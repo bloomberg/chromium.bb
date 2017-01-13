@@ -1286,13 +1286,19 @@ int main(int argc, const char* argv[]) {
   auto blink_namespace_decl =
       namespaceDecl(anyOf(hasName("blink"), hasName("WTF")),
                     hasParent(translationUnitDecl()));
+  auto protocol_namespace_decl =
+      namespaceDecl(hasName("protocol"),
+                    hasParent(namespaceDecl(hasName("blink"),
+                                            hasParent(translationUnitDecl()))));
 
   // Given top-level compilation unit:
   //   namespace WTF {
   //     void foo() {}
   //   }
   // matches |foo|.
-  auto decl_under_blink_namespace = decl(hasAncestor(blink_namespace_decl));
+  auto decl_under_blink_namespace =
+      decl(hasAncestor(blink_namespace_decl),
+           unless(hasAncestor(protocol_namespace_decl)));
 
   // Given top-level compilation unit:
   //   void WTF::function() {}
