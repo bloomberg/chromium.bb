@@ -405,7 +405,6 @@ void RequestTrackerImpl::Close() {
                            base::Bind(
                                [](RequestTrackerImpl* tracker) {
                                  tracker->is_closing_ = true;
-                                 tracker->CancelRequests();
                                },
                                base::RetainedRef(this)));
 
@@ -1238,21 +1237,6 @@ NSString* RequestTrackerImpl::UnsafeDescription() {
                                     request_group_id_.get(),
                                     net::NSURLWithGURL(page_url_),
                                     [urls componentsJoinedByString:@"\n"]];
-}
-
-void RequestTrackerImpl::CancelRequests() {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  std::set<net::URLRequest*>::iterator it;
-  // TODO(droger): When canceling the request, we should in theory make sure
-  // that the NSURLProtocol client method |didFailWithError| is called,
-  // otherwise the iOS system may wait indefinitely for the request to complete.
-  // However, as we currently only cancel the requests when closing a tab, the
-  // requests are all canceled by the system shortly after and nothing bad
-  // happens.
-  for (it = live_requests_.begin(); it != live_requests_.end(); ++it)
-    (*it)->Cancel();
-
-  live_requests_.clear();
 }
 
 void RequestTrackerImpl::SetCertificatePolicyCacheForTest(

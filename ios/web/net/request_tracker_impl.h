@@ -284,9 +284,6 @@ class RequestTrackerImpl
   // |load_success| indicates if the page successfully loaded.
   void StopPageLoad(const GURL& url, bool load_success);
 
-  // Cancels all the requests in |live_requests_|.
-  void CancelRequests();
-
 #pragma mark Private Consumer API
   // Private methods that call into delegate methods.
 
@@ -343,8 +340,6 @@ class RequestTrackerImpl
   // progress, and thus requests corresponding to old navigation events are not
   // in it.
   std::map<const void*, TrackerCounts*> counts_by_request_;
-  // All the live requests associated with the tracker.
-  std::set<net::URLRequest*> live_requests_;
   // A list of all the TrackerCounts, including the finished ones.
   std::vector<std::unique_ptr<TrackerCounts>> counts_;
   // The system shall never allow the page load estimate to go back.
