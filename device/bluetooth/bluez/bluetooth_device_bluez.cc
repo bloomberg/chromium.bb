@@ -928,6 +928,9 @@ void BluetoothDeviceBlueZ::OnSetTrusted(bool success) {
 
 void BluetoothDeviceBlueZ::OnDisconnect(const base::Closure& callback) {
   VLOG(1) << object_path_.value() << ": Disconnected";
+  // Do not notify about changed device since this is already done by
+  // the dbus::PropertySet and the property change callback for BlueZ.
+  DidDisconnectGatt(false /* notifyDeviceChanged */);
   callback.Run();
 }
 

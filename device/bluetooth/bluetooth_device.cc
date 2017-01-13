@@ -517,7 +517,11 @@ void BluetoothDevice::DidFailToConnectGatt(ConnectErrorCode error) {
   create_gatt_connection_error_callbacks_.clear();
 }
 
-void BluetoothDevice::DidDisconnectGatt() {
+void BluetoothDevice::DidDisconnectGatt(bool notifyDeviceChanged) {
+  gatt_services_.clear();
+  device_uuids_.ClearServiceUUIDs();
+  SetGattServicesDiscoveryComplete(false);
+
   // Pending calls to connect GATT are not expected, if they were then
   // DidFailToConnectGatt should have been called.
   DCHECK(create_gatt_connection_error_callbacks_.empty());
@@ -527,7 +531,8 @@ void BluetoothDevice::DidDisconnectGatt() {
     connection->InvalidateConnectionReference();
   }
   gatt_connections_.clear();
-  GetAdapter()->NotifyDeviceChanged(this);
+  if (notifyDeviceChanged)
+    GetAdapter()->NotifyDeviceChanged(this);
 }
 
 void BluetoothDevice::AddGattConnection(BluetoothGattConnection* connection) {

@@ -390,7 +390,7 @@ void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(NSError* error) {
   //   2. When we cancel a pending connection request.
   if (create_gatt_connection_error_callbacks_.empty()) {
     // If there are no pending callbacks then the connection broke (#1).
-    DidDisconnectGatt();
+    DidDisconnectGatt(true /* notifyDeviceChanged */);
     return;
   }
   // Else we canceled the connection request (#2).
