@@ -31,6 +31,14 @@ class IMEStructTraitsTest : public testing::Test,
       const EchoCompositionTextCallback& callback) override {
     callback.Run(in);
   }
+  void EchoTextInputMode(TextInputMode in,
+                         const EchoTextInputModeCallback& callback) override {
+    callback.Run(in);
+  }
+  void EchoTextInputType(TextInputType in,
+                         const EchoTextInputTypeCallback& callback) override {
+    callback.Run(in);
+  }
 
   base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.
   mojo::BindingSet<mojom::IMEStructTraitsTest> traits_test_bindings_;
@@ -53,6 +61,54 @@ TEST_F(IMEStructTraitsTest, CompositionText) {
   proxy->EchoCompositionText(input, &output);
 
   EXPECT_EQ(input, output);
+}
+
+TEST_F(IMEStructTraitsTest, TextInputMode) {
+  const TextInputMode kTextInputModes[] = {
+      TEXT_INPUT_MODE_DEFAULT,     TEXT_INPUT_MODE_VERBATIM,
+      TEXT_INPUT_MODE_LATIN,       TEXT_INPUT_MODE_LATIN_NAME,
+      TEXT_INPUT_MODE_LATIN_PROSE, TEXT_INPUT_MODE_FULL_WIDTH_LATIN,
+      TEXT_INPUT_MODE_KANA,        TEXT_INPUT_MODE_KANA_NAME,
+      TEXT_INPUT_MODE_KATAKANA,    TEXT_INPUT_MODE_NUMERIC,
+      TEXT_INPUT_MODE_TEL,         TEXT_INPUT_MODE_EMAIL,
+      TEXT_INPUT_MODE_URL,
+  };
+
+  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
+  for (size_t i = 0; i < arraysize(kTextInputModes); i++) {
+    ui::TextInputMode mode_out;
+    ASSERT_TRUE(proxy->EchoTextInputMode(kTextInputModes[i], &mode_out));
+    EXPECT_EQ(kTextInputModes[i], mode_out);
+  }
+}
+
+TEST_F(IMEStructTraitsTest, TextInputType) {
+  const TextInputType kTextInputTypes[] = {
+      TEXT_INPUT_TYPE_NONE,
+      TEXT_INPUT_TYPE_TEXT,
+      TEXT_INPUT_TYPE_PASSWORD,
+      TEXT_INPUT_TYPE_SEARCH,
+      TEXT_INPUT_TYPE_EMAIL,
+      TEXT_INPUT_TYPE_NUMBER,
+      TEXT_INPUT_TYPE_TELEPHONE,
+      TEXT_INPUT_TYPE_URL,
+      TEXT_INPUT_TYPE_DATE,
+      TEXT_INPUT_TYPE_DATE_TIME,
+      TEXT_INPUT_TYPE_DATE_TIME_LOCAL,
+      TEXT_INPUT_TYPE_MONTH,
+      TEXT_INPUT_TYPE_TIME,
+      TEXT_INPUT_TYPE_WEEK,
+      TEXT_INPUT_TYPE_TEXT_AREA,
+      TEXT_INPUT_TYPE_CONTENT_EDITABLE,
+      TEXT_INPUT_TYPE_DATE_TIME_FIELD,
+  };
+
+  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
+  for (size_t i = 0; i < arraysize(kTextInputTypes); i++) {
+    ui::TextInputType type_out;
+    ASSERT_TRUE(proxy->EchoTextInputType(kTextInputTypes[i], &type_out));
+    EXPECT_EQ(kTextInputTypes[i], type_out);
+  }
 }
 
 }  // namespace ui

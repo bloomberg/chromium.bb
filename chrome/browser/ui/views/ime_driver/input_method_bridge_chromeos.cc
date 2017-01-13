@@ -17,13 +17,13 @@ InputMethodBridge::InputMethodBridge(ui::mojom::TextInputClientPtr client)
 InputMethodBridge::~InputMethodBridge() {}
 
 void InputMethodBridge::OnTextInputModeChanged(
-    ui::mojom::TextInputMode text_input_mode) {
+    ui::TextInputMode text_input_mode) {
   // TODO(moshayedi): crbug.com/631527. Consider removing this, as
   // ui::InputMethodChromeOS doesn't have this.
 }
 
 void InputMethodBridge::OnTextInputTypeChanged(
-    ui::mojom::TextInputType text_input_type) {
+    ui::TextInputType text_input_type) {
   input_method_chromeos_->OnTextInputTypeChanged(client_.get());
 }
 

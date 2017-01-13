@@ -9,5 +9,9 @@ import "services/ui/public/interfaces/ime/ime.mojom";
 interface IMEStructTraitsTest {
   [Sync]
   EchoCompositionText(CompositionText in) => (CompositionText out);
+  [Sync]
+  EchoTextInputType(TextInputType in) => (TextInputType out);
+  [Sync]
+  EchoTextInputMode(TextInputMode in) => (TextInputMode out);
 };
 

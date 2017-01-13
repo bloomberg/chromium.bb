@@ -39,6 +39,12 @@ enum TextInputType {
   DATE,
   TIME,
   DATETIME,
+  DATETIME_LOCAL,
+  MONTH,
+  WEEK,
+  TEXT_AREA,
+  CONTENT_EDITABLE,
+  DATETIME_FIELD
 };
 
 // See comments for ui::TextInputMode for more details.
@@ -50,6 +56,7 @@ enum TextInputMode {
   LATIN_PROSE,
   FULL_WIDTH_LATIN,
   KANA,
+  KANA_NAME,
   KATAKANA,
   NUMERIC,
   TEL,

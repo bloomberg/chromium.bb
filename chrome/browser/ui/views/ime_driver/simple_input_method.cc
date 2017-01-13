@@ -9,10 +9,10 @@ SimpleInputMethod::SimpleInputMethod() {}
 SimpleInputMethod::~SimpleInputMethod() {}
 
 void SimpleInputMethod::OnTextInputModeChanged(
-    ui::mojom::TextInputMode text_input_mode) {}
+    ui::TextInputMode text_input_mode) {}
 
 void SimpleInputMethod::OnTextInputTypeChanged(
-    ui::mojom::TextInputType text_input_type) {}
+    ui::TextInputType text_input_type) {}
 
 void SimpleInputMethod::OnCaretBoundsChanged(const gfx::Rect& caret_bounds) {}
 

@@ -9,6 +9,8 @@
 #include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/composition_underline.h"
+#include "ui/base/ime/text_input_mode.h"
+#include "ui/base/ime/text_input_type.h"
 
 namespace mojo {
 
@@ -43,6 +45,18 @@ struct StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText> {
   }
   static bool Read(ui::mojom::CompositionTextDataView data,
                    ui::CompositionText* out);
+};
+
+template <>
+struct EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode> {
+  static ui::mojom::TextInputMode ToMojom(ui::TextInputMode text_input_mode);
+  static bool FromMojom(ui::mojom::TextInputMode input, ui::TextInputMode* out);
+};
+
+template <>
+struct EnumTraits<ui::mojom::TextInputType, ui::TextInputType> {
+  static ui::mojom::TextInputType ToMojom(ui::TextInputType text_input_type);
+  static bool FromMojom(ui::mojom::TextInputType input, ui::TextInputType* out);
 };
 
 }  // namespace mojo

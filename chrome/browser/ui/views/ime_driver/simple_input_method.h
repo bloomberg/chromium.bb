@@ -17,10 +17,8 @@ class SimpleInputMethod : public ui::mojom::InputMethod {
   ~SimpleInputMethod() override;
 
   // ui::mojom::InputMethod:
-  void OnTextInputModeChanged(
-      ui::mojom::TextInputMode text_input_mode) override;
-  void OnTextInputTypeChanged(
-      ui::mojom::TextInputType text_input_type) override;
+  void OnTextInputModeChanged(ui::TextInputMode text_input_mode) override;
+  void OnTextInputTypeChanged(ui::TextInputType text_input_type) override;
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                        const ProcessKeyEventCallback& callback) override;

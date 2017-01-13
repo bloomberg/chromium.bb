@@ -6,6 +6,8 @@ mojom = "//services/ui/public/interfaces/ime/ime.mojom"
 public_headers = [
   "//ui/base/ime/composition_text.h",
   "//ui/base/ime/composition_underline.h",
+  "//ui/base/ime/text_input_mode.h",
+  "//ui/base/ime/text_input_type.h",
 ]
 traits_headers = [ "//services/ui/public/interfaces/ime/ime_struct_traits.h" ]
 sources = [
@@ -21,4 +23,6 @@ deps = [
 type_mappings = [
   "ui.mojom.CompositionText=ui::CompositionText",
   "ui.mojom.CompositionUnderline=ui::CompositionUnderline",
+  "ui.mojom.TextInputMode=ui::TextInputMode",
+  "ui.mojom.TextInputType=ui::TextInputType",
 ]

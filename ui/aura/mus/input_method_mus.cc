@@ -93,8 +93,7 @@ void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {
   InputMethodBase::OnTextInputTypeChanged(client);
 
   if (input_method_) {
-    input_method_->OnTextInputTypeChanged(
-        static_cast<ui::mojom::TextInputType>(client->GetTextInputType()));
+    input_method_->OnTextInputTypeChanged(client->GetTextInputType());
   }
 }
 
