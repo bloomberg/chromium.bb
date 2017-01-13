@@ -11,9 +11,9 @@ cr.define('signin.emailConfirmation', function() {
     var newEmail = args.newEmail;
     $('dialogTitle').textContent = loadTimeData.getStringF(
         'signinEmailConfirmationTitle', lastEmail);
-    $('createNewUserRadioButton').innerHTML = loadTimeData.getStringF(
+    $('createNewUserRadioButtonTitle').innerHTML = I18nBehavior.i18n(
         'signinEmailConfirmationCreateProfileButtonTitle', newEmail);
-    $('startSyncRadioButton').innerHTML = loadTimeData.getStringF(
+    $('startSyncRadioButtonTitle').innerHTML = I18nBehavior.i18n(
         'signinEmailConfirmationStartSyncButtonTitle', newEmail);
 
     document.addEventListener('keydown', onKeyDown);

@@ -23,7 +23,7 @@
 namespace {
 
 // Dialog size.
-const int kDialogWidth = 448;
+const int kDialogWidth = 512;
 const int kDialogMinHeight = 200;
 const int kDialogMaxHeight = 700;
 

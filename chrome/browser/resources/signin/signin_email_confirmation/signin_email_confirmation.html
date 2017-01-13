@@ -2,6 +2,7 @@
 <html i18n-values="dir:textdirection;lang:language">
   <head>
     <meta charset="utf-8">
+    <link rel="import" href="chrome://resources/html/i18n_behavior.html">
     <link rel="import" href="chrome://resources/html/polymer.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
@@ -13,11 +14,33 @@
     <link rel="import" href="chrome://resources/html/load_time_data.html">
     <link rel="import" href="chrome://resources/html/util.html">
     <style is="custom-style" include="signin-dialog-shared">
+      .container {
+        /* The sign-in confirmation dialog uses a width that is larger than
+         * the other sign-in dialogs to fit cases when the user has an email
+         * name that is very large. */
+        width: 512px;
+      }
+
       .details {
+        -webkit-margin-start: -8px;
         line-height: 20px;
-        margin-bottom: 8px;
-        margin-left: -8px;
-        padding: 0 24px;
+        padding: 8px 24px 0;
+      }
+
+      .radio-button-title-container {
+        line-height: 20px;
+      }
+
+      .top-title-bar {
+        color: #333;
+        height: auto;
+
+        /* The signin email confirmation dialog needs to support cases when the
+         * title extends multiple lines. In that case, the height of the title
+         * bar is equal to padding + height of the text (which is equal to
+         * 2*16px + nb_lines * 22px). */
+        line-height: 22px;
+        padding: 16px 24px;
       }
 
       #closeButton {
@@ -41,10 +64,16 @@
         <paper-radio-group selected="createNewUser">
           <paper-radio-button id="createNewUserRadioButton"
               name="createNewUser">
-            $i18n{signinEmailConfirmationCreateProfileButtonTitle}
+             <div class="radio-button-title-container"
+                  id="createNewUserRadioButtonTitle">
+              $i18n{signinEmailConfirmationCreateProfileButtonTitle}
+            </div>
           </paper-radio-button>
           <paper-radio-button id="startSyncRadioButton" name="startSync">
-            $i18n{signinEmailConfirmationStartSyncButtonTitle}
+             <div class="radio-button-title-container"
+                 id="startSyncRadioButtonTitle">
+              $i18n{signinEmailConfirmationStartSyncButtonTitle}
+            </div>
           </paper-radio-button>
         </paper-radio-group>
       </div>
