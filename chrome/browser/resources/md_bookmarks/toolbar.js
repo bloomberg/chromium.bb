@@ -5,6 +5,19 @@
 Polymer({
   is: 'bookmarks-toolbar',
 
+  properties: {
+    searchTerm: {
+      type: String,
+      observer: 'onSearchTermChanged_',
+    },
+  },
+
+  /** @return {CrToolbarSearchFieldElement} */
+  get searchField() {
+    return /** @type {CrToolbarElement} */ (this.$$('cr-toolbar'))
+        .getSearchField();
+  },
+
   /**
    * @param {Event} e
    * @private
@@ -43,5 +56,20 @@ Polymer({
   closeDropdownMenu_: function() {
     var menu = /** @type {!CrActionMenuElement} */ (this.$.dropdown);
     menu.close();
-  }
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onSearchChanged_: function(e) {
+    var searchTerm = /** @type {string} */ (e.detail);
+    this.fire('search-term-changed', searchTerm);
+  },
+
+  /** @private */
+  onSearchTermChanged_: function() {
+    if (!this.searchTerm)
+      this.searchField.setValue('');
+  },
 });

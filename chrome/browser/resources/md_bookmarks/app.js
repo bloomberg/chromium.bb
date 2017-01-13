@@ -9,10 +9,12 @@ Polymer({
     selectedId: String,
 
     /** @type {BookmarkTreeNode} */
-    selectedNode: Object,
-
-    /** @type {BookmarkTreeNode} */
     rootNode: Object,
+
+    searchTerm: String,
+
+    /** @type {Array<BookmarkTreeNode>} */
+    displayedList: Array,
   },
 
   /** @override */

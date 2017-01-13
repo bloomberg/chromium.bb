@@ -55,6 +55,7 @@
       'target_name': 'toolbar',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_action_menu/compiled_resources2.gyp:cr_action_menu',
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_toolbar/compiled_resources2.gyp:cr_toolbar',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

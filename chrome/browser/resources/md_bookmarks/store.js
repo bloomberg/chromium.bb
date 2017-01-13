@@ -12,15 +12,26 @@ var BookmarksStore = Polymer({
       notify: true,
     },
 
+    /** @type {?string} */
     selectedId: {
       type: String,
-      observer: 'updateSelectedNode_',
+      observer: 'updateSelectedDisplay_',
       notify: true,
     },
 
-    /** @type {BookmarkTreeNode} */
-    selectedNode: {
-      type: Object,
+    searchTerm: {
+      type: String,
+      observer: 'updateSearchDisplay_',
+      notify: true,
+    },
+
+    /**
+     * This updates to either the result of a search or the contents of the
+     * selected folder.
+     * @type {Array<BookmarkTreeNode>}
+     */
+    displayedList: {
+      type: Array,
       notify: true,
       readOnly: true,
     },
@@ -36,6 +47,7 @@ var BookmarksStore = Polymer({
     this.documentListeners_ = {
       'selected-folder-changed': this.onSelectedFolderChanged_.bind(this),
       'folder-open-changed': this.onFolderOpenChanged_.bind(this),
+      'search-term-changed': this.onSearchTermChanged_.bind(this),
     };
     for (var event in this.documentListeners_)
       document.addEventListener(event, this.documentListeners_[event]);
@@ -76,20 +88,49 @@ var BookmarksStore = Polymer({
     this.fire('selected-folder-changed', this.rootNode.children[0].id);
   },
 
+  /** @private */
+  deselectFolders_: function() {
+    this.unlinkPaths('displayedList');
+    this.set(this.idToNodeMap_[this.selectedId].path + '.isSelected', false);
+    this.selectedId = null;
+  },
+
   /**
    * @param {BookmarkTreeNode} folder
    * @private
    * @return {boolean}
    */
   isAncestorOfSelected_: function(folder) {
-    return this.selectedNode.path.startsWith(folder.path);
+    if (!this.selectedId)
+      return false;
+
+    var selectedNode = this.idToNodeMap_[this.selectedId];
+    return selectedNode.path.startsWith(folder.path);
   },
 
   /** @private */
-  updateSelectedNode_: function() {
+  updateSearchDisplay_: function() {
+    if (this.searchTerm == '') {
+      this.fire('selected-folder-changed', this.rootNode.children[0].id);
+    } else {
+      chrome.bookmarks.search(this.searchTerm, function(results) {
+        if (this.selectedId)
+          this.deselectFolders_();
+
+        this._setDisplayedList(results);
+      }.bind(this));
+    }
+  },
+
+  /** @private */
+  updateSelectedDisplay_: function() {
+    // Don't change to the selected display if ID was cleared.
+    if (!this.selectedId)
+      return;
+
     var selectedNode = this.idToNodeMap_[this.selectedId];
-    this.linkPaths('selectedNode', selectedNode.path);
-    this._setSelectedNode(selectedNode);
+    this.linkPaths('displayedList', selectedNode.path + '.children');
+    this._setDisplayedList(selectedNode.children);
   },
 
   /**
@@ -129,6 +170,10 @@ var BookmarksStore = Polymer({
     this.splice(parentNode.path + '.children', removeInfo.index, 1);
     this.removeDescendantsFromMap_(id);
     BookmarksStore.generatePaths(parentNode, removeInfo.index);
+
+    // Regenerate the search list if its displayed.
+    if (this.searchTerm)
+      this.updateSearchDisplay_();
   },
 
   /**
@@ -141,10 +186,21 @@ var BookmarksStore = Polymer({
       this.set(this.idToNodeMap_[id].path + '.title', changeInfo.title);
     if (changeInfo.url)
       this.set(this.idToNodeMap_[id].path + '.url', changeInfo.url);
+
+    if (this.searchTerm)
+      this.updateSearchDisplay_();
   },
 
 ////////////////////////////////////////////////////////////////////////////////
 // bookmarks-store, bookmarks app event listeners:
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onSearchTermChanged_: function(e) {
+    this.searchTerm = /** @type {string} */ (e.detail);
+  },
 
   /**
    * Selects the folder specified by the event and deselects the previously
@@ -153,6 +209,9 @@ var BookmarksStore = Polymer({
    * @private
    */
   onSelectedFolderChanged_: function(e) {
+    if (this.searchTerm)
+      this.searchTerm = '';
+
     // Deselect the old folder if defined.
     if (this.selectedId)
       this.set(this.idToNodeMap_[this.selectedId].path + '.isSelected', false);

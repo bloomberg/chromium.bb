@@ -32,19 +32,21 @@ suite('<bookmarks-store>', function() {
     assertEquals(TEST_TREE.children[2], store.idToNodeMap_['5']);
   });
 
-  test('changing selectedId changes the selectedNode', function(){
+  test('changing selectedId changes the displayedList', function(){
     store.selectedId = '0';
-    assertEquals(TEST_TREE, store.selectedNode);
+    assertEquals(TEST_TREE.children, store.displayedList);
     store.selectedId = '1';
-    assertEquals(TEST_TREE.children[0], store.selectedNode);
+    assertEquals(TEST_TREE.children[0].children, store.displayedList);
     store.selectedId = '2';
-    assertEquals(TEST_TREE.children[0].children[0], store.selectedNode);
+    assertEquals(
+        TEST_TREE.children[0].children[0].children, store.displayedList);
     store.selectedId = '3';
-    assertEquals(TEST_TREE.children[0].children[1], store.selectedNode);
+    assertEquals(
+        TEST_TREE.children[0].children[1].children, store.displayedList);
     store.selectedId = '4';
-    assertEquals(TEST_TREE.children[1], store.selectedNode);
+    assertEquals(TEST_TREE.children[1].children, store.displayedList);
     store.selectedId = '5';
-    assertEquals(TEST_TREE.children[2], store.selectedNode);
+    assertEquals(TEST_TREE.children[2].children, store.displayedList);
   });
 
   test('correct paths generated for nodes', function() {
@@ -166,6 +168,39 @@ suite('<bookmarks-store>', function() {
     store.onBookmarkRemoved_('1', {parentId:'0', index:'0'});
     assertTrue(store.idToNodeMap_['0'].isSelected);
     assertEquals('0', store.selectedId);
+  });
+
+  test('displayedList updates after searchTerm changes', function() {
+      var SEARCH_RESULTS = [
+        'cat',
+        'apple',
+        'Paris',
+      ];
+
+      chrome.bookmarks.search = function(searchTerm, callback) {
+        callback(SEARCH_RESULTS);
+      };
+
+      // Search for a non-empty string.
+      store.searchTerm = 'a';
+      assertFalse(store.rootNode.children[0].isSelected);
+      assertEquals(null, store.selectedId);
+      assertEquals(SEARCH_RESULTS, store.displayedList);
+
+      // Clear the searchTerm.
+      store.searchTerm = '';
+      var defaultFolder = store.rootNode.children[0];
+      assertTrue(defaultFolder.isSelected);
+      assertEquals(defaultFolder.id, store.selectedId);
+      assertEquals(defaultFolder.children, store.displayedList);
+
+      // Search with no bookmarks returned.
+      var EMPTY_RESULT = [];
+      chrome.bookmarks.search = function(searchTerm, callback) {
+        callback(EMPTY_RESULT);
+      };
+      store.searchTerm = 'asdf';
+      assertEquals(EMPTY_RESULT, store.displayedList);
   });
 
   test('bookmark gets updated after editing', function() {

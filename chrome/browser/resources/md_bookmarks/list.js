@@ -7,10 +7,10 @@ Polymer({
 
   properties: {
     /** @type {BookmarkTreeNode} */
-    selectedNode: Object,
-
-    /** @type {BookmarkTreeNode} */
     menuItem_: Object,
+
+    /** @type {Array<BookmarkTreeNode>} */
+    displayedList: Array,
   },
 
   listeners: {
@@ -47,12 +47,12 @@ Polymer({
 
   /** @private */
   onDeleteTap_: function() {
-    if (this.menuItem_.children) {
-      chrome.bookmarks.removeTree(this.menuItem_.id, function() {
+    if (this.menuItem_.url) {
+      chrome.bookmarks.remove(this.menuItem_.id, function() {
         // TODO(jiaxi): Add toast later.
       }.bind(this));
     } else {
-      chrome.bookmarks.remove(this.menuItem_.id, function() {
+      chrome.bookmarks.removeTree(this.menuItem_.id, function() {
         // TODO(jiaxi): Add toast later.
       }.bind(this));
     }
@@ -82,6 +82,6 @@ Polymer({
 
   /** @private */
   isListEmpty_: function() {
-    return this.selectedNode.children.length == 0;
+    return this.displayedList.length == 0;
   }
 });

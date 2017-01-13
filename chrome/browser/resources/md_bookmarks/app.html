@@ -30,15 +30,16 @@
         flex: 1;
       }
     </style>
-    <bookmarks-toolbar></bookmarks-toolbar>
+    <bookmarks-toolbar search-term="[[searchTerm]]"></bookmarks-toolbar>
     <div id="main-container">
       <bookmarks-sidebar root-folders="[[rootNode.children]]">
       </bookmarks-sidebar>
-      <bookmarks-list selected-node="[[selectedNode]]"></bookmarks-list>
+      <bookmarks-list displayed-list="[[displayedList]]"></bookmarks-list>
     </div>
     <bookmarks-store selected-id="{{selectedId}}"
-        selected-node="{{selectedNode}}"
-        root-node="{{rootNode}}">
+        root-node="{{rootNode}}"
+        search-term="{{searchTerm}}"
+        displayed-list="{{displayedList}}">
     </bookmarks-store>
   </template>
   <script src="chrome://bookmarks/app.js"></script>
