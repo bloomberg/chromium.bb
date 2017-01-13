@@ -84,7 +84,8 @@ void WidgetOwnerNSWindowAdapter::OnWindowWillClose() {
 
   // AppKit child window relationships break when the windows are not visible,
   // so if the child is not visible, it won't currently be a child.
-  DCHECK(![child_window isVisible] || [child_window parentWindow]);
+  if (![child_window isVisible])
+    DCHECK(![child_window parentWindow] && ![child_window sheetParent]);
   DCHECK([child_window delegate]);
 
   [child_window close];

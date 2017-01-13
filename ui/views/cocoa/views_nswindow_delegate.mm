@@ -5,6 +5,8 @@
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 
 #include "base/logging.h"
+#import "base/mac/bind_objc_block.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -46,6 +48,10 @@
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)returnCode
         contextInfo:(void*)contextInfo {
+  // |parent_| will be null when triggered from the block in -windowWillClose:.
+  if (!parent_)
+    return;
+
   [sheet orderOut:nil];
   parent_->OnWindowWillClose();
 }
@@ -87,8 +93,32 @@
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  DCHECK([parent_->ns_window() isEqual:[notification object]]);
+  // Retain |self|. |parent_| should be cleared. OnWindowWillClose() may delete
+  // |parent_|, but it may also dealloc |self| before returning. However, the
+  // observers it notifies before that need a valid |parent_| on the delegate,
+  // so it can only be cleared after OnWindowWillClose() returns.
+  base::scoped_nsobject<NSObject> keepAlive(self, base::scoped_policy::RETAIN);
+  NSWindow* window = parent_->ns_window();
+  if (NSWindow* sheetParent = [window sheetParent]) {
+    // On no! Something called -[NSWindow close] on a sheet rather than calling
+    // -[NSWindow endSheet:] on its parent. If the modal session is not ended
+    // then the parent will never be able to show another sheet. But calling
+    // -endSheet: here will block the thread with an animation, so post a task.
+    // Use a block: The argument to -endSheet: must be retained, since it's the
+    // window that is closing and -performSelector: won't retain the argument.
+    // The NSWindowDelegate (i.e. |self|) must also be explicitly retained. Even
+    // though the call to OnWindowWillClose() below will remove |self| as the
+    // NSWindow delegate, the call to -[NSApp beginSheet:] also took a weak
+    // reference to the delegate, which will be destroyed when the sheet's
+    // BridgedNativeWidget is destroyed.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::BindBlock(^{
+      [sheetParent endSheet:window];
+      [[self retain] release];  // Force |self| to be retained for the block.
+    }));
+  }
+  DCHECK([window isEqual:[notification object]]);
   parent_->OnWindowWillClose();
+  parent_ = nullptr;
 }
 
 - (void)windowDidMiniaturize:(NSNotification*)notification {

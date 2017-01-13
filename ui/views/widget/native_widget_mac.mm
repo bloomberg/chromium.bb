@@ -382,10 +382,6 @@ void NativeWidgetMac::CloseNow() {
   if (!bridge_)
     return;
 
-  // Cocoa ignores -close calls on open sheets, so they should be closed
-  // asynchronously, using Widget::Close().
-  DCHECK(!IsWindowModalSheet());
-
   // NSWindows must be retained until -[NSWindow close] returns.
   base::scoped_nsobject<NSWindow> window(GetNativeWindow(),
                                          base::scoped_policy::RETAIN);

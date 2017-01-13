@@ -998,6 +998,16 @@ Widget* ShowChildModalWidgetAndWait(NSWindow* native_parent) {
   return modal_dialog_widget;
 }
 
+// Shows a window-modal Widget (as a sheet). No need to wait since the native
+// sheet animation is blocking.
+Widget* ShowWindowModalWidget(NSWindow* native_parent) {
+  Widget* sheet_widget = views::DialogDelegate::CreateDialogWidget(
+      new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW), nullptr,
+      [native_parent contentView]);
+  sheet_widget->Show();
+  return sheet_widget;
+}
+
 }  // namespace
 
 // Tests object lifetime for the show/hide animations used for child-modal
@@ -1155,6 +1165,53 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
 
   EXPECT_TRUE(widget_observer.widget_closed());
   EXPECT_TRUE([parent_close_button isEnabled]);
+}
+
+// Tests behavior when closing a window that is a sheet, or that hosts a sheet,
+// and reshowing a sheet on a window after the sheet was closed with -[NSWindow
+// close].
+TEST_F(NativeWidgetMacTest, CloseWithWindowModalSheet) {
+  NSWindow* native_parent =
+      MakeNativeParentWithStyle(NSClosableWindowMask | NSTitledWindowMask);
+  {
+    Widget* sheet_widget = ShowWindowModalWidget(native_parent);
+    EXPECT_TRUE([sheet_widget->GetNativeWindow() isVisible]);
+
+    WidgetChangeObserver widget_observer(sheet_widget);
+
+    // Test synchronous close (asynchronous close is tested above).
+    sheet_widget->CloseNow();
+    EXPECT_TRUE(widget_observer.widget_closed());
+
+    // Spin the RunLoop to ensure the task that ends the modal session on
+    // |native_parent| is executed. Otherwise |native_parent| will refuse to
+    // show another sheet.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  {
+    Widget* sheet_widget = ShowWindowModalWidget(native_parent);
+
+    // Ensure the sheet wasn't blocked by a previous modal session.
+    EXPECT_TRUE([sheet_widget->GetNativeWindow() isVisible]);
+
+    WidgetChangeObserver widget_observer(sheet_widget);
+
+    // Test native -[NSWindow close] on the sheet. Does not animate.
+    [sheet_widget->GetNativeWindow() close];
+    EXPECT_TRUE(widget_observer.widget_closed());
+    base::RunLoop().RunUntilIdle();
+  }
+
+  {
+    Widget* sheet_widget = ShowWindowModalWidget(native_parent);
+    EXPECT_TRUE([sheet_widget->GetNativeWindow() isVisible]);
+    WidgetChangeObserver widget_observer(sheet_widget);
+
+    // Test -[NSWindow close] on the parent window.
+    [native_parent close];
+    EXPECT_TRUE(widget_observer.widget_closed());
+  }
 }
 
 // Test calls to Widget::ReparentNativeView() that result in a no-op on Mac.
