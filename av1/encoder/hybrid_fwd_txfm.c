@@ -92,14 +92,14 @@ static void fwd_txfm_16x32(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TX_TYPE tx_type,
                            FWD_TXFM_OPT fwd_txfm_opt) {
   (void)fwd_txfm_opt;
-  av1_fht16x32_c(src_diff, coeff, diff_stride, tx_type);
+  av1_fht16x32(src_diff, coeff, diff_stride, tx_type);
 }
 
 static void fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TX_TYPE tx_type,
                            FWD_TXFM_OPT fwd_txfm_opt) {
   (void)fwd_txfm_opt;
-  av1_fht32x16_c(src_diff, coeff, diff_stride, tx_type);
+  av1_fht32x16(src_diff, coeff, diff_stride, tx_type);
 }
 
 static void fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
