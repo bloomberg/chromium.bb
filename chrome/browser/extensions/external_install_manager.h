@@ -34,6 +34,9 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
                          bool is_first_run);
   ~ExternalInstallManager() override;
 
+  // Returns true if prompting for external extensions is enabled.
+  static bool IsPromptingEnabled();
+
   // Removes the error associated with a given extension.
   void RemoveExternalInstallError(const std::string& extension_id);
 

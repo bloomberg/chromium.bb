@@ -12,12 +12,14 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/external_install_error.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_url_handlers.h"
 
@@ -84,6 +86,16 @@ ExternalInstallManager::ExternalInstallManager(
 ExternalInstallManager::~ExternalInstallManager() {
 }
 
+
+bool ExternalInstallManager::IsPromptingEnabled() {
+  // Enable this feature on canary on mac.
+#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
+  return GetCurrentChannel() <= version_info::Channel::CANARY;
+#else
+  return FeatureSwitch::prompt_for_external_extensions()->IsEnabled();
+#endif
+}
+
 void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
                                                      bool is_new_profile) {
   // Error already exists or has been previously shown.
@@ -116,7 +128,7 @@ void ExternalInstallManager::RemoveExternalInstallError(
 
 void ExternalInstallManager::UpdateExternalExtensionAlert() {
   // If the feature is not enabled do nothing.
-  if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
+  if (!IsPromptingEnabled())
     return;
 
   // Look for any extensions that were disabled because of being unacknowledged
@@ -219,7 +231,7 @@ void ExternalInstallManager::OnExtensionUninstalled(
 
 bool ExternalInstallManager::IsUnacknowledgedExternalExtension(
     const Extension& extension) const {
-  if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
+  if (!IsPromptingEnabled())
     return false;
 
   int disable_reasons = extension_prefs_->GetDisableReasons(extension.id());
