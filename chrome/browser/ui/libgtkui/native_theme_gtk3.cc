@@ -121,21 +121,30 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return SkColorSetA(
           SkColorFromColorId(ui::NativeTheme::kColorId_LinkEnabled), 0xBB);
     case ui::NativeTheme::kColorId_LinkPressed:
+      if (GtkVersionCheck(3, 12))
+        return GetFgColor("GtkLabel#label.link:link:hover:active");
+      // fallthrough
     case ui::NativeTheme::kColorId_LinkEnabled: {
-      // TODO(thomasanderson): Gtk changed the way links are colored in 3.12.
-      // Add code for later versions.
+      if (GtkVersionCheck(3, 12)) {
+        return GetFgColor("GtkLabel#label.link:link");
+      }
       auto link_context = GetStyleContextFromCss("GtkLabel#label.view");
       GdkColor* color;
       gtk_style_context_get_style(link_context, "link-color", &color, nullptr);
       if (color) {
         SkColor ret_color = SkColorSetRGB(color->red / 255, color->green / 255,
                                           color->blue / 255);
+        // gdk_color_free() was deprecated in Gtk3.14.  This code path is only
+        // taken on versions earlier than Gtk3.12, but the compiler doesn't know
+        // that, so silence the deprecation warnings.
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
         gdk_color_free(color);
+        G_GNUC_END_IGNORE_DEPRECATIONS;
         return ret_color;
-      } else {
-        // Default color comes from gtklinkbutton.c.
-        return SkColorSetRGB(0x00, 0x00, 0xEE);
       }
+
+      // Default color comes from gtklinkbutton.c.
+      return SkColorSetRGB(0x00, 0x00, 0xEE);
     }
 
     // Separator

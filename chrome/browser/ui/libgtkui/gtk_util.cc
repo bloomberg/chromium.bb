@@ -244,12 +244,9 @@ ScopedStyleContext AppendNode(GtkStyleContext* context,
       {"indeterminate", GTK_STATE_FLAG_INCONSISTENT},
       {"focus", GTK_STATE_FLAG_FOCUSED},
       {"backdrop", GTK_STATE_FLAG_BACKDROP},
-      // TODO(thomasanderson): These state flags are only available in
-      // GTK 3.10 or later, which is unavailable in the wheezy
-      // sysroot.  Add them once the sysroot is updated to jessie.
-      // { "link",          GTK_STATE_FLAG_LINK },
-      // { "visited",       GTK_STATE_FLAG_VISITED },
-      // { "checked",       GTK_STATE_FLAG_CHECKED },
+      {"link", GTK_STATE_FLAG_LINK},
+      {"visited", GTK_STATE_FLAG_VISITED},
+      {"checked", GTK_STATE_FLAG_CHECKED},
   };
   GtkStateFlags state =
       context ? gtk_style_context_get_state(context) : GTK_STATE_FLAG_NORMAL;

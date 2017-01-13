@@ -68,6 +68,13 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog);
 void ClearAuraTransientParent(GtkWidget* dialog);
 
 #if GTK_MAJOR_VERSION > 2
+// These constants are defined in gtk/gtkenums.h in Gtk3.12 or later.
+// They are added here as a convenience to avoid version checks, and
+// can be removed once the sysroot is switched from Wheezy to Jessie.
+#define GTK_STATE_FLAG_LINK static_cast<GtkStateFlags>(1 << 9)
+#define GTK_STATE_FLAG_VISITED static_cast<GtkStateFlags>(1 << 10)
+#define GTK_STATE_FLAG_CHECKED static_cast<GtkStateFlags>(1 << 11)
+
 // Returns true iff the runtime version of Gtk used meets
 // |major|.|minor|.|micro|.
 bool GtkVersionCheck(int major, int minor = 0, int micro = 0);
