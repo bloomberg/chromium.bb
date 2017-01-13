@@ -13,7 +13,6 @@ source_set("run_all_unittests") {
 
   deps = [
     "//base/test:test_support",
-    "//blimp/client/public:public_headers",
     "//mojo/edk/system",
     "//ui/gfx:gfx",
   ]

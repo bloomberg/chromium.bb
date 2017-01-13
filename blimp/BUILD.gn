@@ -14,7 +14,6 @@ group("blimp") {
 
   deps = [
     ":blimp_tests",
-    "//blimp/client",
     "//blimp/common",
   ]
 
@@ -37,7 +36,6 @@ group("blimp_tests") {
 
   deps = [
     ":blimp_unittests",
-    "//blimp/client:test_binaries",
   ]
 
   if (is_linux) {
@@ -47,7 +45,6 @@ group("blimp_tests") {
 
 test("blimp_unittests") {
   deps = [
-    "//blimp/client:unit_tests",
     "//blimp/common:unit_tests",
     "//blimp/net:unit_tests",
     "//blimp/test:run_all_unittests",
@@ -59,7 +56,6 @@ test("blimp_unittests") {
 
   if (is_android) {
     enable_multidex = true
-    deps += [ "//blimp/client:blimp_unittests_java_deps" ]
   }
 }
 

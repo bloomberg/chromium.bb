@@ -8,59 +8,13 @@
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/base_jni_registrar.h"
-#include "base/android/jni_android.h"
-#include "blimp/client/public/android/blimp_jni_registrar.h"
-#include "net/android/net_jni_registrar.h"
-#include "ui/android/ui_android_jni_registrar.h"
-#include "ui/gfx/android/gfx_jni_registrar.h"
-#endif
-
 namespace {
 
 class BlimpTestSuite : public base::TestSuite {
  public:
   BlimpTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
- protected:
-  void Initialize() override {
-    base::TestSuite::Initialize();
-
-#if defined(OS_ANDROID)
-    if (!RegisterJni(base::android::AttachCurrentThread())) {
-      LOG(FATAL) << "Jni Registration failed";
-    }
-#endif
-  }
-
  private:
-#if defined(OS_ANDROID)
-  bool RegisterJni(JNIEnv* env) {
-    if (!base::android::RegisterJni(env)) {
-      return false;
-    }
-
-    if (!net::android::RegisterJni(env)) {
-      return false;
-    }
-
-    if (!gfx::android::RegisterJni(env)) {
-      return false;
-    }
-
-    if (!ui::RegisterUIAndroidJni(env)) {
-      return false;
-    }
-
-    if (!blimp::client::RegisterBlimpJni(env)) {
-      return false;
-    }
-
-    return true;
-  }
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(BlimpTestSuite);
 };
 
