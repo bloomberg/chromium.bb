@@ -3093,6 +3093,8 @@ test("unit_tests") {
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
     "../browser/component_updater/supervised_user_whitelist_installer_unittest.cc",
     "../browser/component_updater/sw_reporter_installer_win_unittest.cc",
+    "../browser/conflicts/module_database_win_unittest.cc",
+    "../browser/conflicts/module_event_sink_impl_win_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
     "../browser/content_settings/content_settings_mock_observer.cc",
     "../browser/content_settings/content_settings_mock_observer.h",
