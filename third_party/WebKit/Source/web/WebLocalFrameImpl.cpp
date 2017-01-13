@@ -2029,7 +2029,7 @@ bool WebLocalFrameImpl::isLoading() const {
   if (!frame() || !frame()->document())
     return false;
   return frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() ||
-         frame()->loader().provisionalDocumentLoader() ||
+         frame()->loader().hasProvisionalNavigation() ||
          !frame()->document()->loadEventFinished();
 }
 

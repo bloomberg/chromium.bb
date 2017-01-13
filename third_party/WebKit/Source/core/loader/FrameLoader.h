@@ -214,6 +214,12 @@ class CORE_EXPORT FrameLoader final {
                                          bool isClientRedirect,
                                          HTMLFormElement*);
 
+  // PlzNavigate: Navigations handled by the client are treated as
+  // provisional navigations.
+  bool hasProvisionalNavigation() const {
+    return provisionalDocumentLoader() || m_isNavigationHandledByClient;
+  }
+
   DECLARE_TRACE();
 
   static void setReferrerForFrameRequest(FrameLoadRequest&);

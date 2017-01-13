@@ -2663,7 +2663,8 @@ void Document::open() {
       }
     }
 
-    if (m_frame->loader().provisionalDocumentLoader())
+    // PlzNavigate: We should abort ongoing navigations handled by the client.
+    if (m_frame->loader().hasProvisionalNavigation())
       m_frame->loader().stopAllLoaders();
   }
 
