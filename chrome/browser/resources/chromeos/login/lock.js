@@ -74,31 +74,6 @@ cr.define('cr.ui.Oobe', function() {
       showPinKeyboardAsync();
     },
 
-    /**
-     * Called when a preloaded webview (this) instance is being reused to
-     * display a new lock screen session. This will also be called when a
-     * lock screen has been preloaded and is being displayed for the first
-     * time.
-     */
-    reload: function() {
-      // Sending accountPickerReady displays the webui. Wait for the next
-      // animation frame so the user does not see any state from the previous
-      // instance.
-      requestAnimationFrame(function() {
-        chrome.send('accountPickerReady');
-      });
-    },
-
-    /**
-     * Called when the lock screen has been dismissed but this webview will stay
-     * in memory. The webview will be reused when Oobe.reload() is called.
-     */
-    teardown: function() {
-      // The PIN keyboard will disable the virtual keyboard. Make sure to
-      // revert the force disable when hiding the lock screen.
-      chrome.send('setForceDisableVirtualKeyboard', [false]);
-    },
-
     // Dummy Oobe functions not present with stripped login UI.
     initializeA11yMenu: function(e) {},
     handleAccessibilityLinkClick: function(e) {},

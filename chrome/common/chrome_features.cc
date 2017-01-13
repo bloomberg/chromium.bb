@@ -167,6 +167,13 @@ const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// The lock screen will be preloaded so it is instantly available when the user
+// locks the Chromebook device.
+const base::Feature kPreloadLockScreen{"PreloadLockScreen",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables the Print Scaling feature in print preview.
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 const base::Feature kPrintPdfAsImage{"PrintPdfAsImage",
@@ -196,13 +203,6 @@ const base::Feature kRunAllFlashInAllowMode{"RunAllFlashInAllowMode",
 
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if defined(OS_CHROMEOS)
-// The lock screen will be preloaded and shared so it is instantly available
-// when the user locks the Chromebook device.
-const base::Feature kSharedLockScreen{"SharedLockScreen",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states.

@@ -17,9 +17,8 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/ui/shared_web_view.h"
-#include "chrome/browser/chromeos/login/ui/shared_web_view_factory.h"
-#include "chrome/browser/chromeos/login/ui/web_view_handle.h"
+#include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
+#include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -64,62 +63,57 @@ void ResetKeyboardOverscrollOverride() {
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 }
 
-chromeos::WebUILoginView::WebViewSettings BuildSettings() {
-  chromeos::WebUILoginView::WebViewSettings settings;
-  if (chromeos::WebUIScreenLocker::ShouldShareLockScreen()) {
-    settings.preloaded_url = GURL(kLoginURL);
-    settings.web_view_title =
-        l10n_util::GetStringUTF16(IDS_LOCK_SCREEN_TASK_MANAGER_NAME);
-  }
-  return settings;
-}
-
 }  // namespace
 
 namespace chromeos {
 
 // static
-bool WebUIScreenLocker::ShouldShareLockScreen() {
+void WebUIScreenLocker::RequestPreload() {
+  if (!ShouldPreloadLockScreen())
+    return;
+
+  VLOG(1) << "Preloading lock screen";
+  PreloadedWebView* preloaded_web_view =
+      PreloadedWebViewFactory::GetForProfile(ProfileHelper::GetSigninProfile());
+  preloaded_web_view->PreloadOnIdle(
+      base::BindOnce(&WebUIScreenLocker::DoPreload));
+}
+
+// static
+bool WebUIScreenLocker::ShouldPreloadLockScreen() {
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(
       user_manager::UserManager::Get()->GetActiveUser());
 
-  // We only want to share the lock screen if the user is likely to see the lock
-  // screen (since caching the lock screen uses memory). Without preloading,
-  // showing the lock screen can take so long we will timeout and crash the
-  // browser process (which currently takes down all of Chrome). See
+  // We only want to preload the lock screen if the user is likely to see the
+  // lock screen (since caching the lock screen uses memory). Without
+  // preloading, showing the lock screen can take so long we will timeout and
+  // crash the browser process (which currently takes down all of Chrome). See
   // crbug.com/452599 for more context.
   //
   // prefs::kEnableAutoScreenLock controls if the lock screen is shown on
   // suspend, so that is our primary hueristic.
 
   // Note that |profile| can be null in tests.
-  return base::FeatureList::IsEnabled(features::kSharedLockScreen) && profile &&
+  return base::FeatureList::IsEnabled(features::kPreloadLockScreen) &&
+         profile &&
          profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock);
 }
 
 // static
-void WebUIScreenLocker::Preload() {
-  DCHECK(ShouldShareLockScreen());
-  VLOG(1) << "Preloading lock screen";
-
-  SharedWebView* shared_web_view =
-      SharedWebViewFactory::GetForProfile(ProfileHelper::GetSigninProfile());
-
-  scoped_refptr<WebViewHandle> web_view_handle;
-  if (!shared_web_view->has_web_view() &&
-      !shared_web_view->Get(GURL(kLoginURL), &web_view_handle)) {
-    web_view_handle->web_view()->LoadInitialURL(GURL(kLoginURL));
-    InitializeWebView(
-        web_view_handle->web_view(),
-        l10n_util::GetStringUTF16(IDS_LOCK_SCREEN_TASK_MANAGER_NAME));
-  }
+std::unique_ptr<views::WebView> WebUIScreenLocker::DoPreload(Profile* profile) {
+  auto web_view = base::MakeUnique<views::WebView>(profile);
+  web_view->set_owned_by_client();
+  web_view->LoadInitialURL(GURL(kLoginURL));
+  InitializeWebView(web_view.get(), l10n_util::GetStringUTF16(
+                                        IDS_LOCK_SCREEN_TASK_MANAGER_NAME));
+  return web_view;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebUIScreenLocker implementation.
 
 WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
-    : WebUILoginView(BuildSettings()),
+    : WebUILoginView(BuildConfigSettings()),
       screen_locker_(screen_locker),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
@@ -156,6 +150,8 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   }
 
   ResetKeyboardOverscrollOverride();
+
+  RequestPreload();
 }
 
 void WebUIScreenLocker::LockScreen() {
@@ -240,6 +236,16 @@ void WebUIScreenLocker::ResetAndFocusUserPod() {
     return;
   GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearUserPodPassword");
   FocusUserPod();
+}
+
+WebUILoginView::WebViewSettings WebUIScreenLocker::BuildConfigSettings() {
+  chromeos::WebUILoginView::WebViewSettings settings;
+  if (chromeos::WebUIScreenLocker::ShouldPreloadLockScreen()) {
+    settings.check_for_preload = true;
+    settings.web_view_title =
+        l10n_util::GetStringUTF16(IDS_LOCK_SCREEN_TASK_MANAGER_NAME);
+  }
+  return settings;
 }
 
 void WebUIScreenLocker::OnLockWebUIReady() {

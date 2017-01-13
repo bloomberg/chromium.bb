@@ -21,12 +21,11 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
+#include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
-#include "chrome/browser/chromeos/login/ui/shared_web_view.h"
-#include "chrome/browser/chromeos/login/ui/shared_web_view_factory.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_set_background_color.h"
-#include "chrome/browser/chromeos/login/ui/web_view_handle.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -259,10 +258,6 @@ WebUILoginView::~WebUILoginView() {
     NOTIMPLEMENTED();
   }
 
-  // If the WebView is going to be reused, make sure we call teardown.
-  if (!webui_login_->HasOneRef())
-    GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.teardown");
-
   // Clear any delegates we have set on the WebView.
   WebContents* web_contents = web_view()->GetWebContents();
   WebContentsModalDialogManager::FromWebContents(web_contents)
@@ -305,13 +300,18 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
 void WebUILoginView::Init() {
   Profile* signin_profile = ProfileHelper::GetSigninProfile();
 
-  if (!settings_.preloaded_url.is_empty()) {
-    SharedWebView* shared_web_view =
-        SharedWebViewFactory::GetForProfile(signin_profile);
-    is_reusing_webview_ =
-        shared_web_view->Get(settings_.preloaded_url, &webui_login_);
-  } else {
-    webui_login_ = new WebViewHandle(signin_profile);
+  if (settings_.check_for_preload) {
+    PreloadedWebView* preloaded_web_view =
+        PreloadedWebViewFactory::GetForProfile(signin_profile);
+    // webui_login_ may still be null after this call if there is no preloaded
+    // instance.
+    webui_login_ = preloaded_web_view->TryTake();
+    is_reusing_webview_ = true;
+  }
+
+  if (!webui_login_) {
+    webui_login_ = base::MakeUnique<views::WebView>(signin_profile);
+    webui_login_->set_owned_by_client();
     is_reusing_webview_ = false;
   }
 
@@ -393,12 +393,7 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
 }
 
 void WebUILoginView::LoadURL(const GURL& url) {
-  // If a preloaded_url is provided then |url| must match it.
-  DCHECK(settings_.preloaded_url.is_empty() || url == settings_.preloaded_url);
-
-  if (is_reusing_webview_ && !settings_.preloaded_url.is_empty())
-    GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.reload");
-  else
+  if (!is_reusing_webview_)
     web_view()->LoadInitialURL(url);
   web_view()->RequestFocus();
 
@@ -500,7 +495,7 @@ void WebUILoginView::Observe(int type,
 }
 
 views::WebView* WebUILoginView::web_view() {
-  return webui_login_->web_view();
+  return webui_login_.get();
 }
 
 // WebUILoginView private: -----------------------------------------------------

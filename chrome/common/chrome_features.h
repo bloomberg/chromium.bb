@@ -99,6 +99,10 @@ extern const base::Feature kPermissionsBlacklist;
 extern const base::Feature kPreferHtmlOverPlugins;
 #endif
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kPreloadLockScreen;
+#endif
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 extern const base::Feature kPrintPdfAsImage;
 
@@ -116,10 +120,6 @@ extern const base::Feature kRunAllFlashInAllowMode;
 #endif
 
 extern const base::Feature kSafeSearchUrlReporting;
-
-#if defined(OS_CHROMEOS)
-extern const base::Feature kSharedLockScreen;
-#endif
 
 extern const base::Feature kSimplifiedFullscreenUI;
 

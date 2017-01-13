@@ -34,7 +34,6 @@ class Widget;
 namespace chromeos {
 
 class OobeUI;
-class WebViewHandle;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a WebView.
@@ -45,8 +44,9 @@ class WebUILoginView : public views::View,
                        public web_modal::WebContentsModalDialogHost {
  public:
   struct WebViewSettings {
-    // URL of the WebView to preload and reuse across WebUILoginView instances.
-    GURL preloaded_url;
+    // If true, this will check for and consume a preloaded views::WebView
+    // instance.
+    bool check_for_preload = false;
 
     // Title of the web contents. This will be shown in the task manager. If
     // empty, the default webview title will be used.
@@ -164,7 +164,7 @@ class WebUILoginView : public views::View,
   const WebViewSettings settings_;
 
   // WebView for rendering a webpage as a webui login.
-  scoped_refptr<WebViewHandle> webui_login_;
+  std::unique_ptr<views::WebView> webui_login_;
 
   // True if the current webview instance (ie, GetWebUI()) has been reused.
   bool is_reusing_webview_ = false;

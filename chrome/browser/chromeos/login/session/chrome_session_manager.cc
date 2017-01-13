@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -46,9 +45,6 @@
 namespace chromeos {
 
 namespace {
-
-// Duration of user inactivity before preloading the lock screen.
-constexpr int kIdleSecondsBeforePreloadingLockScreen = 8;
 
 // Whether kiosk auto launch should be started.
 bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
@@ -232,12 +228,7 @@ void ChromeSessionManager::SessionStarted() {
       content::Details<const user_manager::User>(
           user_manager->GetActiveUser()));
 
-  if (chromeos::WebUIScreenLocker::ShouldShareLockScreen()) {
-    idle_detector_ = base::MakeUnique<chromeos::IdleDetector>(
-        base::Bind(&chromeos::WebUIScreenLocker::Preload));
-    idle_detector_->Start(
-        base::TimeDelta::FromSeconds(kIdleSecondsBeforePreloadingLockScreen));
-  }
+  chromeos::WebUIScreenLocker::RequestPreload();
 }
 
 void ChromeSessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,

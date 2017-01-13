@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/ui/shared_web_view_factory.h"
+#include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
 
-#include "chrome/browser/chromeos/login/ui/shared_web_view.h"
+#include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,36 +13,36 @@
 namespace chromeos {
 
 // static
-SharedWebView* SharedWebViewFactory::GetForProfile(Profile* profile) {
-  auto result = static_cast<SharedWebView*>(
+PreloadedWebView* PreloadedWebViewFactory::GetForProfile(Profile* profile) {
+  auto result = static_cast<PreloadedWebView*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
   return result;
 }
 
 // static
-SharedWebViewFactory* SharedWebViewFactory::GetInstance() {
-  return base::Singleton<SharedWebViewFactory>::get();
+PreloadedWebViewFactory* PreloadedWebViewFactory::GetInstance() {
+  return base::Singleton<PreloadedWebViewFactory>::get();
 }
 
-SharedWebViewFactory::SharedWebViewFactory()
+PreloadedWebViewFactory::PreloadedWebViewFactory()
     : BrowserContextKeyedServiceFactory(
-          "SharedWebViewFactory",
+          "PreloadedWebViewFactory",
           BrowserContextDependencyManager::GetInstance()) {}
 
-SharedWebViewFactory::~SharedWebViewFactory() {}
+PreloadedWebViewFactory::~PreloadedWebViewFactory() {}
 
-content::BrowserContext* SharedWebViewFactory::GetBrowserContextToUse(
+content::BrowserContext* PreloadedWebViewFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  // Make sure that only the SigninProfile is using a shared webview.
+  // Make sure that only the SigninProfile is using a preloaded webview.
   if (Profile::FromBrowserContext(context) != ProfileHelper::GetSigninProfile())
     return nullptr;
 
   return context;
 }
 
-KeyedService* SharedWebViewFactory::BuildServiceInstanceFor(
+KeyedService* PreloadedWebViewFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new SharedWebView(Profile::FromBrowserContext(context));
+  return new PreloadedWebView(Profile::FromBrowserContext(context));
 }
 
 }  // namespace chromeos
