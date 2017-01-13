@@ -69,13 +69,19 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                 "Maggie Doe", "Google", "340 Main St", "CA", "", "", "90291", "", "US", "",
                 "jon.doe@gmail.com", "en-US"));
 
+        // Profile with empty billing address info (should not be presented to user).
+        String profile8 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "" /* fullName */, "" /* companyName */, "" /* streetAddress */, "" /* region */,
+                "" /* locality */, "" /* dependentLocality */, "" /* postalCode */,
+                "" /* sortingCode */, "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
+
         // This card has no billing address selected.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jane Doe",
                 "4242424242424242", "1111", "12", "2050", "visa", R.drawable.pr_visa, profile5,
                 "" /* serverId */));
 
         // Assign use stats so that incomplete profiles have the highest frecency, profile2 has the
-        // highest frecency and profile3 has the lowest among the complete profiles, and profile5
+        // highest frecency and profile3 has the lowest among the complete profiles, and profile8
         // has the highest frecency and profile4 has the lowest among the incomplete profiles.
         helper.setProfileUseStatsForTesting(profile1, 5, 5);
         helper.setProfileUseStatsForTesting(profile2, 10, 10);
@@ -84,6 +90,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         helper.setProfileUseStatsForTesting(profile5, 30, 30);
         helper.setProfileUseStatsForTesting(profile6, 25, 25);
         helper.setProfileUseStatsForTesting(profile7, 20, 20);
+        helper.setProfileUseStatsForTesting(profile8, 40, 40);
     }
 
     /** Verifies the format of the billing address suggestions when adding a new credit card. */
