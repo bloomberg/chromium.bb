@@ -125,7 +125,7 @@ void PropertyRegistration::registerProperty(
         tokenizer.tokenRange(), isAnimationTainted, false);
     registry.registerProperty(
         atomicName, syntaxDescriptor, descriptor.inherits(), initial,
-        initialVariableData.release(), std::move(interpolationTypes));
+        std::move(initialVariableData), std::move(interpolationTypes));
   } else {
     if (!syntaxDescriptor.isTokenStream()) {
       exceptionState.throwDOMException(

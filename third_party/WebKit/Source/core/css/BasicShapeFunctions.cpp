@@ -244,7 +244,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state,
     circle->setCenterY(convertToCenterCoordinate(state, circleValue.centerY()));
     circle->setRadius(cssValueToBasicShapeRadius(state, circleValue.radius()));
 
-    basicShape = circle.release();
+    basicShape = std::move(circle);
   } else if (basicShapeValue.isBasicShapeEllipseValue()) {
     const CSSBasicShapeEllipseValue& ellipseValue =
         toCSSBasicShapeEllipseValue(basicShapeValue);
@@ -259,7 +259,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state,
     ellipse->setRadiusY(
         cssValueToBasicShapeRadius(state, ellipseValue.radiusY()));
 
-    basicShape = ellipse.release();
+    basicShape = std::move(ellipse);
   } else if (basicShapeValue.isBasicShapePolygonValue()) {
     const CSSBasicShapePolygonValue& polygonValue =
         toCSSBasicShapePolygonValue(basicShapeValue);
@@ -271,7 +271,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state,
       polygon->appendPoint(convertToLength(state, values.at(i).get()),
                            convertToLength(state, values.at(i + 1).get()));
 
-    basicShape = polygon.release();
+    basicShape = std::move(polygon);
   } else if (basicShapeValue.isBasicShapeInsetValue()) {
     const CSSBasicShapeInsetValue& rectValue =
         toCSSBasicShapeInsetValue(basicShapeValue);
@@ -291,7 +291,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state,
     rect->setBottomLeftRadius(
         convertToLengthSize(state, rectValue.bottomLeftRadius()));
 
-    basicShape = rect.release();
+    basicShape = std::move(rect);
   } else {
     ASSERT_NOT_REACHED();
   }

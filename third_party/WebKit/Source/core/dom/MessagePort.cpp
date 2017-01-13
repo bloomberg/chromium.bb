@@ -218,7 +218,7 @@ void MessagePort::dispatchMessages() {
 
     MessagePortArray* ports =
         MessagePort::entanglePorts(*getExecutionContext(), std::move(channels));
-    Event* evt = MessageEvent::create(ports, message.release());
+    Event* evt = MessageEvent::create(ports, std::move(message));
 
     dispatchEvent(evt);
   }

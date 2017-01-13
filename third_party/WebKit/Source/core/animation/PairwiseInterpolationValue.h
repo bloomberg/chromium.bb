@@ -30,7 +30,7 @@ struct PairwiseInterpolationValue {
   PairwiseInterpolationValue(PairwiseInterpolationValue&& other)
       : startInterpolableValue(std::move(other.startInterpolableValue)),
         endInterpolableValue(std::move(other.endInterpolableValue)),
-        nonInterpolableValue(other.nonInterpolableValue.release()) {}
+        nonInterpolableValue(std::move(other.nonInterpolableValue)) {}
 
   operator bool() const { return startInterpolableValue.get(); }
 

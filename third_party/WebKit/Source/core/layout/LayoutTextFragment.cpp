@@ -108,7 +108,7 @@ void LayoutTextFragment::transformText() {
   // version we will, potentially, screw up the first-letter settings where
   // we only use portions of the string.
   if (RefPtr<StringImpl> textToTransform = originalText())
-    LayoutText::setText(textToTransform.release(), true);
+    LayoutText::setText(std::move(textToTransform), true);
 }
 
 UChar LayoutTextFragment::previousCharacter() const {

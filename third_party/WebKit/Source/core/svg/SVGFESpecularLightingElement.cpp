@@ -174,7 +174,7 @@ FilterEffect* SVGFESpecularLightingElement::build(
   FilterEffect* effect = FESpecularLighting::create(
       filter, color, m_surfaceScale->currentValue()->value(),
       m_specularConstant->currentValue()->value(),
-      m_specularExponent->currentValue()->value(), lightSource.release());
+      m_specularExponent->currentValue()->value(), std::move(lightSource));
   effect->inputEffects().push_back(input1);
   return effect;
 }

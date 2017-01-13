@@ -499,7 +499,7 @@ void LayoutListMarker::listItemStyleDidChange() {
     newStyle->setMarginStart(style()->marginStart());
     newStyle->setMarginEnd(style()->marginRight());
   }
-  setStyle(newStyle.release());
+  setStyle(std::move(newStyle));
 }
 
 }  // namespace blink

@@ -770,7 +770,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState) {
         UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
   }
 
-  createRequest(httpBody.release(), exceptionState);
+  createRequest(std::move(httpBody), exceptionState);
 }
 
 void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState) {
@@ -795,7 +795,7 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState) {
         UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
   }
 
-  createRequest(httpBody.release(), exceptionState);
+  createRequest(std::move(httpBody), exceptionState);
 }
 
 void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState) {
@@ -830,7 +830,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState) {
     }
   }
 
-  createRequest(httpBody.release(), exceptionState);
+  createRequest(std::move(httpBody), exceptionState);
 }
 
 void XMLHttpRequest::send(FormData* body, ExceptionState& exceptionState) {
@@ -852,7 +852,7 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exceptionState) {
     }
   }
 
-  createRequest(httpBody.release(), exceptionState);
+  createRequest(std::move(httpBody), exceptionState);
 }
 
 void XMLHttpRequest::send(DOMArrayBuffer* body,
@@ -881,7 +881,7 @@ void XMLHttpRequest::sendBytesData(const void* data,
     httpBody = EncodedFormData::create(data, length);
   }
 
-  createRequest(httpBody.release(), exceptionState);
+  createRequest(std::move(httpBody), exceptionState);
 }
 
 void XMLHttpRequest::sendForInspectorXHRReplay(

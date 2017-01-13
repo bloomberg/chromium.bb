@@ -1625,7 +1625,7 @@ LayoutTable* LayoutTable::createAnonymousWithParent(
           parent->isLayoutInline() ? EDisplay::InlineTable : EDisplay::Table);
   LayoutTable* newTable = new LayoutTable(nullptr);
   newTable->setDocumentForAnonymous(&parent->document());
-  newTable->setStyle(newStyle.release());
+  newTable->setStyle(std::move(newStyle));
   return newTable;
 }
 

@@ -125,7 +125,7 @@ class BeaconBlob final : public Beacon {
     else
       entityBody->appendBlob(m_data->uuid(), m_data->blobDataHandle());
 
-    request.setHTTPBody(entityBody.release());
+    request.setHTTPBody(std::move(entityBody));
 
     if (!m_contentType.isEmpty())
       request.setHTTPContentType(m_contentType);
@@ -149,7 +149,7 @@ class BeaconDOMArrayBufferView final : public Beacon {
 
     RefPtr<EncodedFormData> entityBody =
         EncodedFormData::create(m_data->baseAddress(), m_data->byteLength());
-    request.setHTTPBody(entityBody.release());
+    request.setHTTPBody(std::move(entityBody));
 
     // FIXME: a reasonable choice, but not in the spec; should it give a
     // default?

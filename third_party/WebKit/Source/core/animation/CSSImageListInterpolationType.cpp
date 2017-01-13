@@ -134,7 +134,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertValue(
     if (!component)
       return nullptr;
     interpolableList->set(i, std::move(component.interpolableValue));
-    nonInterpolableValues[i] = component.nonInterpolableValue.release();
+    nonInterpolableValues[i] = std::move(component.nonInterpolableValue);
   }
   return InterpolationValue(
       std::move(interpolableList),

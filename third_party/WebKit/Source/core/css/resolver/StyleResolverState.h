@@ -80,7 +80,7 @@ class CORE_EXPORT StyleResolverState {
   void setStyle(PassRefPtr<ComputedStyle>);
   const ComputedStyle* style() const { return m_style.get(); }
   ComputedStyle* style() { return m_style.get(); }
-  PassRefPtr<ComputedStyle> takeStyle() { return m_style.release(); }
+  PassRefPtr<ComputedStyle> takeStyle() { return std::move(m_style); }
 
   ComputedStyle& mutableStyleRef() const { return *m_style; }
   const ComputedStyle& styleRef() const { return mutableStyleRef(); }

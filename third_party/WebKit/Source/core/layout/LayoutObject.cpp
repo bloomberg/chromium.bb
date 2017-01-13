@@ -1582,7 +1582,7 @@ void LayoutObject::setPseudoStyle(PassRefPtr<ComputedStyle> pseudoStyle) {
   if (isImage() || isQuote()) {
     RefPtr<ComputedStyle> style = ComputedStyle::create();
     style->inheritFrom(*pseudoStyle);
-    setStyle(style.release());
+    setStyle(std::move(style));
     return;
   }
 
@@ -1661,7 +1661,7 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style) {
 
   styleWillChange(diff, *style);
 
-  RefPtr<ComputedStyle> oldStyle = m_style.release();
+  RefPtr<ComputedStyle> oldStyle = std::move(m_style);
   setStyleInternal(std::move(style));
 
   updateFillImages(oldStyle ? &oldStyle->backgroundLayers() : 0,
@@ -1955,7 +1955,7 @@ void LayoutObject::propagateStyleToAnonymousChildren() {
 
     updateAnonymousChildStyle(*child, *newStyle);
 
-    child->setStyle(newStyle.release());
+    child->setStyle(std::move(newStyle));
   }
 }
 

@@ -121,7 +121,7 @@ PairwiseInterpolationValue CSSBasicShapeInterpolationType::maybeMergeSingles(
     return nullptr;
   return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                     std::move(end.interpolableValue),
-                                    start.nonInterpolableValue.release());
+                                    std::move(start.nonInterpolableValue));
 }
 
 InterpolationValue

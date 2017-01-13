@@ -1845,7 +1845,7 @@ LayoutTableSection* LayoutTableSection::createAnonymousWithParent(
                                                      EDisplay::TableRowGroup);
   LayoutTableSection* newSection = new LayoutTableSection(nullptr);
   newSection->setDocumentForAnonymous(&parent->document());
-  newSection->setStyle(newStyle.release());
+  newSection->setStyle(std::move(newStyle));
   return newSection;
 }
 

@@ -1433,7 +1433,7 @@ LayoutTableCell* LayoutTableCell::createAnonymousWithParent(
   RefPtr<ComputedStyle> newStyle =
       ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(),
                                                      EDisplay::TableCell);
-  newCell->setStyle(newStyle.release());
+  newCell->setStyle(std::move(newStyle));
   return newCell;
 }
 

@@ -68,10 +68,9 @@ static InterpolationValue wrapConvertedLength(
     InterpolationValue&& convertedLength) {
   if (!convertedLength)
     return nullptr;
-  return InterpolationValue(
-      std::move(convertedLength.interpolableValue),
-      CSSSizeNonInterpolableValue::create(
-          convertedLength.nonInterpolableValue.release()));
+  return InterpolationValue(std::move(convertedLength.interpolableValue),
+                            CSSSizeNonInterpolableValue::create(std::move(
+                                convertedLength.nonInterpolableValue)));
 }
 
 InterpolationValue SizeInterpolationFunctions::convertFillSizeSide(
@@ -131,7 +130,7 @@ PairwiseInterpolationValue SizeInterpolationFunctions::maybeMergeSingles(
     return nullptr;
   return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                     std::move(end.interpolableValue),
-                                    start.nonInterpolableValue.release());
+                                    std::move(start.nonInterpolableValue));
 }
 
 InterpolationValue SizeInterpolationFunctions::createNeutralValue(

@@ -163,7 +163,7 @@ void CSSTranslateInterpolationType::applyStandardPropertyValue(
   if (!x.isZero() || !y.isZero() || z != 0)
     result = TranslateTransformOperation::create(
         x, y, z, TransformOperation::Translate3D);
-  state.style()->setTranslate(result.release());
+  state.style()->setTranslate(std::move(result));
 }
 
 }  // namespace blink

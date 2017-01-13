@@ -403,7 +403,7 @@ void LocalDOMWindow::documentWasClosed() {
   dispatchWindowLoadEvent();
   enqueuePageshowEvent(PageshowEventNotPersisted);
   if (m_pendingStateObject)
-    enqueuePopstateEvent(m_pendingStateObject.release());
+    enqueuePopstateEvent(std::move(m_pendingStateObject));
 }
 
 void LocalDOMWindow::enqueuePageshowEvent(PageshowEventPersistence persisted) {

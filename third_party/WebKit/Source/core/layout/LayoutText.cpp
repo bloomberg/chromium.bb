@@ -1571,7 +1571,7 @@ void LayoutText::setTextWithOffset(PassRefPtr<StringImpl> text,
 
 void LayoutText::transformText() {
   if (RefPtr<StringImpl> textToTransform = originalText())
-    setText(textToTransform.release(), true);
+    setText(std::move(textToTransform), true);
 }
 
 static inline bool isInlineFlowOrEmptyText(const LayoutObject* o) {

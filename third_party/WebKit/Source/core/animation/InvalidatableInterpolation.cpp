@@ -46,7 +46,7 @@ InvalidatableInterpolation::maybeConvertPairwise(
       return PairwisePrimitiveInterpolation::create(
           *interpolationType, std::move(result.startInterpolableValue),
           std::move(result.endInterpolableValue),
-          result.nonInterpolableValue.release());
+          std::move(result.nonInterpolableValue));
     }
   }
   return nullptr;
@@ -68,10 +68,11 @@ InvalidatableInterpolation::convertSingleKeyframe(
         keyframe, environment, underlyingValueOwner.value(),
         conversionCheckers);
     addConversionCheckers(*interpolationType, conversionCheckers);
-    if (result)
+    if (result) {
       return TypedInterpolationValue::create(
           *interpolationType, std::move(result.interpolableValue),
-          result.nonInterpolableValue.release());
+          std::move(result.nonInterpolableValue));
+    }
   }
   DCHECK(keyframe.isNeutral());
   return nullptr;
@@ -92,10 +93,11 @@ InvalidatableInterpolation::maybeConvertUnderlyingValue(
   for (const auto& interpolationType : *m_interpolationTypes) {
     InterpolationValue result =
         interpolationType->maybeConvertUnderlyingValue(environment);
-    if (result)
+    if (result) {
       return TypedInterpolationValue::create(
           *interpolationType, std::move(result.interpolableValue),
-          result.nonInterpolableValue.release());
+          std::move(result.nonInterpolableValue));
+    }
   }
   return nullptr;
 }

@@ -28,11 +28,11 @@ struct InterpolationValue {
 
   InterpolationValue(InterpolationValue&& other)
       : interpolableValue(std::move(other.interpolableValue)),
-        nonInterpolableValue(other.nonInterpolableValue.release()) {}
+        nonInterpolableValue(std::move(other.nonInterpolableValue)) {}
 
   void operator=(InterpolationValue&& other) {
     interpolableValue = std::move(other.interpolableValue);
-    nonInterpolableValue = other.nonInterpolableValue.release();
+    nonInterpolableValue = std::move(other.nonInterpolableValue);
   }
 
   operator bool() const { return interpolableValue.get(); }

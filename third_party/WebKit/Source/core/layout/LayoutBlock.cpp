@@ -1998,7 +1998,7 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(
       ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(),
                                                      newDisplay);
   parent->updateAnonymousChildStyle(*newBox, *newStyle);
-  newBox->setStyle(newStyle.release());
+  newBox->setStyle(std::move(newStyle));
   return newBox;
 }
 

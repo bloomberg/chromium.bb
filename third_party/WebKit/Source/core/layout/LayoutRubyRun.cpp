@@ -184,7 +184,7 @@ LayoutRubyBase* LayoutRubyRun::createRubyBase() const {
       ComputedStyle::createAnonymousStyleWithDisplay(styleRef(),
                                                      EDisplay::Block);
   newStyle->setTextAlign(ETextAlign::kCenter);  // FIXME: use WEBKIT_CENTER?
-  layoutObject->setStyle(newStyle.release());
+  layoutObject->setStyle(std::move(newStyle));
   return layoutObject;
 }
 
@@ -196,7 +196,7 @@ LayoutRubyRun* LayoutRubyRun::staticCreateRubyRun(
   RefPtr<ComputedStyle> newStyle =
       ComputedStyle::createAnonymousStyleWithDisplay(parentRuby->styleRef(),
                                                      EDisplay::InlineBlock);
-  rr->setStyle(newStyle.release());
+  rr->setStyle(std::move(newStyle));
   return rr;
 }
 

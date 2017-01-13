@@ -92,7 +92,7 @@ void CustomCompositorAnimations::applyUpdate(
     RefPtr<AnimatableValue> animatableValue =
         AnimatableDouble::create(mutation.opacity());
     m_animation = createOrUpdateAnimation(
-        m_animation, element, CSSPropertyOpacity, animatableValue.release());
+        m_animation, element, CSSPropertyOpacity, std::move(animatableValue));
   }
   if (mutation.isTransformMutated()) {
     TransformOperations ops;
@@ -101,7 +101,7 @@ void CustomCompositorAnimations::applyUpdate(
     RefPtr<AnimatableValue> animatableValue =
         AnimatableTransform::create(ops, 1);
     m_animation = createOrUpdateAnimation(
-        m_animation, element, CSSPropertyTransform, animatableValue.release());
+        m_animation, element, CSSPropertyTransform, std::move(animatableValue));
   }
 }
 

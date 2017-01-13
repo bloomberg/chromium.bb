@@ -2038,7 +2038,7 @@ void Document::updateStyle() {
     StyleRecalcChange localChange = ComputedStyle::stylePropagationDiff(
         documentStyle.get(), layoutViewItem().style());
     if (localChange != NoChange)
-      layoutViewItem().setStyle(documentStyle.release());
+      layoutViewItem().setStyle(std::move(documentStyle));
   }
 
   clearNeedsStyleRecalc();

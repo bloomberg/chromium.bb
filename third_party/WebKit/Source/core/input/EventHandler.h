@@ -233,7 +233,7 @@ class CORE_EXPORT EventHandler final
   void notifyElementActivated();
 
   PassRefPtr<UserGestureToken> takeLastMouseDownGestureToken() {
-    return m_lastMouseDownUserGestureToken.release();
+    return std::move(m_lastMouseDownUserGestureToken);
   }
 
   SelectionController& selectionController() const {

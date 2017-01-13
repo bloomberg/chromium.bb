@@ -66,7 +66,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(
         end.interpolableValue->cloneAndZero();
     return PairwiseInterpolationValue(std::move(startInterpolableValue),
                                       std::move(end.interpolableValue),
-                                      end.nonInterpolableValue.release());
+                                      std::move(end.nonInterpolableValue));
   }
 
   if (endLength == 0) {
@@ -74,7 +74,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(
         start.interpolableValue->cloneAndZero();
     return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                       std::move(endInterpolableValue),
-                                      start.nonInterpolableValue.release());
+                                      std::move(start.nonInterpolableValue));
   }
 
   size_t finalLength = lowestCommonMultiple(startLength, endLength);
@@ -106,7 +106,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(
     resultStartInterpolableList->set(i,
                                      std::move(result.startInterpolableValue));
     resultEndInterpolableList->set(i, std::move(result.endInterpolableValue));
-    resultNonInterpolableValues[i] = result.nonInterpolableValue.release();
+    resultNonInterpolableValues[i] = std::move(result.nonInterpolableValue);
   }
 
   return PairwiseInterpolationValue(

@@ -1340,7 +1340,7 @@ void PaintLayerScrollableArea::updateScrollCornerStyle() {
           LayoutScrollbarPart::createAnonymous(&box().document(), this);
       m_scrollCorner->setDangerousOneWayParent(&box());
     }
-    m_scrollCorner->setStyleWithWritingModeOfParent(corner.release());
+    m_scrollCorner->setStyleWithWritingModeOfParent(std::move(corner));
   } else if (m_scrollCorner) {
     m_scrollCorner->destroy();
     m_scrollCorner = nullptr;
@@ -1496,7 +1496,7 @@ void PaintLayerScrollableArea::updateResizerStyle() {
       m_resizer = LayoutScrollbarPart::createAnonymous(&box().document(), this);
       m_resizer->setDangerousOneWayParent(&box());
     }
-    m_resizer->setStyleWithWritingModeOfParent(resizer.release());
+    m_resizer->setStyleWithWritingModeOfParent(std::move(resizer));
   } else if (m_resizer) {
     m_resizer->destroy();
     m_resizer = nullptr;

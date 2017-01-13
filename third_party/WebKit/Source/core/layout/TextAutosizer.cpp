@@ -1172,7 +1172,7 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject,
       // during layout, e.g. BreakingContext::m_currentStyle.
       m_stylesRetainedDuringLayout.push_back(&currentStyle);
 
-      layoutObject->setStyleInternal(style.release());
+      layoutObject->setStyleInternal(std::move(style));
       DCHECK(!layouter || layoutObject->isDescendantOf(&layouter->root()));
       layoutObject->setNeedsLayoutAndFullPaintInvalidation(
           LayoutInvalidationReason::TextAutosizing, MarkContainerChain,
@@ -1181,7 +1181,7 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject,
 
     case LayoutNeeded:
       DCHECK(!layouter);
-      layoutObject->setStyle(style.release());
+      layoutObject->setStyle(std::move(style));
       break;
   }
 

@@ -155,7 +155,7 @@ PairwiseInterpolationValue PathInterpolationFunctions::maybeMergeSingles(
 
   return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                     std::move(end.interpolableValue),
-                                    end.nonInterpolableValue.release());
+                                    std::move(end.nonInterpolableValue));
 }
 
 void PathInterpolationFunctions::composite(

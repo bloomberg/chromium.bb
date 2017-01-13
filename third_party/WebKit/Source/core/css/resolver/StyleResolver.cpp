@@ -674,7 +674,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
                          isAtShadowBoundary(element)
                              ? ComputedStyleBase::AtShadowBoundary
                              : ComputedStyleBase::NotAtShadowBoundary);
-      state.setStyle(style.release());
+      state.setStyle(std::move(style));
     } else {
       state.setStyle(initialStyleForElement());
       state.setParentStyle(ComputedStyle::clone(*state.style()));
@@ -880,7 +880,7 @@ bool StyleResolver::pseudoStyleForElementInternal(
   } else if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
     RefPtr<ComputedStyle> style = ComputedStyle::create();
     style->inheritFrom(*state.parentStyle());
-    state.setStyle(style.release());
+    state.setStyle(std::move(style));
   } else {
     state.setStyle(initialStyleForElement());
     state.setParentStyle(ComputedStyle::clone(*state.style()));
@@ -972,7 +972,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForPage(int pageIndex) {
                                               : document().computedStyle();
   DCHECK(rootElementStyle);
   style->inheritFrom(*rootElementStyle);
-  state.setStyle(style.release());
+  state.setStyle(std::move(style));
 
   PageRuleCollector collector(rootElementStyle, pageIndex);
 

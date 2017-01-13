@@ -768,7 +768,7 @@ void Fullscreen::setFullScreenLayoutObject(LayoutFullScreen* layoutObject) {
     return;
 
   if (layoutObject && m_savedPlaceholderComputedStyle) {
-    layoutObject->createPlaceholder(m_savedPlaceholderComputedStyle.release(),
+    layoutObject->createPlaceholder(std::move(m_savedPlaceholderComputedStyle),
                                     m_savedPlaceholderFrameRect);
   } else if (layoutObject && m_fullScreenLayoutObject &&
              m_fullScreenLayoutObject->placeholder()) {

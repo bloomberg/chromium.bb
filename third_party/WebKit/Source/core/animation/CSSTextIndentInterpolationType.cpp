@@ -117,7 +117,7 @@ InterpolationValue createValue(const Length& length,
   return InterpolationValue(
       std::move(convertedLength.interpolableValue),
       CSSTextIndentNonInterpolableValue::create(
-          convertedLength.nonInterpolableValue.release(), mode));
+          std::move(convertedLength.nonInterpolableValue), mode));
 }
 
 }  // namespace
@@ -173,7 +173,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertValue(
   return InterpolationValue(
       std::move(length.interpolableValue),
       CSSTextIndentNonInterpolableValue::create(
-          length.nonInterpolableValue.release(), IndentMode(line, type)));
+          std::move(length.nonInterpolableValue), IndentMode(line, type)));
 }
 
 InterpolationValue
@@ -199,12 +199,13 @@ PairwiseInterpolationValue CSSTextIndentInterpolationType::maybeMergeSingles(
       LengthInterpolationFunctions::mergeSingles(
           InterpolationValue(
               std::move(start.interpolableValue),
-              startNonInterpolableValue.lengthNonInterpolableValue().release()),
+              std::move(
+                  startNonInterpolableValue.lengthNonInterpolableValue())),
           InterpolationValue(
               std::move(end.interpolableValue),
-              endNonInterpolableValue.lengthNonInterpolableValue().release()));
+              std::move(endNonInterpolableValue.lengthNonInterpolableValue())));
   result.nonInterpolableValue = CSSTextIndentNonInterpolableValue::create(
-      result.nonInterpolableValue.release(), startNonInterpolableValue.mode());
+      std::move(result.nonInterpolableValue), startNonInterpolableValue.mode());
   return result;
 }
 

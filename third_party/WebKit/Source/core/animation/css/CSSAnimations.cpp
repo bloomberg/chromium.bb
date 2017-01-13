@@ -113,7 +113,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
           DCHECK(value.isCSSWideKeyword());
           timingFunction = CSSTimingData::initialTimingFunction();
         }
-        keyframe->setEasing(timingFunction.release());
+        keyframe->setEasing(std::move(timingFunction));
       } else if (!CSSAnimations::isAnimationAffectingProperty(property)) {
         keyframe->setCSSPropertyValue(property,
                                       properties.propertyAt(j).value());
@@ -686,7 +686,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
       AnimatableValueKeyframe::create();
   startKeyframe->setPropertyValue(id, from.get());
   startKeyframe->setOffset(startKeyframeOffset);
-  startKeyframe->setEasing(timing.timingFunction.release());
+  startKeyframe->setEasing(std::move(timing.timingFunction));
   timing.timingFunction = LinearTimingFunction::shared();
   keyframes.push_back(startKeyframe);
 

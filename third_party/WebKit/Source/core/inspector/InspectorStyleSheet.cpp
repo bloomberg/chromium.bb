@@ -194,7 +194,7 @@ void StyleSheetHandler::startRuleHeader(StyleRule::RuleType type,
   RefPtr<CSSRuleSourceData> data = CSSRuleSourceData::create(type);
   data->ruleHeaderRange.start = offset;
   m_currentRuleData = data.get();
-  m_currentRuleDataStack.push_back(data.release());
+  m_currentRuleDataStack.push_back(std::move(data));
 }
 
 template <typename CharacterType>
@@ -242,7 +242,7 @@ void StyleSheetHandler::endRuleBody(unsigned offset) {
   RefPtr<CSSRuleSourceData> rule = popRuleData();
 
   fixUnparsedPropertyRanges(rule.get());
-  addNewRuleToSourceTree(rule.release());
+  addNewRuleToSourceTree(std::move(rule));
 }
 
 void StyleSheetHandler::addNewRuleToSourceTree(
@@ -1989,7 +1989,7 @@ InspectorStyleSheetForInlineStyle::ruleSourceData() {
                               &ruleSourceDataResult);
     CSSParser::parseDeclarationListForInspector(
         parserContextForDocument(&m_element->document()), text, handler);
-    ruleSourceData = ruleSourceDataResult.front().release();
+    ruleSourceData = std::move(ruleSourceDataResult.front());
   }
   return ruleSourceData.release();
 }

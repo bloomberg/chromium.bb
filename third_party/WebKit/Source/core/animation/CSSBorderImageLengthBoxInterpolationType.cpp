@@ -171,7 +171,7 @@ InterpolationValue convertBorderImageLengthBox(const BorderImageLengthBox& box,
       if (!convertedSide)
         return nullptr;
       list->set(i, std::move(convertedSide.interpolableValue));
-      nonInterpolableValues[i] = convertedSide.nonInterpolableValue.release();
+      nonInterpolableValues[i] = std::move(convertedSide.nonInterpolableValue);
     }
   }
 
@@ -251,7 +251,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(
       if (!convertedSide)
         return nullptr;
       list->set(i, std::move(convertedSide.interpolableValue));
-      nonInterpolableValues[i] = convertedSide.nonInterpolableValue.release();
+      nonInterpolableValues[i] = std::move(convertedSide.nonInterpolableValue);
     }
   }
 
@@ -287,7 +287,7 @@ CSSBorderImageLengthBoxInterpolationType::maybeMergeSingles(
 
   return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                     std::move(end.interpolableValue),
-                                    start.nonInterpolableValue.release());
+                                    std::move(start.nonInterpolableValue));
 }
 
 void CSSBorderImageLengthBoxInterpolationType::composite(

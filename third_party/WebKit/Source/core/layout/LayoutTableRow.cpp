@@ -279,7 +279,7 @@ LayoutTableRow* LayoutTableRow::createAnonymousWithParent(
   RefPtr<ComputedStyle> newStyle =
       ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(),
                                                      EDisplay::TableRow);
-  newRow->setStyle(newStyle.release());
+  newRow->setStyle(std::move(newStyle));
   return newRow;
 }
 

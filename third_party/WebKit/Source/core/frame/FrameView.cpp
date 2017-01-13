@@ -2722,7 +2722,7 @@ void FrameView::updateScrollCorner() {
   if (cornerStyle) {
     if (!m_scrollCorner)
       m_scrollCorner = LayoutScrollbarPart::createAnonymous(doc, this);
-    m_scrollCorner->setStyleWithWritingModeOfParent(cornerStyle.release());
+    m_scrollCorner->setStyleWithWritingModeOfParent(std::move(cornerStyle));
     setScrollCornerNeedsPaintInvalidation();
   } else if (m_scrollCorner) {
     m_scrollCorner->destroy();

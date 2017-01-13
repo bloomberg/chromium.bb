@@ -155,7 +155,7 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(
     return nullptr;
 
   result.nonInterpolableValue = FilterNonInterpolableValue::create(
-      type, result.nonInterpolableValue.release());
+      type, std::move(result.nonInterpolableValue));
   return result;
 }
 
@@ -204,7 +204,7 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertFilter(
     return nullptr;
 
   result.nonInterpolableValue = FilterNonInterpolableValue::create(
-      filter.type(), result.nonInterpolableValue.release());
+      filter.type(), std::move(result.nonInterpolableValue));
   return result;
 }
 

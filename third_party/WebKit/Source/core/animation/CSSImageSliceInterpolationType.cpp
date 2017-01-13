@@ -239,7 +239,7 @@ PairwiseInterpolationValue CSSImageSliceInterpolationType::maybeMergeSingles(
 
   return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                     std::move(end.interpolableValue),
-                                    start.nonInterpolableValue.release());
+                                    std::move(start.nonInterpolableValue));
 }
 
 void CSSImageSliceInterpolationType::composite(

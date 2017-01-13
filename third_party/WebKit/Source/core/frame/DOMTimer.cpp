@@ -138,7 +138,7 @@ void DOMTimer::fired() {
   DCHECK(!context->isContextSuspended());
   // Only the first execution of a multi-shot timer should get an affirmative
   // user gesture indicator.
-  UserGestureIndicator gestureIndicator(m_userGestureToken.release());
+  UserGestureIndicator gestureIndicator(std::move(m_userGestureToken));
 
   TRACE_EVENT1("devtools.timeline", "TimerFire", "data",
                InspectorTimerFireEvent::data(context, m_timeoutID));

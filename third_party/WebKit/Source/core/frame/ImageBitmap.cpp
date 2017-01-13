@@ -959,7 +959,7 @@ PassRefPtr<StaticBitmapImage> ImageBitmap::transfer() {
   ASSERT(!isNeutered());
   m_isNeutered = true;
   m_image->transfer();
-  return m_image.release();
+  return std::move(m_image);
 }
 
 ImageBitmap::~ImageBitmap() {}

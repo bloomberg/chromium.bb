@@ -122,7 +122,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       m_xssAuditor(std::move(config->xssAuditor)),
       m_decoder(std::move(config->decoder)),
       m_loadingTaskRunner(std::move(loadingTaskRunner)),
-      m_tokenizedChunkQueue(config->tokenizedChunkQueue.release()),
+      m_tokenizedChunkQueue(std::move(config->tokenizedChunkQueue)),
       m_pendingCSPMetaTokenIndex(
           HTMLDocumentParser::TokenizedChunk::noPendingToken),
       m_startingScript(false),

@@ -267,7 +267,7 @@ FormSubmission* FormSubmission::create(HTMLFormElement* form,
                                         : copiedAttributes.target();
   return new FormSubmission(copiedAttributes.method(), actionURL,
                             targetOrBaseTarget, encodingType, form,
-                            formData.release(), boundary, event);
+                            std::move(formData), boundary, event);
 }
 
 DEFINE_TRACE(FormSubmission) {

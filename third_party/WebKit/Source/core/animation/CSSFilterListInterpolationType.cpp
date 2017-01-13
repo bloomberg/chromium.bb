@@ -92,7 +92,7 @@ InterpolationValue convertFilterList(const FilterOperations& filterOperations,
     if (!filterResult)
       return nullptr;
     interpolableList->set(i, std::move(filterResult.interpolableValue));
-    nonInterpolableValues[i] = filterResult.nonInterpolableValue.release();
+    nonInterpolableValues[i] = std::move(filterResult.nonInterpolableValue);
   }
   return InterpolationValue(
       std::move(interpolableList),
@@ -155,7 +155,7 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertValue(
     if (!itemResult)
       return nullptr;
     interpolableList->set(i, std::move(itemResult.interpolableValue));
-    nonInterpolableValues[i] = itemResult.nonInterpolableValue.release();
+    nonInterpolableValues[i] = std::move(itemResult.nonInterpolableValue);
   }
   return InterpolationValue(
       std::move(interpolableList),
@@ -187,10 +187,11 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::maybeMergeSingles(
       return nullptr;
   }
 
-  if (startLength == endLength)
+  if (startLength == endLength) {
     return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                       std::move(end.interpolableValue),
-                                      start.nonInterpolableValue.release());
+                                      std::move(start.nonInterpolableValue));
+  }
 
   // Extend the shorter InterpolableList with neutral values that are compatible
   // with corresponding filters in the longer list.
@@ -219,7 +220,7 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::maybeMergeSingles(
 
   return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                     std::move(end.interpolableValue),
-                                    longer.nonInterpolableValue.release());
+                                    std::move(longer.nonInterpolableValue));
 }
 
 void CSSFilterListInterpolationType::composite(
