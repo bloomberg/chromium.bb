@@ -18,3 +18,4 @@ cscope.out
 
 # Obsolete
 /virtualenv/
+/.venv/
