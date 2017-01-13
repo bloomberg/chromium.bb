@@ -47,6 +47,7 @@ class UndoStep : public GarbageCollectedFinalized<UndoStep> {
   virtual bool belongsTo(const LocalFrame&) const = 0;
   virtual void unapply(EditCommandSource) = 0;
   virtual void reapply(EditCommandSource) = 0;
+  virtual InputEvent::InputType inputType() const = 0;
 };
 
 }  // namespace blink
