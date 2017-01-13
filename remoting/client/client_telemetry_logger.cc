@@ -20,10 +20,22 @@ const int kMaxSessionIdAgeDays = 1;
 
 namespace remoting {
 
+struct ClientTelemetryLogger::HostInfo {
+  const std::string host_version;
+  const ChromotingEvent::Os host_os;
+  const std::string host_os_version;
+};
+
 ClientTelemetryLogger::ClientTelemetryLogger(ChromotingEvent::Mode mode)
     : mode_(mode) {}
 
 ClientTelemetryLogger::~ClientTelemetryLogger() {}
+
+void ClientTelemetryLogger::SetHostInfo(const std::string& host_version,
+                                        ChromotingEvent::Os host_os,
+                                        const std::string& host_os_version) {
+  host_info_.reset(new HostInfo{host_version, host_os, host_os_version});
+}
 
 void ClientTelemetryLogger::Start(
     std::unique_ptr<UrlRequestFactory> request_factory,
@@ -152,6 +164,13 @@ ChromotingEvent::ConnectionError ClientTelemetryLogger::TranslateError(
 void ClientTelemetryLogger::FillEventContext(ChromotingEvent* event) const {
   event->SetEnum(ChromotingEvent::kModeKey, mode_);
   event->SetEnum(ChromotingEvent::kRoleKey, ChromotingEvent::Role::CLIENT);
+  if (host_info_) {
+    event->SetString(ChromotingEvent::kHostVersionKey,
+                     host_info_->host_version);
+    event->SetEnum(ChromotingEvent::kHostOsKey, host_info_->host_os);
+    event->SetString(ChromotingEvent::kHostOsVersionKey,
+                     host_info_->host_os_version);
+  }
   event->AddSystemInfo();
   if (!session_id_.empty()) {
     event->SetString(ChromotingEvent::kSessionIdKey, session_id_);

@@ -58,7 +58,10 @@ class ChromotingJniInstance
                         const std::string& pairing_id,
                         const std::string& pairing_secret,
                         const std::string& capabilities,
-                        const std::string& flags);
+                        const std::string& flags,
+                        const std::string& host_version,
+                        const std::string& host_os,
+                        const std::string& host_os_version);
 
   ~ChromotingJniInstance() override;
 
@@ -196,6 +199,11 @@ class ChromotingJniInstance
   // Indicates whether the client is connected to the host. Used on network
   // thread.
   bool connected_ = false;
+
+  // TODO(BUG 680752): Remove these.
+  std::string host_version_;
+  std::string host_os_;
+  std::string host_os_version_;
 
   base::WeakPtr<ChromotingJniInstance> weak_ptr_;
   base::WeakPtrFactory<ChromotingJniInstance> weak_factory_;

@@ -92,6 +92,9 @@ class ChromotingEvent {
   static const char kCpuKey[];
   static const char kDecodeLatencyKey[];
   static const char kEncodeLatencyKey[];
+  static const char kHostOsKey[];
+  static const char kHostOsVersionKey[];
+  static const char kHostVersionKey[];
   static const char kMaxCaptureLatencyKey[];
   static const char kMaxDecodeLatencyKey[];
   static const char kMaxEncodeLatencyKey[];
@@ -141,6 +144,9 @@ class ChromotingEvent {
 
   // Returns true if the SessionState concludes the end of session.
   static bool IsEndOfSession(SessionState state);
+
+  // Converts the OS type String into the enum value.
+  static Os ParseOsFromString(const std::string& os);
 
  private:
   std::unique_ptr<base::DictionaryValue> values_map_;

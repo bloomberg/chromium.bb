@@ -8,11 +8,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.text.TextUtils;
 
-import org.chromium.base.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.chromium.base.Log;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -32,6 +32,9 @@ public class HostInfo {
     public final boolean isOnline;
     public final String hostOfflineReason;
     public final Date updatedTime;
+    public final String hostVersion;
+    public final String hostOs;
+    public final String hostOsVersion;
 
     private final ArrayList<String> mTokenUrlPatterns;
 
@@ -47,7 +50,7 @@ public class HostInfo {
 
     public HostInfo(String name, String id, String jabberId, String publicKey,
             ArrayList<String> tokenUrlPatterns, boolean isOnline, String hostOfflineReason,
-            String updatedTime) {
+            String updatedTime, String hostVersion, String hostOs, String hostOsVersion) {
         this.name = name;
         this.id = id;
         this.jabberId = jabberId;
@@ -55,6 +58,9 @@ public class HostInfo {
         this.mTokenUrlPatterns = tokenUrlPatterns;
         this.isOnline = isOnline;
         this.hostOfflineReason = hostOfflineReason;
+        this.hostVersion = hostVersion;
+        this.hostOs = hostOs;
+        this.hostOsVersion = hostOsVersion;
 
         ParsePosition parsePosition = new ParsePosition(0);
         SimpleDateFormat format = new SimpleDateFormat(RFC_3339_FORMAT, Locale.US);
@@ -103,6 +109,7 @@ public class HostInfo {
         return new HostInfo(json.getString("hostName"), json.getString("hostId"),
                 json.optString("jabberId"), json.optString("publicKey"), tokenUrlPatterns,
                 json.optString("status").equals("ONLINE"), json.optString("hostOfflineReason"),
-                json.optString("updatedTime"));
+                json.optString("updatedTime"), json.optString("hostVersion"),
+                json.optString("hostOs"), json.optString("hostOsVersion"));
     }
 }

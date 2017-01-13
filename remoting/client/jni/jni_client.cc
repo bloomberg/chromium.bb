@@ -46,7 +46,10 @@ void JniClient::ConnectToHost(const std::string& username,
                               const std::string& pairing_id,
                               const std::string& pairing_secret,
                               const std::string& capabilities,
-                              const std::string& flags) {
+                              const std::string& flags,
+                              const std::string& host_version,
+                              const std::string& host_os,
+                              const std::string& host_os_version) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   DCHECK(!display_handler_);
   DCHECK(!session_);
@@ -54,12 +57,16 @@ void JniClient::ConnectToHost(const std::string& username,
   display_handler_.reset(new JniGlDisplayHandler(runtime_, java_client_));
   secret_fetcher_.reset(new JniPairingSecretFetcher(runtime_, GetWeakPtr(),
                                                     host_id));
+  // TODO(BUG 680752): Create ClientTelemetryLogger here. No need to pass host
+  //     info all the way down. Currently we have to do that due to thread
+  //     restriction.
   session_.reset(new ChromotingJniInstance(
       runtime_, GetWeakPtr(), secret_fetcher_->GetWeakPtr(),
       display_handler_->CreateCursorShapeStub(),
       display_handler_->CreateVideoRenderer(),
       username, auth_token, host_jid, host_id,
-      host_pubkey, pairing_id, pairing_secret, capabilities, flags));
+      host_pubkey, pairing_id, pairing_secret, capabilities, flags,
+      host_version, host_os, host_os_version));
   session_->Connect();
 }
 
@@ -158,7 +165,10 @@ void JniClient::Connect(
     const base::android::JavaParamRef<jstring>& pairId,
     const base::android::JavaParamRef<jstring>& pairSecret,
     const base::android::JavaParamRef<jstring>& capabilities,
-    const base::android::JavaParamRef<jstring>& flags) {
+    const base::android::JavaParamRef<jstring>& flags,
+    const base::android::JavaParamRef<jstring>& host_version,
+    const base::android::JavaParamRef<jstring>& host_os,
+    const base::android::JavaParamRef<jstring>& host_os_version) {
   ConnectToHost(ConvertJavaStringToUTF8(env, username),
                 ConvertJavaStringToUTF8(env, authToken),
                 ConvertJavaStringToUTF8(env, hostJid),
@@ -167,7 +177,10 @@ void JniClient::Connect(
                 ConvertJavaStringToUTF8(env, pairId),
                 ConvertJavaStringToUTF8(env, pairSecret),
                 ConvertJavaStringToUTF8(env, capabilities),
-                ConvertJavaStringToUTF8(env, flags));
+                ConvertJavaStringToUTF8(env, flags),
+                ConvertJavaStringToUTF8(env, host_version),
+                ConvertJavaStringToUTF8(env, host_os),
+                ConvertJavaStringToUTF8(env, host_os_version));
 }
 
 void JniClient::Disconnect(JNIEnv* env,

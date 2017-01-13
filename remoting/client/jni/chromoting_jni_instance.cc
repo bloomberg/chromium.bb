@@ -15,6 +15,7 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
+#include "remoting/base/chromoting_event.h"
 #include "remoting/client/audio_player_android.h"
 #include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/jni/android_keymap.h"
@@ -61,7 +62,10 @@ ChromotingJniInstance::ChromotingJniInstance(
     const std::string& pairing_id,
     const std::string& pairing_secret,
     const std::string& capabilities,
-    const std::string& flags)
+    const std::string& flags,
+    const std::string& host_version,
+    const std::string& host_os,
+    const std::string& host_os_version)
     : jni_runtime_(jni_runtime),
       jni_client_(jni_client),
       secret_fetcher_(secret_fetcher),
@@ -70,6 +74,9 @@ ChromotingJniInstance::ChromotingJniInstance(
       cursor_shape_stub_(std::move(cursor_shape_stub)),
       video_renderer_(std::move(video_renderer)),
       capabilities_(capabilities),
+      host_version_(host_version),
+      host_os_(host_os),
+      host_os_version_(host_os_version),
       weak_factory_(this) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
   weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -373,6 +380,10 @@ base::WeakPtr<ChromotingJniInstance> ChromotingJniInstance::GetWeakPtr() {
 
 void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
+
+  jni_runtime_->logger()->SetHostInfo(
+      host_version_, ChromotingEvent::ParseOsFromString(host_os_),
+      host_os_version_);
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 

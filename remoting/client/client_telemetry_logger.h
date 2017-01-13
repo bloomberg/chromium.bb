@@ -22,10 +22,17 @@ namespace remoting {
 // ClientTelemetryLogger sends client log entries to the telemetry server.
 // The logger should be run entirely on one single thread.
 // TODO(yuweih): Implement new features that session_logger.js provides.
+// TODO(BUG 680752): Refactor this so that it's bound to only one session.
 class ClientTelemetryLogger {
  public:
   explicit ClientTelemetryLogger(ChromotingEvent::Mode mode);
   ~ClientTelemetryLogger();
+
+  // Sets the host info to be posted along with other log data. By default
+  // no host info will be logged.
+  void SetHostInfo(const std::string& host_version,
+                   ChromotingEvent::Os host_os,
+                   const std::string& host_os_version);
 
   // Start must be called before posting logs or setting auth token or closure.
   void Start(std::unique_ptr<UrlRequestFactory> request_factory,
@@ -65,6 +72,7 @@ class ClientTelemetryLogger {
       protocol::ErrorCode state);
 
  private:
+  struct HostInfo;
 
   void FillEventContext(ChromotingEvent* event) const;
 
@@ -91,6 +99,8 @@ class ClientTelemetryLogger {
   base::TimeTicks session_id_generation_time_;
 
   ChromotingEvent::Mode mode_;
+
+  std::unique_ptr<HostInfo> host_info_;
 
   // The log writer that actually sends log to the server.
   std::unique_ptr<ChromotingEventLogWriter> log_writer_;

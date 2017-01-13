@@ -89,7 +89,7 @@ public class Client implements InputStub {
     /** Attempts to form a connection to the user-selected host. */
     public void connectToHost(String username, String authToken, String hostJid,
             String hostId, String hostPubkey, SessionAuthenticator authenticator, String flags,
-            ConnectionListener listener) {
+            String hostVersion, String hostOs, String hostOsVersion, ConnectionListener listener) {
         disconnectFromHost();
 
         mConnectionListener = listener;
@@ -97,7 +97,7 @@ public class Client implements InputStub {
         nativeConnect(mNativeJniClient, username, authToken, hostJid,
                 hostId, hostPubkey, mAuthenticator.getPairingId(hostId),
                 mAuthenticator.getPairingSecret(hostId), mCapabilityManager.getLocalCapabilities(),
-                flags);
+                flags, hostVersion, hostOs, hostOsVersion);
         mConnected = true;
     }
 
@@ -296,7 +296,8 @@ public class Client implements InputStub {
     /** Performs the native portion of the connection. */
     private native void nativeConnect(long nativeJniClient,
             String username, String authToken, String hostJid, String hostId, String hostPubkey,
-            String pairId, String pairSecret, String capabilities, String flags);
+            String pairId, String pairSecret, String capabilities, String flags,
+            String hostVersion, String hostOs, String hostOsVersion);
 
     /** Native implementation of Client.handleAuthenticationResponse(). */
     private native void nativeAuthenticationResponse(

@@ -67,7 +67,8 @@ public class SessionConnector implements ConnectionListener, HostListManager.Cal
 
     private void doConnect() {
         mClient.connectToHost(mAccountName, mAuthToken, mHost.jabberId, mHost.id,
-                mHost.publicKey, mAuthenticator, mFlags, this);
+                mHost.publicKey, mAuthenticator, mFlags, mHost.hostVersion, mHost.hostOs,
+                mHost.hostOsVersion, this);
     }
 
     private static boolean hostIncomplete(HostInfo host) {

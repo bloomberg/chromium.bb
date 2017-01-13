@@ -29,6 +29,7 @@ class JniClient {
             base::android::ScopedJavaGlobalRef<jobject> java_client);
   virtual ~JniClient();
 
+  // TODO(yuweih): Put these arguments into a struct.
   // Initiates a connection with the specified host. To skip the attempt at
   // pair-based authentication, leave |pairing_id| and |pairing_secret| as
   // empty strings.
@@ -40,7 +41,10 @@ class JniClient {
                      const std::string& pairing_id,
                      const std::string& pairing_secret,
                      const std::string& capabilities,
-                     const std::string& flags);
+                     const std::string& flags,
+                     const std::string& host_version,
+                     const std::string& host_os,
+                     const std::string& host_os_version);
 
   // Terminates any ongoing connection attempt and cleans up by nullifying
   // |session_|. This is a no-op unless |session| is currently non-null.
@@ -87,7 +91,10 @@ class JniClient {
                const base::android::JavaParamRef<jstring>& pairId,
                const base::android::JavaParamRef<jstring>& pairSecret,
                const base::android::JavaParamRef<jstring>& capabilities,
-               const base::android::JavaParamRef<jstring>& flags);
+               const base::android::JavaParamRef<jstring>& flags,
+               const base::android::JavaParamRef<jstring>& host_version,
+               const base::android::JavaParamRef<jstring>& host_os,
+               const base::android::JavaParamRef<jstring>& host_os_version);
 
   void Disconnect(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& caller);

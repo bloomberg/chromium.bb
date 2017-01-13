@@ -4,6 +4,7 @@
 
 #include "remoting/base/chromoting_event.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/sys_info.h"
 
@@ -14,6 +15,9 @@ const char ChromotingEvent::kConnectionErrorKey[] = "connection_error";
 const char ChromotingEvent::kCpuKey[] = "cpu";
 const char ChromotingEvent::kDecodeLatencyKey[] = "decode_latency";
 const char ChromotingEvent::kEncodeLatencyKey[] = "encode_latency";
+const char ChromotingEvent::kHostOsKey[] = "host_os";
+const char ChromotingEvent::kHostOsVersionKey[] = "host_os_version";
+const char ChromotingEvent::kHostVersionKey[] = "host_version";
 const char ChromotingEvent::kMaxCaptureLatencyKey[] = "max_capture_latency";
 const char ChromotingEvent::kMaxDecodeLatencyKey[] = "max_decode_latency";
 const char ChromotingEvent::kMaxEncodeLatencyKey[] = "max_encode_latency";
@@ -118,6 +122,27 @@ bool ChromotingEvent::IsEndOfSession(SessionState state) {
          state == SessionState::CONNECTION_DROPPED ||
          state == SessionState::CONNECTION_FAILED ||
          state == SessionState::CONNECTION_CANCELED;
+}
+
+// static
+ChromotingEvent::Os ChromotingEvent::ParseOsFromString(const std::string& os) {
+  std::string lower_os = base::ToLowerASCII(os);
+  // TODO(yuweih): Refactor remoting/protocol/name_value_map.h and use it to
+  //     map the value.
+  if (lower_os == "linux") {
+    return Os::CHROMOTING_LINUX;
+  } else if (lower_os == "chromeos") {
+    return Os::CHROMOTING_CHROMEOS;
+  } else if (lower_os == "mac") {
+    return Os::CHROMOTING_MAC;
+  } else if (lower_os == "windows") {
+    return Os::CHROMOTING_WINDOWS;
+  } else if (lower_os == "android") {
+    return Os::CHROMOTING_ANDROID;
+  } else if (lower_os == "ios") {
+    return Os::CHROMOTING_IOS;
+  }
+  return Os::OTHER;
 }
 
 }  // namespace remoting
