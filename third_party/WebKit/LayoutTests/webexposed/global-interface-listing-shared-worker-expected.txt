@@ -349,13 +349,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method readAsBinaryString
 [Worker]     method readAsDataURL
 [Worker]     method readAsText
-[Worker] interface Float32ImageData
-[Worker]     attribute @@toStringTag
-[Worker]     getter colorSpace
-[Worker]     getter data
-[Worker]     getter height
-[Worker]     getter width
-[Worker]     method constructor
 [Worker] interface FormData
 [Worker]     attribute @@toStringTag
 [Worker]     method @@iterator
@@ -536,12 +529,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker] interface ImageData
 [Worker]     attribute @@toStringTag
-[Worker]     getter colorSpace
-[Worker]     getter data
 [Worker]     getter height
 [Worker]     getter width
 [Worker]     method constructor
-[Worker]     method createImageData
 [Worker] interface MessageChannel
 [Worker]     attribute @@toStringTag
 [Worker]     getter port1

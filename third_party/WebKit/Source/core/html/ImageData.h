@@ -31,43 +31,17 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
-#include "wtf/CheckedNumeric.h"
 #include "wtf/Compiler.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class ExceptionState;
 class ImageBitmapOptions;
-
-enum ConstructorParams {
-  kParamSize = 1,
-  kParamWidth = 1 << 1,
-  kParamHeight = 1 << 2,
-  kParamData = 1 << 3,
-  kParamColorSpace = 1 << 4,
-};
-
-enum ImageDataType {
-  kUint8ClampedImageData,
-  kFloat32ImageData,
-};
-
-enum ImageDataColorSpace {
-  kLegacyImageDataColorSpace,
-  kSRGBImageDataColorSpace,
-  kLinearRGBImageDataColorSpace,
-};
-
-const char* const kLinearRGBImageDataColorSpaceName = "linear-rgb";
-const char* const kSRGBImageDataColorSpaceName = "srgb";
-const char* const kLegacyImageDataColorSpaceName = "legacy-srgb";
 
 class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
                                     public ScriptWrappable,
@@ -86,30 +60,9 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
                            unsigned height,
                            ExceptionState&);
 
-  static ImageData* createForTest(const IntSize&);
-
-  ImageData* createImageData(unsigned width,
-                             unsigned height,
-                             String colorSpace,
-                             ExceptionState&);
-  ImageData* createImageData(DOMUint8ClampedArray*,
-                             unsigned width,
-                             String colorSpace,
-                             ExceptionState&);
-  ImageData* createImageData(DOMUint8ClampedArray*,
-                             unsigned width,
-                             unsigned height,
-                             String colorSpace,
-                             ExceptionState&);
-
-  static ImageDataColorSpace getImageDataColorSpace(String);
-  static String getImageDataColorSpaceName(ImageDataColorSpace);
-
   IntSize size() const { return m_size; }
   int width() const { return m_size.width(); }
   int height() const { return m_size.height(); }
-  String colorSpace() const { return getImageDataColorSpaceName(m_colorSpace); }
-  ImageDataColorSpace imageDataColorSpace() { return m_colorSpace; }
   const DOMUint8ClampedArray* data() const { return m_data.get(); }
   DOMUint8ClampedArray* data() { return m_data.get(); }
 
@@ -128,28 +81,16 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper) override;
 
-  static bool validateConstructorArguments(
-      const unsigned&,
-      const IntSize* = nullptr,
-      const unsigned& = 0,
-      const unsigned& = 0,
-      const DOMArrayBufferView* = nullptr,
-      const String* = nullptr,
-      ExceptionState* = nullptr,
-      ImageDataType = kUint8ClampedImageData);
-
  private:
-  ImageData(const IntSize&,
-            DOMUint8ClampedArray*,
-            String = kLegacyImageDataColorSpaceName);
+  ImageData(const IntSize&, DOMUint8ClampedArray*);
+
+  static bool validateConstructorArguments(DOMUint8ClampedArray*,
+                                           unsigned width,
+                                           unsigned&,
+                                           ExceptionState&);
 
   IntSize m_size;
-  ImageDataColorSpace m_colorSpace;
   Member<DOMUint8ClampedArray> m_data;
-
-  static DOMUint8ClampedArray* allocateAndValidateUint8ClampedArray(
-      const unsigned&,
-      ExceptionState* = nullptr);
 };
 
 }  // namespace blink

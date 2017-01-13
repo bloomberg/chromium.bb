@@ -34,161 +34,11 @@
 #include "core/frame/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/CheckedNumeric.h"
 
 namespace blink {
 
-bool ImageData::validateConstructorArguments(const unsigned& paramFlags,
-                                             const IntSize* size,
-                                             const unsigned& width,
-                                             const unsigned& height,
-                                             const DOMArrayBufferView* data,
-                                             const String* colorSpace,
-                                             ExceptionState* exceptionState,
-                                             ImageDataType imageDataType) {
-  if (paramFlags & kParamData) {
-    if (data->type() != DOMArrayBufferView::ViewType::TypeUint8Clamped &&
-        data->type() != DOMArrayBufferView::ViewType::TypeFloat32)
-      return false;
-    if (data->type() == DOMArrayBufferView::ViewType::TypeUint8Clamped &&
-        imageDataType != kUint8ClampedImageData)
-      imageDataType = kFloat32ImageData;
-  }
-
-  // ImageData::create parameters without ExceptionState
-  if (paramFlags & kParamSize) {
-    if (!size->width() || !size->height())
-      return false;
-    if (paramFlags & kParamData) {
-      DCHECK(data);
-      CheckedNumeric<unsigned> dataSize = 4;
-      dataSize *= size->width();
-      dataSize *= size->height();
-      unsigned length =
-          data->type() == DOMArrayBufferView::ViewType::TypeUint8Clamped
-              ? (const_cast<DOMUint8ClampedArray*>(
-                     static_cast<const DOMUint8ClampedArray*>(data)))
-                    ->length()
-              : (const_cast<DOMFloat32Array*>(
-                     static_cast<const DOMFloat32Array*>(data)))
-                    ->length();
-      if (!dataSize.IsValid() || dataSize.ValueOrDie() > length)
-        return false;
-    }
-    return true;
-  }
-
-  // ImageData::create parameters with ExceptionState
-  if ((paramFlags & kParamWidth) && !width) {
-    exceptionState->throwDOMException(
-        IndexSizeError, "The source width is zero or not a number.");
-    return false;
-  }
-  if ((paramFlags & kParamHeight) && !height) {
-    exceptionState->throwDOMException(
-        IndexSizeError, "The source height is zero or not a number.");
-    return false;
-  }
-  if (paramFlags & (kParamWidth | kParamHeight)) {
-    CheckedNumeric<unsigned> dataSize = 4;
-    dataSize *= width;
-    dataSize *= height;
-    if (!dataSize.IsValid()) {
-      exceptionState->throwDOMException(
-          IndexSizeError,
-          "The requested image size exceeds the supported range.");
-      return false;
-    }
-  }
-  if (paramFlags & kParamData) {
-    DCHECK(data);
-    unsigned length =
-        data->type() == DOMArrayBufferView::ViewType::TypeUint8Clamped
-            ? (const_cast<DOMUint8ClampedArray*>(
-                   static_cast<const DOMUint8ClampedArray*>(data)))
-                  ->length()
-            : (const_cast<DOMFloat32Array*>(
-                   static_cast<const DOMFloat32Array*>(data)))
-                  ->length();
-    if (!length) {
-      exceptionState->throwDOMException(IndexSizeError,
-                                        "The input data has zero elements.");
-      return false;
-    }
-    if (length % 4) {
-      exceptionState->throwDOMException(
-          IndexSizeError, "The input data length is not a multiple of 4.");
-      return false;
-    }
-    length /= 4;
-    if (length % width) {
-      exceptionState->throwDOMException(
-          IndexSizeError,
-          "The input data length is not a multiple of (4 * width).");
-      return false;
-    }
-    if ((paramFlags & kParamHeight) && height != length / width) {
-      exceptionState->throwDOMException(
-          IndexSizeError,
-          "The input data length is not equal to (4 * width * height).");
-      return false;
-    }
-  }
-  if (paramFlags & kParamColorSpace) {
-    if (!colorSpace || colorSpace->length() == 0) {
-      exceptionState->throwDOMException(
-          NotSupportedError, "The source color space is not defined.");
-      return false;
-    }
-    if (imageDataType == kUint8ClampedImageData &&
-        *colorSpace != kLegacyImageDataColorSpaceName &&
-        *colorSpace != kSRGBImageDataColorSpaceName) {
-      exceptionState->throwDOMException(NotSupportedError,
-                                        "The input color space is not "
-                                        "supported in "
-                                        "Uint8ClampedArray-backed ImageData.");
-      return false;
-    }
-    if (imageDataType == kFloat32ImageData &&
-        *colorSpace != kLinearRGBImageDataColorSpaceName) {
-      exceptionState->throwDOMException(NotSupportedError,
-                                        "The input color space is not "
-                                        "supported in "
-                                        "Float32Array-backed ImageData.");
-      return false;
-    }
-  }
-  return true;
-}
-
-DOMUint8ClampedArray* ImageData::allocateAndValidateUint8ClampedArray(
-    const unsigned& length,
-    ExceptionState* exceptionState) {
-  if (!length)
-    return nullptr;
-  DOMUint8ClampedArray* dataArray = DOMUint8ClampedArray::createOrNull(length);
-  if (!dataArray || length != dataArray->length()) {
-    if (exceptionState) {
-      exceptionState->throwDOMException(V8RangeError,
-                                        "Out of memory at ImageData creation");
-    }
-    return nullptr;
-  }
-  return dataArray;
-}
-
 ImageData* ImageData::create(const IntSize& size) {
-  if (!ImageData::validateConstructorArguments(kParamSize, &size))
-    return nullptr;
-  DOMUint8ClampedArray* byteArray =
-      ImageData::allocateAndValidateUint8ClampedArray(4 * size.width() *
-                                                      size.height());
-  if (!byteArray)
-    return nullptr;
-  return new ImageData(size, byteArray);
-}
-
-// This function accepts size (0, 0).
-ImageData* ImageData::createForTest(const IntSize& size) {
   CheckedNumeric<unsigned> dataSize = 4;
   dataSize *= size.width();
   dataSize *= size.height();
@@ -205,33 +55,94 @@ ImageData* ImageData::createForTest(const IntSize& size) {
 
 ImageData* ImageData::create(const IntSize& size,
                              DOMUint8ClampedArray* byteArray) {
-  if (!ImageData::validateConstructorArguments(kParamSize | kParamData, &size,
-                                               0, 0, byteArray))
+  CheckedNumeric<unsigned> dataSize = 4;
+  dataSize *= size.width();
+  dataSize *= size.height();
+  if (!dataSize.IsValid())
     return nullptr;
+
+  if (!dataSize.IsValid() || dataSize.ValueOrDie() > byteArray->length())
+    return nullptr;
+
   return new ImageData(size, byteArray);
 }
 
 ImageData* ImageData::create(unsigned width,
                              unsigned height,
                              ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(kParamWidth | kParamHeight,
-                                               nullptr, width, height, nullptr,
-                                               nullptr, &exceptionState))
+  if (!width || !height) {
+    exceptionState.throwDOMException(
+        IndexSizeError, String::format("The source %s is zero or not a number.",
+                                       width ? "height" : "width"));
     return nullptr;
+  }
+
+  CheckedNumeric<unsigned> dataSize = 4;
+  dataSize *= width;
+  dataSize *= height;
+  if (!dataSize.IsValid() || static_cast<int>(width) < 0 ||
+      static_cast<int>(height) < 0) {
+    exceptionState.throwDOMException(
+        IndexSizeError,
+        "The requested image size exceeds the supported range.");
+    return nullptr;
+  }
+
   DOMUint8ClampedArray* byteArray =
-      ImageData::allocateAndValidateUint8ClampedArray(4 * width * height,
-                                                      &exceptionState);
-  return byteArray ? new ImageData(IntSize(width, height), byteArray) : nullptr;
+      DOMUint8ClampedArray::createOrNull(dataSize.ValueOrDie());
+  if (!byteArray) {
+    exceptionState.throwDOMException(V8Error,
+                                     "Out of memory at ImageData creation");
+    return nullptr;
+  }
+
+  return new ImageData(IntSize(width, height), byteArray);
+}
+
+bool ImageData::validateConstructorArguments(DOMUint8ClampedArray* data,
+                                             unsigned width,
+                                             unsigned& lengthInPixels,
+                                             ExceptionState& exceptionState) {
+  if (!width) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The source width is zero or not a number.");
+    return false;
+  }
+  DCHECK(data);
+  unsigned length = data->length();
+  if (!length) {
+    exceptionState.throwDOMException(IndexSizeError,
+                                     "The input data has a zero byte length.");
+    return false;
+  }
+  if (length % 4) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The input data byte length is not a multiple of 4.");
+    return false;
+  }
+  length /= 4;
+  if (length % width) {
+    exceptionState.throwDOMException(
+        IndexSizeError,
+        "The input data byte length is not a multiple of (4 * width).");
+    return false;
+  }
+  lengthInPixels = length;
+  return true;
 }
 
 ImageData* ImageData::create(DOMUint8ClampedArray* data,
                              unsigned width,
                              ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(kParamData | kParamWidth,
-                                               nullptr, width, 0, data, nullptr,
-                                               &exceptionState))
+  unsigned lengthInPixels = 0;
+  if (!validateConstructorArguments(data, width, lengthInPixels,
+                                    exceptionState)) {
+    DCHECK(exceptionState.hadException());
     return nullptr;
-  unsigned height = data->length() / (width * 4);
+  }
+  DCHECK_GT(lengthInPixels, 0u);
+  DCHECK_GT(width, 0u);
+  unsigned height = lengthInPixels / width;
   return new ImageData(IntSize(width, height), data);
 }
 
@@ -239,81 +150,23 @@ ImageData* ImageData::create(DOMUint8ClampedArray* data,
                              unsigned width,
                              unsigned height,
                              ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(
-          kParamData | kParamWidth | kParamHeight, nullptr, width, height, data,
-          nullptr, &exceptionState))
+  unsigned lengthInPixels = 0;
+  if (!validateConstructorArguments(data, width, lengthInPixels,
+                                    exceptionState)) {
+    DCHECK(exceptionState.hadException());
     return nullptr;
+  }
+  DCHECK_GT(lengthInPixels, 0u);
+  DCHECK_GT(width, 0u);
+  if (height != lengthInPixels / width) {
+    exceptionState.throwDOMException(
+        IndexSizeError,
+        "The input data byte length is not equal to (4 * width * height).");
+    return nullptr;
+  }
   return new ImageData(IntSize(width, height), data);
 }
 
-ImageDataColorSpace ImageData::getImageDataColorSpace(String colorSpaceName) {
-  if (colorSpaceName == kLegacyImageDataColorSpaceName)
-    return kLegacyImageDataColorSpace;
-  if (colorSpaceName == kSRGBImageDataColorSpaceName)
-    return kSRGBImageDataColorSpace;
-  if (colorSpaceName == kLinearRGBImageDataColorSpaceName)
-    return kLinearRGBImageDataColorSpace;
-  NOTREACHED();
-  return kLegacyImageDataColorSpace;
-}
-
-String ImageData::getImageDataColorSpaceName(ImageDataColorSpace colorSpace) {
-  switch (colorSpace) {
-    case kLegacyImageDataColorSpace:
-      return kLegacyImageDataColorSpaceName;
-    case kSRGBImageDataColorSpace:
-      return kSRGBImageDataColorSpaceName;
-    case kLinearRGBImageDataColorSpace:
-      return kLinearRGBImageDataColorSpaceName;
-  }
-  NOTREACHED();
-  return String();
-}
-
-ImageData* ImageData::createImageData(unsigned width,
-                                      unsigned height,
-                                      String colorSpace,
-                                      ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(
-          kParamWidth | kParamHeight | kParamColorSpace, nullptr, width, height,
-          nullptr, &colorSpace, &exceptionState))
-    return nullptr;
-
-  DOMUint8ClampedArray* byteArray =
-      ImageData::allocateAndValidateUint8ClampedArray(4 * width * height,
-                                                      &exceptionState);
-  return byteArray
-             ? new ImageData(IntSize(width, height), byteArray, colorSpace)
-             : nullptr;
-}
-
-ImageData* ImageData::createImageData(DOMUint8ClampedArray* data,
-                                      unsigned width,
-                                      String colorSpace,
-                                      ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(
-          kParamData | kParamWidth | kParamColorSpace, nullptr, width, 0, data,
-          &colorSpace, &exceptionState))
-    return nullptr;
-  unsigned height = data->length() / (width * 4);
-  return new ImageData(IntSize(width, height), data, colorSpace);
-}
-
-ImageData* ImageData::createImageData(DOMUint8ClampedArray* data,
-                                      unsigned width,
-                                      unsigned height,
-                                      String colorSpace,
-                                      ExceptionState& exceptionState) {
-  if (!ImageData::validateConstructorArguments(
-          kParamData | kParamWidth | kParamHeight | kParamColorSpace, nullptr,
-          width, height, data, &colorSpace, &exceptionState))
-    return nullptr;
-  return new ImageData(IntSize(width, height), data, colorSpace);
-}
-
-// TODO(zakerinasab): Fix this when ImageBitmap color correction code is landed.
-// Tip: If the source Image Data has a color space, createImageBitmap must
-// respect this color space even when no color space tag is passed to it.
 ScriptPromise ImageData::createImageBitmap(ScriptState* scriptState,
                                            EventTarget& eventTarget,
                                            Optional<IntRect> cropRect,
@@ -358,12 +211,8 @@ v8::Local<v8::Object> ImageData::associateWithWrapper(
   return wrapper;
 }
 
-ImageData::ImageData(const IntSize& size,
-                     DOMUint8ClampedArray* byteArray,
-                     String colorSpaceName)
-    : m_size(size),
-      m_colorSpace(getImageDataColorSpace(colorSpaceName)),
-      m_data(byteArray) {
+ImageData::ImageData(const IntSize& size, DOMUint8ClampedArray* byteArray)
+    : m_size(size), m_data(byteArray) {
   DCHECK_GE(size.width(), 0);
   DCHECK_GE(size.height(), 0);
   SECURITY_CHECK(static_cast<unsigned>(size.width() * size.height() * 4) <=

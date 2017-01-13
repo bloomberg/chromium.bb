@@ -4,7 +4,6 @@
 
 #include "core/frame/ImageBitmap.h"
 
-#include "core/html/Float32ImageData.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
@@ -758,8 +757,6 @@ static sk_sp<SkImage> scaleSkImage(sk_sp<SkImage> skImage,
                                  resizedPixels.release().leakRef());
 }
 
-// TODO(zakerinasab): Fix this and the constructor from Float32ImageData
-// when the CL for Float32ImageData landed.
 ImageBitmap::ImageBitmap(ImageData* data,
                          Optional<IntRect> cropRect,
                          const ImageBitmapOptions& options) {
@@ -908,10 +905,6 @@ ImageBitmap::ImageBitmap(ImageData* data,
   m_image = StaticBitmapImage::create(std::move(skImage));
 }
 
-ImageBitmap::ImageBitmap(Float32ImageData* data,
-                         Optional<IntRect> cropRect,
-                         const ImageBitmapOptions& options) {}
-
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
                          Optional<IntRect> cropRect,
                          const ImageBitmapOptions& options) {
@@ -991,12 +984,6 @@ ImageBitmap* ImageBitmap::create(OffscreenCanvas* offscreenCanvas,
 }
 
 ImageBitmap* ImageBitmap::create(ImageData* data,
-                                 Optional<IntRect> cropRect,
-                                 const ImageBitmapOptions& options) {
-  return new ImageBitmap(data, cropRect, options);
-}
-
-ImageBitmap* ImageBitmap::create(Float32ImageData* data,
                                  Optional<IntRect> cropRect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(data, cropRect, options);

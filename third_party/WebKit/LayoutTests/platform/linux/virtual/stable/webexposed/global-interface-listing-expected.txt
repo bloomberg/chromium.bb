@@ -3017,8 +3017,6 @@ interface ImageBitmapRenderingContext
     method transferFromImageBitmap
 interface ImageData
     attribute @@toStringTag
-    getter colorSpace
-    getter data
     getter height
     getter width
     method constructor
