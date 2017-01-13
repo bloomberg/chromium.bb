@@ -316,7 +316,7 @@ bool GraphicsLayer::paintWithoutCommit(
 
   if (!m_client)
     return false;
-  if (firstPaintInvalidationTrackingEnabled())
+  if (FirstPaintInvalidationTracking::isEnabled())
     m_debugInfo.clearAnnotatedInvalidateRects();
   incrementPaintCount();
 
@@ -1052,7 +1052,7 @@ void GraphicsLayer::setNeedsDisplayInRect(
     return;
 
   m_layer->layer()->invalidateRect(rect);
-  if (firstPaintInvalidationTrackingEnabled())
+  if (FirstPaintInvalidationTracking::isEnabled())
     m_debugInfo.appendAnnotatedInvalidateRect(rect, invalidationReason);
   for (size_t i = 0; i < m_linkHighlights.size(); ++i)
     m_linkHighlights[i]->invalidate();

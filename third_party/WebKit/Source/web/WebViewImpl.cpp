@@ -1047,7 +1047,7 @@ void WebViewImpl::setShowPaintRects(bool show) {
     TRACE_EVENT0("blink", "WebViewImpl::setShowPaintRects");
     m_layerTreeView->setShowPaintRects(show);
   }
-  setFirstPaintInvalidationTrackingEnabledForShowPaintRects(show);
+  FirstPaintInvalidationTracking::setEnabledForShowPaintRects(show);
 }
 
 void WebViewImpl::setShowDebugBorders(bool show) {
