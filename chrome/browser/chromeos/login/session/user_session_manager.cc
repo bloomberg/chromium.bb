@@ -74,7 +74,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
-#include "chrome/browser/ui/app_list/start_page_service.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -1721,8 +1721,16 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
         *base::CommandLine::ForCurrentProcess(), profile, base::FilePath(),
         chrome::startup::IS_PROCESS_STARTUP, first_run);
 
-    // Triggers app launcher start page service to load start page web contents.
-    app_list::StartPageService::Get(profile);
+    // ApplistService is usually initialized as part of browser launching
+    // process. However, kSilentLaunch flag is used for a new user on the device
+    // to skip browser launching (so that first-run app is not blocked by a
+    // browser window). As a result, AppListService init is skipped. This would
+    // cause AppListPresenterService not created and result in no app launcher.
+    // TODO(xiyuan): Remove this with http://crbug.com/681045
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kSilentLaunch)) {
+      AppListService::InitAll(profile, profile->GetPath());
+    }
   } else {
     LOG(WARNING) << "Browser hasn't been launched, should_launch_browser_"
                  << " is false. This is normal in some tests.";
