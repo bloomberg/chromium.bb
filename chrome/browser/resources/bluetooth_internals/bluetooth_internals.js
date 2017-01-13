@@ -8,16 +8,33 @@
  */
 
 // Expose for testing.
+/** @type {adapter_broker.AdapterBroker} */
 var adapterBroker = null;
+/** @type {device_collection.DeviceCollection} */
 var devices = null;
+/** @type {sidebar.Sidebar} */
 var sidebarObj = null;
 
 cr.define('bluetooth_internals', function() {
   /** @const */ var AdapterPage = adapter_page.AdapterPage;
+  /** @const */ var DeviceDetailsPage = device_details_page.DeviceDetailsPage;
   /** @const */ var DevicesPage = devices_page.DevicesPage;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var Snackbar = snackbar.Snackbar;
   /** @const */ var SnackbarType = snackbar.SnackbarType;
+
+  devices = new device_collection.DeviceCollection([]);
+
+  /** @type {adapter_page.AdapterPage} */
+  var adapterPage = null;
+  /** @type {devices_page.DevicesPage} */
+  var devicesPage = null;
+
+  /** @type {interfaces.BluetoothAdapter.DiscoverySession.ptrClass} */
+  var discoverySession = null;
+
+  /** @type {boolean} */
+  var userRequestedScanStop = false;
 
   /**
    * Observer for page changes. Used to update page title header.
@@ -42,79 +59,87 @@ cr.define('bluetooth_internals', function() {
     },
   };
 
-  /** @type {!Map<string, !interfaces.BluetoothDevice.DevicePtr>} */
-  var deviceAddressToProxy = new Map();
+  /**
+   * Removes DeviceDetailsPage with matching device |address|. The associated
+   * sidebar item is also removed.
+   * @param {string} address
+   */
+  function removeDeviceDetailsPage(address) {
+    var id = 'devices/' + address.toLowerCase();
+    sidebarObj.removeItem(id);
 
-  /** @type {!device_collection.DeviceCollection} */
-  devices = new device_collection.DeviceCollection([]);
+    var deviceDetailsPage = PageManager.registeredPages[id];
+    assert(deviceDetailsPage, 'Device Details page must exist');
 
-  /** @type {adapter_page.AdapterPage} */
-  var adapterPage = null;
-  /** @type {devices_page.DevicesPage} */
-  var devicesPage = null;
+    deviceDetailsPage.disconnect();
+    deviceDetailsPage.pageDiv.parentNode.removeChild(deviceDetailsPage.pageDiv);
 
-  /** @type {interfaces.BluetoothAdapter.DiscoverySession.ptrClass} */
-  var discoverySession = null;
+    // Inform the devices page that the user is inspecting this device.
+    // This will update the links in the device table.
+    devicesPage.setInspecting(
+        deviceDetailsPage.deviceInfo, false /* isInspecting */);
 
-  /** @type {boolean} */
-  var userRequestedScanStop = false;
+    PageManager.unregister(deviceDetailsPage);
+  }
 
-  function handleInspect(event) {
-    // TODO(crbug.com/663470): Move connection logic to DeviceDetailsView
-    // when it's added in chrome://bluetooth-internals.
-    var address = event.detail.address;
-    var proxy = deviceAddressToProxy.get(address);
+  /**
+   * Creates a DeviceDetailsPage with the given |deviceInfo|, appends it to
+   * '#page-container', and adds a sidebar item to show the new page. If a
+   * page exists that matches |deviceInfo.address|, nothing is created and the
+   * existing page is returned.
+   * @param {!interfaces.BluetoothDevice.Device} deviceInfo
+   * @return {!device_details_page.DeviceDetailsPage}
+   */
+  function makeDeviceDetailsPage(deviceInfo) {
+    var deviceDetailsPageId = 'devices/' + deviceInfo.address.toLowerCase();
+    var deviceDetailsPage = PageManager.registeredPages[deviceDetailsPageId];
+    if (deviceDetailsPage) return deviceDetailsPage;
 
-    if (proxy) {
-      // Device is already connected, so disconnect.
-      proxy.disconnect();
-      deviceAddressToProxy.delete(address);
-      devices.updateConnectionStatus(
-          address, device_collection.ConnectionStatus.DISCONNECTED);
-      return;
-    }
+    var pageSection = document.createElement('section');
+    pageSection.hidden = true;
+    pageSection.id = deviceDetailsPageId;
+    $('page-container').appendChild(pageSection);
 
-    devices.updateConnectionStatus(
-        address, device_collection.ConnectionStatus.CONNECTING);
+    deviceDetailsPage = new DeviceDetailsPage(deviceDetailsPageId, deviceInfo);
+    deviceDetailsPage.pageDiv.addEventListener('connectionchanged',
+        function(event) {
+          devices.updateConnectionStatus(
+              event.detail.address, event.detail.status);
+        });
 
-    adapterBroker.connectToDevice(address).then(function(deviceProxy) {
-      var deviceInfo = devices.getByAddress(address);
-      if (!deviceInfo) {
-        // Device no longer in list, so drop the connection.
-        deviceProxy.disconnect();
-        return;
-      }
-
-      deviceAddressToProxy.set(address, deviceProxy);
-      devices.updateConnectionStatus(
-          address, device_collection.ConnectionStatus.CONNECTED);
-      Snackbar.show(deviceInfo.name_for_display + ': Connected',
-          SnackbarType.SUCCESS);
-
-      // Fetch services asynchronously.
-      return deviceProxy.getServices();
-    }).then(function(response) {
-      if (!response) return;
-
-      var deviceInfo = devices.getByAddress(address);
-      deviceInfo.services = response.services;
-      devices.addOrUpdate(deviceInfo);
-    }).catch(function(error) {
-      // If a connection error occurs while fetching the services, the proxy
-      // reference must be removed.
-      var proxy = deviceAddressToProxy.get(address);
-      if (proxy) {
-        proxy.disconnect();
-        deviceAddressToProxy.delete(address);
-      }
-
-      devices.updateConnectionStatus(
-          address, device_collection.ConnectionStatus.DISCONNECTED);
-
-      var deviceInfo = devices.getByAddress(address);
-      Snackbar.show(deviceInfo.name_for_display + ': ' + error.message,
-          SnackbarType.ERROR, 'Retry', function() { handleInspect(event); });
+    deviceDetailsPage.pageDiv.addEventListener('infochanged', function(event) {
+      devices.addOrUpdate(event.detail.info);
     });
+
+    deviceDetailsPage.pageDiv.addEventListener('forgetpressed',
+        function(event) {
+          PageManager.showPageByName(devicesPage.name);
+          removeDeviceDetailsPage(event.detail.address);
+        });
+
+    // Inform the devices page that the user is inspecting this device.
+    // This will update the links in the device table.
+    devicesPage.setInspecting(deviceInfo, true /* isInspecting */);
+    PageManager.register(deviceDetailsPage);
+
+    sidebarObj.addItem({
+      pageName: deviceDetailsPageId,
+      text: deviceInfo.name_for_display,
+    });
+
+    deviceDetailsPage.connect();
+    return deviceDetailsPage;
+  }
+
+  /**
+   * Updates the DeviceDetailsPage with the matching device |address| and
+   * redraws it.
+   * @param {string} address
+   */
+  function updateDeviceDetailsPage(address) {
+    var detailPageId = 'devices/' + address.toLowerCase();
+    var page = PageManager.registeredPages[detailPageId];
+    if (page) page.redraw();
   }
 
   function updateStoppedDiscoverySession() {
@@ -150,18 +175,31 @@ cr.define('bluetooth_internals', function() {
     // Hook up device collection events.
     adapterBroker.addEventListener('deviceadded', function(event) {
       devices.addOrUpdate(event.detail.deviceInfo);
+      updateDeviceDetailsPage(event.detail.deviceInfo.address);
     });
     adapterBroker.addEventListener('devicechanged', function(event) {
       devices.addOrUpdate(event.detail.deviceInfo);
+      updateDeviceDetailsPage(event.detail.deviceInfo.address);
     });
     adapterBroker.addEventListener('deviceremoved', function(event) {
       devices.remove(event.detail.deviceInfo);
+      updateDeviceDetailsPage(event.detail.deviceInfo.address);
     });
 
     response.devices.forEach(devices.addOrUpdate, devices /* this */);
 
     devicesPage.setDevices(devices);
-    devicesPage.pageDiv.addEventListener('inspectpressed', handleInspect);
+
+    devicesPage.pageDiv.addEventListener('inspectpressed', function(event) {
+      var detailsPage = makeDeviceDetailsPage(
+          devices.getByAddress(event.detail.address));
+      PageManager.showPageByName(detailsPage.name);
+    });
+
+    devicesPage.pageDiv.addEventListener('forgetpressed', function(event) {
+      PageManager.showPageByName(devicesPage.name);
+      removeDeviceDetailsPage(event.detail.address);
+    });
 
     devicesPage.pageDiv.addEventListener('scanpressed', function(event) {
       if (discoverySession && discoverySession.ptr.isBound()) {
@@ -215,7 +253,10 @@ cr.define('bluetooth_internals', function() {
 
     // Set up hash-based navigation.
     window.addEventListener('hashchange', function() {
-      PageManager.showPageByName(window.location.hash.substr(1));
+      // If a user navigates and the page doesn't exist, do nothing.
+      var pageName = window.location.hash.substr(1);
+      if ($(pageName))
+        PageManager.showPageByName(pageName);
     });
 
     if (!window.location.hash) {
@@ -223,7 +264,8 @@ cr.define('bluetooth_internals', function() {
       return;
     }
 
-    PageManager.showPageByName(window.location.hash.substr(1));
+    // Only the root pages are available on page load.
+    PageManager.showPageByName(window.location.hash.split('/')[0].substr(1));
   }
 
   function initializeViews() {
@@ -242,7 +284,7 @@ cr.define('bluetooth_internals', function() {
   }
 
   return {
-    initializeViews: initializeViews
+    initializeViews: initializeViews,
   };
 });
 

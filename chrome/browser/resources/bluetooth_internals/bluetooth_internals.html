@@ -25,6 +25,7 @@
   <script src="object_fieldset.js"></script>
   <script src="adapter_page.js"></script>
   <script src="device_collection.js"></script>
+  <script src="device_details_page.js"></script>
   <script src="device_table.js"></script>
   <script src="devices_page.js"></script>
   <script src="sidebar.js"></script>
@@ -37,7 +38,7 @@
       <button id="menu-btn" class="custom-appearance"></button>
       <h1 class="page-title"></h1>
     </header>
-    <section id="adapter" hidden>
+    <section id="adapter" class="flex" hidden>
       <div class="header-extras">
         <button id="adapter-refresh-btn">Refresh</button>
       </div>
@@ -78,11 +79,23 @@
         <th data-field="rssi.value">Latest RSSI</th>
         <th data-field="services.length">Services</th>
         <th data-field="is_gatt_connected">GATT Connection State</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
     </tbody>
   </table>
+</template>
+
+<template id="device-details-template">
+  <div class="device-details-page">
+    <div class="header-extras">
+      <button class="disconnect">Disconnect</button>
+      <button class="forget">Forget</button>
+    </div>
+    <h3>Status</h3>
+    <section class="device-details flex"></section>
+  </div>
 </template>
 
 </html>

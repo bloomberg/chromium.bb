@@ -7,6 +7,9 @@
  */
 
 cr.define('sidebar', function() {
+  /** @typedef {{pageName: string, text: string}} */
+  var SidebarItem;
+
   /** @const {!cr.ui.pageManager.PageManager}*/
   var PageManager = cr.ui.pageManager.PageManager;
 
@@ -40,6 +43,23 @@ cr.define('sidebar', function() {
     __proto__: PageManager.Observer.prototype,
 
     /**
+     * Adds a new list item to the sidebar using the given |item|.
+     * @param {!SidebarItem} item
+     */
+    addItem: function(item) {
+      var sidebarItem = document.createElement('li');
+      sidebarItem.dataset.pageName = item.pageName.toLowerCase();
+
+      var button = document.createElement('button');
+      button.classList.add('custom-appearance');
+      button.textContent = item.text;
+      button.addEventListener('click', this.onItemClick_.bind(this));
+      sidebarItem.appendChild(button);
+
+      this.sidebarList_.appendChild(sidebarItem);
+    },
+
+    /**
      * Closes the sidebar. Only applies to layouts with window width <= 600px.
      */
     close: function() {
@@ -55,6 +75,16 @@ cr.define('sidebar', function() {
       document.body.style.overflow = 'hidden';
       this.sidebarDiv_.classList.add('open');
       document.dispatchEvent(new CustomEvent('contentblur'));
+    },
+
+    /**
+     * Removes a sidebar item where |pageName| matches the item's pageName.
+     * @param {string} pageName
+     */
+    removeItem: function(pageName) {
+      pageName = pageName.toLowerCase();
+      var query = 'li[data-page-name="' + pageName + '"]';
+      this.sidebarList_.removeChild(this.sidebarList_.querySelector(query));
     },
 
     /**

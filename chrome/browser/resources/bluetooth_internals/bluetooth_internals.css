@@ -45,7 +45,7 @@ h1 {
 }
 
 /* Page content */
-#page-container section {
+#page-container > section {
   padding: 24px 16px;
 }
 
@@ -96,7 +96,10 @@ h1 {
   }
 
   .page-header > h1 {
-    margin: 13px 0 13px 24px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 190px;
   }
 }
 
@@ -199,6 +202,11 @@ table {
   margin: 0;
   padding: 0;
   width: 100%;
+}
+
+table a {
+  font-size: 10pt;
+  padding: 6px;
 }
 
 table th,
@@ -311,13 +319,6 @@ table .removed {
   visibility: visible;
 }
 
-/* Adapter Page */
-@media screen and (min-width: 601px) {
-  #adapter {
-    display: flex;
-  }
-}
-
 /* Object Fieldset */
 .object-fieldset .status {
   align-items: center;
@@ -332,4 +333,16 @@ table .removed {
 
 .object-fieldset .status:last-child {
   margin-bottom: 0;
+}
+
+/* Object Fieldset Container */
+@media screen and (min-width: 601px) {
+  .flex {
+    display: flex;
+  }
+}
+
+/* Device Details Page */
+.device-details-page section {
+  -webkit-margin-start: 1em;
 }

@@ -83,6 +83,14 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
+     * Unregisters an existing page.
+     * @param {!cr.ui.pageManager.Page} page Page to unregister.
+     */
+    unregister: function(page) {
+      delete this.registeredPages[page.name.toLowerCase()];
+    },
+
+    /**
      * Registers a new Overlay page.
      * @param {!cr.ui.pageManager.Page} overlay Overlay to register.
      * @param {cr.ui.pageManager.Page} parentPage Associated parent page for

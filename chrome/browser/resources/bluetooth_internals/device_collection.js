@@ -89,7 +89,7 @@ cr.define('device_collection', function() {
      * @param {string} address The address of the device.
      * @param {number} status The new connection status.
      */
-    updateConnectionStatus: function(address, status, opt_error) {
+    updateConnectionStatus: function(address, status) {
       var device = assert(this.getByAddress(address), 'Device does not exist');
       device.connectionStatus = status;
       this.updateIndex(this.indexOf(device));

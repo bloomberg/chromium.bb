@@ -49,6 +49,15 @@ cr.define('devices_page', function() {
       this.deviceTable.setDevices(devices);
     },
 
+    /**
+     * Updates the inspect status of the given |deviceInfo| in the device table.
+     * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
+     * @param {boolean} isInspecting
+     */
+    setInspecting: function(deviceInfo, isInspecting) {
+      this.deviceTable.setInspecting(deviceInfo, isInspecting);
+    },
+
     setScanStatus: function(status) {
       switch (status) {
         case ScanStatus.OFF:
