@@ -400,7 +400,7 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     if (tx_size == TX_8X8) {
       txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, TX_4X4, tx_size);
+                            xd->left_txfm_context + tx_row, sub_txs, tx_size);
       return;
     }
 

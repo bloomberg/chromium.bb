@@ -347,14 +347,14 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
 
     if (tx_size == TX_8X8) {
       int idx, idy;
-      inter_tx_size[0][0] = TX_4X4;
+      inter_tx_size[0][0] = sub_txs;
       for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
         for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
           inter_tx_size[idy][idx] = inter_tx_size[0][0];
-      mbmi->tx_size = TX_4X4;
+      mbmi->tx_size = sub_txs;
       mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
       txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, TX_4X4, tx_size);
+                            xd->left_txfm_context + tx_row, sub_txs, tx_size);
       return;
     }
 
