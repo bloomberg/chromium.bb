@@ -184,7 +184,8 @@ void HeadlessBrowserTest::FinishAsynchronousTest() {
 }
 
 HeadlessAsyncDevTooledBrowserTest::HeadlessAsyncDevTooledBrowserTest()
-    : web_contents_(nullptr),
+    : browser_context_(nullptr),
+      web_contents_(nullptr),
       devtools_client_(HeadlessDevToolsClient::Create()),
       render_process_exited_(false) {}
 
@@ -209,6 +210,7 @@ void HeadlessAsyncDevTooledBrowserTest::RenderProcessExited(
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   browser_context_ = browser()->CreateBrowserContextBuilder().Build();
+  browser()->SetDefaultBrowserContext(browser_context_);
 
   web_contents_ = browser_context_->CreateWebContentsBuilder().Build();
   web_contents_->AddObserver(this);

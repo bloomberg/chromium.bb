@@ -51,6 +51,9 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
       const std::string& devtools_agent_host_id) override;
   HeadlessBrowserContext* GetBrowserContextForId(
       const std::string& id) override;
+  void SetDefaultBrowserContext(
+      HeadlessBrowserContext* browser_context) override;
+  HeadlessBrowserContext* GetDefaultBrowserContext() override;
 
   void set_browser_main_parts(HeadlessBrowserMainParts* browser_main_parts);
   HeadlessBrowserMainParts* browser_main_parts() const;
@@ -82,6 +85,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
 
   std::unordered_map<std::string, std::unique_ptr<HeadlessBrowserContextImpl>>
       browser_contexts_;
+  HeadlessBrowserContext* default_browser_context_;  // Not owned.
 
   base::WeakPtrFactory<HeadlessBrowserImpl> weak_ptr_factory_;
 

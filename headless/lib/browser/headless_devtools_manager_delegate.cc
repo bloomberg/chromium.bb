@@ -20,9 +20,57 @@
 
 namespace headless {
 
+namespace {
+const char kIdParam[] = "id";
+const char kResultParam[] = "result";
+const char kErrorParam[] = "error";
+const char kErrorCodeParam[] = "code";
+const char kErrorMessageParam[] = "message";
+
+// JSON RPC 2.0 spec: http://www.jsonrpc.org/specification#error_object
+enum Error {
+  kErrorInvalidParam = -32602,
+  kErrorServerError = -32000
+};
+
+std::unique_ptr<base::DictionaryValue> CreateSuccessResponse(
+    int command_id,
+    std::unique_ptr<base::Value> result) {
+  if (!result)
+    result.reset(new base::DictionaryValue());
+
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  response->SetInteger(kIdParam, command_id);
+  response->Set(kResultParam, std::move(result));
+  return response;
+}
+
+std::unique_ptr<base::DictionaryValue> CreateErrorResponse(
+    int command_id,
+    int error_code,
+    const std::string& error_message) {
+  std::unique_ptr<base::DictionaryValue> error_object(
+      new base::DictionaryValue());
+  error_object->SetInteger(kErrorCodeParam, error_code);
+  error_object->SetString(kErrorMessageParam, error_message);
+
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  response->Set(kErrorParam, std::move(error_object));
+  return response;
+}
+
+std::unique_ptr<base::DictionaryValue> CreateInvalidParamResponse(
+    int command_id,
+    const std::string& param) {
+  return CreateErrorResponse(
+      command_id, kErrorInvalidParam,
+      base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
+}
+}  // namespace
+
 HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
     base::WeakPtr<HeadlessBrowserImpl> browser)
-    : browser_(std::move(browser)), default_browser_context_(nullptr) {
+    : browser_(std::move(browser)) {
   command_map_["Target.createTarget"] =
       &HeadlessDevToolsManagerDelegate::CreateTarget;
   command_map_["Target.closeTarget"] =
@@ -55,19 +103,15 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
   if (find_it == command_map_.end())
     return nullptr;
   CommandMemberFnPtr command_fn_ptr = find_it->second;
-  std::unique_ptr<base::Value> cmd_result(((this)->*command_fn_ptr)(params));
-  if (!cmd_result)
-    return nullptr;
-
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->SetInteger("id", id);
-  result->Set("result", std::move(cmd_result));
-  return result.release();
+  std::unique_ptr<base::DictionaryValue> cmd_result(
+      ((this)->*command_fn_ptr)(id, params));
+  return cmd_result.release();
 }
 
 std::string HeadlessDevToolsManagerDelegate::GetDiscoveryPageHTML() {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_HEADLESS_LIB_DEVTOOLS_DISCOVERY_PAGE).as_string();
+  return ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(IDR_HEADLESS_LIB_DEVTOOLS_DISCOVERY_PAGE)
+      .as_string();
 }
 
 std::string HeadlessDevToolsManagerDelegate::GetFrontendResource(
@@ -75,7 +119,9 @@ std::string HeadlessDevToolsManagerDelegate::GetFrontendResource(
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
-std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
+std::unique_ptr<base::DictionaryValue>
+HeadlessDevToolsManagerDelegate::CreateTarget(
+    int command_id,
     const base::DictionaryValue* params) {
   std::string url;
   std::string browser_context_id;
@@ -86,15 +132,20 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
   params->GetInteger("width", &width);
   params->GetInteger("height", &height);
 
-  // TODO(alexclarke): Should we fail when user passes incorrect id?
   HeadlessBrowserContext* context =
       browser_->GetBrowserContextForId(browser_context_id);
-  if (!context) {
-    if (!default_browser_context_) {
-      default_browser_context_ =
-          browser_->CreateBrowserContextBuilder().Build();
+  if (!browser_context_id.empty()) {
+    context = browser_->GetBrowserContextForId(browser_context_id);
+    if (!context)
+      return CreateInvalidParamResponse(command_id, "browserContextId");
+  } else {
+    context = browser_->GetDefaultBrowserContext();
+    if (!context) {
+      return CreateErrorResponse(command_id, kErrorServerError,
+                                 "You specified no |browserContextId|, but "
+                                 "there is no default browser context set on "
+                                 "HeadlessBrowser");
     }
-    context = default_browser_context_;
   }
 
   HeadlessWebContentsImpl* web_contents_impl =
@@ -103,18 +154,21 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
                                         .SetWindowSize(gfx::Size(width, height))
                                         .Build());
 
-  return target::CreateTargetResult::Builder()
-      .SetTargetId(web_contents_impl->GetDevToolsAgentHostId())
-      .Build()
-      ->Serialize();
+  std::unique_ptr<base::Value> result(
+      target::CreateTargetResult::Builder()
+          .SetTargetId(web_contents_impl->GetDevToolsAgentHostId())
+          .Build()
+          ->Serialize());
+  return CreateSuccessResponse(command_id, std::move(result));
 }
 
-std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CloseTarget(
+std::unique_ptr<base::DictionaryValue>
+HeadlessDevToolsManagerDelegate::CloseTarget(
+    int command_id,
     const base::DictionaryValue* params) {
   std::string target_id;
-  if (!params->GetString("targetId", &target_id)) {
-    return nullptr;
-  }
+  if (!params->GetString("targetId", &target_id))
+    return CreateInvalidParamResponse(command_id, "targetId");
   HeadlessWebContents* web_contents =
       browser_->GetWebContentsForDevToolsAgentHostId(target_id);
   bool success = false;
@@ -122,46 +176,51 @@ std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CloseTarget(
     web_contents->Close();
     success = true;
   }
-  return target::CloseTargetResult::Builder()
-      .SetSuccess(success)
-      .Build()
-      ->Serialize();
+  std::unique_ptr<base::Value> result(target::CloseTargetResult::Builder()
+                                          .SetSuccess(success)
+                                          .Build()
+                                          ->Serialize());
+  return CreateSuccessResponse(command_id, std::move(result));
 }
 
-std::unique_ptr<base::Value>
+std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::CreateBrowserContext(
+    int command_id,
     const base::DictionaryValue* params) {
   HeadlessBrowserContext* browser_context =
       browser_->CreateBrowserContextBuilder().Build();
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  return target::CreateBrowserContextResult::Builder()
-      .SetBrowserContextId(browser_context->Id())
-      .Build()
-      ->Serialize();
+  std::unique_ptr<base::Value> result(
+      target::CreateBrowserContextResult::Builder()
+          .SetBrowserContextId(browser_context->Id())
+          .Build()
+          ->Serialize());
+  return CreateSuccessResponse(command_id, std::move(result));
 }
 
-std::unique_ptr<base::Value>
+std::unique_ptr<base::DictionaryValue>
 HeadlessDevToolsManagerDelegate::DisposeBrowserContext(
+    int command_id,
     const base::DictionaryValue* params) {
   std::string browser_context_id;
-  if (!params->GetString("browserContextId", &browser_context_id)) {
-    return nullptr;
-  }
+  if (!params->GetString("browserContextId", &browser_context_id))
+    return CreateInvalidParamResponse(command_id, "browserContextId");
   HeadlessBrowserContext* context =
       browser_->GetBrowserContextForId(browser_context_id);
 
   bool success = false;
-  if (context && context != default_browser_context_ &&
+  if (context && context != browser_->GetDefaultBrowserContext() &&
       context->GetAllWebContents().empty()) {
     success = true;
     context->Close();
   }
 
-  return target::DisposeBrowserContextResult::Builder()
-      .SetSuccess(success)
-      .Build()
-      ->Serialize();
+  std::unique_ptr<base::Value> result(
+      target::DisposeBrowserContextResult::Builder()
+          .SetSuccess(success)
+          .Build()
+          ->Serialize());
+  return CreateSuccessResponse(command_id, std::move(result));
 }
 
 }  // namespace headless

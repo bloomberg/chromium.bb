@@ -75,6 +75,8 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
     HeadlessBrowserContext::Builder context_builder =
         browser_->CreateBrowserContextBuilder();
+    // TODO(eseckler): These switches should also affect BrowserContexts that
+    // are created via DevTools later.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDeterministicFetch)) {
       deterministic_dispatcher_.reset(
@@ -98,6 +100,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
           }));
     }
     browser_context_ = context_builder.Build();
+    browser_->SetDefaultBrowserContext(browser_context_);
 
     HeadlessWebContents::Builder builder(
         browser_context_->CreateWebContentsBuilder());

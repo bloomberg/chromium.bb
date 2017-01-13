@@ -56,6 +56,12 @@ class HEADLESS_EXPORT HeadlessBrowser {
   virtual HeadlessBrowserContext* GetBrowserContextForId(
       const std::string& id) = 0;
 
+  // Allows setting and getting the browser context that DevTools will create
+  // new targets in by default.
+  virtual void SetDefaultBrowserContext(
+      HeadlessBrowserContext* browser_context) = 0;
+  virtual HeadlessBrowserContext* GetDefaultBrowserContext() = 0;
+
   // Returns a task runner for submitting work to the browser file thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserFileThread()
       const = 0;
