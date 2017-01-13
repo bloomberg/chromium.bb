@@ -12,71 +12,77 @@ namespace blink {
 FloatRect GeometryMapper::sourceToDestinationVisualRect(
     const FloatRect& rect,
     const PropertyTreeState& sourceState,
-    const PropertyTreeState& destinationState,
-    bool& success) {
-  FloatRect result =
-      localToAncestorVisualRect(rect, sourceState, destinationState, success);
-  if (success)
-    return result;
-  return slowSourceToDestinationVisualRect(rect, sourceState, destinationState,
-                                           success);
+    const PropertyTreeState& destinationState) {
+  bool success = false;
+  FloatRect result = sourceToDestinationVisualRectInternal(
+      rect, sourceState, destinationState, success);
+  DCHECK(success);
+  return result;
 }
 
-FloatRect GeometryMapper::sourceToDestinationRect(
-    const FloatRect& rect,
-    const TransformPaintPropertyNode* sourceTransformNode,
-    const TransformPaintPropertyNode* destinationTransformNode,
-    bool& success) {
-  FloatRect result = localToAncestorRect(rect, sourceTransformNode,
-                                         destinationTransformNode, success);
-  if (success)
-    return result;
-  return slowSourceToDestinationRect(rect, sourceTransformNode,
-                                     destinationTransformNode, success);
-}
-
-FloatRect GeometryMapper::slowSourceToDestinationVisualRect(
+FloatRect GeometryMapper::sourceToDestinationVisualRectInternal(
     const FloatRect& rect,
     const PropertyTreeState& sourceState,
     const PropertyTreeState& destinationState,
     bool& success) {
+  FloatRect result = localToAncestorVisualRectInternal(
+      rect, sourceState, destinationState, success);
+  // Success if destinationState is an ancestor state.
+  if (success)
+    return result;
+
+  // Otherwise first map to the least common ancestor, then map to destination.
   const TransformPaintPropertyNode* lcaTransform = leastCommonAncestor(
       sourceState.transform(), destinationState.transform());
   DCHECK(lcaTransform);
 
   // Assume that the clip of destinationState is an ancestor of the clip of
   // sourceState and is under the space of lcaTransform. Otherwise
-  // localToAncestorClipRect() will fail.
+  // localToAncestorVisualRect() will fail.
   PropertyTreeState lcaState = destinationState;
   lcaState.setTransform(lcaTransform);
 
-  FloatRect result =
-      localToAncestorVisualRect(rect, sourceState, lcaState, success);
+  FloatRect lcaVisualRect =
+      localToAncestorVisualRectInternal(rect, sourceState, lcaState, success);
   if (!success)
-    return result;
-
-  return ancestorToLocalRect(result, lcaTransform, destinationState.transform(),
-                             success);
+    return lcaVisualRect;
+  return ancestorToLocalRect(lcaVisualRect, lcaTransform,
+                             destinationState.transform());
 }
 
-FloatRect GeometryMapper::slowSourceToDestinationRect(
+FloatRect GeometryMapper::sourceToDestinationRect(
     const FloatRect& rect,
     const TransformPaintPropertyNode* sourceTransformNode,
-    const TransformPaintPropertyNode* destinationTransformNode,
-    bool& success) {
+    const TransformPaintPropertyNode* destinationTransformNode) {
+  bool success = false;
+  FloatRect result = localToAncestorRectInternal(
+      rect, sourceTransformNode, destinationTransformNode, success);
+  // Success if destinationTransformNode is an ancestor of sourceTransformNode.
+  if (success)
+    return result;
+
+  // Otherwise first map to the least common ancestor, then map to destination.
   const TransformPaintPropertyNode* lcaTransform =
       leastCommonAncestor(sourceTransformNode, destinationTransformNode);
   DCHECK(lcaTransform);
 
-  FloatRect result =
-      localToAncestorRect(rect, sourceTransformNode, lcaTransform, success);
-  DCHECK(success);
-
-  return ancestorToLocalRect(result, lcaTransform, destinationTransformNode,
-                             success);
+  FloatRect lcaRect =
+      localToAncestorRect(rect, sourceTransformNode, lcaTransform);
+  return ancestorToLocalRect(lcaRect, lcaTransform, destinationTransformNode);
 }
 
 FloatRect GeometryMapper::localToAncestorVisualRect(
+    const FloatRect& rect,
+    const PropertyTreeState& localState,
+    const PropertyTreeState& ancestorState) {
+  bool success = false;
+  FloatRect result = localToAncestorVisualRectInternal(rect, localState,
+                                                       ancestorState, success);
+  DCHECK(success);
+  return result;
+}
+
+FloatRect GeometryMapper::localToAncestorVisualRectInternal(
     const FloatRect& rect,
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
@@ -86,7 +92,7 @@ FloatRect GeometryMapper::localToAncestorVisualRect(
     return rect;
   }
 
-  const auto& transformMatrix = localToAncestorMatrix(
+  const auto& transformMatrix = localToAncestorMatrixInternal(
       localState.transform(), ancestorState.transform(), success);
   if (!success)
     return rect;
@@ -94,7 +100,7 @@ FloatRect GeometryMapper::localToAncestorVisualRect(
   FloatRect mappedRect = transformMatrix.mapRect(rect);
 
   const auto clipRect =
-      localToAncestorClipRect(localState, ancestorState, success);
+      localToAncestorClipRectInternal(localState, ancestorState, success);
 
   if (success) {
     mappedRect.intersect(clipRect);
@@ -114,6 +120,17 @@ FloatRect GeometryMapper::localToAncestorVisualRect(
 FloatRect GeometryMapper::localToAncestorRect(
     const FloatRect& rect,
     const TransformPaintPropertyNode* localTransformNode,
+    const TransformPaintPropertyNode* ancestorTransformNode) {
+  bool success = false;
+  FloatRect result = localToAncestorRectInternal(
+      rect, localTransformNode, ancestorTransformNode, success);
+  DCHECK(success);
+  return result;
+}
+
+FloatRect GeometryMapper::localToAncestorRectInternal(
+    const FloatRect& rect,
+    const TransformPaintPropertyNode* localTransformNode,
     const TransformPaintPropertyNode* ancestorTransformNode,
     bool& success) {
   if (localTransformNode == ancestorTransformNode) {
@@ -121,8 +138,8 @@ FloatRect GeometryMapper::localToAncestorRect(
     return rect;
   }
 
-  const auto& transformMatrix =
-      localToAncestorMatrix(localTransformNode, ancestorTransformNode, success);
+  const auto& transformMatrix = localToAncestorMatrixInternal(
+      localTransformNode, ancestorTransformNode, success);
   if (!success)
     return rect;
   return transformMatrix.mapRect(rect);
@@ -131,23 +148,13 @@ FloatRect GeometryMapper::localToAncestorRect(
 FloatRect GeometryMapper::ancestorToLocalRect(
     const FloatRect& rect,
     const TransformPaintPropertyNode* ancestorTransformNode,
-    const TransformPaintPropertyNode* localTransformNode,
-    bool& success) {
-  if (localTransformNode == ancestorTransformNode) {
-    success = true;
+    const TransformPaintPropertyNode* localTransformNode) {
+  if (localTransformNode == ancestorTransformNode)
     return rect;
-  }
 
   const auto& transformMatrix =
-      localToAncestorMatrix(localTransformNode, ancestorTransformNode, success);
-  if (!success)
-    return rect;
-
-  if (!transformMatrix.isInvertible()) {
-    success = false;
-    return rect;
-  }
-  success = true;
+      localToAncestorMatrix(localTransformNode, ancestorTransformNode);
+  DCHECK(transformMatrix.isInvertible());
 
   // TODO(chrishtr): Cache the inverse?
   return transformMatrix.inverse().mapRect(rect);
@@ -162,6 +169,16 @@ PrecomputedDataForAncestor& GeometryMapper::getPrecomputedDataForAncestor(
 }
 
 FloatRect GeometryMapper::localToAncestorClipRect(
+    const PropertyTreeState& localState,
+    const PropertyTreeState& ancestorState) {
+  bool success = false;
+  FloatRect result =
+      localToAncestorClipRectInternal(localState, ancestorState, success);
+  DCHECK(success);
+  return result;
+}
+
+FloatRect GeometryMapper::localToAncestorClipRectInternal(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
     bool& success) {
@@ -197,7 +214,7 @@ FloatRect GeometryMapper::localToAncestorClipRect(
   for (auto it = intermediateNodes.rbegin(); it != intermediateNodes.rend();
        ++it) {
     success = false;
-    const TransformationMatrix& transformMatrix = localToAncestorMatrix(
+    const TransformationMatrix& transformMatrix = localToAncestorMatrixInternal(
         (*it)->localTransformSpace(), ancestorState.transform(), success);
     if (!success)
       return clip;
@@ -211,6 +228,16 @@ FloatRect GeometryMapper::localToAncestorClipRect(
 }
 
 const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
+    const TransformPaintPropertyNode* localTransformNode,
+    const TransformPaintPropertyNode* ancestorTransformNode) {
+  bool success = false;
+  const auto& result = localToAncestorMatrixInternal(
+      localTransformNode, ancestorTransformNode, success);
+  DCHECK(success);
+  return result;
+}
+
+const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
     const TransformPaintPropertyNode* localTransformNode,
     const TransformPaintPropertyNode* ancestorTransformNode,
     bool& success) {

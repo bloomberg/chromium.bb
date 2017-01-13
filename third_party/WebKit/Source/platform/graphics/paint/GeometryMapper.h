@@ -58,21 +58,19 @@ class PLATFORM_EXPORT GeometryMapper {
   // it by the the inverse transform mapping from the least common ancestor to
   // |destinationState.transform|.
   //
-  // Sets |success| to whether that inverse transform is invertible. If it is
-  // not, returns the input rect.
+  // DCHECK fails if the clip of |destinationState| is not an ancestor of the
+  // clip of |sourceState|, or the inverse transform is not invertible.
   FloatRect sourceToDestinationVisualRect(
       const FloatRect&,
       const PropertyTreeState& sourceState,
-      const PropertyTreeState& destinationState,
-      bool& success);
+      const PropertyTreeState& destinationState);
 
   // Same as sourceToDestinationVisualRect() except that only transforms are
   // applied.
   FloatRect sourceToDestinationRect(
       const FloatRect&,
       const TransformPaintPropertyNode* sourceTransformNode,
-      const TransformPaintPropertyNode* destinationTransformNode,
-      bool& success);
+      const TransformPaintPropertyNode* destinationTransformNode);
 
   // Maps from a rect in |localTransformSpace| to its visual rect in
   // |ancestorState|. This is computed by multiplying the rect by its combined
@@ -83,73 +81,84 @@ class PLATFORM_EXPORT GeometryMapper {
   //
   // Note that the clip of |ancestorState| is *not* applied.
   //
-  // If any of the paint property tree nodes in |localTransformState| are not
-  // equal to or a descendant of that in |ancestorState|, returns the passed-in
-  // rect and sets |success| to false. Otherwise, sets |success| to true.
+  // DCHECK fails if any of the paint property tree nodes in
+  // |localTransformState| are not equal to or a descendant of that in
+  // |ancestorState|.
   FloatRect localToAncestorVisualRect(
       const FloatRect&,
       const PropertyTreeState& localTransformState,
-      const PropertyTreeState& ancestorState,
-      bool& success);
+      const PropertyTreeState& ancestorState);
 
   // Maps from a rect in |localTransformNode| space to its transformed rect in
   // |ancestorTransformNode| space. This is computed by multiplying the rect by
   // the combined transform between |localTransformNode| and
   // |ancestorTransformNode|, then flattening into 2D space.
   //
-  // If |localTransformNode| is not equal to or a descendant of
-  // |ancestorTransformNode|, returns the passed-in rec and sets |success| to
-  // false. Otherwise, sets |success| to true.
+  // DCHECK fails if |localTransformNode| is not equal to or a descendant of
+  // |ancestorTransformNode|.
   FloatRect localToAncestorRect(
       const FloatRect&,
       const TransformPaintPropertyNode* localTransformNode,
-      const TransformPaintPropertyNode* ancestorTransformNode,
-      bool& success);
+      const TransformPaintPropertyNode* ancestorTransformNode);
 
   // Maps from a rect in |ancestorTransformNode| space to its transformed rect
   // in |localTransformNode| space. This is computed by multiplying the rect by
   // the inverse combined transform between |localTransformNode| and
   // |ancestorTransformNode|, if the transform is invertible.
   //
-  // If the combined transform is not invertible, or |localTransformNode| is not
-  // equal to or a descendant of |ancestorTransformNode|, returns the passed-in
-  // rect and sets |success| to false. Otherwise, sets |success| to true.
+  // DCHECK fails if the combined transform is not invertible, or
+  // |localTransformNode| is not equal to or a descendant of
+  // |ancestorTransformNode|.
   FloatRect ancestorToLocalRect(
       const FloatRect&,
       const TransformPaintPropertyNode* ancestorTransformNode,
-      const TransformPaintPropertyNode* localTransformNode,
-      bool& success);
+      const TransformPaintPropertyNode* localTransformNode);
 
-  // Returns the matrix used in |LocalToAncestorRect|. Sets |success| to false
-  // iff |localTransformNode| is not equal to or a descendant of
+  // Returns the matrix used in |LocalToAncestorRect|. DCHECK fails iff
+  // |localTransformNode| is not equal to or a descendant of
   // |ancestorTransformNode|.
   const TransformationMatrix& localToAncestorMatrix(
       const TransformPaintPropertyNode* localTransformNode,
-      const TransformPaintPropertyNode* ancestorTransformNode,
-      bool& success);
+      const TransformPaintPropertyNode* ancestorTransformNode);
 
   // Returns the "clip visual rect" between |localTransformState| and
   // |ancestorState|. See above for the definition of "clip visual rect".
   FloatRect localToAncestorClipRect(
       const PropertyTreeState& localTransformState,
-      const PropertyTreeState& ancestorState,
-      bool& success);
+      const PropertyTreeState& ancestorState);
 
  private:
-  // Used by sourceToDestinationVisualRect() after fast mapping (assuming
-  // destination is an ancestor of source) failed.
-  FloatRect slowSourceToDestinationVisualRect(
+  // The internal methods do the same things as their public counterparts, but
+  // take an extra |success| parameter which indicates if the function is
+  // successful on return. See comments of the public functions for failure
+  // conditions.
+
+  FloatRect sourceToDestinationVisualRectInternal(
       const FloatRect&,
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState,
       bool& success);
 
-  // Used by sourceToDestinationRect() after fast mapping (assuming destination
-  // is an ancestor of source) failed.
-  FloatRect slowSourceToDestinationRect(
+  FloatRect localToAncestorVisualRectInternal(
       const FloatRect&,
-      const TransformPaintPropertyNode* sourceTransformNode,
-      const TransformPaintPropertyNode* destinationTransformNode,
+      const PropertyTreeState& localTransformState,
+      const PropertyTreeState& ancestorState,
+      bool& success);
+
+  FloatRect localToAncestorRectInternal(
+      const FloatRect&,
+      const TransformPaintPropertyNode* localTransformNode,
+      const TransformPaintPropertyNode* ancestorTransformNode,
+      bool& success);
+
+  const TransformationMatrix& localToAncestorMatrixInternal(
+      const TransformPaintPropertyNode* localTransformNode,
+      const TransformPaintPropertyNode* ancestorTransformNode,
+      bool& success);
+
+  FloatRect localToAncestorClipRectInternal(
+      const PropertyTreeState& localTransformState,
+      const PropertyTreeState& ancestorState,
       bool& success);
 
   // Returns the precomputed data if already set, or adds and memoizes a new

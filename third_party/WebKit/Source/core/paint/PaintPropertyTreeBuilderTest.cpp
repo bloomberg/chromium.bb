@@ -76,7 +76,6 @@ void PaintPropertyTreeBuilderTest::TearDown() {
     GeometryMapper geometryMapper;                                             \
     LayoutRect source((sourceLayoutObject)->localVisualRect());                \
     source.moveBy((sourceLayoutObject)->paintOffset());                        \
-    bool success = false;                                                      \
     const auto& contentsProperties =                                           \
         *(ancestorLayoutObject)->paintProperties()->contentsProperties();      \
     LayoutRect actual =                                                        \
@@ -84,8 +83,7 @@ void PaintPropertyTreeBuilderTest::TearDown() {
             FloatRect(source), *(sourceLayoutObject)                           \
                                     ->paintProperties()                        \
                                     ->localBorderBoxProperties(),              \
-            contentsProperties, success));                                     \
-    ASSERT_TRUE(success);                                                      \
+            contentsProperties));                                              \
     actual.moveBy(-(ancestorLayoutObject)->paintOffset());                     \
     EXPECT_EQ(expected, actual)                                                \
         << "GeometryMapper: expected: " << expected.toString()                 \

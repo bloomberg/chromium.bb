@@ -42,6 +42,33 @@ class GeometryMapperTest : public ::testing::Test,
     return GeometryMapper::leastCommonAncestor(a, b);
   }
 
+  FloatRect sourceToDestinationVisualRectInternal(
+      const FloatRect& rect,
+      const PropertyTreeState& sourceState,
+      const PropertyTreeState& destinationState,
+      bool& success) {
+    return geometryMapper->localToAncestorVisualRectInternal(
+        rect, sourceState, destinationState, success);
+  }
+
+  FloatRect localToAncestorVisualRectInternal(
+      const FloatRect& rect,
+      const PropertyTreeState& localState,
+      const PropertyTreeState& ancestorState,
+      bool& success) {
+    return geometryMapper->localToAncestorVisualRectInternal(
+        rect, localState, ancestorState, success);
+  }
+
+  FloatRect localToAncestorRectInternal(
+      const FloatRect& rect,
+      const TransformPaintPropertyNode* localTransformNode,
+      const TransformPaintPropertyNode* ancestorTransformNode,
+      bool& success) {
+    return geometryMapper->localToAncestorRectInternal(
+        rect, localTransformNode, ancestorTransformNode, success);
+  }
+
  private:
   void SetUp() override {
     geometryMapper = WTF::makeUnique<GeometryMapper>();
@@ -76,30 +103,25 @@ const static float kTestEpsilon = 1e-6;
                        expectedClipInAncestorSpace, localPropertyTreeState,    \
                        ancestorPropertyTreeState)                              \
   do {                                                                         \
-    bool success = false;                                                      \
-    EXPECT_RECT_EQ(expectedVisualRect,                                         \
-                   geometryMapper->localToAncestorVisualRect(                  \
-                       inputRect, localPropertyTreeState,                      \
-                       ancestorPropertyTreeState, success));                   \
-    EXPECT_TRUE(success);                                                      \
+    EXPECT_RECT_EQ(                                                            \
+        expectedVisualRect,                                                    \
+        geometryMapper->localToAncestorVisualRect(                             \
+            inputRect, localPropertyTreeState, ancestorPropertyTreeState));    \
     FloatRect mappedClip = geometryMapper->localToAncestorClipRect(            \
-        localPropertyTreeState, ancestorPropertyTreeState, success);           \
-    EXPECT_TRUE(success);                                                      \
+        localPropertyTreeState, ancestorPropertyTreeState);                    \
     EXPECT_RECT_EQ(expectedClipInAncestorSpace, mappedClip);                   \
-    EXPECT_RECT_EQ(expectedVisualRect,                                         \
-                   geometryMapper->sourceToDestinationVisualRect(              \
-                       inputRect, localPropertyTreeState,                      \
-                       ancestorPropertyTreeState, success));                   \
-    EXPECT_TRUE(success);                                                      \
+    EXPECT_RECT_EQ(                                                            \
+        expectedVisualRect,                                                    \
+        geometryMapper->sourceToDestinationVisualRect(                         \
+            inputRect, localPropertyTreeState, ancestorPropertyTreeState));    \
     EXPECT_RECT_EQ(expectedTransformedRect,                                    \
                    geometryMapper->localToAncestorRect(                        \
                        inputRect, localPropertyTreeState.transform(),          \
-                       ancestorPropertyTreeState.transform(), success));       \
+                       ancestorPropertyTreeState.transform()));                \
     EXPECT_RECT_EQ(expectedTransformedRect,                                    \
                    geometryMapper->sourceToDestinationRect(                    \
                        inputRect, localPropertyTreeState.transform(),          \
-                       ancestorPropertyTreeState.transform(), success));       \
-    EXPECT_TRUE(success);                                                      \
+                       ancestorPropertyTreeState.transform()));                \
     if (ancestorPropertyTreeState.transform() !=                               \
         localPropertyTreeState.transform()) {                                  \
       EXPECT_EQ(                                                               \
@@ -154,11 +176,9 @@ TEST_F(GeometryMapperTest, TranslationTransform) {
                  ClipPaintPropertyNode::root()->clipRect().rect(), localState,
                  rootPropertyTreeState());
 
-  bool success = false;
   EXPECT_RECT_EQ(input, geometryMapper->ancestorToLocalRect(
                             output, rootPropertyTreeState().transform(),
-                            localState.transform(), success));
-  EXPECT_TRUE(success);
+                            localState.transform()));
 }
 
 TEST_F(GeometryMapperTest, RotationAndScaleTransform) {
@@ -453,40 +473,38 @@ TEST_F(GeometryMapperTest, SiblingTransforms) {
 
   bool success;
   FloatRect input(0, 0, 100, 100);
-  FloatRect result = geometryMapper->localToAncestorVisualRect(
+  FloatRect result = localToAncestorVisualRectInternal(
       input, transform1State, transform2State, success);
   // Fails, because the transform2state is not an ancestor of transform1State.
   EXPECT_FALSE(success);
   EXPECT_RECT_EQ(input, result);
 
-  result = geometryMapper->localToAncestorRect(input, transform1.get(),
-                                               transform2.get(), success);
+  result = localToAncestorRectInternal(input, transform1.get(),
+                                       transform2.get(), success);
   // Fails, because the transform2state is not an ancestor of transform1State.
   EXPECT_FALSE(success);
   EXPECT_RECT_EQ(input, result);
 
-  result = geometryMapper->localToAncestorVisualRect(input, transform2State,
-                                                     transform1State, success);
+  result = localToAncestorVisualRectInternal(input, transform2State,
+                                             transform1State, success);
   // Fails, because the transform1state is not an ancestor of transform2State.
   EXPECT_FALSE(success);
   EXPECT_RECT_EQ(input, result);
 
-  result = geometryMapper->localToAncestorRect(input, transform2.get(),
-                                               transform1.get(), success);
+  result = localToAncestorRectInternal(input, transform2.get(),
+                                       transform1.get(), success);
   // Fails, because the transform1state is not an ancestor of transform2State.
   EXPECT_FALSE(success);
   EXPECT_RECT_EQ(input, result);
 
   FloatRect expected =
       rotateTransform2.inverse().mapRect(rotateTransform1.mapRect(input));
-  result = geometryMapper->sourceToDestinationVisualRect(
-      input, transform1State, transform2State, success);
-  EXPECT_TRUE(success);
+  result = geometryMapper->sourceToDestinationVisualRect(input, transform1State,
+                                                         transform2State);
   EXPECT_RECT_EQ(expected, result);
 
   result = geometryMapper->sourceToDestinationRect(input, transform1.get(),
-                                                   transform2.get(), success);
-  EXPECT_TRUE(success);
+                                                   transform2.get());
   EXPECT_RECT_EQ(expected, result);
 }
 
@@ -524,7 +542,7 @@ TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
 
   // sourceToDestinationVisualRect ignores clip from the common ancestor to
   // destination.
-  FloatRect result = geometryMapper->sourceToDestinationVisualRect(
+  FloatRect result = sourceToDestinationVisualRectInternal(
       input, transform1State, transform2AndClipState, success);
   // Fails, because the clip of the destination state is not an ancestor of the
   // clip of the source state.
@@ -532,8 +550,7 @@ TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
 
   // sourceToDestinationRect applies transforms only.
   result = geometryMapper->sourceToDestinationRect(input, transform1.get(),
-                                                   transform2.get(), success);
-  EXPECT_TRUE(success);
+                                                   transform2.get());
   EXPECT_RECT_EQ(expected, result);
 
   // Test map from transform2AndClipState to transform1State.
@@ -545,14 +562,12 @@ TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
   // sourceToDestinationVisualRect ignores clip from the common ancestor to
   // destination.
   result = geometryMapper->sourceToDestinationVisualRect(
-      input, transform2AndClipState, transform1State, success);
-  EXPECT_TRUE(success);
+      input, transform2AndClipState, transform1State);
   EXPECT_RECT_EQ(expectedClipped, result);
 
   // sourceToDestinationRect applies transforms only.
   result = geometryMapper->sourceToDestinationRect(input, transform2.get(),
-                                                   transform1.get(), success);
-  EXPECT_TRUE(success);
+                                                   transform1.get());
   EXPECT_RECT_EQ(expectedUnclipped, result);
 }
 

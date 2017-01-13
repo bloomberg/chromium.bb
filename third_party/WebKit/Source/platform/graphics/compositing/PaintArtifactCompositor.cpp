@@ -284,22 +284,17 @@ static void applyClipsBetweenStates(const PropertyTreeState& localState,
   const TransformPaintPropertyNode* transformNode =
       localState.clip()->localTransformSpace();
   if (transformNode != ancestorState.transform()) {
-    bool success = false;
     const TransformationMatrix& localToAncestorMatrix =
-        geometryMapper.localToAncestorMatrix(
-            transformNode, ancestorState.transform(), success);
-    DCHECK(success);
+        geometryMapper.localToAncestorMatrix(transformNode,
+                                             ancestorState.transform());
     // Clips are only in descendant spaces that are transformed by one
     // or more scrolls.
     DCHECK(localToAncestorMatrix.isIdentityOrTranslation());
   }
 #endif
 
-  FloatRect combinedClip;
-  bool success = false;
-  combinedClip = geometryMapper.localToAncestorClipRect(localState,
-                                                        ancestorState, success);
-  DCHECK(success);
+  FloatRect combinedClip =
+      geometryMapper.localToAncestorClipRect(localState, ancestorState);
 
   ccList.CreateAndAppendPairedBeginItem<cc::FloatClipDisplayItem>(
       gfx::RectF(combinedClip));
@@ -369,13 +364,11 @@ static void recordPairedBeginDisplayItems(
         FloatPoint filterOrigin;
         if (pairedState->effect()->localTransformSpace() !=
             pairedState->transform()) {
-          bool success = false;
           const TransformPaintPropertyNode* transformNode =
               pairedState->effect()->localTransformSpace();
           const TransformationMatrix& localToAncestorMatrix =
-              geometryMapper.localToAncestorMatrix(
-                  transformNode, pairedState->transform(), success);
-          DCHECK(success);
+              geometryMapper.localToAncestorMatrix(transformNode,
+                                                   pairedState->transform());
           // Effects are only in descendant spaces that are transformed by one
           // or more scrolls.
           DCHECK(localToAncestorMatrix.isIdentityOrTranslation());
@@ -1082,19 +1075,15 @@ bool PaintArtifactCompositor::mightOverlap(
       TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
       EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
 
-  bool success = false;
   FloatRect paintChunkScreenVisualRect =
       geometryMapper.localToAncestorVisualRect(
           paintChunk.bounds, paintChunk.properties.propertyTreeState,
-          rootPropertyTreeState, success);
-  DCHECK(success);
+          rootPropertyTreeState);
 
-  success = false;
   FloatRect pendingLayerScreenVisualRect =
       geometryMapper.localToAncestorVisualRect(
           candidatePendingLayer.bounds, candidatePendingLayer.propertyTreeState,
-          rootPropertyTreeState, success);
-  DCHECK(success);
+          rootPropertyTreeState);
 
   return paintChunkScreenVisualRect.intersects(pendingLayerScreenVisualRect);
 }
@@ -1115,11 +1104,9 @@ void PaintArtifactCompositor::PendingLayer::add(
   paintChunks.push_back(&paintChunk);
   FloatRect mappedBounds = paintChunk.bounds;
   if (geometryMapper) {
-    bool success = false;
     mappedBounds = geometryMapper->localToAncestorRect(
         mappedBounds, paintChunk.properties.propertyTreeState.transform(),
-        propertyTreeState.transform(), success);
-    DCHECK(success);
+        propertyTreeState.transform());
   }
   bounds.unite(mappedBounds);
   if (bounds.size() != paintChunks[0]->bounds.size()) {
