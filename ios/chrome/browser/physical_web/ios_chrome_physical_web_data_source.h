@@ -35,6 +35,10 @@ class IOSChromePhysicalWebDataSource
   // requests are disabled, the list will be empty.
   std::unique_ptr<base::ListValue> GetMetadata() override;
 
+  // Returns a list of resolved URLs and associated page metadata. If network
+  // requests are disabled, the list will be empty.
+  std::unique_ptr<physical_web::MetadataList> GetMetadataList() override;
+
   // Returns boolean |true| if network requests are disabled and there are one
   // or more discovered URLs that have not been sent to the resolution service.
   bool HasUnresolvedDiscoveries() override;

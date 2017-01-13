@@ -20,6 +20,7 @@
 #import "ios/chrome/common/physical_web/physical_web_device.h"
 #import "ios/chrome/common/physical_web/physical_web_request.h"
 #import "ios/chrome/common/physical_web/physical_web_types.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -185,7 +186,7 @@ enum BeaconType {
 }
 
 - (std::unique_ptr<base::ListValue>)metadata {
-  auto metadataList = base::MakeUnique<base::ListValue>();
+  auto metadataRet = base::MakeUnique<base::ListValue>();
 
   for (PhysicalWebDevice* device in [self devices]) {
     std::string scannedUrl =
@@ -202,10 +203,34 @@ enum BeaconType {
     metadataItem->SetString(physical_web::kIconUrlKey, icon);
     metadataItem->SetString(physical_web::kTitleKey, title);
     metadataItem->SetString(physical_web::kDescriptionKey, description);
-    metadataList->Append(std::move(metadataItem));
+    metadataRet->Append(std::move(metadataItem));
   }
 
-  return metadataList;
+  return metadataRet;
+}
+
+- (std::unique_ptr<physical_web::MetadataList>)metadataList {
+  auto metadataRet = base::MakeUnique<physical_web::MetadataList>();
+
+  for (PhysicalWebDevice* device in [self devices]) {
+    std::string scannedUrl =
+        base::SysNSStringToUTF8([[device requestURL] absoluteString]);
+    std::string resolvedUrl =
+        base::SysNSStringToUTF8([[device url] absoluteString]);
+    std::string icon = base::SysNSStringToUTF8([[device icon] absoluteString]);
+    std::string title = base::SysNSStringToUTF8([device title]);
+    std::string description = base::SysNSStringToUTF8([device description]);
+
+    physical_web::Metadata metadataItem;
+    metadataItem.scanned_url = GURL(scannedUrl);
+    metadataItem.resolved_url = GURL(resolvedUrl);
+    metadataItem.icon_url = GURL(icon);
+    metadataItem.title = title;
+    metadataItem.description = description;
+    metadataRet->push_back(std::move(metadataItem));
+  }
+
+  return metadataRet;
 }
 
 - (void)setNetworkRequestEnabled:(BOOL)enabled {

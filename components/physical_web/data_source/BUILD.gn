@@ -11,8 +11,9 @@ source_set("data_source") {
     "physical_web_listener.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
+    "//url",
   ]
 }
 

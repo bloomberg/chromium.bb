@@ -283,7 +283,7 @@ class UrlManager {
             PwsResult pwsResult = mPwsResultMap.get(requestUrl);
             if (pwsResult != null) {
                 nativeAppendMetadataItem(nativePhysicalWebCollection, requestUrl,
-                        urlInfo.getDistance(), (int) urlInfo.getScanTimestamp(), pwsResult.siteUrl,
+                        urlInfo.getDistance(), urlInfo.getScanTimestamp(), pwsResult.siteUrl,
                         pwsResult.iconUrl, pwsResult.title, pwsResult.description,
                         pwsResult.groupId);
             }
@@ -825,7 +825,7 @@ class UrlManager {
 
     private native long nativeInit();
     private native void nativeAppendMetadataItem(long nativePhysicalWebCollection,
-            String requestUrl, double distanceEstimate, int scanTimestamp, String siteUrl,
+            String requestUrl, double distanceEstimate, long scanTimestamp, String siteUrl,
             String iconUrl, String title, String description, String groupId);
     private native void nativeOnFound(long nativePhysicalWebDataSourceAndroid, String url);
     private native void nativeOnLost(long nativePhysicalWebDataSourceAndroid, String url);

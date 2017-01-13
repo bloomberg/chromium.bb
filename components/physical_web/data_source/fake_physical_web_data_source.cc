@@ -73,6 +73,10 @@ std::unique_ptr<base::ListValue> FakePhysicalWebDataSource::GetMetadata() {
   return metadata_->CreateDeepCopy();
 }
 
+std::unique_ptr<MetadataList> FakePhysicalWebDataSource::GetMetadataList() {
+  return base::MakeUnique<MetadataList>(*metadata_list_.get());
+}
+
 bool FakePhysicalWebDataSource::HasUnresolvedDiscoveries() {
   return false;
 }
@@ -90,6 +94,11 @@ void FakePhysicalWebDataSource::UnregisterListener(
 void FakePhysicalWebDataSource::SetMetadata(
     std::unique_ptr<ListValue> metadata) {
   metadata_ = std::move(metadata);
+}
+
+void FakePhysicalWebDataSource::SetMetadataList(
+    std::unique_ptr<MetadataList> metadata_list) {
+  metadata_list_ = std::move(metadata_list);
 }
 
 void FakePhysicalWebDataSource::NotifyOnFound(const GURL& url) {
