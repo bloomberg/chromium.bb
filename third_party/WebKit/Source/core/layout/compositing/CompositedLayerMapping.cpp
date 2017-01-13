@@ -57,7 +57,6 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
-#include "core/paint/PaintTiming.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/plugins/PluginView.h"
@@ -3282,13 +3281,6 @@ void CompositedLayerMapping::invalidateTargetElementForTesting() {
   // TODO(wkorman): Consider revising the below to invalidate all
   // non-compositing descendants as well.
   targetObject->invalidateDisplayItemClients(PaintInvalidationForTesting);
-}
-
-void CompositedLayerMapping::notifyPaint(bool isFirstPaint,
-                                         bool textPainted,
-                                         bool imagePainted) {
-  if (PaintTiming* timing = m_owningLayer.paintTiming())
-    timing->notifyPaint(isFirstPaint, textPainted, imagePainted);
 }
 
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const {

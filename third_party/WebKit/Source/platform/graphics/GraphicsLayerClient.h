@@ -72,9 +72,6 @@ class PLATFORM_EXPORT GraphicsLayerClient {
   virtual ~GraphicsLayerClient() {}
 
   virtual void invalidateTargetElementForTesting() {}
-  virtual void notifyPaint(bool isFirstPaint,
-                           bool textPainted,
-                           bool imagePainted) {}
 
   virtual IntRect computeInterestRect(
       const GraphicsLayer*,

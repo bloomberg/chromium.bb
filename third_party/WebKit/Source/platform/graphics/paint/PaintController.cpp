@@ -527,6 +527,21 @@ void PaintController::commitNewDisplayItems(
     }
   }
 
+  if (!m_firstPainted) {
+    for (const auto& item : m_newDisplayItemList) {
+      if (item.isDrawing() &&
+          // Here we ignore all document-background paintings because we don't
+          // know if the background is default. ViewPainter should have called
+          // setFirstPainted() if this display item is for non-default
+          // background.
+          item.getType() != DisplayItem::kDocumentBackground &&
+          item.drawsContent()) {
+        m_firstPainted = true;
+        break;
+      }
+    }
+  }
+
   for (auto* client : skippedCacheClients)
     client->setDisplayItemsUncached();
 

@@ -338,30 +338,7 @@ bool GraphicsLayer::paintWithoutCommit(
 
   m_previousInterestRect = *interestRect;
   m_client->paintContents(this, context, m_paintingPhase, *interestRect);
-  notifyFirstPaintToClient();
   return true;
-}
-
-void GraphicsLayer::notifyFirstPaintToClient() {
-  bool isFirstPaint = false;
-  if (!m_painted) {
-    DisplayItemList& itemList = m_paintController->newDisplayItemList();
-    for (DisplayItem& item : itemList) {
-      DisplayItem::Type type = item.getType();
-      if (type == DisplayItem::kDocumentBackground &&
-          !m_paintController->nonDefaultBackgroundColorPainted()) {
-        continue;
-      }
-      if (DisplayItem::isDrawingType(type) &&
-          static_cast<const DrawingDisplayItem&>(item).picture()) {
-        m_painted = true;
-        isFirstPaint = true;
-        break;
-      }
-    }
-  }
-  m_client->notifyPaint(isFirstPaint, m_paintController->textPainted(),
-                        m_paintController->imagePainted());
 }
 
 void GraphicsLayer::updateChildList() {

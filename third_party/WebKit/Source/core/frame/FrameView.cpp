@@ -94,6 +94,7 @@
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/PaintTiming.h"
 #include "core/paint/PrePaintTreeWalk.h"
 #include "core/plugins/PluginView.h"
 #include "core/style/ComputedStyle.h"
@@ -3003,6 +3004,14 @@ void FrameView::prePaint() {
   });
 }
 
+void FrameView::notifyPaint(const PaintController& paintController) const {
+  DCHECK(m_frame->document());
+  PaintTiming::from(*m_frame->document())
+      .notifyPaint(paintController.firstPainted(),
+                   paintController.textPainted(),
+                   paintController.imagePainted());
+}
+
 void FrameView::paintTree() {
   TRACE_EVENT0("blink", "FrameView::paintTree");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Paint.UpdateTime");
@@ -3021,6 +3030,7 @@ void FrameView::paintTree() {
       GraphicsContext graphicsContext(*m_paintController);
       paint(graphicsContext, CullRect(LayoutRect::infiniteIntRect()));
       m_paintController->commitNewDisplayItems(LayoutSize());
+      notifyPaint(*m_paintController);
     }
   } else {
     // A null graphics layer can occur for painting of SVG images that are not
@@ -3059,8 +3069,10 @@ void FrameView::paintTree() {
 }
 
 void FrameView::paintGraphicsLayerRecursively(GraphicsLayer* graphicsLayer) {
-  if (graphicsLayer->drawsContent())
+  if (graphicsLayer->drawsContent()) {
     graphicsLayer->paint(nullptr);
+    notifyPaint(graphicsLayer->getPaintController());
+  }
 
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())

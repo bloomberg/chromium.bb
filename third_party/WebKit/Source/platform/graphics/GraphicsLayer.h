@@ -314,8 +314,6 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
 
   void incrementPaintCount() { ++m_paintCount; }
 
-  void notifyFirstPaintToClient();
-
   // Helper functions used by settors to keep layer's the state consistent.
   void updateChildList();
   void updateLayerIsDrawable();

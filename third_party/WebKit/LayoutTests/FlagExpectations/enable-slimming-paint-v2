@@ -79,8 +79,6 @@ Bug(none) webaudio/ [ Skip ]
 Bug(none) webexposed/ [ Skip ]
 Bug(none) webmidi/ [ Skip ]
 Bug(none) xmlviewer/ [ Skip ]
-crbug.com/657825 fast/performance/performance-first-paint-timing-observable.html [ Skip ]
-crbug.com/657825 fast/performance/performance-paint-timing-observable.html [ Skip ]
 
 Bug(none) broadcastchannel/blobs.html [ Pass Failure ]
 Bug(none) compositing/3d-cube.html [ Failure ]

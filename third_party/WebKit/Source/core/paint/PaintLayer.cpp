@@ -73,7 +73,6 @@
 #include "core/paint/BoxReflectionUtils.h"
 #include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/PaintTiming.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint3D.h"
@@ -3183,12 +3182,6 @@ void PaintLayer::clearNeedsRepaintRecursively() {
   for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
     child->clearNeedsRepaintRecursively();
   m_needsRepaint = false;
-}
-
-PaintTiming* PaintLayer::paintTiming() {
-  if (Node* node = layoutObject()->node())
-    return &PaintTiming::from(node->document());
-  return nullptr;
 }
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS

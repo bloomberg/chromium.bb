@@ -72,7 +72,6 @@ class FilterOperations;
 class HitTestResult;
 class HitTestingTransformState;
 class PaintLayerCompositor;
-class PaintTiming;
 class TransformationMatrix;
 
 enum IncludeSelfOrNot { IncludeSelf, ExcludeSelf };
@@ -970,8 +969,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void setPreviousPaintPhaseDescendantBlockBackgroundsEmpty(bool isEmpty) {
     m_previousPaintPhaseDescendantBlockBackgroundsWasEmpty = isEmpty;
   }
-
-  PaintTiming* paintTiming();
 
   ClipRectsCache* clipRectsCache() const { return m_clipRectsCache.get(); }
   ClipRectsCache& ensureClipRectsCache() const {
