@@ -30,6 +30,8 @@ class SearchGeolocationDisclosureTabHelper
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
 
+  void MaybeShowDisclosure(const GURL& gurl);
+
   static void ResetDisclosure(Profile* profile);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -41,8 +43,6 @@ class SearchGeolocationDisclosureTabHelper
   explicit SearchGeolocationDisclosureTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<
       SearchGeolocationDisclosureTabHelper>;
-
-  void MaybeShowDefaultSearchGeolocationDisclosure(const GURL& gurl);
 
   bool ShouldShowDisclosureForUrl(const GURL& gurl);
 
