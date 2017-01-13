@@ -29,12 +29,8 @@
 
 class MockServerProcess(object):
 
-    def __init__(self, port_obj=None, name=None, cmd=None, env=None,
-                 treat_no_data_as_crash=False, more_logging=False, lines=None,
-                 crashed=False):
-        # port_obj and name are unused, but are maintained for compatibility
-        # with server_process.ServerProcess.
-        # pylint: disable=unused-argument
+    def __init__(self, port_obj=None, name=None, cmd=None, env=None, universal_newlines=False,
+                 treat_no_data_as_crash=False, more_logging=False, lines=None, crashed=False):
         self.timed_out = False
         self.lines = lines or ['#READY']
         self.crashed = crashed

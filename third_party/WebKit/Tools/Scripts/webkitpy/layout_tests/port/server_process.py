@@ -79,12 +79,15 @@ class ServerProcess(object):
     as necessary to keep issuing commands.
     """
 
-    def __init__(self, port_obj, name, cmd, env=None, treat_no_data_as_crash=False,
+    def __init__(self, port_obj, name, cmd, env=None, universal_newlines=False, treat_no_data_as_crash=False,
                  more_logging=False):
         self._port = port_obj
         self._name = name  # Should be the command name (e.g. content_shell, image_diff)
         self._cmd = cmd
         self._env = env
+        # Set if the process outputs non-standard newlines like '\r\n' or '\r'.
+        # Don't set if there will be binary data or the data must be ASCII encoded.
+        self._universal_newlines = universal_newlines
         self._treat_no_data_as_crash = treat_no_data_as_crash
         self._logging = more_logging
         self._host = self._port.host
@@ -137,7 +140,8 @@ class ServerProcess(object):
                                                 stdout=self._host.executive.PIPE,
                                                 stderr=self._host.executive.PIPE,
                                                 close_fds=close_fds,
-                                                env=self._env)
+                                                env=self._env,
+                                                universal_newlines=self._universal_newlines)
         self._pid = self._proc.pid
         fd = self._proc.stdout.fileno()
         if not self._use_win32_apis:
