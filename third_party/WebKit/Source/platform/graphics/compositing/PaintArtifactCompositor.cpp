@@ -603,7 +603,7 @@ class PropertyTreeManager {
   // is actually its index in the property tree's vector of its node type. More
   // recent cc code now refers to these as 'node indices', or 'property tree
   // indices'. |parent_id| is the same sort of 'node index' of that node's
-  // parent, whereas |owner_id| is the layer id of the layer owning that node.
+  // parent.
   //
   // Note there are two other primary types of 'ids' referenced in cc property
   // tree related logic: (1) ElementId, also known Blink-side as
@@ -623,18 +623,19 @@ class PropertyTreeManager {
   // platform/graphics/paint/README.md for more.
   //
   // With the above as background, we can now state more clearly a description
-  // of the below set of compositor id generation methods: they take Blink paint
-  // property tree nodes as input and produce a corresponding cc 'node id',
-  // a.k.a., 'node index', for use as we build out the corresponding cc property
-  // tree representation.
+  // of the below set of compositor node methods: they take Blink paint property
+  // tree nodes as input, create a corresponding compositor property tree node
+  // if none yet exists, and return the compositor node's 'node id', a.k.a.,
+  // 'node index'.
 
-  int compositorIdForTransformNode(const TransformPaintPropertyNode*);
-  int compositorIdForClipNode(const ClipPaintPropertyNode*);
+  int ensureCompositorTransformNode(const TransformPaintPropertyNode*);
+  int ensureCompositorClipNode(const ClipPaintPropertyNode*);
+  int ensureCompositorScrollNode(const ScrollPaintPropertyNode*);
+
   int switchToEffectNode(const EffectPaintPropertyNode& nextEffect);
-  int compositorIdForCurrentEffectNode() const {
+  int getCurrentCompositorEffectNodeIndex() const {
     return m_effectStack.back().id;
   }
-  int compositorIdForScrollNode(const ScrollPaintPropertyNode*);
 
   // Scroll offset has special treatment in the transform and scroll trees.
   void updateScrollOffset(int layerId, int scrollId);
@@ -765,7 +766,7 @@ void PropertyTreeManager::setupRootScrollNode() {
   m_rootLayer->SetScrollTreeIndex(scrollNode.id);
 }
 
-int PropertyTreeManager::compositorIdForTransformNode(
+int PropertyTreeManager::ensureCompositorTransformNode(
     const TransformPaintPropertyNode* transformNode) {
   DCHECK(transformNode);
   // TODO(crbug.com/645615): Remove the failsafe here.
@@ -777,7 +778,7 @@ int PropertyTreeManager::compositorIdForTransformNode(
     return it->value;
 
   scoped_refptr<cc::Layer> dummyLayer = cc::Layer::Create();
-  int parentId = compositorIdForTransformNode(transformNode->parent());
+  int parentId = ensureCompositorTransformNode(transformNode->parent());
   int id = transformTree().Insert(cc::TransformNode(), parentId);
 
   cc::TransformNode& compositorNode = *transformTree().Node(id);
@@ -810,7 +811,7 @@ int PropertyTreeManager::compositorIdForTransformNode(
   return id;
 }
 
-int PropertyTreeManager::compositorIdForClipNode(
+int PropertyTreeManager::ensureCompositorClipNode(
     const ClipPaintPropertyNode* clipNode) {
   DCHECK(clipNode);
   // TODO(crbug.com/645615): Remove the failsafe here.
@@ -822,7 +823,7 @@ int PropertyTreeManager::compositorIdForClipNode(
     return it->value;
 
   scoped_refptr<cc::Layer> dummyLayer = cc::Layer::Create();
-  int parentId = compositorIdForClipNode(clipNode->parent());
+  int parentId = ensureCompositorClipNode(clipNode->parent());
   int id = clipTree().Insert(cc::ClipNode(), parentId);
 
   cc::ClipNode& compositorNode = *clipTree().Node(id);
@@ -833,7 +834,7 @@ int PropertyTreeManager::compositorIdForClipNode(
   // TODO(jbroman): Don't discard rounded corners.
   compositorNode.clip = clipNode->clipRect().rect();
   compositorNode.transform_id =
-      compositorIdForTransformNode(clipNode->localTransformSpace());
+      ensureCompositorTransformNode(clipNode->localTransformSpace());
   compositorNode.target_transform_id = kRealRootNodeId;
   compositorNode.target_effect_id = kSecondaryRootNodeId;
   compositorNode.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
@@ -853,7 +854,7 @@ int PropertyTreeManager::compositorIdForClipNode(
   return id;
 }
 
-int PropertyTreeManager::compositorIdForScrollNode(
+int PropertyTreeManager::ensureCompositorScrollNode(
     const ScrollPaintPropertyNode* scrollNode) {
   DCHECK(scrollNode);
   // TODO(crbug.com/645615): Remove the failsafe here.
@@ -864,7 +865,7 @@ int PropertyTreeManager::compositorIdForScrollNode(
   if (it != m_scrollNodeMap.end())
     return it->value;
 
-  int parentId = compositorIdForScrollNode(scrollNode->parent());
+  int parentId = ensureCompositorScrollNode(scrollNode->parent());
   int id = scrollTree().Insert(cc::ScrollNode(), parentId);
 
   cc::ScrollNode& compositorNode = *scrollTree().Node(id);
@@ -883,7 +884,7 @@ int PropertyTreeManager::compositorIdForScrollNode(
   compositorNode.user_scrollable_vertical =
       scrollNode->userScrollableVertical();
   compositorNode.transform_id =
-      compositorIdForTransformNode(scrollNode->scrollOffsetTranslation());
+      ensureCompositorTransformNode(scrollNode->scrollOffsetTranslation());
   compositorNode.main_thread_scrolling_reasons =
       scrollNode->mainThreadScrollingReasons();
 
@@ -963,13 +964,14 @@ int PropertyTreeManager::switchToEffectNode(
   // See comments in PropertyTreeManager::buildEffectNodesRecursively().
   // TODO(crbug.com/504464): Remove premature optimization here.
   if (currentEffectNode() && currentEffectNode()->opacity() != 1.f) {
-    effectTree().Node(compositorIdForCurrentEffectNode())->has_render_surface =
-        true;
+    effectTree()
+        .Node(getCurrentCompositorEffectNodeIndex())
+        ->has_render_surface = true;
   }
 
   buildEffectNodesRecursively(&nextEffect);
 
-  return compositorIdForCurrentEffectNode();
+  return getCurrentCompositorEffectNodeIndex();
 }
 
 void PropertyTreeManager::buildEffectNodesRecursively(
@@ -992,8 +994,9 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   // blending mode. See comments below for more detail.
   // TODO(crbug.com/504464): Remove premature optimization here.
   if (nextEffect->blendMode() != SkBlendMode::kSrcOver) {
-    effectTree().Node(compositorIdForCurrentEffectNode())->has_render_surface =
-        true;
+    effectTree()
+        .Node(getCurrentCompositorEffectNodeIndex())
+        ->has_render_surface = true;
   }
 
   // We currently create dummy layers to host effect nodes and corresponding
@@ -1002,10 +1005,10 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   scoped_refptr<cc::Layer> dummyLayer = nextEffect->ensureDummyLayer();
   m_rootLayer->AddChild(dummyLayer);
 
-  int outputClipId = compositorIdForClipNode(nextEffect->outputClip());
+  int outputClipId = ensureCompositorClipNode(nextEffect->outputClip());
 
   cc::EffectNode& effectNode = *effectTree().Node(effectTree().Insert(
-      cc::EffectNode(), compositorIdForCurrentEffectNode()));
+      cc::EffectNode(), getCurrentCompositorEffectNodeIndex()));
   effectNode.owning_layer_id = dummyLayer->id();
   effectNode.clip_id = outputClipId;
   // Every effect is supposed to have render surface enabled for grouping,
@@ -1181,11 +1184,11 @@ void PaintArtifactCompositor::update(
         paintArtifact, pendingLayer, layerOffset, newContentLayerClients,
         rasterChunkInvalidations, storeDebugInfo, geometryMapper);
 
-    int transformId = propertyTreeManager.compositorIdForTransformNode(
+    int transformId = propertyTreeManager.ensureCompositorTransformNode(
         pendingLayer.propertyTreeState.transform());
-    int scrollId = propertyTreeManager.compositorIdForScrollNode(
+    int scrollId = propertyTreeManager.ensureCompositorScrollNode(
         pendingLayer.propertyTreeState.scroll());
-    int clipId = propertyTreeManager.compositorIdForClipNode(
+    int clipId = propertyTreeManager.ensureCompositorClipNode(
         pendingLayer.propertyTreeState.clip());
     int effectId = propertyTreeManager.switchToEffectNode(
         *pendingLayer.propertyTreeState.effect());
