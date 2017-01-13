@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -29,6 +30,11 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
   ~ChromeNavigationBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Backgrounded renderer processes run at a lower priority, causing the
+    // tests to take more time to complete. Disable backgrounding so that the
+    // tests don't time out.
+    command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
+
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
