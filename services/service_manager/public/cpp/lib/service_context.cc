@@ -98,45 +98,13 @@ void ServiceContext::OnConnect(
                            local_info_.interface_provider_specs, &target_spec);
   GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
                            source_info.interface_provider_specs, &source_spec);
-
-  // Acknowledge the request regardless of whether it's accepted.
-  callback.Run();
-
-  CallOnConnect(source_info, source_spec, target_spec, std::move(interfaces));
-}
-
-void ServiceContext::OnBindInterface(
-    const ServiceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe,
-    const OnBindInterfaceCallback& callback) {
-  // Acknowledge the request regardless of whether it's accepted.
-  callback.Run();
-
-  mojom::InterfaceProviderPtr interface_provider;
-  // TODO(beng): This should be replaced with a call to OnBindInterface() in a
-  //             subsequent change.
-  InterfaceProviderSpec source_spec, target_spec;
-  GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
-                           local_info_.interface_provider_specs, &target_spec);
-  GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
-                           source_info.interface_provider_specs, &source_spec);
-  CallOnConnect(source_info, source_spec, target_spec,
-                MakeRequest(&interface_provider));
-  interface_provider->GetInterface(interface_name, std::move(interface_pipe));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ServiceContext, private:
-
-void ServiceContext::CallOnConnect(const ServiceInfo& source_info,
-                                   const InterfaceProviderSpec& source_spec,
-                                   const InterfaceProviderSpec& target_spec,
-                                   mojom::InterfaceProviderRequest interfaces) {
   auto registry =
       base::MakeUnique<InterfaceRegistry>(mojom::kServiceManager_ConnectorSpec);
   registry->Bind(std::move(interfaces), local_info_.identity, target_spec,
                  source_info.identity, source_spec);
+
+  // Acknowledge the request regardless of whether it's accepted.
+  callback.Run();
 
   if (!service_->OnConnect(source_info, registry.get()))
     return;
@@ -148,6 +116,9 @@ void ServiceContext::CallOnConnect(const ServiceInfo& source_info,
   connection_interface_registries_.insert(
       std::make_pair(raw_registry, std::move(registry)));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ServiceContext, private:
 
 void ServiceContext::OnConnectionError() {
   // Note that the Service doesn't technically have to quit now, it may live

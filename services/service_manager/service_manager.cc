@@ -47,21 +47,6 @@ const char kCapability_InstancePerChild[] =
     "service_manager:instance_per_child";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
-bool Succeeded(mojom::ConnectResult result) {
-  return result == mojom::ConnectResult::SUCCEEDED;
-}
-
-void RunCallback(ConnectParams* params,
-                 mojom::ConnectResult result,
-                 const std::string& user_id) {
-  if (!params->connect_callback().is_null()) {
-    params->connect_callback().Run(result, user_id);
-    return;
-  }
-  if (!params->bind_interface_callback().is_null())
-    params->bind_interface_callback().Run(result, user_id);
-}
-
 }  // namespace
 
 Identity CreateServiceManagerIdentity() {
@@ -140,19 +125,18 @@ class ServiceManager::Instance
     Stop();
   }
 
-  bool OnConnect(std::unique_ptr<ConnectParams>* in_params) {
+  bool ConnectToService(std::unique_ptr<ConnectParams>* connect_params) {
     if (!service_.is_bound())
       return false;
 
-    std::unique_ptr<ConnectParams> params(std::move(*in_params));
+    std::unique_ptr<ConnectParams> params(std::move(*connect_params));
     if (!params->connect_callback().is_null()) {
       params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
                                      identity_.user_id());
     }
 
     InterfaceProviderSpecMap specs;
-    Instance* source =
-        service_manager_->GetExistingInstance(params->source());
+    Instance* source = service_manager_->GetExistingInstance(params->source());
     if (source)
       specs = source->interface_provider_specs_;
 
@@ -161,48 +145,6 @@ class ServiceManager::Instance
                         params->TakeRemoteInterfaces(),
                         base::Bind(&Instance::OnConnectComplete,
                                    base::Unretained(this)));
-    return true;
-  }
-
-  bool OnBindInterface(std::unique_ptr<ConnectParams>* in_params) {
-    if (!service_.is_bound())
-      return false;
-
-    std::unique_ptr<ConnectParams> params(std::move(*in_params));
-    InterfaceProviderSpecMap source_specs;
-    InterfaceProviderSpec source_connection_spec;
-    Instance* source =
-        service_manager_->GetExistingInstance(params->source());
-    if (source) {
-      source_specs = source->interface_provider_specs_;
-      source_connection_spec = source->GetConnectionSpec();
-    }
-
-    InterfaceSet exposed = GetInterfacesToExpose(source_connection_spec,
-                                                 identity_,
-                                                 GetConnectionSpec());
-    bool allowed = (exposed.size() == 1 && exposed.count("*") == 1) ||
-        exposed.count(params->interface_name()) > 0;
-    if (!allowed) {
-      std::stringstream ss;
-      ss << "Connection InterfaceProviderSpec prevented service: "
-         << params->source().name() << " from binding interface: "
-         << params->interface_name() << " exposed by: " << identity_.name();
-      LOG(ERROR) << ss.str();
-      params->bind_interface_callback().Run(mojom::ConnectResult::ACCESS_DENIED,
-                                            identity_.user_id());
-      return false;
-    }
-
-    params->bind_interface_callback().Run(mojom::ConnectResult::SUCCEEDED,
-                                          identity_.user_id());
-
-    pending_service_connections_++;
-    service_->OnBindInterface(
-        ServiceInfo(params->source(), source_specs),
-        params->interface_name(),
-        params->TakeInterfaceRequestPipe(),
-        base::Bind(&Instance::OnConnectComplete, base::Unretained(this)));
     return true;
   }
 
@@ -287,65 +229,72 @@ class ServiceManager::Instance
 
   // mojom::Connector implementation:
   void StartService(
-      const Identity& in_target,
+      const Identity& target,
       mojo::ScopedMessagePipeHandle service_handle,
       mojom::PIDReceiverRequest pid_receiver_request) override {
-    Identity target = in_target;
-    mojom::ConnectResult result =
-        ValidateConnectParams(&target, nullptr, nullptr);
-    if (!Succeeded(result))
-      return;
-
-    std::unique_ptr<ConnectParams> params(new ConnectParams);
-    params->set_source(identity_);
-    params->set_target(target);
-
     mojom::ServicePtr service;
     service.Bind(mojom::ServicePtrInfo(std::move(service_handle), 0));
-    params->set_client_process_info(std::move(service),
-                                    std::move(pid_receiver_request));
-    service_manager_->Connect(
-        std::move(params), nullptr, weak_factory_.GetWeakPtr());
+    ConnectImpl(
+        target,
+        mojom::InterfaceProviderRequest(),
+        std::move(service),
+        std::move(pid_receiver_request),
+        base::Bind(
+            &service_manager::ServiceManager::Instance::EmptyConnectCallback,
+            weak_factory_.GetWeakPtr()));
   }
 
-  void Connect(const service_manager::Identity& in_target,
+  void Connect(const service_manager::Identity& target,
                mojom::InterfaceProviderRequest remote_interfaces,
                const ConnectCallback& callback) override {
+    ConnectImpl(target, std::move(remote_interfaces), mojom::ServicePtr(),
+                mojom::PIDReceiverRequest(), callback);
+  }
+
+  void BindInterface(const service_manager::Identity& target,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe,
+                     const BindInterfaceCallback& callback) override {
+    mojom::InterfaceProviderPtr remote_interfaces;
+    ConnectImpl(
+        target,
+        MakeRequest(&remote_interfaces),
+        mojom::ServicePtr(),
+        mojom::PIDReceiverRequest(),
+        base::Bind(
+            &service_manager::ServiceManager::Instance::BindCallbackWrapper,
+            weak_factory_.GetWeakPtr(),
+            callback));
+    remote_interfaces->GetInterface(interface_name, std::move(interface_pipe));
+    // TODO(beng): Rather than just forwarding thru to InterfaceProvider, do
+    //             manifest policy intersection here.
+  }
+
+  void ConnectImpl(const service_manager::Identity& in_target,
+                   mojom::InterfaceProviderRequest remote_interfaces,
+                   mojom::ServicePtr service,
+                   mojom::PIDReceiverRequest pid_receiver_request,
+                   const ConnectCallback& callback) {
     Identity target = in_target;
-    mojom::ConnectResult result =
-        ValidateConnectParams(&target, nullptr, nullptr);
-    if (!Succeeded(result)) {
-      callback.Run(result, mojom::kInheritUserID);
+    if (target.user_id() == mojom::kInheritUserID)
+      target.set_user_id(identity_.user_id());
+
+    if (!ValidateIdentity(target, callback))
+      return;
+    if (!ValidateClientProcessInfo(&service, &pid_receiver_request, target,
+                                   callback)) {
       return;
     }
+    if (!ValidateConnectionSpec(target, callback))
+      return;
 
     std::unique_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
     params->set_target(target);
     params->set_remote_interfaces(std::move(remote_interfaces));
+    params->set_client_process_info(std::move(service),
+                                    std::move(pid_receiver_request));
     params->set_connect_callback(callback);
-    service_manager_->Connect(
-        std::move(params), nullptr, weak_factory_.GetWeakPtr());
-  }
-
-  void BindInterface(const service_manager::Identity& in_target,
-                     const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe,
-                     const BindInterfaceCallback& callback) override {
-    Identity target = in_target;
-    mojom::ConnectResult result =
-        ValidateConnectParams(&target, nullptr, nullptr);
-    if (!Succeeded(result)) {
-      callback.Run(result, mojom::kInheritUserID);
-      return;
-    }
-
-    std::unique_ptr<ConnectParams> params(new ConnectParams);
-    params->set_source(identity_);
-    params->set_target(target);
-    params->set_interface_request_info(interface_name,
-                                       std::move(interface_pipe));
-    params->set_bind_interface_callback(callback);
     service_manager_->Connect(
         std::move(params), nullptr, weak_factory_.GetWeakPtr());
   }
@@ -372,66 +321,61 @@ class ServiceManager::Instance
     service_manager_->AddListener(std::move(listener));
   }
 
-  mojom::ConnectResult ValidateConnectParams(
-      Identity* target,
-      mojom::ServicePtr* service,
-      mojom::PIDReceiverRequest* pid_receiver_request) {
-    if (target->user_id() == mojom::kInheritUserID)
-      target->set_user_id(identity_.user_id());
-
-    mojom::ConnectResult result = ValidateIdentity(*target);
-    if (!Succeeded(result))
-      return result;
-
-    result = ValidateClientProcessInfo(service, pid_receiver_request, *target);
-    if (!Succeeded(result))
-      return result;
-    return ValidateConnectionSpec(*target);
-  }
-
-  mojom::ConnectResult ValidateIdentity(const Identity& identity) {
+  bool ValidateIdentity(const Identity& identity,
+                        const ConnectCallback& callback) {
     if (identity.name().empty()) {
       LOG(ERROR) << "Error: empty service name.";
-      return mojom::ConnectResult::INVALID_ARGUMENT;
+      callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                   mojom::kInheritUserID);
+      return false;
     }
     if (!base::IsValidGUID(identity.user_id())) {
       LOG(ERROR) << "Error: invalid user_id: " << identity.user_id();
-      return mojom::ConnectResult::INVALID_ARGUMENT;
+      callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                   mojom::kInheritUserID);
+      return false;
     }
-    return mojom::ConnectResult::SUCCEEDED;
+    return true;
   }
 
-  mojom::ConnectResult ValidateClientProcessInfo(
+  bool ValidateClientProcessInfo(
       mojom::ServicePtr* service,
       mojom::PIDReceiverRequest* pid_receiver_request,
-      const Identity& target) {
-    if (service && pid_receiver_request &&
-        (service->is_bound() || pid_receiver_request->is_pending())) {
+      const Identity& target,
+      const ConnectCallback& callback) {
+    if (service->is_bound() || pid_receiver_request->is_pending()) {
       if (!HasCapability(GetConnectionSpec(), kCapability_ClientProcess)) {
         LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
                    << "to register an instance for a process it created for "
                    << "target: " << target.name() << " without the "
                    << "service_manager{client_process} capability "
                    << "class.";
-        return mojom::ConnectResult::ACCESS_DENIED;
+        callback.Run(mojom::ConnectResult::ACCESS_DENIED,
+                     mojom::kInheritUserID);
+        return false;
       }
 
       if (!service->is_bound() || !pid_receiver_request->is_pending()) {
         LOG(ERROR) << "Must supply both service AND "
                    << "pid_receiver_request when sending client process info";
-        return mojom::ConnectResult::INVALID_ARGUMENT;
+        callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                     mojom::kInheritUserID);
+        return false;
       }
       if (service_manager_->GetExistingInstance(target)) {
         LOG(ERROR) << "Cannot client process matching existing identity:"
                    << "Name: " << target.name() << " User: "
                    << target.user_id() << " Instance: " << target.instance();
-        return mojom::ConnectResult::INVALID_ARGUMENT;
+        callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                     mojom::kInheritUserID);
+        return false;
       }
     }
-    return mojom::ConnectResult::SUCCEEDED;
+    return true;
   }
 
-  mojom::ConnectResult ValidateConnectionSpec(const Identity& target) {
+  bool ValidateConnectionSpec(const Identity& target,
+                              const ConnectCallback& callback) {
     InterfaceProviderSpec connection_spec = GetConnectionSpec();
     // TODO(beng): Need to do the following additional policy validation of
     // whether this instance is allowed to connect using:
@@ -444,7 +388,9 @@ class ServiceManager::Instance
                  << " attempting to connect to: " << target.name()
                  << " as: " << target.user_id() << " without "
                  << " the service:service_manager{user_id} capability.";
-      return mojom::ConnectResult::ACCESS_DENIED;
+      callback.Run(mojom::ConnectResult::ACCESS_DENIED,
+                   mojom::kInheritUserID);
+      return false;
     }
     if (!target.instance().empty() &&
         target.instance() != target.name() &&
@@ -454,17 +400,19 @@ class ServiceManager::Instance
                  << " using Instance name: " << target.instance()
                  << " without the "
                  << "service_manager{instance_name} capability.";
-      return mojom::ConnectResult::ACCESS_DENIED;
+      callback.Run(mojom::ConnectResult::ACCESS_DENIED, mojom::kInheritUserID);
+      return false;
     }
 
     if (allow_any_application_ ||
         connection_spec.requires.find(target.name()) !=
             connection_spec.requires.end()) {
-      return mojom::ConnectResult::SUCCEEDED;
+      return true;
     }
     LOG(ERROR) << "InterfaceProviderSpec prevented connection from: "
                << identity_.name() << " to: " << target.name();
-    return mojom::ConnectResult::ACCESS_DENIED;
+    callback.Run(mojom::ConnectResult::ACCESS_DENIED, mojom::kInheritUserID);
+    return false;
   }
 
   uint32_t GenerateUniqueID() const {
@@ -834,14 +782,7 @@ void ServiceManager::NotifyServiceFailedToStart(const Identity& identity) {
 bool ServiceManager::ConnectToExistingInstance(
     std::unique_ptr<ConnectParams>* params) {
   Instance* instance = GetExistingInstance((*params)->target());
-  if (instance) {
-    if ((*params)->HasInterfaceRequestInfo()) {
-      instance->OnBindInterface(params);
-      return true;
-    }
-    return instance->OnConnect(params);
-  }
-  return false;
+  return instance && instance->ConnectToService(params);
 }
 
 ServiceManager::Instance* ServiceManager::CreateInstance(
@@ -927,7 +868,10 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   // If name resolution failed, we drop the connection.
   if (!result) {
     LOG(ERROR) << "Failed to resolve service name: " << params->target().name();
-    RunCallback(params.get(), mojom::ConnectResult::INVALID_ARGUMENT, "");
+    if (!params->connect_callback().is_null()) {
+      params->connect_callback().Run(
+          mojom::ConnectResult::INVALID_ARGUMENT, "");
+    }
     return;
   }
 
@@ -997,7 +941,8 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
       LOG(ERROR)
           << "Error: The catalog was unable to read a manifest for service \""
           << result->name << "\".";
-      RunCallback(params.get(), mojom::ConnectResult::ACCESS_DENIED, "");
+      if (!params->connect_callback().is_null())
+        params->connect_callback().Run(mojom::ConnectResult::ACCESS_DENIED, "");
       return;
     }
 
@@ -1035,19 +980,18 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
 
       if (!instance->StartWithFilePath(package_path)) {
         OnInstanceError(instance);
-        RunCallback(params.get(), mojom::ConnectResult::INVALID_ARGUMENT, "");
+        if (!params->connect_callback().is_null()) {
+          params->connect_callback().Run(
+              mojom::ConnectResult::INVALID_ARGUMENT, "");
+        }
         return;
       }
     }
   }
 
   // Now that the instance has a Service, we can connect to it.
-  if (params->HasInterfaceRequestInfo()) {
-    instance->OnBindInterface(&params);
-  } else {
-    bool connected = instance->OnConnect(&params);
-    DCHECK(connected);
-  }
+  bool connected = instance->ConnectToService(&params);
+  DCHECK(connected);
 }
 
 base::WeakPtr<ServiceManager> ServiceManager::GetWeakPtr() {
