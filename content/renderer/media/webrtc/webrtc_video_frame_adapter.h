@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "media/base/video_frame.h"
-#include "third_party/webrtc/common_video/include/video_frame_buffer.h"
+#include "third_party/webrtc/api/video/video_frame_buffer.h"
 
 namespace content {
 // Thin adapter from media::VideoFrame to webrtc::VideoFrameBuffer. This

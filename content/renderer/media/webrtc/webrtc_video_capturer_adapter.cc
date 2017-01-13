@@ -21,7 +21,7 @@
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/webrtc/common_video/rotation.h"
+#include "third_party/webrtc/api/video/video_rotation.h"
 
 namespace content {
 
