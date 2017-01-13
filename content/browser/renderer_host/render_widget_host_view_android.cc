@@ -786,6 +786,22 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
       state.is_non_ime_change);
 }
 
+void RenderWidgetHostViewAndroid::OnImeCompositionRangeChanged(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
+  DCHECK_EQ(text_input_manager_, text_input_manager);
+  const TextInputManager::CompositionRangeInfo* info =
+      text_input_manager_->GetCompositionRangeInfo();
+  if (!info)
+    return;
+
+  std::vector<gfx::RectF> character_bounds;
+  for (const gfx::Rect& rect : info->character_bounds)
+    character_bounds.emplace_back(rect);
+
+  ime_adapter_android_.SetCharacterBounds(character_bounds);
+}
+
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
   if (cached_background_color_ == color)
     return;
@@ -908,15 +924,6 @@ void RenderWidgetHostViewAndroid::ImeCancelComposition() {
   ime_adapter_android_.CancelComposition();
 }
 
-void RenderWidgetHostViewAndroid::ImeCompositionRangeChanged(
-    const gfx::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
-  std::vector<gfx::RectF> character_bounds_float;
-  for (const gfx::Rect& rect : character_bounds) {
-    character_bounds_float.emplace_back(rect);
-  }
-  ime_adapter_android_.SetCharacterBounds(character_bounds_float);
-}
 
 void RenderWidgetHostViewAndroid::FocusedNodeChanged(
     bool is_editable_node,

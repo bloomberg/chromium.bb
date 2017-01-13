@@ -488,13 +488,10 @@ void RenderWidgetHostViewBase::ImeCancelComposition() {
 void RenderWidgetHostViewBase::ImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
-// TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
-#if !defined(OS_ANDROID)
   if (GetTextInputManager()) {
     GetTextInputManager()->ImeCompositionRangeChanged(this, range,
                                                       character_bounds);
   }
-#endif
 }
 
 TextInputManager* RenderWidgetHostViewBase::GetTextInputManager() {
