@@ -26,13 +26,11 @@
 // REAL_IO_THREAD.
 //
 // For some tests it is important to emulate real browser startup. During real
-// browser startup some initialization is done (e.g. creation of thread objects)
-// between creating the main thread message loop, which is bound to the existing
-// main thread, and starting the other threads. Passing DONT_START_THREADS to
-// constructor will delay staring these other threads until the test explicitly
-// calls Start().
+// browser startup, the main MessageLoop is created before other threads.
+// Passing DONT_CREATE_THREADS to constructor will delay creating other threads
+// until the test explicitly calls CreateThreads().
 //
-// DONT_START_THREADS should only be used when the options specify at least
+// DONT_CREATE_THREADS should only be used when the options specify at least
 // one real thread other than the main thread.
 
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
@@ -64,15 +62,15 @@ class TestBrowserThreadBundle {
     REAL_DB_THREAD = 0x02,
     REAL_FILE_THREAD = 0x08,
     REAL_IO_THREAD = 0x10,
-    DONT_START_THREADS = 0x20,
+    DONT_CREATE_THREADS = 0x20,
   };
 
   TestBrowserThreadBundle();
   explicit TestBrowserThreadBundle(int options);
 
-  // Start the real threads; should only be called from other classes if the
-  // DONT_START_THREADS option was used when the bundle was created.
-  void Start();
+  // Creates threads; should only be called from other classes if the
+  // DONT_CREATE_THREADS option was used when the bundle was created.
+  void CreateThreads();
 
   ~TestBrowserThreadBundle();
 
@@ -90,7 +88,7 @@ class TestBrowserThreadBundle {
   std::unique_ptr<TestBrowserThread> io_thread_;
 
   int options_;
-  bool threads_started_;
+  bool threads_created_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserThreadBundle);
 };

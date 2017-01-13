@@ -17,11 +17,13 @@ TestBrowserThreadBundle::TestBrowserThreadBundle()
     : TestBrowserThreadBundle(DEFAULT) {}
 
 TestBrowserThreadBundle::TestBrowserThreadBundle(int options)
-    : options_(options), threads_started_(false) {
+    : options_(options), threads_created_(false) {
   Init();
 }
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
+  DCHECK(threads_created_);
+
   // To avoid memory leaks, we must ensure that any tasks posted to the blocking
   // pool via PostTaskAndReply are able to reply back to the originating thread.
   // Thus we must flush the blocking pool while the browser threads still exist.
@@ -65,23 +67,34 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
 void TestBrowserThreadBundle::Init() {
   // Check for conflicting options can't have two IO threads.
   CHECK(!(options_ & IO_MAINLOOP) || !(options_ & REAL_IO_THREAD));
-  // There must be a thread to start to use DONT_START_THREADS
-  CHECK((options_ & ~IO_MAINLOOP) != DONT_START_THREADS);
+  // There must be a thread to start to use DONT_CREATE_THREADS
+  CHECK((options_ & ~IO_MAINLOOP) != DONT_CREATE_THREADS);
 
+  // Create the UI thread. In production, this work is done in
+  // BrowserMainLoop::MainMessageLoopStart().
   if (options_ & IO_MAINLOOP) {
     message_loop_.reset(new base::MessageLoopForIO());
   } else {
     message_loop_.reset(new base::MessageLoopForUI());
   }
 
-  task_scheduler_.reset(
-      new base::test::ScopedTaskScheduler(message_loop_.get()));
-
   ui_thread_.reset(
       new TestBrowserThread(BrowserThread::UI, message_loop_.get()));
 
+  if (!(options_ & DONT_CREATE_THREADS))
+    CreateThreads();
+}
+
+// This method mimics the work done in BrowserMainLoop::CreateThreads().
+void TestBrowserThreadBundle::CreateThreads() {
+  DCHECK(!threads_created_);
+
+  task_scheduler_.reset(
+      new base::test::ScopedTaskScheduler(message_loop_.get()));
+
   if (options_ & REAL_DB_THREAD) {
     db_thread_.reset(new TestBrowserThread(BrowserThread::DB));
+    db_thread_->Start();
   } else {
     db_thread_.reset(
         new TestBrowserThread(BrowserThread::DB, message_loop_.get()));
@@ -89,6 +102,7 @@ void TestBrowserThreadBundle::Init() {
 
   if (options_ & REAL_FILE_THREAD) {
     file_thread_.reset(new TestBrowserThread(BrowserThread::FILE));
+    file_thread_->Start();
   } else {
     file_thread_.reset(
         new TestBrowserThread(BrowserThread::FILE, message_loop_.get()));
@@ -103,28 +117,13 @@ void TestBrowserThreadBundle::Init() {
 
   if (options_ & REAL_IO_THREAD) {
     io_thread_.reset(new TestBrowserThread(BrowserThread::IO));
+    io_thread_->StartIOThread();
   } else {
     io_thread_.reset(
         new TestBrowserThread(BrowserThread::IO, message_loop_.get()));
   }
 
-  if (!(options_ & DONT_START_THREADS))
-    Start();
-}
-
-void TestBrowserThreadBundle::Start() {
-  DCHECK(!threads_started_);
-
-  if (options_ & REAL_DB_THREAD)
-    db_thread_->Start();
-
-  if (options_ & REAL_FILE_THREAD)
-    file_thread_->Start();
-
-  if (options_ & REAL_IO_THREAD)
-    io_thread_->StartIOThread();
-
-  threads_started_ = true;
+  threads_created_ = true;
 }
 
 }  // namespace content
