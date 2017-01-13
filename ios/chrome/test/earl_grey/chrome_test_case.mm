@@ -19,6 +19,8 @@
 
 namespace {
 
+NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_egtests";
+
 // Contains a list of test names that run in multitasking test suite.
 NSArray* whiteListedMultitaskingTests = @[
   // Integration tests
@@ -114,8 +116,8 @@ NSArray* whiteListedMultitaskingTests = @[
 
   // Return specific list of tests based on the target.
   NSString* targetName = [NSBundle mainBundle].infoDictionary[@"CFBundleName"];
-  if ([targetName isEqualToString:@"ios_chrome_flaky_egtests"]) {
-    // Only run FLAKY_ tests for the flaky test suite.
+  if ([targetName hasSuffix:kFlakyEarlGreyTestTargetSuffix]) {
+    // Only run FLAKY_ tests for flaky test suites.
     return [self flakyTestNames];
   } else if ([targetName isEqualToString:@"ios_chrome_multitasking_egtests"]) {
     // Only run white listed tests for the multitasking test suite.
