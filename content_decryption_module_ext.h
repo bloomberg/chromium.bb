@@ -1,0 +1,60 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CDM_CONTENT_DECRYPTION_MODULE_EXT_H_
+#define CDM_CONTENT_DECRYPTION_MODULE_EXT_H_
+
+#if defined(WIN32)
+#include <windows.h>
+#endif
+
+#include "content_decryption_module_export.h"
+
+#if defined(_MSC_VER)
+typedef unsigned int uint32_t;
+#else
+#include <stdint.h>
+#endif
+
+namespace cdm {
+
+#if defined(WIN32)
+typedef wchar_t FilePathCharType;
+typedef HANDLE PlatformFile;
+const PlatformFile kInvalidPlatformFile = INVALID_HANDLE_VALUE;
+#elif defined(OS_POSIX)
+typedef char FilePathCharType;
+typedef int PlatformFile;
+const PlatformFile kInvalidPlatformFile = -1;
+#else  // !defined(WIN32) && !defined(OS_POSIX)
+#error Unsupported platform.
+#endif  // defined(WIN32)
+
+struct HostFile {
+  HostFile(const FilePathCharType* file_path,
+           PlatformFile file,
+           PlatformFile sig_file)
+      : file_path(file_path), file(file), sig_file(sig_file) {}
+
+  // File that is part of the host of the CDM.
+  const FilePathCharType* file_path = nullptr;
+  PlatformFile file = kInvalidPlatformFile;
+
+  // Signature file for |file|.
+  PlatformFile sig_file = kInvalidPlatformFile;
+};
+
+}  // namespace cdm
+
+extern "C" {
+
+// Verifies CDM host files, which are opened in read-only mode and passed in
+// |host_files|. The CDM MUST return as soon as possible and process the files
+// asynchronously. All files MUST be closed by the CDM after this one-time
+// processing is finished.
+CDM_API void VerifyHostFiles(const cdm::HostFile* host_files,
+                             uint32_t num_files);
+}
+
+#endif  // CDM_CONTENT_DECRYPTION_MODULE_EXT_H_

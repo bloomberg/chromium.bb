@@ -5,6 +5,8 @@
 #ifndef CDM_CONTENT_DECRYPTION_MODULE_H_
 #define CDM_CONTENT_DECRYPTION_MODULE_H_
 
+#include "content_decryption_module_export.h"
+
 #if defined(_MSC_VER)
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
@@ -14,32 +16,19 @@ typedef __int64 int64_t;
 #include <stdint.h>
 #endif
 
-// Define CDM_API so that functionality implemented by the CDM module
-// can be exported to consumers. Note: the implementation lives in
-// a dynamic library even in a non-component build.
-// Also define CDM_CLASS_API to export class types. We have to add
-// visibility attributes to make sure virtual tables in CDM consumer
-// and CDM implementation are the same. Generally, it was always a
-// good idea, as there're no guarantees about that for the internal
-// symbols, but it has only become a practical issue after
-// introduction of LTO devirtualization. See more details on
+// Define CDM_CLASS_API to export class types. We have to add visibility
+// attributes to make sure virtual tables in CDM consumer and CDM implementation
+// are the same. Generally, it was always a good idea, as there're no guarantees
+// about that for the internal symbols, but it has only become a practical issue
+// after introduction of LTO devirtualization. See more details on
 // https://crbug.com/609564#c35
 #if defined(WIN32)
-
 #if defined(__clang__)
 #define CDM_CLASS_API [[clang::lto_visibility_public]]
 #else
 #define CDM_CLASS_API
 #endif
-
-#if defined(CDM_IMPLEMENTATION)
-#define CDM_API __declspec(dllexport)
-#else
-#define CDM_API __declspec(dllimport)
-#endif  // defined(CDM_IMPLEMENTATION)
-
 #else  // defined(WIN32)
-#define CDM_API __attribute__((visibility("default")))
 #define CDM_CLASS_API __attribute__((visibility("default")))
 #endif  // defined(WIN32)
 
