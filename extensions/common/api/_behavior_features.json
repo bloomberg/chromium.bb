@@ -43,7 +43,7 @@
     ]
   },
   "allow_usb_devices_permission_interface_class": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "session_types": ["kiosk"] 
   },
