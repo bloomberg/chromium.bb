@@ -1459,7 +1459,7 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		  ch = 9;
 		  break;
 		case 'v':
-		  ch = 22;
+		  ch = 11;
 		  break;
 		case 'w':
 		  ch = ENDSEGMENT;
