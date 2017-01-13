@@ -2,29 +2,29 @@
 <html>
 <head>
   <title>AudioBufferSourceNode - playbackRate test</title>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
 </head>
 <body>
   <script>
-  description("Test if AudioBufferSourceNode.playbackRate can playback at different rates properly.");
-  window.jsTestIsAsync = true;
+  let audit = Audit.createTaskRunner();
 
   // Any sample rate mutiple of 128 is valid for this test, but here it uses
   // 48000Hz because it is a commonly used number that happens to be multiple
   // of 128.
-  var sampleRate = 48000;
+  let sampleRate = 48000;
 
   // The test iterates over 60 pitches starting from 36. (MIDI pitch of C2)
-  var fundamentalPitch = 36;
-  var numberOfPitches = 60;
+  let fundamentalPitch = 36;
+  let numberOfPitches = 60;
 
-  var noteDuration = 0.025;
-  var totalDuration = noteDuration * numberOfPitches;
+  let noteDuration = 0.025;
+  let totalDuration = noteDuration * numberOfPitches;
 
   // Test constraints for each octave.
-  var testConstraints = [{
+  let testConstraints = [{
     thresholdSNR: 103.8508,
     thresholdDiffULP: 0.3028
   }, {
@@ -50,33 +50,33 @@
   }
 
   function createSineWaveBuffer(context, frequency, duration) {
-    var buffer = context.createBuffer(1, duration * sampleRate, sampleRate);
-    var data = buffer.getChannelData(0);
-    var omega = 2 * Math.PI * frequency / sampleRate;
-    for (var i = 0; i < data.length; i++)
+    let buffer = context.createBuffer(1, duration * sampleRate, sampleRate);
+    let data = buffer.getChannelData(0);
+    let omega = 2 * Math.PI * frequency / sampleRate;
+    for (let i = 0; i < data.length; i++)
       data[i] = Math.sin(omega * i);
 
     return buffer;
   }
 
-  var context = new OfflineAudioContext(2, totalDuration * sampleRate, sampleRate);
-
-  // This is the fundamental buffer for playbackRate modulation. The duration of
-  // this buffer is arbitrary but long enough to produce the sound without
+  // This is the fundamental buffer for playbackRate modulation. The duration
+  // of this buffer is arbitrary but long enough to produce the sound without
   // running short.
-  var fundamentalBuffer = createSineWaveBuffer(context, pitchToFrequency(fundamentalPitch), totalDuration);
+  let fundamentalBuffer;
 
   // A unit test consists of 2 sources: the 'actual' source runs a buffer with
-  // the playback rate modulated and the 'expected' source runs a mathmatically
-  // generated sound buffer.
+  // the playback rate modulated and the 'expected' source runs a
+  // mathmatically generated sound buffer.
   function runUnitTest(context, noteStart, notePitch) {
-    var actualSrc = context.createBufferSource();
-    var expectedSrc = context.createBufferSource();
-    var merger = context.createChannelMerger(2);
+    let actualSrc = context.createBufferSource();
+    let expectedSrc = context.createBufferSource();
+    let merger = context.createChannelMerger(2);
 
     actualSrc.buffer = fundamentalBuffer;
-    expectedSrc.buffer = createSineWaveBuffer(context, pitchToFrequency(notePitch), noteDuration);
-    actualSrc.playbackRate.value = pitchDiffToPlaybackRate(notePitch - fundamentalPitch);
+    expectedSrc.buffer = createSineWaveBuffer(context,
+      pitchToFrequency(notePitch), noteDuration);
+    actualSrc.playbackRate.value =
+      pitchDiffToPlaybackRate(notePitch - fundamentalPitch);
 
     actualSrc.connect(merger, 0, 0);
     expectedSrc.connect(merger, 0, 1);
@@ -88,30 +88,45 @@
     expectedSrc.stop(noteStart + noteDuration);
   }
 
-  // Schedule tests up to 60 pitches above from the fundamental pitch.
-  for (var iteration = 0; iteration < numberOfPitches; iteration++)
-    runUnitTest(context, noteDuration * iteration, fundamentalPitch + iteration);
 
-  // Once the rendering is complete, split the buffer into 5 octaves. Then
-  // perform the SNR and the maximum difference ULP check for each octave with
-  // different constraints.
-  context.startRendering().then(function (renderedBuffer) {
-    var actual = renderedBuffer.getChannelData(0);
-    var expected = renderedBuffer.getChannelData(1);
-    var octaveLength = Math.floor(noteDuration * 12 * sampleRate);
+  // Test if AudioBufferSourceNode.playbackRate can playback at different rates
+  // properly.
+  audit.defineTask("playbackrate-test", function (taskDone) {
+    let context = new OfflineAudioContext(2, totalDuration *
+      sampleRate,
+      sampleRate);
+    fundamentalBuffer = createSineWaveBuffer(context,
+      pitchToFrequency(fundamentalPitch), totalDuration);
 
-    for (var i = 0; i < numberOfPitches / 12; i++) {
-      var start = i * octaveLength, end = (i + 1) * octaveLength;
-      var octaveActual = actual.subarray(start, end);
-      var octaveExpected = expected.subarray(start, end);
+    // Schedule tests up to 60 pitches above from the fundamental pitch.
+    for (let iteration = 0; iteration < numberOfPitches; iteration++)
+      runUnitTest(context, noteDuration * iteration, fundamentalPitch +
+        iteration);
 
-      compareBuffersWithConstraints(octaveActual, octaveExpected, testConstraints[i]);
-    }
+    // Once the rendering is complete, split the buffer into 5 octaves. Then
+    // perform the SNR and the maximum difference ULP check for each octave
+    // with different constraints.
+    context.startRendering()
+      .then(function (renderedBuffer) {
+        let actual = renderedBuffer.getChannelData(0);
+        let expected = renderedBuffer.getChannelData(1);
+        let octaveLength = Math.floor(noteDuration * 12 * sampleRate);
 
-    finishJSTest();
+        for (let i = 0; i < numberOfPitches / 12; i++) {
+          let start = i * octaveLength;
+          let end = (i + 1) * octaveLength;
+          let octaveActual = actual.subarray(start, end);
+          let octaveExpected = expected.subarray(start, end);
+
+          compareBuffersWithConstraints(octaveActual, octaveExpected,
+            testConstraints[i]);
+        }
+
+      })
+      .then(taskDone);
   });
 
-  successfullyParsed = true;
+  audit.runTasks();
   </script>
 </body>
 </html>
