@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/precache/core/fetcher_pool.h"
+#include "components/precache/core/proto/precache.pb.h"
 #include "components/precache/core/proto/quota.pb.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -269,6 +270,12 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheFetcher);
 };
+
+// Visible for testing.
+double ResourceWeight(
+    PrecacheConfigurationSettings::ResourceWeightFunction function,
+    double resource_weight_ratio,
+    int64_t host_visits);
 
 // Class that fetches a URL, and runs the specified callback when the fetch is
 // complete. This class exists so that a different method can be run in

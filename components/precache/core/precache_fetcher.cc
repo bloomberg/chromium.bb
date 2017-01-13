@@ -28,7 +28,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
-#include "components/precache/core/proto/precache.pb.h"
 #include "components/precache/core/proto/quota.pb.h"
 #include "components/precache/core/proto/unfinished_work.pb.h"
 #include "net/base/completion_callback.h"
@@ -229,11 +228,42 @@ bool IsQuotaTimeExpired(const PrecacheQuota& quota,
          start_time + base::TimeDelta::FromDays(1) < time_now;
 }
 
-double ResourceWeight(const PrecacheResource& resource, int64_t host_visits) {
-  return resource.weight_ratio() * host_visits;
+// Models the expected number of requests for the resource, given that
+// resource_weight_ratio is the probability of a request given a visit to the
+// host, and host_visits is the number of visits to the host in 30 days.
+double NaiveResourceWeight(double resource_weight_ratio, int64_t host_visits) {
+  return resource_weight_ratio * host_visits;
+}
+
+// Models the probability of at least one request for the resource, given that
+// resource_weight_ratio is the probability of a request given a visit to the
+// host, and host_visits is the number of visits to the host in 30 days.
+double GeometricResourceWeight(double resource_weight_ratio,
+                               int64_t host_visits) {
+  return 1 - pow(1 - resource_weight_ratio, host_visits);
 }
 
 }  // namespace
+
+// Returns the weight of the resource. When global ranking is enabled, the
+// fetches are sorted by descending weight. Parameters:
+//   function: Which combination function to use.
+//   resource_weight_ratio: The weight_ratio of the resource.
+//   host_visits: The count of visits to the given host in the past 30 days.
+double ResourceWeight(
+    PrecacheConfigurationSettings::ResourceWeightFunction function,
+    double resource_weight_ratio,
+    int64_t host_visits) {
+  switch (function) {
+    case PrecacheConfigurationSettings::FUNCTION_NAIVE:
+      return NaiveResourceWeight(resource_weight_ratio, host_visits);
+    case PrecacheConfigurationSettings::FUNCTION_GEOMETRIC:
+      return GeometricResourceWeight(resource_weight_ratio, host_visits);
+    default:
+      DLOG(FATAL) << "Unknown function " << function;
+      return 0;
+  }
+}
 
 PrecacheFetcher::Fetcher::Fetcher(
     net::URLRequestContextGetter* request_context,
@@ -723,7 +753,9 @@ void PrecacheFetcher::OnManifestFetchComplete(int64_t host_visits,
             manifest.resource(i).has_url()) {
           GURL url(manifest.resource(i).url());
           if (url.is_valid()) {
-            double weight = ResourceWeight(manifest.resource(i), host_visits);
+            double weight = ResourceWeight(
+                unfinished_work_->config_settings().resource_weight_function(),
+                manifest.resource(i).weight_ratio(), host_visits);
             if (weight >= unfinished_work_->config_settings().min_weight())
               resources_to_rank_.emplace_back(url, source.referrer(), weight);
           }

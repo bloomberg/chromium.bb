@@ -1421,7 +1421,32 @@ TEST_F(PrecacheFetcherTest, SendUsedDownloadedResourceHash) {
   }
 }
 
-TEST_F(PrecacheFetcherTest, GloballyRankResources) {
+TEST(PrecacheFetcherResourceWeightTest, Naive) {
+  ASSERT_EQ(
+      0, ResourceWeight(PrecacheConfigurationSettings::FUNCTION_NAIVE, 0, 100));
+  ASSERT_EQ(
+      4, ResourceWeight(PrecacheConfigurationSettings::FUNCTION_NAIVE, 1, 4));
+  ASSERT_EQ(8, ResourceWeight(PrecacheConfigurationSettings::FUNCTION_NAIVE,
+                              0.5, 16));
+}
+
+TEST(PrecacheFetcherResourceWeightTest, Geometric) {
+  ASSERT_EQ(0, ResourceWeight(PrecacheConfigurationSettings::FUNCTION_GEOMETRIC,
+                              0, 100));
+  ASSERT_EQ(1, ResourceWeight(PrecacheConfigurationSettings::FUNCTION_GEOMETRIC,
+                              1, 4));
+  ASSERT_NEAR(0.9999847,
+              ResourceWeight(PrecacheConfigurationSettings::FUNCTION_GEOMETRIC,
+                             0.5, 16),
+              0.0000001);
+}
+
+class PrecacheFetcherGlobalRankingTest
+    : public PrecacheFetcherTest,
+      public testing::WithParamInterface<
+          PrecacheConfigurationSettings::ResourceWeightFunction> {};
+
+TEST_P(PrecacheFetcherGlobalRankingTest, GloballyRankResources) {
   SetDefaultFlags();
 
   const size_t kNumTopHosts = 5;
@@ -1432,6 +1457,7 @@ TEST_F(PrecacheFetcherTest, GloballyRankResources) {
   PrecacheConfigurationSettings config;
   config.set_top_sites_count(kNumTopHosts);
   config.set_global_ranking(true);
+  config.set_resource_weight_function(GetParam());
   factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   expected_requested_urls.emplace_back(kConfigURL);
@@ -1465,8 +1491,8 @@ TEST_F(PrecacheFetcherTest, GloballyRankResources) {
       resource->set_weight_ratio(weight);
       factory_.SetFakeResponse(GURL(resource_url), "good", net::HTTP_OK,
                                net::URLRequestStatus::SUCCESS);
-      resources.emplace_back(resource_url,
-                             top_host->visits() * resource->weight_ratio());
+      resources.emplace_back(
+          resource_url, ResourceWeight(GetParam(), weight, top_host->visits()));
     }
     factory_.SetFakeResponse(GURL(kManifestURLPrefix + top_host_url),
                              manifest.SerializeAsString(), net::HTTP_OK,
@@ -1493,6 +1519,12 @@ TEST_F(PrecacheFetcherTest, GloballyRankResources) {
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
 }
+
+INSTANTIATE_TEST_CASE_P(
+    PrecacheFetcherGlobalRankingTest,
+    PrecacheFetcherGlobalRankingTest,
+    testing::Values(PrecacheConfigurationSettings::FUNCTION_NAIVE,
+                    PrecacheConfigurationSettings::FUNCTION_GEOMETRIC));
 
 TEST_F(PrecacheFetcherTest, GloballyRankResourcesAfterPauseResume) {
   SetDefaultFlags();
