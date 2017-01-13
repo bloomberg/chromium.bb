@@ -1,9 +1,7 @@
 # Ensemble de signes représentés sur plusieurs cellules. Compatible braille 6pts et 8pts.
-#
-# Références :
-# - Code braille français uniformisé pour la transcription des textes imprimés (CBFU) - Deuxième édition Septembre 2008
-# - Notation mathématique braille - Première édition janvier 2007
 
+# Copyright (C) 2017 André-Abush CLAUSE <dev@andreabc.net>
+# Copyright (C) 2017 Ludovic Oger <oger.ludovic@gmail.com>
 
 #  This file is part of liblouis.
 #
@@ -21,8 +19,10 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+# Références :
+# - Code braille français uniformisé pour la transcription des textes imprimés (CBFU) - Deuxième édition Septembre 2008
+# - Notation mathématique braille - Première édition janvier 2007
 
-# Created by André-Abush CLAUSE <dev@andreabc.net> and garconvacher (Ludovic Oger <oger.ludovic@gmail.com>)
 # Last updated on January 12, 2017
 ################################################################################
 
