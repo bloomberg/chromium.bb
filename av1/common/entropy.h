@@ -45,7 +45,13 @@ extern "C" {
 #define CATEGORY5_TOKEN 9   // 35-66 Extra Bits 5+1
 #define CATEGORY6_TOKEN 10  // 67+   Extra Bits 14+1
 #define EOB_TOKEN 11        // EOB   Extra Bits 0+0
-
+#if CONFIG_EC_MULTISYMBOL
+#define BLOCK_Z_TOKEN 255  // block zero
+#define ONE_TOKEN_EOB 1
+#define ONE_TOKEN_NEOB 2
+#define TWO_TOKEN_PLUS_EOB 3
+#define TWO_TOKEN_PLUS_NEOB 4
+#endif
 #define ENTROPY_TOKENS 12
 
 #define ENTROPY_NODES 11

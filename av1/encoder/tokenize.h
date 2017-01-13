@@ -35,11 +35,12 @@ typedef struct {
 } TOKENVALUE;
 
 typedef struct {
-  const aom_prob *context_tree;
 #if CONFIG_EC_MULTISYMBOL
   aom_cdf_prob (*tail_cdf)[ENTROPY_TOKENS];
   aom_cdf_prob (*head_cdf)[ENTROPY_TOKENS];
+  int is_eob;
 #endif
+  const aom_prob *context_tree;
   EXTRABIT extra;
   uint8_t token;
   uint8_t skip_eob_node;

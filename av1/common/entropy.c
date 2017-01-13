@@ -4398,21 +4398,76 @@ void av1_model_to_full_probs(const aom_prob *model, aom_prob *full) {
 
 #if CONFIG_EC_MULTISYMBOL
 static void build_token_cdfs(const aom_prob *pdf_model,
+                             const aom_prob *blockz_model,
                              aom_cdf_prob cdf_tail[ENTROPY_TOKENS],
                              aom_cdf_prob cdf_head[ENTROPY_TOKENS]) {
-  int i, p, scale, sum = 0;
+  int i, p, p1, p2, phead[6], prob_NZ, prob_EOB_1, prob_EOB_2p, prob_NEOB_1,
+      prob_NEOB_2p, sum = 0;
+  int prob8_blocknz;
 
   assert(pdf_model[2] != 0);
 
-  // Do the head (ZERO, ONE, TWO or more)
-  cdf_head[ZERO_TOKEN] = sum = (pdf_model[1] << (CDF_PROB_BITS - 8));
-  assert(cdf_head[ZERO_TOKEN] < CDF_PROB_TOP);
-  scale = CDF_PROB_TOP - cdf_head[ZERO_TOKEN];
-  p = ROUND_POWER_OF_TWO(scale * (pdf_model[2] << (CDF_PROB_BITS - 8)),
-                         CDF_PROB_BITS);
-  cdf_head[ONE_TOKEN] = cdf_head[ZERO_TOKEN] + AOMMIN(AOMMAX(1, p), scale - 1);
-  assert(cdf_head[ONE_TOKEN] < CDF_PROB_TOP);
-  cdf_head[TWO_TOKEN] = CDF_PROB_TOP;
+  /* FIXME: maintain true CDF counts. */
+
+  /* Values are 0=BLOCK_ZERO 1=ZERO_TOKEN, 2=ONE_TOKEN_EOB
+     3=ONE_TOKEN_NEOB, 4=TWO_TOKEN_PLUS_EOB, 5=TWO_TOKEN_PLUS_NEOB
+     */
+  // Block zero probability
+  phead[0] =
+      blockz_model == NULL ? 0 : ((*blockz_model) << (CDF_PROB_BITS - 8)) +
+                                     (1 << (CDF_PROB_BITS - 9));
+  phead[0] = AOMMIN(CDF_PROB_TOP - 6, AOMMAX(1, phead[0]));
+  cdf_head[0] = phead[0];
+
+  // Will scale the remaining probabilities by the probability of the block
+  // being non-zero
+  prob8_blocknz = blockz_model == NULL ? 256 : (256 - *blockz_model);
+
+  // Probability of zero
+  phead[1 + ZERO_TOKEN] =
+      (pdf_model[1] << (CDF_PROB_BITS - 8)) + (1 << (CDF_PROB_BITS - 9));
+
+  // Will scale the non-zero values
+  prob_NZ = CDF_PROB_TOP - phead[1 + ZERO_TOKEN];
+
+  // Will scale the EOBs by the probability of and EOB_TOKEN ..
+  prob_EOB_1 =
+      (pdf_model[0] << (CDF_PROB_BITS - 8)) + (1 << (CDF_PROB_BITS - 9));
+  // .. use a lower probability of EOB for larger values
+  prob_EOB_2p = prob_EOB_1 / 2;
+
+  prob_NEOB_1 = CDF_PROB_TOP - prob_EOB_1;
+  prob_NEOB_2p = CDF_PROB_TOP - prob_EOB_2p;
+  if (prob_NZ == 0 || prob_NZ == CDF_PROB_TOP) abort();
+  if (prob_EOB_1 == 0 || prob_EOB_1 == CDF_PROB_TOP) abort();
+  if (prob_EOB_2p == 0 || prob_EOB_2p == CDF_PROB_TOP) abort();
+
+  // ONE_CONTEXT_NODE prob
+  p = (pdf_model[2] << (CDF_PROB_BITS - 8)) + (1 << (CDF_PROB_BITS - 9));
+  // Scale by the non-zero factor to get the probability of token = 1
+  p1 = ROUND_POWER_OF_TWO(prob_NZ * p, 15);
+
+  // Scale by the EOB factors
+  phead[1 + ONE_TOKEN_EOB] = ROUND_POWER_OF_TWO(p1 * prob_EOB_1, 15);
+  phead[1 + ONE_TOKEN_NEOB] = ROUND_POWER_OF_TWO(p1 * prob_NEOB_1, 15);
+
+  // Probability token is 2 or more
+  p2 = CDF_PROB_TOP - p1 - phead[1 + ZERO_TOKEN];
+
+  phead[1 + TWO_TOKEN_PLUS_EOB] = ROUND_POWER_OF_TWO(p2 * prob_EOB_2p, 15);
+  phead[1 + TWO_TOKEN_PLUS_NEOB] = ROUND_POWER_OF_TWO(p2 * prob_NEOB_2p, 15);
+
+  // Now use block non-zerp prob to scale the values
+  for (i = 1; i < 5; ++i) {
+    phead[i] = (prob8_blocknz * phead[i] + 128) >> 8;
+  }
+
+  sum = phead[0];
+  for (i = 1; i < 5; ++i) {
+    p = AOMMAX(1, AOMMIN(CDF_PROB_TOP - (5 - i) - cdf_head[i - 1], phead[i]));
+    cdf_head[i] = cdf_head[i - 1] + p;
+  }
+  cdf_head[5] = CDF_PROB_TOP;
 
   // Do the tail
   sum = 0;
@@ -4431,6 +4486,7 @@ void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
         for (k = 0; k < COEF_BANDS; ++k)
           for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l)
             build_token_cdfs(fc->coef_probs[t][i][j][k][l],
+                             k == 0 ? &fc->blockzero_probs[t][i][j][l] : NULL,
                              fc->coef_tail_cdfs[t][i][j][k][l],
                              fc->coef_head_cdfs[t][i][j][k][l]);
 }
