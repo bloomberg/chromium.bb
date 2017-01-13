@@ -202,22 +202,23 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     // Trees and Tables (implemented on GTK using the same class)
     case ui::NativeTheme::kColorId_TableBackground:
     case ui::NativeTheme::kColorId_TreeBackground:
-      return GetBgColor("GtkTreeView#treeview.view");
+      return GetBgColor("GtkTreeView#treeview.view .view.cell");
     case ui::NativeTheme::kColorId_TableText:
     case ui::NativeTheme::kColorId_TreeText:
     case ui::NativeTheme::kColorId_TreeArrow:
     case ui::NativeTheme::kColorId_TableGroupingIndicatorColor:
-      return GetFgColor("GtkTreeView#treeview.view .cell");
+      return GetFgColor("GtkTreeView#treeview.view .view.cell GtkLabel#label");
     case ui::NativeTheme::kColorId_TableSelectedText:
     case ui::NativeTheme::kColorId_TableSelectedTextUnfocused:
     case ui::NativeTheme::kColorId_TreeSelectedText:
     case ui::NativeTheme::kColorId_TreeSelectedTextUnfocused:
-      return GetFgColor("GtkTreeView#treeview.view .cell:selected");
+      return GetFgColor(
+          "GtkTreeView#treeview.view .view.cell:selected:focus GtkLabel#label");
     case ui::NativeTheme::kColorId_TableSelectionBackgroundFocused:
     case ui::NativeTheme::kColorId_TableSelectionBackgroundUnfocused:
     case ui::NativeTheme::kColorId_TreeSelectionBackgroundFocused:
     case ui::NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
-      return GetBgColor("GtkTreeView#treeview.view .cell:selected");
+      return GetBgColor("GtkTreeView#treeview.view .view.cell:selected:focus");
 
     // Results Table
     // TODO(thomasanderson): The GtkEntry selectors was how the gtk2 theme got
