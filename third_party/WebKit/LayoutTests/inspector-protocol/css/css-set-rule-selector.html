@@ -120,6 +120,30 @@ function test()
             }, next);
         },
 
+        function testSelectorTextWithBrace(next)
+        {
+            verifyProtocolError({
+                range: firstSelectorRange,
+                selector: "body {"
+            }, next);
+        },
+
+        function testSelectorTextWithBraces(next)
+        {
+            verifyProtocolError({
+                range: firstSelectorRange,
+                selector: "body {}"
+            }, next);
+        },
+
+        function testSelectorTextWithExtraRule(next)
+        {
+            verifyProtocolError({
+                range: firstSelectorRange,
+                selector: "body {} body"
+            }, next);
+        },
+
         function testEditSubSelector(next)
         {
             verifyProtocolError({

@@ -121,6 +121,22 @@ function test()
             }, next);
         },
 
+        function testInvalidRule2(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 },
+                ruleText: "@media all { ",
+            }, next);
+        },
+
+        function testInvalidRule3(next)
+        {
+            verifyProtocolError({
+                location: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 0 },
+                ruleText: "#test {} #test {",
+            }, next);
+        },
+
         function testAddingRuleInsideSelector(next)
         {
             verifyProtocolError({

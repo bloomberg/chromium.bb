@@ -404,6 +404,12 @@ Dumping inherited rules:
 Running test: testInvalidRule
 Expected protocol error: SyntaxError Rule text is not valid.
 
+Running test: testInvalidRule2
+Expected protocol error: SyntaxError Rule text is not valid.
+
+Running test: testInvalidRule3
+Expected protocol error: SyntaxError Rule text is not valid.
+
 Running test: testAddingRuleInsideSelector
 Expected protocol error: NotFoundError Cannot insert rule inside rule selector.
 

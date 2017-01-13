@@ -98,6 +98,24 @@ function test()
             }], dumpUndoAndNext(next));
         },
 
+        function testSetStyleOpenBrace(next)
+        {
+            verifyProtocolError([{
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
+                text: "{",
+            }], dumpUndoAndNext(next));
+        },
+
+        function testSetStyleComment(next)
+        {
+            verifyProtocolError([{
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
+                text: "/*",
+            }], dumpUndoAndNext(next));
+        },
+
         function testSetStyleInMedia(next)
         {
             setStyleTexts([{

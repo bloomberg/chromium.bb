@@ -69,6 +69,12 @@ Expected protocol error: Invalid parameters (range.startLine: integer value expe
 Running test: testInvalidText
 Expected protocol error: SyntaxError Selector or media text is not valid.
 
+Running test: testInvalidText2
+Expected protocol error: SyntaxError Selector or media text is not valid.
+
+Running test: testInvalidText3
+Expected protocol error: SyntaxError Selector or media text is not valid.
+
 Running test: testEditSequentially
 ==== Style sheet text ====
 @media screen {

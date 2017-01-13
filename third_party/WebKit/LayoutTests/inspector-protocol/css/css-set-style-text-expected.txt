@@ -237,6 +237,48 @@ Dumping matched rules:
     }
 Dumping inherited rules: 
 
+Running test: testSetStyleOpenBrace
+Expected protocol error: Failed applying edit #0: SyntaxError Style text is not valid.
+Dumping matched rules: 
+*#test* {    regular
+    box-sizing: border-box;
+}
+*#test* {    regular
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex;
+}
+@media (min-width: 1px)
+    *#test* {    regular
+        font-size: 200%;
+    }
+@media (min-width: 1px)
+    *#test* {    regular
+    }
+Dumping inherited rules: 
+
+Running test: testSetStyleComment
+Expected protocol error: Failed applying edit #0: SyntaxError Style text is not valid.
+Dumping matched rules: 
+*#test* {    regular
+    box-sizing: border-box;
+}
+*#test* {    regular
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex;
+}
+@media (min-width: 1px)
+    *#test* {    regular
+        font-size: 200%;
+    }
+@media (min-width: 1px)
+    *#test* {    regular
+    }
+Dumping inherited rules: 
+
 Running test: testSetStyleInMedia
 ==== Style sheet text ====
 #test {

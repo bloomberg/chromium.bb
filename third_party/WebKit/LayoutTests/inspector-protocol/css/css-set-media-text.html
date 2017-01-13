@@ -83,6 +83,22 @@ function test()
             }, next);
         },
 
+        function testInvalidText2(next)
+        {
+            verifyProtocolError({
+                range: firstMediaRange,
+                text: "something { is { wrong: here} }"
+            }, next);
+        },
+
+        function testInvalidText3(next)
+        {
+            verifyProtocolError({
+                range: firstMediaRange,
+                text: "something { wrong"
+            }, next);
+        },
+
         function testEditSequentially(next)
         {
             var newText = "screen";
