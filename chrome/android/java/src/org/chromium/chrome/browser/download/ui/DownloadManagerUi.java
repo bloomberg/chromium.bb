@@ -219,7 +219,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         mToolbar = (DownloadManagerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(),
-                0, drawerLayout, R.id.normal_menu_group, R.id.selection_mode_menu_group, this);
+                0, drawerLayout, R.id.normal_menu_group, R.id.selection_mode_menu_group, null, true,
+                this);
         mToolbar.setTitle(R.string.menu_downloads);
         addObserver(mToolbar);
 

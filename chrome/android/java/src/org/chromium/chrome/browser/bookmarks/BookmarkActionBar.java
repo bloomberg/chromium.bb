@@ -130,7 +130,7 @@ public class BookmarkActionBar extends SelectionToolbar<BookmarkId> implements B
         // try to set the title when a selection is cleared.
         int titleResId = 0;
         initialize(delegate.getSelectionDelegate(), titleResId, delegate.getDrawerLayout(),
-                R.id.normal_menu_group, R.id.selection_mode_menu_group);
+                R.id.normal_menu_group, R.id.selection_mode_menu_group, null);
     }
 
     @Override

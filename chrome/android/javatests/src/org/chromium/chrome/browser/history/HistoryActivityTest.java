@@ -327,21 +327,105 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
     public void testSupervisedUser() throws Exception {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
         SelectableItemView<HistoryItem> item = getItemView(2);
-        toggleItemSelection(2);
+        View itemRemoveButton = item.findViewById(R.id.remove);
 
+        // The item's remove button is visible for non-supervised users when there is no selection.
+        assertEquals(View.VISIBLE, itemRemoveButton.getVisibility());
+
+        toggleItemSelection(2);
         assertTrue(toolbar.getItemById(R.id.selection_mode_open_in_incognito).isVisible());
         assertTrue(toolbar.getItemById(R.id.selection_mode_open_in_incognito).isEnabled());
         assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isVisible());
         assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isEnabled());
-        assertEquals(View.VISIBLE, item.findViewById(R.id.remove).getVisibility());
+        // The item's remove button is invisible for non-supervised users when there is a selection.
+        assertEquals(View.INVISIBLE, item.findViewById(R.id.remove).getVisibility());
 
         signInToSupervisedAccount();
 
         assertNull(toolbar.getItemById(R.id.selection_mode_open_in_incognito));
         assertNull(toolbar.getItemById(R.id.selection_mode_delete_menu_id));
+        // The item's remove button should be gone for supervised users.
+        assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+
+        // The item's remove button visibility is updated when toggling selection.
+        // Check that the visibility is set correctly when toggling selection.
+        toggleItemSelection(2);
+        assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+
+        toggleItemSelection(2);
+        assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
         assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
 
         signOut();
+
+        // Check that the item's remove button visibilty is set correctly after signing out.
+        assertEquals(View.INVISIBLE, item.findViewById(R.id.remove).getVisibility());
+        toggleItemSelection(2);
+        assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        assertEquals(View.VISIBLE, item.findViewById(R.id.remove).getVisibility());
+    }
+
+    @SmallTest
+    public void testToolbarShadow() throws Exception {
+        View toolbarShadow = mHistoryManager.getToolbarShadowForTests();
+        assertEquals(View.GONE, toolbarShadow.getVisibility());
+
+        toggleItemSelection(2);
+        assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        assertEquals(View.VISIBLE, toolbarShadow.getVisibility());
+
+        toggleItemSelection(2);
+        assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        assertEquals(View.GONE, toolbarShadow.getVisibility());
+    }
+
+    @SmallTest
+    public void testSearchView() throws Exception {
+        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
+        View toolbarShadow = mHistoryManager.getToolbarShadowForTests();
+        View toolbarSearchView = toolbar.getSearchViewForTests();
+        assertEquals(View.GONE, toolbarShadow.getVisibility());
+        assertEquals(View.GONE, toolbarSearchView.getVisibility());
+
+        toggleItemSelection(2);
+        assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+
+        int callCount = mTestObserver.onSelectionCallback.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                toolbar.getMenu().performIdentifierAction(R.id.search_menu_id, 0);
+            }
+        });
+
+        // The selection should be cleared when a search is started.
+        mTestObserver.onSelectionCallback.waitForCallback(callCount, 1);
+        assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        assertEquals(View.VISIBLE, toolbarShadow.getVisibility());
+        assertEquals(View.VISIBLE, toolbarSearchView.getVisibility());
+
+        // Select an item and assert that the search view is no longer showing.
+        toggleItemSelection(2);
+        assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        assertEquals(View.VISIBLE, toolbarShadow.getVisibility());
+        assertEquals(View.GONE, toolbarSearchView.getVisibility());
+
+        // Clear the selection and assert that the search view is showing again.
+        toggleItemSelection(2);
+        assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
+        assertEquals(View.VISIBLE, toolbarShadow.getVisibility());
+        assertEquals(View.VISIBLE, toolbarSearchView.getVisibility());
+
+        // Close the search view.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                toolbar.onNavigationBack();
+            }
+        });
+        assertEquals(View.GONE, toolbarShadow.getVisibility());
+        assertEquals(View.GONE, toolbarSearchView.getVisibility());
     }
 
     private void toggleItemSelection(int position) throws Exception {

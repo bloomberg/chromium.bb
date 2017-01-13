@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.history;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -19,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -97,6 +99,7 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
         getMenu().setGroupVisible(mSelectedGroupResId, false);
         setNavigationButton(NAVIGATION_BUTTON_BACK);
         mSearchView.setVisibility(View.VISIBLE);
+        setBackgroundColor(Color.WHITE);
 
         mSearchEditText.requestFocus();
         UiUtils.showKeyboard(mSearchEditText);
@@ -111,6 +114,8 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
         mSearchEditText.setText("");
         UiUtils.hideKeyboard(mSearchEditText);
         mSearchView.setVisibility(View.GONE);
+        setBackgroundColor(ApiCompatibilityUtils.getColor(
+                getResources(), R.color.default_primary_color));
 
         mManager.onEndSearch();
     }
@@ -146,12 +151,14 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
             mSearchView.setVisibility(View.VISIBLE);
             getMenu().setGroupVisible(mNormalGroupResId, false);
             setNavigationButton(NAVIGATION_BUTTON_BACK);
+            setBackgroundColor(Color.WHITE);
         }
     }
 
     @Override
     protected void onDataChanged(int numItems) {
-        getMenu().findItem(R.id.search_menu_id).setVisible(!mIsSearching && numItems != 0);
+        getMenu().findItem(R.id.search_menu_id).setVisible(
+                !mIsSelectionEnabled && !mIsSearching && numItems != 0);
     }
 
     @Override
@@ -205,7 +212,12 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
     }
 
     @VisibleForTesting
-    Menu getMenuForTest() {
+    Menu getMenuForTests() {
         return getMenu();
+    }
+
+    @VisibleForTesting
+    View getSearchViewForTests() {
+        return mSearchView;
     }
 }

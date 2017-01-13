@@ -48,6 +48,7 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
     private ActionBarDrawerToggle mActionBarDrawerToggle;
     private int mNavigationButton;
     private int mTitleResId;
+    private int mNormalBackgroundColor;
     protected int mNormalGroupResId;
     protected int mSelectedGroupResId;
 
@@ -78,9 +79,13 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
      *                         established.
      * @param selectedGroupResId The resource id of the menu item to show when a selection is
      *                           established.
+     * @param normalBackgroundColorResId The resource id of the color to use as the background color
+     *                                   when selection is not enabled. If null the default appbar
+     *                                   background color will be used.
      */
     public void initialize(SelectionDelegate<E> delegate, int titleResId,
-            @Nullable DrawerLayout drawerLayout, int normalGroupResId, int selectedGroupResId) {
+            @Nullable DrawerLayout drawerLayout, int normalGroupResId, int selectedGroupResId,
+            @Nullable Integer normalBackgroundColorResId) {
         mTitleResId = titleResId;
         mDrawerLayout = drawerLayout;
         mNormalGroupResId = normalGroupResId;
@@ -91,8 +96,11 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
 
         if (mDrawerLayout != null) initActionBarDrawerToggle();
 
-        setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                R.color.appbar_background));
+        normalBackgroundColorResId = normalBackgroundColorResId != null ? normalBackgroundColorResId
+                : R.color.appbar_background;
+        mNormalBackgroundColor =
+                ApiCompatibilityUtils.getColor(getResources(), normalBackgroundColorResId);
+        setBackgroundColor(mNormalBackgroundColor);
         if (mTitleResId != 0) setTitle(mTitleResId);
     }
 
@@ -137,8 +145,7 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
                     R.drawable.btn_menu));
             getMenu().setGroupVisible(mNormalGroupResId, true);
             getMenu().setGroupVisible(mSelectedGroupResId, false);
-            setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.appbar_background));
+            setBackgroundColor(mNormalBackgroundColor);
 
             if (mTitleResId != 0) setTitle(mTitleResId);
             setNavigationButton(NAVIGATION_BUTTON_MENU);

@@ -79,14 +79,6 @@ public class SelectableListLayout<E> extends RelativeLayout {
 
         mToolbarStub = (ViewStub) findViewById(R.id.action_bar_stub);
 
-        FadingShadowView shadow = (FadingShadowView) findViewById(R.id.shadow);
-        if (DeviceFormFactor.isLargeTablet(getContext())) {
-            shadow.setVisibility(View.GONE);
-        } else {
-            shadow.init(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.toolbar_shadow_color), FadingShadow.POSITION_TOP);
-        }
-
         setFocusable(true);
         setFocusableInTouchMode(true);
     }
@@ -121,18 +113,33 @@ public class SelectableListLayout<E> extends RelativeLayout {
      *                         established.
      * @param selectedGroupResId The resource id of the menu item to show when a selection is
      *                           established.
+     * @param normalBackgroundColorResId The resource id of the color to use as the background color
+     *                                   when selection is not enabled. If null the default appbar
+     *                                   background color will be used.
+     * @param hideShadowOnLargeTablets Whether the toolbar shadow should be hidden on large tablets.
      * @param listener The OnMenuItemClickListener to set on the toolbar.
      * @return The initialized SelectionToolbar.
      */
     public SelectionToolbar<E> initializeToolbar(int toolbarLayoutId,
             SelectionDelegate<E> delegate, int titleResId, @Nullable DrawerLayout drawerLayout,
-            int normalGroupResId, int selectedGroupResId, OnMenuItemClickListener listener) {
+            int normalGroupResId, int selectedGroupResId,
+            @Nullable Integer normalBackgroundColorResId, boolean hideShadowOnLargeTablets,
+            OnMenuItemClickListener listener) {
+
+        FadingShadowView shadow = (FadingShadowView) findViewById(R.id.shadow);
+        if (hideShadowOnLargeTablets && DeviceFormFactor.isLargeTablet(getContext())) {
+            shadow.setVisibility(View.GONE);
+        } else {
+            shadow.init(ApiCompatibilityUtils.getColor(getResources(),
+                    R.color.toolbar_shadow_color), FadingShadow.POSITION_TOP);
+        }
+
         mToolbarStub.setLayoutResource(toolbarLayoutId);
         @SuppressWarnings("unchecked")
         SelectionToolbar<E> toolbar = (SelectionToolbar<E>) mToolbarStub.inflate();
         mToolbar = toolbar;
         mToolbar.initialize(delegate, titleResId, drawerLayout, normalGroupResId,
-                selectedGroupResId);
+                selectedGroupResId, normalBackgroundColorResId);
         mToolbar.setOnMenuItemClickListener(listener);
         return mToolbar;
     }

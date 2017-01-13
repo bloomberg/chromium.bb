@@ -19,9 +19,11 @@ import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -35,8 +37,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
@@ -44,7 +48,8 @@ import java.util.List;
 /**
  * Displays and manages the UI for browsing history.
  */
-public class HistoryManager implements OnMenuItemClickListener, SignInStateObserver {
+public class HistoryManager implements OnMenuItemClickListener, SignInStateObserver,
+        SelectionObserver<HistoryItem> {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
@@ -57,6 +62,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
     private final HistoryManagerToolbar mToolbar;
     private final TextView mEmptyView;
+    private final FadingShadowView mToolbarShadow;
+    private final RecyclerView mRecyclerView;
     private LargeIconBridge mLargeIconBridge;
 
     private boolean mIsSearching;
@@ -69,28 +76,39 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mActivity = activity;
 
         mSelectionDelegate = new SelectionDelegate<>();
+        mSelectionDelegate.addObserver(this);
         mHistoryAdapter = new HistoryAdapter(mSelectionDelegate, this,
                 sProviderForTests != null ? sProviderForTests : new BrowsingHistoryBridge());
 
         mSelectableListLayout =
                 (SelectableListLayout<HistoryItem>) LayoutInflater.from(activity).inflate(
                         R.layout.history_main, null);
-        RecyclerView recyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
+        mRecyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
+
         mToolbar = (HistoryManagerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.history_toolbar, mSelectionDelegate, R.string.menu_history, null,
-                R.id.normal_menu_group, R.id.selection_mode_menu_group, this);
+                R.id.normal_menu_group, R.id.selection_mode_menu_group,
+                R.color.default_primary_color, false, this);
         mToolbar.setManager(this);
+        mToolbarShadow = (FadingShadowView) mSelectableListLayout.findViewById(R.id.shadow);
+        mToolbarShadow.setVisibility(View.GONE);
+
         mEmptyView = mSelectableListLayout.initializeEmptyView(
                 VectorDrawableCompat.create(
                         mActivity.getResources(), R.drawable.history_big,
                         mActivity.getTheme()),
                 R.string.history_manager_empty);
+        // TODO(twellington): remove this after unifying bookmarks and downloads UI with history.
+        mEmptyView.setTextColor(ApiCompatibilityUtils.getColor(mActivity.getResources(),
+                R.color.google_grey_500));
 
         mHistoryAdapter.initialize();
 
-        recyclerView.addOnScrollListener(new OnScrollListener() {
+        mRecyclerView.addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                setToolbarShadowVisibility();
+
                 if (!mHistoryAdapter.canLoadMoreItems()) return;
 
                 // Load more items if the scroll position is close to the bottom of the list.
@@ -140,6 +158,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             return true;
         } else if (item.getItemId() == R.id.search_menu_id) {
             mToolbar.showSearchView();
+            mToolbarShadow.setVisibility(View.VISIBLE);
             mSelectableListLayout.setEmptyViewText(R.string.history_manager_no_results);
             recordUserAction("Search");
             mIsSearching = true;
@@ -247,6 +266,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mHistoryAdapter.onEndSearch();
         mSelectableListLayout.setEmptyViewText(R.string.history_manager_empty);
         mIsSearching = false;
+        setToolbarShadowVisibility();
     }
 
     /**
@@ -293,6 +313,11 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         return mHistoryAdapter;
     }
 
+    @VisibleForTesting
+    View getToolbarShadowForTests() {
+        return mToolbarShadow;
+    }
+
     /**
      * @param action The user action string to record.
      */
@@ -328,5 +353,17 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     public void onSignedOut() {
         mToolbar.onSignInStateChange();
         mHistoryAdapter.onSignInStateChange();
+    }
+
+    @Override
+    public void onSelectionStateChange(List<HistoryItem> selectedItems) {
+        mHistoryAdapter.onSelectionStateChange(mSelectionDelegate.isSelectionEnabled());
+        setToolbarShadowVisibility();
+    }
+
+    private void setToolbarShadowVisibility() {
+        boolean showShadow = mRecyclerView.computeVerticalScrollOffset() != 0
+                || mIsSearching || mSelectionDelegate.isSelectionEnabled();
+        mToolbarShadow.setVisibility(showShadow ? View.VISIBLE : View.GONE);
     }
 }

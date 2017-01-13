@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.history.HistoryProvider.BrowsingHistoryObserv
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -45,6 +47,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private TextView mSignedInNotSyncedTextView;
     private TextView mSignedInSyncedTextView;
     private TextView mOtherFormsOfBrowsingHistoryTextView;
+    private Button mClearBrowsingDataButton;
 
     private boolean mHasOtherFormsOfBrowsingData;
     private boolean mHasSyncedData;
@@ -163,13 +166,25 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         }
     }
 
+    /**
+     * See {@link SelectionObserver}.
+     */
+    public void onSelectionStateChange(boolean selectionEnabled) {
+        mClearBrowsingDataButton.setEnabled(!selectionEnabled);
+        for (HistoryItemView item : mItemViews) {
+            item.setRemoveButtonVisible(!selectionEnabled);
+        }
+    }
+
     @Override
     protected ViewHolder createViewHolder(ViewGroup parent) {
         View v = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.history_item_view, parent, false);
         SelectableItemViewHolder<HistoryItem> viewHolder =
                 new SelectableItemViewHolder<>(v, mSelectionDelegate);
-        mItemViews.add((HistoryItemView) viewHolder.itemView);
+        HistoryItemView itemView = (HistoryItemView) viewHolder.itemView;
+        itemView.setRemoveButtonVisible(!mSelectionDelegate.isSelectionEnabled());
+        mItemViews.add(itemView);
         return viewHolder;
     }
 
@@ -235,8 +250,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
                 R.layout.history_header, parent, false);
         mIsHeaderInflated = true;
 
-        View cbdButton = v.findViewById(R.id.clear_browsing_data_button);
-        cbdButton.setOnClickListener(new OnClickListener() {
+        mClearBrowsingDataButton = (Button) v.findViewById(R.id.clear_browsing_data_button);
+        mClearBrowsingDataButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 mManager.openClearBrowsingDataPreference();

@@ -40,6 +40,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     private final int mDisplayedIconSize;
     private final int mCornerRadius;
 
+    private boolean mRemoveButtonVisible;
+
     public HistoryItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -122,6 +124,18 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         updateRemoveButtonVisibility();
     }
 
+    /**
+     * @param visible Whether the remove button should be visible. Note that this method will have
+     *                no effect if the button is GONE because the signed in user is not allowed to
+     *                delete browsing history.
+     */
+    public void setRemoveButtonVisible(boolean visible) {
+        mRemoveButtonVisible = visible;
+        if (!PrefServiceBridge.getInstance().canDeleteBrowsingHistory()) return;
+
+        mRemoveButton.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+    }
+
     @Override
     protected void onClick() {
         if (getItem() != null) getItem().open();
@@ -151,7 +165,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
     private void updateRemoveButtonVisibility() {
         mRemoveButton.setVisibility(
-                PrefServiceBridge.getInstance().canDeleteBrowsingHistory() ? View.VISIBLE
-                        : View.GONE);
+                !PrefServiceBridge.getInstance().canDeleteBrowsingHistory() ? View.GONE :
+                    mRemoveButtonVisible ? View.VISIBLE : View.INVISIBLE);
     }
 }

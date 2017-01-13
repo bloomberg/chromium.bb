@@ -18,21 +18,29 @@
 
    <org.chromium.ui.widget.TextViewWithClickableSpans
         android:id="@+id/other_forms_of_browsing_history"
-        style="@style/PrivacyDisclaimerText"  />
+        style="@style/PrivacyDisclaimerText" />
 
-    <Button
-        android:id="@+id/clear_browsing_data_button"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        style="@style/ButtonCompatBorderless"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:gravity="center_vertical|start"
-        android:text="@string/open_clear_browsing_data_dialog_button"
-        android:textAllCaps="true"
-        android:textColor="@color/light_active_color"
-        android:textSize="16sp" />
+        android:layout_marginBottom="8dp"
+        android:background="@android:color/white" >
+
+        <Button
+            android:id="@+id/clear_browsing_data_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ButtonCompatBorderless"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:gravity="center_vertical|start"
+            android:text="@string/open_clear_browsing_data_dialog_button"
+            android:textAllCaps="true"
+            android:textColor="@color/history_cbd_button_tint"
+            android:textSize="16sp" />
+
+    </FrameLayout>
 </LinearLayout>
