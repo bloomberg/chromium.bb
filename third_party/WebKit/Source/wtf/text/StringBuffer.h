@@ -64,7 +64,7 @@ class StringBuffer {
     return characters()[i];
   }
 
-  PassRefPtr<StringImpl> release() { return m_data.release(); }
+  PassRefPtr<StringImpl> release() { return std::move(m_data); }
 
  private:
   RefPtr<StringImpl> m_data;
