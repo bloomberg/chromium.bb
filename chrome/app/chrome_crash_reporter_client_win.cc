@@ -88,8 +88,7 @@ size_t RegisterCrashKeysHelper() {
   // but ultimately constitute a single key-value pair.
   //
   // For now these need to be kept relatively up to date with those in
-  // //chrome/common/crash_keys.cc::RegisterChromeCrashKeys() and
-  // //blimp/engine/app/blimp_engine_crash_keys.cc
+  // chrome/common/crash_keys.cc::RegisterChromeCrashKeys().
   constexpr base::debug::CrashKey fixed_keys[] = {
       {kMetricsClientId, kSmallSize},
       {kChannel, kSmallSize},

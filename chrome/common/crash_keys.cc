@@ -105,10 +105,8 @@ size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
   //
-  // If you're adding keys here, please also add them to the following lists:
-  // 1. //blimp/engine/app/blimp_engine_crash_keys.cc and
-  // 2. //chrome/app/chrome_crash_reporter_client_win.cc::
-  //    RegisterCrashKeysHelper().
+  // If you're adding keys here, please also add them to the following list:
+  // chrome/app/chrome_crash_reporter_client_win.cc::RegisterCrashKeysHelper().
   base::debug::CrashKey fixed_keys[] = {
 #if defined(OS_MACOSX) || defined(OS_WIN)
     { kMetricsClientId, kSmallSize },
