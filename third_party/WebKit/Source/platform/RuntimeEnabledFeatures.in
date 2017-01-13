@@ -42,7 +42,7 @@ EnableCanvas2dDynamicRenderingModeSwitching status=experimental
 CanMakePayment status=stable
 Canvas2dImageChromium status=experimental
 ClientHints status=stable
-CompositeOpaqueFixedPosition status=stable, settable_from_internals=True
+CompositeOpaqueFixedPosition status=test, settable_from_internals=True
 CompositeOpaqueScrollers status=stable, settable_from_internals=True
 ColorCorrectRendering status=experimental
 ColorCorrectRenderingDefaultMode status=experimental
