@@ -8,6 +8,7 @@
 
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 
+#import "base/mac/foundation_util.h"
 #import "ios/clean/chrome/browser/ui/ui_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -127,8 +128,47 @@ CGFloat kToolbarHeight = 56.0;
 #pragma mark - MenuPresentationDelegate
 
 - (CGRect)frameForMenuPresentation:(UIPresentationController*)presentation {
-  // Placeholder.
-  return CGRectMake(50, 50, 250, 300);
+  CGSize menuSize = presentation.presentedView.frame.size;
+  CGRect menuRect;
+  menuRect.size = menuSize;
+
+  CGRect menuOriginRect = [self rectForZoomWithKey:@"" inView:self.view];
+  if (CGRectIsNull(menuOriginRect)) {
+    menuRect.origin = CGPointMake(50, 50);
+    return menuRect;
+  }
+  // Calculate which corner of the menu the origin rect is in. This is
+  // determined by comparing frames, and thus is RTL-independent.
+  if (CGRectGetMinX(menuOriginRect) - CGRectGetMinX(self.view.bounds) <
+      CGRectGetMaxX(self.view.bounds) - CGRectGetMaxX(menuOriginRect)) {
+    // Origin rect is closer to the left edge of |self.view| than to the right.
+    menuRect.origin.x = CGRectGetMinX(menuOriginRect);
+  } else {
+    // Origin rect is closer to the right edge of |self.view| than to the left.
+    menuRect.origin.x = CGRectGetMaxX(menuOriginRect) - menuSize.width;
+  }
+
+  if (CGRectGetMinY(menuOriginRect) - CGRectGetMinY(self.view.bounds) <
+      CGRectGetMaxY(self.view.bounds) - CGRectGetMaxY(menuOriginRect)) {
+    // Origin rect is closer to the top edge of |self.view| than to the bottom.
+    menuRect.origin.y = CGRectGetMinY(menuOriginRect);
+  } else {
+    // Origin rect is closer to the bottom edge of |self.view| than to the top.
+    menuRect.origin.y = CGRectGetMaxY(menuOriginRect) - menuSize.height;
+  }
+
+  return menuRect;
+}
+
+#pragma mark - ZoomTransitionDelegate
+
+- (CGRect)rectForZoomWithKey:(NSObject*)key inView:(UIView*)view {
+  UIViewController<ZoomTransitionDelegate>* delegate =
+      base::mac::ObjCCast<UIViewController<ZoomTransitionDelegate>>(
+          self.toolbarViewController);
+  if (delegate)
+    return [delegate rectForZoomWithKey:key inView:view];
+  return CGRectNull;
 }
 
 #pragma mark - UIResponder

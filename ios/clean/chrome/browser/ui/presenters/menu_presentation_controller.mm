@@ -10,6 +10,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+#include "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
 #include "ios/clean/chrome/browser/ui/presenters/menu_presentation_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,11 +20,14 @@
 @interface MenuPresentationController ()
 @property(nonatomic, weak) id<MenuPresentationDelegate> presentationDelegate;
 @property(nonatomic, assign) CGRect presentationFrame;
+@property(nonatomic, strong) UITapGestureRecognizer* dismissRecognizer;
 @end
 
 @implementation MenuPresentationController
 @synthesize presentationDelegate = _presentationDelegate;
 @synthesize presentationFrame = _presentationFrame;
+@synthesize toolbarCommandHandler = _toolbarCommandHandler;
+@synthesize dismissRecognizer = _dismissRecognizer;
 
 #pragma mark - UIPresentationDelegate
 
@@ -34,9 +38,12 @@
       self.presentationFrame =
           [self.presentationDelegate frameForMenuPresentation:self];
     } else {
-      // Placeholder default frame: something rectangular, 50 points in and
-      // down.
-      self.presentationFrame = CGRectMake(50, 50, 250, 300);
+      // Placeholder default frame: centered in the presenting view.
+      CGSize menuSize = self.presentedView.frame.size;
+      self.presentationFrame.size = menuSize;
+      self.presentationFrame.origin = CGPointMake(
+          (self.containerView.bounds.size.width - menuSize.width) / 2.0,
+          (self.containerView.bounds.size.height - menuSize.height) / 2.0);
     }
   }
   return self.presentationFrame;
@@ -46,9 +53,18 @@
   self.presentedView.layer.borderWidth = 1.0;
   self.presentedView.layer.shadowRadius = 1.0;
   self.presentedView.layer.borderColor = [UIColor blackColor].CGColor;
+
+  self.dismissRecognizer =
+      [[UITapGestureRecognizer alloc] initWithTarget:self
+                                              action:@selector(tapToDismiss:)];
+  [self.containerView addGestureRecognizer:self.dismissRecognizer];
 }
 
 #pragma mark - Private methods.
+
+- (void)tapToDismiss:(UIGestureRecognizer*)recognizer {
+  [self.toolbarCommandHandler closeToolsMenu];
+}
 
 // Checks if the presenting view controller conforms to
 // MenuPresentationDelegate and, if so, sets that view controller as the

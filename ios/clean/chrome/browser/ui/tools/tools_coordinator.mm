@@ -21,6 +21,7 @@
 @end
 
 @implementation ToolsCoordinator
+@synthesize toolbarCommandHandler = _toolbarCommandHandler;
 @synthesize menuViewController = _menuViewController;
 
 #pragma mark - BrowserCoordinator
@@ -67,6 +68,7 @@ presentationControllerForPresentedViewController:(UIViewController*)presented
       [[MenuPresentationController alloc]
           initWithPresentedViewController:presented
                  presentingViewController:presenting];
+  menuPresentation.toolbarCommandHandler = self.toolbarCommandHandler;
   return menuPresentation;
 }
 

@@ -49,6 +49,7 @@
 
 - (void)showToolsMenu {
   ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
+  toolsCoordinator.toolbarCommandHandler = self;
   [self addChildCoordinator:toolsCoordinator];
   [toolsCoordinator start];
   self.toolsMenuCoordinator = toolsCoordinator;

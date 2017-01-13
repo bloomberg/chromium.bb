@@ -13,9 +13,12 @@
 
 #import "ios/clean/chrome/browser/browser_coordinator.h"
 
+@protocol ToolbarCommands;
+
 // Coordinator that shows an inteface for the user to select a
 // tool or action to use.
 @interface ToolsCoordinator : BrowserCoordinator
+@property(nonatomic, assign) id<ToolbarCommands> toolbarCommandHandler;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLS_TOOLS_COORDINATOR_H_

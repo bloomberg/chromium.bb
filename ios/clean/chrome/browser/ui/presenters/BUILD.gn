@@ -10,4 +10,8 @@ source_set("presenters") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//ios/clean/chrome/browser/ui/commands",
+  ]
 }

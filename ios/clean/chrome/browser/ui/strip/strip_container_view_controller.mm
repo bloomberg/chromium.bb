@@ -8,8 +8,8 @@
 
 #import "ios/clean/chrome/browser/ui/strip/strip_container_view_controller.h"
 
-#import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/ui_types.h"
+#import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
