@@ -92,9 +92,17 @@ static bool tokenExitsMath(const CompactHTMLToken& token) {
          threadSafeMatch(tagName, MathMLNames::mtextTag);
 }
 
+static bool tokenExitsInSelect(const CompactHTMLToken& token) {
+  // https://html.spec.whatwg.org/#parsing-main-inselect
+  const String& tagName = token.data();
+  return threadSafeMatch(tagName, inputTag) ||
+         threadSafeMatch(tagName, keygenTag) ||
+         threadSafeMatch(tagName, textareaTag);
+}
+
 HTMLTreeBuilderSimulator::HTMLTreeBuilderSimulator(
     const HTMLParserOptions& options)
-    : m_options(options) {
+    : m_options(options), m_inSelectInsertionMode(false) {
   m_namespaceStack.push_back(HTML);
 }
 
@@ -140,20 +148,38 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
       if (threadSafeMatch(tagName, textareaTag) ||
           threadSafeMatch(tagName, titleTag)) {
         tokenizer->setState(HTMLTokenizer::RCDATAState);
-      } else if (threadSafeMatch(tagName, plaintextTag)) {
-        tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
       } else if (threadSafeMatch(tagName, scriptTag)) {
         tokenizer->setState(HTMLTokenizer::ScriptDataState);
         simulatedToken = ScriptStart;
-      } else if (threadSafeMatch(tagName, styleTag) ||
-                 threadSafeMatch(tagName, iframeTag) ||
-                 threadSafeMatch(tagName, xmpTag) ||
-                 (threadSafeMatch(tagName, noembedTag) &&
-                  m_options.pluginsEnabled) ||
-                 threadSafeMatch(tagName, noframesTag) ||
-                 (threadSafeMatch(tagName, noscriptTag) &&
-                  m_options.scriptEnabled)) {
-        tokenizer->setState(HTMLTokenizer::RAWTEXTState);
+      } else if (!m_inSelectInsertionMode) {
+        // If we're in the "in select" insertion mode, all of these tags are
+        // ignored, so we shouldn't change the tokenizer state:
+        // https://html.spec.whatwg.org/#parsing-main-inselect
+        if (threadSafeMatch(tagName, plaintextTag) &&
+            !m_inSelectInsertionMode) {
+          tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
+        } else if (threadSafeMatch(tagName, styleTag) ||
+                   threadSafeMatch(tagName, iframeTag) ||
+                   threadSafeMatch(tagName, xmpTag) ||
+                   (threadSafeMatch(tagName, noembedTag) &&
+                    m_options.pluginsEnabled) ||
+                   threadSafeMatch(tagName, noframesTag) ||
+                   (threadSafeMatch(tagName, noscriptTag) &&
+                    m_options.scriptEnabled)) {
+          tokenizer->setState(HTMLTokenizer::RAWTEXTState);
+        }
+      }
+
+      // We need to track whether we're in the "in select" insertion mode
+      // in order to determine whether '<plaintext>' will put the tokenizer
+      // into PLAINTEXTState, and whether '<xmp>' and others will consume
+      // textual content.
+      //
+      // https://html.spec.whatwg.org/#parsing-main-inselect
+      if (threadSafeMatch(tagName, selectTag)) {
+        m_inSelectInsertionMode = true;
+      } else if (m_inSelectInsertionMode && tokenExitsInSelect(token)) {
+        m_inSelectInsertionMode = false;
       }
     }
   }
@@ -169,12 +195,15 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
         (m_namespaceStack.contains(SVG) && m_namespaceStack.back() == HTML &&
          tokenExitsSVG(token)) ||
         (m_namespaceStack.contains(MathML) && m_namespaceStack.back() == HTML &&
-         tokenExitsMath(token)))
+         tokenExitsMath(token))) {
       m_namespaceStack.pop_back();
+    }
     if (threadSafeMatch(tagName, scriptTag)) {
       if (!inForeignContent())
         tokenizer->setState(HTMLTokenizer::DataState);
       return ScriptEnd;
+    } else if (threadSafeMatch(tagName, selectTag)) {
+      m_inSelectInsertionMode = false;
     }
   }
 
