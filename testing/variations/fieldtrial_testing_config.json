@@ -943,6 +943,21 @@
             ]
         }
     ],
+    "MacAllowBackgroundingProcesses": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MacAllowBackgroundingProcesses"
+                    ]
+                }
+            ]
+        }
+    ],
     "MacMemoryMechanism": [
         {
             "platforms": [
