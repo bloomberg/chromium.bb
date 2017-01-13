@@ -167,6 +167,8 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
 }
 
 int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
+  if (request.was_cached() || !request.response_headers())
+    return request.received_response_content_length();
   int64_t original_content_length_from_header =
       request.response_headers()->GetInt64HeaderValue(
           "x-original-content-length");
