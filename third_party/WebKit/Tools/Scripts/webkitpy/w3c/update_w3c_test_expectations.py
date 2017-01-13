@@ -329,8 +329,7 @@ class W3CExpectationsLineAdder(object):
             testharness.js tests that required new baselines to be downloaded
             from `webkit-patch rebaseline-cl`.
         """
-        modified_tests = self.get_modified_existing_tests()
-        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(modified_tests, tests_results)
+        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(tests_results)
         _log.debug('Tests to rebaseline: %r', tests_to_rebaseline)
         if tests_to_rebaseline:
             webkit_patch = self.host.filesystem.join(
@@ -344,23 +343,7 @@ class W3CExpectationsLineAdder(object):
             ] + tests_to_rebaseline)
         return tests_results
 
-    def get_modified_existing_tests(self):
-        """Returns a list of layout test names for layout tests that have been modified."""
-        diff_output = self.host.executive.run_command(
-            ['git', 'diff', 'origin/master', '--name-only', '--diff-filter=AMR'])  # Added, modified, and renamed files.
-        paths_from_chromium_root = diff_output.splitlines()
-        modified_tests = []
-        for path in paths_from_chromium_root:
-            absolute_path = self.host.filesystem.join(self.finder.chromium_base(), path)
-            if not self.host.filesystem.exists(absolute_path):
-                _log.warning('File does not exist: %s', absolute_path)
-                continue
-            test_path = self.finder.layout_test_name(path)
-            if test_path:
-                modified_tests.append(test_path)
-        return modified_tests
-
-    def get_tests_to_rebaseline(self, modified_tests, test_results):
+    def get_tests_to_rebaseline(self, test_results):
         """Returns a list of tests to download new baselines for.
 
         Creates a list of tests to rebaseline depending on the tests' platform-
@@ -368,10 +351,8 @@ class W3CExpectationsLineAdder(object):
         due to a baseline mismatch (rather than crash or timeout).
 
         Args:
-            modified_tests: A list of paths to modified files (which should
-                be added, removed or modified files in the imported w3c
-                directory), relative to the LayoutTests directory.
-            test_results: A dictionary of failing tests results.
+            test_results: A dictionary of failing test results, mapping tests
+                to platforms to result dicts.
 
         Returns:
             A pair: A set of tests to be rebaselined, and a modified copy of
@@ -380,7 +361,7 @@ class W3CExpectationsLineAdder(object):
         """
         test_results = copy.deepcopy(test_results)
         tests_to_rebaseline = set()
-        for test_path in modified_tests:
+        for test_path in test_results:
             if not (self.is_js_test(test_path) and test_results.get(test_path)):
                 continue
             for platform in test_results[test_path].keys():

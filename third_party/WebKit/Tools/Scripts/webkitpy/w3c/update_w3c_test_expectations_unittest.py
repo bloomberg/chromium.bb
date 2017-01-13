@@ -251,7 +251,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
             '<script src="/resources/testharness.js"></script>')
         line_adder = W3CExpectationsLineAdder(self.host)
         tests_to_rebaseline, _ = line_adder.get_tests_to_rebaseline(
-            ['imported/fake/test/path.html', 'imported/other/test/path.html'], self.mock_dict_two)
+            self.mock_dict_two)
         # The other test doesn't have an entry in the test results dict, so it is not listed as a test to rebaseline.
         self.assertEqual(tests_to_rebaseline, ['imported/fake/test/path.html'])
 
@@ -260,7 +260,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
             'this file does not look like a testharness JS test.')
         line_adder = W3CExpectationsLineAdder(self.host)
         tests_to_rebaseline, _ = line_adder.get_tests_to_rebaseline(
-            ['imported/fake/test/path.html'], self.mock_dict_two)
+            self.mock_dict_two)
         self.assertEqual(tests_to_rebaseline, [])
 
     def test_get_tests_to_rebaseline_returns_updated_dict(self):
@@ -275,7 +275,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
             '<script src="/resources/testharness.js"></script>')
         line_adder = W3CExpectationsLineAdder(self.host)
         tests_to_rebaseline, modified_test_results = line_adder.get_tests_to_rebaseline(
-            ['imported/fake/test/path.html'], test_results_dict)
+            test_results_dict)
         self.assertEqual(tests_to_rebaseline, ['imported/fake/test/path.html'])
         # The record for the builder with a timeout is kept, but not with a text mismatch,
         # since that should be covered by downloading a new baseline.
@@ -299,7 +299,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
             '<script src="/resources/testharness.js"></script>')
         line_adder = W3CExpectationsLineAdder(self.host)
         tests_to_rebaseline, modified_test_results = line_adder.get_tests_to_rebaseline(
-            ['imported/fake/test/path.html'], test_results_dict)
+            test_results_dict)
         self.assertEqual(tests_to_rebaseline, ['imported/fake/test/path.html'])
         # The record for the builder with a timeout is kept, but not with a text mismatch,
         # since that should be covered by downloading a new baseline.
@@ -337,17 +337,3 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
                 'https://codereview.chromium.org/api/11112222/1'
             ])
         self.assertLog(['ERROR: No try job information was collected.\n'])
-
-    def test_get_modified_existing_tests(self):
-        line_adder = W3CExpectationsLineAdder(self.host)
-        modified_files = [
-            'third_party/WebKit/LayoutTests/a/b.html',
-            'third_party/WebKit/LayoutTests/a/c.html',
-            'x/y/z.cc',
-        ]
-        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/a/b.html'] = ''
-        self.host.filesystem.files['/mock-checkout/x/y/z.cc'] = ''
-        self.host.executive = MockExecutive(output='\n'.join(modified_files))
-        tests = line_adder.get_modified_existing_tests()
-        self.assertEqual(tests, ['a/b.html'])
-        self.assertEqual(self.host.executive.calls, [['git', 'diff', 'origin/master', '--name-only', '--diff-filter=AMR']])
