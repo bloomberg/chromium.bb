@@ -129,7 +129,6 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnAppActivated(Profile* profile, const std::string& app_id) override;
   void OnAppDeactivated(Profile* profile, const std::string& app_id) override;
   void OnAppStop(Profile* profile, const std::string& app_id) override;
-  void OnChromeTerminating() override;
 
   // content::NotificationObserver overrides:
   void Observe(int type,

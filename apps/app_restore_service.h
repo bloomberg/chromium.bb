@@ -38,6 +38,9 @@ class AppRestoreService : public KeyedService,
   // running when Chrome was last terminated.
   bool IsAppRestorable(const std::string& extension_id);
 
+  // Called to notify that the application has begun to exit.
+  void OnApplicationTerminating();
+
   static AppRestoreService* Get(Profile* profile);
 
  private:
@@ -46,7 +49,6 @@ class AppRestoreService : public KeyedService,
   void OnAppActivated(Profile* profile, const std::string& app_id) override;
   void OnAppDeactivated(Profile* profile, const std::string& app_id) override;
   void OnAppStop(Profile* profile, const std::string& app_id) override;
-  void OnChromeTerminating() override;
 
   // KeyedService.
   void Shutdown() override;

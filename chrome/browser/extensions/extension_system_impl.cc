@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "apps/app_restore_service.h"
+#include "apps/app_restore_service_factory.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -16,6 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -40,6 +43,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_pref_store.h"
@@ -97,6 +101,8 @@ UninstallPingSender::FilterResult ShouldSendUninstallPing(
 
 ExtensionSystemImpl::Shared::Shared(Profile* profile)
     : profile_(profile) {
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
 }
 
 ExtensionSystemImpl::Shared::~Shared() {
@@ -322,6 +328,16 @@ AppSorting* ExtensionSystemImpl::Shared::app_sorting() {
 
 ContentVerifier* ExtensionSystemImpl::Shared::content_verifier() {
   return content_verifier_.get();
+}
+
+void ExtensionSystemImpl::Shared::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  CHECK(apps::AppRestoreServiceFactory::GetForProfile(profile_));
+  apps::AppRestoreServiceFactory::GetForProfile(profile_)
+      ->OnApplicationTerminating();
 }
 
 //

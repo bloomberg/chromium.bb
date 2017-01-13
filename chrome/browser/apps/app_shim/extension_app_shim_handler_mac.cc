@@ -735,8 +735,6 @@ void ExtensionAppShimHandler::OnAppDeactivated(Profile* profile,
 void ExtensionAppShimHandler::OnAppStop(Profile* profile,
                                         const std::string& app_id) {}
 
-void ExtensionAppShimHandler::OnChromeTerminating() {}
-
 // The BrowserWindow may be NULL when this is called.
 // Therefore we listen for the notification
 // chrome::NOTIFICATION_BROWSER_WINDOW_READY and then call OnAppActivated.

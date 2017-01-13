@@ -4,7 +4,6 @@
 
 #include "apps/app_lifetime_monitor.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -28,9 +27,6 @@ AppLifetimeMonitor::AppLifetimeMonitor(Profile* profile)
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllSources());
-  registrar_.Add(
-      this, chrome::NOTIFICATION_APP_TERMINATING,
-      content::NotificationService::AllSources());
 
   AppWindowRegistry* app_window_registry =
       AppWindowRegistry::Factory::GetForBrowserContext(profile_,
@@ -70,11 +66,6 @@ void AppLifetimeMonitor::Observe(int type,
         return;
 
       NotifyAppStop(extension->id());
-      break;
-    }
-
-    case chrome::NOTIFICATION_APP_TERMINATING: {
-      NotifyChromeTerminating();
       break;
     }
   }
@@ -142,11 +133,6 @@ void AppLifetimeMonitor::NotifyAppDeactivated(const std::string& app_id) {
 void AppLifetimeMonitor::NotifyAppStop(const std::string& app_id) {
   for (auto& observer : observers_)
     observer.OnAppStop(profile_, app_id);
-}
-
-void AppLifetimeMonitor::NotifyChromeTerminating() {
-  for (auto& observer : observers_)
-    observer.OnChromeTerminating();
 }
 
 }  // namespace apps

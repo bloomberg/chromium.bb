@@ -66,6 +66,12 @@ bool AppRestoreService::IsAppRestorable(const std::string& extension_id) {
   return ExtensionPrefs::Get(profile_)->IsExtensionRunning(extension_id);
 }
 
+void AppRestoreService::OnApplicationTerminating() {
+  // We want to preserve the state when the app begins terminating, so stop
+  // listening to app lifetime events.
+  StopObservingAppLifetime();
+}
+
 // static
 AppRestoreService* AppRestoreService::Get(Profile* profile) {
   return apps::AppRestoreServiceFactory::GetForProfile(profile);
@@ -88,12 +94,6 @@ void AppRestoreService::OnAppDeactivated(Profile* profile,
 
 void AppRestoreService::OnAppStop(Profile* profile, const std::string& app_id) {
   RecordAppStop(app_id);
-}
-
-void AppRestoreService::OnChromeTerminating() {
-  // We want to preserve the state when the app begins terminating, so stop
-  // listening to app lifetime events.
-  StopObservingAppLifetime();
 }
 
 void AppRestoreService::Shutdown() {
