@@ -96,7 +96,7 @@ class ActivityLoggerTest : public testing::Test {
     sources.push_back(ScriptSourceCode(script));
     Vector<v8::Local<v8::Value>> results;
     m_scriptController->executeScriptInIsolatedWorld(isolatedWorldId, sources,
-                                                     extensionGroup, 0);
+                                                     0);
     pumpPendingRequestsForFrameToLoad(m_webViewHelper.webView()->mainFrame());
   }
 
@@ -108,7 +108,6 @@ class ActivityLoggerTest : public testing::Test {
 
  private:
   static const int isolatedWorldId = 1;
-  static const int extensionGroup = 0;
 
   WebViewHelper m_webViewHelper;
   Persistent<ScriptController> m_scriptController;

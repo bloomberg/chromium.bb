@@ -31,7 +31,6 @@ class TranslateHelper : public content::RenderFrameObserver,
  public:
   TranslateHelper(content::RenderFrame* render_frame,
                   int world_id,
-                  int extension_group,
                   const std::string& extension_scheme);
   ~TranslateHelper() override;
 
@@ -144,9 +143,6 @@ class TranslateHelper : public content::RenderFrameObserver,
 
   // The world ID to use for script execution.
   int world_id_;
-
-  // The extension group.
-  int extension_group_;
 
   // The URL scheme for translate extensions.
   std::string extension_scheme_;

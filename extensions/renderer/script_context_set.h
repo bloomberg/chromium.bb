@@ -55,7 +55,6 @@ class ScriptContextSet {
   // Returns a weak reference to the new ScriptContext.
   ScriptContext* Register(blink::WebLocalFrame* frame,
                           const v8::Local<v8::Context>& v8_context,
-                          int extension_group,
                           int world_id);
 
   // If the specified context is contained in this set, remove it, then delete
@@ -121,7 +120,7 @@ class ScriptContextSet {
   // Returns the Feature::Context type of context for a JavaScript context.
   Feature::Context ClassifyJavaScriptContext(
       const Extension* extension,
-      int extension_group,
+      int world_id,
       const GURL& url,
       const blink::WebSecurityOrigin& origin);
 

@@ -87,7 +87,6 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void DidCreateScriptContext(blink::WebLocalFrame* frame,
                               const v8::Local<v8::Context>& context,
-                              int extension_group,
                               int world_id);
 
   // Runs on a different thread and should only use thread safe member

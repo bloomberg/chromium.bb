@@ -190,11 +190,9 @@ void FrameLoaderClientImpl::runScriptsAtDocumentReady(bool documentIsEmpty) {
 
 void FrameLoaderClientImpl::didCreateScriptContext(
     v8::Local<v8::Context> context,
-    int extensionGroup,
     int worldId) {
   if (m_webFrame->client())
-    m_webFrame->client()->didCreateScriptContext(m_webFrame, context,
-                                                 extensionGroup, worldId);
+    m_webFrame->client()->didCreateScriptContext(m_webFrame, context, worldId);
 }
 
 void FrameLoaderClientImpl::willReleaseScriptContext(
@@ -205,13 +203,7 @@ void FrameLoaderClientImpl::willReleaseScriptContext(
                                                    worldId);
 }
 
-bool FrameLoaderClientImpl::allowScriptExtension(const String& extensionName,
-                                                 int extensionGroup,
-                                                 int worldId) {
-  if (m_webFrame->contentSettingsClient())
-    return m_webFrame->contentSettingsClient()->allowScriptExtension(
-        extensionName, extensionGroup, worldId);
-
+bool FrameLoaderClientImpl::allowScriptExtensions() {
   return true;
 }
 

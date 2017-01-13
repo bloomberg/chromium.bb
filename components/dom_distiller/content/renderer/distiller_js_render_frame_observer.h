@@ -30,7 +30,6 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   void DidStartProvisionalLoad() override;
   void DidFinishLoad() override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
-                              int extension_group,
                               int world_id) override;
 
   // Add the mojo interface to a RenderFrame's

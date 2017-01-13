@@ -66,15 +66,11 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
   void runScriptsAtDocumentReady(bool documentIsEmpty) override;
 
   void didCreateScriptContext(v8::Local<v8::Context>,
-                              int extensionGroup,
                               int worldId) override;
   void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override;
 
-  // Returns true if we should allow the given V8 extension to be added to
-  // the script context at the currently loading page and given extension group.
-  bool allowScriptExtension(const String& extensionName,
-                            int extensionGroup,
-                            int worldId) override;
+  // Returns true if we should allow register V8 extensions to be added.
+  bool allowScriptExtensions() override;
 
   bool hasWebView() const override;
   bool inShadowTree() const override;

@@ -26,7 +26,6 @@ class WebScriptExecutor : public SuspendableScriptExecutor::Executor {
  public:
   WebScriptExecutor(const HeapVector<ScriptSourceCode>& sources,
                     int worldID,
-                    int extensionGroup,
                     bool userGesture);
 
   Vector<v8::Local<v8::Value>> execute(LocalFrame*) override;
@@ -39,18 +38,15 @@ class WebScriptExecutor : public SuspendableScriptExecutor::Executor {
  private:
   HeapVector<ScriptSourceCode> m_sources;
   int m_worldID;
-  int m_extensionGroup;
   bool m_userGesture;
 };
 
 WebScriptExecutor::WebScriptExecutor(
     const HeapVector<ScriptSourceCode>& sources,
     int worldID,
-    int extensionGroup,
     bool userGesture)
     : m_sources(sources),
       m_worldID(worldID),
-      m_extensionGroup(extensionGroup),
       m_userGesture(userGesture) {}
 
 Vector<v8::Local<v8::Value>> WebScriptExecutor::execute(LocalFrame* frame) {
@@ -64,7 +60,7 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::execute(LocalFrame* frame) {
   Vector<v8::Local<v8::Value>> results;
   if (m_worldID) {
     frame->script().executeScriptInIsolatedWorld(m_worldID, m_sources,
-                                                 m_extensionGroup, &results);
+                                                 &results);
   } else {
     v8::Local<v8::Value> scriptValue =
         frame->script().executeScriptInMainWorldAndReturnValue(
@@ -136,17 +132,15 @@ void SuspendableScriptExecutor::createAndRun(
     LocalFrame* frame,
     int worldID,
     const HeapVector<ScriptSourceCode>& sources,
-    int extensionGroup,
     bool userGesture,
     WebScriptExecutionCallback* callback) {
   // TODO(devlin): Passing in a v8::Isolate* directly would be better than
   // toIsolate() here.
   ScriptState* scriptState = ScriptState::forWorld(
-      frame,
-      *DOMWrapperWorld::fromWorldId(toIsolate(frame), worldID, extensionGroup));
+      frame, *DOMWrapperWorld::fromWorldId(toIsolate(frame), worldID));
   SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(
       frame, scriptState, callback,
-      new WebScriptExecutor(sources, worldID, extensionGroup, userGesture));
+      new WebScriptExecutor(sources, worldID, userGesture));
   executor->run();
 }
 

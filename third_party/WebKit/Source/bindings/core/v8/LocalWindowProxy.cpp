@@ -117,8 +117,8 @@ void LocalWindowProxy::initialize() {
 
   MainThreadDebugger::instance()->contextCreated(m_scriptState.get(), frame(),
                                                  origin);
-  frame()->loader().client()->didCreateScriptContext(
-      context, m_world->extensionGroup(), m_world->worldId());
+  frame()->loader().client()->didCreateScriptContext(context,
+                                                     m_world->worldId());
   // If conditional features for window have been queued before the V8 context
   // was ready, then inject them into the context now
   if (m_world->isMainWorld()) {
@@ -139,21 +139,13 @@ void LocalWindowProxy::createContext() {
       V8Window::domTemplate(isolate(), *m_world)->InstanceTemplate();
   CHECK(!globalTemplate.IsEmpty());
 
-  // FIXME: It's not clear what the right thing to do for remote frames is.
-  // The extensions registered don't generally seem to make sense for remote
-  // frames, so skip it for now.
   Vector<const char*> extensionNames;
   // Dynamically tell v8 about our extensions now.
-  const V8Extensions& extensions = ScriptController::registeredExtensions();
-  extensionNames.reserveInitialCapacity(extensions.size());
-  int extensionGroup = m_world->extensionGroup();
-  int worldId = m_world->worldId();
-  for (const auto* extension : extensions) {
-    if (!frame()->loader().client()->allowScriptExtension(
-            extension->name(), extensionGroup, worldId))
-      continue;
-
-    extensionNames.push_back(extension->name());
+  if (frame()->loader().client()->allowScriptExtensions()) {
+    const V8Extensions& extensions = ScriptController::registeredExtensions();
+    extensionNames.reserveInitialCapacity(extensions.size());
+    for (const auto* extension : extensions)
+      extensionNames.push_back(extension->name());
   }
   v8::ExtensionConfiguration extensionConfiguration(extensionNames.size(),
                                                     extensionNames.data());

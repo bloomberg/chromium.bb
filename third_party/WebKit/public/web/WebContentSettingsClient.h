@@ -66,22 +66,6 @@ class WebContentSettingsClient {
     return enabledPerSettings;
   }
 
-  // Controls whether the given script extension should run in a new script
-  // context in this frame. If extensionGroup is 0, the script context is the
-  // frame's main context. Otherwise, it is a context created by
-  // WebLocalFrame::executeScriptInIsolatedWorld with that same extensionGroup
-  // value.
-  virtual bool allowScriptExtension(const WebString& extensionName,
-                                    int extensionGroup) {
-    return true;
-  }
-
-  virtual bool allowScriptExtension(const WebString& extensionName,
-                                    int extensionGroup,
-                                    int worldId) {
-    return allowScriptExtension(extensionName, extensionGroup);
-  }
-
   // Controls whether HTML5 Web Storage is allowed for this frame.
   // If local is true, then this is for local storage, otherwise it's for
   // session storage.

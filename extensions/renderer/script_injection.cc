@@ -18,7 +18,6 @@
 #include "extensions/common/host_id.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
-#include "extensions/renderer/extension_groups.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_injection_callback.h"
 #include "extensions/renderer/scripts_run_info.h"
@@ -278,7 +277,6 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
         world_id,
         &sources.front(),
         sources.size(),
-        EXTENSION_GROUP_CONTENT_SCRIPTS,
         is_user_gesture,
         callback.release());
   }

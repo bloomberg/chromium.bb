@@ -575,7 +575,6 @@ class BLINK_EXPORT WebFrameClient {
   // frame context.
   virtual void didCreateScriptContext(WebLocalFrame*,
                                       v8::Local<v8::Context>,
-                                      int extensionGroup,
                                       int worldId) {}
 
   // WebKit is about to release its reference to a v8 context for a frame.

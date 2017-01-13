@@ -121,7 +121,7 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
     OnSetClientSidePhishingDetection(true);
   translate_helper_ = new translate::TranslateHelper(
-      render_frame, chrome::ISOLATED_WORLD_ID_TRANSLATE, 0,
+      render_frame, chrome::ISOLATED_WORLD_ID_TRANSLATE,
       extensions::kExtensionScheme);
 }
 

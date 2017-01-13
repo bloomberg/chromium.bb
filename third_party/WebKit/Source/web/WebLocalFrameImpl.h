@@ -107,8 +107,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   void executeScript(const WebScriptSource&) override;
   void executeScriptInIsolatedWorld(int worldID,
                                     const WebScriptSource* sources,
-                                    unsigned numSources,
-                                    int extensionGroup) override;
+                                    unsigned numSources) override;
   void setIsolatedWorldSecurityOrigin(int worldID,
                                       const WebSecurityOrigin&) override;
   void setIsolatedWorldContentSecurityPolicy(int worldID,
@@ -132,13 +131,11 @@ class WEB_EXPORT WebLocalFrameImpl final
       int worldID,
       const WebScriptSource* sourcesIn,
       unsigned numSources,
-      int extensionGroup,
       WebVector<v8::Local<v8::Value>>* results) override;
   void requestExecuteScriptInIsolatedWorld(
       int worldID,
       const WebScriptSource* sourceIn,
       unsigned numSources,
-      int extensionGroup,
       bool userGesture,
       WebScriptExecutionCallback*) override;
   v8::Local<v8::Value> callFunctionEvenIfScriptDisabled(

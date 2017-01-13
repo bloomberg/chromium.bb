@@ -316,12 +316,11 @@ bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
 void Dispatcher::DidCreateScriptContext(
     blink::WebLocalFrame* frame,
     const v8::Local<v8::Context>& v8_context,
-    int extension_group,
     int world_id) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
-  ScriptContext* context = script_context_set_->Register(
-      frame, v8_context, extension_group, world_id);
+  ScriptContext* context =
+      script_context_set_->Register(frame, v8_context, world_id);
 
   // Initialize origin permissions for content scripts, which can't be
   // initialized in |OnActivateExtension|.

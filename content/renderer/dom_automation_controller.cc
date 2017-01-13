@@ -60,7 +60,6 @@ void DomAutomationController::OnDestruct() {}
 
 void DomAutomationController::DidCreateScriptContext(
     v8::Local<v8::Context> context,
-    int extension_group,
     int world_id) {
   // Add the domAutomationController to isolated worlds as well.
   v8::Isolate* isolate = blink::mainThreadIsolate();

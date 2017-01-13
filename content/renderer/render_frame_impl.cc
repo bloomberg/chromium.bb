@@ -2002,7 +2002,7 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestInIsolatedWorld(
   WebScriptSource script = WebScriptSource(jscript);
   JavaScriptIsolatedWorldRequest* request = new JavaScriptIsolatedWorldRequest(
       id, notify_result, routing_id_, weak_factory_.GetWeakPtr());
-  frame_->requestExecuteScriptInIsolatedWorld(world_id, &script, 1, 0, false,
+  frame_->requestExecuteScriptInIsolatedWorld(world_id, &script, 1, false,
                                               request);
 }
 
@@ -4497,12 +4497,11 @@ void RenderFrameImpl::didObserveLoadingBehavior(
 
 void RenderFrameImpl::didCreateScriptContext(blink::WebLocalFrame* frame,
                                              v8::Local<v8::Context> context,
-                                             int extension_group,
                                              int world_id) {
   DCHECK_EQ(frame_, frame);
 
   for (auto& observer : observers_)
-    observer.DidCreateScriptContext(context, extension_group, world_id);
+    observer.DidCreateScriptContext(context, world_id);
 }
 
 void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,

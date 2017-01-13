@@ -164,8 +164,7 @@ void WebRemoteFrameImpl::executeScript(const WebScriptSource&) {
 void WebRemoteFrameImpl::executeScriptInIsolatedWorld(
     int worldID,
     const WebScriptSource* sources,
-    unsigned numSources,
-    int extensionGroup) {
+    unsigned numSources) {
   NOTREACHED();
 }
 
@@ -195,7 +194,6 @@ void WebRemoteFrameImpl::executeScriptInIsolatedWorld(
     int worldID,
     const WebScriptSource* sourcesIn,
     unsigned numSources,
-    int extensionGroup,
     WebVector<v8::Local<v8::Value>>* results) {
   NOTREACHED();
 }

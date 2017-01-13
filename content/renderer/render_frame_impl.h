@@ -607,7 +607,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLoadingBehaviorFlag behavior) override;
   void didCreateScriptContext(blink::WebLocalFrame* frame,
                               v8::Local<v8::Context> context,
-                              int extension_group,
                               int world_id) override;
   void willReleaseScriptContext(blink::WebLocalFrame* frame,
                                 v8::Local<v8::Context> context,

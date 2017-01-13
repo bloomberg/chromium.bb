@@ -601,7 +601,7 @@ TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
   // This relies on the iframe focusing itself when it loads. This is a bit
   // sketchy, but it seems to be what other tests do.
   web_view()->focusedFrame()->executeScriptInIsolatedWorld(world_id, &source, 1,
-                                                           1, &values);
+                                                           &values);
   // Since only one script was added, only one result is expected
   if (values.size() == 1 && !values[0].IsEmpty())
     return values[0];
@@ -612,7 +612,7 @@ void TestRunnerForSpecificView::EvaluateScriptInIsolatedWorld(
     int world_id,
     const std::string& script) {
   WebScriptSource source(WebString::fromUTF8(script));
-  web_view()->focusedFrame()->executeScriptInIsolatedWorld(world_id, &source, 1,
+  web_view()->focusedFrame()->executeScriptInIsolatedWorld(world_id, &source,
                                                            1);
 }
 

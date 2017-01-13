@@ -219,7 +219,6 @@ class WebLocalFrame : public WebFrame {
       int worldID,
       const WebScriptSource* sourceIn,
       unsigned numSources,
-      int extensionGroup,
       bool userGesture,
       WebScriptExecutionCallback*) = 0;
 

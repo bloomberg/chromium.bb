@@ -118,7 +118,6 @@ class DomAutomationController : public gin::Wrappable<DomAutomationController>,
   // RenderFrameObserver
   void OnDestruct() override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
-                              int extension_group,
                               int world_id) override;
 
   int automation_id_;  // routing id to be used by the next channel.

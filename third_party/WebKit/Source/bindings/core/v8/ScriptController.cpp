@@ -435,12 +435,11 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(
 void ScriptController::executeScriptInIsolatedWorld(
     int worldID,
     const HeapVector<ScriptSourceCode>& sources,
-    int extensionGroup,
     Vector<v8::Local<v8::Value>>* results) {
   ASSERT(worldID > 0);
 
   RefPtr<DOMWrapperWorld> world =
-      DOMWrapperWorld::ensureIsolatedWorld(isolate(), worldID, extensionGroup);
+      DOMWrapperWorld::ensureIsolatedWorld(isolate(), worldID);
   LocalWindowProxy* isolatedWorldWindowProxy = windowProxy(*world);
   ScriptState* scriptState = isolatedWorldWindowProxy->getScriptState();
   if (!scriptState->contextIsValid())

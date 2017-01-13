@@ -6,9 +6,13 @@
 
 namespace extensions {
 
-TestExtensionsRendererClient::TestExtensionsRendererClient() {}
+TestExtensionsRendererClient::TestExtensionsRendererClient() {
+  ExtensionsRendererClient::Set(this);
+}
 
-TestExtensionsRendererClient::~TestExtensionsRendererClient() {}
+TestExtensionsRendererClient::~TestExtensionsRendererClient() {
+  ExtensionsRendererClient::Set(nullptr);
+}
 
 bool TestExtensionsRendererClient::IsIncognitoProcess() const {
   return false;

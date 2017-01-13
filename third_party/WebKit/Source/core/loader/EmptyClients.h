@@ -342,14 +342,9 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
   void runScriptsAtDocumentReady(bool) override {}
 
   void didCreateScriptContext(v8::Local<v8::Context>,
-                              int extensionGroup,
                               int worldId) override {}
   void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override {}
-  bool allowScriptExtension(const String& extensionName,
-                            int extensionGroup,
-                            int worldId) override {
-    return false;
-  }
+  bool allowScriptExtensions() override { return false; }
 
   WebCookieJar* cookieJar() const override { return 0; }
 

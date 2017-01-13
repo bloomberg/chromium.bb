@@ -244,16 +244,12 @@ class WebFrame {
   // The script gets its own global scope and its own prototypes for
   // intrinsic JavaScript objects (String, Array, and so-on). It also
   // gets its own wrappers for all DOM nodes and DOM constructors.
-  // extensionGroup is an embedder-provided specifier that controls which
-  // v8 extensions are loaded into the new context - see
-  // blink::registerExtension for the corresponding specifier.
   //
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < EmbedderWorldIdLimit, high number used internally.
   virtual void executeScriptInIsolatedWorld(int worldID,
                                             const WebScriptSource* sources,
-                                            unsigned numSources,
-                                            int extensionGroup) = 0;
+                                            unsigned numSources) = 0;
 
   // Associates an isolated world (see above for description) with a security
   // origin. XMLHttpRequest instances used in that world will be considered
@@ -287,7 +283,6 @@ class WebFrame {
       int worldID,
       const WebScriptSource* sourcesIn,
       unsigned numSources,
-      int extensionGroup,
       WebVector<v8::Local<v8::Value>>* results) = 0;
 
   // Call the function with the given receiver and arguments, bypassing

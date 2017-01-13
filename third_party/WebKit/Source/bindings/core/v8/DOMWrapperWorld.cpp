@@ -84,16 +84,12 @@ class DOMObjectHolder : public DOMObjectHolderBase {
 unsigned DOMWrapperWorld::isolatedWorldCount = 0;
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate,
-                                                    int worldId,
-                                                    int extensionGroup) {
-  return adoptRef(new DOMWrapperWorld(isolate, worldId, extensionGroup));
+                                                    int worldId) {
+  return adoptRef(new DOMWrapperWorld(isolate, worldId));
 }
 
-DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
-                                 int worldId,
-                                 int extensionGroup)
+DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate, int worldId)
     : m_worldId(worldId),
-      m_extensionGroup(extensionGroup),
       m_domDataStore(
           WTF::wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {}
 
@@ -101,17 +97,15 @@ DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
   ASSERT(isMainThread());
   DEFINE_STATIC_REF(
       DOMWrapperWorld, cachedMainWorld,
-      (DOMWrapperWorld::create(v8::Isolate::GetCurrent(), MainWorldId,
-                               mainWorldExtensionGroup)));
+      (DOMWrapperWorld::create(v8::Isolate::GetCurrent(), MainWorldId)));
   return *cachedMainWorld;
 }
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::fromWorldId(v8::Isolate* isolate,
-                                                         int worldId,
-                                                         int extensionGroup) {
+                                                         int worldId) {
   if (worldId == MainWorldId)
     return &mainWorld();
-  return ensureIsolatedWorld(isolate, worldId, extensionGroup);
+  return ensureIsolatedWorld(isolate, worldId);
 }
 
 typedef HashMap<int, DOMWrapperWorld*> WorldMap;
@@ -207,8 +201,7 @@ static bool isIsolatedWorldId(int worldId) {
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(
     v8::Isolate* isolate,
-    int worldId,
-    int extensionGroup) {
+    int worldId) {
   ASSERT(isIsolatedWorldId(worldId));
 
   WorldMap& map = isolatedWorldMap();
@@ -216,11 +209,10 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(
   RefPtr<DOMWrapperWorld> world = result.storedValue->value;
   if (world) {
     ASSERT(world->worldId() == worldId);
-    ASSERT(world->extensionGroup() == extensionGroup);
     return world.release();
   }
 
-  world = DOMWrapperWorld::create(isolate, worldId, extensionGroup);
+  world = DOMWrapperWorld::create(isolate, worldId);
   result.storedValue->value = world.get();
   isolatedWorldCount++;
   return world.release();

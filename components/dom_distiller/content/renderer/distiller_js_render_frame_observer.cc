@@ -42,7 +42,6 @@ void DistillerJsRenderFrameObserver::DidFinishLoad() {
 
 void DistillerJsRenderFrameObserver::DidCreateScriptContext(
     v8::Local<v8::Context> context,
-    int extension_group,
     int world_id) {
   if (world_id != distiller_isolated_world_id_ || !is_distiller_page_) {
     return;

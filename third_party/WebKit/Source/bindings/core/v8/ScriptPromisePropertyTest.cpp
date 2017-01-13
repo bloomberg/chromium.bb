@@ -101,7 +101,7 @@ class ScriptPromisePropertyTestBase {
     v8::HandleScope handleScope(isolate());
     m_otherScriptState = ScriptStateForTesting::create(
         v8::Context::New(isolate()),
-        DOMWrapperWorld::ensureIsolatedWorld(isolate(), 1, -1));
+        DOMWrapperWorld::ensureIsolatedWorld(isolate(), 1));
   }
 
   virtual ~ScriptPromisePropertyTestBase() { destroyContext(); }

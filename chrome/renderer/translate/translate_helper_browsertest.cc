@@ -70,7 +70,6 @@ class TestTranslateHelper : public translate::TranslateHelper {
   explicit TestTranslateHelper(content::RenderFrame* render_frame)
       : translate::TranslateHelper(render_frame,
                                    chrome::ISOLATED_WORLD_ID_TRANSLATE,
-                                   0,
                                    extensions::kExtensionScheme) {}
 
   base::TimeDelta AdjustDelay(int delayInMs) override {

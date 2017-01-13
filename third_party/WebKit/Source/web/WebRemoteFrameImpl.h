@@ -56,8 +56,7 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void executeScript(const WebScriptSource&) override;
   void executeScriptInIsolatedWorld(int worldID,
                                     const WebScriptSource* sources,
-                                    unsigned numSources,
-                                    int extensionGroup) override;
+                                    unsigned numSources) override;
   void setIsolatedWorldSecurityOrigin(int worldID,
                                       const WebSecurityOrigin&) override;
   void setIsolatedWorldContentSecurityPolicy(int worldID,
@@ -69,7 +68,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
       int worldID,
       const WebScriptSource* sourcesIn,
       unsigned numSources,
-      int extensionGroup,
       WebVector<v8::Local<v8::Value>>* results) override;
   v8::Local<v8::Value> callFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>,

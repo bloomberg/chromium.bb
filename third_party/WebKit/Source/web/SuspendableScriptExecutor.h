@@ -27,7 +27,6 @@ class SuspendableScriptExecutor final
   static void createAndRun(LocalFrame*,
                            int worldID,
                            const HeapVector<ScriptSourceCode>& sources,
-                           int extensionGroup,
                            bool userGesture,
                            WebScriptExecutionCallback*);
   static void createAndRun(LocalFrame*,

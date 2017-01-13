@@ -59,14 +59,10 @@ class DOMObjectHolderBase;
 // This class represent a collection of DOM wrappers for a specific world.
 class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
  public:
-  static PassRefPtr<DOMWrapperWorld> create(v8::Isolate*,
-                                            int worldId = -1,
-                                            int extensionGroup = -1);
+  static PassRefPtr<DOMWrapperWorld> create(v8::Isolate*, int worldId = -1);
 
-  static const int mainWorldExtensionGroup = 0;
   static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(v8::Isolate*,
-                                                         int worldId,
-                                                         int extensionGroup);
+                                                         int worldId);
   ~DOMWrapperWorld();
   void dispose();
 
@@ -88,9 +84,7 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   }
 
   static DOMWrapperWorld& mainWorld();
-  static PassRefPtr<DOMWrapperWorld> fromWorldId(v8::Isolate*,
-                                                 int worldId,
-                                                 int extensionGroup);
+  static PassRefPtr<DOMWrapperWorld> fromWorldId(v8::Isolate*, int worldId);
 
   static void setIsolatedWorldHumanReadableName(int worldID, const String&);
   String isolatedWorldHumanReadableName();
@@ -121,7 +115,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   }
 
   int worldId() const { return m_worldId; }
-  int extensionGroup() const { return m_extensionGroup; }
   DOMDataStore& domDataStore() const { return *m_domDataStore; }
 
  public:
@@ -129,7 +122,7 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   void registerDOMObjectHolder(v8::Isolate*, T*, v8::Local<v8::Value>);
 
  private:
-  DOMWrapperWorld(v8::Isolate*, int worldId, int extensionGroup);
+  DOMWrapperWorld(v8::Isolate*, int worldId);
 
   static void weakCallbackForDOMObjectHolder(
       const v8::WeakCallbackInfo<DOMObjectHolderBase>&);
@@ -139,7 +132,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   static unsigned isolatedWorldCount;
 
   const int m_worldId;
-  const int m_extensionGroup;
   std::unique_ptr<DOMDataStore> m_domDataStore;
   HashSet<std::unique_ptr<DOMObjectHolderBase>> m_domObjectHolders;
 };

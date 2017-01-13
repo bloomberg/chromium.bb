@@ -664,8 +664,7 @@ void WebLocalFrameImpl::executeScript(const WebScriptSource& source) {
 void WebLocalFrameImpl::executeScriptInIsolatedWorld(
     int worldID,
     const WebScriptSource* sourcesIn,
-    unsigned numSources,
-    int extensionGroup) {
+    unsigned numSources) {
   DCHECK(frame());
   CHECK_GT(worldID, 0);
   CHECK_LT(worldID, EmbedderWorldIdLimit);
@@ -673,8 +672,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(
   HeapVector<ScriptSourceCode> sources =
       createSourcesVector(sourcesIn, numSources);
   v8::HandleScope handleScope(toIsolate(frame()));
-  frame()->script().executeScriptInIsolatedWorld(worldID, sources,
-                                                 extensionGroup, 0);
+  frame()->script().executeScriptInIsolatedWorld(worldID, sources, 0);
 }
 
 void WebLocalFrameImpl::setIsolatedWorldSecurityOrigin(
@@ -753,7 +751,7 @@ void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(
   DCHECK(frame());
 
   SuspendableScriptExecutor::createAndRun(
-      frame(), 0, createSourcesVector(&source, 1), 0, userGesture, callback);
+      frame(), 0, createSourcesVector(&source, 1), userGesture, callback);
 }
 
 void WebLocalFrameImpl::requestExecuteV8Function(
@@ -773,7 +771,6 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(
     int worldID,
     const WebScriptSource* sourcesIn,
     unsigned numSources,
-    int extensionGroup,
     WebVector<v8::Local<v8::Value>>* results) {
   DCHECK(frame());
   CHECK_GT(worldID, 0);
@@ -784,8 +781,8 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(
 
   if (results) {
     Vector<v8::Local<v8::Value>> scriptResults;
-    frame()->script().executeScriptInIsolatedWorld(
-        worldID, sources, extensionGroup, &scriptResults);
+    frame()->script().executeScriptInIsolatedWorld(worldID, sources,
+                                                   &scriptResults);
     WebVector<v8::Local<v8::Value>> v8Results(scriptResults.size());
     for (unsigned i = 0; i < scriptResults.size(); i++)
       v8Results[i] =
@@ -793,8 +790,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(
     results->swap(v8Results);
   } else {
     v8::HandleScope handleScope(toIsolate(frame()));
-    frame()->script().executeScriptInIsolatedWorld(worldID, sources,
-                                                   extensionGroup, 0);
+    frame()->script().executeScriptInIsolatedWorld(worldID, sources, 0);
   }
 }
 
@@ -802,7 +798,6 @@ void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(
     int worldID,
     const WebScriptSource* sourcesIn,
     unsigned numSources,
-    int extensionGroup,
     bool userGesture,
     WebScriptExecutionCallback* callback) {
   DCHECK(frame());
@@ -810,8 +805,8 @@ void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(
   CHECK_LT(worldID, EmbedderWorldIdLimit);
 
   SuspendableScriptExecutor::createAndRun(
-      frame(), worldID, createSourcesVector(sourcesIn, numSources),
-      extensionGroup, userGesture, callback);
+      frame(), worldID, createSourcesVector(sourcesIn, numSources), userGesture,
+      callback);
 }
 
 // TODO(bashi): Consider returning MaybeLocal.

@@ -109,11 +109,9 @@ namespace translate {
 // TranslateHelper, public:
 TranslateHelper::TranslateHelper(content::RenderFrame* render_frame,
                                  int world_id,
-                                 int extension_group,
                                  const std::string& extension_scheme)
     : content::RenderFrameObserver(render_frame),
       world_id_(world_id),
-      extension_group_(extension_group),
       extension_scheme_(extension_scheme),
       binding_(this),
       weak_method_factory_(this) {}
@@ -238,8 +236,7 @@ void TranslateHelper::ExecuteScript(const std::string& script) {
     return;
 
   WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
-  main_frame->executeScriptInIsolatedWorld(
-      world_id_, &source, 1, extension_group_);
+  main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1);
 }
 
 bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
@@ -251,8 +248,7 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
   WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
-  main_frame->executeScriptInIsolatedWorld(
-      world_id_, &source, 1, extension_group_, &results);
+  main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsBoolean()) {
     NOTREACHED();
     return fallback;
@@ -270,8 +266,7 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
   WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
-  main_frame->executeScriptInIsolatedWorld(
-      world_id_, &source, 1, extension_group_, &results);
+  main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsString()) {
     NOTREACHED();
     return std::string();
@@ -293,8 +288,7 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebVector<v8::Local<v8::Value> > results;
   WebScriptSource source = WebScriptSource(ASCIIToUTF16(script));
-  main_frame->executeScriptInIsolatedWorld(
-      world_id_, &source, 1, extension_group_, &results);
+  main_frame->executeScriptInIsolatedWorld(world_id_, &source, 1, &results);
   if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsNumber()) {
     NOTREACHED();
     return 0.0;

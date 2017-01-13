@@ -4278,7 +4278,6 @@ class ContextLifetimeTestWebFrameClient
  private:
   void didCreateScriptContext(WebLocalFrame* frame,
                               v8::Local<v8::Context> context,
-                              int extensionGroup,
                               int worldId) override {
     createNotifications.push_back(
         WTF::makeUnique<Notification>(frame, context, worldId));
@@ -4399,9 +4398,8 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds) {
   int isolatedWorldId = 42;
   WebScriptSource scriptSource("hi!");
   int numSources = 1;
-  int extensionGroup = 0;
   webViewHelper.webView()->mainFrame()->executeScriptInIsolatedWorld(
-      isolatedWorldId, &scriptSource, numSources, extensionGroup);
+      isolatedWorldId, &scriptSource, numSources);
 
   // We should now have a new create notification.
   ASSERT_EQ(1u, webFrameClient.createNotifications.size());
@@ -4582,7 +4580,6 @@ class TestExecuteScriptDuringDidCreateScriptContext
  public:
   void didCreateScriptContext(WebLocalFrame* frame,
                               v8::Local<v8::Context> context,
-                              int extensionGroup,
                               int worldId) override {
     frame->executeScript(WebScriptSource("window.history = 'replaced';"));
   }
