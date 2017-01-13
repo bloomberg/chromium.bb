@@ -41,6 +41,7 @@ using MainThreadScrollingReasons = uint32_t;
 
 class CompositorAnimationHost;
 class CompositorAnimationTimeline;
+class LayoutBox;
 class LocalFrame;
 class FrameView;
 class GraphicsLayer;
@@ -74,6 +75,8 @@ class CORE_EXPORT ScrollingCoordinator final
   void notifyGeometryChanged();
   // Called when any frame recalculates its overflows after style change.
   void notifyOverflowUpdated();
+  // Called when any layoutBox has transform changed
+  void notifyTransformChanged(const LayoutBox&);
 
   void updateAfterCompositingChangeIfNeeded();
 
