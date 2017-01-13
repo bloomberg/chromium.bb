@@ -764,15 +764,21 @@ static void build_masks(const loop_filter_info_n *const lfi_n,
   const BLOCK_SIZE block_size = mbmi->sb_type;
   // TODO(debargha): Check if masks can be setup correctly when
   // rectangular transfroms are used with the EXT_TX expt.
-  const TX_SIZE tx_size_y = txsize_sqr_up_map[mbmi->tx_size];
+  const TX_SIZE tx_size_y = txsize_sqr_map[mbmi->tx_size];
+  const TX_SIZE tx_size_y_left = txsize_horz_map[mbmi->tx_size];
+  const TX_SIZE tx_size_y_above = txsize_vert_map[mbmi->tx_size];
   const TX_SIZE tx_size_uv =
-      txsize_sqr_up_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
+      txsize_sqr_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
+  const TX_SIZE tx_size_uv_left =
+      txsize_horz_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
+  const TX_SIZE tx_size_uv_above =
+      txsize_vert_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
   const int filter_level = get_filter_level(lfi_n, mbmi);
-  uint64_t *const left_y = &lfm->left_y[tx_size_y];
-  uint64_t *const above_y = &lfm->above_y[tx_size_y];
+  uint64_t *const left_y = &lfm->left_y[tx_size_y_left];
+  uint64_t *const above_y = &lfm->above_y[tx_size_y_above];
   uint64_t *const int_4x4_y = &lfm->int_4x4_y;
-  uint16_t *const left_uv = &lfm->left_uv[tx_size_uv];
-  uint16_t *const above_uv = &lfm->above_uv[tx_size_uv];
+  uint16_t *const left_uv = &lfm->left_uv[tx_size_uv_left];
+  uint16_t *const above_uv = &lfm->above_uv[tx_size_uv_above];
   uint16_t *const int_4x4_uv = &lfm->left_int_4x4_uv;
   int i;
 
@@ -813,16 +819,17 @@ static void build_masks(const loop_filter_info_n *const lfi_n,
   // size mask is set to be correct for a 64x64 prediction block size. We
   // mask to match the size of the block we are working on and then shift it
   // into place..
-  *above_y |= (size_mask[block_size] & above_64x64_txform_mask[tx_size_y])
+  *above_y |= (size_mask[block_size] & above_64x64_txform_mask[tx_size_y_above])
               << shift_y;
   *above_uv |=
-      (size_mask_uv[block_size] & above_64x64_txform_mask_uv[tx_size_uv])
+      (size_mask_uv[block_size] & above_64x64_txform_mask_uv[tx_size_uv_above])
       << shift_uv;
 
-  *left_y |= (size_mask[block_size] & left_64x64_txform_mask[tx_size_y])
+  *left_y |= (size_mask[block_size] & left_64x64_txform_mask[tx_size_y_left])
              << shift_y;
-  *left_uv |= (size_mask_uv[block_size] & left_64x64_txform_mask_uv[tx_size_uv])
-              << shift_uv;
+  *left_uv |=
+      (size_mask_uv[block_size] & left_64x64_txform_mask_uv[tx_size_uv_left])
+      << shift_uv;
 
   // Here we are trying to determine what to do with the internal 4x4 block
   // boundaries.  These differ from the 4x4 boundaries on the outside edge of
@@ -845,7 +852,9 @@ static void build_y_mask(const loop_filter_info_n *const lfi_n,
 #endif  // CONFIG_SUPERTX
                          LOOP_FILTER_MASK *lfm) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
-  const TX_SIZE tx_size_y = txsize_sqr_up_map[mbmi->tx_size];
+  const TX_SIZE tx_size_y = txsize_sqr_map[mbmi->tx_size];
+  const TX_SIZE tx_size_y_left = txsize_horz_map[mbmi->tx_size];
+  const TX_SIZE tx_size_y_above = txsize_vert_map[mbmi->tx_size];
 #if CONFIG_SUPERTX
   const BLOCK_SIZE block_size =
       supertx_enabled ? (BLOCK_SIZE)(3 * tx_size_y) : mbmi->sb_type;
@@ -853,8 +862,8 @@ static void build_y_mask(const loop_filter_info_n *const lfi_n,
   const BLOCK_SIZE block_size = mbmi->sb_type;
 #endif
   const int filter_level = get_filter_level(lfi_n, mbmi);
-  uint64_t *const left_y = &lfm->left_y[tx_size_y];
-  uint64_t *const above_y = &lfm->above_y[tx_size_y];
+  uint64_t *const left_y = &lfm->left_y[tx_size_y_left];
+  uint64_t *const above_y = &lfm->above_y[tx_size_y_above];
   uint64_t *const int_4x4_y = &lfm->int_4x4_y;
   int i;
 
@@ -874,10 +883,10 @@ static void build_y_mask(const loop_filter_info_n *const lfi_n,
 
   if (mbmi->skip && is_inter_block(mbmi)) return;
 
-  *above_y |= (size_mask[block_size] & above_64x64_txform_mask[tx_size_y])
+  *above_y |= (size_mask[block_size] & above_64x64_txform_mask[tx_size_y_above])
               << shift_y;
 
-  *left_y |= (size_mask[block_size] & left_64x64_txform_mask[tx_size_y])
+  *left_y |= (size_mask[block_size] & left_64x64_txform_mask[tx_size_y_left])
              << shift_y;
 
   if (tx_size_y == TX_4X4)
@@ -1368,13 +1377,6 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
       // Filter level can vary per MI
       if (!(lfl[r][c_step] = get_filter_level(&cm->lf_info, mbmi))) continue;
 
-      if (txsize_sqr_up_map[tx_size] == TX_32X32)
-        tx_size_mask = 3;
-      else if (txsize_sqr_up_map[tx_size] == TX_16X16)
-        tx_size_mask = 1;
-      else
-        tx_size_mask = 0;
-
 #if CONFIG_VAR_TX
       tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
       tx_size_c =
@@ -1383,6 +1385,13 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
       cm->above_txfm_context[mi_col + c] = tx_size;
       cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
 #endif  // CONFIG_VAR_TX
+
+      if (tx_size_c == TX_32X32)
+        tx_size_mask = 3;
+      else if (tx_size_c == TX_16X16)
+        tx_size_mask = 1;
+      else
+        tx_size_mask = 0;
 
       // Build masks based on the transform size of each block
       // handle vertical mask
@@ -1413,6 +1422,13 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
             (c_step & tx_size_mask) == 0)
           mask_4x4_int[r] |= col_mask;
       }
+
+      if (tx_size_r == TX_32X32)
+        tx_size_mask = 3;
+      else if (tx_size_r == TX_16X16)
+        tx_size_mask = 1;
+      else
+        tx_size_mask = 0;
 
       // set horizontal mask
       if (tx_size_r == TX_32X32) {
@@ -1555,13 +1571,6 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
       // Filter level can vary per MI
       if (!(lfl[r][c_step] = get_filter_level(&cm->lf_info, mbmi))) continue;
 
-      if (txsize_sqr_up_map[tx_size] == TX_32X32)
-        tx_size_mask = 3;
-      else if (txsize_sqr_up_map[tx_size] == TX_16X16)
-        tx_size_mask = 1;
-      else
-        tx_size_mask = 0;
-
 #if CONFIG_VAR_TX
       tx_size_r = AOMMIN(tx_size, cm->above_txfm_context[mi_col + c]);
       tx_size_c =
@@ -1570,6 +1579,13 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
       cm->above_txfm_context[mi_col + c] = tx_size;
       cm->left_txfm_context[(mi_row + r) & MAX_MIB_MASK] = tx_size;
 #endif
+
+      if (tx_size_c == TX_32X32)
+        tx_size_mask = 3;
+      else if (tx_size_c == TX_16X16)
+        tx_size_mask = 1;
+      else
+        tx_size_mask = 0;
 
       // Build masks based on the transform size of each block
       // handle vertical mask
@@ -1600,6 +1616,13 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
             (c_step & tx_size_mask) == 0)
           mask_4x4_int[r] |= col_mask;
       }
+
+      if (tx_size_r == TX_32X32)
+        tx_size_mask = 3;
+      else if (tx_size_r == TX_16X16)
+        tx_size_mask = 1;
+      else
+        tx_size_mask = 0;
 
       // set horizontal mask
       if (tx_size_r == TX_32X32) {
