@@ -663,11 +663,6 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
   if (tracker_) {
     // Set up any clients that can operate regardless of the request
     PushClients(tracker_->ClientsHandlingAnyRequest());
-  } else {
-    // There was no request_group_id, so the request was from something like a
-    // data: or file: URL.
-    // Attach any global clients to the request.
-    PushClients(RequestTracker::GlobalClientsHandlingAnyRequest());
   }
 
   // Now that all of the network clients are set up, if there was an error with

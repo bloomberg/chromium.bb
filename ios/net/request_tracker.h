@@ -79,14 +79,6 @@ class RequestTracker {
   // this tracker.
   void AddNetworkClientFactory(CRNForwardingNetworkClientFactory* factory);
 
-  // Registers a factory with the class that will be added to all trackers.
-  // Requests without associated trackers can add clients from these factories
-  // using GlobalClientsHandlingAnyRequest().
-  // Only |-clientHandlingAnyRequest| will be called on |factory|, the other
-  // methods are not supported.
-  static void AddGlobalNetworkClientFactory(
-      CRNForwardingNetworkClientFactory* factory);
-
   // Gets the request context associated with the tracker.
   virtual URLRequestContext* GetRequestContext() = 0;
 
@@ -95,10 +87,6 @@ class RequestTracker {
   // to the CRNForwardingNetworkClientFactories added to the tracker. The array
   // may be empty. The caller is responsible for taking ownership of the clients
   // in the array.
-
-  // Static method that returns clients that can handle any request, for use
-  // in cases where a request isn't associated with any request_tracker.
-  static NSArray* GlobalClientsHandlingAnyRequest();
 
   // Returns clients that can handle any request.
   NSArray* ClientsHandlingAnyRequest();
