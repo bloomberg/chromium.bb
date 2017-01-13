@@ -2,6 +2,9 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
+var initialize_Test = function() {
+    InspectorTest.preloadModule("inline_editor");
+};
 
 function test()
 {
@@ -88,7 +91,7 @@ function test()
 
     function dumpCSSLength(lengthText)
     {
-        var length = Common.CSSLength.parse(lengthText);
+        var length = InlineEditor.CSSLength.parse(lengthText);
         var statusText = length !== null ? "Succeeded: " + length.asCSSText() : "Failed";
         InspectorTest.addResult("\"" + lengthText  + "\", Parsing " + statusText);
     }
@@ -105,7 +108,7 @@ function test()
 
     function dumpShadow(shadowText, isBoxShadow)
     {
-        var shadows = isBoxShadow ? Common.CSSShadowModel.parseBoxShadow(shadowText) : Common.CSSShadowModel.parseTextShadow(shadowText);
+        var shadows = isBoxShadow ? InlineEditor.CSSShadowModel.parseBoxShadow(shadowText) : InlineEditor.CSSShadowModel.parseTextShadow(shadowText);
         var output = [];
         for (var i = 0; i < shadows.length; i++)
             output.push(shadows[i].asCSSText());

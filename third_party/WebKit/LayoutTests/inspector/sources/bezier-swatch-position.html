@@ -21,7 +21,7 @@ function test()
             {
                 var swatch = sourceFrame.textEditor._codeMirrorElement.querySelector("span[is=bezier-swatch]");
                 swatch.shadowRoot.querySelector(".bezier-swatch-icon").click();
-                sourceFrame._bezierEditor.setBezier(Common.Geometry.CubicBezier.parse("linear"));
+                sourceFrame._bezierEditor.setBezier(UI.Geometry.CubicBezier.parse("linear"));
                 sourceFrame._bezierEditor._onchange();
                 sourceFrame._swatchPopoverHelper.hide(true)
                 InspectorTest.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
