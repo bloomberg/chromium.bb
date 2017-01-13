@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
@@ -130,12 +131,16 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
           this,
           WTF::bind(&MediaControls::hideAllMenus, wrapWeakPersistent(this)))),
       m_orientationLockDelegate(nullptr),
-      m_hideMediaControlsTimer(this,
+      m_hideMediaControlsTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
+                                                     &mediaElement.document()),
+                               this,
                                &MediaControls::hideMediaControlsTimerFired),
       m_hideTimerBehaviorFlags(IgnoreNone),
       m_isMouseOverControls(false),
       m_isPausedForScrubbing(false),
-      m_panelWidthChangedTimer(this,
+      m_panelWidthChangedTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
+                                                     &mediaElement.document()),
+                               this,
                                &MediaControls::panelWidthChangedTimerFired),
       m_panelWidth(0),
       m_keepShowingUntilTimerFires(false) {}

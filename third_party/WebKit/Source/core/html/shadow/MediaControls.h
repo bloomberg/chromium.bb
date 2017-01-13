@@ -205,12 +205,12 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   Member<MediaControlsWindowEventListener> m_windowEventListener;
   Member<MediaControlsOrientationLockDelegate> m_orientationLockDelegate;
 
-  Timer<MediaControls> m_hideMediaControlsTimer;
+  TaskRunnerTimer<MediaControls> m_hideMediaControlsTimer;
   unsigned m_hideTimerBehaviorFlags;
   bool m_isMouseOverControls : 1;
   bool m_isPausedForScrubbing : 1;
 
-  Timer<MediaControls> m_panelWidthChangedTimer;
+  TaskRunnerTimer<MediaControls> m_panelWidthChangedTimer;
   int m_panelWidth;
 
   bool m_keepShowingUntilTimerFires : 1;
