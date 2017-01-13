@@ -366,6 +366,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ResourcePrefetchPredictor",
      predictors::RegisterResourcePrefetchPredictor},
     {"RevenueStats", chrome::android::RegisterRevenueStats},
+    {"SafeBrowsing", safe_browsing::android::RegisterBrowserJNI},
     {"SceneLayer", RegisterSceneLayer},
     {"ScreenshotTask", chrome::android::RegisterScreenshotTask},
     {"ServiceTabLauncher", ServiceTabLauncher::Register},
