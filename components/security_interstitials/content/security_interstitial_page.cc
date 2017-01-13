@@ -34,9 +34,12 @@ SecurityInterstitialPage::SecurityInterstitialPage(
       create_view_(true),
       controller_(std::move(controller)) {
   // Determine if any prefs need to be updated prior to showing the security
-  // interstitial.
-  safe_browsing::UpdatePrefsBeforeSecurityInterstitial(
-      controller_->GetPrefService());
+  // interstitial. Note that some content embedders (such as Android WebView)
+  // uses security interstitials without a prefservice.
+  if (controller_->GetPrefService()) {
+    safe_browsing::UpdatePrefsBeforeSecurityInterstitial(
+        controller_->GetPrefService());
+  }
 
   // Creating interstitial_page_ without showing it leaks memory, so don't
   // create it here.
@@ -72,10 +75,6 @@ void SecurityInterstitialPage::Show() {
 
   controller_->set_interstitial_page(interstitial_page_);
   AfterShow();
-}
-
-bool SecurityInterstitialPage::IsPrefEnabled(const char* pref) {
-  return controller_->GetPrefService()->GetBoolean(pref);
 }
 
 SecurityInterstitialControllerClient* SecurityInterstitialPage::controller() {

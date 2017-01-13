@@ -64,9 +64,6 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   content::WebContents* web_contents() const;
   GURL request_url() const;
 
-  // Returns the boolean value of the given |pref|.
-  bool IsPrefEnabled(const char* pref);
-
   SecurityInterstitialControllerClient* controller();
 
   MetricsHelper* metrics_helper();
