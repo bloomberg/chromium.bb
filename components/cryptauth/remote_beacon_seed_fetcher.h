@@ -26,7 +26,7 @@ class RemoteBeaconSeedFetcher {
 
   virtual bool FetchSeedsForDevice(
       const RemoteDevice& remote_device,
-      std::vector<BeaconSeed>* beacon_seeds_out);
+      std::vector<BeaconSeed>* beacon_seeds_out) const;
 
  private:
   // Not owned by this instance and must outlive it.

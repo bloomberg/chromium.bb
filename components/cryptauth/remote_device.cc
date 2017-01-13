@@ -49,6 +49,13 @@ bool RemoteDevice::operator==(const RemoteDevice& other) const {
       && sign_in_challenge == other.sign_in_challenge;
 }
 
+bool RemoteDevice::operator<(const RemoteDevice& other) const {
+  // |public_key| is the only field guaranteed to be set and is also unique to
+  // each RemoteDevice. However, since it can contain null bytes, use
+  // GetDeviceId(), which cannot contain null bytes, to compare devices.
+  return GetDeviceId().compare(other.GetDeviceId()) < 0;
+}
+
 // static
 std::string RemoteDevice::TruncateDeviceIdForLogs(const std::string& full_id) {
   if (full_id.length() <= 10) {

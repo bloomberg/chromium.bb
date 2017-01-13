@@ -38,17 +38,19 @@ void MockLocalDeviceDataProvider::SetBeaconSeeds(
 bool MockLocalDeviceDataProvider::GetLocalDeviceData(
     std::string* public_key_out,
     std::vector<cryptauth::BeaconSeed>* beacon_seeds_out) const {
-  if (public_key_ && beacon_seeds_) {
-    if (public_key_out) {
-      *public_key_out = *public_key_;
-    }
-    if (beacon_seeds_out) {
-      *beacon_seeds_out = *beacon_seeds_;
-    }
-    return true;
+  bool success = false;
+
+  if (public_key_ && public_key_out) {
+    *public_key_out = *public_key_;
+    success = true;
   }
 
-  return false;
+  if (beacon_seeds_ && beacon_seeds_out) {
+    *beacon_seeds_out = *beacon_seeds_;
+    success = true;
+  }
+
+  return success;
 }
 
 }  // namespace tether

@@ -38,6 +38,7 @@ class EidGenerator {
     DataWithTimestamp(const std::string& data,
                       const int64_t start_timestamp_ms,
                       const int64_t end_timestamp_ms);
+    DataWithTimestamp(const DataWithTimestamp& other);
 
     bool ContainsTime(const int64_t timestamp_ms) const;
     std::string DataInHex() const;

@@ -43,6 +43,10 @@ struct RemoteDevice {
 
   bool operator==(const RemoteDevice& other) const;
 
+  // Compares devices via their public keys. Note that this function is
+  // necessary in order to use |RemoteDevice| as a key of a std::map.
+  bool operator<(const RemoteDevice& other) const;
+
   // Static method for truncated device ID for logs.
   static std::string TruncateDeviceIdForLogs(const std::string& full_id);
 };

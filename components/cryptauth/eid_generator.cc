@@ -94,6 +94,15 @@ EidGenerator::DataWithTimestamp::DataWithTimestamp(
   DCHECK(data.size());
 }
 
+EidGenerator::DataWithTimestamp::DataWithTimestamp(
+    const DataWithTimestamp& other)
+    : data(other.data),
+      start_timestamp_ms(other.start_timestamp_ms),
+      end_timestamp_ms(other.end_timestamp_ms) {
+  DCHECK(start_timestamp_ms < end_timestamp_ms);
+  DCHECK(data.size());
+}
+
 bool EidGenerator::DataWithTimestamp::ContainsTime(
     const int64_t timestamp_ms) const {
   return start_timestamp_ms <= timestamp_ms && timestamp_ms < end_timestamp_ms;

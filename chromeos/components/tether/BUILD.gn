@@ -8,6 +8,8 @@ static_library("tether") {
   sources = [
     "ble_advertisement_device_queue.cc",
     "ble_advertisement_device_queue.h",
+    "ble_advertiser.cc",
+    "ble_advertiser.h",
     "ble_constants.cc",
     "ble_constants.h",
     "ble_scanner.cc",
@@ -59,6 +61,7 @@ source_set("unit_tests") {
 
   sources = [
     "ble_advertisement_device_queue_unittest.cc",
+    "ble_advertiser_unittest.cc",
     "ble_scanner_unittest.cc",
     "host_scan_scheduler_unittest.cc",
     "local_device_data_provider_unittest.cc",

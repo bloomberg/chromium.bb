@@ -16,7 +16,7 @@ RemoteBeaconSeedFetcher::~RemoteBeaconSeedFetcher() {}
 
 bool RemoteBeaconSeedFetcher::FetchSeedsForDevice(
     const RemoteDevice& remote_device,
-    std::vector<BeaconSeed>* beacon_seeds_out) {
+    std::vector<BeaconSeed>* beacon_seeds_out) const {
   if (remote_device.public_key.empty()) {
     return false;
   }
