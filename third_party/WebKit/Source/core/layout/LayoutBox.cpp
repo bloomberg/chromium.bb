@@ -55,7 +55,6 @@
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
-#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxPaintInvalidator.h"
@@ -336,11 +335,6 @@ void LayoutBox::styleDidChange(StyleDifference diff,
     }
   }
 
-  if (diff.transformChanged()) {
-    if (ScrollingCoordinator* scrollingCoordinator =
-            document().frame()->page()->scrollingCoordinator())
-      scrollingCoordinator->notifyTransformChanged(*this);
-  }
   // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
   DCHECK(!isInline() || isAtomicInlineLevel());
 }

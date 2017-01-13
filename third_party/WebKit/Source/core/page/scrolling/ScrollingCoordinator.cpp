@@ -128,18 +128,6 @@ void ScrollingCoordinator::notifyGeometryChanged() {
   m_shouldScrollOnMainThreadDirty = true;
 }
 
-void ScrollingCoordinator::notifyTransformChanged(const LayoutBox& box) {
-  if (m_page->deprecatedLocalMainFrame()->view()->needsLayout())
-    return;
-
-  for (PaintLayer* layer = box.enclosingLayer(); layer;
-       layer = layer->parent()) {
-    if (m_layersWithTouchRects.contains(layer)) {
-      m_touchEventTargetRectsAreDirty = true;
-      return;
-    }
-  }
-}
 void ScrollingCoordinator::notifyOverflowUpdated() {
   m_scrollGestureRegionIsDirty = true;
 }
