@@ -203,7 +203,6 @@ component("skia") {
     "ext/google_logging.cc",
     "ext/image_operations.cc",
     "ext/opacity_filter_canvas.cc",
-    "ext/platform_device.cc",
     "ext/recursive_gaussian_convolution.cc",
     "ext/skia_encode_image.cc",
     "ext/skia_encode_image.h",

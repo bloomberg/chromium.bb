@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
