@@ -9,7 +9,6 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -80,18 +79,6 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
 
   ScrollOffset m_scrollOffset;
   ScrollOffset m_maximumScrollOffset;
-};
-
-class ScrollbarTestSuite : public testing::Test {
- public:
-  ScrollbarTestSuite() {}
-
-  void SetUp() override {
-    m_config.compositorSupport = Platform::current()->compositorSupport();
-  }
-
- protected:
-  TestingPlatformSupport::Config m_config;
 };
 
 }  // namespace blink

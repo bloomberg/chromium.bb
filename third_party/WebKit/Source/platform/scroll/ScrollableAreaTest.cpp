@@ -32,12 +32,11 @@ class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
 
 }  // namespace
 
-class ScrollableAreaTest : public ScrollbarTestSuite {};
+using ScrollableAreaTest = testing::Test;
 
 TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
-                               const TestingPlatformSupport::Config&>
-      platform(m_config);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
 
   MockScrollableArea* scrollableArea =
       MockScrollableArea::create(ScrollOffset(0, 100));
@@ -46,9 +45,8 @@ TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync) {
 }
 
 TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
-                               const TestingPlatformSupport::Config&>
-      platform(m_config);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
 
   ScrollbarThemeWithMockInvalidation theme;
   MockScrollableArea* scrollableArea =
@@ -89,9 +87,8 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint) {
 }
 
 TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
-                               const TestingPlatformSupport::Config&>
-      platform(m_config);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
 
   ScrollbarTheme::setMockScrollbarsEnabled(true);
   MockScrollableArea* scrollableArea =
@@ -116,9 +113,8 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
 }
 
 TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
-                               const TestingPlatformSupport::Config&>
-      platform(m_config);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
 
   ScrollbarThemeWithMockInvalidation theme;
   MockScrollableArea* scrollableArea =
@@ -160,9 +156,8 @@ TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
 }
 
 TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
-                               const TestingPlatformSupport::Config&>
-      platform(m_config);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
 
   ScrollbarThemeWithMockInvalidation theme;
   MockScrollableArea* scrollableArea =
@@ -242,9 +237,8 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
 }
 
 TEST_F(ScrollableAreaTest, RecalculatesScrollbarOverlayIfBackgroundChanges) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
-                               const TestingPlatformSupport::Config&>
-      platform(m_config);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
 
   MockScrollableArea* scrollableArea =
       MockScrollableArea::create(ScrollOffset(0, 100));

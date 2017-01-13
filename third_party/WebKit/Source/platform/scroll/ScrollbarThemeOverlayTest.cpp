@@ -5,18 +5,18 @@
 #include "platform/scroll/ScrollbarThemeOverlay.h"
 
 #include "platform/scroll/ScrollbarTestSuite.h"
+#include "platform/testing/TestingPlatformSupport.h"
 
 namespace blink {
 
 using testing::NiceMock;
 using testing::Return;
 
-class ScrollbarThemeOverlayTest : public ScrollbarTestSuite {};
+using ScrollbarThemeOverlayTest = testing::Test;
 
 TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
-                               const TestingPlatformSupport::Config&>
-      platform(m_config);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
 
   NiceMock<MockScrollableArea>* mockScrollableArea =
       new NiceMock<MockScrollableArea>(ScrollOffset(100, 100));
