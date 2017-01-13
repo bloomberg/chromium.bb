@@ -85,7 +85,7 @@ const char kLearnMoreIncognitoUrl[] =
 // The URL for the Learn More page shown on guest session new tab.
 const char kLearnMoreGuestSessionUrl[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromebook/answer/1057090";
+    "https://support.google.com/chromebook/?p=chromebook_guest";
 #else
     "https://support.google.com/chrome/?p=ui_guest";
 #endif
