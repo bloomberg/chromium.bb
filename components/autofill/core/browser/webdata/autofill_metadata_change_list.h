@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_change_list.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -35,7 +37,7 @@ class AutofillMetadataChangeList : public syncer::MetadataChangeList {
   void ClearMetadata(const std::string& storage_key) override;
 
   // Returns the value of |error_| and unsets it.
-  syncer::SyncError TakeError();
+  base::Optional<syncer::ModelError> TakeError();
 
  private:
   // The autofill table to store metadata in; always outlives |this|.
@@ -45,7 +47,7 @@ class AutofillMetadataChangeList : public syncer::MetadataChangeList {
   syncer::ModelType type_;
 
   // The first error encountered by this object, if any.
-  syncer::SyncError error_;
+  base::Optional<syncer::ModelError> error_;
 };
 
 }  // namespace autofill

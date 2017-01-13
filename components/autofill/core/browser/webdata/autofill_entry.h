@@ -31,6 +31,7 @@ class AutofillKey {
 
 class AutofillEntry {
  public:
+  AutofillEntry();
   AutofillEntry(const AutofillKey& key,
                 const base::Time& date_created,
                 const base::Time& date_last_used);
@@ -41,6 +42,7 @@ class AutofillEntry {
   const base::Time& date_last_used() const { return date_last_used_; }
 
   bool operator==(const AutofillEntry& entry) const;
+  bool operator!=(const AutofillEntry& entry) const;
   bool operator<(const AutofillEntry& entry) const;
 
  private:

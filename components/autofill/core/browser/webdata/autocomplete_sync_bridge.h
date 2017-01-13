@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
@@ -65,9 +66,6 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
   // AutofillWebDataServiceObserverOnDBThread implementation.
   void AutofillEntriesChanged(const AutofillChangeList& changes) override;
 
-  static AutofillEntry CreateAutofillEntry(
-      const sync_pb::AutofillSpecifics& autofill_specifics);
-
  private:
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable() const;
@@ -86,6 +84,8 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
 
   ScopedObserver<AutofillWebDataBackend, AutocompleteSyncBridge>
       scoped_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncBridge);
 };
 
 }  // namespace autofill
