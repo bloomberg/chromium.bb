@@ -6500,19 +6500,32 @@ void av1_update_neighbors(int tx_size, const int16_t *scan,
     const int coeff_idx = scan[scan_idx];
     const int r = coeff_idx / tx1d_size;
     const int c = coeff_idx % tx1d_size;
-    const int has_left = c > 0 && iscan[coeff_idx - 1] < scan_idx;
-    const int has_above = r > 0 && iscan[coeff_idx - tx1d_size] < scan_idx;
+    const int nb_offset_r[5] = { -1, 0, -1, -1, 1 };
+    const int nb_offset_c[5] = { 0, -1, -1, 1, -1 };
+    const int nb_num = 5;
+    int nb_count = 0;
+    int nb_idx;
 
-    if (has_left && has_above) {
-      neighbors[scan_idx * MAX_NEIGHBORS + 0] = coeff_idx - 1;
-      neighbors[scan_idx * MAX_NEIGHBORS + 1] = coeff_idx - tx1d_size;
-    } else if (has_left) {
-      neighbors[scan_idx * MAX_NEIGHBORS + 0] = coeff_idx - 1;
-      neighbors[scan_idx * MAX_NEIGHBORS + 1] = coeff_idx - 1;
-    } else if (has_above) {
-      neighbors[scan_idx * MAX_NEIGHBORS + 0] = coeff_idx - tx1d_size;
-      neighbors[scan_idx * MAX_NEIGHBORS + 1] = coeff_idx - tx1d_size;
-    } else {
+    for (nb_idx = 0; nb_idx < nb_num; ++nb_idx) {
+      if (nb_count < 2) {
+        int nb_r = r + nb_offset_r[nb_idx];
+        int nb_c = c + nb_offset_c[nb_idx];
+        int nb_coeff_idx = nb_r * tx1d_size + nb_c;
+        int valid_pos =
+            nb_r >= 0 && nb_r < tx1d_size && nb_c >= 0 && nb_c < tx1d_size;
+        if (valid_pos && iscan[nb_coeff_idx] < scan_idx) {
+          neighbors[scan_idx * MAX_NEIGHBORS + nb_count] = nb_coeff_idx;
+          ++nb_count;
+        }
+      } else {
+        break;
+      }
+    }
+
+    if (nb_count == 1) {
+      neighbors[scan_idx * MAX_NEIGHBORS + 1] =
+          neighbors[scan_idx * MAX_NEIGHBORS + 0];
+    } else if (nb_count == 0) {
       neighbors[scan_idx * MAX_NEIGHBORS + 0] = scan[0];
       neighbors[scan_idx * MAX_NEIGHBORS + 1] = scan[0];
     }

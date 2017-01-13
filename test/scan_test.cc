@@ -81,13 +81,14 @@ TEST(ScanTest, av1_update_neighbors) {
   const int16_t scan[16] = { 0, 1, 2,  3,  4,  5,  6,  7,
                              8, 9, 10, 11, 12, 13, 14, 15 };
   int16_t nb[(16 + 1) * 2];
-  const int16_t ref_nb[(16 + 1) * 2] = { 0, 0,  0,  0,  1,  1, 2, 2, 0,
-                                         0, 4,  1,  5,  2,  6, 3, 4, 4,
-                                         8, 5,  9,  6,  10, 7, 8, 8, 12,
-                                         9, 13, 10, 14, 11, 0, 0 };
+  const int16_t ref_nb[(16 + 1) * 2] = { 0,  0,  0,  0,  1,  1,  2, 2, 0,
+                                         1,  1,  4,  2,  5,  3,  6, 4, 5,
+                                         5,  8,  6,  9,  7,  10, 8, 9, 9,
+                                         12, 10, 13, 11, 14, 0,  0 };
 
   // raster order's scan and iscan are the same
   av1_update_neighbors(tx_size, scan, scan, nb);
+
   for (int i = 0; i < (16 + 1) * 2; ++i) {
     EXPECT_EQ(ref_nb[i], nb[i]);
   }
