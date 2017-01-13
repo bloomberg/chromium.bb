@@ -106,6 +106,14 @@ var PeerConnectionUpdateTable = (function() {
       var details = row.cells[1].childNodes[0];
       details.appendChild(valueContainer);
 
+      // Highlight ICE failures and failure callbacks.
+      if ((update.type === 'iceConnectionStateChange' &&
+           update.value === 'ICEConnectionStateFailed') ||
+          update.type.indexOf('OnFailure') !== -1 ||
+          update.type === 'addIceCandidateFailed') {
+        valueContainer.parentElement.classList.add('update-log-failure');
+      }
+
       var value = update.value;
       // map internal names and values to names and events from the
       // specification. This is a display change which shall not
