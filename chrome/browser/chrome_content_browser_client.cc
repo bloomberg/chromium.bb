@@ -148,9 +148,8 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
+#include "components/task_scheduler_util/browser/initialization.h"
 #include "components/task_scheduler_util/common/variations_util.h"
-#include "components/task_scheduler_util/initialization/browser_util.h"
-#include "components/task_scheduler_util/variations/browser_variations_util.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
@@ -3355,16 +3354,14 @@ void ChromeContentBrowserClient::GetTaskSchedulerInitializationParams(
   DCHECK(index_to_traits_callback);
   // If this call fails, content will fall back to the default params.
   *params_vector =
-      task_scheduler_util::variations::
-          GetBrowserSchedulerWorkerPoolParamsFromVariations();
-  *index_to_traits_callback = base::Bind(&task_scheduler_util::initialization::
-                                             BrowserWorkerPoolIndexForTraits);
+      task_scheduler_util::GetBrowserWorkerPoolParamsFromVariations();
+  *index_to_traits_callback =
+      base::Bind(&task_scheduler_util::BrowserWorkerPoolIndexForTraits);
 }
 
 void ChromeContentBrowserClient::
     PerformExperimentalTaskSchedulerRedirections() {
-  task_scheduler_util::variations::
-      MaybePerformBrowserTaskSchedulerRedirection();
+  task_scheduler_util::MaybePerformBrowserTaskSchedulerRedirection();
 }
 
 bool ChromeContentBrowserClient::ShouldRedirectDOMStorageTaskRunner() {

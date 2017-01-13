@@ -12,8 +12,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/task_scheduler_util/initialization/browser_util.h"
-#include "components/task_scheduler_util/variations/browser_variations_util.h"
+#include "components/task_scheduler_util/browser/initialization.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_about_rewriter.h"
@@ -177,13 +176,12 @@ void ChromeWebClient::GetTaskSchedulerInitializationParams(
   DCHECK(params_vector);
   DCHECK(index_to_traits_callback);
   // If this call fails, web will fall back to the default params.
-  *params_vector = task_scheduler_util::variations::
-      GetBrowserSchedulerWorkerPoolParamsFromVariations();
-  *index_to_traits_callback = base::Bind(
-      &task_scheduler_util::initialization::BrowserWorkerPoolIndexForTraits);
+  *params_vector =
+      task_scheduler_util::GetBrowserWorkerPoolParamsFromVariations();
+  *index_to_traits_callback =
+      base::Bind(&task_scheduler_util::BrowserWorkerPoolIndexForTraits);
 }
 
 void ChromeWebClient::PerformExperimentalTaskSchedulerRedirections() {
-  task_scheduler_util::variations::
-      MaybePerformBrowserTaskSchedulerRedirection();
+  task_scheduler_util::MaybePerformBrowserTaskSchedulerRedirection();
 }
