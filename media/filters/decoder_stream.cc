@@ -458,7 +458,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
     case DecodeStatus::OK:
       // Any successful decode counts!
       if (buffer_size > 0)
-        StreamTraits::ReportStatistics(statistics_cb_, buffer_size);
+        traits_.ReportStatistics(statistics_cb_, buffer_size);
 
       if (state_ == STATE_NORMAL) {
         if (end_of_stream) {

@@ -263,6 +263,12 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->ShouldDisableVideoWhenHidden();
   }
 
+  void SetVideoKeyframeDistanceAverage(base::TimeDelta value) {
+    PipelineStatistics statistics;
+    statistics.video_keyframe_distance_average = value;
+    wmpi_->SetPipelineStatisticsForTest(statistics);
+  }
+
   // "Renderer" thread.
   base::MessageLoop message_loop_;
 
@@ -775,12 +781,17 @@ TEST_F(WebMediaPlayerImplTest, ShouldDisableVideoWhenHidden) {
   SetBackgroundVideoOptimization(true);
 
   SetMetadata(true, true);
+  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(5));
   EXPECT_TRUE(ShouldDisableVideoWhenHidden());
 
   SetMetadata(false, true);
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 
   SetMetadata(true, false);
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+
+  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(100));
+  SetMetadata(true, true);
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 }
 

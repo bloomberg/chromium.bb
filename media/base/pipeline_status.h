@@ -5,11 +5,11 @@
 #ifndef MEDIA_BASE_PIPELINE_STATUS_H_
 #define MEDIA_BASE_PIPELINE_STATUS_H_
 
-#include "base/callback.h"
-
 #include <stdint.h>
-
 #include <string>
+
+#include "base/callback.h"
+#include "base/time/time.h"
 
 namespace media {
 
@@ -59,6 +59,7 @@ struct PipelineStatistics {
   uint32_t video_frames_dropped = 0;
   int64_t audio_memory_usage = 0;
   int64_t video_memory_usage = 0;
+  base::TimeDelta video_keyframe_distance_average;
 };
 
 // Used for updating pipeline statistics; the passed value should be a delta

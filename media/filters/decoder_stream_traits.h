@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "media/base/cdm_context.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/moving_average.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/audio_timestamp_validator.h"
@@ -37,12 +38,11 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
-  static void ReportStatistics(const StatisticsCB& statistics_cb,
-                               int bytes_decoded);
   static scoped_refptr<OutputType> CreateEOSOutput();
 
   explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log);
 
+  void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void InitializeDecoder(DecoderType* decoder,
                          DemuxerStream* stream,
                          CdmContext* cdm_context,
@@ -72,12 +72,11 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
-  static void ReportStatistics(const StatisticsCB& statistics_cb,
-                               int bytes_decoded);
   static scoped_refptr<OutputType> CreateEOSOutput();
 
-  explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log) {}
+  explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log);
 
+  void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
   void InitializeDecoder(DecoderType* decoder,
                          DemuxerStream* stream,
                          CdmContext* cdm_context,
@@ -89,6 +88,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
 
  private:
   base::TimeDelta last_keyframe_timestamp_;
+  MovingAverage keyframe_distance_average_;
 };
 
 }  // namespace media

@@ -17,8 +17,10 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -395,6 +397,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // - right after the pipeline has resumed if the video is not hidden.
   void EnableVideoTrackIfNeeded();
 
+  // Overrides the pipeline statistics returned by GetStatistics() for tests.
+  void SetPipelineStatisticsForTest(const PipelineStatistics& stats);
+
+  // Returns the pipeline statistics or the value overridden by tests.
+  PipelineStatistics GetPipelineStatistics() const;
+
   blink::WebLocalFrame* frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
@@ -623,11 +631,20 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Whether the player is currently in autoplay muted state.
   bool autoplay_muted_ = false;
 
+  // The maximum video keyframe distance that allows triggering background
+  // playback optimizations.
+  // 10 seconds by default but can be overridden by a Finch experiment.
+  base::TimeDelta max_keyframe_distance_to_disable_background_video_ =
+      base::TimeDelta::FromSeconds(10);
+
   // Whether disabled the video track as an optimization.
   bool video_track_disabled_ = false;
 
   // Whether the pipeline is being resumed at the moment.
   bool is_pipeline_resuming_ = false;
+
+  // Pipeline statistics overridden by tests.
+  base::Optional<PipelineStatistics> pipeline_statistics_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

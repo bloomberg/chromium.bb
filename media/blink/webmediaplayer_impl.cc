@@ -887,28 +887,28 @@ double WebMediaPlayerImpl::mediaTimeForTimeValue(double timeValue) const {
 unsigned WebMediaPlayerImpl::decodedFrameCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  PipelineStatistics stats = pipeline_.GetStatistics();
+  PipelineStatistics stats = GetPipelineStatistics();
   return stats.video_frames_decoded;
 }
 
 unsigned WebMediaPlayerImpl::droppedFrameCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  PipelineStatistics stats = pipeline_.GetStatistics();
+  PipelineStatistics stats = GetPipelineStatistics();
   return stats.video_frames_dropped;
 }
 
 size_t WebMediaPlayerImpl::audioDecodedByteCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  PipelineStatistics stats = pipeline_.GetStatistics();
+  PipelineStatistics stats = GetPipelineStatistics();
   return stats.audio_bytes_decoded;
 }
 
 size_t WebMediaPlayerImpl::videoDecodedByteCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  PipelineStatistics stats = pipeline_.GetStatistics();
+  PipelineStatistics stats = GetPipelineStatistics();
   return stats.video_bytes_decoded;
 }
 
@@ -2005,7 +2005,7 @@ void WebMediaPlayerImpl::ReportMemoryUsage() {
 void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  const PipelineStatistics stats = pipeline_.GetStatistics();
+  const PipelineStatistics stats = GetPipelineStatistics();
   const int64_t data_source_memory_usage =
       data_source_ ? data_source_->GetMemoryUsage() : 0;
   const int64_t current_memory_usage =
@@ -2107,9 +2107,17 @@ bool WebMediaPlayerImpl::ShouldPauseWhenHidden() const {
 }
 
 bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(IsHidden());
-  return IsBackgroundVideoTrackOptimizationEnabled() && hasVideo() &&
-         hasAudio() && !IsStreaming();
+
+  if (!IsBackgroundVideoTrackOptimizationEnabled() || !hasVideo() ||
+      !hasAudio() || IsStreaming()) {
+    return false;
+  }
+
+  PipelineStatistics stats = GetPipelineStatistics();
+  return stats.video_keyframe_distance_average <
+         max_keyframe_distance_to_disable_background_video_;
 }
 
 void WebMediaPlayerImpl::EnableVideoTrackIfNeeded() {
@@ -2139,6 +2147,17 @@ void WebMediaPlayerImpl::DisableVideoTrackIfNeeded() {
     video_track_disabled_ = true;
     selectedVideoTrackChanged(nullptr);
   }
+}
+
+void WebMediaPlayerImpl::SetPipelineStatisticsForTest(
+    const PipelineStatistics& stats) {
+  pipeline_statistics_for_test_ = base::make_optional(stats);
+}
+
+PipelineStatistics WebMediaPlayerImpl::GetPipelineStatistics() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  return pipeline_statistics_for_test_.value_or(pipeline_.GetStatistics());
 }
 
 }  // namespace media
