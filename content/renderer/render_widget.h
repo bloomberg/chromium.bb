@@ -510,6 +510,7 @@ class CONTENT_EXPORT RenderWidget
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
   void OnUpdateWindowScreenRect(const gfx::Rect& window_screen_rect);
+  void OnSetViewportIntersection(const gfx::Rect& viewport_intersection);
   void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
   // Real data that is dragged is not included at DragEnter time.
   void OnDragTargetDragEnter(

@@ -114,6 +114,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   FrameView* frameView() const { return m_frameView; }
 
+  // |ancestor| can be nullptr, which will map the rect to the main frame's
+  // space, even if the main frame is remote (or has intermediate remote
+  // frames in the chain).
   bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor,
                                       LayoutRect&,
                                       MapCoordinatesFlags,

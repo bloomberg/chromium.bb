@@ -4,9 +4,13 @@
 
 #include "core/frame/RemoteFrameView.h"
 
+#include "core/dom/IntersectionObserverEntry.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/RemoteFrameClient.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutPartItem.h"
 
 namespace blink {
@@ -27,6 +31,41 @@ RemoteFrameView* RemoteFrameView::create(RemoteFrame* remoteFrame) {
   RemoteFrameView* view = new RemoteFrameView(remoteFrame);
   view->show();
   return view;
+}
+
+void RemoteFrameView::updateRemoteViewportIntersection() {
+  if (!m_remoteFrame->ownerLayoutObject())
+    return;
+
+  FrameView* localRootView =
+      toLocalFrame(m_remoteFrame->tree().parent())->localFrameRoot()->view();
+  if (!localRootView)
+    return;
+
+  // Start with rect in remote frame's coordinate space. Then
+  // mapToVisualRectInAncestorSpace will move it to the local root's coordinate
+  // space and account for any clip from containing elements such as a
+  // scrollable div. Passing nullptr as an argument to
+  // mapToVisualRectInAncestorSpace causes it to be clipped to the viewport,
+  // even if there are RemoteFrame ancestors in the frame tree.
+  LayoutRect rect(0, 0, frameRect().width(), frameRect().height());
+  rect.move(m_remoteFrame->ownerLayoutObject()->contentBoxOffset());
+  if (!m_remoteFrame->ownerLayoutObject()->mapToVisualRectInAncestorSpace(
+          nullptr, rect))
+    return;
+  IntRect rootVisibleRect = localRootView->visibleContentRect();
+  IntRect viewportIntersection(rect);
+  viewportIntersection.intersect(rootVisibleRect);
+  viewportIntersection.move(-localRootView->scrollOffsetInt());
+
+  // Translate the intersection rect from the root frame's coordinate space
+  // to the remote frame's coordinate space.
+  viewportIntersection = convertFromRootFrame(viewportIntersection);
+  if (viewportIntersection != m_lastViewportIntersection) {
+    m_remoteFrame->client()->updateRemoteViewportIntersection(
+        viewportIntersection);
+  }
+  m_lastViewportIntersection = viewportIntersection;
 }
 
 void RemoteFrameView::dispose() {
@@ -68,7 +107,9 @@ void RemoteFrameView::frameRectsChanged() {
   if (parent() && parent()->isFrameView())
     newRect = parent()->convertToRootFrame(
         toFrameView(parent())->contentsToFrame(newRect));
-  m_remoteFrame->frameRectsChanged(newRect);
+  m_remoteFrame->client()->frameRectsChanged(newRect);
+
+  updateRemoteViewportIntersection();
 }
 
 void RemoteFrameView::hide() {
@@ -76,7 +117,7 @@ void RemoteFrameView::hide() {
 
   Widget::hide();
 
-  m_remoteFrame->visibilityChanged(false);
+  m_remoteFrame->client()->visibilityChanged(false);
 }
 
 void RemoteFrameView::show() {
@@ -84,7 +125,7 @@ void RemoteFrameView::show() {
 
   Widget::show();
 
-  m_remoteFrame->visibilityChanged(true);
+  m_remoteFrame->client()->visibilityChanged(true);
 }
 
 void RemoteFrameView::setParentVisible(bool visible) {
@@ -95,7 +136,7 @@ void RemoteFrameView::setParentVisible(bool visible) {
   if (!isSelfVisible())
     return;
 
-  m_remoteFrame->visibilityChanged(isVisible());
+  m_remoteFrame->client()->visibilityChanged(isVisible());
 }
 
 DEFINE_TRACE(RemoteFrameView) {

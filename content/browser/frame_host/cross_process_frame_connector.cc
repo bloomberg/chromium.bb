@@ -42,6 +42,8 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(CrossProcessFrameConnector, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardInputEvent, OnForwardInputEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameRectChanged, OnFrameRectChanged)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateViewportIntersection,
+                        OnUpdateViewportIntersection)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisibilityChanged, OnVisibilityChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SatisfySequence, OnSatisfySequence)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequireSequence, OnRequireSequence)
@@ -286,6 +288,12 @@ void CrossProcessFrameConnector::OnFrameRectChanged(
     const gfx::Rect& frame_rect) {
   if (!frame_rect.size().IsEmpty())
     SetRect(frame_rect);
+}
+
+void CrossProcessFrameConnector::OnUpdateViewportIntersection(
+    const gfx::Rect& viewport_intersection) {
+  if (view_)
+    view_->UpdateViewportIntersection(viewport_intersection);
 }
 
 void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {

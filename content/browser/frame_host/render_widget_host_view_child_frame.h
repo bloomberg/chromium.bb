@@ -194,6 +194,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void RegisterFrameSinkId();
   void UnregisterFrameSinkId();
 
+  void UpdateViewportIntersection(const gfx::Rect& viewport_intersection);
+
  protected:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewChildFrameTest;

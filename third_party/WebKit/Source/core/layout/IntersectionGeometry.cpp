@@ -109,13 +109,10 @@ void IntersectionGeometry::initializeTargetRect() {
 }
 
 void IntersectionGeometry::initializeRootRect() {
-  // TODO(szager): In OOPIF, m_root will be the LayoutView of the
-  // localFrameRoot().  Once viewport intersection support lands,
-  // add a call to mapToVisualRectInAncestorSpace to map the rect up to
-  // top-level frame coordinates.
   if (m_root->isLayoutView()) {
     m_rootRect =
         LayoutRect(toLayoutView(m_root)->frameView()->visibleContentRect());
+    m_root->mapToVisualRectInAncestorSpace(nullptr, m_rootRect);
   } else if (m_root->isBox() && m_root->hasOverflowClip()) {
     m_rootRect = LayoutRect(toLayoutBox(m_root)->contentBoxRect());
   } else {
@@ -145,11 +142,10 @@ void IntersectionGeometry::applyRootMargin() {
 void IntersectionGeometry::clipToRoot() {
   // Map and clip rect into root element coordinates.
   // TODO(szager): the writing mode flipping needs a test.
-  // TODO(szager): Once the OOPIF viewport intersection code lands,
-  // use nullptr for ancestor to map to the top frame.
   LayoutBox* ancestor = toLayoutBox(m_root);
   m_doesIntersect = m_target->mapToVisualRectInAncestorSpace(
-      ancestor, m_intersectionRect, EdgeInclusive);
+      (rootIsImplicit() ? nullptr : ancestor), m_intersectionRect,
+      EdgeInclusive);
   if (ancestor && ancestor->hasOverflowClip())
     m_intersectionRect.move(-ancestor->scrolledContentOffset());
   if (!m_doesIntersect)
@@ -169,14 +165,10 @@ void IntersectionGeometry::mapTargetRectToTargetFrameCoordinates() {
 }
 
 void IntersectionGeometry::mapRootRectToRootFrameCoordinates() {
-  Document& rootDocument = m_root->document();
-  if (!rootIsImplicit())
-    mapRectUpToDocument(m_rootRect, *m_root, rootDocument);
-  // TODO(szager): When OOPIF support lands, this scroll offset adjustment
-  // will probably be wrong.
-  LayoutSize scrollPosition =
-      LayoutSize(rootDocument.view()->getScrollOffset());
-  m_rootRect.move(-scrollPosition);
+  m_root->frameView()->mapQuadToAncestorFrameIncludingScrollOffset(
+      m_rootRect, m_root,
+      rootIsImplicit() ? nullptr : m_root->document().layoutView(),
+      UseTransforms | ApplyContainerFlip);
 }
 
 void IntersectionGeometry::mapIntersectionRectToTargetFrameCoordinates() {

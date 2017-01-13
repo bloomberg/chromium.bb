@@ -619,6 +619,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetViewportIntersection,
+                        OnSetViewportIntersection)
     IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(InputMsg_RequestCompositionUpdate,
@@ -1650,6 +1652,15 @@ void RenderWidget::OnUpdateWindowScreenRect(
     screen_metrics_emulator_->OnUpdateWindowScreenRect(window_screen_rect);
   else
     window_screen_rect_ = window_screen_rect;
+}
+
+void RenderWidget::OnSetViewportIntersection(
+    const gfx::Rect& viewport_intersection) {
+  if (GetWebWidget() && GetWebWidget()->isWebFrameWidget()) {
+    DCHECK(popup_type_ == WebPopupType::WebPopupTypeNone);
+    static_cast<WebFrameWidget*>(GetWebWidget())
+        ->setRemoteViewportIntersection(viewport_intersection);
+  }
 }
 
 void RenderWidget::OnHandleCompositorProto(const std::vector<uint8_t>& proto) {

@@ -343,6 +343,8 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
       transformState.move(parentDocLayoutItem.contentBoxOffset());
 
       parentDocLayoutItem.mapLocalToAncestor(ancestor, transformState, mode);
+    } else {
+      frameView()->applyTransformForTopFrameSpace(transformState);
     }
   }
 }
@@ -463,16 +465,15 @@ bool LayoutView::mapToVisualRectInAncestorSpace(
     rect.move(offsetForFixedPosition(true));
 
   // Apply our transform if we have one (because of full page zooming).
-  if (!ancestor && layer() && layer()->transform())
+  if (layer() && layer()->transform())
     rect = layer()->transform()->mapRect(rect);
 
-  ASSERT(ancestor);
   if (ancestor == this)
     return true;
 
   Element* owner = document().localOwner();
   if (!owner)
-    return true;
+    return frameView()->mapToVisualRectInTopFrameSpace(rect);
 
   if (LayoutBox* obj = owner->layoutBox()) {
     if (!(mode & InputIsInFrameCoordinates)) {

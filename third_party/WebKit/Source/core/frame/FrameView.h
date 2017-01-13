@@ -31,6 +31,7 @@
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
+#include "core/layout/MapCoordinatesFlags.h"
 #include "core/layout/ScrollAnchor.h"
 #include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/paint/ObjectPaintProperties.h"
@@ -87,6 +88,7 @@ class PaintInvalidationState;
 class Page;
 class ScrollingCoordinator;
 class TracedValue;
+class TransformState;
 struct AnnotatedRegionValue;
 struct CompositedSelection;
 
@@ -795,6 +797,28 @@ class CORE_EXPORT FrameView final
 
   bool hasVisibleSlowRepaintViewportConstrainedObjects() const;
 
+  // Called on a view for a LocalFrame with a RemoteFrame parent. This makes
+  // viewport intersection available that accounts for remote ancestor frames
+  // and their respective scroll positions, clips, etc.
+  void setViewportIntersectionFromParent(const IntRect&);
+  IntRect remoteViewportIntersection();
+
+  // This method uses localToAncestorQuad to map a rect into an ancestor's
+  // coordinate space, while guaranteeing that the top-level scroll offset
+  // is accounted for. This is needed because LayoutView::mapLocalToAncestor()
+  // implicitly includes the ancestor frame's scroll offset when there is
+  // a remote frame in the ancestor chain, but does not include it when
+  // there are only local frames in the frame tree.
+  void mapQuadToAncestorFrameIncludingScrollOffset(
+      LayoutRect&,
+      const LayoutObject* descendant,
+      const LayoutView* ancestor,
+      MapCoordinatesFlags mode);
+
+  bool mapToVisualRectInTopFrameSpace(LayoutRect&);
+
+  void applyTransformForTopFrameSpace(TransformState&);
+
  protected:
   // Scroll the content via the compositor.
   bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -1144,6 +1168,8 @@ class CORE_EXPORT FrameView final
   bool m_allowsLayoutInvalidationAfterLayoutClean;
 
   Member<ElementVisibilityObserver> m_visibilityObserver;
+
+  IntRect m_remoteViewportIntersection;
 
   // For testing.
   struct ObjectPaintInvalidation {

@@ -336,6 +336,13 @@ void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
   }
 }
 
+void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
+    const gfx::Rect& viewport_intersection) {
+  if (host_)
+    host_->Send(new ViewMsg_SetViewportIntersection(host_->GetRoutingID(),
+                                                    viewport_intersection));
+}
+
 void RenderWidgetHostViewChildFrame::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {

@@ -137,15 +137,6 @@ void RemoteFrame::forwardInputEvent(Event* event) {
   client()->forwardInputEvent(event);
 }
 
-void RemoteFrame::frameRectsChanged(const IntRect& frameRect) {
-  client()->frameRectsChanged(frameRect);
-}
-
-void RemoteFrame::visibilityChanged(bool visible) {
-  if (client())
-    client()->visibilityChanged(visible);
-}
-
 void RemoteFrame::setView(RemoteFrameView* view) {
   // Oilpan: as RemoteFrameView performs no finalization actions,
   // no explicit dispose() of it needed here. (cf. FrameView::dispose().)

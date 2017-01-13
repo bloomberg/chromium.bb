@@ -608,6 +608,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
 IPC_MESSAGE_ROUTED1(ViewMsg_HandleCompositorProto,
                     std::vector<uint8_t> /* proto */)
 
+// Sets the viewport intersection on the widget for an out-of-process iframe.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetViewportIntersection,
+                    gfx::Rect /* viewport_intersection */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

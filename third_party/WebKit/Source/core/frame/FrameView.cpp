@@ -52,6 +52,8 @@
 #include "core/frame/Location.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/PerformanceMonitor.h"
+#include "core/frame/RemoteFrame.h"
+#include "core/frame/RemoteFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameElement.h"
@@ -109,6 +111,7 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
@@ -4929,6 +4932,64 @@ FrameView::getStyleRelatedMainThreadScrollingReasons() const {
     }
   }
   return reasons;
+}
+
+void FrameView::setViewportIntersectionFromParent(
+    const IntRect& viewportIntersection) {
+  if (m_remoteViewportIntersection != viewportIntersection) {
+    m_remoteViewportIntersection = viewportIntersection;
+    scheduleAnimation();
+  }
+}
+
+IntRect FrameView::remoteViewportIntersection() {
+  IntRect intersection(m_remoteViewportIntersection);
+  intersection.move(scrollOffsetInt());
+  return intersection;
+}
+
+void FrameView::mapQuadToAncestorFrameIncludingScrollOffset(
+    LayoutRect& rect,
+    const LayoutObject* descendant,
+    const LayoutView* ancestor,
+    MapCoordinatesFlags mode) {
+  FloatQuad mappedQuad = descendant->localToAncestorQuad(
+      FloatQuad(FloatRect(rect)), ancestor, mode);
+  rect = LayoutRect(mappedQuad.boundingBox());
+
+  // localToAncestorQuad accounts for scroll offset if it encounters a remote
+  // frame in the ancestor chain, otherwise it needs to be added explicitly.
+  if (frame().localFrameRoot() == frame().tree().top() ||
+      (ancestor &&
+       ancestor->frame()->localFrameRoot() == frame().localFrameRoot())) {
+    FrameView* ancestorView =
+        (ancestor ? ancestor->frameView()
+                  : toLocalFrame(frame().tree().top())->view());
+    LayoutSize scrollPosition = LayoutSize(ancestorView->getScrollOffset());
+    rect.move(-scrollPosition);
+  }
+}
+
+bool FrameView::mapToVisualRectInTopFrameSpace(LayoutRect& rect) {
+  // This is the top-level frame, so no mapping necessary.
+  if (m_frame->isMainFrame())
+    return true;
+
+  LayoutRect viewportIntersectionRect(remoteViewportIntersection());
+  rect.intersect(viewportIntersectionRect);
+  if (rect.isEmpty())
+    return false;
+  return true;
+}
+
+void FrameView::applyTransformForTopFrameSpace(TransformState& transformState) {
+  // This is the top-level frame, so no mapping necessary.
+  if (m_frame->isMainFrame())
+    return;
+
+  LayoutRect viewportIntersectionRect(remoteViewportIntersection());
+  transformState.move(
+      LayoutSize(-viewportIntersectionRect.x(), -viewportIntersectionRect.y()));
 }
 
 }  // namespace blink

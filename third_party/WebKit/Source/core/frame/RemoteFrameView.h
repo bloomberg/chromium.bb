@@ -28,14 +28,10 @@ class RemoteFrameView final : public Widget {
   }
 
   void dispose() override;
-
   // Override to notify remote frame that its viewport size has changed.
   void frameRectsChanged() override;
-
   void invalidateRect(const IntRect&) override;
-
   void setFrameRect(const IntRect&) override;
-
   void hide() override;
   void show() override;
   void setParentVisible(bool) override;
@@ -45,11 +41,15 @@ class RemoteFrameView final : public Widget {
  private:
   explicit RemoteFrameView(RemoteFrame*);
 
+  void updateRemoteViewportIntersection();
+
   // The properties and handling of the cycle between RemoteFrame
   // and its RemoteFrameView corresponds to that between LocalFrame
   // and FrameView. Please see the FrameView::m_frame comment for
   // details.
   Member<RemoteFrame> m_remoteFrame;
+
+  IntRect m_lastViewportIntersection;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameView,

@@ -712,6 +712,17 @@ void WebFrameWidgetImpl::applyReplacementRange(const WebRange& range) {
   }
 }
 
+void WebFrameWidgetImpl::setRemoteViewportIntersection(
+    const WebRect& viewportIntersection) {
+  // Remote viewports are only applicable to local frames with remote ancestors.
+  DCHECK(m_localRoot->parent() && m_localRoot->parent()->isWebRemoteFrame());
+
+  if (m_localRoot->frameView()) {
+    m_localRoot->frameView()->setViewportIntersectionFromParent(
+        viewportIntersection);
+  }
+}
+
 void WebFrameWidgetImpl::handleMouseLeave(LocalFrame& mainFrame,
                                           const WebMouseEvent& event) {
   // FIXME: WebWidget doesn't have the method below.

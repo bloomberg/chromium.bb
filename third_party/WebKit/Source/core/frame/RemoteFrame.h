@@ -13,7 +13,6 @@
 namespace blink {
 
 class Event;
-class IntRect;
 class LocalFrame;
 class RemoteFrameClient;
 class RemoteFrameView;
@@ -47,10 +46,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   // FIXME: Remove this method once we have input routing in the browser
   // process. See http://crbug.com/339659.
   void forwardInputEvent(Event*);
-
-  void frameRectsChanged(const IntRect& frameRect);
-
-  void visibilityChanged(bool visible);
 
   void setWebLayer(WebLayer*);
   WebLayer* webLayer() const { return m_webLayer; }

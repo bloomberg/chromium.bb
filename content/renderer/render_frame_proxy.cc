@@ -30,6 +30,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
+#include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -490,6 +491,12 @@ void RenderFrameProxy::frameRectsChanged(const blink::WebRect& frame_rect) {
         rect, 1.f / render_widget_->GetOriginalDeviceScaleFactor());
   }
   Send(new FrameHostMsg_FrameRectChanged(routing_id_, rect));
+}
+
+void RenderFrameProxy::updateRemoteViewportIntersection(
+    const blink::WebRect& viewportIntersection) {
+  Send(new FrameHostMsg_UpdateViewportIntersection(
+      routing_id_, gfx::Rect(viewportIntersection)));
 }
 
 void RenderFrameProxy::visibilityChanged(bool visible) {

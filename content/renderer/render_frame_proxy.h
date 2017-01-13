@@ -131,6 +131,8 @@ class CONTENT_EXPORT RenderFrameProxy
                 bool should_replace_current_entry) override;
   void forwardInputEvent(const blink::WebInputEvent* event) override;
   void frameRectsChanged(const blink::WebRect& frame_rect) override;
+  void updateRemoteViewportIntersection(
+      const blink::WebRect& viewportIntersection) override;
   void visibilityChanged(bool visible) override;
   void setHasReceivedUserGesture() override;
   void didChangeOpener(blink::WebFrame* opener) override;

@@ -1315,6 +1315,11 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardInputEvent,
 // position of a child's ancestor has changed).
 IPC_MESSAGE_ROUTED1(FrameHostMsg_FrameRectChanged, gfx::Rect /* frame_rect */)
 
+// Sent by a parent frame to update its child's viewport intersection rect for
+// use by the IntersectionObserver API.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
+                    gfx::Rect /* viewport_intersection */)
+
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
 

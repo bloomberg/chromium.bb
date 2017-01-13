@@ -12,6 +12,7 @@
 #include "core/layout/api/LayoutItem.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "platform/exported/WrappedResourceRequest.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/web/WebRemoteFrameClient.h"
@@ -172,6 +173,11 @@ void RemoteFrameClientImpl::forwardInputEvent(Event* event) {
 
 void RemoteFrameClientImpl::frameRectsChanged(const IntRect& frameRect) {
   m_webFrame->client()->frameRectsChanged(frameRect);
+}
+
+void RemoteFrameClientImpl::updateRemoteViewportIntersection(
+    const IntRect& viewportIntersection) {
+  m_webFrame->client()->updateRemoteViewportIntersection(viewportIntersection);
 }
 
 void RemoteFrameClientImpl::advanceFocus(WebFocusType type,

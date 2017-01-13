@@ -42,6 +42,9 @@ class WebRemoteFrameClient {
 
   virtual void frameRectsChanged(const WebRect&) {}
 
+  virtual void updateRemoteViewportIntersection(
+      const WebRect& viewportIntersection) {}
+
   virtual void visibilityChanged(bool visible) {}
 
   virtual void setHasReceivedUserGesture() {}
