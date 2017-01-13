@@ -998,6 +998,9 @@
     'tools': {
       'filepath': 'tools/',
     },
+    'tools_win_chromeexts': {
+      'filepath': 'tools/win/chromeexts',
+    },
     'tracing': {
       'filepath': 'base/debug/trace_event.*'\
                   '|base/trace_event/'\
@@ -2067,6 +2070,7 @@
                            'shuchen+watch@chromium.org',
                            'yusukes+watch@chromium.org'],
     'timers': ['chirantan+watch@chromium.org'],
+    'tools_win_chromeexts': ['robliao+watch@chromium.org'],
     'tracing': ['tracing+reviews@chromium.org',
                 'wfh+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],

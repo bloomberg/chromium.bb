@@ -690,6 +690,7 @@ group("both_gn_and_gyp") {
       "//testing/gtest:gtest_main",
       "//third_party/codesighs:msmap2tsv",
       "//third_party/pdfium/samples:pdfium_diff",
+      "//tools/win/chromeexts:chromeexts",
     ]
     deps -= [
       "//crypto:crypto_unittests",  # TODO(GYP)
