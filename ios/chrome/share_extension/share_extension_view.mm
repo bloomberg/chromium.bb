@@ -60,9 +60,10 @@ const CGFloat kButtonFontSize = 17;
 // Keep strong references of the views that need to be updated.
 @property(nonatomic, strong) UILabel* titleLabel;
 @property(nonatomic, strong) UILabel* URLLabel;
+@property(nonatomic, strong) UIView* titleURLContainer;
 @property(nonatomic, strong) UIButton* readingListButton;
 @property(nonatomic, strong) UIImageView* screenshotView;
-@property(nonatomic, strong) UIStackView* itemStack;
+@property(nonatomic, strong) UIView* itemView;
 
 // View creation helpers.
 // Returns a view containing the shared items (title, URL, screenshot). This
@@ -99,9 +100,10 @@ const CGFloat kButtonFontSize = 17;
 
 @synthesize titleLabel = _titleLabel;
 @synthesize URLLabel = _URLLabel;
+@synthesize titleURLContainer = _titleURLContainer;
 @synthesize readingListButton = _readingListButton;
 @synthesize screenshotView = _screenshotView;
-@synthesize itemStack = _itemStack;
+@synthesize itemView = _itemView;
 
 #pragma mark - Lifecycle
 
@@ -179,15 +181,17 @@ const CGFloat kButtonFontSize = 17;
 
   // Screenshot view. Image will be filled by |setScreenshot:| when available.
   _screenshotView = [[UIImageView alloc] initWithFrame:CGRectZero];
-  [_screenshotView.widthAnchor
-      constraintLessThanOrEqualToConstant:kScreenshotSize]
-      .active = YES;
+  [_screenshotView setTranslatesAutoresizingMaskIntoConstraints:NO];
+  NSLayoutConstraint* imageWidthConstraint =
+      [_screenshotView.widthAnchor constraintEqualToConstant:0];
+  imageWidthConstraint.priority = UILayoutPriorityDefaultHigh;
+  imageWidthConstraint.active = YES;
+
   [_screenshotView.heightAnchor
       constraintEqualToAnchor:_screenshotView.widthAnchor]
       .active = YES;
   [_screenshotView setContentMode:UIViewContentModeScaleAspectFill];
   [_screenshotView setClipsToBounds:YES];
-  [_screenshotView setHidden:YES];
 
   // |_screenshotView| should take as much space as needed. Lower compression
   // resistance of the other elements.
@@ -203,52 +207,58 @@ const CGFloat kButtonFontSize = 17;
       setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                       forAxis:UILayoutConstraintAxisHorizontal];
 
-  UIStackView* titleURLStack = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ _titleLabel, _URLLabel ]];
-  [titleURLStack setAxis:UILayoutConstraintAxisVertical];
+  _titleURLContainer = [[UIView alloc] initWithFrame:CGRectZero];
+  [_titleURLContainer setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  UIView* titleURLContainer = [[UIView alloc] initWithFrame:CGRectZero];
-  [titleURLContainer setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [titleURLContainer addSubview:titleURLStack];
-  [[titleURLStack topAnchor]
-      constraintEqualToAnchor:[titleURLContainer topAnchor]
-                     constant:kShareExtensionPadding]
-      .active = YES;
-  [[titleURLStack bottomAnchor]
-      constraintEqualToAnchor:[titleURLContainer bottomAnchor]
-                     constant:-kShareExtensionPadding]
-      .active = YES;
+  [_titleURLContainer addSubview:_titleLabel];
+  [_titleURLContainer addSubview:_URLLabel];
 
-  [titleURLStack.centerYAnchor
-      constraintEqualToAnchor:titleURLContainer.centerYAnchor]
-      .active = YES;
-  [titleURLStack.centerXAnchor
-      constraintEqualToAnchor:titleURLContainer.centerXAnchor]
-      .active = YES;
-  [titleURLStack.widthAnchor
-      constraintEqualToAnchor:titleURLContainer.widthAnchor]
-      .active = YES;
-  [titleURLStack
-      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
-                                      forAxis:UILayoutConstraintAxisVertical];
+  _itemView = [[UIView alloc] init];
+  [_itemView setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [_itemView addSubview:_titleURLContainer];
+  [_itemView addSubview:_screenshotView];
 
-  _itemStack =
-      [[UIStackView alloc] initWithArrangedSubviews:@[ titleURLContainer ]];
-  [_itemStack setAxis:UILayoutConstraintAxisHorizontal];
-  [_itemStack setLayoutMargins:UIEdgeInsetsMake(kShareExtensionPadding,
-                                                kShareExtensionPadding,
-                                                kShareExtensionPadding,
-                                                kShareExtensionPadding)];
-  [_itemStack setLayoutMarginsRelativeArrangement:YES];
-  [_itemStack setSpacing:kShareExtensionPadding];
+  [NSLayoutConstraint activateConstraints:@[
+    [_titleLabel.topAnchor
+        constraintEqualToAnchor:_titleURLContainer.topAnchor],
+    [_URLLabel.topAnchor constraintEqualToAnchor:_titleLabel.bottomAnchor],
+    [_URLLabel.bottomAnchor
+        constraintEqualToAnchor:_titleURLContainer.bottomAnchor],
+    [_titleLabel.trailingAnchor
+        constraintEqualToAnchor:_titleURLContainer.trailingAnchor],
+    [_URLLabel.trailingAnchor
+        constraintEqualToAnchor:_titleURLContainer.trailingAnchor],
+    [_titleLabel.leadingAnchor
+        constraintEqualToAnchor:_titleURLContainer.leadingAnchor],
+    [_URLLabel.leadingAnchor
+        constraintEqualToAnchor:_titleURLContainer.leadingAnchor],
+    [_titleURLContainer.centerYAnchor
+        constraintEqualToAnchor:_itemView.centerYAnchor],
+    [_itemView.heightAnchor
+        constraintGreaterThanOrEqualToAnchor:_titleURLContainer.heightAnchor
+                                  multiplier:1
+                                    constant:2 * kShareExtensionPadding],
+    [_titleURLContainer.leadingAnchor
+        constraintEqualToAnchor:_itemView.leadingAnchor
+                       constant:kShareExtensionPadding],
+    [_screenshotView.trailingAnchor
+        constraintEqualToAnchor:_itemView.trailingAnchor
+                       constant:-kShareExtensionPadding],
+    [_itemView.heightAnchor
+        constraintGreaterThanOrEqualToAnchor:_screenshotView.heightAnchor
+                                  multiplier:1
+                                    constant:2 * kShareExtensionPadding],
+    [_screenshotView.centerYAnchor
+        constraintEqualToAnchor:_itemView.centerYAnchor],
+  ]];
 
-  [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_URLLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_screenshotView setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [titleURLStack setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_itemStack setTranslatesAutoresizingMaskIntoConstraints:NO];
+  NSLayoutConstraint* titleURLScreenshotConstraint =
+      [_titleURLContainer.trailingAnchor
+          constraintEqualToAnchor:_screenshotView.leadingAnchor];
+  titleURLScreenshotConstraint.priority = UILayoutPriorityDefaultHigh;
+  titleURLScreenshotConstraint.active = YES;
 
-  return _itemStack;
+  return _itemView;
 }
 
 - (UIView*)dividerViewWithVibrancy:(UIVisualEffect*)vibrancyEffect {
@@ -414,9 +424,13 @@ const CGFloat kButtonFontSize = 17;
 }
 
 - (void)setScreenshot:(UIImage*)screenshot {
-  [[self screenshotView] setHidden:NO];
+  [self.screenshotView.widthAnchor constraintEqualToConstant:kScreenshotSize]
+      .active = YES;
+  [self.titleURLContainer.trailingAnchor
+      constraintEqualToAnchor:self.screenshotView.leadingAnchor
+                     constant:-kShareExtensionPadding]
+      .active = YES;
   [[self screenshotView] setImage:screenshot];
-  [[self itemStack] addArrangedSubview:[self screenshotView]];
 }
 
 @end
