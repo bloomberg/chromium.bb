@@ -23,7 +23,7 @@ class LargestToSmallestScaleFunctor {
  public:
   bool operator()(const std::unique_ptr<PictureLayerTiling>& left,
                   const std::unique_ptr<PictureLayerTiling>& right) {
-    return left->contents_scale_key() > right->contents_scale_key();
+    return left->contents_scale() > right->contents_scale();
   }
 };
 
@@ -84,10 +84,10 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
   bool tiling_sort_required = false;
   for (const auto& pending_twin_tiling : pending_twin_set->tilings_) {
     PictureLayerTiling* this_tiling =
-        FindTilingWithScaleKey(pending_twin_tiling->contents_scale_key());
+        FindTilingWithScaleKey(pending_twin_tiling->contents_scale());
     if (!this_tiling) {
       std::unique_ptr<PictureLayerTiling> new_tiling(new PictureLayerTiling(
-          tree_, pending_twin_tiling->raster_scales(), raster_source_, client_,
+          tree_, pending_twin_tiling->contents_scale(), raster_source_, client_,
           kMaxSoonBorderDistanceInScreenPixels, max_preraster_distance_));
       tilings_.push_back(std::move(new_tiling));
       this_tiling = tilings_.back().get();
@@ -108,10 +108,10 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
     scoped_refptr<RasterSource> raster_source,
     const PictureLayerTilingSet* pending_twin_set,
     const Region& layer_invalidation,
-    float minimum_contents_scale_key,
-    float maximum_contents_scale_key) {
-  RemoveTilingsBelowScaleKey(minimum_contents_scale_key);
-  RemoveTilingsAboveScaleKey(maximum_contents_scale_key);
+    float minimum_contents_scale,
+    float maximum_contents_scale) {
+  RemoveTilingsBelowScaleKey(minimum_contents_scale);
+  RemoveTilingsAboveScaleKey(maximum_contents_scale);
 
   raster_source_ = raster_source;
 
@@ -123,7 +123,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
   // If the tiling is not shared (FindTilingWithScale returns nullptr), then
   // invalidate tiles and update them to the new raster source.
   for (const auto& tiling : tilings_) {
-    if (pending_twin_set->FindTilingWithScaleKey(tiling->contents_scale_key()))
+    if (pending_twin_set->FindTilingWithScaleKey(tiling->contents_scale()))
       continue;
 
     tiling->SetRasterSourceAndResize(raster_source);
@@ -149,10 +149,10 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
 void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
     scoped_refptr<RasterSource> raster_source,
     const Region& layer_invalidation,
-    float minimum_contents_scale_key,
-    float maximum_contents_scale_key) {
-  RemoveTilingsBelowScaleKey(minimum_contents_scale_key);
-  RemoveTilingsAboveScaleKey(maximum_contents_scale_key);
+    float minimum_contents_scale,
+    float maximum_contents_scale) {
+  RemoveTilingsBelowScaleKey(minimum_contents_scale);
+  RemoveTilingsAboveScaleKey(maximum_contents_scale);
 
   raster_source_ = raster_source;
 
@@ -231,8 +231,8 @@ void PictureLayerTilingSet::CleanUpTilings(
   std::vector<PictureLayerTiling*> to_remove;
   for (const auto& tiling : tilings_) {
     // Keep all tilings within the min/max scales.
-    if (tiling->contents_scale_key() >= min_acceptable_high_res_scale_key &&
-        tiling->contents_scale_key() <= max_acceptable_high_res_scale_key) {
+    if (tiling->contents_scale() >= min_acceptable_high_res_scale_key &&
+        tiling->contents_scale() <= max_acceptable_high_res_scale_key) {
       continue;
     }
 
@@ -270,22 +270,20 @@ void PictureLayerTilingSet::MarkAllTilingsNonIdeal() {
 }
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(
-    float contents_scale_key,
+    float contents_scale,
     scoped_refptr<RasterSource> raster_source) {
   if (!raster_source_)
     raster_source_ = raster_source;
 
 #if DCHECK_IS_ON()
   for (size_t i = 0; i < tilings_.size(); ++i) {
-    DCHECK_NE(tilings_[i]->contents_scale_key(), contents_scale_key);
+    DCHECK_NE(tilings_[i]->contents_scale(), contents_scale);
     DCHECK_EQ(tilings_[i]->raster_source(), raster_source.get());
   }
 #endif  // DCHECK_IS_ON()
 
-  gfx::SizeF raster_scales(contents_scale_key,
-                           contents_scale_key / aspect_ratio_);
   tilings_.push_back(base::MakeUnique<PictureLayerTiling>(
-      tree_, raster_scales, raster_source, client_,
+      tree_, contents_scale, raster_source, client_,
       kMaxSoonBorderDistanceInScreenPixels, max_preraster_distance_));
   PictureLayerTiling* appended = tilings_.back().get();
   state_since_last_tile_priority_update_.added_tilings = true;
@@ -304,7 +302,7 @@ int PictureLayerTilingSet::NumHighResTilings() const {
 PictureLayerTiling* PictureLayerTilingSet::FindTilingWithScaleKey(
     float scale_key) const {
   for (size_t i = 0; i < tilings_.size(); ++i) {
-    if (tilings_[i]->contents_scale_key() == scale_key)
+    if (tilings_[i]->contents_scale() == scale_key)
       return tilings_[i].get();
   }
   return nullptr;
@@ -327,7 +325,7 @@ void PictureLayerTilingSet::RemoveTilingsBelowScaleKey(
   auto to_remove = std::remove_if(
       tilings_.begin(), tilings_.end(),
       [minimum_scale_key](const std::unique_ptr<PictureLayerTiling>& tiling) {
-        return tiling->contents_scale_key() < minimum_scale_key;
+        return tiling->contents_scale() < minimum_scale_key;
       });
   tilings_.erase(to_remove, tilings_.end());
 }
@@ -337,7 +335,7 @@ void PictureLayerTilingSet::RemoveTilingsAboveScaleKey(
   auto to_remove = std::remove_if(
       tilings_.begin(), tilings_.end(),
       [maximum_scale_key](const std::unique_ptr<PictureLayerTiling>& tiling) {
-        return tiling->contents_scale_key() > maximum_scale_key;
+        return tiling->contents_scale() > maximum_scale_key;
       });
   tilings_.erase(to_remove, tilings_.end());
 }
@@ -369,7 +367,7 @@ float PictureLayerTilingSet::GetSnappedContentsScaleKey(
   float snapped_contents_scale = start_scale;
   float snapped_ratio = snap_to_existing_tiling_ratio;
   for (const auto& tiling : tilings_) {
-    float tiling_contents_scale = tiling->contents_scale_key();
+    float tiling_contents_scale = tiling->contents_scale();
     float ratio = LargerRatio(tiling_contents_scale, start_scale);
     if (ratio < snapped_ratio) {
       snapped_contents_scale = tiling_contents_scale;
@@ -383,8 +381,7 @@ float PictureLayerTilingSet::GetMaximumContentsScale() const {
   if (tilings_.empty())
     return 0.f;
   // The first tiling has the largest contents scale.
-  return std::max(tilings_[0]->raster_scales().width(),
-                  tilings_[0]->raster_scales().height());
+  return tilings_[0]->contents_scale();
 }
 
 bool PictureLayerTilingSet::TilingsNeedUpdate(
@@ -551,15 +548,6 @@ bool PictureLayerTilingSet::UpdateTilePriorities(
   return true;
 }
 
-void PictureLayerTilingSet::SetAspectRatio(float ratio) {
-  if (std::abs(ratio - aspect_ratio_) < std::numeric_limits<float>::epsilon())
-    return;
-  TRACE_EVENT1("cc", "PictureLayerTilingSet::SetAspectRatio", "aspect_ratio",
-               ratio);
-  aspect_ratio_ = ratio;
-  RemoveAllTilings();
-}
-
 void PictureLayerTilingSet::GetAllPrioritizedTilesForTracing(
     std::vector<PrioritizedTile>* prioritized_tiles) const {
   for (const auto& tiling : tilings_)
@@ -581,7 +569,7 @@ PictureLayerTilingSet::CoverageIterator::CoverageIterator(
   size_t tilings_size = set_->tilings_.size();
   for (ideal_tiling_ = 0; ideal_tiling_ < tilings_size; ++ideal_tiling_) {
     PictureLayerTiling* tiling = set_->tilings_[ideal_tiling_].get();
-    if (tiling->contents_scale_key() < ideal_contents_scale) {
+    if (tiling->contents_scale() < ideal_contents_scale) {
       if (ideal_tiling_ > 0)
         ideal_tiling_--;
       break;

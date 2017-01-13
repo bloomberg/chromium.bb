@@ -81,7 +81,7 @@ class CC_EXPORT PictureLayerTiling {
   static const int kBorderTexels = 1;
 
   PictureLayerTiling(WhichTree tree,
-                     const gfx::SizeF& raster_scales,
+                     float raster_scale,
                      scoped_refptr<RasterSource> raster_source,
                      PictureLayerTilingClient* client,
                      float min_preraster_distance,
@@ -120,8 +120,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
   gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
-  float contents_scale_key() const { return raster_scales_.width(); }
-  const gfx::SizeF& raster_scales() const { return raster_scales_; }
+  float contents_scale() const { return contents_scale_; }
   const TilingData* tiling_data() const { return &tiling_data_; }
 
   Tile* TileAt(int i, int j) const {
@@ -165,9 +164,8 @@ class CC_EXPORT PictureLayerTiling {
   UpdateAndGetAllPrioritizedTilesForTesting() const;
 
   void SetAllTilesOccludedForTesting() {
-    gfx::Rect viewport_in_layer_space = ScaleToEnclosingRect(
-        current_visible_rect_, 1.f / raster_scales_.width(),
-        1.f / raster_scales_.height());
+    gfx::Rect viewport_in_layer_space =
+        ScaleToEnclosingRect(current_visible_rect_, 1.f / contents_scale_);
     current_occlusion_in_layer_space_ =
         Occlusion(gfx::Transform(),
                   SimpleEnclosedRegion(viewport_in_layer_space),
@@ -181,9 +179,8 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::Rect& skewport,
       const gfx::Rect& soon_border_rect,
       const gfx::Rect& eventually_rect) {
-    SetTilePriorityRects(gfx::SizeF(1.f, 1.f), visible_rect_in_content_space,
-                         skewport, soon_border_rect, eventually_rect,
-                         Occlusion());
+    SetTilePriorityRects(1.f, visible_rect_in_content_space, skewport,
+                         soon_border_rect, eventually_rect, Occlusion());
   }
 
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
@@ -219,7 +216,7 @@ class CC_EXPORT PictureLayerTiling {
     const PictureLayerTiling* tiling_ = nullptr;
     gfx::Size coverage_rect_max_bounds_;
     gfx::Rect coverage_rect_;
-    gfx::SizeF coverage_to_content_scale_;
+    float coverage_to_content_scale_;
 
     Tile* current_tile_ = nullptr;
     gfx::Rect current_geometry_rect_;
@@ -280,7 +277,7 @@ class CC_EXPORT PictureLayerTiling {
   bool TilingMatchesTileIndices(const PictureLayerTiling* twin) const;
 
   // Save the required data for computing tile priorities later.
-  void SetTilePriorityRects(const gfx::SizeF& content_to_screen_scale,
+  void SetTilePriorityRects(float content_to_screen_scale,
                             const gfx::Rect& visible_rect_in_content_space,
                             const gfx::Rect& skewport,
                             const gfx::Rect& soon_border_rect,
@@ -329,7 +326,7 @@ class CC_EXPORT PictureLayerTiling {
   void RemoveTilesInRegion(const Region& layer_region, bool recreate_tiles);
 
   // Given properties.
-  const gfx::SizeF raster_scales_;
+  const float contents_scale_;
   PictureLayerTilingClient* const client_;
   const WhichTree tree_;
   scoped_refptr<RasterSource> raster_source_;
@@ -351,7 +348,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect current_soon_border_rect_;
   gfx::Rect current_eventually_rect_;
   // Other properties used for tile iteration and prioritization.
-  gfx::SizeF current_content_to_screen_scale_;
+  float current_content_to_screen_scale_;
   Occlusion current_occlusion_in_layer_space_;
   float max_skewport_extent_in_screen_space_ = 0.f;
 

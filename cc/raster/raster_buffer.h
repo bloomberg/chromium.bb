@@ -23,7 +23,7 @@ class CC_EXPORT RasterBuffer {
       const gfx::Rect& raster_full_rect,
       const gfx::Rect& raster_dirty_rect,
       uint64_t new_content_id,
-      const gfx::SizeF& scales,
+      float scale,
       const RasterSource::PlaybackSettings& playback_settings) = 0;
 };
 

@@ -44,7 +44,7 @@ class CC_EXPORT DiscardableImageMap {
 
   bool empty() const { return all_images_.empty(); }
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
-                                  const gfx::SizeF& raster_scales,
+                                  float contents_scale,
                                   std::vector<DrawImage>* images) const;
 
  private:

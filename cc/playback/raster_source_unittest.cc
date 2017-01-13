@@ -48,8 +48,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
   for (int y = 0; y <= 300; y += 100) {
     for (int x = 0; x <= 300; x += 100) {
       gfx::Rect rect(x, y, 100, 100);
-      is_solid_color =
-          raster->PerformSolidColorAnalysis(rect, gfx::SizeF(1.f, 1.f), &color);
+      is_solid_color = raster->PerformSolidColorAnalysis(rect, 1.f, &color);
       EXPECT_TRUE(is_solid_color) << rect.ToString();
       EXPECT_EQ(solid_color, color) << rect.ToString();
     }
@@ -63,32 +62,32 @@ TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
       RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   color = SK_ColorTRANSPARENT;
-  is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(0, 0, 100, 100), gfx::SizeF(1.f, 1.f), &color);
+  is_solid_color =
+      raster->PerformSolidColorAnalysis(gfx::Rect(0, 0, 100, 100), 1.f, &color);
   EXPECT_FALSE(is_solid_color);
 
   color = SK_ColorTRANSPARENT;
   is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(100, 0, 100, 100), gfx::SizeF(1.f, 1.f), &color);
+      gfx::Rect(100, 0, 100, 100), 1.f, &color);
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(solid_color, color);
 
   // Boundaries should be clipped.
   color = SK_ColorTRANSPARENT;
   is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(350, 0, 100, 100), gfx::SizeF(1.f, 1.f), &color);
+      gfx::Rect(350, 0, 100, 100), 1.f, &color);
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(solid_color, color);
 
   color = SK_ColorTRANSPARENT;
   is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(0, 350, 100, 100), gfx::SizeF(1.f, 1.f), &color);
+      gfx::Rect(0, 350, 100, 100), 1.f, &color);
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(solid_color, color);
 
   color = SK_ColorTRANSPARENT;
   is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(350, 350, 100, 100), gfx::SizeF(1.f, 1.f), &color);
+      gfx::Rect(350, 350, 100, 100), 1.f, &color);
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(solid_color, color);
 }
@@ -120,8 +119,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidScaled) {
   for (int y = 0; y <= 30; y += 10) {
     for (int x = 0; x <= 30; x += 10) {
       gfx::Rect rect(x, y, 10, 10);
-      is_solid_color = raster->PerformSolidColorAnalysis(
-          rect, gfx::SizeF(0.1f, 0.1f), &color);
+      is_solid_color = raster->PerformSolidColorAnalysis(rect, 0.1f, &color);
       EXPECT_TRUE(is_solid_color) << rect.ToString();
       EXPECT_EQ(color, solid_color) << rect.ToString();
     }
@@ -135,32 +133,32 @@ TEST(RasterSourceTest, AnalyzeIsSolidScaled) {
       RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   color = SK_ColorTRANSPARENT;
-  is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(0, 0, 10, 10), gfx::SizeF(0.1f, 0.1f), &color);
+  is_solid_color =
+      raster->PerformSolidColorAnalysis(gfx::Rect(0, 0, 10, 10), 0.1f, &color);
   EXPECT_FALSE(is_solid_color);
 
   color = SK_ColorTRANSPARENT;
-  is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(10, 0, 10, 10), gfx::SizeF(0.1f, 0.1f), &color);
+  is_solid_color =
+      raster->PerformSolidColorAnalysis(gfx::Rect(10, 0, 10, 10), 0.1f, &color);
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(color, solid_color);
 
   // Boundaries should be clipped.
   color = SK_ColorTRANSPARENT;
-  is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(35, 0, 10, 10), gfx::SizeF(0.1f, 0.1f), &color);
+  is_solid_color =
+      raster->PerformSolidColorAnalysis(gfx::Rect(35, 0, 10, 10), 0.1f, &color);
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(color, solid_color);
 
   color = SK_ColorTRANSPARENT;
-  is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(0, 35, 10, 10), gfx::SizeF(0.1f, 0.1f), &color);
+  is_solid_color =
+      raster->PerformSolidColorAnalysis(gfx::Rect(0, 35, 10, 10), 0.1f, &color);
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(color, solid_color);
 
   color = SK_ColorTRANSPARENT;
-  is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(35, 35, 10, 10), gfx::SizeF(0.1f, 0.1f), &color);
+  is_solid_color = raster->PerformSolidColorAnalysis(gfx::Rect(35, 35, 10, 10),
+                                                     0.1f, &color);
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(color, solid_color);
 }
@@ -176,8 +174,8 @@ TEST(RasterSourceTest, AnalyzeIsSolidEmpty) {
       RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   SkColor color = SK_ColorTRANSPARENT;
-  bool is_solid_color = raster->PerformSolidColorAnalysis(
-      gfx::Rect(0, 0, 400, 400), gfx::SizeF(1.f, 1.f), &color);
+  bool is_solid_color =
+      raster->PerformSolidColorAnalysis(gfx::Rect(0, 0, 400, 400), 1.f, &color);
 
   EXPECT_TRUE(is_solid_color);
   EXPECT_EQ(color, SkColorSetARGB(0, 0, 0, 0));
@@ -213,31 +211,29 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   // Tile sized iterators. These should find only one pixel ref.
   {
     std::vector<DrawImage> images;
-    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
-                                       gfx::SizeF(1.f, 1.f), &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f, &images);
     EXPECT_EQ(1u, images.size());
     EXPECT_EQ(discardable_image[0][0], images[0].image());
   }
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
     std::vector<DrawImage> images;
-    raster->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256),
-                                       gfx::SizeF(1.f, 1.f), &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256), 1.f,
+                                       &images);
     EXPECT_EQ(1u, images.size());
     EXPECT_EQ(discardable_image[1][1], images[0].image());
   }
   // Ensure there's no discardable pixel refs in the empty cell
   {
     std::vector<DrawImage> images;
-    raster->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256),
-                                       gfx::SizeF(1.f, 1.f), &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256), 1.f,
+                                       &images);
     EXPECT_EQ(0u, images.size());
   }
   // Layer sized iterators. These should find three pixel ref.
   {
     std::vector<DrawImage> images;
-    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512),
-                                       gfx::SizeF(1.f, 1.f), &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), 1.f, &images);
     EXPECT_EQ(3u, images.size());
     EXPECT_EQ(discardable_image[0][0], images[0].image());
     EXPECT_EQ(discardable_image[0][1], images[1].image());
@@ -291,7 +287,7 @@ TEST(RasterSourceTest, RasterFullContents) {
       canvas.clear(SK_ColorTRANSPARENT);
 
       raster->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect,
-                               gfx::SizeF(contents_scale, contents_scale),
+                               contents_scale,
                                RasterSource::PlaybackSettings());
 
       SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -343,8 +339,7 @@ TEST(RasterSourceTest, RasterPartialContents) {
   gfx::Rect raster_full_rect(content_bounds);
   gfx::Rect playback_rect(content_bounds);
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           gfx::SizeF(contents_scale, contents_scale),
-                           RasterSource::PlaybackSettings());
+                           contents_scale, RasterSource::PlaybackSettings());
 
   {
     SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -375,8 +370,7 @@ TEST(RasterSourceTest, RasterPartialContents) {
   // that touches the edge pixels of the recording.
   playback_rect.Inset(1, 2, 0, 1);
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           gfx::SizeF(contents_scale, contents_scale),
-                           RasterSource::PlaybackSettings());
+                           contents_scale, RasterSource::PlaybackSettings());
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
   int num_black = 0;
@@ -440,8 +434,7 @@ TEST(RasterSourceTest, RasterPartialClear) {
   gfx::Rect raster_full_rect(content_bounds);
   gfx::Rect playback_rect(content_bounds);
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           gfx::SizeF(contents_scale, contents_scale),
-                           RasterSource::PlaybackSettings());
+                           contents_scale, RasterSource::PlaybackSettings());
 
   {
     SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -480,8 +473,7 @@ TEST(RasterSourceTest, RasterPartialClear) {
   playback_rect =
       gfx::Rect(gfx::ScaleToCeiledSize(partial_bounds, contents_scale));
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           gfx::SizeF(contents_scale, contents_scale),
-                           RasterSource::PlaybackSettings());
+                           contents_scale, RasterSource::PlaybackSettings());
 
   // Test that the whole playback_rect was cleared and repainted with new alpha.
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -520,8 +512,7 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
   bitmap.allocN32Pixels(canvas_rect.width(), canvas_rect.height());
   SkCanvas canvas(bitmap);
 
-  raster->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect,
-                           gfx::SizeF(contents_scale, contents_scale),
+  raster->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect, contents_scale,
                            RasterSource::PlaybackSettings());
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -595,7 +586,7 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
   settings.playback_to_shared_canvas = true;
   settings.use_image_hijack_canvas = true;
   raster_source->PlaybackToCanvas(&canvas, gfx::Rect(size), gfx::Rect(size),
-                                  gfx::SizeF(1.f, 1.f), settings);
+                                  1.f, settings);
 
   EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
   EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(49, 0));

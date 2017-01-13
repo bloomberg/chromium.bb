@@ -166,7 +166,7 @@ class CC_EXPORT DisplayItemList
 
   void GenerateDiscardableImagesMetadata();
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
-                                  const gfx::SizeF& raster_scales,
+                                  float contents_scale,
                                   std::vector<DrawImage>* images);
 
   void SetRetainVisualRectsForTesting(bool retain) {

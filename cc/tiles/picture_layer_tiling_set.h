@@ -63,22 +63,22 @@ class CC_EXPORT PictureLayerTilingSet {
       scoped_refptr<RasterSource> raster_source,
       const PictureLayerTilingSet* pending_twin_set,
       const Region& layer_invalidation,
-      float minimum_contents_scale_key,
-      float maximum_contents_scale_key);
+      float minimum_contents_scale,
+      float maximum_contents_scale);
 
   // This function is called on the sync tree during commit.
   void UpdateTilingsToCurrentRasterSourceForCommit(
       scoped_refptr<RasterSource> raster_source,
       const Region& layer_invalidation,
-      float minimum_contents_scale_key,
-      float maximum_contents_scale_key);
+      float minimum_contents_scale,
+      float maximum_contents_scale);
 
   // This function is called on the sync tree right after commit.
   void UpdateRasterSourceDueToLCDChange(
       scoped_refptr<RasterSource> raster_source,
       const Region& layer_invalidation);
 
-  PictureLayerTiling* AddTiling(float contents_scale_key,
+  PictureLayerTiling* AddTiling(float contents_scale,
                                 scoped_refptr<RasterSource> raster_source);
   size_t num_tilings() const { return tilings_.size(); }
   int NumHighResTilings() const;
@@ -124,9 +124,6 @@ class CC_EXPORT PictureLayerTilingSet {
                             double current_frame_time_in_seconds,
                             const Occlusion& occlusion_in_layer_space,
                             bool can_require_tiles_for_activation);
-
-  void SetAspectRatio(float ratio);
-  float aspect_ratio() const { return aspect_ratio_; }
 
   void GetAllPrioritizedTilesForTracing(
       std::vector<PrioritizedTile>* prioritized_tiles) const;
@@ -261,8 +258,6 @@ class CC_EXPORT PictureLayerTilingSet {
   gfx::Rect skewport_in_layer_space_;
   gfx::Rect soon_border_rect_in_layer_space_;
   gfx::Rect eventually_rect_in_layer_space_;
-
-  float aspect_ratio_ = 1.f;
 
   friend class Iterator;
 

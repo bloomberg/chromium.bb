@@ -34,9 +34,9 @@ class CC_EXPORT DrawImage {
   bool matrix_is_decomposable() const { return matrix_is_decomposable_; }
   const SkMatrix& matrix() const { return matrix_; }
 
-  DrawImage ApplyScale(const gfx::SizeF& scales) const {
+  DrawImage ApplyScale(float scale) const {
     SkMatrix scaled_matrix = matrix_;
-    scaled_matrix.preScale(scales.width(), scales.height());
+    scaled_matrix.preScale(scale, scale);
     return DrawImage(image_, src_rect_, filter_quality_, scaled_matrix);
   }
 

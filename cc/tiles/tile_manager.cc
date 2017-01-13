@@ -98,7 +98,7 @@ class RasterTaskImpl : public TileTask {
         raster_source_(std::move(raster_source)),
         content_rect_(tile->content_rect()),
         invalid_content_rect_(invalidated_rect),
-        raster_scales_(tile->raster_scales()),
+        raster_scale_(tile->contents_scale()),
         playback_settings_(playback_settings),
         tile_resolution_(tile_resolution),
         layer_id_(tile->layer_id()),
@@ -128,7 +128,7 @@ class RasterTaskImpl : public TileTask {
 
     raster_buffer_->Playback(raster_source_.get(), content_rect_,
                              invalid_content_rect_, new_content_id_,
-                             raster_scales_, playback_settings_);
+                             raster_scale_, playback_settings_);
   }
 
   // Overridden from TileTask:
@@ -162,7 +162,7 @@ class RasterTaskImpl : public TileTask {
   scoped_refptr<RasterSource> raster_source_;
   gfx::Rect content_rect_;
   gfx::Rect invalid_content_rect_;
-  gfx::SizeF raster_scales_;
+  float raster_scale_;
   RasterSource::PlaybackSettings playback_settings_;
   TileResolution tile_resolution_;
   int layer_id_;
@@ -658,7 +658,7 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
       SkColor color = SK_ColorTRANSPARENT;
       bool is_solid_color =
           prioritized_tile.raster_source()->PerformSolidColorAnalysis(
-              tile->content_rect(), tile->raster_scales(), &color);
+              tile->content_rect(), tile->contents_scale(), &color);
       if (is_solid_color) {
         tile->draw_info().set_solid_color(color);
         tile->draw_info().set_was_ever_ready_to_draw();
@@ -899,7 +899,7 @@ void TileManager::ScheduleTasks(
 
     std::vector<DrawImage> images;
     prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-        tile->enclosing_layer_rect(), tile->raster_scales(), &images);
+        tile->enclosing_layer_rect(), tile->contents_scale(), &images);
     new_locked_images.insert(new_locked_images.end(), images.begin(),
                              images.end());
   }
@@ -1002,7 +1002,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   images.clear();
   if (!playback_settings.skip_images) {
     prioritized_tile.raster_source()->GetDiscardableImagesInRect(
-        tile->enclosing_layer_rect(), tile->raster_scales(), &images);
+        tile->enclosing_layer_rect(), tile->contents_scale(), &images);
   }
 
   // We can skip the image hijack canvas if we have no images.

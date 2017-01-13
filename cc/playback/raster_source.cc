@@ -63,7 +63,7 @@ RasterSource::~RasterSource() {
 void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
                                     const gfx::Rect& canvas_bitmap_rect,
                                     const gfx::Rect& canvas_playback_rect,
-                                    const gfx::SizeF& raster_scales,
+                                    float raster_scale,
                                     const PlaybackSettings& settings) const {
   SkIRect raster_bounds = gfx::RectToSkIRect(canvas_bitmap_rect);
   if (!canvas_playback_rect.IsEmpty() &&
@@ -75,7 +75,7 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   raster_canvas->save();
   raster_canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
   raster_canvas->clipRect(SkRect::MakeFromIRect(raster_bounds));
-  raster_canvas->scale(raster_scales.width(), raster_scales.height());
+  raster_canvas->scale(raster_scale, raster_scale);
   PlaybackToCanvas(raster_canvas, settings);
   raster_canvas->restore();
 }
@@ -215,12 +215,12 @@ size_t RasterSource::GetPictureMemoryUsage() const {
 }
 
 bool RasterSource::PerformSolidColorAnalysis(const gfx::Rect& content_rect,
-                                             const gfx::SizeF& raster_scales,
+                                             float contents_scale,
                                              SkColor* color) const {
   TRACE_EVENT0("cc", "RasterSource::PerformSolidColorAnalysis");
 
-  gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
-      content_rect, 1.f / raster_scales.width(), 1.f / raster_scales.height());
+  gfx::Rect layer_rect =
+      gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale);
 
   layer_rect.Intersect(gfx::Rect(size_));
   skia::AnalysisCanvas canvas(layer_rect.width(), layer_rect.height());
@@ -231,10 +231,10 @@ bool RasterSource::PerformSolidColorAnalysis(const gfx::Rect& content_rect,
 
 void RasterSource::GetDiscardableImagesInRect(
     const gfx::Rect& layer_rect,
-    const gfx::SizeF& raster_scales,
+    float contents_scale,
     std::vector<DrawImage>* images) const {
   DCHECK_EQ(0u, images->size());
-  display_list_->GetDiscardableImagesInRect(layer_rect, raster_scales, images);
+  display_list_->GetDiscardableImagesInRect(layer_rect, contents_scale, images);
 }
 
 bool RasterSource::CoversRect(const gfx::Rect& layer_rect) const {
