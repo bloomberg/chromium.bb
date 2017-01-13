@@ -56,12 +56,12 @@ BRLTTY AUTHORS
 Liblouis was derived from the Linux screen reader BRLTTY. Because it
 is rather difficult to trace back exactly which parts of BRLTTY ended
 up in liblouis we just list all BRLTTY contributors here (see also
-mielke.cc/brltty/contact.html).
+brltty.com/contact.html).
 
 The team:
 
   Dave Mielke <dave@mielke.cc>
-  Nicolas Pitre <nico@cam.org>
+  Nicolas Pitre <nico@fluxnic.net>
   Stéphane Doyon <s.doyon@videotron.ca>
 
 Other contributors:
