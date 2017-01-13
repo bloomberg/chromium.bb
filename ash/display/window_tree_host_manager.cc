@@ -443,13 +443,18 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   CHECK(primary_host);
   CHECK_NE(primary_host, non_primary_host);
 
+  aura::Window* primary_window = GetWindow(primary_host);
+  aura::Window* non_primary_window = GetWindow(non_primary_host);
   window_tree_hosts_[new_primary_display.id()] = primary_host;
-  GetRootWindowSettings(GetWindow(primary_host))->display_id =
-      new_primary_display.id();
+  GetRootWindowSettings(primary_window)->display_id = new_primary_display.id();
 
   window_tree_hosts_[old_primary_display.id()] = non_primary_host;
-  GetRootWindowSettings(GetWindow(non_primary_host))->display_id =
+  GetRootWindowSettings(non_primary_window)->display_id =
       old_primary_display.id();
+
+  base::string16 old_primary_title = primary_window->GetTitle();
+  primary_window->SetTitle(non_primary_window->GetTitle());
+  non_primary_window->SetTitle(old_primary_title);
 
   const display::DisplayLayout& layout =
       GetDisplayManager()->GetCurrentDisplayLayout();
