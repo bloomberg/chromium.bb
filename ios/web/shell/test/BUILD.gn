@@ -13,6 +13,7 @@ group("all_tests") {
 }
 
 ios_eg_test("ios_web_shell_egtests") {
+  info_plist = "//ios/web/shell/Info.plist"
   sources = [
     "context_menu_egtest.mm",
     "meta_tags_egtest.mm",
