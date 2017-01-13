@@ -1934,26 +1934,6 @@ static CSSValue* consumePerspective(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSValueList* consumePositionList(CSSParserTokenRange& range,
-                                         CSSParserMode cssParserMode) {
-  CSSValueList* positions = CSSValueList::createCommaSeparated();
-  do {
-    CSSValue* position =
-        consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
-    if (!position)
-      return nullptr;
-    positions->append(*position);
-  } while (consumeCommaIncludingWhitespace(range));
-  return positions;
-}
-
-static CSSValue* consumeScrollSnapCoordinate(CSSParserTokenRange& range,
-                                             CSSParserMode cssParserMode) {
-  if (range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-  return consumePositionList(range, cssParserMode);
-}
-
 static CSSValue* consumeScrollSnapPoints(CSSParserTokenRange& range,
                                          CSSParserMode cssParserMode) {
   if (range.peek().id() == CSSValueNone)
@@ -3426,8 +3406,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeImageOrNone(m_range, m_context);
     case CSSPropertyPerspective:
       return consumePerspective(m_range, m_context, unresolvedProperty);
-    case CSSPropertyScrollSnapCoordinate:
-      return consumeScrollSnapCoordinate(m_range, m_context.mode());
     case CSSPropertyScrollSnapPointsX:
     case CSSPropertyScrollSnapPointsY:
       return consumeScrollSnapPoints(m_range, m_context.mode());
