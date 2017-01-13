@@ -275,11 +275,8 @@ CupsPrintJobNotification::GetButtonCommands() const {
     case CupsPrintJob::State::STATE_STARTED:
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_RESUMED:
-      commands->push_back(ButtonCommand::PAUSE_PRINTING);
-      commands->push_back(ButtonCommand::CANCEL_PRINTING);
-      break;
     case CupsPrintJob::State::STATE_SUSPENDED:
-      commands->push_back(ButtonCommand::RESUME_PRINTING);
+      // TODO(crbug.com/679927): Add PAUSE and RESUME buttons.
       commands->push_back(ButtonCommand::CANCEL_PRINTING);
       break;
     case CupsPrintJob::State::STATE_ERROR:
