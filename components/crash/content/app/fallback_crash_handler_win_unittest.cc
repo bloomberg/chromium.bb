@@ -4,15 +4,21 @@
 
 #include "components/crash/content/app/fallback_crash_handler_win.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
+#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/multiprocess_test.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "components/crash/content/app/fallback_crash_handler_launcher_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
 #include "third_party/crashpad/crashpad/snapshot/minidump/process_snapshot_minidump.h"
@@ -23,9 +29,9 @@ namespace crash_reporter {
 
 namespace {
 
-class FallbackCrashHandlerWinTest : public testing::Test {
+class ExceptionPointers {
  public:
-  FallbackCrashHandlerWinTest() : self_handle_(base::kNullProcessHandle) {
+  ExceptionPointers() {
     RtlCaptureContext(&context_);
     memset(&exception_, 0, sizeof(exception_));
     exception_.ExceptionCode = EXCEPTION_ACCESS_VIOLATION;
@@ -33,6 +39,61 @@ class FallbackCrashHandlerWinTest : public testing::Test {
     exception_ptrs_.ExceptionRecord = &exception_;
     exception_ptrs_.ContextRecord = &context_;
   }
+
+  EXCEPTION_POINTERS* exception_ptrs() { return &exception_ptrs_; }
+  std::string AsString() {
+    return base::Uint64ToString(reinterpret_cast<uintptr_t>(exception_ptrs()));
+  }
+
+ private:
+  CONTEXT context_;
+  EXCEPTION_RECORD exception_;
+  EXCEPTION_POINTERS exception_ptrs_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExceptionPointers);
+};
+
+const char kProduct[] = "SomeProduct";
+const char kVersion[] = "1.2.3.6";
+const char kChannel[] = "canary";
+const char kProcessType[] = "Test";
+
+// This main function runs the handler to test.
+MULTIPROCESS_TEST_MAIN(FallbackCrashHandlerWinRunHandler) {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+  FallbackCrashHandler handler;
+  CHECK(handler.ParseCommandLine(*cmd_line));
+  CHECK(handler.GenerateCrashDump(kProduct, kVersion, kChannel, kProcessType));
+
+  return 0;
+}
+
+// This main function runs the setup and generates the simulated crash.
+MULTIPROCESS_TEST_MAIN(FallbackCrashHandlerWinMain) {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+  base::FilePath directory = cmd_line->GetSwitchValuePath("directory");
+  CHECK(!directory.empty());
+
+  base::CommandLine base_cmdline =
+      base::GetMultiProcessTestChildBaseCommandLine();
+  base_cmdline.AppendSwitchASCII(switches::kTestChildProcess,
+                                 "FallbackCrashHandlerWinRunHandler");
+
+  FallbackCrashHandlerLauncher launcher;
+  CHECK(launcher.Initialize(base_cmdline, directory));
+
+  ExceptionPointers exception_ptrs;
+  CHECK_EQ(0U,
+           launcher.LaunchAndWaitForHandler(exception_ptrs.exception_ptrs()));
+
+  return 0;
+}
+
+class FallbackCrashHandlerWinTest : public testing::Test {
+ public:
+  FallbackCrashHandlerWinTest() : self_handle_(base::kNullProcessHandle) {}
 
   void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
@@ -53,10 +114,6 @@ class FallbackCrashHandlerWinTest : public testing::Test {
     }
   }
 
-  std::string ExcPtrsAsString() const {
-    return base::Uint64ToString(reinterpret_cast<uintptr_t>(&exception_ptrs_));
-  };
-
   std::string SelfHandleAsString() const {
     return base::UintToString(base::win::HandleToUint32(self_handle_));
   };
@@ -68,10 +125,6 @@ class FallbackCrashHandlerWinTest : public testing::Test {
   }
 
  protected:
-  CONTEXT context_;
-  EXCEPTION_RECORD exception_;
-  EXCEPTION_POINTERS exception_ptrs_;
-
   base::ProcessHandle self_handle_;
   base::ScopedTempDir database_dir_;
 
@@ -87,8 +140,9 @@ TEST_F(FallbackCrashHandlerWinTest, ParseCommandLine) {
   base::CommandLine cmd_line(base::FilePath(L"empty"));
   ASSERT_FALSE(handler.ParseCommandLine(cmd_line));
 
+  ExceptionPointers exception_ptrs;
   cmd_line.AppendSwitchPath("database", database_dir_.GetPath());
-  cmd_line.AppendSwitchASCII("exception-pointers", ExcPtrsAsString());
+  cmd_line.AppendSwitchASCII("exception-pointers", exception_ptrs.AsString());
   cmd_line.AppendSwitchASCII("process", SelfHandleAsString());
 
   // Thread missing, still should fail.
@@ -105,32 +159,17 @@ TEST_F(FallbackCrashHandlerWinTest, ParseCommandLine) {
 }
 
 TEST_F(FallbackCrashHandlerWinTest, GenerateCrashDump) {
-  FallbackCrashHandler handler;
+  base::CommandLine cmd_line = base::GetMultiProcessTestChildBaseCommandLine();
+  cmd_line.AppendSwitchPath("directory", database_dir_.GetPath());
+  base::LaunchOptions options;
+  options.start_hidden = true;
+  base::Process test_child = base::SpawnMultiProcessTestChild(
+      "FallbackCrashHandlerWinMain", cmd_line, options);
 
-  base::CommandLine cmd_line(base::FilePath(L"empty"));
-  cmd_line.AppendSwitchPath("database", database_dir_.GetPath());
-  cmd_line.AppendSwitchASCII("exception-pointers", ExcPtrsAsString());
-
-  cmd_line.AppendSwitchASCII("process", SelfHandleAsString());
-  cmd_line.AppendSwitchASCII(
-      "thread", base::UintToString(base::PlatformThread::CurrentId()));
-
-  // Because how handle ownership is guarded, we have to "disown" this before
-  // the handler takes it over.
-  ASSERT_TRUE(handler.ParseCommandLine(cmd_line));
-  self_handle_ = base::kNullProcessHandle;
-
-  const char kProduct[] = "SomeProduct";
-  const char kVersion[] = "1.2.3.6";
-  const char kChannel[] = "canary";
-  const char kProcessType[] = "Test";
-
-  // TODO(siggi): If this ends up being flakey, spin the testing out to a
-  //     a separate process, which can in turn use the
-  //     FallbackCrashHandlerLauncher class to spin a third process to grab
-  //     a dump.
-  EXPECT_TRUE(
-      handler.GenerateCrashDump(kProduct, kVersion, kChannel, kProcessType));
+  ASSERT_TRUE(test_child.IsValid());
+  int exit_code = -1;
+  ASSERT_TRUE(test_child.WaitForExit(&exit_code));
+  ASSERT_EQ(0, exit_code);
 
   // Validate that the database contains one valid crash dump.
   std::unique_ptr<crashpad::CrashReportDatabase> database =
