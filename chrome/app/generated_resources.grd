@@ -3715,9 +3715,8 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_NON_PLATFORM_APP_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the non-platform app uninstallation prompt. Tells the user the app will be uninstalled if confirmed.">
         "<ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph>" will be uninstalled.
       </message>
-      <message name="IDS_ARC_APP_UNINSTALL_PROMPT_HEADING" desc="Bold line in the content area of the ARC(App Runtime for Chrome) app uninstallation prompt. Tells the user that local data associated with the app will be removed from this device.">
-        "<ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph>" will be uninstalled.
-Data associated with this app will be removed from this device.
+      <message name="IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING" desc="Line in the content area of the ARC(App Runtime for Chrome) app uninstallation prompt. Tells the user that local data associated with the app will be removed from this device.">
+        Data associated with this app will be removed from this device.
       </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app uninstallation prompt window">
         Confirm Removal

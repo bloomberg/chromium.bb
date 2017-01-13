@@ -61,6 +61,7 @@ class ArcAppDialogView : public views::DialogDelegateView,
                    const std::string& app_id,
                    const base::string16& window_title,
                    const base::string16& heading_text,
+                   const base::string16& subheading_text,
                    const base::string16& confirm_button_text,
                    const base::string16& cancel_button_text,
                    ArcAppConfirmCallback confirm_callback);
@@ -83,13 +84,14 @@ class ArcAppDialogView : public views::DialogDelegateView,
   void OnAppImageUpdated(const std::string& app_id,
                          const gfx::ImageSkia& image) override;
 
+  void AddMultiLineLabel(views::View* parent, const base::string16& label_text);
+
   // Constructs and shows the modal dialog widget.
   void Show();
 
   bool initial_setup_ = true;
 
   views::ImageView* icon_view_ = nullptr;
-  views::Label* heading_view_ = nullptr;
 
   std::unique_ptr<ArcAppIconLoader> icon_loader_;
 
@@ -119,6 +121,7 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
                                    const std::string& app_id,
                                    const base::string16& window_title,
                                    const base::string16& heading_text,
+                                   const base::string16& subheading_text,
                                    const base::string16& confirm_button_text,
                                    const base::string16& cancel_button_text,
                                    ArcAppConfirmCallback confirm_callback)
@@ -141,12 +144,20 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   icon_view_ = new FixedBoundarySizeImageView();
   AddChildView(icon_view_);
 
-  heading_view_ = new views::Label(heading_text);
-  heading_view_->SetMultiLine(true);
-  heading_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  heading_view_->SetAllowCharacterBreak(true);
-  heading_view_->SizeToFit(kRightColumnWidth);
-  AddChildView(heading_view_);
+  views::View* text_container = new views::View();
+  views::BoxLayout* text_container_layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  text_container_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  text_container_layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  text_container->SetLayoutManager(text_container_layout);
+
+  AddChildView(text_container);
+  DCHECK(!heading_text.empty());
+  AddMultiLineLabel(text_container, heading_text);
+  if (!subheading_text.empty())
+    AddMultiLineLabel(text_container, subheading_text);
 
   icon_loader_.reset(new ArcAppIconLoader(profile_, kIconSourceSize, this));
   // The dialog will show once the icon is loaded.
@@ -156,6 +167,16 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
 ArcAppDialogView::~ArcAppDialogView() {
   DCHECK_EQ(this, g_current_arc_app_dialog_view);
   g_current_arc_app_dialog_view = nullptr;
+}
+
+void ArcAppDialogView::AddMultiLineLabel(views::View* parent,
+                                         const base::string16& label_text) {
+  views::Label* label = new views::Label(label_text);
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetAllowCharacterBreak(true);
+  label->SizeToFit(kRightColumnWidth);
+  parent->AddChildView(label);
 }
 
 void ArcAppDialogView::ConfirmOrCancelForTest(bool confirm) {
@@ -242,8 +263,13 @@ void ShowArcAppUninstallDialog(Profile* profile,
 
   base::string16 heading_text = base::UTF8ToUTF16(l10n_util::GetStringFUTF8(
       is_shortcut ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING
-                  : IDS_ARC_APP_UNINSTALL_PROMPT_HEADING,
+                  : IDS_NON_PLATFORM_APP_UNINSTALL_PROMPT_HEADING,
       base::UTF8ToUTF16(app_info->name)));
+  base::string16 subheading_text;
+  if (!is_shortcut) {
+    subheading_text = l10n_util::GetStringUTF16(
+        IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING);
+  }
 
   base::string16 confirm_button_text = l10n_util::GetStringUTF16(
       is_shortcut ? IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON
@@ -252,7 +278,7 @@ void ShowArcAppUninstallDialog(Profile* profile,
   base::string16 cancel_button_text = l10n_util::GetStringUTF16(IDS_CANCEL);
 
   new ArcAppDialogView(profile, controller, app_id, window_title, heading_text,
-                       confirm_button_text, cancel_button_text,
+                       subheading_text, confirm_button_text, cancel_button_text,
                        base::Bind(UninstallArcApp));
 }
 
