@@ -6,9 +6,9 @@ from gpu_tests.webgl_conformance_expectations import WebGLConformanceExpectation
 # See the GpuTestExpectations class for documentation.
 
 class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
-  def __init__(self, conformance_path, url_prefixes=None):
+  def __init__(self, conformance_path, url_prefixes=None, is_asan=False):
     super(WebGL2ConformanceExpectations, self).__init__(
-      conformance_path, url_prefixes=url_prefixes)
+      conformance_path, url_prefixes=url_prefixes, is_asan=is_asan)
 
   def SetExpectations(self):
     # ===================================
@@ -490,6 +490,20 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd', 'intel'], bug=679691)
 
     # Mac Intel
+
+    # ASAN only
+    self.Fail(
+      'conformance/more/functions/copyTexImage2D.html',
+      ['mac', 'intel', 'asan'], bug=680845)
+    self.Fail(
+      'conformance/more/functions/copyTexSubImage2D.html',
+      ['mac', 'intel', 'asan'], bug=680845)
+    self.Fail(
+      'deqp/functional/gles3/negativetextureapi.html',
+      ['mac', 'intel', 'asan'], bug=680845)
+    self.Fail(
+      'deqp/functional/gles3/texturespecification/basic_copyteximage2d.html',
+      ['mac', 'intel', 'asan'], bug=680845)
 
     self.Fail(
       'conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-float.html',

@@ -44,6 +44,10 @@ class SampleExpectationSubclass(test_expectations.Expectation):
 
 
 class SampleTestExpectations(test_expectations.TestExpectations):
+  def __init__(self, url_prefixes=None, is_asan=False):
+    super(SampleTestExpectations, self).__init__(
+      url_prefixes=url_prefixes, is_asan=is_asan)
+
   def CreateExpectation(self, expectation, url_pattern, conditions=None,
                         bug=None):
     return SampleExpectationSubclass(expectation, url_pattern,
@@ -70,6 +74,12 @@ class SampleTestExpectations(test_expectations.TestExpectations):
     # Explicitly matched paths have precedence over wildcards.
     self.Fail('conformance/glsl/*')
     self.Skip('conformance/glsl/page15.html')
+    # Test ASAN expectations.
+    self.Fail('page16.html', ['mac', 'asan'])
+    self.Fail('page17.html', ['mac', 'no_asan'])
+    # Explicitly specified ASAN expectations should not collide.
+    self.Skip('page18.html', ['mac', 'asan'])
+    self.Fail('page18.html', ['mac', 'no_asan'])
 
   def _ExpectationAppliesToTest(
       self, expectation, browser, test_url, test_name):
@@ -93,10 +103,13 @@ class FailingAbsoluteTestExpectations(test_expectations.TestExpectations):
     self.Fail('http://test.com/page5.html', bug=123)
 
 class TestExpectationsTest(unittest.TestCase):
-  def setUp(self):
+  def setUpHelper(self, is_asan=False):
     self.expectations = SampleTestExpectations(url_prefixes=[
       'third_party/webgl/src/sdk/tests/',
-      'content/test/data/gpu'])
+      'content/test/data/gpu'], is_asan=is_asan)
+
+  def setUp(self):
+    self.setUpHelper()
 
   def assertExpectationEquals(self, expected, url, platform=StubPlatform(''),
                               browser_type=None):
@@ -237,3 +250,21 @@ class TestExpectationsTest(unittest.TestCase):
       'third_party\\webgl\\src\\sdk\\tests\\conformance\\glsl\\foo.html',
       'Foo',
       StubPlatform('win'))
+
+  def testCaseInsensitivity(self):
+    url = 'http://test.com/page1.html'
+    self.assertExpectationEquals('fail', url, StubPlatform('Win'))
+    url = 'http://test.com/page2.html'
+    self.assertExpectationEquals('fail', url, StubPlatform('Win', 'Vista'))
+    url = 'http://test.com/page10.html'
+    self.assertExpectationEquals('fail', url, StubPlatform('android'),
+                                 browser_type='Android-Webview-Shell')
+
+  def testASANExpectations(self):
+    url16 = 'page16.html'
+    url18 = 'page18.html'
+    self.assertExpectationEquals('pass', url16, StubPlatform('mac'))
+    self.assertExpectationEquals('fail', url18, StubPlatform('mac'))
+    self.setUpHelper(is_asan=True)
+    self.assertExpectationEquals('fail', url16, StubPlatform('mac'))
+    self.assertExpectationEquals('skip', url18, StubPlatform('mac'))

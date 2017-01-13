@@ -444,6 +444,7 @@ FYI_WATERFALL = {
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'mac',
+      'is_asan': True,
     },
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
@@ -1252,6 +1253,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'allow_on_android': True,
       },
     ],
+    'asan_args': ['--is-asan'],
   },
   'webgl_conformance_d3d9_tests': {
     'tester_configs': [
@@ -1265,6 +1267,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'extra_browser_args': [
       '--use-angle=d3d9',
     ],
+    'asan_args': ['--is-asan'],
   },
   'webgl_conformance_gl_tests': {
     'tester_configs': [
@@ -1306,6 +1309,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'extra_browser_args': [
       '--use-angle=gl',
     ],
+    'asan_args': ['--is-asan'],
   },
   'webgl_conformance_angle_tests': {
     'tester_configs': [
@@ -1319,6 +1323,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'extra_browser_args': [
       '--use-gl=angle',
     ],
+    'asan_args': ['--is-asan'],
   },
   'webgl_conformance_d3d11_passthrough': {
     'tester_configs': [
@@ -1333,6 +1338,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--use-angle=d3d11',
       '--use-passthrough-cmd-decoder',
     ],
+    'asan_args': ['--is-asan'],
   },
   'webgl2_conformance_tests': {
     'tester_configs': [
@@ -1362,6 +1368,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--read-abbreviated-json-results-from=' + \
       '../../content/test/data/gpu/webgl2_conformance_tests_output.json',
     ],
+    'asan_args': ['--is-asan'],
     'swarming': {
       # These tests currently take about an hour and fifteen minutes
       # to run. Split them into roughly 5-minute shards.
@@ -1405,6 +1412,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--read-abbreviated-json-results-from=' + \
       '../../content/test/data/gpu/webgl2_conformance_tests_output.json',
     ],
+    'asan_args': ['--is-asan'],
     'swarming': {
       # These tests currently take about an hour and fifteen minutes
       # to run. Split them into roughly 5-minute shards.
@@ -1457,6 +1465,9 @@ def matches_swarming_dimensions(tester_config, dimension_sets):
 
 def is_android(tester_config):
   return tester_config['os_type'] == 'android'
+
+def is_asan(tester_config):
+  return tester_config.get('is_asan', False)
 
 def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
                                  check_waterfall):
@@ -1628,6 +1639,9 @@ def generate_isolated_test(tester_name, tester_config, test, test_config,
   if 'android_args' in test_config and is_android(tester_config):
     test_args.extend(substitute_args(tester_config,
                                      test_config['android_args']))
+  if 'asan_args' in test_config and is_asan(tester_config):
+    test_args.extend(substitute_args(tester_config,
+                                     test_config['asan_args']))
   # The step name must end in 'test' or 'tests' in order for the
   # results to automatically show up on the flakiness dashboard.
   # (At least, this was true some time ago.) Continue to use this

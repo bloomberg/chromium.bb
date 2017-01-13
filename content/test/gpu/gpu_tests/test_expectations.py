@@ -15,6 +15,9 @@ import urlparse
 # Browser types:
 #     android-webview-shell, android-content-shell, debug, release
 #
+# ASAN conditions:
+#     asan, no_asan
+#
 # Sample usage in SetExpectations in subclasses:
 #   self.Fail('gl-enable-vertex-attrib.html',
 #       ['mac', 'release'], bug=123)
@@ -29,6 +32,14 @@ OS_CONDITIONS = ['win', 'mac', 'linux', 'chromeos', 'android'] + \
 BROWSER_TYPE_CONDITIONS = [
     'android-webview-shell', 'android-content-shell', 'android-chromium',
     'debug', 'release']
+
+ASAN_CONDITIONS = ['asan', 'no_asan']
+
+def _SafeLower(opt_str):
+  if not opt_str:
+    return opt_str
+  return opt_str.lower()
+
 
 class Expectation(object):
   """Represents a single expectation for a test.
@@ -56,6 +67,7 @@ class Expectation(object):
 
     self.os_conditions = []
     self.browser_conditions = []
+    self.asan_conditions = []
 
     if conditions:
       for c in conditions:
@@ -90,7 +102,9 @@ class Expectation(object):
     if cl in OS_CONDITIONS:
       self.os_conditions.append(cl)
     elif cl in BROWSER_TYPE_CONDITIONS:
-      self.browser_conditions.append(condition)
+      self.browser_conditions.append(cl)
+    elif cl in ASAN_CONDITIONS:
+      self.asan_conditions.append(cl)
     else:
       raise ValueError('Unknown expectation condition: "%s"' % cl)
 
@@ -98,9 +112,14 @@ class Expectation(object):
 class TestExpectations(object):
   """A class which defines the expectations for a test execution."""
 
-  def __init__(self, url_prefixes=None):
+  def __init__(self, url_prefixes=None, is_asan=False):
     self._expectations = []
     self._url_prefixes = []
+    # The browser doesn't know whether it was built with ASAN or not;
+    # only the surrounding environment knows that. Tests which care to
+    # support ASAN-specific expectations have to tell the
+    # TestExpectations object about this during its construction.
+    self._is_asan = is_asan
     self._skip_matching_names = False
     self._built_expectation_cache = True
     self._ClearExpectationsCache()
@@ -274,12 +293,18 @@ class TestExpectations(object):
           return False
 
     platform = browser.platform
-    os_matches = (not expectation.os_conditions or
-        platform.GetOSName() in expectation.os_conditions or
-        platform.GetOSVersionName() in expectation.os_conditions)
+    os_matches = (
+      not expectation.os_conditions or
+      _SafeLower(platform.GetOSName()) in expectation.os_conditions or
+      _SafeLower(platform.GetOSVersionName()) in expectation.os_conditions)
 
     browser_matches = (
       (not expectation.browser_conditions) or
-      browser.browser_type in expectation.browser_conditions)
+      _SafeLower(browser.browser_type) in expectation.browser_conditions)
 
-    return os_matches and browser_matches
+    asan_matches = (
+      (not expectation.asan_conditions) or
+      ('asan' in expectation.asan_conditions and self._is_asan) or
+      ('no_asan' in expectation.asan_conditions and not self._is_asan))
+
+    return os_matches and browser_matches and asan_matches

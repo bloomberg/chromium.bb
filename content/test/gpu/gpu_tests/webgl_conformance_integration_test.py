@@ -90,6 +90,7 @@ def _CompareVersion(version1, version2):
 class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   _webgl_version = None
+  _is_asan = False
 
   @classmethod
   def Name(cls):
@@ -103,6 +104,9 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     parser.add_option('--webgl2-only',
         help='Whether we include webgl 1 tests if version is 2.0.0 or above.',
         default='false')
+    parser.add_option('--is-asan',
+        help='Indicates whether currently running an ASAN build',
+        action='store_true')
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -116,6 +120,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         None)
     cls._webgl_version = [
         int(x) for x in options.webgl_conformance_version.split('.')][0]
+    cls._is_asan = options.is_asan
     for test_path in test_paths:
       # generated test name cannot contain '.'
       name = _GenerateTestNameFromTestPath(test_path).replace(
@@ -298,14 +303,16 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     assert cls._webgl_version == 1 or cls._webgl_version == 2
     if cls._webgl_version == 1:
       return webgl_conformance_expectations.WebGLConformanceExpectations(
-          conformance_path, url_prefixes=url_prefixes_to_trim)
+        conformance_path, url_prefixes=url_prefixes_to_trim,
+        is_asan=cls._is_asan)
     else:
       return webgl2_conformance_expectations.WebGL2ConformanceExpectations(
-          conformance_path, url_prefixes=url_prefixes_to_trim)
+        conformance_path, url_prefixes=url_prefixes_to_trim,
+        is_asan=cls._is_asan)
 
   @classmethod
   def setUpClass(cls):
-    super(cls, WebGLConformanceIntegrationTest).setUpClass()
+    super(WebGLConformanceIntegrationTest, cls).setUpClass()
     cls.CustomizeOptions()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()

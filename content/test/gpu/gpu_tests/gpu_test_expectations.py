@@ -76,8 +76,9 @@ class GpuExpectation(test_expectations.Expectation):
 
 
 class GpuTestExpectations(test_expectations.TestExpectations):
-  def __init__(self, url_prefixes=None):
-    super(GpuTestExpectations, self).__init__(url_prefixes=url_prefixes)
+  def __init__(self, url_prefixes=None, is_asan=False):
+    super(GpuTestExpectations, self).__init__(
+      url_prefixes=url_prefixes, is_asan=is_asan)
 
   def CreateExpectation(self, expectation, pattern, conditions=None,
                         bug=None):
