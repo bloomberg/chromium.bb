@@ -110,7 +110,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
         containerPaintProperties->contentsProperties();
 
     bool success = false;
-    result = LayoutRect(geometryMapper.mapToVisualRectInDestinationSpace(
+    result = LayoutRect(geometryMapper.sourceToDestinationVisualRect(
         rect, currentTreeState, containerContentsProperties, success));
     DCHECK(success);
 
@@ -166,11 +166,6 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
   if (object != context.paintInvalidationContainer) {
     point.moveBy(FloatPoint(object.paintOffset()));
 
-    PropertyTreeState currentTreeState(
-        context.treeBuilderContext.current.transform,
-        context.treeBuilderContext.current.clip,
-        context.treeBuilderContext.currentEffect,
-        context.treeBuilderContext.current.scroll);
     const auto* containerPaintProperties =
         context.paintInvalidationContainer->paintProperties();
     auto containerContentsProperties =
@@ -178,9 +173,10 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
 
     bool success = false;
     point = m_geometryMapper
-                .mapRectToDestinationSpace(FloatRect(point, FloatSize()),
-                                           currentTreeState,
-                                           containerContentsProperties, success)
+                .sourceToDestinationRect(
+                    FloatRect(point, FloatSize()),
+                    context.treeBuilderContext.current.transform,
+                    containerContentsProperties.transform(), success)
                 .location();
     DCHECK(success);
 

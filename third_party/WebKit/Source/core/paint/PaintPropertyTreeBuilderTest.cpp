@@ -80,7 +80,7 @@ void PaintPropertyTreeBuilderTest::TearDown() {
     auto contentsProperties =                                                  \
         (ancestorLayoutObject)->paintProperties()->contentsProperties();       \
     LayoutRect actual =                                                        \
-        LayoutRect(geometryMapper.mapToVisualRectInDestinationSpace(           \
+        LayoutRect(geometryMapper.sourceToDestinationVisualRect(               \
             FloatRect(source), *(sourceLayoutObject)                           \
                                     ->paintProperties()                        \
                                     ->localBorderBoxProperties(),              \

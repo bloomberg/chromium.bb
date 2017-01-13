@@ -216,15 +216,18 @@ LayoutRect PaintLayerClipper::localClipRect(
     // The rect now needs to be transformed to the local space of this
     // PaintLayer.
     bool success = false;
-    FloatRect clippedRectInLocalSpace =
-        m_geometryMapper->mapRectToDestinationSpace(
-            FloatRect(clipRect.rect()), *clippingRootLayer->layoutObject()
+    const auto* clipRootLayerTransform = clippingRootLayer->layoutObject()
                                              ->paintProperties()
-                                             ->localBorderBoxProperties(),
-            *m_layer.layoutObject()
-                 ->paintProperties()
-                 ->localBorderBoxProperties(),
-            success);
+                                             ->localBorderBoxProperties()
+                                             ->transform();
+    const auto* layerTransform = m_layer.layoutObject()
+                                     ->paintProperties()
+                                     ->localBorderBoxProperties()
+                                     ->transform();
+    FloatRect clippedRectInLocalSpace =
+        m_geometryMapper->sourceToDestinationRect(FloatRect(clipRect.rect()),
+                                                  clipRootLayerTransform,
+                                                  layerTransform, success);
     DCHECK(success);
 
     return LayoutRect(clippedRectInLocalSpace);
@@ -259,16 +262,19 @@ void PaintLayerClipper::mapLocalToRootWithGeometryMapper(
   DCHECK(m_geometryMapper);
   bool success;
 
-  const auto* layerBorderBoxProperties =
-      m_layer.layoutObject()->paintProperties()->localBorderBoxProperties();
+  const auto* layerTransform = m_layer.layoutObject()
+                                   ->paintProperties()
+                                   ->localBorderBoxProperties()
+                                   ->transform();
+  const auto* rootTransform = context.rootLayer->layoutObject()
+                                  ->paintProperties()
+                                  ->localBorderBoxProperties()
+                                  ->transform();
+
   FloatRect localRect(layoutRect);
   localRect.moveBy(FloatPoint(m_layer.layoutObject()->paintOffset()));
-
-  layoutRect = LayoutRect(m_geometryMapper->mapRectToDestinationSpace(
-      localRect, *layerBorderBoxProperties, *context.rootLayer->layoutObject()
-                                                 ->paintProperties()
-                                                 ->localBorderBoxProperties(),
-      success));
+  layoutRect = LayoutRect(m_geometryMapper->sourceToDestinationRect(
+      localRect, layerTransform, rootTransform, success));
   DCHECK(success);
 }
 
@@ -452,7 +458,7 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
       destinationPropertyTreeState.setClip(ancestorProperties->overflowClip());
   }
   FloatRect clippedRectInRootLayerSpace =
-      m_geometryMapper->mapToVisualRectInDestinationSpace(
+      m_geometryMapper->sourceToDestinationVisualRect(
           FloatRect(source), propertyTreeState, destinationPropertyTreeState,
           success);
   DCHECK(success);

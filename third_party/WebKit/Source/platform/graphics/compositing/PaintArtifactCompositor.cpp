@@ -286,8 +286,8 @@ static void applyClipsBetweenStates(const PropertyTreeState& localState,
   if (transformNode != ancestorState.transform()) {
     bool success = false;
     const TransformationMatrix& localToAncestorMatrix =
-        geometryMapper.localToAncestorMatrix(transformNode, ancestorState,
-                                             success);
+        geometryMapper.localToAncestorMatrix(
+            transformNode, ancestorState.transform(), success);
     DCHECK(success);
     // Clips are only in descendant spaces that are transformed by one
     // or more scrolls.
@@ -373,8 +373,8 @@ static void recordPairedBeginDisplayItems(
           const TransformPaintPropertyNode* transformNode =
               pairedState->effect()->localTransformSpace();
           const TransformationMatrix& localToAncestorMatrix =
-              geometryMapper.localToAncestorMatrix(transformNode, *pairedState,
-                                                   success);
+              geometryMapper.localToAncestorMatrix(
+                  transformNode, pairedState->transform(), success);
           DCHECK(success);
           // Effects are only in descendant spaces that are transformed by one
           // or more scrolls.
@@ -1084,14 +1084,14 @@ bool PaintArtifactCompositor::mightOverlap(
 
   bool success = false;
   FloatRect paintChunkScreenVisualRect =
-      geometryMapper.localToVisualRectInAncestorSpace(
+      geometryMapper.localToAncestorVisualRect(
           paintChunk.bounds, paintChunk.properties.propertyTreeState,
           rootPropertyTreeState, success);
   DCHECK(success);
 
   success = false;
   FloatRect pendingLayerScreenVisualRect =
-      geometryMapper.localToVisualRectInAncestorSpace(
+      geometryMapper.localToAncestorVisualRect(
           candidatePendingLayer.bounds, candidatePendingLayer.propertyTreeState,
           rootPropertyTreeState, success);
   DCHECK(success);
@@ -1117,8 +1117,8 @@ void PaintArtifactCompositor::PendingLayer::add(
   if (geometryMapper) {
     bool success = false;
     mappedBounds = geometryMapper->localToAncestorRect(
-        mappedBounds, paintChunk.properties.propertyTreeState,
-        propertyTreeState, success);
+        mappedBounds, paintChunk.properties.propertyTreeState.transform(),
+        propertyTreeState.transform(), success);
     DCHECK(success);
   }
   bounds.unite(mappedBounds);
