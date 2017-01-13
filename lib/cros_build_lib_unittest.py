@@ -685,6 +685,13 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
                                 debug_level=logging.NOTICE)
     self.AssertOutputContainsLine('foo')
 
+  def testRunCommandRedirectStdoutStderrOnCommandError(self):
+    """Tests that stderr is captured when RunCommand raises."""
+    with self.assertRaises(cros_build_lib.RunCommandError) as cm:
+      cros_build_lib.RunCommand(['cat', '/'], redirect_stderr=True)
+    self.assertIsNotNone(cm.exception.result.error)
+    self.assertNotEqual('', cm.exception.result.error)
+
 
 class TestRetries(cros_test_lib.MockTempDirTestCase):
   """Tests of GenericRetry and relatives."""
