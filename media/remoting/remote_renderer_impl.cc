@@ -21,6 +21,27 @@
 #include "media/remoting/rpc/proto_enum_utils.h"
 #include "media/remoting/rpc/proto_utils.h"
 
+namespace {
+
+// The moving time window to track the media time and statistics updates.
+constexpr base::TimeDelta kTrackingWindow = base::TimeDelta::FromSeconds(3);
+
+// The allowed delay for the remoting playback. When exceeds this limit, the
+// user experience is likely poor and the controller is notified.
+constexpr base::TimeDelta kMediaPlaybackDelayThreshold =
+    base::TimeDelta::FromMilliseconds(450);
+
+// The allowed percentage of the number of video frames dropped vs. the number
+// of the video frames decoded. When exceeds this limit, the user experience is
+// likely poor and the controller is notified.
+constexpr int kMaxNumVideoFramesDroppedPercentage = 3;
+
+// The time period to allow receiver get stable after playback rate change or
+// Flush().
+constexpr base::TimeDelta kStabilizationPeriod =
+    base::TimeDelta::FromSeconds(2);
+}
+
 namespace media {
 
 RemoteRendererImpl::RemoteRendererImpl(
@@ -196,6 +217,7 @@ void RemoteRendererImpl::StartPlayingFrom(base::TimeDelta time) {
     base::AutoLock auto_lock(time_lock_);
     current_media_time_ = time;
   }
+  ResetQueues();
 }
 
 void RemoteRendererImpl::SetPlaybackRate(double playback_rate) {
@@ -213,6 +235,8 @@ void RemoteRendererImpl::SetPlaybackRate(double playback_rate) {
   VLOG(2) << __func__ << ": Sending RPC_R_SETPLAYBACKRATE to " << rpc->handle()
           << " with rate=" << rpc->double_value();
   SendRpcToRemote(std::move(rpc));
+  playback_rate_ = playback_rate;
+  ResetQueues();
 }
 
 void RemoteRendererImpl::SetVolume(float volume) {
@@ -464,6 +488,7 @@ void RemoteRendererImpl::FlushUntilCallback() {
   if (video_demuxer_stream_adapter_)
     video_demuxer_stream_adapter_->SignalFlush(false);
   base::ResetAndReturn(&flush_cb_).Run();
+  ResetQueues();
 }
 
 void RemoteRendererImpl::SetCdmCallback(
@@ -505,8 +530,8 @@ void RemoteRendererImpl::OnTimeUpdate(
     current_media_time_ = base::TimeDelta::FromMicroseconds(time_usec);
     current_max_time_ = base::TimeDelta::FromMicroseconds(max_time_usec);
   }
-  VLOG(3) << __func__ << " max time:" << current_max_time_.InMicroseconds()
-          << " new time:" << current_media_time_.InMicroseconds();
+
+  OnMediaTimeUpdated();
 }
 
 void RemoteRendererImpl::OnBufferingStateChange(
@@ -585,6 +610,8 @@ void RemoteRendererImpl::OnStatisticsUpdate(
           << ", video_frames_dropped=" << stats.video_frames_dropped
           << ", audio_memory_usage=" << stats.audio_memory_usage
           << ", video_memory_usage=" << stats.video_memory_usage;
+
+  UpdateVideoStatsQueue(stats.video_frames_decoded, stats.video_frames_dropped);
   client_->OnStatisticsUpdate(stats);
 }
 
@@ -650,6 +677,103 @@ void RemoteRendererImpl::UpdateInterstitial(
   canvas_size_ = canvas_size;
   PaintRemotingInterstitial(interstitial_background_, canvas_size_,
                             interstitial_type, video_renderer_sink_);
+}
+
+void RemoteRendererImpl::OnMediaTimeUpdated() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  if (!flush_cb_.is_null())
+    return;  // Don't manage and check the queue when Flush() is on-going.
+
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  if (current_time < ignore_updates_until_time_)
+    return;  // Not stable yet.
+
+  media_time_queue_.push_back(
+      std::make_pair(current_time, current_media_time_));
+  base::TimeDelta window_duration =
+      current_time - media_time_queue_.front().first;
+  if (window_duration < kTrackingWindow)
+    return;  // Not enough data to make a reliable decision.
+
+  base::TimeDelta media_duration =
+      media_time_queue_.back().second - media_time_queue_.front().second;
+  base::TimeDelta update_duration =
+      (media_time_queue_.back().first - media_time_queue_.front().first) *
+      playback_rate_;
+  if ((media_duration - update_duration).magnitude() >=
+      kMediaPlaybackDelayThreshold) {
+    VLOG(1) << "Irregular playback detected: Media playback delayed."
+            << " media_duration = " << media_duration
+            << " update_duration = " << update_duration;
+    OnIrregularPlaybackDetected();
+  }
+  // Prune |media_time_queue_|.
+  while (media_time_queue_.back().first - media_time_queue_.front().first >=
+         kTrackingWindow)
+    media_time_queue_.pop_front();
+}
+
+void RemoteRendererImpl::UpdateVideoStatsQueue(int video_frames_decoded,
+                                               int video_frames_dropped) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  if (!flush_cb_.is_null())
+    return;  // Don't manage and check the queue when Flush() is on-going.
+
+  if (!stats_updated_) {
+    if (video_frames_decoded)
+      stats_updated_ = true;
+    // Ignore the first stats since it may include the information during
+    // unstable period.
+    return;
+  }
+
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  if (current_time < ignore_updates_until_time_)
+    return;  // Not stable yet.
+
+  video_stats_queue_.push_back(std::make_tuple(
+      current_time, video_frames_decoded, video_frames_dropped));
+  sum_video_frames_decoded_ += video_frames_decoded;
+  sum_video_frames_dropped_ += video_frames_dropped;
+  base::TimeDelta window_duration =
+      current_time - std::get<0>(video_stats_queue_.front());
+  if (window_duration < kTrackingWindow)
+    return;  // Not enough data to make a reliable decision.
+
+  if (sum_video_frames_decoded_ &&
+      sum_video_frames_dropped_ * 100 >
+          sum_video_frames_decoded_ * kMaxNumVideoFramesDroppedPercentage) {
+    VLOG(1) << "Irregular playback detected: Too many video frames dropped."
+            << " video_frames_decoded= " << sum_video_frames_decoded_
+            << " video_frames_dropped= " << sum_video_frames_dropped_;
+    OnIrregularPlaybackDetected();
+  }
+  // Prune |video_stats_queue_|.
+  while (std::get<0>(video_stats_queue_.back()) -
+             std::get<0>(video_stats_queue_.front()) >=
+         kTrackingWindow) {
+    sum_video_frames_decoded_ -= std::get<1>(video_stats_queue_.front());
+    sum_video_frames_dropped_ -= std::get<2>(video_stats_queue_.front());
+    video_stats_queue_.pop_front();
+  }
+}
+
+void RemoteRendererImpl::ResetQueues() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  media_time_queue_.clear();
+  video_stats_queue_.clear();
+  sum_video_frames_dropped_ = 0;
+  sum_video_frames_decoded_ = 0;
+  stats_updated_ = false;
+  ignore_updates_until_time_ = base::TimeTicks::Now() + kStabilizationPeriod;
+}
+
+void RemoteRendererImpl::OnIrregularPlaybackDetected() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RemotingRendererController::OnIrregularPlaybackDetected,
+                 remoting_renderer_controller_));
 }
 
 }  // namespace media

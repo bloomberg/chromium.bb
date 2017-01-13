@@ -234,8 +234,10 @@ void RemotingRendererController::OnPaused() {
 bool RemotingRendererController::ShouldBeRemoting() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (switch_renderer_cb_.is_null())
+  if (switch_renderer_cb_.is_null()) {
+    DCHECK(!remote_rendering_started_);
     return false;  // No way to switch to a RemotingRenderImpl.
+  }
 
   const RemotingSessionState state = remoting_source_->state();
   if (is_encrypted_) {
@@ -248,6 +250,9 @@ bool RemotingRendererController::ShouldBeRemoting() {
            state == RemotingSessionState::SESSION_STOPPING ||
            state == RemotingSessionState::SESSION_PERMANENTLY_STOPPED;
   }
+
+  if (irregular_playback_detected_)
+    return false;
 
   switch (state) {
     case SESSION_UNAVAILABLE:
@@ -385,6 +390,15 @@ void RemotingRendererController::OnPosterImageDownloaded(
   if (download_url != poster_url_)
     return;  // The poster image URL has changed during the download.
   UpdateInterstitial(image);
+}
+
+void RemotingRendererController::OnIrregularPlaybackDetected() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (irregular_playback_detected_)
+    return;
+  irregular_playback_detected_ = true;
+  UpdateAndMaybeSwitch();
 }
 
 }  // namespace media

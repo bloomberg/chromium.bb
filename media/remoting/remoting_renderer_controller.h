@@ -87,6 +87,12 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   base::WeakPtr<remoting::RpcBroker> GetRpcBroker() const;
 
+  // Called by RemoteRendererImpl when irregular playback is detected, which
+  // indicates either insufficient network bandwidth or the receiver cannot
+  // handle the data volume of the content (e.g., too high resolution and/or
+  // frame rate).
+  void OnIrregularPlaybackDetected();
+
  private:
   bool has_audio() const {
     return pipeline_metadata_.has_audio &&
@@ -153,6 +159,9 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   // Indicates whether video is paused.
   bool is_paused_ = true;
+
+  // Indicates whether OnIrregularPlaybackDetected() has been called.
+  bool irregular_playback_detected_ = false;
 
   // The callback to switch the media renderer.
   base::Closure switch_renderer_cb_;

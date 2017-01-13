@@ -137,6 +137,19 @@ class RemoteRendererImpl : public Renderer {
                           const gfx::Size& canvas_size,
                           RemotingInterstitialType interstitial_type);
 
+  // Called when |current_media_time_| is updated.
+  void OnMediaTimeUpdated();
+
+  // Called to update the |video_stats_queue_|.
+  void UpdateVideoStatsQueue(int video_frames_decoded,
+                             int video_frames_dropped);
+
+  // Called to clear |media_time_queue_| and |video_stats_queue_|.
+  void ResetQueues();
+
+  // Called when irregular playback is detected.
+  void OnIrregularPlaybackDetected();
+
   // Shut down remoting session.
   void OnFatalError(PipelineStatus status);
 
@@ -179,6 +192,29 @@ class RemoteRendererImpl : public Renderer {
   // the interstitial.
   SkBitmap interstitial_background_;
   gfx::Size canvas_size_;
+
+  // Current playback rate.
+  double playback_rate_ = 0;
+
+  // Ignores updates until this time.
+  base::TimeTicks ignore_updates_until_time_;
+
+  // Indicates whether stats has been updated.
+  bool stats_updated_ = false;
+
+  // Stores all |current_media_time_| and the local time when updated in the
+  // moving time window. This is used to check whether the playback duration
+  // matches the update duration in the window.
+  std::deque<std::pair<base::TimeTicks, base::TimeDelta>> media_time_queue_;
+
+  // Stores all updates on the number of video frames decoded/dropped, and the
+  // local time when updated in the moving time window. This is used to check
+  // whether too many video frames were dropped.
+  std::deque<std::tuple<base::TimeTicks, int, int>> video_stats_queue_;
+
+  // The total number of frames decoded/dropped in the time window.
+  int sum_video_frames_decoded_ = 0;
+  int sum_video_frames_dropped_ = 0;
 
   base::WeakPtrFactory<RemoteRendererImpl> weak_factory_;
 
