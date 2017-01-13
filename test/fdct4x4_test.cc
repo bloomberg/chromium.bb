@@ -159,7 +159,7 @@ class Trans4x4HT : public libaom_test::TransformTestBase,
   IhtFunc inv_txfm_;
 };
 
-TEST_P(Trans4x4HT, AccuracyCheck) { RunAccuracyCheck(0, 0.00001); }
+TEST_P(Trans4x4HT, AccuracyCheck) { RunAccuracyCheck(1, 0.005); }
 
 TEST_P(Trans4x4HT, CoeffCheck) { RunCoeffCheck(); }
 
