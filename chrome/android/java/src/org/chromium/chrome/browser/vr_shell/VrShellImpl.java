@@ -276,11 +276,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     }
 
     @Override
-    public void setVrModeEnabled(boolean enabled) {
-        AndroidCompat.setVrModeEnabled(mActivity, enabled);
-    }
-
-    @Override
     public void setWebVrModeEnabled(boolean enabled) {
         nativeSetWebVrMode(mNativeVrShell, enabled);
     }

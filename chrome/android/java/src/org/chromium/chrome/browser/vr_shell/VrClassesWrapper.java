@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.vr_shell;
 
 /**
- * Abstracts away the VrClassesBuilderImpl class, which may or may not be present at runtime
+ * Abstracts away the VrClassesWrapperImpl class, which may or may not be present at runtime
  * depending on compile flags.
  */
-public interface VrClassesBuilder {
+public interface VrClassesWrapper {
     /**
      * Creates a NonPresentingGvrContextImpl instance.
      */
@@ -28,4 +28,9 @@ public interface VrClassesBuilder {
     * Creates a VrCoreVersionCheckerImpl instance.
     */
     public VrCoreVersionChecker createVrCoreVersionChecker();
+
+    /**
+     * Sets VR Mode to |enabled|.
+     */
+    public void setVrModeEnabled(boolean enabled);
 }

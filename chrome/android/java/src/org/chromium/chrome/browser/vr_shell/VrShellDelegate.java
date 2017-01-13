@@ -75,7 +75,7 @@ public class VrShellDelegate {
     @VrSupportLevel
     private int mVrSupportLevel;
 
-    private final VrClassesBuilder mVrClassesBuilder;
+    private final VrClassesWrapper mVrClassesWrapper;
     private VrShell mVrShell;
     private NonPresentingGvrContext mNonPresentingGvrContext;
     private VrDaydreamApi mVrDaydreamApi;
@@ -93,7 +93,7 @@ public class VrShellDelegate {
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
-        mVrClassesBuilder = createVrClassesBuilder();
+        mVrClassesWrapper = createVrClassesWrapper();
         updateVrSupportLevel();
     }
 
@@ -103,7 +103,7 @@ public class VrShellDelegate {
      */
     // TODO(bshe): Find a place to call this function again, i.e. page refresh or onResume.
     private void updateVrSupportLevel() {
-        if (mVrClassesBuilder == null || !isVrCoreCompatible()) {
+        if (mVrClassesWrapper == null || !isVrCoreCompatible()) {
             mVrSupportLevel = VR_NOT_AVAILABLE;
             mEnterVRIntent = null;
             mTabObserver = null;
@@ -111,7 +111,7 @@ public class VrShellDelegate {
         }
 
         if (mVrDaydreamApi == null) {
-            mVrDaydreamApi = mVrClassesBuilder.createVrDaydreamApi();
+            mVrDaydreamApi = mVrClassesWrapper.createVrDaydreamApi();
         }
 
         if (mEnterVRIntent == null) {
@@ -157,18 +157,18 @@ public class VrShellDelegate {
     }
 
     @SuppressWarnings("unchecked")
-    private VrClassesBuilder createVrClassesBuilder() {
+    private VrClassesWrapper createVrClassesWrapper() {
         try {
-            Class<? extends VrClassesBuilder> vrClassesBuilderClass =
-                    (Class<? extends VrClassesBuilder>) Class.forName(
-                            "org.chromium.chrome.browser.vr_shell.VrClassesBuilderImpl");
+            Class<? extends VrClassesWrapper> vrClassesBuilderClass =
+                    (Class<? extends VrClassesWrapper>) Class.forName(
+                            "org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl");
             Constructor<?> vrClassesBuilderConstructor =
                     vrClassesBuilderClass.getConstructor(Activity.class);
-            return (VrClassesBuilder) vrClassesBuilderConstructor.newInstance(mActivity);
+            return (VrClassesWrapper) vrClassesBuilderConstructor.newInstance(mActivity);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
             if (!(e instanceof ClassNotFoundException)) {
-                Log.e(TAG, "Unable to instantiate VrClassesBuilder", e);
+                Log.e(TAG, "Unable to instantiate VrClassesWrapper", e);
             }
             return null;
         }
@@ -198,7 +198,7 @@ public class VrShellDelegate {
         } else {
             if (mRequestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, false);
             if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrShell.setVrModeEnabled(false);
+                mVrClassesWrapper.setVrModeEnabled(false);
             }
         }
 
@@ -217,7 +217,7 @@ public class VrShellDelegate {
             mActivity.setRequestedOrientation(mRestoreOrientation);
             return false;
         }
-        mVrShell.setVrModeEnabled(true);
+        mVrClassesWrapper.setVrModeEnabled(true);
         mInVr = true;
         mTab = tab;
         mTab.addObserver(mTabObserver);
@@ -419,11 +419,11 @@ public class VrShellDelegate {
     public void onExitVRResult(int resultCode) {
         assert mVrSupportLevel != VR_NOT_AVAILABLE;
         if (resultCode == Activity.RESULT_OK) {
-            mVrShell.setVrModeEnabled(false);
+            mVrClassesWrapper.setVrModeEnabled(false);
         } else {
             // For now, we don't handle re-entering VR when exit fails, so keep trying to exit.
             if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrShell.setVrModeEnabled(false);
+                mVrClassesWrapper.setVrModeEnabled(false);
             }
         }
     }
@@ -448,8 +448,8 @@ public class VrShellDelegate {
 
     @CalledByNative
     private long createNonPresentingNativeContext() {
-        if (mVrClassesBuilder == null) return 0;
-        mNonPresentingGvrContext = mVrClassesBuilder.createNonPresentingGvrContext();
+        if (mVrClassesWrapper == null) return 0;
+        mNonPresentingGvrContext = mVrClassesWrapper.createNonPresentingGvrContext();
         if (mNonPresentingGvrContext == null) return 0;
         return mNonPresentingGvrContext.getNativeGvrContext();
     }
@@ -481,10 +481,10 @@ public class VrShellDelegate {
         mRequestedWebVR = false;
         if (!isPausing) {
             if (!showTransition || !mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrShell.setVrModeEnabled(false);
+                mVrClassesWrapper.setVrModeEnabled(false);
             }
         } else {
-            mVrShell.setVrModeEnabled(false);
+            mVrClassesWrapper.setVrModeEnabled(false);
             mLastVRExit = SystemClock.uptimeMillis();
         }
         mActivity.setRequestedOrientation(mRestoreOrientation);
@@ -499,16 +499,16 @@ public class VrShellDelegate {
     }
 
     private boolean isVrCoreCompatible() {
-        assert mVrClassesBuilder != null;
+        assert mVrClassesWrapper != null;
         if (mVrCoreVersionChecker == null) {
-            mVrCoreVersionChecker = mVrClassesBuilder.createVrCoreVersionChecker();
+            mVrCoreVersionChecker = mVrClassesWrapper.createVrCoreVersionChecker();
         }
         return mVrCoreVersionChecker.isVrCoreCompatible();
     }
 
     private boolean createVrShell() {
-        if (mVrClassesBuilder == null) return false;
-        mVrShell = mVrClassesBuilder.createVrShell();
+        if (mVrClassesWrapper == null) return false;
+        mVrShell = mVrClassesWrapper.createVrShell();
         return mVrShell != null;
     }
 
