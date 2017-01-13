@@ -174,7 +174,15 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 // Tests "Open in New Tab" on context menu  on a link that requires scrolling
 // on the page to verify that context menu can be properly triggered in the
 // current screen view.
-- (void)testContextMenuOpenInNewTabFromTallPage {
+// TODO(crbug.com/681130): Re-enable this test on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuOpenInNewTabFromTallPage \
+  testContextMenuOpenInNewTabFromTallPage
+#else
+#define MAYBE_testContextMenuOpenInNewTabFromTallPage \
+  FLAKY_testContextMenuOpenInNewTabFromTallPage
+#endif
+- (void)MAYBE_testContextMenuOpenInNewTabFromTallPage {
   // Set up test simple http server.
   std::map<GURL, std::string> responses;
   GURL initialURL =
