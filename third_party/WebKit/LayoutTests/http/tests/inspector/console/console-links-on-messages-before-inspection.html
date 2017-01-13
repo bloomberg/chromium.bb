@@ -29,7 +29,7 @@ function test()
 
         InspectorTest.addResult("script was added");
         var message = Console.ConsoleView.instance()._visibleViewMessages[0];
-        var anchorElement = message.element().querySelector(".console-message-url");
+        var anchorElement = message.element().querySelector(".devtools-link");
         anchorElement.click();
     }
 
