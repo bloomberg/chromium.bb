@@ -2252,6 +2252,18 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                     max_angle_delta + mbmi->angle_delta[0]);
   }
 #endif  // CONFIG_EXT_INTRA
+#if CONFIG_FILTER_INTRA
+  if (mbmi->mode == DC_PRED) {
+    const aom_prob prob = cpi->common.fc->filter_intra_probs[0];
+    if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {
+      const int mode = mbmi->filter_intra_mode_info.filter_intra_mode[0];
+      mode_cost += (av1_cost_bit(prob, 1) +
+                    write_uniform_cost(FILTER_INTRA_MODES, mode));
+    } else {
+      mode_cost += av1_cost_bit(prob, 0);
+    }
+  }
+#endif  // CONFIG_FILTER_INTRA
   this_rd = RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate + mode_cost,
                    this_rd_stats.dist);
   return this_rd;
@@ -3055,14 +3067,12 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     int *rate, int *rate_tokenonly,
                                     int64_t *distortion, int *skippable,
                                     BLOCK_SIZE bsize, int mode_cost,
-                                    int64_t *best_rd, uint16_t skip_mask) {
+                                    int64_t *best_rd, int64_t *best_model_rd,
+                                    uint16_t skip_mask) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *mbmi = &mic->mbmi;
-  int this_rate;
-  RD_STATS tokenonly_rd_stats;
   int filter_intra_selected_flag = 0;
-  int64_t this_rd;
   FILTER_INTRA_MODE mode;
   TX_SIZE best_tx_size = TX_4X4;
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
@@ -3076,11 +3086,18 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_PALETTE
 
   for (mode = 0; mode < FILTER_INTRA_MODES; ++mode) {
+    int this_rate;
+    int64_t this_rd, this_model_rd;
+    RD_STATS tokenonly_rd_stats;
     if (skip_mask & (1 << mode)) continue;
     mbmi->filter_intra_mode_info.filter_intra_mode[0] = mode;
+    this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost);
+    if (*best_model_rd != INT64_MAX &&
+        this_model_rd > *best_model_rd + (*best_model_rd >> 1))
+      continue;
+    if (this_model_rd < *best_model_rd) *best_model_rd = this_model_rd;
     super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
     if (tokenonly_rd_stats.rate == INT_MAX) continue;
-
     this_rate = tokenonly_rd_stats.rate +
                 av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 1) +
                 write_uniform_cost(FILTER_INTRA_MODES, mode) + mode_cost;
@@ -3602,7 +3619,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (beat_best_rd) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
-                                 &best_rd, filter_intra_mode_skip_mask)) {
+                                 &best_rd, &best_model_rd,
+                                 filter_intra_mode_skip_mask)) {
       best_mbmi = *mbmi;
     }
   }
@@ -9083,7 +9101,8 @@ static void pick_filter_intra_interframe(
   int rate2 = 0, rate_y = INT_MAX, skippable = 0, rate_uv, rate_dummy, i;
   int dc_mode_index;
   const int *const intra_mode_cost = cpi->mbmode_cost[size_group_lookup[bsize]];
-  int64_t distortion2 = 0, distortion_y = 0, this_rd = *best_rd, distortion_uv;
+  int64_t distortion2 = 0, distortion_y = 0, this_rd = *best_rd;
+  int64_t distortion_uv, model_rd = INT64_MAX;
   TX_SIZE uv_tx;
 
   for (i = 0; i < MAX_MODES; ++i)
@@ -9101,7 +9120,7 @@ static void pick_filter_intra_interframe(
   mbmi->ref_frame[1] = NONE_FRAME;
   if (!rd_pick_filter_intra_sby(cpi, x, &rate_dummy, &rate_y, &distortion_y,
                                 &skippable, bsize, intra_mode_cost[mbmi->mode],
-                                &this_rd, 0)) {
+                                &this_rd, &model_rd, 0)) {
     return;
   }
   if (rate_y == INT_MAX) return;
