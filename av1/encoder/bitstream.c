@@ -762,6 +762,7 @@ static void update_supertx_probs(AV1_COMMON *cm, int probwt, aom_writer *w) {
 }
 #endif  // CONFIG_SUPERTX
 
+#if CONFIG_EC_MULTISYMBOL
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
                            aom_bit_depth_t bit_depth, const TX_SIZE tx_size,
@@ -784,15 +785,8 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
     aom_tree_index index = 0;
-#if !CONFIG_EC_MULTISYMBOL
-    const struct av1_token *const coef_encoding = &av1_coef_encodings[token];
-    int coef_value = coef_encoding->value;
-    int coef_length = coef_encoding->len;
-#endif  // !CONFIG_EC_MULTISYMBOL
     const av1_extra_bit *const extra_bits = &extra_bits_table[token];
 
-#if CONFIG_EC_MULTISYMBOL
-    /* skip one or two nodes */
     if (!p->skip_eob_node)
       aom_write_record(w, token != EOB_TOKEN, p->context_tree[0], token_stats);
 
@@ -803,30 +797,6 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                          CATEGORY6_TOKEN + 1 - 2);
       }
     }
-#else
-    /* skip one or two nodes */
-    if (p->skip_eob_node)
-      coef_length -= p->skip_eob_node;
-    else
-      aom_write_record(w, token != EOB_TOKEN, p->context_tree[0], token_stats);
-
-    if (token != EOB_TOKEN) {
-      aom_write_record(w, token != ZERO_TOKEN, p->context_tree[1], token_stats);
-
-      if (token != ZERO_TOKEN) {
-        aom_write_record(w, token != ONE_TOKEN, p->context_tree[2],
-                         token_stats);
-
-        if (token != ONE_TOKEN) {
-          const int unconstrained_len = UNCONSTRAINED_NODES - p->skip_eob_node;
-          aom_write_tree_record(
-              w, av1_coef_con_tree,
-              av1_pareto8_full[p->context_tree[PIVOT_NODE] - 1], coef_value,
-              coef_length - unconstrained_len, 0, token_stats);
-        }
-      }
-    }
-#endif  // CONFIG_EC_MULTISYMBOL
 
     if (extra_bits->base_val) {
       const int bit_string = p->extra;
@@ -867,6 +837,97 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
   *tp = p;
 }
+#else
+static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
+                           const TOKENEXTRA *const stop,
+                           aom_bit_depth_t bit_depth, const TX_SIZE tx_size,
+                           TOKEN_STATS *token_stats) {
+  const TOKENEXTRA *p = *tp;
+#if CONFIG_VAR_TX
+  int count = 0;
+  const int seg_eob = tx_size_2d[tx_size];
+#endif
+#if CONFIG_AOM_HIGHBITDEPTH
+  const av1_extra_bit *const extra_bits_table =
+      (bit_depth == AOM_BITS_12)
+          ? av1_extra_bits_high12
+          : (bit_depth == AOM_BITS_10) ? av1_extra_bits_high10 : av1_extra_bits;
+#else
+  const av1_extra_bit *const extra_bits_table = av1_extra_bits;
+  (void)bit_depth;
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+
+  while (p < stop && p->token != EOSB_TOKEN) {
+    const int token = p->token;
+    aom_tree_index index = 0;
+    const struct av1_token *const coef_encoding = &av1_coef_encodings[token];
+    int coef_value = coef_encoding->value;
+    int coef_length = coef_encoding->len;
+    const av1_extra_bit *const extra_bits = &extra_bits_table[token];
+
+    /* skip one or two nodes */
+    if (p->skip_eob_node)
+      coef_length -= p->skip_eob_node;
+    else
+      aom_write_record(w, token != EOB_TOKEN, p->context_tree[0], token_stats);
+
+    if (token != EOB_TOKEN) {
+      aom_write_record(w, token != ZERO_TOKEN, p->context_tree[1], token_stats);
+
+      if (token != ZERO_TOKEN) {
+        aom_write_record(w, token != ONE_TOKEN, p->context_tree[2],
+                         token_stats);
+
+        if (token != ONE_TOKEN) {
+          const int unconstrained_len = UNCONSTRAINED_NODES - p->skip_eob_node;
+          aom_write_tree_record(
+              w, av1_coef_con_tree,
+              av1_pareto8_full[p->context_tree[PIVOT_NODE] - 1], coef_value,
+              coef_length - unconstrained_len, 0, token_stats);
+        }
+      }
+    }
+
+    if (extra_bits->base_val) {
+      const int bit_string = p->extra;
+      const int bit_string_length = extra_bits->len;  // Length of extra bits to
+                                                      // be written excluding
+                                                      // the sign bit.
+      int skip_bits = (extra_bits->base_val == CAT6_MIN_VAL)
+                          ? TX_SIZES - 1 - txsize_sqr_up_map[tx_size]
+                          : 0;
+
+      if (bit_string_length > 0) {
+        const unsigned char *pb = extra_bits->prob;
+        const int value = bit_string >> 1;
+        const int num_bits = bit_string_length;  // number of bits in value
+        assert(num_bits > 0);
+
+        for (index = 0; index < num_bits; ++index) {
+          const int shift = num_bits - index - 1;
+          const int bb = (value >> shift) & 1;
+          if (skip_bits) {
+            --skip_bits;
+            assert(!bb);
+          } else {
+            aom_write_record(w, bb, pb[index], token_stats);
+          }
+        }
+      }
+
+      aom_write_bit_record(w, bit_string & 1, token_stats);
+    }
+    ++p;
+
+#if CONFIG_VAR_TX
+    ++count;
+    if (token == EOB_TOKEN || count == seg_eob) break;
+#endif
+  }
+
+  *tp = p;
+}
+#endif
 #endif  // !CONFIG_PVG
 #if CONFIG_VAR_TX
 static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
