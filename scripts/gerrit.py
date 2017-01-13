@@ -158,16 +158,8 @@ def PrintCl(opts, cls, lims, show_approvals=True):
 
 
 def _MyUserInfo():
-  email = git.GetProjectUserEmail(constants.CHROMITE_DIR)
-  [username, _, domain] = email.partition('@')
-  if domain in ('google.com', 'chromium.org'):
-    emails = ['%s@%s' % (username, domain)
-              for domain in ('google.com', 'chromium.org')]
-  else:
-    emails = [email]
-  reviewers = ['reviewer:%s' % x for x in emails]
-  owners = ['owner:%s' % x for x in emails]
-  return emails, reviewers, owners
+  """Try to return e-mail addresses used by the active user."""
+  return [git.GetProjectUserEmail(constants.CHROMITE_DIR)]
 
 
 def _Query(opts, query, raw=True):
@@ -187,6 +179,7 @@ def FilteredQuery(opts, query):
   """Query gerrit and filter/clean up the results"""
   ret = []
 
+  logging.debug('Running query: %s', query)
   for cl in _Query(opts, query, raw=True):
     # Gerrit likes to return a stats record too.
     if not 'project' in cl:
@@ -231,9 +224,8 @@ def IsApprover(cl, users):
 
 def UserActTodo(opts):
   """List CLs needing your review"""
-  emails, reviewers, owners = _MyUserInfo()
-  cls = FilteredQuery(opts, ('( %s ) status:open NOT ( %s )' %
-                             (' OR '.join(reviewers), ' OR '.join(owners))))
+  emails = _MyUserInfo()
+  cls = FilteredQuery(opts, 'reviewer:self status:open NOT owner:self')
   cls = [x for x in cls if not IsApprover(x, emails)]
   lims = limits(cls)
   for cl in cls:
@@ -250,12 +242,11 @@ def UserActSearch(opts, query):
 
 def UserActMine(opts):
   """List your CLs with review statuses"""
-  _, _, owners = _MyUserInfo()
   if opts.draft:
     rule = 'is:draft'
   else:
     rule = 'status:new'
-  UserActSearch(opts, '( %s ) %s' % (' OR '.join(owners), rule))
+  UserActSearch(opts, 'owner:self %s' % (rule,))
 
 
 def _BreadthFirstSearch(to_visit, children, visited_key=lambda x: x):
