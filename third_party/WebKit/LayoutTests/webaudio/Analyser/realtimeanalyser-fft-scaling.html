@@ -14,9 +14,9 @@
     <script>
       let audit = Audit.createTaskRunner();
 
-      // The number of analysers. We have analysers from size for each of the possible sizes of 32,
-      // 64, 128, 256, 512, 1024 and 2048 for a total of 7.
-      let numberOfAnalysers = 7;
+      // The number of analysers. We have analysers from size for each of the
+      // possible sizes of 2^5 to 2^15 for a total of 11.
+      let numberOfAnalysers = 11;
       let sampleRate = 44100;
       let nyquistFrequency = sampleRate / 2;
 
@@ -34,7 +34,9 @@
       // determined experimentally.
       //
       // See https://code.google.com/p/chromium/issues/detail?id=341596.
-      let peakThreshold = [-14.43, -13.56, -13.56, -13.56, -13.56, -13.56, -13.56];
+      let peakThreshold = [-14.43, -13.56, -13.56, -13.56, -13.56, -13.56,
+        -13.56, -13.56, -13.56, -13.56, -13.56
+      ];
 
       function checkResult(order, analyser, should) {
           return function () {
@@ -68,9 +70,10 @@
       audit.define("FFT scaling tests", function (task, should) {
         task.describe("Test Scaling of FFT in AnalyserNode");
         let tests = [];
-        for (let k = 5; k < 12; ++k)
+        for (let k = 5; k <= 15; ++k)
           tests.push(runTest(k, should));
 
+        // The order in which the tests finish is not important.
         Promise.all(tests)
           .then(task.done.bind(task));
       });
