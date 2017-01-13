@@ -112,7 +112,7 @@ class DepsUpdaterTest(unittest.TestCase):
             host.executive.calls,
             [
                 [
-                    '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/manifest',
+                    '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
                     '--work',
                     '--tests-root',
                     '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt'

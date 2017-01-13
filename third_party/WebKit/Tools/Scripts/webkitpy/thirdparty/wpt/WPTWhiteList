@@ -6,6 +6,8 @@
 ./manifest
 ./serve
 ./serve.py
+./tools/gitignore/gitignore.py
+./tools/gitignore/__init__.py
 ./tools/__init__.py
 ./tools/LICENSE
 ./tools/localpaths.py

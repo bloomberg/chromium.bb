@@ -158,7 +158,7 @@ class DepsUpdater(object):
         Runs the (newly-updated) manifest command if it's found, and then
         stages the generated MANIFEST.json in the git index, ready to commit.
         """
-        manifest_command = self.finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty', 'wpt', 'manifest')
+        manifest_command = self.finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty', 'wpt', 'wpt', 'manifest')
         if 'css' in dest_path:
             # Do nothing for csswg-test.
             return
