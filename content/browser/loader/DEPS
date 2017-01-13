@@ -345,6 +345,7 @@ specific_include_rules = {
   "upload_progress_tracker\.(cc|h)": [
     "-content",
     "+content/browser/loader/upload_progress_tracker.h",
+    "+content/common/content_export.h",
   ],
   "url_loader_factory_impl\.(cc|h)": [
     "-content",

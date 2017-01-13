@@ -1129,6 +1129,7 @@ test("content_unittests") {
     "../browser/loader/test_url_loader_client.h",
     "../browser/loader/throttling_resource_handler_unittest.cc",
     "../browser/loader/upload_data_stream_builder_unittest.cc",
+    "../browser/loader/upload_progress_tracker_unittest.cc",
     "../browser/loader/url_loader_factory_impl_unittest.cc",
     "../browser/mach_broker_mac_unittest.cc",
     "../browser/media/audible_metrics_unittest.cc",

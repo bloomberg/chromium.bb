@@ -34,6 +34,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/upload_progress.h"
 #include "net/url_request/redirect_info.h"
 
 using base::TimeDelta;
@@ -553,13 +554,13 @@ void AsyncResourceHandler::RecordHistogram() {
   inlining_helper_->RecordHistogram(elapsed_time);
 }
 
-void AsyncResourceHandler::SendUploadProgress(int64_t current_position,
-                                              int64_t total_size) {
+void AsyncResourceHandler::SendUploadProgress(
+    const net::UploadProgress& progress) {
   ResourceMessageFilter* filter = GetFilter();
   if (!filter)
     return;
   filter->Send(new ResourceMsg_UploadProgress(
-      GetRequestID(), current_position, total_size));
+      GetRequestID(), progress.position(), progress.size()));
 }
 
 }  // namespace content

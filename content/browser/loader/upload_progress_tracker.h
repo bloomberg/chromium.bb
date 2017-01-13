@@ -9,8 +9,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/common/content_export.h"
+#include "net/base/upload_progress.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace tracked_objects {
 class Location;
@@ -24,20 +33,26 @@ namespace content {
 
 // UploadProgressTracker watches the upload progress of a URL loading, and sends
 // the progress to the client in a suitable granularity and frequency.
-class UploadProgressTracker final {
+class CONTENT_EXPORT UploadProgressTracker {
  public:
   using UploadProgressReportCallback =
-      base::RepeatingCallback<void(int64_t, int64_t)>;
+      base::RepeatingCallback<void(const net::UploadProgress&)>;
 
   UploadProgressTracker(const tracked_objects::Location& location,
                         UploadProgressReportCallback report_progress,
-                        net::URLRequest* request);
+                        net::URLRequest* request,
+                        scoped_refptr<base::SingleThreadTaskRunner>
+                            task_runner = base::ThreadTaskRunnerHandle::Get());
   ~UploadProgressTracker();
 
   void OnAckReceived();
   void OnUploadCompleted();
 
  private:
+  // Overridden by tests to use a fake time and progress.
+  virtual base::TimeTicks GetCurrentTime() const;
+  virtual net::UploadProgress GetUploadProgress() const;
+
   void ReportUploadProgressIfNeeded();
 
   net::URLRequest* request_;  // Not owned.

@@ -20,6 +20,7 @@
 
 namespace net {
 class URLRequest;
+class UploadProgress;
 }
 
 namespace content {
@@ -67,7 +68,7 @@ class CONTENT_EXPORT AsyncResourceHandler : public ResourceHandler,
   int CalculateEncodedDataLengthToReport();
   int CalculateEncodedBodyLengthToReport();
   void RecordHistogram();
-  void SendUploadProgress(int64_t current_position, int64_t total_size);
+  void SendUploadProgress(const net::UploadProgress& progress);
 
   scoped_refptr<ResourceBuffer> buffer_;
   ResourceDispatcherHostImpl* rdh_;

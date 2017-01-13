@@ -18,11 +18,12 @@ constexpr base::TimeDelta kUploadProgressInterval =
 UploadProgressTracker::UploadProgressTracker(
     const tracked_objects::Location& location,
     UploadProgressReportCallback report_progress,
-    net::URLRequest* request)
+    net::URLRequest* request,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : request_(request), report_progress_(std::move(report_progress)) {
-  DCHECK(request_);
   DCHECK(report_progress_);
 
+  progress_timer_.SetTaskRunner(std::move(task_runner));
   progress_timer_.Start(location, kUploadProgressInterval, this,
                         &UploadProgressTracker::ReportUploadProgressIfNeeded);
 }
@@ -39,22 +40,33 @@ void UploadProgressTracker::OnUploadCompleted() {
   progress_timer_.Stop();
 }
 
+base::TimeTicks UploadProgressTracker::GetCurrentTime() const {
+  return base::TimeTicks::Now();
+}
+
+net::UploadProgress UploadProgressTracker::GetUploadProgress() const {
+  return request_->GetUploadProgress();
+}
+
 void UploadProgressTracker::ReportUploadProgressIfNeeded() {
   if (waiting_for_upload_progress_ack_)
     return;
 
-  net::UploadProgress progress = request_->GetUploadProgress();
+  net::UploadProgress progress = GetUploadProgress();
   if (!progress.size())
-    return;  // Nothing to upload.
+    return;  // Nothing to upload, or in the chunked upload mode.
 
-  if (progress.position() == last_upload_position_)
-    return;  // No progress made since last time.
+  // No progress made since last time, or the progress was reset by a redirect
+  // or a retry.
+  if (progress.position() <= last_upload_position_)
+    return;
 
   const uint64_t kHalfPercentIncrements = 200;
   const base::TimeDelta kOneSecond = base::TimeDelta::FromMilliseconds(1000);
 
   uint64_t amt_since_last = progress.position() - last_upload_position_;
-  base::TimeDelta time_since_last = base::TimeTicks::Now() - last_upload_ticks_;
+  base::TimeTicks now = GetCurrentTime();
+  base::TimeDelta time_since_last = now - last_upload_ticks_;
 
   bool is_finished = (progress.size() == progress.position());
   bool enough_new_progress =
@@ -62,9 +74,9 @@ void UploadProgressTracker::ReportUploadProgressIfNeeded() {
   bool too_much_time_passed = time_since_last > kOneSecond;
 
   if (is_finished || enough_new_progress || too_much_time_passed) {
-    report_progress_.Run(progress.position(), progress.size());
+    report_progress_.Run(progress);
     waiting_for_upload_progress_ack_ = true;
-    last_upload_ticks_ = base::TimeTicks::Now();
+    last_upload_ticks_ = now;
     last_upload_position_ = progress.position();
   }
 }
