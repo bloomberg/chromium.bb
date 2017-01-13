@@ -2369,10 +2369,12 @@ void InspectorCSSAgent::visitLayoutTreeNodes(
     if (node->isFrameOwnerElement()) {
       Document* contentDocument =
           toHTMLFrameOwnerElement(node)->contentDocument();
-      contentDocument->updateStyleAndLayoutTree();
-      visitLayoutTreeNodes(contentDocument->documentElement(), layoutTreeNodes,
-                           cssPropertyWhitelist, styleToIndexMap,
-                           computedStyles);
+      if (contentDocument) {
+        contentDocument->updateStyleAndLayoutTree();
+        visitLayoutTreeNodes(contentDocument->documentElement(),
+                             layoutTreeNodes, cssPropertyWhitelist,
+                             styleToIndexMap, computedStyles);
+      }
     }
 
     LayoutObject* layoutObject = node->layoutObject();
