@@ -132,6 +132,36 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/textureshadow/2d_array_*.html',
         ['win', 'intel'], bug=666392)
 
+    # Intel HD 530
+    self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/fboinvalidate/format_00.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/fboinvalidate/format_01.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/fboinvalidate/format_02.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/fborender/shared_colorbuffer_01.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_00.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_01.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_02.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_03.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_04.html',
+        ['win', 'intel'], bug=680797)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_06.html',
+        ['win', 'intel'], bug=680797)
+
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this
     # configuration while running basically any test.

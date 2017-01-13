@@ -148,6 +148,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/uniforms/gl-uniform-arrays.html',
         ['win', 'debug', 'intel'], bug=678382)
 
+    # Win / Intel HD 530 failures
+    self.Fail('conformance/canvas/to-data-url-test.html',
+        ['win', 'intel'], bug=680797)
+
     # Win / AMD flakiness seen on new tryservers.
     # It's unfortunate that this suppression needs to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
@@ -225,6 +229,47 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/variables/gl-pointcoord.html',
         ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
+
+    # Win / OpenGL / Intel HD 530 failures
+    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/extensions/angle-instanced-arrays.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/extensions/ext-sRGB.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/extensions/ext-shader-texture-lod.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/extensions/oes-vertex-array-object.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/glsl/bugs/' +
+        'array-of-struct-with-int-first-position.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/glsl/bugs/constant-precision-qualifier.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/glsl/matrices/matrix-compound-multiply.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/more/conformance/webGLArrays.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/ogles/GL/struct/struct_049_to_056.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/rendering/draw-with-changing-start-vertex-bug.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
+    self.Fail('conformance/textures/misc/texture-fakeblack.html',
+        ['win10', 'intel', 'opengl'], bug=680797)
 
     # Win / Passthrough command decoder
     self.Fail('conformance/attribs/gl-vertexattribpointer.html',
