@@ -28,6 +28,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -360,8 +361,16 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         ContentSetting locationPermission = locationSettings.getContentSetting();
         if (locationPermission == ContentSetting.ASK) {
             // Handle the case where the geoHeader being sent when no permission has been specified.
-            if (checkGeoHeader && GeolocationHeader.isGeoHeaderEnabledForUrl(url, false)) {
-                locationPermission = ContentSetting.ALLOW;
+            if (checkGeoHeader) {
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION)) {
+                    if (WebsitePreferenceBridge.shouldUseDSEGeolocationSetting(url, false)) {
+                        locationPermission = WebsitePreferenceBridge.getDSEGeolocationSetting()
+                                ? ContentSetting.ALLOW
+                                : ContentSetting.BLOCK;
+                    }
+                } else if (GeolocationHeader.isGeoHeaderEnabledForUrl(url, false)) {
+                    locationPermission = ContentSetting.ALLOW;
+                }
             }
         }
         return locationPermission;
