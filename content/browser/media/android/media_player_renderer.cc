@@ -172,9 +172,7 @@ base::TimeDelta MediaPlayerRenderer::GetMediaTime() {
 media::MediaResourceGetter* MediaPlayerRenderer::GetMediaResourceGetter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!media_resource_getter_.get()) {
-    WebContents* web_contents =
-        WebContents::FromRenderFrameHost(render_frame_host_);
-    RenderProcessHost* host = web_contents->GetRenderProcessHost();
+    RenderProcessHost* host = render_frame_host_->GetProcess();
     BrowserContext* context = host->GetBrowserContext();
     StoragePartition* partition = host->GetStoragePartition();
     storage::FileSystemContext* file_system_context =
