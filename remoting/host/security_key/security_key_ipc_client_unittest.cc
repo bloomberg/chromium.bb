@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "remoting/host/security_key/fake_security_key_ipc_server.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,7 +74,7 @@ class SecurityKeyIpcClientTest : public testing::Test {
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
 
-  mojo::edk::test::ScopedIPCSupport ipc_support_;
+  mojo::edk::ScopedIPCSupport ipc_support_;
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.
@@ -110,7 +110,8 @@ class SecurityKeyIpcClientTest : public testing::Test {
 };
 
 SecurityKeyIpcClientTest::SecurityKeyIpcClientTest()
-    : ipc_support_(message_loop_.task_runner()),
+    : ipc_support_(message_loop_.task_runner(),
+                   mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST),
       run_loop_(new base::RunLoop()),
       fake_ipc_server_(
           kTestConnectionId,

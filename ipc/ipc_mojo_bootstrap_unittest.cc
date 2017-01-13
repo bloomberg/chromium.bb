@@ -18,7 +18,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

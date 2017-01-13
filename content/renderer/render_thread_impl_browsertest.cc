@@ -44,7 +44,6 @@
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -179,7 +178,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get();
 
     InitializeMojo();
-    ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner));
     shell_context_.reset(new TestServiceManagerContext);
     child_connection_.reset(new ChildConnection(
         mojom::kRendererServiceName, "test", mojo::edk::GenerateRandomToken(),
@@ -241,7 +239,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
 
   std::unique_ptr<TestBrowserThreadBundle> browser_threads_;
-  std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
   std::unique_ptr<ChildConnection> child_connection_;
   std::unique_ptr<IPC::ChannelProxy> channel_;

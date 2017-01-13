@@ -17,7 +17,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/security_key/fake_security_key_ipc_client.h"
 #include "remoting/host/security_key/fake_security_key_ipc_server.h"
@@ -88,7 +88,7 @@ class SecurityKeyAuthHandlerWinTest : public testing::Test {
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
 
-  mojo::edk::test::ScopedIPCSupport ipc_support_;
+  mojo::edk::ScopedIPCSupport ipc_support_;
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.
@@ -116,7 +116,8 @@ class SecurityKeyAuthHandlerWinTest : public testing::Test {
 };
 
 SecurityKeyAuthHandlerWinTest::SecurityKeyAuthHandlerWinTest()
-    : ipc_support_(message_loop_.task_runner()),
+    : ipc_support_(message_loop_.task_runner(),
+                   mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST),
       run_loop_(new base::RunLoop()) {
   auth_handler_ = remoting::SecurityKeyAuthHandler::Create(
       &mock_client_session_details_,

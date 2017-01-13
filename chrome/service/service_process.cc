@@ -171,8 +171,9 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
 
   // Initialize Mojo early so things can use it.
   mojo::edk::Init();
-  mojo_ipc_support_.reset(
-      new mojo::edk::ScopedIPCSupport(io_thread_->task_runner()));
+  mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
+      io_thread_->task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
 
   request_context_getter_ = new ServiceURLRequestContextGetter();
 

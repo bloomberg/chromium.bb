@@ -237,8 +237,9 @@ void RenderViewTest::SetUp() {
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
   test_io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-  ipc_support_.reset(
-      new mojo::edk::test::ScopedIPCSupport(test_io_thread_->task_runner()));
+  ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
+      test_io_thread_->task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
 
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.

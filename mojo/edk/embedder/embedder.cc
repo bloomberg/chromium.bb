@@ -18,8 +18,8 @@
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/entrypoints.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/edk/system/core.h"
+#include "mojo/edk/system/node_controller.h"
 
 #if !defined(OS_NACL)
 #include "crypto/random.h"
@@ -34,7 +34,6 @@ class PlatformSupport;
 namespace internal {
 
 Core* g_core;
-ProcessDelegate* g_process_delegate;
 
 Core* GetCore() { return g_core; }
 
@@ -83,14 +82,12 @@ ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe) {
 
 ScopedMessagePipeHandle ConnectToPeerProcess(ScopedPlatformHandle pipe,
                                              const std::string& peer_token) {
-  CHECK(internal::g_process_delegate);
   DCHECK(pipe.is_valid());
   DCHECK(!peer_token.empty());
   return internal::g_core->ConnectToPeerProcess(std::move(pipe), peer_token);
 }
 
 void ClosePeerConnection(const std::string& peer_token) {
-  CHECK(internal::g_process_delegate);
   return internal::g_core->ClosePeerConnection(peer_token);
 }
 
@@ -137,19 +134,18 @@ MojoResult PassSharedMemoryHandle(
       mojo_handle, shared_memory_handle, num_bytes, read_only);
 }
 
-void InitIPCSupport(ProcessDelegate* process_delegate,
-                    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
+void InitIPCSupport(scoped_refptr<base::TaskRunner> io_thread_task_runner) {
   CHECK(internal::g_core);
   internal::g_core->SetIOTaskRunner(io_thread_task_runner);
-  internal::g_process_delegate = process_delegate;
 }
 
-void ShutdownIPCSupport() {
-  CHECK(internal::g_process_delegate);
+scoped_refptr<base::TaskRunner> GetIOTaskRunner() {
+  return internal::g_core->GetNodeController()->io_task_runner();
+}
+
+void ShutdownIPCSupport(const base::Closure& callback) {
   CHECK(internal::g_core);
-  internal::g_core->RequestShutdown(
-      base::Bind(&ProcessDelegate::OnShutdownComplete,
-                 base::Unretained(internal::g_process_delegate)));
+  internal::g_core->RequestShutdown(callback);
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -161,18 +157,15 @@ void SetMachPortProvider(base::PortProvider* port_provider) {
 
 ScopedMessagePipeHandle CreateMessagePipe(
     ScopedPlatformHandle platform_handle) {
-  CHECK(internal::g_process_delegate);
   return internal::g_core->CreateMessagePipe(std::move(platform_handle));
 }
 
 ScopedMessagePipeHandle CreateParentMessagePipe(
     const std::string& token, const std::string& child_token) {
-  CHECK(internal::g_process_delegate);
   return internal::g_core->CreateParentMessagePipe(token, child_token);
 }
 
 ScopedMessagePipeHandle CreateChildMessagePipe(const std::string& token) {
-  CHECK(internal::g_process_delegate);
   return internal::g_core->CreateChildMessagePipe(token);
 }
 

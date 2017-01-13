@@ -433,7 +433,8 @@ void ChildThreadImpl::Init(const Options& options) {
 
   if (!IsInBrowserProcess()) {
     // Don't double-initialize IPC support in single-process mode.
-    mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(GetIOTaskRunner()));
+    mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
+        GetIOTaskRunner(), mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
     InitializeMojoIPCChannel();
   }
   std::string service_request_token;

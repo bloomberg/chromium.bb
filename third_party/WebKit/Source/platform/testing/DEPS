@@ -11,5 +11,4 @@ include_rules = [
     "+base/test/test_io_thread.h",
     "+cc",
     "+mojo/edk/embedder",
-    "+mojo/edk/test",
 ]

@@ -16,7 +16,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/test/test_extensions_client.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "url/url_util.h"
@@ -100,10 +99,6 @@ void ExtensionsTestSuite::Shutdown() {
 
 int main(int argc, char** argv) {
   content::UnitTestTestSuite test_suite(new ExtensionsTestSuite(argc, argv));
-
-  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  mojo::edk::test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
-
   return base::LaunchUnitTests(argc,
                                argv,
                                base::Bind(&content::UnitTestTestSuite::Run,

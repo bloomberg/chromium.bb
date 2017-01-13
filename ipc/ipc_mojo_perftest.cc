@@ -20,7 +20,6 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 

@@ -641,7 +641,9 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   g_io_thread = io_thread;
 
   mojo::edk::Init();
-  mojo::edk::ScopedIPCSupport ipc_support(io_thread->task_runner());
+  mojo::edk::ScopedIPCSupport ipc_support(
+      io_thread->task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   // Find already running instances of Chrome.
   pid_t pid = -1;

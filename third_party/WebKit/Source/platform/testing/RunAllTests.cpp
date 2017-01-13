@@ -33,7 +33,7 @@
 #include "base/test/test_io_thread.h"
 #include "base/test/test_suite.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "platform/heap/Heap.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include <memory>
@@ -56,9 +56,9 @@ int main(int argc, char** argv) {
 
     mojo::edk::Init();
     base::TestIOThread testIoThread(base::TestIOThread::kAutoStart);
-    std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipcSupport(
-        WTF::wrapUnique(
-            new mojo::edk::test::ScopedIPCSupport(testIoThread.task_runner())));
+    mojo::edk::ScopedIPCSupport ipcSupport(
+        testIoThread.task_runner(),
+        mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
     result = base::LaunchUnitTests(
         argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
   }

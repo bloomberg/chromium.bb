@@ -19,7 +19,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/page_state.h"
 #include "content/public/test/mock_render_thread.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -210,7 +210,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
 
   // For Mojo.
   std::unique_ptr<base::TestIOThread> test_io_thread_;
-  std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
+  std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;

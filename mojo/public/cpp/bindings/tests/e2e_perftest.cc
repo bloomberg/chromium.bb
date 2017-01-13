@@ -13,8 +13,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/mojo_test_base.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -171,7 +171,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(PingService, MojoE2EPerftest, mp) {
   InterfaceRequest<test::EchoService> request;
   request.Bind(ScopedMessagePipeHandle(MessagePipeHandle(service_mp)));
   base::RunLoop run_loop;
-  edk::test::GetIoTaskRunner()->PostTask(
+  edk::GetIOTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CreateAndRunService, base::Passed(&request),
                  base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
@@ -195,7 +195,7 @@ TEST_F(MojoE2EPerftest, MultiProcessEchoIoThread) {
     MojoHandle client_mp, service_mp;
     CreateMessagePipe(&client_mp, &service_mp);
     WriteMessageWithHandles(mp, "hello", &service_mp, 1);
-    RunTestOnTaskRunner(edk::test::GetIoTaskRunner(), client_mp,
+    RunTestOnTaskRunner(edk::GetIOTaskRunner().get(), client_mp,
                         "MultiProcessEchoIoThread");
   END_CHILD()
 }

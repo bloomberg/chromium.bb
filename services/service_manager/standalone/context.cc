@@ -149,7 +149,7 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
 
   init_edk_ = !init_params || init_params->init_edk;
   if (init_edk_) {
-    mojo::edk::InitIPCSupport(this, io_thread_->task_runner().get());
+    mojo::edk::InitIPCSupport(io_thread_->task_runner().get());
 #if defined(OS_MACOSX)
     mojo::edk::SetMachPortProvider(MachBroker::GetInstance()->port_provider());
 #endif
@@ -243,9 +243,11 @@ void Context::Shutdown() {
     return;
 
   TRACE_EVENT0("service_manager", "Context::Shutdown");
-  // Post a task in case OnShutdownComplete is called synchronously.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(mojo::edk::ShutdownIPCSupport));
+  mojo::edk::ShutdownIPCSupport(
+      base::Bind(IgnoreResult(&base::TaskRunner::PostTask),
+                 base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                 base::Bind(&Context::OnShutdownComplete,
+                            base::Unretained(this))));
   // We'll quit when we get OnShutdownComplete().
   base::RunLoop().Run();
 }

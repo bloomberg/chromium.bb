@@ -101,8 +101,9 @@ bool NaClService::OnConnect(const service_manager::ServiceInfo& remote_info,
 std::unique_ptr<service_manager::ServiceContext> CreateNaClServiceContext(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     mojo::ScopedMessagePipeHandle* ipc_channel) {
-  auto ipc_support =
-      base::MakeUnique<mojo::edk::ScopedIPCSupport>(std::move(io_task_runner));
+  auto ipc_support = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
+      std::move(io_task_runner),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
   EstablishMojoConnection();
 
   IPC::mojom::ChannelBootstrapPtr bootstrap;

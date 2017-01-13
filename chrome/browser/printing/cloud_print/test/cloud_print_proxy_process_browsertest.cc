@@ -264,7 +264,9 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
 
   // Needed for IPC.
   mojo::edk::Init();
-  mojo::edk::ScopedIPCSupport ipc_support(service_process.io_task_runner());
+  mojo::edk::ScopedIPCSupport ipc_support(
+      service_process.io_task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   MockServiceIPCServer server(&service_process,
                               service_process.io_task_runner(),
@@ -520,7 +522,8 @@ base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
 TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   mojo::edk::Init();
   mojo::edk::ScopedIPCSupport ipc_support(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   TestingBrowserProcess* browser_process =
       TestingBrowserProcess::GetGlobal();

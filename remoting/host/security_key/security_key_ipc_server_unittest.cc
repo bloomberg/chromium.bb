@@ -16,7 +16,7 @@
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "remoting/host/client_session_details.h"
 #include "remoting/host/security_key/fake_security_key_ipc_client.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
@@ -59,7 +59,7 @@ class SecurityKeyIpcServerTest : public testing::Test,
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
 
-  mojo::edk::test::ScopedIPCSupport ipc_support_;
+  mojo::edk::ScopedIPCSupport ipc_support_;
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.
@@ -82,7 +82,8 @@ class SecurityKeyIpcServerTest : public testing::Test,
 };
 
 SecurityKeyIpcServerTest::SecurityKeyIpcServerTest()
-    : ipc_support_(message_loop_.task_runner()),
+    : ipc_support_(message_loop_.task_runner(),
+                   mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST),
       run_loop_(new base::RunLoop()) {
 #if defined(OS_WIN)
   EXPECT_TRUE(ProcessIdToSessionId(

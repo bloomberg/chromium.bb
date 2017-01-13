@@ -23,13 +23,13 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/test_embedder.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/mojo_test_base.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -595,7 +595,7 @@ TEST_F(EmbedderTest, ClosePendingPeerConnection) {
   // work. By the time the local message pipe has been observerd as closed,
   // that task will have been posted. Therefore, a task to create the client
   // connection should be handled after the channel is closed.
-  test::GetIoTaskRunner()->PostTaskAndReply(
+  GetIOTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&CreateClientHandleOnIoThread, named_handle, &client_handle),
       run_loop.QuitClosure());

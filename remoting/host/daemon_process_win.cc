@@ -128,7 +128,8 @@ DaemonProcessWin::DaemonProcessWin(
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback)
     : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback),
-      ipc_support_(io_task_runner->task_runner()) {}
+      ipc_support_(io_task_runner->task_runner(),
+                   mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST) {}
 
 DaemonProcessWin::~DaemonProcessWin() {
 }

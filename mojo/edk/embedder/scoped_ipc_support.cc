@@ -4,57 +4,35 @@
 
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 
-#include "base/lazy_instance.h"
-#include "base/logging.h"
-#include "base/macros.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/process_delegate.h"
 
 namespace mojo {
 namespace edk {
 
-namespace {
-class IPCSupportInitializer : public mojo::edk::ProcessDelegate {
- public:
-  IPCSupportInitializer() {}
-  ~IPCSupportInitializer() override {}
-
-  void Init(scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-    CHECK(!io_thread_task_runner_);
-    CHECK(io_thread_task_runner);
-    io_thread_task_runner_ = io_thread_task_runner;
-
-    mojo::edk::InitIPCSupport(this, io_thread_task_runner_);
-  }
-
-  void ShutDown() {
-    CHECK(io_thread_task_runner_);
-    mojo::edk::ShutdownIPCSupport();
-  }
-
- private:
-  // mojo::edk::ProcessDelegate:
-  void OnShutdownComplete() override {
-    // TODO(rockot): We should ensure that IO runner shutdown is blocked until
-    // this is called.
-  }
-
-  scoped_refptr<base::TaskRunner> io_thread_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(IPCSupportInitializer);
-};
-
-base::LazyInstance<IPCSupportInitializer>::Leaky ipc_support_initializer;
-
-}  // namespace
-
 ScopedIPCSupport::ScopedIPCSupport(
-    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  ipc_support_initializer.Get().Init(io_thread_task_runner);
+    scoped_refptr<base::TaskRunner> io_thread_task_runner,
+    ShutdownPolicy shutdown_policy) : shutdown_policy_(shutdown_policy) {
+  InitIPCSupport(io_thread_task_runner);
 }
 
 ScopedIPCSupport::~ScopedIPCSupport() {
-  ipc_support_initializer.Get().ShutDown();
+  if (shutdown_policy_ == ShutdownPolicy::FAST) {
+    ShutdownIPCSupport(base::Bind(&base::DoNothing));
+    return;
+  }
+
+  base::WaitableEvent shutdown_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  ShutdownIPCSupport(base::Bind(&base::WaitableEvent::Signal,
+                                base::Unretained(&shutdown_event)));
+
+  base::ThreadRestrictions::ScopedAllowWait allow_io;
+  shutdown_event.Wait();
 }
 
 }  // namespace edk

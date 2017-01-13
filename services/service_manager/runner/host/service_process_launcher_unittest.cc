@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/process_delegate.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -39,16 +39,6 @@ void ProcessReadyCallbackAdapater(const base::Closure& callback,
                                   base::ProcessId process_id) {
   callback.Run();
 }
-
-class ProcessDelegate : public mojo::edk::ProcessDelegate {
- public:
-  ProcessDelegate() {}
-  ~ProcessDelegate() override {}
-
- private:
-  void OnShutdownComplete() override {}
-  DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
-};
 
 class ServiceProcessLauncherDelegateImpl
     : public ServiceProcessLauncher::Delegate {
@@ -94,8 +84,9 @@ TEST(ServieProcessLauncherTest, MAYBE_StartJoin) {
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);
 
-  ProcessDelegate delegate;
-  mojo::edk::InitIPCSupport(&delegate, io_thread.task_runner());
+  auto ipc_support = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
+      io_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
   base::FilePath test_service_path =
       base::FilePath(kPackagesPath).AppendASCII(kTestServiceName)
@@ -114,7 +105,8 @@ TEST(ServieProcessLauncherTest, MAYBE_StartJoin) {
 
   launcher.Join();
   blocking_pool->Shutdown();
-  mojo::edk::ShutdownIPCSupport();
+  ipc_support.reset();
+
   EXPECT_EQ(1u, service_process_launcher_delegate.get_and_clear_adjust_count());
 }
 

@@ -16,7 +16,6 @@
 #include "content/public/test/test_launcher.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/catalog/store.h"
 #include "services/service_manager/public/cpp/connector.h"

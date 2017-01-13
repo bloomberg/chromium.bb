@@ -11,7 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/process_delegate.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -54,41 +54,6 @@ std::unique_ptr<LinuxSandbox> InitializeSandbox() {
 }
 #endif
 
-// Should be created and initialized on the main thread and kept alive as long
-// a Service is running in the current process.
-class ScopedAppContext : public mojo::edk::ProcessDelegate {
- public:
-  ScopedAppContext()
-      : io_thread_("io_thread"),
-        wait_for_shutdown_event_(
-            base::WaitableEvent::ResetPolicy::MANUAL,
-            base::WaitableEvent::InitialState::NOT_SIGNALED) {
-    mojo::edk::Init();
-    io_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    mojo::edk::InitIPCSupport(this, io_thread_.task_runner());
-    mojo::edk::SetParentPipeHandleFromCommandLine();
-  }
-
-  ~ScopedAppContext() override {
-    mojo::edk::ShutdownIPCSupport();
-    wait_for_shutdown_event_.Wait();
-  }
-
- private:
-  // ProcessDelegate implementation.
-  void OnShutdownComplete() override {
-    wait_for_shutdown_event_.Signal();
-  }
-
-  base::Thread io_thread_;
-
-  // Used to unblock the main thread on shutdown.
-  base::WaitableEvent wait_for_shutdown_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAppContext);
-};
-
 }  // namespace
 
 void RunStandaloneService(const StandaloneServiceCallback& callback) {
@@ -112,7 +77,17 @@ void RunStandaloneService(const StandaloneServiceCallback& callback) {
     sandbox = InitializeSandbox();
 #endif
 
-  ScopedAppContext app_context;
+  mojo::edk::Init();
+
+  base::Thread io_thread("io_thread");
+  io_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+
+  mojo::edk::ScopedIPCSupport ipc_support(
+      io_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+  mojo::edk::SetParentPipeHandleFromCommandLine();
+
   callback.Run(GetServiceRequestFromCommandLine());
 }
 

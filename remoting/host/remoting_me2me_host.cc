@@ -470,7 +470,8 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   // AutoThreadTaskRunner should not be passed to it. Otherwise, the process may
   // never shut down cleanly.
   ipc_support_ = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
-      context_->network_task_runner()->task_runner());
+      context_->network_task_runner()->task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
   mojo::edk::SetParentPipeHandle(
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *cmd_line));

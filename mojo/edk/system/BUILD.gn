@@ -78,7 +78,6 @@ component("system") {
 
   public_deps = [
     "//mojo/edk/embedder",
-    "//mojo/edk/embedder:delegates",
     "//mojo/edk/embedder:platform",
     "//mojo/edk/system/ports",
     "//mojo/public/c/system",

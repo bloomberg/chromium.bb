@@ -52,6 +52,9 @@ class GpuChannelHost;
 }
 namespace mojo {
 class SyncCallRestrictions;
+namespace edk {
+class ScopedIPCSupport;
+}
 }
 namespace ui {
 class CommandBufferClientImpl;
@@ -193,6 +196,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class PlatformThread;
   friend class android::JavaHandlerThread;
   friend class mojo::SyncCallRestrictions;
+  friend class mojo::edk::ScopedIPCSupport;
   friend class ui::CommandBufferClientImpl;
   friend class ui::CommandBufferLocal;
   friend class ui::GpuState;

@@ -13,7 +13,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "mojo/edk/embedder/process_delegate.h"
 #include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/standalone/tracer.h"
@@ -32,7 +31,7 @@ namespace service_manager {
 constexpr size_t kThreadPoolMaxThreads = 3;
 
 // The "global" context for the service manager's main process.
-class Context : public mojo::edk::ProcessDelegate {
+class Context {
  public:
   struct InitParams {
     InitParams();
@@ -46,7 +45,7 @@ class Context : public mojo::edk::ProcessDelegate {
   };
 
   Context();
-  ~Context() override;
+  ~Context();
 
   static void EnsureEmbedderIsInitialized();
 
@@ -63,8 +62,7 @@ class Context : public mojo::edk::ProcessDelegate {
   ServiceManager* service_manager() { return service_manager_.get(); }
 
  private:
-  // mojo::edk::ProcessDelegate:
-  void OnShutdownComplete() override;
+  void OnShutdownComplete();
 
   // Runs the app specified by |name|.
   void Run(const std::string& name);

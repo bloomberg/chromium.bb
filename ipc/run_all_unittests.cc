@@ -9,7 +9,7 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mach_port_broker.h"
@@ -19,10 +19,9 @@ int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
   mojo::edk::Init();
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  // Leak this because its destructor calls mojo::edk::ShutdownIPCSupport which
-  // really does nothing in the new EDK but does depend on the current message
-  // loop, which is destructed inside base::LaunchUnitTests.
-  new mojo::edk::test::ScopedIPCSupport(test_io_thread.task_runner());
+  mojo::edk::ScopedIPCSupport ipc_support(
+      test_io_thread.task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   base::MachPortBroker mach_broker("mojo_test");

@@ -52,7 +52,9 @@ int DesktopProcessMain() {
       AutoThread::CreateWithType("I/O thread", ui_task_runner,
                                  base::MessageLoop::TYPE_IO);
 
-  mojo::edk::ScopedIPCSupport ipc_support(io_task_runner->task_runner());
+  mojo::edk::ScopedIPCSupport ipc_support(
+      io_task_runner->task_runner(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
   mojo::edk::ScopedPlatformHandle parent_pipe =
       mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
           *command_line);

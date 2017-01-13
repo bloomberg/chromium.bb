@@ -141,7 +141,9 @@ int StartRemoteSecurityKey() {
 #endif
 
   mojo::edk::Init();
-  mojo::edk::ScopedIPCSupport ipc_support(base::ThreadTaskRunnerHandle::Get());
+  mojo::edk::ScopedIPCSupport ipc_support(
+      base::ThreadTaskRunnerHandle::Get(),
+      mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   base::RunLoop run_loop;
 

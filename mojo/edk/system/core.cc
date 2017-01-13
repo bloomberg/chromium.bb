@@ -332,15 +332,7 @@ MojoResult Core::PassSharedMemoryHandle(
 }
 
 void Core::RequestShutdown(const base::Closure& callback) {
-  base::Closure on_shutdown;
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
-    on_shutdown = base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
-                             base::ThreadTaskRunnerHandle::Get(),
-                             FROM_HERE, callback);
-  } else {
-    on_shutdown = callback;
-  }
-  GetNodeController()->RequestShutdown(on_shutdown);
+  GetNodeController()->RequestShutdown(callback);
 }
 
 ScopedMessagePipeHandle Core::CreateMessagePipe(
