@@ -249,6 +249,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void DisableOverlay();
 
   void OnPipelineSuspended();
+  void OnBeforePipelineResume();
+  void OnPipelineResumed();
   void OnDemuxerOpened();
 
   // Pipeline::Client overrides.
@@ -369,8 +371,29 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // is intended for android.
   bool DoesOverlaySupportMetadata() const;
 
-  // Whether the media should be paused when hidden.
+  // Whether the media should be paused when hidden. Uses metadata so has
+  // meaning only after the pipeline has started, otherwise returns false.
   bool ShouldPauseWhenHidden() const;
+
+  // Whether the video track should be disabled when hidden. Uses metadata so
+  // has meaning only after the pipeline has started, otherwise returns false.
+  bool ShouldDisableVideoWhenHidden() const;
+
+  // Disables the video track to save power if possible.
+  // Must be called when either of the following happens:
+  // - right after the video was hidden,
+  // - right after the pipeline has started (|seeking_| is used to detect the
+  //   when pipeline started) if the video is hidden,
+  // - right ater the pipeline has resumed if the video is hidden.
+  void DisableVideoTrackIfNeeded();
+
+  // Enables the video track if it was disabled before to save power.
+  // Must be called when either of the following happens:
+  // - right after the video was shown,
+  // - right before the pipeline is requested to resume
+  //   (see https://crbug.com/678374),
+  // - right after the pipeline has resumed if the video is not hidden.
+  void EnableVideoTrackIfNeeded();
 
   blink::WebLocalFrame* frame_;
 
@@ -599,6 +622,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Whether the player is currently in autoplay muted state.
   bool autoplay_muted_ = false;
+
+  // Whether disabled the video track as an optimization.
+  bool video_track_disabled_ = false;
+
+  // Whether the pipeline is being resumed at the moment.
+  bool is_pipeline_resuming_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

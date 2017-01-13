@@ -39,6 +39,10 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
                                         base::Unretained(this)),
                              base::Bind(&PipelineControllerTest::OnSuspended,
                                         base::Unretained(this)),
+                             base::Bind(&PipelineControllerTest::OnBeforeResume,
+                                        base::Unretained(this)),
+                             base::Bind(&PipelineControllerTest::OnResumed,
+                                        base::Unretained(this)),
                              base::Bind(&PipelineControllerTest::OnError,
                                         base::Unretained(this))) {}
 
@@ -118,6 +122,8 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   }
 
   void OnSuspended() { was_suspended_ = true; }
+  void OnBeforeResume() { was_resuming_ = true; }
+  void OnResumed() { was_resumed_ = true; }
 
   // Pipeline::Client overrides
   void OnError(PipelineStatus status) override { NOTREACHED(); }
@@ -140,6 +146,8 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   bool was_seeked_ = false;
   bool last_seeked_time_updated_ = false;
   bool was_suspended_ = false;
+  bool was_resuming_ = false;
+  bool was_resumed_ = false;
   base::TimeDelta last_resume_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PipelineControllerTest);
@@ -165,7 +173,12 @@ TEST_F(PipelineControllerTest, SuspendResume) {
   EXPECT_TRUE(was_suspended_);
   EXPECT_FALSE(pipeline_controller_.IsStable());
 
-  Complete(ResumePipeline());
+  PipelineStatusCB resume_cb = ResumePipeline();
+  EXPECT_TRUE(was_resuming_);
+  EXPECT_FALSE(was_resumed_);
+
+  Complete(resume_cb);
+  EXPECT_TRUE(was_resumed_);
   EXPECT_TRUE(pipeline_controller_.IsStable());
 
   // |was_seeked_| should not be affected by Suspend()/Resume() at all.

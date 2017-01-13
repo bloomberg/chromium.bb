@@ -200,6 +200,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                      base::Unretained(this)),
           base::Bind(&WebMediaPlayerImpl::OnPipelineSeeked, AsWeakPtr()),
           base::Bind(&WebMediaPlayerImpl::OnPipelineSuspended, AsWeakPtr()),
+          base::Bind(&WebMediaPlayerImpl::OnBeforePipelineResume, AsWeakPtr()),
+          base::Bind(&WebMediaPlayerImpl::OnPipelineResumed, AsWeakPtr()),
           base::Bind(&WebMediaPlayerImpl::OnError, AsWeakPtr())),
       load_type_(LoadTypeURL),
       opaque_(false),
@@ -474,6 +476,7 @@ void WebMediaPlayerImpl::pause() {
   DCHECK(watch_time_reporter_);
   watch_time_reporter_->OnPaused();
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
+
   UpdatePlayState();
 }
 
@@ -671,9 +674,7 @@ void WebMediaPlayerImpl::selectedVideoTrackChanged(
 
   std::ostringstream logstr;
   std::vector<MediaTrack::Id> selectedVideoMediaTrackId;
-  bool canAddVideoTrack =
-      !IsBackgroundVideoTrackOptimizationEnabled() || !IsHidden();
-  if (selectedTrackId && canAddVideoTrack) {
+  if (selectedTrackId && !video_track_disabled_) {
     selectedVideoMediaTrackId.push_back(selectedTrackId->utf8().data());
     logstr << selectedVideoMediaTrackId[0];
   }
@@ -1072,6 +1073,7 @@ void WebMediaPlayerImpl::OnCdmAttached(bool success) {
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   seeking_ = false;
   seek_time_ = base::TimeDelta();
+
   if (paused_) {
 #if defined(OS_ANDROID)  // WMPI_CAST
     if (isRemote()) {
@@ -1116,6 +1118,25 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   if (pending_suspend_resume_cycle_) {
     pending_suspend_resume_cycle_ = false;
     UpdatePlayState();
+  }
+}
+
+void WebMediaPlayerImpl::OnBeforePipelineResume() {
+  // Enable video track if we disabled it in the background - this way the new
+  // renderer will attach its callbacks to the video stream properly.
+  // TODO(avayvod): Remove this when disabling and enabling video tracks in
+  // non-playing state works correctly. See https://crbug.com/678374.
+  EnableVideoTrackIfNeeded();
+  is_pipeline_resuming_ = true;
+}
+
+void WebMediaPlayerImpl::OnPipelineResumed() {
+  is_pipeline_resuming_ = false;
+
+  if (IsHidden()) {
+    DisableVideoTrackIfNeeded();
+  } else {
+    EnableVideoTrackIfNeeded();
   }
 }
 
@@ -1360,16 +1381,16 @@ void WebMediaPlayerImpl::OnHidden() {
   if (watch_time_reporter_)
     watch_time_reporter_->OnHidden();
 
-  if (!IsStreaming() && IsBackgroundVideoTrackOptimizationEnabled()) {
-    if (ShouldPauseWhenHidden()) {
+  if (ShouldPauseWhenHidden()) {
+    if (!paused_when_hidden_) {
       // OnPause() will set |paused_when_hidden_| to false and call
       // UpdatePlayState(), so set the flag to true after and then return.
       OnPause();
       paused_when_hidden_ = true;
       return;
     }
-
-    selectedVideoTrackChanged(nullptr);
+  } else {
+    DisableVideoTrackIfNeeded();
   }
 
   UpdatePlayState();
@@ -1389,21 +1410,16 @@ void WebMediaPlayerImpl::OnShown() {
       base::Bind(&VideoFrameCompositor::SetForegroundTime,
                  base::Unretained(compositor_), base::TimeTicks::Now()));
 
-  if (!IsStreaming() && IsBackgroundVideoTrackOptimizationEnabled()) {
-    if (paused_when_hidden_) {
-      paused_when_hidden_ = false;
-      OnPlay();  // Calls UpdatePlayState() so return afterwards.
-      return;
-    }
-
-    if (client_->hasSelectedVideoTrack()) {
-      WebMediaPlayer::TrackId trackId = client_->getSelectedVideoTrackId();
-      selectedVideoTrackChanged(&trackId);
-    }
-  }
-
   must_suspend_ = false;
   background_pause_timer_.Stop();
+
+  if (paused_when_hidden_) {
+    paused_when_hidden_ = false;
+    OnPlay();  // Calls UpdatePlayState() so return afterwards.
+    return;
+  }
+
+  EnableVideoTrackIfNeeded();
 
   UpdatePlayState();
 }
@@ -2076,12 +2092,53 @@ void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {
 }
 
 bool WebMediaPlayerImpl::ShouldPauseWhenHidden() const {
+  DCHECK(IsHidden());
+// Don't pause videos being Cast (Android only) or if the background video
+// optimizations are off (desktop only).
 #if defined(OS_ANDROID)  // WMPI_CAST
   if (isRemote())
     return false;
-#endif  // defined(OS_ANDROID)  // WMPI_CAST
+#else   // defined(OS_ANDROID)
+  if (!IsBackgroundVideoTrackOptimizationEnabled())
+    return false;
+#endif  // defined(OS_ANDROID)
 
   return hasVideo() && !hasAudio();
+}
+
+bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
+  DCHECK(IsHidden());
+  return IsBackgroundVideoTrackOptimizationEnabled() && hasVideo() &&
+         hasAudio() && !IsStreaming();
+}
+
+void WebMediaPlayerImpl::EnableVideoTrackIfNeeded() {
+  DCHECK(!IsHidden());
+
+  // Don't change video track while the pipeline is resuming or seeking.
+  if (is_pipeline_resuming_ || seeking_)
+    return;
+
+  if (video_track_disabled_) {
+    video_track_disabled_ = false;
+    if (client_->hasSelectedVideoTrack()) {
+      WebMediaPlayer::TrackId trackId = client_->getSelectedVideoTrackId();
+      selectedVideoTrackChanged(&trackId);
+    }
+  }
+}
+
+void WebMediaPlayerImpl::DisableVideoTrackIfNeeded() {
+  DCHECK(IsHidden());
+
+  // Don't change video track while the pipeline is resuming or seeking.
+  if (is_pipeline_resuming_ || seeking_)
+    return;
+
+  if (!video_track_disabled_ && ShouldDisableVideoWhenHidden()) {
+    video_track_disabled_ = true;
+    selectedVideoTrackChanged(nullptr);
+  }
 }
 
 }  // namespace media

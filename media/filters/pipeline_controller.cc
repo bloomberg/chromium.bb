@@ -14,17 +14,23 @@ PipelineController::PipelineController(
     const RendererFactoryCB& renderer_factory_cb,
     const SeekedCB& seeked_cb,
     const SuspendedCB& suspended_cb,
+    const BeforeResumeCB& before_resume_cb,
+    const ResumedCB& resumed_cb,
     const PipelineStatusCB& error_cb)
     : pipeline_(pipeline),
       renderer_factory_cb_(renderer_factory_cb),
       seeked_cb_(seeked_cb),
       suspended_cb_(suspended_cb),
+      before_resume_cb_(before_resume_cb),
+      resumed_cb_(resumed_cb),
       error_cb_(error_cb),
       weak_factory_(this) {
   DCHECK(pipeline_);
   DCHECK(!renderer_factory_cb_.is_null());
   DCHECK(!seeked_cb_.is_null());
   DCHECK(!suspended_cb_.is_null());
+  DCHECK(!before_resume_cb_.is_null());
+  DCHECK(!resumed_cb_.is_null());
   DCHECK(!error_cb_.is_null());
 }
 
@@ -123,12 +129,18 @@ void PipelineController::OnPipelineStatus(State state,
     return;
   }
 
+  State old_state = state_;
   state_ = state;
 
   if (state == State::PLAYING) {
     // Start(), Seek(), or Resume() completed; we can be sure that
     // |demuxer_| got the seek it was waiting for.
     waiting_for_seek_ = false;
+
+    // TODO(avayvod): Remove resumed callback after https://crbug.com/678374 is
+    // properly fixed.
+    if (old_state == State::RESUMING)
+      resumed_cb_.Run();
   } else if (state == State::SUSPENDED) {
     // Warning: possibly reentrant. The state may change inside this callback.
     // It must be safe to call Dispatch() twice in a row here.
@@ -180,6 +192,7 @@ void PipelineController::Dispatch() {
 
     pending_resume_ = false;
     state_ = State::RESUMING;
+    before_resume_cb_.Run();
     pipeline_->Resume(renderer_factory_cb_.Run(), seek_time_,
                       base::Bind(&PipelineController::OnPipelineStatus,
                                  weak_factory_.GetWeakPtr(), State::PLAYING));

@@ -249,6 +249,20 @@ class WebMediaPlayerImplTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(kResumeBackgroundVideo);
   }
 
+  void SetBackgroundVideoOptimization(bool enable) {
+    if (enable) {
+      scoped_feature_list_.InitAndEnableFeature(
+          kBackgroundVideoTrackOptimization);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          kBackgroundVideoTrackOptimization);
+    }
+  }
+
+  bool ShouldDisableVideoWhenHidden() const {
+    return wmpi_->ShouldDisableVideoWhenHidden();
+  }
+
   // "Renderer" thread.
   base::MessageLoop message_loop_;
 
@@ -753,6 +767,30 @@ TEST_F(WebMediaPlayerImplTest, AutoplayMuted_SetVolume) {
   EXPECT_CALL(delegate_, DidPlay(_, true, true, false, _));
   client_.set_is_autoplaying_muted(false);
   wmpi_->setVolume(1.0);
+}
+
+TEST_F(WebMediaPlayerImplTest, ShouldDisableVideoWhenHidden) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(delegate_, IsHidden()).WillRepeatedly(Return(true));
+  SetBackgroundVideoOptimization(true);
+
+  SetMetadata(true, true);
+  EXPECT_TRUE(ShouldDisableVideoWhenHidden());
+
+  SetMetadata(false, true);
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+
+  SetMetadata(true, false);
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+}
+
+TEST_F(WebMediaPlayerImplTest, ShouldDisableVideoWhenHiddenFeatureDisabled) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(delegate_, IsHidden()).WillRepeatedly(Return(true));
+  SetBackgroundVideoOptimization(false);
+
+  SetMetadata(true, true);
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 }
 
 }  // namespace media
