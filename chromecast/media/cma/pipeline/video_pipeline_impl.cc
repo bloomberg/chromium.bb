@@ -56,19 +56,25 @@ VideoPipelineImpl::~VideoPipelineImpl() {
   }
   DCHECK(configs.size() <= 2);
   DCHECK(configs[0].IsValidConfig());
+  encryption_schemes_.resize(configs.size());
+
   VideoConfig video_config =
       DecoderConfigAdapter::ToCastVideoConfig(kPrimary, configs[0]);
+  encryption_schemes_[0] = video_config.encryption_scheme;
+
   VideoConfig secondary_config;
   if (configs.size() == 2) {
     DCHECK(configs[1].IsValidConfig());
     secondary_config = DecoderConfigAdapter::ToCastVideoConfig(kSecondary,
                                                                configs[1]);
     video_config.additional_config = &secondary_config;
+    encryption_schemes_[1] = secondary_config.encryption_scheme;
   }
 
   if (!video_decoder_->SetConfig(video_config)) {
     return ::media::PIPELINE_ERROR_INITIALIZATION_FAILED;
   }
+
   set_state(kFlushed);
   return ::media::PIPELINE_OK;
 }
@@ -96,11 +102,22 @@ void VideoPipelineImpl::OnUpdateConfig(
     CMALOG(kLogControl) << __FUNCTION__ << " id:" << id << " "
                         << video_config.AsHumanReadableString();
 
-    bool success = video_decoder_->SetConfig(
-        DecoderConfigAdapter::ToCastVideoConfig(id, video_config));
+    DCHECK_LT(id, encryption_schemes_.size());
+    VideoConfig cast_video_config =
+        DecoderConfigAdapter::ToCastVideoConfig(id, video_config);
+    encryption_schemes_[static_cast<int>(id)] =
+        cast_video_config.encryption_scheme;
+
+    bool success = video_decoder_->SetConfig(cast_video_config);
     if (!success && !client().playback_error_cb.is_null())
       client().playback_error_cb.Run(::media::PIPELINE_ERROR_DECODE);
   }
+}
+
+const EncryptionScheme& VideoPipelineImpl::GetEncryptionScheme(
+    StreamId id) const {
+  DCHECK_LT(id, encryption_schemes_.size());
+  return encryption_schemes_[static_cast<int>(id)];
 }
 
 void VideoPipelineImpl::UpdateStatistics() {

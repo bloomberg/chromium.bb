@@ -44,8 +44,10 @@ class AudioPipelineImpl : public AvPipelineImpl {
   void OnUpdateConfig(StreamId id,
                       const ::media::AudioDecoderConfig& audio_config,
                       const ::media::VideoDecoderConfig& video_config) override;
+  const EncryptionScheme& GetEncryptionScheme(StreamId id) const override;
 
   MediaPipelineBackend::AudioDecoder* const audio_decoder_;
+  EncryptionScheme encryption_scheme_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPipelineImpl);
 };

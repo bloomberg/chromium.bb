@@ -74,7 +74,8 @@ class CastCdmContextForTest : public CastCdmContext {
   }
 
   std::unique_ptr<DecryptContextImpl> GetDecryptContext(
-      const std::string& key_id) override {
+      const std::string& key_id,
+      const EncryptionScheme& encryption_scheme) override {
     if (license_installed_) {
       return std::unique_ptr<DecryptContextImpl>(
           new DecryptContextImpl(KEY_SYSTEM_CLEAR_KEY));

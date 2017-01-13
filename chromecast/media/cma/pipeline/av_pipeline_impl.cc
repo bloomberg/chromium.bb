@@ -225,7 +225,8 @@ void AvPipelineImpl::ProcessPendingBuffer() {
     }
 
     std::unique_ptr<DecryptContextImpl> decrypt_context =
-        cast_cdm_context_->GetDecryptContext(key_id);
+        cast_cdm_context_->GetDecryptContext(
+            key_id, GetEncryptionScheme(pending_buffer_->stream_id()));
     if (!decrypt_context) {
       CMALOG(kLogControl) << "frame(pts=" << pending_buffer_->timestamp()
                           << "): waiting for key id "
@@ -387,7 +388,10 @@ void AvPipelineImpl::UpdatePlayableFrames() {
           non_playable_frame->decrypt_config();
       if (decrypt_config &&
           !(cast_cdm_context_ &&
-            cast_cdm_context_->GetDecryptContext(decrypt_config->key_id())
+            cast_cdm_context_
+                ->GetDecryptContext(
+                    decrypt_config->key_id(),
+                    GetEncryptionScheme(non_playable_frame->stream_id()))
                 .get())) {
         // The frame is still not playable. All the following are thus not
         // playable.

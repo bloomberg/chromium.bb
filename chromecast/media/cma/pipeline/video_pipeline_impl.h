@@ -44,9 +44,11 @@ class VideoPipelineImpl : public AvPipelineImpl {
   void OnUpdateConfig(StreamId id,
                       const ::media::AudioDecoderConfig& audio_config,
                       const ::media::VideoDecoderConfig& video_config) override;
+  const EncryptionScheme& GetEncryptionScheme(StreamId id) const override;
 
   MediaPipelineBackend::VideoDecoder* const video_decoder_;
   const VideoPipelineClient::NaturalSizeChangedCB natural_size_changed_cb_;
+  std::vector<EncryptionScheme> encryption_schemes_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoPipelineImpl);
 };

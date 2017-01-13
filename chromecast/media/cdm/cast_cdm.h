@@ -56,7 +56,8 @@ class CastCdm : public ::media::ContentDecryptionModule {
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|. Returns null if |key_id| is not available.
   virtual std::unique_ptr<DecryptContextImpl> GetDecryptContext(
-      const std::string& key_id) const = 0;
+      const std::string& key_id,
+      const EncryptionScheme& encryption_scheme) const = 0;
 
   // Notifies that key status has changed (e.g. if expiry is detected by
   // hardware decoder).

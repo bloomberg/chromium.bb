@@ -15,6 +15,7 @@ namespace chromecast {
 namespace media {
 
 class DecryptContextImpl;
+struct EncryptionScheme;
 
 // CdmContext implementation + some extra APIs needed by CastRenderer.
 class CastCdmContext : public ::media::CdmContext {
@@ -35,7 +36,8 @@ class CastCdmContext : public ::media::CdmContext {
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|. Returns null if |key_id| is not available.
   virtual std::unique_ptr<DecryptContextImpl> GetDecryptContext(
-      const std::string& key_id) = 0;
+      const std::string& key_id,
+      const EncryptionScheme& encryption_scheme) = 0;
 
   // Notifies that key status has changed (e.g. if expiry is detected by
   // hardware decoder).
