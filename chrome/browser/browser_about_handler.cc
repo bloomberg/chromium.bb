@@ -26,6 +26,10 @@
 #include "chrome/browser/ui/webui/md_history_ui.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#endif
+
 bool FixupBrowserAboutURL(GURL* url,
                           content::BrowserContext* browser_context) {
   // Ensure that any cleanup done by FixupURL happens before the rewriting
@@ -82,9 +86,14 @@ bool WillHandleBrowserAboutURL(GURL* url,
   // Redirect chrome://history.
   } else if (host == chrome::kChromeUIHistoryHost) {
 #if defined(OS_ANDROID)
-    // On Android, redirect directly to chrome://history-frame since
-    // uber page is unsupported.
-    host = chrome::kChromeUIHistoryFrameHost;
+    // TODO(twellington): remove this after native Android history launches.
+    // See http://crbug.com/654071.
+    if (!base::FeatureList::IsEnabled(
+            chrome::android::kNativeAndroidHistoryManager)) {
+      // On Android, redirect directly to chrome://history-frame since
+      // uber page is unsupported.
+      host = chrome::kChromeUIHistoryFrameHost;
+    }
 #else
     // Material design history is handled on the top-level chrome://history
     // host.

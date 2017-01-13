@@ -17,6 +17,7 @@ namespace android {
 // Rewrites old-style Android NTP URLs and legacy bookmark URLs.
 //  - chrome://newtab              -> chrome-native://newtab
 //  - chrome-native://bookmarks/#  -> chrome-native://bookmarks/folder/
+//  - chrome://history             -> chrome-native://history/
 bool HandleAndroidNativePageURL(GURL* url,
                                 content::BrowserContext* browser_context);
 

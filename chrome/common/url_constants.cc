@@ -108,6 +108,7 @@ const char kChromeUIJavaCrashURL[] = "chrome://java-crash/";
 const char kChromeUINativeScheme[] = "chrome-native";
 const char kChromeUINativeNewTabURL[] = "chrome-native://newtab/";
 const char kChromeUINativeBookmarksURL[] = "chrome-native://bookmarks/";
+const char kChromeUINativeHistoryURL[] = "chrome-native://history/";
 const char kChromeUINativePhysicalWebDiagnosticsURL[] =
     "chrome-native://physical-web-diagnostics/";
 const char kChromeUINativeRecentTabsURL[] = "chrome-native://recent-tabs/";
