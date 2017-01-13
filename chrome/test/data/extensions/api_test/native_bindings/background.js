@@ -39,4 +39,21 @@ chrome.test.runTests([
     chrome.test.assertFalse(!!chrome.power);
     chrome.test.succeed();
   },
+  function events() {
+    var createdEvent = new Promise((resolve, reject) => {
+      chrome.tabs.onCreated.addListener(tab => {
+        resolve(tab.id);
+      });
+    });
+    var createdCallback = new Promise((resolve, reject) => {
+      chrome.tabs.create({url: 'http://example.com'}, tab => {
+        resolve(tab.id);
+      });
+    });
+    Promise.all([createdEvent, createdCallback]).then(res => {
+      chrome.test.assertEq(2, res.length);
+      chrome.test.assertEq(res[0], res[1]);
+      chrome.test.succeed();
+    });
+  },
 ]);

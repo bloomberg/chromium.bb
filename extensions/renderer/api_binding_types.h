@@ -14,6 +14,12 @@
 namespace extensions {
 namespace binding {
 
+// Types of changes for event listener registration.
+enum class EventListenersChanged {
+  HAS_LISTENERS,  // The event had no listeners, and now does.
+  NO_LISTENERS,   // The event had listeners, and now does not.
+};
+
 // A callback to execute the given v8::Function with the provided context and
 // arguments.
 using RunJSFunction = base::Callback<void(v8::Local<v8::Function>,

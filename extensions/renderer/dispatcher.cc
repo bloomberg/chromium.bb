@@ -198,6 +198,25 @@ void SendRequestIPC(ScriptContext* context,
   frame->Send(new ExtensionHostMsg_Request(frame->GetRoutingID(), params));
 }
 
+// Sends a notification to the browser that an event either has or no longer has
+// listeners associated with it. Note that we only do this for the first added/
+// last removed listener, rather than for each subsequent listener; the browser
+// only cares if an event has >0 associated listeners.
+// TODO(devlin): Use this in EventBindings, too, and add logic for lazy
+// background pages.
+void SendEventListenersIPC(binding::EventListenersChanged changed,
+                           ScriptContext* context,
+                           const std::string& event_name) {
+  if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
+    content::RenderThread::Get()->Send(new ExtensionHostMsg_AddListener(
+        context->GetExtensionID(), context->url(), event_name));
+  } else {
+    DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
+    content::RenderThread::Get()->Send(new ExtensionHostMsg_RemoveListener(
+        context->GetExtensionID(), context->url(), event_name));
+  }
+}
+
 base::LazyInstance<WorkerScriptContextSet> g_worker_script_context_set =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -217,7 +236,7 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
 
   if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
     bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(
-        base::Bind(&SendRequestIPC));
+        base::Bind(&SendRequestIPC), base::Bind(&SendEventListenersIPC));
   } else {
     bindings_system_ = base::MakeUnique<JsExtensionBindingsSystem>(
         &source_map_, base::MakeUnique<RequestSender>());

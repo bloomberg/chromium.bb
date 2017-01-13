@@ -51,7 +51,9 @@ class APIBindingsSystem {
   APIBindingsSystem(const binding::RunJSFunction& call_js,
                     const binding::RunJSFunctionSync& call_js_sync,
                     const GetAPISchemaMethod& get_api_schema,
-                    const SendRequestMethod& send_request);
+                    const SendRequestMethod& send_request,
+                    const APIEventHandler::EventListenersChangedMethod&
+                        event_listeners_changed);
   ~APIBindingsSystem();
 
   // Returns a new v8::Object representing the api specified by |api_name|.

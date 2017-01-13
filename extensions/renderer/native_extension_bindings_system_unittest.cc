@@ -22,6 +22,7 @@
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/string_source_map.h"
 #include "extensions/renderer/test_v8_extension_configuration.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
 
@@ -49,6 +50,14 @@ scoped_refptr<Extension> CreateExtension(
       .Build();
 }
 
+class EventChangeHandler {
+ public:
+  MOCK_METHOD3(OnChange,
+               void(binding::EventListenersChanged,
+                    ScriptContext*,
+                    const std::string& event_name));
+};
+
 }  // namespace
 
 class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
@@ -57,6 +66,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   ~NativeExtensionBindingsSystemUnittest() override {}
 
  protected:
+  using MockEventChangeHandler = ::testing::StrictMock<EventChangeHandler>;
+
   v8::ExtensionConfiguration* GetV8ExtensionConfiguration() override {
     return TestV8ExtensionConfiguration::GetConfiguration();
   }
@@ -64,7 +75,9 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   void SetUp() override {
     script_context_set_ = base::MakeUnique<ScriptContextSet>(&extension_ids_);
     bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(
-        base::Bind(&NativeExtensionBindingsSystemUnittest::MockSendIPC,
+        base::Bind(&NativeExtensionBindingsSystemUnittest::MockSendRequestIPC,
+                   base::Unretained(this)),
+        base::Bind(&NativeExtensionBindingsSystemUnittest::MockSendListenerIPC,
                    base::Unretained(this)));
     APIBindingTest::SetUp();
   }
@@ -78,8 +91,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     APIBindingTest::TearDown();
   }
 
-  void MockSendIPC(ScriptContext* context,
-                   const ExtensionHostMsg_Request_Params& params) {
+  void MockSendRequestIPC(ScriptContext* context,
+                          const ExtensionHostMsg_Request_Params& params) {
     last_params_.name = params.name;
     last_params_.arguments.Swap(params.arguments.CreateDeepCopy().get());
     last_params_.extension_id = params.extension_id;
@@ -89,6 +102,13 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     last_params_.user_gesture = params.user_gesture;
     last_params_.worker_thread_id = params.worker_thread_id;
     last_params_.service_worker_version_id = params.service_worker_version_id;
+  }
+
+  void MockSendListenerIPC(binding::EventListenersChanged changed,
+                           ScriptContext* context,
+                           const std::string& event_name) {
+    if (event_change_handler_)
+      event_change_handler_->OnChange(changed, context, event_name);
   }
 
   ScriptContext* CreateScriptContext(v8::Local<v8::Context> v8_context,
@@ -106,18 +126,28 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 
   void RegisterExtension(const ExtensionId& id) { extension_ids_.insert(id); }
 
+  void InitEventChangeHandler() {
+    event_change_handler_ = base::MakeUnique<MockEventChangeHandler>();
+  }
+
   NativeExtensionBindingsSystem* bindings_system() {
     return bindings_system_.get();
   }
   const ExtensionHostMsg_Request_Params& last_params() { return last_params_; }
   StringSourceMap* source_map() { return &source_map_; }
+  MockEventChangeHandler* event_change_handler() {
+    return event_change_handler_.get();
+  }
 
  private:
   ExtensionIdSet extension_ids_;
   std::unique_ptr<ScriptContextSet> script_context_set_;
   std::vector<ScriptContext*> raw_script_contexts_;
   std::unique_ptr<NativeExtensionBindingsSystem> bindings_system_;
+
   ExtensionHostMsg_Request_Params last_params_;
+  std::unique_ptr<MockEventChangeHandler> event_change_handler_;
+
   StringSourceMap source_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeExtensionBindingsSystemUnittest);
@@ -415,6 +445,60 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
   EXPECT_FALSE(last_params().has_callback);
   EXPECT_TRUE(
       last_params().arguments.Equals(ListValueFromString("[50]").get()));
+}
+
+// Tests that we can notify the browser as event listeners are added or removed.
+// Note: the notification logic is tested more thoroughly in the APIEventHandler
+// unittests.
+TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
+  InitEventChangeHandler();
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", {"idle", "power"});
+
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  // Add a new event listener. We should be notified of the change.
+  const char kEventName[] = "idle.onStateChanged";
+  v8::Local<v8::Function> listener =
+      FunctionFromString(context, "(function() {})");
+  const char kAddListener[] =
+      "(function(listener) {\n"
+      "  chrome.idle.onStateChanged.addListener(listener);\n"
+      "});";
+  v8::Local<v8::Function> add_listener =
+      FunctionFromString(context, kAddListener);
+  EXPECT_CALL(
+      *event_change_handler(),
+      OnChange(binding::EventListenersChanged::HAS_LISTENERS,
+               script_context,
+               kEventName)).Times(1);
+  v8::Local<v8::Value> argv[] = {listener};
+  RunFunction(add_listener, context, arraysize(argv), argv);
+  ::testing::Mock::VerifyAndClearExpectations(event_change_handler());
+
+  // Remove the event listener. We should be notified again.
+  const char kRemoveListener[] =
+      "(function(listener) {\n"
+      "  chrome.idle.onStateChanged.removeListener(listener);\n"
+      "});";
+  EXPECT_CALL(
+      *event_change_handler(),
+      OnChange(binding::EventListenersChanged::NO_LISTENERS,
+               script_context,
+               kEventName)).Times(1);
+  v8::Local<v8::Function> remove_listener =
+      FunctionFromString(context, kRemoveListener);
+  RunFunction(remove_listener, context, arraysize(argv), argv);
+  ::testing::Mock::VerifyAndClearExpectations(event_change_handler());
 }
 
 }  // namespace extensions

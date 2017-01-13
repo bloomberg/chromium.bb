@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "extensions/renderer/api_binding_types.h"
+#include "extensions/renderer/event_emitter.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -24,7 +25,13 @@ namespace extensions {
 // single thread.
 class APIEventHandler {
  public:
-  APIEventHandler(const binding::RunJSFunction& call_js);
+  using EventListenersChangedMethod =
+      base::Callback<void(const std::string& event_name,
+                          binding::EventListenersChanged,
+                          v8::Local<v8::Context>)>;
+
+  APIEventHandler(const binding::RunJSFunction& call_js,
+                  const EventListenersChangedMethod& listeners_changed);
   ~APIEventHandler();
 
   // Returns a new v8::Object for an event with the given |event_name|.
@@ -44,6 +51,8 @@ class APIEventHandler {
  private:
   // Method to run a given v8::Function. Curried in for testing.
   binding::RunJSFunction call_js_;
+
+  EventListenersChangedMethod listeners_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(APIEventHandler);
 };

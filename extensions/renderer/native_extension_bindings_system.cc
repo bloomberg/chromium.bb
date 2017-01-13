@@ -127,13 +127,18 @@ bool IsAPIMethodAvailable(ScriptContext* context,
 }  // namespace
 
 NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
-    const SendIPCMethod& send_ipc)
-    : send_ipc_(send_ipc),
-      api_system_(base::Bind(&CallJsFunction),
-                  base::Bind(&CallJsFunctionSync),
-                  base::Bind(&GetAPISchema),
-                  base::Bind(&NativeExtensionBindingsSystem::SendRequest,
-                             base::Unretained(this))),
+    const SendRequestIPCMethod& send_request_ipc,
+    const SendEventListenerIPCMethod& send_event_listener_ipc)
+    : send_request_ipc_(send_request_ipc),
+      send_event_listener_ipc_(send_event_listener_ipc),
+      api_system_(
+          base::Bind(&CallJsFunction),
+          base::Bind(&CallJsFunctionSync),
+          base::Bind(&GetAPISchema),
+          base::Bind(&NativeExtensionBindingsSystem::SendRequest,
+                     base::Unretained(this)),
+          base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
+                     base::Unretained(this))),
       weak_factory_(this) {}
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}
@@ -321,7 +326,15 @@ void NativeExtensionBindingsSystem::SendRequest(
   params.worker_thread_id = -1;
   params.service_worker_version_id = kInvalidServiceWorkerVersionId;
 
-  send_ipc_.Run(script_context, params);
+  send_request_ipc_.Run(script_context, params);
+}
+
+void NativeExtensionBindingsSystem::OnEventListenerChanged(
+    const std::string& event_name,
+    binding::EventListenersChanged change,
+    v8::Local<v8::Context> context) {
+  send_event_listener_ipc_.Run(
+      change, ScriptContextSet::GetContextByV8Context(context), event_name);
 }
 
 }  // namespace extensions

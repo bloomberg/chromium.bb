@@ -52,13 +52,21 @@ struct APIEventPerContextData : public base::SupportsUserData::Data {
 
 }  // namespace
 
-APIEventHandler::APIEventHandler(const binding::RunJSFunction& call_js)
-    : call_js_(call_js) {}
+APIEventHandler::APIEventHandler(
+    const binding::RunJSFunction& call_js,
+    const EventListenersChangedMethod& listeners_changed)
+    : call_js_(call_js), listeners_changed_(listeners_changed) {}
 APIEventHandler::~APIEventHandler() {}
 
 v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
     const std::string& event_name,
     v8::Local<v8::Context> context) {
+  // We need a context scope since gin::CreateHandle only takes the isolate
+  // and infers the context from that.
+  // TODO(devlin): This could be avoided if gin::CreateHandle could take a
+  // context directly.
+  v8::Context::Scope context_scope(context);
+
   gin::PerContextData* per_context_data = gin::PerContextData::From(context);
   DCHECK(per_context_data);
   APIEventPerContextData* data = static_cast<APIEventPerContextData*>(
@@ -73,8 +81,9 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
 
   DCHECK(data->event_data.find(event_name) == data->event_data.end());
 
-  gin::Handle<EventEmitter> emitter_handle =
-      gin::CreateHandle(context->GetIsolate(), new EventEmitter(call_js_));
+  gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
+      context->GetIsolate(),
+      new EventEmitter(call_js_, base::Bind(listeners_changed_, event_name)));
   CHECK(!emitter_handle.IsEmpty());
   v8::Local<v8::Value> emitter_value = emitter_handle.ToV8();
   CHECK(emitter_value->IsObject());

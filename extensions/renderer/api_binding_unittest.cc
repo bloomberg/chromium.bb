@@ -116,6 +116,10 @@ bool AllowAllAPIs(const std::string& name) {
   return true;
 }
 
+void OnEventListenersChanged(const std::string& event_name,
+                             binding::EventListenersChanged change,
+                             v8::Local<v8::Context> context) {}
+
 }  // namespace
 
 class APIBindingUnittest : public APIBindingTest {
@@ -235,8 +239,8 @@ TEST_F(APIBindingUnittest, TestEmptyAPI) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
   EXPECT_EQ(
@@ -259,8 +263,8 @@ TEST_F(APIBindingUnittest, Test) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -360,8 +364,8 @@ TEST_F(APIBindingUnittest, EnumValues) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -420,8 +424,8 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -473,8 +477,8 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
     return name == "test.allowedOne" || name == "test.allowedTwo";
   };
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(is_available));
 
@@ -508,8 +512,8 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -545,8 +549,8 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -575,8 +579,8 @@ TEST_F(APIBindingUnittest, MultipleContexts) {
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object_a = binding.CreateInstance(
       context_a, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
   v8::Local<v8::Object> binding_object_b = binding.CreateInstance(
@@ -626,8 +630,8 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -675,8 +679,8 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -741,8 +745,8 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -807,8 +811,8 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -857,8 +861,8 @@ TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -926,8 +930,8 @@ TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -985,8 +989,8 @@ TEST_F(APIBindingUnittest,
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
@@ -1049,8 +1053,8 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());
 
-  APIEventHandler event_handler(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                                base::Bind(&OnEventListenersChanged));
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 

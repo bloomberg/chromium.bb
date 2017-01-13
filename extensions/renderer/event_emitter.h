@@ -23,8 +23,12 @@ namespace extensions {
 class EventEmitter final : public gin::Wrappable<EventEmitter> {
  public:
   using Listeners = std::vector<v8::Global<v8::Function>>;
+  using ListenersChangedMethod =
+      base::Callback<void(binding::EventListenersChanged,
+                          v8::Local<v8::Context>)>;
 
-  explicit EventEmitter(const binding::RunJSFunction& run_js);
+  EventEmitter(const binding::RunJSFunction& run_js,
+               const ListenersChangedMethod& listeners_changed);
   ~EventEmitter() override;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -41,7 +45,7 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
  private:
   // Bound methods for the Event JS object.
   void AddListener(gin::Arguments* arguments);
-  void RemoveListener(v8::Local<v8::Function> function);
+  void RemoveListener(gin::Arguments* arguments);
   bool HasListener(v8::Local<v8::Function> function);
   bool HasListeners();
   void Dispatch(gin::Arguments* arguments);
@@ -49,6 +53,8 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   Listeners listeners_;
 
   binding::RunJSFunction run_js_;
+
+  ListenersChangedMethod listeners_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(EventEmitter);
 };

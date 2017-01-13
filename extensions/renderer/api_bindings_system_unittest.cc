@@ -92,6 +92,10 @@ class APIBindingsSystemTestBase : public APIBindingTest {
     last_request_ = std::move(request);
   }
 
+  void OnEventListenersChanged(const std::string& event_name,
+                               binding::EventListenersChanged changed,
+                               v8::Local<v8::Context> context) {}
+
  protected:
   APIBindingsSystemTestBase() {}
   void SetUp() override {
@@ -102,6 +106,8 @@ class APIBindingsSystemTestBase : public APIBindingTest {
         base::Bind(&APIBindingsSystemTestBase::GetAPISchema,
                    base::Unretained(this)),
         base::Bind(&APIBindingsSystemTestBase::OnAPIRequest,
+                   base::Unretained(this)),
+        base::Bind(&APIBindingsSystemTestBase::OnEventListenersChanged,
                    base::Unretained(this)));
   }
 

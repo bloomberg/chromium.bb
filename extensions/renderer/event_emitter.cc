@@ -13,8 +13,9 @@ namespace extensions {
 
 gin::WrapperInfo EventEmitter::kWrapperInfo = {gin::kEmbedderNativeGin};
 
-EventEmitter::EventEmitter(const binding::RunJSFunction& run_js)
-    : run_js_(run_js) {}
+EventEmitter::EventEmitter(const binding::RunJSFunction& run_js,
+                           const ListenersChangedMethod& listeners_changed)
+    : run_js_(run_js), listeners_changed_(listeners_changed) {}
 
 EventEmitter::~EventEmitter() {}
 
@@ -53,25 +54,47 @@ void EventEmitter::Fire(v8::Local<v8::Context> context,
 
 void EventEmitter::AddListener(gin::Arguments* arguments) {
   v8::Local<v8::Function> listener;
+  // TODO(devlin): For some reason, we don't throw an error when someone calls
+  // add/removeListener with no argument. We probably should. For now, keep
+  // the status quo, but we should revisit this.
   if (!arguments->GetNext(&listener))
     return;
 
   v8::Local<v8::Object> holder;
   CHECK(arguments->GetHolder(&holder));
   CHECK(!holder.IsEmpty());
-  if (!gin::PerContextData::From(holder->CreationContext()))
+  v8::Local<v8::Context> context = holder->CreationContext();
+  if (!gin::PerContextData::From(context))
     return;
 
   if (!HasListener(listener)) {
     listeners_.push_back(
         v8::Global<v8::Function>(arguments->isolate(), listener));
+    if (listeners_.size() == 1) {
+      listeners_changed_.Run(binding::EventListenersChanged::HAS_LISTENERS,
+                             context);
+    }
   }
 }
 
-void EventEmitter::RemoveListener(v8::Local<v8::Function> listener) {
+void EventEmitter::RemoveListener(gin::Arguments* arguments) {
+  v8::Local<v8::Function> listener;
+  // See comment in AddListener().
+  if (!arguments->GetNext(&listener))
+    return;
+
   auto iter = std::find(listeners_.begin(), listeners_.end(), listener);
-  if (iter != listeners_.end())
+  if (iter != listeners_.end()) {
     listeners_.erase(iter);
+    if (listeners_.empty()) {
+      v8::Local<v8::Object> holder;
+      CHECK(arguments->GetHolder(&holder));
+      CHECK(!holder.IsEmpty());
+      v8::Local<v8::Context> context = holder->CreationContext();
+      listeners_changed_.Run(binding::EventListenersChanged::NO_LISTENERS,
+                             context);
+    }
+  }
 }
 
 bool EventEmitter::HasListener(v8::Local<v8::Function> listener) {
