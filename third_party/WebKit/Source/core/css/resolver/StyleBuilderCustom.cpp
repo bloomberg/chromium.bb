@@ -928,42 +928,37 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(
       initial = true;
   }
 
-  DCHECK(initial ^ inherit);
-
+  state.style()->removeVariable(name, isInheritedProperty);
   if (initial) {
-    if (isInheritedProperty)
-      state.style()->removeInheritedVariable(name);
-    else
-      state.style()->removeNonInheritedVariable(name);
     return;
   }
 
-  if (isInheritedProperty) {
-    state.style()->removeInheritedVariable(name);
-    StyleInheritedVariables* parentVariables =
-        state.parentStyle()->inheritedVariables();
-    if (!parentVariables)
-      return;
-    CSSVariableData* parentValue = parentVariables->getVariable(name);
+  DCHECK(inherit);
+  CSSVariableData* parentValue =
+      state.parentStyle()->getVariable(name, isInheritedProperty);
+  const CSSValue* parentCSSValue =
+      registration && parentValue
+          ? state.parentStyle()->getRegisteredVariable(name,
+                                                       isInheritedProperty)
+          : nullptr;
+
+  if (!isInheritedProperty) {
+    DCHECK(registration);
     if (parentValue) {
-      if (!registration)
-        state.style()->setResolvedUnregisteredVariable(name, parentValue);
-      else
-        state.style()->setResolvedInheritedVariable(
-            name, parentValue, parentVariables->registeredVariable(name));
+      state.style()->setResolvedNonInheritedVariable(name, parentValue,
+                                                     parentCSSValue);
     }
     return;
   }
 
-  state.style()->removeNonInheritedVariable(name);
-  StyleNonInheritedVariables* parentVariables =
-      state.parentStyle()->nonInheritedVariables();
-  if (!parentVariables)
-    return;
-  CSSVariableData* parentValue = parentVariables->getVariable(name);
-  if (parentValue)
-    state.style()->setResolvedNonInheritedVariable(
-        name, parentValue, parentVariables->registeredVariable(name));
+  if (parentValue) {
+    if (!registration) {
+      state.style()->setResolvedUnregisteredVariable(name, parentValue);
+    } else {
+      state.style()->setResolvedInheritedVariable(name, parentValue,
+                                                  parentCSSValue);
+    }
+  }
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyBaselineShift(

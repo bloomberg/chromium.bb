@@ -1826,24 +1826,43 @@ void ComputedStyle::setResolvedNonInheritedVariable(
   variables.setRegisteredVariable(name, parsedValue);
 }
 
-void ComputedStyle::removeInheritedVariable(const AtomicString& name) {
-  mutableInheritedVariables().removeVariable(name);
-}
-
-void ComputedStyle::removeNonInheritedVariable(const AtomicString& name) {
-  mutableNonInheritedVariables().removeVariable(name);
+void ComputedStyle::removeVariable(const AtomicString& name,
+                                   bool isInheritedProperty) {
+  if (isInheritedProperty) {
+    mutableInheritedVariables().removeVariable(name);
+  } else {
+    mutableNonInheritedVariables().removeVariable(name);
+  }
 }
 
 CSSVariableData* ComputedStyle::getVariable(const AtomicString& name) const {
-  if (inheritedVariables()) {
-    if (CSSVariableData* variable = inheritedVariables()->getVariable(name))
-      return variable;
+  CSSVariableData* variable = getVariable(name, true);
+  if (variable) {
+    return variable;
   }
-  if (nonInheritedVariables()) {
-    if (CSSVariableData* variable = nonInheritedVariables()->getVariable(name))
-      return variable;
+  return getVariable(name, false);
+}
+
+CSSVariableData* ComputedStyle::getVariable(const AtomicString& name,
+                                            bool isInheritedProperty) const {
+  if (isInheritedProperty) {
+    return inheritedVariables() ? inheritedVariables()->getVariable(name)
+                                : nullptr;
   }
-  return nullptr;
+  return nonInheritedVariables() ? nonInheritedVariables()->getVariable(name)
+                                 : nullptr;
+}
+
+const CSSValue* ComputedStyle::getRegisteredVariable(
+    const AtomicString& name,
+    bool isInheritedProperty) const {
+  if (isInheritedProperty) {
+    return inheritedVariables() ? inheritedVariables()->registeredVariable(name)
+                                : nullptr;
+  }
+  return nonInheritedVariables()
+             ? nonInheritedVariables()->registeredVariable(name)
+             : nullptr;
 }
 
 float ComputedStyle::wordSpacing() const {

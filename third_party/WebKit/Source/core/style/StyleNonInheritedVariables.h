@@ -36,7 +36,7 @@ class StyleNonInheritedVariables {
   void removeVariable(const AtomicString&);
 
   void setRegisteredVariable(const AtomicString&, const CSSValue*);
-  CSSValue* registeredVariable(const AtomicString& name) const {
+  const CSSValue* registeredVariable(const AtomicString& name) const {
     return m_registeredData.get(name);
   }
 

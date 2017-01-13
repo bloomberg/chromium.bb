@@ -2504,11 +2504,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                        PassRefPtr<CSSVariableData>,
                                        const CSSValue*);
 
-  void removeInheritedVariable(const AtomicString&);
-  void removeNonInheritedVariable(const AtomicString&);
+  void removeVariable(const AtomicString&, bool isInheritedProperty);
 
   // Handles both inherited and non-inherited variables
   CSSVariableData* getVariable(const AtomicString&) const;
+
+  CSSVariableData* getVariable(const AtomicString&,
+                               bool isInheritedProperty) const;
+
+  const CSSValue* getRegisteredVariable(const AtomicString&,
+                                        bool isInheritedProperty) const;
 
   void setHasVariableReferenceFromNonInheritedProperty() {
     m_nonInheritedData.m_variableReference = true;

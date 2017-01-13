@@ -37,7 +37,7 @@ class StyleInheritedVariables : public RefCounted<StyleInheritedVariables> {
   void removeVariable(const AtomicString&);
 
   void setRegisteredVariable(const AtomicString&, const CSSValue*);
-  CSSValue* registeredVariable(const AtomicString&) const;
+  const CSSValue* registeredVariable(const AtomicString&) const;
 
   // This map will contain null pointers if variables are invalid due to
   // cycles or referencing invalid variables without using a fallback.
