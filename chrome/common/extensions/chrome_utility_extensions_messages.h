@@ -55,11 +55,6 @@ IPC_STRUCT_TRAITS_BEGIN(picasa::FolderINIContents)
 IPC_STRUCT_TRAITS_END()
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-IPC_STRUCT_TRAITS_BEGIN(metadata::AttachedImage)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-IPC_STRUCT_TRAITS_END()
-
 //------------------------------------------------------------------------------
 // Utility process messages:
 // These are messages from the browser to the utility process.
@@ -97,11 +92,6 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_IndexPicasaAlbumsContents,
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_CheckMediaFile,
                      int64_t /* milliseconds_of_decoding */,
                      IPC::PlatformFileForTransit /* Media file to parse */)
-
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_ParseMediaMetadata,
-                     std::string /* mime_type */,
-                     int64_t /* total_size */,
-                     bool /* get_attached_images */)
 
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RequestBlobBytes_Finished,
                      int64_t /* request_id */,
@@ -159,12 +149,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished,
 // the file appears to be a well formed media file.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_CheckMediaFile_Finished,
                      bool /* passed_checks */)
-
-IPC_MESSAGE_CONTROL3(
-    ChromeUtilityHostMsg_ParseMediaMetadata_Finished,
-    bool /* parse_success */,
-    base::DictionaryValue /* metadata */,
-    std::vector<metadata::AttachedImage> /* attached_images */)
 
 IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_RequestBlobBytes,
                      int64_t /* request_id */,

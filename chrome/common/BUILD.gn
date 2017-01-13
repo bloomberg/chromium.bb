@@ -324,6 +324,7 @@ static_library("common") {
       "extensions/webstore_install_result.h",
     ]
     public_deps += [
+      "//chrome/common/extensions:mojo_bindings",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:extensions_features",
       "//device/usb",

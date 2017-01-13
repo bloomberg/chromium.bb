@@ -1,0 +1,24 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Media parsing interface provided by the utility process and exposed by
+// mojo policy control to the chrome browser process.
+
+module extensions.mojom;
+
+import "mojo/common/values.mojom";
+
+struct AttachedImage {
+  string type;
+  array<uint8> data;
+};
+
+interface MediaParser {
+  ParseMediaMetadata(string mime_type,
+                     int64 total_size,
+                     bool get_attached_images)
+      => (bool parse_success,
+          mojo.common.mojom.DictionaryValue metadata,
+          array<AttachedImage> attached_images);
+};

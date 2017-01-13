@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/media_galleries.h"
+#include "chrome/common/extensions/media_parser.mojom.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
@@ -63,10 +64,15 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
   // Launches the utility process.  Must run on the IO thread.
   void StartWorkOnIOThread(const DoneCallback& callback);
 
-  // Notification from the utility process when it finishes parsing metadata.
+  // Mojo callback if the utility process or metadata parse requests fail.
   // Runs on the IO thread.
-  void OnParseMediaMetadataFinished(
-      bool parse_success, const base::DictionaryValue& metadata_dictionary,
+  void ParseMediaMetadataFailed();
+
+  // Mojo callback from utility process when it finishes parsing metadata.
+  // Runs on the IO thread.
+  void ParseMediaMetadataDone(
+      bool parse_success,
+      std::unique_ptr<base::DictionaryValue> metadata_dictionary,
       const std::vector<AttachedImage>& attached_images);
 
   // Sequence of functions that bounces from the IO thread to the UI thread to
@@ -85,7 +91,6 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.
-  void OnProcessCrashed(int exit_code) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // All member variables are only accessed on the IO thread.
@@ -98,6 +103,8 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
   DoneCallback callback_;
 
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
+
+  extensions::mojom::MediaParserPtr interface_;
 
   // Verifies the messages from the utility process came at the right time.
   // Initialized on the UI thread, but only accessed on the IO thread.

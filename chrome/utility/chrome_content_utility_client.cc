@@ -115,7 +115,7 @@ std::unique_ptr<service_manager::Service> CreateImageDecoderService() {
 ChromeContentUtilityClient::ChromeContentUtilityClient()
     : filter_messages_(false) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  handlers_.push_back(new extensions::ExtensionsHandler(this));
+  handlers_.push_back(new extensions::ExtensionsHandler());
   handlers_.push_back(new image_writer::ImageWriterHandler());
 #endif
 
@@ -192,13 +192,17 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 
 void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
     service_manager::InterfaceRegistry* registry) {
-  // When the utility process is running with elevated privileges, we need to
-  // filter messages so that only a whitelist of IPCs can run. In Mojo, there's
-  // no way of filtering individual messages. Instead, we can avoid adding
-  // non-whitelisted Mojo services to the service_manager::InterfaceRegistry.
-  // TODO(amistry): Use a whitelist once the whistlisted IPCs have been
-  // converted to Mojo.
-  if (filter_messages_)
+  const bool running_elevated =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUtilityProcessRunningElevated);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  ChromeContentUtilityClient* utility_client = this;
+  extensions::ExtensionsHandler::ExposeInterfacesToBrowser(
+      registry, utility_client, running_elevated);
+#endif
+  // If our process runs with elevated privileges, only add elevated
+  // Mojo services to the interface registry.
+  if (running_elevated)
     return;
 
 #if !defined(OS_ANDROID)
