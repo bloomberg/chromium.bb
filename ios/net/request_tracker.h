@@ -20,7 +20,6 @@ class URLRequestContext;
 }
 
 @class CRNForwardingNetworkClientFactory;
-@class CRNSimpleNetworkClientFactory;
 class GURL;
 
 namespace net {
