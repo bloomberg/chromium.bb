@@ -79,9 +79,6 @@ class FileSystem(object):
     def exists(self, path):
         return os.path.exists(path)
 
-    def getsize(self, path):
-        return os.path.getsize(path)
-
     def files_under(self, path, dirs_to_skip=[], file_filter=None):
         """Return the list of all files under the given path in topdown order.
 
