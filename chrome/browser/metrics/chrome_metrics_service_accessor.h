@@ -41,6 +41,7 @@ class DomainReliabilityServiceFactory;
 
 namespace extensions {
 class ChromeExtensionWebContentsObserver;
+class ChromeGuestViewManagerDelegate;
 class ChromeMetricsPrivateDelegate;
 class FileManagerPrivateIsUMAEnabledFunction;
 }
@@ -105,6 +106,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class DataReductionProxyChromeSettings;
   friend class domain_reliability::DomainReliabilityServiceFactory;
   friend class extensions::ChromeExtensionWebContentsObserver;
+  friend class extensions::ChromeGuestViewManagerDelegate;
   friend class extensions::ChromeMetricsPrivateDelegate;
   friend class extensions::FileManagerPrivateIsUMAEnabledFunction;
   friend void ChangeMetricsReportingStateWithReply(
