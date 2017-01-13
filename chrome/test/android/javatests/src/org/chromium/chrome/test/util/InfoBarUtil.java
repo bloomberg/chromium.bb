@@ -9,6 +9,10 @@ import android.view.View;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+
+import java.util.List;
 
 /**
  * Utility functions for dealing with InfoBars.
@@ -70,5 +74,17 @@ public class InfoBarUtil {
      */
     public static boolean clickSecondaryButton(InfoBar infoBar) {
         return findButton(infoBar, R.id.button_secondary, true);
+    }
+
+    /**
+     * Waits until the specified InfoBar list contains no info bars.
+     */
+    public static void waitUntilNoInfoBarsExist(final List<InfoBar> infoBars) {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return infoBars.isEmpty();
+            }
+        });
     }
 }

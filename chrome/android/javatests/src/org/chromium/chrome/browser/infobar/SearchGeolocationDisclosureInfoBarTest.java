@@ -8,7 +8,6 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SearchGeolocationDisclosureTabHelper;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -50,7 +49,6 @@ public class SearchGeolocationDisclosureInfoBarTest
         super.tearDown();
     }
 
-    @FlakyTest(message = "https://crbug.com/678210")
     @SmallTest
     @Feature({"Browser", "Main"})
     @CommandLineFlags.Add(ENABLE_NEW_DISCLOSURE_FEATURE)
@@ -74,6 +72,9 @@ public class SearchGeolocationDisclosureInfoBarTest
 
         // Infobar should not appear again on the same day.
         loadUrl(mTestServer.getURL(SEARCH_PAGE));
+        // There can be a delay from infobars being removed in the native InfobarManager and them
+        // being removed in the Java container, so wait until the infobar has really gone.
+        InfoBarUtil.waitUntilNoInfoBarsExist(getInfoBars());
         assertEquals("Wrong infobar count after search", 0, getInfoBars().size());
 
         // Infobar should appear again the next day.
@@ -86,6 +87,7 @@ public class SearchGeolocationDisclosureInfoBarTest
 
         // Infobar should not appear again on the same day.
         loadUrl(mTestServer.getURL(SEARCH_PAGE));
+        InfoBarUtil.waitUntilNoInfoBarsExist(getInfoBars());
         assertEquals("Wrong infobar count after search", 0, getInfoBars().size());
 
         // Infobar should appear again the next day.
@@ -98,6 +100,7 @@ public class SearchGeolocationDisclosureInfoBarTest
 
         // Infobar should not appear again on the same day.
         loadUrl(mTestServer.getURL(SEARCH_PAGE));
+        InfoBarUtil.waitUntilNoInfoBarsExist(getInfoBars());
         assertEquals("Wrong infobar count after search", 0, getInfoBars().size());
 
         // Infobar has appeared three times now, it should not appear again.
@@ -126,6 +129,7 @@ public class SearchGeolocationDisclosureInfoBarTest
 
         // Infobar should not appear again on the same day.
         loadUrl(mTestServer.getURL(SEARCH_PAGE));
+        InfoBarUtil.waitUntilNoInfoBarsExist(getInfoBars());
         assertEquals("Wrong infobar count after search", 0, getInfoBars().size());
 
         // Infobar should not appear the next day either, as it has been dismissed.

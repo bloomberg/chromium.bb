@@ -57,15 +57,6 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private EmbeddedTestServer mTestServer;
     private InfoBarTestAnimationListener mListener;
 
-    private void waitUntilNoInfoBarsExist() {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getInfoBars().isEmpty();
-            }
-        });
-    }
-
     private void waitUntilDataReductionPromoInfoBarAppears() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -186,14 +177,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                         getActivity().getActivityTab().goBack();
                     }
                 });
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getInfoBars().isEmpty();
-                    }
-                },
-                MAX_TIMEOUT, CHECK_INTERVAL);
+        InfoBarUtil.waitUntilNoInfoBarsExist(getInfoBars());
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
     }
 
@@ -239,7 +223,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
 
         // The renderer should have been killed and the infobar removed.
-        waitUntilNoInfoBarsExist();
+        InfoBarUtil.waitUntilNoInfoBarsExist(getInfoBars());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -300,7 +284,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
 
         // The renderer should have been killed and the infobar removed.
-        waitUntilNoInfoBarsExist();
+        InfoBarUtil.waitUntilNoInfoBarsExist(getInfoBars());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
