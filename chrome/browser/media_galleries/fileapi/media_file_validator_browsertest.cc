@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -112,10 +113,12 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     base::FilePath src_path = base.AppendASCII("src_fs");
     ASSERT_TRUE(base::CreateDirectory(src_path));
 
-    ScopedVector<storage::FileSystemBackend> additional_providers;
-    additional_providers.push_back(new content::TestFileSystemBackend(
-        base::ThreadTaskRunnerHandle::Get().get(), src_path));
-    additional_providers.push_back(new MediaFileSystemBackend(
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers;
+    additional_providers.push_back(
+        base::MakeUnique<content::TestFileSystemBackend>(
+            base::ThreadTaskRunnerHandle::Get().get(), src_path));
+    additional_providers.push_back(base::MakeUnique<MediaFileSystemBackend>(
         base, base::ThreadTaskRunnerHandle::Get().get()));
     file_system_context_ =
         content::CreateFileSystemContextWithAdditionalProvidersForTesting(

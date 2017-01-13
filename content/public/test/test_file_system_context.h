@@ -26,14 +26,16 @@ storage::FileSystemContext* CreateFileSystemContextForTesting(
 // The caller is responsible for including TestFileSystemBackend in
 // |additional_providers| if needed.
 storage::FileSystemContext*
-    CreateFileSystemContextWithAdditionalProvidersForTesting(
-        storage::QuotaManagerProxy* quota_manager_proxy,
-        ScopedVector<storage::FileSystemBackend> additional_providers,
-        const base::FilePath& base_path);
+CreateFileSystemContextWithAdditionalProvidersForTesting(
+    storage::QuotaManagerProxy* quota_manager_proxy,
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers,
+    const base::FilePath& base_path);
 
 storage::FileSystemContext* CreateFileSystemContextWithAutoMountersForTesting(
     storage::QuotaManagerProxy* quota_manager_proxy,
-    ScopedVector<storage::FileSystemBackend> additional_providers,
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers,
     const std::vector<storage::URLRequestAutoMountHandler>& auto_mounters,
     const base::FilePath& base_path);
 

@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
+#include <iterator>
+
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -784,11 +786,11 @@ void NavigationHandleImpl::RunCompleteCallback(
 }
 
 void NavigationHandleImpl::RegisterNavigationThrottles() {
-  // Register the navigation throttles. The ScopedVector returned by
+  // Register the navigation throttles. The vector returned by
   // GetNavigationThrottles is not assigned to throttles_ directly because it
-  // would overwrite any throttle previously added with
+  // would overwrite any throttles previously added with
   // RegisterThrottleForTesting.
-  ScopedVector<NavigationThrottle> throttles_to_register =
+  std::vector<std::unique_ptr<NavigationThrottle>> throttles_to_register =
       GetDelegate()->CreateThrottlesForNavigation(this);
   std::unique_ptr<NavigationThrottle> devtools_throttle =
       RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(this);
@@ -805,11 +807,9 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   if (ancestor_throttle)
     throttles_.push_back(std::move(ancestor_throttle));
 
-  if (throttles_to_register.size() > 0) {
-    throttles_.insert(throttles_.begin(), throttles_to_register.begin(),
-                      throttles_to_register.end());
-    throttles_to_register.weak_clear();
-  }
+  throttles_.insert(throttles_.begin(),
+                    std::make_move_iterator(throttles_to_register.begin()),
+                    std::make_move_iterator(throttles_to_register.end()));
 }
 
 }  // namespace content

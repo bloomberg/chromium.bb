@@ -86,7 +86,8 @@ class ChromeContentBrowserClientExtensionsPart
   void GetAdditionalFileSystemBackends(
       content::BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
-      ScopedVector<storage::FileSystemBackend>* additional_backends) override;
+      std::vector<std::unique_ptr<storage::FileSystemBackend>>*
+          additional_backends) override;
   void AppendExtraRendererCommandLineSwitches(
       base::CommandLine* command_line,
       content::RenderProcessHost* process,

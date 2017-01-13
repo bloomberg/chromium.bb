@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -174,8 +175,9 @@ class ItunesFileUtilTest : public testing::Test {
     event.Wait();
 
     media_path_filter_.reset(new MediaPathFilter());
-    ScopedVector<storage::FileSystemBackend> additional_providers;
-    additional_providers.push_back(new TestMediaFileSystemBackend(
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers;
+    additional_providers.push_back(base::MakeUnique<TestMediaFileSystemBackend>(
         profile_dir_.GetPath(),
         new TestITunesFileUtil(media_path_filter_.get(),
                                itunes_data_provider_.get())));

@@ -19,10 +19,10 @@ bool NavigatorDelegate::ShouldPreserveAbortedURLs() {
   return false;
 }
 
-ScopedVector<NavigationThrottle>
+std::vector<std::unique_ptr<NavigationThrottle>>
 NavigatorDelegate::CreateThrottlesForNavigation(
     NavigationHandle* navigation_handle) {
-  return ScopedVector<NavigationThrottle>();
+  return std::vector<std::unique_ptr<NavigationThrottle>>();
 }
 
 std::unique_ptr<NavigationUIData> NavigatorDelegate::GetNavigationUIData(

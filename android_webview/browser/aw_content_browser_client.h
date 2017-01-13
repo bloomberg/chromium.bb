@@ -123,7 +123,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::FileDescriptorInfo* mappings) override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* web_prefs) override;
-  ScopedVector<content::NavigationThrottle> CreateThrottlesForNavigation(
+  std::vector<std::unique_ptr<content::NavigationThrottle>>
+  CreateThrottlesForNavigation(
       content::NavigationHandle* navigation_handle) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(

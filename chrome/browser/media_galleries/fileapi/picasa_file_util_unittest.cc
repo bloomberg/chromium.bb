@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -17,8 +18,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -244,8 +245,9 @@ class PicasaFileUtilTest : public testing::Test {
 
     media_path_filter_.reset(new MediaPathFilter());
 
-    ScopedVector<storage::FileSystemBackend> additional_providers;
-    additional_providers.push_back(new TestMediaFileSystemBackend(
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers;
+    additional_providers.push_back(base::MakeUnique<TestMediaFileSystemBackend>(
         profile_dir_.GetPath(),
         new TestPicasaFileUtil(media_path_filter_.get(),
                                picasa_data_provider_.get())));
@@ -275,13 +277,11 @@ class PicasaFileUtilTest : public testing::Test {
   }
 
   // |test_folders| must be in alphabetical order for easy verification
-  void SetupFolders(ScopedVector<TestFolder>* test_folders,
+  void SetupFolders(std::vector<std::unique_ptr<TestFolder>>* test_folders,
                     const std::vector<AlbumInfo>& albums,
                     const AlbumImagesMap& albums_images) {
     std::vector<AlbumInfo> folders;
-    for (ScopedVector<TestFolder>::iterator it = test_folders->begin();
-        it != test_folders->end(); ++it) {
-      TestFolder* test_folder = *it;
+    for (const auto& test_folder : *test_folders) {
       ASSERT_TRUE(test_folder->Init());
       folders.push_back(test_folder->folder_info());
     }
@@ -295,7 +295,8 @@ class PicasaFileUtilTest : public testing::Test {
         PicasaDataProvider::ALBUMS_IMAGES_FRESH_STATE;
   }
 
-  void VerifyFolderDirectoryList(const ScopedVector<TestFolder>& test_folders) {
+  void VerifyFolderDirectoryList(
+      const std::vector<std::unique_ptr<TestFolder>>& test_folders) {
     FileSystemOperation::FileEntryList contents;
     FileSystemURL url = CreateURL(kPicasaDirFolders);
     bool completed = false;
@@ -322,9 +323,8 @@ class PicasaFileUtilTest : public testing::Test {
 
       EXPECT_EQ(image_filenames.size(), folder_contents.size());
 
-      for (FileSystemOperation::FileEntryList::const_iterator file_it =
-               folder_contents.begin(); file_it != folder_contents.end();
-           ++file_it) {
+      for (auto file_it = folder_contents.begin();
+           file_it != folder_contents.end(); ++file_it) {
         EXPECT_EQ(1u, image_filenames.count(
             base::FilePath(file_it->name).AsUTF8Unsafe()));
       }
@@ -400,7 +400,7 @@ TEST_F(PicasaFileUtilTest, DateFormat) {
 }
 
 TEST_F(PicasaFileUtilTest, NameDeduplication) {
-  ScopedVector<TestFolder> test_folders;
+  std::vector<std::unique_ptr<TestFolder>> test_folders;
   std::vector<std::string> expected_names;
 
   base::Time test_date;
@@ -411,23 +411,23 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
   std::string test_date_2_string = DateToPathString(test_date_2);
 
   test_folders.push_back(
-      new TestFolder("diff_date", test_date_2, "uuid3", 0, 0));
+      base::MakeUnique<TestFolder>("diff_date", test_date_2, "uuid3", 0, 0));
   expected_names.push_back("diff_date " + test_date_2_string);
 
   test_folders.push_back(
-      new TestFolder("diff_date", test_date, "uuid2", 0, 0));
+      base::MakeUnique<TestFolder>("diff_date", test_date, "uuid2", 0, 0));
   expected_names.push_back("diff_date " + test_date_string);
 
   test_folders.push_back(
-      new TestFolder("duplicate", test_date, "uuid4", 0, 0));
+      base::MakeUnique<TestFolder>("duplicate", test_date, "uuid4", 0, 0));
   expected_names.push_back("duplicate " + test_date_string + " (1)");
 
   test_folders.push_back(
-      new TestFolder("duplicate", test_date, "uuid5", 0, 0));
+      base::MakeUnique<TestFolder>("duplicate", test_date, "uuid5", 0, 0));
   expected_names.push_back("duplicate " + test_date_string + " (2)");
 
   test_folders.push_back(
-      new TestFolder("unique_name", test_date, "uuid1", 0, 0));
+      base::MakeUnique<TestFolder>("unique_name", test_date, "uuid1", 0, 0));
   expected_names.push_back("unique_name " + test_date_string);
 
   SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
@@ -447,7 +447,7 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
 }
 
 TEST_F(PicasaFileUtilTest, RootFolders) {
-  ScopedVector<TestFolder> empty_folders_list;
+  std::vector<std::unique_ptr<TestFolder>> empty_folders_list;
   SetupFolders(&empty_folders_list, std::vector<AlbumInfo>(), AlbumImagesMap());
 
   FileSystemOperation::FileEntryList contents;
@@ -466,7 +466,7 @@ TEST_F(PicasaFileUtilTest, RootFolders) {
 }
 
 TEST_F(PicasaFileUtilTest, NonexistentFolder) {
-  ScopedVector<TestFolder> empty_folders_list;
+  std::vector<std::unique_ptr<TestFolder>> empty_folders_list;
   SetupFolders(&empty_folders_list, std::vector<AlbumInfo>(), AlbumImagesMap());
 
   TestNonexistentDirectory(std::string(kPicasaDirFolders) + "/foo");
@@ -475,47 +475,46 @@ TEST_F(PicasaFileUtilTest, NonexistentFolder) {
 }
 
 TEST_F(PicasaFileUtilTest, FolderContentsTrivial) {
-  ScopedVector<TestFolder> test_folders;
+  std::vector<std::unique_ptr<TestFolder>> test_folders;
   base::Time test_date;
   EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
-  test_folders.push_back(
-      new TestFolder("folder-1-empty", test_date, "uid-empty", 0, 0));
-  test_folders.push_back(
-      new TestFolder("folder-2-images", test_date, "uid-images", 5, 0));
-  test_folders.push_back(
-      new TestFolder("folder-3-nonimages", test_date, "uid-nonimages", 0, 5));
-  test_folders.push_back(
-      new TestFolder("folder-4-both", test_date, "uid-both", 5, 5));
+  test_folders.push_back(base::MakeUnique<TestFolder>(
+      "folder-1-empty", test_date, "uid-empty", 0, 0));
+  test_folders.push_back(base::MakeUnique<TestFolder>(
+      "folder-2-images", test_date, "uid-images", 5, 0));
+  test_folders.push_back(base::MakeUnique<TestFolder>(
+      "folder-3-nonimages", test_date, "uid-nonimages", 0, 5));
+  test_folders.push_back(base::MakeUnique<TestFolder>(
+      "folder-4-both", test_date, "uid-both", 5, 5));
 
   SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
   VerifyFolderDirectoryList(test_folders);
 }
 
 TEST_F(PicasaFileUtilTest, FolderWithManyFiles) {
-  ScopedVector<TestFolder> test_folders;
+  std::vector<std::unique_ptr<TestFolder>> test_folders;
   base::Time test_date;
   EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
-  test_folders.push_back(
-      new TestFolder("folder-many-files", test_date, "uid-both", 50, 50));
+  test_folders.push_back(base::MakeUnique<TestFolder>(
+      "folder-many-files", test_date, "uid-both", 50, 50));
 
   SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
   VerifyFolderDirectoryList(test_folders);
 }
 
 TEST_F(PicasaFileUtilTest, ManyFolders) {
-  ScopedVector<TestFolder> test_folders;
+  std::vector<std::unique_ptr<TestFolder>> test_folders;
   base::Time test_date;
   EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
   for (unsigned int i = 0; i < 50; ++i) {
     base::Time date = test_date - base::TimeDelta::FromDays(i);
 
-    test_folders.push_back(
-        new TestFolder(base::StringPrintf("folder-%05d", i),
-                       date,
-                       base::StringPrintf("uid%05d", i), i % 5, i % 3));
+    test_folders.push_back(base::MakeUnique<TestFolder>(
+        base::StringPrintf("folder-%05d", i), date,
+        base::StringPrintf("uid%05d", i), i % 5, i % 3));
   }
 
   SetupFolders(&test_folders, std::vector<AlbumInfo>(), AlbumImagesMap());
@@ -523,7 +522,7 @@ TEST_F(PicasaFileUtilTest, ManyFolders) {
 }
 
 TEST_F(PicasaFileUtilTest, AlbumExistence) {
-  ScopedVector<TestFolder> test_folders;
+  std::vector<std::unique_ptr<TestFolder>> test_folders;
   base::Time test_date;
   EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
@@ -546,7 +545,7 @@ TEST_F(PicasaFileUtilTest, AlbumExistence) {
 }
 
 TEST_F(PicasaFileUtilTest, AlbumContents) {
-  ScopedVector<TestFolder> test_folders;
+  std::vector<std::unique_ptr<TestFolder>> test_folders;
   base::Time test_date;
   EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 

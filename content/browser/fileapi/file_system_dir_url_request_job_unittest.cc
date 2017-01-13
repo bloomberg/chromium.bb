@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -155,8 +155,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     *mnt_point = temp_dir_.GetPath().AppendASCII("auto_mount_dir");
     ASSERT_TRUE(base::CreateDirectory(*mnt_point));
 
-    ScopedVector<storage::FileSystemBackend> additional_providers;
-    additional_providers.push_back(new TestFileSystemBackend(
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers;
+    additional_providers.push_back(base::MakeUnique<TestFileSystemBackend>(
         base::ThreadTaskRunnerHandle::Get().get(), *mnt_point));
 
     std::vector<storage::URLRequestAutoMountHandler> handlers;

@@ -391,7 +391,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   FrameTreeNode* frame_tree_node_;
 
   // A list of Throttles registered for this navigation.
-  ScopedVector<NavigationThrottle> throttles_;
+  std::vector<std::unique_ptr<NavigationThrottle>> throttles_;
 
   // The index of the next throttle to check.
   size_t next_index_;

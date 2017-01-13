@@ -231,11 +231,12 @@ ShellContentBrowserClient::GetDevToolsManagerDelegate() {
   return new content::ShellDevToolsManagerDelegate(GetBrowserContext());
 }
 
-ScopedVector<content::NavigationThrottle>
+std::vector<std::unique_ptr<content::NavigationThrottle>>
 ShellContentBrowserClient::CreateThrottlesForNavigation(
     content::NavigationHandle* navigation_handle) {
-  ScopedVector<content::NavigationThrottle> throttles;
-  throttles.push_back(new ExtensionNavigationThrottle(navigation_handle));
+  std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+  throttles.push_back(
+      base::MakeUnique<ExtensionNavigationThrottle>(navigation_handle));
   return throttles;
 }
 

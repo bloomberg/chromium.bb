@@ -51,7 +51,8 @@ class ChromeContentBrowserClientParts {
   virtual void GetAdditionalFileSystemBackends(
       content::BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
-      ScopedVector<storage::FileSystemBackend>* additional_backends) {}
+      std::vector<std::unique_ptr<storage::FileSystemBackend>>*
+          additional_backends) {}
 
   // Append extra switches to |command_line| for |process|. If |process| is not
   // NULL, then neither is |profile|.

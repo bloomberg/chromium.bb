@@ -252,7 +252,7 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
       additional_allowed_schemes,
       env_override_);
 
-  ScopedVector<storage::FileSystemBackend> additional_backends;
+  std::vector<std::unique_ptr<storage::FileSystemBackend>> additional_backends;
   additional_backends.push_back(SyncFileSystemBackend::CreateForTesting());
 
   file_system_context_ = new FileSystemContext(

@@ -129,7 +129,7 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
           base::ThreadTaskRunnerHandle::Get().get(), mount_points.get(),
           NULL,  // special_storage_policy
           NULL,  // quota_manager_proxy,
-          ScopedVector<storage::FileSystemBackend>(),
+          std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
           std::vector<storage::URLRequestAutoMountHandler>(),
           temp_dir_.GetPath(),  // partition_path
           content::CreateAllowFileAccessOptions()));

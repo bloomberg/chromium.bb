@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_
 
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -136,8 +135,8 @@ class CONTENT_EXPORT NavigatorDelegate {
   // Returns the NavigationThrottles to add to this navigation. Normally these
   // are defined by the content/ embedder, except in the case of interstitials
   // where no NavigationThrottles are added to the navigation.
-  virtual ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
-      NavigationHandle* navigation_handle);
+  virtual std::vector<std::unique_ptr<NavigationThrottle>>
+  CreateThrottlesForNavigation(NavigationHandle* navigation_handle);
 
   // PlzNavigate
   // Called at the start of the navigation to get opaque data the embedder

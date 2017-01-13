@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/crx_file/id_util.h"
@@ -36,11 +37,13 @@ class MockBrowserClient : public content::ContentBrowserClient {
 
   // Only construct an ExtensionNavigationThrottle so that we can test it in
   // isolation.
-  ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
+  std::vector<std::unique_ptr<NavigationThrottle>> CreateThrottlesForNavigation(
       content::NavigationHandle* handle) override {
-    ScopedVector<NavigationThrottle> throttles;
-    if (!handle->IsInMainFrame())  // Mirrors ChromeContentBrowserClient.
-      throttles.push_back(new ExtensionNavigationThrottle(handle));
+    std::vector<std::unique_ptr<NavigationThrottle>> throttles;
+    if (!handle->IsInMainFrame()) {  // Mirrors ChromeContentBrowserClient.
+      throttles.push_back(
+          base::MakeUnique<ExtensionNavigationThrottle>(handle));
+    }
     return throttles;
   }
 };
@@ -69,10 +72,11 @@ class ExtensionNavigationThrottleUnitTest
                      NavigationThrottle::ThrottleCheckResult expected_result) {
     std::unique_ptr<content::NavigationHandle> handle =
         content::NavigationHandle::CreateNavigationHandleForTesting(url, host);
-    EXPECT_EQ(expected_result, handle->CallWillStartRequestForTesting(
-                                   false, //not post
-                                   content::Referrer(), false,
-                                   ui::PAGE_TRANSITION_LINK, false))
+    EXPECT_EQ(expected_result,
+              handle->CallWillStartRequestForTesting(
+                  /*is_post=*/false, content::Referrer(),
+                  /*has_user_gesture=*/false, ui::PAGE_TRANSITION_LINK,
+                  /*is_external_protocol=*/false))
         << url;
   }
 

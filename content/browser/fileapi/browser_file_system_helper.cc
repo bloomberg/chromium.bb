@@ -62,7 +62,7 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   // Setting up additional filesystem backends.
-  ScopedVector<storage::FileSystemBackend> additional_backends;
+  std::vector<std::unique_ptr<storage::FileSystemBackend>> additional_backends;
   GetContentClient()->browser()->GetAdditionalFileSystemBackends(
       browser_context,
       profile_path,

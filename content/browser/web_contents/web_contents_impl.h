@@ -604,7 +604,7 @@ class CONTENT_EXPORT WebContentsImpl
                        bool to_different_document) override;
   void DidStopLoading() override;
   void DidChangeLoadProgress() override;
-  ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
+  std::vector<std::unique_ptr<NavigationThrottle>> CreateThrottlesForNavigation(
       NavigationHandle* navigation_handle) override;
   std::unique_ptr<NavigationUIData> GetNavigationUIData(
       NavigationHandle* navigation_handle) override;

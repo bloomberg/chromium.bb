@@ -16,7 +16,6 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/open_file_system_mode.h"
@@ -118,7 +117,7 @@ class STORAGE_EXPORT FileSystemContext
       ExternalMountPoints* external_mount_points,
       storage::SpecialStoragePolicy* special_storage_policy,
       storage::QuotaManagerProxy* quota_manager_proxy,
-      ScopedVector<FileSystemBackend> additional_backends,
+      std::vector<std::unique_ptr<FileSystemBackend>> additional_backends,
       const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
       const base::FilePath& partition_path,
       const FileSystemOptions& options);
@@ -378,7 +377,7 @@ class STORAGE_EXPORT FileSystemContext
 
   // Additional file system backends.
   std::unique_ptr<PluginPrivateFileSystemBackend> plugin_private_backend_;
-  ScopedVector<FileSystemBackend> additional_backends_;
+  std::vector<std::unique_ptr<FileSystemBackend>> additional_backends_;
 
   std::vector<URLRequestAutoMountHandler> auto_mount_handlers_;
 

@@ -500,10 +500,10 @@ void AwContentBrowserClient::OverrideWebkitPrefs(
       content::WebContents::FromRenderViewHost(rvh), web_prefs);
 }
 
-ScopedVector<content::NavigationThrottle>
+std::vector<std::unique_ptr<content::NavigationThrottle>>
 AwContentBrowserClient::CreateThrottlesForNavigation(
     content::NavigationHandle* navigation_handle) {
-  ScopedVector<content::NavigationThrottle> throttles;
+  std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
   // We allow intercepting only navigations within main frames. This
   // is used to post onPageStarted. We handle shouldOverrideUrlLoading
   // via a sync IPC.

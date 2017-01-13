@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -127,8 +128,9 @@ class NativeMediaFileUtilTest : public testing::Test {
     scoped_refptr<storage::SpecialStoragePolicy> storage_policy =
         new content::MockSpecialStoragePolicy();
 
-    ScopedVector<storage::FileSystemBackend> additional_providers;
-    additional_providers.push_back(new MediaFileSystemBackend(
+    std::vector<std::unique_ptr<storage::FileSystemBackend>>
+        additional_providers;
+    additional_providers.push_back(base::MakeUnique<MediaFileSystemBackend>(
         data_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
 
     file_system_context_ = new storage::FileSystemContext(

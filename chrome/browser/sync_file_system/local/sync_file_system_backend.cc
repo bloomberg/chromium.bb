@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
@@ -87,9 +88,10 @@ SyncFileSystemBackend::~SyncFileSystemBackend() {
 }
 
 // static
-SyncFileSystemBackend* SyncFileSystemBackend::CreateForTesting() {
+std::unique_ptr<SyncFileSystemBackend>
+SyncFileSystemBackend::CreateForTesting() {
   DCHECK(CalledOnUIThread());
-  SyncFileSystemBackend* backend = new SyncFileSystemBackend(nullptr);
+  auto backend = base::MakeUnique<SyncFileSystemBackend>(nullptr);
   backend->skip_initialize_syncfs_service_for_testing_ = true;
   return backend;
 }

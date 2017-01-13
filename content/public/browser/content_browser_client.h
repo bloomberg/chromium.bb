@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_vector.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -623,7 +622,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalFileSystemBackends(
       BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
-      ScopedVector<storage::FileSystemBackend>* additional_backends) {}
+      std::vector<std::unique_ptr<storage::FileSystemBackend>>*
+          additional_backends) {}
 
   // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
   // It's valid to return nullptr.
@@ -752,8 +752,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // to control the flow of a navigation on the UI thread. The embedder is
   // guaranteed that the throttles will be executed in the order they were
   // provided.
-  virtual ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
-      NavigationHandle* navigation_handle);
+  virtual std::vector<std::unique_ptr<NavigationThrottle>>
+  CreateThrottlesForNavigation(NavigationHandle* navigation_handle);
 
   // PlzNavigate
   // Called at the start of the navigation to get opaque data the embedder

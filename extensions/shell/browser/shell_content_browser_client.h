@@ -56,7 +56,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
-  ScopedVector<content::NavigationThrottle> CreateThrottlesForNavigation(
+  std::vector<std::unique_ptr<content::NavigationThrottle>>
+  CreateThrottlesForNavigation(
       content::NavigationHandle* navigation_handle) override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;

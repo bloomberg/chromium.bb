@@ -245,7 +245,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void GetAdditionalFileSystemBackends(
       content::BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
-      ScopedVector<storage::FileSystemBackend>* additional_backends) override;
+      std::vector<std::unique_ptr<storage::FileSystemBackend>>*
+          additional_backends) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   content::TracingDelegate* GetTracingDelegate() override;
   bool IsPluginAllowedToCallRequestOSFileHandle(
@@ -299,8 +300,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   GetReceiverPresentationServiceDelegate(
       content::WebContents* web_contents) override;
   void RecordURLMetric(const std::string& metric, const GURL& url) override;
-  ScopedVector<content::NavigationThrottle> CreateThrottlesForNavigation(
-      content::NavigationHandle* handle) override;
+  std::vector<std::unique_ptr<content::NavigationThrottle>>
+  CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
   std::unique_ptr<content::MemoryCoordinatorDelegate>

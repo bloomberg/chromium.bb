@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -191,13 +190,12 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
 
     base::FilePath base_dir = base_.GetPath();
-    ScopedVector<storage::FileSystemBackend> additional_providers;
     file_system_context_ = new FileSystemContext(
         base::ThreadTaskRunnerHandle::Get().get(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         make_scoped_refptr(new MockSpecialStoragePolicy()).get(), nullptr,
-        std::move(additional_providers),
+        std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
         std::vector<storage::URLRequestAutoMountHandler>(), base_dir,
         CreateAllowFileAccessOptions());
 

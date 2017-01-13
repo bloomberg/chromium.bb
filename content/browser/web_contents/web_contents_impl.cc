@@ -4535,7 +4535,8 @@ void WebContentsImpl::DidChangeLoadProgress() {
       min_delay);
 }
 
-ScopedVector<NavigationThrottle> WebContentsImpl::CreateThrottlesForNavigation(
+std::vector<std::unique_ptr<NavigationThrottle>>
+WebContentsImpl::CreateThrottlesForNavigation(
     NavigationHandle* navigation_handle) {
   return GetContentClient()->browser()->CreateThrottlesForNavigation(
       navigation_handle);

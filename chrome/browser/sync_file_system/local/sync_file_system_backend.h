@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -28,7 +30,7 @@ class SyncFileSystemBackend : public storage::FileSystemBackend {
   explicit SyncFileSystemBackend(Profile* profile);
   ~SyncFileSystemBackend() override;
 
-  static SyncFileSystemBackend* CreateForTesting();
+  static std::unique_ptr<SyncFileSystemBackend> CreateForTesting();
 
   // FileSystemBackend overrides.
   bool CanHandleType(storage::FileSystemType type) const override;
