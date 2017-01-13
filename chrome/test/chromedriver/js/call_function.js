@@ -260,7 +260,8 @@ function wrap(value) {
   // frames[0].document.body instanceof Object == false even though
   // typeof(frames[0].document.body) == 'object'.
   if ((typeof(value) == 'object' && value != null) ||
-      (typeof(value) == 'function' && value instanceof Element)) {
+      (typeof(value) == 'function' && value.nodeName &&
+       value.nodeType == Node.ELEMENT_NODE)) {
     var nodeType = value['nodeType'];
     if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT
         || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {

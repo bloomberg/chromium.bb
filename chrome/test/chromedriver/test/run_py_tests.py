@@ -1378,6 +1378,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     if (self._driver.w3c_compliant):
       self.assertEquals(len(element._id), w3c_id_length)
 
+  def testFindElementWhenElementIsOverridden(self):
+    self._driver.Load('about:blank')
+    self._driver.ExecuteScript(
+        'document.body.appendChild(document.createElement("a"));')
+    self._driver.ExecuteScript('window.Element = {}')
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'a')))
+
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
 
