@@ -184,10 +184,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // client is informed of a valid connection type.
   bool waiting_for_network_online_;
 
-  // Whether login successfully completed after the connection was established.
-  // If a connection reset happens while attempting to log in, the current
-  // backoff entry is reused (after incrementing with a new failure).
-  bool logging_in_;
+  // Whether handshake is in progress after the connection was established. If
+  // a connection reset happens while attempting to complete the handshake, the
+  // current backoff entry is reused (after incrementing with a new failure).
+  bool handshake_in_progress_;
 
   // The time of the last login completion. Used for calculating whether to
   // restore a previous backoff entry and for measuring uptime.

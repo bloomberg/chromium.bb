@@ -66,8 +66,8 @@ void ConnectionEventTracker::ConnectionAttemptSucceeded() {
 void ConnectionEventTracker::ConnectionLoginFailed() {
   // A login failure would have originally been marked as a successful
   // connection, so now that it failed, that needs to be updated.
-  // TODO(harkness): Add back DCHECK which was removed. See
-  // https://crbug.com/673706.
+  DCHECK_EQ(current_event_.type(),
+            mcs_proto::ClientEvent::SUCCESSFUL_CONNECTION);
 
   current_event_.set_type(mcs_proto::ClientEvent::FAILED_CONNECTION);
   current_event_.clear_time_connection_established_ms();

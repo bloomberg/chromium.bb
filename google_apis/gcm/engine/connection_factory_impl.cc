@@ -66,7 +66,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
       connecting_(false),
       waiting_for_backoff_(false),
       waiting_for_network_online_(false),
-      logging_in_(false),
+      handshake_in_progress_(false),
       recorder_(recorder),
       listener_(NULL),
       weak_ptr_factory_(this) {
@@ -131,7 +131,7 @@ ConnectionEventTracker* ConnectionFactoryImpl::GetEventTrackerForTesting() {
 void ConnectionFactoryImpl::ConnectWithBackoff() {
   // If a canary managed to connect while a backoff expiration was pending,
   // just cleanup the internal state.
-  if (connecting_ || logging_in_ || IsEndpointReachable()) {
+  if (connecting_ || handshake_in_progress_ || IsEndpointReachable()) {
     waiting_for_backoff_ = false;
     return;
   }
@@ -167,8 +167,8 @@ bool ConnectionFactoryImpl::IsEndpointReachable() const {
 std::string ConnectionFactoryImpl::GetConnectionStateString() const {
   if (IsEndpointReachable())
     return "CONNECTED";
-  if (logging_in_)
-    return "LOGGING IN";
+  if (handshake_in_progress_)
+    return "HANDSHAKE IN PROGRESS";
   if (connecting_)
     return "CONNECTING";
   if (waiting_for_backoff_)
@@ -209,7 +209,7 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     // connection.
   }
 
-  if (logging_in_)
+  if (reason == LOGIN_FAILURE)
     event_tracker_.ConnectionLoginFailed();
   event_tracker_.EndConnectionAttempt();
 
@@ -233,9 +233,9 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     // effect if we're already in the process of connecting.
     ConnectImpl();
     return;
-  } else if (logging_in_) {
-    // Failures prior to login completion just reuse the existing backoff entry.
-    logging_in_ = false;
+  } else if (handshake_in_progress_) {
+    // Failures prior to handshake completion reuse the existing backoff entry.
+    handshake_in_progress_ = false;
     backoff_entry_->InformOfRequest(false);
   } else if (reason == LOGIN_FAILURE ||
              ShouldRestorePreviousBackoff(last_login_time_, NowTicks())) {
@@ -412,7 +412,7 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
   last_successful_endpoint_ = next_endpoint_;
   next_endpoint_ = 0;
   connecting_ = false;
-  logging_in_ = true;
+  handshake_in_progress_ = true;
   DVLOG(1) << "MCS endpoint socket connection success, starting login.";
   InitHandler();
 }
@@ -434,7 +434,7 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
   last_login_time_ = NowTicks();
   previous_backoff_.swap(backoff_entry_);
   backoff_entry_->Reset();
-  logging_in_ = false;
+  handshake_in_progress_ = false;
 
   event_tracker_.ConnectionAttemptSucceeded();
 
