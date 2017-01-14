@@ -23,6 +23,8 @@ VRController::VRController(NavigatorVR* navigatorVR)
       m_binding(this) {
   navigatorVR->document()->frame()->interfaceProvider()->getInterface(
       mojo::MakeRequest(&m_service));
+  m_service.set_connection_error_handler(convertToBaseCallback(
+      WTF::bind(&VRController::dispose, wrapWeakPersistent(this))));
   m_service->SetClient(
       m_binding.CreateInterfacePtrAndBind(),
       convertToBaseCallback(
@@ -32,15 +34,10 @@ VRController::VRController(NavigatorVR* navigatorVR)
 VRController::~VRController() {}
 
 void VRController::getDisplays(ScriptPromiseResolver* resolver) {
-  if (!m_service) {
-    DOMException* exception = DOMException::create(
-        InvalidStateError, "The service is no longer active.");
-    resolver->reject(exception);
-    return;
-  }
-
-  // If we've previously synced the VRDisplays just return the current list.
-  if (m_displaySynced) {
+  // If we've previously synced the VRDisplays or no longer have a valid service
+  // connection just return the current list. In the case of the service being
+  // disconnected this will be an empty array.
+  if (!m_service || m_displaySynced) {
     resolver->resolve(m_displays);
     return;
   }
@@ -106,6 +103,11 @@ void VRController::dispose() {
   // Shutdown all displays' message pipe
   for (size_t i = 0; i < m_displays.size(); ++i)
     m_displays[i]->dispose();
+
+  m_displays.clear();
+
+  // Ensure that any outstanding getDisplays promises are resolved.
+  onGetDisplays();
 }
 
 DEFINE_TRACE(VRController) {

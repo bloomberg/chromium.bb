@@ -1987,6 +1987,8 @@ source_set("browser") {
 
   if (enable_webvr) {
     deps += [ "//device/vr" ]
+  } else {
+    deps += [ "//device/vr:mojo_bindings" ]
   }
 
   if (enable_ipc_fuzzer) {
