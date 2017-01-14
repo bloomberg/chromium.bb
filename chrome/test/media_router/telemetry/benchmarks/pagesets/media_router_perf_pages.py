@@ -156,9 +156,14 @@ class CastMirroringPage(media_router_page.CastPage):
       # Wait for 5s to make sure the route is created.
       action_runner.Wait(5)
       action_runner.TapElement(selector='#start_session_button')
-      action_runner.Wait(2)
+      self._WaitForResult(
+          action_runner,
+          lambda: len(action_runner.tab.browser.tabs) >= 2,
+          'MR dialog never showed up.')
+
       for tab in action_runner.tab.browser.tabs:
         if tab.url == 'chrome://media-router/':
+          self.WaitUntilDialogLoaded(action_runner, tab)
           if not self.CheckIfExistingRoute(tab, sink_name):
             raise page.page_test.Failure('Failed to start mirroring session.')
       action_runner.ExecuteJavaScript('collectPerfData();')

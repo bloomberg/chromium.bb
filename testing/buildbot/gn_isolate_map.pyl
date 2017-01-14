@@ -584,7 +584,7 @@
   "media_router_perf_tests": {
     "label": "//chrome/test/media_router:media_router_perf_tests",
     "type": "script",
-    "script": "//chrome/test/media_router/telemetry/run_benchmark",
+    "script": "//chrome/test/media_router/telemetry/run_benchmark.py",
     "args": [
       "--browser=release",
       "--also-run-disabled-tests",
