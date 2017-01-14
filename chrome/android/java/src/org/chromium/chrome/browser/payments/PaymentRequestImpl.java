@@ -266,7 +266,7 @@ public class PaymentRequestImpl
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
     private boolean mQueriedCanMakePayment;
-    private CurrencyStringFormatter mFormatter;
+    private CurrencyFormatter mCurrencyFormatter;
 
     /** True if any of the requested payment methods are supported. */
     private boolean mArePaymentMethodsSupported;
@@ -324,6 +324,14 @@ public class PaymentRequestImpl
         if (sCanMakePaymentQueries == null) sCanMakePaymentQueries = new ArrayMap<>();
 
         recordSuccessFunnelHistograms("Initiated");
+    }
+
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (mCurrencyFormatter != null) {
+            // Ensures the native implementation of currency formatter does not leak.
+            mCurrencyFormatter.destroy();
+        }
     }
 
     /**
@@ -595,23 +603,23 @@ public class PaymentRequestImpl
             return false;
         }
 
-        if (mFormatter == null) {
-            mFormatter = new CurrencyStringFormatter(details.total.amount.currency,
-                    Locale.getDefault());
+        if (mCurrencyFormatter == null) {
+            mCurrencyFormatter = new CurrencyFormatter(details.total.amount.currency,
+                    details.total.amount.currencySystem, Locale.getDefault());
         }
 
         // Total is never pending.
-        LineItem uiTotal = new LineItem(
-                details.total.label, mFormatter.getFormattedCurrencyCode(),
-                mFormatter.format(details.total.amount.value), /* isPending */ false);
+        LineItem uiTotal = new LineItem(details.total.label,
+                mCurrencyFormatter.getFormattedCurrencyCode(),
+                mCurrencyFormatter.format(details.total.amount.value), /* isPending */ false);
 
-        List<LineItem> uiLineItems = getLineItems(details.displayItems, mFormatter);
+        List<LineItem> uiLineItems = getLineItems(details.displayItems, mCurrencyFormatter);
 
         mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
         mRawTotal = details.total;
         mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
 
-        mUiShippingOptions = getShippingOptions(details.shippingOptions, mFormatter);
+        mUiShippingOptions = getShippingOptions(details.shippingOptions, mCurrencyFormatter);
 
         for (int i = 0; i < details.modifiers.length; i++) {
             PaymentDetailsModifier modifier = details.modifiers[i];
@@ -636,8 +644,9 @@ public class PaymentRequestImpl
         for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
             PaymentInstrument instrument = (PaymentInstrument) mPaymentMethodsSection.getItem(i);
             PaymentDetailsModifier modifier = getModifier(instrument);
-            instrument.setModifiedTotal(modifier == null || modifier.total == null ? null
-                    : mFormatter.format(modifier.total.amount.value));
+            instrument.setModifiedTotal(modifier == null || modifier.total == null
+                            ? null
+                            : mCurrencyFormatter.format(modifier.total.amount.value));
         }
 
         updateOrderSummary((PaymentInstrument) mPaymentMethodsSection.getSelectedItem());
@@ -651,10 +660,12 @@ public class PaymentRequestImpl
         PaymentItem total = modifier == null ? null : modifier.total;
         if (total == null) total = mRawTotal;
 
-        mUiShoppingCart.setTotal(new LineItem(total.label, mFormatter.getFormattedCurrencyCode(),
-                mFormatter.format(total.amount.value), false /* isPending */));
-        mUiShoppingCart.setAdditionalContents(modifier == null ? null
-                : getLineItems(modifier.additionalDisplayItems, mFormatter));
+        mUiShoppingCart.setTotal(
+                new LineItem(total.label, mCurrencyFormatter.getFormattedCurrencyCode(),
+                        mCurrencyFormatter.format(total.amount.value), false /* isPending */));
+        mUiShoppingCart.setAdditionalContents(modifier == null
+                        ? null
+                        : getLineItems(modifier.additionalDisplayItems, mCurrencyFormatter));
         mUI.updateOrderSummarySection(mUiShoppingCart);
     }
 
@@ -674,7 +685,7 @@ public class PaymentRequestImpl
      * @return A list of valid line items.
      */
     private static List<LineItem> getLineItems(
-            @Nullable PaymentItem[] items, CurrencyStringFormatter formatter) {
+            @Nullable PaymentItem[] items, CurrencyFormatter formatter) {
         // Line items are optional.
         if (items == null) return new ArrayList<>();
 
@@ -697,7 +708,7 @@ public class PaymentRequestImpl
      * @return The UI representation of the shipping options.
      */
     private static SectionInformation getShippingOptions(
-            @Nullable PaymentShippingOption[] options, CurrencyStringFormatter formatter) {
+            @Nullable PaymentShippingOption[] options, CurrencyFormatter formatter) {
         // Shipping options are optional.
         if (options == null || options.length == 0) {
             return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS);

@@ -168,6 +168,7 @@
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
+#include "components/payments/android/currency_formatter_android.h"
 #include "components/payments/android/payments_jni_registrar.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_browsing_db/android/jni_registrar.h"
@@ -271,6 +272,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"CreditCardScannerBridge",
      autofill::CreditCardScannerViewAndroid::Register},
     {"CtrSuppression", RegisterCtrSuppression},
+    {"CurrencyFormatter", payments::CurrencyFormatterAndroid::Register},
     {"DataReductionPromoInfoBarDelegate",
      DataReductionPromoInfoBarDelegateAndroid::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},

@@ -17,6 +17,7 @@
 namespace payments {
 
 const char kIso4217CurrencySystem[] = "urn:iso:std:iso:4217";
+
 namespace {
 
 // Support a maximum of 10 fractional digits, similar to the ISO20022 standard.
@@ -27,6 +28,12 @@ const int kMaximumNumFractionalDigits = 10;
 // Max currency code length. Length of currency code can be at most 2048.
 const static size_t kMaxCurrencyCodeLength = 2048;
 
+// Currency codes longer than 6 characters get truncated to 5 + ellipsis.
+const static size_t kMaxCurrencyCodeDisplayedChars = 6;
+
+// Used to truncate long currency codes.
+const char kEllipsis[] = "\xE2\x80\xA6";
+
 // Returns whether the |currency_code| is valid to be used in ICU.
 bool ShouldUseCurrencyCode(const std::string& currency_code,
                            const base::Optional<std::string> currency_system) {
@@ -36,22 +43,27 @@ bool ShouldUseCurrencyCode(const std::string& currency_code,
          currency_code.size() <= kMaxCurrencyCodeLength;
 }
 
+std::string FormatCurrencyCode(const std::string& currency_code) {
+  return currency_code.length() < kMaxCurrencyCodeDisplayedChars
+             ? currency_code
+             : currency_code.substr(0, kMaxCurrencyCodeDisplayedChars - 1) +
+                   kEllipsis;
+}
+
 }  // namespace
 
 CurrencyFormatter::CurrencyFormatter(
     const std::string& currency_code,
     const base::Optional<std::string> currency_system,
     const std::string& locale_name)
-    : locale_(locale_name.c_str()) {
+    : locale_(locale_name.c_str()),
+      formatted_currency_code_(FormatCurrencyCode(currency_code)) {
   UErrorCode error_code = U_ZERO_ERROR;
   icu_formatter_.reset(
       icu::NumberFormat::createCurrencyInstance(locale_, error_code));
   if (U_FAILURE(error_code)) {
-    icu::UnicodeString name;
-    std::string locale_str;
-    locale_.getDisplayName(name).toUTF8String(locale_str);
     LOG(ERROR) << "Failed to initialize the currency formatter for "
-               << locale_str;
+               << locale_name;
     return;
   }
 

@@ -7,10 +7,13 @@ import("//build/config/android/rules.gni")
 
 static_library("payments_jni") {
   sources = [
+    "currency_formatter_android.cc",
+    "currency_formatter_android.h",
     "payments_jni_registrar.cc",
   ]
   deps = [
     ":jni_headers",
+    "//base",
     "//components/payments:payment_request",
     "//components/payments:payment_validation",
   ]
@@ -18,6 +21,7 @@ static_library("payments_jni") {
 
 generate_jni("jni_headers") {
   sources = [
+    "//chrome/android/java/src/org/chromium/chrome/browser/payments/CurrencyFormatter.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/payments/PaymentValidator.java",
   ]
   jni_package = "payments"

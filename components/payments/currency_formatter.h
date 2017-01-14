@@ -41,9 +41,14 @@ class CurrencyFormatter {
   // formatter, this method will return |amount|.
   base::string16 Format(const std::string& amount);
 
+  // Returns the formatted currency code (<= 6 characters including ellipsis if
+  // applicable).
+  std::string formatted_currency_code() { return formatted_currency_code_; }
+
  private:
   const icu::Locale locale_;
   std::unique_ptr<icu::UnicodeString> currency_code_;
+  std::string formatted_currency_code_;
   std::unique_ptr<icu::NumberFormat> icu_formatter_;
 
   DISALLOW_COPY_AND_ASSIGN(CurrencyFormatter);
