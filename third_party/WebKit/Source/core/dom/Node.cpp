@@ -109,6 +109,24 @@
 
 namespace blink {
 
+namespace {
+
+// TODO(crbug.com/545926): Unsafe hack to avoid triggering the
+// ThreadRestrictionVerifier on StringImpl. This should be fixed completely, and
+// we should always avoid accessing these strings from the impl thread.
+// Currently code that calls into this method from the impl thread tries to make
+// sure that the main thread is not running at this time.
+void appendUnsafe(StringBuilder& builder, const String& offThreadString) {
+  StringImpl* impl = offThreadString.impl();
+  if (impl) {
+    builder.append(impl->is8Bit()
+                       ? StringView(impl->characters8(), impl->length())
+                       : StringView(impl->characters16(), impl->length()));
+  }
+}
+
+}  // namespace
+
 using namespace HTMLNames;
 
 struct SameSizeAsNode : EventTarget {
@@ -1488,12 +1506,12 @@ unsigned short Node::compareDocumentPosition(
 
 String Node::debugName() const {
   StringBuilder name;
-  name.append(debugNodeName());
+  appendUnsafe(name, debugNodeName());
   if (isElementNode()) {
     const Element& thisElement = toElement(*this);
     if (thisElement.hasID()) {
       name.append(" id=\'");
-      name.append(thisElement.getIdAttribute());
+      appendUnsafe(name, thisElement.getIdAttribute());
       name.append('\'');
     }
 
@@ -1502,7 +1520,7 @@ String Node::debugName() const {
       for (size_t i = 0; i < thisElement.classNames().size(); ++i) {
         if (i > 0)
           name.append(' ');
-        name.append(thisElement.classNames()[i]);
+        appendUnsafe(name, thisElement.classNames()[i]);
       }
       name.append('\'');
     }

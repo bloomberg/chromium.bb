@@ -89,6 +89,9 @@ TEST(StringImplTest, LowerASCII) {
   static const UChar testWithNonASCIICapitalized[3] = {0x0041, 0x00e1,
                                                        0};  // A\xE1
 
+  // Make sure we support RefPtr<const StringImpl>.
+  RefPtr<const StringImpl> constRef = testStringImpl->isolatedCopy();
+  DCHECK(constRef->hasOneRef());
   EXPECT_TRUE(equal(
       StringImpl::create(testWithNonASCII, 2).get(),
       StringImpl::create(testWithNonASCIICapitalized, 2)->lowerASCII().get()));

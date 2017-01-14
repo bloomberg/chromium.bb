@@ -599,7 +599,7 @@ createContextProviderOnWorkerThread(
   ContextProviderCreationInfo creationInfo;
   creationInfo.contextAttributes = contextAttributes;
   creationInfo.glInfo = glInfo;
-  creationInfo.url = url;
+  creationInfo.url = url.copy();
   RefPtr<WebTaskRunner> taskRunner =
       Platform::current()->mainThread()->getWebTaskRunner();
   taskRunner->postTask(BLINK_FROM_HERE,

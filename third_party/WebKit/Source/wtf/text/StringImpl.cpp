@@ -32,6 +32,7 @@
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringTable.h"
+#include "wtf/text/CString.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
@@ -54,8 +55,16 @@ namespace WTF {
 
 using namespace Unicode;
 
-static_assert(sizeof(StringImpl) == 3 * sizeof(int),
+// As of Jan 2017, StringImpl needs 2 * sizeof(int) + 29 bits of data, and
+// sizeof(ThreadRestrictionVerifier) is 16 bytes. Thus, in DCHECK mode the
+// class may be padded to 32 bytes.
+#if DCHECK_IS_ON()
+static_assert(sizeof(StringImpl) <= 8 * sizeof(int),
               "StringImpl should stay small");
+#else
+static_assert(sizeof(StringImpl) <= 3 * sizeof(int),
+              "StringImpl should stay small");
+#endif
 
 #ifdef STRING_STATS
 
@@ -300,7 +309,7 @@ inline StringImpl::~StringImpl() {
     AtomicStringTable::instance().remove(this);
 }
 
-void StringImpl::destroyIfNotStatic() {
+void StringImpl::destroyIfNotStatic() const {
   if (!isStatic())
     delete this;
 }
@@ -323,6 +332,13 @@ bool StringImpl::isSafeToSendToAnotherThread() const {
     return true;
   return false;
 }
+
+#if DCHECK_IS_ON()
+std::string StringImpl::asciiForDebugging() const {
+  CString ascii = String(substring(0, 128)).ascii();
+  return std::string(ascii.data(), ascii.length());
+}
+#endif
 
 PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length,
                                                        LChar*& data) {
@@ -501,13 +517,16 @@ bool StringImpl::containsOnlyWhitespace() {
   return true;
 }
 
-PassRefPtr<StringImpl> StringImpl::substring(unsigned start, unsigned length) {
+PassRefPtr<StringImpl> StringImpl::substring(unsigned start,
+                                             unsigned length) const {
   if (start >= m_length)
     return empty();
   unsigned maxLength = m_length - start;
   if (length >= maxLength) {
+    // PassRefPtr has trouble dealing with const arguments. It should be updated
+    // so this const_cast is not necessary.
     if (!start)
-      return this;
+      return const_cast<StringImpl*>(this);
     length = maxLength;
   }
   if (is8Bit())

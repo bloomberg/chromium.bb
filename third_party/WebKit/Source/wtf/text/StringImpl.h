@@ -35,6 +35,10 @@
 #include <limits.h>
 #include <string.h>
 
+#if DCHECK_IS_ON()
+#include "wtf/ThreadRestrictionVerifier.h"
+#endif
+
 #if OS(MACOSX)
 typedef const struct __CFString* CFStringRef;
 #endif
@@ -297,11 +301,25 @@ class WTF_EXPORT StringImpl {
     return hashSlowCase();
   }
 
-  ALWAYS_INLINE bool hasOneRef() const { return m_refCount == 1; }
+  ALWAYS_INLINE bool hasOneRef() const {
+#if DCHECK_IS_ON()
+    DCHECK(isStatic() || m_verifier.isSafeToUse()) << asciiForDebugging();
+#endif
+    return m_refCount == 1;
+  }
 
-  ALWAYS_INLINE void ref() { ++m_refCount; }
+  ALWAYS_INLINE void ref() const {
+#if DCHECK_IS_ON()
+    DCHECK(isStatic() || m_verifier.onRef(m_refCount)) << asciiForDebugging();
+#endif
+    ++m_refCount;
+  }
 
-  ALWAYS_INLINE void deref() {
+  ALWAYS_INLINE void deref() const {
+#if DCHECK_IS_ON()
+    DCHECK(isStatic() || m_verifier.onDeref(m_refCount))
+        << asciiForDebugging() << " " << currentThread();
+#endif
     if (!--m_refCount)
       destroyIfNotStatic();
   }
@@ -329,7 +347,7 @@ class WTF_EXPORT StringImpl {
   // its own copy of the string.
   PassRefPtr<StringImpl> isolatedCopy() const;
 
-  PassRefPtr<StringImpl> substring(unsigned pos, unsigned len = UINT_MAX);
+  PassRefPtr<StringImpl> substring(unsigned pos, unsigned len = UINT_MAX) const;
 
   UChar operator[](unsigned i) const {
     SECURITY_DCHECK(i < m_length);
@@ -487,8 +505,12 @@ class WTF_EXPORT StringImpl {
                                                           StripBehavior);
   NEVER_INLINE unsigned hashSlowCase() const;
 
-  void destroyIfNotStatic();
+  void destroyIfNotStatic() const;
   void updateContainsOnlyASCII() const;
+
+#if DCHECK_IS_ON()
+  std::string asciiForDebugging() const;
+#endif
 
 #ifdef STRING_STATS
   static StringStats m_stringStats;
@@ -505,7 +527,10 @@ class WTF_EXPORT StringImpl {
 #endif
 
  private:
-  unsigned m_refCount;
+#if DCHECK_IS_ON()
+  mutable ThreadRestrictionVerifier m_verifier;
+#endif
+  mutable unsigned m_refCount;
   const unsigned m_length;
   mutable unsigned m_hash : 24;
   mutable unsigned m_containsOnlyASCII : 1;

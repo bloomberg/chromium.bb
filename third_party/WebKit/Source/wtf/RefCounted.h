@@ -43,7 +43,7 @@ class WTF_EXPORT RefCountedBase {
  public:
   void ref() const {
 #if CHECK_REF_COUNTED_LIFECYCLE
-    m_verifier.onRef(m_refCount);
+    SECURITY_DCHECK(m_verifier.onRef(m_refCount));
     DCHECK(!m_adoptionIsRequired);
 #endif
     SECURITY_DCHECK(!m_deletionHasBegun);
@@ -53,14 +53,14 @@ class WTF_EXPORT RefCountedBase {
   bool hasOneRef() const {
     SECURITY_DCHECK(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
-    m_verifier.checkSafeToUse();
+    SECURITY_DCHECK(m_verifier.isSafeToUse());
 #endif
     return m_refCount == 1;
   }
 
   int refCount() const {
 #if CHECK_REF_COUNTED_LIFECYCLE
-    m_verifier.checkSafeToUse();
+    SECURITY_DCHECK(m_verifier.isSafeToUse());
 #endif
     return m_refCount;
   }
@@ -90,7 +90,7 @@ class WTF_EXPORT RefCountedBase {
   bool derefBase() const {
     SECURITY_DCHECK(!m_deletionHasBegun);
 #if CHECK_REF_COUNTED_LIFECYCLE
-    m_verifier.onDeref(m_refCount);
+    SECURITY_DCHECK(m_verifier.onDeref(m_refCount));
     DCHECK(!m_adoptionIsRequired);
 #endif
 

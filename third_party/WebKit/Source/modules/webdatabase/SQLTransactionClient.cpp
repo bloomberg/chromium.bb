@@ -65,16 +65,14 @@ void SQLTransactionClient::didCommitWriteTransaction(Database* database) {
   String databaseName = database->stringIdentifier();
   ExecutionContext* executionContext =
       database->getDatabaseContext()->getExecutionContext();
+  SecurityOrigin* origin = database->getSecurityOrigin();
   if (!executionContext->isContextThread()) {
     executionContext->postTask(
         TaskType::DatabaseAccess, BLINK_FROM_HERE,
-        createCrossThreadTask(
-            &databaseModifiedCrossThread,
-            executionContext->getSecurityOrigin()->toRawString(),
-            databaseName));
+        createCrossThreadTask(&databaseModifiedCrossThread,
+                              origin->toRawString(), databaseName));
   } else {
-    databaseModified(WebSecurityOrigin(executionContext->getSecurityOrigin()),
-                     databaseName);
+    databaseModified(WebSecurityOrigin(origin), databaseName);
   }
 }
 
