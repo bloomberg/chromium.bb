@@ -32,7 +32,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
-
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -652,6 +651,15 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE}};
   AddLocalizedStringsBulk(html_source, storage_strings,
                           arraysize(storage_strings));
+
+  LocalizedString power_strings[] = {
+      {"powerSourceLabel", IDS_SETTINGS_POWER_SOURCE_LABEL},
+      {"powerSourceBattery", IDS_SETTINGS_POWER_SOURCE_BATTERY},
+      {"powerSourceAcAdapter", IDS_SETTINGS_POWER_SOURCE_AC_ADAPTER},
+      {"powerSourceLowPowerCharger",
+       IDS_SETTINGS_POWER_SOURCE_LOW_POWER_CHARGER},
+      {"calculatingPower", IDS_SETTINGS_POWER_SOURCE_CALCULATING}};
+  AddLocalizedStringsBulk(html_source, power_strings, arraysize(power_strings));
 
   html_source->AddString("naturalScrollLearnMoreLink",
                          base::ASCIIToUTF16(chrome::kNaturalScrollHelpURL));

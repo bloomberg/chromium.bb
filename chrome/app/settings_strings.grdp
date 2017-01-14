@@ -2744,6 +2744,23 @@
     <message name="IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE" desc="In storage manager confirmation dialog, label for the button to delete offline files.">
       Delete files
     </message>
+
+    <!-- Power -->
+    <message name="IDS_SETTINGS_POWER_SOURCE_LABEL" desc="The label for the power source dropdown in the Power overlay.">
+      Power source
+    </message>
+    <message name="IDS_SETTINGS_POWER_SOURCE_BATTERY" desc="The text referring to the battery as the power source.">
+      Battery
+    </message>
+    <message name="IDS_SETTINGS_POWER_SOURCE_AC_ADAPTER" desc="The text referring to a dedicated charger like an AC adapter as the power source.">
+      AC adapter
+    </message>
+    <message name="IDS_SETTINGS_POWER_SOURCE_LOW_POWER_CHARGER" desc="The text referring to a low-power charger like a USB charger as the power source.">
+      Low-power charger
+    </message>
+    <message name="IDS_SETTINGS_POWER_SOURCE_CALCULATING" desc="The description in the 'Power' overlay when the power status is being determined.">
+      Checking...
+    </message>
   </if>
 
   <!-- System Page -->

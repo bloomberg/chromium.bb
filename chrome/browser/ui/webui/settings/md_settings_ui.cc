@@ -44,8 +44,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/palette/palette_utils.h"
+#include "ash/common/system/chromeos/power/power_status.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
@@ -53,9 +55,11 @@
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
+#include "chrome/common/chrome_switches.h"
 #else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
@@ -153,6 +157,18 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       "androidAppsAllowed",
       arc::ArcSessionManager::IsAllowedForProfile(profile) &&
           !arc::ArcSessionManager::IsOptInVerificationDisabled());
+
+  // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
+  bool enable_power_settings =
+      !chrome::IsRunningInMash() &&
+      (switches::PowerOverlayEnabled() ||
+       (ash::PowerStatus::Get()->IsBatteryPresent() &&
+        ash::PowerStatus::Get()->SupportsDualRoleDevices()));
+  html_source->AddBoolean("enablePowerSettings", enable_power_settings);
+  if (enable_power_settings) {
+    AddSettingsPageUIHandler(
+        base::MakeUnique<chromeos::settings::PowerHandler>());
+  }
 #endif
 
   AddSettingsPageUIHandler(

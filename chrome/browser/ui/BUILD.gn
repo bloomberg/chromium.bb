@@ -1094,6 +1094,8 @@ split_static_library("ui") {
       "webui/settings/chromeos/device_keyboard_handler.h",
       "webui/settings/chromeos/device_pointer_handler.cc",
       "webui/settings/chromeos/device_pointer_handler.h",
+      "webui/settings/chromeos/device_power_handler.cc",
+      "webui/settings/chromeos/device_power_handler.h",
       "webui/settings/chromeos/device_storage_handler.cc",
       "webui/settings/chromeos/device_storage_handler.h",
       "webui/settings/chromeos/easy_unlock_settings_handler.cc",

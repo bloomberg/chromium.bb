@@ -9,6 +9,7 @@ cr.define('device_page_tests', function() {
     Display: 'display',
     Keyboard: 'keyboard',
     Pointers: 'pointers',
+    Power: 'power',
   };
 
   /**
@@ -17,6 +18,7 @@ cr.define('device_page_tests', function() {
    */
   function TestDevicePageBrowserProxy() {
     this.keyboardShortcutsOverlayShown_ = 0;
+    this.updatePowerStatusCalled_ = 0;
   }
 
   TestDevicePageBrowserProxy.prototype = {
@@ -41,6 +43,16 @@ cr.define('device_page_tests', function() {
     /** override */
     showKeyboardShortcutsOverlay: function() {
       this.keyboardShortcutsOverlayShown_++;
+    },
+
+    /** @override */
+    updatePowerStatus: function() {
+      this.updatePowerStatusCalled_++;
+    },
+
+    /** @override */
+    setPowerSource: function(powerSourceId) {
+      this.powerSourceId_ = powerSourceId;
     },
   };
 
@@ -523,6 +535,168 @@ cr.define('device_page_tests', function() {
         expectTrue(displayPage.displays[0].isPrimary);
         expectTrue(displayPage.showMirror_(displayPage.displays));
         expectTrue(displayPage.isMirrored_(displayPage.displays));
+      });
+    });
+
+    suite(assert(TestNames.Power), function() {
+      /**
+       * Sets power sources using a deep copy of |sources|.
+       * @param {Array<settings.PowerSource>} sources
+       * @param {string} powerSourceId
+       * @param {bool} isLowPowerCharger
+       */
+      function setPowerSources(sources, powerSourceId, isLowPowerCharger) {
+        var sourcesCopy = sources.map(function(source) {
+          return Object.assign({}, source);
+        });
+        cr.webUIListenerCallback('power-sources-changed',
+            sourcesCopy, powerSourceId, isLowPowerCharger);
+      }
+
+      suite('no power settings', function() {
+        test('power row hidden', function() {
+          assertEquals(null, devicePage.$$('#powerRow'));
+          assertEquals(0,
+              settings.DevicePageBrowserProxyImpl.getInstance()
+              .updatePowerStatusCalled_);
+        });
+      });
+
+      suite('power settings', function() {
+        var powerRow;
+        var powerSourceWrapper;
+        var powerSourceSelect;
+
+        suiteSetup(function() {
+          // Always show power settings.
+          loadTimeData.overrideValues({
+            enablePowerSettings: true,
+          });
+        });
+
+        setup(function() {
+          powerRow = assert(devicePage.$$('#powerRow'));
+          powerSourceWrapper =
+              assert(powerRow.querySelector('.md-select-wrapper'));
+          powerSourceSelect = assert(devicePage.$$('#powerSource'));
+          assertEquals(1,
+              settings.DevicePageBrowserProxyImpl.getInstance()
+              .updatePowerStatusCalled_);
+        });
+
+        test('battery status', function() {
+          var icon = powerRow.querySelector('iron-icon');
+          assertEquals('settings:battery-unknown', icon.icon);
+
+          // Start at 50%.
+          var batteryStatus = {
+            charging: false,
+            calculating: false,
+            percent: 50,
+            statusText: '5 hours left',
+          };
+          cr.webUIListenerCallback(
+              'battery-status-changed', Object.assign({}, batteryStatus));
+          setPowerSources([], '', false);
+          assertEquals(icon.icon, 'settings:battery-50');
+
+          // Update to charging.
+          var powerSource = {
+            id: '1',
+            type: settings.PowerDeviceType.DEDICATED_CHARGER,
+            description: 'AC adapter',
+          };
+          batteryStatus.charging = true;
+          batteryStatus.percent = 65;
+          cr.webUIListenerCallback(
+              'battery-status-changed', Object.assign({}, batteryStatus));
+          setPowerSources([powerSource], powerSource.id, false);
+          assertEquals(icon.icon, 'settings:battery-charging-60');
+
+          // Update with a low-power charger.
+          setPowerSources([powerSource], powerSource.id, true);
+          assertEquals(icon.icon, 'settings:battery-unreliable');
+
+          // Update with no charger and a critical battery level.
+          batteryStatus.charging = false;
+          batteryStatus.percent = 2;
+          cr.webUIListenerCallback(
+              'battery-status-changed', Object.assign({}, batteryStatus));
+          setPowerSources([], '', false);
+          assertEquals(icon.icon, 'settings:battery-alert');
+        });
+
+        test('power sources', function() {
+          var batteryStatus = {
+            charging: false,
+            calculating: false,
+            percent: 50,
+            statusText: '5 hours left',
+          };
+          cr.webUIListenerCallback(
+              'battery-status-changed', Object.assign({}, batteryStatus));
+          setPowerSources([], '', false);
+          Polymer.dom.flush();
+
+          // Power sources dropdown is hidden.
+          assertTrue(powerSourceWrapper.hidden);
+
+          // Attach a dual-role USB device.
+          var powerSource = {
+            id: '2',
+            type: settings.PowerDeviceType.DUAL_ROLE_USB,
+            description: 'USB-C device',
+          };
+          setPowerSources([powerSource], '', false);
+          Polymer.dom.flush();
+
+          // "Battery" should be selected.
+          assertFalse(powerSourceWrapper.hidden);
+          assertEquals('', powerSourceSelect.value);
+
+          // Select the power source.
+          setPowerSources([powerSource], powerSource.id, true);
+          Polymer.dom.flush();
+          assertFalse(powerSourceWrapper.hidden);
+          assertEquals(powerSource.id, powerSourceSelect.value);
+
+          // Send another power source; the first should still be selected.
+          var otherPowerSource = Object.assign({}, powerSource);
+          otherPowerSource.id = '3';
+          setPowerSources(
+              [otherPowerSource, powerSource], powerSource.id, true);
+          Polymer.dom.flush();
+          assertFalse(powerSourceWrapper.hidden);
+          assertEquals(powerSource.id, powerSourceSelect.value);
+        });
+
+        test('choose power source', function() {
+          var batteryStatus = {
+            charging: false,
+            calculating: false,
+            percent: 50,
+            statusText: '5 hours left',
+          };
+          cr.webUIListenerCallback(
+              'battery-status-changed', Object.assign({}, batteryStatus));
+
+          // Attach a dual-role USB device.
+          var powerSource = {
+            id: '3',
+            type: settings.PowerDeviceType.DUAL_ROLE_USB,
+            description: 'USB-C device',
+          };
+          setPowerSources([powerSource], '', false);
+          Polymer.dom.flush();
+
+          // Select the device.
+          powerSourceSelect.value = powerSourceSelect.children[1].value;
+          powerSourceSelect.dispatchEvent(new CustomEvent('change'));
+          Polymer.dom.flush();
+          expectEquals(
+              powerSource.id,
+              settings.DevicePageBrowserProxyImpl.getInstance().powerSourceId_);
+        });
       });
     });
   });

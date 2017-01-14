@@ -719,6 +719,10 @@ TEST_F('CrSettingsDevicePageTest', 'KeyboardTest', function() {
 TEST_F('CrSettingsDevicePageTest', 'PointersTest', function() {
   mocha.grep(assert(device_page_tests.TestNames.Pointers)).run();
 });
+
+TEST_F('CrSettingsDevicePageTest', 'PowerTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Power)).run();
+});
 GEN('#endif');
 
 /**
