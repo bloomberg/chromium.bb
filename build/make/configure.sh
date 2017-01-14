@@ -1433,7 +1433,7 @@ EOF
   esac
 
   # glibc needs these
-  if enabled linux; then
+  if enabled linux || [ "$toolchain" = "generic-gnu" ]; then
     add_cflags -D_LARGEFILE_SOURCE
     add_cflags -D_FILE_OFFSET_BITS=64
   fi
