@@ -268,7 +268,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
                 link.setVisibility(View.GONE);
             } else {
                 ForegroundColorSpan linkSpan = new ForegroundColorSpan(
-                        ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color));
+                        ApiCompatibilityUtils.getColor(resources, R.color.google_blue_700));
                 if (LocationUtils.getInstance().isSystemLocationSettingEnabled()) {
                     String message = mContext.getString(
                             locationEnabled(position, true)
