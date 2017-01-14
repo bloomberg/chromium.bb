@@ -29,7 +29,12 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
   ~SiteIsolationStatsGathererBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ASSERT_TRUE(embedded_test_server()->Start());
+    // EmbeddedTestServer::InitializeAndListen() initializes its |base_url_|
+    // which is required below. This cannot invoke Start() however as that kicks
+    // off the "EmbeddedTestServer IO Thread" which then races with
+    // initialization in ContentBrowserTest::SetUp(), http://crbug.com/674545.
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
     // Add a host resolver rule to map all outgoing requests to the test server.
     // This allows us to use "real" hostnames in URLs, which we can use to
     // create arbitrary SiteInstances.
@@ -41,6 +46,12 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
     // Since we assume exploited renderer process, it can bypass the same origin
     // policy at will. Simulate that by passing the disable-web-security flag.
     command_line->AppendSwitch(switches::kDisableWebSecurity);
+  }
+
+  void SetUpOnMainThread() override {
+    // Complete the manual Start() after ContentBrowserTest's own
+    // initialization, ref. comment on InitializeAndListen() above.
+    embedded_test_server()->StartAcceptingConnections();
   }
 
   void InspectHistograms(const base::HistogramTester& histograms,
