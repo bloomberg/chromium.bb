@@ -5,8 +5,10 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_async_task_scheduler.h"
 #include "base/test/scoped_task_scheduler.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/test/test_browser_thread.h"
@@ -55,7 +57,8 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
 
-  task_scheduler_.reset();
+  scoped_async_task_scheduler_.reset();
+  scoped_task_scheduler_.reset();
 
   // |message_loop_| needs to explicitly go away before fake threads in order
   // for DestructionObservers hooked to |message_loop_| to be able to invoke
@@ -89,8 +92,13 @@ void TestBrowserThreadBundle::Init() {
 void TestBrowserThreadBundle::CreateThreads() {
   DCHECK(!threads_created_);
 
-  task_scheduler_.reset(
-      new base::test::ScopedTaskScheduler(message_loop_.get()));
+  if (options_ & REAL_TASK_SCHEDULER) {
+    scoped_async_task_scheduler_ =
+        base::MakeUnique<base::test::ScopedAsyncTaskScheduler>();
+  } else {
+    scoped_task_scheduler_ =
+        base::MakeUnique<base::test::ScopedTaskScheduler>(message_loop_.get());
+  }
 
   if (options_ & REAL_DB_THREAD) {
     db_thread_.reset(new TestBrowserThread(BrowserThread::DB));

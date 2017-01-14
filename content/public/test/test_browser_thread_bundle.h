@@ -25,6 +25,10 @@
 // FileDescriptorWatcher. Most of the time, IO_MAINLOOP avoids needing to use a
 // REAL_IO_THREAD.
 //
+// If a test needs a TaskScheduler that runs tasks on a dedicated thread, it
+// should use REAL_TASK_SCHEDULER. Usage of this option should be justified as
+// it is easier to understand and debug a single-threaded unit test.
+//
 // For some tests it is important to emulate real browser startup. During real
 // browser startup, the main MessageLoop is created before other threads.
 // Passing DONT_CREATE_THREADS to constructor will delay creating other threads
@@ -43,6 +47,7 @@
 namespace base {
 class MessageLoop;
 namespace test {
+class ScopedAsyncTaskScheduler;
 class ScopedTaskScheduler;
 }  // namespace test
 }  // namespace base
@@ -57,12 +62,13 @@ class TestBrowserThreadBundle {
   // which of the named BrowserThreads should be backed by a real
   // threads. The UI thread is always the main thread in a unit test.
   enum Options {
-    DEFAULT = 0x00,
-    IO_MAINLOOP = 0x01,
-    REAL_DB_THREAD = 0x02,
-    REAL_FILE_THREAD = 0x08,
-    REAL_IO_THREAD = 0x10,
-    DONT_CREATE_THREADS = 0x20,
+    DEFAULT = 0,
+    IO_MAINLOOP = 1 << 0,
+    REAL_DB_THREAD = 1 << 1,
+    REAL_FILE_THREAD = 1 << 2,
+    REAL_IO_THREAD = 1 << 3,
+    REAL_TASK_SCHEDULER = 1 << 4,
+    DONT_CREATE_THREADS = 1 << 5,
   };
 
   TestBrowserThreadBundle();
@@ -78,7 +84,9 @@ class TestBrowserThreadBundle {
   void Init();
 
   std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<base::test::ScopedTaskScheduler> task_scheduler_;
+  std::unique_ptr<base::test::ScopedAsyncTaskScheduler>
+      scoped_async_task_scheduler_;
+  std::unique_ptr<base::test::ScopedTaskScheduler> scoped_task_scheduler_;
   std::unique_ptr<TestBrowserThread> ui_thread_;
   std::unique_ptr<TestBrowserThread> db_thread_;
   std::unique_ptr<TestBrowserThread> file_thread_;
