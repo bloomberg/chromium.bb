@@ -2275,8 +2275,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)goToItemAtIndex:(int)index {
   CRWSessionController* sessionController = self.sessionController;
   NSArray* entries = sessionController.entries;
-  DCHECK_LT(static_cast<NSUInteger>(index), entries.count);
-  DCHECK_GE(index, 0);
+  if (index < 0 || index >= static_cast<int>(entries.count)) {
+    NOTREACHED();
+    return;
+  }
 
   if (!_webStateImpl->IsShowingWebInterstitial())
     [self recordStateInHistory];
