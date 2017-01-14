@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -164,6 +166,16 @@ void PolicyOAuth2TokenFetcherImpl::StartWithRefreshToken(
 }
 
 void PolicyOAuth2TokenFetcherImpl::StartFetchingRefreshToken() {
+  // Don't fetch tokens for test.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
+    failed_ = true;
+    ForwardPolicyToken(
+        std::string(),
+        GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
+    return;
+  }
+
   if (auth_code_.empty()) {
     refresh_token_fetcher_.reset(new GaiaAuthFetcher(
         this, GaiaConstants::kChromeSource, auth_context_getter_.get()));
