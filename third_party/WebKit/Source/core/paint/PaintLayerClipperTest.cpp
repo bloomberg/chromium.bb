@@ -8,15 +8,29 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 
 namespace blink {
 
-class PaintLayerClipperTest : public RenderingTest {
+class PaintLayerClipperTest : public ::testing::WithParamInterface<bool>,
+                              private ScopedSlimmingPaintV2ForTest,
+                              public RenderingTest {
  public:
-  PaintLayerClipperTest() : RenderingTest(EmptyFrameLoaderClient::create()) {}
+  PaintLayerClipperTest()
+      : ScopedSlimmingPaintV2ForTest(GetParam()),
+        RenderingTest(EmptyFrameLoaderClient::create()) {}
+
+  bool geometryMapperCacheEmpty(const PaintLayerClipper& clipper) {
+    return clipper.m_geometryMapper->m_data.isEmpty();
+  }
 };
 
-TEST_F(PaintLayerClipperTest, LayoutSVGRoot) {
+INSTANTIATE_TEST_CASE_P(All,
+                        PaintLayerClipperTest,
+                        ::testing::ValuesIn({false, true}));
+
+TEST_P(PaintLayerClipperTest, LayoutSVGRoot) {
   setBodyInnerHTML(
       "<!DOCTYPE html>"
       "<svg id=target width=200 height=300 style='position: relative'>"
@@ -37,11 +51,15 @@ TEST_F(PaintLayerClipperTest, LayoutSVGRoot) {
       context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds,
       backgroundRect, foregroundRect);
   EXPECT_EQ(LayoutRect(LayoutRect::infiniteIntRect()), backgroundRect.rect());
-  EXPECT_EQ(LayoutRect(LayoutRect::infiniteIntRect()), foregroundRect.rect());
+  // TODO(chrishtr): the behavior for SPv2 is actually correct, since the
+  // svg root clip should be applied to the foreground rect. See
+  // crbug.com/680325.
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    EXPECT_EQ(LayoutRect(LayoutRect::infiniteIntRect()), foregroundRect.rect());
   EXPECT_EQ(LayoutRect(8, 8, 200, 300), layerBounds);
 }
 
-TEST_F(PaintLayerClipperTest, LayoutSVGRootChild) {
+TEST_P(PaintLayerClipperTest, LayoutSVGRootChild) {
   setBodyInnerHTML(
       "<svg width=200 height=300 style='position: relative'>"
       "  <foreignObject width=400 height=500>"
@@ -64,7 +82,7 @@ TEST_F(PaintLayerClipperTest, LayoutSVGRootChild) {
   EXPECT_EQ(LayoutRect(8, 8, 400, 0), layerBounds);
 }
 
-TEST_F(PaintLayerClipperTest, ContainPaintClip) {
+TEST_P(PaintLayerClipperTest, ContainPaintClip) {
   setBodyInnerHTML(
       "<div id='target'"
       "    style='contain: paint; width: 200px; height: 200px; overflow: auto'>"
@@ -79,8 +97,9 @@ TEST_F(PaintLayerClipperTest, ContainPaintClip) {
   ClipRect backgroundRect, foregroundRect;
   layer->clipper().calculateRects(context, infiniteRect, layerBounds,
                                   backgroundRect, foregroundRect);
-  EXPECT_EQ(infiniteRect, backgroundRect.rect());
-  EXPECT_EQ(infiniteRect, foregroundRect.rect());
+  EXPECT_GE(backgroundRect.rect().size().width().toInt(), 33554422);
+  EXPECT_GE(backgroundRect.rect().size().height().toInt(), 33554422);
+  EXPECT_EQ(backgroundRect.rect(), foregroundRect.rect());
   EXPECT_EQ(LayoutRect(0, 0, 200, 200), layerBounds);
 
   ClipRectsContext contextClip(layer, PaintingClipRects);
@@ -91,7 +110,7 @@ TEST_F(PaintLayerClipperTest, ContainPaintClip) {
   EXPECT_EQ(LayoutRect(0, 0, 200, 200), layerBounds);
 }
 
-TEST_F(PaintLayerClipperTest, NestedContainPaintClip) {
+TEST_P(PaintLayerClipperTest, NestedContainPaintClip) {
   setBodyInnerHTML(
       "<div style='contain: paint; width: 200px; height: 200px; overflow: "
       "auto'>"
@@ -120,7 +139,7 @@ TEST_F(PaintLayerClipperTest, NestedContainPaintClip) {
   EXPECT_EQ(LayoutRect(0, 0, 200, 400), layerBounds);
 }
 
-TEST_F(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
+TEST_P(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
   setBodyInnerHTML(
       "<div id='transformed'"
       "    style='will-change: transform; width: 100px; height: 100px;"
@@ -144,11 +163,16 @@ TEST_F(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
             fixed->clipper().localClipRect(transformed));
 }
 
-TEST_F(PaintLayerClipperTest, ClearClipRectsRecursive) {
+TEST_P(PaintLayerClipperTest, ClearClipRectsRecursive) {
+  // SPv2 will re-use a global GeometryMapper, so this
+  // logic does not apply.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
   setBodyInnerHTML(
       "<style>"
       "div { "
-      "  width: 5px; height: 5px; background: blue;"
+      "  width: 5px; height: 5px; background: blue; overflow: hidden;"
       "  position: relative;"
       "}"
       "</style>"
@@ -172,7 +196,12 @@ TEST_F(PaintLayerClipperTest, ClearClipRectsRecursive) {
   EXPECT_FALSE(child->clipRectsCache());
 }
 
-TEST_F(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
+TEST_P(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
+  // SPv2 will re-use a global GeometryMapper, so this
+  // logic does not apply.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
   setBodyInnerHTML(
       "<style>"
       "div { "
@@ -200,7 +229,12 @@ TEST_F(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
   EXPECT_FALSE(child->clipRectsCache());
 }
 
-TEST_F(PaintLayerClipperTest, ClearClipRectsRecursiveOneType) {
+TEST_P(PaintLayerClipperTest, ClearClipRectsRecursiveOneType) {
+  // SPv2 will re-use a global GeometryMapper, so this
+  // logic does not apply.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
   setBodyInnerHTML(
       "<style>"
       "div { "

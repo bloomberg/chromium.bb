@@ -35,10 +35,6 @@ SlimmingPaintAndRootLayerScrolling foo[] = {
 INSTANTIATE_TEST_CASE_P(All, PaintLayerTest, ::testing::ValuesIn(foo));
 
 TEST_P(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
-  // TODO(chrishtr): fix this test for SPv2
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    return;
-
   setBodyInnerHTML(
       " <div id='parent'><div id='absposparent'><div id='absposchild'>"
       " </div></div></div>"

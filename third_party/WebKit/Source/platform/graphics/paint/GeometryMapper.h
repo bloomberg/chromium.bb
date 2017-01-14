@@ -172,6 +172,7 @@ class PLATFORM_EXPORT GeometryMapper {
       const TransformPaintPropertyNode*);
 
   friend class GeometryMapperTest;
+  friend class PaintLayerClipperTest;
 
   HashMap<const TransformPaintPropertyNode*,
           std::unique_ptr<PrecomputedDataForAncestor>>

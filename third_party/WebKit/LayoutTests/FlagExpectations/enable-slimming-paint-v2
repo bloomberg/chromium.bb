@@ -1609,3 +1609,11 @@ Bug(none) svg/custom/non-scaling-stroke-update.svg [ Failure ]
 Bug(none) svg/custom/use-css-events.svg [ Failure ]
 Bug(none) svg/text/text-layout-crash.html [ Failure ]
 Bug(none) images/color-profile-iframe.html [ Failure ]
+
+# Failing because SPv2 applies extra clips for SVG root clip or control clip.
+crbug.com/680325 fast/forms/button-positioned.html [ Failure ]
+crbug.com/680325 fast/forms/text/input-appearance-preventDefault.html [ Failure ]
+crbug.com/680325 svg/custom/mouse-move-on-svg-container-standalone.svg [ Failure ]
+crbug.com/680325 svg/custom/mouse-move-on-svg-root-standalone.svg [ Failure ]
+crbug.com/680325 svg/custom/pattern-userSpaceOnUse-userToBaseTransform.xhtml [ Failure ]
+crbug.com/680325 svg/custom/viewport-update2.svg [ Failure ]

@@ -210,11 +210,15 @@ LayoutRect PaintLayerClipper::localClipRect(
     const PaintLayer* clippingRootLayer) const {
   ClipRectsContext context(clippingRootLayer, PaintingClipRects);
   if (m_geometryMapper) {
-    ClipRect clipRect = applyOverflowClipToBackgroundRectWithGeometryMapper(
-        context, clipRectWithGeometryMapper(context, false));
+    LayoutRect premappedRect =
+        applyOverflowClipToBackgroundRectWithGeometryMapper(
+            context, clipRectWithGeometryMapper(context, false))
+            .rect();
 
     // The rect now needs to be transformed to the local space of this
     // PaintLayer.
+    premappedRect.moveBy(context.rootLayer->layoutObject()->paintOffset());
+
     const auto* clipRootLayerTransform = clippingRootLayer->layoutObject()
                                              ->paintProperties()
                                              ->localBorderBoxProperties()
@@ -225,7 +229,9 @@ LayoutRect PaintLayerClipper::localClipRect(
                                      ->transform();
     FloatRect clippedRectInLocalSpace =
         m_geometryMapper->sourceToDestinationRect(
-            FloatRect(clipRect.rect()), clipRootLayerTransform, layerTransform);
+            FloatRect(premappedRect), clipRootLayerTransform, layerTransform);
+    clippedRectInLocalSpace.moveBy(
+        -FloatPoint(m_layer.layoutObject()->paintOffset()));
 
     return LayoutRect(clippedRectInLocalSpace);
   }
@@ -255,7 +261,7 @@ LayoutRect PaintLayerClipper::localClipRect(
 
 void PaintLayerClipper::mapLocalToRootWithGeometryMapper(
     const ClipRectsContext& context,
-    LayoutRect& layoutRect) const {
+    LayoutRect& rectToMap) const {
   DCHECK(m_geometryMapper);
 
   const auto* layerTransform = m_layer.layoutObject()
@@ -267,10 +273,11 @@ void PaintLayerClipper::mapLocalToRootWithGeometryMapper(
                                   ->localBorderBoxProperties()
                                   ->transform();
 
-  FloatRect localRect(layoutRect);
+  FloatRect localRect(rectToMap);
   localRect.moveBy(FloatPoint(m_layer.layoutObject()->paintOffset()));
-  layoutRect = LayoutRect(m_geometryMapper->sourceToDestinationRect(
+  rectToMap = LayoutRect(m_geometryMapper->sourceToDestinationRect(
       localRect, layerTransform, rootTransform));
+  rectToMap.moveBy(-context.rootLayer->layoutObject()->paintOffset());
 }
 
 void PaintLayerClipper::calculateRectsWithGeometryMapper(
@@ -437,23 +444,38 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
   LayoutRect source(LayoutRect::infiniteIntRect());
   const auto* properties = m_layer.layoutObject()->paintProperties();
   DCHECK(properties && properties->localBorderBoxProperties());
+
   PropertyTreeState propertyTreeState = *properties->localBorderBoxProperties();
-
-  if (isForeground && shouldClipOverflow(context) && properties->overflowClip())
-    propertyTreeState.setClip(properties->overflowClip());
-
   const auto* ancestorProperties =
       context.rootLayer->layoutObject()->paintProperties();
   DCHECK(ancestorProperties && ancestorProperties->localBorderBoxProperties());
   PropertyTreeState destinationPropertyTreeState =
       *ancestorProperties->localBorderBoxProperties();
-  if (!context.rootLayer->clipper().shouldRespectOverflowClip(context)) {
-    if (ancestorProperties->overflowClip())
+
+  if (&m_layer == context.rootLayer) {
+    // Set the overflow clip for |propertyTreeState| so that it differs from
+    // |destinationPropertyTreeState| in its clip.
+    if (isForeground && context.respectOverflowClip == RespectOverflowClip &&
+        properties->overflowClip())
+      propertyTreeState.setClip(properties->overflowClip());
+  } else {
+    // Set the clip of |destinationPropertyTreeState| to be inside the
+    // ancestor's overflow clip, so that that clip is not applied.
+    if (context.respectOverflowClip == IgnoreOverflowClip &&
+        ancestorProperties->overflowClip())
       destinationPropertyTreeState.setClip(ancestorProperties->overflowClip());
+
+    // Set the overflow clip for |propertyTreeState| so that it differs from
+    // destinationPropertyTreeState| in its clip.
+    if (isForeground && properties->overflowClip())
+      propertyTreeState.setClip(properties->overflowClip());
   }
+
   FloatRect clippedRectInRootLayerSpace =
       m_geometryMapper->sourceToDestinationVisualRect(
           FloatRect(source), propertyTreeState, destinationPropertyTreeState);
+  clippedRectInRootLayerSpace.moveBy(
+      -FloatPoint(context.rootLayer->layoutObject()->paintOffset()));
   return ClipRect(LayoutRect(clippedRectInRootLayerSpace));
 }
 
