@@ -255,7 +255,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/pywebsocket.git' + '@' + '2d7b73c3acbd0f41dcab487ae5c97c6feae06ce2',
 
   'src/media/cdm/api':
-    Var('chromium_git') + '/chromium/cdm.git' + '@' + '6a62dcef02523e2d5be4defb68a7d9363c7389d2',
+    Var('chromium_git') + '/chromium/cdm.git' + '@' + '379a18058fee03b429bd5b4a330b78add56efec4',
 
   'src/third_party/mesa/src':
     Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + 'ef811c6bd4de74e13e7035ca882cc77f85793fef',
