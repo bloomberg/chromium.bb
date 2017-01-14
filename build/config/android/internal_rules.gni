@@ -767,8 +767,9 @@ if (enable_java_templates) {
       depfile = "${target_gen_dir}/${target_name}.d"
       outputs = [
         _output_jar_path,
-        "$_output_jar_path.seeds",
+        "$_output_jar_path.flags",
         "$_output_jar_path.mapping",
+        "$_output_jar_path.seeds",
         "$_output_jar_path.usage",
       ]
       args = [

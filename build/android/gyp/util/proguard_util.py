@@ -151,6 +151,19 @@ class ProguardCmdBuilder(object):
       inputs += [self._tested_apk_info_path]
     return inputs
 
+  def _WriteFlagsFile(self, out):
+    # Quite useful for auditing proguard flags.
+    for config in self._configs:
+      out.write('#' * 80 + '\n')
+      out.write(config + '\n')
+      out.write('#' * 80 + '\n')
+      with open(config) as config_file:
+        out.write(config_file.read().rstrip())
+      out.write('\n\n')
+    out.write('#' * 80 + '\n')
+    out.write('Command-line\n')
+    out.write('#' * 80 + '\n')
+    out.write(' '.join(self._cmd) + '\n')
 
   def CheckOutput(self):
     self.build()
@@ -160,6 +173,10 @@ class ProguardCmdBuilder(object):
     open(self._outjar + '.seeds', 'w').close()
     open(self._outjar + '.usage', 'w').close()
     open(self._outjar + '.mapping', 'w').close()
+
+    with open(self._outjar + '.flags', 'w') as out:
+      self._WriteFlagsFile(out)
+
     # Warning: and Error: are sent to stderr, but messages and Note: are sent
     # to stdout.
     stdout_filter = None
