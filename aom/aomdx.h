@@ -145,10 +145,6 @@ typedef struct aom_decrypt_init {
   void *decrypt_state;
 } aom_decrypt_init;
 
-/*!\brief A deprecated alias for aom_decrypt_init.
- */
-typedef aom_decrypt_init aom_decrypt_init;
-
 /*!\cond */
 /*!\brief AOM decoder control function parameter type
  *
