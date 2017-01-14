@@ -565,10 +565,14 @@ main(int argc, char *argv[]) {
   int direction = 0;
   int hyphenation = 0;
 
-  file = fopen(argv[1], "rb");
-  assert(file);
-
   file_name = argv[1];
+  file = fopen(file_name, "rb");
+  if (!file)
+    {
+      fprintf(stderr, "%s: file not found: %s\n", program_name, file_name);
+      exit(3);
+    }
+
 
   char *dir_name = strdup(file_name);
   int i = strlen(dir_name);
