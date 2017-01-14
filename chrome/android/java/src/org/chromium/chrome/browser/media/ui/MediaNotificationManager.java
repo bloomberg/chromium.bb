@@ -691,17 +691,11 @@ public class MediaNotificationManager {
     private MediaMetadataCompat createMetadata() {
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
-                    mMediaNotificationInfo.metadata.getTitle());
-            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
-                    mMediaNotificationInfo.origin);
-        } else {
-            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE,
-                    mMediaNotificationInfo.metadata.getTitle());
-            metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
-                    mMediaNotificationInfo.origin);
-        }
+        metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE,
+                mMediaNotificationInfo.metadata.getTitle());
+        metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
+                mMediaNotificationInfo.origin);
+
         if (!TextUtils.isEmpty(mMediaNotificationInfo.metadata.getArtist())) {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
                     mMediaNotificationInfo.metadata.getArtist());
