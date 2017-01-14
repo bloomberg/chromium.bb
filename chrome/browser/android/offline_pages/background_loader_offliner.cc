@@ -4,9 +4,13 @@
 
 #include "chrome/browser/android/offline_pages/background_loader_offliner.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
+#include "chrome/browser/android/offline_pages/offliner_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -37,6 +41,49 @@ bool BackgroundLoaderOffliner::LoadAndSave(const SavePageRequest& request,
     return false;
   }
 
+  // Do not allow loading for custom tabs clients if 3rd party cookies blocked.
+  // TODO(dewittj): Revise api to specify policy rather than hard code to
+  // name_space.
+  if (request.client_id().name_space == kCCTNamespace &&
+      (AreThirdPartyCookiesBlocked(browser_context_) ||
+       IsNetworkPredictionDisabled(browser_context_))) {
+    DVLOG(1) << "WARNING: Unable to load when 3rd party cookies blocked or "
+             << "prediction disabled";
+    // Record user metrics for third party cookies being disabled or network
+    // prediction being disabled.
+    if (AreThirdPartyCookiesBlocked(browser_context_)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "OfflinePages.Background.CctApiDisableStatus",
+          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                               THIRD_PARTY_COOKIES_DISABLED),
+          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                               NETWORK_PREDICTION_DISABLED) +
+              1);
+    }
+    if (IsNetworkPredictionDisabled(browser_context_)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "OfflinePages.Background.CctApiDisableStatus",
+          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                               NETWORK_PREDICTION_DISABLED),
+          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                               NETWORK_PREDICTION_DISABLED) +
+              1);
+    }
+
+    return false;
+  }
+
+  // Record UMA that the load was allowed to proceed.
+  if (request.client_id().name_space == kCCTNamespace) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "OfflinePages.Background.CctApiDisableStatus",
+        static_cast<int>(
+            OfflinePagesCctApiPrerenderAllowedStatus::PRERENDER_ALLOWED),
+        static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                             NETWORK_PREDICTION_DISABLED) +
+            1);
+  }
+
   if (!OfflinePageModel::CanSaveURL(request.url())) {
     DVLOG(1) << "Not able to save page for requested url: " << request.url();
     return false;
@@ -54,6 +101,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(const SavePageRequest& request,
       base::Bind(&BackgroundLoaderOffliner::OnApplicationStateChange,
                  weak_ptr_factory_.GetWeakPtr())));
 
+  // Load page attempt.
   loader_.get()->LoadPage(request.url());
 
   return true;

@@ -6,12 +6,18 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/offline_pages/offliner_helper.h"
+#include "chrome/browser/net/prediction_options.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/offline_pages/content/background_loader/background_loader_contents_stub.h"
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,6 +132,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   Offliner::RequestStatus request_status() { return request_status_; }
   bool SaveInProgress() const { return model_->mock_saving(); }
   MockOfflinePageModel* model() const { return model_; }
+  const base::HistogramTester& histograms() const { return histogram_tester_; }
 
   void CompleteLoading() {
     // For some reason, setting loading to True will call DidStopLoading
@@ -142,6 +149,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   MockOfflinePageModel* model_;
   bool completion_callback_called_;
   Offliner::RequestStatus request_status_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderOfflinerTest);
 };
@@ -164,6 +172,47 @@ void BackgroundLoaderOfflinerTest::OnCompletion(
   DCHECK(!completion_callback_called_);  // Expect 1 callback per request.
   completion_callback_called_ = true;
   request_status_ = status;
+}
+
+TEST_F(BackgroundLoaderOfflinerTest,
+       LoadAndSaveBlockThirdPartyCookiesForCustomTabs) {
+  base::Time creation_time = base::Time::Now();
+  ClientId custom_tabs_client_id("custom_tabs", "88");
+  SavePageRequest request(kRequestId, kHttpUrl, custom_tabs_client_id,
+                          creation_time, kUserRequested);
+
+  profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  EXPECT_FALSE(offliner()->LoadAndSave(request, callback()));
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.CctApiDisableStatus",
+      static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                           THIRD_PARTY_COOKIES_DISABLED),
+      1);
+  histograms().ExpectBucketCount("OfflinePages.Background.CctApiDisableStatus",
+                                 0 /* PRERENDER_ALLOWED */, 0);
+}
+
+TEST_F(BackgroundLoaderOfflinerTest,
+       LoadAndSaveNetworkPredictionDisabledForCustomTabs) {
+  base::Time creation_time = base::Time::Now();
+  ClientId custom_tabs_client_id("custom_tabs", "88");
+  SavePageRequest request(kRequestId, kHttpUrl, custom_tabs_client_id,
+                          creation_time, kUserRequested);
+
+  profile()->GetPrefs()->SetInteger(
+      prefs::kNetworkPredictionOptions,
+      chrome_browser_net::NETWORK_PREDICTION_NEVER);
+  EXPECT_FALSE(offliner()->LoadAndSave(request, callback()));
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.CctApiDisableStatus",
+      static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                           NETWORK_PREDICTION_DISABLED),
+      1);
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.CctApiDisableStatus",
+      static_cast<int>(
+          OfflinePagesCctApiPrerenderAllowedStatus::PRERENDER_ALLOWED),
+      0);
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveStartsLoading) {

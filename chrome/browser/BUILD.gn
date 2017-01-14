@@ -2752,6 +2752,8 @@ split_static_library("browser") {
       "android/offline_pages/offline_page_utils.cc",
       "android/offline_pages/offline_page_utils.h",
       "android/offline_pages/offliner_factory.h",
+      "android/offline_pages/offliner_helper.cc",
+      "android/offline_pages/offliner_helper.h",
       "android/offline_pages/prerender_adapter.cc",
       "android/offline_pages/prerender_adapter.h",
       "android/offline_pages/prerendering_loader.cc",

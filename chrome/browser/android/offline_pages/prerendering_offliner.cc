@@ -8,39 +8,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
-#include "chrome/browser/net/prediction_options.h"
+#include "chrome/browser/android/offline_pages/offliner_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-
-namespace {
-
-bool AreThirdPartyCookiesBlocked(content::BrowserContext* browser_context) {
-  return Profile::FromBrowserContext(browser_context)
-      ->GetPrefs()
-      ->GetBoolean(prefs::kBlockThirdPartyCookies);
-}
-
-bool IsNetworkPredictionDisabled(content::BrowserContext* browser_context) {
-  return Profile::FromBrowserContext(browser_context)
-             ->GetPrefs()
-             ->GetInteger(prefs::kNetworkPredictionOptions) ==
-         chrome_browser_net::NETWORK_PREDICTION_NEVER;
-}
-
-enum class OfflinePagesCctApiPrerenderAllowedStatus {
-  PRERENDER_ALLOWED,
-  THIRD_PARTY_COOKIES_DISABLED,
-  NETWORK_PREDICTION_DISABLED,
-};
-
-}  // namespace
 
 namespace offline_pages {
 
