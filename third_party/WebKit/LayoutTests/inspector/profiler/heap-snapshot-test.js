@@ -1,6 +1,6 @@
 var initialize_HeapSnapshotTest = function() {
 
-InspectorTest.preloadPanel("profiles");
+InspectorTest.preloadPanel("heap_profiler");
 
 InspectorTest.createHeapSnapshotMockFactories = function() {
 
@@ -418,7 +418,7 @@ InspectorTest.startProfilerTest = function(callback)
     // We mock out HeapProfilerAgent -- as DRT runs in single-process mode, Inspector
     // and test share the same heap. Taking a snapshot takes too long for a test,
     // so we provide synthetic snapshots.
-    InspectorTest._panelReset = InspectorTest.override(UI.panels.profiles, "_reset", function(){}, true);
+    InspectorTest._panelReset = InspectorTest.override(UI.panels.heap_profiler, "_reset", function(){}, true);
     InspectorTest.addSniffer(Profiler.HeapSnapshotView.prototype, "show", InspectorTest._snapshotViewShown, true);
 
     // Reduce the number of populated nodes to speed up testing.
@@ -455,7 +455,7 @@ InspectorTest.runHeapSnapshotTestSuite = function(testSuite)
         var nextTest = testSuiteTests.shift();
         InspectorTest.addResult("");
         InspectorTest.addResult("Running: " + /function\s([^(]*)/.exec(nextTest)[1]);
-        InspectorTest._panelReset.call(UI.panels.profiles);
+        InspectorTest._panelReset.call(UI.panels.heap_profiler);
         InspectorTest.safeWrap(nextTest)(runner, runner);
     }
 
@@ -676,7 +676,7 @@ InspectorTest.findMatchingRow = function(matcher, parent)
 InspectorTest.switchToView = function(title, callback)
 {
     callback = InspectorTest.safeWrap(callback);
-    var view = UI.panels.profiles.visibleView;
+    var view = UI.panels.heap_profiler.visibleView;
     view._changePerspectiveAndWait(title, callback);
     // Increase the grid container height so the viewport don't limit the number of nodes.
     InspectorTest._currentGrid().scrollContainer.style.height = "10000px";
@@ -710,7 +710,7 @@ InspectorTest.viewColumns = function()
 
 InspectorTest.currentProfileView = function()
 {
-    return UI.panels.profiles.visibleView;
+    return UI.panels.heap_profiler.visibleView;
 };
 
 InspectorTest._currentGrid = function()

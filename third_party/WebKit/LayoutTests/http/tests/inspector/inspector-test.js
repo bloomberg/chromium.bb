@@ -1120,7 +1120,7 @@ function runTest(pixelTest, enableWatchDogWhileDebugging)
             "editor": "sources",
             "layers": "layers",
             "network": "network",
-            "profiler": "profiles",
+            "profiler": "heap_profiler",
             "resource-tree": "resources",
             "search": "sources",
             "security": "security",

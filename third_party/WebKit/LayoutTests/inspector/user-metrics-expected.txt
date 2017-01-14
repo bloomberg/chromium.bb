@@ -35,15 +35,16 @@ recordPanelShown:
     drawer-sensors : 14
     drawer-sources.search : 15
     elements : 1
+    heap_profiler : 6
+    js_profiler : 17
     layers : 9
     network : 3
-    profiles : 6
     resources : 2
     security : 16
     sources : 4
     timeline : 5
 }
-Panel shown: profiles
+Panel shown: js_profiler
 Panel shown: timeline
 Panel shown: audits
 

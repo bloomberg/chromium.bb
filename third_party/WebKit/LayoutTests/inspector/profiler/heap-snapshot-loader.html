@@ -12,7 +12,7 @@ function test()
 
     function injectMockProfile(callback) {
         var dispatcher = InspectorTest.mainTarget._dispatchers["HeapProfiler"]._dispatcher;
-        var panel = UI.panels.profiles;
+        var panel = UI.panels.heap_profiler;
         panel._reset();
 
         var profileType =  Profiler.ProfileTypeRegistry.instance.heapSnapshotProfileType;
@@ -74,7 +74,7 @@ function test()
 
         function heapSnapshotLoadFromFileTest(next)
         {
-            var panel = UI.panels.profiles;
+            var panel = UI.panels.heap_profiler;
 
             var fileMock = {
                 name: "mock.heapsnapshot",

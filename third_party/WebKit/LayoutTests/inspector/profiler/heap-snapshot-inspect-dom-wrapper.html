@@ -30,7 +30,7 @@ function test()
             return clear("FAILED: wrong number of recorded profiles was found. profiles.length = " + profiles.length);
 
         var profile = profiles[profiles.length - 1];
-        UI.panels.profiles.showProfile(profile);
+        UI.panels.heap_profiler.showProfile(profile);
     }
 
     function snapshotReceived(profile)
@@ -88,7 +88,7 @@ function test()
         if (errorMessage)
             InspectorTest.addResult(errorMessage);
         setTimeout(done, 0);
-        UI.panels.profiles._reset();
+        UI.panels.heap_profiler._reset();
         return !errorMessage;
     }
 
