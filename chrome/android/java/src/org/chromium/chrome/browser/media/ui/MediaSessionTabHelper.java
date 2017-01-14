@@ -199,9 +199,10 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                                 .setOrigin(mOrigin)
                                 .setTabId(mTab.getId())
                                 .setPrivate(mTab.isIncognito())
-                                .setIcon(R.drawable.audio_playing)
-                                .setLargeIcon(mCurrentMediaImage)
-                                .setDefaultLargeIcon(R.drawable.audio_playing_square)
+                                .setNotificationSmallIcon(R.drawable.audio_playing)
+                                .setNotificationLargeIcon(mCurrentMediaImage)
+                                .setDefaultNotificationLargeIcon(R.drawable.audio_playing_square)
+                                .setMediaSessionImage(mPageMediaImage)
                                 .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
                                         | MediaNotificationInfo.ACTION_SWIPEAWAY)
                                 .setContentIntent(contentIntent)
@@ -290,7 +291,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             if (isNotificationHiddingOrHidden()) return;
 
             mNotificationInfoBuilder.setOrigin(mOrigin);
-            mNotificationInfoBuilder.setLargeIcon(mFavicon);
+            mNotificationInfoBuilder.setNotificationLargeIcon(mFavicon);
             showNotification();
         }
 
@@ -462,7 +463,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         mCurrentMediaImage = newMediaImage;
 
         if (isNotificationHiddingOrHidden()) return;
-        mNotificationInfoBuilder.setLargeIcon(mCurrentMediaImage);
+        mNotificationInfoBuilder.setNotificationLargeIcon(mCurrentMediaImage);
         showNotification();
     }
 

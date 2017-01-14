@@ -88,8 +88,7 @@ public class MediaNotificationManager {
 
     private NotificationCompat.Builder mNotificationBuilder;
 
-    private Bitmap mNotificationIcon;
-    private Bitmap mDefaultLargeIcon;
+    private Bitmap mDefaultNotificationLargeIcon;
 
     // |mMediaNotificationInfo| should be not null if and only if the notification is showing.
     private MediaNotificationInfo mMediaNotificationInfo;
@@ -711,6 +710,10 @@ public class MediaNotificationManager {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM,
                     mMediaNotificationInfo.metadata.getAlbum());
         }
+        if (mMediaNotificationInfo.mediaSessionImage != null) {
+            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
+                                      mMediaNotificationInfo.mediaSessionImage);
+        }
 
         return metadataBuilder.build();
     }
@@ -725,7 +728,7 @@ public class MediaNotificationManager {
         mNotificationBuilder = new NotificationCompat.Builder(mContext);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
-        mNotificationBuilder.setSmallIcon(mMediaNotificationInfo.icon);
+        mNotificationBuilder.setSmallIcon(mMediaNotificationInfo.notificationSmallIcon);
         mNotificationBuilder.setAutoCancel(false);
         mNotificationBuilder.setLocalOnly(true);
         mNotificationBuilder.setGroup(getNotificationGroupName());
@@ -858,16 +861,17 @@ public class MediaNotificationManager {
         setMediaStyleNotificationText(builder);
         if (!mMediaNotificationInfo.supportsPlayPause()) {
             builder.setLargeIcon(null);
-        } else if (mMediaNotificationInfo.largeIcon != null) {
-            builder.setLargeIcon(mMediaNotificationInfo.largeIcon);
+        } else if (mMediaNotificationInfo.notificationLargeIcon != null) {
+            builder.setLargeIcon(mMediaNotificationInfo.notificationLargeIcon);
         } else if (!isRunningN()) {
-            if (mDefaultLargeIcon == null) {
-                int resourceId = (mMediaNotificationInfo.defaultLargeIcon != 0)
-                        ? mMediaNotificationInfo.defaultLargeIcon : R.drawable.audio_playing_square;
-                mDefaultLargeIcon = scaleIconForDisplay(
+            if (mDefaultNotificationLargeIcon == null) {
+                int resourceId = (mMediaNotificationInfo.defaultNotificationLargeIcon != 0)
+                        ? mMediaNotificationInfo.defaultNotificationLargeIcon
+                        : R.drawable.audio_playing_square;
+                mDefaultNotificationLargeIcon = scaleIconForDisplay(
                         BitmapFactory.decodeResource(mContext.getResources(), resourceId));
             }
-            builder.setLargeIcon(mDefaultLargeIcon);
+            builder.setLargeIcon(mDefaultNotificationLargeIcon);
         }
         // TODO(zqzhang): It's weird that setShowWhen() don't work on K. Calling setWhen() to force
         // removing the time.
