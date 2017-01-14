@@ -34,7 +34,7 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 94, 728, 90],
-          "reason": "forced by layout"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutView #document",
@@ -98,7 +98,7 @@
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "forced by layout"
+      "reason": "layoutObject insertion"
     },
     {
       "object": "LayoutBlockFlow BODY",
