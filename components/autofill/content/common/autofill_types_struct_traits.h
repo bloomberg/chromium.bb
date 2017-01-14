@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "components/autofill/content/common/autofill_types.mojom.h"
 #include "components/autofill/core/common/form_data.h"
@@ -37,14 +38,6 @@ struct EnumTraits<autofill::mojom::RoleAttribute,
       autofill::FormFieldData::RoleAttribute input);
   static bool FromMojom(autofill::mojom::RoleAttribute input,
                         autofill::FormFieldData::RoleAttribute* output);
-};
-
-template <>
-struct EnumTraits<autofill::mojom::TextDirection, base::i18n::TextDirection> {
-  static autofill::mojom::TextDirection ToMojom(
-      base::i18n::TextDirection input);
-  static bool FromMojom(autofill::mojom::TextDirection input,
-                        base::i18n::TextDirection* output);
 };
 
 template <>

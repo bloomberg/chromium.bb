@@ -42,6 +42,5 @@ type_mappings = [
   "autofill.mojom.PasswordFormScheme=autofill::PasswordForm::Scheme",
   "autofill.mojom.PasswordFormType=autofill::PasswordForm::Type",
   "autofill.mojom.RoleAttribute=autofill::FormFieldData::RoleAttribute",
-  "autofill.mojom.TextDirection=base::i18n::TextDirection",
   "autofill.mojom.UsernamesCollectionKey=autofill::UsernamesCollectionKey",
 ]

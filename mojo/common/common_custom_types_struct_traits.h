@@ -6,12 +6,14 @@
 #define MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 
 #include "base/files/file.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "base/version.h"
 #include "mojo/common/file.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/common/string16.mojom-shared.h"
+#include "mojo/common/text_direction.mojom-shared.h"
 #include "mojo/common/time.mojom-shared.h"
 #include "mojo/common/unguessable_token.mojom-shared.h"
 #include "mojo/common/version.mojom-shared.h"
@@ -81,6 +83,14 @@ struct StructTraits<common::mojom::FileDataView, base::File> {
 
   static mojo::ScopedHandle fd(base::File& file);
   static bool Read(common::mojom::FileDataView data, base::File* file);
+};
+
+template <>
+struct EnumTraits<common::mojom::TextDirection, base::i18n::TextDirection> {
+  static common::mojom::TextDirection ToMojom(
+      base::i18n::TextDirection text_direction);
+  static bool FromMojom(common::mojom::TextDirection input,
+                        base::i18n::TextDirection* out);
 };
 
 }  // namespace mojo

@@ -17,6 +17,7 @@ mojom("common_custom_types") {
     "file.mojom",
     "file_path.mojom",
     "string16.mojom",
+    "text_direction.mojom",
     "time.mojom",
     "unguessable_token.mojom",
     "values.mojom",
@@ -95,5 +96,8 @@ source_set("struct_traits") {
     ":common_custom_types_shared_cpp_sources",
     "//base:base",
     "//mojo/public/cpp/system",
+  ]
+  public_deps = [
+    "//base:i18n",
   ]
 }

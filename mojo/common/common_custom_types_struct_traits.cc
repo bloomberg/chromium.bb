@@ -71,4 +71,38 @@ bool StructTraits<common::mojom::FileDataView, base::File>::Read(
   return true;
 }
 
+// static
+common::mojom::TextDirection
+EnumTraits<common::mojom::TextDirection, base::i18n::TextDirection>::ToMojom(
+    base::i18n::TextDirection text_direction) {
+  switch (text_direction) {
+    case base::i18n::UNKNOWN_DIRECTION:
+      return common::mojom::TextDirection::UNKNOWN_DIRECTION;
+    case base::i18n::RIGHT_TO_LEFT:
+      return common::mojom::TextDirection::RIGHT_TO_LEFT;
+    case base::i18n::LEFT_TO_RIGHT:
+      return common::mojom::TextDirection::LEFT_TO_RIGHT;
+  }
+  NOTREACHED();
+  return common::mojom::TextDirection::UNKNOWN_DIRECTION;
+}
+
+// static
+bool EnumTraits<common::mojom::TextDirection, base::i18n::TextDirection>::
+    FromMojom(common::mojom::TextDirection input,
+              base::i18n::TextDirection* out) {
+  switch (input) {
+    case common::mojom::TextDirection::UNKNOWN_DIRECTION:
+      *out = base::i18n::UNKNOWN_DIRECTION;
+      return true;
+    case common::mojom::TextDirection::RIGHT_TO_LEFT:
+      *out = base::i18n::RIGHT_TO_LEFT;
+      return true;
+    case common::mojom::TextDirection::LEFT_TO_RIGHT:
+      *out = base::i18n::LEFT_TO_RIGHT;
+      return true;
+  }
+  return false;
+}
+
 }  // namespace mojo

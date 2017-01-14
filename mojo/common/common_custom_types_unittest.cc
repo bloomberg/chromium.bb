@@ -170,6 +170,22 @@ class TestFileImpl : public TestFile {
   mojo::Binding<TestFile> binding_;
 };
 
+class TestTextDirectionImpl : public TestTextDirection {
+ public:
+  explicit TestTextDirectionImpl(TestTextDirectionRequest request)
+      : binding_(this, std::move(request)) {}
+
+  // TestTextDirection:
+  void BounceTextDirection(
+      base::i18n::TextDirection in,
+      const BounceTextDirectionCallback& callback) override {
+    callback.Run(in);
+  }
+
+ private:
+  mojo::Binding<TestTextDirection> binding_;
+};
+
 class CommonCustomTypesTest : public testing::Test {
  protected:
   CommonCustomTypesTest() {}
@@ -394,6 +410,21 @@ TEST_F(CommonCustomTypesTest, InvalidFile) {
 
   ASSERT_TRUE(ptr->BounceFile(base::File(), &file_out));
   EXPECT_FALSE(file_out.IsValid());
+}
+
+TEST_F(CommonCustomTypesTest, TextDirection) {
+  base::i18n::TextDirection kTestDirections[] = {base::i18n::LEFT_TO_RIGHT,
+                                                 base::i18n::RIGHT_TO_LEFT,
+                                                 base::i18n::UNKNOWN_DIRECTION};
+
+  TestTextDirectionPtr ptr;
+  TestTextDirectionImpl impl(MakeRequest(&ptr));
+
+  for (size_t i = 0; i < arraysize(kTestDirections); i++) {
+    base::i18n::TextDirection direction_out;
+    ASSERT_TRUE(ptr->BounceTextDirection(kTestDirections[i], &direction_out));
+    EXPECT_EQ(kTestDirections[i], direction_out);
+  }
 }
 
 }  // namespace test
