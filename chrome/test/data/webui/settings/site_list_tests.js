@@ -462,6 +462,28 @@ cr.define('site_list', function() {
             });
       });
 
+      test('action menu closes when list changes', function() {
+        setUpCategory(settings.ContentSettingsTypes.GEOLOCATION,
+            settings.PermissionValues.ALLOW, prefs);
+        var actionMenu = testElement.$$('dialog[is=cr-action-menu]');
+        return browserProxy.whenCalled('getExceptionList').then(
+            function(contentType) {
+              Polymer.dom.flush();  // Populates action menu.
+              openActionMenu(0);
+              assertTrue(actionMenu.open);
+
+              browserProxy.resetResolver('getExceptionList');
+              // Simulate a change in the underlying model.
+              cr.webUIListenerCallback(
+                  'contentSettingSitePermissionChanged',
+                  settings.ContentSettingsTypes.GEOLOCATION);
+              return browserProxy.whenCalled('getExceptionList');
+            }).then(function() {
+              // Check that the action menu was closed.
+              assertFalse(actionMenu.open);
+            });
+      });
+
       test('exceptions are not reordered in non-ALL_SITES', function() {
         setUpCategory(settings.ContentSettingsTypes.GEOLOCATION,
             settings.PermissionValues.BLOCK, prefsMixedProvider);

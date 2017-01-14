@@ -223,11 +223,13 @@ Polymer({
     if (this.allSites) {
       this.getAllSitesList_().then(function(lists) {
         this.processExceptions_(lists);
+        this.closeActionMenu_();
       }.bind(this));
     } else {
       this.browserProxy_.getExceptionList(this.category).then(
         function(exceptionList) {
           this.processExceptions_([exceptionList]);
+          this.closeActionMenu_();
       }.bind(this));
     }
   },
@@ -465,7 +467,9 @@ Polymer({
   /** @private */
   closeActionMenu_: function() {
     this.actionMenuSite_ = null;
-    /** @type {!CrActionMenuElement} */ (
-        this.$$('dialog[is=cr-action-menu]')).close();
+    var actionMenu = /** @type {!CrActionMenuElement} */ (
+        this.$$('dialog[is=cr-action-menu]'));
+    if (actionMenu.open)
+      actionMenu.close();
   },
 });
