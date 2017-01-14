@@ -78,15 +78,21 @@ class RemoteDemuxerStreamAdapter {
   void Initialize(int remote_callback_handle);
   void ReadUntil(std::unique_ptr<remoting::pb::RpcMessage> message);
   void EnableBitstreamConverter();
-  void RequestBuffer(int callback_handle);
-  void SendReadAck(int callback_handle);
+  void RequestBuffer();
+  void SendReadAck();
 
   // Callback function when retrieving data from demuxer.
-  void OnNewBuffer(int callback_handle,
-                   ::media::DemuxerStream::Status status,
+  void OnNewBuffer(::media::DemuxerStream::Status status,
                    const scoped_refptr<::media::DecoderBuffer>& input);
-  void TryWriteData(int callback_handle, MojoResult result);
+  void TryWriteData(MojoResult result);
   void ResetPendingFrame();
+  bool IsProcessingReadRequest() const {
+    // |read_until_callback_handle_| is set when RPC_DS_READUNTIL message is
+    // received, and will be reset to invalid value after
+    // RPC_DS_READUNTIL_CALLBACK is sent back to receiver. Therefore it can be
+    // used to determine if the class is in the reading state or not.
+    return read_until_callback_handle_ != kInvalidHandle;
+  }
 
   // Callback function when data pipe error occurs.
   void OnFatalError(const char* reason);
@@ -108,8 +114,18 @@ class RemoteDemuxerStreamAdapter {
   ::media::DemuxerStream* const demuxer_stream_;
   const ::media::DemuxerStream::Type type_;
 
-  // Remote RPC handles to process demuxer stream data.
+  // Remote RPC handle for demuxer initialization. The value is provided by
+  // receiver from RPC_DS_INITIALIZE message and will be used as handle in
+  // RPC_DS_INITIALIZE_CALLBACK message.
   int remote_callback_handle_;
+
+  // Remote RPC handle for reading data from demuxer. The value is provided by
+  // receiver from RPC_DS_READUNTIL message and will be used as handle in
+  // RPC_DS_READUNTIL_CALLBACK message. The handle can be used to indicate
+  // whether it is in reading state because not only each RPC_DS_READUNTIL
+  //  message provides different callback handle, but also it is only set to
+  // valid handle while in reading state.
+  int read_until_callback_handle_;
 
   // Current frame count issued by RPC_DS_READUNTIL RPC message. It should send
   // all frame data with count id smaller than |read_until_count_| before
@@ -118,12 +134,6 @@ class RemoteDemuxerStreamAdapter {
 
   // Count id of last frame sent.
   uint32_t last_count_;
-
-  // Indicates if the class is processing RPC_DS_READUNTIL RPC message. The flag
-  // is to prevent from receiving multiple RPC_DS_READUNTIL RPC messages. This
-  // is set to true after receiving RPC_DS_READUNTIL and before sending
-  // RPC_DS_READUNTIL_CALLBACK back to receiver.
-  bool processing_read_rpc_;
 
   // Flag to indicate if it's on flushing operation. All actions should be
   // aborted and data should be discarded when the value is true.
