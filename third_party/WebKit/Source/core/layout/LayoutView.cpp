@@ -247,6 +247,8 @@ void LayoutView::layout() {
 
   SubtreeLayoutScope layoutScope(*this);
 
+  LayoutRect oldLayoutOverflowRect = layoutOverflowRect();
+
   // Use calcWidth/Height to get the new width/height, since this will take the
   // full page zoom factor into account.
   bool relayoutChildren =
@@ -280,6 +282,17 @@ void LayoutView::layout() {
   LayoutState rootLayoutState(*this);
 
   layoutContent();
+
+  if (layoutOverflowRect() != oldLayoutOverflowRect) {
+    // The document element paints the viewport background, so we need to
+    // invalidate it when layout overflow changes.
+    // FIXME: Improve viewport background styling/invalidation/painting.
+    // crbug.com/475115
+    if (Element* documentElement = document().documentElement()) {
+      if (LayoutObject* rootObject = documentElement->layoutObject())
+        rootObject->setShouldDoFullPaintInvalidation();
+    }
+  }
 
 #if ENABLE(ASSERT)
   checkLayoutState();

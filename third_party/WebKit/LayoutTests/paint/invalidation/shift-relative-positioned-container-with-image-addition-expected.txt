@@ -7,6 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 785, 829],
+          "reason": "forced by layout"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [0, 735, 785, 94],
           "reason": "incremental"
@@ -29,7 +34,7 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [10, 88, 728, 90],
-          "reason": "layoutObject insertion"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutView #document",
@@ -58,6 +63,10 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutIFrame IFRAME id='iframe'",
@@ -89,7 +98,7 @@
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "layoutObject insertion"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutBlockFlow BODY",

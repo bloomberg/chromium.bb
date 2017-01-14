@@ -9,6 +9,11 @@
           "object": "LayoutView #document",
           "rect": [0, 250, 600, 250],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 600, 8],
+          "reason": "forced by layout"
         }
       ]
     }
@@ -17,6 +22,10 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
     }
   ]
 }
@@ -27,6 +36,11 @@
       "bounds": [400, 250],
       "drawsContent": true,
       "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 600, 8],
+          "reason": "forced by layout"
+        },
         {
           "object": "LayoutView #document",
           "rect": [400, 0, 200, 250],
@@ -39,6 +53,10 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
     }
   ]
 }
@@ -53,6 +71,11 @@
           "object": "LayoutView #document",
           "rect": [0, 250, 400, 350],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 400, 8],
+          "reason": "forced by layout"
         }
       ]
     }
@@ -61,6 +84,10 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
     }
   ]
 }
@@ -71,6 +98,11 @@
       "bounds": [800, 600],
       "drawsContent": true,
       "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 8],
+          "reason": "forced by layout"
+        },
         {
           "object": "LayoutView #document",
           "rect": [400, 0, 400, 600],
@@ -83,6 +115,10 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
     }
   ]
 }

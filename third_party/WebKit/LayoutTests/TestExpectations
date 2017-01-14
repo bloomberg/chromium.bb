@@ -1967,6 +1967,14 @@ crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/callback-idle-perio
 crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
 crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/basic.html [ Timeout ]
 
+crbug.com/680745 [ Win Linux Mac10.9 Mac10.11 Retina ] paint/invalidation/resize-iframe-text.html [ NeedsRebaseline ]
+crbug.com/680745 paint/invalidation/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
+crbug.com/680745 paint/invalidation/window-resize-frameset.html [ NeedsRebaseline ]
+crbug.com/680745 virtual/stable/paint/invalidation/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
+crbug.com/680745 [ Win Linux Mac10.9 Mac10.11 Retina ] virtual/stable/paint/invalidation/resize-iframe-text.html [ NeedsRebaseline ]
+crbug.com/680745 virtual/stable/paint/invalidation/window-resize-percent-html.html [ NeedsRebaseline ]
+crbug.com/680745 virtual/stable/paint/invalidation/window-resize-frameset.html [ NeedsRebaseline ]
+
 # [css-ui] Imported tests from W3C suite.
 crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-014.html [ Failure ]
 crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-015.html [ Failure ]
