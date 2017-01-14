@@ -71,4 +71,36 @@ Not Found: shouldNotFindThisFunction
 Checking 'shou'
 Not Found: should not find this
 
+Checking 'document.   bo'
+Found: body
+
+Checking 'document.	bo'
+Found: body
+
+Checking 'document.
+bo'
+Found: body
+
+Checking 'document.
+bo'
+Found: body
+
+Checking 'document   [    'bo'
+Not Found: 'body']
+
+Checking 'function hey(should'
+Not Found: shouldNotFindThisFunction
+
+Checking 'var should'
+Not Found: shouldNotFindThisFunction
+
+Checking 'document[[win'
+Found: window
+
+Checking 'document[   [win'
+Found: window
+
+Checking 'document[   [  win'
+Found: window
+
 

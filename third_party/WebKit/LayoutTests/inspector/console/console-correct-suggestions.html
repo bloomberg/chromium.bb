@@ -68,7 +68,17 @@ function test()
         () => testCompletions("`${do", ["document"], false),
         () => testCompletions("// do", ["document"], false),
         () => testCompletions('["should', ["shouldNotFindThisFunction"]),
-        () => testCompletions("shou", ["should not find this"])
+        () => testCompletions("shou", ["should not find this"]),
+        () => testCompletions("document.   bo", ["body"]),
+        () => testCompletions("document.\tbo", ["body"]),
+        () => testCompletions("document.\nbo", ["body"]),
+        () => testCompletions("document.\r\nbo", ["body"]),
+        () => testCompletions("document   [    'bo", ["'body']"]),
+        () => testCompletions("function hey(should", ["shouldNotFindThisFunction"]),
+        () => testCompletions("var should", ["shouldNotFindThisFunction"]),
+        () => testCompletions("document[[win", ["window"]),
+        () => testCompletions("document[   [win", ["window"]),
+        () => testCompletions("document[   [  win", ["window"])
     ]).then(InspectorTest.completeTest);
 
 }
