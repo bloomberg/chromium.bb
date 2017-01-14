@@ -2141,7 +2141,11 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   int resource_multiplier_location = -1;
   int resource_offset_location = -1;
   const Program* program = GetProgram(ProgramKey::YUVVideo(
-      tex_coord_precision, sampler, use_alpha_plane, use_nv12, use_color_lut));
+      tex_coord_precision, sampler,
+      use_alpha_plane ? YUV_HAS_ALPHA_TEXTURE : YUV_NO_ALPHA_TEXTURE,
+      use_nv12 ? UV_TEXTURE_MODE_UV : UV_TEXTURE_MODE_U_V,
+      use_color_lut ? COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV
+                    : COLOR_CONVERSION_MODE_NONE));
   DCHECK(program && (program->initialized() || IsContextLost()));
   SetUseProgram(program->program());
   matrix_location = program->matrix_location();

@@ -186,11 +186,17 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
         ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true)));
 
     // Iterate over alpha plane, nv12, and color_lut parameters.
+    UVTextureMode uv_modes[2] = {UV_TEXTURE_MODE_UV, UV_TEXTURE_MODE_U_V};
+    YUVAlphaTextureMode a_modes[2] = {YUV_NO_ALPHA_TEXTURE,
+                                      YUV_HAS_ALPHA_TEXTURE};
+    ColorConversionMode c_modes[2] = {
+        COLOR_CONVERSION_MODE_NONE,
+        COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV};
     for (int j = 0; j < 2; j++) {
       for (int k = 0; k < 2; k++) {
         for (int l = 0; l < 2; l++) {
-          const Program* program = renderer()->GetProgram(
-              ProgramKey::YUVVideo(precision, sampler, j, k, l));
+          const Program* program = renderer()->GetProgram(ProgramKey::YUVVideo(
+              precision, sampler, a_modes[j], uv_modes[k], c_modes[l]));
           EXPECT_PROGRAM_VALID(program);
         }
       }

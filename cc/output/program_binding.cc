@@ -27,8 +27,9 @@ bool ProgramKey::operator==(const ProgramKey& other) const {
          mask_mode_ == other.mask_mode_ &&
          mask_for_background_ == other.mask_for_background_ &&
          has_color_matrix_ == other.has_color_matrix_ &&
-         use_alpha_texture_ == other.use_alpha_texture_ &&
-         use_nv12_ == other.use_nv12_ && use_color_lut_ == other.use_color_lut_;
+         yuv_alpha_texture_mode_ == other.yuv_alpha_texture_mode_ &&
+         uv_texture_mode_ == other.uv_texture_mode_ &&
+         color_conversion_mode_ == other.color_conversion_mode_;
 }
 
 // static
@@ -108,16 +109,20 @@ ProgramKey ProgramKey::VideoStream(TexCoordPrecision precision) {
 // static
 ProgramKey ProgramKey::YUVVideo(TexCoordPrecision precision,
                                 SamplerType sampler,
-                                bool use_alpha_texture,
-                                bool use_nv12,
-                                bool use_color_lut) {
+                                YUVAlphaTextureMode yuv_alpha_texture_mode,
+                                UVTextureMode uv_texture_mode,
+                                ColorConversionMode color_conversion_mode) {
   ProgramKey result;
   result.type_ = PROGRAM_TYPE_YUV_VIDEO;
   result.precision_ = precision;
   result.sampler_ = sampler;
-  result.use_alpha_texture_ = use_alpha_texture;
-  result.use_nv12_ = use_nv12;
-  result.use_color_lut_ = use_color_lut;
+  result.yuv_alpha_texture_mode_ = yuv_alpha_texture_mode;
+  DCHECK(yuv_alpha_texture_mode == YUV_NO_ALPHA_TEXTURE ||
+         yuv_alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE);
+  result.uv_texture_mode_ = uv_texture_mode;
+  DCHECK(uv_texture_mode == UV_TEXTURE_MODE_UV ||
+         uv_texture_mode == UV_TEXTURE_MODE_U_V);
+  result.color_conversion_mode_ = color_conversion_mode;
   return result;
 }
 

@@ -114,6 +114,29 @@ enum InputColorSource {
   INPUT_COLOR_SOURCE_UNIFORM,
 };
 
+enum UVTextureMode {
+  // Shader does not use YUV textures.
+  UV_TEXTURE_MODE_NA,
+  // UV plane is a single texture.
+  UV_TEXTURE_MODE_UV,
+  // U and V planes have separate textures.
+  UV_TEXTURE_MODE_U_V,
+};
+
+enum YUVAlphaTextureMode {
+  YUV_ALPHA_TEXTURE_MODE_NA,
+  YUV_NO_ALPHA_TEXTURE,
+  YUV_HAS_ALPHA_TEXTURE,
+};
+
+enum ColorConversionMode {
+  // No color conversion is performed.
+  COLOR_CONVERSION_MODE_NONE,
+  // Conversion is done directly from YUV to output RGB space, via a 3D texture
+  // represented as a 2D texture.
+  COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV,
+};
+
 // TODO(ccameron): Merge this with BlendMode.
 enum FragColorMode {
   FRAG_COLOR_MODE_DEFAULT,
@@ -256,9 +279,10 @@ class FragmentShader {
   bool mask_for_background_ = false;
 
   // YUV-only parameters.
-  bool use_alpha_texture_ = false;
-  bool use_nv12_ = false;
-  bool use_color_lut_ = false;
+  YUVAlphaTextureMode yuv_alpha_texture_mode_ = YUV_ALPHA_TEXTURE_MODE_NA;
+  UVTextureMode uv_texture_mode_ = UV_TEXTURE_MODE_UV;
+
+  ColorConversionMode color_conversion_mode_ = COLOR_CONVERSION_MODE_NONE;
 
   // YUV uniform locations.
   int y_texture_location_ = -1;

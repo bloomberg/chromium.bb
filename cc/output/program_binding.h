@@ -92,9 +92,9 @@ class CC_EXPORT ProgramKey {
   static ProgramKey VideoStream(TexCoordPrecision precision);
   static ProgramKey YUVVideo(TexCoordPrecision precision,
                              SamplerType sampler,
-                             bool use_alpha_texture,
-                             bool use_nv12,
-                             bool use_color_lut);
+                             YUVAlphaTextureMode yuv_alpha_texture_mode,
+                             UVTextureMode uv_texture_mode,
+                             ColorConversionMode color_conversion_mode);
 
   bool operator==(const ProgramKey& other) const;
 
@@ -118,9 +118,10 @@ class CC_EXPORT ProgramKey {
   bool mask_for_background_ = false;
   bool has_color_matrix_ = false;
 
-  bool use_alpha_texture_ = false;
-  bool use_nv12_ = false;
-  bool use_color_lut_ = false;
+  YUVAlphaTextureMode yuv_alpha_texture_mode_ = YUV_NO_ALPHA_TEXTURE;
+  UVTextureMode uv_texture_mode_ = UV_TEXTURE_MODE_NA;
+
+  ColorConversionMode color_conversion_mode_ = COLOR_CONVERSION_MODE_NONE;
 };
 
 struct ProgramKeyHash {
@@ -137,9 +138,9 @@ struct ProgramKeyHash {
            (static_cast<size_t>(key.mask_mode_) << 21) ^
            (static_cast<size_t>(key.mask_for_background_) << 22) ^
            (static_cast<size_t>(key.has_color_matrix_) << 23) ^
-           (static_cast<size_t>(key.use_alpha_texture_) << 24) ^
-           (static_cast<size_t>(key.use_nv12_) << 25) ^
-           (static_cast<size_t>(key.use_color_lut_) << 26);
+           (static_cast<size_t>(key.yuv_alpha_texture_mode_) << 24) ^
+           (static_cast<size_t>(key.uv_texture_mode_) << 25) ^
+           (static_cast<size_t>(key.color_conversion_mode_) << 26);
   }
 };
 
@@ -384,9 +385,10 @@ class Program : public ProgramBindingBase {
     vertex_shader_.is_ya_uv_ = true;
 
     fragment_shader_.input_color_type_ = INPUT_COLOR_SOURCE_YUV_TEXTURES;
-    fragment_shader_.use_alpha_texture_ = key.use_alpha_texture_;
-    fragment_shader_.use_nv12_ = key.use_nv12_;
-    fragment_shader_.use_color_lut_ = key.use_color_lut_;
+    fragment_shader_.has_uniform_alpha_ = true;
+    fragment_shader_.yuv_alpha_texture_mode_ = key.yuv_alpha_texture_mode_;
+    fragment_shader_.uv_texture_mode_ = key.uv_texture_mode_;
+    fragment_shader_.color_conversion_mode_ = key.color_conversion_mode_;
   }
 
   void InitializeInternal(ContextProvider* context_provider) {
