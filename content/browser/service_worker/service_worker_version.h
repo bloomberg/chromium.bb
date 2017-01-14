@@ -100,6 +100,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
     DOES_NOT_EXIST,
   };
 
+  // Navigation Preload support status of the service worker.
+  enum class NavigationPreloadSupportStatus {
+    SUPPORTED,
+    NOT_SUPPORTED_FIELD_TRIAL_STOPPED,
+    NOT_SUPPORTED_DISABLED_BY_COMMAND_LINE,
+    NOT_SUPPORTED_NO_VALID_ORIGIN_TRIAL_TOKEN,
+  };
+
   class Listener {
    public:
     virtual void OnRunningStateChanged(ServiceWorkerVersion* version) {}
@@ -426,6 +434,41 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void NotifyMainScriptRequestHandlerCreated();
   void NotifyMainScriptJobCreated(
       ServiceWorkerContextRequestHandler::CreateJobStatus status);
+
+  // Returns the Navigation Preload support status of the service worker.
+  //  - Origin Trial: Have an effective token.
+  //                                 Command line
+  //                             Default  Enable  Disabled
+  //                   Default      B1      A        B2
+  //      Field trial  Enabled      A       A        B2
+  //                   Disabled     B1      A        B2
+  //
+  //  - Origin Trial: No token.
+  //                                 Command line
+  //                             Default  Enable  Disabled
+  //                   Default      C       A        C
+  //      Field trial  Enabled      C       A        C
+  //                   Disabled     C       A        C
+  //
+  //   * A  = SUPPORTED
+  //     B1 = NOT_SUPPORTED_FIELD_TRIAL_STOPPED
+  //     B2 = NOT_SUPPORTED_DISABLED_BY_COMMAND_LINE
+  //     C  = NOT_SUPPORTED_NO_VALID_ORIGIN_TRIAL_TOKEN
+  //
+  // There are three types of behaviors:
+  //  - A: Navigation Preload related methods and attributes are available in JS
+  //       and work correctly.
+  //  - B: Navigation Preload related methods and attributes are available in
+  //       JS. But NavigationPreloadManager's enable, disable and setHeaderValue
+  //       methods always return a rejected promise. And FetchEvent's
+  //       preloadResponse attribute returns a promise which always resolve with
+  //       undefined.
+  //  - C: Navigation Preload related methods and attributes are not available
+  //       in JS.
+  // This method returns SUPPORTED only for A case.
+  // blink::OriginTrials::serviceWorkerNavigationPreloadEnabled() returns true
+  // for both A and B case. So the methods and attributes are available in JS.
+  NavigationPreloadSupportStatus GetNavigationPreloadSupportStatus() const;
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;

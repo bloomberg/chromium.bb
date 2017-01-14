@@ -314,8 +314,20 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kWebPayments));
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kServiceWorkerNavigationPreload))
+  // We set the RuntimeEnabledFeatures for Navigation Preload feature only when
+  // it is set by "--enable-features" flag.
+  // While we are experimenting this feature using Origin Trial, we enable this
+  // feature using the field trial mechanism. So FeatureList::IsEnabled() always
+  // returns true. But, unless the command line explicitly enabled the feature,
+  // this feature should be available only when a valid origin trial token is
+  // set. This check is done by the generated code of
+  // blink::OriginTrials::serviceWorkerNavigationPreloadEnabled(). See the
+  // comments in service_worker_version.h for the details.
+  if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kServiceWorkerNavigationPreload.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
     WebRuntimeFeatures::enableServiceWorkerNavigationPreload(true);
+  }
 
   if (base::FeatureList::IsEnabled(features::kSpeculativeLaunchServiceWorker))
     WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(true);

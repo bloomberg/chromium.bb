@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -25,7 +24,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_util.h"
@@ -400,10 +398,11 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   // TODO(horo): Currently NavigationPreload doesn't support request body.
   if (!request_->blob_uuid.empty())
     return;
-  if (!base::FeatureList::IsEnabled(
-          features::kServiceWorkerNavigationPreload)) {
-    // TODO(horo): Check |version_|'s origin_trial_tokens() here if we use
-    // Origin-Trial for NavigationPreload.
+
+  ServiceWorkerVersion::NavigationPreloadSupportStatus support_status =
+      version_->GetNavigationPreloadSupportStatus();
+  if (support_status !=
+      ServiceWorkerVersion::NavigationPreloadSupportStatus::SUPPORTED) {
     return;
   }
 

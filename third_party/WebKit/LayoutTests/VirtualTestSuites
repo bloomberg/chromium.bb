@@ -321,6 +321,11 @@
     "args": ["--enable-features=ServiceWorkerNavigationPreload"]
   },
   {
+    "prefix": "service-worker-navigation-preload-disabled",
+    "base": "http/tests/serviceworker/chromium",
+    "args": ["--disable-features=ServiceWorkerNavigationPreload"]
+  },
+  {
     "prefix": "layout_ng",
     "base": "fast/block/basic",
     "args": ["--enable-blink-features=LayoutNG"]

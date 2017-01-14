@@ -218,7 +218,7 @@ ScrollAnchoring status=experimental, settable_from_internals=True
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
 Sensor status=experimental
-ServiceWorkerNavigationPreload
+ServiceWorkerNavigationPreload origin_trial_feature_name=ServiceWorkerNavigationPreload
 SetRootScroller status=experimental
 ShadowPiercingDescendantCombinator status=experimental
 ShapeDetection status=experimental

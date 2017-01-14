@@ -11,11 +11,13 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8WorkerNavigator.h"
 #include "bindings/modules/v8/V8DedicatedWorkerGlobalScopePartial.h"
+#include "bindings/modules/v8/V8FetchEvent.h"
 #include "bindings/modules/v8/V8Gamepad.h"
 #include "bindings/modules/v8/V8GamepadButton.h"
 #include "bindings/modules/v8/V8InstallEvent.h"
 #include "bindings/modules/v8/V8NavigatorPartial.h"
 #include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
+#include "bindings/modules/v8/V8ServiceWorkerRegistration.h"
 #include "bindings/modules/v8/V8SharedWorkerGlobalScopePartial.h"
 #include "bindings/modules/v8/V8WindowPartial.h"
 #include "bindings/modules/v8/V8WorkerNavigatorPartial.h"
@@ -77,11 +79,45 @@ void installConditionalFeaturesForModules(
       V8WindowPartial::installGamepadExtensions(
           isolate, world, instanceObject, prototypeObject, interfaceObject);
     }
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+      V8WindowPartial::installServiceWorkerNavigationPreload(
+          isolate, world, instanceObject, prototypeObject, interfaceObject);
+    }
+  } else if (wrapperTypeInfo ==
+             &V8DedicatedWorkerGlobalScope::wrapperTypeInfo) {
+    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+      V8DedicatedWorkerGlobalScopePartial::
+          installServiceWorkerNavigationPreload(
+              isolate, world, instanceObject, prototypeObject, interfaceObject);
+    }
+  } else if (wrapperTypeInfo == &V8SharedWorkerGlobalScope::wrapperTypeInfo) {
+    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+      V8SharedWorkerGlobalScopePartial::installServiceWorkerNavigationPreload(
+          isolate, world, instanceObject, prototypeObject, interfaceObject);
+    }
   } else if (wrapperTypeInfo == &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
     v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
     if (OriginTrials::foreignFetchEnabled(executionContext)) {
       V8ServiceWorkerGlobalScope::installForeignFetch(
           isolate, world, instanceObject, prototypeObject, interfaceObject);
+    }
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+      V8ServiceWorkerGlobalScope::installServiceWorkerNavigationPreload(
+          isolate, world, instanceObject, prototypeObject, interfaceObject);
+    }
+  } else if (wrapperTypeInfo == &V8ServiceWorkerRegistration::wrapperTypeInfo) {
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+      V8ServiceWorkerRegistration::installServiceWorkerNavigationPreload(
+          isolate, world, v8::Local<v8::Object>(), prototypeObject,
+          interfaceObject);
+    }
+  } else if (wrapperTypeInfo == &V8FetchEvent::wrapperTypeInfo) {
+    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(executionContext)) {
+      V8FetchEvent::installServiceWorkerNavigationPreload(
+          isolate, world, v8::Local<v8::Object>(), prototypeObject,
+          interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8InstallEvent::wrapperTypeInfo) {
     if (OriginTrials::foreignFetchEnabled(executionContext)) {

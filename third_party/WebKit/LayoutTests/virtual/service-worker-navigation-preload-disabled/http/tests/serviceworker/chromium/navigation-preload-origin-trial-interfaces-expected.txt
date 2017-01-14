@@ -1,0 +1,81 @@
+CONSOLE MESSAGE: line 18: Interfaces in document
+interface NavigationPreloadManager
+ method constructor
+ method disable
+ method enable
+ method getState
+ method setHeaderValue
+interface ServiceWorkerRegistration
+ getter active
+ getter installing
+ getter navigationPreload
+ getter onupdatefound
+ getter paymentAppManager
+ getter pushManager
+ getter scope
+ getter sync
+ getter waiting
+ method constructor
+ method getNotifications
+ method showNotification
+ method unregister
+ method update
+ setter onupdatefound
+CONSOLE MESSAGE: line 55: Interfaces in normal Service Worker
+interface FetchEvent
+ getter clientId
+ getter isReload
+ getter request
+ method constructor
+ method respondWith
+interface ServiceWorkerRegistration
+ getter active
+ getter installing
+ getter onupdatefound
+ getter paymentAppManager
+ getter pushManager
+ getter scope
+ getter sync
+ getter waiting
+ method constructor
+ method getNotifications
+ method showNotification
+ method unregister
+ method update
+ setter onupdatefound
+CONSOLE MESSAGE: line 67: Interfaces in Origin-Trial enabled Service Worker
+interface FetchEvent
+ getter clientId
+ getter isReload
+ getter preloadResponse
+ getter request
+ method constructor
+ method respondWith
+interface NavigationPreloadManager
+ method constructor
+ method disable
+ method enable
+ method getState
+ method setHeaderValue
+interface ServiceWorkerRegistration
+ getter active
+ getter installing
+ getter navigationPreload
+ getter onupdatefound
+ getter paymentAppManager
+ getter pushManager
+ getter scope
+ getter sync
+ getter waiting
+ method constructor
+ method getNotifications
+ method showNotification
+ method unregister
+ method update
+ setter onupdatefound
+This is a testharness.js-based test.
+PASS Navigation preload related interfaces in Origin-Trial enabled document. 
+PASS Navigation preload related interfaces in normal SW. 
+PASS Navigation preload related interfaces in Origin-Trial enabled SW. 
+Harness: the test ran to completion.
+
