@@ -32,10 +32,14 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_DEVICE_TABLE_JS);
   html_source->AddResourcePath("devices_page.js",
                                IDR_BLUETOOTH_INTERNALS_DEVICES_PAGE_JS);
+  html_source->AddResourcePath("expandable_list.js",
+                               IDR_BLUETOOTH_INTERNALS_EXPANDABLE_LIST_JS);
   html_source->AddResourcePath("interfaces.js",
                                IDR_BLUETOOTH_INTERNALS_INTERFACES_JS);
   html_source->AddResourcePath("object_fieldset.js",
                                IDR_BLUETOOTH_INTERNALS_OBJECT_FIELDSET_JS);
+  html_source->AddResourcePath("service_list.js",
+                               IDR_BLUETOOTH_INTERNALS_SERVICE_LIST_JS);
   html_source->AddResourcePath("sidebar.js",
                                IDR_BLUETOOTH_INTERNALS_SIDEBAR_JS);
   html_source->AddResourcePath("snackbar.js",

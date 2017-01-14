@@ -20,6 +20,7 @@ struct DeviceInfo {
 };
 
 struct ServiceInfo {
+  string id;
   UUID uuid;
   bool is_primary;
 };

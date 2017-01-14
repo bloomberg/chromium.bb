@@ -119,6 +119,7 @@ mojom::ServiceInfoPtr Device::ConstructServiceInfoStruct(
     const device::BluetoothRemoteGattService& service) {
   mojom::ServiceInfoPtr service_info = mojom::ServiceInfo::New();
 
+  service_info->id = service.GetIdentifier();
   service_info->uuid = service.GetUUID();
   service_info->is_primary = service.IsPrimary();
 

@@ -294,6 +294,18 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_FOCUS_ROW"
                  file="html/cr/ui/focus_row.html" type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_LIST"
+                 file="html/cr/ui/list.html"
+                 type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_LIST_ITEM"
+                 file="html/cr/ui/list_item.html"
+                 type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_LIST_SELECTION_CONTROLLER"
+                 file="html/cr/ui/list_selection_controller.html"
+                 type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_LIST_SELECTION_MODEL"
+                 file="html/cr/ui/list_selection_model.html"
+                 type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_MENU"
                  file="html/cr/ui/menu.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_MENU_BUTTON"

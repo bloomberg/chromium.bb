@@ -9,6 +9,7 @@
  */
 
 cr.define('device_details_page', function() {
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var Snackbar = snackbar.Snackbar;
   /** @const */ var SnackbarType = snackbar.SnackbarType;
@@ -42,12 +43,16 @@ cr.define('device_details_page', function() {
     /** @type {interfaces.BluetoothDevice.DeviceInfo} */
     this.deviceInfo = deviceInfo;
 
-    /** @type {interfaces.BluetoothDevice.Device.ptrClass} */
+    /** @type {?interfaces.BluetoothDevice.Device.ptrClass} */
     this.devicePtr = null;
 
     /** @type {!object_fieldset.ObjectFieldSet} */
     this.deviceFieldSet = new object_fieldset.ObjectFieldSet();
     this.deviceFieldSet.setPropertyDisplayNames(PROPERTY_NAMES);
+
+    /** @type {!service_list.ServiceList} */
+    this.serviceList = new service_list.ServiceList();
+    this.serviceList.setLoading(true);
 
     /** @private {!device_collection.ConnectionStatus} */
     this.status_ = device_collection.ConnectionStatus.DISCONNECTED;
@@ -61,6 +66,7 @@ cr.define('device_details_page', function() {
 
     this.pageDiv.querySelector('.device-details').appendChild(
         this.deviceFieldSet);
+    this.pageDiv.querySelector('.services').appendChild(this.serviceList);
 
     this.pageDiv.querySelector('.forget').addEventListener(
         'click', function() {
@@ -102,7 +108,10 @@ cr.define('device_details_page', function() {
         // Fetch services asynchronously.
         return this.devicePtr.getServices();
       }.bind(this)).then(function(response) {
-        this.deviceInfo.services = response.services;
+        this.serviceList.setData(new ArrayDataModel(response.services));
+        this.deviceInfo.services = this.serviceList.dataModel;
+        this.serviceList.setLoading(false);
+
         this.redraw();
         this.fireDeviceInfoChanged_();
       }.bind(this)).catch(function(error) {
@@ -160,6 +169,7 @@ cr.define('device_details_page', function() {
       };
 
       this.deviceFieldSet.setObject(deviceViewObj);
+      this.serviceList.redraw();
     },
 
     /**

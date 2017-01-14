@@ -4,6 +4,7 @@
  */
 
 :root {
+  --expandable-list-item-border: 1px solid gray;
   --fade-duration: 225ms;
   --header-height: 48px;
   --md-timing-function: cubic-bezier(.4, 0, .6, 1);
@@ -31,6 +32,53 @@ h1 {
 .toggle-status.checked {
   background-image:
       url(../../../../ui/webui/resources/images/check_circle_green.svg);
+}
+
+/* Expandable List */
+list {
+  list-style-type: none;
+  outline: none;
+}
+
+list .spinner {
+  height: 48px;
+  margin: 0 auto;
+  pointer-events: none;
+  width: 48px;
+}
+
+.expandable-list-item .brief-content {
+  align-items: center;
+  background-color: whitesmoke;
+  border-left: var(--expandable-list-item-border);
+  border-right: var(--expandable-list-item-border);
+  border-top: var(--expandable-list-item-border);
+  cursor: pointer;
+  display: flex;
+  font-weight: 600;
+  height: 40px;
+  padding: 8px;
+}
+
+.expandable-list-item.expanded > .brief-content {
+  border-bottom: var(--expandable-list-item-border);
+}
+
+.expandable-list-item:nth-last-child(2) > .brief-content {
+  border-bottom: var(--expandable-list-item-border);
+}
+
+.expandable-list-item > .expanded-content {
+  height: 0;
+  overflow: hidden;
+}
+
+.expandable-list-item.expanded > .expanded-content {
+  height: auto;
+}
+
+.expandable-list-item .info-container {
+  padding: 0 0 8px;
 }
 
 /* Page container */
@@ -336,6 +384,10 @@ table .removed {
 }
 
 /* Object Fieldset Container */
+.flex {
+  overflow-x: auto;
+}
+
 @media screen and (min-width: 601px) {
   .flex {
     display: flex;
@@ -343,6 +395,7 @@ table .removed {
 }
 
 /* Device Details Page */
-.device-details-page section {
+.device-details-page section,
+.info-container fieldset {
   -webkit-margin-start: 1em;
 }
