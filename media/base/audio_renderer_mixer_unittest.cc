@@ -553,7 +553,7 @@ INSTANTIATE_TEST_CASE_P(
 // support single item lists and we don't want these test cases to run for every
 // parameter set.
 INSTANTIATE_TEST_CASE_P(
-    AudioRendererMixerBehavioralTest,
+    /* no prefix */,
     AudioRendererMixerBehavioralTest,
     testing::ValuesIn(std::vector<AudioRendererMixerTestData>(
         1,

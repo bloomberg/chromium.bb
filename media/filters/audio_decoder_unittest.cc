@@ -380,8 +380,6 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderTest);
 };
 
-class FFmpegAudioDecoderBehavioralTest : public AudioDecoderTest {};
-
 TEST_P(AudioDecoderTest, Initialize) {
   SKIP_TEST_IF_NO_MEDIA_CODEC();
   ASSERT_NO_FATAL_FAILURE(Initialize());
@@ -483,7 +481,7 @@ const DecoderTestData kMediaCodecTests[] = {
 #endif
 };
 
-INSTANTIATE_TEST_CASE_P(MediaCodecAudioDecoderTest,
+INSTANTIATE_TEST_CASE_P(MediaCodec,
                         AudioDecoderTest,
                         testing::ValuesIn(kMediaCodecTests));
 #endif  // defined(OS_ANDROID)
@@ -571,16 +569,8 @@ const DecoderTestData kFFmpegTests[] = {
      CHANNEL_LAYOUT_STEREO},
 };
 
-// Dummy data for behavioral tests.
-const DecoderTestData kFFmpegBehavioralTest[] = {
-    {FFMPEG, kUnknownAudioCodec, "", NULL, 0, 0, CHANNEL_LAYOUT_NONE},
-};
-
-INSTANTIATE_TEST_CASE_P(FFmpegAudioDecoderTest,
+INSTANTIATE_TEST_CASE_P(FFmpeg,
                         AudioDecoderTest,
                         testing::ValuesIn(kFFmpegTests));
-INSTANTIATE_TEST_CASE_P(FFmpegAudioDecoderBehavioralTest,
-                        FFmpegAudioDecoderBehavioralTest,
-                        testing::ValuesIn(kFFmpegBehavioralTest));
 
 }  // namespace media
