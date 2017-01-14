@@ -58,6 +58,7 @@ NSString* const kGoBackTwoID = @"go-back-2";
 const char kBackHTMLButtonLabel[] = "BackHTMLButton";
 const char kForwardHTMLButtonLabel[] = "ForwardHTMLButton";
 const char kForwardHTMLSentinel[] = "Forward page loaded";
+const char kTestPageSentinel[] = "Test Page";
 const char kBackURL[] = "http://back";
 const char kForwardURL[] = "http://forward";
 const char kTestURL[] = "http://test";
@@ -378,11 +379,6 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
 // Tests going back via back button then forward via history.forward().
 - (void)testHistoryForwardNavigation {
-// TODO(crbug.com/677129): Reenable this test.
-#if TARGET_OS_IPHONE
-  EARL_GREY_TEST_SKIPPED(@"flaky on devices");
-#endif  // TARGET_OS_IPHONE
-
   SetupBackAndForwardResponseProvider();
 
   // Navigate to an HTML page with a forward button.
@@ -396,15 +392,17 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   // Tap the back button in the toolbar and verify the page with forward button
   // is loaded.
   [[EarlGrey selectElementWithMatcher:backButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
-                                          firstURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
   [[EarlGrey
       selectElementWithMatcher:webViewContainingText(kForwardHTMLSentinel)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
+                                          firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap the forward button in the HTML and verify the second URL is loaded.
   TapWebViewElementWithId(kForwardHTMLButtonLabel);
+  [[EarlGrey selectElementWithMatcher:webViewContainingText(kTestPageSentinel)]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
                                           secondURL.GetContent())]
       assertWithMatcher:grey_notNil()];
