@@ -885,6 +885,18 @@
             ]
         }
     ],
+    "InstantApps": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "InstantAppsEnabled"
+                }
+            ]
+        }
+    ],
     "IntelligentSessionRestore": [
         {
             "platforms": [
