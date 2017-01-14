@@ -68,6 +68,7 @@ class CORE_EXPORT SharedStyleFinder {
   bool sharingCandidateHasIdenticalStyleAffectingAttributes(
       Element& candidate) const;
   bool sharingCandidateCanShareHostStyles(Element& candidate) const;
+  bool sharingCandidateAssignedToSameSlot(Element& candidate) const;
   bool sharingCandidateDistributedToSameInsertionPoint(
       Element& candidate) const;
   bool matchesRuleSet(RuleSet*);

@@ -114,16 +114,17 @@ static Element* parentElement(
   return context.element->parentElement();
 }
 
+// If context has scope, return slot that matches the scope, otherwise return
+// the assigned slot for scope-less matching of ::slotted pseudo element.
 static const HTMLSlotElement* findSlotElementInScope(
     const SelectorChecker::SelectorCheckingContext& context) {
   if (!context.scope)
-    return nullptr;
+    return context.element->assignedSlot();
 
-  const HTMLSlotElement* slot = context.element->assignedSlot();
-  while (slot) {
+  for (const HTMLSlotElement* slot = context.element->assignedSlot(); slot;
+       slot = slot->assignedSlot()) {
     if (slot->treeScope() == context.scope->treeScope())
       return slot;
-    slot = slot->assignedSlot();
   }
   return nullptr;
 }

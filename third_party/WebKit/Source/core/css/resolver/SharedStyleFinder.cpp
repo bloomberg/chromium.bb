@@ -198,6 +198,15 @@ bool SharedStyleFinder::sharingCandidateCanShareHostStyles(
   return elementShadow->hasSameStyles(*candidateShadow);
 }
 
+bool SharedStyleFinder::sharingCandidateAssignedToSameSlot(
+    Element& candidate) const {
+  HTMLSlotElement* elementSlot = element().assignedSlot();
+  HTMLSlotElement* candidateSlot = candidate.assignedSlot();
+  if (!elementSlot && !candidateSlot)
+    return true;
+  return elementSlot == candidateSlot;
+}
+
 bool SharedStyleFinder::sharingCandidateDistributedToSameInsertionPoint(
     Element& candidate) const {
   HeapVector<Member<InsertionPoint>, 8> insertionPoints,
@@ -251,6 +260,10 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const {
     return false;
   if (!sharingCandidateCanShareHostStyles(candidate))
     return false;
+  // For Shadow DOM V1
+  if (!sharingCandidateAssignedToSameSlot(candidate))
+    return false;
+  // For Shadow DOM V0
   if (!sharingCandidateDistributedToSameInsertionPoint(candidate))
     return false;
   if (candidate.isInTopLayer() != element().isInTopLayer())
