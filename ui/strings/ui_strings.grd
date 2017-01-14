@@ -667,6 +667,9 @@ need to be translated for each locale.-->
       <message name="IDS_DISPLAY_TOUCH_CALIBRATION_HINT_SUBLABEL_TEXT" desc="Message to inform the user what the next step is in touch calibration is">
         Tap the touch targets on your screen.
       </message>
+      <message name="IDS_DISPLAY_TOUCH_CALIBRATION_TAP_HERE_LABEL" desc="A message to notify the user about the significance of a circle on the screen during the touchscreen calibration.">
+        Tap here
+      </message>
 
       <!-- Display names -->
       <message name="IDS_DISPLAY_NAME_UNKNOWN" desc="The name used for a display whose name is unknown, which is shown in the display settings and ash tray.">

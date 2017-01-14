@@ -9,10 +9,12 @@
 #include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -24,23 +26,28 @@ constexpr char kWidgetName[] = "TouchCalibratorOverlay";
 
 constexpr int kAnimationFrameRate = 100;
 constexpr int kFadeDurationInMs = 150;
+constexpr int kPointMoveDurationInMs = 600;
+constexpr int kPointMoveDurationLongInMs = 700;
 
 const SkColor kExitLabelColor = SkColorSetARGBInline(255, 96, 96, 96);
 const SkColor kExitLabelShadowColor = SkColorSetARGBInline(255, 11, 11, 11);
 constexpr int kExitLabelWidth = 300;
 constexpr int kExitLabelHeight = 20;
 
+const SkColor kTapHereLabelColor = SK_ColorWHITE;
+
 constexpr int kHintBoxWidth = 298;
 constexpr int kHintBoxHeight = 180;
 constexpr int kHintBoxLabelTextSize = 5;
 constexpr int kHintBoxSublabelTextSize = 3;
 
-constexpr int kThrobberCircleViewWidth = 128;
+constexpr int kThrobberCircleViewWidth = 64;
 constexpr float kThrobberCircleRadiusFactor = 3.f / 8.f;
 
 constexpr int kTouchPointViewOffset = 100;
 
 constexpr int kTapLabelHeight = 48;
+constexpr int kTapLabelWidth = 80;
 
 const SkColor kHintLabelTextColor = SK_ColorBLACK;
 const SkColor kHintSublabelTextColor = SkColorSetARGBInline(255, 161, 161, 161);
@@ -50,7 +57,7 @@ const SkColor kOuterCircleColor = SkColorSetA(kInnerCircleColor, 128);
 
 constexpr int kCircleAnimationDurationMs = 900;
 
-constexpr int kHintRectBorderRadius = 8;
+constexpr int kHintRectBorderRadius = 4;
 
 constexpr float kBackgroundFinalOpacity = 0.75f;
 
@@ -76,6 +83,17 @@ gfx::Size GetSizeForString(const base::string16& text,
   int height = 0, width = 0;
   gfx::Canvas::SizeStringInt(text, font_list, &width, &height, 0, 0);
   return gfx::Size(width, height);
+}
+
+void AnimateLayerToPosition(views::View* view,
+                            int duration,
+                            gfx::Point end_position) {
+  ui::ScopedLayerAnimationSettings slide_settings(view->layer()->GetAnimator());
+  slide_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  slide_settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(duration));
+  view->SetBoundsRect(gfx::Rect(end_position, view->size()));
 }
 
 }  // namespace
@@ -291,6 +309,7 @@ TouchCalibratorView::TouchCalibratorView(const display::Display& target_display,
     : display_(target_display),
       is_primary_view_(is_primary_view),
       exit_label_(nullptr),
+      tap_label_(nullptr),
       throbber_circle_(nullptr),
       hint_box_view_(nullptr),
       touch_point_view_(nullptr) {
@@ -349,18 +368,41 @@ void TouchCalibratorView::InitViewContents() {
   // Initialize the touch point view that contains the animated circle that the
   // user needs to tap.
   const int kTouchPointViewHeight = kThrobberCircleViewWidth + kTapLabelHeight;
+  const int kThrobberCircleViewHorizontalOffset =
+      (kTapLabelWidth - kThrobberCircleViewWidth) / 2;
 
   throbber_circle_ =
       new CircularThrobberView(kThrobberCircleViewWidth, kInnerCircleColor,
                                kOuterCircleColor, kCircleAnimationDurationMs);
-  throbber_circle_->SetPosition(gfx::Point(0, 0));
+  throbber_circle_->SetPosition(
+      gfx::Point(kThrobberCircleViewHorizontalOffset, 0));
+
+  // Initialize the tap label.
+  tap_label_ = new views::Label(
+      rb.GetLocalizedString(IDS_DISPLAY_TOUCH_CALIBRATION_TAP_HERE_LABEL),
+      rb.GetFontListWithDelta(6, gfx::Font::FontStyle::NORMAL,
+                              gfx::Font::Weight::NORMAL));
+  tap_label_->SetBounds(0, kThrobberCircleViewWidth, kTapLabelWidth,
+                        kTapLabelHeight);
+  tap_label_->SetEnabledColor(kTapHereLabelColor);
+  tap_label_->SetDisabledColor(kTapHereLabelColor);
+  tap_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  tap_label_->SetAutoColorReadabilityEnabled(false);
+  tap_label_->SetSubpixelRenderingEnabled(false);
+  tap_label_->SetVisible(false);
 
   touch_point_view_ = new views::View;
   touch_point_view_->SetBounds(kTouchPointViewOffset, kTouchPointViewOffset,
-                               kThrobberCircleViewWidth, kTouchPointViewHeight);
+                               kTapLabelWidth, kTouchPointViewHeight);
   touch_point_view_->SetVisible(false);
+  touch_point_view_->SetPaintToLayer(true);
+  touch_point_view_->layer()->SetFillsBoundsOpaquely(false);
+  touch_point_view_->layer()->GetAnimator()->AddObserver(this);
+  touch_point_view_->set_background(
+      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
 
   touch_point_view_->AddChildView(throbber_circle_);
+  touch_point_view_->AddChildView(tap_label_);
 
   AddChildView(touch_point_view_);
 
@@ -411,7 +453,10 @@ void TouchCalibratorView::OnPaintBackground(gfx::Canvas* canvas) {
 }
 
 void TouchCalibratorView::AnimationProgressed(const gfx::Animation* animation) {
-  SchedulePaint();
+  if (!is_primary_view_) {
+    SchedulePaint();
+    return;
+  }
 }
 
 void TouchCalibratorView::AnimationCanceled(const gfx::Animation* animation) {
@@ -433,9 +478,38 @@ void TouchCalibratorView::AnimationEnded(const gfx::Animation* animation) {
   }
 }
 
+void TouchCalibratorView::OnLayerAnimationStarted(
+    ui::LayerAnimationSequence* sequence) {}
+
+void TouchCalibratorView::OnLayerAnimationEnded(
+    ui::LayerAnimationSequence* sequence) {
+  switch (state_) {
+    case ANIMATING_1_TO_2:
+      state_ = DISPLAY_POINT_2;
+      tap_label_->SetVisible(true);
+      break;
+    case ANIMATING_2_TO_3:
+      state_ = DISPLAY_POINT_3;
+      break;
+    case ANIMATING_3_TO_4:
+      state_ = DISPLAY_POINT_4;
+      break;
+    default:
+      break;
+  }
+}
+
+void TouchCalibratorView::OnLayerAnimationAborted(
+    ui::LayerAnimationSequence* sequence) {
+  OnLayerAnimationEnded(sequence);
+}
+
+void TouchCalibratorView::OnLayerAnimationScheduled(
+    ui::LayerAnimationSequence* sequence) {}
+
 void TouchCalibratorView::AdvanceToNextState() {
   // Stop any previous animations and skip them to the end.
-  animator_->End();
+  SkipCurrentAnimation();
 
   switch (state_) {
     case UNKNOWN:
@@ -445,26 +519,75 @@ void TouchCalibratorView::AdvanceToNextState() {
       end_opacity_value_ = kBackgroundFinalOpacity;
 
       paint_.setStyle(SkPaint::kFill_Style);
-
       animator_->SetDuration(kFadeDurationInMs);
-      break;
+      animator_->Start();
+      return;
+    case DISPLAY_POINT_1:
+      state_ = ANIMATING_1_TO_2;
+
+      // The touch point has to be animated from the top left corner of the
+      // screen to the top right corner.
+      AnimateLayerToPosition(
+          touch_point_view_, kPointMoveDurationInMs,
+          gfx::Point(display_.bounds().width() - kTouchPointViewOffset -
+                         touch_point_view_->width(),
+                     touch_point_view_->y()));
+      hint_box_view_->SetVisible(false);
+      return;
+    case DISPLAY_POINT_2:
+      state_ = ANIMATING_2_TO_3;
+
+      // The touch point has to be animated from the top right corner of the
+      // screen to the bottom left corner.
+      AnimateLayerToPosition(
+          touch_point_view_, kPointMoveDurationLongInMs,
+          gfx::Point(kTouchPointViewOffset, display_.bounds().height() -
+                                                kTouchPointViewOffset -
+                                                touch_point_view_->height()));
+      return;
+    case DISPLAY_POINT_3:
+      state_ = ANIMATING_3_TO_4;
+
+      // The touch point has to be animated from the bottom left corner of the
+      // screen to the bottom right corner.
+      AnimateLayerToPosition(
+          touch_point_view_, kPointMoveDurationInMs,
+          gfx::Point(display_.bounds().width() - kTouchPointViewOffset -
+                         touch_point_view_->width(),
+                     touch_point_view_->y()));
+      return;
     default:
-      break;
+      return;
   }
-  animator_->Start();
 }
 
 bool TouchCalibratorView::GetDisplayPointLocation(gfx::Point* location) {
+  DCHECK(location);
   if (!is_primary_view_)
     return false;
-  return false;
+
+  if (state_ != DISPLAY_POINT_1 && state_ != DISPLAY_POINT_2 &&
+      state_ != DISPLAY_POINT_3 && state_ != DISPLAY_POINT_4) {
+    return false;
+  }
+
+  if (!touch_point_view_ || !throbber_circle_)
+    return false;
+  // TODO(malaykeshav): Can use views::ConvertPointToScreen()
+  location->SetPoint(touch_point_view_->x() + touch_point_view_->width() / 2.f,
+                     touch_point_view_->y() + touch_point_view_->width() / 2.f);
+  return true;
 }
 
 void TouchCalibratorView::SkipToFinalState() {}
 
-void TouchCalibratorView::SkipCurrentAnimationForTest() {
+void TouchCalibratorView::SkipCurrentAnimation() {
   if (animator_->is_animating())
     animator_->End();
+  if (touch_point_view_ &&
+      touch_point_view_->layer()->GetAnimator()->is_animating()) {
+    touch_point_view_->layer()->GetAnimator()->StopAnimating();
+  }
 }
 
 }  // namespace chromeos

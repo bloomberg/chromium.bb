@@ -125,6 +125,10 @@ void TouchCalibratorController::OnTouchEvent(ui::TouchEvent* touch) {
   if (target_screen_calibration_view->GetDisplayPointLocation(&display_point)) {
     touch_point_quad_[state_index] =
         std::make_pair(display_point, touch->location());
+  } else {
+    // TODO(malaykeshav): Display some kind of error for the user.
+    NOTREACHED() << "Touch calibration failed. Could not retrieve location for"
+                    " display point. Retry calibration.";
   }
 
   // If this is the final state, then store all calibration data and stop

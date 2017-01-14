@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DISPLAY_TOUCH_CALIBRATOR_TOUCH_CALIBRATOR_VIEW_H_
 
 #include "base/macros.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/view.h"
@@ -20,6 +21,10 @@ class Animation;
 class LinearAnimation;
 }
 
+namespace ui {
+class LayerAnimationSequence;
+}
+
 namespace chromeos {
 
 class CircularThrobberView;
@@ -30,7 +35,9 @@ class CircularThrobberView;
 // touch calibration view.
 // |TouchCalibratorView| acts as a state machine and has an API to toggle its
 // state or get the current state.
-class TouchCalibratorView : public views::View, public gfx::AnimationDelegate {
+class TouchCalibratorView : public views::View,
+                            public gfx::AnimationDelegate,
+                            public ui::LayerAnimationObserver {
  public:
   // Different states of |TouchCalibratorView| in order.
   enum State {
@@ -68,6 +75,12 @@ class TouchCalibratorView : public views::View, public gfx::AnimationDelegate {
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
+  // ui::LayerAnimationObserver
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
+
   // Moves the touch calibrator view to its next state.
   void AdvanceToNextState();
 
@@ -81,7 +94,7 @@ class TouchCalibratorView : public views::View, public gfx::AnimationDelegate {
   bool GetDisplayPointLocation(gfx::Point* location);
 
   // Skips/cancels any ongoing animation to its end.
-  void SkipCurrentAnimationForTest();
+  void SkipCurrentAnimation();
 
   // Returns the current state of the view.
   State state() { return state_; }
@@ -104,6 +117,8 @@ class TouchCalibratorView : public views::View, public gfx::AnimationDelegate {
 
   // Text label indicating how to exit the touch calibration.
   views::Label* exit_label_;
+  // Text label indicating the significance of the touch point on screen.
+  views::Label* tap_label_;
 
   // Start and end opacity values used during the fade animation. This is set
   // before the animation begins.

@@ -56,7 +56,7 @@ class TouchCalibratorControllerTest : public ash::test::AshTestBase {
         ctrl->touch_calibrator_views_[target_display.id()].get();
 
     // End the background fade in animation.
-    target_calibrator_view->SkipCurrentAnimationForTest();
+    target_calibrator_view->SkipCurrentAnimation();
 
     // TouchCalibratorView on the display being calibrated should be at the
     // state where the first display point is visible.
