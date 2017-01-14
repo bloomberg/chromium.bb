@@ -494,7 +494,6 @@ class MojoInterfacePerfTest : public mojo::edk::test::MojoTestBase {
 
  protected:
   void RunPingPongServer(MojoHandle mp, const std::string& label) {
-    base::MessageLoop main_message_loop;
     label_ = label;
 
     mojo::MessagePipeHandle mp_handle(mp);
@@ -581,12 +580,13 @@ DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MojoInterfacePerfTest, h) {
 // raw IPC::Messages.
 TEST_F(MojoInterfacePerfTest, MultiprocessPingPong) {
   RUN_CHILD_ON_PIPE(PingPongClient, h)
+    base::MessageLoop main_message_loop;
     RunPingPongServer(h, "MultiProcess");
   END_CHILD()
 }
 
 // A single process version of the above test.
-TEST_F(MojoInterfacePerfTest, SingleProcessPingPong) {
+TEST_F(MojoInterfacePerfTest, SingleProcessMultiThreadPingPong) {
   MojoHandle server_handle, client_handle;
   CreateMessagePipe(&server_handle, &client_handle);
 
@@ -595,6 +595,20 @@ TEST_F(MojoInterfacePerfTest, SingleProcessPingPong) {
   client_thread.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&RunPingPongClient), client_handle));
+
+  base::MessageLoop main_message_loop;
+  RunPingPongServer(server_handle, "SingleProcess");
+}
+
+TEST_F(MojoInterfacePerfTest, SingleProcessSingleThreadPingPong) {
+  MojoHandle server_handle, client_handle;
+  CreateMessagePipe(&server_handle, &client_handle);
+
+  base::MessageLoop main_message_loop;
+  mojo::MessagePipeHandle mp_handle(client_handle);
+  mojo::ScopedMessagePipeHandle scoped_mp(mp_handle);
+  LockThreadAffinity thread_locker(kSharedCore);
+  ReflectorImpl impl(std::move(scoped_mp));
 
   RunPingPongServer(server_handle, "SingleProcess");
 }
@@ -605,7 +619,7 @@ class CallbackPerfTest : public testing::Test {
       : client_thread_("PingPongClient"), message_count_(0), count_down_(0) {}
 
  protected:
-  void RunPingPongServer() {
+  void RunMultiThreadPingPongServer() {
     client_thread_.Start();
 
     LockThreadAffinity thread_locker(kSharedCore);
@@ -623,7 +637,7 @@ class CallbackPerfTest : public testing::Test {
   }
 
   void Ping(const std::string& value) {
-    main_message_loop.task_runner()->PostTask(
+    main_message_loop_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&CallbackPerfTest::OnPong, base::Unretained(this),
         value));
@@ -633,7 +647,7 @@ class CallbackPerfTest : public testing::Test {
     if (value == "hello") {
       DCHECK(!perf_logger_.get());
       std::string test_name =
-          base::StringPrintf("Callback_Perf_%dx_%zu",
+          base::StringPrintf("Callback_MultiProcess_Perf_%dx_%zu",
                              message_count_,
                              payload_.size());
       perf_logger_.reset(new base::PerfTimeLogger(test_name.c_str()));
@@ -654,9 +668,90 @@ class CallbackPerfTest : public testing::Test {
         base::Bind(&CallbackPerfTest::Ping, base::Unretained(this), payload_));
   }
 
+  void RunSingleThreadNoPostTaskPingPongServer() {
+    LockThreadAffinity thread_locker(kSharedCore);
+    std::vector<PingPongTestParams> params = GetDefaultTestParams();
+    base::Callback<void(const std::string&,
+                        const base::Callback<void(const std::string&)>&)> ping =
+        base::Bind(&CallbackPerfTest::SingleThreadPingNoPostTask,
+                   base::Unretained(this));
+    for (size_t i = 0; i < params.size(); i++) {
+      payload_ = std::string(params[i].message_size(), 'a');
+      std::string test_name =
+          base::StringPrintf("Callback_SingleThreadPostTask_Perf_%dx_%zu",
+                             params[i].message_count(),
+                             payload_.size());
+      perf_logger_.reset(new base::PerfTimeLogger(test_name.c_str()));
+      for (int j = 0; j < params[i].message_count(); ++j) {
+        ping.Run(payload_,
+                 base::Bind(&CallbackPerfTest::SingleThreadPongNoPostTask,
+                            base::Unretained(this)));
+      }
+      perf_logger_.reset();
+    }
+  }
+
+  void SingleThreadPingNoPostTask(const std::string& value,
+                         const base::Callback<void(const std::string&)>& pong) {
+    pong.Run(value);
+  }
+
+  void SingleThreadPongNoPostTask(const std::string& value) {
+  }
+
+  void RunSingleThreadPostTaskPingPongServer() {
+    LockThreadAffinity thread_locker(kSharedCore);
+    std::vector<PingPongTestParams> params = GetDefaultTestParams();
+    for (size_t i = 0; i < params.size(); i++) {
+      std::string hello("hello");
+      base::MessageLoop::current()->task_runner()->PostTask(
+          FROM_HERE,
+          base::Bind(&CallbackPerfTest::SingleThreadPingPostTask,
+                     base::Unretained(this), hello));
+      message_count_ = count_down_ = params[i].message_count();
+      payload_ = std::string(params[i].message_size(), 'a');
+
+      base::RunLoop().Run();
+    }
+  }
+
+  void SingleThreadPingPostTask(const std::string& value) {
+    base::MessageLoop::current()->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&CallbackPerfTest::SingleThreadPongPostTask,
+                   base::Unretained(this),
+        value));
+  }
+
+  void SingleThreadPongPostTask(const std::string& value) {
+    if (value == "hello") {
+      DCHECK(!perf_logger_.get());
+      std::string test_name =
+          base::StringPrintf("Callback_SingleThreadNoPostTask_Perf_%dx_%zu",
+                             message_count_,
+                             payload_.size());
+      perf_logger_.reset(new base::PerfTimeLogger(test_name.c_str()));
+    } else {
+      DCHECK_EQ(payload_.size(), value.size());
+
+      CHECK(count_down_ > 0);
+      count_down_--;
+      if (count_down_ == 0) {
+        perf_logger_.reset();
+        base::MessageLoop::current()->QuitWhenIdle();
+        return;
+      }
+    }
+
+    base::MessageLoop::current()->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&CallbackPerfTest::SingleThreadPingPostTask,
+                   base::Unretained(this), payload_));
+  }
+
  private:
   base::Thread client_thread_;
-  base::MessageLoop main_message_loop;
+  base::MessageLoop main_message_loop_;
   int message_count_;
   int count_down_;
   std::string payload_;
@@ -665,9 +760,20 @@ class CallbackPerfTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CallbackPerfTest);
 };
 
-// Sends the same data as above using PostTask instead of IPCs for comparison.
-TEST_F(CallbackPerfTest, PingPong) {
-  RunPingPongServer();
+// Sends the same data as above using PostTask to a different thread instead of
+// IPCs for comparison.
+TEST_F(CallbackPerfTest, MultiThreadPingPong) {
+  RunMultiThreadPingPongServer();
+}
+
+// Sends the same data as above using PostTask to the same thread.
+TEST_F(CallbackPerfTest, SingleThreadPostTaskPingPong) {
+  RunSingleThreadPostTaskPingPongServer();
+}
+
+// Sends the same data as above without using PostTask to the same thread.
+TEST_F(CallbackPerfTest, SingleThreadNoPostTaskPingPong) {
+  RunSingleThreadNoPostTaskPingPongServer();
 }
 
 }  // namespace
