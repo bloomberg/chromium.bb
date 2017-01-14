@@ -31,14 +31,12 @@ function test()
         function format(record)
         {
             if (record.type() === TimelineModel.TimelineModel.RecordType.EvaluateScript) {
-                InspectorTest.dumpTimelineRecord(record, undefined, undefined, [
-                    "TimeStamp",
-                ]);
                 InspectorTest.printTimelineRecordProperties(record);
+            } else if (record.type() === TimelineModel.TimelineModel.RecordType.TimeStamp) {
+                InspectorTest.addResult(`----> ${Timeline.TimelineUIUtils.eventTitle(record.traceEvent())}`);
             }
-        }
-
-        InspectorTest.printTimelineRecords(null, InspectorTest.safeWrap(format));
+        };
+        InspectorTest.printTimelineRecords(null, format);
         InspectorTest.completeTest();
     }
 }

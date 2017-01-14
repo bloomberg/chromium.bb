@@ -268,57 +268,6 @@ InspectorTest._printTimlineRecord = function(typeName, formatter, record)
         formatter(record);
 };
 
-// Dump just the record name, indenting output on separate lines for subrecords
-InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filterTypes)
-{
-    if (typeof level !== "number")
-        level = 0;
-    var message = "";
-    for (var i = 0; i < level ; ++i)
-        message = "----" + message;
-    if (level > 0)
-        message = message + "> ";
-    if (record.type() === TimelineModel.TimelineModel.RecordType.TimeStamp
-        || record.type() === TimelineModel.TimelineModel.RecordType.ConsoleTime) {
-        message += Timeline.TimelineUIUtils.eventTitle(record.traceEvent());
-    } else  {
-        message += record.type();
-    }
-    if (detailsCallback)
-        message += " " + detailsCallback(record);
-    InspectorTest.addResult(message);
-
-    var children = record.children();
-    var numChildren = children.length;
-    for (var i = 0; i < numChildren; ++i) {
-        if (filterTypes && filterTypes.indexOf(children[i].type()) == -1)
-            continue;
-        InspectorTest.dumpTimelineRecord(children[i], detailsCallback, level + 1, filterTypes);
-    }
-}
-
-InspectorTest.dumpTimelineModelRecord = function(record, level)
-{
-    if (typeof level !== "number")
-        level = 0;
-    var prefix = "";
-    for (var i = 0; i < level ; ++i)
-        prefix = "----" + prefix;
-    if (level > 0)
-        prefix = prefix + "> ";
-    InspectorTest.addResult(prefix + record.type() + ": " + (Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent(), null) || ""));
-
-    var numChildren = record.children() ? record.children().length : 0;
-    for (var i = 0; i < numChildren; ++i)
-        InspectorTest.dumpTimelineModelRecord(record.children()[i], level + 1);
-}
-
-InspectorTest.dumpTimelineRecords = function(timelineRecords)
-{
-    for (var i = 0; i < timelineRecords.length; ++i)
-        InspectorTest.dumpTimelineRecord(timelineRecords[i], 0);
-};
-
 InspectorTest.printTimelineRecordProperties = function(record)
 {
     InspectorTest.printTraceEventProperties(record.traceEvent());
@@ -328,6 +277,18 @@ InspectorTest.printTraceEventPropertiesIfNameMatches = function(set, traceEvent)
 {
     if (set.has(traceEvent.name))
         InspectorTest.printTraceEventProperties(traceEvent);
+}
+
+InspectorTest.forAllEvents = function(events, callback)
+{
+    let eventStack = [];
+    for (let event of events) {
+        while (eventStack.length && eventStack.peekLast().endTime <= event.startTime)
+            eventStack.pop();
+        callback(event, eventStack);
+        if (event.endTime)
+            eventStack.push(event);
+    }
 }
 
 InspectorTest.printTraceEventProperties = function(traceEvent)
