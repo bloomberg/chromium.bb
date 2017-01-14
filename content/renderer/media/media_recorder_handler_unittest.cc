@@ -116,6 +116,10 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
       registry_.AddAudioTrack(kTestAudioTrackId);
   }
 
+  void ForceOneErrorInWebmMuxer() {
+    media_recorder_handler_->webm_muxer_->ForceOneLibWebmErrorForTesting();
+  }
+
   std::unique_ptr<media::AudioBus> NextAudioBus() {
     std::unique_ptr<media::AudioBus> bus(media::AudioBus::Create(
         kTestAudioChannels,
@@ -333,6 +337,55 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
   }
 
   media_recorder_handler_->stop();
+
+  // Expect a last call on destruction, with size 0 and |lastInSlice| true.
+  EXPECT_CALL(*this, writeData(nullptr, 0, true, _)).Times(1);
+  media_recorder_handler_.reset();
+}
+
+// Starts up recording and forces a WebmMuxer's libwebm error.
+TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
+  // Video-only test: Audio would be very similar.
+  if (GetParam().has_audio)
+    return;
+
+  AddTracks();
+
+  const WebString mime_type(base::UTF8ToUTF16(GetParam().mime_type));
+  const WebString codecs(base::UTF8ToUTF16(GetParam().codecs));
+  EXPECT_TRUE(media_recorder_handler_->initialize(this, registry_.test_stream(),
+                                                  mime_type, codecs, 0, 0));
+  EXPECT_TRUE(media_recorder_handler_->start(0));
+
+  InSequence s;
+  const scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::CreateBlackFrame(gfx::Size(160, 80));
+
+  {
+    const size_t kEncodedSizeThreshold = 16;
+    base::RunLoop run_loop;
+    base::Closure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*this, writeData(_, _, _, _)).Times(AtLeast(1));
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _, _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+
+    OnVideoFrameForTesting(video_frame);
+    run_loop.Run();
+  }
+
+  ForceOneErrorInWebmMuxer();
+
+  {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*this, writeData(_, _, _, _)).Times(0);
+    EXPECT_CALL(*this, onError(_)).Times(1).WillOnce(RunClosure(quit_closure));
+
+    OnVideoFrameForTesting(video_frame);
+    run_loop.Run();
+  }
+
 
   // Expect a last call on destruction, with size 0 and |lastInSlice| true.
   EXPECT_CALL(*this, writeData(nullptr, 0, true, _)).Times(1);

@@ -274,8 +274,11 @@ void MediaRecorderHandler::OnEncodedVideo(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (!webm_muxer_)
     return;
-  webm_muxer_->OnEncodedVideo(params, std::move(encoded_data), timestamp,
-                              is_key_frame);
+  if (!webm_muxer_->OnEncodedVideo(params, std::move(encoded_data), timestamp,
+                                   is_key_frame)) {
+    DLOG(ERROR) << "Error muxing video data";
+    client_->onError("Error muxing video data");
+  }
 }
 
 void MediaRecorderHandler::OnEncodedAudio(
@@ -283,8 +286,13 @@ void MediaRecorderHandler::OnEncodedAudio(
     std::unique_ptr<std::string> encoded_data,
     base::TimeTicks timestamp) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  if (webm_muxer_)
-    webm_muxer_->OnEncodedAudio(params, std::move(encoded_data), timestamp);
+  if (!webm_muxer_)
+    return;
+  if (!webm_muxer_->OnEncodedAudio(params, std::move(encoded_data),
+                                   timestamp)) {
+    DLOG(ERROR) << "Error muxing audio data";
+    client_->onError("Error muxing audio data");
+  }
 }
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
