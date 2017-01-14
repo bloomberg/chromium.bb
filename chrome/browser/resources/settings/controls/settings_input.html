@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_behavior.html">
@@ -18,7 +19,7 @@
           error-message="[[errorMessage]]" label="[[label]]"
           no-label-float="[[noLabelFloat]]" pattern="[[pattern]]"
           readonly$="[[readonly]]" required="[[required]]" type="[[type]]"
-          on-blur="onBlur_" disabled="[[isDisabled_(disabled, pref)]]"
+          on-change="onChange_" disabled="[[isDisabled_(disabled, pref)]]"
           stop-keyboard-event-propagation$="[[stopKeyboardEventPropagation]]"
           tabindex$="[[getTabindex_(canTab)]]">
       </paper-input>

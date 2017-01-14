@@ -90,10 +90,11 @@ Polymer({
   },
 
   /**
-   * Blur method for paper-input. Only update the pref value on a blur event.
+   * Change event handler for paper-input. Updates the pref value.
+   * settings-input uses the change event because it is fired by the Enter key.
    * @private
    */
-  onBlur_: function() {
+  onChange_: function() {
     if (!this.pref)
       return;
 
