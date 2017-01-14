@@ -1465,12 +1465,12 @@ class Port(object):
 
         # We require stdout and stderr to be bytestrings, not character strings.
         if stdout:
-            assert isinstance(stdout, str)
+            assert isinstance(stdout, basestring)
             stdout_lines = stdout.decode('utf8', 'replace').splitlines()
         else:
             stdout_lines = [u'<empty>']
         if stderr:
-            assert isinstance(stderr, str)
+            assert isinstance(stderr, basestring)
             stderr_lines = stderr.decode('utf8', 'replace').splitlines()
         else:
             stderr_lines = [u'<empty>']
