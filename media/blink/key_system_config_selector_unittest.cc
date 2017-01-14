@@ -108,6 +108,8 @@ class FakeKeySystems : public KeySystems {
       const std::string& key_system,
       EmeMediaType media_type,
       const std::string& requested_robustness) const override {
+    if (requested_robustness.empty())
+      return EmeConfigRule::SUPPORTED;
     if (requested_robustness == kUnsupported)
       return EmeConfigRule::NOT_SUPPORTED;
     if (requested_robustness == kRequireIdentifier)
@@ -648,6 +650,21 @@ TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Codecs_AllSupported) {
   ASSERT_TRUE(SelectConfigReturnsConfig());
   ASSERT_EQ(1u, config_.videoCapabilities.size());
   EXPECT_EQ(kSupportedCodecs, config_.videoCapabilities[0].codecs);
+}
+
+TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Robustness_Empty) {
+  std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
+  video_capabilities[0].contentType = "a";
+  video_capabilities[0].mimeType = kSupportedContainer;
+  ASSERT_TRUE(video_capabilities[0].robustness.isEmpty());
+
+  blink::WebMediaKeySystemConfiguration config = DefaultConfiguration();
+  config.videoCapabilities = video_capabilities;
+  configs_.push_back(config);
+
+  ASSERT_TRUE(SelectConfigReturnsConfig());
+  ASSERT_EQ(1u, config_.videoCapabilities.size());
+  EXPECT_TRUE(config_.videoCapabilities[0].robustness.isEmpty());
 }
 
 TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Robustness_Supported) {

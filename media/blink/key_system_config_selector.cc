@@ -374,21 +374,23 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
     EmeMediaType media_type,
     const blink::WebVector<blink::WebMediaKeySystemMediaCapability>&
         requested_media_capabilities,
+    // Corresponds to the partial configuration, plus restrictions.
     KeySystemConfigSelector::ConfigState* config_state,
     std::vector<blink::WebMediaKeySystemMediaCapability>*
         supported_media_capabilities) {
-  // From
-  // https://w3c.github.io/encrypted-media/#get-supported-capabilities-for-media-type
+  // From "3.1.1.3 Get Supported Capabilities for Audio/Video Type".
+  // https://w3c.github.io/encrypted-media/#get-supported-capabilities-for-audio-video-type
   // 1. Let local accumulated capabilities be a local copy of partial
   //    configuration.
   //    (Skipped as we directly update |config_state|. This is safe because we
   //    only do so when at least one requested media capability is supported.)
-  // 2. Let supported media capabilities be empty.
+  // 2. Let supported media capabilities be an empty sequence of
+  //    MediaKeySystemMediaCapability dictionaries.
   DCHECK_EQ(supported_media_capabilities->size(), 0ul);
-  // 3. For each value in requested media capabilities:
+  // 3. For each requested media capability in requested media capabilities:
   for (size_t i = 0; i < requested_media_capabilities.size(); i++) {
-    // 3.1. Let contentType be the value's contentType member.
-    // 3.2. Let robustness be the value's robustness member.
+    // 3.1. Let content type be requested media capability's contentType member.
+    // 3.2. Let robustness be requested media capability's robustness member.
     const blink::WebMediaKeySystemMediaCapability& capability =
         requested_media_capabilities[i];
     // 3.3. If contentType is the empty string, return null.
@@ -398,8 +400,10 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
       return false;
     }
 
-    // 3.4-3.11. (Implemented by IsSupportedContentType().)
+    // Corresponds to the local accumulated configuration, plus restrictions.
     ConfigState proposed_config_state = *config_state;
+
+    // 3.4-3.11. (Implemented by IsSupportedContentType().)
     if (!capability.mimeType.containsOnlyASCII() ||
         !capability.codecs.containsOnlyASCII() ||
         !IsSupportedContentType(
@@ -407,31 +411,49 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
             capability.codecs.ascii(), &proposed_config_state)) {
       continue;
     }
-    // 3.12. If robustness is not the empty string, run the following steps:
+
+    // 3.12. If robustness is not the empty string and contains an unrecognized
+    //       value or a value not supported by implementation, continue to the
+    //       next iteration. String comparison is case-sensitive.
+    // Note: If the robustness is empty, we still try to get the config rule
+    //       from |key_systems_| for the empty robustness.
+    std::string requested_robustness_ascii;
     if (!capability.robustness.isEmpty()) {
-      // 3.12.1. If robustness is an unrecognized value or not supported by
-      //         implementation, continue to the next iteration. String
-      //         comparison is case-sensitive.
       if (!capability.robustness.containsOnlyASCII())
         continue;
-      EmeConfigRule robustness_rule = key_systems_->GetRobustnessConfigRule(
-          key_system, media_type, capability.robustness.ascii());
-      if (!proposed_config_state.IsRuleSupported(robustness_rule))
-        continue;
-      proposed_config_state.AddRule(robustness_rule);
-      // 3.12.2. Add robustness to configuration.
-      //         (It's already added, we use capability as configuration.)
+      requested_robustness_ascii = capability.robustness.ascii();
     }
-    // 3.13. If the user agent and implementation do not support playback of
-    //       encrypted media data as specified by configuration, including all
-    //       media types, in combination with local accumulated capabilities,
-    //       continue to the next iteration.
-    //       (This is handled when adding rules to |proposed_config_state|.)
-    // 3.14. Add configuration to supported media capabilities.
+    EmeConfigRule robustness_rule = key_systems_->GetRobustnessConfigRule(
+        key_system, media_type, requested_robustness_ascii);
+
+    // 3.13. If the user agent and implementation definitely support playback of
+    //       encrypted media data for the combination of container, media types,
+    //       robustness and local accumulated configuration in combination with
+    //       restrictions:
+    if (!proposed_config_state.IsRuleSupported(robustness_rule))
+      continue;
+
+    // 3.13.1. Add requested media capability to supported media capabilities.
     supported_media_capabilities->push_back(capability);
-    // 3.15. Add configuration to local accumulated capabilities.
+
+    // 3.13.2. Add requested media capability to the {audio|video}Capabilities
+    // member of local accumulated configuration.
+    proposed_config_state.AddRule(robustness_rule);
+
+    // This is used as an intermediate variable so that |proposed_config_state|
+    // is updated in the next iteration of the for loop.
+    //
+    // Since |config_state| is also the output parameter, this also updates the
+    // "partial configuration" as specified in
+    // "3.1.1.2. Get Supported Configuration and Consent"
+    // https://w3c.github.io/encrypted-media/#get-supported-configuration-and-consent
+    // Step 16.3 and 17.3: Set the {video|audio}Capabilities member of
+    // accumulated configuration to {video|audio} capabilities.
+    //
+    // TODO(xhwang): Refactor this to be more consistent with the spec steps.
     *config_state = proposed_config_state;
   }
+
   // 4. If supported media capabilities is empty, return null.
   if (supported_media_capabilities->empty()) {
     DVLOG(2) << "Rejecting requested configuration because "
@@ -439,6 +461,7 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
     return false;
   }
   // 5. Return media type capabilities.
+  // Note: |supported_media_capabilities| has already been populated.
   return true;
 }
 
