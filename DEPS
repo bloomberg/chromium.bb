@@ -1101,6 +1101,56 @@ hooks = [
                 '--version',
     ],
   },
+
+  # Pull down Node binaries for WebUI toolchain.
+  {
+    'name': 'node_linux64',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=linux*',
+                '--extract',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs/6.9.4',
+                '-s', 'src/third_party/node/linux/node-linux-x64.tar.gz.sha1',
+    ],
+  },
+  {
+    'name': 'node_mac',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=darwin',
+                '--extract',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs/6.9.4',
+                '-s', 'src/third_party/node/mac/node-darwin-x64.tar.gz.sha1',
+    ],
+  },
+  {
+    'name': 'node_win',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=win32',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs/6.9.4',
+                '-s', 'src/third_party/node/win/node.exe.sha1',
+    ],
+  },
+
+  # Pull down NPM dependencies for WebUI toolchain.
+  {
+    'name': 'webui_node_modules',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--extract',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs',
+                '-s', 'src/third_party/node/node_modules.tar.gz.sha1',
+    ],
+  },
 ]
 
 recursedeps = [

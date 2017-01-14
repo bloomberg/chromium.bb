@@ -1,0 +1,11 @@
+{
+  "name": "webui-node-modules",
+  "version": "1.0.0",
+  "author": "dpapad@chromium.org",
+  "dependencies": {
+    "crisper": "2.0.2",
+    "polymer-css-build": "0.0.7",
+    "uglifyjs": "2.4.10",
+    "vulcanize": "1.15.2"
+  }
+}
