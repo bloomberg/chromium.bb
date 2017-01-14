@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "content/renderer/media/cdm/pepper_cdm_wrapper.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
@@ -147,6 +148,9 @@ class PpapiDecryptor : public media::ContentDecryptionModule,
   DecoderInitCB video_decoder_init_cb_;
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;
+
+  base::Lock lock_;  // Protects |had_fatal_plugin_error_|.
+  bool had_fatal_plugin_error_ = false;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PpapiDecryptor> weak_ptr_factory_;

@@ -173,7 +173,8 @@ void DecoderSelector<StreamType>::InitializeDecryptingDemuxerStream() {
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::DecryptingDemuxerStreamInitDone(
     PipelineStatus status) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__
+           << ": status=" << MediaLog::PipelineStatusToString(status);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If DecryptingDemuxerStream initialization succeeded, we'll use it to do

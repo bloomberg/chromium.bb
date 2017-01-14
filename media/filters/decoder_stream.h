@@ -136,7 +136,7 @@ class MEDIA_EXPORT DecoderStream {
     STATE_ERROR,
   };
 
-  void SelectDecoder(CdmContext* cdm_context);
+  void SelectDecoder();
 
   // Called when |decoder_selector| selected the |selected_decoder|.
   // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream
@@ -199,6 +199,8 @@ class MEDIA_EXPORT DecoderStream {
   base::Closure reset_cb_;
 
   DemuxerStream* stream_;
+
+  CdmContext* cdm_context_;
 
   std::unique_ptr<DecoderSelector<StreamType>> decoder_selector_;
 

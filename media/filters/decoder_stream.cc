@@ -52,6 +52,7 @@ DecoderStream<StreamType>::DecoderStream(
       media_log_(media_log),
       state_(STATE_UNINITIALIZED),
       stream_(NULL),
+      cdm_context_(nullptr),
       decoder_selector_(new DecoderSelector<StreamType>(task_runner,
                                                         std::move(decoders),
                                                         media_log)),
@@ -107,15 +108,16 @@ void DecoderStream<StreamType>::Initialize(
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
 
-  statistics_cb_ = statistics_cb;
-  init_cb_ = init_cb;
-  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
   stream_ = stream;
+  init_cb_ = init_cb;
+  cdm_context_ = cdm_context;
+  statistics_cb_ = statistics_cb;
+  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   traits_.OnStreamReset(stream_);
 
   state_ = STATE_INITIALIZING;
-  SelectDecoder(cdm_context);
+  SelectDecoder();
 }
 
 template <DemuxerStream::Type StreamType>
@@ -248,9 +250,9 @@ base::TimeDelta DecoderStream<StreamType>::AverageDuration() const {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::SelectDecoder(CdmContext* cdm_context) {
+void DecoderStream<StreamType>::SelectDecoder() {
   decoder_selector_->SelectDecoder(
-      &traits_, stream_, cdm_context,
+      &traits_, stream_, cdm_context_,
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
@@ -433,13 +435,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
         FUNCTION_DVLOG(1)
             << ": Falling back to new decoder after initial decode error.";
         state_ = STATE_REINITIALIZING_DECODER;
-        decoder_selector_->SelectDecoder(
-            &traits_, stream_, nullptr,
-            base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
-                       weak_factory_.GetWeakPtr()),
-            base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
-                       fallback_weak_factory_.GetWeakPtr()),
-            waiting_for_decryption_key_cb_);
+        SelectDecoder();
         return;
       }
       FUNCTION_DVLOG(1) << ": Decode error!";
@@ -711,9 +707,7 @@ void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
     // Reinitialization failed. Try to fall back to one of the remaining
     // decoders. This will consume at least one decoder so doing it more than
     // once is safe.
-    // For simplicity, don't attempt to fall back to a decrypting decoder.
-    // Calling this with a null CdmContext ensures that one won't be selected.
-    SelectDecoder(nullptr);
+    SelectDecoder();
   } else {
     CompleteDecoderReinitialization(true);
   }

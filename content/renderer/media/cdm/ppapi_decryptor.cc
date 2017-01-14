@@ -205,7 +205,8 @@ media::CdmContext* PpapiDecryptor::GetCdmContext() {
 }
 
 media::Decryptor* PpapiDecryptor::GetDecryptor() {
-  return this;
+  base::AutoLock auto_lock(lock_);
+  return had_fatal_plugin_error_ ? nullptr : this;
 }
 
 int PpapiDecryptor::GetCdmId() const {
@@ -436,8 +437,12 @@ void PpapiDecryptor::AttemptToResumePlayback() {
 }
 
 void PpapiDecryptor::OnFatalPluginError() {
+  DVLOG(1) << __func__;
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   pepper_cdm_wrapper_.reset();
+
+  base::AutoLock auto_lock(lock_);
+  had_fatal_plugin_error_ = true;
 }
 
 ContentDecryptorDelegate* PpapiDecryptor::CdmDelegate() {
