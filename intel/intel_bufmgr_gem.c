@@ -2736,11 +2736,12 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t * name)
 
 		pthread_mutex_lock(&bufmgr_gem->lock);
 		if (!bo_gem->global_name) {
+			bo_gem->global_name = flink.name;
+			bo_gem->reusable = false;
+
 			HASH_ADD(name_hh, bufmgr_gem->name_table,
 				 global_name, sizeof(bo_gem->global_name),
 				 bo_gem);
-			bo_gem->global_name = flink.name;
-			bo_gem->reusable = false;
 		}
 		pthread_mutex_unlock(&bufmgr_gem->lock);
 	}
