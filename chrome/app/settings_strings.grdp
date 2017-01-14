@@ -248,7 +248,7 @@
     Show home button
   </message>
   <message name="IDS_SETTINGS_SHOW_BOOKMARKS_BAR" desc="Label for the checkbox which enables or disables showing the bookmarks bar in the toolbar.">
-    Always show the bookmarks bar
+    Show bookmarks bar
   </message>
   <message name="IDS_SETTINGS_HOME_PAGE_NTP" desc="Description of the New Tab Page when set as the home page.">
     Use the New Tab Page
@@ -954,7 +954,7 @@
     Google Cloud Print
   </message>
   <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINTERS_DESCRIPTION" desc="In Printing Settings, the title description of the google cloud printers setting section.">
-    Setup cloud printing devices
+    Set up cloud printing devices
   </message>
 
   <!-- Downloads Page -->
@@ -1582,13 +1582,13 @@
     Keep Wi-Fi on during sleep
   </message>
   <message name="IDS_SETTINGS_MANAGE_CERTIFICATES" desc="Text for manage certificates button in Privacy options">
-    Manage Certificates
+    Manage certificates
   </message>
   <message name="IDS_SETTINGS_MANAGE_CERTIFICATES_DESCRIPTION" desc="Secondary, continued explanation of how to manage SSL certificates and settings in Privacy options">
     Manage HTTPS/SSL certificates and settings
   </message>
   <message name="IDS_SETTINGS_CONTENT_SETTINGS" desc="Text of the button that takes a user to settings page thats allows users to modify site settings. Also the title of that settings page.">
-    Content Settings
+    Content settings
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS" desc="Text of the button that takes a user to the enhanced settings page thats allows users to modify site settings. Also the title of that settings page.">
     Site Settings
@@ -1939,10 +1939,10 @@
     Search cookies
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE" desc="Label for the Block 3rd-party cookie checkbox on the Cookies category.">
-    Block third-party cookies.
+    Block third-party cookies
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL" desc="A sub-label below the Block 3rd-party cookie checkbox.">
-    Prevent third-party websites from saving and reading cookie data.
+    Prevent third-party websites from saving and reading cookie data
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_DELETE_DATA_POST_SESSION" desc="Label for the checkbox that allows the user to automatically delete their data at the end of the browser session.">
     Keep local data only until you quit your browser
@@ -2222,7 +2222,7 @@
   </if>
 
   <message name="IDS_SETTINGS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
-    Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Google services.
+    Sign in to get your bookmarks, history, passwords, and other settings on all your devices. You'll also automatically be signed in to your Google services.
   </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT" desc="The text to display on the button to indicate stop syncing functionality.">
     Sign Out
