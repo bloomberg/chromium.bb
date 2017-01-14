@@ -1035,9 +1035,9 @@ TEST_F(ScrollingCoordinatorTest,
 class StyleRelatedMainThreadScrollingReasonTest
     : public ScrollingCoordinatorTest {
   static const uint32_t m_LCDTextRelatedReasons =
-      MainThreadScrollingReason::kHasOpacity |
-      MainThreadScrollingReason::kHasTransform |
-      MainThreadScrollingReason::kBackgroundNotOpaqueInRect;
+      MainThreadScrollingReason::kHasOpacityAndLCDText |
+      MainThreadScrollingReason::kHasTransformAndLCDText |
+      MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
 
  protected:
   StyleRelatedMainThreadScrollingReasonTest() {
@@ -1093,16 +1093,16 @@ class StyleRelatedMainThreadScrollingReasonTest
 };
 
 TEST_F(StyleRelatedMainThreadScrollingReasonTest, TransparentTest) {
-  testStyle("transparent", MainThreadScrollingReason::kHasOpacity);
+  testStyle("transparent", MainThreadScrollingReason::kHasOpacityAndLCDText);
 }
 
 TEST_F(StyleRelatedMainThreadScrollingReasonTest, TransformTest) {
-  testStyle("transform", MainThreadScrollingReason::kHasTransform);
+  testStyle("transform", MainThreadScrollingReason::kHasTransformAndLCDText);
 }
 
 TEST_F(StyleRelatedMainThreadScrollingReasonTest, BackgroundNotOpaqueTest) {
   testStyle("background-not-opaque",
-            MainThreadScrollingReason::kBackgroundNotOpaqueInRect);
+            MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
 }
 
 TEST_F(StyleRelatedMainThreadScrollingReasonTest, BorderRadiusTest) {
@@ -1150,7 +1150,7 @@ TEST_F(StyleRelatedMainThreadScrollingReasonTest, ClipPathTest) {
 
 TEST_F(StyleRelatedMainThreadScrollingReasonTest, LCDTextEnabledTest) {
   testStyle("transparent border-radius",
-            MainThreadScrollingReason::kHasOpacity |
+            MainThreadScrollingReason::kHasOpacityAndLCDText |
                 MainThreadScrollingReason::kHasBorderRadius);
 }
 

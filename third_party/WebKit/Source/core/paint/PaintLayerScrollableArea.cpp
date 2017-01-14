@@ -1767,16 +1767,16 @@ bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
       !backgroundSupportsLCDText) {
     if (layer->compositesWithOpacity()) {
       addStyleRelatedMainThreadScrollingReasons(
-          MainThreadScrollingReason::kHasOpacity);
+          MainThreadScrollingReason::kHasOpacityAndLCDText);
     }
     if (layer->compositesWithTransform()) {
       addStyleRelatedMainThreadScrollingReasons(
-          MainThreadScrollingReason::kHasTransform);
+          MainThreadScrollingReason::kHasTransformAndLCDText);
     }
     if (!layer->backgroundIsKnownToBeOpaqueInRect(
             toLayoutBox(layer->layoutObject())->paddingBoxRect())) {
       addStyleRelatedMainThreadScrollingReasons(
-          MainThreadScrollingReason::kBackgroundNotOpaqueInRect);
+          MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
     }
     needsCompositedScrolling = false;
   }

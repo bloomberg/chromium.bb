@@ -32,10 +32,13 @@ struct MainThreadScrollingReason {
     kHandlingScrollFromMainThread = 1 << 13,
     kCustomScrollbarScrolling = 1 << 15,
 
-    // Style Related scrolling on main reasons
-    kHasOpacity = 1 << 16,
-    kHasTransform = 1 << 17,
-    kBackgroundNotOpaqueInRect = 1 << 18,
+    // Style-related scrolling on main reasons.
+    // These *AndLCDText reasons are due to subpixel text rendering which can
+    // only be applied by blending glyphs with the background at a specific
+    // screen position; transparency and transforms break this.
+    kHasOpacityAndLCDText = 1 << 16,
+    kHasTransformAndLCDText = 1 << 17,
+    kBackgroundNotOpaqueInRectAndLCDText = 1 << 18,
     kHasBorderRadius = 1 << 19,
     kHasClipRelatedProperty = 1 << 20,
 
@@ -62,8 +65,9 @@ struct MainThreadScrollingReason {
         kNotScrollingOnMain | kHasBackgroundAttachmentFixedObjects |
         kHasNonLayerViewportConstrainedObjects | kThreadedScrollingDisabled |
         kScrollbarScrolling | kPageOverlay | kHandlingScrollFromMainThread |
-        kCustomScrollbarScrolling | kHasOpacity | kHasTransform |
-        kBackgroundNotOpaqueInRect | kHasBorderRadius | kHasClipRelatedProperty;
+        kCustomScrollbarScrolling | kHasOpacityAndLCDText |
+        kHasTransformAndLCDText | kBackgroundNotOpaqueInRectAndLCDText |
+        kHasBorderRadius | kHasClipRelatedProperty;
     return (reasons & reasons_set_by_main_thread) == reasons;
   }
 
@@ -108,12 +112,15 @@ struct MainThreadScrollingReason {
       tracedValue->AppendString("Handling scroll from main thread");
     if (reasons & MainThreadScrollingReason::kCustomScrollbarScrolling)
       tracedValue->AppendString("Custom scrollbar scrolling");
-    if (reasons & MainThreadScrollingReason::kHasOpacity)
-      tracedValue->AppendString("Has opacity");
-    if (reasons & MainThreadScrollingReason::kHasTransform)
-      tracedValue->AppendString("Has transform");
-    if (reasons & MainThreadScrollingReason::kBackgroundNotOpaqueInRect)
-      tracedValue->AppendString("Background is not opaque in rect");
+    if (reasons & MainThreadScrollingReason::kHasOpacityAndLCDText)
+      tracedValue->AppendString("Has opacity and LCD text");
+    if (reasons & MainThreadScrollingReason::kHasTransformAndLCDText)
+      tracedValue->AppendString("Has transform and LCD text");
+    if (reasons &
+        MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText) {
+      tracedValue->AppendString(
+          "Background is not opaque in rect and LCD text");
+    }
     if (reasons & MainThreadScrollingReason::kHasBorderRadius)
       tracedValue->AppendString("Has border radius");
     if (reasons & MainThreadScrollingReason::kHasClipRelatedProperty)
