@@ -4896,6 +4896,19 @@ MainThreadScrollingReasons FrameView::mainThreadScrollingReasons() const {
 }
 
 String FrameView::mainThreadScrollingReasonsAsText() const {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    DCHECK(lifecycle().state() >= DocumentLifecycle::PrePaintClean);
+
+    // Slimming paint v2 stores main thread scrolling reasons on property
+    // trees instead of in |m_mainThreadScrollingReasons|.
+    MainThreadScrollingReasons reasons = 0;
+    if (const auto* scrollNode = scroll())
+      reasons |= scrollNode->mainThreadScrollingReasons();
+    return String(
+        MainThreadScrollingReason::mainThreadScrollingReasonsAsText(reasons)
+            .c_str());
+  }
+
   DCHECK(lifecycle().state() >= DocumentLifecycle::CompositingClean);
   if (layerForScrolling() && layerForScrolling()->platformLayer()) {
     String result(

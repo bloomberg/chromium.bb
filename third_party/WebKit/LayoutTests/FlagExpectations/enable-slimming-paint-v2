@@ -249,7 +249,6 @@ Bug(none) compositing/layer-creation/fixed-position-out-of-view-with-backdrop-fi
 Bug(none) compositing/layer-creation/fixed-position-out-of-view.html [ Failure ]
 Bug(none) compositing/layer-creation/fixed-position-scroll.html [ Failure ]
 Bug(none) compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
-crbug.com/671838 compositing/layer-creation/iframe-background-attachment-fixed.html [ Failure ]
 Bug(none) compositing/layer-creation/no-compositing-for-fixed-position-under-transform.html [ Failure ]
 Bug(none) compositing/layer-creation/no-compositing-for-preserve-3d.html [ Failure ]
 Bug(none) compositing/layer-creation/overflow-scroll-overlap.html [ Failure ]
