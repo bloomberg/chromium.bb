@@ -463,6 +463,23 @@ class AudioOutputProxyTest : public testing::Test {
     proxy->Close();
   }
 
+  void DispatcherDestroyed_AfterStop(
+      std::unique_ptr<AudioOutputDispatcher> dispatcher) {
+    MockAudioOutputStream stream(&manager_, params_);
+    EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+        .WillOnce(Return(&stream));
+    EXPECT_CALL(stream, Open()).WillOnce(Return(true));
+    EXPECT_CALL(stream, Close()).Times(1);
+    EXPECT_CALL(stream, SetVolume(_)).Times(1);
+
+    AudioOutputProxy* proxy = dispatcher->CreateStreamProxy();
+    EXPECT_TRUE(proxy->Open());
+    proxy->Start(&callback_);
+    proxy->Stop();
+    dispatcher.reset();
+    proxy->Close();
+  }
+
   base::MessageLoop message_loop_;
   std::unique_ptr<AudioOutputDispatcherImpl> dispatcher_impl_;
   MockAudioManager manager_;
@@ -607,6 +624,14 @@ TEST_F(AudioOutputProxyTest, DispatcherDestroyed_BeforeStop) {
 
 TEST_F(AudioOutputResamplerTest, DispatcherDestroyed_BeforeStop) {
   DispatcherDestroyed_BeforeStop(std::move(resampler_));
+}
+
+TEST_F(AudioOutputProxyTest, DispatcherDestroyed_AfterStop) {
+  DispatcherDestroyed_AfterStop(std::move(dispatcher_impl_));
+}
+
+TEST_F(AudioOutputResamplerTest, DispatcherDestroyed_AfterStop) {
+  DispatcherDestroyed_AfterStop(std::move(resampler_));
 }
 
 // Simulate AudioOutputStream::Create() failure with a low latency stream and

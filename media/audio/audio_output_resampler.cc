@@ -242,8 +242,9 @@ AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
 }
 
 AudioOutputResampler::~AudioOutputResampler() {
-  for (auto& iter : callbacks_) {
-    StopStream(iter.first);
+  for (const auto& item : callbacks_) {
+    if (item.second->started())
+      StopStreamInternal(item);
   }
 }
 
@@ -362,25 +363,15 @@ void AudioOutputResampler::StreamVolumeSet(AudioOutputProxy* stream_proxy,
 
 void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  dispatcher_->StopStream(stream_proxy);
 
-  // Now that StopStream() has completed the underlying physical stream should
-  // be stopped and no longer calling OnMoreData(), making it safe to Stop() the
-  // OnMoreDataConverter.
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
-  if (it != callbacks_.end()) {
-    it->second->Stop();
-
-    // Destroy idle streams if any errors occurred during output; this ensures
-    // bad streams will not be reused.  Note: Errors may occur during the Stop()
-    // call above.
-    if (it->second->error_occurred())
-      dispatcher_->CloseAllIdleStreams();
-  }
+  DCHECK(it != callbacks_.end());
+  StopStreamInternal(*it);
 }
 
 void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
   dispatcher_->CloseStream(stream_proxy);
 
   // We assume that StopStream() is always called prior to CloseStream(), so
@@ -394,6 +385,27 @@ void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
       !output_params_.Equals(original_output_params_)) {
     reinitialize_timer_.Reset();
   }
+}
+
+void AudioOutputResampler::StopStreamInternal(
+    const CallbackMap::value_type& item) {
+  AudioOutputProxy* stream_proxy = item.first;
+  OnMoreDataConverter* callback = item.second.get();
+  DCHECK(callback->started());
+
+  // Stop the underlying physical stream.
+  dispatcher_->StopStream(stream_proxy);
+
+  // Now that StopStream() has completed the underlying physical stream should
+  // be stopped and no longer calling OnMoreData(), making it safe to Stop() the
+  // OnMoreDataConverter.
+  callback->Stop();
+
+  // Destroy idle streams if any errors occurred during output; this ensures
+  // bad streams will not be reused.  Note: Errors may occur during the Stop()
+  // call above.
+  if (callback->error_occurred())
+    dispatcher_->CloseAllIdleStreams();
 }
 
 OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,

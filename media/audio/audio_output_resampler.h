@@ -48,6 +48,9 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   void CloseStream(AudioOutputProxy* stream_proxy) override;
 
  private:
+  using CallbackMap =
+      std::map<AudioOutputProxy*, std::unique_ptr<OnMoreDataConverter>>;
+
   // Converts low latency based output parameters into high latency
   // appropriate output parameters in error situations.
   void SetupFallbackParams();
@@ -58,13 +61,14 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   // Used to initialize |dispatcher_|.
   void Initialize();
 
+  // Stops the stream corresponding to the |item| in |callbacks_|.
+  void StopStreamInternal(const CallbackMap::value_type& item);
+
   // Dispatcher to proxy all AudioOutputDispatcher calls too.
   std::unique_ptr<AudioOutputDispatcherImpl> dispatcher_;
 
   // Map of outstanding OnMoreDataConverter objects.  A new object is created
   // on every StartStream() call and destroyed on CloseStream().
-  typedef std::map<AudioOutputProxy*, std::unique_ptr<OnMoreDataConverter>>
-      CallbackMap;
   CallbackMap callbacks_;
 
   // Used by AudioOutputDispatcherImpl; kept so we can reinitialize on the fly.
