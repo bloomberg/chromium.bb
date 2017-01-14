@@ -152,6 +152,8 @@ public class OmniboxUrlEmphasizer {
                 switch (securityLevel) {
                     case ConnectionSecurityLevel.NONE:
                     // Intentional fall-through:
+                    case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
+                    // Intentional fall-through:
                     case ConnectionSecurityLevel.SECURITY_WARNING:
                         break;
                     case ConnectionSecurityLevel.DANGEROUS:
