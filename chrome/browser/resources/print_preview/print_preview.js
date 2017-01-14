@@ -1362,6 +1362,7 @@ cr.define('print_preview', function() {
 // <include src="search/destination_list_item.js">
 // <include src="search/destination_search.js">
 // <include src="search/fedex_tos.js">
+// <include src="search/cros_destination_resolver.js">
 // <include src="search/provisional_destination_resolver.js">
 
 window.addEventListener('DOMContentLoaded', function() {

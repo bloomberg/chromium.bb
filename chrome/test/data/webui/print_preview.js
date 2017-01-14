@@ -389,16 +389,43 @@ TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreLocalDestination',
 //Test with multiple destinations
 TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreMultipleDestinations',
     function() {
-  this.initialSettings_.serializedAppStateStr_ =
-      '{"version":2,"recentDestinations":[{"id":"ID1", "origin":"local",' +
-        '"account":"", "capabilities":0, "name":"", "extensionId":"",' +
-            '"extensionName":""},' +
-      '{"id":"ID2", "origin":"local",' +
-        '"account":"", "capabilities":0, "name":"", "extensionId":"",' +
-            '"extensionName":""},' +
-      '{"id":"ID3", "origin":"local",' +
-        '"account":"", "capabilities":0, "name":"", "extensionId":"",' +
-            '"extensionName":""}]}';
+  var origin = cr.isChromeOS ? "chrome_os" : "local";
+
+  var appState = {
+    'version': 2,
+    'recentDestinations': [
+      {
+        'id': 'ID1',
+        'origin': origin,
+        'account': '',
+        'capabilities': 0,
+        'name': '',
+        'extensionId': '',
+        'extensionName': ''
+      },
+      {
+        'id': 'ID2',
+        'origin': origin,
+        'account': '',
+        'capabilities': 0,
+        'name': '',
+        'extensionId': '',
+        'extensionName': ''
+      },
+      {
+        'id': 'ID3',
+        'origin': origin,
+        'account': '',
+        'capabilities': 0,
+        'name': '',
+        'extensionId': '',
+        'extensionName': ''
+      }
+    ]
+  };
+
+  this.initialSettings_.serializedAppStateStr_ = JSON.stringify(appState);
+
   this.setInitialSettings();
 
   // Set capabilities for the three recently used destinations + 1 more
@@ -1252,4 +1279,3 @@ TEST_F('PrintPreviewWebUITest', 'TestAdvancedSettings2Options', function() {
 
   this.waitForAnimationToEnd('more-settings');
 });
-

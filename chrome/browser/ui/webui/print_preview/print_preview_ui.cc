@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/feature_list.h"
@@ -50,8 +51,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
-#include "base/feature_list.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #endif
 
@@ -236,6 +235,9 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString(
       "resolveExtensionUSBErrorMessage",
       IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_ERROR_MESSAGE);
+  source->AddLocalizedString(
+      "resolveCrosPrinterMessage",
+      IDS_PRINT_PREVIEW_RESOLVE_CROS_DESTINATION_MESSAGE);
   const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
 #if !defined(OS_CHROMEOS)
   source->AddString(

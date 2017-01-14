@@ -1011,6 +1011,7 @@ if (!is_android) {
       "data/webui/ntp4.js",
       "data/webui/polymer_browser_test_base.js",
       "data/webui/print_preview.js",
+      "data/webui/print_preview_destination_search_test.js",
       "data/webui/sandboxstatus_browsertest.js",
       "data/webui/settings/advanced_page_browsertest.js",
       "data/webui/settings/animation_browsertest.js",

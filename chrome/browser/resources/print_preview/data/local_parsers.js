@@ -25,7 +25,8 @@ cr.define('print_preview', function() {
     return new print_preview.Destination(
         destinationInfo.deviceName,
         print_preview.Destination.Type.LOCAL,
-        print_preview.Destination.Origin.LOCAL,
+        cr.isChromeOS ? print_preview.Destination.Origin.CROS :
+                        print_preview.Destination.Origin.LOCAL,
         destinationInfo.printerName,
         false /*isRecent*/,
         print_preview.Destination.ConnectionStatus.ONLINE,

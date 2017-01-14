@@ -15,6 +15,15 @@ cr.exportPath('print_preview');
  */
 print_preview.PreviewSettings;
 
+/**
+ * @typedef {{
+ *   printerId: string,
+ *   success: boolean,
+ *   capabilities: Object,
+ * }}
+*/
+print_preview.PrinterSetupResponse;
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -229,6 +238,15 @@ cr.define('print_preview', function() {
      */
     grantExtensionPrinterAccess: function(provisionalDestinationId) {
       chrome.send('grantExtensionPrinterAccess', [provisionalDestinationId]);
+    },
+
+    /**
+     * Requests that Chrome peform printer setup for the given printer.
+     * @param {string} printerId
+     * @return {!Promise<!print_preview.PrinterSetupResponse>}
+     */
+    setupPrinter: function(printerId) {
+      return cr.sendWithPromise('setupPrinter', printerId);
     },
 
     /**

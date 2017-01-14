@@ -570,6 +570,9 @@ void PrintPreviewHandler::RegisterMessages() {
       "getPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrinterCapabilities,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setupPrinter", base::Bind(&PrintPreviewHandler::HandlePrinterSetup,
+                                 base::Unretained(this)));
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
   web_ui()->RegisterMessageCallback("showSystemDialog",
       base::Bind(&PrintPreviewHandler::HandleShowSystemDialog,
@@ -1079,6 +1082,26 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
                                                                 cb);
 }
 
+// |args| is expected to contain a string with representing the callback id
+// followed by a list of arguments the first of which should be the printer id.
+void PrintPreviewHandler::HandlePrinterSetup(const base::ListValue* args) {
+  AllowJavascript();
+
+  std::string callback_id;
+  std::string printer_name;
+  if (!args->GetString(0, &callback_id) || !args->GetString(1, &printer_name) ||
+      callback_id.empty() || printer_name.empty()) {
+    RejectJavascriptCallback(base::StringValue(callback_id),
+                             base::StringValue(printer_name));
+    return;
+  }
+
+  printer_backend_proxy()->ConfigurePrinterAndFetchCapabilities(
+      printer_name,
+      base::Bind(&PrintPreviewHandler::SendPrinterSetup,
+                 weak_factory_.GetWeakPtr(), callback_id, printer_name));
+}
+
 void PrintPreviewHandler::OnSigninComplete() {
   if (print_preview_ui())
     print_preview_ui()->OnReloadPrintersList();
@@ -1277,6 +1300,30 @@ void PrintPreviewHandler::SendPrinterCapabilities(
   VLOG(1) << "Get printer capabilities finished";
   web_ui()->CallJavascriptFunctionUnsafe("updateWithPrinterCapabilities",
                                          *settings_info);
+}
+
+void PrintPreviewHandler::SendPrinterSetup(
+    const std::string& callback_id,
+    const std::string& printer_name,
+    std::unique_ptr<base::DictionaryValue> destination_info) {
+  auto response = base::MakeUnique<base::DictionaryValue>();
+  bool success = true;
+  auto caps_value = base::Value::CreateNullValue();
+  auto caps = base::MakeUnique<base::DictionaryValue>();
+  if (destination_info &&
+      destination_info->Remove(printing::kPrinterCapabilities, &caps_value) &&
+      caps_value->IsType(base::Value::Type::DICTIONARY)) {
+    caps = base::DictionaryValue::From(std::move(caps_value));
+  } else {
+    LOG(WARNING) << "Printer setup failed";
+    success = false;
+  }
+
+  response->SetString("printerId", printer_name);
+  response->SetBoolean("success", success);
+  response->Set("capabilities", std::move(caps));
+
+  ResolveJavascriptCallback(base::StringValue(callback_id), *response);
 }
 
 void PrintPreviewHandler::SetupPrinterList(

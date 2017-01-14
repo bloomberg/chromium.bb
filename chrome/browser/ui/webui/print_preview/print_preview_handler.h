@@ -155,6 +155,9 @@ class PrintPreviewHandler
   // Gets the printer capabilities. First element of |args| is the printer name.
   void HandleGetPrinterCapabilities(const base::ListValue* args);
 
+  // Performs printer setup. First element of |args| is the printer name.
+  void HandlePrinterSetup(const base::ListValue* args);
+
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
   // Asks the initiator renderer to show the native print system dialog. |args|
   // is unused.
@@ -218,6 +221,12 @@ class PrintPreviewHandler
   void SendPrinterCapabilities(
       const std::string& printer_name,
       std::unique_ptr<base::DictionaryValue> settings_info);
+
+  // Send the result of performing printer setup. |settings_info| contains
+  // printer capabilities.
+  void SendPrinterSetup(const std::string& callback_id,
+                        const std::string& printer_name,
+                        std::unique_ptr<base::DictionaryValue> settings_info);
 
   // Send the list of printers to the Web UI.
   void SetupPrinterList(const printing::PrinterList& printer_list);

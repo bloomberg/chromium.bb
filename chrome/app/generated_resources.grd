@@ -8813,6 +8813,9 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_ERROR_MESSAGE" desc="Message shown to the user when they attempt to select a USB pinter supported by an extension, but for which the extension does not yet have access permission. The message is shown if the user grants the extension access to the USB device (by confirming printer selection), but the extension is not able to retrieve information about the printer, and an error is reported. The message contains a placeholder for the name of the extension.">
           <ph name="EXTENSION_NAME">$1<ex>Print app</ex></ph> could not communicate with this printer. Make sure the printer is plugged in and try again.
         </message>
+        <message name="IDS_PRINT_PREVIEW_RESOLVE_CROS_DESTINATION_MESSAGE" desc="Message shown to user while their printer is being setup in Chrome OS">
+          Setting up your printer.
+        </message>
       </if>
 
       <!-- Load State -->

@@ -229,7 +229,8 @@ cr.define('print_preview', function() {
     PROFILE: 'profile',
     DEVICE: 'device',
     PRIVET: 'privet',
-    EXTENSION: 'extension'
+    EXTENSION: 'extension',
+    CROS: 'chrome_os',
   };
 
   /**
@@ -330,6 +331,7 @@ cr.define('print_preview', function() {
     get isLocal() {
       return this.origin_ == Destination.Origin.LOCAL ||
              this.origin_ == Destination.Origin.EXTENSION ||
+             this.origin_ == Destination.Origin.CROS ||
              (this.origin_ == Destination.Origin.PRIVET &&
               this.connectionStatus_ !=
               Destination.ConnectionStatus.UNREGISTERED);

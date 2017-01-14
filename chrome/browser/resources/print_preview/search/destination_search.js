@@ -583,6 +583,35 @@ cr.define('print_preview', function() {
      * @private
      */
     handleOnDestinationSelect_: function(destination) {
+      if (destination.origin == print_preview.Destination.Origin.CROS &&
+          !destination.capabilities) {
+        // local printers on CrOS require setup.
+        assert(!this.printerConfigurer_);
+        this.printerConfigurer_ = new print_preview.CrosDestinationResolver(
+            this.destinationStore_, destination);
+        this.addChild(this.printerConfigurer_);
+        this.printerConfigurer_.run(this.getElement()).
+            then(
+                /**
+                  * @param {!print_preview.PrinterSetupResponse} result
+                  *    An object containing the printerId and capabilities.
+                  */
+                function(result) {
+                  assert(result.printerId == destination.id);
+                  destination.capabilities = result.capabilities;
+                  this.handleOnDestinationSelect_(destination);
+                }.bind(this),
+                function() {
+                  console.warn(
+                      'Failed to setup destination: ' + destination.id);
+                }).
+            then(function() {
+              this.removeChild(this.printerConfigurer_);
+              this.printerConfigurer_ = null;
+            }.bind(this));
+        return;
+      }
+
       if (destination.isProvisional) {
         assert(!this.provisionalDestinationResolver_,
                'Provisional destination resolver already exists.');
@@ -594,8 +623,8 @@ cr.define('print_preview', function() {
 
         var lastFocusedElement = document.activeElement;
         this.addChild(this.provisionalDestinationResolver_);
-        this.provisionalDestinationResolver_.run(this.getElement())
-            .then(
+        this.provisionalDestinationResolver_.run(this.getElement()).
+            then(
                 /**
                  * @param {!print_preview.Destination} resolvedDestination
                  *    Destination to which the provisional destination was
@@ -603,13 +632,13 @@ cr.define('print_preview', function() {
                  */
                 function(resolvedDestination) {
                   this.handleOnDestinationSelect_(resolvedDestination);
-                }.bind(this))
-            .catch(
+                }.bind(this)).
+            catch(
                 function() {
                   console.log('Failed to resolve provisional destination: ' +
                               destination.id);
-                })
-            .then(
+                }).
+            then(
                 function() {
                   this.removeChild(this.provisionalDestinationResolver_);
                   this.provisionalDestinationResolver_ = null;
