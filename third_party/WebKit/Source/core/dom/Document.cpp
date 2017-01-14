@@ -4945,6 +4945,19 @@ void Document::setEncodingData(const DocumentEncodingData& newData) {
 }
 
 KURL Document::completeURL(const String& url) const {
+  String trimmed = url.stripWhiteSpace();
+  bool newline = trimmed.contains('\n') || trimmed.contains('\r');
+  bool brace = trimmed.contains('<');
+  if (newline)
+    UseCounter::count(*this, UseCounter::DocumentCompleteURLContainingNewline);
+  if (brace) {
+    UseCounter::count(*this,
+                      UseCounter::DocumentCompleteURLContainingOpenBrace);
+  }
+  if (newline && brace) {
+    UseCounter::count(
+        *this, UseCounter::DocumentCompleteURLContainingNewlineAndOpenBrace);
+  }
   return completeURLWithOverride(url, m_baseURL);
 }
 
