@@ -35,6 +35,8 @@ Polymer({
    * @private
    */
   getIcon_: function() {
+    if (!this.networkState)
+      return '';
     let showDisconnected =
         !this.isListItem && (!this.networkState.ConnectionState ||
                              this.networkState.ConnectionState ==
@@ -92,6 +94,8 @@ Polymer({
    */
   getTechnology_: function() {
     let networkState = this.networkState;
+    if (!networkState)
+      return '';
     let type = networkState.Type;
     if (type == CrOnc.Type.WI_MAX)
       return 'network:4g';
@@ -140,6 +144,8 @@ Polymer({
    */
   showSecure_: function() {
     let networkState = this.networkState;
+    if (!this.networkState)
+      return false;
     if (networkState.Type == CrOnc.Type.WI_FI && networkState.WiFi) {
       let security = networkState.WiFi.Security;
       return !!security && security != 'None';
