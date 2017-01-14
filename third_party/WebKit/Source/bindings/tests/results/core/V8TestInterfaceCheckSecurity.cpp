@@ -437,7 +437,7 @@ void crossOriginNamedSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value
 void crossOriginNamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
   Vector<String> names;
   for (const auto& attribute : kCrossOriginAttributeTable)
-    names.append(attribute.name);
+    names.push_back(attribute.name);
 
   v8SetReturnValue(
       info,

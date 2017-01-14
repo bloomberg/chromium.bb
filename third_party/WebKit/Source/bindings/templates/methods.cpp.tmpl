@@ -188,7 +188,7 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
     {{throw_argument_error(method, argument, "parameter %(index)d is not of type '%(type)s'.")}}
     return;
   }
-  {{argument.name}}.append(V8{{argument.idl_type}}::toImpl(v8::Local<v8::Object>::Cast(info[i])));
+  {{argument.name}}.push_back(V8{{argument.idl_type}}::toImpl(v8::Local<v8::Object>::Cast(info[i])));
 }
 {% elif argument.is_dictionary %}
 {% if not argument.use_permissive_dictionary_conversion %}

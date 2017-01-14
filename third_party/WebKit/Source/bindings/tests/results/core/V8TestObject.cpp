@@ -7869,7 +7869,7 @@ static void voidMethodVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCall
 
       return;
     }
-    variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
+    variadicTestInterfaceEmptyArgs.push_back(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
   }
 
   impl->voidMethodVariadicTestInterfaceEmptyArg(variadicTestInterfaceEmptyArgs);
@@ -7904,7 +7904,7 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
 
       return;
     }
-    variadicTestInterfaceEmptyArgs.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
+    variadicTestInterfaceEmptyArgs.push_back(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
   }
 
   impl->voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(testInterfaceEmptyArg, variadicTestInterfaceEmptyArgs);
@@ -7926,7 +7926,7 @@ static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(const v8::F
 
       return;
     }
-    variadicTestInterfaceGarbageCollectedArg.append(V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(info[i])));
+    variadicTestInterfaceGarbageCollectedArg.push_back(V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(info[i])));
   }
 
   impl->voidMethodVariadicTestInterfaceGarbageCollectedArg(variadicTestInterfaceGarbageCollectedArg);
@@ -10575,7 +10575,7 @@ static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMe
 
       return;
     }
-    testInterfaceEmptyArg.append(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
+    testInterfaceEmptyArg.push_back(V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(info[i])));
   }
 
   impl->legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg(testInterfaceEmptyArg);
