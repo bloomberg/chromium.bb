@@ -52,7 +52,7 @@ uint32_t GetCrtc(int fd,
 
   DCHECK_GE(32, resources->count_crtcs);
   uint32_t best_crtc = 0;
-  int best_crtc_planes = 0;
+  int best_crtc_planes = -1;
 
   // Try to find an encoder for the connector.
   for (int i = 0; i < connector->count_encoders; ++i) {
