@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_PROFILES_PROFILE_SIGNIN_CONFIRMATION_VIEW_CONTROLLER_
 
 #import <Cocoa/Cocoa.h>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -33,7 +34,7 @@ class ProfileSigninConfirmationDelegate;
   bool offerProfileCreation_;
 
   // Dialog button callbacks.
-  ui::ProfileSigninConfirmationDelegate* delegate_;
+  std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate_;
   base::Closure closeDialogCallback_;
 
   // UI elements.
@@ -48,22 +49,16 @@ class ProfileSigninConfirmationDelegate;
 }
 
 - (id)initWithBrowser:(Browser*)browser
-             username:(const std::string&)username
-             delegate:(ui::ProfileSigninConfirmationDelegate*)delegate
-  closeDialogCallback:(const base::Closure&)closeDialogCallback
- offerProfileCreation:(bool)offer;
+                username:(const std::string&)username
+                delegate:
+                    (std::unique_ptr<ui::ProfileSigninConfirmationDelegate>)
+                        delegate
+     closeDialogCallback:(const base::Closure&)closeDialogCallback
+    offerProfileCreation:(bool)offer;
 - (IBAction)cancel:(id)sender;
 - (IBAction)ok:(id)sender;
 - (IBAction)close:(id)sender;
 - (IBAction)createProfile:(id)sender;
-
-@end
-
-@interface ProfileSigninConfirmationViewController (TestingAPI)
-
-@property(readonly, nonatomic) ui::ProfileSigninConfirmationDelegate* delegate;
-@property(readonly, nonatomic) NSButton* createProfileButton;
-@property(readonly, nonatomic) NSTextView* explanationField;
 
 @end
 

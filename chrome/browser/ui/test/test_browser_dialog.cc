@@ -88,11 +88,11 @@ void TestBrowserDialog::RunDialog() {
 
   gfx::NativeView parent = platform_util::GetViewForWindow(DialogParent());
   views::Widget::Widgets widgets_before;
-  views::Widget::GetAllChildWidgets(parent, &widgets_before);
+  views::Widget::GetAllOwnedWidgets(parent, &widgets_before);
 
   ShowDialog(NameFromTestCase());
   views::Widget::Widgets widgets_after;
-  views::Widget::GetAllChildWidgets(parent, &widgets_after);
+  views::Widget::GetAllOwnedWidgets(parent, &widgets_after);
 
   auto added = base::STLSetDifference<std::vector<views::Widget*>>(
       widgets_after, widgets_before);

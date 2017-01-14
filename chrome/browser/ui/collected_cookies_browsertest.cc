@@ -22,7 +22,7 @@ class CollectedCookiesTest : public DialogBrowserTest {
  public:
   CollectedCookiesTest() {}
 
-  // TestDialogInterface:
+  // DialogBrowserTest:
   void ShowDialog(const std::string& name) override {
     ASSERT_TRUE(embedded_test_server()->Start());
 

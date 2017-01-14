@@ -242,11 +242,11 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
 
   content::RecordAction(
       base::UserMetricsAction("Signin_Show_EnterpriseAccountPrompt"));
-  TabDialogs::FromWebContents(web_contents)->ShowProfileSigninConfirmation(
-      browser_,
-      profile_,
-      signin->GetUsernameForAuthInProgress(),
-      new SigninDialogDelegate(weak_pointer_factory_.GetWeakPtr()));
+  TabDialogs::FromWebContents(web_contents)
+      ->ShowProfileSigninConfirmation(browser_, profile_,
+                                      signin->GetUsernameForAuthInProgress(),
+                                      base::MakeUnique<SigninDialogDelegate>(
+                                          weak_pointer_factory_.GetWeakPtr()));
 }
 
 void OneClickSigninSyncStarter::LoadPolicyWithCachedCredentials() {

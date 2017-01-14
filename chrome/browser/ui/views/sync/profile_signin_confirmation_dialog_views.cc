@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -22,6 +21,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
@@ -36,13 +36,17 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#endif
+
 ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
     Browser* browser,
     const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate)
+    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate)
     : browser_(browser),
       username_(username),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       prompt_for_new_profile_(true) {}
 
 ProfileSigninConfirmationDialogViews::~ProfileSigninConfirmationDialogViews() {}
@@ -52,7 +56,8 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
     Browser* browser,
     Profile* profile,
     const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate) {
+    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate) {
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   // Hides the new avatar bubble if it is currently shown. The new avatar bubble
   // should be automatically closed when it loses focus. However on windows the
   // profile signin confirmation dialog is not modal yet thus it does not take
@@ -61,10 +66,11 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
   // TODO(guohui): removes the workaround once the profile confirmation dialog
   // is fixed.
   ProfileChooserView::Hide();
+#endif
 
   ProfileSigninConfirmationDialogViews* dialog =
-      new ProfileSigninConfirmationDialogViews(
-          browser, username, delegate);
+      new ProfileSigninConfirmationDialogViews(browser, username,
+                                               std::move(delegate));
   ui::CheckShouldPromptForNewProfile(
       profile,
       // This callback is guaranteed to be invoked, and once it is, the dialog
@@ -117,7 +123,7 @@ bool ProfileSigninConfirmationDialogViews::Accept() {
       delegate_->OnSigninWithNewProfile();
     else
       delegate_->OnContinueSignin();
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
   return true;
 }
@@ -125,7 +131,7 @@ bool ProfileSigninConfirmationDialogViews::Accept() {
 bool ProfileSigninConfirmationDialogViews::Cancel() {
   if (delegate_) {
     delegate_->OnCancelSignin();
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
   return true;
 }
@@ -246,7 +252,7 @@ void ProfileSigninConfirmationDialogViews::ButtonPressed(
   DCHECK(prompt_for_new_profile_);
   if (delegate_) {
     delegate_->OnContinueSignin();
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
   GetWidget()->Close();
 }

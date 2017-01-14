@@ -16,19 +16,15 @@
 namespace {
 
 // static
-void ShowDialog(
-    Browser* browser,
-    content::WebContents* web_contents,
-    Profile* profile,
-    const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate,
-    bool offer_profile_creation) {
+void ShowDialog(Browser* browser,
+                content::WebContents* web_contents,
+                Profile* profile,
+                const std::string& username,
+                std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate,
+                bool offer_profile_creation) {
   // The dialog owns itself.
-  new ProfileSigninConfirmationDialogCocoa(browser,
-                                           web_contents,
-                                           profile,
-                                           username,
-                                           delegate,
+  new ProfileSigninConfirmationDialogCocoa(browser, web_contents, profile,
+                                           username, std::move(delegate),
                                            offer_profile_creation);
 }
 
@@ -39,19 +35,18 @@ ProfileSigninConfirmationDialogCocoa::ProfileSigninConfirmationDialogCocoa(
     content::WebContents* web_contents,
     Profile* profile,
     const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate,
+    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate,
     bool offer_profile_creation) {
   // Setup the dialog view controller.
   const base::Closure& closeDialogCallback =
       base::Bind(&ProfileSigninConfirmationDialogCocoa::Close,
                  base::Unretained(this));
-  controller_.reset(
-      [[ProfileSigninConfirmationViewController alloc]
-          initWithBrowser:browser
-                 username:username
-                 delegate:delegate
-      closeDialogCallback:closeDialogCallback
-     offerProfileCreation:offer_profile_creation]);
+  controller_.reset([[ProfileSigninConfirmationViewController alloc]
+           initWithBrowser:browser
+                  username:username
+                  delegate:std::move(delegate)
+       closeDialogCallback:closeDialogCallback
+      offerProfileCreation:offer_profile_creation]);
 
   // Setup the constrained window that will show the view.
   base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
@@ -71,10 +66,10 @@ void ProfileSigninConfirmationDialogCocoa::Show(
     content::WebContents* web_contents,
     Profile* profile,
     const std::string& username,
-    ui::ProfileSigninConfirmationDelegate* delegate) {
+    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate) {
   ui::CheckShouldPromptForNewProfile(
       profile, base::Bind(ShowDialog, browser, web_contents, profile, username,
-                          delegate));
+                          base::Passed(std::move(delegate))));
 }
 
 void ProfileSigninConfirmationDialogCocoa::Close() {

@@ -15,6 +15,11 @@ class TabDialogsViewsMac : public TabDialogsCocoa {
 
   // TabDialogs:
   void ShowCollectedCookies() override;
+  void ShowProfileSigninConfirmation(
+      Browser* browser,
+      Profile* profile,
+      const std::string& username,
+      std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabDialogsViewsMac);

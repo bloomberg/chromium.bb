@@ -1508,6 +1508,8 @@ split_static_library("ui") {
       "views/subtle_notification_view.h",
       "views/sync/bubble_sync_promo_view.cc",
       "views/sync/bubble_sync_promo_view.h",
+      "views/sync/profile_signin_confirmation_dialog_views.cc",
+      "views/sync/profile_signin_confirmation_dialog_views.h",
       "views/task_manager_view.cc",
       "views/task_manager_view.h",
       "views/website_settings/chosen_object_row.cc",
@@ -1559,8 +1561,6 @@ split_static_library("ui") {
         "views/screen_capture_notification_ui_views.cc",
         "views/sync/one_click_signin_dialog_view.cc",
         "views/sync/one_click_signin_dialog_view.h",
-        "views/sync/profile_signin_confirmation_dialog_views.cc",
-        "views/sync/profile_signin_confirmation_dialog_views.h",
       ]
     }
 
