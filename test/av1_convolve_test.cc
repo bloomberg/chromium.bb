@@ -56,9 +56,7 @@ TEST(AV1ConvolveTest, av1_convolve8) {
   int w = 1;
   int h = 1;
 
-  ConvolveParams conv_params;
-  conv_params.ref = 0;
-  conv_params.round = 1;
+  ConvolveParams conv_params = get_conv_params(0);
 
   setup_convolve();
 
@@ -105,9 +103,7 @@ TEST(AV1ConvolveTest, av1_convolve) {
   int subpel_x_q4;
   int subpel_y_q4;
 
-  ConvolveParams conv_params;
-  conv_params.ref = 0;
-  conv_params.round = 1;
+  ConvolveParams conv_params = get_conv_params(0);
 
   ASSERT_LE(filter_size, 12);
   setup_convolve();
@@ -168,9 +164,7 @@ TEST(AV1ConvolveTest, av1_convolve_vert_first) {
   int subpel_x_q4;
   int subpel_y_q4;
 
-  ConvolveParams conv_params;
-  conv_params.ref = 0;
-  conv_params.round = 1;
+  ConvolveParams conv_params = get_conv_params(0);
 
   ASSERT_LE(filter_size_x, 12);
   ASSERT_LE(filter_size_y, 12);
@@ -239,9 +233,7 @@ TEST(AV1ConvolveTest, av1_convolve_avg) {
   int subpel_x_q4;
   int subpel_y_q4;
 
-  ConvolveParams conv_params;
-  conv_params.ref = 0;
-  conv_params.round = 1;
+  ConvolveParams conv_params = get_conv_params(0);
 
   setup_convolve();
 

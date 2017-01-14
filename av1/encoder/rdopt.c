@@ -4879,6 +4879,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     int id = ite % 2;  // Even iterations search in the first reference frame,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
+    ConvolveParams conv_params = get_conv_params(0);
 
     // Initialized here because of compiler problem in Visual Studio.
     ref_yv12[0] = xd->plane[0].pre[0];
@@ -4902,16 +4903,16 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
           MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE, xd->bd);
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
-      av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
-                                second_pred, pw, &frame_mv[refs[!id]].as_mv,
-                                &sf, pw, ph, 0, interp_filter, MV_PRECISION_Q3,
-                                mi_col * MI_SIZE, mi_row * MI_SIZE);
+      av1_build_inter_predictor(
+          ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
+          &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
+          MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE);
     }
 #else
-    av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
-                              second_pred, pw, &frame_mv[refs[!id]].as_mv, &sf,
-                              pw, ph, 0, interp_filter, MV_PRECISION_Q3,
-                              mi_col * MI_SIZE, mi_row * MI_SIZE);
+    av1_build_inter_predictor(
+        ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
+        &frame_mv[refs[!id]].as_mv, &sf, pw, ph, &conv_params, interp_filter,
+        MV_PRECISION_Q3, mi_col * MI_SIZE, mi_row * MI_SIZE);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
     // Do compound motion search on the current reference frame.

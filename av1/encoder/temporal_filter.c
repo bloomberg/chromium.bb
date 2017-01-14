@@ -39,6 +39,7 @@ static void temporal_filter_predictors_mb_c(
   const MV mv = { mv_row, mv_col };
   enum mv_precision mv_precision_uv;
   int uv_stride;
+  ConvolveParams conv_params = get_conv_params(which_mv);
 
 #if USE_TEMPORALFILTER_12TAP
 #if CONFIG_DUAL_FILTER
@@ -81,15 +82,15 @@ static void temporal_filter_predictors_mb_c(
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale, 16, 16,
-                            which_mv, interp_filter, MV_PRECISION_Q3, x, y);
+                            &conv_params, interp_filter, MV_PRECISION_Q3, x, y);
 
   av1_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256], uv_block_width,
                             &mv, scale, uv_block_width, uv_block_height,
-                            which_mv, interp_filter, mv_precision_uv, x, y);
+                            &conv_params, interp_filter, mv_precision_uv, x, y);
 
   av1_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512], uv_block_width,
                             &mv, scale, uv_block_width, uv_block_height,
-                            which_mv, interp_filter, mv_precision_uv, x, y);
+                            &conv_params, interp_filter, mv_precision_uv, x, y);
 }
 
 void av1_temporal_filter_apply_c(uint8_t *frame1, unsigned int stride,

@@ -610,13 +610,15 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #else
   InterpFilter tmp_ipf = interp_filter;
 #endif  // CONFIG_DUAL_FILTER
+  ConvolveParams conv_params = get_conv_params(0);
 #if CONFIG_AOM_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_dst_[2 * MAX_SB_SQUARE]);
   uint8_t *tmp_dst = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
                          ? CONVERT_TO_BYTEPTR(tmp_dst_)
                          : tmp_dst_;
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
-                           subpel_y, sf, w, h, 0, tmp_ipf, xs, ys, xd);
+                           subpel_y, sf, w, h, &conv_params, tmp_ipf, xs, ys,
+                           xd);
 #if CONFIG_SUPERTX
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     build_masked_compound_wedge_extend_highbd(
@@ -652,7 +654,8 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #else   // CONFIG_AOM_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_dst[MAX_SB_SQUARE]);
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
-                           subpel_y, sf, w, h, 0, tmp_ipf, xs, ys, xd);
+                           subpel_y, sf, w, h, &conv_params, tmp_ipf, xs, ys,
+                           xd);
 #if CONFIG_SUPERTX
   build_masked_compound_wedge_extend(dst, dst_stride, dst, dst_stride, tmp_dst,
                                      MAX_SB_SIZE, comp_data->wedge_index,
@@ -700,7 +703,7 @@ void av1_highbd_build_inter_predictor(
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *src_mv,
                                const struct scale_factors *sf, int w, int h,
-                               int ref,
+                               ConvolveParams *conv_params,
 #if CONFIG_DUAL_FILTER
                                const InterpFilter *interp_filter,
 #else
@@ -717,7 +720,7 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   src += (mv.row >> SUBPEL_BITS) * src_stride + (mv.col >> SUBPEL_BITS);
 
   inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
-                  h, ref, interp_filter, sf->x_step_q4, sf->y_step_q4);
+                  h, conv_params, interp_filter, sf->x_step_q4, sf->y_step_q4);
 }
 
 void build_inter_predictors(MACROBLOCKD *xd, int plane,
@@ -797,6 +800,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
           MV32 scaled_mv;
           int xs, ys, subpel_x, subpel_y;
           const int is_scaled = av1_is_scaled(sf);
+          ConvolveParams conv_params = get_conv_params(ref);
 
           x = x_base + idx * x_step;
           y = y_base + idy * y_step;
@@ -838,7 +842,8 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_EXT_INTER
             av1_make_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
                                      subpel_x, subpel_y, sf, x_step, y_step,
-                                     ref, mi->mbmi.interp_filter, xs, ys, xd);
+                                     &conv_params, mi->mbmi.interp_filter, xs,
+                                     ys, xd);
         }
       }
     }
@@ -876,6 +881,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
     MV32 scaled_mv;
     int xs, ys, subpel_x, subpel_y;
     const int is_scaled = av1_is_scaled(sf);
+    ConvolveParams conv_params = get_conv_params(ref);
 
     if (is_scaled) {
       pre = pre_buf->buf + scaled_buffer_offset(x, y, pre_buf->stride, sf);
@@ -922,7 +928,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_GLOBAL_MOTION
 #endif  // CONFIG_EXT_INTER
       av1_make_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
-                               subpel_x, subpel_y, sf, w, h, ref,
+                               subpel_x, subpel_y, sf, w, h, &conv_params,
                                mi->mbmi.interp_filter, xs, ys, xd);
   }
 }
@@ -939,6 +945,7 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
   const int is_compound = has_second_ref(&mi->mbmi);
 
   for (ref = 0; ref < 1 + is_compound; ++ref) {
+    ConvolveParams conv_params = get_conv_params(ref);
     const uint8_t *pre =
         &pd->pre[ref].buf[(ir * pd->pre[ref].stride + ic) << 2];
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -952,15 +959,15 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
       av1_build_inter_predictor(
           pre, pd->pre[ref].stride, dst, pd->dst.stride,
           &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
-          ref, mi->mbmi.interp_filter, MV_PRECISION_Q3,
+          &conv_params, mi->mbmi.interp_filter, MV_PRECISION_Q3,
           mi_col * MI_SIZE + 4 * ic, mi_row * MI_SIZE + 4 * ir);
     }
 #else
     av1_build_inter_predictor(
         pre, pd->pre[ref].stride, dst, pd->dst.stride,
         &mi->bmi[i].as_mv[ref].as_mv, &xd->block_refs[ref]->sf, width, height,
-        ref, mi->mbmi.interp_filter, MV_PRECISION_Q3, mi_col * MI_SIZE + 4 * ic,
-        mi_row * MI_SIZE + 4 * ir);
+        &conv_params, mi->mbmi.interp_filter, MV_PRECISION_Q3,
+        mi_col * MI_SIZE + 4 * ic, mi_row * MI_SIZE + 4 * ir);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   }
 }
@@ -2747,6 +2754,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   MV32 scaled_mv;
   int xs, ys, subpel_x, subpel_y;
   const int is_scaled = av1_is_scaled(sf);
+  ConvolveParams conv_params = get_conv_params(0);
 
   if (is_scaled) {
     pre = pre_buf->buf + scaled_buffer_offset(x, y, pre_buf->stride, sf);
@@ -2766,8 +2774,8 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
          (scaled_mv.col >> SUBPEL_BITS);
 
   av1_make_inter_predictor(pre, pre_buf->stride, dst, ext_dst_stride, subpel_x,
-                           subpel_y, sf, w, h, 0, mi->mbmi.interp_filter, xs,
-                           ys, xd);
+                           subpel_y, sf, w, h, &conv_params,
+                           mi->mbmi.interp_filter, xs, ys, xd);
 }
 
 void av1_build_inter_predictors_for_planes_single_buf(

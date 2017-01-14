@@ -25,7 +25,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                                    uint8_t *dst, int dst_stride,
                                    const int subpel_x, const int subpel_y,
                                    const struct scale_factors *sf, int w, int h,
-                                   int ref_idx,
+                                   ConvolveParams *conv_params,
 #if CONFIG_DUAL_FILTER
                                    const InterpFilter *interp_filter,
 #else
@@ -34,9 +34,9 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                                    int xs, int ys) {
 #if CONFIG_DUAL_FILTER
   InterpFilterParams interp_filter_params_x =
-      av1_get_interp_filter_params(interp_filter[1 + 2 * ref_idx]);
+      av1_get_interp_filter_params(interp_filter[1 + 2 * conv_params->ref]);
   InterpFilterParams interp_filter_params_y =
-      av1_get_interp_filter_params(interp_filter[0 + 2 * ref_idx]);
+      av1_get_interp_filter_params(interp_filter[0 + 2 * conv_params->ref]);
 #else
   InterpFilterParams interp_filter_params =
       av1_get_interp_filter_params(interp_filter);
@@ -56,17 +56,14 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
     const int16_t *kernel_y =
         av1_get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
 #endif
-    sf->predict[subpel_x != 0][subpel_y != 0][ref_idx](
+    sf->predict[subpel_x != 0][subpel_y != 0][conv_params->ref](
         src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h);
   } else {
     // ref_idx > 0 means this is the second reference frame
     // first reference frame's prediction result is already in dst
     // therefore we need to average the first and second results
-    ConvolveParams conv_params;
-    conv_params.round = 1;
-    conv_params.ref = ref_idx;
     av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
-                 subpel_x, xs, subpel_y, ys, &conv_params);
+                 subpel_x, xs, subpel_y, ys, conv_params);
   }
 }
 
@@ -219,7 +216,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 static INLINE void av1_make_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
-    int w, int h, int ref,
+    int w, int h, ConvolveParams *conv_params,
 #if CONFIG_DUAL_FILTER
     const InterpFilter *interp_filter,
 #else
@@ -230,11 +227,12 @@ static INLINE void av1_make_inter_predictor(
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
-                           sf, w, h, ref, interp_filter, xs, ys, xd->bd);
+                           sf, w, h, conv_params->ref, interp_filter, xs, ys,
+                           xd->bd);
   else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
     inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
-                    h, ref, interp_filter, xs, ys);
+                    h, conv_params, interp_filter, xs, ys);
 }
 
 #if CONFIG_EXT_INTER
@@ -365,7 +363,7 @@ void av1_build_masked_inter_predictor_complex(
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *mv_q3,
                                const struct scale_factors *sf, int w, int h,
-                               int do_avg,
+                               ConvolveParams *conv_params,
 #if CONFIG_DUAL_FILTER
                                const InterpFilter *interp_filter,
 #else
