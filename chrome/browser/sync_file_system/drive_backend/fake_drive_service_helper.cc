@@ -217,12 +217,11 @@ DriveApiErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
-  const ScopedVector<FileResource>& items = resource_list->items();
-  for (ScopedVector<FileResource>::const_iterator itr = items.begin();
-       itr != items.end(); ++itr) {
-    const FileResource& item = **itr;
-    if (item.parents().empty()) {
-      *sync_root_folder_id = item.file_id();
+  const std::vector<std::unique_ptr<FileResource>>& items =
+      resource_list->items();
+  for (const auto& item : items) {
+    if (item->parents().empty()) {
+      *sync_root_folder_id = item->file_id();
       return google_apis::HTTP_SUCCESS;
     }
   }
@@ -231,7 +230,7 @@ DriveApiErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
 
 DriveApiErrorCode FakeDriveServiceHelper::ListFilesInFolder(
     const std::string& folder_id,
-    ScopedVector<FileResource>* entries) {
+    std::vector<std::unique_ptr<FileResource>>* entries) {
   DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   std::unique_ptr<FileList> list;
   fake_drive_service_->GetFileListInDirectory(
@@ -247,7 +246,7 @@ DriveApiErrorCode FakeDriveServiceHelper::ListFilesInFolder(
 DriveApiErrorCode FakeDriveServiceHelper::SearchByTitle(
     const std::string& folder_id,
     const std::string& title,
-    ScopedVector<FileResource>* entries) {
+    std::vector<std::unique_ptr<FileResource>>* entries) {
   DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   std::unique_ptr<FileList> list;
   fake_drive_service_->SearchByTitle(
@@ -316,15 +315,12 @@ DriveApiErrorCode FakeDriveServiceHelper::GetAboutResource(
 
 DriveApiErrorCode FakeDriveServiceHelper::CompleteListing(
     std::unique_ptr<FileList> list,
-    ScopedVector<FileResource>* entries) {
+    std::vector<std::unique_ptr<FileResource>>* entries) {
   while (true) {
     entries->reserve(entries->size() + list->items().size());
-    std::vector<FileResource*> tmp;
-    list->mutable_items()->release(&tmp);
-    for (std::vector<FileResource*>::const_iterator itr =
-             tmp.begin(); itr != tmp.end(); ++itr) {
-      entries->push_back(*itr);
-    }
+    std::move(list->mutable_items()->begin(), list->mutable_items()->end(),
+              std::back_inserter(*entries));
+    list->mutable_items()->clear();
 
     GURL next_feed = list->next_link();
     if (next_feed.is_empty())

@@ -54,13 +54,13 @@ std::unique_ptr<DatabaseContents> CreateTestDatabaseContents() {
       test_util::CreatePlaceholderTracker(
           "unsynced_file_id", kPlaceholderTrackerID, app_root_tracker.get());
 
-  contents->file_metadata.push_back(sync_root_metadata.release());
-  contents->file_trackers.push_back(sync_root_tracker.release());
-  contents->file_metadata.push_back(app_root_metadata.release());
-  contents->file_trackers.push_back(app_root_tracker.release());
-  contents->file_metadata.push_back(file_metadata.release());
-  contents->file_trackers.push_back(file_tracker.release());
-  contents->file_trackers.push_back(placeholder_tracker.release());
+  contents->file_metadata.push_back(std::move(sync_root_metadata));
+  contents->file_trackers.push_back(std::move(sync_root_tracker));
+  contents->file_metadata.push_back(std::move(app_root_metadata));
+  contents->file_trackers.push_back(std::move(app_root_tracker));
+  contents->file_metadata.push_back(std::move(file_metadata));
+  contents->file_trackers.push_back(std::move(file_tracker));
+  contents->file_trackers.push_back(std::move(placeholder_tracker));
   return contents;
 }
 

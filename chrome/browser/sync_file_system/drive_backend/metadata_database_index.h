@@ -17,7 +17,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
 
@@ -49,8 +48,8 @@ namespace drive_backend {
 struct DatabaseContents {
   DatabaseContents();
   ~DatabaseContents();
-  ScopedVector<FileMetadata> file_metadata;
-  ScopedVector<FileTracker> file_trackers;
+  std::vector<std::unique_ptr<FileMetadata>> file_metadata;
+  std::vector<std::unique_ptr<FileTracker>> file_trackers;
 };
 
 // Maintains indexes of MetadataDatabase on memory.

@@ -42,11 +42,11 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
 
   GURL origin;
   bool include_subdomains;
-  ScopedVector<GURL> collectors;
+  std::vector<std::unique_ptr<GURL>> collectors;
 
   double success_sample_rate;
   double failure_sample_rate;
-  ScopedVector<std::string> path_prefixes;
+  std::vector<std::unique_ptr<std::string>> path_prefixes;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityConfig);

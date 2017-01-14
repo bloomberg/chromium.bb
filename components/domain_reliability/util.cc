@@ -170,22 +170,23 @@ void GetUploadResultFromResponseDetails(
   return;
 }
 
-// N.B. This uses a ScopedVector because that's what JSONValueConverter uses
-// for repeated fields of any type, and Config uses JSONValueConverter to parse
-// JSON configs.
-GURL SanitizeURLForReport(const GURL& beacon_url,
-                          const GURL& collector_url,
-                          const ScopedVector<std::string>& path_prefixes) {
+// N.B. This uses a std::vector<std::unique_ptr<>> because that's what
+// JSONValueConverter uses for repeated fields of any type, and Config uses
+// JSONValueConverter to parse JSON configs.
+GURL SanitizeURLForReport(
+    const GURL& beacon_url,
+    const GURL& collector_url,
+    const std::vector<std::unique_ptr<std::string>>& path_prefixes) {
   if (CanReportFullBeaconURLToCollector(beacon_url, collector_url))
     return beacon_url.GetAsReferrer();
 
   std::string path = beacon_url.path();
   const std::string empty_path;
   const std::string* longest_path_prefix = &empty_path;
-  for (const std::string* path_prefix : path_prefixes) {
+  for (const auto& path_prefix : path_prefixes) {
     if (path.substr(0, path_prefix->length()) == *path_prefix &&
         path_prefix->length() > longest_path_prefix->length()) {
-      longest_path_prefix = path_prefix;
+      longest_path_prefix = path_prefix.get();
     }
   }
 

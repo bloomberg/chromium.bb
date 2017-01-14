@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"

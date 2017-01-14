@@ -60,11 +60,11 @@ class FakeDriveServiceHelper {
       std::string* sync_root_folder_id);
   google_apis::DriveApiErrorCode ListFilesInFolder(
       const std::string& folder_id,
-      ScopedVector<google_apis::FileResource>* entries);
+      std::vector<std::unique_ptr<google_apis::FileResource>>* entries);
   google_apis::DriveApiErrorCode SearchByTitle(
       const std::string& folder_id,
       const std::string& title,
-      ScopedVector<google_apis::FileResource>* entries);
+      std::vector<std::unique_ptr<google_apis::FileResource>>* entries);
 
   google_apis::DriveApiErrorCode GetFileResource(
       const std::string& file_id,
@@ -83,7 +83,7 @@ class FakeDriveServiceHelper {
  private:
   google_apis::DriveApiErrorCode CompleteListing(
       std::unique_ptr<google_apis::FileList> list,
-      ScopedVector<google_apis::FileResource>* entries);
+      std::vector<std::unique_ptr<google_apis::FileResource>>* entries);
 
   void Initialize();
 

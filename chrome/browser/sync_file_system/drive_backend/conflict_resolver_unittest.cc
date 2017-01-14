@@ -237,10 +237,10 @@ class ConflictResolverTest : public testing::Test {
     return status;
   }
 
-  ScopedVector<google_apis::FileResource>
+  std::vector<std::unique_ptr<google_apis::FileResource>>
   GetResourceEntriesForParentAndTitle(const std::string& parent_folder_id,
                                       const std::string& title) {
-    ScopedVector<google_apis::FileResource> entries;
+    std::vector<std::unique_ptr<google_apis::FileResource>> entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
@@ -252,7 +252,7 @@ class ConflictResolverTest : public testing::Test {
       const std::string& title,
       const std::string& primary_file_id,
       test_util::FileResourceKind kind) {
-    ScopedVector<google_apis::FileResource> entries;
+    std::vector<std::unique_ptr<google_apis::FileResource>> entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
@@ -307,7 +307,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_Files) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::FileResource> entries =
+  std::vector<std::unique_ptr<google_apis::FileResource>> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(4u, entries.size());
 
@@ -333,7 +333,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_Folders) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::FileResource> entries =
+  std::vector<std::unique_ptr<google_apis::FileResource>> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(4u, entries.size());
 
@@ -359,7 +359,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_FilesAndFolders) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::FileResource> entries =
+  std::vector<std::unique_ptr<google_apis::FileResource>> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(4u, entries.size());
 
@@ -391,7 +391,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_RemoteFolderOnLocalFile) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::FileResource> entries =
+  std::vector<std::unique_ptr<google_apis::FileResource>> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(2u, entries.size());
 
@@ -439,7 +439,7 @@ TEST_F(ConflictResolverTest, ResolveConflict_RemoteNestedFolderOnLocalFile) {
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 
-  ScopedVector<google_apis::FileResource> entries =
+  std::vector<std::unique_ptr<google_apis::FileResource>> entries =
       GetResourceEntriesForParentAndTitle(app_root, kTitle);
   ASSERT_EQ(2u, entries.size());
 

@@ -24,7 +24,7 @@ std::unique_ptr<Value> DomainReliabilityBeacon::ToValue(
     base::TimeTicks upload_time,
     base::TimeTicks last_network_change_time,
     const GURL& collector_url,
-    const ScopedVector<std::string>& path_prefixes) const {
+    const std::vector<std::unique_ptr<std::string>>& path_prefixes) const {
   std::unique_ptr<DictionaryValue> beacon_value(new DictionaryValue());
   DCHECK(url.is_valid());
   GURL sanitized_url = SanitizeURLForReport(url, collector_url, path_prefixes);

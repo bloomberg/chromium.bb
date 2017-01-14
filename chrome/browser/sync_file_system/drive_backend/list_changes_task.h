@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -50,7 +49,7 @@ class ListChangesTask : public SyncTask {
   drive::DriveServiceInterface* drive_service();
 
   SyncEngineContext* sync_context_;
-  ScopedVector<google_apis::ChangeResource> change_list_;
+  std::vector<std::unique_ptr<google_apis::ChangeResource>> change_list_;
 
   std::vector<std::string> file_ids_;
 

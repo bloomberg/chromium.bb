@@ -28,8 +28,9 @@ class DomainReliabilityHeaderTest : public testing::Test {
   std::unique_ptr<DomainReliabilityHeader> parsed_;
 };
 
-bool CheckReportUris(const char* pipe_separated_expected_report_uris,
-                     const ScopedVector<GURL>& actual_report_uris) {
+bool CheckReportUris(
+    const char* pipe_separated_expected_report_uris,
+    const std::vector<std::unique_ptr<GURL>>& actual_report_uris) {
   if (!pipe_separated_expected_report_uris)
     return actual_report_uris.empty();
 

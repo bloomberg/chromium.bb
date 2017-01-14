@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -106,7 +105,7 @@ class SyncEngineInitializer : public SyncTask {
   int find_sync_root_retry_count_;
 
   std::unique_ptr<MetadataDatabase> metadata_database_;
-  ScopedVector<google_apis::FileResource> app_root_folders_;
+  std::vector<std::unique_ptr<google_apis::FileResource>> app_root_folders_;
 
   int64_t largest_change_id_;
   std::string root_folder_id_;

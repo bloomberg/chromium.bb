@@ -13,7 +13,6 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/json/json_value_converter.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -70,7 +69,7 @@ bool DomainReliabilityConfig::IsValid() const {
     return false;
   }
 
-  for (const auto* url : collectors) {
+  for (const auto& url : collectors) {
     if (!url->is_valid())
       return false;
   }

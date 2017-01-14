@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
@@ -132,7 +134,8 @@ void FileListCallbackAdapter(const FileListCallback& callback,
   for (size_t i = 0; i < change_list->items().size(); ++i) {
     const ChangeResource& entry = *change_list->items()[i];
     if (entry.file())
-      file_list->mutable_items()->push_back(new FileResource(*entry.file()));
+      file_list->mutable_items()->push_back(
+          base::MakeUnique<FileResource>(*entry.file()));
   }
   callback.Run(error, std::move(file_list));
 }
@@ -1662,7 +1665,7 @@ void FakeDriveService::GetChangeListInternal(
 
   // Filter out entries per parameters like |directory_resource_id| and
   // |search_query|.
-  ScopedVector<ChangeResource> entries;
+  std::vector<std::unique_ptr<ChangeResource>> entries;
   int num_entries_matched = 0;
   for (auto it = entries_.begin(); it != entries_.end(); ++it) {
     const ChangeResource& entry = it->second->change_resource;
@@ -1720,7 +1723,7 @@ void FakeDriveService::GetChangeListInternal(
         entry_copied->set_file(base::MakeUnique<FileResource>(*entry.file()));
       }
       entry_copied->set_modification_date(entry.modification_date());
-      entries.push_back(entry_copied.release());
+      entries.push_back(std::move(entry_copied));
     }
   }
 

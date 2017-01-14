@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -45,10 +44,11 @@ class FolderCreator {
   void DidCreateFolder(const FileIDCallback& callback,
                        google_apis::DriveApiErrorCode error,
                        std::unique_ptr<google_apis::FileResource> entry);
-  void DidListFolders(const FileIDCallback& callback,
-                      ScopedVector<google_apis::FileResource> candidates,
-                      google_apis::DriveApiErrorCode error,
-                      std::unique_ptr<google_apis::FileList> file_list);
+  void DidListFolders(
+      const FileIDCallback& callback,
+      std::vector<std::unique_ptr<google_apis::FileResource>> candidates,
+      google_apis::DriveApiErrorCode error,
+      std::unique_ptr<google_apis::FileList> file_list);
 
   drive::DriveServiceInterface* drive_service_;
   MetadataDatabase* metadata_database_;

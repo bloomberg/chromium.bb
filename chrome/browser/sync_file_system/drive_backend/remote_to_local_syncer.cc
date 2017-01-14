@@ -676,11 +676,8 @@ void RemoteToLocalSyncer::DidListFolderContent(
   }
 
   children->reserve(children->size() + file_list->items().size());
-  for (ScopedVector<google_apis::FileResource>::const_iterator itr =
-           file_list->items().begin();
-       itr != file_list->items().end();
-       ++itr) {
-    children->push_back((*itr)->file_id());
+  for (const auto& file_resource : file_list->items()) {
+    children->push_back(file_resource->file_id());
   }
 
   if (!file_list->next_link().is_empty()) {

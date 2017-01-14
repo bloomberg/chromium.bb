@@ -180,9 +180,9 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   foo_app->set_application_id("foo_app_id");
   foo_app->set_name("Foo");
   foo_app->set_object_type("foo_object_type");
-  ScopedVector<std::string> foo_mime_types;
-  foo_mime_types.push_back(new std::string("text/plain"));
-  foo_mime_types.push_back(new std::string("text/html"));
+  std::vector<std::unique_ptr<std::string>> foo_mime_types;
+  foo_mime_types.push_back(base::MakeUnique<std::string>("text/plain"));
+  foo_mime_types.push_back(base::MakeUnique<std::string>("text/html"));
   foo_app->set_primary_mimetypes(std::move(foo_mime_types));
 
   // Bar.app can only handle "text/plain".
@@ -192,14 +192,14 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   bar_app->set_application_id("bar_app_id");
   bar_app->set_name("Bar");
   bar_app->set_object_type("bar_object_type");
-  ScopedVector<std::string> bar_mime_types;
-  bar_mime_types.push_back(new std::string("text/plain"));
+  std::vector<std::unique_ptr<std::string>> bar_mime_types;
+  bar_mime_types.push_back(base::MakeUnique<std::string>("text/plain"));
   bar_app->set_primary_mimetypes(std::move(bar_mime_types));
 
   // Prepare DriveAppRegistry from Foo.app and Bar.app.
-  ScopedVector<google_apis::AppResource> app_resources;
-  app_resources.push_back(foo_app.release());
-  app_resources.push_back(bar_app.release());
+  std::vector<std::unique_ptr<google_apis::AppResource>> app_resources;
+  app_resources.push_back(std::move(foo_app));
+  app_resources.push_back(std::move(bar_app));
   google_apis::AppList app_list;
   app_list.set_items(std::move(app_resources));
   drive::DriveAppRegistry drive_app_registry(NULL);
@@ -734,12 +734,12 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   baz_app->set_application_id(kBazId);
   baz_app->set_name("Baz");
   baz_app->set_object_type("baz_object_type");
-  ScopedVector<std::string> baz_mime_types;
-  baz_mime_types.push_back(new std::string("text/plain"));
+  std::vector<std::unique_ptr<std::string>> baz_mime_types;
+  baz_mime_types.push_back(base::MakeUnique<std::string>("text/plain"));
   baz_app->set_primary_mimetypes(std::move(baz_mime_types));
   // Set up DriveAppRegistry.
-  ScopedVector<google_apis::AppResource> app_resources;
-  app_resources.push_back(baz_app.release());
+  std::vector<std::unique_ptr<google_apis::AppResource>> app_resources;
+  app_resources.push_back(std::move(baz_app));
   google_apis::AppList app_list;
   app_list.set_items(std::move(app_resources));
   drive::DriveAppRegistry drive_app_registry(NULL);
@@ -783,13 +783,14 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   foo_app->set_application_id(kFooId);
   foo_app->set_name("Foo");
   foo_app->set_object_type("foo_object_type");
-  ScopedVector<std::string> foo_extensions;
-  foo_extensions.push_back(new std::string("gdoc"));  // Not ".gdoc"
+  std::vector<std::unique_ptr<std::string>> foo_extensions;
+  foo_extensions.push_back(
+      base::MakeUnique<std::string>("gdoc"));  // Not ".gdoc"
   foo_app->set_primary_file_extensions(std::move(foo_extensions));
 
   // Prepare DriveAppRegistry from Foo.app.
-  ScopedVector<google_apis::AppResource> app_resources;
-  app_resources.push_back(foo_app.release());
+  std::vector<std::unique_ptr<google_apis::AppResource>> app_resources;
+  app_resources.push_back(std::move(foo_app));
   google_apis::AppList app_list;
   app_list.set_items(std::move(app_resources));
   drive::DriveAppRegistry drive_app_registry(NULL);

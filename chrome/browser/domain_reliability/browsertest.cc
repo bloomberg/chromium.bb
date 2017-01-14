@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, UploadAtShutdown) {
   auto config = base::MakeUnique<DomainReliabilityConfig>();
   config->origin = GURL("https://localhost/");
   config->include_subdomains = false;
-  config->collectors.push_back(new GURL(
+  config->collectors.push_back(base::MakeUnique<GURL>(
       net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_IO_PENDING)));
   config->success_sample_rate = 1.0;
   config->failure_sample_rate = 1.0;

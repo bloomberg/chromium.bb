@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -412,18 +413,14 @@ class DriveBackendSyncTest : public testing::Test,
     }
     EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
 
-    ScopedVector<google_apis::FileResource> remote_entries;
+    std::vector<std::unique_ptr<google_apis::FileResource>> remote_entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_service_helper_->ListFilesInFolder(
                   sync_root_folder_id, &remote_entries));
     std::map<std::string, const google_apis::FileResource*> app_root_by_title;
-    for (ScopedVector<google_apis::FileResource>::iterator itr =
-             remote_entries.begin();
-         itr != remote_entries.end();
-         ++itr) {
-      const google_apis::FileResource& remote_entry = **itr;
-      EXPECT_FALSE(base::ContainsKey(app_root_by_title, remote_entry.title()));
-      app_root_by_title[remote_entry.title()] = *itr;
+    for (const auto& remote_entry : remote_entries) {
+      EXPECT_FALSE(base::ContainsKey(app_root_by_title, remote_entry->title()));
+      app_root_by_title[remote_entry->title()] = remote_entry.get();
     }
 
     for (std::map<std::string, CannedSyncableFileSystem*>::const_iterator itr =
@@ -446,14 +443,14 @@ class DriveBackendSyncTest : public testing::Test,
                                   CannedSyncableFileSystem* file_system) {
     SCOPED_TRACE(testing::Message() << "Verifying folder: " << path.value());
 
-    ScopedVector<google_apis::FileResource> remote_entries;
+    std::vector<std::unique_ptr<google_apis::FileResource>> remote_entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_service_helper_->ListFilesInFolder(
                   folder_id, &remote_entries));
     std::map<std::string, const google_apis::FileResource*>
         remote_entry_by_title;
     for (size_t i = 0; i < remote_entries.size(); ++i) {
-      google_apis::FileResource* remote_entry = remote_entries[i];
+      google_apis::FileResource* remote_entry = remote_entries[i].get();
       EXPECT_FALSE(
           base::ContainsKey(remote_entry_by_title, remote_entry->title()))
           << "title: " << remote_entry->title();

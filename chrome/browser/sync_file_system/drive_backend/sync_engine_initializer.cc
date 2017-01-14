@@ -180,11 +180,9 @@ void SyncEngineInitializer::DidFindSyncRoot(
     return;
   }
 
-  ScopedVector<google_apis::FileResource>* items = file_list->mutable_items();
-  for (ScopedVector<google_apis::FileResource>::iterator itr = items->begin();
-       itr != items->end(); ++itr) {
-    google_apis::FileResource* entry = *itr;
-
+  std::vector<std::unique_ptr<google_apis::FileResource>>* items =
+      file_list->mutable_items();
+  for (auto& entry : *items) {
     // Ignore deleted folder.
     if (entry->labels().is_trashed())
       continue;
@@ -199,8 +197,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
       continue;
 
     if (!sync_root_folder_ || LessOnCreationTime(*entry, *sync_root_folder_)) {
-      sync_root_folder_.reset(entry);
-      *itr = nullptr;
+      sync_root_folder_ = std::move(entry);
     }
   }
 
@@ -321,11 +318,12 @@ void SyncEngineInitializer::DidListAppRootFolders(
     return;
   }
 
-  ScopedVector<google_apis::FileResource>* new_entries =
+  std::vector<std::unique_ptr<google_apis::FileResource>>* new_entries =
       file_list->mutable_items();
-  app_root_folders_.insert(app_root_folders_.end(),
-                           new_entries->begin(), new_entries->end());
-  new_entries->weak_clear();
+  app_root_folders_.reserve(app_root_folders_.size() + new_entries->size());
+  std::move(new_entries->begin(), new_entries->end(),
+            std::back_inserter(app_root_folders_));
+  new_entries->clear();
 
   set_used_network(true);
   if (!file_list->next_link().is_empty()) {

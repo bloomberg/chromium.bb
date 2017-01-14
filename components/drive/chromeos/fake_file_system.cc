@@ -5,7 +5,10 @@
 #include "components/drive/chromeos/fake_file_system.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -404,7 +407,8 @@ void FakeFileSystem::GetResourceEntryAfterGetFileList(
   }
 
   DCHECK(file_list);
-  const ScopedVector<google_apis::FileResource>& entries = file_list->items();
+  const std::vector<std::unique_ptr<google_apis::FileResource>>& entries =
+      file_list->items();
   for (size_t i = 0; i < entries.size(); ++i) {
     std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
     std::string parent_resource_id;

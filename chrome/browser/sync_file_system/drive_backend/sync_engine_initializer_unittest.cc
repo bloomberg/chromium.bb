@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -114,18 +115,24 @@ class SyncEngineInitializerTest : public testing::Test {
     if (status != SYNC_STATUS_OK)
       return status;
 
-    // |app_root_list| must not own the resources here. Be sure to call
-    // weak_clear later.
-    ScopedVector<google_apis::FileResource> app_root_list;
+    // |app_root_list| must not own the resources here. Be sure to release
+    // ownership of all elements later.
+    // TODO(leonhsl) Need follow up: having two owners for a pointer is a
+    // dangerous pattern that we don't want to keep around.
+    std::vector<std::unique_ptr<google_apis::FileResource>> app_root_list;
     for (size_t i = 0; i < app_roots_count; ++i) {
-      app_root_list.push_back(
-          const_cast<google_apis::FileResource*>(app_roots[i]));
+      app_root_list.push_back(base::WrapUnique(
+          const_cast<google_apis::FileResource*>(app_roots[i])));
     }
 
     status = database->PopulateInitialData(
         kInitialLargestChangeID, sync_root, app_root_list);
 
-    app_root_list.weak_clear();
+    for_each(app_root_list.begin(), app_root_list.end(),
+             [](std::unique_ptr<google_apis::FileResource>& entry) {
+               entry.release();
+             });
+    app_root_list.clear();
     return status;
   }
 

@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include <string>
-
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
@@ -158,7 +157,7 @@ bool Unquote(const std::string& in, std::string* out) {
 }
 
 bool ParseReportUri(const std::vector<base::StringPiece> in,
-                    ScopedVector<GURL>* out) {
+                    std::vector<std::unique_ptr<GURL>>* out) {
   if (in.size() < 1u)
     return false;
 
@@ -170,7 +169,7 @@ bool ParseReportUri(const std::vector<base::StringPiece> in,
     GURL url(unquoted);
     if (!url.is_valid() || !content::IsOriginSecure(url))
       return false;
-    out->push_back(new GURL(url));
+    out->push_back(base::MakeUnique<GURL>(url));
   }
 
   return true;
@@ -201,7 +200,7 @@ DomainReliabilityHeader::~DomainReliabilityHeader() {}
 // static
 std::unique_ptr<DomainReliabilityHeader> DomainReliabilityHeader::Parse(
     base::StringPiece value) {
-  ScopedVector<GURL> report_uri;
+  std::vector<std::unique_ptr<GURL>> report_uri;
   base::TimeDelta max_age;
   bool include_subdomains = false;
 
@@ -284,7 +283,7 @@ std::string DomainReliabilityHeader::ToString() const {
     DCHECK_EQ(0, max_age_s);
   } else {
     string += "report-uri=";
-    for (const auto* uri : config_->collectors)
+    for (const auto& uri : config_->collectors)
       string += uri->spec() + " ";
     // Remove trailing space.
     string.erase(string.length() - 1, 1);

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -20,7 +21,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string16.h"
@@ -103,7 +103,7 @@ struct NavigationCorrection {
 struct NavigationCorrectionResponse {
   std::string event_id;
   std::string fingerprint;
-  ScopedVector<NavigationCorrection> corrections;
+  std::vector<std::unique_ptr<NavigationCorrection>> corrections;
 
   static void RegisterJSONConverter(
       base::JSONValueConverter<NavigationCorrectionResponse>* converter) {
@@ -302,9 +302,8 @@ std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
   std::unique_ptr<ErrorPageParams> params(new ErrorPageParams());
   params->override_suggestions.reset(new base::ListValue());
   std::unique_ptr<base::ListValue> parsed_corrections(new base::ListValue());
-  for (ScopedVector<NavigationCorrection>::const_iterator it =
-           response.corrections.begin();
-       it != response.corrections.end(); ++it) {
+  for (auto it = response.corrections.begin(); it != response.corrections.end();
+       ++it) {
     // Doesn't seem like a good idea to show these.
     if ((*it)->is_porn || (*it)->is_soft_porn)
       continue;

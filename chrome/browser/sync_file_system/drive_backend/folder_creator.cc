@@ -56,14 +56,16 @@ void FolderCreator::DidCreateFolder(
 
   drive_service_->SearchByTitle(
       title_, parent_folder_id_,
-      base::Bind(&FolderCreator::DidListFolders,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
-                 base::Passed(ScopedVector<google_apis::FileResource>())));
+      base::Bind(
+          &FolderCreator::DidListFolders, weak_ptr_factory_.GetWeakPtr(),
+          callback,
+          base::Passed(
+              std::vector<std::unique_ptr<google_apis::FileResource>>())));
 }
 
 void FolderCreator::DidListFolders(
     const FileIDCallback& callback,
-    ScopedVector<google_apis::FileResource> candidates,
+    std::vector<std::unique_ptr<google_apis::FileResource>> candidates,
     google_apis::DriveApiErrorCode error,
     std::unique_ptr<google_apis::FileList> file_list) {
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
@@ -79,10 +81,9 @@ void FolderCreator::DidListFolders(
   }
 
   candidates.reserve(candidates.size() + file_list->items().size());
-  candidates.insert(candidates.end(),
-                    file_list->items().begin(),
-                    file_list->items().end());
-  file_list->mutable_items()->weak_clear();
+  std::move(file_list->mutable_items()->begin(),
+            file_list->mutable_items()->end(), std::back_inserter(candidates));
+  file_list->mutable_items()->clear();
 
   if (!file_list->next_link().is_empty()) {
     drive_service_->GetRemainingFileList(

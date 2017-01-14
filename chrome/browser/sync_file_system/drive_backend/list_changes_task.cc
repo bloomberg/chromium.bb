@@ -75,12 +75,12 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
-  std::vector<google_apis::ChangeResource*> changes;
-  change_list->mutable_items()->release(&changes);
-
-  change_list_.reserve(change_list_.size() + changes.size());
-  for (size_t i = 0; i < changes.size(); ++i)
-    change_list_.push_back(changes[i]);
+  change_list_.reserve(change_list_.size() +
+                       change_list->mutable_items()->size());
+  std::move(change_list->mutable_items()->begin(),
+            change_list->mutable_items()->end(),
+            std::back_inserter(change_list_));
+  change_list->mutable_items()->clear();
 
   if (!change_list->next_link().is_empty()) {
     drive_service()->GetRemainingChangeList(

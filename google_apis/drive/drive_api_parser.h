@@ -10,11 +10,11 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
@@ -189,35 +189,37 @@ class AppResource {
   // List of primary mime types supported by this WebApp. Primary status should
   // trigger this WebApp becoming the default handler of file instances that
   // have these mime types.
-  const ScopedVector<std::string>& primary_mimetypes() const {
+  const std::vector<std::unique_ptr<std::string>>& primary_mimetypes() const {
     return primary_mimetypes_;
   }
 
   // List of secondary mime types supported by this WebApp. Secondary status
   // should make this WebApp show up in "Open with..." pop-up menu of the
   // default action menu for file with matching mime types.
-  const ScopedVector<std::string>& secondary_mimetypes() const {
+  const std::vector<std::unique_ptr<std::string>>& secondary_mimetypes() const {
     return secondary_mimetypes_;
   }
 
   // List of primary file extensions supported by this WebApp. Primary status
   // should trigger this WebApp becoming the default handler of file instances
   // that match these extensions.
-  const ScopedVector<std::string>& primary_file_extensions() const {
+  const std::vector<std::unique_ptr<std::string>>& primary_file_extensions()
+      const {
     return primary_file_extensions_;
   }
 
   // List of secondary file extensions supported by this WebApp. Secondary
   // status should make this WebApp show up in "Open with..." pop-up menu of the
   // default action menu for file with matching extensions.
-  const ScopedVector<std::string>& secondary_file_extensions() const {
+  const std::vector<std::unique_ptr<std::string>>& secondary_file_extensions()
+      const {
     return secondary_file_extensions_;
   }
 
   // Returns Icons for this application.  An application can have multiple
   // icons for different purpose (application, document, shared document)
   // in several sizes.
-  const ScopedVector<DriveAppIcon>& icons() const {
+  const std::vector<std::unique_ptr<DriveAppIcon>>& icons() const {
     return icons_;
   }
 
@@ -234,22 +236,22 @@ class AppResource {
   }
   void set_removable(bool removable) { removable_ = removable; }
   void set_primary_mimetypes(
-      ScopedVector<std::string> primary_mimetypes) {
+      std::vector<std::unique_ptr<std::string>> primary_mimetypes) {
     primary_mimetypes_ = std::move(primary_mimetypes);
   }
   void set_secondary_mimetypes(
-      ScopedVector<std::string> secondary_mimetypes) {
+      std::vector<std::unique_ptr<std::string>> secondary_mimetypes) {
     secondary_mimetypes_ = std::move(secondary_mimetypes);
   }
   void set_primary_file_extensions(
-      ScopedVector<std::string> primary_file_extensions) {
+      std::vector<std::unique_ptr<std::string>> primary_file_extensions) {
     primary_file_extensions_ = std::move(primary_file_extensions);
   }
   void set_secondary_file_extensions(
-      ScopedVector<std::string> secondary_file_extensions) {
+      std::vector<std::unique_ptr<std::string>> secondary_file_extensions) {
     secondary_file_extensions_ = std::move(secondary_file_extensions);
   }
-  void set_icons(ScopedVector<DriveAppIcon> icons) {
+  void set_icons(std::vector<std::unique_ptr<DriveAppIcon>> icons) {
     icons_ = std::move(icons);
   }
   void set_create_url(const GURL& url) {
@@ -271,11 +273,11 @@ class AppResource {
   bool supports_create_;
   bool removable_;
   GURL create_url_;
-  ScopedVector<std::string> primary_mimetypes_;
-  ScopedVector<std::string> secondary_mimetypes_;
-  ScopedVector<std::string> primary_file_extensions_;
-  ScopedVector<std::string> secondary_file_extensions_;
-  ScopedVector<DriveAppIcon> icons_;
+  std::vector<std::unique_ptr<std::string>> primary_mimetypes_;
+  std::vector<std::unique_ptr<std::string>> secondary_mimetypes_;
+  std::vector<std::unique_ptr<std::string>> primary_file_extensions_;
+  std::vector<std::unique_ptr<std::string>> secondary_file_extensions_;
+  std::vector<std::unique_ptr<DriveAppIcon>> icons_;
 
   DISALLOW_COPY_AND_ASSIGN(AppResource);
 };
@@ -299,12 +301,16 @@ class AppList {
   const std::string& etag() const { return etag_; }
 
   // Returns a vector of applications.
-  const ScopedVector<AppResource>& items() const { return items_; }
+  const std::vector<std::unique_ptr<AppResource>>& items() const {
+    return items_;
+  }
 
   void set_etag(const std::string& etag) {
     etag_ = etag;
   }
-  void set_items(ScopedVector<AppResource> items) { items_ = std::move(items); }
+  void set_items(std::vector<std::unique_ptr<AppResource>> items) {
+    items_ = std::move(items);
+  }
 
  private:
   friend class DriveAPIParserTest;
@@ -315,7 +321,7 @@ class AppList {
   bool Parse(const base::Value& value);
 
   std::string etag_;
-  ScopedVector<AppResource> items_;
+  std::vector<std::unique_ptr<AppResource>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(AppList);
 };
@@ -613,8 +619,12 @@ class FileList {
   const GURL& next_link() const { return next_link_; }
 
   // Returns a set of files in this list.
-  const ScopedVector<FileResource>& items() const { return items_; }
-  ScopedVector<FileResource>* mutable_items() { return &items_; }
+  const std::vector<std::unique_ptr<FileResource>>& items() const {
+    return items_;
+  }
+  std::vector<std::unique_ptr<FileResource>>* mutable_items() {
+    return &items_;
+  }
 
   void set_next_link(const GURL& next_link) {
     next_link_ = next_link;
@@ -629,7 +639,7 @@ class FileList {
   bool Parse(const base::Value& value);
 
   GURL next_link_;
-  ScopedVector<FileResource> items_;
+  std::vector<std::unique_ptr<FileResource>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(FileList);
 };
@@ -721,8 +731,12 @@ class ChangeList {
   int64_t largest_change_id() const { return largest_change_id_; }
 
   // Returns a set of changes in this list.
-  const ScopedVector<ChangeResource>& items() const { return items_; }
-  ScopedVector<ChangeResource>* mutable_items() { return &items_; }
+  const std::vector<std::unique_ptr<ChangeResource>>& items() const {
+    return items_;
+  }
+  std::vector<std::unique_ptr<ChangeResource>>* mutable_items() {
+    return &items_;
+  }
 
   void set_next_link(const GURL& next_link) {
     next_link_ = next_link;
@@ -741,7 +755,7 @@ class ChangeList {
 
   GURL next_link_;
   int64_t largest_change_id_;
-  ScopedVector<ChangeResource> items_;
+  std::vector<std::unique_ptr<ChangeResource>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeList);
 };

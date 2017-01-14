@@ -161,7 +161,7 @@ struct AddEntriesMessage {
   TargetVolume volume;
 
   // Entries to be added.
-  ScopedVector<TestEntryInfo> entries;
+  std::vector<std::unique_ptr<TestEntryInfo>> entries;
 
   // Registers the member information to the given converter.
   static void RegisterJSONConverter(

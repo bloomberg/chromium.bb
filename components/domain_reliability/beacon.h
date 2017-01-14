@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "net/base/net_error_details.h"
@@ -40,7 +39,7 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
       base::TimeTicks upload_time,
       base::TimeTicks last_network_change_time,
       const GURL& collector_url,
-      const ScopedVector<std::string>& path_prefixes) const;
+      const std::vector<std::unique_ptr<std::string>>& path_prefixes) const;
 
   // The URL that the beacon is reporting on, if included.
   GURL url;

@@ -5,6 +5,8 @@
 #include "components/drive/chromeos/file_system/search_operation.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -37,7 +39,8 @@ FileError ResolveSearchResultOnBlockingPool(
   DCHECK(resource_metadata);
   DCHECK(result);
 
-  const ScopedVector<google_apis::FileResource>& entries = file_list->items();
+  const std::vector<std::unique_ptr<google_apis::FileResource>>& entries =
+      file_list->items();
   result->reserve(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
     std::string local_id;

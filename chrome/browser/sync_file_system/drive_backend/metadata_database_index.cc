@@ -98,7 +98,7 @@ void ReadDatabaseContents(LevelDBWrapper* db, DatabaseContents* contents) {
         continue;
       }
 
-      contents->file_metadata.push_back(metadata.release());
+      contents->file_metadata.push_back(std::move(metadata));
       continue;
     }
 
@@ -117,7 +117,7 @@ void ReadDatabaseContents(LevelDBWrapper* db, DatabaseContents* contents) {
                   "Failed to parse a Tracker");
         continue;
       }
-      contents->file_trackers.push_back(tracker.release());
+      contents->file_trackers.push_back(std::move(tracker));
       continue;
     }
   }
@@ -168,12 +168,11 @@ void RemoveUnreachableItemsFromDB(DatabaseContents* contents,
   }
 
   // Delete all unreachable trackers.
-  ScopedVector<FileTracker> reachable_trackers;
+  std::vector<std::unique_ptr<FileTracker>> reachable_trackers;
   for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
-    FileTracker* tracker = contents->file_trackers[i];
+    std::unique_ptr<FileTracker>& tracker = contents->file_trackers[i];
     if (base::ContainsKey(visited_trackers, tracker->tracker_id())) {
-      reachable_trackers.push_back(tracker);
-      contents->file_trackers[i] = nullptr;
+      reachable_trackers.push_back(std::move(tracker));
     } else {
       PutFileTrackerDeletionToDB(tracker->tracker_id(), db);
     }
@@ -186,12 +185,11 @@ void RemoveUnreachableItemsFromDB(DatabaseContents* contents,
     referred_file_ids.insert(contents->file_trackers[i]->file_id());
 
   // Delete all unreferred metadata.
-  ScopedVector<FileMetadata> referred_file_metadata;
+  std::vector<std::unique_ptr<FileMetadata>> referred_file_metadata;
   for (size_t i = 0; i < contents->file_metadata.size(); ++i) {
-    FileMetadata* metadata = contents->file_metadata[i];
+    std::unique_ptr<FileMetadata>& metadata = contents->file_metadata[i];
     if (base::ContainsKey(referred_file_ids, metadata->file_id())) {
-      referred_file_metadata.push_back(metadata);
-      contents->file_metadata[i] = nullptr;
+      referred_file_metadata.push_back(std::move(metadata));
     } else {
       PutFileMetadataDeletionToDB(metadata->file_id(), db);
     }
@@ -238,12 +236,12 @@ void MetadataDatabaseIndex::Initialize(
   service_metadata_ = std::move(service_metadata);
 
   for (size_t i = 0; i < contents->file_metadata.size(); ++i)
-    StoreFileMetadata(base::WrapUnique(contents->file_metadata[i]));
-  contents->file_metadata.weak_clear();
+    StoreFileMetadata(std::move(contents->file_metadata[i]));
+  contents->file_metadata.clear();
 
   for (size_t i = 0; i < contents->file_trackers.size(); ++i)
-    StoreFileTracker(base::WrapUnique(contents->file_trackers[i]));
-  contents->file_trackers.weak_clear();
+    StoreFileTracker(std::move(contents->file_trackers[i]));
+  contents->file_trackers.clear();
 
   UMA_HISTOGRAM_COUNTS("SyncFileSystem.MetadataNumber", metadata_by_id_.size());
   UMA_HISTOGRAM_COUNTS("SyncFileSystem.TrackerNumber", tracker_by_id_.size());

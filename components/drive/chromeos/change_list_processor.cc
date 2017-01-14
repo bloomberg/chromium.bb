@@ -5,7 +5,10 @@
 #include "components/drive/chromeos/change_list_processor.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -71,7 +74,8 @@ ChangeList::ChangeList() {}
 ChangeList::ChangeList(const google_apis::ChangeList& change_list)
     : next_url_(change_list.next_link()),
       largest_changestamp_(change_list.largest_change_id()) {
-  const ScopedVector<google_apis::ChangeResource>& items = change_list.items();
+  const std::vector<std::unique_ptr<google_apis::ChangeResource>>& items =
+      change_list.items();
   entries_.resize(items.size());
   parent_resource_ids_.resize(items.size());
   size_t entries_index = 0;
@@ -90,7 +94,8 @@ ChangeList::ChangeList(const google_apis::ChangeList& change_list)
 ChangeList::ChangeList(const google_apis::FileList& file_list)
     : next_url_(file_list.next_link()),
       largest_changestamp_(0) {
-  const ScopedVector<google_apis::FileResource>& items = file_list.items();
+  const std::vector<std::unique_ptr<google_apis::FileResource>>& items =
+      file_list.items();
   entries_.resize(items.size());
   parent_resource_ids_.resize(items.size());
   size_t entries_index = 0;
