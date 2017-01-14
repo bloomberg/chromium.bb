@@ -9,7 +9,7 @@
 
 namespace chromeos {
 
-class EulaModel;
+class EulaScreen;
 
 // Interface between eula screen and its representation, either WebUI
 // or Views one. Note, do not forget to call OnViewDestroyed in the
@@ -20,7 +20,7 @@ class EulaView {
 
   virtual void Show() = 0;
   virtual void Hide() = 0;
-  virtual void Bind(EulaModel& model) = 0;
+  virtual void Bind(EulaScreen* screen) = 0;
   virtual void Unbind() = 0;
   virtual void OnPasswordFetched(const std::string& tpm_password) = 0;
 };

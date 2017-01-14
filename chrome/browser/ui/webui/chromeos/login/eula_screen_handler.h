@@ -34,7 +34,7 @@ class EulaScreenHandler : public EulaView,
   // EulaView implementation:
   void Show() override;
   void Hide() override;
-  void Bind(EulaModel& model) override;
+  void Bind(EulaScreen* screen) override;
   void Unbind() override;
   void OnPasswordFetched(const std::string& tpm_password) override;
 
@@ -52,14 +52,14 @@ class EulaScreenHandler : public EulaView,
   void HandleOnChromeOSCredits();
   void HandleOnInstallationSettingsPopupOpened();
 
-  EulaModel* model_;
-  CoreOobeActor* core_oobe_actor_;
+  EulaScreen* screen_ = nullptr;
+  CoreOobeActor* core_oobe_actor_ = nullptr;
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 
   // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EulaScreenHandler);
 };

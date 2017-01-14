@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
-#include "chrome/browser/chromeos/login/screens/eula_model.h"
+#include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/profiles/profile.h"
@@ -84,14 +84,12 @@ namespace chromeos {
 
 EulaScreenHandler::EulaScreenHandler(CoreOobeActor* core_oobe_actor)
     : BaseScreenHandler(kJsScreenPath),
-      model_(NULL),
-      core_oobe_actor_(core_oobe_actor),
-      show_on_init_(false) {
+      core_oobe_actor_(core_oobe_actor) {
 }
 
 EulaScreenHandler::~EulaScreenHandler() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
 void EulaScreenHandler::Show() {
@@ -105,15 +103,15 @@ void EulaScreenHandler::Show() {
 void EulaScreenHandler::Hide() {
 }
 
-void EulaScreenHandler::Bind(EulaModel& model) {
-  model_ = &model;
-  BaseScreenHandler::SetBaseScreen(model_);
+void EulaScreenHandler::Bind(EulaScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
   if (page_is_ready())
     Initialize();
 }
 
 void EulaScreenHandler::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
@@ -170,14 +168,14 @@ void EulaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
 }
 
 void EulaScreenHandler::Initialize() {
-  if (!page_is_ready() || !model_)
+  if (!page_is_ready() || !screen_)
     return;
 
-  core_oobe_actor_->SetUsageStats(model_->IsUsageStatsEnabled());
+  core_oobe_actor_->SetUsageStats(screen_->IsUsageStatsEnabled());
 
   // This OEM EULA is a file:// URL which we're unable to load in iframe.
   // Instead if it's defined we use chrome://terms/oem that will load same file.
-  if (!model_->GetOemEulaUrl().is_empty())
+  if (!screen_->GetOemEulaUrl().is_empty())
     core_oobe_actor_->SetOemEulaUrl(chrome::kChromeUITermsOemURL);
 
   if (show_on_init_) {
@@ -215,8 +213,8 @@ void EulaScreenHandler::HandleOnChromeCredits() {
 }
 
 void EulaScreenHandler::HandleOnInstallationSettingsPopupOpened() {
-  if (model_)
-    model_->InitiatePasswordFetch();
+  if (screen_)
+    screen_->InitiatePasswordFetch();
 }
 
 }  // namespace chromeos

@@ -11,45 +11,37 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/eula_view.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
+namespace {
+
+constexpr const char kUserActionAcceptButtonClicked[] = "accept-button";
+constexpr const char kUserActionBackButtonClicked[] = "back-button";
+constexpr const char kContextKeyUsageStatsEnabled[] = "usageStatsEnabled";
+
+}  // namespace
 
 EulaScreen::EulaScreen(BaseScreenDelegate* base_screen_delegate,
                        Delegate* delegate,
                        EulaView* view)
-    : EulaModel(base_screen_delegate),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_EULA),
       delegate_(delegate),
       view_(view),
       password_fetcher_(this) {
   DCHECK(view_);
   DCHECK(delegate_);
   if (view_)
-    view_->Bind(*this);
+    view_->Bind(this);
 }
 
 EulaScreen::~EulaScreen() {
   if (view_)
     view_->Unbind();
-}
-
-void EulaScreen::Show() {
-  // Command to own the TPM.
-  DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
-      EmptyVoidDBusMethodCallback());
-  if (policy::DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode() ==
-      policy::ZeroTouchEnrollmentMode::HANDS_OFF)
-    OnUserAction(EulaModel::kUserActionAcceptButtonClicked);
-  else if (view_)
-    view_->Show();
-}
-
-void EulaScreen::Hide() {
-  if (view_)
-    view_->Hide();
 }
 
 GURL EulaScreen::GetOemEulaUrl() const {
@@ -79,12 +71,6 @@ void EulaScreen::InitiatePasswordFetch() {
   }
 }
 
-void EulaScreen::OnPasswordFetched(const std::string& tpm_password) {
-  tpm_password_ = tpm_password;
-  if (view_)
-    view_->OnPasswordFetched(tpm_password_);
-}
-
 bool EulaScreen::IsUsageStatsEnabled() const {
   return delegate_ && delegate_->GetUsageStatisticsReporting();
 }
@@ -92,6 +78,22 @@ bool EulaScreen::IsUsageStatsEnabled() const {
 void EulaScreen::OnViewDestroyed(EulaView* view) {
   if (view_ == view)
     view_ = NULL;
+}
+
+void EulaScreen::Show() {
+  // Command to own the TPM.
+  DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(
+      EmptyVoidDBusMethodCallback());
+  if (policy::DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode() ==
+      policy::ZeroTouchEnrollmentMode::HANDS_OFF)
+    OnUserAction(kUserActionAcceptButtonClicked);
+  else if (view_)
+    view_->Show();
+}
+
+void EulaScreen::Hide() {
+  if (view_)
+    view_->Hide();
 }
 
 void EulaScreen::OnUserAction(const std::string& action_id) {
@@ -109,6 +111,12 @@ void EulaScreen::OnContextKeyUpdated(
     delegate_->SetUsageStatisticsReporting(
         context_.GetBoolean(kContextKeyUsageStatsEnabled));
   }
+}
+
+void EulaScreen::OnPasswordFetched(const std::string& tpm_password) {
+  tpm_password_ = tpm_password;
+  if (view_)
+    view_->OnPasswordFetched(tpm_password_);
 }
 
 }  // namespace chromeos

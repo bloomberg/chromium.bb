@@ -772,8 +772,6 @@ source_set("chromeos") {
     "login/screens/error_screen.cc",
     "login/screens/error_screen.h",
     "login/screens/error_screen_actor_delegate.h",
-    "login/screens/eula_model.cc",
-    "login/screens/eula_model.h",
     "login/screens/eula_screen.cc",
     "login/screens/eula_screen.h",
     "login/screens/eula_view.h",

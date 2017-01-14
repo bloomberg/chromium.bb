@@ -23,17 +23,17 @@ MockEulaView::MockEulaView() {
 }
 
 MockEulaView::~MockEulaView() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
-void MockEulaView::Bind(EulaModel& model) {
-  model_ = &model;
-  MockBind(model);
+void MockEulaView::Bind(EulaScreen* screen) {
+  screen_ = screen;
+  MockBind(screen);
 }
 
 void MockEulaView::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   MockUnbind();
 }
 

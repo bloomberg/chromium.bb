@@ -10,16 +10,18 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/eula_model.h"
 #include "chromeos/tpm/tpm_password_fetcher.h"
 #include "components/login/screens/screen_context.h"
 #include "url/gurl.h"
 
 namespace chromeos {
 
+class BaseScreenDelegate;
+class EulaView;
+
 // Representation independent class that controls OOBE screen showing EULA
 // to users.
-class EulaScreen : public EulaModel, public TpmPasswordFetcherDelegate {
+class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
  public:
   class Delegate {
    public:
@@ -35,20 +37,31 @@ class EulaScreen : public EulaModel, public TpmPasswordFetcherDelegate {
              EulaView* view);
   ~EulaScreen() override;
 
-  // EulaModel implementation:
+  // Returns URL of the OEM EULA page that should be displayed using current
+  // locale and manifest. Returns empty URL otherwise.
+  GURL GetOemEulaUrl() const;
+
+  // Initiate TPM password fetch. Will call actor's OnPasswordFetched() when
+  // done.
+  void InitiatePasswordFetch();
+
+  // Returns true if usage statistics reporting is enabled.
+  bool IsUsageStatsEnabled() const;
+
+  // This method is called, when view is being destroyed. Note, if model
+  // is destroyed earlier then it has to call SetModel(NULL).
+  void OnViewDestroyed(EulaView* view);
+
+ private:
+  // BaseScreen implementation:
   void Show() override;
   void Hide() override;
-  GURL GetOemEulaUrl() const override;
-  void InitiatePasswordFetch() override;
-  bool IsUsageStatsEnabled() const override;
-  void OnViewDestroyed(EulaView* view) override;
   void OnUserAction(const std::string& action_id) override;
   void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
 
   // TpmPasswordFetcherDelegate implementation:
   void OnPasswordFetched(const std::string& tpm_password) override;
 
- private:
   // URL of the OEM EULA page (on disk).
   GURL oem_eula_page_;
 

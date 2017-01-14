@@ -25,18 +25,18 @@ class MockEulaView : public EulaView {
   MockEulaView();
   ~MockEulaView() override;
 
-  void Bind(EulaModel& model) override;
+  void Bind(EulaScreen* screen) override;
   void Unbind() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
 
-  MOCK_METHOD1(MockBind, void(EulaModel& model));
+  MOCK_METHOD1(MockBind, void(EulaScreen* screen));
   MOCK_METHOD0(MockUnbind, void());
   MOCK_METHOD1(OnPasswordFetched, void(const std::string& tpm_password));
 
  private:
-  EulaModel* model_;
+  EulaScreen* screen_ = nullptr;
 };
 
 }  // namespace chromeos
