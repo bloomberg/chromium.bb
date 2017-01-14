@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/mock_callback.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decrypt_config.h"
@@ -962,17 +963,6 @@ TEST_F(FFmpegDemuxerTest, SeekText) {
   base::RunLoop().Run();
 }
 
-class MockReadCB {
- public:
-  MockReadCB() {}
-  ~MockReadCB() {}
-
-  MOCK_METHOD2(Run, void(DemuxerStream::Status status,
-                         const scoped_refptr<DecoderBuffer>& buffer));
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockReadCB);
-};
-
 TEST_F(FFmpegDemuxerTest, Stop) {
   // Tests that calling Read() on a stopped demuxer stream immediately deletes
   // the callback.
@@ -986,11 +976,11 @@ TEST_F(FFmpegDemuxerTest, Stop) {
   demuxer_->Stop();
 
   // Reads after being stopped are all EOS buffers.
-  StrictMock<MockReadCB> callback;
+  StrictMock<base::MockCallback<DemuxerStream::ReadCB>> callback;
   EXPECT_CALL(callback, Run(DemuxerStream::kOk, IsEndOfStreamBuffer()));
 
   // Attempt the read...
-  audio->Read(base::Bind(&MockReadCB::Run, base::Unretained(&callback)));
+  audio->Read(callback.Get());
   base::RunLoop().RunUntilIdle();
 
   // Don't let the test call Stop() again.

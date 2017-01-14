@@ -48,6 +48,7 @@ static_library("test_support") {
     "launcher/test_result.h",
     "launcher/test_results_tracker.h",
     "launcher/unit_test_launcher.h",
+    "mock_callback.h",
     "mock_chrome_application_mac.h",
     "mock_chrome_application_mac.mm",
     "mock_devices_changed_observer.cc",
