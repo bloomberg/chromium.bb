@@ -48,6 +48,7 @@ modules_idl_files =
                     "bluetooth/BluetoothDevice.idl",
                     "bluetooth/BluetoothCharacteristicProperties.idl",
                     "bluetooth/BluetoothRemoteGATTCharacteristic.idl",
+                    "bluetooth/BluetoothRemoteGATTDescriptor.idl",
                     "bluetooth/BluetoothRemoteGATTServer.idl",
                     "bluetooth/BluetoothRemoteGATTService.idl",
                     "bluetooth/BluetoothUUID.idl",

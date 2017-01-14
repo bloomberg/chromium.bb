@@ -23,13 +23,16 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_connection.h"
+#include "device/bluetooth/test/mock_bluetooth_gatt_descriptor.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_notify_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::StringPiece;
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
+using device::BluetoothGattCharacteristic;
 using device::BluetoothRemoteGattCharacteristic;
+using device::BluetoothRemoteGattDescriptor;
 using device::BluetoothRemoteGattService;
 using device::BluetoothUUID;
 using device::MockBluetoothAdapter;
@@ -37,6 +40,7 @@ using device::MockBluetoothDevice;
 using device::MockBluetoothDiscoverySession;
 using device::MockBluetoothGattCharacteristic;
 using device::MockBluetoothGattConnection;
+using device::MockBluetoothGattDescriptor;
 using device::MockBluetoothGattNotifySession;
 using device::MockBluetoothGattService;
 using testing::ElementsAre;
@@ -50,6 +54,8 @@ typedef testing::NiceMock<MockBluetoothAdapter> NiceMockBluetoothAdapter;
 typedef testing::NiceMock<MockBluetoothDevice> NiceMockBluetoothDevice;
 typedef testing::NiceMock<MockBluetoothDiscoverySession>
     NiceMockBluetoothDiscoverySession;
+typedef testing::NiceMock<MockBluetoothGattDescriptor>
+    NiceMockBluetoothGattDescriptor;
 typedef testing::NiceMock<MockBluetoothGattCharacteristic>
     NiceMockBluetoothGattCharacteristic;
 typedef testing::NiceMock<MockBluetoothGattConnection>
@@ -84,6 +90,13 @@ const char kMeasurementIntervalUUID[] = "2a21";
 const char kHeartRateMeasurementUUID[] = "2a37";
 const char kSerialNumberStringUUID[] = "2a25";
 const char kPeripheralPrivacyFlagUUID[] = "2a02";
+// Descriptors:
+const char kUserDescriptionUUID[] = "2901";
+// Client Config is in our blocklist.  It must not be writable
+const char kClientConfigUUID[] = "2902";
+// Blocklisted descriptor
+const char kBlocklistedDescriptorUUID[] =
+    "bad2ddcf-60db-45cd-bef9-fd72b153cf7c";
 
 // Invokes Run() on the k-th argument of the function with no arguments.
 ACTION_TEMPLATE(RunCallback,
@@ -654,9 +667,7 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateAdapter() {
 
   device->AddMockService(GetGenericAccessService(device.get()));
   device->AddMockService(GetHeartRateService(adapter.get(), device.get()));
-
   adapter->AddMockDevice(std::move(device));
-
   return adapter;
 }
 
@@ -708,6 +719,33 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer() {
           RunCallbackWithResult<0 /* success_callback */>([measurement_ptr]() {
             return GetBaseGATTNotifySession(measurement_ptr->GetWeakPtr());
           }));
+
+  std::unique_ptr<NiceMockBluetoothGattDescriptor> user_description(
+      new NiceMockBluetoothGattDescriptor(
+          measurement_interval.get(), "gatt.characteristic_user_description",
+          BluetoothUUID(kUserDescriptionUUID), false,
+          device::BluetoothRemoteGattCharacteristic::PROPERTY_READ));
+
+  std::unique_ptr<NiceMockBluetoothGattDescriptor> client_config(
+      new NiceMockBluetoothGattDescriptor(
+          measurement_interval.get(),
+          "gatt.client_characteristic_configuration",
+          BluetoothUUID(kClientConfigUUID), false,
+          device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
+              device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+
+  // Add it here with full permission as the blocklist should prevent us from
+  // accessing this descriptor
+  std::unique_ptr<NiceMockBluetoothGattDescriptor> blocklisted_descriptor(
+      new NiceMockBluetoothGattDescriptor(
+          measurement_interval.get(), "bad2ddcf-60db-45cd-bef9-fd72b153cf7c",
+          BluetoothUUID(kBlocklistedDescriptorUUID), false,
+          device::BluetoothRemoteGattCharacteristic::PROPERTY_READ |
+              device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+
+  measurement_interval->AddMockDescriptor(std::move(user_description));
+  measurement_interval->AddMockDescriptor(std::move(client_config));
+  measurement_interval->AddMockDescriptor(std::move(blocklisted_descriptor));
 
   health_thermometer->AddMockCharacteristic(std::move(measurement_interval));
   device->AddMockService(std::move(health_thermometer));
@@ -1573,20 +1611,27 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTCharacteristic(
           service, identifier, BluetoothUUID(uuid), false /* is_local */,
           properties, NULL /* permissions */));
 
-  // Read response.
   ON_CALL(*characteristic, ReadRemoteCharacteristic(_, _))
       .WillByDefault(
           RunCallback<1>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
 
-  // Write response.
   ON_CALL(*characteristic, WriteRemoteCharacteristic(_, _, _))
       .WillByDefault(
           RunCallback<2>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
 
-  // StartNotifySession response
   ON_CALL(*characteristic, StartNotifySession(_, _))
       .WillByDefault(
           RunCallback<1>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
+
+  ON_CALL(*characteristic, GetDescriptors())
+      .WillByDefault(
+          Invoke(characteristic.get(),
+                 &MockBluetoothGattCharacteristic::GetMockDescriptors));
+
+  ON_CALL(*characteristic, GetDescriptor(_))
+      .WillByDefault(
+          Invoke(characteristic.get(),
+                 &MockBluetoothGattCharacteristic::GetMockDescriptor));
 
   return characteristic;
 }

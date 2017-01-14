@@ -44,7 +44,7 @@ DEFINE_TRACE(BluetoothRemoteGATTService) {
   visitor->trace(m_device);
 }
 
-// Callback that allows us to resolve the promise with a single Characteristic
+// Callback that allows us to resolve the promise with a single characteristic
 // or with a vector owning the characteristics.
 void BluetoothRemoteGATTService::GetCharacteristicsCallback(
     const String& serviceInstanceId,

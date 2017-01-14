@@ -332,6 +332,13 @@ class LayoutTestBluetoothAdapterProvider {
   //           - StartNotifySession: Run success callback.
   //           - GetProperties: Returns
   //               BluetoothRemoteGattCharacteristic::PROPERTY_READ
+  //           - Descriptors
+  //             - User Description (2901)
+  //             - Client Characteristic Configuration (2902)
+  //                 Note: This descriptor is blocklisted for writes.
+  //             - bad2ddcf-60db-45cd-bef9-fd72b153cf7c
+  //                 A test descriptor that is blocklisted.
+
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetDisconnectingHealthThermometer();
 

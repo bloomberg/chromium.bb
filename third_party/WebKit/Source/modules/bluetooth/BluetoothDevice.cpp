@@ -63,6 +63,14 @@ bool BluetoothDevice::isValidCharacteristic(
       characteristicInstanceId);
 }
 
+BluetoothRemoteGATTDescriptor*
+BluetoothDevice::getOrCreateBluetoothRemoteGATTDescriptor(
+    mojom::blink::WebBluetoothRemoteGATTDescriptorPtr descriptor,
+    BluetoothRemoteGATTCharacteristic* characteristic) {
+  return m_attributeInstanceMap->getOrCreateBluetoothRemoteGATTDescriptor(
+      std::move(descriptor), characteristic);
+}
+
 void BluetoothDevice::dispose() {
   disconnectGATTIfConnected();
 }

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  // DisconnectingHealthThermometerAdapter's measurement_interval contains
+  // one blocklisted descriptor.  Make sure that it isn't returned in the result
+  // of getDescriptors().
+  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['health_thermometer']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
+    .then(service => service.getCharacteristic('measurement_interval'))
+    .then(characteristic => characteristic.getDescriptors())
+    .then(descriptors => {
+      descriptors.forEach(descriptor => {
+            let bad_uuid = blocklist_test_descriptor_uuid;
+            // bad_uuid is a blocklisted UUID.  It should never be present
+            // in a getDescriptors() result.
+            assert_true(descriptor.uuid != bad_uuid)
+          });
+      })
+}, 'Making sure no blocklisted descriptors are present. ');
+
+
+</script>

@@ -18,6 +18,9 @@ promise_test(() => {
           requestDisconnection();
           return assert_promise_rejects_with_message(
             error_characteristic.CALLS([
+              getDescriptor(user_description.name)|
+              getDescriptors(user_description.name)[UUID]|
+              getDescriptors()|
               readValue()|
               writeValue(val)|
               startNotifications()]),

@@ -16,6 +16,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/string_util_icu.h"
 #include "grit/bluetooth_strings.h"
@@ -494,6 +495,22 @@ BluetoothDevice::GetCharacteristicsByUUID(
     }
   }
   return characteristics;
+}
+
+std::vector<device::BluetoothRemoteGattDescriptor*>
+BluetoothDevice::GetDescriptorsByUUID(
+    device::BluetoothRemoteGattCharacteristic* characteristic,
+    const BluetoothUUID& descriptor_uuid) {
+  std::vector<device::BluetoothRemoteGattDescriptor*> descriptors;
+  DVLOG(1) << "Looking for descriptor: " << descriptor_uuid.canonical_value();
+  for (auto* descriptor : characteristic->GetDescriptors()) {
+    DVLOG(1) << "Descriptor in cache: "
+             << descriptor->GetUUID().canonical_value();
+    if (descriptor->GetUUID() == descriptor_uuid) {
+      descriptors.push_back(descriptor);
+    }
+  }
+  return descriptors;
 }
 
 void BluetoothDevice::DidConnectGatt() {

@@ -14,8 +14,8 @@
     readonly attribute UUID                              uuid;
     readonly attribute BluetoothCharacteristicProperties properties;
     readonly attribute DataView?                         value;
-    // Promise<BluetoothRemoteGATTDescriptor>           getDescriptor(BluetoothDescriptorUUID descriptor);
-    // Promise<sequence<BluetoothRemoteGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
+    [RaisesException, CallWith=ScriptState] Promise<BluetoothRemoteGATTDescriptor>           getDescriptor(BluetoothDescriptorUUID descriptor);
+    [RaisesException, CallWith=ScriptState] Promise<sequence<BluetoothRemoteGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
     [CallWith=ScriptState] Promise<DataView>                          readValue();
     [CallWith=ScriptState] Promise<void>                              writeValue(BufferSource value);
     [CallWith=ScriptState] Promise<BluetoothRemoteGATTCharacteristic> startNotifications();

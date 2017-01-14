@@ -21,9 +21,6 @@ namespace device {
 
 class MockBluetoothGattCharacteristic;
 
-// TODO(rkc): This class doesn't seem to be used anywhere. Figure out whether
-// it will be used (in which case, name it appropriately), otherwise delete the
-// class.
 class MockBluetoothGattDescriptor : public BluetoothRemoteGattDescriptor {
  public:
   MockBluetoothGattDescriptor(

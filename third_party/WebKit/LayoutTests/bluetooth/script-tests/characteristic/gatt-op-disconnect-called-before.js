@@ -12,6 +12,9 @@ promise_test(() => {
           gattServer.disconnect();
           return assert_promise_rejects_with_message(
             measurement_interval.CALLS([
+              getDescriptor(user_description.name)|
+              getDescriptors(user_description.name)[UUID]|
+              getDescriptors()|
               readValue()|
               writeValue(val)|
               startNotifications()|

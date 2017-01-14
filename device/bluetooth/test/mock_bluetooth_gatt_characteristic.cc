@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
-
+#include "device/bluetooth/test/mock_bluetooth_gatt_descriptor.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
 
 using testing::Return;
@@ -33,6 +33,31 @@ MockBluetoothGattCharacteristic::MockBluetoothGattCharacteristic(
 }
 
 MockBluetoothGattCharacteristic::~MockBluetoothGattCharacteristic() {
+}
+
+void MockBluetoothGattCharacteristic::AddMockDescriptor(
+    std::unique_ptr<MockBluetoothGattDescriptor> mock_descriptor) {
+  mock_descriptors_.push_back(std::move(mock_descriptor));
+}
+
+std::vector<BluetoothRemoteGattDescriptor*>
+MockBluetoothGattCharacteristic::GetMockDescriptors() const {
+  std::vector<BluetoothRemoteGattDescriptor*> descriptors;
+  for (auto& descriptor : mock_descriptors_) {
+    descriptors.push_back(descriptor.get());
+  }
+  return descriptors;
+}
+
+BluetoothRemoteGattDescriptor*
+MockBluetoothGattCharacteristic::GetMockDescriptor(
+    const std::string& identifier) const {
+  for (auto& descriptor : mock_descriptors_) {
+    if (descriptor->GetIdentifier() == identifier) {
+      return descriptor.get();
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace device

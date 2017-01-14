@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -20,6 +21,7 @@ namespace device {
 
 class BluetoothRemoteGattDescriptor;
 class BluetoothRemoteGattService;
+class MockBluetoothGattDescriptor;
 class MockBluetoothGattService;
 
 class MockBluetoothGattCharacteristic
@@ -58,6 +60,12 @@ class MockBluetoothGattCharacteristic
                     const base::Closure&,
                     const ErrorCallback&));
 
+  void AddMockDescriptor(
+      std::unique_ptr<MockBluetoothGattDescriptor> mock_descriptor);
+  std::vector<BluetoothRemoteGattDescriptor*> GetMockDescriptors() const;
+  BluetoothRemoteGattDescriptor* GetMockDescriptor(
+      const std::string& identifier) const;
+
  protected:
   MOCK_METHOD3(SubscribeToNotifications,
                void(BluetoothRemoteGattDescriptor*,
@@ -69,6 +77,8 @@ class MockBluetoothGattCharacteristic
                     const ErrorCallback&));
 
  private:
+  std::vector<std::unique_ptr<MockBluetoothGattDescriptor>> mock_descriptors_;
+
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothGattCharacteristic);
 };
 

@@ -128,6 +128,11 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void RemoteCharacteristicStopNotifications(
       const std::string& characteristic_instance_id,
       const RemoteCharacteristicStopNotificationsCallback& callback) override;
+  void RemoteCharacteristicGetDescriptors(
+      const std::string& service_instance_id,
+      blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+      const base::Optional<device::BluetoothUUID>& characteristics_uuid,
+      const RemoteCharacteristicGetDescriptorsCallback& callback) override;
 
   void RequestDeviceImpl(
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
@@ -163,16 +168,17 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       device::BluetoothDevice::ConnectErrorCode error_code);
 
   // Callbacks for BluetoothRemoteGattCharacteristic::ReadRemoteCharacteristic.
-  void OnReadValueSuccess(const RemoteCharacteristicReadValueCallback& callback,
-                          const std::vector<uint8_t>& value);
-  void OnReadValueFailed(
+  void OnCharacteristicReadValueSuccess(
+      const RemoteCharacteristicReadValueCallback& callback,
+      const std::vector<uint8_t>& value);
+  void OnCharacteristicReadValueFailed(
       const RemoteCharacteristicReadValueCallback& callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Callbacks for BluetoothRemoteGattCharacteristic::WriteRemoteCharacteristic.
-  void OnWriteValueSuccess(
+  void OnCharacteristicWriteValueSuccess(
       const RemoteCharacteristicWriteValueCallback& callback);
-  void OnWriteValueFailed(
+  void OnCharacteristicWriteValueFailed(
       const RemoteCharacteristicWriteValueCallback& callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
@@ -227,6 +233,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // Maps to get the object's parent based on its instanceID.
   std::unordered_map<std::string, std::string> service_id_to_device_address_;
   std::unordered_map<std::string, std::string> characteristic_id_to_service_id_;
+  std::unordered_map<std::string, std::string>
+      descriptor_id_to_characteristic_id_;
 
   // Map to keep track of the connected Bluetooth devices.
   std::unique_ptr<FrameConnectedBluetoothDevices> connected_devices_;

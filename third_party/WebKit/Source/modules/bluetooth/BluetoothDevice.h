@@ -19,6 +19,7 @@ namespace blink {
 class Bluetooth;
 class BluetoothAttributeInstanceMap;
 class BluetoothRemoteGATTCharacteristic;
+class BluetoothRemoteGATTDescriptor;
 class BluetoothRemoteGATTServer;
 class BluetoothRemoteGATTService;
 class ScriptPromiseResolver;
@@ -56,6 +57,10 @@ class BluetoothDevice final : public EventTargetWithInlineData,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*);
   bool isValidCharacteristic(const String& characteristicInstanceId);
+
+  BluetoothRemoteGATTDescriptor* getOrCreateBluetoothRemoteGATTDescriptor(
+      mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
+      BluetoothRemoteGATTCharacteristic*);
 
   // We should disconnect from the device in all of the following cases:
   // 1. When the object gets GarbageCollected e.g. it went out of scope.

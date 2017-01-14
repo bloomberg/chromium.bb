@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ID Not In Map Note:
-// A service, characteristic, or descriptor ID not in the corresponding
-// WebBluetoothServiceImpl map [service_id_to_device_address_,
-// characteristic_id_to_service_id_, descriptor_to_characteristic_] implies a
-// hostile renderer because a renderer obtains the corresponding ID from this
-// class and it will be added to the map at that time.
+// ID Not In Map Note: A service, characteristic, or descriptor ID not in the
+// corresponding WebBluetoothServiceImpl map [service_id_to_device_address_,
+// characteristic_id_to_service_id_, descriptor_id_to_characteristic_id_]
+// implies a hostile renderer because a renderer obtains the corresponding ID
+// from this class and it will be added to the map at that time.
 
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 
@@ -27,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "device/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 
 using device::BluetoothAdapterFactoryWrapper;
 using device::BluetoothUUID;
@@ -129,7 +129,6 @@ blink::mojom::WebBluetoothResult TranslateGATTErrorAndRecord(
   NOTREACHED();
   return blink::mojom::WebBluetoothResult::GATT_UNTRANSLATED_ERROR_CODE;
 }
-
 }  // namespace
 
 // Struct that holds the result of a cache query.
@@ -520,6 +519,72 @@ void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
                base::nullopt /* characteristics */);
 }
 
+void WebBluetoothServiceImpl::RemoteCharacteristicGetDescriptors(
+    const std::string& characteristic_instance_id,
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const base::Optional<BluetoothUUID>& descriptors_uuid,
+    const RemoteCharacteristicGetDescriptorsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (descriptors_uuid &&
+      BluetoothBlocklist::Get().IsExcluded(descriptors_uuid.value())) {
+    callback.Run(blink::mojom::WebBluetoothResult::BLOCKLISTED_DESCRIPTOR_UUID,
+                 base::nullopt /* descriptor */);
+    return;
+  }
+
+  const CacheQueryResult query_result =
+      QueryCacheForCharacteristic(characteristic_instance_id);
+
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
+    return;
+  }
+
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    callback.Run(query_result.GetWebResult(), base::nullopt /* descriptor */);
+    return;
+  }
+
+  auto descriptors =
+      descriptors_uuid
+          ? query_result.device->GetDescriptorsByUUID(
+                query_result.characteristic, descriptors_uuid.value())
+          : query_result.characteristic->GetDescriptors();
+
+  std::vector<blink::mojom::WebBluetoothRemoteGATTDescriptorPtr>
+      response_descriptors;
+  for (device::BluetoothRemoteGattDescriptor* descriptor : descriptors) {
+    if (BluetoothBlocklist::Get().IsExcluded(descriptor->GetUUID())) {
+      continue;
+    }
+    std::string descriptor_instance_id = descriptor->GetIdentifier();
+    auto insert_result = descriptor_id_to_characteristic_id_.insert(
+        {descriptor_instance_id, characteristic_instance_id});
+    // If value is already in map, DCHECK it's valid.
+    if (!insert_result.second)
+      DCHECK(insert_result.first->second == characteristic_instance_id);
+
+    auto descriptor_ptr(blink::mojom::WebBluetoothRemoteGATTDescriptor::New());
+    descriptor_ptr->instance_id = descriptor_instance_id;
+    descriptor_ptr->uuid = descriptor->GetUUID().canonical_value();
+    response_descriptors.push_back(std::move(descriptor_ptr));
+
+    if (quantity == blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
+      break;
+    }
+  }
+
+  if (!response_descriptors.empty()) {
+    callback.Run(blink::mojom::WebBluetoothResult::SUCCESS,
+                 std::move(response_descriptors));
+    return;
+  }
+
+  callback.Run(descriptors_uuid
+                   ? blink::mojom::WebBluetoothResult::DESCRIPTOR_NOT_FOUND
+                   : blink::mojom::WebBluetoothResult::NO_DESCRIPTORS_FOUND,
+               base::nullopt /* descriptors */);
+}
+
 void WebBluetoothServiceImpl::RemoteCharacteristicReadValue(
     const std::string& characteristic_instance_id,
     const RemoteCharacteristicReadValueCallback& callback) {
@@ -549,9 +614,9 @@ void WebBluetoothServiceImpl::RemoteCharacteristicReadValue(
   }
 
   query_result.characteristic->ReadRemoteCharacteristic(
-      base::Bind(&WebBluetoothServiceImpl::OnReadValueSuccess,
+      base::Bind(&WebBluetoothServiceImpl::OnCharacteristicReadValueSuccess,
                  weak_ptr_factory_.GetWeakPtr(), callback),
-      base::Bind(&WebBluetoothServiceImpl::OnReadValueFailed,
+      base::Bind(&WebBluetoothServiceImpl::OnCharacteristicReadValueFailed,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
@@ -592,9 +657,10 @@ void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
   }
 
   query_result.characteristic->WriteRemoteCharacteristic(
-      value, base::Bind(&WebBluetoothServiceImpl::OnWriteValueSuccess,
-                        weak_ptr_factory_.GetWeakPtr(), callback),
-      base::Bind(&WebBluetoothServiceImpl::OnWriteValueFailed,
+      value,
+      base::Bind(&WebBluetoothServiceImpl::OnCharacteristicWriteValueSuccess,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&WebBluetoothServiceImpl::OnCharacteristicWriteValueFailed,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
@@ -811,7 +877,7 @@ void WebBluetoothServiceImpl::OnCreateGATTConnectionFailed(
   callback.Run(TranslateConnectErrorAndRecord(error_code));
 }
 
-void WebBluetoothServiceImpl::OnReadValueSuccess(
+void WebBluetoothServiceImpl::OnCharacteristicReadValueSuccess(
     const RemoteCharacteristicReadValueCallback& callback,
     const std::vector<uint8_t>& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -819,7 +885,7 @@ void WebBluetoothServiceImpl::OnReadValueSuccess(
   callback.Run(blink::mojom::WebBluetoothResult::SUCCESS, value);
 }
 
-void WebBluetoothServiceImpl::OnReadValueFailed(
+void WebBluetoothServiceImpl::OnCharacteristicReadValueFailed(
     const RemoteCharacteristicReadValueCallback& callback,
     device::BluetoothRemoteGattService::GattErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -828,14 +894,14 @@ void WebBluetoothServiceImpl::OnReadValueFailed(
                base::nullopt /* value */);
 }
 
-void WebBluetoothServiceImpl::OnWriteValueSuccess(
+void WebBluetoothServiceImpl::OnCharacteristicWriteValueSuccess(
     const RemoteCharacteristicWriteValueCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::SUCCESS);
   callback.Run(blink::mojom::WebBluetoothResult::SUCCESS);
 }
 
-void WebBluetoothServiceImpl::OnWriteValueFailed(
+void WebBluetoothServiceImpl::OnCharacteristicWriteValueFailed(
     const RemoteCharacteristicWriteValueCallback& callback,
     device::BluetoothRemoteGattService::GattErrorCode error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -975,6 +1041,7 @@ url::Origin WebBluetoothServiceImpl::GetOrigin() {
 void WebBluetoothServiceImpl::ClearState() {
   characteristic_id_to_notify_session_.clear();
   pending_primary_services_requests_.clear();
+  descriptor_id_to_characteristic_id_.clear();
   characteristic_id_to_service_id_.clear();
   service_id_to_device_address_.clear();
   connected_devices_.reset(

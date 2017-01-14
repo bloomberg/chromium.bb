@@ -92,6 +92,10 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*,
                 "No Characteristics with specified UUID found in Service.");
       MAP_ERROR(NO_CHARACTERISTICS_FOUND, NotFoundError,
                 "No Characteristics found in service.");
+      MAP_ERROR(DESCRIPTOR_NOT_FOUND, NotFoundError,
+                "No Descriptors with specified UUID found in Characteristic.");
+      MAP_ERROR(NO_DESCRIPTORS_FOUND, NotFoundError,
+                "No Descriptors found in Characteristic.");
       MAP_ERROR(BLUETOOTH_LOW_ENERGY_NOT_AVAILABLE, NotFoundError,
                 "Bluetooth Low Energy not available.");
 
@@ -111,6 +115,9 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*,
                 "GATT operation not authorized.");
       MAP_ERROR(BLOCKLISTED_CHARACTERISTIC_UUID, SecurityError,
                 "getCharacteristic(s) called with blocklisted UUID. "
+                "https://goo.gl/4NeimX");
+      MAP_ERROR(BLOCKLISTED_DESCRIPTOR_UUID, SecurityError,
+                "getDescriptor(s) called with blocklisted UUID. "
                 "https://goo.gl/4NeimX");
       MAP_ERROR(BLOCKLISTED_READ, SecurityError,
                 "readValue() called on blocklisted object marked "

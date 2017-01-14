@@ -6,6 +6,7 @@
 #define BluetoothAttributeInstanceMap_h
 
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
+#include "modules/bluetooth/BluetoothRemoteGATTDescriptor.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
@@ -51,6 +52,18 @@ class BluetoothAttributeInstanceMap final
   // |characteristicInstanceId| is in the map.
   bool containsCharacteristic(const String& characteristicInstanceId);
 
+  // Constructs a new BluetoothRemoteGATTDescriptor object if there was no
+  // descriptor with the same instance id and adds it to the map.
+  // Otherwise returns the BluetoothRemoteGATTDescriptor object already in
+  // the map.
+  BluetoothRemoteGATTDescriptor* getOrCreateBluetoothRemoteGATTDescriptor(
+      mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
+      BluetoothRemoteGATTCharacteristic*);
+
+  // Returns true if a BluetoothRemoteGATTDescriptor with
+  // |descriptorInstanceId| is in the map.
+  bool containsDescriptor(const String& descriptorInstanceId);
+
   // Removes all Attributes from the map.
   // TODO(crbug.com/654950): Remove descriptors when implemented.
   void Clear();
@@ -65,6 +78,9 @@ class BluetoothAttributeInstanceMap final
   // Map of characteristic instance ids to objects.
   HeapHashMap<String, Member<BluetoothRemoteGATTCharacteristic>>
       m_characteristicIdToObject;
+  // Map of descriptor instance ids to objects.
+  HeapHashMap<String, Member<BluetoothRemoteGATTDescriptor>>
+      m_descriptorIdToObject;
 };
 
 }  // namespace blink

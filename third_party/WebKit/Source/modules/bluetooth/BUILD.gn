@@ -18,6 +18,8 @@ blink_modules_sources("bluetooth") {
     "BluetoothError.h",
     "BluetoothRemoteGATTCharacteristic.cpp",
     "BluetoothRemoteGATTCharacteristic.h",
+    "BluetoothRemoteGATTDescriptor.cpp",
+    "BluetoothRemoteGATTDescriptor.h",
     "BluetoothRemoteGATTServer.cpp",
     "BluetoothRemoteGATTServer.h",
     "BluetoothRemoteGATTService.cpp",

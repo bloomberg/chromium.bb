@@ -51,6 +51,8 @@ enum WebBluetoothResult {
   NO_SERVICES_FOUND,
   CHARACTERISTIC_NOT_FOUND,
   NO_CHARACTERISTICS_FOUND,
+  DESCRIPTOR_NOT_FOUND,
+  NO_DESCRIPTORS_FOUND,
   WEB_BLUETOOTH_NOT_SUPPORTED,
   BLUETOOTH_LOW_ENERGY_NOT_AVAILABLE,
   // NotSupportedError:
@@ -61,6 +63,7 @@ enum WebBluetoothResult {
   GATT_UNTRANSLATED_ERROR_CODE,
   // SecurityError:
   GATT_NOT_AUTHORIZED,
+  BLOCKLISTED_DESCRIPTOR_UUID,
   BLOCKLISTED_CHARACTERISTIC_UUID,
   BLOCKLISTED_READ,
   BLOCKLISTED_WRITE,
@@ -108,6 +111,11 @@ struct WebBluetoothRemoteGATTCharacteristic {
   string instance_id;
   string uuid;
   uint32 properties;
+};
+
+struct WebBluetoothRemoteGATTDescriptor {
+  string instance_id;
+  string uuid;
 };
 
 // Web Bluetooth Interface that Blink can use to perform
@@ -179,6 +187,17 @@ interface WebBluetoothService {
   // |characteristic_instance_id|.
   RemoteCharacteristicStopNotifications(
     string characteristic_instance_id) => ();
+
+  // Returns the Descriptors of a GATT Characteristic with
+  // |characteristics_instance_id|.
+  // If |quantity| == WebBluetoothGATTQueryQuantity::SINGLE, only one descriptor
+  // will be returned.
+  RemoteCharacteristicGetDescriptors(
+    string characteristics_instance_id,
+    WebBluetoothGATTQueryQuantity quantity,
+    bluetooth.mojom.UUID? descriptor_uuid) => (
+      WebBluetoothResult result,
+      array<WebBluetoothRemoteGATTDescriptor>? descriptors);
 };
 
 // Classes should implement this interface and pass an associated pointer

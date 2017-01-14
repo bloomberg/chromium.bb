@@ -379,11 +379,21 @@ interface BluetoothRemoteGATTCharacteristic : EventTarget
     getter uuid
     getter value
     method constructor
+    method getDescriptor
+    method getDescriptors
     method readValue
     method startNotifications
     method stopNotifications
     method writeValue
     setter oncharacteristicvaluechanged
+interface BluetoothRemoteGATTDescriptor
+    attribute @@toStringTag
+    getter characteristic
+    getter uuid
+    getter value
+    method constructor
+    method readValue
+    method writeValue
 interface BluetoothRemoteGATTServer
     attribute @@toStringTag
     getter connected

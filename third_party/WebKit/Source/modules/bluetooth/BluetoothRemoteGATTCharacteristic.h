@@ -80,6 +80,13 @@ class BluetoothRemoteGATTCharacteristic final
   String uuid() { return m_characteristic->uuid; }
   BluetoothCharacteristicProperties* properties() { return m_properties; }
   DOMDataView* value() const { return m_value; }
+  ScriptPromise getDescriptor(ScriptState*,
+                              const StringOrUnsignedLong& descriptor,
+                              ExceptionState&);
+  ScriptPromise getDescriptors(ScriptState*, ExceptionState&);
+  ScriptPromise getDescriptors(ScriptState*,
+                               const StringOrUnsignedLong& descriptor,
+                               ExceptionState&);
   ScriptPromise readValue(ScriptState*);
   ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&);
   ScriptPromise startNotifications(ScriptState*);
@@ -93,6 +100,8 @@ class BluetoothRemoteGATTCharacteristic final
                           RegisteredEventListener&) override;
 
  private:
+  friend class BluetoothRemoteGATTDescriptor;
+
   BluetoothRemoteGATTServer* gatt() { return m_service->device()->gatt(); }
 
   void ReadValueCallback(ScriptPromiseResolver*,
@@ -103,6 +112,18 @@ class BluetoothRemoteGATTCharacteristic final
                           mojom::blink::WebBluetoothResult);
   void NotificationsCallback(ScriptPromiseResolver*,
                              mojom::blink::WebBluetoothResult);
+
+  ScriptPromise getDescriptorsImpl(ScriptState*,
+                                   mojom::blink::WebBluetoothGATTQueryQuantity,
+                                   const String& descriptorUUID = String());
+
+  void GetDescriptorsCallback(
+      const String& characteristicInstanceId,
+      mojom::blink::WebBluetoothGATTQueryQuantity,
+      ScriptPromiseResolver*,
+      mojom::blink::WebBluetoothResult,
+      Optional<Vector<mojom::blink::WebBluetoothRemoteGATTDescriptorPtr>>
+          descriptors);
 
   mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr m_characteristic;
   Member<BluetoothRemoteGATTService> m_service;

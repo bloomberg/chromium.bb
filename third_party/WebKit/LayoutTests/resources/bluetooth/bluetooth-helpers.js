@@ -9,6 +9,8 @@ var blocklist_exclude_reads_characteristic_uuid =
   "bad1c9a2-9a5b-4015-8b60-1579bbbf2135";
 var request_disconnection_characteristic_uuid =
   "01d7d88a-7451-419f-aeb8-d65e7b9277af";
+// Descriptors:
+var blocklist_test_descriptor_uuid = "bad2ddcf-60db-45cd-bef9-fd72b153cf7c";
 
 // Sometimes we need to test that using either the name, alias, or UUID
 // produces the same result. The following objects help us do that.
@@ -51,6 +53,16 @@ var battery_level = {
   alias: 0x2A19,
   name: 'battery_level',
   uuid: '00002a19-0000-1000-8000-00805f9b34fb'
+};
+var user_description = {
+  alias: 0x2901,
+  name: 'gatt.characteristic_user_description',
+  uuid: '00002901-0000-1000-8000-00805f9b34fb'
+};
+var client_characteristic_configuration = {
+  alias: 0x2902,
+  name: 'gatt.client_characteristic_configuration',
+  uuid: '00002902-0000-1000-8000-00805f9b34fb'
 };
 
 // The following tests make sure the Web Bluetooth implementation
