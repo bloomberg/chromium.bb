@@ -372,8 +372,11 @@ void RemoveBorders(GtkStyleContext* context) {
       "border-radius: 0px;"
       "border-width: 0px;"
       "border-image-width: 0px;"
+      "box-shadow: none;"
       "padding: 0px;"
       "margin: 0px;"
+      "outline: none;"
+      "outline-width: 0px;"
       "}");
   ApplyCssToContext(context, provider);
 }
@@ -384,8 +387,11 @@ void AddBorders(GtkStyleContext* context) {
       "border-style: solid;"
       "border-radius: 0px;"
       "border-width: 1px;"
+      "box-shadow: none;"
       "padding: 0px;"
       "margin: 0px;"
+      "outline: none;"
+      "outline-width: 0px;"
       "}");
   ApplyCssToContext(context, provider);
 }
