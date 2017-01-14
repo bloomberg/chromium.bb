@@ -37,7 +37,7 @@ class CSSPropertyAPI {
   // Parses a single CSS property and returns the corresponding CSSValue. If the
   // input is invalid it returns nullptr.
   static const CSSValue* parseSingleValue(CSSParserTokenRange&,
-                                          const CSSParserContext&);
+                                          const CSSParserContext*);
 };
 
 }  // namespace blink

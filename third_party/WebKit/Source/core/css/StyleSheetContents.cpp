@@ -59,7 +59,7 @@ unsigned StyleSheetContents::estimatedSizeInBytes() const {
 
 StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule,
                                        const String& originalURL,
-                                       const CSSParserContext& context)
+                                       const CSSParserContext* context)
     : m_ownerRule(ownerRule),
       m_originalURL(originalURL),
       m_defaultNamespace(starAtom),
@@ -346,7 +346,7 @@ void StyleSheetContents::parseAuthorStyleSheet(
   }
 
   CSSStyleSheetResource::MIMETypeCheck mimeTypeCheck =
-      isQuirksModeBehavior(m_parserContext.mode()) && isSameOriginRequest
+      isQuirksModeBehavior(m_parserContext->mode()) && isSameOriginRequest
           ? CSSStyleSheetResource::MIMETypeCheck::Lax
           : CSSStyleSheetResource::MIMETypeCheck::Strict;
   String sheetText = cachedStyleSheet->sheetText(mimeTypeCheck);
@@ -358,7 +358,8 @@ void StyleSheetContents::parseAuthorStyleSheet(
     m_sourceMapURL = response.httpHeaderField(HTTPNames::X_SourceMap);
   }
 
-  CSSParserContext context(parserContext(), UseCounter::getFrom(this));
+  const CSSParserContext* context =
+      CSSParserContext::createWithStyleSheetContents(parserContext(), this);
   CSSParser::parseSheet(context, this, sheetText,
                         RuntimeEnabledFeatures::lazyParseCSSEnabled());
 
@@ -379,7 +380,8 @@ void StyleSheetContents::parseString(const String& sheetText) {
 void StyleSheetContents::parseStringAtPosition(
     const String& sheetText,
     const TextPosition& startPosition) {
-  CSSParserContext context(parserContext(), UseCounter::getFrom(this));
+  const CSSParserContext* context =
+      CSSParserContext::createWithStyleSheetContents(parserContext(), this);
   CSSParser::parseSheet(context, this, sheetText);
 }
 
@@ -693,6 +695,7 @@ DEFINE_TRACE(StyleSheetContents) {
   visitor->trace(m_completedClients);
   visitor->trace(m_ruleSet);
   visitor->trace(m_referencedFromResource);
+  visitor->trace(m_parserContext);
 }
 
 }  // namespace blink

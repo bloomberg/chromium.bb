@@ -102,8 +102,8 @@ CSSStyleSheet* CSSStyleSheet::createInline(Node& ownerNode,
                                            const KURL& baseURL,
                                            const TextPosition& startPosition,
                                            const String& encoding) {
-  CSSParserContext parserContext(ownerNode.document(), nullptr, baseURL,
-                                 encoding);
+  CSSParserContext* parserContext =
+      CSSParserContext::create(ownerNode.document(), baseURL, encoding);
   StyleSheetContents* sheet =
       StyleSheetContents::create(baseURL.getString(), parserContext);
   return new CSSStyleSheet(sheet, ownerNode, true, startPosition);
@@ -264,8 +264,8 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString,
                             String::number(length()) + ").");
     return 0;
   }
-  CSSParserContext context(m_contents->parserContext(),
-                           UseCounter::getFrom(this));
+  const CSSParserContext* context =
+      CSSParserContext::createWithStyleSheet(m_contents->parserContext(), this);
   StyleRuleBase* rule =
       CSSParser::parseRule(context, m_contents.get(), ruleString);
 

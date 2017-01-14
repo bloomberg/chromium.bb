@@ -99,7 +99,8 @@ void CSSKeyframesRule::appendRule(const String& ruleText) {
          m_keyframesRule->keyframes().size());
 
   CSSStyleSheet* styleSheet = parentStyleSheet();
-  CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
+  CSSParserContext* context =
+      CSSParserContext::createWithStyleSheet(parserContext(), styleSheet);
   StyleRuleKeyframe* keyframe = CSSParser::parseKeyframeRule(context, ruleText);
   if (!keyframe)
     return;

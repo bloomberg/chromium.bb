@@ -49,7 +49,7 @@ StyleEngineTest::RuleSetInvalidation
 StyleEngineTest::scheduleInvalidationsForRules(TreeScope& treeScope,
                                                const String& cssText) {
   StyleSheetContents* sheet =
-      StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+      StyleSheetContents::create(CSSParserContext::create(HTMLStandardMode));
   sheet->parseString(cssText);
   HeapHashSet<Member<RuleSet>> ruleSets;
   RuleSet& ruleSet = sheet->ensureRuleSet(MediaQueryEvaluator(),
@@ -64,7 +64,7 @@ StyleEngineTest::scheduleInvalidationsForRules(TreeScope& treeScope,
 
 TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
   StyleSheetContents* parsedSheet =
-      StyleSheetContents::create(CSSParserContext(document(), nullptr));
+      StyleSheetContents::create(CSSParserContext::create(document()));
   parsedSheet->parseString("div {}");
   styleEngine().injectAuthorSheet(parsedSheet);
   document().view()->updateAllLifecyclePhases();
@@ -86,7 +86,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   unsigned beforeCount = styleEngine().styleForElementCount();
 
   StyleSheetContents* parsedSheet =
-      StyleSheetContents::create(CSSParserContext(document(), nullptr));
+      StyleSheetContents::create(CSSParserContext::create(document()));
   parsedSheet->parseString("#t1 { color: green }");
   styleEngine().injectAuthorSheet(parsedSheet);
   document().view()->updateAllLifecyclePhases();

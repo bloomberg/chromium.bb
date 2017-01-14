@@ -11,7 +11,7 @@
 
 namespace blink {
 
-CSSLazyParsingState::CSSLazyParsingState(const CSSParserContext& context,
+CSSLazyParsingState::CSSLazyParsingState(const CSSParserContext* context,
                                          Vector<String> escapedStrings,
                                          const String& sheetText,
                                          StyleSheetContents* contents)
@@ -23,7 +23,7 @@ CSSLazyParsingState::CSSLazyParsingState(const CSSParserContext& context,
       m_totalStyleRules(0),
       m_styleRulesNeededForNextMilestone(0),
       m_usage(UsageGe0),
-      m_shouldUseCount(!!m_context.useCounter()) {
+      m_shouldUseCount(m_context->isUseCounterRecordingEnabled()) {
   recordUsageMetrics();
 }
 
@@ -33,23 +33,21 @@ CSSLazyPropertyParserImpl* CSSLazyParsingState::createLazyParser(
   return new CSSLazyPropertyParserImpl(std::move(block), this);
 }
 
-const CSSParserContext& CSSLazyParsingState::context() {
+const CSSParserContext* CSSLazyParsingState::context() {
   DCHECK(m_owningContents);
   if (!m_shouldUseCount) {
-    DCHECK(!m_context.useCounter());
+    DCHECK(!m_context->isUseCounterRecordingEnabled());
     return m_context;
   }
 
-  // Try as best as possible to grab a valid UseCounter if the underlying
-  // document has gone away.
+  // Try as best as possible to grab a valid Document if the old Document has
+  // gone away so we can still use UseCounter.
   if (!m_document)
     m_document = m_owningContents->anyOwnerDocument();
 
-  // Always refresh the UseCounter, as the Document can outlive its
-  // underlying frame host causing a use-after-free of m_context's counter.
   UseCounter* useCounter = UseCounter::getFrom(m_document);
-  if (useCounter != m_context.useCounter())
-    m_context = CSSParserContext(m_context, useCounter);
+  if (useCounter != m_context->useCounter())
+    m_context = CSSParserContext::create(m_context, useCounter);
   return m_context;
 }
 
@@ -123,6 +121,7 @@ void CSSLazyParsingState::recordUsageMetrics() {
 DEFINE_TRACE(CSSLazyParsingState) {
   visitor->trace(m_owningContents);
   visitor->trace(m_document);
+  visitor->trace(m_context);
 }
 
 }  // namespace blink

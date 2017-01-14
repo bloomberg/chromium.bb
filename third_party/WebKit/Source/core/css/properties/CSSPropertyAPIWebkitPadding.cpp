@@ -12,9 +12,9 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIWebkitPadding::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   return consumeLengthOrPercent(
-      range, context.mode(), ValueRangeNonNegative,
+      range, context->mode(), ValueRangeNonNegative,
       CSSPropertyParserHelpers::UnitlessQuirk::Forbid);
 }
 

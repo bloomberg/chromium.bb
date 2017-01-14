@@ -11,12 +11,12 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIFlexBasis::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   // FIXME: Support intrinsic dimensions too.
   if (range.peek().id() == CSSValueAuto)
     return CSSPropertyParserHelpers::consumeIdent(range);
   return CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, context.mode(), ValueRangeNonNegative);
+      range, context->mode(), ValueRangeNonNegative);
 }
 
 }  // namespace blink

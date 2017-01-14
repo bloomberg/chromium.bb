@@ -57,7 +57,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value) {
   // This will return false when !important is present
   MutableStylePropertySet* dummyStyle =
       MutableStylePropertySet::create(HTMLStandardMode);
-  return CSSParser::parseValue(dummyStyle, unresolvedProperty, value, false, 0)
+  return CSSParser::parseValue(dummyStyle, unresolvedProperty, value, false)
       .didParse;
 }
 

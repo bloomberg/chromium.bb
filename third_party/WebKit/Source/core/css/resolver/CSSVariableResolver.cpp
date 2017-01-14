@@ -256,7 +256,7 @@ const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(
     if (resolver.resolveTokenRange(
             shorthandValue->variableDataValue()->tokens(),
             disallowAnimationTainted, tokens, isAnimationTainted)) {
-      CSSParserContext context(HTMLStandardMode, 0);
+      CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
 
       HeapVector<CSSProperty, 256> parsedProperties;
 

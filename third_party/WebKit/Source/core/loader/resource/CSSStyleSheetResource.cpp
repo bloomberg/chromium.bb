@@ -186,7 +186,7 @@ bool CSSStyleSheetResource::canUseSheet(MIMETypeCheck mimeTypeCheck) const {
 }
 
 StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   if (!m_parsedStyleSheetCache)
     return nullptr;
   if (m_parsedStyleSheetCache->hasFailedOrCanceledSubresources()) {
@@ -199,7 +199,7 @@ StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(
 
   // Contexts must be identical so we know we would get the same exact result if
   // we parsed again.
-  if (m_parsedStyleSheetCache->parserContext() != context)
+  if (*m_parsedStyleSheetCache->parserContext() != *context)
     return nullptr;
 
   return m_parsedStyleSheetCache;

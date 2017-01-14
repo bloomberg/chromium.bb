@@ -13,7 +13,7 @@ class CSSParserContext;
 // Stores function pointers matching those declared in CSSPropertyAPI.
 struct CSSPropertyDescriptor {
   const CSSValue* (*parseSingleValue)(CSSParserTokenRange&,
-                                      const CSSParserContext&);
+                                      const CSSParserContext*);
 
   // Stores whether or not this descriptor is for a valid property. Do not
   // access the contents of this descriptor unless this value is true.

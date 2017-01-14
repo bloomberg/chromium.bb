@@ -62,7 +62,8 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString,
   }
 
   CSSStyleSheet* styleSheet = parentStyleSheet();
-  CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
+  CSSParserContext* context =
+      CSSParserContext::createWithStyleSheet(parserContext(), styleSheet);
   StyleRuleBase* newRule = CSSParser::parseRule(
       context, styleSheet ? styleSheet->contents() : nullptr, ruleString);
   if (!newRule) {

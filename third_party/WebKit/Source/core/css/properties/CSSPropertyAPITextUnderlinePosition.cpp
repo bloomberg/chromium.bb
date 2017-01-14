@@ -11,7 +11,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPITextUnderlinePosition::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   // auto | [ under || [ left | right ] ], but we only support auto | under
   // for now
   DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());

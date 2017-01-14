@@ -30,23 +30,28 @@ class CORE_EXPORT CSSParser {
 
  public:
   // As well as regular rules, allows @import and @namespace but not @charset
-  static StyleRuleBase* parseRule(const CSSParserContext&,
+  static StyleRuleBase* parseRule(const CSSParserContext*,
                                   StyleSheetContents*,
                                   const String&);
-  static void parseSheet(const CSSParserContext&,
+  static void parseSheet(const CSSParserContext*,
                          StyleSheetContents*,
                          const String&,
                          bool deferPropertyParsing = false);
-  static CSSSelectorList parseSelector(const CSSParserContext&,
+  static CSSSelectorList parseSelector(const CSSParserContext*,
                                        StyleSheetContents*,
                                        const String&);
-  static CSSSelectorList parsePageSelector(const CSSParserContext&,
+  static CSSSelectorList parsePageSelector(const CSSParserContext*,
                                            StyleSheetContents*,
                                            const String&);
-  static bool parseDeclarationList(const CSSParserContext&,
+  static bool parseDeclarationList(const CSSParserContext*,
                                    MutableStylePropertySet*,
                                    const String&);
 
+  static MutableStylePropertySet::SetResult parseValue(
+      MutableStylePropertySet*,
+      CSSPropertyID unresolvedProperty,
+      const String&,
+      bool important);
   static MutableStylePropertySet::SetResult parseValue(
       MutableStylePropertySet*,
       CSSPropertyID unresolvedProperty,
@@ -68,17 +73,17 @@ class CORE_EXPORT CSSParser {
   static const CSSValue* parseSingleValue(
       CSSPropertyID,
       const String&,
-      const CSSParserContext& = strictCSSParserContext());
+      const CSSParserContext* = strictCSSParserContext());
 
   static const CSSValue* parseFontFaceDescriptor(CSSPropertyID,
                                                  const String&,
-                                                 const CSSParserContext&);
+                                                 const CSSParserContext*);
 
   static ImmutableStylePropertySet* parseInlineStyleDeclaration(const String&,
                                                                 Element*);
 
   static std::unique_ptr<Vector<double>> parseKeyframeKeyList(const String&);
-  static StyleRuleKeyframe* parseKeyframeRule(const CSSParserContext&,
+  static StyleRuleKeyframe* parseKeyframeRule(const CSSParserContext*,
                                               const String&);
 
   static bool parseSupportsCondition(const String&);
@@ -88,11 +93,11 @@ class CORE_EXPORT CSSParser {
   static bool parseColor(Color&, const String&, bool strict = false);
   static bool parseSystemColor(Color&, const String&);
 
-  static void parseSheetForInspector(const CSSParserContext&,
+  static void parseSheetForInspector(const CSSParserContext*,
                                      StyleSheetContents*,
                                      const String&,
                                      CSSParserObserver&);
-  static void parseDeclarationListForInspector(const CSSParserContext&,
+  static void parseDeclarationListForInspector(const CSSParserContext*,
                                                const String&,
                                                CSSParserObserver&);
 
@@ -102,7 +107,7 @@ class CORE_EXPORT CSSParser {
       CSSPropertyID unresolvedProperty,
       const String&,
       bool important,
-      const CSSParserContext&);
+      const CSSParserContext*);
 };
 
 }  // namespace blink

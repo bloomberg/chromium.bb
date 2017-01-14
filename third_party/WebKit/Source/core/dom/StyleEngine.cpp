@@ -147,7 +147,7 @@ CSSStyleSheet& StyleEngine::ensureInspectorStyleSheet() {
     return *m_inspectorStyleSheet;
 
   StyleSheetContents* contents =
-      StyleSheetContents::create(CSSParserContext(*m_document, nullptr));
+      StyleSheetContents::create(CSSParserContext::create(*m_document));
   m_inspectorStyleSheet = CSSStyleSheet::create(contents, *m_document);
   markDocumentDirty();
   // TODO(rune@opera.com): Making the active stylesheets up-to-date here is

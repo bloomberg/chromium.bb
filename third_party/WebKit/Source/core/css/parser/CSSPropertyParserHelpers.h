@@ -90,9 +90,9 @@ enum class ConsumeGeneratedImagePolicy { Allow, Forbid };
 
 CSSValue* consumeImage(
     CSSParserTokenRange&,
-    const CSSParserContext&,
+    const CSSParserContext*,
     ConsumeGeneratedImagePolicy = ConsumeGeneratedImagePolicy::Allow);
-CSSValue* consumeImageOrNone(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* consumeImageOrNone(CSSParserTokenRange&, const CSSParserContext*);
 
 bool isCSSWideKeyword(StringView);
 

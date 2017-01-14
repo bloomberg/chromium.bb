@@ -119,7 +119,7 @@ TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
     CSSTokenizer tokenizer(testCase[0]);
     CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        range, CSSParserContext::create(HTMLStandardMode), nullptr);
     EXPECT_STREQ(testCase[1], list.selectorsText().ascii().data());
   }
 }
@@ -142,7 +142,7 @@ TEST(CSSSelectorParserTest, PseudoElementsInCompoundLists) {
     CSSTokenizer tokenizer(testCase);
     CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        range, CSSParserContext::create(HTMLStandardMode), nullptr);
     EXPECT_FALSE(list.isValid());
   }
 }
@@ -157,7 +157,7 @@ TEST(CSSSelectorParserTest, ValidSimpleAfterPseudoElementInCompound) {
     CSSTokenizer tokenizer(testCase);
     CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        range, CSSParserContext::create(HTMLStandardMode), nullptr);
     EXPECT_TRUE(list.isValid());
   }
 }
@@ -180,7 +180,7 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound) {
     CSSTokenizer tokenizer(testCase);
     CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        range, CSSParserContext::create(HTMLStandardMode), nullptr);
     EXPECT_FALSE(list.isValid());
   }
 }
@@ -195,7 +195,7 @@ TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle) {
     CSSTokenizer tokenizer(testCase);
     CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext(UASheetMode, nullptr), nullptr);
+        range, CSSParserContext::create(UASheetMode), nullptr);
     EXPECT_TRUE(list.isValid());
   }
 }
@@ -209,7 +209,7 @@ TEST(CSSSelectorParserTest, ValidPseudoElementInNonRightmostCompound) {
     CSSTokenizer tokenizer(testCase);
     CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        range, CSSParserContext::create(HTMLStandardMode), nullptr);
     EXPECT_TRUE(list.isValid());
   }
 }
@@ -223,7 +223,7 @@ TEST(CSSSelectorParserTest, InvalidPseudoElementInNonRightmostCompound) {
     CSSTokenizer tokenizer(testCase);
     CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        range, CSSParserContext::create(HTMLStandardMode), nullptr);
     EXPECT_FALSE(list.isValid());
   }
 }
@@ -231,7 +231,7 @@ TEST(CSSSelectorParserTest, InvalidPseudoElementInNonRightmostCompound) {
 TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix) {
   const char* testCases[] = {"ns|div", "div ns|div", "div ns|div "};
 
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* sheet = StyleSheetContents::create(context);
 
   for (auto testCase : testCases) {
@@ -260,7 +260,7 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
       {"ns|*::cue(i)", "ns|*::cue(i)"},
       {"ns|*::shadow", "ns|*::shadow"}};
 
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* sheet = StyleSheetContents::create(context);
   sheet->parserAddNamespace("ns", "http://ns.org");
 
@@ -278,8 +278,8 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
 TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInDynamicProfile) {
   const char* testCases[] = {"div >>>> span", "div >>> span", "div >> span"};
 
-  CSSParserContext context(HTMLStandardMode, nullptr,
-                           CSSParserContext::DynamicProfile);
+  CSSParserContext* context = CSSParserContext::create(
+      HTMLStandardMode, CSSParserContext::DynamicProfile);
   StyleSheetContents* sheet = StyleSheetContents::create(context);
 
   for (auto testCase : testCases) {
@@ -296,8 +296,8 @@ TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInStaticProfile) {
   const char* testCases[] = {"div >>>> span", "div >> span", "div >> > span",
                              "div > >> span", "div > > > span"};
 
-  CSSParserContext context(HTMLStandardMode, nullptr,
-                           CSSParserContext::StaticProfile);
+  CSSParserContext* context = CSSParserContext::create(
+      HTMLStandardMode, CSSParserContext::StaticProfile);
   StyleSheetContents* sheet = StyleSheetContents::create(context);
 
   for (auto testCase : testCases) {
@@ -316,8 +316,8 @@ TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInStaticProfile) {
                                 {"div >/**/>> span", "div >>> span"},
                                 {"div >/**/>/**/> span", "div >>> span"}};
 
-  CSSParserContext context(HTMLStandardMode, nullptr,
-                           CSSParserContext::StaticProfile);
+  CSSParserContext* context = CSSParserContext::create(
+      HTMLStandardMode, CSSParserContext::StaticProfile);
   StyleSheetContents* sheet = StyleSheetContents::create(context);
 
   for (auto testCase : testCases) {

@@ -53,7 +53,7 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
 
   void didAddClient(ResourceClient*) override;
 
-  StyleSheetContents* restoreParsedStyleSheet(const CSSParserContext&);
+  StyleSheetContents* restoreParsedStyleSheet(const CSSParserContext*);
   void saveParsedStyleSheet(StyleSheetContents*);
 
   void appendData(const char* data, size_t length) override;

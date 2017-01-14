@@ -66,8 +66,8 @@ namespace {
 
 using namespace blink;
 
-static CSSParserContext parserContextForDocument(Document* document) {
-  return document ? CSSParserContext(*document, nullptr)
+static const CSSParserContext* parserContextForDocument(Document* document) {
+  return document ? CSSParserContext::create(*document)
                   : strictCSSParserContext();
 }
 

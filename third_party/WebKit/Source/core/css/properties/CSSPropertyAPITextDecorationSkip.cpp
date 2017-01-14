@@ -13,7 +13,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPITextDecorationSkip::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   while (true) {

@@ -195,7 +195,8 @@ void ProcessingInstruction::setCSSStyleSheet(
   }
 
   DCHECK(m_isCSS);
-  CSSParserContext parserContext(document(), nullptr, baseURL, charset);
+  CSSParserContext* parserContext =
+      CSSParserContext::create(document(), baseURL, charset);
 
   StyleSheetContents* newSheet =
       StyleSheetContents::create(href, parserContext);

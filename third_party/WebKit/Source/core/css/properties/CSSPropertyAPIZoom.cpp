@@ -12,7 +12,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIZoom::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   const CSSParserToken& token = range.peek();
   CSSValue* zoom = nullptr;
   if (token.type() == IdentToken) {
@@ -26,17 +26,17 @@ const CSSValue* CSSPropertyAPIZoom::parseSingleValue(
           CSSPropertyParserHelpers::consumeNumber(range, ValueRangeNonNegative);
     }
   }
-  if (zoom && context.useCounter()) {
+  if (zoom && context->isUseCounterRecordingEnabled()) {
     if (!(token.id() == CSSValueNormal ||
           (token.type() == NumberToken &&
            toCSSPrimitiveValue(zoom)->getDoubleValue() == 1) ||
           (token.type() == PercentageToken &&
            toCSSPrimitiveValue(zoom)->getDoubleValue() == 100)))
-      context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
+      context->useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
     if (token.id() == CSSValueReset)
-      context.useCounter()->count(UseCounter::CSSZoomReset);
+      context->useCounter()->count(UseCounter::CSSZoomReset);
     if (token.id() == CSSValueDocument)
-      context.useCounter()->count(UseCounter::CSSZoomDocument);
+      context->useCounter()->count(UseCounter::CSSZoomDocument);
   }
   return zoom;
 }

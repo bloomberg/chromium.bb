@@ -79,7 +79,7 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
       ResourceResponse(cssURL, "style/css", 0, nullAtom, String()), nullptr);
   cssResource->finish();
 
-  CSSParserContext parserContext(HTMLStandardMode, nullptr);
+  CSSParserContext* parserContext = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* contents = StyleSheetContents::create(parserContext);
   CSSStyleSheet* sheet = CSSStyleSheet::create(contents, document());
   EXPECT_TRUE(sheet);

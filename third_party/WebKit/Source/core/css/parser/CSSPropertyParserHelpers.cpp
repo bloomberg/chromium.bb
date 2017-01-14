@@ -1067,14 +1067,14 @@ static CSSValue* consumeLinearGradient(CSSParserTokenRange& args,
 }
 
 CSSValue* consumeImageOrNone(CSSParserTokenRange& range,
-                             const CSSParserContext& context) {
+                             const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
   return consumeImage(range, context);
 }
 
 static CSSValue* consumeCrossFade(CSSParserTokenRange& args,
-                                  const CSSParserContext& context) {
+                                  const CSSParserContext* context) {
   CSSValue* fromImageValue = consumeImageOrNone(args, context);
   if (!fromImageValue || !consumeCommaIncludingWhitespace(args))
     return nullptr;
@@ -1099,7 +1099,7 @@ static CSSValue* consumeCrossFade(CSSParserTokenRange& args,
 }
 
 static CSSValue* consumePaint(CSSParserTokenRange& args,
-                              const CSSParserContext& context) {
+                              const CSSParserContext* context) {
   DCHECK(RuntimeEnabledFeatures::cssPaintAPIEnabled());
 
   CSSCustomIdentValue* name = consumeCustomIdent(args);
@@ -1110,50 +1110,52 @@ static CSSValue* consumePaint(CSSParserTokenRange& args,
 }
 
 static CSSValue* consumeGeneratedImage(CSSParserTokenRange& range,
-                                       const CSSParserContext& context) {
+                                       const CSSParserContext* context) {
   CSSValueID id = range.peek().functionId();
   CSSParserTokenRange rangeCopy = range;
   CSSParserTokenRange args = consumeFunction(rangeCopy);
   CSSValue* result = nullptr;
   if (id == CSSValueRadialGradient) {
-    result = consumeRadialGradient(args, context.mode(), NonRepeating);
+    result = consumeRadialGradient(args, context->mode(), NonRepeating);
   } else if (id == CSSValueRepeatingRadialGradient) {
-    result = consumeRadialGradient(args, context.mode(), Repeating);
+    result = consumeRadialGradient(args, context->mode(), Repeating);
   } else if (id == CSSValueWebkitLinearGradient) {
     // FIXME: This should send a deprecation message.
-    if (context.useCounter())
-      context.useCounter()->count(UseCounter::DeprecatedWebKitLinearGradient);
-    result = consumeLinearGradient(args, context.mode(), NonRepeating,
+    if (context->isUseCounterRecordingEnabled())
+      context->useCounter()->count(UseCounter::DeprecatedWebKitLinearGradient);
+    result = consumeLinearGradient(args, context->mode(), NonRepeating,
                                    CSSPrefixedLinearGradient);
   } else if (id == CSSValueWebkitRepeatingLinearGradient) {
     // FIXME: This should send a deprecation message.
-    if (context.useCounter())
-      context.useCounter()->count(
+    if (context->isUseCounterRecordingEnabled()) {
+      context->useCounter()->count(
           UseCounter::DeprecatedWebKitRepeatingLinearGradient);
-    result = consumeLinearGradient(args, context.mode(), Repeating,
+    }
+    result = consumeLinearGradient(args, context->mode(), Repeating,
                                    CSSPrefixedLinearGradient);
   } else if (id == CSSValueRepeatingLinearGradient) {
-    result = consumeLinearGradient(args, context.mode(), Repeating,
+    result = consumeLinearGradient(args, context->mode(), Repeating,
                                    CSSLinearGradient);
   } else if (id == CSSValueLinearGradient) {
-    result = consumeLinearGradient(args, context.mode(), NonRepeating,
+    result = consumeLinearGradient(args, context->mode(), NonRepeating,
                                    CSSLinearGradient);
   } else if (id == CSSValueWebkitGradient) {
     // FIXME: This should send a deprecation message.
-    if (context.useCounter())
-      context.useCounter()->count(UseCounter::DeprecatedWebKitGradient);
-    result = consumeDeprecatedGradient(args, context.mode());
+    if (context->isUseCounterRecordingEnabled())
+      context->useCounter()->count(UseCounter::DeprecatedWebKitGradient);
+    result = consumeDeprecatedGradient(args, context->mode());
   } else if (id == CSSValueWebkitRadialGradient) {
     // FIXME: This should send a deprecation message.
-    if (context.useCounter())
-      context.useCounter()->count(UseCounter::DeprecatedWebKitRadialGradient);
+    if (context->isUseCounterRecordingEnabled())
+      context->useCounter()->count(UseCounter::DeprecatedWebKitRadialGradient);
     result =
-        consumeDeprecatedRadialGradient(args, context.mode(), NonRepeating);
+        consumeDeprecatedRadialGradient(args, context->mode(), NonRepeating);
   } else if (id == CSSValueWebkitRepeatingRadialGradient) {
-    if (context.useCounter())
-      context.useCounter()->count(
+    if (context->isUseCounterRecordingEnabled()) {
+      context->useCounter()->count(
           UseCounter::DeprecatedWebKitRepeatingRadialGradient);
-    result = consumeDeprecatedRadialGradient(args, context.mode(), Repeating);
+    }
+    result = consumeDeprecatedRadialGradient(args, context->mode(), Repeating);
   } else if (id == CSSValueWebkitCrossFade) {
     result = consumeCrossFade(args, context);
   } else if (id == CSSValuePaint) {
@@ -1169,15 +1171,15 @@ static CSSValue* consumeGeneratedImage(CSSParserTokenRange& range,
 
 static CSSValue* createCSSImageValueWithReferrer(
     const AtomicString& rawValue,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   CSSValue* imageValue =
-      CSSImageValue::create(rawValue, context.completeURL(rawValue));
-  toCSSImageValue(imageValue)->setReferrer(context.referrer());
+      CSSImageValue::create(rawValue, context->completeURL(rawValue));
+  toCSSImageValue(imageValue)->setReferrer(context->referrer());
   return imageValue;
 }
 
 static CSSValue* consumeImageSet(CSSParserTokenRange& range,
-                                 const CSSParserContext& context) {
+                                 const CSSParserContext* context) {
   CSSParserTokenRange rangeCopy = range;
   CSSParserTokenRange args = consumeFunction(rangeCopy);
   CSSImageSetValue* imageSet = CSSImageSetValue::create();
@@ -1220,7 +1222,7 @@ static bool isGeneratedImage(CSSValueID id) {
 }
 
 CSSValue* consumeImage(CSSParserTokenRange& range,
-                       const CSSParserContext& context,
+                       const CSSParserContext* context,
                        ConsumeGeneratedImagePolicy generatedImage) {
   AtomicString uri = consumeUrlAsStringView(range).toAtomicString();
   if (!uri.isNull())

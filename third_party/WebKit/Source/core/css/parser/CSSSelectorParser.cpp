@@ -14,9 +14,9 @@
 
 namespace blink {
 
-static void recordSelectorStats(const CSSParserContext& context,
+static void recordSelectorStats(const CSSParserContext* context,
                                 const CSSSelectorList& selectorList) {
-  if (!context.useCounter())
+  if (!context->isUseCounterRecordingEnabled())
     return;
 
   for (const CSSSelector* selector = selectorList.first(); selector;
@@ -53,11 +53,11 @@ static void recordSelectorStats(const CSSParserContext& context,
           feature = UseCounter::CSSSelectorPseudoFullScreen;
           break;
         case CSSSelector::PseudoListBox:
-          if (context.mode() != UASheetMode)
+          if (context->mode() != UASheetMode)
             feature = UseCounter::CSSSelectorInternalPseudoListBox;
           break;
         case CSSSelector::PseudoWebKitCustomElement:
-          if (context.mode() != UASheetMode) {
+          if (context->mode() != UASheetMode) {
             if (current->value() == "-internal-media-controls-cast-button")
               feature = UseCounter::CSSSelectorInternalMediaControlsCastButton;
             else if (current->value() ==
@@ -67,25 +67,25 @@ static void recordSelectorStats(const CSSParserContext& context,
           }
           break;
         case CSSSelector::PseudoSpatialNavigationFocus:
-          if (context.mode() != UASheetMode)
+          if (context->mode() != UASheetMode)
             feature =
                 UseCounter::CSSSelectorInternalPseudoSpatialNavigationFocus;
           break;
         case CSSSelector::PseudoReadOnly:
-          if (context.mode() != UASheetMode)
+          if (context->mode() != UASheetMode)
             feature = UseCounter::CSSSelectorPseudoReadOnly;
           break;
         case CSSSelector::PseudoReadWrite:
-          if (context.mode() != UASheetMode)
+          if (context->mode() != UASheetMode)
             feature = UseCounter::CSSSelectorPseudoReadWrite;
           break;
         default:
           break;
       }
       if (feature != UseCounter::NumberOfFeatures)
-        context.useCounter()->count(feature);
+        context->useCounter()->count(feature);
       if (current->relation() == CSSSelector::IndirectAdjacent)
-        context.useCounter()->count(UseCounter::CSSSelectorIndirectAdjacent);
+        context->useCounter()->count(UseCounter::CSSSelectorIndirectAdjacent);
       if (current->selectorList())
         recordSelectorStats(context, *current->selectorList());
     }
@@ -94,7 +94,7 @@ static void recordSelectorStats(const CSSParserContext& context,
 
 CSSSelectorList CSSSelectorParser::parseSelector(
     CSSParserTokenRange range,
-    const CSSParserContext& context,
+    const CSSParserContext* context,
     StyleSheetContents* styleSheet) {
   CSSSelectorParser parser(context, styleSheet);
   range.consumeWhitespace();
@@ -106,7 +106,7 @@ CSSSelectorList CSSSelectorParser::parseSelector(
   return result;
 }
 
-CSSSelectorParser::CSSSelectorParser(const CSSParserContext& context,
+CSSSelectorParser::CSSSelectorParser(const CSSParserContext* context,
                                      StyleSheetContents* styleSheet)
     : m_context(context), m_styleSheet(styleSheet) {}
 
@@ -191,7 +191,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(
 
   for (CSSParserSelector* simple = selector.get();
        simple && !previousCompoundFlags; simple = simple->tagHistory())
-    previousCompoundFlags |= extractCompoundFlags(*simple, m_context.mode());
+    previousCompoundFlags |= extractCompoundFlags(*simple, m_context->mode());
 
   while (CSSSelector::RelationType combinator = consumeCombinator(range)) {
     std::unique_ptr<CSSParserSelector> nextSelector =
@@ -202,10 +202,10 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(
     if (previousCompoundFlags & HasPseudoElementForRightmostCompound)
       return nullptr;
     CSSParserSelector* end = nextSelector.get();
-    unsigned compoundFlags = extractCompoundFlags(*end, m_context.mode());
+    unsigned compoundFlags = extractCompoundFlags(*end, m_context->mode());
     while (end->tagHistory()) {
       end = end->tagHistory();
-      compoundFlags |= extractCompoundFlags(*end, m_context.mode());
+      compoundFlags |= extractCompoundFlags(*end, m_context->mode());
     }
     end->setRelation(combinator);
     if (previousCompoundFlags & HasContentPseudoElement)
@@ -312,7 +312,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(
     if (compoundSelector->match() == CSSSelector::PseudoElement)
       compoundPseudoElement = compoundSelector->pseudoType();
   }
-  if (m_context.isHTMLDocument())
+  if (m_context->isHTMLDocument())
     elementName = elementName.lower();
 
   while (std::unique_ptr<CSSParserSelector> simpleSelector =
@@ -321,7 +321,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(
     // The UASheetMode check is a work-around to allow this selector in
     // mediaControls(New).css:
     // video::-webkit-media-text-track-region-container.scrolling
-    if (m_context.mode() != UASheetMode &&
+    if (m_context->mode() != UASheetMode &&
         !isSimpleSelectorValidAfterPseudoElement(*simpleSelector.get(),
                                                  compoundPseudoElement)) {
       m_failedParsing = true;
@@ -423,7 +423,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeId(
   std::unique_ptr<CSSParserSelector> selector = CSSParserSelector::create();
   selector->setMatch(CSSSelector::Id);
   AtomicString value = range.consume().value().toAtomicString();
-  selector->setValue(value, isQuirksModeBehavior(m_context.matchMode()));
+  selector->setValue(value, isQuirksModeBehavior(m_context->matchMode()));
   return selector;
 }
 
@@ -437,7 +437,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeClass(
   std::unique_ptr<CSSParserSelector> selector = CSSParserSelector::create();
   selector->setMatch(CSSSelector::Class);
   AtomicString value = range.consume().value().toAtomicString();
-  selector->setValue(value, isQuirksModeBehavior(m_context.matchMode()));
+  selector->setValue(value, isQuirksModeBehavior(m_context->matchMode()));
   return selector;
 }
 
@@ -453,7 +453,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeAttribute(
     return nullptr;
   block.consumeWhitespace();
 
-  if (m_context.isHTMLDocument())
+  if (m_context->isHTMLDocument())
     attributeName = attributeName.lower();
 
   AtomicString namespaceURI = determineNamespace(namespacePrefix);
@@ -616,7 +616,7 @@ CSSSelector::RelationType CSSSelectorParser::consumeCombinator(
     case '>':
       if (!RuntimeEnabledFeatures::
               shadowPiercingDescendantCombinatorEnabled() ||
-          m_context.isDynamicProfile() ||
+          m_context->isDynamicProfile() ||
           range.peek(1).type() != DelimiterToken ||
           range.peek(1).delimiter() != '>') {
         range.consumeIncludingWhitespace();

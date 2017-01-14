@@ -33,7 +33,7 @@ class CSSLazyParsingTest : public testing::Test {
 };
 
 TEST_F(CSSLazyParsingTest, Simple) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
 
   String sheetText = "body { background-color: red; }";
@@ -47,7 +47,7 @@ TEST_F(CSSLazyParsingTest, Simple) {
 // Avoiding lazy parsing for trivially empty blocks helps us perform the
 // shouldConsiderForMatchingRules optimization.
 TEST_F(CSSLazyParsingTest, DontLazyParseEmpty) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
 
   String sheetText = "body {  }";
@@ -61,7 +61,7 @@ TEST_F(CSSLazyParsingTest, DontLazyParseEmpty) {
 // Avoid parsing rules with ::before or ::after to avoid causing
 // collectFeatures() when we trigger parsing for attr();
 TEST_F(CSSLazyParsingTest, DontLazyParseBeforeAfter) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
 
   String sheetText =
@@ -77,7 +77,7 @@ TEST_F(CSSLazyParsingTest, DontLazyParseBeforeAfter) {
 // dangerous API because callers will expect the set of matching rules to be
 // identical if the stylesheet is not mutated.
 TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
 
   String sheetText = "p::first-letter { ,badness, } ";
@@ -100,7 +100,7 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
 // Test the same thing as above, with a property that does not get lazy parsed,
 // to ensure that we perform the optimization where possible.
 TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
 
   String sheetText = "p::before { ,badness, } ";
@@ -118,8 +118,9 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
 TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   std::unique_ptr<DummyPageHolder> dummyHolder =
       DummyPageHolder::create(IntSize(500, 500));
-  CSSParserContext context(HTMLStandardMode,
-                           UseCounter::getFrom(&dummyHolder->document()));
+  CSSParserContext* context = CSSParserContext::create(
+      HTMLStandardMode, CSSParserContext::DynamicProfile,
+      UseCounter::getFrom(&dummyHolder->document()));
   m_cachedContents = StyleSheetContents::create(context);
   {
     CSSStyleSheet* sheet =
@@ -169,7 +170,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
 }
 
 TEST_F(CSSLazyParsingTest, SimpleRuleUsagePercent) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
 
   std::string metricName = "Style.LazyUsage.Percent";

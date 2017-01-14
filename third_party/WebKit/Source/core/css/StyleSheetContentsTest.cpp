@@ -11,7 +11,7 @@
 namespace blink {
 
 TEST(StyleSheetContentsTest, InsertMediaRule) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
 
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
   styleSheet->parseString("@namespace ns url(test);");
@@ -34,7 +34,7 @@ TEST(StyleSheetContentsTest, InsertMediaRule) {
 }
 
 TEST(StyleSheetContentsTest, InsertFontFaceRule) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
 
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
   styleSheet->parseString("@namespace ns url(test);");
@@ -57,7 +57,7 @@ TEST(StyleSheetContentsTest, InsertFontFaceRule) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRule) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
 
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
   styleSheet->parseString("@viewport { width: 200px}");
@@ -66,7 +66,7 @@ TEST(StyleSheetContentsTest, HasViewportRule) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertion) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
 
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
   styleSheet->parseString("body { color: pink }");
@@ -82,7 +82,7 @@ TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertion) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertionIntoMediaRule) {
-  CSSParserContext context(HTMLStandardMode, nullptr);
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
 
   StyleSheetContents* styleSheet = StyleSheetContents::create(context);
   styleSheet->parseString("@media {}");

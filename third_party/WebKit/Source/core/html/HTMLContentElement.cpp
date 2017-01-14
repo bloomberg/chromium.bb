@@ -63,7 +63,7 @@ void HTMLContentElement::parseSelect() {
   DCHECK(m_shouldParseSelect);
 
   m_selectorList = CSSParser::parseSelector(
-      CSSParserContext(document(), nullptr), nullptr, m_select);
+      CSSParserContext::create(document()), nullptr, m_select);
   m_shouldParseSelect = false;
   m_isValidSelector = validateSelect();
   if (!m_isValidSelector)

@@ -12,7 +12,7 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIRotate::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
   CSSValueList* list = CSSValueList::createSpaceSeparated();
 

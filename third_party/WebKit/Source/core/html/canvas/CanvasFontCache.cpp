@@ -88,7 +88,7 @@ MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString) {
     m_fontLRUList.add(fontString);
   } else {
     parsedStyle = MutableStylePropertySet::create(HTMLStandardMode);
-    CSSParser::parseValue(parsedStyle, CSSPropertyFont, fontString, true, 0);
+    CSSParser::parseValue(parsedStyle, CSSPropertyFont, fontString, true);
     if (parsedStyle->isEmpty())
       return nullptr;
     // According to

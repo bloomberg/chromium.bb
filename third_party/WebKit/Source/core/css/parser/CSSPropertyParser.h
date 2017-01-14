@@ -47,18 +47,18 @@ class CSSPropertyParser {
   static bool parseValue(CSSPropertyID,
                          bool important,
                          const CSSParserTokenRange&,
-                         const CSSParserContext&,
+                         const CSSParserContext*,
                          HeapVector<CSSProperty, 256>&,
                          StyleRule::RuleType);
 
   // Parses a non-shorthand CSS property
   static const CSSValue* parseSingleValue(CSSPropertyID,
                                           const CSSParserTokenRange&,
-                                          const CSSParserContext&);
+                                          const CSSParserContext*);
 
  private:
   CSSPropertyParser(const CSSParserTokenRange&,
-                    const CSSParserContext&,
+                    const CSSParserContext*,
                     HeapVector<CSSProperty, 256>*);
 
   // TODO(timloh): Rename once the CSSParserValue-based parseValue is removed
@@ -67,7 +67,7 @@ class CSSPropertyParser {
   const CSSValue* parseSingleValue(CSSPropertyID,
                                    CSSPropertyID = CSSPropertyInvalid);
 
-  bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
+  bool inQuirksMode() const { return isQuirksModeBehavior(m_context->mode()); }
 
   bool parseViewportDescriptor(CSSPropertyID propId, bool important);
   bool parseFontFaceDescriptor(CSSPropertyID);
@@ -117,7 +117,7 @@ class CSSPropertyParser {
  private:
   // Inputs:
   CSSParserTokenRange m_range;
-  const CSSParserContext& m_context;
+  Member<const CSSParserContext> m_context;
   // Outputs:
   HeapVector<CSSProperty, 256>* m_parsedProperties;
 };

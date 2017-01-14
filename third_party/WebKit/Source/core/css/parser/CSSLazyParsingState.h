@@ -22,7 +22,7 @@ class CSSParserTokenRange;
 class CSSLazyParsingState
     : public GarbageCollectedFinalized<CSSLazyParsingState> {
  public:
-  CSSLazyParsingState(const CSSParserContext&,
+  CSSLazyParsingState(const CSSParserContext*,
                       Vector<String> escapedStrings,
                       const String& sheetText,
                       StyleSheetContents*);
@@ -30,7 +30,7 @@ class CSSLazyParsingState
   // Helper method used to bump m_totalStyleRules.
   CSSLazyPropertyParserImpl* createLazyParser(const CSSParserTokenRange& block);
 
-  const CSSParserContext& context();
+  const CSSParserContext* context();
 
   void countRuleParsed();
 
@@ -57,7 +57,7 @@ class CSSLazyParsingState
  private:
   void recordUsageMetrics();
 
-  CSSParserContext m_context;
+  Member<const CSSParserContext> m_context;
   Vector<String> m_escapedStrings;
   // Also referenced on the css resource.
   String m_sheetText;

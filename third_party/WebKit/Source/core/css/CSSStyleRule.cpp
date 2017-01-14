@@ -77,7 +77,8 @@ String CSSStyleRule::selectorText() const {
 }
 
 void CSSStyleRule::setSelectorText(const String& selectorText) {
-  CSSParserContext context(parserContext(), nullptr);
+  const CSSParserContext* context =
+      CSSParserContext::create(parserContext(), nullptr);
   CSSSelectorList selectorList = CSSParser::parseSelector(
       context, parentStyleSheet() ? parentStyleSheet()->contents() : nullptr,
       selectorText);

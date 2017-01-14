@@ -93,7 +93,7 @@ class CORE_EXPORT CSSRule : public GarbageCollectedFinalized<CSSRule>,
     m_hasCachedSelectorText = hasCachedSelectorText;
   }
 
-  const CSSParserContext& parserContext() const;
+  const CSSParserContext* parserContext() const;
 
  private:
   mutable unsigned char m_hasCachedSelectorText : 1;

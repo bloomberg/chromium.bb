@@ -26,10 +26,10 @@ static CSSValueList* consumePositionList(CSSParserTokenRange& range,
 
 const CSSValue* CSSPropertyAPIScrollSnapCoordinate::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNone)
     return CSSPropertyParserHelpers::consumeIdent(range);
-  return consumePositionList(range, context.mode());
+  return consumePositionList(range, context->mode());
 }
 
 }  // namespace blink

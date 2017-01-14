@@ -43,7 +43,7 @@ CSSFontVariationValue* consumeFontVariationTag(CSSParserTokenRange& range) {
 
 const CSSValue* CSSPropertyAPIFontVariationSettings::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
   if (range.peek().id() == CSSValueNormal)
     return CSSPropertyParserHelpers::consumeIdent(range);

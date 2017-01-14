@@ -107,8 +107,8 @@ void LinkStyle::setCSSStyleSheet(
     }
   }
 
-  CSSParserContext parserContext(m_owner->document(), nullptr, baseURL,
-                                 charset);
+  CSSParserContext* parserContext =
+      CSSParserContext::create(m_owner->document(), baseURL, charset);
 
   DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheetHistogram,
                       ("Blink.RestoredCachedStyleSheet", 2));

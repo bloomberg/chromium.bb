@@ -43,7 +43,7 @@ class SharedStyleFinderTest : public ::testing::Test {
 
   void addSelector(const String& selector) {
     StyleRuleBase* newRule =
-        CSSParser::parseRule(CSSParserContext(HTMLStandardMode, nullptr),
+        CSSParser::parseRule(CSSParserContext::create(HTMLStandardMode),
                              nullptr, selector + "{color:pink}");
     m_ruleSet->addStyleRule(static_cast<StyleRule*>(newRule),
                             RuleHasNoSpecialState);

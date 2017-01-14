@@ -446,7 +446,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font) {
   // CanvasRenderingContext2D.
   MutableStylePropertySet* parsedStyle =
       MutableStylePropertySet::create(HTMLStandardMode);
-  CSSParser::parseValue(parsedStyle, CSSPropertyFont, fontString, true, 0);
+  CSSParser::parseValue(parsedStyle, CSSPropertyFont, fontString, true);
   if (parsedStyle->isEmpty())
     return false;
 

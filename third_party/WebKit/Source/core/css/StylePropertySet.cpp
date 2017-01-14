@@ -384,11 +384,13 @@ void MutableStylePropertySet::parseDeclarationList(
     StyleSheetContents* contextStyleSheet) {
   m_propertyVector.clear();
 
-  CSSParserContext context(cssParserMode(),
-                           UseCounter::getFrom(contextStyleSheet));
+  CSSParserContext* context;
   if (contextStyleSheet) {
-    context = contextStyleSheet->parserContext();
-    context.setMode(cssParserMode());
+    context = CSSParserContext::createWithStyleSheetContents(
+        contextStyleSheet->parserContext(), contextStyleSheet);
+    context->setMode(cssParserMode());
+  } else {
+    context = CSSParserContext::create(cssParserMode());
   }
 
   CSSParser::parseDeclarationList(context, this, styleDeclaration);

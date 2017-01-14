@@ -186,7 +186,7 @@ void WebDocument::insertStyleSheet(const WebString& sourceCode) {
   Document* document = unwrap<Document>();
   DCHECK(document);
   StyleSheetContents* parsedSheet =
-      StyleSheetContents::create(CSSParserContext(*document, nullptr));
+      StyleSheetContents::create(CSSParserContext::create(*document));
   parsedSheet->parseString(sourceCode);
   document->styleEngine().injectAuthorSheet(parsedSheet);
 }

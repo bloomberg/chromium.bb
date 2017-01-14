@@ -16,7 +16,7 @@ class CSSParserContext;
 class {{api_classname}} : public CSSPropertyAPI {
  public:
   static const CSSValue* parseSingleValue(CSSParserTokenRange&,
-                                          const CSSParserContext&);
+                                          const CSSParserContext*);
 };
 
 }  // namespace blink

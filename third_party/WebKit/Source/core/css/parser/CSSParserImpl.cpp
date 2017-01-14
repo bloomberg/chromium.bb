@@ -36,7 +36,7 @@
 
 namespace blink {
 
-CSSParserImpl::CSSParserImpl(const CSSParserContext& context,
+CSSParserImpl::CSSParserImpl(const CSSParserContext* context,
                              StyleSheetContents* styleSheet)
     : m_context(context),
       m_styleSheet(styleSheet),
@@ -47,7 +47,7 @@ MutableStylePropertySet::SetResult CSSParserImpl::parseValue(
     CSSPropertyID unresolvedProperty,
     const String& string,
     bool important,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   CSSParserImpl parser(context);
   StyleRule::RuleType ruleType = StyleRule::Style;
   if (declaration->cssParserMode() == CSSViewportRuleMode)
@@ -72,7 +72,7 @@ MutableStylePropertySet::SetResult CSSParserImpl::parseVariableValue(
     const PropertyRegistry* registry,
     const String& value,
     bool important,
-    const CSSParserContext& context,
+    const CSSParserContext* context,
     bool isAnimationTainted) {
   CSSParserImpl parser(context);
   CSSTokenizer tokenizer(value);
@@ -155,13 +155,13 @@ ImmutableStylePropertySet* CSSParserImpl::parseInlineStyleDeclaration(
     const String& string,
     Element* element) {
   Document& document = element->document();
-  CSSParserContext context =
-      CSSParserContext(document.elementSheet().contents()->parserContext(),
-                       UseCounter::getFrom(&document));
+  CSSParserContext* context = CSSParserContext::create(
+      document.elementSheet().contents()->parserContext(),
+      UseCounter::getFrom(&document));
   CSSParserMode mode = element->isHTMLElement() && !document.inQuirksMode()
                            ? HTMLStandardMode
                            : HTMLQuirksMode;
-  context.setMode(mode);
+  context->setMode(mode);
   CSSParserImpl parser(context, document.elementSheet().contents());
   CSSTokenizer tokenizer(string);
   parser.consumeDeclarationList(tokenizer.tokenRange(), StyleRule::Style);
@@ -170,7 +170,7 @@ ImmutableStylePropertySet* CSSParserImpl::parseInlineStyleDeclaration(
 
 bool CSSParserImpl::parseDeclarationList(MutableStylePropertySet* declaration,
                                          const String& string,
-                                         const CSSParserContext& context) {
+                                         const CSSParserContext* context) {
   CSSParserImpl parser(context);
   StyleRule::RuleType ruleType = StyleRule::Style;
   if (declaration->cssParserMode() == CSSViewportRuleMode)
@@ -194,7 +194,7 @@ bool CSSParserImpl::parseDeclarationList(MutableStylePropertySet* declaration,
 }
 
 StyleRuleBase* CSSParserImpl::parseRule(const String& string,
-                                        const CSSParserContext& context,
+                                        const CSSParserContext* context,
                                         StyleSheetContents* styleSheet,
                                         AllowedRulesType allowedRules) {
   CSSParserImpl parser(context, styleSheet);
@@ -217,12 +217,12 @@ StyleRuleBase* CSSParserImpl::parseRule(const String& string,
 }
 
 void CSSParserImpl::parseStyleSheet(const String& string,
-                                    const CSSParserContext& context,
+                                    const CSSParserContext* context,
                                     StyleSheetContents* styleSheet,
                                     bool deferPropertyParsing) {
   TRACE_EVENT_BEGIN2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
-                     "baseUrl", context.baseURL().getString().utf8(), "mode",
-                     context.mode());
+                     "baseUrl", context->baseURL().getString().utf8(), "mode",
+                     context->mode());
 
   TRACE_EVENT_BEGIN0("blink,blink_style",
                      "CSSParserImpl::parseStyleSheet.tokenize");
@@ -336,7 +336,7 @@ bool CSSParserImpl::supportsDeclaration(CSSParserTokenRange& range) {
 
 void CSSParserImpl::parseDeclarationListForInspector(
     const String& declaration,
-    const CSSParserContext& context,
+    const CSSParserContext* context,
     CSSParserObserver& observer) {
   CSSParserImpl parser(context);
   CSSParserObserverWrapper wrapper(observer);
@@ -348,7 +348,7 @@ void CSSParserImpl::parseDeclarationListForInspector(
 }
 
 void CSSParserImpl::parseStyleSheetForInspector(const String& string,
-                                                const CSSParserContext& context,
+                                                const CSSParserContext* context,
                                                 StyleSheetContents* styleSheet,
                                                 CSSParserObserver& observer) {
   CSSParserImpl parser(context, styleSheet);
@@ -367,10 +367,10 @@ void CSSParserImpl::parseStyleSheetForInspector(const String& string,
 
 StylePropertySet* CSSParserImpl::parseDeclarationListForLazyStyle(
     CSSParserTokenRange block,
-    const CSSParserContext& context) {
+    const CSSParserContext* context) {
   CSSParserImpl parser(context);
   parser.consumeDeclarationList(std::move(block), StyleRule::Style);
-  return createStylePropertySet(parser.m_parsedProperties, context.mode());
+  return createStylePropertySet(parser.m_parsedProperties, context->mode());
 }
 
 static CSSParserImpl::AllowedRulesType computeNewAllowedRules(
@@ -452,8 +452,8 @@ StyleRuleBase* CSSParserImpl::consumeAtRule(CSSParserTokenRange& range,
 
   CSSParserTokenRange prelude = range.makeSubRange(preludeStart, &range.peek());
   CSSAtRuleID id = cssAtRuleID(name);
-  if (id != CSSAtRuleInvalid && m_context.useCounter())
-    countAtRule(m_context.useCounter(), id);
+  if (id != CSSAtRuleInvalid && m_context->isUseCounterRecordingEnabled())
+    countAtRule(m_context->useCounter(), id);
 
   if (range.atEnd() || range.peek().type() == SemicolonToken) {
     range.consume();
@@ -641,7 +641,7 @@ StyleRuleViewport* CSSParserImpl::consumeViewportRule(
     CSSParserTokenRange block) {
   // Allow @viewport rules from UA stylesheets even if the feature is disabled.
   if (!RuntimeEnabledFeatures::cssViewportEnabled() &&
-      !isUASheetBehavior(m_context.mode()))
+      !isUASheetBehavior(m_context->mode()))
     return nullptr;
 
   if (!prelude.atEnd())
@@ -701,8 +701,8 @@ StyleRuleKeyframes* CSSParserImpl::consumeKeyframesRule(
   if (nameToken.type() == IdentToken) {
     name = nameToken.value().toString();
   } else if (nameToken.type() == StringToken && webkitPrefixed) {
-    if (m_context.useCounter())
-      m_context.useCounter()->count(UseCounter::QuotedKeyframesRule);
+    if (m_context->isUseCounterRecordingEnabled())
+      m_context->useCounter()->count(UseCounter::QuotedKeyframesRule);
     name = nameToken.value().toString();
   } else {
     return nullptr;  // Parse error; expected ident token in @keyframes header
@@ -746,7 +746,7 @@ StyleRulePage* CSSParserImpl::consumePageRule(CSSParserTokenRange prelude,
 
   return StyleRulePage::create(
       std::move(selectorList),
-      createStylePropertySet(m_parsedProperties, m_context.mode()));
+      createStylePropertySet(m_parsedProperties, m_context->mode()));
 }
 
 void CSSParserImpl::consumeApplyRule(CSSParserTokenRange prelude) {
@@ -777,7 +777,7 @@ StyleRuleKeyframe* CSSParserImpl::consumeKeyframeStyleRule(
   consumeDeclarationList(block, StyleRule::Keyframe);
   return StyleRuleKeyframe::create(
       std::move(keyList),
-      createStylePropertySet(m_parsedProperties, m_context.mode()));
+      createStylePropertySet(m_parsedProperties, m_context->mode()));
 }
 
 static void observeSelectors(CSSParserObserverWrapper& wrapper,
@@ -823,7 +823,7 @@ StyleRule* CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude,
 
   return StyleRule::create(
       std::move(selectorList),
-      createStylePropertySet(m_parsedProperties, m_context.mode()));
+      createStylePropertySet(m_parsedProperties, m_context->mode()));
 }
 
 void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range,

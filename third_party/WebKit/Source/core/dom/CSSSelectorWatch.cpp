@@ -151,9 +151,10 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors) {
   StylePropertySet* callbackPropertySet =
       ImmutableStylePropertySet::create(nullptr, 0, UASheetMode);
 
+  CSSParserContext* context = CSSParserContext::create(UASheetMode);
   for (const auto& selector : selectors) {
-    CSSSelectorList selectorList = CSSParser::parseSelector(
-        CSSParserContext(UASheetMode, nullptr), nullptr, selector);
+    CSSSelectorList selectorList =
+        CSSParser::parseSelector(context, nullptr, selector);
     if (!selectorList.isValid())
       continue;
 

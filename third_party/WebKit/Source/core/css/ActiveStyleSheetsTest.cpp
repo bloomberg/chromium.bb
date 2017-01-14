@@ -23,7 +23,7 @@ class ActiveStyleSheetsTest : public ::testing::Test {
  protected:
   static CSSStyleSheet* createSheet(const String& cssText = String()) {
     StyleSheetContents* contents =
-        StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+        StyleSheetContents::create(CSSParserContext::create(HTMLStandardMode));
     contents->parseString(cssText);
     contents->ensureRuleSet(MediaQueryEvaluator(),
                             RuleHasDocumentSecurityOrigin);

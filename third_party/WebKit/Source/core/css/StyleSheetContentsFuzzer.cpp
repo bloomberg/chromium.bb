@@ -8,7 +8,8 @@
 #include "wtf/text/WTFString.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  blink::CSSParserContext context(blink::HTMLStandardMode, nullptr);
+  blink::CSSParserContext* context =
+      blink::CSSParserContext::create(blink::HTMLStandardMode);
   blink::StyleSheetContents* styleSheet =
       blink::StyleSheetContents::create(context);
   styleSheet->parseString(String::fromUTF8WithLatin1Fallback(
