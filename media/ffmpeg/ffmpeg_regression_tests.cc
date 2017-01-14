@@ -101,7 +101,10 @@ FFMPEG_TEST_CASE(Cr112384,
                  "security/112384.webm",
                  DEMUXER_ERROR_COULD_NOT_PARSE,
                  DEMUXER_ERROR_COULD_NOT_PARSE);
-FFMPEG_TEST_CASE(Cr112976, "security/112976.ogg", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr112976,
+                 "security/112976.ogg",
+                 PIPELINE_OK,
+                 DEMUXER_ERROR_COULD_NOT_PARSE);
 FFMPEG_TEST_CASE(Cr116927,
                  "security/116927.ogv",
                  DEMUXER_ERROR_NO_SUPPORTED_STREAMS,
@@ -110,17 +113,26 @@ FFMPEG_TEST_CASE(Cr117912,
                  "security/117912.webm",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
-FFMPEG_TEST_CASE(Cr123481, "security/123481.ogv", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr123481,
+                 "security/123481.ogv",
+                 PIPELINE_OK,
+                 DEMUXER_ERROR_COULD_NOT_PARSE);
 FFMPEG_TEST_CASE(Cr132779,
                  "security/132779.webm",
                  DEMUXER_ERROR_COULD_NOT_PARSE,
                  DEMUXER_ERROR_COULD_NOT_PARSE);
-FFMPEG_TEST_CASE(Cr140165, "security/140165.ogg", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr140165,
+                 "security/140165.ogg",
+                 PIPELINE_OK,
+                 DEMUXER_ERROR_COULD_NOT_PARSE);
 FFMPEG_TEST_CASE(Cr140647,
                  "security/140647.ogv",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
-FFMPEG_TEST_CASE(Cr142738, "crbug142738.ogg", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr142738,
+                 "crbug142738.ogg",
+                 PIPELINE_OK,
+                 DEMUXER_ERROR_COULD_NOT_PARSE);
 FFMPEG_TEST_CASE(Cr152691,
                  "security/152691.mp3",
                  PIPELINE_OK,

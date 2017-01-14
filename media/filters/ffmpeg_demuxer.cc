@@ -475,59 +475,59 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   const base::TimeDelta stream_timestamp =
       ConvertStreamTimestamp(stream_->time_base, packet->pts);
 
-  if (stream_timestamp != kNoTimestamp) {
-    const bool is_audio = type() == AUDIO;
+  if (stream_timestamp == kNoTimestamp) {
+    demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
+    return;
+  }
 
-    // If this file has negative timestamps don't rebase any other stream types
-    // against the negative starting time.
-    base::TimeDelta start_time = demuxer_->start_time();
-    if (fixup_negative_timestamps_ && !is_audio &&
-        start_time < base::TimeDelta()) {
-      start_time = base::TimeDelta();
-    }
+  const bool is_audio = type() == AUDIO;
 
-    // Don't rebase timestamps for positive start times, the HTML Media Spec
-    // details this in section "4.8.10.6 Offsets into the media resource." We
-    // will still need to rebase timestamps before seeking with FFmpeg though.
-    if (start_time > base::TimeDelta())
-      start_time = base::TimeDelta();
+  // If this file has negative timestamps don't rebase any other stream types
+  // against the negative starting time.
+  base::TimeDelta start_time = demuxer_->start_time();
+  if (fixup_negative_timestamps_ && !is_audio &&
+      start_time < base::TimeDelta()) {
+    start_time = base::TimeDelta();
+  }
 
-    buffer->set_timestamp(stream_timestamp - start_time);
+  // Don't rebase timestamps for positive start times, the HTML Media Spec
+  // details this in section "4.8.10.6 Offsets into the media resource." We
+  // will still need to rebase timestamps before seeking with FFmpeg though.
+  if (start_time > base::TimeDelta())
+    start_time = base::TimeDelta();
 
-    // If enabled, and no codec delay is present, mark audio packets with
-    // negative timestamps for post-decode discard.
-    if (fixup_negative_timestamps_ && is_audio &&
-        stream_timestamp < base::TimeDelta() &&
-        buffer->duration() != kNoTimestamp) {
-      if (!audio_decoder_config().codec_delay()) {
-        DCHECK_EQ(buffer->discard_padding().first, base::TimeDelta());
+  buffer->set_timestamp(stream_timestamp - start_time);
 
-        if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
-          DCHECK_EQ(buffer->discard_padding().second, base::TimeDelta());
+  // If enabled, and no codec delay is present, mark audio packets with
+  // negative timestamps for post-decode discard.
+  if (fixup_negative_timestamps_ && is_audio &&
+      stream_timestamp < base::TimeDelta() &&
+      buffer->duration() != kNoTimestamp) {
+    if (!audio_decoder_config().codec_delay()) {
+      DCHECK_EQ(buffer->discard_padding().first, base::TimeDelta());
 
-          // Discard the entire packet if it's entirely before zero.
-          buffer->set_discard_padding(
-              std::make_pair(kInfiniteDuration, base::TimeDelta()));
-        } else {
-          // Only discard part of the frame if it overlaps zero.
-          buffer->set_discard_padding(std::make_pair(
-              -stream_timestamp, buffer->discard_padding().second));
-        }
+      if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
+        DCHECK_EQ(buffer->discard_padding().second, base::TimeDelta());
+
+        // Discard the entire packet if it's entirely before zero.
+        buffer->set_discard_padding(
+            std::make_pair(kInfiniteDuration, base::TimeDelta()));
       } else {
-        // Verify that codec delay would cover discard and that we don't need to
-        // mark the packet for post decode discard.  Since timestamps may be in
-        // milliseconds and codec delay in nanosecond precision, round up to the
-        // nearest millisecond.  See enable_negative_timestamp_fixups().
-        DCHECK_LE(-std::ceil(FramesToTimeDelta(
-                                 audio_decoder_config().codec_delay(),
-                                 audio_decoder_config().samples_per_second())
-                                 .InMillisecondsF()),
-                  stream_timestamp.InMillisecondsF());
+        // Only discard part of the frame if it overlaps zero.
+        buffer->set_discard_padding(std::make_pair(
+            -stream_timestamp, buffer->discard_padding().second));
       }
+    } else {
+      // Verify that codec delay would cover discard and that we don't need to
+      // mark the packet for post decode discard.  Since timestamps may be in
+      // milliseconds and codec delay in nanosecond precision, round up to the
+      // nearest millisecond.  See enable_negative_timestamp_fixups().
+      DCHECK_LE(-std::ceil(FramesToTimeDelta(
+                               audio_decoder_config().codec_delay(),
+                               audio_decoder_config().samples_per_second())
+                               .InMillisecondsF()),
+                stream_timestamp.InMillisecondsF());
     }
-  } else {
-    // If this happens on the first packet, decoders will throw an error.
-    buffer->set_timestamp(kNoTimestamp);
   }
 
   if (last_packet_timestamp_ != kNoTimestamp) {
@@ -538,25 +538,17 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     //
     // If the new link starts with a negative timestamp or a timestamp less than
     // the original (positive) |start_time|, we will get a negative timestamp
-    // here.  It's also possible FFmpeg returns kNoTimestamp here if it's not
-    // able to work out a timestamp using the previous link and the next.
+    // here.
     //
     // Fixing chained ogg is non-trivial, so for now just reuse the last good
     // timestamp.  The decoder will rewrite the timestamps to be sample accurate
     // later.  See http://crbug.com/396864.
     if (fixup_negative_timestamps_ &&
-        (buffer->timestamp() == kNoTimestamp ||
-         buffer->timestamp() < last_packet_timestamp_)) {
+        buffer->timestamp() < last_packet_timestamp_) {
       buffer->set_timestamp(last_packet_timestamp_ +
                             (last_packet_duration_ != kNoTimestamp
                                  ? last_packet_duration_
                                  : base::TimeDelta::FromMicroseconds(1)));
-    }
-
-    if (buffer->timestamp() == kNoTimestamp) {
-      // If we didn't get a valid timestamp and didn't fix it up, then fail.
-      demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
-      return;
     }
 
     // The demuxer should always output positive timestamps.
