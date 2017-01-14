@@ -38,6 +38,8 @@ extern void AddGpuFingerprintToMicrodumpCrashHandler(
 // whether InitCrashReporter() is called.
 bool IsCrashReporterEnabled();
 
+// Generates a minidump on demand for this process, writing it to |dump_fd|.
+void GenerateMinidumpOnDemandForAndroid(int dump_fd);
 }  // namespace breakpad
 
 #endif  // COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_LINUX_H_

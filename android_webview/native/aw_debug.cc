@@ -4,7 +4,7 @@
 
 #include "android_webview/native/aw_debug.h"
 
-#include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/debug/dump_without_crashing.h"

@@ -12,8 +12,9 @@
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/aw_descriptors.h"
+#include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
 #include "android_webview/gpu/aw_content_gpu_client.h"
 #include "android_webview/native/aw_locale_manager_impl.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
@@ -152,6 +153,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   CommandLineHelper::AddDisabledFeature(*cl, features::kWebPayments.name);
 
+  android_webview::RegisterPathProvider();
+
   return false;
 }
 
@@ -197,7 +200,7 @@ void AwMainDelegate::PreSandboxStartup() {
     }
   }
 
-  crash_reporter::EnableMicrodumpCrashReporter(process_type, crash_signal_fd);
+  crash_reporter::EnableCrashReporter(process_type, crash_signal_fd);
 }
 
 int AwMainDelegate::RunProcess(

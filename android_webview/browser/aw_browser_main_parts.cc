@@ -10,8 +10,11 @@
 #include "android_webview/browser/aw_result_codes.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/net/aw_network_change_notifier_factory.h"
+#include "android_webview/common/aw_descriptors.h"
+#include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/aw_switches.h"
+#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
 #include "base/android/locale_utils.h"
@@ -20,6 +23,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
+#include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_frame_host.h"
@@ -116,6 +120,18 @@ int AwBrowserMainParts::PreCreateThreads() {
       base::android::AttachCurrentThread());
   DeferredGpuCommandService::SetInstance();
   breakpad::CrashDumpObserver::Create();
+
+  if (crash_reporter::IsCrashReporterEnabled()) {
+    base::FilePath crash_dir;
+    if (PathService::Get(android_webview::DIR_CRASH_DUMPS, &crash_dir)) {
+      if (!base::PathExists(crash_dir))
+        base::CreateDirectory(crash_dir);
+      breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
+          base::MakeUnique<breakpad::CrashDumpManager>(
+              crash_dir, kAndroidMinidumpDescriptor));
+    }
+  }
+
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
     // Create the renderers crash manager on the UI thread.

@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
 
+#include "android_webview/common/aw_descriptors.h"
+#include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_version_info_values.h"
 #include "base/android/build_info.h"
+#include "base/base_paths_android.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
@@ -23,7 +27,8 @@ namespace {
 
 class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
  public:
-  AwCrashReporterClient() : dump_fd_(-1), crash_signal_fd_(-1) {}
+  AwCrashReporterClient()
+      : dump_fd_(kAndroidMinidumpDescriptor), crash_signal_fd_(-1) {}
 
   // Does not use lock, can only be called immediately after creation.
   void set_crash_signal_fd(int fd) { crash_signal_fd_ = fd; }
@@ -34,7 +39,7 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
 
   void GetProductNameAndVersion(const char** product_name,
                                 const char** version) override {
-    *product_name = "WebView";
+    *product_name = "AndroidWebView";
     *version = PRODUCT_VERSION;
   }
   // Microdumps are always enabled in WebView builds, conversely to what happens
@@ -46,18 +51,19 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   int GetAndroidCrashSignalFD() override { return crash_signal_fd_; }
 
   bool DumpWithoutCrashingToFd(int fd) {
-    DCHECK(dump_fd_ == -1);
-    base::AutoLock lock(dump_lock_);
-    dump_fd_ = fd;
-    base::debug::DumpWithoutCrashing();
-    dump_fd_ = -1;
+    // TODO(tobiasjs): figure out what to do with on demand minidump on the
+    // renderer process of webview.
+    breakpad::GenerateMinidumpOnDemandForAndroid(fd);
     return true;
+  }
+
+  bool GetCrashDumpLocation(base::FilePath* crash_dir) override {
+    return PathService::Get(android_webview::DIR_CRASH_DUMPS, crash_dir);
   }
 
  private:
   int dump_fd_;
   int crash_signal_fd_;
-  base::Lock dump_lock_;
   DISALLOW_COPY_AND_ASSIGN(AwCrashReporterClient);
 };
 
@@ -125,10 +131,9 @@ bool SafeToUseSignalHandler() {
 
 }  // namespace
 
-void EnableMicrodumpCrashReporter(const std::string& process_type,
-                                  int crash_signal_fd) {
+void EnableCrashReporter(const std::string& process_type, int crash_signal_fd) {
   if (g_enabled) {
-    NOTREACHED() << "EnableMicrodumpCrashReporter called more than once";
+    NOTREACHED() << "EnableCrashReporter called more than once";
     return;
   }
 
@@ -145,8 +150,20 @@ void EnableMicrodumpCrashReporter(const std::string& process_type,
   }
   ::crash_reporter::SetCrashReporterClient(client);
 
-  breakpad::InitMicrodumpCrashHandlerIfNecessary(process_type);
+  bool is_browser_process =
+      process_type.empty() ||
+      process_type == breakpad::kWebViewSingleProcessType ||
+      process_type == breakpad::kBrowserProcessType;
+  if (is_browser_process) {
+    breakpad::InitCrashReporter("");
+  } else {
+    breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+  }
   g_enabled = true;
+}
+
+bool GetCrashDumpLocation(base::FilePath* crash_dir) {
+  return g_crash_reporter_client.Get().GetCrashDumpLocation(crash_dir);
 }
 
 void AddGpuFingerprintToMicrodumpCrashHandler(
@@ -156,6 +173,10 @@ void AddGpuFingerprintToMicrodumpCrashHandler(
 
 bool DumpWithoutCrashingToFd(int fd) {
   return g_crash_reporter_client.Pointer()->DumpWithoutCrashingToFd(fd);
+}
+
+bool IsCrashReporterEnabled() {
+  return breakpad::IsCrashReporterEnabled();
 }
 
 }  // namespace crash_reporter

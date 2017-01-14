@@ -7,14 +7,19 @@
 
 #include <string>
 
+namespace base {
+class FilePath;
+}
+
 namespace android_webview {
 namespace crash_reporter {
 
-void EnableMicrodumpCrashReporter(const std::string& process_type,
-                                  int crash_signal_fd);
+void EnableCrashReporter(const std::string& process_type, int crash_signal_fd);
+bool GetCrashDumpLocation(base::FilePath* crash_dir);
 void AddGpuFingerprintToMicrodumpCrashHandler(
     const std::string& gpu_fingerprint);
 bool DumpWithoutCrashingToFd(int fd);
+bool IsCrashReporterEnabled();
 }  // namespace crash_reporter
 }  // namespace android_webview
 

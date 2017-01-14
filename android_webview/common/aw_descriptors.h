@@ -12,6 +12,7 @@ enum {
   kAndroidWebViewMainPakDescriptor,
   kAndroidWebView100PercentPakDescriptor,
   kAndroidWebViewCrashSignalDescriptor,
+  kAndroidMinidumpDescriptor,
 };
 
 #endif  // ANDROID_WEBVIEW_COMMON_AW_DESCRIPTORS_H_

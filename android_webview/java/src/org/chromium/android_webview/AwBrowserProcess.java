@@ -163,8 +163,9 @@ public abstract class AwBrowserProcess {
             @Override
             protected Void doInBackground(Void... params) {
                 final Context appContext = ContextUtils.getApplicationContext();
-                final CrashFileManager crashFileManager =
-                        new CrashFileManager(appContext.getCacheDir());
+                final File crashSpoolDir = new File(appContext.getCacheDir().getPath(), "WebView");
+                if (!crashSpoolDir.isDirectory()) return null;
+                final CrashFileManager crashFileManager = new CrashFileManager(crashSpoolDir);
                 final File[] minidumpFiles =
                         crashFileManager.getAllMinidumpFiles(MAX_MINIDUMP_UPLOAD_TRIES);
                 if (minidumpFiles.length == 0) return null;

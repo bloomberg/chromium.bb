@@ -23,11 +23,13 @@
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
+#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/grit/aw_resources.h"
 #include "base/android/locale_utils.h"
 #include "base/base_paths_android.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/json/json_reader.h"
@@ -272,6 +274,10 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     // The only kind of a child process WebView can have is renderer.
     DCHECK_EQ(switches::kRendererProcess,
               command_line->GetSwitchValueASCII(switches::kProcessType));
+    // Pass crash reporter enabled state to renderer processes.
+    if (crash_reporter::IsCrashReporterEnabled()) {
+      command_line->AppendSwitch(::switches::kEnableCrashReporter);
+    }
   }
 }
 
