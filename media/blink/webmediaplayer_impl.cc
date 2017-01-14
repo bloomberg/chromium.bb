@@ -149,9 +149,9 @@ base::TimeDelta GetCurrentTimeInternal(WebMediaPlayerImpl* p_this) {
   return base::TimeDelta::FromSecondsD(p_this->currentTime());
 }
 
-// How much time must have elapsed since loading last progressed before the
-// player is eligible for idle suspension.
-constexpr base::TimeDelta kLoadingToIdleTimeout =
+// How much time must have elapsed since loading last progressed before we
+// assume that the decoder will have had time to complete preroll.
+constexpr base::TimeDelta kPrerollAttemptTimeout =
     base::TimeDelta::FromSeconds(3);
 
 }  // namespace
@@ -182,8 +182,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     const WebMediaPlayerParams& params)
     : frame_(frame),
       delegate_state_(DelegateState::GONE),
-      is_idle_(false),
-      must_suspend_(false),
+      delegate_has_audio_(false),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       highest_ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
@@ -243,6 +242,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       use_fallback_path_(false),
       is_encrypted_(false),
       underflow_count_(0),
+      preroll_attempt_pending_(false),
       observer_(params.media_observer()) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
@@ -253,8 +253,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   force_video_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
 
-  if (delegate_)
+  if (delegate_) {
     delegate_id_ = delegate_->AddObserver(this);
+    delegate_->SetIdle(delegate_id_, true);
+  }
 
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
@@ -425,8 +427,10 @@ void WebMediaPlayerImpl::play() {
     return;
   }
 #endif
+  // TODO(sandersd): Do we want to reset the idle timer here?
+  if (delegate_)
+    delegate_->SetIdle(delegate_id_, false);
   paused_ = false;
-  is_idle_ = false;
   pipeline_.SetPlaybackRate(playback_rate_);
   background_pause_timer_.Stop();
 
@@ -531,11 +535,11 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
   if (watch_time_reporter_)
     watch_time_reporter_->OnSeeking();
 
-  // TODO(sandersd): Ideally we would not clear the idle state if
-  // |pipeline_controller_| can elide the seek.
-  is_idle_ = false;
+  // TODO(sandersd): Move |seeking_| to PipelineController.
+  // TODO(sandersd): Do we want to reset the idle timer here?
+  if (delegate_)
+    delegate_->SetIdle(delegate_id_, false);
   ended_ = false;
-
   seeking_ = true;
   seek_time_ = time;
   if (paused_)
@@ -815,6 +819,26 @@ blink::WebTimeRanges WebMediaPlayerImpl::seekable() const {
   return blink::WebTimeRanges(&seekable_range, 1);
 }
 
+bool WebMediaPlayerImpl::IsPrerollAttemptNeeded() {
+  // TODO(sandersd): Replace with |highest_ready_state_since_seek_| if we need
+  // to ensure that preroll always gets a chance to complete.
+  // See http://crbug.com/671525.
+  if (highest_ready_state_ >= ReadyState::ReadyStateHaveFutureData)
+    return false;
+
+  if (preroll_attempt_pending_)
+    return true;
+
+  // Freshly initialized; there has never been any loading progress. (Otherwise
+  // |preroll_attempt_pending_| would be true when the start time is null.)
+  if (preroll_attempt_start_time_.is_null())
+    return false;
+
+  base::TimeDelta preroll_attempt_duration =
+      tick_clock_->NowTicks() - preroll_attempt_start_time_;
+  return preroll_attempt_duration < kPrerollAttemptTimeout;
+}
+
 bool WebMediaPlayerImpl::didLoadingProgress() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -823,18 +847,21 @@ bool WebMediaPlayerImpl::didLoadingProgress() {
   const bool data_progress = buffered_data_source_host_.DidLoadingProgress();
   const bool did_loading_progress = pipeline_progress || data_progress;
 
-  // If we've idle suspended before reaching kHaveFutureData and loading has
-  // progressed we need to spin up the renderer and figure out if we have enough
-  // data yet; |client_| may be waiting on this signal to trigger playback. The
-  // idle timeout is long enough that this is a low-cost operation.
-  if (highest_ready_state_ < ReadyState::ReadyStateHaveFutureData &&
-      pipeline_controller_.IsSuspended() && did_loading_progress && is_idle_) {
-    is_idle_ = false;
+  if (did_loading_progress &&
+      highest_ready_state_ < ReadyState::ReadyStateHaveFutureData) {
+    // Reset the preroll attempt clock.
+    preroll_attempt_pending_ = true;
+    preroll_attempt_start_time_ = base::TimeTicks();
+
+    // Clear any 'stale' flag and give the pipeline a chance to resume. If we
+    // are already resumed, this will cause |preroll_attempt_start_time_| to be
+    // set.
+    // TODO(sandersd): Should this be on the same stack? It might be surprising
+    // that didLoadingProgress() can synchronously change state.
+    if (delegate_)
+      delegate_->ClearStaleFlag(delegate_id_);
     UpdatePlayState();
   }
-
-  if (did_loading_progress)
-    last_time_loading_progressed_ = tick_clock_->NowTicks();
 
   return did_loading_progress;
 }
@@ -1253,8 +1280,10 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
       data_source_->OnBufferingHaveEnough(false);
 
     // Blink expects a timeChanged() in response to a seek().
-    if (should_notify_time_changed_)
+    if (should_notify_time_changed_) {
+      should_notify_time_changed_ = false;
       client_->timeChanged();
+    }
 
     // Once we have enough, start reporting the total memory usage. We'll also
     // report once playback starts.
@@ -1375,7 +1404,7 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
     video_weblayer_->layer()->SetContentsOpaque(opaque_);
 }
 
-void WebMediaPlayerImpl::OnHidden() {
+void WebMediaPlayerImpl::OnFrameHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (watch_time_reporter_)
@@ -1400,8 +1429,15 @@ void WebMediaPlayerImpl::OnHidden() {
   ScheduleIdlePauseTimer();
 }
 
-void WebMediaPlayerImpl::OnShown() {
+void WebMediaPlayerImpl::OnFrameClosed() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  UpdatePlayState();
+}
+
+void WebMediaPlayerImpl::OnFrameShown() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  background_pause_timer_.Stop();
+
   if (watch_time_reporter_)
     watch_time_reporter_->OnShown();
 
@@ -1409,9 +1445,6 @@ void WebMediaPlayerImpl::OnShown() {
       FROM_HERE,
       base::Bind(&VideoFrameCompositor::SetForegroundTime,
                  base::Unretained(compositor_), base::TimeTicks::Now()));
-
-  must_suspend_ = false;
-  background_pause_timer_.Stop();
 
   if (paused_when_hidden_) {
     paused_when_hidden_ = false;
@@ -1424,37 +1457,17 @@ void WebMediaPlayerImpl::OnShown() {
   UpdatePlayState();
 }
 
-bool WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
+void WebMediaPlayerImpl::OnIdleTimeout() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (must_suspend) {
-    must_suspend_ = true;
-    UpdatePlayState();
-    return true;
+  // If we are attempting preroll, clear the stale flag.
+  if (IsPrerollAttemptNeeded()) {
+    if (delegate_)
+      delegate_->ClearStaleFlag(delegate_id_);
+    return;
   }
 
-  // If we're beyond HaveFutureData, we can safely suspend at any time.
-  if (highest_ready_state_ >= WebMediaPlayer::ReadyStateHaveFutureData) {
-    is_idle_ = true;
-    UpdatePlayState();
-    return true;
-  }
-
-  // Before HaveFutureData blink will not call play(), so we must be careful to
-  // only suspend if we'll eventually receive an event that will trigger a
-  // resume. If the last time loading progressed was a while ago, and we still
-  // haven't reached HaveFutureData, we assume that we're waiting on more data
-  // to continue pre-rolling. When that data is loaded the pipeline will be
-  // resumed by didLoadingProgress().
-  if (last_time_loading_progressed_.is_null() ||
-      (tick_clock_->NowTicks() - last_time_loading_progressed_) >
-          kLoadingToIdleTimeout) {
-    is_idle_ = true;
-    UpdatePlayState();
-    return true;
-  }
-
-  return false;
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::OnPlay() {
@@ -1791,43 +1804,46 @@ void WebMediaPlayerImpl::UpdatePlayState() {
   bool is_backgrounded = IsBackgroundedSuspendEnabled() && IsHidden();
   PlayState state = UpdatePlayState_ComputePlayState(
       is_remote, is_streaming, is_suspended, is_backgrounded);
-  SetDelegateState(state.delegate_state);
+  SetDelegateState(state.delegate_state, state.is_idle);
   SetMemoryReportingState(state.is_memory_reporting_enabled);
   SetSuspendState(state.is_suspended || pending_suspend_resume_cycle_);
 }
 
-void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
+void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
+                                          bool is_idle) {
   if (!delegate_)
     return;
 
-  if (delegate_state_ == new_state) {
-    if (delegate_state_ != DelegateState::PLAYING ||
-        autoplay_muted_ == client_->isAutoplayingMuted()) {
-      return;
-    }
+  // Prevent duplicate delegate calls.
+  // TODO(sandersd): Move this deduplication into the delegate itself.
+  // TODO(sandersd): WebContentsObserverSanityChecker does not allow sending the
+  // 'playing' IPC more than once in a row, even if the metadata has changed.
+  // Figure out whether it should.
+  bool has_audio = hasAudio() && !client_->isAutoplayingMuted();
+  if (delegate_state_ == new_state &&
+      (delegate_state_ != DelegateState::PLAYING ||
+       delegate_has_audio_ == has_audio)) {
+    return;
   }
-
   delegate_state_ = new_state;
+  delegate_has_audio_ = has_audio;
 
-  switch (delegate_state_) {
+  switch (new_state) {
     case DelegateState::GONE:
       delegate_->PlayerGone(delegate_id_);
       break;
     case DelegateState::PLAYING: {
-      autoplay_muted_ = client_->isAutoplayingMuted();
-      bool has_audio = autoplay_muted_ ? false : hasAudio();
       delegate_->DidPlay(
-          delegate_id_, hasVideo(), has_audio, false,
+          delegate_id_, hasVideo(), has_audio,
           media::DurationToMediaContentType(pipeline_.GetMediaDuration()));
       break;
     }
     case DelegateState::PAUSED:
-      delegate_->DidPause(delegate_id_, false);
-      break;
-    case DelegateState::ENDED:
-      delegate_->DidPause(delegate_id_, true);
+      delegate_->DidPause(delegate_id_);
       break;
   }
+
+  delegate_->SetIdle(delegate_id_, is_idle);
 }
 
 void WebMediaPlayerImpl::SetMemoryReportingState(
@@ -1873,12 +1889,20 @@ void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   can_suspend_state_ = CanSuspendState::YES;
 #endif
 
-  if (can_suspend_state_ == CanSuspendState::NO)
-    return;
-
-  if (is_suspended) {
+  if (is_suspended && can_suspend_state_ != CanSuspendState::NO) {
+    // If we were not resumed for long enough to satisfy the preroll attempt,
+    // reset the clock.
+    if (!preroll_attempt_pending_ && IsPrerollAttemptNeeded()) {
+      preroll_attempt_pending_ = true;
+      preroll_attempt_start_time_ = base::TimeTicks();
+    }
     pipeline_controller_.Suspend();
   } else {
+    // When resuming, start the preroll attempt clock.
+    if (preroll_attempt_pending_) {
+      preroll_attempt_pending_ = false;
+      preroll_attempt_start_time_ = tick_clock_->NowTicks();
+    }
     pipeline_controller_.Resume();
   }
 }
@@ -1889,6 +1913,9 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
                                                      bool is_suspended,
                                                      bool is_backgrounded) {
   PlayState result;
+
+  bool must_suspend = delegate_ && delegate_->IsFrameClosed();
+  bool is_stale = delegate_ && delegate_->IsStale(delegate_id_);
 
   // This includes both data source (before pipeline startup) and pipeline
   // errors.
@@ -1910,7 +1937,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   bool can_play_backgrounded = is_backgrounded_video && !is_remote &&
                                hasAudio() && IsResumeBackgroundVideosEnabled();
   bool is_background_playing =
-      delegate_ && delegate_->IsPlayingBackgroundVideo();
+      delegate_ && delegate_->IsBackgroundVideoPlaybackUnlocked();
   bool background_suspended = !is_streaming && is_backgrounded_video &&
                               !(can_play_backgrounded && is_background_playing);
   bool background_pause_suspended =
@@ -1923,16 +1950,16 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // TODO(sandersd): Make the delegate suspend idle players immediately when
   // hidden.
   bool idle_suspended =
-      !is_streaming && is_idle_ && paused_ && !seeking_ && !overlay_enabled_;
+      !is_streaming && is_stale && paused_ && !seeking_ && !overlay_enabled_;
 
   // If we're already suspended, see if we can wait for user interaction. Prior
-  // to HaveFutureData, we require |is_idle_| to remain suspended. |is_idle_|
+  // to HaveFutureData, we require |is_stale| to remain suspended. |is_stale|
   // will be cleared when we receive data which may take us to HaveFutureData.
   bool can_stay_suspended =
-      (is_idle_ || have_future_data) && is_suspended && paused_ && !seeking_;
+      (is_stale || have_future_data) && is_suspended && paused_ && !seeking_;
 
   // Combined suspend state.
-  result.is_suspended = is_remote || must_suspend_ || idle_suspended ||
+  result.is_suspended = is_remote || must_suspend || idle_suspended ||
                         background_suspended || background_pause_suspended ||
                         can_stay_suspended;
 
@@ -1956,30 +1983,34 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // TODO(sandersd): If Blink told us the paused state sooner, we could create
   // the media session sooner.
   bool can_play = !has_error && !is_remote && have_future_data;
-  bool has_session_playing =
-      can_play && !must_suspend_ && !background_suspended;
+  bool has_session_playing = can_play && !must_suspend && !background_suspended;
 
   // |has_session_suspended| means the player is suspended from the media
   // element point of view but paused and can be resumed from the delegate point
   // of view. Therefore it behaves like |paused_| for the delegate.
-  bool has_session_suspended = can_play && !must_suspend_ &&
+  bool has_session_suspended = can_play && !must_suspend &&
                                background_suspended && can_play_backgrounded;
 
   bool has_session = has_session_playing || has_session_suspended;
 
   if (!has_session) {
     result.delegate_state = DelegateState::GONE;
+    result.is_idle = delegate_ && delegate_->IsIdle(delegate_id_);
   } else if (paused_ || has_session_suspended) {
+    // TODO(sandersd): Is it possible to have a suspended session, be ended,
+    // and not be paused? If so we should be in a PLAYING state.
     result.delegate_state =
-        ended_ ? DelegateState::ENDED : DelegateState::PAUSED;
+        ended_ ? DelegateState::GONE : DelegateState::PAUSED;
+    result.is_idle = !seeking_;
   } else {
     result.delegate_state = DelegateState::PLAYING;
+    result.is_idle = false;
   }
 
   // It's not critical if some cases where memory usage can change are missed,
   // since media memory changes are usually gradual.
   result.is_memory_reporting_enabled =
-      can_play && !result.is_suspended && !paused_;
+      can_play && !result.is_suspended && (!paused_ || seeking_);
 
   return result;
 }
@@ -2065,7 +2096,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
       pipeline_metadata_.natural_size,
       base::Bind(&GetCurrentTimeInternal, this)));
   watch_time_reporter_->OnVolumeChange(volume_);
-  if (IsHidden())
+  if (delegate_ && delegate_->IsFrameHidden())
     watch_time_reporter_->OnHidden();
   else
     watch_time_reporter_->OnShown();
@@ -2074,7 +2105,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
 bool WebMediaPlayerImpl::IsHidden() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  return delegate_ && delegate_->IsHidden();
+  return delegate_ && delegate_->IsFrameHidden() && !delegate_->IsFrameClosed();
 }
 
 bool WebMediaPlayerImpl::IsStreaming() const {

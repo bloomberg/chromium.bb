@@ -55,15 +55,15 @@ class FakeWebMediaPlayerDelegate
   void DidPlay(int delegate_id,
                bool has_video,
                bool has_audio,
-               bool is_remote,
                media::MediaContentType type) override {
     EXPECT_EQ(delegate_id_, delegate_id);
     EXPECT_FALSE(playing_);
     playing_ = true;
+    has_video_ = has_video;
     is_gone_ = false;
   }
 
-  void DidPause(int delegate_id, bool reached_end_of_stream) override {
+  void DidPause(int delegate_id) override {
     EXPECT_EQ(delegate_id_, delegate_id);
     EXPECT_TRUE(playing_);
     EXPECT_FALSE(is_gone_);
@@ -75,9 +75,28 @@ class FakeWebMediaPlayerDelegate
     is_gone_ = true;
   }
 
-  bool IsHidden() override { return is_hidden_; }
+  void SetIdle(int delegate_id, bool is_idle) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+    is_idle_ = is_idle;
+  }
 
-  bool IsPlayingBackgroundVideo() override { return false; }
+  bool IsIdle(int delegate_id) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+    return is_idle_;
+  }
+
+  void ClearStaleFlag(int delegate_id) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+  }
+
+  bool IsStale(int delegate_id) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+    return false;
+  }
+
+  bool IsFrameHidden() override { return is_hidden_; }
+  bool IsFrameClosed() override { return false; }
+  bool IsBackgroundVideoPlaybackUnlocked() override { return false; }
 
   void set_hidden(bool is_hidden) { is_hidden_ = is_hidden; }
 
@@ -85,8 +104,10 @@ class FakeWebMediaPlayerDelegate
   int delegate_id_ = 1234;
   Observer* observer_ = nullptr;
   bool playing_ = false;
+  bool has_video_ = false;
   bool is_hidden_ = false;
   bool is_gone_ = true;
+  bool is_idle_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebMediaPlayerDelegate);
 };
@@ -907,18 +928,18 @@ TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
 
   // A hidden player should start still be playing upon shown.
   delegate_.set_hidden(false);
-  player_->OnShown();
+  player_->OnFrameShown();
   EXPECT_FALSE(player_->paused());
 
   // A hidden event should not pause the player.
   delegate_.set_hidden(true);
-  player_->OnHidden();
+  player_->OnFrameHidden();
   EXPECT_FALSE(player_->paused());
 
   // A user generated pause() should clear the automatic resumption.
   player_->pause();
   delegate_.set_hidden(false);
-  player_->OnShown();
+  player_->OnFrameShown();
   EXPECT_TRUE(player_->paused());
 
   // A user generated play() should start playback.
@@ -926,15 +947,15 @@ TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
   EXPECT_FALSE(player_->paused());
 
   // An OnSuspendRequested() without forced suspension should do nothing.
-  player_->OnSuspendRequested(false);
+  player_->OnIdleTimeout();
   EXPECT_FALSE(player_->paused());
 
   // An OnSuspendRequested() with forced suspension should pause playback.
-  player_->OnSuspendRequested(true);
+  player_->OnFrameClosed();
   EXPECT_TRUE(player_->paused());
 
   // OnShown() should restart after a forced suspension.
-  player_->OnShown();
+  player_->OnFrameShown();
   EXPECT_FALSE(player_->paused());
   EXPECT_CALL(*this, DoSetWebLayer(false));
 

@@ -143,9 +143,10 @@ class CONTENT_EXPORT WebMediaPlayerMS
   size_t videoDecodedByteCount() const override;
 
   // WebMediaPlayerDelegate::Observer implementation.
-  void OnHidden() override;
-  void OnShown() override;
-  bool OnSuspendRequested(bool must_suspend) override;
+  void OnFrameHidden() override;
+  void OnFrameClosed() override;
+  void OnFrameShown() override;
+  void OnIdleTimeout() override;
   void OnPlay() override;
   void OnPause() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;

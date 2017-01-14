@@ -187,9 +187,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void setPoster(const blink::WebURL& poster) override;
 
   // WebMediaPlayerDelegate::Observer implementation.
-  void OnHidden() override;
-  void OnShown() override;
-  bool OnSuspendRequested(bool must_suspend) override;
+  void OnFrameHidden() override;
+  void OnFrameClosed() override;
+  void OnFrameShown() override;
+  void OnIdleTimeout() override;
   void OnPlay() override;
   void OnPause() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
@@ -226,20 +227,18 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // intersection.
   void ActivateViewportIntersectionMonitoring(bool activate);
 
-  // Distinct states that |delegate_| can be in.
-  // TODO(sandersd): This should move into WebMediaPlayerDelegate.
-  // (Public for testing.)
+  // Distinct states that |delegate_| can be in. (Public for testing.)
   enum class DelegateState {
     GONE,
     PLAYING,
     PAUSED,
-    ENDED,
   };
 
   // Playback state variables computed together in UpdatePlayState().
   // (Public for testing.)
   struct PlayState {
     DelegateState delegate_state;
+    bool is_idle;
     bool is_memory_reporting_enabled;
     bool is_suspended;
   };
@@ -346,7 +345,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
                                              bool is_streaming,
                                              bool is_suspended,
                                              bool is_backgrounded);
-  void SetDelegateState(DelegateState new_state);
+  void SetDelegateState(DelegateState new_state, bool is_idle);
   void SetMemoryReportingState(bool is_memory_reporting_enabled);
   void SetSuspendState(bool is_suspended);
 
@@ -360,6 +359,15 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called during OnHidden() when we want a suspended player to enter the
   // paused state after some idle timeout.
   void ScheduleIdlePauseTimer();
+
+  // Returns |true| before HaveFutureData whenever there has been loading
+  // progress and we have not been resumed for at least kLoadingToIdleTimeout
+  // since then.
+  //
+  // This is used to delay suspension long enough for preroll to complete, which
+  // is necessay because play() will not be called before HaveFutureData (and
+  // thus we think we are idle forever).
+  bool IsPrerollAttemptNeeded();
 
   void CreateWatchTimeReporter();
 
@@ -406,14 +414,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   blink::WebLocalFrame* frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
-  // states. (Which can have undesired effects like resetting the idle timer.)
+  // states.
+  // TODO(sandersd): The delegate should be implementing deduplication.
   DelegateState delegate_state_;
-
-  // Set when OnSuspendRequested() is called with |must_suspend| unset.
-  bool is_idle_;
-
-  // Set when OnSuspendRequested() is called with |must_suspend| set.
-  bool must_suspend_;
+  bool delegate_has_audio_;
 
   blink::WebMediaPlayer::NetworkState network_state_;
   blink::WebMediaPlayer::ReadyState ready_state_;
@@ -608,8 +612,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   GURL fallback_url_;
   bool use_fallback_path_;
 
-  // Called some-time after OnHidden() if the media was suspended in a playing
-  // state as part of the call to OnHidden().
+  // Called sometime after the media is suspended in a playing state in
+  // OnFrameHidden(), causing the state to change to paused.
   base::OneShotTimer background_pause_timer_;
 
   // Monitors the watch time of the played content.
@@ -620,16 +624,17 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   int underflow_count_;
   std::unique_ptr<base::ElapsedTimer> underflow_timer_;
 
-  // The last time didLoadingProgress() returned true.
-  base::TimeTicks last_time_loading_progressed_;
+  // Used to track loading progress, used by IsPrerollAttemptNeeded().
+  // |preroll_attempt_pending_| indicates that the clock has been reset
+  // (awaiting a resume to start), while |preroll_attempt_start_time_| tracks
+  // when a preroll attempt began.
+  bool preroll_attempt_pending_;
+  base::TimeTicks preroll_attempt_start_time_;
 
   std::unique_ptr<base::TickClock> tick_clock_;
 
   // Monitors the player events.
   base::WeakPtr<MediaObserver> observer_;
-
-  // Whether the player is currently in autoplay muted state.
-  bool autoplay_muted_ = false;
 
   // The maximum video keyframe distance that allows triggering background
   // playback optimizations.

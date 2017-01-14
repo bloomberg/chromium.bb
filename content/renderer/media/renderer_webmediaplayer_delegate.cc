@@ -32,13 +32,12 @@ namespace media {
 RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
     content::RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      idle_cleanup_timer_(true, true),
       default_tick_clock_(new base::DefaultTickClock()),
       tick_clock_(default_tick_clock_.get()) {
   idle_cleanup_interval_ = base::TimeDelta::FromSeconds(5);
   idle_timeout_ = base::TimeDelta::FromSeconds(15);
 
-  // To conserve resources, cleanup idle players more often on low end devices.
+  // Idle players time out more aggressively on low end devices.
   is_low_end_device_ = base::SysInfo::IsLowEndDevice();
 
 #if defined(OS_ANDROID)
@@ -51,87 +50,146 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
 
 RendererWebMediaPlayerDelegate::~RendererWebMediaPlayerDelegate() {}
 
-int RendererWebMediaPlayerDelegate::AddObserver(Observer* observer) {
-  const int delegate_id = id_map_.Add(observer);
-  // Start players in the idle state to ensure we capture players which are
-  // consuming resources, but which have never played.
-  AddIdleDelegate(delegate_id);
-  return delegate_id;
+bool RendererWebMediaPlayerDelegate::IsFrameHidden() {
+  if (is_frame_hidden_for_testing_)
+    return true;
+
+  return (render_frame() && render_frame()->IsHidden()) || is_frame_closed_;
 }
 
-void RendererWebMediaPlayerDelegate::RemoveObserver(int delegate_id) {
-  DCHECK(id_map_.Lookup(delegate_id));
-  id_map_.Remove(delegate_id);
-  RemoveIdleDelegate(delegate_id);
-  playing_videos_.erase(delegate_id);
+bool RendererWebMediaPlayerDelegate::IsFrameClosed() {
+  return is_frame_closed_;
+}
+
+bool RendererWebMediaPlayerDelegate::IsBackgroundVideoPlaybackUnlocked() {
+  // TODO(sandersd): Include a check for kResumeBackgroundVideo?
+  return background_video_allowed_;
+}
+
+int RendererWebMediaPlayerDelegate::AddObserver(Observer* observer) {
+  return id_map_.Add(observer);
+}
+
+void RendererWebMediaPlayerDelegate::RemoveObserver(int player_id) {
+  DCHECK(id_map_.Lookup(player_id));
+  id_map_.Remove(player_id);
+  idle_player_map_.erase(player_id);
+  stale_players_.erase(player_id);
+  playing_videos_.erase(player_id);
+
+  Send(
+      new MediaPlayerDelegateHostMsg_OnMediaDestroyed(routing_id(), player_id));
+
+  ScheduleUpdateTask();
 }
 
 void RendererWebMediaPlayerDelegate::DidPlay(
-    int delegate_id,
+    int player_id,
     bool has_video,
     bool has_audio,
-    bool is_remote,
     MediaContentType media_content_type) {
-  DCHECK(id_map_.Lookup(delegate_id));
-  has_played_media_ = true;
-  if (has_video && !is_remote)
-    playing_videos_.insert(delegate_id);
-  else
-    playing_videos_.erase(delegate_id);
-  RemoveIdleDelegate(delegate_id);
+  DVLOG(2) << __func__ << "(" << player_id << ", " << has_video << ", "
+           << has_audio << ", " << static_cast<int>(media_content_type) << ")";
+  DCHECK(id_map_.Lookup(player_id));
 
-  // Upon receipt of a playback request, suspend everything that's not used.
-  if (is_low_end_device_)
-    CleanupIdleDelegates(base::TimeDelta());
+  has_played_media_ = true;
+  if (has_video) {
+    if (!playing_videos_.count(player_id)) {
+      playing_videos_.insert(player_id);
+      has_played_video_ = true;
+    }
+  } else {
+    playing_videos_.erase(player_id);
+  }
 
   Send(new MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      routing_id(), delegate_id, has_video, has_audio, is_remote,
+      routing_id(), player_id, has_video, has_audio, false,
       media_content_type));
+
+  ScheduleUpdateTask();
 }
 
-void RendererWebMediaPlayerDelegate::DidPause(int delegate_id,
-                                              bool reached_end_of_stream) {
-  DCHECK(id_map_.Lookup(delegate_id));
-  AddIdleDelegate(delegate_id);
-  if (reached_end_of_stream)
-    playing_videos_.erase(delegate_id);
-  Send(new MediaPlayerDelegateHostMsg_OnMediaPaused(routing_id(), delegate_id,
-                                                    reached_end_of_stream));
+void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
+  DVLOG(2) << __func__ << "(" << player_id << ")";
+  DCHECK(id_map_.Lookup(player_id));
+  playing_videos_.erase(player_id);
+  Send(new MediaPlayerDelegateHostMsg_OnMediaPaused(routing_id(), player_id,
+                                                    false));
+
+  // Required to keep background playback statistics up to date.
+  ScheduleUpdateTask();
 }
 
-void RendererWebMediaPlayerDelegate::PlayerGone(int delegate_id) {
-  DCHECK(id_map_.Lookup(delegate_id));
-  playing_videos_.erase(delegate_id);
-  Send(new MediaPlayerDelegateHostMsg_OnMediaDestroyed(routing_id(),
-                                                       delegate_id));
+void RendererWebMediaPlayerDelegate::PlayerGone(int player_id) {
+  DVLOG(2) << __func__ << "(" << player_id << ")";
+  DCHECK(id_map_.Lookup(player_id));
+  playing_videos_.erase(player_id);
+  Send(
+      new MediaPlayerDelegateHostMsg_OnMediaDestroyed(routing_id(), player_id));
+
+  // Required to keep background playback statistics up to date.
+  ScheduleUpdateTask();
 }
 
-bool RendererWebMediaPlayerDelegate::IsHidden() {
-  return render_frame()->IsHidden();
+void RendererWebMediaPlayerDelegate::SetIdle(int player_id, bool is_idle) {
+  DVLOG(2) << __func__ << "(" << player_id << ", " << is_idle << ")";
+
+  if (is_idle == IsIdle(player_id))
+    return;
+
+  if (is_idle) {
+    idle_player_map_[player_id] = tick_clock_->NowTicks();
+  } else {
+    idle_player_map_.erase(player_id);
+    stale_players_.erase(player_id);
+  }
+
+  ScheduleUpdateTask();
 }
 
-bool RendererWebMediaPlayerDelegate::IsPlayingBackgroundVideo() {
-  return is_playing_background_video_;
+bool RendererWebMediaPlayerDelegate::IsIdle(int player_id) {
+  return idle_player_map_.count(player_id) || stale_players_.count(player_id);
+}
+
+void RendererWebMediaPlayerDelegate::ClearStaleFlag(int player_id) {
+  DVLOG(2) << __func__ << "(" << player_id << ")";
+
+  if (!stale_players_.erase(player_id))
+    return;
+
+  // Set the idle time such that the player will be considered stale the next
+  // time idle cleanup runs.
+  idle_player_map_[player_id] = tick_clock_->NowTicks() - idle_timeout_;
+
+  ScheduleUpdateTask();
+}
+
+bool RendererWebMediaPlayerDelegate::IsStale(int player_id) {
+  return stale_players_.count(player_id);
 }
 
 void RendererWebMediaPlayerDelegate::WasHidden() {
-  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
-    it.GetCurrentValue()->OnHidden();
-
   RecordAction(base::UserMetricsAction("Media.Hidden"));
+
+  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+    it.GetCurrentValue()->OnFrameHidden();
+
+  ScheduleUpdateTask();
 }
 
 void RendererWebMediaPlayerDelegate::WasShown() {
-  SetIsPlayingBackgroundVideo(false);
-  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
-    it.GetCurrentValue()->OnShown();
-
   RecordAction(base::UserMetricsAction("Media.Shown"));
+  is_frame_closed_ = false;
+  background_video_allowed_ = false;
+
+  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+    it.GetCurrentValue()->OnFrameShown();
+
+  ScheduleUpdateTask();
 }
 
 bool RendererWebMediaPlayerDelegate::OnMessageReceived(
     const IPC::Message& msg) {
-  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RendererWebMediaPlayerDelegate, msg)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Pause, OnMediaDelegatePause)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Play, OnMediaDelegatePlay)
@@ -139,9 +197,9 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateSuspendAllMediaPlayers)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_UpdateVolumeMultiplier,
                         OnMediaDelegateVolumeMultiplierUpdate)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
-  return handled;
+  return true;
 }
 
 void RendererWebMediaPlayerDelegate::SetIdleCleanupParamsForTesting(
@@ -154,128 +212,158 @@ void RendererWebMediaPlayerDelegate::SetIdleCleanupParamsForTesting(
   is_low_end_device_ = is_low_end_device;
 }
 
-void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(int delegate_id) {
-  Observer* observer = id_map_.Lookup(delegate_id);
-  if (observer) {
-    if (playing_videos_.find(delegate_id) != playing_videos_.end())
-      SetIsPlayingBackgroundVideo(false);
-    observer->OnPause();
-  }
-
-  RecordAction(base::UserMetricsAction("Media.Controls.RemotePause"));
+bool RendererWebMediaPlayerDelegate::IsIdleCleanupTimerRunningForTesting()
+    const {
+  return idle_cleanup_timer_.IsRunning();
 }
 
-void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int delegate_id) {
-  Observer* observer = id_map_.Lookup(delegate_id);
-  if (observer) {
-    if (playing_videos_.find(delegate_id) != playing_videos_.end())
-      SetIsPlayingBackgroundVideo(IsHidden());
-    observer->OnPlay();
+void RendererWebMediaPlayerDelegate::SetFrameHiddenForTesting(bool is_hidden) {
+  if (is_hidden == is_frame_hidden_for_testing_)
+    return;
+
+  if (is_hidden) {
+    is_frame_hidden_for_testing_ = true;
+  } else {
+    is_frame_hidden_for_testing_ = false;
+    background_video_allowed_ = false;
   }
 
+  ScheduleUpdateTask();
+}
+
+void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(int player_id) {
+  RecordAction(base::UserMetricsAction("Media.Controls.RemotePause"));
+
+  Observer* observer = id_map_.Lookup(player_id);
+  if (observer) {
+    background_video_allowed_ = false;
+    observer->OnPause();
+  }
+}
+
+void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int player_id) {
   RecordAction(base::UserMetricsAction("Media.Controls.RemotePlay"));
+
+  Observer* observer = id_map_.Lookup(player_id);
+  if (observer) {
+    // TODO(sandersd): Ideally we would only set the flag if the player has
+    // video, but we don't reliably know if a paused player has video.
+    if (IsFrameHidden() && !IsFrameClosed())
+      background_video_allowed_ = true;
+    observer->OnPlay();
+  }
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegateSuspendAllMediaPlayers() {
+  is_frame_closed_ = true;
+
   for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
-    it.GetCurrentValue()->OnSuspendRequested(true);
+    it.GetCurrentValue()->OnFrameClosed();
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegateVolumeMultiplierUpdate(
-    int delegate_id,
+    int player_id,
     double multiplier) {
-  Observer* observer = id_map_.Lookup(delegate_id);
+  Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnVolumeMultiplierUpdate(multiplier);
 }
 
-void RendererWebMediaPlayerDelegate::AddIdleDelegate(int delegate_id) {
-  idle_delegate_map_[delegate_id] = tick_clock_->NowTicks();
-  if (!idle_cleanup_timer_.IsRunning()) {
+void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {
+  if (!pending_update_task_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererWebMediaPlayerDelegate::UpdateTask, AsWeakPtr()));
+    pending_update_task_ = true;
+  }
+}
+
+void RendererWebMediaPlayerDelegate::UpdateTask() {
+  DVLOG(3) << __func__;
+  pending_update_task_ = false;
+
+  // Check whether a player was played since the last UpdateTask(). We basically
+  // treat this as a parameter to UpdateTask(), except that it can be changed
+  // between posting the task and UpdateTask() executing.
+  bool has_played_video_since_last_update_task = has_played_video_;
+  has_played_video_ = false;
+
+  // Record UMAs for background video playback.
+  RecordBackgroundVideoPlayback();
+
+  // Clean up idle players.
+  bool aggressive_cleanup = false;
+
+  // When we reach the maximum number of idle players, clean them up
+  // aggressively. Values chosen after testing on a Galaxy Nexus device for
+  // http://crbug.com/612909.
+  if (idle_player_map_.size() > (is_low_end_device_ ? 2u : 8u))
+    aggressive_cleanup = true;
+
+  // When a player plays on a low-end device, clean up idle players
+  // aggressively.
+  if (has_played_video_since_last_update_task && is_low_end_device_)
+    aggressive_cleanup = true;
+
+  CleanUpIdlePlayers(aggressive_cleanup ? base::TimeDelta() : idle_timeout_);
+
+  // If there are still idle players, schedule an attempt to clean them up.
+  // This construct ensures that the next callback is always
+  // |idle_cleanup_interval_| from now.
+  idle_cleanup_timer_.Stop();
+  if (!idle_player_map_.empty()) {
     idle_cleanup_timer_.Start(
         FROM_HERE, idle_cleanup_interval_,
-        base::Bind(&RendererWebMediaPlayerDelegate::CleanupIdleDelegates,
-                   base::Unretained(this), idle_timeout_));
+        base::Bind(&RendererWebMediaPlayerDelegate::UpdateTask,
+                   base::Unretained(this)));
   }
-
-  // When we reach the maximum number of idle players, aggressively suspend idle
-  // delegates to try and remain under the limit. Values chosen after testing on
-  // a Galaxy Nexus device for http://crbug.com/612909.
-  if (idle_delegate_map_.size() > (is_low_end_device_ ? 2u : 8u))
-    CleanupIdleDelegates(base::TimeDelta());
 }
 
-void RendererWebMediaPlayerDelegate::RemoveIdleDelegate(int delegate_id) {
-  // To avoid invalidating the iterator, just mark the delegate for deletion
-  // using a sentinel value of an empty TimeTicks.
-  if (idle_cleanup_running_) {
-    idle_delegate_map_[delegate_id] = base::TimeTicks();
-    return;
-  }
+void RendererWebMediaPlayerDelegate::RecordBackgroundVideoPlayback() {
+#if defined(OS_ANDROID)
+  // TODO(avayvod): This would be useful to collect on desktop too and express
+  // in actual media watch time vs. just elapsed time.
+  // See https://crbug.com/638726.
+  bool has_playing_background_video =
+      IsFrameHidden() && !IsFrameClosed() && !playing_videos_.empty();
 
-  idle_delegate_map_.erase(delegate_id);
-  if (idle_delegate_map_.empty())
-    idle_cleanup_timer_.Stop();
-}
+  if (has_playing_background_video != was_playing_background_video_) {
+    was_playing_background_video_ = has_playing_background_video;
 
-void RendererWebMediaPlayerDelegate::CleanupIdleDelegates(
-    base::TimeDelta timeout) {
-  // Drop reentrant cleanups which can occur during forced suspension when the
-  // number of idle delegates is too high for a given device.
-  if (idle_cleanup_running_)
-    return;
-
-  // Iterate over the delegates and suspend the idle ones. Note: The call to
-  // OnSuspendRequested() can trigger calls into RemoveIdleDelegate(), so for
-  // iterator validity we set |idle_cleanup_running_| to true and defer
-  // deletions.
-  DCHECK(!idle_cleanup_running_);
-  base::AutoReset<bool> scoper(&idle_cleanup_running_, true);
-  const base::TimeTicks now = tick_clock_->NowTicks();
-  for (auto& idle_delegate_entry : idle_delegate_map_) {
-    if (now - idle_delegate_entry.second > timeout) {
-      if (id_map_.Lookup(idle_delegate_entry.first)
-              ->OnSuspendRequested(false)) {
-        // If the player accepted the suspension, mark it for removal
-        // from future polls to avoid running the timer forever.
-        idle_delegate_entry.second = base::TimeTicks();
-      }
+    if (has_playing_background_video) {
+      RecordAction(base::UserMetricsAction("Media.Session.BackgroundResume"));
+      background_video_start_time_ = base::TimeTicks::Now();
+    } else {
+      RecordAction(base::UserMetricsAction("Media.Session.BackgroundSuspend"));
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "Media.Android.BackgroundVideoTime",
+          base::TimeTicks::Now() - background_video_start_time_,
+          base::TimeDelta::FromSeconds(7), base::TimeDelta::FromHours(10), 50);
     }
   }
-
-  // Take care of any removals that happened during the above iteration.
-  for (auto it = idle_delegate_map_.begin(); it != idle_delegate_map_.end();) {
-    if (it->second.is_null())
-      it = idle_delegate_map_.erase(it);
-    else
-      ++it;
-  }
-
-  // Shutdown the timer if no delegates are left.
-  if (idle_delegate_map_.empty())
-    idle_cleanup_timer_.Stop();
+#endif  // OS_ANDROID
 }
 
-void RendererWebMediaPlayerDelegate::SetIsPlayingBackgroundVideo(
-    bool is_playing) {
-  if (is_playing_background_video_ == is_playing) return;
+void RendererWebMediaPlayerDelegate::CleanUpIdlePlayers(
+    base::TimeDelta timeout) {
+  const base::TimeTicks now = tick_clock_->NowTicks();
 
-// TODO(avayvod): This would be useful to collect on desktop too and express in
-// actual media watch time vs. just elapsed time. See https://crbug.com/638726.
-#if defined(OS_ANDROID)
-  if (is_playing_background_video_) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Media.Android.BackgroundVideoTime",
-        base::TimeTicks::Now() - background_video_playing_start_time_,
-        base::TimeDelta::FromSeconds(7), base::TimeDelta::FromHours(10), 50);
-    RecordAction(base::UserMetricsAction("Media.Session.BackgroundSuspend"));
-  } else {
-    background_video_playing_start_time_ = base::TimeTicks::Now();
-    RecordAction(base::UserMetricsAction("Media.Session.BackgroundResume"));
+  // Create a list of stale players before making any possibly reentrant calls
+  // to OnIdleTimeout().
+  std::vector<int> stale_players;
+  for (const auto& it : idle_player_map_) {
+    if (now - it.second >= timeout)
+      stale_players.push_back(it.first);
   }
-#endif  // OS_ANDROID
 
-  is_playing_background_video_ = is_playing;
+  // Notify stale players.
+  for (int player_id : stale_players) {
+    Observer* player = id_map_.Lookup(player_id);
+    if (player && idle_player_map_.erase(player_id)) {
+      stale_players_.insert(player_id);
+      player->OnIdleTimeout();
+    }
+  }
 }
 
 void RendererWebMediaPlayerDelegate::OnDestruct() {

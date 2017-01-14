@@ -295,8 +295,9 @@ void WebMediaPlayerMS::play() {
     // TODO(perkj, magjed): We use OneShot focus type here so that it takes
     // audio focus once it starts, and then will not respond to further audio
     // focus changes. See http://crbug.com/596516 for more details.
-    delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
+    delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(),
                        media::MediaContentType::OneShot);
+    delegate_->SetIdle(delegate_id_, false);
   }
 
   paused_ = false;
@@ -320,8 +321,10 @@ void WebMediaPlayerMS::pause() {
   if (audio_renderer_)
     audio_renderer_->Pause();
 
-  if (delegate_)
-    delegate_->DidPause(delegate_id_, false);
+  if (delegate_) {
+    delegate_->DidPause(delegate_id_);
+    delegate_->SetIdle(delegate_id_, true);
+  }
 
   paused_ = true;
 }
@@ -503,7 +506,7 @@ size_t WebMediaPlayerMS::videoDecodedByteCount() const {
   return 0;
 }
 
-void WebMediaPlayerMS::OnHidden() {
+void WebMediaPlayerMS::OnFrameHidden() {
 #if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -524,7 +527,25 @@ void WebMediaPlayerMS::OnHidden() {
 #endif  // defined(OS_ANDROID)
 }
 
-void WebMediaPlayerMS::OnShown() {
+void WebMediaPlayerMS::OnFrameClosed() {
+#if defined(OS_ANDROID)
+  if (!paused_) {
+    pause();
+    should_play_upon_shown_ = true;
+  }
+
+  if (delegate_)
+    delegate_->PlayerGone(delegate_id_);
+
+  if (frame_deliverer_) {
+    io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
+                              base::Unretained(frame_deliverer_.get()), true));
+  }
+#endif  // defined(OS_ANDROID)
+}
+
+void WebMediaPlayerMS::OnFrameShown() {
 #if defined(OS_ANDROID)
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -540,27 +561,7 @@ void WebMediaPlayerMS::OnShown() {
 #endif  // defined(OS_ANDROID)
 }
 
-bool WebMediaPlayerMS::OnSuspendRequested(bool must_suspend) {
-#if defined(OS_ANDROID)
-  if (!must_suspend)
-    return false;
-
-  if (!paused_) {
-    pause();
-    should_play_upon_shown_ = true;
-  }
-
-  if (delegate_)
-    delegate_->PlayerGone(delegate_id_);
-
-  if (frame_deliverer_) {
-    io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
-                              base::Unretained(frame_deliverer_.get()), true));
-  }
-#endif  // defined(OS_ANDROID)
-  return true;
-}
+void WebMediaPlayerMS::OnIdleTimeout() {}
 
 void WebMediaPlayerMS::OnPlay() {
   // TODO(perkj, magjed): It's not clear how WebRTC should work with an

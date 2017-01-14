@@ -182,8 +182,10 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  if (delegate_)
+  if (delegate_) {
     delegate_id_ = delegate_->AddObserver(this);
+    delegate_->SetIdle(delegate_id_, true);
+  }
 
   player_id_ = player_manager_->RegisterMediaPlayer(this);
 
@@ -295,8 +297,8 @@ void WebMediaPlayerAndroid::play() {
     bool can_video_play_in_background =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMediaSuspend) ||
-        (IsBackgroundVideoCandidate() &&
-            delegate_ && delegate_->IsPlayingBackgroundVideo());
+        (IsBackgroundVideoCandidate() && delegate_ &&
+         delegate_->IsBackgroundVideoPlaybackUnlocked());
     if (!can_video_play_in_background) {
       is_play_pending_ = true;
       return;
@@ -828,8 +830,10 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     // If we're paused after we receive metadata for the first time, tell the
     // delegate we can now be safely suspended due to inactivity if a subsequent
     // play event does not occur.
-    if (paused() && delegate_)
-      delegate_->DidPause(delegate_id_, false);
+    if (paused() && delegate_) {
+      delegate_->DidPause(delegate_id_);
+      delegate_->SetIdle(delegate_id_, true);
+    }
   }
 }
 
@@ -1204,19 +1208,28 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
       // be known at this point -- there are no video only containers, so only
       // send audio if we know for sure its audio.  The browser side player will
       // fill in the correct value later for media sessions.
-      delegate_->DidPlay(delegate_id_, hasVideo(), !hasVideo(), isRemote(),
-                         media::DurationToMediaContentType(duration_));
+      if (isRemote()) {
+        delegate_->PlayerGone(delegate_id_);
+      } else {
+        delegate_->DidPlay(delegate_id_, hasVideo(), !hasVideo(),
+                           media::DurationToMediaContentType(duration_));
+      }
+      delegate_->SetIdle(delegate_id_, false);
     } else {
       // Even if OnPlaybackComplete() has not been called yet, Blink may have
       // already fired the ended event based on current time relative to
       // duration -- so we need to check both possibilities here.
-      delegate_->DidPause(delegate_id_,
-                          playback_completed_ || currentTime() >= duration());
+      if (playback_completed_ || currentTime() >= duration()) {
+        delegate_->PlayerGone(delegate_id_);
+      } else {
+        delegate_->DidPause(delegate_id_);
+      }
+      delegate_->SetIdle(delegate_id_, true);
     }
   }
 }
 
-void WebMediaPlayerAndroid::OnHidden() {
+void WebMediaPlayerAndroid::OnFrameHidden() {
   // Pause audible video preserving its session.
   if (hasVideo() && IsBackgroundVideoCandidate() && !paused()) {
     Pause(false);
@@ -1224,29 +1237,30 @@ void WebMediaPlayerAndroid::OnHidden() {
     return;
   }
 
-  OnSuspendRequested(false);
+  OnIdleTimeout();
 }
 
-void WebMediaPlayerAndroid::OnShown() {
+void WebMediaPlayerAndroid::OnFrameClosed() {
+  SuspendAndReleaseResources();
+}
+
+void WebMediaPlayerAndroid::OnFrameShown() {
   if (is_play_pending_)
     play();
 }
 
-bool WebMediaPlayerAndroid::OnSuspendRequested(bool must_suspend) {
-  if (!must_suspend &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
+void WebMediaPlayerAndroid::OnIdleTimeout() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableMediaSuspend)) {
-    return true;
+    return;
   }
 
-  // If we're idle or playing video, pause and release resources; audio only
-  // players are allowed to continue unless indicated otherwise by the call.
-  if (must_suspend || (paused() && playback_completed_) ||
-      (hasVideo() && !IsBackgroundVideoCandidate())) {
+  // If we're playing video or ended, pause and release resources; audio only
+  // players are allowed to continue.
+  if ((hasVideo() && !IsBackgroundVideoCandidate()) ||
+      (paused() && playback_completed_)) {
     SuspendAndReleaseResources();
   }
-
-  return true;
 }
 
 void WebMediaPlayerAndroid::OnPlay() {
@@ -1327,7 +1341,8 @@ bool WebMediaPlayerAndroid::IsBackgroundVideoCandidate() const {
   }
 
   return base::FeatureList::IsEnabled(media::kResumeBackgroundVideo) &&
-      hasAudio() && !isRemote() && delegate_ && delegate_->IsHidden();
+         hasAudio() && !isRemote() && delegate_ && delegate_->IsFrameHidden() &&
+         !delegate_->IsFrameClosed();
 }
 
 }  // namespace content
