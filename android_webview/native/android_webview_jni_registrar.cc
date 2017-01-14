@@ -14,7 +14,7 @@
 #include "android_webview/native/aw_form_database.h"
 #include "android_webview/native/aw_gl_functor.h"
 #include "android_webview/native/aw_http_auth_handler.h"
-#include "android_webview/native/aw_metrics_switch.h"
+#include "android_webview/native/aw_metrics_service_client_impl.h"
 #include "android_webview/native/aw_pdf_exporter.h"
 #include "android_webview/native/aw_picture.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"

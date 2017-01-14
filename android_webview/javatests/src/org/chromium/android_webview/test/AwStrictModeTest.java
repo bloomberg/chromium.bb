@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.os.StrictMode;
 import android.support.test.filters.LargeTest;
 
-import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -99,11 +98,11 @@ public class AwStrictModeTest extends AwTestBase {
 
     private void startEverythingSync() throws Exception {
         getActivity();
+        createAwBrowserContext();
+        startBrowserProcess();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                createAwBrowserContext();
-                AwBrowserProcess.start();
                 mAwTestContainerView = createAwTestContainerView(mContentsClient);
             }
         });

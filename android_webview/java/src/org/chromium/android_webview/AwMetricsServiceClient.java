@@ -7,15 +7,25 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.webkit.ValueCallback;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
- * Java twin of the homonymous C++ class. The Java side is only responsible for
- * switching metrics on and off. Since the setting is a platform feature, it
- * must be obtained through PlatformServiceBridge.
+ * Determines whether metrics should be enabled.
+ *
+ * This requires the following steps:
+ * 1) Check the platform's metrics consent setting.
+ * 2) Check if the app has opted out.
+ * 3) Wait for the native AwMetricsServiceClient to call nativeInitialized.
+ * 4) If enabled, inform the native AwMetricsServiceClient via nativeSetMetricsEnabled.
+ *
+ * Step 1 is done asynchronously and the result is passed to setConsentSetting, which does step 2.
+ * This happens in parallel with native AwMetricsServiceClient initialization; either
+ * nativeInitialized or setConsentSetting might fire first. Whichever fires second should call
+ * nativeSetMetricsEnabled.
  */
 @JNINamespace("android_webview")
 public class AwMetricsServiceClient {
@@ -25,10 +35,13 @@ public class AwMetricsServiceClient {
     // reporting. See https://developer.android.com/reference/android/webkit/WebView.html
     private static final String OPT_OUT_META_DATA_STR = "android.webkit.WebView.MetricsOptOut";
 
-    private static boolean isAppOptedOut(Context applicationContext) {
+    private static boolean sIsClientReady; // Is the native AwMetricsServiceClient initialized?
+    private static boolean sShouldEnable; // Have steps 1 and 2 passed?
+
+    private static boolean isAppOptedOut(Context appContext) {
         try {
-            ApplicationInfo info = applicationContext.getPackageManager().getApplicationInfo(
-                    applicationContext.getPackageName(), PackageManager.GET_META_DATA);
+            ApplicationInfo info = appContext.getPackageManager().getApplicationInfo(
+                    appContext.getPackageName(), PackageManager.GET_META_DATA);
             if (info.metaData == null) {
                 // null means no such tag was found.
                 return false;
@@ -43,18 +56,27 @@ public class AwMetricsServiceClient {
         }
     }
 
-    public AwMetricsServiceClient(Context applicationContext) {
-        if (isAppOptedOut(applicationContext)) {
+    public static void setConsentSetting(Context appContext, boolean userConsent) {
+        ThreadUtils.assertOnUiThread();
+
+        if (!userConsent || isAppOptedOut(appContext)) {
+            // Metrics defaults to off, so no need to call nativeSetMetricsEnabled(false).
             return;
         }
 
-        // Check if the user has consented.
-        PlatformServiceBridge.getInstance(applicationContext)
-                .setMetricsSettingListener(new ValueCallback<Boolean>() {
-                    public void onReceiveValue(Boolean enabled) {
-                        nativeSetMetricsEnabled(enabled);
-                    }
-                });
+        sShouldEnable = true;
+        if (sIsClientReady) {
+            nativeSetMetricsEnabled(true);
+        }
+    }
+
+    @CalledByNative
+    public static void nativeInitialized() {
+        ThreadUtils.assertOnUiThread();
+        sIsClientReady = true;
+        if (sShouldEnable) {
+            nativeSetMetricsEnabled(true);
+        }
     }
 
     public static native void nativeSetMetricsEnabled(boolean enabled);

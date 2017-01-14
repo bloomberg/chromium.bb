@@ -98,12 +98,18 @@ public class AwTestBase
         if (mBrowserContext != null) {
             throw new AndroidRuntimeException("There should only be one browser context.");
         }
-        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
-        mBrowserContext = new AwBrowserContext(new InMemorySharedPreferences(), appContext);
+        final InMemorySharedPreferences prefs = new InMemorySharedPreferences();
+        final Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mBrowserContext = new AwBrowserContext(prefs, appContext);
+            }
+        });
     }
 
     protected void startBrowserProcess() throws Exception {
-        // The activity must be launched in order for proper webview statics to be setup.
+        // The Activity must be launched in order for proper webview statics to be setup.
         getActivity();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override

@@ -24,6 +24,7 @@ import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ServiceWorkerController;
 import android.webkit.TokenBindingService;
+import android.webkit.ValueCallback;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
@@ -40,11 +41,13 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwDevToolsServer;
+import org.chromium.android_webview.AwMetricsServiceClient;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.HttpAuthDatabase;
+import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
@@ -396,7 +399,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         // Make sure that ResourceProvider is initialized before starting the browser process.
         final String webViewPackageName = WebViewFactory.getLoadedPackageInfo().packageName;
-        Context context = ContextUtils.getApplicationContext();
+        final Context context = ContextUtils.getApplicationContext();
         setUpResources(webViewPackageName, context);
         initPlatSupportLibrary();
         initNetworkChangeNotifier(context);
@@ -404,6 +407,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, isExternalService);
         AwBrowserProcess.start();
         AwBrowserProcess.handleMinidumps(webViewPackageName);
+
+        PlatformServiceBridge.getInstance(context)
+                .queryMetricsSetting(new ValueCallback<Boolean>() {
+                    public void onReceiveValue(Boolean enabled) {
+                        ThreadUtils.assertOnUiThread();
+                        AwMetricsServiceClient.setConsentSetting(context, enabled);
+                    }
+                });
 
         if (isBuildDebuggable()) {
             setWebContentsDebuggingEnabled(true);

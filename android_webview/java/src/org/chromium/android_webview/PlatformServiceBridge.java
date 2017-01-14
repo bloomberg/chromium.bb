@@ -8,6 +8,7 @@ import android.content.Context;
 import android.webkit.ValueCallback;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -24,7 +25,9 @@ public class PlatformServiceBridge {
 
     protected PlatformServiceBridge() {}
 
-    public static PlatformServiceBridge getInstance(Context applicationContext) {
+    public static PlatformServiceBridge getInstance(Context appContext) {
+        ThreadUtils.assertOnUiThread(); // Avoid race conditions on sInstance.
+
         if (sInstance != null) {
             return sInstance;
         }
@@ -33,7 +36,7 @@ public class PlatformServiceBridge {
         try {
             Class<?> cls = Class.forName(PLATFORM_SERVICE_BRIDGE);
             sInstance = (PlatformServiceBridge) cls.getDeclaredConstructor(Context.class)
-                    .newInstance(applicationContext);
+                    .newInstance(appContext);
             return sInstance;
         } catch (ClassNotFoundException e) {
             // This is not an error; it just means this device doesn't have specialized services.
@@ -49,13 +52,21 @@ public class PlatformServiceBridge {
         return sInstance;
     }
 
-    // Try to enable WebView to use Google Play Services (a.k.a. GMS) APIs. Return true on success.
-    // Do not use GMS APIs before this has returned true, or if it returns false. This can be called
-    // from multiple threads, so long as no thread uses GMS APIs before at least one call has
-    // returned true. (The easy way is for each thread to wait for its own call to return true.)
+    // TODO(paulmiller): remove; replaced by canUseGms
     public boolean tryEnableGms() {
         return false;
     }
 
-    public void setMetricsSettingListener(ValueCallback<Boolean> callback) {}
+    // Can WebView use Google Play Services (a.k.a. GMS)?
+    public boolean canUseGms() {
+        return false;
+    }
+
+    // Overriding implementations may call "callback" asynchronously. For simplicity (and not
+    // because of any technical limitation) we require that "queryMetricsSetting" and "callback"
+    // both get called on WebView's UI thread.
+    public void queryMetricsSetting(ValueCallback<Boolean> callback) {
+        ThreadUtils.assertOnUiThread();
+        callback.onReceiveValue(false);
+    }
 }
