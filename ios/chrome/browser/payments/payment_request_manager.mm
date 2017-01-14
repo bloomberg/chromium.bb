@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/payments/js_payment_request_manager.h"
 #import "ios/chrome/browser/payments/payment_request_coordinator.h"
-#import "ios/chrome/browser/payments/payment_request_web_state_observer.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -28,14 +27,15 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 namespace {
 // Command prefix for injected JavaScript.
 const std::string kCommandPrefix = "paymentRequest";
 }  // namespace
 
-@interface PaymentRequestManager ()<PaymentRequestCoordinatorDelegate,
-                                    PaymentRequestWebStateDelegate> {
+@interface PaymentRequestManager ()<CRWWebStateObserver,
+                                    PaymentRequestCoordinatorDelegate> {
   // View controller used to present the PaymentRequest view controller.
   base::WeakNSObject<UIViewController> _baseViewController;
 
@@ -46,7 +46,7 @@ const std::string kCommandPrefix = "paymentRequest";
   web::WebState* _webState;
 
   // Observer for |_webState|.
-  std::unique_ptr<PaymentRequestWebStateObserver> _webStateObserver;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 
   // Object that manages JavaScript injection into the web view.
   base::WeakNSObject<JSPaymentRequestManager> _paymentRequestJsManager;
@@ -101,10 +101,6 @@ const std::string kCommandPrefix = "paymentRequest";
     _personalDataManager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
             browserState->GetOriginalChromeBrowserState());
-
-    // Set up the web state observer. This lasts as long as this object does,
-    // but it will observe and un-observe the web tabs as it changes over time.
-    _webStateObserver.reset(new PaymentRequestWebStateObserver(self));
   }
   return self;
 }
@@ -122,7 +118,7 @@ const std::string kCommandPrefix = "paymentRequest";
             [webState->GetJSInjectionReceiver()
                 instanceOfClass:[JSPaymentRequestManager class]]));
     _webState = webState;
-    _webStateObserver->ObserveWebState(webState);
+    _webStateObserver.reset(new web::WebStateObserverBridge(webState, self));
     [self enableCurrentWebState];
   } else {
     _webState = nullptr;
@@ -171,7 +167,7 @@ const std::string kCommandPrefix = "paymentRequest";
     return;
   }
 
-  if (_enabled && [self webStateContentIsSecureHTML]) {
+  if (_enabled) {
     if (!_webStateEnabled) {
       base::WeakNSObject<PaymentRequestManager> weakSelf(self);
       auto callback =
@@ -186,8 +182,6 @@ const std::string kCommandPrefix = "paymentRequest";
 
       _webStateEnabled = YES;
     }
-
-    [self initializeWebViewForPaymentRequest];
   } else {
     [self disableCurrentWebState];
   }
@@ -203,17 +197,13 @@ const std::string kCommandPrefix = "paymentRequest";
 - (void)disconnectWebState {
   if (_webState) {
     _paymentRequestJsManager.reset();
-    _webStateObserver->ObserveWebState(nullptr);
+    _webStateObserver.reset();
     [self disableCurrentWebState];
   }
 }
 
 - (void)initializeWebViewForPaymentRequest {
   DCHECK(_webStateEnabled);
-
-  if (![self webStateContentIsSecureHTML]) {
-    return;
-  }
 
   [_paymentRequestJsManager inject];
   _isScriptInjected = YES;
@@ -324,14 +314,14 @@ const std::string kCommandPrefix = "paymentRequest";
                                 completionHandler:nil];
 }
 
-#pragma mark - PaymentRequestWebStateDelegate methods
+#pragma mark - CRWWebStateObserver methods
 
-- (void)pageLoadedWithStatus:(web::PageLoadCompletionStatus)loadStatus {
-  if (loadStatus != web::PageLoadCompletionStatus::SUCCESS)
-    return;
-
-  [self dismissUI];
+- (void)webState:(web::WebState*)webState
+    didCommitNavigationWithDetails:
+        (const web::LoadCommittedDetails&)load_details {
   _isScriptInjected = NO;
+  [self dismissUI];
+  [self initializeWebViewForPaymentRequest];
   [self enableCurrentWebState];
 }
 

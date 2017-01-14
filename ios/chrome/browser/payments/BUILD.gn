@@ -30,8 +30,6 @@ source_set("payments") {
     "payment_request_utils.mm",
     "payment_request_view_controller.h",
     "payment_request_view_controller.mm",
-    "payment_request_web_state_observer.h",
-    "payment_request_web_state_observer.mm",
     "shipping_address_selection_coordinator.h",
     "shipping_address_selection_coordinator.mm",
     "shipping_address_selection_view_controller.h",
