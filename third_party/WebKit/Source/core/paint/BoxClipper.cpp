@@ -16,13 +16,20 @@
 
 namespace blink {
 
+// Clips for boxes are applied by the box's PaintLayerClipper, if the box has
+// a self-painting PaintLayer. Otherwise the box clips itself.
+// Note that this method is very similar to
+// PaintLayerClipper::shouldClipOverflow for that reason.
+//
+// An exception is control clip, which is currently never applied by
+// PaintLayerClipper.
 static bool boxNeedsClip(const LayoutBox& box) {
   if (box.hasControlClip())
     return true;
-  if (box.isSVGRoot() && toLayoutSVGRoot(box).shouldApplyViewportClip())
-    return true;
   if (box.hasLayer() && box.layer()->isSelfPaintingLayer())
     return false;
+  if (box.isSVGRoot() && toLayoutSVGRoot(box).shouldApplyViewportClip())
+    return true;
   return box.hasOverflowClip() || box.styleRef().containsPaint();
 }
 

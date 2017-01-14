@@ -31,12 +31,16 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo,
 
   LayoutRect borderRect(adjustedPaintOffset, m_layoutReplaced.size());
 
-  if (m_layoutReplaced.style()->visibility() == EVisibility::kVisible &&
-      m_layoutReplaced.hasBoxDecorationBackground() &&
-      (paintInfo.phase == PaintPhaseForeground ||
-       paintInfo.phase == PaintPhaseSelection))
-    m_layoutReplaced.paintBoxDecorationBackground(paintInfo,
-                                                  adjustedPaintOffset);
+  if (shouldPaintSelfBlockBackground(paintInfo.phase)) {
+    if (m_layoutReplaced.style()->visibility() == EVisibility::kVisible &&
+        m_layoutReplaced.hasBoxDecorationBackground()) {
+      m_layoutReplaced.paintBoxDecorationBackground(paintInfo,
+                                                    adjustedPaintOffset);
+    }
+    // We're done. We don't bother painting any children.
+    if (paintInfo.phase == PaintPhaseSelfBlockBackgroundOnly)
+      return;
+  }
 
   if (paintInfo.phase == PaintPhaseMask) {
     m_layoutReplaced.paintMask(paintInfo, adjustedPaintOffset);
@@ -130,7 +134,8 @@ bool ReplacedPainter::shouldPaint(
       !shouldPaintSelfOutline(paintInfo.phase) &&
       paintInfo.phase != PaintPhaseSelection &&
       paintInfo.phase != PaintPhaseMask &&
-      paintInfo.phase != PaintPhaseClippingMask)
+      paintInfo.phase != PaintPhaseClippingMask &&
+      !shouldPaintSelfBlockBackground(paintInfo.phase))
     return false;
 
   // If we're invisible or haven't received a layout yet, just bail.

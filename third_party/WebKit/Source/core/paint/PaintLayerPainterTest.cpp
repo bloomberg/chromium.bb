@@ -223,11 +223,6 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceForSVGRoot) {
   LayoutObject& rect = *document().getElementById("rect")->layoutObject();
   LayoutObject& div = *document().getElementById("div")->layoutObject();
 
-  DisplayItem::Type clipBoxBegin =
-      DisplayItem::paintPhaseToClipBoxType(PaintPhaseForeground);
-  DisplayItem::Type clipBoxEnd =
-      DisplayItem::clipTypeToEndClipType(clipBoxBegin);
-
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       // SPv2 slips the clip box (see BoxClipper).
@@ -269,11 +264,12 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceForSVGRoot) {
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
         TestDisplayItem(svgLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(svg, clipBoxBegin),
+        TestDisplayItem(svg, DisplayItem::kClipLayerForeground),
         TestDisplayItem(svg, DisplayItem::kBeginTransform),
         TestDisplayItem(rect, foregroundType),
         TestDisplayItem(svg, DisplayItem::kEndTransform),
-        TestDisplayItem(svg, clipBoxEnd),
+        TestDisplayItem(svg, DisplayItem::clipTypeToEndClipType(
+                                 DisplayItem::kClipLayerForeground)),
         TestDisplayItem(svgLayer, DisplayItem::kEndSubsequence),
         TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
   }
@@ -337,11 +333,12 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceForSVGRoot) {
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
         TestDisplayItem(svgLayer, DisplayItem::kSubsequence),
-        TestDisplayItem(svg, clipBoxBegin),
+        TestDisplayItem(svg, DisplayItem::kClipLayerForeground),
         TestDisplayItem(svg, DisplayItem::kBeginTransform),
         TestDisplayItem(rect, foregroundType),
         TestDisplayItem(svg, DisplayItem::kEndTransform),
-        TestDisplayItem(svg, clipBoxEnd),
+        TestDisplayItem(svg, DisplayItem::clipTypeToEndClipType(
+                                 DisplayItem::kClipLayerForeground)),
         TestDisplayItem(svgLayer, DisplayItem::kEndSubsequence),
         TestDisplayItem(div, backgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),

@@ -412,9 +412,7 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context,
 
   adjustClipRectsForChildren(layoutObject, clipRects);
 
-  if (shouldClipOverflow(context) || layoutObject.hasClip() ||
-      (layoutObject.isSVGRoot() &&
-       toLayoutSVGRoot(&layoutObject)->shouldApplyViewportClip())) {
+  if (shouldClipOverflow(context) || layoutObject.hasClip()) {
     // This offset cannot use convertToLayerCoords, because sometimes our
     // rootLayer may be across some transformed layer boundary, for example, in
     // the PaintLayerCompositor overlapMap, where clipRects are needed in view
@@ -546,8 +544,11 @@ void PaintLayerClipper::getOrCalculateClipRects(const ClipRectsContext& context,
 
 bool PaintLayerClipper::shouldClipOverflow(
     const ClipRectsContext& context) const {
-  return (m_layer.layoutObject()->hasOverflowClip() ||
-          m_layer.layoutObject()->styleRef().containsPaint()) &&
+  LayoutObject* layoutObject = m_layer.layoutObject();
+  return (layoutObject->hasOverflowClip() ||
+          layoutObject->styleRef().containsPaint() ||
+          (layoutObject->isSVGRoot() &&
+           toLayoutSVGRoot(layoutObject)->shouldApplyViewportClip())) &&
          shouldRespectOverflowClip(context);
 }
 

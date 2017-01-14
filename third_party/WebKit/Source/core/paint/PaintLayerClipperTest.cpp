@@ -50,12 +50,8 @@ TEST_P(PaintLayerClipperTest, LayoutSVGRoot) {
   targetPaintLayer->clipper().calculateRects(
       context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds,
       backgroundRect, foregroundRect);
-  EXPECT_EQ(LayoutRect(LayoutRect::infiniteIntRect()), backgroundRect.rect());
-  // TODO(chrishtr): the behavior for SPv2 is actually correct, since the
-  // svg root clip should be applied to the foreground rect. See
-  // crbug.com/680325.
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    EXPECT_EQ(LayoutRect(LayoutRect::infiniteIntRect()), foregroundRect.rect());
+  EXPECT_EQ(LayoutRect(8, 8, 200, 300), backgroundRect.rect());
+  EXPECT_EQ(LayoutRect(8, 8, 200, 300), foregroundRect.rect());
   EXPECT_EQ(LayoutRect(8, 8, 200, 300), layerBounds);
 }
 

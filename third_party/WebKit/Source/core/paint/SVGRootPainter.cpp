@@ -43,10 +43,6 @@ void SVGRootPainter::paintReplaced(const PaintInfo& paintInfo,
   if (pixelSnappedSize(paintOffset).isEmpty())
     return;
 
-  // SVG outlines are painted during PaintPhaseForeground.
-  if (shouldPaintSelfOutline(paintInfo.phase))
-    return;
-
   // An empty viewBox also disables rendering.
   // (http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute)
   SVGSVGElement* svg = toSVGSVGElement(m_layoutSVGRoot.node());
