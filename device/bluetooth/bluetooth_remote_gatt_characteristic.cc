@@ -145,15 +145,14 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
 // rid of the entire check, and run SubscribeToNotifications on all
 // platforms.
 //
-// TODO(http://crbug.com/633191): Remove OS_MACOSX from this check.
 // TODO(http://crbug.com/636270): Remove OS_WIN from this check.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
                  GetWeakPtr(), error_callback,
                  BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
-#else   // !(defined(OS_MACOSX) || defined(OS_WIN))
+#else   // defined(OS_WIN))
   // Find the Client Characteristic Configuration descriptor.
   std::vector<BluetoothRemoteGattDescriptor*> ccc_descriptor =
       GetDescriptorsByUUID(BluetoothRemoteGattDescriptor::
@@ -183,7 +182,7 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
           GetWeakPtr(), callback),
       base::Bind(&BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
                  GetWeakPtr(), error_callback));
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // defined(OS_WIN)
 }
 
 void BluetoothRemoteGattCharacteristic::CancelStartNotifySession(

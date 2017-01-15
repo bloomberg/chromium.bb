@@ -48,10 +48,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   std::vector<BluetoothRemoteGattDescriptor*> GetDescriptors() const override;
   BluetoothRemoteGattDescriptor* GetDescriptor(
       const std::string& identifier) const override;
-  void StartNotifySession(const NotifySessionCallback& callback,
-                          const ErrorCallback& error_callback) override;
-  void StopNotifySession(BluetoothGattNotifySession* session,
-                         const base::Closure& callback) override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
@@ -126,9 +122,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   std::pair<ValueCallback, ErrorCallback> read_characteristic_value_callbacks_;
   // WriteRemoteCharacteristic request callbacks.
   std::pair<base::Closure, ErrorCallback> write_characteristic_value_callbacks_;
-  // Stores StartNotifySession request callbacks.
-  typedef std::pair<NotifySessionCallback, ErrorCallback>
-      PendingStartNotifyCall;
+  // Stores SubscribeToNotifications request callbacks.
+  typedef std::pair<base::Closure, const ErrorCallback> PendingStartNotifyCall;
   std::vector<PendingStartNotifyCall> start_notify_session_callbacks_;
   // Flag indicates if GATT event registration is in progress.
   bool start_notifications_in_progress_;
