@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::Sequence;
 
 namespace extensions {
 namespace api {
@@ -161,6 +162,54 @@ TEST_F(KeepAliveDelegateTest, TestResetTimersAndPassthroughAllOtherTraffic) {
 
   keep_alive_->Start();
   keep_alive_->OnMessage(other_message);
+  RunPendingTasks();
+}
+
+TEST_F(KeepAliveDelegateTest, TestPassthroughMessagesAfterError) {
+  CastMessage message =
+      KeepAliveDelegate::CreateKeepAliveMessage("NEITHER_PING_NOR_PONG");
+  CastMessage message_after_error =
+      KeepAliveDelegate::CreateKeepAliveMessage("ANOTHER_NOT_PING_NOR_PONG");
+  CastMessage late_ping_message = KeepAliveDelegate::CreateKeepAliveMessage(
+      KeepAliveDelegate::kHeartbeatPingType);
+
+  EXPECT_CALL(*inner_delegate_, Start()).Times(1);
+  EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(2);
+  EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(2);
+  EXPECT_CALL(*liveness_timer_, Stop()).Times(1);
+  EXPECT_CALL(*ping_timer_, Stop()).Times(1);
+
+  Sequence message_and_error_sequence;
+  EXPECT_CALL(*inner_delegate_, OnMessage(EqualsProto(message)))
+      .Times(1)
+      .InSequence(message_and_error_sequence)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*inner_delegate_, OnError(CHANNEL_ERROR_INVALID_MESSAGE))
+      .Times(1)
+      .InSequence(message_and_error_sequence);
+  EXPECT_CALL(*inner_delegate_, OnMessage(EqualsProto(message_after_error)))
+      .Times(1)
+      .InSequence(message_and_error_sequence)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*inner_delegate_, OnMessage(EqualsProto(late_ping_message)))
+      .Times(0)
+      .InSequence(message_and_error_sequence)
+      .RetiresOnSaturation();
+
+  // Start, process one message, then error-out. KeepAliveDelegate will
+  // automatically stop itself.
+  keep_alive_->Start();
+  keep_alive_->OnMessage(message);
+  RunPendingTasks();
+  keep_alive_->OnError(CHANNEL_ERROR_INVALID_MESSAGE);
+  RunPendingTasks();
+
+  // Process a non-PING/PONG message and expect it to pass through.
+  keep_alive_->OnMessage(message_after_error);
+  RunPendingTasks();
+
+  // Process a late-arriving PING/PONG message, which should have no effect.
+  keep_alive_->OnMessage(late_ping_message);
   RunPendingTasks();
 }
 

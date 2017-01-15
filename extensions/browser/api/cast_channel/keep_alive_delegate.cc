@@ -9,7 +9,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
@@ -26,30 +25,19 @@ const char kPingSenderId[] = "chrome";
 const char kPingReceiverId[] = "receiver-0";
 const char kTypeNodeId[] = "type";
 
-// Determines if the JSON-encoded payload is equivalent to
-// { "type": |chk_type| }
-bool NestedPayloadTypeEquals(const std::string& chk_type,
-                             const CastMessage& message) {
-  MessageInfo message_info;
-  CastMessageToMessageInfo(message, &message_info);
-  std::string type_json;
-  if (!message_info.data->GetAsString(&type_json)) {
-    return false;
-  }
-  std::unique_ptr<base::Value> type_value(base::JSONReader::Read(type_json));
-  if (!type_value.get()) {
-    return false;
-  }
-
-  base::DictionaryValue* type_dict;
-  if (!type_value->GetAsDictionary(&type_dict)) {
-    return false;
-  }
-
+// Parses the JSON-encoded payload of |message| and returns the value in the
+// "type" field or the empty string if the parse fails or the field is not
+// found.
+std::string ParseForPayloadType(const CastMessage& message) {
+  std::unique_ptr<base::Value> parsed_payload(
+      base::JSONReader::Read(message.payload_utf8()));
+  base::DictionaryValue* payload_as_dict;
+  if (!parsed_payload || !parsed_payload->GetAsDictionary(&payload_as_dict))
+    return std::string();
   std::string type_string;
-  return (type_dict->HasKey(kTypeNodeId) &&
-          type_dict->GetString(kTypeNodeId, &type_string) &&
-          type_string == chk_type);
+  if (!payload_as_dict->GetString(kTypeNodeId, &type_string))
+    return std::string();
+  return type_string;
 }
 
 }  // namespace
@@ -176,19 +164,22 @@ void KeepAliveDelegate::OnError(ChannelError error_state) {
 }
 
 void KeepAliveDelegate::OnMessage(const CastMessage& message) {
-  DCHECK(started_);
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "KeepAlive::OnMessage : " << message.payload_utf8();
 
-  ResetTimers();
+  if (started_)
+    ResetTimers();
 
-  if (NestedPayloadTypeEquals(kHeartbeatPingType, message)) {
+  // PING and PONG messages are intercepted and handled by KeepAliveDelegate
+  // here. All other messages are passed through to |inner_delegate_|.
+  const std::string payload_type = ParseForPayloadType(message);
+  if (payload_type == kHeartbeatPingType) {
     VLOG(2) << "Received PING.";
-    SendKeepAliveMessage(pong_message_, kHeartbeatPongType);
-  } else if (NestedPayloadTypeEquals(kHeartbeatPongType, message)) {
+    if (started_)
+      SendKeepAliveMessage(pong_message_, kHeartbeatPongType);
+  } else if (payload_type == kHeartbeatPongType) {
     VLOG(2) << "Received PONG.";
   } else {
-    // PING and PONG messages are intentionally suppressed from layers above.
     inner_delegate_->OnMessage(message);
   }
 }
