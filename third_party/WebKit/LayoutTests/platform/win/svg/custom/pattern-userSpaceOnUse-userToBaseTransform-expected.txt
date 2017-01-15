@@ -32,7 +32,7 @@ layer at (0,0) size 800x358
       LayoutText {#text} at (408,324) size 4x17
         text run at (408,324) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-layer at (420,44) size 202x302
+layer at (420,44) size 202x302 clip at (421,45) size 200x300
   LayoutSVGRoot {svg} at (412,36) size 202x302
     LayoutSVGText {text} at (5,266) size 172.08x17 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (5,266) size 172.08x17
