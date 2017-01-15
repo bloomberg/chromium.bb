@@ -2334,6 +2334,9 @@ crbug.com/678493 virtual/mojo-loading/http/tests/permissions/chromium/test-reque
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
+crbug.com/681391 virtual/gpu-rasterization/images/imagemap-circle-focus-ring.html [ NeedsManualRebaseline ]
+crbug.com/681391 virtual/gpu-rasterization/images/imagemap-overflowing-circle-focus-ring.html [ NeedsManualRebaseline ]
+
 crbug.com/680043 sensor/ambient-light-sensor.html [ Pass Failure ]
 
 crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
