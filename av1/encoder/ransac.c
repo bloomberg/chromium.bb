@@ -8,6 +8,7 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+#define _POSIX_C_SOURCE 200112L  // rand_r()
 #include <memory.h>
 #include <math.h>
 #include <time.h>
