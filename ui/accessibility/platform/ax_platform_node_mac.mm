@@ -427,32 +427,17 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   return nil;
 }
 
-// NSAccessibility attributes.
-
-- (NSArray*)AXChildren {
-  if (!node_)
-    return nil;
-  int count = node_->GetChildCount();
-  NSMutableArray* children = [NSMutableArray arrayWithCapacity:count];
-  for (int i = 0; i < count; ++i)
-    [children addObject:node_->ChildAtIndex(i)];
-  return NSAccessibilityUnignoredChildren(children);
-}
-
-- (id)AXParent {
-  if (!node_)
-    return nil;
-  return NSAccessibilityUnignoredAncestor(node_->GetParent());
-}
-
-- (NSValue*)AXPosition {
-  return [NSValue valueWithPoint:self.boundsInScreen.origin];
-}
+// NSAccessibility attributes. Order them according to
+// NSAccessibilityConstants.h, or see https://crbug.com/678898.
 
 - (NSString*)AXRole {
   if (!node_)
     return nil;
   return [[self class] nativeRoleFromAXRole:node_->GetData().role];
+}
+
+- (NSString*)AXRoleDescription {
+  return NSAccessibilityRoleDescription([self AXRole], [self AXSubrole]);
 }
 
 - (NSString*)AXSubrole {
@@ -469,8 +454,54 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   return [AXPlatformNodeCocoa nativeSubroleFromAXRole:role];
 }
 
-- (NSString*)AXRoleDescription {
-  return NSAccessibilityRoleDescription([self AXRole], [self AXSubrole]);
+- (NSString*)AXHelp {
+  return [self getStringAttribute:ui::AX_ATTR_DESCRIPTION];
+}
+
+- (NSString*)AXValue {
+  return [self getStringAttribute:ui::AX_ATTR_VALUE];
+}
+
+- (NSNumber*)AXEnabled {
+  return [NSNumber
+      numberWithBool:!ui::AXNodeData::IsFlagSet(node_->GetData().state,
+                                                ui::AX_STATE_DISABLED)];
+}
+
+- (NSNumber*)AXFocused {
+  if (ui::AXNodeData::IsFlagSet(node_->GetData().state,
+                                ui::AX_STATE_FOCUSABLE))
+    return [NSNumber numberWithBool:(node_->GetDelegate()->GetFocus() ==
+                                     node_->GetNativeViewAccessible())];
+  return [NSNumber numberWithBool:NO];
+}
+
+- (id)AXParent {
+  if (!node_)
+    return nil;
+  return NSAccessibilityUnignoredAncestor(node_->GetParent());
+}
+
+- (NSArray*)AXChildren {
+  if (!node_)
+    return nil;
+  int count = node_->GetChildCount();
+  NSMutableArray* children = [NSMutableArray arrayWithCapacity:count];
+  for (int i = 0; i < count; ++i)
+    [children addObject:node_->ChildAtIndex(i)];
+  return NSAccessibilityUnignoredChildren(children);
+}
+
+- (id)AXWindow {
+  return node_->GetDelegate()->GetTopLevelWidget();
+}
+
+- (id)AXTopLevelUIElement {
+  return [self AXWindow];
+}
+
+- (NSValue*)AXPosition {
+  return [NSValue valueWithPoint:self.boundsInScreen.origin];
 }
 
 - (NSValue*)AXSize {
@@ -481,50 +512,13 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   return [self getStringAttribute:ui::AX_ATTR_NAME];
 }
 
-- (NSString*)AXValue {
-  return [self getStringAttribute:ui::AX_ATTR_VALUE];
-}
-
-- (NSValue*)AXEnabled {
-  return [NSNumber
-      numberWithBool:!ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                                ui::AX_STATE_DISABLED)];
-}
-
-- (NSValue*)AXFocused {
-  if (ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                ui::AX_STATE_FOCUSABLE))
-    return [NSNumber numberWithBool:(node_->GetDelegate()->GetFocus() ==
-                                     node_->GetNativeViewAccessible())];
-  return [NSNumber numberWithBool:NO];
-}
-
-- (NSString*)AXHelp {
-  return [self getStringAttribute:ui::AX_ATTR_DESCRIPTION];
-}
-
-- (NSWindow*)AXTopLevelUIElement {
-  return [self AXWindow];
-}
-
-- (NSWindow*)AXWindow {
-  return node_->GetDelegate()->GetTopLevelWidget();
-}
-
-// Textfield-specific NSAccessibility attributes.
-
-- (NSNumber*)AXInsertionPointLineNumber {
-  // Multiline is not supported on views.
-  return [NSNumber numberWithInteger:0];
-}
-
-- (NSNumber*)AXNumberOfCharacters {
-  return [NSNumber numberWithInteger:[[self AXValue] length]];
-}
+// Misc attributes.
 
 - (NSString*)AXPlaceholderValue {
   return [self getStringAttribute:ui::AX_ATTR_PLACEHOLDER];
 }
+
+// Text-specific attributes.
 
 - (NSString*)AXSelectedText {
   NSRange selectedTextRange;
@@ -547,9 +541,18 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
       valueWithRange:NSMakeRange(beginSelectionIndex, abs(end - start))];
 }
 
+- (NSNumber*)AXNumberOfCharacters {
+  return [NSNumber numberWithInteger:[[self AXValue] length]];
+}
+
 - (NSValue*)AXVisibleCharacterRange {
   return [NSValue
       valueWithRange:NSMakeRange(0, [[self AXNumberOfCharacters] intValue])];
+}
+
+- (NSNumber*)AXInsertionPointLineNumber {
+  // Multiline is not supported on views.
+  return [NSNumber numberWithInteger:0];
 }
 
 @end
