@@ -53,7 +53,6 @@ class MODULES_EXPORT PresentationAvailability final
   void suspend() override;
   void resume() override;
   void contextDestroyed(ExecutionContext*) override;
-  void contextDestroyed(Page*) override;
 
   // PageVisibilityObserver implementation.
   void pageVisibilityChanged() override;

@@ -55,8 +55,6 @@ void ScreenWakeLock::contextDestroyed(ExecutionContext*) {
   setKeepAwake(false);
 }
 
-void ScreenWakeLock::contextDestroyed(Page*) {}
-
 DEFINE_TRACE(ScreenWakeLock) {
   Supplement<LocalFrame>::trace(visitor);
   PageVisibilityObserver::trace(visitor);

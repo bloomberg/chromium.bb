@@ -123,8 +123,6 @@ void Geolocation::contextDestroyed(ExecutionContext*) {
   m_lastPosition = nullptr;
 }
 
-void Geolocation::contextDestroyed(Page*) {}
-
 void Geolocation::recordOriginTypeAccess() const {
   DCHECK(frame());
 

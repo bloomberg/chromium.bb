@@ -604,8 +604,6 @@ void NFC::contextDestroyed(ExecutionContext*) {
   m_callbacks.clear();
 }
 
-void NFC::contextDestroyed(Page*) {}
-
 // https://w3c.github.io/web-nfc/#writing-or-pushing-content
 // https://w3c.github.io/web-nfc/#dom-nfc-push
 ScriptPromise NFC::push(ScriptState* scriptState,

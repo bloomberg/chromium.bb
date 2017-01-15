@@ -65,6 +65,9 @@ class CORE_EXPORT SynchronousMutationObserver
   // Called before removing node.
   virtual void nodeWillBeRemoved(Node&);
 
+  // Called when detaching document.
+  virtual void contextDestroyed(Document*) {}
+
  protected:
   SynchronousMutationObserver();
 

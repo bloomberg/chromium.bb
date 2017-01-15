@@ -111,8 +111,6 @@ void BatteryManager::contextDestroyed(ExecutionContext*) {
   stopUpdating();
 }
 
-void BatteryManager::contextDestroyed(Page*) {}
-
 bool BatteryManager::hasPendingActivity() const {
   // Prevent V8 from garbage collecting the wrapper object if there are
   // event listeners attached to it.

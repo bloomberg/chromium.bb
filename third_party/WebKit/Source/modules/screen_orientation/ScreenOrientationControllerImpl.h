@@ -57,7 +57,6 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
 
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
   void contextDestroyed(ExecutionContext*) override;
-  void contextDestroyed(Page*) override;
   void pageVisibilityChanged() override;
 
   void notifyDispatcher();

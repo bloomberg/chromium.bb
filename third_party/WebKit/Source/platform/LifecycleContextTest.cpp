@@ -56,7 +56,7 @@ class TestingObserver final
     return new TestingObserver(context);
   }
 
-  void contextDestroyed(DummyContext* destroyedContext) override {
+  void contextDestroyed(DummyContext* destroyedContext) {
     if (m_observerToRemoveOnDestruct) {
       destroyedContext->removeObserver(m_observerToRemoveOnDestruct);
       m_observerToRemoveOnDestruct.clear();

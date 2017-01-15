@@ -29,6 +29,9 @@ class WorkerThreadLifecycleContext;
 class CORE_EXPORT WorkerThreadLifecycleObserver
     : public LifecycleObserver<WorkerThreadLifecycleContext,
                                WorkerThreadLifecycleObserver> {
+ public:
+  virtual void contextDestroyed(WorkerThreadLifecycleContext*) {}
+
  protected:
   explicit WorkerThreadLifecycleObserver(WorkerThreadLifecycleContext*);
   virtual ~WorkerThreadLifecycleObserver();

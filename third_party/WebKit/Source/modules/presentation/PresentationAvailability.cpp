@@ -98,8 +98,6 @@ void PresentationAvailability::contextDestroyed(ExecutionContext*) {
   setState(State::Inactive);
 }
 
-void PresentationAvailability::contextDestroyed(Page*) {}
-
 void PresentationAvailability::pageVisibilityChanged() {
   if (m_state == State::Inactive)
     return;

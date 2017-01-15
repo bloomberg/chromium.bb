@@ -66,7 +66,6 @@ class MODULES_EXPORT Geolocation final
 
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
   void contextDestroyed(ExecutionContext*) override;
-  void contextDestroyed(Page*) override;
 
   Document* document() const;
   LocalFrame* frame() const;

@@ -63,6 +63,8 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
 class CORE_EXPORT ContextLifecycleObserver
     : public LifecycleObserver<ExecutionContext, ContextLifecycleObserver> {
  public:
+  virtual void contextDestroyed(ExecutionContext*) {}
+
   ExecutionContext* getExecutionContext() const { return lifecycleContext(); }
   LocalFrame* frame() const;
 

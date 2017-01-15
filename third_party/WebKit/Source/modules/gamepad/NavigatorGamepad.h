@@ -76,7 +76,6 @@ class MODULES_EXPORT NavigatorGamepad final
 
   // ContextLifecycleObserver and PageVisibilityObserver
   void contextDestroyed(ExecutionContext*) override;
-  void contextDestroyed(Page*) override;
   void pageVisibilityChanged() override;
 
   // PlatformEventController

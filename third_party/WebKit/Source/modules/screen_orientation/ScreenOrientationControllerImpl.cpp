@@ -215,8 +215,6 @@ void ScreenOrientationControllerImpl::contextDestroyed(ExecutionContext*) {
   m_activeLock = false;
 }
 
-void ScreenOrientationControllerImpl::contextDestroyed(Page*) {}
-
 void ScreenOrientationControllerImpl::notifyDispatcher() {
   if (m_orientation && page()->isPageVisible())
     startUpdating();

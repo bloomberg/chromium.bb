@@ -178,8 +178,6 @@ void VibrationController::contextDestroyed(ExecutionContext*) {
   m_service.reset();
 }
 
-void VibrationController::contextDestroyed(Page*) {}
-
 void VibrationController::pageVisibilityChanged() {
   if (!page()->isPageVisible())
     cancel();

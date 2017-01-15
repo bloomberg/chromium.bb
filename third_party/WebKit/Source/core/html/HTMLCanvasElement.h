@@ -172,7 +172,6 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // ContextLifecycleObserver and PageVisibilityObserver implementation
   void contextDestroyed(ExecutionContext*) override;
-  void contextDestroyed(Page*) override;
 
   // PageVisibilityObserver implementation
   void pageVisibilityChanged() override;

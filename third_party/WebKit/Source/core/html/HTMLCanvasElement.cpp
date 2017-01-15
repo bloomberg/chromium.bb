@@ -1202,8 +1202,6 @@ void HTMLCanvasElement::contextDestroyed(ExecutionContext*) {
     m_context->stop();
 }
 
-void HTMLCanvasElement::contextDestroyed(Page*) {}
-
 void HTMLCanvasElement::styleDidChange(const ComputedStyle* oldStyle,
                                        const ComputedStyle& newStyle) {
   if (m_context)

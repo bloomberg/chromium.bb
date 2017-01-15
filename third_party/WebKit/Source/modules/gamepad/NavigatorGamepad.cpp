@@ -186,8 +186,6 @@ void NavigatorGamepad::contextDestroyed(ExecutionContext*) {
   stopUpdating();
 }
 
-void NavigatorGamepad::contextDestroyed(Page*) {}
-
 void NavigatorGamepad::registerWithDispatcher() {
   GamepadDispatcher::instance().addController(this);
   m_dispatchOneEventRunner->resume();
