@@ -51,23 +51,23 @@ There are four broad types of layout tests, listed in the order of preference.
   JavaScript tests, and are only used when JavaScript tests are insufficient,
   such as when testing paint code.
 * *Pixel Tests* render a test page and compare the result against a pre-rendered
-  baseline image in the repository. Pixel tests are less robust than all
-  alternatives listed above, because the rendering of a page is influenced by
+  baseline image in the repository. Pixel tests are less robust than the
+  first two types, because the rendering of a page is influenced by
   many factors such as the host computer's graphics card and driver, the
   platform's text rendering system, and various user-configurable operating
   system settings. For this reason, it is common for a pixel test to have a
-  different reference image for each platform that Blink is tested on. Pixel
-  tests are least preferred, because the reference images are
-  [quite cumbersome to manage](./layout_test_expectations.md).
-* *Dump Render Tree (DRT) Tests* output a textual representation of the render
+  different reference image for each platform that Blink is tested on, and
+  the reference images are
+  [quite cumbersome to manage](./layout_test_expectations.md). You
+  should only write a pixel test if you cannot use a reference test. By default
+  a pixel test will also dump the layout tree as text output, so they are
+  similar to ...
+* *Layout tree tests*, which output a textual representation of the layout
   tree, which is the key data structure in Blink's page rendering system. The
-  test passes if the output matches a baseline text file in the repository. In
-  addition to their text result, DRT tests can also produce an image result
-  which is compared to an image baseline, similarly to pixel tests (described
-  above). A DRT test with two results (text and image) passes if _both_ results
-  match the baselines in the repository. DRT tests are less desirable than all
-  the alternatives, because they depend on a browser implementation detail.
-
+  test passes if the output matches a baseline text file in the repository.
+  Layout tree tests are used as a last resort to test the internal quirks of
+  the implementation, and they should be avoided in favor of one of the earlier
+  options.
 ## General Principles
 
 The principles below are adapted from
@@ -760,6 +760,9 @@ contain useful guidance. The most relevant pieces of advice are below.
   apply when testing text, text flow, font selection, font fallback, font
   features, or other typographic information.
 
+TODO: Document how to opt out of generating a layout tree when generating
+pixel results.
+
 *** promo
 When using `window.testRunner.dumpAsTextWithPixelResults()`, the image result
 will always be 800x600px, because test pages are rendered in an 800x600px
@@ -798,34 +801,46 @@ frame, then call the passed callback. There is also a library at
 `fast/repaint/resources/text-based-repaint.js` to help with writing paint
 invalidation and repaint tests.
 
-## Dump Render Tree (DRT) Tests
+## Layout tree tests
 
-A Dump Render Tree test renders a web page and produces up to two results, which
+A layout tree test renders a web page and produces up to two results, which
 are compared against baseline files:
 
 * All tests output a textual representation of Blink's
-  [render tree](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/render-tree-construction),
+  [layout tree](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/render-tree-construction) (called the render tree on that page),
   which is compared against an `-expected.txt` text baseline.
 * Some tests also output the image of the rendered page, which is compared
   against an `-expected.png` image baseline, using the same method as pixel
   tests.
 
-TODO: Document the API used by DRT tests to opt out of producing image results.
+Whether you want a pixel test or a layout tree test depends on whether
+you care about the visual image, the details of how that image was
+constructed, or both. It is possible for multiple layout trees to produce
+the same pixel output, so it is important to make it clear in the test
+which outputs you really care about.
 
-A DRT test passes if _all_ of its results match their baselines. Like pixel
-tests, the output of DRT tests depends on platform-specific mechanisms, so DRT
-tests often require per-platform baselines. Furthermore, DRT tests depend on the
-render tree data structure, which means that if we replace the render tree data
-structure, we will need to look at each DRT test and consider whether it is
-still meaningful.
+TODO: Document the API used by layout tree tests to opt out of producing image
+results.
 
-For these reasons, DRT tests should **only** be used to cover aspects of the
-layout code that can only be tested by looking at the render tree. Any
-combination of the other test types is preferable to a DRT test. DRT tests are
+A layout tree test passes if _all_ of its results match their baselines. Like pixel
+tests, the output of layout tree tests depends on platform-specific details,
+so layout tree tests often require per-platform baselines. Furthermore,
+since the tests obviously depend on the layout tree structure,
+that means that if we change the layout tree you have to rebaseline each
+layout tree test to see if the results are still correct and whether the test
+is still meaningful. There are actually many cases where the layout tree
+output is misstated (i.e., wrong), because people didn't want to have to update
+existing baselines and tests. This is really unfortunate and confusing.
+
+For these reasons, layout tree tests should **only** be used to cover aspects
+of the layout code that can only be tested by looking at the layout tree. Any
+combination of the other test types is preferable to a layout tree test.
+Layout tree tests are
 [inherited from WebKit](https://webkit.org/blog/1456/layout-tests-practice/), so
-the repository may have some unfortunate examples of DRT tests.
+the repository may have some unfortunate examples of layout tree tests.
 
-The following page is an example of a DRT test.
+
+The following page is an example of a layout tree test.
 
 ```html
 <!doctype html>
@@ -866,11 +881,11 @@ test page uses the Ahem font (introduced above), whose main design goal is
 consistent cross-platform rendering. Had the test used another font, its text
 baseline would have depended on the fonts installed on the testing computer, and
 on the platform's font rendering system. Please follow the pixel tests
-guidelines and write reliable DRT tests!
+guidelines and write reliable layout tree tests!
 
-WebKit's render tree is described in
+WebKit's layout tree is described in
 [a series of posts](https://webkit.org/blog/114/webcore-rendering-i-the-basics/)
-on WebKit's blog. Some of the concepts there still apply to Blink's render tree.
+on WebKit's blog. Some of the concepts there still apply to Blink's layout tree.
 
 ## Directory Structure
 
