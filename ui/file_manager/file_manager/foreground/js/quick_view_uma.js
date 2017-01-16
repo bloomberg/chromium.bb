@@ -25,6 +25,27 @@ function QuickViewUma(volumeManager, dialogType) {
 }
 
 /**
+ * In which way quick view was opened.
+ * @enum {string}
+ * @const
+ */
+QuickViewUma.WayToOpen = {
+  CONTEXT_MENU: 'contextMenu',
+  SPACE_KEY: 'spaceKey',
+};
+
+/**
+ * The order should be consistnet with the definition  in histograms.xml.
+ *
+ * @const {!Array<QuickViewUma.WayToOpen>}
+ * @private
+ */
+QuickViewUma.WayToOpenValues_ = [
+  QuickViewUma.WayToOpen.CONTEXT_MENU,
+  QuickViewUma.WayToOpen.SPACE_KEY,
+];
+
+/**
  * Keep the order of this in sync with FileManagerVolumeType in
  * tools/metrics/histograms/histograms.xml.
  *
@@ -69,9 +90,13 @@ QuickViewUma.prototype.onEntryChanged = function(entry) {
  * Exports UMA based on the entry selected when Quick View is opened.
  *
  * @param {!FileEntry} entry
+ * @param {QuickViewUma.WayToOpen} wayToOpen
  */
-QuickViewUma.prototype.onOpened = function(entry) {
+QuickViewUma.prototype.onOpened = function(entry, wayToOpen) {
   this.exportFileType_(entry, 'QuickView.FileTypeOnLaunch');
+  metrics.recordEnum(
+      'QuickView.WayToOpen', wayToOpen, QuickViewUma.WayToOpenValues_);
+
   var volumeType = this.volumeManager_.getVolumeInfo(entry).volumeType;
   if (QuickViewUma.VolumeType.includes(volumeType)) {
     metrics.recordEnum(

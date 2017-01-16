@@ -90,7 +90,7 @@ function QuickViewController(
       'keydown', this.onKeyDownToOpen_.bind(this));
   this.listContainer_.element.addEventListener('command', function(event) {
     if(event.command.id === 'get-info')
-      this.display_();
+      this.display_(QuickViewUma.WayToOpen.CONTEXT_MENU);
   }.bind(this));
 }
 
@@ -151,7 +151,7 @@ QuickViewController.prototype.onKeyDownToOpen_ = function(event) {
     return;
   if (event.key === ' ') {
     event.preventDefault();
-    this.display_();
+    this.display_(QuickViewUma.WayToOpen.SPACE_KEY);
   }
 };
 
@@ -188,13 +188,15 @@ QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
 /**
  * Display quick view.
  *
+ * @param {QuickViewUma.WayToOpen=} opt_wayToOpen in which way opening of
+ *     quick view was triggered. Can be omitted if quick view is already open.
  * @private
  */
-QuickViewController.prototype.display_ = function() {
+QuickViewController.prototype.display_ = function(opt_wayToOpen) {
   this.updateQuickView_().then(function() {
     if (!this.quickView_.isOpened()) {
       this.quickView_.open();
-      this.quickViewUma_.onOpened(this.entries_[0]);
+      this.quickViewUma_.onOpened(this.entries_[0], assert(opt_wayToOpen));
     }
   }.bind(this));
 };
