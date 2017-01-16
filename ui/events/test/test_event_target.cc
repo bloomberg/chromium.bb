@@ -25,24 +25,20 @@ TestEventTarget::TestEventTarget()
 TestEventTarget::~TestEventTarget() {}
 
 void TestEventTarget::AddChild(std::unique_ptr<TestEventTarget> child) {
-  TestEventTarget* child_r = child.get();
-  if (child->parent()) {
-    AddChild(child->parent()->RemoveChild(child.release()));
-  } else {
-    children_.push_back(std::move(child));
-  }
-  child_r->set_parent(this);
+  DCHECK(!child->parent());
+  children_.push_back(std::move(child));
+  children_.back()->set_parent(this);
 }
 
 std::unique_ptr<TestEventTarget> TestEventTarget::RemoveChild(
     TestEventTarget* c) {
-  ScopedVector<TestEventTarget>::iterator iter = std::find(children_.begin(),
-                                                           children_.end(),
-                                                           c);
-  if (iter != children_.end()) {
-    children_.weak_erase(iter);
-    c->set_parent(NULL);
-    return base::WrapUnique(c);
+  for (auto iter = children_.begin(); iter != children_.end(); ++iter) {
+    if (iter->get() == c) {
+      std::unique_ptr<TestEventTarget> child = std::move(*iter);
+      children_.erase(iter);
+      child->set_parent(nullptr);
+      return child;
+    }
   }
   return nullptr;
 }
@@ -72,8 +68,8 @@ EventTarget* TestEventTarget::GetParentTarget() {
 }
 
 std::unique_ptr<EventTargetIterator> TestEventTarget::GetChildIterator() const {
-  return base::MakeUnique<EventTargetIteratorImpl<TestEventTarget>>(
-      children_.get());
+  return base::MakeUnique<EventTargetIteratorUniquePtrImpl<TestEventTarget>>(
+      children_);
 }
 
 EventTargeter* TestEventTarget::GetEventTargeter() {

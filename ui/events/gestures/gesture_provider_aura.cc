@@ -61,19 +61,15 @@ void GestureProviderAura::OnGestureEvent(const GestureEventData& gesture) {
     // Dispatching event caused by timer.
     client_->OnGestureEvent(gesture_consumer_, event.get());
   } else {
-    // Memory managed by ScopedVector pending_gestures_.
     pending_gestures_.push_back(std::move(event));
   }
 }
 
-ScopedVector<GestureEvent>* GestureProviderAura::GetAndResetPendingGestures() {
-  if (pending_gestures_.empty())
-    return NULL;
-  // Caller is responsible for deleting old_pending_gestures.
-  ScopedVector<GestureEvent>* old_pending_gestures =
-      new ScopedVector<GestureEvent>();
-  old_pending_gestures->swap(pending_gestures_);
-  return old_pending_gestures;
+std::vector<std::unique_ptr<GestureEvent>>
+GestureProviderAura::GetAndResetPendingGestures() {
+  std::vector<std::unique_ptr<GestureEvent>> result;
+  result.swap(pending_gestures_);
+  return result;
 }
 
 void GestureProviderAura::OnTouchEnter(int pointer_id, float x, float y) {

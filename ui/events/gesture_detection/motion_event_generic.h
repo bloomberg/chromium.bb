@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/containers/stack_container.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
@@ -127,7 +126,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   int button_state_;
   int flags_;
   base::StackVector<PointerProperties, kTypicalMaxPointerCount> pointers_;
-  ScopedVector<MotionEvent> historical_events_;
+  std::vector<std::unique_ptr<MotionEvent>> historical_events_;
 };
 
 }  // namespace ui

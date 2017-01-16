@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/events/event_target.h"
 
 typedef std::vector<std::string> HandlerSequenceRecorder;
@@ -35,7 +35,7 @@ class TestEventTarget : public EventTarget,
     mark_events_as_handled_ = handle;
   }
 
-  TestEventTarget* child_at(int index) { return children_[index]; }
+  TestEventTarget* child_at(int index) { return children_[index].get(); }
   size_t child_count() const { return children_.size(); }
 
   void SetEventTargeter(std::unique_ptr<EventTargeter> targeter);
@@ -68,7 +68,7 @@ class TestEventTarget : public EventTarget,
   void set_parent(TestEventTarget* parent) { parent_ = parent; }
 
   TestEventTarget* parent_;
-  ScopedVector<TestEventTarget> children_;
+  std::vector<std::unique_ptr<TestEventTarget>> children_;
   std::unique_ptr<EventTargeter> targeter_;
   bool mark_events_as_handled_;
 

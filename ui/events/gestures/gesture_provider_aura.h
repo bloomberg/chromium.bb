@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
@@ -42,7 +44,7 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   bool OnTouchEvent(TouchEvent* event);
   void OnTouchEventAck(uint32_t unique_touch_event_id, bool event_consumed);
   const MotionEventAura& pointer_state() { return pointer_state_; }
-  ScopedVector<GestureEvent>* GetAndResetPendingGestures();
+  std::vector<std::unique_ptr<GestureEvent>> GetAndResetPendingGestures();
   void OnTouchEnter(int pointer_id, float x, float y);
 
   // GestureProviderClient implementation
@@ -54,7 +56,7 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   FilteredGestureProvider filtered_gesture_provider_;
 
   bool handling_event_;
-  ScopedVector<GestureEvent> pending_gestures_;
+  std::vector<std::unique_ptr<GestureEvent>> pending_gestures_;
 
   // |gesture_consumer_| must outlive this object.
   GestureConsumer* gesture_consumer_;

@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_EVENT_TARGET_ITERATOR_H_
 #define UI_EVENTS_EVENT_TARGET_ITERATOR_H_
 
+#include <memory>
 #include <vector>
 
 namespace ui {
@@ -18,21 +19,19 @@ class EventTargetIterator {
   virtual EventTarget* GetNextTarget() = 0;
 };
 
-// Provides an EventTargetIterator implementation for iterating over a list of
+// Provides EventTargetIterator implementations for iterating over a list of
 // EventTargets. The list is iterated in the reverse order, since typically the
 // EventTargets are maintained in increasing z-order in the lists.
-template<typename T>
-class EventTargetIteratorImpl : public EventTargetIterator {
+template <typename T>
+class EventTargetIteratorPtrImpl : public EventTargetIterator {
  public:
-  explicit EventTargetIteratorImpl(const std::vector<T*>& children)
-      : begin_(children.rbegin()),
-        end_(children.rend()) {
-  }
-  ~EventTargetIteratorImpl() override {}
+  explicit EventTargetIteratorPtrImpl(const std::vector<T*>& children)
+      : begin_(children.rbegin()), end_(children.rend()) {}
+  ~EventTargetIteratorPtrImpl() override {}
 
   EventTarget* GetNextTarget() override {
     if (begin_ == end_)
-      return NULL;
+      return nullptr;
     EventTarget* target = *(begin_);
     ++begin_;
     return target;
@@ -41,6 +40,27 @@ class EventTargetIteratorImpl : public EventTargetIterator {
  private:
   typename std::vector<T*>::const_reverse_iterator begin_;
   typename std::vector<T*>::const_reverse_iterator end_;
+};
+
+template <typename T>
+class EventTargetIteratorUniquePtrImpl : public EventTargetIterator {
+ public:
+  explicit EventTargetIteratorUniquePtrImpl(
+      const std::vector<std::unique_ptr<T>>& children)
+      : begin_(children.rbegin()), end_(children.rend()) {}
+  ~EventTargetIteratorUniquePtrImpl() override {}
+
+  EventTarget* GetNextTarget() override {
+    if (begin_ == end_)
+      return nullptr;
+    EventTarget* target = begin_->get();
+    ++begin_;
+    return target;
+  }
+
+ private:
+  typename std::vector<std::unique_ptr<T>>::const_reverse_iterator begin_;
+  typename std::vector<std::unique_ptr<T>>::const_reverse_iterator end_;
 };
 
 }  // namespace ui

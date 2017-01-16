@@ -154,7 +154,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
       WARN_UNUSED_RESULT;
   ui::EventDispatchDetails ProcessGestures(
       Window* target,
-      ui::GestureRecognizer::Gestures* gestures) WARN_UNUSED_RESULT;
+      ui::GestureRecognizer::Gestures gestures) WARN_UNUSED_RESULT;
 
   // Called when a window becomes invisible, either by being removed
   // from root window hierarchy, via SetVisible(false) or being destroyed.

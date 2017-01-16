@@ -846,24 +846,20 @@ void TouchExplorationController::OnGestureEvent(ui::GestureConsumer* consumer,
                                                 ui::GestureEvent* gesture) {}
 
 void TouchExplorationController::ProcessGestureEvents() {
-  std::unique_ptr<ScopedVector<ui::GestureEvent>> gestures(
-      gesture_provider_->GetAndResetPendingGestures());
-  if (gestures) {
-    for (ScopedVector<GestureEvent>::iterator i = gestures->begin();
-         i != gestures->end();
-         ++i) {
-      if ((*i)->type() == ui::ET_GESTURE_SWIPE &&
-          state_ == GESTURE_IN_PROGRESS) {
-        OnSwipeEvent(*i);
-        // The tap timer to leave gesture state is ended, and we now wait for
-        // all fingers to be released.
-        tap_timer_.Stop();
-        SET_STATE(WAIT_FOR_NO_FINGERS);
-        return;
-      }
-      if (state_ == SLIDE_GESTURE && (*i)->IsScrollGestureEvent()) {
-        SideSlideControl(*i);
-      }
+  std::vector<std::unique_ptr<GestureEvent>> gestures =
+      gesture_provider_->GetAndResetPendingGestures();
+  for (const auto& gesture : gestures) {
+    if (gesture->type() == ui::ET_GESTURE_SWIPE &&
+        state_ == GESTURE_IN_PROGRESS) {
+      OnSwipeEvent(gesture.get());
+      // The tap timer to leave gesture state is ended, and we now wait for
+      // all fingers to be released.
+      tap_timer_.Stop();
+      SET_STATE(WAIT_FOR_NO_FINGERS);
+      return;
+    }
+    if (state_ == SLIDE_GESTURE && gesture->IsScrollGestureEvent()) {
+      SideSlideControl(gesture.get());
     }
   }
 }

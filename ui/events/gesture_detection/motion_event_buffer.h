@@ -6,9 +6,9 @@
 #define UI_EVENTS_GESTURE_DETECTION_MOTION_EVENT_BUFFER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 
@@ -55,13 +55,15 @@ class GESTURE_DETECTION_EXPORT MotionEventBuffer {
   void Flush(base::TimeTicks frame_time);
 
  private:
-  typedef ScopedVector<MotionEventGeneric> MotionEventVector;
+  using MotionEventVector = std::vector<std::unique_ptr<MotionEventGeneric>>;
 
   void FlushWithResampling(MotionEventVector events,
                            base::TimeTicks resample_time);
   void FlushWithoutResampling(MotionEventVector events);
 
   MotionEventBufferClient* const client_;
+
+  // An ordered vector of buffered events.
   MotionEventVector buffered_events_;
 
   // Time of the most recently extrapolated event. This will be 0 if the

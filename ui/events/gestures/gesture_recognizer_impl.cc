@@ -273,7 +273,7 @@ bool GestureRecognizerImpl::ProcessTouchEventPreDispatch(
   return gesture_provider->OnTouchEvent(event);
 }
 
-GestureRecognizer::Gestures* GestureRecognizerImpl::AckTouchEvent(
+GestureRecognizer::Gestures GestureRecognizerImpl::AckTouchEvent(
     uint32_t unique_event_id,
     ui::EventResult result,
     GestureConsumer* consumer) {

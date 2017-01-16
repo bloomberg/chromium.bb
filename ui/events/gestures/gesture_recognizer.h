@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
 #include "ui/events/gestures/gesture_types.h"
@@ -24,8 +24,7 @@ class EVENTS_EXPORT GestureRecognizer {
   static GestureRecognizer* Get();
   static void Reset();
 
-  // List of GestureEvent*.
-  typedef ScopedVector<GestureEvent> Gestures;
+  using Gestures = std::vector<std::unique_ptr<GestureEvent>>;
 
   virtual ~GestureRecognizer() {}
 
@@ -34,12 +33,11 @@ class EVENTS_EXPORT GestureRecognizer {
   virtual bool ProcessTouchEventPreDispatch(TouchEvent* event,
                                             GestureConsumer* consumer) = 0;
 
-  // Returns a list of zero or more GestureEvents. The caller is responsible for
-  // freeing the returned events. Acks the gesture packet in the queue which
-  // matches with unique_event_id.
-  virtual Gestures* AckTouchEvent(uint32_t unique_event_id,
-                                  ui::EventResult result,
-                                  GestureConsumer* consumer) = 0;
+  // Returns a list of zero or more GestureEvents. Acks the gesture packet in
+  // the queue which matches with unique_event_id.
+  virtual Gestures AckTouchEvent(uint32_t unique_event_id,
+                                 ui::EventResult result,
+                                 GestureConsumer* consumer) = 0;
 
   // This is called when the consumer is destroyed. So this should cleanup any
   // internal state maintained for |consumer|. Returns true iff there was
