@@ -368,6 +368,8 @@ interface ImageBitmap
     method close
     method constructor
 interface ImageData
+    getter colorSpace
+    getter data
     getter height
     getter width
     method constructor

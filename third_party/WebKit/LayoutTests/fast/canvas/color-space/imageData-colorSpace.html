@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+
+var data = new Uint8ClampedArray([255, 0, 0, 255]);
+
+function createImageDataAndGetColorSpace(colorSpace) {
+  experimental = new ImageData(1,1); 
+  imageData = experimental.createImageData(1, 1, colorSpace)
+  return imageData.colorSpace;
+}
+
+function createWithDataAndGetColorSpaceW(colorSpace) {
+  experimental = new ImageData(1,1); 
+  imageData = experimental.createImageData(data, 1, colorSpace)
+  return imageData.colorSpace;
+}
+
+function createWithDataAndGetColorSpaceWH(colorSpace) {
+  experimental = new ImageData(1,1); 
+  imageData = experimental.createImageData(data, 1, 1, colorSpace)
+  return imageData.colorSpace;
+}
+
+test(function() {
+  assert_equals((new ImageData(1,1)).colorSpace, "legacy-srgb", "The default color space for ImageData is legacy-srgb.");
+  assert_equals(createImageDataAndGetColorSpace("legacy-srgb"), "legacy-srgb", "The color space read from ImageData is the one that was set.");
+  assert_equals(createImageDataAndGetColorSpace("srgb"), "srgb", "The color space read from ImageData is the one that was set.");
+  assert_throws("NotSupportedError", function() {createImageDataAndGetColorSpace("linear-rgb");}, "Linear RGB is not supported in ImageData.");
+  assert_throws(null, function() {createImageDataAndGetColorSpace("undefined");}, "Only members of ImageDataColorSpace enum are processed in ImageData constructor.");
+
+  assert_equals((new ImageData(data,1)).colorSpace, "legacy-srgb", "The default color space for ImageData is legacy-srgb.");
+  assert_equals(createWithDataAndGetColorSpaceW("legacy-srgb"), "legacy-srgb", "The color space read from ImageData is the one that was set.");
+  assert_equals(createWithDataAndGetColorSpaceW("srgb"), "srgb", "The color space read from ImageData is the one that was set.");
+  assert_throws("NotSupportedError", function() {createWithDataAndGetColorSpaceW("linear-rgb");}, "Linear RGB is not supported in ImageData.");
+  assert_throws(null, function() {createWithDataAndGetColorSpaceW("undefined");}, "Only members of ImageDataColorSpace enum are processed in ImageData constructor.");
+
+  assert_equals((new ImageData(data,1, 1)).colorSpace, "legacy-srgb", "The default color space for ImageData is legacy-srgb.");
+  assert_equals(createWithDataAndGetColorSpaceWH("legacy-srgb"), "legacy-srgb", "The color space read from ImageData is the one that was set.");
+  assert_equals(createWithDataAndGetColorSpaceWH("srgb"), "srgb", "The color space read from ImageData is the one that was set.");
+  assert_throws("NotSupportedError", function() {createWithDataAndGetColorSpaceWH("linear-rgb");}, "Linear RGB is not supported in ImageData.");
+  assert_throws(null, function() {createWithDataAndGetColorSpaceWH("undefined");}, "Only members of ImageDataColorSpace enum are processed in ImageData constructor.");
+
+}, 'This test examines the correct behavior of createImageData API in setting and getting ImageData.colorSpace.');
+
+</script>
+</body>

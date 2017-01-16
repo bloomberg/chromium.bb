@@ -1,0 +1,22 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/junov/CanvasColorSpace/blob/master/CanvasColorSpaceProposal.md#imagedata
+
+[
+    Constructor(unsigned long sw, unsigned long sh),
+    Constructor(unsigned long sw, unsigned long sh, ImageDataColorSpace colorSpace),
+    Constructor(Float32Array data, unsigned long sw),
+    Constructor(Float32Array data, unsigned long sw, unsigned long sh),
+    Constructor(Float32Array data, unsigned long sw, unsigned long sh, ImageDataColorSpace colorSpace),
+
+    Exposed=(Window,Worker),
+    RaisesException=Constructor,
+    RuntimeEnabled=ExperimentalCanvasFeatures,
+] interface Float32ImageData {
+    readonly attribute unsigned long width;
+    readonly attribute unsigned long height;
+    readonly attribute Float32Array data;
+    readonly attribute ImageDataColorSpace colorSpace;
+};

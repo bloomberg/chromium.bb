@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+
+// RGBA(255,0,0,255) -> LinearRGB(0x3c00, 0x0, 0x0, 0x3c00)
+var data = new Float32Array([0x00003c00, 0x0, 0x0, 0x00003c00]);
+
+test(function() {
+
+  assert_equals((new Float32ImageData(1, 1)).colorSpace, "linear-rgb", "The default color space for Float32ImageData is linear-rgb.");
+  assert_equals((new Float32ImageData(1, 1, "linear-rgb")).colorSpace, "linear-rgb", "The color space read from Float32ImageData is the one that was set.");
+  assert_throws("NotSupportedError", function() {fImageData = new Float32ImageData(1, 1, "legacy-srgb");}, "Legacy SRGB is not supported in Float32ImageData.");
+  assert_throws("NotSupportedError", function() {fImageData = new Float32ImageData(1, 1, "srgb");}, "SRGB is not supported in Float32ImageData.");
+  assert_throws(null, function() {fImageData = new Float32ImageData(1, 1, "undefined");}, "Only members of ImageDataColorSpace enum are processed in Float32ImageData constructor.");
+
+  assert_equals((new Float32ImageData(data, 1, 1)).colorSpace, "linear-rgb", "The default color space for Float32ImageData is linear-rgb.");
+  assert_equals((new Float32ImageData(data, 1, 1, "linear-rgb")).colorSpace, "linear-rgb", "The color space read from Float32ImageData is the one that was set.");
+  assert_throws("NotSupportedError", function() {fImageData = new Float32ImageData(data, 1, 1, "legacy-srgb");}, "Legacy SRGB is not supported in Float32ImageData.");
+  assert_throws("NotSupportedError", function() {fImageData = new Float32ImageData(data, 1, 1, "srgb");}, "SRGB is not supported in Float32ImageData.");
+  assert_throws(null, function() {fImageData = new Float32ImageData(data, 1, 1, "undefined");}, "Only members of ImageDataColorSpace enum are processed in Float32ImageData constructor.");
+
+}, 'This test examines the correct behavior of Float32ImageData API in setting and getting ImageDataColorSpace.');
+
+</script>
+</body>

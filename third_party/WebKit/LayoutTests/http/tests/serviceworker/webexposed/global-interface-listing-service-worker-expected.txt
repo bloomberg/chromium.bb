@@ -344,6 +344,12 @@ interface FileReaderSync
     method readAsBinaryString
     method readAsDataURL
     method readAsText
+interface Float32ImageData
+    getter colorSpace
+    getter data
+    getter height
+    getter width
+    method constructor
 interface ForeignFetchEvent : ExtendableEvent
     getter origin
     getter request
@@ -510,9 +516,12 @@ interface ImageBitmap
     method close
     method constructor
 interface ImageData
+    getter colorSpace
+    getter data
     getter height
     getter width
     method constructor
+    method createImageData
 interface InstallEvent : ExtendableEvent
     method constructor
     method registerForeignFetch
