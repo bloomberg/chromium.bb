@@ -12,6 +12,7 @@
 #include "core/css/PropertyRegistry.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/css/parser/CSSVariableParser.h"
+#include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleChangeReason.h"
@@ -121,6 +122,8 @@ void PropertyRegistration::registerProperty(
           "The initial value provided is not computationally independent.");
       return;
     }
+    initial =
+        &StyleBuilderConverter::convertRegisteredPropertyInitialValue(*initial);
     RefPtr<CSSVariableData> initialVariableData = CSSVariableData::create(
         tokenizer.tokenRange(), isAnimationTainted, false);
     registry.registerProperty(

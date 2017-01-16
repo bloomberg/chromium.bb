@@ -194,6 +194,7 @@ class StyleBuilderConverter {
   static Length convertPositionLength(StyleResolverState&, const CSSValue&);
   static Rotation convertRotation(const CSSValue&);
 
+  static const CSSValue& convertRegisteredPropertyInitialValue(const CSSValue&);
   static const CSSValue& convertRegisteredPropertyValue(
       const StyleResolverState&,
       const CSSValue&);

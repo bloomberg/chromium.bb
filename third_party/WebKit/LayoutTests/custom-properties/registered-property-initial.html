@@ -9,11 +9,15 @@
 </style>
 <div id=target></div>
 <script>
+CSS.registerProperty({name: '--length', syntax: '<length>', initialValue: 'calc(10px + 15px)'});
+CSS.registerProperty({name: '--length-percentage', syntax: '<length-percentage>', initialValue: 'calc(1in + 10% + 4px)'});
 CSS.registerProperty({name: '--inherited-color', syntax: '<color>', initialValue: 'pink', inherits: true});
 CSS.registerProperty({name: '--non-inherited-color', syntax: '<color>', initialValue: 'purple'});
 
 test(function() {
     computedStyle = getComputedStyle(target);
+    assert_equals(computedStyle.getPropertyValue('--length'), '25px');
+    assert_equals(computedStyle.getPropertyValue('--length-percentage'), 'calc(100px + 10%)');
     assert_equals(computedStyle.getPropertyValue('--inherited-color'), 'pink');
     assert_equals(computedStyle.getPropertyValue('--non-inherited-color'), 'purple');
 

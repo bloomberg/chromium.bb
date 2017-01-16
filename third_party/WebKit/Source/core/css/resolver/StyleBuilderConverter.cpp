@@ -1284,30 +1284,46 @@ PassRefPtr<StylePath> StyleBuilderConverter::convertPathOrNone(
   return nullptr;
 }
 
-const CSSValue& StyleBuilderConverter::convertRegisteredPropertyValue(
-    const StyleResolverState& state,
+static const CSSValue& computeRegisteredPropertyValue(
+    const CSSToLengthConversionData& cssToLengthConversionData,
     const CSSValue& value) {
   // TODO(timloh): Images and transform-function values can also contain
   // lengths.
   if (value.isValueList()) {
     CSSValueList* newList = CSSValueList::createSpaceSeparated();
-    for (const CSSValue* innerValue : toCSSValueList(value))
-      newList->append(convertRegisteredPropertyValue(state, *innerValue));
+    for (const CSSValue* innerValue : toCSSValueList(value)) {
+      newList->append(computeRegisteredPropertyValue(cssToLengthConversionData,
+                                                     *innerValue));
+    }
     return *newList;
   }
 
   if (value.isPrimitiveValue()) {
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue.isCalculated() ||
+    if ((primitiveValue.isCalculated() &&
+         (primitiveValue.isCalculatedPercentageWithLength() ||
+          primitiveValue.isLength() || primitiveValue.isPercentage())) ||
         CSSPrimitiveValue::isRelativeUnit(
             primitiveValue.typeWithCalcResolved())) {
       // Instead of the actual zoom, use 1 to avoid potential rounding errors
       Length length = primitiveValue.convertToLength(
-          state.cssToLengthConversionData().copyWithAdjustedZoom(1));
+          cssToLengthConversionData.copyWithAdjustedZoom(1));
       return *CSSPrimitiveValue::create(length, 1);
     }
   }
   return value;
+}
+
+const CSSValue& StyleBuilderConverter::convertRegisteredPropertyInitialValue(
+    const CSSValue& value) {
+  return computeRegisteredPropertyValue(CSSToLengthConversionData(), value);
+}
+
+const CSSValue& StyleBuilderConverter::convertRegisteredPropertyValue(
+    const StyleResolverState& state,
+    const CSSValue& value) {
+  return computeRegisteredPropertyValue(state.cssToLengthConversionData(),
+                                        value);
 }
 
 }  // namespace blink

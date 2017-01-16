@@ -83,7 +83,7 @@ class CORE_EXPORT CSSToLengthConversionData {
     DoubleSize m_size;
   };
 
-  CSSToLengthConversionData() {}
+  CSSToLengthConversionData() : m_style(nullptr), m_zoom(1) {}
   CSSToLengthConversionData(const ComputedStyle*,
                             const FontSizes&,
                             const ViewportSize&,

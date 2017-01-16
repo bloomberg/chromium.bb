@@ -85,7 +85,6 @@ CSSToLengthConversionData::CSSToLengthConversionData(
       m_fontSizes(fontSizes),
       m_viewportSize(viewportSize),
       m_zoom(clampTo<float>(zoom, std::numeric_limits<float>::denorm_min())) {
-  ASSERT(m_style);
 }
 
 CSSToLengthConversionData::CSSToLengthConversionData(
