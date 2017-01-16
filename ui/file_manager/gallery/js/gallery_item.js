@@ -440,3 +440,27 @@ GalleryItem.prototype.rename = function(displayName) {
     this.entry_ = entry;
   }.bind(this));
 };
+
+/**
+ * The threshold size of an image in pixels, which we always use thumbnail
+ * image for slide-in animation above this. This is a hack to avoid an UI
+ * unresponsiveness when switching between images.
+ * @type {number}
+ * @const
+ */
+GalleryItem.HEAVY_RENDERING_THRESHOLD_PIXELS = 4000 * 3000;
+
+/**
+ * Whether the image requires long rendering time.
+ *
+ * @return {boolean}
+ */
+GalleryItem.prototype.requireLongRenderingTime = function() {
+  // Check for undefined values.
+  if (!this.metadataItem_ ||
+      !this.metadataItem_.imageHeight || !this.metadataItem_.imageWidth)
+    return false;
+  var numPixels = this.metadataItem_.imageHeight *
+      this.metadataItem_.imageWidth;
+  return numPixels > GalleryItem.HEAVY_RENDERING_THRESHOLD_PIXELS;
+};

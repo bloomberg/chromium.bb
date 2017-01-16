@@ -138,7 +138,7 @@ ImageView.LoadTarget = {
  * @return {ImageView.LoadTarget} Load target.
  */
 ImageView.getLoadTarget = function(item, effect) {
-  if (item.contentImage)
+  if (item.contentImage && !item.requireLongRenderingTime())
     return ImageView.LoadTarget.CACHED_MAIN_IMAGE;
 
   // Only show thumbnails if there is no effect or the effect is Slide or
