@@ -99,7 +99,7 @@ class IceTransportChannel : public sigslot::has_slots<> {
   void NotifyConnected();
 
   // Signal handlers for cricket::IceTransportInternal.
-  void OnCandidateGathered(cricket::IceTransportInternal2* ice_transport,
+  void OnCandidateGathered(cricket::IceTransportInternal* ice_transport,
                            const cricket::Candidate& candidate);
   void OnRouteChange(cricket::IceTransportInternal* ice_transport,
                      const cricket::Candidate& candidate);
