@@ -1148,6 +1148,8 @@ weston_wm_window_draw_decoration(void *data)
 	}
 
 	cairo_destroy(cr);
+	cairo_surface_flush(window->cairo_surface);
+	xcb_flush(window->wm->conn);
 
 	if (window->surface) {
 		pixman_region32_fini(&window->surface->pending.opaque);
