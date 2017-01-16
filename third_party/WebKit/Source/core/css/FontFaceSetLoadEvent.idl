@@ -30,10 +30,10 @@
 
 // https://dev.w3.org/csswg/css-font-loading/#fontfacesetloadevent
 
-// TODO(foolip): This interface should have a constructor and
-// [Exposed=Window,Worker], and thus not [NoInterfaceObject].
 [
-    NoInterfaceObject,
+  Constructor(DOMString type, optional FontFaceSetLoadEventInit eventInitDict),
+  // TODO(lunalu): Exposed=(Window,Worker)
+  Exposed=Window
 ] interface FontFaceSetLoadEvent : Event {
-    readonly attribute sequence<FontFace> fontfaces;
+    [SameObject] readonly attribute FrozenArray<FontFace> fontfaces;
 };
