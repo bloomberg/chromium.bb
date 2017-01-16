@@ -645,7 +645,7 @@ void PersonalDataManager::UpdateServerCreditCard(
   Refresh();
 }
 
-void PersonalDataManager::UpdateServerCardBillingAddress(
+void PersonalDataManager::UpdateServerCardMetadata(
     const CreditCard& credit_card) {
   DCHECK_NE(CreditCard::LOCAL_CARD, credit_card.record_type());
 

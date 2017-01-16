@@ -767,7 +767,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         PersonalDataManager pdm = PersonalDataManager.getInstance();
         if (!card.getIsLocal()) {
-            pdm.updateServerCardBillingAddress(card.getServerId(), card.getBillingAddressId());
+            pdm.updateServerCardBillingAddress(card);
             return;
         }
 

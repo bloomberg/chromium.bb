@@ -532,14 +532,11 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
 void PersonalDataManagerAndroid::UpdateServerCardBillingAddress(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
-    const JavaParamRef<jstring>& jcard_server_id,
-    const JavaParamRef<jstring>& jbilling_address_id) {
-  CreditCard card("", kSettingsOrigin);
-  card.set_record_type(CreditCard::MASKED_SERVER_CARD);
-  card.set_server_id(ConvertJavaStringToUTF8(env, jcard_server_id));
-  card.set_billing_address_id(ConvertJavaStringToUTF8(env,
-      jbilling_address_id));
-  personal_data_manager_->UpdateServerCardBillingAddress(card);
+    const JavaParamRef<jobject>& jcard) {
+  CreditCard card;
+  PopulateNativeCreditCardFromJava(jcard, env, &card);
+
+  personal_data_manager_->UpdateServerCardMetadata(card);
 }
 
 ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::GetBasicCardPaymentType(

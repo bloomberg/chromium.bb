@@ -161,13 +161,11 @@ class PersonalDataManagerAndroid
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jcard);
 
-  // Updates the billing address of a server credit card with server ID
-  // |jcard_server_id|.
+  // Updates the billing address of a server credit card |jcard|.
   void UpdateServerCardBillingAddress(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jstring>& jcard_server_id,
-      const base::android::JavaParamRef<jstring>& jbilling_address_id);
+      const base::android::JavaParamRef<jobject>& jcard);
 
   // Returns the card type according to PaymentRequest spec, or an empty string
   // if the given card number is not valid and |jempty_if_invalid| is true.

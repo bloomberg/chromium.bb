@@ -678,10 +678,9 @@ public class PersonalDataManager {
         return nativeSetCreditCard(mPersonalDataManagerAndroid, card);
     }
 
-    public void updateServerCardBillingAddress(String cardServerId, String billingAddressId) {
+    public void updateServerCardBillingAddress(CreditCard card) {
         ThreadUtils.assertOnUiThread();
-        nativeUpdateServerCardBillingAddress(
-                mPersonalDataManagerAndroid, cardServerId, billingAddressId);
+        nativeUpdateServerCardBillingAddress(mPersonalDataManagerAndroid, card);
     }
 
     public String getBasicCardPaymentType(String cardNumber, boolean emptyIfInvalid) {
@@ -908,7 +907,7 @@ public class PersonalDataManager {
     private native String nativeSetCreditCard(long nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeUpdateServerCardBillingAddress(long nativePersonalDataManagerAndroid,
-            String guid, String billingAddressId);
+            CreditCard card);
     private native String nativeGetBasicCardPaymentType(
             long nativePersonalDataManagerAndroid, String cardNumber, boolean emptyIfInvalid);
     private native void nativeAddServerCreditCardForTest(long nativePersonalDataManagerAndroid,
