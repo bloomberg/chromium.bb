@@ -44,7 +44,7 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
   ApplyStyleCommand::create(document(), EditingStyle::create(style),
                             InputEvent::InputType::FormatJustifyCenter,
                             ApplyStyleCommand::ForceBlockProperties)
-      ->apply(EditCommandSource::kDOM);
+      ->apply();
   // Shouldn't crash.
 }
 

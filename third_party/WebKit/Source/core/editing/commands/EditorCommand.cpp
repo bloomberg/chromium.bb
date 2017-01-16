@@ -363,14 +363,14 @@ static bool executeApplyParagraphStyle(LocalFrame& frame,
 }
 
 static bool executeInsertFragment(LocalFrame& frame,
-                                  EditCommandSource source,
+                                  EditCommandSource,
                                   DocumentFragment* fragment) {
   DCHECK(frame.document());
   return ReplaceSelectionCommand::create(
              *frame.document(), fragment,
              ReplaceSelectionCommand::PreventNesting,
              InputEvent::InputType::None)
-      ->apply(source);
+      ->apply();
 }
 
 static bool executeInsertElement(LocalFrame& frame,
@@ -541,12 +541,12 @@ static bool executeCopy(LocalFrame& frame,
 
 static bool executeCreateLink(LocalFrame& frame,
                               Event*,
-                              EditCommandSource source,
+                              EditCommandSource,
                               const String& value) {
   if (value.isEmpty())
     return false;
   DCHECK(frame.document());
-  return CreateLinkCommand::create(*frame.document(), value)->apply(source);
+  return CreateLinkCommand::create(*frame.document(), value)->apply();
 }
 
 static bool executeCut(LocalFrame& frame,
@@ -593,10 +593,9 @@ static bool executeDelete(LocalFrame& frame,
       // time, siding with IE, not Firefox).
       DCHECK(frame.document());
       TypingCommand::deleteKeyPressed(
-          *frame.document(), source,
-          frame.selection().granularity() == WordGranularity
-              ? TypingCommand::SmartDelete
-              : 0);
+          *frame.document(), frame.selection().granularity() == WordGranularity
+                                 ? TypingCommand::SmartDelete
+                                 : 0);
       return true;
   }
   NOTREACHED();
@@ -756,7 +755,7 @@ static bool executeForeColor(LocalFrame& frame,
 
 static bool executeFormatBlock(LocalFrame& frame,
                                Event*,
-                               EditCommandSource source,
+                               EditCommandSource,
                                const String& value) {
   String tagName = value.lower();
   if (tagName[0] == '<' && tagName[tagName.length() - 1] == '>')
@@ -771,7 +770,7 @@ static bool executeFormatBlock(LocalFrame& frame,
   DCHECK(frame.document());
   FormatBlockCommand* command =
       FormatBlockCommand::create(*frame.document(), qualifiedTagName);
-  command->apply(source);
+  command->apply();
   return command->didApply();
 }
 
@@ -791,8 +790,7 @@ static bool executeForwardDelete(LocalFrame& frame,
       // only needed for backward compatibility with ourselves, and for
       // consistency with Delete.
       DCHECK(frame.document());
-      TypingCommand::forwardDeleteKeyPressed(*frame.document(), source,
-                                             &editingState);
+      TypingCommand::forwardDeleteKeyPressed(*frame.document(), &editingState);
       if (editingState.isAborted())
         return false;
       return true;
@@ -811,12 +809,12 @@ static bool executeIgnoreSpelling(LocalFrame& frame,
 
 static bool executeIndent(LocalFrame& frame,
                           Event*,
-                          EditCommandSource source,
+                          EditCommandSource,
                           const String&) {
   DCHECK(frame.document());
   return IndentOutdentCommand::create(*frame.document(),
                                       IndentOutdentCommand::Indent)
-      ->apply(source);
+      ->apply();
 }
 
 static bool executeInsertBacktab(LocalFrame& frame,
@@ -876,7 +874,7 @@ static bool executeInsertLineBreak(LocalFrame& frame,
       // is only needed for backward compatibility with ourselves, and for
       // consistency with other commands.
       DCHECK(frame.document());
-      return TypingCommand::insertLineBreak(*frame.document(), source);
+      return TypingCommand::insertLineBreak(*frame.document());
   }
   NOTREACHED();
   return false;
@@ -897,29 +895,29 @@ static bool executeInsertNewline(LocalFrame& frame,
 
 static bool executeInsertNewlineInQuotedContent(LocalFrame& frame,
                                                 Event*,
-                                                EditCommandSource source,
+                                                EditCommandSource,
                                                 const String&) {
   DCHECK(frame.document());
   return TypingCommand::insertParagraphSeparatorInQuotedContent(
-      *frame.document(), source);
+      *frame.document());
 }
 
 static bool executeInsertOrderedList(LocalFrame& frame,
                                      Event*,
-                                     EditCommandSource source,
+                                     EditCommandSource,
                                      const String&) {
   DCHECK(frame.document());
   return InsertListCommand::create(*frame.document(),
                                    InsertListCommand::OrderedList)
-      ->apply(source);
+      ->apply();
 }
 
 static bool executeInsertParagraph(LocalFrame& frame,
                                    Event*,
-                                   EditCommandSource source,
+                                   EditCommandSource,
                                    const String&) {
   DCHECK(frame.document());
-  return TypingCommand::insertParagraphSeparator(*frame.document(), source);
+  return TypingCommand::insertParagraphSeparator(*frame.document());
 }
 
 static bool executeInsertTab(LocalFrame& frame,
@@ -935,21 +933,21 @@ static bool executeInsertTab(LocalFrame& frame,
 
 static bool executeInsertText(LocalFrame& frame,
                               Event*,
-                              EditCommandSource source,
+                              EditCommandSource,
                               const String& value) {
   DCHECK(frame.document());
-  TypingCommand::insertText(*frame.document(), source, value, 0);
+  TypingCommand::insertText(*frame.document(), value, 0);
   return true;
 }
 
 static bool executeInsertUnorderedList(LocalFrame& frame,
                                        Event*,
-                                       EditCommandSource source,
+                                       EditCommandSource,
                                        const String&) {
   DCHECK(frame.document());
   return InsertListCommand::create(*frame.document(),
                                    InsertListCommand::UnorderedList)
-      ->apply(source);
+      ->apply();
 }
 
 static bool executeJustifyCenter(LocalFrame& frame,
@@ -1470,12 +1468,12 @@ static bool executeMoveToRightEndOfLineAndModifySelection(LocalFrame& frame,
 
 static bool executeOutdent(LocalFrame& frame,
                            Event*,
-                           EditCommandSource source,
+                           EditCommandSource,
                            const String&) {
   DCHECK(frame.document());
   return IndentOutdentCommand::create(*frame.document(),
                                       IndentOutdentCommand::Outdent)
-      ->apply(source);
+      ->apply();
 }
 
 static bool executeToggleOverwrite(LocalFrame& frame,
@@ -1775,10 +1773,10 @@ static bool executeUndo(LocalFrame& frame,
 
 static bool executeUnlink(LocalFrame& frame,
                           Event*,
-                          EditCommandSource source,
+                          EditCommandSource,
                           const String&) {
   DCHECK(frame.document());
-  return UnlinkCommand::create(*frame.document())->apply(source);
+  return UnlinkCommand::create(*frame.document())->apply();
 }
 
 static bool executeUnscript(LocalFrame& frame,
