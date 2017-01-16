@@ -171,8 +171,13 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
         int abovePosition = getAdapterPosition() - 1;
         boolean hasCardAbove = abovePosition >= 0 && isCard(adapter.getItemViewType(abovePosition));
         int belowPosition = getAdapterPosition() + 1;
-        boolean hasCardBelow = belowPosition < adapter.getItemCount()
-                && isCard(adapter.getItemViewType(belowPosition));
+        boolean hasCardBelow = false;
+        if (belowPosition < adapter.getItemCount()) {
+            // The PROMO card has an empty margin and will not be right against the preceding card,
+            // so we don't consider it a card from the point of view of the preceding one.
+            @ItemViewType int belowViewType = adapter.getItemViewType(belowPosition);
+            hasCardBelow = isCard(belowViewType) && belowViewType != ItemViewType.PROMO;
+        }
 
         getParams().bottomMargin = hasCardBelow ? -mCards9PatchAdjustment : 0;
 

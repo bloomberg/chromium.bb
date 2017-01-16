@@ -8,7 +8,6 @@ import android.content.Context;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -176,43 +175,18 @@ public class SignInPromo extends OptionalLeaf
      * View Holder for {@link SignInPromo}.
      */
     public static class ViewHolder extends StatusCardViewHolder {
-        private final int mSeparationSpaceSize;
 
         public ViewHolder(NewTabPageRecyclerView parent, NewTabPageManager newTabPageManager,
                 UiConfig config) {
             super(parent, newTabPageManager, config);
-            mSeparationSpaceSize = parent.getResources().getDimensionPixelSize(
+            getParams().topMargin = parent.getResources().getDimensionPixelSize(
                     R.dimen.ntp_sign_in_promo_margin_top);
         }
 
         @DrawableRes
         @Override
         protected int selectBackground(boolean hasCardAbove, boolean hasCardBelow) {
-            assert !hasCardBelow;
-            if (hasCardAbove) return R.drawable.ntp_signin_promo_card_bottom;
             return R.drawable.ntp_signin_promo_card_single;
-        }
-
-        @Override
-        public void updateLayoutParams() {
-            super.updateLayoutParams();
-
-            if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
-
-            int precedingPosition = getAdapterPosition() - 1;
-            if (precedingPosition < 0) return; // Invalid adapter position, just do nothing.
-
-            @ItemViewType
-            int precedingCardType =
-                    getRecyclerView().getAdapter().getItemViewType(precedingPosition);
-
-            // The sign in promo should stick to the articles of the preceding section, but have
-            // some space otherwise.
-            if (precedingCardType != ItemViewType.SNIPPET) {
-                getParams().topMargin = mSeparationSpaceSize;
-            } else {
-                getParams().topMargin = 0;
-            }
         }
 
         @Override
