@@ -107,6 +107,9 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
   native_app_package_ = ConvertJavaStringToUTF8(env, japp_package);
   icon_url_ = GURL(ConvertJavaStringToUTF8(env, jicon_url));
 
+  if (!CheckIfShouldShowBanner())
+    return false;
+
   return ManifestIconDownloader::Download(
       web_contents(), icon_url_, GetIdealIconSizeInPx(),
       GetMinimumIconSizeInPx(),

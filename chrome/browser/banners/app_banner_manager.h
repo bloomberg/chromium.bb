@@ -104,6 +104,11 @@ class AppBannerManager : public content::WebContentsObserver,
   explicit AppBannerManager(content::WebContents* web_contents);
   ~AppBannerManager() override;
 
+  // Returns true if the banner should be shown. Returns false if the banner has
+  // been shown too recently, or if the app has already been installed.
+  // GetAppIdentifier() must return a valid value for this method to work.
+  bool CheckIfShouldShowBanner();
+
   // Return a string identifying this app for metrics.
   virtual std::string GetAppIdentifier();
 
@@ -220,9 +225,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Creates a banner for the app. Overridden by subclasses as the infobar is
   // platform-specific.
   virtual void ShowBanner() = 0;
-
-  // Returns true if the banner should be shown.
-  bool CheckIfShouldShowBanner();
 
   // Called after the manager sends a message to the renderer regarding its
   // intention to show a prompt. The renderer will send a message back with the

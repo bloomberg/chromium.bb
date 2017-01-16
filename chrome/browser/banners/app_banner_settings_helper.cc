@@ -246,12 +246,6 @@ InstallableStatusCode AppBannerSettingsHelper::ShouldShowBanner(
     const GURL& origin_url,
     const std::string& package_name_or_start_url,
     base::Time time) {
-  // Ignore all checks if the flag to do so is set.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBypassAppBannerEngagementChecks)) {
-    return NO_ERROR_DETECTED;
-  }
-
   // Never show a banner when the package name or URL is empty.
   if (package_name_or_start_url.empty())
     return PACKAGE_NAME_OR_START_URL_EMPTY;
@@ -277,9 +271,8 @@ InstallableStatusCode AppBannerSettingsHelper::ShouldShowBanner(
   base::Time shown_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
                            APP_BANNER_EVENT_DID_SHOW);
-  if (time - shown_time < base::TimeDelta::FromDays(gDaysAfterIgnoredToShow)) {
+  if (time - shown_time < base::TimeDelta::FromDays(gDaysAfterIgnoredToShow))
     return PREVIOUSLY_IGNORED;
-  }
 
   return NO_ERROR_DETECTED;
 }

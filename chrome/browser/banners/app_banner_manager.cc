@@ -240,14 +240,7 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
 }
 
 void AppBannerManager::PerformInstallableCheck() {
-  if (IsWebAppInstalled(web_contents()->GetBrowserContext(),
-                        manifest_.start_url, manifest_url_) &&
-      !IsDebugMode()) {
-    ReportStatus(web_contents(), ALREADY_INSTALLED);
-    Stop();
-  }
-
-  if (!is_active_)
+  if (!CheckIfShouldShowBanner())
     return;
 
   // Fetch and verify the other required information.
@@ -337,13 +330,6 @@ void AppBannerManager::Stop() {
 
 void AppBannerManager::SendBannerPromptRequest() {
   RecordCouldShowBanner();
-
-  // Given all of the other checks that have been made, the only possible reason
-  // for stopping now is that the app has been added to the homescreen.
-  if (!IsDebugMode() && !CheckIfShouldShowBanner()) {
-    Stop();
-    return;
-  }
 
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_CREATED);
   event_request_id_ = ++gCurrentRequestID;
@@ -450,37 +436,43 @@ void AppBannerManager::RecordCouldShowBanner() {
 }
 
 bool AppBannerManager::CheckIfShouldShowBanner() {
-  content::WebContents* contents = web_contents();
-  DCHECK(contents);
-
-  InstallableStatusCode code = AppBannerSettingsHelper::ShouldShowBanner(
-      contents, validated_url_, GetAppIdentifier(), GetCurrentTime());
-  if (code == NO_ERROR_DETECTED)
+  if (IsDebugMode())
     return true;
 
-  switch (code) {
-    case ALREADY_INSTALLED:
-      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
-      break;
-    case PREVIOUSLY_BLOCKED:
-      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
-      break;
-    case PREVIOUSLY_IGNORED:
-      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
-      break;
-    case INSUFFICIENT_ENGAGEMENT:
-      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_NOT_VISITED_ENOUGH);
-      break;
-    default:
-      break;
+  // Check whether we are permitted to show the banner. If we have already
+  // added this site to homescreen, or if the banner has been shown too
+  // recently, prevent the banner from being shown.
+  content::WebContents* contents = web_contents();
+  InstallableStatusCode code = AppBannerSettingsHelper::ShouldShowBanner(
+      contents, validated_url_, GetAppIdentifier(), GetCurrentTime());
+
+  if (code == NO_ERROR_DETECTED &&
+      IsWebAppInstalled(contents->GetBrowserContext(), manifest_.start_url,
+                        manifest_url_)) {
+    code = ALREADY_INSTALLED;
   }
 
-  // If we are in debug mode, AppBannerSettingsHelper::ShouldShowBanner must
-  // return NO_ERROR_DETECTED (bypass flag is set) or we must not have entered
-  // this method.
-  DCHECK(!IsDebugMode());
-  ReportStatus(web_contents(), code);
-  return false;
+  if (code != NO_ERROR_DETECTED) {
+    switch (code) {
+      case ALREADY_INSTALLED:
+        banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
+        break;
+      case PREVIOUSLY_BLOCKED:
+        banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
+        break;
+      case PREVIOUSLY_IGNORED:
+        banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
+        break;
+      case PACKAGE_NAME_OR_START_URL_EMPTY:
+        break;
+      default:
+        NOTREACHED();
+    }
+    ReportStatus(contents, code);
+    Stop();
+    return false;
+  }
+  return true;
 }
 
 void AppBannerManager::OnBannerPromptReply(
