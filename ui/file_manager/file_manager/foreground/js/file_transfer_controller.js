@@ -673,7 +673,7 @@ FileTransferController.prototype.preloadThumbnailImage_ = function(entry) {
   var imagePromise = this.thumbnailModel_.get([entry]).then(function(metadata) {
     return new Promise(function(fulfill, reject) {
       var loader = new ThumbnailLoader(
-          entry, ThumbnailLoader.LoaderType.IMAGE, metadata[0]);
+          entry, ThumbnailLoader.LoaderType.CANVAS, metadata[0]);
       loader.loadDetachedImage(function(result) {
         if (result)
           fulfill(loader.getImage());

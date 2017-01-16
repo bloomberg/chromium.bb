@@ -168,3 +168,40 @@ function testLoadAsDataUrlFromExternal(callback) {
         assertEquals(externalThumbnailDataUrl, result.data);
       }), callback);
 }
+
+function testLoadDetachedFromExifInCavnasModeThumbnailRotate(callback) {
+  ImageLoaderClient.getInstance = function() {
+    return {
+      load: function(url, callback, opt_option) {
+        // Assert that data url is passed.
+        assertTrue(/^data:/i.test(url));
+        callback({status: 'success', data: url, width: 64, height: 32});
+      }
+    };
+  };
+
+  var metadata = {
+    thumbnail: {
+      url: generateSampleImageDataUrl(64, 32),
+      transform: {
+        rotate90: 1,
+        scaleX: 1,
+        scaleY: -1,
+      }
+    }
+  };
+
+  var fileSystem = new MockFileSystem('volume-id');
+  var entry = new MockEntry(fileSystem, '/Test1.jpg');
+  var thumbnailLoader =
+      new ThumbnailLoader(entry, ThumbnailLoader.LoaderType.CANVAS, metadata);
+
+  reportPromise(
+    new Promise(function(resolve, reject) {
+      thumbnailLoader.loadDetachedImage(resolve);
+    }).then(function() {
+      var image = thumbnailLoader.getImage();
+      assertEquals(32, image.width);
+      assertEquals(64, image.height);
+    }), callback);
+}

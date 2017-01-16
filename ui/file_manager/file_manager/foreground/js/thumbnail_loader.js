@@ -324,6 +324,46 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
 };
 
 /**
+ * Renders an Image to canvas applying an image transformation.
+ * @param {Image} image Original image. Can be an unattached one to an elment.
+ * @param {number} width width of the original image
+ * @param {number} height height of the original image
+ * @param {{scaleX:number, scaleY:number, rotate90: number}} transform
+ *     Transform.
+ * @param {!Object} canvas
+ */
+ThumbnailLoader.prototype.renderImageToCanvasWithTransform_ = function(
+    image, width, height, transform, canvas) {
+  var scaleX = transform.scaleX;
+  var scaleY = transform.scaleY;
+  var rotate90 = transform.rotate90;
+
+  assert(scaleX === 1 || scaleX === -1);
+  assert(scaleY === 1 || scaleY === -1);
+  assert(rotate90 === 0 || rotate90 === 1);
+
+  var context = canvas.getContext('2d');
+
+  canvas.width = rotate90 === 1 ? height : width;
+  canvas.height = rotate90 === 1 ? width : height;
+
+  // Scale transformation should be applied before rotate transformation.
+  // i.e. When matrices for scale and rotate are A and B, transformation matrix
+  // should be BA.
+
+  // Rotate 90 degree at center.
+  if (rotate90 === 1) {
+    context.translate(height, 0);
+    context.rotate(Math.PI / 2);
+  }
+
+  // Flip X and Y.
+  context.translate(scaleX === -1 ? width : 0, scaleY === -1 ? height : 0);
+  context.scale(scaleX, scaleY);
+  context.drawImage(image, 0, 0);
+};
+
+/**
  * Applies transform to data url.
  *
  * @param {{scaleX:number, scaleY:number, rotate90: number}} transform
@@ -338,13 +378,6 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
 ThumbnailLoader.prototype.applyTransformToDataUrl_ = function(
     transform, dataUrl, width, height) {
   var image = new Image();
-  var scaleX = this.transform_.scaleX;
-  var scaleY = this.transform_.scaleY;
-  var rotate90 = this.transform_.rotate90;
-
-  assert(scaleX === 1 || scaleX === -1);
-  assert(scaleY === 1 || scaleY === -1);
-  assert(rotate90 === 0 || rotate90 === 1);
 
   return new Promise(function(resolve, reject) {
     // Decode image for transformation.
@@ -352,27 +385,9 @@ ThumbnailLoader.prototype.applyTransformToDataUrl_ = function(
     image.onerror = reject;
     image.src = dataUrl;
   }).then(function() {
-    // Apply transform. Scale transformation should be applied before rotate
-    // transformation. i.e. When matrices for scale and rotate are A and B,
-    // transformation matrix should be BA.
     var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
-
-    canvas.width = rotate90 === 1 ? height : width;
-    canvas.height = rotate90 === 1 ? width : height;
-
-    // Rotate 90 degree at center.
-    if (rotate90 === 1) {
-      context.translate(height, 0);
-      context.rotate(Math.PI / 2);
-    }
-
-    // Flip X and Y.
-    context.translate(scaleX === -1 ? width : 0, scaleY === -1 ? height : 0);
-    context.scale(scaleX, scaleY);
-
-    context.drawImage(image, 0, 0);
-
+    this.renderImageToCanvasWithTransform_(
+        image, width, height, this.transform_, canvas);
     return {
       data: canvas.toDataURL('image/png'),
       width: canvas.width,
@@ -473,6 +488,8 @@ ThumbnailLoader.prototype.renderMedia_ = function() {
     this.canvas_ = document.createElement('canvas');
 
   // Copy the image to a canvas if the canvas is outdated.
+  // At this point, image transformation is not applied because we attach style
+  // attribute to an img element in attachImage() instead.
   if (!this.canvasUpToDate_) {
     this.canvas_.width = this.image_.width;
     this.canvas_.height = this.image_.height;
@@ -521,14 +538,22 @@ ThumbnailLoader.prototype.attachImage = function(
 
 /**
  * Gets the loaded image.
- * TODO(mtomasz): Apply transformations.
  *
  * @return {Image|HTMLCanvasElement} Either image or a canvas object.
  */
 ThumbnailLoader.prototype.getImage = function() {
   this.renderMedia_();
-  return this.loaderType_ === ThumbnailLoader.LoaderType.CANVAS ? this.canvas_ :
-      this.image_;
+  if (this.loaderType_ === ThumbnailLoader.LoaderType.IMAGE)
+    // TODO(yamaguchi): Fix image orientation in case of detached image loaded
+    // in IMAGE mode. Either apply transformation here or return
+    // this.transform_ as well.
+    return this.image_;
+  if (this.transform_) {
+    this.renderImageToCanvasWithTransform_(
+        this.image_, this.image_.width, this.image_.height,
+        this.transform_, this.canvas_);
+  }
+  return this.canvas_;
 };
 
 /**
