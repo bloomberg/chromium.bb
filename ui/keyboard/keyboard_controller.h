@@ -159,6 +159,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void ShowAnimationFinished();
   void HideAnimationFinished();
 
+  // Called when the keyboard mode is set or the keyboard is moved to another
+  // display.
+  void AdjustKeyboardBounds();
+
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_;
   std::unique_ptr<aura::Window> container_;
