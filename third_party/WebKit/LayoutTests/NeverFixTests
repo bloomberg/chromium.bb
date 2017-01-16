@@ -208,6 +208,16 @@ crbug.com/642912 virtual/mojo-loading/http/tests/wasm/ [ WontFix ]
 webaudio/codec-tests/mp3 [ WontFix ]
 webaudio/codec-tests/aac [ WontFix ]
 
+# WPT subdirectories without owners.
+imported/wpt/accelerometer [ WontFix ]
+imported/wpt/auxclick [ WontFix ]
+imported/wpt/clear-site-data [ WontFix ]
+imported/wpt/css-values [ WontFix ]
+imported/wpt/gyroscope [ WontFix ]
+imported/wpt/magnetometer [ WontFix ]
+imported/wpt/preload [ WontFix ]
+imported/wpt/upgrade-insecure-requests [ WontFix ]
+
 # These tests require a DRM system that is not available with content_shell.
 imported/wpt/encrypted-media/drm-check-initdata-type.html [ WontFix ]
 imported/wpt/encrypted-media/drm-events.html [ WontFix ]
