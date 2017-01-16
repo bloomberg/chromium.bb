@@ -490,11 +490,6 @@ are declared in build/common.gypi.
       <message name="IDS_EDIT" desc="Edit menu item">
         &amp;Edit
       </message>
-      <if expr="is_macosx">
-        <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role" meaning="UI element">
-          Tab
-        </message>
-      </if>
       <message name="IDS_SAVE" desc="Used on a button to save information you are editing.">
         Save
       </message>

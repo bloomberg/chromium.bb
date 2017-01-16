@@ -17,6 +17,11 @@ class Tab;
 class TabbedPaneListener;
 class TabStrip;
 
+namespace test {
+class TabbedPaneAccessibilityMacTest;
+class TabbedPaneTest;
+}
+
 // TabbedPane is a view that shows tabs. When the user clicks on a tab, the
 // associated view is displayed.
 class VIEWS_EXPORT TabbedPane : public View {
@@ -61,11 +66,8 @@ class VIEWS_EXPORT TabbedPane : public View {
   friend class FocusTraversalTest;
   friend class Tab;
   friend class TabStrip;
-  FRIEND_TEST_ALL_PREFIXES(TabbedPaneTest, AddAndSelect);
-  FRIEND_TEST_ALL_PREFIXES(TabbedPaneTest, ArrowKeyBindings);
-
-  // Get the Tab (the tabstrip view, not its content) at the valid |index|.
-  Tab* GetTabAt(int index);
+  friend class test::TabbedPaneTest;
+  friend class test::TabbedPaneAccessibilityMacTest;
 
   // Get the Tab (the tabstrip view, not its content) at the selected index.
   Tab* GetSelectedTab();
@@ -121,6 +123,8 @@ class Tab : public View {
   void OnGestureEvent(ui::GestureEvent* event) override;
   gfx::Size GetPreferredSize() const override;
   const char* GetClassName() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void OnFocus() override;
   void OnBlur() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -148,6 +152,33 @@ class Tab : public View {
   View* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
+};
+
+// The tab strip shown above the tab contents.
+class TabStrip : public View {
+ public:
+  // Internal class name.
+  static const char kViewClassName[];
+
+  TabStrip();
+  ~TabStrip() override;
+
+  // Called by TabStrip when the selected tab changes. This function is only
+  // called if |from_tab| is not null, i.e., there was a previously selected
+  // tab.
+  virtual void OnSelectedTabChanged(Tab* from_tab, Tab* to_tab);
+
+  // Overridden from View:
+  const char* GetClassName() const override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
+
+  Tab* GetSelectedTab() const;
+  Tab* GetTabAtDeltaFromSelected(int delta) const;
+  Tab* GetTabAtIndex(int index) const;
+  int GetSelectedTabIndex() const;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
 
 }  // namespace views

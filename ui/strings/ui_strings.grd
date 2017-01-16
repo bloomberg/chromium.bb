@@ -344,6 +344,11 @@ need to be translated for each locale.-->
       </message>
 
       <!--Accessible name strings-->
+      <if expr="is_macosx">
+        <message name="IDS_ACCNAME_TAB_ROLE_DESCRIPTION" desc="A generic description of a tab button's role." meaning="UI element">
+          Tab
+        </message>
+      </if>
       <message name="IDS_APP_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>

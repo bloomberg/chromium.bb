@@ -12,7 +12,9 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace {
 
@@ -371,8 +373,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   // Allow certain attributes to be written via an accessibility client. A
   // writable attribute will only appear as such if the accessibility element
   // has a value set for that attribute.
-  if ([attributeName isEqualToString:NSAccessibilitySelectedAttribute] ||
-      [attributeName
+  if ([attributeName
           isEqualToString:NSAccessibilitySelectedChildrenAttribute] ||
       [attributeName
           isEqualToString:NSAccessibilitySelectedTextRangeAttribute] ||
@@ -381,10 +382,18 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
     return NO;
   }
 
+  // Since tabs use the Radio Button role on Mac, the standard way to set them
+  // is via the value attribute rather than the selected attribute.
+  if ([attributeName isEqualToString:NSAccessibilityValueAttribute] &&
+      node_->GetData().role == ui::AX_ROLE_TAB) {
+    return !node_->GetData().HasStateFlag(ui::AX_STATE_SELECTED);
+  }
+
   if ([attributeName isEqualToString:NSAccessibilityValueAttribute] ||
-      [attributeName isEqualToString:NSAccessibilitySelectedTextAttribute])
+      [attributeName isEqualToString:NSAccessibilitySelectedTextAttribute]) {
     return !ui::AXNodeData::IsFlagSet(node_->GetData().state,
                                       ui::AX_STATE_READ_ONLY);
+  }
 
   if ([attributeName isEqualToString:NSAccessibilityFocusedAttribute]) {
     return ui::AXNodeData::IsFlagSet(node_->GetData().state,
@@ -398,20 +407,25 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
   ui::AXActionData data;
-  if ([value isKindOfClass:[NSString class]]) {
-    data.value = base::SysNSStringToUTF16(value);
-    if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
-      data.action = ui::AX_ACTION_SET_VALUE;
-    } else if ([attribute
-                   isEqualToString:NSAccessibilitySelectedTextAttribute]) {
-      data.action = ui::AX_ACTION_REPLACE_SELECTED_TEXT;
-    }
-  } else if ([value isKindOfClass:[NSNumber class]]) {
-    if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
+
+  // Check for attributes first. Only the |data.action| should be set here - any
+  // type-specific information, if needed, should be set below.
+  if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
+    data.action = node_->GetData().role == ui::AX_ROLE_TAB
+                      ? ui::AX_ACTION_SET_SELECTION
+                      : ui::AX_ACTION_SET_VALUE;
+  } else if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
+    data.action = ui::AX_ACTION_REPLACE_SELECTED_TEXT;
+  } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
+    if ([value isKindOfClass:[NSNumber class]]) {
       data.action =
           [value boolValue] ? ui::AX_ACTION_FOCUS : ui::AX_ACTION_BLUR;
     }
   }
+
+  // Set type-specific information as necessary for actions set above.
+  if ([value isKindOfClass:[NSString class]])
+    data.value = base::SysNSStringToUTF16(value);
 
   if (data.action != ui::AX_ACTION_NONE)
     node_->GetDelegate()->AccessibilityPerformAction(data);
@@ -437,6 +451,15 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 - (NSString*)AXRoleDescription {
+  switch (node_->GetData().role) {
+    case ui::AX_ROLE_TAB:
+      // There is no NSAccessibilityTabRole or similar (AXRadioButton is used
+      // instead). Do the same as NSTabView and put "tab" in the description.
+      return [l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TAB_ROLE_DESCRIPTION)
+          lowercaseString];
+    default:
+      break;
+  }
   return NSAccessibilityRoleDescription([self AXRole], [self AXSubrole]);
 }
 
@@ -458,7 +481,9 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   return [self getStringAttribute:ui::AX_ATTR_DESCRIPTION];
 }
 
-- (NSString*)AXValue {
+- (id)AXValue {
+  if (node_->GetData().role == ui::AX_ROLE_TAB)
+    return [self AXSelected];
   return [self getStringAttribute:ui::AX_ATTR_VALUE];
 }
 
@@ -513,6 +538,11 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 // Misc attributes.
+
+- (NSNumber*)AXSelected {
+  return [NSNumber
+      numberWithBool:node_->GetData().HasStateFlag(ui::AX_STATE_SELECTED)];
+}
 
 - (NSString*)AXPlaceholderValue {
   return [self getStringAttribute:ui::AX_ATTR_PLACEHOLDER];

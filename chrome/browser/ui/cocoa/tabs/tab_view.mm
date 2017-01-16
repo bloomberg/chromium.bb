@@ -15,7 +15,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMFadeTruncatingTextFieldCell.h"
@@ -26,6 +25,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace {
 
@@ -759,7 +759,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   if ([attribute isEqual:NSAccessibilityRoleAttribute])
     return NSAccessibilityRadioButtonRole;
   if ([attribute isEqual:NSAccessibilityRoleDescriptionAttribute])
-    return l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TAB);
+    return l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TAB_ROLE_DESCRIPTION);
   if ([attribute isEqual:NSAccessibilityTitleAttribute])
     return [controller_ title];
   if ([attribute isEqual:NSAccessibilityValueAttribute])
