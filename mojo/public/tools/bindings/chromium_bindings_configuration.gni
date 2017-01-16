@@ -8,6 +8,7 @@ _typemap_imports = [
   "//chrome/browser/media/router/mojo/typemaps.gni",
   "//chrome/common/extensions/typemaps.gni",
   "//chrome/common/importer/typemaps.gni",
+  "//chrome/typemaps.gni",
   "//components/arc/common/typemaps.gni",
   "//components/metrics/public/cpp/typemaps.gni",
   "//components/typemaps.gni",

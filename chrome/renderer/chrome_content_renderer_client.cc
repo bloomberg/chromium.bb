@@ -520,6 +520,11 @@ void ChromeContentRendererClient::RenderFrameCreated(
     new subresource_filter::SubresourceFilterAgent(
         render_frame, subresource_filter_ruleset_dealer_.get());
   }
+
+  if (command_line->HasSwitch(switches::kInstantProcess) &&
+      render_frame->IsMainFrame()) {
+    new SearchBox(render_frame);
+  }
 }
 
 void ChromeContentRendererClient::RenderViewCreated(
@@ -531,10 +536,6 @@ void ChromeContentRendererClient::RenderViewCreated(
   new SpellCheckProvider(render_view, spellcheck_.get());
 #endif
   new prerender::PrerendererClient(render_view);
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kInstantProcess))
-    new SearchBox(render_view);
 
   new ChromeRenderViewObserver(render_view, web_cache_impl_.get());
 
@@ -1118,9 +1119,8 @@ bool ChromeContentRendererClient::WillSendRequest(
   if (!url.protocolIs(chrome::kChromeSearchScheme))
     return false;
 
-  const content::RenderView* render_view =
-      content::RenderView::FromWebView(frame->view());
-  SearchBox* search_box = SearchBox::Get(render_view);
+  SearchBox* search_box =
+      SearchBox::Get(content::RenderFrame::FromWebFrame(frame));
   if (search_box) {
     // Note: this GURL copy could be avoided if host() were added to WebURL.
     GURL gurl(url);

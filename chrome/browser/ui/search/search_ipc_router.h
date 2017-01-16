@@ -11,10 +11,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/common/instant.mojom.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/ntp_tile_source.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -28,7 +30,8 @@ class SearchIPCRouterTest;
 
 // SearchIPCRouter is responsible for receiving and sending IPC messages between
 // the browser and the Instant page.
-class SearchIPCRouter : public content::WebContentsObserver {
+class SearchIPCRouter : public content::WebContentsObserver,
+                        public chrome::mojom::Instant {
  public:
   // SearchIPCRouter calls its delegate in response to messages received from
   // the page.
@@ -109,6 +112,19 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldSubmitQuery() = 0;
   };
 
+  // Creates chrome::mojom::SearchBox connections on request.
+  class SearchBoxClientFactory {
+   public:
+    SearchBoxClientFactory() = default;
+    virtual ~SearchBoxClientFactory() = default;
+
+    // The returned pointer is owned by the factory.
+    virtual chrome::mojom::SearchBox* GetSearchBox() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SearchBoxClientFactory);
+  };
+
   SearchIPCRouter(content::WebContents* web_contents,
                   Delegate* delegate,
                   std::unique_ptr<Policy> policy);
@@ -155,6 +171,35 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // Called when the tab corresponding to |this| instance is deactivated.
   void OnTabDeactivated();
 
+  // chrome::mojom::Instant:
+  void InstantSupportDetermined(int page_seq_no,
+                                bool supports_instant) override;
+  void FocusOmnibox(int page_id, OmniboxFocusState state) override;
+  void SearchBoxDeleteMostVisitedItem(int page_seq_no,
+                                      const GURL& url) override;
+  void SearchBoxUndoMostVisitedDeletion(int page_seq_no,
+                                        const GURL& url) override;
+  void SearchBoxUndoAllMostVisitedDeletions(int page_seq_no) override;
+  void LogEvent(int page_seq_no,
+                NTPLoggingEventType event,
+                base::TimeDelta time) override;
+  void LogMostVisitedImpression(int page_seq_no,
+                                int position,
+                                ntp_tiles::NTPTileSource tile_source) override;
+  void LogMostVisitedNavigation(int page_seq_no,
+                                int position,
+                                ntp_tiles::NTPTileSource tile_source) override;
+  void PasteAndOpenDropdown(int page_seq_no,
+                            const base::string16& text) override;
+  void ChromeIdentityCheck(int page_seq_no,
+                           const base::string16& identity) override;
+  void HistorySyncCheck(int page_seq_no) override;
+
+  void set_search_box_client_factory_for_testing(
+      std::unique_ptr<SearchBoxClientFactory> factory) {
+    search_box_client_factory_ = std::move(factory);
+  }
+
  private:
   friend class SearchIPCRouterPolicyTest;
   friend class SearchIPCRouterTest;
@@ -168,29 +213,6 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
 
-  // Overridden from contents::WebContentsObserver:
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  void OnInstantSupportDetermined(int page_seq_no, bool supports_instant) const;
-  void OnFocusOmnibox(int page_id, OmniboxFocusState state) const;
-  void OnDeleteMostVisitedItem(int page_seq_no, const GURL& url) const;
-  void OnUndoMostVisitedDeletion(int page_seq_no, const GURL& url) const;
-  void OnUndoAllMostVisitedDeletions(int page_seq_no) const;
-  void OnLogEvent(int page_seq_no,
-                  NTPLoggingEventType event,
-                  base::TimeDelta time) const;
-  void OnLogMostVisitedImpression(int page_seq_no,
-                                  int position,
-                                  ntp_tiles::NTPTileSource tile_source) const;
-  void OnLogMostVisitedNavigation(int page_seq_no,
-                                  int position,
-                                  ntp_tiles::NTPTileSource tile_source) const;
-  void OnPasteAndOpenDropDown(int page_seq_no,
-                              const base::string16& text) const;
-  void OnChromeIdentityCheck(int page_seq_no,
-                             const base::string16& identity) const;
-  void OnHistorySyncCheck(int page_seq_no) const;
-
   // Used by unit tests to set a fake delegate.
   void set_delegate_for_testing(Delegate* delegate);
 
@@ -203,6 +225,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // Used by unit tests.
   int page_seq_no_for_testing() const { return commit_counter_; }
 
+  chrome::mojom::SearchBox* search_box() {
+    return search_box_client_factory_->GetSearchBox();
+  }
+
   Delegate* delegate_;
   std::unique_ptr<Policy> policy_;
 
@@ -212,6 +238,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
   // Set to true, when the tab corresponding to |this| instance is active.
   bool is_active_tab_;
+
+  content::WebContentsFrameBindingSet<chrome::mojom::Instant> bindings_;
+
+  std::unique_ptr<SearchBoxClientFactory> search_box_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchIPCRouter);
 };

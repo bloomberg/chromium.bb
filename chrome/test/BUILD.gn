@@ -3440,6 +3440,7 @@ test("unit_tests") {
     ":test_support",
     ":test_support_unit",
     "//base/test:test_support",
+    "//chrome/common:test_support",
     "//components/browser_sync:test_support",
     "//components/content_settings/core/test:test_support",
     "//components/resources",

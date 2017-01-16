@@ -1,0 +1,104 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chrome.mojom;
+
+import "mojo/common/string16.mojom";
+import "mojo/common/time.mojom";
+import "url/mojo/url.mojom";
+
+[Native]
+enum NTPLoggingEventType;
+
+[Native]
+enum OmniboxFocusState;
+
+[Native]
+enum NTPTileSource;
+
+interface Instant {
+  // Tells InstantExtended whether the embedded search API is supported.
+  // See http://dev.chromium.org/embeddedsearch
+  InstantSupportDetermined(int32 page_seq_no, bool result);
+
+  // Tells InstantExtended to set the omnibox focus state.
+  FocusOmnibox(int32 page_seq_no, OmniboxFocusState state);
+
+  // TODO(treib): Remove the SearchBox prefix from these three methods.
+  // Tells InstantExtended to delete a most visited item.
+  SearchBoxDeleteMostVisitedItem(int32 page_seq_no, url.mojom.Url url);
+
+  // Tells InstantExtended to undo all most visited item deletions.
+  SearchBoxUndoAllMostVisitedDeletions(int32 page_seq_no);
+
+  // Tells InstantExtended to undo one most visited item deletion.
+  SearchBoxUndoMostVisitedDeletion(int32 page_seq_no, url.mojom.Url url);
+
+  // Logs events from InstantExtended New Tab Pages.
+  LogEvent(int32 page_seq_no,
+           NTPLoggingEventType event,
+           mojo.common.mojom.TimeDelta time);
+
+  // Logs an impression on one of the Most Visited tile on the InstantExtended
+  // New Tab Page.
+  LogMostVisitedImpression(int32 page_seq_no, int32 position,
+                           NTPTileSource tile_source);
+
+  // Logs a navigation on one of the Most Visited tile on the InstantExtended
+  // New Tab Page.
+  LogMostVisitedNavigation(int32 page_seq_no, int32 position,
+                           NTPTileSource tile_source);
+
+  // Tells InstantExtended to paste text into the omnibox.  If text is empty,
+  // the clipboard contents will be pasted. This causes the omnibox dropdown to
+  // open.
+  PasteAndOpenDropdown(int32 page_seq_no,
+                       mojo.common.mojom.String16 text_to_be_pasted);
+
+  // The Instant page asks whether the user syncs its history.
+  HistorySyncCheck(int32 page_seq_no);
+
+  // The Instant page asks for Chrome identity check against |identity|.
+  ChromeIdentityCheck(int32 page_seq_no, mojo.common.mojom.String16 identity);
+};
+
+[Native]
+enum OmniboxFocusChangeReason;
+
+[Native]
+struct InstantMostVisitedItem;
+
+[Native]
+struct InstantSuggestion;
+
+[Native]
+struct EmbeddedSearchRequestParams;
+
+[Native]
+struct ThemeBackgroundInfo;
+
+interface SearchBox {
+  SetPageSequenceNumber(int32 page_seq_no);
+
+  DetermineIfPageSupportsInstant();
+
+  FocusChanged(OmniboxFocusState new_focus_state,
+               OmniboxFocusChangeReason reason);
+
+  MostVisitedChanged(array<InstantMostVisitedItem> items);
+
+  SetInputInProgress(bool input_in_progress);
+
+  SetSuggestionToPrefetch(InstantSuggestion suggestion);
+
+  Submit(mojo.common.mojom.String16 value,
+         EmbeddedSearchRequestParams params);
+
+  ThemeChanged(ThemeBackgroundInfo value);
+
+  HistorySyncCheckResult(bool sync_history);
+
+  ChromeIdentityCheckResult(mojo.common.mojom.String16 identity,
+                            bool identity_match);
+};

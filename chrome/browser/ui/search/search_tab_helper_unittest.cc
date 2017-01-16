@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/search/mock_searchbox.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -41,7 +42,9 @@
 
 class OmniboxView;
 
+using testing::Eq;
 using testing::Return;
+using testing::_;
 
 namespace {
 
@@ -66,13 +69,26 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD0(OnHistorySyncCheck, void());
 };
 
+class MockSearchBoxClientFactory
+    : public SearchIPCRouter::SearchBoxClientFactory {
+ public:
+  MOCK_METHOD0(GetSearchBox, chrome::mojom::SearchBox*(void));
+};
+
 }  // namespace
 
 class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
+  SearchTabHelperTest() {}
+
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SearchTabHelper::CreateForWebContents(web_contents());
+    auto search_tab = SearchTabHelper::FromWebContents(web_contents());
+    auto factory = base::MakeUnique<MockSearchBoxClientFactory>();
+    ON_CALL(*factory, GetSearchBox()).WillByDefault(Return(&mock_search_box_));
+    search_tab->ipc_router_for_testing()
+        .set_search_box_client_factory_for_testing(std::move(factory));
   }
 
   content::BrowserContext* CreateBrowserContext() override {
@@ -110,14 +126,13 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
         .WillRepeatedly(Return(result));
   }
 
-  bool MessageWasSent(uint32_t id) {
-    return process()->sink().GetFirstMessageMatching(id) != NULL;
-  }
-
   MockSearchIPCRouterDelegate* mock_delegate() { return &delegate_; }
+
+  MockSearchBox* mock_search_box() { return &mock_search_box_; }
 
  private:
   MockSearchIPCRouterDelegate delegate_;
+  MockSearchBox mock_search_box_;
 };
 
 TEST_F(SearchTabHelperTest, DetermineIfPageSupportsInstant_Local) {
@@ -127,27 +142,26 @@ TEST_F(SearchTabHelperTest, DetermineIfPageSupportsInstant_Local) {
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  search_tab_helper->ipc_router().set_delegate_for_testing(mock_delegate());
+  search_tab_helper->ipc_router_for_testing().set_delegate_for_testing(
+      mock_delegate());
   search_tab_helper->DetermineIfPageSupportsInstant();
 }
 
 TEST_F(SearchTabHelperTest, DetermineIfPageSupportsInstant_NonLocal) {
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
-  process()->sink().ClearMessages();
   EXPECT_CALL(*mock_delegate(), OnInstantSupportDetermined(true)).Times(1);
 
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  search_tab_helper->ipc_router().set_delegate_for_testing(mock_delegate());
+  search_tab_helper->ipc_router_for_testing().set_delegate_for_testing(
+      mock_delegate());
+  EXPECT_CALL(*mock_search_box(), DetermineIfPageSupportsInstant());
   search_tab_helper->DetermineIfPageSupportsInstant();
-  ASSERT_TRUE(MessageWasSent(ChromeViewMsg_DetermineIfPageSupportsInstant::ID));
 
-  std::unique_ptr<IPC::Message> response(
-      new ChromeViewHostMsg_InstantSupportDetermined(
-          web_contents()->GetRenderViewHost()->GetRoutingID(),
-          search_tab_helper->ipc_router().page_seq_no_for_testing(), true));
-  search_tab_helper->ipc_router().OnMessageReceived(*response);
+  search_tab_helper->ipc_router_for_testing().InstantSupportDetermined(
+      search_tab_helper->ipc_router_for_testing().page_seq_no_for_testing(),
+      true);
 }
 
 TEST_F(SearchTabHelperTest, PageURLDoesntBelongToInstantRenderer) {
@@ -155,16 +169,15 @@ TEST_F(SearchTabHelperTest, PageURLDoesntBelongToInstantRenderer) {
   // SearchTabHelper::DeterminerIfPageSupportsInstant() should return
   // immediately without dispatching any message to the renderer.
   NavigateAndCommit(GURL("http://www.example.com"));
-  process()->sink().ClearMessages();
   EXPECT_CALL(*mock_delegate(), OnInstantSupportDetermined(false)).Times(0);
 
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-  search_tab_helper->ipc_router().set_delegate_for_testing(mock_delegate());
+  search_tab_helper->ipc_router_for_testing().set_delegate_for_testing(
+      mock_delegate());
+  EXPECT_CALL(*mock_search_box(), DetermineIfPageSupportsInstant()).Times(0);
   search_tab_helper->DetermineIfPageSupportsInstant();
-  ASSERT_FALSE(MessageWasSent(
-      ChromeViewMsg_DetermineIfPageSupportsInstant::ID));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
@@ -175,16 +188,9 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
   const base::string16 test_identity = base::ASCIIToUTF16("foo@bar.com");
+  EXPECT_CALL(*mock_search_box(),
+              ChromeIdentityCheckResult(Eq(test_identity), true));
   search_tab_helper->OnChromeIdentityCheck(test_identity);
-
-  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
-      ChromeViewMsg_ChromeIdentityCheckResult::ID);
-  ASSERT_TRUE(message != NULL);
-
-  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
-  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, std::get<0>(params));
-  ASSERT_TRUE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail) {
@@ -198,16 +204,9 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail) {
   // standard form.
   const base::string16 test_identity =
       base::ASCIIToUTF16("Foo.Bar.123@gmail.com");
+  EXPECT_CALL(*mock_search_box(),
+              ChromeIdentityCheckResult(Eq(test_identity), true));
   search_tab_helper->OnChromeIdentityCheck(test_identity);
-
-  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
-      ChromeViewMsg_ChromeIdentityCheckResult::ID);
-  ASSERT_TRUE(message != NULL);
-
-  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
-  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, std::get<0>(params));
-  ASSERT_TRUE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail2) {
@@ -222,16 +221,9 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail2) {
   // a standard form.
   const base::string16 test_identity =
       base::ASCIIToUTF16("chromeuser7forever@googlemail.com");
+  EXPECT_CALL(*mock_search_box(),
+              ChromeIdentityCheckResult(Eq(test_identity), true));
   search_tab_helper->OnChromeIdentityCheck(test_identity);
-
-  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
-      ChromeViewMsg_ChromeIdentityCheckResult::ID);
-  ASSERT_TRUE(message != NULL);
-
-  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
-  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, std::get<0>(params));
-  ASSERT_TRUE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
@@ -242,16 +234,9 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
   const base::string16 test_identity = base::ASCIIToUTF16("bar@foo.com");
+  EXPECT_CALL(*mock_search_box(),
+              ChromeIdentityCheckResult(Eq(test_identity), false));
   search_tab_helper->OnChromeIdentityCheck(test_identity);
-
-  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
-      ChromeViewMsg_ChromeIdentityCheckResult::ID);
-  ASSERT_TRUE(message != NULL);
-
-  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
-  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, std::get<0>(params));
-  ASSERT_FALSE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
@@ -262,16 +247,9 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
   const base::string16 test_identity = base::ASCIIToUTF16("bar@foo.com");
+  EXPECT_CALL(*mock_search_box(),
+              ChromeIdentityCheckResult(Eq(test_identity), false));
   search_tab_helper->OnChromeIdentityCheck(test_identity);
-
-  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
-      ChromeViewMsg_ChromeIdentityCheckResult::ID);
-  ASSERT_TRUE(message != NULL);
-
-  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
-  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, std::get<0>(params));
-  ASSERT_FALSE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncing) {
@@ -281,15 +259,8 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncing) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
+  EXPECT_CALL(*mock_search_box(), HistorySyncCheckResult(true));
   search_tab_helper->OnHistorySyncCheck();
-
-  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
-      ChromeViewMsg_HistorySyncCheckResult::ID);
-  ASSERT_TRUE(message != NULL);
-
-  ChromeViewMsg_HistorySyncCheckResult::Param params;
-  ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
-  ASSERT_TRUE(std::get<0>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
@@ -299,15 +270,8 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
+  EXPECT_CALL(*mock_search_box(), HistorySyncCheckResult(false));
   search_tab_helper->OnHistorySyncCheck();
-
-  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
-      ChromeViewMsg_HistorySyncCheckResult::ID);
-  ASSERT_TRUE(message != NULL);
-
-  ChromeViewMsg_HistorySyncCheckResult::Param params;
-  ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
-  ASSERT_FALSE(std::get<0>(params));
 }
 
 class TabTitleObserver : public content::WebContentsObserver {

@@ -92,6 +92,7 @@ static_library("renderer") {
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/common",
+    "//chrome/common:instant_mojom",
     "//chrome/common:mojo_bindings",
     "//chrome/common/net",
     "//components/autofill/content/renderer",
@@ -127,6 +128,7 @@ static_library("renderer") {
     "//net",
     "//ppapi/features",
     "//printing/features",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//storage/common",
     "//third_party/WebKit/public:blink",
@@ -377,6 +379,7 @@ static_library("test_support") {
 
   deps = [
     ":renderer",
+    "//chrome/common:instant_mojom",
     "//content/test:test_support",
     "//extensions/features",
     "//testing/gmock",

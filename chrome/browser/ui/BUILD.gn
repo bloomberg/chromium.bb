@@ -473,6 +473,7 @@ split_static_library("ui") {
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
     "//chrome/common",
+    "//chrome/common:instant_mojom",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",
     "//components/app_modal",

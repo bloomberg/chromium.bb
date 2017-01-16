@@ -28,10 +28,12 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search/instant_types.h"
+#include "chrome/common/search/mock_searchbox.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -43,8 +45,19 @@
 #include "ui/gfx/geometry/size.h"
 
 using base::ASCIIToUTF16;
+using testing::_;
+using testing::AllOf;
+using testing::Eq;
+using testing::Field;
+using testing::Return;
 
 namespace {
+
+class MockSearchBoxClientFactory
+    : public SearchIPCRouter::SearchBoxClientFactory {
+ public:
+  MOCK_METHOD0(GetSearchBox, chrome::mojom::SearchBox*(void));
+};
 
 using content::Referrer;
 using prerender::Origin;
@@ -56,13 +69,13 @@ using prerender::PrerenderTabHelper;
 
 class DummyPrerenderContents : public PrerenderContents {
  public:
-  DummyPrerenderContents(
-      PrerenderManager* prerender_manager,
-      Profile* profile,
-      const GURL& url,
-      const Referrer& referrer,
-      Origin origin,
-      bool call_did_finish_load);
+  DummyPrerenderContents(PrerenderManager* prerender_manager,
+                         Profile* profile,
+                         const GURL& url,
+                         const Referrer& referrer,
+                         Origin origin,
+                         bool call_did_finish_load,
+                         chrome::mojom::SearchBox* search_box);
 
   void StartPrerendering(
       const gfx::Rect& bounds,
@@ -74,15 +87,16 @@ class DummyPrerenderContents : public PrerenderContents {
   Profile* profile_;
   const GURL url_;
   bool call_did_finish_load_;
+  chrome::mojom::SearchBox* search_box_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyPrerenderContents);
 };
 
 class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
  public:
-  explicit DummyPrerenderContentsFactory(bool call_did_finish_load)
-      : call_did_finish_load_(call_did_finish_load) {
-  }
+  DummyPrerenderContentsFactory(bool call_did_finish_load,
+                                chrome::mojom::SearchBox* search_box)
+      : call_did_finish_load_(call_did_finish_load), search_box_(search_box) {}
 
   PrerenderContents* CreatePrerenderContents(
       PrerenderManager* prerender_manager,
@@ -93,6 +107,7 @@ class DummyPrerenderContentsFactory : public PrerenderContents::Factory {
 
  private:
   bool call_did_finish_load_;
+  chrome::mojom::SearchBox* search_box_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyPrerenderContentsFactory);
 };
@@ -103,12 +118,13 @@ DummyPrerenderContents::DummyPrerenderContents(
     const GURL& url,
     const Referrer& referrer,
     Origin origin,
-    bool call_did_finish_load)
+    bool call_did_finish_load,
+    chrome::mojom::SearchBox* search_box)
     : PrerenderContents(prerender_manager, profile, url, referrer, origin),
       profile_(profile),
       url_(url),
-      call_did_finish_load_(call_did_finish_load) {
-}
+      call_did_finish_load_(call_did_finish_load),
+      search_box_(search_box) {}
 
 void DummyPrerenderContents::StartPrerendering(
     const gfx::Rect& bounds,
@@ -122,6 +138,12 @@ void DummyPrerenderContents::StartPrerendering(
   content::NavigationController::LoadURLParams params(url_);
   prerender_contents_->GetController().LoadURLWithParams(params);
   SearchTabHelper::CreateForWebContents(prerender_contents_.get());
+  auto* search_tab =
+      SearchTabHelper::FromWebContents(prerender_contents_.get());
+  auto factory = base::MakeUnique<MockSearchBoxClientFactory>();
+  ON_CALL(*factory, GetSearchBox()).WillByDefault(Return(search_box_));
+  search_tab->ipc_router_for_testing()
+      .set_search_box_client_factory_for_testing(std::move(factory));
 
   prerendering_has_started_ = true;
   DCHECK(session_storage_namespace);
@@ -149,7 +171,7 @@ PrerenderContents* DummyPrerenderContentsFactory::CreatePrerenderContents(
     const Referrer& referrer,
     Origin origin) {
   return new DummyPrerenderContents(prerender_manager, profile, url, referrer,
-                                    origin, call_did_finish_load_);
+                                    origin, call_did_finish_load_, search_box_);
 }
 
 }  // namespace
@@ -170,8 +192,8 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
     AddTab(browser(), GURL(url::kAboutBlankURL));
 
     PrerenderManagerFactory::GetForBrowserContext(browser()->profile())
-        ->SetPrerenderContentsFactoryForTest(
-            new DummyPrerenderContentsFactory(call_did_finish_load));
+        ->SetPrerenderContentsFactoryForTest(new DummyPrerenderContentsFactory(
+            call_did_finish_load, &mock_search_box_));
     if (prerender_search_results_base_page) {
       content::SessionStorageNamespace* session_storage_namespace =
           GetActiveWebContents()->GetController().
@@ -199,13 +221,6 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
     return GetInstantSearchPrerenderer()->prerender_contents();
   }
 
-  bool MessageWasSent(uint32_t id) {
-    content::MockRenderProcessHost* process =
-        static_cast<content::MockRenderProcessHost*>(
-            prerender_contents()->GetMainFrame()->GetProcess());
-    return process->sink().GetFirstMessageMatching(id) != NULL;
-  }
-
   content::WebContents* GetActiveWebContents() const {
     return browser()->tab_strip_model()->GetWebContentsAt(0);
   }
@@ -222,6 +237,11 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
     EXPECT_TRUE(prerenderer->CanCommitQuery(GetActiveWebContents(), query));
     EXPECT_NE(static_cast<PrerenderHandle*>(NULL), prerender_handle());
   }
+
+  MockSearchBox* mock_search_box() { return &mock_search_box_; }
+
+ private:
+  MockSearchBox mock_search_box_;
 };
 
 TEST_F(InstantSearchPrerendererTest, GetSearchTermsFromPrerenderedPage) {
@@ -247,11 +267,10 @@ TEST_F(InstantSearchPrerendererTest, PrefetchSearchResults) {
   Init(true, true);
   EXPECT_TRUE(prerender_handle()->IsFinishedLoading());
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
+  EXPECT_CALL(*mock_search_box(), SetSuggestionToPrefetch(_));
   prerenderer->Prerender(
       InstantSuggestion(ASCIIToUTF16("flowers"), std::string()));
   EXPECT_EQ("flowers", base::UTF16ToASCII(prerenderer->get_last_query()));
-  EXPECT_TRUE(MessageWasSent(
-      ChromeViewMsg_SearchBoxSetSuggestionToPrefetch::ID));
 }
 
 TEST_F(InstantSearchPrerendererTest, DoNotPrefetchSearchResults) {
@@ -259,11 +278,10 @@ TEST_F(InstantSearchPrerendererTest, DoNotPrefetchSearchResults) {
   // Page hasn't finished loading yet.
   EXPECT_FALSE(prerender_handle()->IsFinishedLoading());
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
+  EXPECT_CALL(*mock_search_box(), SetSuggestionToPrefetch(_)).Times(0);
   prerenderer->Prerender(
       InstantSuggestion(ASCIIToUTF16("flowers"), std::string()));
   EXPECT_EQ("", base::UTF16ToASCII(prerenderer->get_last_query()));
-  EXPECT_FALSE(MessageWasSent(
-      ChromeViewMsg_SearchBoxSetSuggestionToPrefetch::ID));
 }
 
 TEST_F(InstantSearchPrerendererTest, CanCommitQuery) {
@@ -285,8 +303,8 @@ TEST_F(InstantSearchPrerendererTest, CommitQuery) {
   base::string16 query = ASCIIToUTF16("flowers");
   PrerenderSearchQuery(query);
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
+  EXPECT_CALL(*mock_search_box(), Submit(_, _));
   prerenderer->Commit(query, EmbeddedSearchRequestParams());
-  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxSubmit::ID));
 }
 
 TEST_F(InstantSearchPrerendererTest, CancelPrerenderRequestOnTabChangeEvent) {
@@ -435,7 +453,7 @@ class ReuseInstantSearchBasePageTest : public InstantSearchPrerendererTest {
   void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                        "Group1 strk:20"));
-    InstantUnitTestBase::SetUp();
+    InstantSearchPrerendererTest::SetUp();
   }
 };
 
@@ -504,6 +522,17 @@ TEST_F(TestUsePrerenderPage, DoNotUsePrerenderPage) {
 TEST_F(TestUsePrerenderPage, SetEmbeddedSearchRequestParams) {
   PrerenderSearchQuery(ASCIIToUTF16("foo"));
   EXPECT_TRUE(browser()->instant_controller());
+  EXPECT_CALL(
+      *mock_search_box(),
+      Submit(Eq(ASCIIToUTF16("foo")),
+             AllOf(Field(&EmbeddedSearchRequestParams::original_query,
+                         Eq(base::ASCIIToUTF16("f"))),
+                   Field(&EmbeddedSearchRequestParams::input_encoding,
+                         Eq(base::ASCIIToUTF16("utf-8"))),
+                   Field(&EmbeddedSearchRequestParams::rlz_parameter_value,
+                         Eq(base::ASCIIToUTF16(""))),
+                   Field(&EmbeddedSearchRequestParams::assisted_query_stats,
+                         Eq(base::ASCIIToUTF16("chrome...0"))))));
 
   // Open a search results page. Query extraction flag is disabled in field
   // trials. Search results page URL does not contain search terms replacement
@@ -511,21 +540,5 @@ TEST_F(TestUsePrerenderPage, SetEmbeddedSearchRequestParams) {
   GURL url("https://www.google.com/url?bar=foo&aqs=chrome...0&ie=utf-8&oq=f");
   browser()->instant_controller()->OpenInstant(
       WindowOpenDisposition::CURRENT_TAB, url);
-  content::MockRenderProcessHost* process =
-      static_cast<content::MockRenderProcessHost*>(
-          prerender_contents()->GetMainFrame()->GetProcess());
-  const IPC::Message* message = process->sink().GetFirstMessageMatching(
-      ChromeViewMsg_SearchBoxSubmit::ID);
-  ASSERT_TRUE(message);
-
-  // Verify the IPC message params.
-  std::tuple<base::string16, EmbeddedSearchRequestParams> params;
-  ChromeViewMsg_SearchBoxSubmit::Read(message, &params);
-  EXPECT_EQ("foo", base::UTF16ToASCII(std::get<0>(params)));
-  EXPECT_EQ("f", base::UTF16ToASCII(std::get<1>(params).original_query));
-  EXPECT_EQ("utf-8", base::UTF16ToASCII(std::get<1>(params).input_encoding));
-  EXPECT_EQ("", base::UTF16ToASCII(std::get<1>(params).rlz_parameter_value));
-  EXPECT_EQ("chrome...0",
-            base::UTF16ToASCII(std::get<1>(params).assisted_query_stats));
 }
 #endif

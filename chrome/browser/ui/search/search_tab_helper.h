@@ -83,6 +83,8 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   void set_delegate(SearchTabHelperDelegate* delegate) { delegate_ = delegate; }
 
+  SearchIPCRouter& ipc_router_for_testing() { return ipc_router_; }
+
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
   friend class SearchIPCRouterPolicyTest;
@@ -166,9 +168,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // results in a call to OnInstantSupportDetermined() when the reply is
   // received.
   void DetermineIfPageSupportsInstant();
-
-  // Used by unit tests.
-  SearchIPCRouter& ipc_router() { return ipc_router_; }
 
   Profile* profile() const;
 

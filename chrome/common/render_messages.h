@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/features.h"
+#include "chrome/common/instant_type_traits.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/common/web_application_info.h"
@@ -80,9 +81,6 @@ struct ParamTraits<ContentSettingsPattern> {
 
 IPC_ENUM_TRAITS_MAX_VALUE(ChromeViewHostMsg_GetPluginInfo_Status,
                           ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized)
-IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
-                          OMNIBOX_FOCUS_CHANGE_REASON_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusState, OMNIBOX_FOCUS_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageAlignment,
                           THEME_BKGRND_IMAGE_ALIGN_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ThemeBackgroundImageTiling, THEME_BKGRND_IMAGE_LAST)
@@ -119,27 +117,6 @@ IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)
   IPC_STRUCT_TRAITS_MEMBER(incognito)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(EmbeddedSearchRequestParams)
-  IPC_STRUCT_TRAITS_MEMBER(search_query)
-  IPC_STRUCT_TRAITS_MEMBER(original_query)
-  IPC_STRUCT_TRAITS_MEMBER(rlz_parameter_value)
-  IPC_STRUCT_TRAITS_MEMBER(input_encoding)
-  IPC_STRUCT_TRAITS_MEMBER(assisted_query_stats)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
-  IPC_STRUCT_TRAITS_MEMBER(text)
-  IPC_STRUCT_TRAITS_MEMBER(metadata)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedItem)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(title)
-  IPC_STRUCT_TRAITS_MEMBER(thumbnail)
-  IPC_STRUCT_TRAITS_MEMBER(favicon)
-  IPC_STRUCT_TRAITS_MEMBER(source)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
   IPC_STRUCT_TRAITS_MEMBER(image_rules)
   IPC_STRUCT_TRAITS_MEMBER(script_rules)
@@ -152,29 +129,6 @@ IPC_STRUCT_TRAITS_BEGIN(RGBAColor)
   IPC_STRUCT_TRAITS_MEMBER(b)
   IPC_STRUCT_TRAITS_MEMBER(a)
 IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
-  IPC_STRUCT_TRAITS_MEMBER(using_default_theme)
-  IPC_STRUCT_TRAITS_MEMBER(background_color)
-  IPC_STRUCT_TRAITS_MEMBER(text_color)
-  IPC_STRUCT_TRAITS_MEMBER(link_color)
-  IPC_STRUCT_TRAITS_MEMBER(text_color_light)
-  IPC_STRUCT_TRAITS_MEMBER(header_color)
-  IPC_STRUCT_TRAITS_MEMBER(section_border_color)
-  IPC_STRUCT_TRAITS_MEMBER(theme_id)
-  IPC_STRUCT_TRAITS_MEMBER(image_horizontal_alignment)
-  IPC_STRUCT_TRAITS_MEMBER(image_vertical_alignment)
-  IPC_STRUCT_TRAITS_MEMBER(image_tiling)
-  IPC_STRUCT_TRAITS_MEMBER(image_height)
-  IPC_STRUCT_TRAITS_MEMBER(has_attribution)
-  IPC_STRUCT_TRAITS_MEMBER(logo_alternate)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType,
-                          NTP_EVENT_TYPE_LAST)
-
-IPC_ENUM_TRAITS_MAX_VALUE(ntp_tiles::NTPTileSource,
-                          ntp_tiles::NTPTileSource::LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(WebApplicationInfo::MobileCapable,
                           WebApplicationInfo::MOBILE_CAPABLE_APPLE)
@@ -219,38 +173,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
 IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
                      std::string /* field trial name */,
                      std::string /* group name that was assigned. */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetPageSequenceNumber,
-                    int /* page_seq_no */)
-
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_DetermineIfPageSupportsInstant)
-
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
-                    OmniboxFocusState /* new_focus_state */,
-                    OmniboxFocusChangeReason /* reason */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
-                    std::vector<InstantMostVisitedItem> /* items */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetInputInProgress,
-                    bool /* input_in_progress */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetSuggestionToPrefetch,
-                    InstantSuggestion /* suggestion */)
-
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxSubmit,
-                    base::string16 /* value */,
-                    EmbeddedSearchRequestParams /* params */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
-                    ThemeBackgroundInfo /* value */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_HistorySyncCheckResult,
-                    bool /* sync_history */)
-
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_ChromeIdentityCheckResult,
-                    base::string16 /* identity */,
-                    bool /* identity_match */)
 
 // Sent to allow or forbid the running of insecure mixed-content.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
@@ -517,67 +439,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_DidGetWebApplicationInfo,
                     WebApplicationInfo)
-
-// Logs events from InstantExtended New Tab Pages.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogEvent,
-                    int /* page_seq_no */,
-                    NTPLoggingEventType /* event */,
-                    base::TimeDelta /* time */)
-
-// Logs an impression on one of the Most Visited tile on the InstantExtended
-// New Tab Page.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogMostVisitedImpression,
-                    int /* page_seq_no */,
-                    int /* position */,
-                    ntp_tiles::NTPTileSource /* tile_source */)
-
-// Logs a navigation on one of the Most Visited tile on the InstantExtended
-// New Tab Page.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogMostVisitedNavigation,
-                    int /* page_seq_no */,
-                    int /* position */,
-                    ntp_tiles::NTPTileSource /* tile_source */)
-
-// The Instant page asks whether the user syncs its history.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_HistorySyncCheck,
-                    int /* page_seq_no */)
-
-// The Instant page asks for Chrome identity check against |identity|.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ChromeIdentityCheck,
-                    int /* page_seq_no */,
-                    base::string16 /* identity */)
-
-// Tells InstantExtended to set the omnibox focus state.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FocusOmnibox,
-                    int /* page_seq_no */,
-                    OmniboxFocusState /* state */)
-
-// Tells InstantExtended to paste text into the omnibox.  If text is empty,
-// the clipboard contents will be pasted. This causes the omnibox dropdown to
-// open.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PasteAndOpenDropdown,
-                    int /* page_seq_no */,
-                    base::string16 /* text to be pasted */)
-
-// Tells InstantExtended whether the embedded search API is supported.
-// See http://dev.chromium.org/embeddedsearch
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
-                    int /* page_seq_no */,
-                    bool /* result */)
-
-// Tells InstantExtended to delete a most visited item.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
-                    int /* page_seq_no */,
-                    GURL /* url */)
-
-// Tells InstantExtended to undo all most visited item deletions.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
-                    int /* page_seq_no */)
-
-// Tells InstantExtended to undo one most visited item deletion.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
-                    int /* page_seq_no */,
-                    GURL /* url */)
 
 // Tells the renderer a list of URLs which should be bounced back to the browser
 // process so that they can be assigned to an Instant renderer.

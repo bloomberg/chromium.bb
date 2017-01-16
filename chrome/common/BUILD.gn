@@ -92,6 +92,7 @@ static_library("common") {
     "descriptors_android.h",
     "ini_parser.cc",
     "ini_parser.h",
+    "instant_type_traits.h",
     "logging_chrome.cc",
     "logging_chrome.h",
     "mac/app_shim_launch.h",
@@ -623,13 +624,18 @@ if (is_win) {
 # require many files from it. This makes linking more efficient.
 static_library("test_support") {
   testonly = true
-  visibility = [ "//chrome/test:test_support" ]
+  visibility = [ "//chrome/test:*" ]
 
-  sources = []
+  sources = [
+    "search/mock_searchbox.cc",
+    "search/mock_searchbox.h",
+  ]
 
   deps = [
     ":common",
+    ":instant_mojom",
     "//base",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 
@@ -682,6 +688,17 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
+    "//url/mojo:url_mojom_gurl",
+  ]
+}
+
+mojom("instant_mojom") {
+  sources = [
+    "instant.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
     "//url/mojo:url_mojom_gurl",
   ]
 }

@@ -23,6 +23,7 @@
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "components/crx_file/id_util.h"
 #include "components/ntp_tiles/ntp_tile_source.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -211,27 +212,24 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
   return obj;
 }
 
-// Returns the render view for the current JS context if it matches |origin|,
-// otherwise returns NULL. Used to restrict methods that access suggestions and
-// most visited data to pages with origin chrome-search://most-visited and
-// chrome-search://suggestions.
-content::RenderView* GetRenderViewWithCheckedOrigin(const GURL& origin) {
+// Returns the main frame of the render frame for the current JS context if it
+// matches |origin|, otherwise returns NULL. Used to restrict methods that
+// access suggestions and most visited data to pages with origin
+// chrome-search://most-visited and chrome-search://suggestions.
+content::RenderFrame* GetRenderFrameWithCheckedOrigin(const GURL& origin) {
   blink::WebLocalFrame* webframe =
       blink::WebLocalFrame::frameForCurrentContext();
   if (!webframe)
     return NULL;
-  blink::WebView* webview = webframe->view();
-  if (!webview)
-    return NULL;  // Can happen during closing.
-  content::RenderView* render_view = content::RenderView::FromWebView(webview);
-  if (!render_view)
+  auto* main_frame = content::RenderFrame::FromWebFrame(webframe->localRoot());
+  if (!main_frame || !main_frame->IsMainFrame())
     return NULL;
 
   GURL url(webframe->document().url());
   if (url.GetOrigin() != origin.GetOrigin())
     return NULL;
 
-  return render_view;
+  return main_frame;
 }
 
 }  // namespace
@@ -398,8 +396,8 @@ class SearchBoxExtensionWrapper : public v8::Extension {
       v8::Isolate*,
       v8::Local<v8::String> name) override;
 
-  // Helper function to find the RenderView. May return NULL.
-  static content::RenderView* GetRenderView();
+  // Helper function to find the main RenderFrame. May return NULL.
+  static content::RenderFrame* GetRenderFrame();
 
   // Sends a Chrome identity check to the browser.
   static void CheckIsUserSignedInToChromeAs(
@@ -418,7 +416,7 @@ class SearchBoxExtensionWrapper : public v8::Extension {
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Gets the raw data for a most visited item including its raw URL.
-  // GetRenderViewWithCheckedOrigin() enforces that only code in the origin
+  // GetRenderFrameWithCheckedOrigin() enforces that only code in the origin
   // chrome-search://most-visited can call this function.
   static void GetMostVisitedItemData(
     const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -629,70 +627,74 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
 }
 
 // static
-content::RenderView* SearchBoxExtensionWrapper::GetRenderView() {
+content::RenderFrame* SearchBoxExtensionWrapper::GetRenderFrame() {
   blink::WebLocalFrame* webframe =
       blink::WebLocalFrame::frameForCurrentContext();
   if (!webframe) return NULL;
 
-  blink::WebView* webview = webframe->view();
-  if (!webview) return NULL;  // can happen during closing
+  auto* main_frame = content::RenderFrame::FromWebFrame(webframe->localRoot());
+  if (!main_frame || !main_frame->IsMainFrame())
+    return NULL;
 
-  return content::RenderView::FromWebView(webview);
+  return main_frame;
 }
 
 // static
 void SearchBoxExtensionWrapper::CheckIsUserSignedInToChromeAs(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
   if (!args.Length() || args[0]->IsUndefined()) {
     ThrowInvalidParameters(args);
     return;
   }
 
-  DVLOG(1) << render_view << " CheckIsUserSignedInToChromeAs";
+  DVLOG(1) << render_frame << " CheckIsUserSignedInToChromeAs";
 
-  SearchBox::Get(render_view)->CheckIsUserSignedInToChromeAs(
-      V8ValueToUTF16(args[0]));
+  SearchBox::Get(render_frame)
+      ->CheckIsUserSignedInToChromeAs(V8ValueToUTF16(args[0]));
 }
 
 // static
 void SearchBoxExtensionWrapper::CheckIsUserSyncingHistory(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
-  DVLOG(1) << render_view << " CheckIsUserSyncingHistory";
-  SearchBox::Get(render_view)->CheckIsUserSyncingHistory();
+  DVLOG(1) << render_frame << " CheckIsUserSyncingHistory";
+  SearchBox::Get(render_frame)->CheckIsUserSyncingHistory();
 }
 
 // static
 void SearchBoxExtensionWrapper::DeleteMostVisitedItem(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
   if (!args.Length()) {
     ThrowInvalidParameters(args);
     return;
   }
 
-  DVLOG(1) << render_view
+  DVLOG(1) << render_frame
            << " DeleteMostVisitedItem: " << args[0]->ToInteger()->Value();
-  SearchBox::Get(render_view)->
-      DeleteMostVisitedItem(args[0]->ToInteger()->Value());
+  SearchBox::Get(render_frame)
+      ->DeleteMostVisitedItem(args[0]->ToInteger()->Value());
 }
 
 // static
 void SearchBoxExtensionWrapper::GetMostVisitedItems(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view)
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
     return;
-  DVLOG(1) << render_view << " GetMostVisitedItems";
+  DVLOG(1) << render_frame << " GetMostVisitedItems";
 
-  const SearchBox* search_box = SearchBox::Get(render_view);
+  const SearchBox* search_box = SearchBox::Get(render_frame);
 
   std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
   search_box->GetMostVisitedItems(&instant_mv_items);
@@ -700,11 +702,10 @@ void SearchBoxExtensionWrapper::GetMostVisitedItems(
   v8::Local<v8::Array> v8_mv_items =
       v8::Array::New(isolate, instant_mv_items.size());
   for (size_t i = 0; i < instant_mv_items.size(); ++i) {
-    v8_mv_items->Set(i,
-                     GenerateMostVisitedItem(isolate,
-                                             render_view->GetRoutingID(),
-                                             instant_mv_items[i].first,
-                                             instant_mv_items[i].second));
+    v8_mv_items->Set(
+        i, GenerateMostVisitedItem(
+               isolate, render_frame->GetRenderView()->GetRoutingID(),
+               instant_mv_items[i].first, instant_mv_items[i].second));
   }
   args.GetReturnValue().Set(v8_mv_items);
 }
@@ -712,9 +713,10 @@ void SearchBoxExtensionWrapper::GetMostVisitedItems(
 // static
 void SearchBoxExtensionWrapper::GetMostVisitedItemData(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+  content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
       GURL(chrome::kChromeSearchMostVisitedUrl));
-  if (!render_view) return;
+  if (!render_frame)
+    return;
 
   // Need an rid argument.
   if (!args.Length() || !args[0]->IsNumber()) {
@@ -722,25 +724,27 @@ void SearchBoxExtensionWrapper::GetMostVisitedItemData(
     return;
   }
 
-  DVLOG(1) << render_view << " GetMostVisitedItem";
+  DVLOG(1) << render_frame << " GetMostVisitedItem";
   InstantRestrictedID restricted_id = args[0]->IntegerValue();
   InstantMostVisitedItem mv_item;
-  if (!SearchBox::Get(render_view)->GetMostVisitedItemWithID(
-          restricted_id, &mv_item)) {
+  if (!SearchBox::Get(render_frame)
+           ->GetMostVisitedItemWithID(restricted_id, &mv_item)) {
     return;
   }
   v8::Isolate* isolate = args.GetIsolate();
   args.GetReturnValue().Set(GenerateMostVisitedItem(
-      isolate, render_view->GetRoutingID(), restricted_id, mv_item));
+      isolate, render_frame->GetRenderView()->GetRoutingID(), restricted_id,
+      mv_item));
 }
 
 // static
 void SearchBoxExtensionWrapper::GetQuery(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
-  const base::string16& query = SearchBox::Get(render_view)->query();
-  DVLOG(1) << render_view << " GetQuery: '" << query << "'";
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
+  const base::string16& query = SearchBox::Get(render_frame)->query();
+  DVLOG(1) << render_frame << " GetQuery: '" << query << "'";
   v8::Isolate* isolate = args.GetIsolate();
   args.GetReturnValue().Set(UTF16ToV8String(isolate, query));
 }
@@ -754,11 +758,12 @@ void SearchBoxExtensionWrapper::GetRightToLeft(
 // static
 void SearchBoxExtensionWrapper::GetSearchRequestParams(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
   const EmbeddedSearchRequestParams& params =
-      SearchBox::Get(render_view)->GetEmbeddedSearchRequestParams();
+      SearchBox::Get(render_frame)->GetEmbeddedSearchRequestParams();
   v8::Isolate* isolate = args.GetIsolate();
   v8::Local<v8::Object> data = v8::Object::New(isolate);
   if (!params.search_query.empty()) {
@@ -787,11 +792,12 @@ void SearchBoxExtensionWrapper::GetSearchRequestParams(
 // static
 void SearchBoxExtensionWrapper::GetSuggestionToPrefetch(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
   const InstantSuggestion& suggestion =
-      SearchBox::Get(render_view)->suggestion();
+      SearchBox::Get(render_frame)->suggestion();
   v8::Isolate* isolate = args.GetIsolate();
   v8::Local<v8::Object> data = v8::Object::New(isolate);
   data->Set(v8::String::NewFromUtf8(isolate, "text"),
@@ -804,12 +810,13 @@ void SearchBoxExtensionWrapper::GetSuggestionToPrefetch(
 // static
 void SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
-  DVLOG(1) << render_view << " GetThemeBackgroundInfo";
+  DVLOG(1) << render_frame << " GetThemeBackgroundInfo";
   const ThemeBackgroundInfo& theme_info =
-      SearchBox::Get(render_view)->GetThemeBackgroundInfo();
+      SearchBox::Get(render_frame)->GetThemeBackgroundInfo();
   v8::Isolate* isolate = args.GetIsolate();
   v8::Local<v8::Object> info = v8::Object::New(isolate);
 
@@ -959,152 +966,162 @@ void SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
 // static
 void SearchBoxExtensionWrapper::IsFocused(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
-  bool is_focused = SearchBox::Get(render_view)->is_focused();
-  DVLOG(1) << render_view << " IsFocused: " << is_focused;
+  bool is_focused = SearchBox::Get(render_frame)->is_focused();
+  DVLOG(1) << render_frame << " IsFocused: " << is_focused;
   args.GetReturnValue().Set(is_focused);
 }
 
 // static
 void SearchBoxExtensionWrapper::IsInputInProgress(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
   bool is_input_in_progress =
-      SearchBox::Get(render_view)->is_input_in_progress();
-  DVLOG(1) << render_view << " IsInputInProgress: " << is_input_in_progress;
+      SearchBox::Get(render_frame)->is_input_in_progress();
+  DVLOG(1) << render_frame << " IsInputInProgress: " << is_input_in_progress;
   args.GetReturnValue().Set(is_input_in_progress);
 }
 
 // static
 void SearchBoxExtensionWrapper::IsKeyCaptureEnabled(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
-  args.GetReturnValue().Set(SearchBox::Get(render_view)->
-                            is_key_capture_enabled());
+  args.GetReturnValue().Set(
+      SearchBox::Get(render_frame)->is_key_capture_enabled());
 }
 
 // static
 void SearchBoxExtensionWrapper::LogEvent(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+  content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
       GURL(chrome::kChromeSearchMostVisitedUrl));
-  if (!render_view) return;
+  if (!render_frame)
+    return;
 
   if (!args.Length() || !args[0]->IsNumber()) {
     ThrowInvalidParameters(args);
     return;
   }
 
-  DVLOG(1) << render_view << " LogEvent";
+  DVLOG(1) << render_frame << " LogEvent";
 
   if (args[0]->Uint32Value() <= NTP_EVENT_TYPE_LAST) {
     NTPLoggingEventType event =
         static_cast<NTPLoggingEventType>(args[0]->Uint32Value());
-    SearchBox::Get(render_view)->LogEvent(event);
+    SearchBox::Get(render_frame)->LogEvent(event);
   }
 }
 
 // static
 void SearchBoxExtensionWrapper::LogMostVisitedImpression(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+  content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
       GURL(chrome::kChromeSearchMostVisitedUrl));
-  if (!render_view) return;
+  if (!render_frame)
+    return;
 
   if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber()) {
     ThrowInvalidParameters(args);
     return;
   }
 
-  DVLOG(1) << render_view << " LogMostVisitedImpression";
+  DVLOG(1) << render_frame << " LogMostVisitedImpression";
 
   if (args[1]->Uint32Value() <=
       static_cast<int>(ntp_tiles::NTPTileSource::LAST)) {
     ntp_tiles::NTPTileSource tile_source =
         static_cast<ntp_tiles::NTPTileSource>(args[1]->Uint32Value());
-    SearchBox::Get(render_view)->LogMostVisitedImpression(
-        args[0]->IntegerValue(), tile_source);
+    SearchBox::Get(render_frame)
+        ->LogMostVisitedImpression(args[0]->IntegerValue(), tile_source);
   }
 }
 
 // static
 void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+  content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
       GURL(chrome::kChromeSearchMostVisitedUrl));
-  if (!render_view) return;
+  if (!render_frame)
+    return;
 
   if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber()) {
     ThrowInvalidParameters(args);
     return;
   }
 
-  DVLOG(1) << render_view << " LogMostVisitedNavigation";
+  DVLOG(1) << render_frame << " LogMostVisitedNavigation";
 
   if (args[1]->Uint32Value() <=
       static_cast<int>(ntp_tiles::NTPTileSource::LAST)) {
     ntp_tiles::NTPTileSource tile_source =
         static_cast<ntp_tiles::NTPTileSource>(args[1]->Uint32Value());
-    SearchBox::Get(render_view)->LogMostVisitedNavigation(
-        args[0]->IntegerValue(), tile_source);
+    SearchBox::Get(render_frame)
+        ->LogMostVisitedNavigation(args[0]->IntegerValue(), tile_source);
   }
 }
 
 // static
 void SearchBoxExtensionWrapper::Paste(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
   base::string16 text;
   if (!args[0]->IsUndefined())
     text = V8ValueToUTF16(args[0]);
 
-  DVLOG(1) << render_view << " Paste: " << text;
-  SearchBox::Get(render_view)->Paste(text);
+  DVLOG(1) << render_frame << " Paste: " << text;
+  SearchBox::Get(render_frame)->Paste(text);
 }
 
 // static
 void SearchBoxExtensionWrapper::StartCapturingKeyStrokes(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
-  DVLOG(1) << render_view << " StartCapturingKeyStrokes";
-  SearchBox::Get(render_view)->StartCapturingKeyStrokes();
+  DVLOG(1) << render_frame << " StartCapturingKeyStrokes";
+  SearchBox::Get(render_frame)->StartCapturingKeyStrokes();
 }
 
 // static
 void SearchBoxExtensionWrapper::StopCapturingKeyStrokes(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
-  DVLOG(1) << render_view << " StopCapturingKeyStrokes";
-  SearchBox::Get(render_view)->StopCapturingKeyStrokes();
+  DVLOG(1) << render_frame << " StopCapturingKeyStrokes";
+  SearchBox::Get(render_frame)->StopCapturingKeyStrokes();
 }
 
 // static
 void SearchBoxExtensionWrapper::UndoAllMostVisitedDeletions(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return;
 
-  DVLOG(1) << render_view << " UndoAllMostVisitedDeletions";
-  SearchBox::Get(render_view)->UndoAllMostVisitedDeletions();
+  DVLOG(1) << render_frame << " UndoAllMostVisitedDeletions";
+  SearchBox::Get(render_frame)->UndoAllMostVisitedDeletions();
 }
 
 // static
 void SearchBoxExtensionWrapper::UndoMostVisitedDeletion(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) {
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame) {
     return;
   }
   if (!args.Length()) {
@@ -1112,8 +1129,8 @@ void SearchBoxExtensionWrapper::UndoMostVisitedDeletion(
     return;
   }
 
-  DVLOG(1) << render_view << " UndoMostVisitedDeletion";
-  SearchBox::Get(render_view)
+  DVLOG(1) << render_frame << " UndoMostVisitedDeletion";
+  SearchBox::Get(render_frame)
       ->UndoMostVisitedDeletion(args[0]->ToInteger()->Value());
 }
 

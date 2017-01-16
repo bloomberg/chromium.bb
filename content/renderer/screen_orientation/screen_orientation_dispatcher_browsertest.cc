@@ -59,7 +59,7 @@ class ScreenOrientationDispatcherTest : public RenderViewTest {
     RenderViewTest::SetUp();
     dispatcher_.reset(new ScreenOrientationDispatcher(nullptr));
     ScreenOrientationAssociatedPtr screen_orientation;
-    mojo::GetDummyProxyForTesting(&screen_orientation);
+    mojo::GetIsolatedProxy(&screen_orientation);
     dispatcher_->SetScreenOrientationForTests(screen_orientation);
   }
 

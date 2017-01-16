@@ -9,9 +9,11 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/search/mock_searchbox.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_controller.h"
@@ -22,6 +24,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using testing::Return;
 
 class Profile;
 
@@ -36,8 +40,13 @@ class FakePageDelegate : public InstantTab::Delegate {
                void(const content::WebContents* contents,
                     bool supports_instant));
   MOCK_METHOD2(InstantTabAboutToNavigateMainFrame,
-               void(const content::WebContents* contents,
-                    const GURL& url));
+               void(const content::WebContents* contents, const GURL& url));
+};
+
+class MockSearchBoxClientFactory
+    : public SearchIPCRouter::SearchBoxClientFactory {
+ public:
+  MOCK_METHOD0(GetSearchBox, chrome::mojom::SearchBox*(void));
 };
 
 }  // namespace
@@ -56,11 +65,17 @@ class InstantTabTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<InstantTab> page;
   FakePageDelegate delegate;
+  MockSearchBox mock_search_box;
 };
 
 void InstantTabTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   SearchTabHelper::CreateForWebContents(web_contents());
+  auto factory = base::MakeUnique<MockSearchBoxClientFactory>();
+  ON_CALL(*factory, GetSearchBox()).WillByDefault(Return(&mock_search_box));
+  search_tab()
+      ->ipc_router_for_testing()
+      .set_search_box_client_factory_for_testing(std::move(factory));
 }
 
 TEST_F(InstantTabTest, DetermineIfPageSupportsInstant_Local) {
@@ -78,13 +93,8 @@ TEST_F(InstantTabTest, DetermineIfPageSupportsInstant_NonLocal) {
   EXPECT_FALSE(SupportsInstant());
   page->Init();
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
-  process()->sink().ClearMessages();
+  EXPECT_CALL(mock_search_box, DetermineIfPageSupportsInstant());
   search_tab()->DetermineIfPageSupportsInstant();
-  const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-      ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
-  ASSERT_TRUE(message != NULL);
-  EXPECT_EQ(web_contents()->GetRenderViewHost()->GetRoutingID(),
-            message->routing_id());
 }
 
 TEST_F(InstantTabTest, PageURLDoesntBelongToInstantRenderer) {
@@ -97,13 +107,10 @@ TEST_F(InstantTabTest, PageURLDoesntBelongToInstantRenderer) {
   // SearchTabHelper::DeterminerIfPageSupportsInstant() should return
   // immediately without dispatching any message to the renderer.
   NavigateAndCommit(GURL("http://www.example.com"));
-  process()->sink().ClearMessages();
   EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), false));
+  EXPECT_CALL(mock_search_box, DetermineIfPageSupportsInstant()).Times(0);
 
   search_tab()->DetermineIfPageSupportsInstant();
-  const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-      ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
-  ASSERT_TRUE(message == NULL);
   EXPECT_FALSE(SupportsInstant());
 }
 
@@ -114,13 +121,8 @@ TEST_F(InstantTabTest, PageSupportsInstant) {
   EXPECT_FALSE(SupportsInstant());
   page->Init();
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
-  process()->sink().ClearMessages();
+  EXPECT_CALL(mock_search_box, DetermineIfPageSupportsInstant());
   search_tab()->DetermineIfPageSupportsInstant();
-  const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-      ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
-  ASSERT_TRUE(message != NULL);
-  EXPECT_EQ(web_contents()->GetRenderViewHost()->GetRoutingID(),
-            message->routing_id());
 
   EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), true));
 

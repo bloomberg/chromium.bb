@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/instant.mojom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
@@ -24,6 +25,8 @@
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/favicon_base/large_icon_url_parser.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
+#include "content/public/common/associated_interface_provider.h"
+#include "content/public/common/associated_interface_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
@@ -123,7 +126,7 @@ SearchBoxIconURLHelper::~SearchBoxIconURLHelper() {
 }
 
 int SearchBoxIconURLHelper::GetViewID() const {
-  return search_box_->render_view()->GetRoutingID();
+  return search_box_->render_frame()->GetRenderView()->GetRoutingID();
 }
 
 std::string SearchBoxIconURLHelper::GetURLStringFromRestrictedID(
@@ -231,69 +234,60 @@ SearchBox::IconURLHelper::IconURLHelper() {
 SearchBox::IconURLHelper::~IconURLHelper() {
 }
 
-SearchBox::SearchBox(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view),
-      content::RenderViewObserverTracker<SearchBox>(render_view),
-    page_seq_no_(0),
-    is_focused_(false),
-    is_input_in_progress_(false),
-    is_key_capture_enabled_(false),
-    most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
-    query_() {
+SearchBox::SearchBox(content::RenderFrame* render_frame)
+    : content::RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<SearchBox>(render_frame),
+      page_seq_no_(0),
+      is_focused_(false),
+      is_input_in_progress_(false),
+      is_key_capture_enabled_(false),
+      most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
+      query_(),
+      binding_(this) {
+  render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
+      &instant_service_);
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::Bind(&SearchBox::Bind, base::Unretained(this)));
 }
 
 SearchBox::~SearchBox() {
 }
 
 void SearchBox::LogEvent(NTPLoggingEventType event) {
-  // The main frame for the current RenderView may be out-of-process, in which
-  // case it won't have performance().  Use the default delta of 0 in this
-  // case.
-  base::TimeDelta delta;
-  if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame()) {
-    // navigation_start in ms.
-    uint64_t start = 1000 * (render_view()
-                                 ->GetMainRenderFrame()
-                                 ->GetWebFrame()
-                                 ->performance()
-                                 .navigationStart());
-    uint64_t now = (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch())
-                       .InMilliseconds();
-    DCHECK(now >= start);
-    delta = base::TimeDelta::FromMilliseconds(now - start);
-  }
-  render_view()->Send(new ChromeViewHostMsg_LogEvent(
-      render_view()->GetRoutingID(), page_seq_no_, event, delta));
+  // navigation_start in ms.
+  uint64_t start =
+      1000 * (render_frame()->GetWebFrame()->performance().navigationStart());
+  uint64_t now =
+      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InMilliseconds();
+  DCHECK(now >= start);
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(now - start);
+  instant_service_->LogEvent(page_seq_no_, event, delta);
 }
 
 void SearchBox::LogMostVisitedImpression(int position,
                                          ntp_tiles::NTPTileSource tile_source) {
-  render_view()->Send(new ChromeViewHostMsg_LogMostVisitedImpression(
-      render_view()->GetRoutingID(), page_seq_no_, position, tile_source));
+  instant_service_->LogMostVisitedImpression(page_seq_no_, position,
+                                             tile_source);
 }
 
 void SearchBox::LogMostVisitedNavigation(int position,
                                          ntp_tiles::NTPTileSource tile_source) {
-  render_view()->Send(new ChromeViewHostMsg_LogMostVisitedNavigation(
-      render_view()->GetRoutingID(), page_seq_no_, position, tile_source));
+  instant_service_->LogMostVisitedNavigation(page_seq_no_, position,
+                                             tile_source);
 }
 
 void SearchBox::CheckIsUserSignedInToChromeAs(const base::string16& identity) {
-  render_view()->Send(new ChromeViewHostMsg_ChromeIdentityCheck(
-      render_view()->GetRoutingID(), page_seq_no_, identity));
+  instant_service_->ChromeIdentityCheck(page_seq_no_, identity);
 }
 
 void SearchBox::CheckIsUserSyncingHistory() {
-  render_view()->Send(new ChromeViewHostMsg_HistorySyncCheck(
-      render_view()->GetRoutingID(), page_seq_no_));
+  instant_service_->HistorySyncCheck(page_seq_no_);
 }
 
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
-  render_view()->Send(new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
-      render_view()->GetRoutingID(),
-      page_seq_no_,
-      GetURLForMostVisitedItem(most_visited_item_id)));
+  instant_service_->SearchBoxDeleteMostVisitedItem(
+      page_seq_no_, GetURLForMostVisitedItem(most_visited_item_id));
 }
 
 bool SearchBox::GenerateImageURLFromTransientURL(const GURL& transient_url,
@@ -324,83 +318,46 @@ const EmbeddedSearchRequestParams& SearchBox::GetEmbeddedSearchRequestParams() {
 }
 
 void SearchBox::Paste(const base::string16& text) {
-  render_view()->Send(new ChromeViewHostMsg_PasteAndOpenDropdown(
-      render_view()->GetRoutingID(), page_seq_no_, text));
+  instant_service_->PasteAndOpenDropdown(page_seq_no_, text);
 }
 
 void SearchBox::StartCapturingKeyStrokes() {
-  render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
-      render_view()->GetRoutingID(), page_seq_no_, OMNIBOX_FOCUS_INVISIBLE));
+  instant_service_->FocusOmnibox(page_seq_no_, OMNIBOX_FOCUS_INVISIBLE);
 }
 
 void SearchBox::StopCapturingKeyStrokes() {
-  render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
-      render_view()->GetRoutingID(), page_seq_no_, OMNIBOX_FOCUS_NONE));
+  instant_service_->FocusOmnibox(page_seq_no_, OMNIBOX_FOCUS_NONE);
 }
 
 void SearchBox::UndoAllMostVisitedDeletions() {
-  render_view()->Send(
-      new ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
-          render_view()->GetRoutingID(), page_seq_no_));
+  instant_service_->SearchBoxUndoAllMostVisitedDeletions(page_seq_no_);
 }
 
 void SearchBox::UndoMostVisitedDeletion(
     InstantRestrictedID most_visited_item_id) {
-  render_view()->Send(new ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
-      render_view()->GetRoutingID(), page_seq_no_,
-      GetURLForMostVisitedItem(most_visited_item_id)));
+  instant_service_->SearchBoxUndoMostVisitedDeletion(
+      page_seq_no_, GetURLForMostVisitedItem(most_visited_item_id));
 }
 
-bool SearchBox::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SearchBox, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetPageSequenceNumber,
-                        OnSetPageSequenceNumber)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_ChromeIdentityCheckResult,
-                        OnChromeIdentityCheckResult)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
-                        OnDetermineIfPageSupportsInstant)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_HistorySyncCheckResult,
-                        OnHistorySyncCheckResult)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocusChanged, OnFocusChanged)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
-                        OnMostVisitedChanged)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetInputInProgress,
-                        OnSetInputInProgress)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetSuggestionToPrefetch,
-                        OnSetSuggestionToPrefetch)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSubmit, OnSubmit)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
-                        OnThemeChanged)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void SearchBox::OnSetPageSequenceNumber(int page_seq_no) {
+void SearchBox::SetPageSequenceNumber(int page_seq_no) {
   page_seq_no_ = page_seq_no;
 }
 
-void SearchBox::OnChromeIdentityCheckResult(const base::string16& identity,
-                                            bool identity_match) {
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    extensions_v8::SearchBoxExtension::DispatchChromeIdentityCheckResult(
-        render_view()->GetWebView()->mainFrame(), identity, identity_match);
-  }
+void SearchBox::ChromeIdentityCheckResult(const base::string16& identity,
+                                          bool identity_match) {
+  extensions_v8::SearchBoxExtension::DispatchChromeIdentityCheckResult(
+      render_frame()->GetWebFrame(), identity, identity_match);
 }
 
-void SearchBox::OnDetermineIfPageSupportsInstant() {
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
-        render_view()->GetWebView()->mainFrame());
-    DVLOG(1) << render_view() << " PageSupportsInstant: " << result;
-    render_view()->Send(new ChromeViewHostMsg_InstantSupportDetermined(
-        render_view()->GetRoutingID(), page_seq_no_, result));
-  }
+void SearchBox::DetermineIfPageSupportsInstant() {
+  bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
+      render_frame()->GetWebFrame());
+  DVLOG(1) << render_frame() << " PageSupportsInstant: " << result;
+  instant_service_->InstantSupportDetermined(page_seq_no_, result);
 }
 
-void SearchBox::OnFocusChanged(OmniboxFocusState new_focus_state,
-                               OmniboxFocusChangeReason reason) {
+void SearchBox::FocusChanged(OmniboxFocusState new_focus_state,
+                             OmniboxFocusChangeReason reason) {
   bool key_capture_enabled = new_focus_state == OMNIBOX_FOCUS_INVISIBLE;
   if (key_capture_enabled != is_key_capture_enabled_) {
     // Tell the page if the key capture mode changed unless the focus state
@@ -411,103 +368,90 @@ void SearchBox::OnFocusChanged(OmniboxFocusState new_focus_state,
     // onkeycapturechange before the corresponding onchange, and the page would
     // have no way of telling whether the keycapturechange happened because of
     // some actual user action or just because they started typing.)
-    if (reason != OMNIBOX_FOCUS_CHANGE_TYPING &&
-        render_view()->GetWebView() &&
-        render_view()->GetWebView()->mainFrame()) {
+    if (reason != OMNIBOX_FOCUS_CHANGE_TYPING) {
       is_key_capture_enabled_ = key_capture_enabled;
-      DVLOG(1) << render_view() << " OnKeyCaptureChange";
+      DVLOG(1) << render_frame() << " KeyCaptureChange";
       extensions_v8::SearchBoxExtension::DispatchKeyCaptureChange(
-          render_view()->GetWebView()->mainFrame());
+          render_frame()->GetWebFrame());
     }
   }
   bool is_focused = new_focus_state == OMNIBOX_FOCUS_VISIBLE;
   if (is_focused != is_focused_) {
     is_focused_ = is_focused;
-    DVLOG(1) << render_view() << " OnFocusChange";
-    if (render_view()->GetWebView() &&
-        render_view()->GetWebView()->mainFrame()) {
-      extensions_v8::SearchBoxExtension::DispatchFocusChange(
-          render_view()->GetWebView()->mainFrame());
-    }
+    DVLOG(1) << render_frame() << " FocusChange";
+    extensions_v8::SearchBoxExtension::DispatchFocusChange(
+        render_frame()->GetWebFrame());
   }
 }
 
-void SearchBox::OnHistorySyncCheckResult(bool sync_history) {
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    extensions_v8::SearchBoxExtension::DispatchHistorySyncCheckResult(
-        render_view()->GetWebView()->mainFrame(), sync_history);
-  }
+void SearchBox::HistorySyncCheckResult(bool sync_history) {
+  extensions_v8::SearchBoxExtension::DispatchHistorySyncCheckResult(
+      render_frame()->GetWebFrame(), sync_history);
 }
 
-void SearchBox::OnMostVisitedChanged(
+void SearchBox::MostVisitedChanged(
     const std::vector<InstantMostVisitedItem>& items) {
   std::vector<InstantMostVisitedItemIDPair> last_known_items;
   GetMostVisitedItems(&last_known_items);
 
-  if (AreMostVisitedItemsEqual(last_known_items, items))
+  if (AreMostVisitedItemsEqual(last_known_items, items)) {
     return;  // Do not send duplicate onmostvisitedchange events.
+  }
 
   most_visited_items_cache_.AddItems(items);
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(
-        render_view()->GetWebView()->mainFrame());
-  }
+  extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(
+      render_frame()->GetWebFrame());
 }
 
-void SearchBox::OnSetInputInProgress(bool is_input_in_progress) {
+void SearchBox::SetInputInProgress(bool is_input_in_progress) {
   if (is_input_in_progress_ != is_input_in_progress) {
     is_input_in_progress_ = is_input_in_progress;
-    DVLOG(1) << render_view() << " OnSetInputInProgress";
-    if (render_view()->GetWebView() &&
-        render_view()->GetWebView()->mainFrame()) {
-      if (is_input_in_progress_) {
-        extensions_v8::SearchBoxExtension::DispatchInputStart(
-            render_view()->GetWebView()->mainFrame());
-      } else {
-        extensions_v8::SearchBoxExtension::DispatchInputCancel(
-            render_view()->GetWebView()->mainFrame());
-      }
+    DVLOG(1) << render_frame() << " SetInputInProgress";
+    if (is_input_in_progress_) {
+      extensions_v8::SearchBoxExtension::DispatchInputStart(
+          render_frame()->GetWebFrame());
+    } else {
+      extensions_v8::SearchBoxExtension::DispatchInputCancel(
+          render_frame()->GetWebFrame());
     }
   }
 }
 
-void SearchBox::OnSetSuggestionToPrefetch(const InstantSuggestion& suggestion) {
+void SearchBox::SetSuggestionToPrefetch(const InstantSuggestion& suggestion) {
   suggestion_ = suggestion;
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    DVLOG(1) << render_view() << " OnSetSuggestionToPrefetch";
-    extensions_v8::SearchBoxExtension::DispatchSuggestionChange(
-        render_view()->GetWebView()->mainFrame());
-  }
+  DVLOG(1) << render_frame() << " SetSuggestionToPrefetch";
+  extensions_v8::SearchBoxExtension::DispatchSuggestionChange(
+      render_frame()->GetWebFrame());
 }
 
-void SearchBox::OnSubmit(const base::string16& query,
-                         const EmbeddedSearchRequestParams& params) {
+void SearchBox::Submit(const base::string16& query,
+                       const EmbeddedSearchRequestParams& params) {
   query_ = query;
   embedded_search_request_params_ = params;
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    DVLOG(1) << render_view() << " OnSubmit";
-    extensions_v8::SearchBoxExtension::DispatchSubmit(
-        render_view()->GetWebView()->mainFrame());
-  }
+  DVLOG(1) << render_frame() << " Submit";
+  extensions_v8::SearchBoxExtension::DispatchSubmit(
+      render_frame()->GetWebFrame());
   if (!query.empty())
     Reset();
 }
 
-void SearchBox::OnThemeChanged(const ThemeBackgroundInfo& theme_info) {
+void SearchBox::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
   // Do not send duplicate notifications.
   if (theme_info_ == theme_info)
     return;
 
   theme_info_ = theme_info;
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    extensions_v8::SearchBoxExtension::DispatchThemeChange(
-        render_view()->GetWebView()->mainFrame());
-  }
+  extensions_v8::SearchBoxExtension::DispatchThemeChange(
+      render_frame()->GetWebFrame());
 }
 
 GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
   InstantMostVisitedItem item;
   return GetMostVisitedItemWithID(item_id, &item) ? item.url : GURL();
+}
+
+void SearchBox::Bind(chrome::mojom::SearchBoxAssociatedRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 void SearchBox::Reset() {
