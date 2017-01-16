@@ -86,6 +86,9 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   // Note |observer| is expected to outlive the SchedulerHelper.
   void SetObserver(Observer* observer);
 
+  // Remove all canceled delayed tasks.
+  void SweepCanceledDelayedTasks();
+
   // Accessor methods.
   RealTimeDomain* real_time_domain() const;
   void RegisterTimeDomain(TimeDomain* time_domain);

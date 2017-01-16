@@ -42,6 +42,7 @@ class BLINK_PLATFORM_EXPORT CompositorWorkerScheduler
   void OnIdleTaskPosted() override;
   base::TimeTicks WillProcessIdleTask() override;
   void DidProcessIdleTask() override;
+  base::TimeTicks NowTicks() override;
 
  private:
   base::Thread* thread_;

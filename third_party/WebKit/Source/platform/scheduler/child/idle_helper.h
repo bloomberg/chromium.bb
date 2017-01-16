@@ -138,6 +138,7 @@ class BLINK_PLATFORM_EXPORT IdleHelper
   void OnIdleTaskPosted() override;
   base::TimeTicks WillProcessIdleTask() override;
   void DidProcessIdleTask() override;
+  base::TimeTicks NowTicks() override;
 
   // base::MessageLoop::TaskObserver implementation:
   void WillProcessTask(const base::PendingTask& pending_task) override;
@@ -149,6 +150,8 @@ class BLINK_PLATFORM_EXPORT IdleHelper
  private:
   friend class BaseIdleHelperTest;
   friend class IdleHelperTest;
+
+  const scoped_refptr<TaskQueue>& idle_queue() const { return idle_queue_; }
 
   class State {
    public:

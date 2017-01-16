@@ -93,6 +93,9 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                    TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                    "RendererSchedulerIdlePeriod",
                    base::TimeDelta()),
+      idle_canceled_delayed_task_sweeper_("renderer.scheduler",
+                                          &helper_,
+                                          idle_helper_.IdleTaskRunner()),
       render_widget_scheduler_signals_(this),
       control_task_runner_(helper_.ControlTaskRunner()),
       compositor_task_runner_(

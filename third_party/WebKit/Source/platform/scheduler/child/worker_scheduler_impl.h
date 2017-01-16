@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_IMPL_H_
 
 #include "base/macros.h"
+#include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "public/platform/scheduler/child/worker_scheduler.h"
@@ -50,6 +51,7 @@ class BLINK_PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
 
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
+  IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
   bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerImpl);

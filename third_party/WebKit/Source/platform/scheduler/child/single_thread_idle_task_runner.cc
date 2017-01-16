@@ -44,6 +44,17 @@ void SingleThreadIdleTaskRunner::PostIdleTask(
                             weak_scheduler_ptr_, idle_task));
 }
 
+void SingleThreadIdleTaskRunner::PostDelayedIdleTask(
+    const tracked_objects::Location& from_here,
+    const base::TimeDelta delay,
+    const IdleTask& idle_task) {
+  base::TimeTicks first_run_time = delegate_->NowTicks() + delay;
+  delayed_idle_tasks_.insert(std::make_pair(
+      first_run_time,
+      std::make_pair(from_here, base::Bind(&SingleThreadIdleTaskRunner::RunTask,
+                                           weak_scheduler_ptr_, idle_task))));
+}
+
 void SingleThreadIdleTaskRunner::PostNonNestableIdleTask(
     const tracked_objects::Location& from_here,
     const IdleTask& idle_task) {
@@ -51,6 +62,20 @@ void SingleThreadIdleTaskRunner::PostNonNestableIdleTask(
   idle_priority_task_runner_->PostNonNestableTask(
       from_here, base::Bind(&SingleThreadIdleTaskRunner::RunTask,
                             weak_scheduler_ptr_, idle_task));
+}
+
+void SingleThreadIdleTaskRunner::EnqueueReadyDelayedIdleTasks() {
+  if (delayed_idle_tasks_.empty())
+    return;
+
+  base::TimeTicks now = delegate_->NowTicks();
+  while (!delayed_idle_tasks_.empty() &&
+         delayed_idle_tasks_.begin()->first <= now) {
+    idle_priority_task_runner_->PostTask(
+        delayed_idle_tasks_.begin()->second.first,
+        std::move(delayed_idle_tasks_.begin()->second.second));
+    delayed_idle_tasks_.erase(delayed_idle_tasks_.begin());
+  }
 }
 
 void SingleThreadIdleTaskRunner::RunTask(IdleTask idle_task) {

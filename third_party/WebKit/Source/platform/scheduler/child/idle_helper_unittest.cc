@@ -166,7 +166,7 @@ class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
 
   ~IdleHelperForTest() override {}
 
-  // SchedulerHelperDelegate implementation:
+  // IdleHelper::Delegate implementation:
   MOCK_METHOD2(CanEnterLongIdlePeriod,
                bool(base::TimeTicks now,
                     base::TimeDelta* next_long_idle_period_delay_out));
@@ -282,6 +282,10 @@ class BaseIdleHelperTest : public testing::Test {
   void CheckIdlePeriodStateIs(const char* expected) {
     EXPECT_STREQ(expected, IdleHelper::IdlePeriodStateToString(
                                idle_helper_->SchedulerIdlePeriodState()));
+  }
+
+  const scoped_refptr<TaskQueue>& idle_queue() const {
+    return idle_helper_->idle_queue_;
   }
 
   std::unique_ptr<base::SimpleTestTickClock> clock_;
@@ -1078,6 +1082,40 @@ TEST_F(IdleHelperWithQuiescencePeriodTest,
   idle_helper_->Shutdown();
   mock_task_runner_->RunUntilIdle();
   EXPECT_EQ(0, run_count);
+}
+
+TEST_F(IdleHelperTest, TestPostDelayedIdleTask) {
+  int run_count = 0;
+  base::TimeTicks expected_deadline =
+      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(2300);
+  base::TimeTicks deadline_in_task;
+
+  // Posting a delayed idle task should not post anything on the underlying
+  // task queue until the delay is up.
+  idle_task_runner_->PostDelayedIdleTask(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(200),
+      base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  EXPECT_EQ(0u, idle_queue()->GetNumberOfPendingTasks());
+
+  clock_->Advance(base::TimeDelta::FromMilliseconds(100));
+
+  // It shouldn't run until the delay is over even though we went idle.
+  idle_helper_->StartIdlePeriod(
+      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
+      expected_deadline);
+  EXPECT_EQ(0u, idle_queue()->GetNumberOfPendingTasks());
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  clock_->Advance(base::TimeDelta::FromMilliseconds(100));
+  idle_helper_->StartIdlePeriod(
+      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
+      expected_deadline);
+  EXPECT_EQ(1u, idle_queue()->GetNumberOfPendingTasks());
+  RunUntilIdle();
+
+  EXPECT_EQ(1, run_count);
+  EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 
 }  // namespace scheduler

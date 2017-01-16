@@ -140,6 +140,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // Returns true if there is a task that could be executed immediately.
   bool HasImmediateWorkForTesting() const;
 
+  // Removes all canceled delayed tasks.
+  void SweepCanceledDelayedTasks();
+
  private:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;

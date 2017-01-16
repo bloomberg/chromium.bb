@@ -174,6 +174,9 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
   helper_->CheckOnValidThread();
   DCHECK(IsInIdlePeriod(new_state));
 
+  // Allow any ready delayed idle tasks to run.
+  idle_task_runner_->EnqueueReadyDelayedIdleTasks();
+
   base::TimeDelta idle_period_duration(idle_period_deadline - now);
   if (idle_period_duration <
       base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
@@ -319,6 +322,10 @@ void IdleHelper::DidProcessIdleTask() {
   if (IsInLongIdlePeriod(state_.idle_period_state())) {
     UpdateLongIdlePeriodStateAfterIdleTask();
   }
+}
+
+base::TimeTicks IdleHelper::NowTicks() {
+  return helper_->scheduler_tqm_delegate()->NowTicks();
 }
 
 // static

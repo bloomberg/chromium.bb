@@ -175,5 +175,9 @@ base::TimeTicks CompositorWorkerScheduler::WillProcessIdleTask() {
 
 void CompositorWorkerScheduler::DidProcessIdleTask() {}
 
+base::TimeTicks CompositorWorkerScheduler::NowTicks() {
+  return base::TimeTicks::Now();
+}
+
 }  // namespace scheduler
 }  // namespace blink

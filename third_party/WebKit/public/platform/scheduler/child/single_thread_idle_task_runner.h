@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
 #define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -22,6 +24,7 @@ class BlameContext;
 
 namespace blink {
 namespace scheduler {
+class IdleHelper;
 
 // A SingleThreadIdleTaskRunner is a task runner for running idle tasks. Idle
 // tasks have an unbound argument which is bound to a deadline
@@ -50,6 +53,9 @@ class SingleThreadIdleTaskRunner
     // Signals that an idle task has finished being run.
     virtual void DidProcessIdleTask() = 0;
 
+    // Returns the current time.
+    virtual base::TimeTicks NowTicks() = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
@@ -64,6 +70,13 @@ class SingleThreadIdleTaskRunner
   virtual void PostIdleTask(const tracked_objects::Location& from_here,
                             const IdleTask& idle_task);
 
+  // |idle_task| is eligible to run after the next time an idle period starts
+  // after |delay|.  Note this has after wakeup semantics, i.e. unless something
+  // else wakes the CPU up, this won't run.
+  virtual void PostDelayedIdleTask(const tracked_objects::Location& from_here,
+                                   const base::TimeDelta delay,
+                                   const IdleTask& idle_task);
+
   virtual void PostNonNestableIdleTask(
       const tracked_objects::Location& from_here,
       const IdleTask& idle_task);
@@ -77,10 +90,17 @@ class SingleThreadIdleTaskRunner
 
  private:
   friend class base::RefCountedThreadSafe<SingleThreadIdleTaskRunner>;
+  friend class IdleHelper;
 
   void RunTask(IdleTask idle_task);
 
+  void EnqueueReadyDelayedIdleTasks();
+
+  using DelayedIdleTask =
+      std::pair<const tracked_objects::Location, base::Closure>;
+
   scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner_;
+  std::multimap<base::TimeTicks, DelayedIdleTask> delayed_idle_tasks_;
   Delegate* delegate_;  // NOT OWNED
   const char* tracing_category_;
   base::trace_event::BlameContext* blame_context_;  // Not owned.

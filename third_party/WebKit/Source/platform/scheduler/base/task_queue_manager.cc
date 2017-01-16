@@ -494,5 +494,15 @@ bool TaskQueueManager::HasImmediateWorkForTesting() const {
   return !selector_.EnabledWorkQueuesEmpty();
 }
 
+void TaskQueueManager::SweepCanceledDelayedTasks() {
+  std::map<TimeDomain*, base::TimeTicks> time_domain_now;
+  for (const scoped_refptr<internal::TaskQueueImpl>& queue : queues_) {
+    TimeDomain* time_domain = queue->GetTimeDomain();
+    if (time_domain_now.find(time_domain) == time_domain_now.end())
+      time_domain_now.insert(std::make_pair(time_domain, time_domain->Now()));
+    queue->SweepCanceledDelayedTasks(time_domain_now[time_domain]);
+  }
+}
+
 }  // namespace scheduler
 }  // namespace blink

@@ -212,6 +212,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     bool enabled_;
   };
 
+  // Iterates over |delayed_incoming_queue| removing canceled tasks.
+  void SweepCanceledDelayedTasks(base::TimeTicks now);
+
  private:
   friend class WorkQueue;
   friend class WorkQueueTest;

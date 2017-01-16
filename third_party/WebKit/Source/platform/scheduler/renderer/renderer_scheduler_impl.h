@@ -14,6 +14,7 @@
 #include "platform/scheduler/base/pollable_thread_safe_flag.h"
 #include "platform/scheduler/base/queueing_time_estimator.h"
 #include "platform/scheduler/base/thread_load_tracker.h"
+#include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/renderer/deadline_task_runner.h"
@@ -376,6 +377,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
 
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
+  IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
 

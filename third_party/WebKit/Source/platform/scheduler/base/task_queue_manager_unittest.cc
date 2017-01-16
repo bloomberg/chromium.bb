@@ -2162,5 +2162,43 @@ TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeDisabledVoterDeleted) {
   voter.reset();
 }
 
+TEST_F(TaskQueueManagerTest, SweepCanceledDelayedTasks) {
+  Initialize(1u);
+
+  CancelableTask task1(now_src_.get());
+  CancelableTask task2(now_src_.get());
+  CancelableTask task3(now_src_.get());
+  CancelableTask task4(now_src_.get());
+  base::TimeDelta delay1(base::TimeDelta::FromSeconds(5));
+  base::TimeDelta delay2(base::TimeDelta::FromSeconds(10));
+  base::TimeDelta delay3(base::TimeDelta::FromSeconds(15));
+  base::TimeDelta delay4(base::TimeDelta::FromSeconds(30));
+  std::vector<base::TimeTicks> run_times;
+  runners_[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&CancelableTask::RecordTimeTask,
+                            task1.weak_factory_.GetWeakPtr(), &run_times),
+      delay1);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&CancelableTask::RecordTimeTask,
+                            task2.weak_factory_.GetWeakPtr(), &run_times),
+      delay2);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&CancelableTask::RecordTimeTask,
+                            task3.weak_factory_.GetWeakPtr(), &run_times),
+      delay3);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&CancelableTask::RecordTimeTask,
+                            task4.weak_factory_.GetWeakPtr(), &run_times),
+      delay4);
+
+  EXPECT_EQ(4u, runners_[0]->GetNumberOfPendingTasks());
+  task2.weak_factory_.InvalidateWeakPtrs();
+  task3.weak_factory_.InvalidateWeakPtrs();
+  EXPECT_EQ(4u, runners_[0]->GetNumberOfPendingTasks());
+
+  manager_->SweepCanceledDelayedTasks();
+  EXPECT_EQ(2u, runners_[0]->GetNumberOfPendingTasks());
+}
+
 }  // namespace scheduler
 }  // namespace blink

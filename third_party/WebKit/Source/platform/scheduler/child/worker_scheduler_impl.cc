@@ -24,7 +24,10 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
                    "worker.scheduler",
                    TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
                    "WorkerSchedulerIdlePeriod",
-                   base::TimeDelta::FromMilliseconds(300)) {
+                   base::TimeDelta::FromMilliseconds(300)),
+      idle_canceled_delayed_task_sweeper_("worker.scheduler",
+                                          &helper_,
+                                          idle_helper_.IdleTaskRunner()) {
   initialized_ = false;
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);

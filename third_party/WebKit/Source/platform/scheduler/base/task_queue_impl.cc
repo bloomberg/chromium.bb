@@ -814,6 +814,28 @@ TaskQueueImpl::CreateQueueEnabledVoter() {
   return base::MakeUnique<QueueEnabledVoterImpl>(this);
 }
 
+void TaskQueueImpl::SweepCanceledDelayedTasks(base::TimeTicks now) {
+  if (main_thread_only().delayed_incoming_queue.empty())
+    return;
+
+  base::TimeTicks first_task_runtime =
+      main_thread_only().delayed_incoming_queue.top().delayed_run_time;
+
+  // TODO(alexclarke): Let this remove all tasks once the DoWork refactor has
+  // landed.
+  std::priority_queue<Task> remaining_tasks;
+  while (!main_thread_only().delayed_incoming_queue.empty()) {
+    if (!main_thread_only().delayed_incoming_queue.top().task.IsCancelled() ||
+        main_thread_only().delayed_incoming_queue.top().delayed_run_time ==
+            first_task_runtime) {
+      remaining_tasks.push(std::move(
+          const_cast<Task&>(main_thread_only().delayed_incoming_queue.top())));
+    }
+    main_thread_only().delayed_incoming_queue.pop();
+  }
+  main_thread_only().delayed_incoming_queue = std::move(remaining_tasks);
+}
+
 }  // namespace internal
 }  // namespace scheduler
 }  // namespace blink

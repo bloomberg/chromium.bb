@@ -129,6 +129,12 @@ void SchedulerHelper::SetObserver(Observer* observer) {
   task_queue_manager_->SetObserver(this);
 }
 
+void SchedulerHelper::SweepCanceledDelayedTasks() {
+  CheckOnValidThread();
+  DCHECK(task_queue_manager_);
+  task_queue_manager_->SweepCanceledDelayedTasks();
+}
+
 RealTimeDomain* SchedulerHelper::real_time_domain() const {
   CheckOnValidThread();
   DCHECK(task_queue_manager_);
