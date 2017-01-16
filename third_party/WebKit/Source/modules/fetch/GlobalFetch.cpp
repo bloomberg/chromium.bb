@@ -40,7 +40,8 @@ class GlobalFetchImpl final
                       const RequestInfo& input,
                       const Dictionary& init,
                       ExceptionState& exceptionState) override {
-    if (!scriptState->contextIsValid()) {
+    ExecutionContext* executionContext = m_fetchManager->getExecutionContext();
+    if (!scriptState->contextIsValid() || !executionContext) {
       // TODO(yhirano): Should this be moved to bindings?
       exceptionState.throwTypeError("The global scope is shutting down.");
       return ScriptPromise();
@@ -53,10 +54,8 @@ class GlobalFetchImpl final
     if (exceptionState.hadException())
       return ScriptPromise();
 
-    if (ExecutionContext* executionContext =
-            m_fetchManager->getExecutionContext())
-      InspectorInstrumentation::willSendXMLHttpOrFetchNetworkRequest(
-          executionContext, r->url());
+    InspectorInstrumentation::willSendXMLHttpOrFetchNetworkRequest(
+        executionContext, r->url());
     return m_fetchManager->fetch(scriptState, r->passRequestData(scriptState));
   }
 
