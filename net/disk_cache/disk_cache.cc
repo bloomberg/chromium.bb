@@ -88,8 +88,7 @@ CacheCreator::CacheCreator(
       net_log_(net_log) {
 }
 
-CacheCreator::~CacheCreator() {
-}
+CacheCreator::~CacheCreator() {}
 
 int CacheCreator::Run() {
 #if defined(OS_ANDROID)
@@ -101,14 +100,14 @@ int CacheCreator::Run() {
       (backend_type_ == net::CACHE_BACKEND_DEFAULT &&
        kSimpleBackendIsDefault)) {
     disk_cache::SimpleBackendImpl* simple_cache =
-        new disk_cache::SimpleBackendImpl(
-            path_, max_bytes_, type_, thread_, net_log_);
+        new disk_cache::SimpleBackendImpl(path_, max_bytes_, type_, thread_,
+                                          net_log_);
     created_cache_.reset(simple_cache);
     return simple_cache->Init(
         base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   }
 
-  // Avoid references to blockfile functions on Android to reduce binary size.
+// Avoid references to blockfile functions on Android to reduce binary size.
 #if defined(OS_ANDROID)
   return net::ERR_FAILED;
 #else
@@ -176,17 +175,16 @@ int CreateCacheBackend(
     return *backend ? net::OK : net::ERR_FAILED;
   }
   DCHECK(thread.get());
-  CacheCreator* creator = new CacheCreator(path,
-                                           force,
-                                           max_bytes,
-                                           type,
-                                           backend_type,
-                                           kNone,
-                                           thread,
-                                           net_log,
-                                           backend,
-                                           callback);
+  CacheCreator* creator =
+      new CacheCreator(path, force, max_bytes, type, backend_type, kNone,
+                       thread, net_log, backend, callback);
   return creator->Run();
+}
+
+int Backend::CalculateSizeOfEntriesBetween(base::Time initial_time,
+                                           base::Time end_time,
+                                           const CompletionCallback& callback) {
+  return net::ERR_NOT_IMPLEMENTED;
 }
 
 }  // namespace disk_cache
