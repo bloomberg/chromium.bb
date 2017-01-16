@@ -5,7 +5,7 @@
 "use strict";
 
 const TEST_BUDGET_COST = 1.2;
-const TEST_BUDGET_AT = 2.3;
+const TEST_BUDGET_AT = 2;
 const TEST_BUDGET_TIME = new Date().getTime();
 
 let budgetServiceMock = loadMojoModules(

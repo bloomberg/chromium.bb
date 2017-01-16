@@ -114,9 +114,12 @@ void BudgetService::gotBudget(
 
   // Copy the chunks into the budget array.
   HeapVector<Member<BudgetState>> budget(expectations.size());
-  for (size_t i = 0; i < expectations.size(); i++)
-    budget[i] =
-        new BudgetState(expectations[i]->budget_at, expectations[i]->time);
+  for (size_t i = 0; i < expectations.size(); i++) {
+    // Return the largest integer less than the budget, so it's easier for
+    // developer to reason about budget.
+    budget[i] = new BudgetState(floor(expectations[i]->budget_at),
+                                expectations[i]->time);
+  }
 
   resolver->resolve(budget);
 }

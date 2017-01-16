@@ -27,8 +27,13 @@ namespace {
 const char kDatabaseUMAName[] = "BudgetManager";
 
 // The default amount of time during which a budget will be valid.
-// This is 4 days = 96 hours.
-constexpr double kBudgetDurationInHours = 96;
+constexpr int kBudgetDurationInDays = 4;
+
+// The amount of budget that a maximally engaged site should receive per hour.
+// For context, silent push messages cost 2 each, so this allows 6 silent push
+// messages a day for a fully engaged site. See budget_manager.cc for costs of
+// various actions.
+constexpr double kMaximumHourlyBudget = 12.0 / 24.0;
 
 }  // namespace
 
@@ -163,8 +168,6 @@ void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
     prediction->time = chunk.expiration.ToDoubleT();
     predictions.push_back(std::move(prediction));
   }
-
-  DCHECK_EQ(0, total);
 
   callback.Run(blink::mojom::BudgetServiceErrorType::NONE,
                std::move(predictions));
@@ -304,26 +307,26 @@ void BudgetDatabase::SyncLoadedCache(const url::Origin& origin,
 }
 
 void BudgetDatabase::AddEngagementBudget(const url::Origin& origin) {
-  // Get the current SES score, which we'll use to set a new budget.
-  SiteEngagementService* service = SiteEngagementService::Get(profile_);
-  double score = service->GetScore(origin.GetURL());
-
-  // By default we award the "full" award. Then that ratio is decreased if
-  // there have been other awards recently.
-  double ratio = 1.0;
-
-  // Calculate how much budget should be awarded. If there is no entry in the
-  // cache then we award a full amount.
+  // Calculate how much budget should be awarded. The award depends on the
+  // time elapsed since the last award and the SES score.
+  // By default, give the origin kBudgetDurationInDays worth of budget, but
+  // reduce that if budget has already been given during that period.
+  base::TimeDelta elapsed = base::TimeDelta::FromDays(kBudgetDurationInDays);
   if (IsCached(origin)) {
-    base::TimeDelta elapsed =
-        clock_->Now() - budget_map_[origin].last_engagement_award;
-    int elapsed_hours = elapsed.InHours();
+    elapsed = clock_->Now() - budget_map_[origin].last_engagement_award;
     // Don't give engagement awards for periods less than an hour.
-    if (elapsed_hours < 1)
+    if (elapsed.InHours() < 1)
       return;
-    if (elapsed_hours < kBudgetDurationInHours)
-      ratio = elapsed_hours / kBudgetDurationInHours;
+    // Cap elapsed time to the budget duration.
+    if (elapsed.InDays() > kBudgetDurationInDays)
+      elapsed = base::TimeDelta::FromDays(kBudgetDurationInDays);
   }
+
+  // Get the current SES score, and calculate the hourly budget for that score.
+  SiteEngagementService* service = SiteEngagementService::Get(profile_);
+  double hourly_budget = kMaximumHourlyBudget *
+                         service->GetScore(origin.GetURL()) /
+                         service->GetMaxPoints();
 
   // Update the last_engagement_award to the current time. If the origin wasn't
   // already in the map, this adds a new entry for it.
@@ -331,8 +334,9 @@ void BudgetDatabase::AddEngagementBudget(const url::Origin& origin) {
 
   // Add a new chunk of budget for the origin at the default expiration time.
   base::Time expiration =
-      clock_->Now() + base::TimeDelta::FromHours(kBudgetDurationInHours);
-  budget_map_[origin].chunks.emplace_back(ratio * score, expiration);
+      clock_->Now() + base::TimeDelta::FromDays(kBudgetDurationInDays);
+  budget_map_[origin].chunks.emplace_back(elapsed.InHours() * hourly_budget,
+                                          expiration);
 
   // Any time we award engagement budget, which is done at most once an hour
   // whenever any budget action is taken, record the budget.
@@ -355,10 +359,10 @@ bool BudgetDatabase::CleanupExpiredBudget(const url::Origin& origin) {
     cleanup_iter = chunks.erase(cleanup_iter);
 
   // If the entire budget is empty now AND there have been no engagements
-  // in the last kBudgetDurationInHours hours, remove this from the cache.
+  // in the last kBudgetDurationInDays days, remove this from the cache.
   if (chunks.empty() &&
       budget_map_[origin].last_engagement_award <
-          clock_->Now() - base::TimeDelta::FromHours(kBudgetDurationInHours)) {
+          clock_->Now() - base::TimeDelta::FromDays(kBudgetDurationInDays)) {
     budget_map_.erase(origin);
     return true;
   }

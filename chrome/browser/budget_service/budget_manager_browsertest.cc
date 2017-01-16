@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/budget_service/budget_manager.h"
 #include "chrome/browser/budget_service/budget_manager_factory.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -19,6 +20,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace {
@@ -53,6 +55,12 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
     InProcessBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void SetSiteEngagementScore(double score) {
+    SiteEngagementService* service =
+        SiteEngagementService::Get(browser()->profile());
+    service->ResetScoreForURL(https_server_->GetURL(kTestURL), score);
   }
 
   bool RunScript(const std::string& script, std::string* result) {
@@ -94,20 +102,22 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(BudgetManagerBrowserTest, BudgetInDocument) {
   std::string script_result;
 
-  // The page will have been loaded once, which gives a budget of 3.
+  SetSiteEngagementScore(5);
+
+  // Site Engagement score of 5 gives a budget of 2.
   ASSERT_TRUE(RunScript("documentGetBudget()", &script_result));
-  ASSERT_EQ("ok - budget returned value of 3", script_result);
+  EXPECT_EQ("ok - budget returned value of 2", script_result);
 
   ASSERT_TRUE(RunScript("documentReserveBudget()", &script_result));
-  ASSERT_EQ("ok - reserved budget", script_result);
+  EXPECT_EQ("ok - reserved budget", script_result);
 
-  // After reserving budget, the new budget should be at 1.
+  // After reserving budget, the new budget should be at 0.
   ASSERT_TRUE(RunScript("documentGetBudget()", &script_result));
-  ASSERT_EQ("ok - budget returned value of 1", script_result);
+  EXPECT_EQ("ok - budget returned value of 0", script_result);
 
   // A second reserve should fail because there is not enough budget.
   ASSERT_TRUE(RunScript("documentReserveBudget()", &script_result));
-  ASSERT_EQ("failed - not able to reserve budget", script_result);
+  EXPECT_EQ("failed - not able to reserve budget", script_result);
 
   // Consume should succeed because there is an existing reservation.
   ConsumeReservation();
@@ -125,29 +135,29 @@ IN_PROC_BROWSER_TEST_F(BudgetManagerBrowserTest, BudgetInWorker) {
   ASSERT_EQ("ok - service worker registered", script_result);
 
   LoadTestPage();  // Reload to become controlled.
+  SetSiteEngagementScore(12);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
 
-  // The page will have been loaded twice and a service worker was registered,
-  // which gives a budget of 4.5.
+  // Site engagement score of 12 gives a budget of 5.
   ASSERT_TRUE(RunScript("workerGetBudget()", &script_result));
-  ASSERT_EQ("ok - budget returned value of 4.5", script_result);
+  EXPECT_EQ("ok - budget returned value of 5", script_result);
 
-  // With a budget of 4.5, two reservations should succeed.
+  // With a budget of 5, two reservations should succeed.
   ASSERT_TRUE(RunScript("workerReserveBudget()", &script_result));
-  ASSERT_EQ("ok - reserved budget", script_result);
+  EXPECT_EQ("ok - reserved budget", script_result);
 
   ASSERT_TRUE(RunScript("workerReserveBudget()", &script_result));
-  ASSERT_EQ("ok - reserved budget", script_result);
+  EXPECT_EQ("ok - reserved budget", script_result);
 
-  // After reserving budget, the new budget should be at 0.5.
+  // After reserving budget, the new budget should be at 1.
   ASSERT_TRUE(RunScript("workerGetBudget()", &script_result));
-  ASSERT_EQ("ok - budget returned value of 0.5", script_result);
+  EXPECT_EQ("ok - budget returned value of 1", script_result);
 
   // A second reserve should fail because there is not enough budget.
   ASSERT_TRUE(RunScript("workerReserveBudget()", &script_result));
-  ASSERT_EQ("failed - not able to reserve budget", script_result);
+  EXPECT_EQ("failed - not able to reserve budget", script_result);
 
   // Two consumes should succeed because there are existing reservations.
   ConsumeReservation();

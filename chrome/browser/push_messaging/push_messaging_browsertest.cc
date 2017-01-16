@@ -1240,9 +1240,10 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   content::WebContents* web_contents =
       GetBrowser()->tab_strip_model()->GetActiveWebContents();
 
-  // Set the site engagement score for the site. Setting it to 4 means it should
-  // have enough budget for two non-shown notification, which cost 2 each.
-  SetSiteEngagementScore(web_contents->GetURL(), 4.0);
+  // Set the site engagement score for the site. Setting it to 10 means it
+  // should have a budget of 4, enough for two non-shown notification, which
+  // cost 2 each.
+  SetSiteEngagementScore(web_contents->GetURL(), 10.0);
 
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.

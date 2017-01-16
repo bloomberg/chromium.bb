@@ -4,6 +4,7 @@
 
 #include "chrome/browser/budget_service/budget_database.h"
 
+#include <math.h>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
@@ -12,6 +13,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/budget_service/budget.pb.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/leveldb_proto/proto_database.h"
@@ -24,8 +26,11 @@
 
 namespace {
 
-const double kDefaultExpirationInHours = 96;
-const double kDefaultEngagement = 30.0;
+// These values mirror the defaults in budget_database.cc
+const double kDefaultExpirationInDays = 4;
+const double kMaxDailyBudget = 12;
+
+const double kEngagement = 25;
 
 const char kTestOrigin[] = "https://example.com";
 
@@ -114,16 +119,20 @@ TEST_F(BudgetDatabaseTest, GetBudgetNoBudgetOrSES) {
 TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
   base::SimpleTestClock* clock = SetClockForTesting();
   base::Time expiration_time =
-      clock->Now() + base::TimeDelta::FromHours(kDefaultExpirationInHours);
+      clock->Now() + base::TimeDelta::FromDays(kDefaultExpirationInDays);
 
   // Set the default site engagement.
-  SetSiteEngagementScore(kDefaultEngagement);
+  SetSiteEngagementScore(kEngagement);
 
-  // The budget should include a full share of the engagement.
+  // The budget should include kDefaultExpirationInDays days worth of
+  // engagement.
+  double daily_budget =
+      kMaxDailyBudget * (kEngagement / SiteEngagementScore::kMaxPoints);
   GetBudgetDetails();
   ASSERT_TRUE(success_);
   ASSERT_EQ(2U, prediction_.size());
-  ASSERT_EQ(kDefaultEngagement, prediction_[0]->budget_at);
+  ASSERT_DOUBLE_EQ(daily_budget * kDefaultExpirationInDays,
+                   prediction_[0]->budget_at);
   ASSERT_EQ(0, prediction_[1]->budget_at);
   ASSERT_EQ(expiration_time.ToDoubleT(), prediction_[1]->time);
 
@@ -134,12 +143,11 @@ TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
   // The budget should now have 1 full share plus 1 daily budget.
   ASSERT_TRUE(success_);
   ASSERT_EQ(3U, prediction_.size());
-  double daily_budget = kDefaultEngagement * 24 / kDefaultExpirationInHours;
-  ASSERT_DOUBLE_EQ(kDefaultEngagement + daily_budget,
+  ASSERT_DOUBLE_EQ(daily_budget * (kDefaultExpirationInDays + 1),
                    prediction_[0]->budget_at);
   ASSERT_DOUBLE_EQ(daily_budget, prediction_[1]->budget_at);
   ASSERT_EQ(expiration_time.ToDoubleT(), prediction_[1]->time);
-  ASSERT_EQ(0, prediction_[2]->budget_at);
+  ASSERT_DOUBLE_EQ(0, prediction_[2]->budget_at);
   ASSERT_EQ((expiration_time + base::TimeDelta::FromDays(1)).ToDoubleT(),
             prediction_[2]->time);
 
@@ -151,7 +159,7 @@ TEST_F(BudgetDatabaseTest, AddEngagementBudgetTest) {
   // The budget should be the same as before the attempted add.
   ASSERT_TRUE(success_);
   ASSERT_EQ(3U, prediction_.size());
-  ASSERT_DOUBLE_EQ(kDefaultEngagement + daily_budget,
+  ASSERT_DOUBLE_EQ(daily_budget * (kDefaultExpirationInDays + 1),
                    prediction_[0]->budget_at);
 }
 
@@ -159,7 +167,7 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
   base::SimpleTestClock* clock = SetClockForTesting();
 
   // Set the default site engagement.
-  SetSiteEngagementScore(kDefaultEngagement);
+  SetSiteEngagementScore(kEngagement);
 
   // Intialize the budget with several chunks.
   GetBudgetDetails();
@@ -168,15 +176,16 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
   clock->Advance(base::TimeDelta::FromDays(1));
   GetBudgetDetails();
 
-  // Spend an amount of budget less than kDefaultEngagement.
+  // Spend an amount of budget less than the daily budget.
   ASSERT_TRUE(SpendBudget(1));
   GetBudgetDetails();
 
-  // There should still be three chunks of budget of size kDefaultEngagement-1,
-  // kDefaultEngagement, and kDefaultEngagement.
+  // There should still be three chunks of budget of size daily_budget-1,
+  // daily_budget, and kDefaultExpirationInDays * daily_budget.
+  double daily_budget =
+      kMaxDailyBudget * (kEngagement / SiteEngagementScore::kMaxPoints);
   ASSERT_EQ(4U, prediction_.size());
-  double daily_budget = kDefaultEngagement * 24 / kDefaultExpirationInHours;
-  ASSERT_DOUBLE_EQ(kDefaultEngagement + 2 * daily_budget - 1,
+  ASSERT_DOUBLE_EQ((2 + kDefaultExpirationInDays) * daily_budget - 1,
                    prediction_[0]->budget_at);
   ASSERT_DOUBLE_EQ(daily_budget * 2, prediction_[1]->budget_at);
   ASSERT_DOUBLE_EQ(daily_budget, prediction_[2]->budget_at);
@@ -184,22 +193,22 @@ TEST_F(BudgetDatabaseTest, SpendBudgetTest) {
 
   // Now spend enough that it will use up the rest of the first chunk and all of
   // the second chunk, but not all of the third chunk.
-  ASSERT_TRUE(SpendBudget(kDefaultEngagement + daily_budget));
+  ASSERT_TRUE(SpendBudget((1 + kDefaultExpirationInDays) * daily_budget));
   GetBudgetDetails();
   ASSERT_EQ(2U, prediction_.size());
   ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0]->budget_at);
 
   // Validate that the code returns false if SpendBudget tries to spend more
   // budget than the origin has.
-  EXPECT_FALSE(SpendBudget(kDefaultEngagement));
+  EXPECT_FALSE(SpendBudget(kEngagement));
   GetBudgetDetails();
   ASSERT_EQ(2U, prediction_.size());
   ASSERT_DOUBLE_EQ(daily_budget - 1, prediction_[0]->budget_at);
 
   // Advance time until the last remaining chunk should be expired, then query
   // for the full engagement worth of budget.
-  clock->Advance(base::TimeDelta::FromHours(kDefaultExpirationInHours + 1));
-  EXPECT_TRUE(SpendBudget(kDefaultEngagement));
+  clock->Advance(base::TimeDelta::FromDays(kDefaultExpirationInDays + 1));
+  EXPECT_TRUE(SpendBudget(daily_budget * kDefaultExpirationInDays));
 }
 
 // There are times when a device's clock could move backwards in time, either
@@ -210,7 +219,7 @@ TEST_F(BudgetDatabaseTest, GetBudgetNegativeTime) {
   base::SimpleTestClock* clock = SetClockForTesting();
 
   // Set the default site engagement.
-  SetSiteEngagementScore(kDefaultEngagement);
+  SetSiteEngagementScore(kEngagement);
 
   // Initialize the budget with two chunks.
   GetBudgetDetails();
@@ -241,17 +250,17 @@ TEST_F(BudgetDatabaseTest, CheckBackgroundBudgetHistogram) {
   base::SimpleTestClock* clock = SetClockForTesting();
 
   // Set the default site engagement.
-  SetSiteEngagementScore(kDefaultEngagement);
+  SetSiteEngagementScore(kEngagement);
 
   // Initialize the budget with some interesting chunks: 30 budget (full
   // engagement), 15 budget (half of the engagement), 0 budget (less than an
   // hour), and then after the first two expire, another 30 budget.
   GetBudgetDetails();
-  clock->Advance(base::TimeDelta::FromHours(kDefaultExpirationInHours / 2));
+  clock->Advance(base::TimeDelta::FromDays(kDefaultExpirationInDays / 2));
   GetBudgetDetails();
   clock->Advance(base::TimeDelta::FromMinutes(59));
   GetBudgetDetails();
-  clock->Advance(base::TimeDelta::FromHours(kDefaultExpirationInHours + 1));
+  clock->Advance(base::TimeDelta::FromDays(kDefaultExpirationInDays + 1));
   GetBudgetDetails();
 
   // The BackgroundBudget UMA is recorded when budget is added to the origin.
@@ -259,20 +268,25 @@ TEST_F(BudgetDatabaseTest, CheckBackgroundBudgetHistogram) {
   std::vector<base::Bucket> buckets =
       GetHistogramTester()->GetAllSamples("PushMessaging.BackgroundBudget");
   ASSERT_EQ(2U, buckets.size());
-  // First bucket is for full engagement, which should have 2 entries.
-  EXPECT_EQ(kDefaultEngagement, buckets[0].min);
+  // First bucket is for full award, which should have 2 entries.
+  double full_award = kMaxDailyBudget * kEngagement /
+                      SiteEngagementScore::kMaxPoints *
+                      kDefaultExpirationInDays;
+  EXPECT_EQ(floor(full_award), buckets[0].min);
   EXPECT_EQ(2, buckets[0].count);
-  // Second bucket is for 1.5 * engagement, which should have 1 entry.
-  EXPECT_EQ(kDefaultEngagement * 1.5, buckets[1].min);
+  // Second bucket is for 1.5 * award, which should have 1 entry.
+  EXPECT_EQ(floor(full_award * 1.5), buckets[1].min);
   EXPECT_EQ(1, buckets[1].count);
 }
 
 TEST_F(BudgetDatabaseTest, CheckEngagementHistograms) {
   base::SimpleTestClock* clock = SetClockForTesting();
 
-  // Set the engagement to twice the cost of an action.
+  // Manipulate the engagement so that the budget is twice the cost of an
+  // action.
   double cost = 2;
-  double engagement = cost * 2;
+  double engagement = 2 * cost * SiteEngagementScore::kMaxPoints /
+                      kDefaultExpirationInDays / kMaxDailyBudget;
   SetSiteEngagementScore(engagement);
 
   // Get the budget, which will award a chunk of budget equal to engagement.
@@ -299,17 +313,17 @@ TEST_F(BudgetDatabaseTest, CheckEngagementHistograms) {
   std::vector<base::Bucket> no_budget_buckets =
       GetHistogramTester()->GetAllSamples("PushMessaging.SESForNoBudgetOrigin");
   ASSERT_EQ(2U, no_budget_buckets.size());
-  EXPECT_EQ(engagement, no_budget_buckets[0].min);
+  EXPECT_EQ(floor(engagement), no_budget_buckets[0].min);
   EXPECT_EQ(1, no_budget_buckets[0].count);
-  EXPECT_EQ(engagement * 2, no_budget_buckets[1].min);
+  EXPECT_EQ(floor(engagement * 2), no_budget_buckets[1].min);
   EXPECT_EQ(1, no_budget_buckets[1].count);
 
   std::vector<base::Bucket> low_budget_buckets =
       GetHistogramTester()->GetAllSamples(
           "PushMessaging.SESForLowBudgetOrigin");
   ASSERT_EQ(2U, low_budget_buckets.size());
-  EXPECT_EQ(engagement, low_budget_buckets[0].min);
+  EXPECT_EQ(floor(engagement), low_budget_buckets[0].min);
   EXPECT_EQ(1, low_budget_buckets[0].count);
-  EXPECT_EQ(engagement * 2, low_budget_buckets[1].min);
+  EXPECT_EQ(floor(engagement * 2), low_budget_buckets[1].min);
   EXPECT_EQ(1, low_budget_buckets[1].count);
 }

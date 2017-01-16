@@ -115,15 +115,15 @@ class BudgetManagerTest : public testing::Test {
 };
 
 TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
-  // Set initial SES. The first time we try to spend budget, the
-  // engagement award will be granted which is 48.0.
+  // Set initial SES. The first time we try to spend budget, the engagement
+  // award will be granted which is 23.04. (kTestSES * maxDaily / maxSES)
   SetSiteEngagementScore(kTestSES);
   const blink::mojom::BudgetOperationType type =
       blink::mojom::BudgetOperationType::SILENT_PUSH;
 
-  // Spend for 24 silent push messages. This should consume all the original
+  // Spend for 11 silent push messages. This should consume all the original
   // budget grant.
-  for (int i = 0; i < 24; i++) {
+  for (int i = 0; i < 11; i++) {
     ASSERT_TRUE(GetBudget());
     ASSERT_TRUE(ReserveBudget(type));
   }
@@ -132,8 +132,8 @@ TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
   ASSERT_TRUE(GetBudget());
   ASSERT_FALSE(ReserveBudget(type));
 
-  // Try to consume for the 24 messages reserved.
-  for (int i = 0; i < 24; i++)
+  // Try to consume for the 11 messages reserved.
+  for (int i = 0; i < 11; i++)
     ASSERT_TRUE(ConsumeBudget(type));
 
   // The next consume should fail, since there is no reservation or budget
@@ -148,9 +148,9 @@ TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
   // 1 failed reserve call.
   EXPECT_EQ(0, buckets[0].min);
   EXPECT_EQ(1, buckets[0].count);
-  // 24 successful reserve calls.
+  // 11 successful reserve calls.
   EXPECT_EQ(1, buckets[1].min);
-  EXPECT_EQ(24, buckets[1].count);
+  EXPECT_EQ(11, buckets[1].count);
 
   // Check that the UMA recorded for the GetBudget calls matches the operations
   // that were executed.
@@ -159,7 +159,7 @@ TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
   int num_samples = 0;
   for (const base::Bucket& bucket : buckets)
     num_samples += bucket.count;
-  EXPECT_EQ(25, num_samples);
+  EXPECT_EQ(12, num_samples);
 }
 
 TEST_F(BudgetManagerTest, TestInsecureOrigin) {
