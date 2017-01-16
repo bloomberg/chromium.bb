@@ -112,12 +112,12 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   }
 
   InstallableParams params;
-  params.ideal_icon_size_in_px =
+  params.ideal_primary_icon_size_in_px =
       ShortcutHelper::GetIdealHomescreenIconSizeInPx();
-  params.minimum_icon_size_in_px =
+  params.minimum_primary_icon_size_in_px =
       ShortcutHelper::GetMinimumHomescreenIconSizeInPx();
   params.check_installable = true;
-  params.fetch_valid_icon = true;
+  params.fetch_valid_primary_icon = true;
   InstallableManager::CreateForWebContents(web_contents());
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents());
@@ -152,15 +152,15 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
 
   info_.UpdateFromManifest(data.manifest);
   info_.manifest_url = data.manifest_url;
-  info_.best_icon_url = data.icon_url;
-  best_icon_ = *data.icon;
+  info_.best_icon_url = data.primary_icon_url;
+  best_icon_ = *data.primary_icon;
 
   icon_hasher_.reset(new WebApkIconHasher());
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   icon_hasher_->DownloadAndComputeMurmur2Hash(
       profile->GetRequestContext(),
-      data.icon_url,
+      data.primary_icon_url,
       base::Bind(&WebApkUpdateDataFetcher::OnGotIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
 }

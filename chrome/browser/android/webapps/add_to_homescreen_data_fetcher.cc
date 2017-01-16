@@ -47,10 +47,10 @@ InstallableParams ParamsToPerformInstallableCheck(int ideal_icon_size_in_px,
                                                   int minimum_icon_size_in_px,
                                                   bool check_installable) {
   InstallableParams params;
-  params.ideal_icon_size_in_px = ideal_icon_size_in_px;
-  params.minimum_icon_size_in_px = minimum_icon_size_in_px;
+  params.ideal_primary_icon_size_in_px = ideal_icon_size_in_px;
+  params.minimum_primary_icon_size_in_px = minimum_icon_size_in_px;
   params.check_installable = check_installable;
-  params.fetch_valid_icon = true;
+  params.fetch_valid_primary_icon = true;
   return params;
 }
 
@@ -218,10 +218,10 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 
-  if (data.icon) {
-    shortcut_info_.best_icon_url = data.icon_url;
+  if (data.primary_icon) {
+    shortcut_info_.best_icon_url = data.primary_icon_url;
 
-    CreateLauncherIcon(*(data.icon));
+    CreateLauncherIcon(*(data.primary_icon));
     return;
   }
 

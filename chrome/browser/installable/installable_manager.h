@@ -25,20 +25,22 @@
 // Data is cached and fetched in the order specified in this struct. A web app
 // manifest will always be fetched first.
 struct InstallableParams {
-  // The ideal icon size to fetch. Used only if |fetch_valid_icon| is true.
-  int ideal_icon_size_in_px = -1;
+  // The ideal primary icon size to fetch. Used only if
+  // |fetch_valid_primary_icon| is true.
+  int ideal_primary_icon_size_in_px = -1;
 
-  // The minimum icon size to fetch. Used only if |fetch_valid_icon| is true.
-  int minimum_icon_size_in_px = -1;
+  // The minimum primary icon size to fetch. Used only if
+  // |fetch_valid_primary_icon| is true.
+  int minimum_primary_icon_size_in_px = -1;
 
   // Check whether the site is installable. That is, it has a manifest valid for
   // a web app and a service worker controlling the manifest start URL and the
   // current URL.
   bool check_installable = false;
 
-  // Check whether there is an icon in the manifest conforming to the icon size
-  // parameters, and that the icon can be fetched and isn't an empty bitmap.
-  bool fetch_valid_icon = false;
+  // Check whether there is a fetchable, non-empty icon in the manifest
+  // conforming to the primary icon size parameters.
+  bool fetch_valid_primary_icon = false;
 };
 
 // This struct is passed to an InstallableCallback when the InstallableManager
@@ -55,14 +57,15 @@ struct InstallableData {
   // Empty if the site has an unparseable manifest.
   const content::Manifest& manifest;
 
-  // Empty if no icon was requested.
-  const GURL& icon_url;
+  // Empty if no primary_icon was requested.
+  const GURL& primary_icon_url;
 
-  // nullptr if the most appropriate icon couldn't be determined or downloaded.
-  // The underlying icon is owned by the InstallableManager; clients must copy
-  // the bitmap if they want to to use it. If fetch_valid_icon was true and an
-  // icon could not be retrieved, the reason will be in error_code.
-  const SkBitmap* icon;
+  // nullptr if the most appropriate primary icon couldn't be determined or
+  // downloaded. The underlying primary icon is owned by the InstallableManager;
+  // clients must copy the bitmap if they want to to use it. If
+  // fetch_valid_primary_icon was true and a primary icon could not be
+  // retrieved, the reason will be in error_code.
+  const SkBitmap* primary_icon;
 
   // true if the site has a service worker and a viable web app manifest. If
   // check_installable was true and the site isn't installable, the reason will

@@ -42,10 +42,10 @@ InstallableParams ParamsToGetManifest() {
 InstallableParams ParamsToPerformInstallableCheck(int ideal_icon_size_in_px,
                                                   int minimum_icon_size_in_px) {
   InstallableParams params;
-  params.ideal_icon_size_in_px = ideal_icon_size_in_px;
-  params.minimum_icon_size_in_px = minimum_icon_size_in_px;
+  params.ideal_primary_icon_size_in_px = ideal_icon_size_in_px;
+  params.minimum_primary_icon_size_in_px = minimum_icon_size_in_px;
   params.check_installable = true;
-  params.fetch_valid_icon = true;
+  params.fetch_valid_primary_icon = true;
 
   return params;
 }
@@ -267,11 +267,11 @@ void AppBannerManager::OnDidPerformInstallableCheck(
     return;
 
   DCHECK(data.is_installable);
-  DCHECK(!data.icon_url.is_empty());
-  DCHECK(data.icon);
+  DCHECK(!data.primary_icon_url.is_empty());
+  DCHECK(data.primary_icon);
 
-  icon_url_ = data.icon_url;
-  icon_.reset(new SkBitmap(*data.icon));
+  icon_url_ = data.primary_icon_url;
+  icon_.reset(new SkBitmap(*data.primary_icon));
 
   SendBannerPromptRequest();
 }
