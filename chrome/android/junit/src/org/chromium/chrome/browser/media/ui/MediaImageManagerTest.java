@@ -120,6 +120,30 @@ public class MediaImageManagerTest {
     }
 
     @Test
+    public void testDownloadSameImageTwiceButFailed() {
+        // First download.
+        mBitmaps.clear();
+        mOriginalImageSizes.clear();
+
+        mMediaImageManager.downloadImage(mImages, mCallback);
+        mMediaImageManager.onFinishDownloadImage(
+                REQUEST_ID_1, 404, IMAGE_URL_1, mBitmaps, mOriginalImageSizes);
+
+        // Second download.
+        mMediaImageManager.downloadImage(mImages, mCallback);
+        // The second download request will never be initiated and the callback
+        // will be ignored.
+        mMediaImageManager.onFinishDownloadImage(
+                REQUEST_ID_1, 200, IMAGE_URL_1, mBitmaps, mOriginalImageSizes);
+
+        verify(mWebContents, times(1))
+                .downloadImage(eq(IMAGE_URL_1), eq(false),
+                        eq(MediaImageManager.MAX_BITMAP_SIZE_FOR_DOWNLOAD), eq(false),
+                        eq(mMediaImageManager));
+        verify(mCallback, times(1)).onImageDownloaded(isNull(Bitmap.class));
+    }
+
+    @Test
     public void testDownloadDifferentImagesTwice() {
         // First download.
         mMediaImageManager.downloadImage(mImages, mCallback);

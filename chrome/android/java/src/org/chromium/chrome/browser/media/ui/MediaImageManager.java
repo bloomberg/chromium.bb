@@ -80,7 +80,7 @@ public class MediaImageManager implements ImageDownloadCallback {
     // The last image src for download, used for avoiding fetching the same src when artwork is set
     // multiple times but the same src is chosen.
     //
-    // Will be reset when initiating a new download request, and set to |null| when download failed.
+    // Will be reset when initiating a new download request.
     private String mLastImageSrc;
 
     /**
@@ -134,7 +134,9 @@ public class MediaImageManager implements ImageDownloadCallback {
         mCallback = callback;
         MediaImage image = selectImage(images);
         if (image == null) {
-            onDownloadFailed();
+            mLastImageSrc = null;
+            mCallback.onImageDownloaded(null);
+            clearRequests();
             return;
         }
 
@@ -178,12 +180,8 @@ public class MediaImageManager implements ImageDownloadCallback {
                 bestScore = newScore;
             }
         }
-        if (bestBitmap != null) {
-            mCallback.onImageDownloaded(bestBitmap);
-            clearRequests();
-        } else {
-            onDownloadFailed();
-        }
+        mCallback.onImageDownloaded(bestBitmap);
+        clearRequests();
     }
 
     /**
@@ -208,12 +206,6 @@ public class MediaImageManager implements ImageDownloadCallback {
     private void clearRequests() {
         mRequestId = -1;
         mCallback = null;
-    }
-
-    private void onDownloadFailed() {
-        mLastImageSrc = null;
-        mCallback.onImageDownloaded(null);
-        clearRequests();
     }
 
     private double getImageScore(MediaImage image) {
