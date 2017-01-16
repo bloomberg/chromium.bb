@@ -14,6 +14,8 @@ namespace blink {
 // properties. For example, the value of the high priority property 'font-size'
 // decides the pixel value of low priority properties with 'em' units.
 
+// TODO(sashab): Generate the methods in this file.
+
 enum CSSPropertyPriority {
   ResolveVariables = 0,
   AnimationPropertyPriority,
@@ -82,9 +84,9 @@ inline CSSPropertyID CSSPropertyPriorityData<HighPropertyPriority>::last() {
   static_assert(
       CSSPropertyZoom == CSSPropertyColor + 21,
       "CSSPropertyZoom should be the end of the high priority property range");
-  static_assert(
-      CSSPropertyTextRendering == CSSPropertyZoom - 1,
-      "CSSPropertyTextRendering should be immediately before CSSPropertyZoom");
+  static_assert(CSSPropertyWritingMode == CSSPropertyZoom - 1,
+                "CSSPropertyWritingMode should be immediately before "
+                "CSSPropertyZoom");
   return CSSPropertyZoom;
 }
 

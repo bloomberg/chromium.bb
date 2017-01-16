@@ -31,6 +31,7 @@ class CSSProperties(in_generator.Writer):
         'custom_value': False,
         'builder_skip': False,
         'direction_aware': False,
+        'priority': 'Low',
         'api_class': None,
         # Generated ComputedStyle annotations.
         'field_storage_type': None,
@@ -55,6 +56,7 @@ class CSSProperties(in_generator.Writer):
         'custom_value': (True, False),
         'builder_skip': (True, False),
         'direction_aware': (True, False),
+        'priority': ('Animation', 'High', 'Low'),
         'keyword_only': (True, False),
     }
 
@@ -62,6 +64,24 @@ class CSSProperties(in_generator.Writer):
         in_generator.Writer.__init__(self, file_paths)
 
         properties = self.in_file.name_dictionaries
+
+        # Sort properties by priority, then alphabetically.
+        for property in properties:
+            # This order must match the order in CSSPropertyPriority.h.
+            priority_numbers = {'Animation': 0, 'High': 1, 'Low': 2}
+            priority = priority_numbers[property['priority']]
+            name_without_leading_dash = property['name']
+            if property['name'].startswith('-'):
+                name_without_leading_dash = property['name'][1:]
+            property['sorting_key'] = (priority, name_without_leading_dash)
+
+        # Assert there are no key collisions.
+        sorting_keys = [p['sorting_key'] for p in properties]
+        assert len(sorting_keys) == len(set(sorting_keys)), \
+            ('Collision detected - two properties have the same name and priority, '
+             'a potentially non-deterministic ordering can occur.')
+        properties.sort(key=lambda p: p['sorting_key'])
+
         self._aliases = [property for property in properties if property['alias_for']]
         properties = [property for property in properties if not property['alias_for']]
 

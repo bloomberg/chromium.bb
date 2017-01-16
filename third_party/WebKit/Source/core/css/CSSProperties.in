@@ -142,47 +142,52 @@
 // This property resolves to a different property based on the current direction
 // and writing mode.
 
+// - priority=High
+// The priority level for computing the property. Valid values are
+// "Animation" (highest), "High" and "Low". Properties with the same
+// priority level are grouped and computed in alphabetical order. The
+// default value is "Low".
 
 // Properties with StyleBuilder handling
 
 // Animation Priority properties
-animation-delay custom_all
-animation-direction keywords=[normal|reverse|alternate|alternate-reverse], repeated, custom_all
-animation-duration custom_all
-animation-fill-mode custom_all
-animation-iteration-count keywords=[infinite], repeated, custom_all
-animation-name custom_all
-animation-play-state custom_all
-animation-timing-function custom_all
-transition-delay custom_all
-transition-duration custom_all
-transition-property custom_all
-transition-timing-function custom_all
+animation-delay custom_all, priority=Animation
+animation-direction keywords=[normal|reverse|alternate|alternate-reverse], repeated, custom_all, priority=Animation
+animation-duration custom_all, priority=Animation
+animation-fill-mode custom_all, priority=Animation
+animation-iteration-count keywords=[infinite], repeated, custom_all, priority=Animation
+animation-name custom_all, priority=Animation
+animation-play-state custom_all, priority=Animation
+animation-timing-function custom_all, priority=Animation
+transition-delay custom_all, priority=Animation
+transition-duration custom_all, priority=Animation
+transition-property custom_all, priority=Animation
+transition-timing-function custom_all, priority=Animation
 
 // High Priority and all other font properties.
 // Other properties can depend upon high priority properties (e.g. font-size / ems)
-color interpolable, inherited, custom_all
-direction inherited, custom_value, keyword_only, keywords=[ltr|rtl], initial_keyword=ltr, field_storage_type=platform/text/TextDirection
-font-family inherited, font, type_name=FontDescription::FamilyDescription, name_for_methods=FamilyDescription, converter=convertFontFamily
-font-kerning inherited, font, type_name=FontDescription::Kerning, name_for_methods=Kerning
-font-size interpolable, inherited, font, name_for_methods=Size, getter=getSize, converter=convertFontSize
-font-size-adjust runtime_flag=CSSFontSizeAdjust, interpolable, inherited, font, name_for_methods=SizeAdjust, converter=convertFontSizeAdjust, api_class
-font-stretch inherited, font, type_name=FontStretch, name_for_methods=Stretch
-font-style inherited, font, type_name=FontStyle, name_for_methods=Style
-font-variant-ligatures inherited, font, type_name=VariantLigatures, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures
-font-variant-caps inherited, font, name_for_methods=VariantCaps, converter=convertFontVariantCaps
-font-variant-numeric inherited, font, name_for_methods=VariantNumeric, converter=convertFontVariantNumeric
-font-weight interpolable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
-font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
-font-variation-settings runtime_flag=CSSVariableFonts, inherited, font, name_for_methods=VariationSettings, converter=convertFontVariationSettings, api_class
--webkit-font-smoothing inherited, font, type_name=FontSmoothingMode
--webkit-locale inherited, font, custom_value
-text-orientation inherited, custom_value, type_name=TextOrientation
--webkit-text-orientation inherited, custom_value, type_name=TextOrientation
-writing-mode inherited, custom_value, type_name=WritingMode, keyword_only, keywords=[horizontal-tb|vertical-rl|vertical-lr], initial_keyword=horizontal-tb, field_storage_type=platform/text/WritingMode
--webkit-writing-mode inherited, custom_value, type_name=WritingMode
-text-rendering inherited, font, type_name=TextRenderingMode
-zoom custom_all, api_class
+color interpolable, inherited, custom_all, priority=High
+direction inherited, custom_value, keyword_only, keywords=[ltr|rtl], initial_keyword=ltr, field_storage_type=platform/text/TextDirection, priority=High
+font-family inherited, font, type_name=FontDescription::FamilyDescription, name_for_methods=FamilyDescription, converter=convertFontFamily, priority=High
+font-kerning inherited, font, type_name=FontDescription::Kerning, name_for_methods=Kerning, priority=High
+font-size interpolable, inherited, font, name_for_methods=Size, getter=getSize, converter=convertFontSize, priority=High
+font-size-adjust runtime_flag=CSSFontSizeAdjust, interpolable, inherited, font, name_for_methods=SizeAdjust, converter=convertFontSizeAdjust, api_class, priority=High
+font-stretch inherited, font, type_name=FontStretch, name_for_methods=Stretch, priority=High
+font-style inherited, font, type_name=FontStyle, name_for_methods=Style, priority=High
+font-variant-ligatures inherited, font, type_name=VariantLigatures, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures, priority=High
+font-variant-caps inherited, font, name_for_methods=VariantCaps, converter=convertFontVariantCaps, priority=High
+font-variant-numeric inherited, font, name_for_methods=VariantNumeric, converter=convertFontVariantNumeric, priority=High
+font-weight interpolable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight, priority=High
+font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings, priority=High
+font-variation-settings runtime_flag=CSSVariableFonts, inherited, font, name_for_methods=VariationSettings, converter=convertFontVariationSettings, api_class, priority=High
+-webkit-font-smoothing inherited, font, type_name=FontSmoothingMode, priority=High
+-webkit-locale inherited, font, custom_value, priority=High
+text-orientation inherited, custom_value, type_name=TextOrientation, priority=High
+-webkit-text-orientation inherited, custom_value, type_name=TextOrientation, priority=High
+writing-mode inherited, custom_value, type_name=WritingMode, keyword_only, keywords=[horizontal-tb|vertical-rl|vertical-lr], initial_keyword=horizontal-tb, field_storage_type=platform/text/WritingMode, priority=High
+-webkit-writing-mode inherited, custom_value, type_name=WritingMode, priority=High
+text-rendering inherited, font, type_name=TextRenderingMode, priority=High
+zoom custom_all, api_class, priority=High
 
 align-content initial=initialContentAlignment, converter=convertContentAlignmentData
 align-items initial=initialDefaultAlignment, converter=convertSelfOrDefaultAlignmentData
