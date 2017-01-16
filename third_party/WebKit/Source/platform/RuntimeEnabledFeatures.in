@@ -219,7 +219,7 @@ ScrollAnchoring status=experimental, settable_from_internals=True
 ScrollTopLeftInterop status=experimental
 Sensor status=experimental
 ServiceWorkerNavigationPreload origin_trial_feature_name=ServiceWorkerNavigationPreload
-SetRootScroller status=experimental
+SetRootScroller status=experimental, origin_trial_feature_name=RootScroller
 ShadowPiercingDescendantCombinator status=experimental
 ShapeDetection status=experimental
 SharedArrayBuffer
