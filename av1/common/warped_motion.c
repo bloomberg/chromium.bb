@@ -992,8 +992,7 @@ void warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
             int ix = ix4 + l - 3;
             // At this point, sx = sx4 + alpha * l + beta * k
             const int16_t *coeffs =
-                warped_filter[ROUND_POWER_OF_TWO_SIGNED(sx,
-                                                        WARPEDDIFF_PREC_BITS) +
+                warped_filter[ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
                               WARPEDPIXEL_PREC_SHIFTS];
             int32_t sum = 0;
             for (m = 0; m < 8; ++m) {
@@ -1012,9 +1011,9 @@ void warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
           uint8_t *p =
               &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
           // At this point, sy = sy4 + gamma * l + delta * k
-          const int16_t *coeffs = warped_filter[ROUND_POWER_OF_TWO_SIGNED(
-                                                    sy, WARPEDDIFF_PREC_BITS) +
-                                                WARPEDPIXEL_PREC_SHIFTS];
+          const int16_t *coeffs =
+              warped_filter[ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
+                            WARPEDPIXEL_PREC_SHIFTS];
           int32_t sum = 0;
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
