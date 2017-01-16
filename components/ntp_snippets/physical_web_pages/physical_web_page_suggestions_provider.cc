@@ -99,7 +99,7 @@ void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
     const ImageFetchedCallback& callback) {
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
   base::StringPiece raw_data = resource_bundle.GetRawDataResourceForScale(
-      IDR_PHYSICAL_WEB_LOGO, resource_bundle.GetMaxScaleFactor());
+      IDR_PHYSICAL_WEB_LOGO_WITH_PADDING, resource_bundle.GetMaxScaleFactor());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback,

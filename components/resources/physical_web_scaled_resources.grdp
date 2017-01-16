@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<grit-part>
-  <structure type="chrome_scaled_image" name="IDR_PHYSICAL_WEB_LOGO" file="physical_web/logo.png" />
-</grit-part>
