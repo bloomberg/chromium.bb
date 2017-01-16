@@ -10,18 +10,19 @@ Fetch event handler
 event.preloadResponse not found
 
 CONSOLE MESSAGE: line 76: --Origin-Trial enabled SW--
-disable() rejected with: AbortError: Failed to enable or disable navigation preload: The Navigation Preload Origin Trial has ended.
-enable() rejected with: AbortError: Failed to enable or disable navigation preload: The Navigation Preload Origin Trial has ended.
-getState() resolved with: {"enabled":false,"headerValue":"true"}
-setHeaderValue() rejected with: AbortError: Failed to set navigation preload header: The Navigation Preload Origin Trial has ended.
+disable() resolved with: undefined
+enable() resolved with: undefined
+getState() resolved with: {"enabled":true,"headerValue":"world"}
+setHeaderValue() resolved with: undefined
 log from SW
 Activate event handler
-disable() rejected with: AbortError: Failed to enable or disable navigation preload: The Navigation Preload Origin Trial has ended.
-enable() rejected with: AbortError: Failed to enable or disable navigation preload: The Navigation Preload Origin Trial has ended.
-getState() resolved with: {"enabled":false,"headerValue":"true"}
-setHeaderValue() rejected with: AbortError: Failed to set navigation preload header: The Navigation Preload Origin Trial has ended.
+disable() resolved with: undefined
+enable() resolved with: undefined
+getState() resolved with: {"enabled":true,"headerValue":"true"}
+setHeaderValue() resolved with: undefined
 Fetch event handler
-event.preloadResponse resolved with: undefined
+event.preloadResponse resolved with: [object Response]
+Text of preloadResponse: [Service-Worker-Navigation-Preload header set: hello]
 
 This is a testharness.js-based test.
 PASS Calling Navigation preload related methods for normal SW. 

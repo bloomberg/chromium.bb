@@ -189,10 +189,12 @@ const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Navigation preload feature of service workers.
-// TODO(horo): Revise link when this lands in the spec:
-// https://github.com/w3c/ServiceWorker/pull/983/files
+// Enables this base::Feature by default for Origin-Trial, but enables the
+// corresponding blink::WebRuntimeFeatures only when '--enable-features' command
+// line flag is given. See the comments in runtime_features.cc and
+// service_worker_version.h for the details.
 const base::Feature kServiceWorkerNavigationPreload{
-    "ServiceWorkerNavigationPreload", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ServiceWorkerNavigationPreload", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",

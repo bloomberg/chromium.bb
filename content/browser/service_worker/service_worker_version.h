@@ -439,7 +439,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   //  - Origin Trial: Have an effective token.
   //                                 Command line
   //                             Default  Enable  Disabled
-  //                   Default      B1      A        B2
+  //                   Default      A       A        B2
   //      Field trial  Enabled      A       A        B2
   //                   Disabled     B1      A        B2
   //
