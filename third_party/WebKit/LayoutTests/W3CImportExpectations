@@ -236,7 +236,8 @@ imported/wpt/dom [ Pass ]
 # imported/wpt/domxpath [ Pass ]
 imported/wpt/dpub-aam [ Skip ]
 imported/wpt/dpub-aria [ Skip ]
-imported/wpt/editing [ Skip ]
+## Owners: dom-dev@chromium.org
+# imported/wpt/editing [ Pass ]
 ## Owners: jsbell@chromium.org
 # imported/wpt/encoding [ Pass ]
 ## Owners: jrummell@chromium.org
@@ -308,7 +309,8 @@ imported/wpt/resources/webidl2/README.md [ Skip ]
 imported/wpt/resources/webidl2/test [ Skip ]
 imported/wpt/screen-orientation [ Skip ]
 imported/wpt/secure-contexts [ Skip ]
-imported/wpt/selection [ Skip ]
+## Owners: dom-dev@chromium.org
+# imported/wpt/selection [ Pass ]
 imported/wpt/selectors [ Skip ]
 imported/wpt/selectors-api [ Skip ]
 imported/wpt/serve [ Skip ]
