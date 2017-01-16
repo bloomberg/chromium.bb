@@ -2336,3 +2336,6 @@ crbug.com/575167 imported/wpt/html/browsers/origin/cross-origin-objects/cross-or
 
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
+
+crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
+crbug.com/681471 virtual/stable/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
