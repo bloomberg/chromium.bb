@@ -5384,6 +5384,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // aren't at present, and if they become the same this test will need to be
   // updated to accommodate.
   EXPECT_NE(TOUCH_ACTION_AUTO, TOUCH_ACTION_NONE);
+
   // Verify the child's input router is initially set for TOUCH_ACTION_AUTO. The
   // TouchStart event will trigger TOUCH_ACTION_NONE being sent back to the
   // browser.
@@ -5391,7 +5392,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
   InputRouterImpl* child_input_router =
       static_cast<InputRouterImpl*>(child_render_widget_host->input_router());
-  EXPECT_EQ(TOUCH_ACTION_AUTO, child_input_router->allowed_touch_action());
+  EXPECT_EQ(TOUCH_ACTION_AUTO,
+            child_input_router->touch_action_filter_.allowed_touch_action());
 
   // Simulate touch event to sub-frame.
   gfx::Point child_center(150, 150);
@@ -5410,7 +5412,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Verify the presence of the touch handler in the child frame correctly
   // propagates touch-action:none information back to the child's input router.
-  EXPECT_EQ(TOUCH_ACTION_NONE, child_input_router->allowed_touch_action());
+  EXPECT_EQ(TOUCH_ACTION_NONE,
+            child_input_router->touch_action_filter_.allowed_touch_action());
 }
 
 namespace {

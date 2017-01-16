@@ -201,10 +201,6 @@ class CONTENT_EXPORT InputRouterImpl
 
   int routing_id() const { return routing_id_; }
 
-  TouchAction allowed_touch_action() {
-    return touch_action_filter_.allowed_touch_action();
-  }
-
   IPC::Sender* sender_;
   InputRouterClient* client_;
   InputAckHandler* ack_handler_;
