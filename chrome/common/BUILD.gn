@@ -677,7 +677,8 @@ source_set("app_mode_app_support") {
 
 mojom("mojo_bindings") {
   sources = [
-    "conflicts/module_event_sink_win.mojom",
+    "conflicts/module_database_win.mojom",
+    "conflicts/module_event_win.mojom",
     "field_trial_recorder.mojom",
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",

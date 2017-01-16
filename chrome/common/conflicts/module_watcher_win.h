@@ -8,8 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
-#include "chrome/common/conflicts/module_event_sink_win.mojom.h"
+#include "chrome/common/conflicts/module_event_win.mojom.h"
 
 class ModuleWatcherTest;
 
@@ -23,37 +22,14 @@ union LDR_DLL_NOTIFICATION_DATA;
 // created.
 class ModuleWatcher {
  public:
-  // Houses information about a module load/unload event, and some module
-  // metadata.
-  struct ModuleEvent {
-    ModuleEvent() = default;
-    ModuleEvent(const ModuleEvent& other) = default;
-    ModuleEvent(mojom::ModuleEventType event_type,
-                const base::FilePath& module_path,
-                void* module_load_address,
-                size_t module_size)
-        : event_type(event_type),
-          module_path(module_path),
-          module_load_address(module_load_address),
-          module_size(module_size) {}
-
-    // The type of module event.
-    mojom::ModuleEventType event_type;
-    // The full path to the module on disk.
-    base::FilePath module_path;
-    // The load address of the module.
-    void* module_load_address;
-    // The size of the module in memory.
-    size_t module_size;
-  };
-
   // The type of callback that will be invoked for each module event. This is
   // invoked by the loader and potentially on any thread. The loader lock is not
   // held but the execution of this callback blocks the module from being bound.
   // Keep the amount of work performed here to an absolute minimum. Note that
   // it is possible for this callback to be invoked after the destruction of the
   // watcher, but very unlikely.
-  using OnModuleEventCallback = base::Callback<void(const ModuleEvent& event)>;
+  using OnModuleEventCallback =
+      base::Callback<void(const mojom::ModuleEvent& event)>;
 
   // Creates and starts a watcher. This enumerates all loaded modules
   // synchronously on the current thread during construction, and provides
@@ -68,7 +44,8 @@ class ModuleWatcher {
   //
   // Only a single instance of a watcher may exist at any moment. This will
   // return nullptr when trying to create a second watcher.
-  static std::unique_ptr<ModuleWatcher> Create(OnModuleEventCallback callback);
+  static std::unique_ptr<ModuleWatcher> Create(
+      const OnModuleEventCallback& callback);
 
   // This can be called on any thread. After destruction the |callback|
   // provided to the constructor will no longer be invoked with module events.
@@ -106,7 +83,7 @@ class ModuleWatcher {
 
  private:
   // Private to enforce Singleton semantics. See Create above.
-  explicit ModuleWatcher(OnModuleEventCallback callback);
+  explicit ModuleWatcher(const OnModuleEventCallback& callback);
 
   // The current callback. Can end up being invoked on any thread.
   OnModuleEventCallback callback_;

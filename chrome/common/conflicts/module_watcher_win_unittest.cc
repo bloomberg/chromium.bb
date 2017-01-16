@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ModuleWatcherTest : public testing::Test {
- protected:
+ public:
   ModuleWatcherTest()
       : module_(nullptr),
         module_event_count_(0),
@@ -18,7 +18,7 @@ class ModuleWatcherTest : public testing::Test {
         module_loaded_event_count_(0),
         module_unloaded_event_count_(0) {}
 
-  void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
+  void OnModuleEvent(const mojom::ModuleEvent& event) {
     ++module_event_count_;
     switch (event.event_type) {
       case mojom::ModuleEventType::MODULE_ALREADY_LOADED:
@@ -63,6 +63,7 @@ class ModuleWatcherTest : public testing::Test {
 
   // Holds a handle to a loaded module.
   HMODULE module_;
+
   // Total number of module events seen.
   int module_event_count_;
   // Total number of MODULE_ALREADY_LOADED events seen.
