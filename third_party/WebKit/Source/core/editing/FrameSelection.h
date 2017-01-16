@@ -45,6 +45,7 @@
 namespace blink {
 
 class CharacterData;
+class DisplayItemClient;
 class LayoutBlock;
 class LocalFrame;
 class FrameCaret;
@@ -287,6 +288,9 @@ class CORE_EXPORT FrameSelection final
                            FullDocumentPaintingWithCaret);
 
   explicit FrameSelection(LocalFrame&);
+
+  // For |PaintControllerPaintTestForSlimmingPaintV1AndV2|.
+  const DisplayItemClient& caretDisplayItemClientForTesting() const;
 
   // Note: We have |selectionInFlatTree()| for unit tests, we should
   // use |visibleSelection<EditingInFlatTreeStrategy>()|.

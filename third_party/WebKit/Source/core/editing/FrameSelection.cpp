@@ -104,6 +104,11 @@ FrameSelection::FrameSelection(LocalFrame& frame)
 
 FrameSelection::~FrameSelection() {}
 
+const DisplayItemClient& FrameSelection::caretDisplayItemClientForTesting()
+    const {
+  return *m_frameCaret;
+}
+
 const Document& FrameSelection::document() const {
   DCHECK(m_document);
   return *m_document;

@@ -72,7 +72,10 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
           TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
           TestDisplayItem(layoutView(), documentBackgroundType),
           TestDisplayItem(textInlineBox, foregroundType),
-          TestDisplayItem(*document().frame()->selection().m_frameCaret,
+          TestDisplayItem(document()
+                              .frame()
+                              ->selection()
+                              .caretDisplayItemClientForTesting(),
                           DisplayItem::kCaret),  // New!
           TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
     } else {
@@ -83,7 +86,10 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
           TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
           TestDisplayItem(layoutView(), documentBackgroundType),
           TestDisplayItem(textInlineBox, foregroundType),
-          TestDisplayItem(*document().frame()->selection().m_frameCaret,
+          TestDisplayItem(document()
+                              .frame()
+                              ->selection()
+                              .caretDisplayItemClientForTesting(),
                           DisplayItem::kCaret),  // New!
           TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence),
           TestDisplayItem(layoutView(),
@@ -95,8 +101,9 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
         rootPaintController().getDisplayItemList(), 3,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(*document().frame()->selection().m_frameCaret,
-                        DisplayItem::kCaret));  // New!
+        TestDisplayItem(
+            document().frame()->selection().caretDisplayItemClientForTesting(),
+            DisplayItem::kCaret));  // New!
   }
 }
 
