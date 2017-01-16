@@ -172,7 +172,6 @@ class TouchList;
 class TransformSource;
 class TreeWalker;
 class VisitedLinkState;
-enum class SelectionBehaviorOnFocus;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
@@ -979,7 +978,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // Returns null if there is no such element.
   HTMLLinkElement* linkManifest() const;
 
-  void updateFocusAppearanceSoon(SelectionBehaviorOnFocus);
+  void updateFocusAppearanceLater();
   void cancelFocusAppearanceUpdate();
 
   bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
@@ -1525,7 +1524,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool m_haveExplicitlyDisabledDNSPrefetch;
   bool m_containsValidityStyleRules;
   bool m_containsPlugins;
-  SelectionBehaviorOnFocus m_updateFocusAppearanceSelectionBahavior;
 
   // http://www.whatwg.org/specs/web-apps/current-work/#ignore-destructive-writes-counter
   unsigned m_ignoreDestructiveWriteCount;

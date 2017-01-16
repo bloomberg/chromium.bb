@@ -501,8 +501,10 @@ void HTMLInputElement::updateType() {
     }
   }
 
+  // UA Shadow tree was recreated. We need to set selection again. We do it
+  // later in order to avoid force layout.
   if (document().focusedElement() == this)
-    document().updateFocusAppearanceSoon(SelectionBehaviorOnFocus::Restore);
+    document().updateFocusAppearanceLater();
 
   setTextAsOfLastFormControlChangeEvent(value());
   setChangedSinceLastFormControlChangeEvent(false);
@@ -854,9 +856,6 @@ void HTMLInputElement::attachLayoutTree(const AttachContext& context) {
 
   m_inputTypeView->startResourceLoading();
   m_inputType->countUsage();
-
-  if (document().focusedElement() == this)
-    document().updateFocusAppearanceSoon(SelectionBehaviorOnFocus::Restore);
 }
 
 void HTMLInputElement::detachLayoutTree(const AttachContext& context) {

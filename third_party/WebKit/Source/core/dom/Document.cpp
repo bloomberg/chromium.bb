@@ -435,7 +435,6 @@ Document::Document(const DocumentInit& initializer,
       m_gotoAnchorNeededAfterStylesheetsLoad(false),
       m_containsValidityStyleRules(false),
       m_containsPlugins(false),
-      m_updateFocusAppearanceSelectionBahavior(SelectionBehaviorOnFocus::Reset),
       m_ignoreDestructiveWriteCount(0),
       m_throwOnDynamicMarkupInsertionCount(0),
       m_markers(new DocumentMarkerController(*this)),
@@ -5591,9 +5590,7 @@ bool Document::isContextThread() const {
   return isMainThread();
 }
 
-void Document::updateFocusAppearanceSoon(
-    SelectionBehaviorOnFocus selectionbehavioronfocus) {
-  m_updateFocusAppearanceSelectionBahavior = selectionbehavioronfocus;
+void Document::updateFocusAppearanceLater() {
   if (!m_updateFocusAppearanceTimer.isActive())
     m_updateFocusAppearanceTimer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -5608,7 +5605,7 @@ void Document::updateFocusAppearanceTimerFired(TimerBase*) {
     return;
   updateStyleAndLayout();
   if (element->isFocusable())
-    element->updateFocusAppearance(m_updateFocusAppearanceSelectionBahavior);
+    element->updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
 }
 
 void Document::attachRange(Range* range) {
