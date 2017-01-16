@@ -1948,26 +1948,17 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     const PropertyRegistry::Registration* registration =
         registry->registration(customPropertyName);
     if (registration) {
-      const CSSValue* result = nullptr;
-      if (registration->inherits()) {
-        if (StyleInheritedVariables* variables = style.inheritedVariables())
-          result = variables->registeredVariable(customPropertyName);
-      } else {
-        if (StyleNonInheritedVariables* variables =
-                style.nonInheritedVariables())
-          result = variables->registeredVariable(customPropertyName);
-      }
+      const CSSValue* result = style.getRegisteredVariable(
+          customPropertyName, registration->inherits());
       if (result)
         return result;
       return registration->initial();
     }
   }
 
-  StyleInheritedVariables* variables = style.inheritedVariables();
-  if (!variables)
-    return nullptr;
-
-  CSSVariableData* data = variables->getVariable(customPropertyName);
+  bool isInheritedProperty = true;
+  CSSVariableData* data =
+      style.getVariable(customPropertyName, isInheritedProperty);
   if (!data)
     return nullptr;
 
