@@ -28,6 +28,9 @@ class EmbeddedWorkerInstanceClientImpl
 
   // Called from ServiceWorkerContextClient.
   void StopWorkerCompleted();
+  EmbeddedWorkerDevToolsAgent* devtools_agent() {
+    return wrapper_->devtools_agent();
+  };
 
  private:
   EmbeddedWorkerInstanceClientImpl(

@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 
 #include "content/common/devtools_messages.h"
+#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
@@ -23,6 +24,15 @@ EmbeddedWorkerDevToolsAgent::EmbeddedWorkerDevToolsAgent(
 
 EmbeddedWorkerDevToolsAgent::~EmbeddedWorkerDevToolsAgent() {
   RenderThreadImpl::current()->RemoveEmbeddedWorkerRoute(route_id_);
+}
+
+void EmbeddedWorkerDevToolsAgent::SendMessage(IPC::Sender* sender,
+                                              int session_id,
+                                              int call_id,
+                                              const std::string& message,
+                                              const std::string& state_cookie) {
+  DevToolsAgent::SendChunkedProtocolMessage(sender, route_id_, session_id,
+                                            call_id, message, state_cookie);
 }
 
 bool EmbeddedWorkerDevToolsAgent::OnMessageReceived(

@@ -60,7 +60,6 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
           base::MakeUnique<ServiceWorkerContextClient>(
               params.embedded_worker_id, params.service_worker_version_id,
               params.scope, params.script_url,
-              params.worker_devtools_agent_route_id,
               std::move(dispatcher_request), std::move(temporal_self_)));
   wrapper_ = wrapper.get();
   dispatcher_->RegisterWorker(params.embedded_worker_id, std::move(wrapper));

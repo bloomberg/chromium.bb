@@ -33,7 +33,7 @@ EmbeddedWorkerDispatcher::WorkerWrapper::WorkerWrapper(
     blink::WebEmbeddedWorker* worker,
     int devtools_agent_route_id)
     : worker_(worker),
-      dev_tools_agent_(
+      devtools_agent_(
           new EmbeddedWorkerDevToolsAgent(worker, devtools_agent_route_id)) {}
 
 EmbeddedWorkerDispatcher::WorkerWrapper::~WorkerWrapper() {}
@@ -71,8 +71,7 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
   std::unique_ptr<WorkerWrapper> wrapper = StartWorkerContext(
       params, base::MakeUnique<ServiceWorkerContextClient>(
                   params.embedded_worker_id, params.service_worker_version_id,
-                  params.scope, params.script_url,
-                  params.worker_devtools_agent_route_id));
+                  params.scope, params.script_url));
   RegisterWorker(params.embedded_worker_id, std::move(wrapper));
 }
 

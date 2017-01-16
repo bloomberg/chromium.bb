@@ -87,14 +87,12 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url,
-      int worker_devtools_agent_route_id,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client);
   ServiceWorkerContextClient(int embedded_worker_id,
                              int64_t service_worker_version_id,
                              const GURL& service_worker_scope,
-                             const GURL& script_url,
-                             int worker_devtools_agent_route_id);
+                             const GURL& script_url);
   ~ServiceWorkerContextClient() override;
 
   void OnMessageReceived(int thread_id,
@@ -280,7 +278,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
   const GURL script_url_;
-  const int worker_devtools_agent_route_id_;
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;

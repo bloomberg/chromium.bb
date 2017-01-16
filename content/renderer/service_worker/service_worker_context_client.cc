@@ -45,6 +45,7 @@
 #include "content/public/renderer/document_state.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
@@ -375,14 +376,12 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url,
-    int worker_devtools_agent_route_id,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
-      worker_devtools_agent_route_id_(worker_devtools_agent_route_id),
       sender_(ChildThreadImpl::current()->thread_safe_sender()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       proxy_(nullptr),
@@ -402,14 +401,12 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     int embedded_worker_id,
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
-    const GURL& script_url,
-    int worker_devtools_agent_route_id)
+    const GURL& script_url)
     : ServiceWorkerContextClient::ServiceWorkerContextClient(
           embedded_worker_id,
           service_worker_version_id,
           service_worker_scope,
           script_url,
-          worker_devtools_agent_route_id,
           mojom::ServiceWorkerEventDispatcherRequest(),
           nullptr) {}
 
@@ -660,9 +657,8 @@ void ServiceWorkerContextClient::sendDevToolsMessage(
     int call_id,
     const blink::WebString& message,
     const blink::WebString& state_cookie) {
-  DevToolsAgent::SendChunkedProtocolMessage(
-      sender_.get(), worker_devtools_agent_route_id_, session_id, call_id,
-      message.utf8(), state_cookie.utf8());
+  embedded_worker_client_->devtools_agent()->SendMessage(
+      sender_.get(), session_id, call_id, message.utf8(), state_cookie.utf8());
 }
 
 blink::WebDevToolsAgentClient::WebKitClientMessageLoop*

@@ -12,6 +12,7 @@
 
 namespace IPC {
 class Message;
+class Sender;
 }
 
 namespace blink {
@@ -25,6 +26,13 @@ class EmbeddedWorkerDevToolsAgent : public IPC::Listener {
   EmbeddedWorkerDevToolsAgent(blink::WebEmbeddedWorker* webworker,
                               int route_id);
   ~EmbeddedWorkerDevToolsAgent() override;
+
+  // Sends |message| to the DevToolsAgent via |sender|.
+  void SendMessage(IPC::Sender* sender,
+                   int session_id,
+                   int call_id,
+                   const std::string& message,
+                   const std::string& state_cookie);
 
   bool OnMessageReceived(const IPC::Message& message) override;
 

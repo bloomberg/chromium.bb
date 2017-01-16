@@ -51,11 +51,14 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
     ~WorkerWrapper();
 
     blink::WebEmbeddedWorker* worker() { return worker_.get(); }
+    EmbeddedWorkerDevToolsAgent* devtools_agent() {
+      return devtools_agent_.get();
+    }
 
    private:
     ScopedChildProcessReference process_ref_;
     std::unique_ptr<blink::WebEmbeddedWorker> worker_;
-    std::unique_ptr<EmbeddedWorkerDevToolsAgent> dev_tools_agent_;
+    std::unique_ptr<EmbeddedWorkerDevToolsAgent> devtools_agent_;
   };
 
   void OnStartWorker(const EmbeddedWorkerStartParams& params);
