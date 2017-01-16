@@ -151,6 +151,7 @@ source_set("browser") {
     "//ui/shell_dialogs",
     "//ui/snapshot",
     "//ui/touch_selection",
+    "//v8:v8_version",
   ]
 
   public_deps = [

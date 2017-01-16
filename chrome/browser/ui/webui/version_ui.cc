@@ -27,7 +27,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-version-string.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -61,7 +61,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
   html_source->AddLocalizedString(version_ui::kPlatform, IDS_PLATFORM_LABEL);
   html_source->AddString(version_ui::kOSType, version_info::GetOSType());
   html_source->AddString(version_ui::kJSEngine, "V8");
-  html_source->AddString(version_ui::kJSVersion, v8::V8::GetVersion());
+  html_source->AddString(version_ui::kJSVersion, V8_VERSION_STRING);
 
 #if defined(OS_ANDROID)
   html_source->AddString(version_ui::kOSVersion,

@@ -50,7 +50,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-version-string.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/files/file_util_proxy.h"
@@ -376,7 +376,7 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("productTOS", tos);
 
   localized_strings->SetString("jsEngine", "V8");
-  localized_strings->SetString("jsEngineVersion", v8::V8::GetVersion());
+  localized_strings->SetString("jsEngineVersion", V8_VERSION_STRING);
 
   localized_strings->SetString("userAgentInfo", GetUserAgent());
 

@@ -37,7 +37,7 @@
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/socket/server_socket.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-version-string.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -525,7 +525,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     version.SetString("WebKit-Version", GetWebKitVersion());
     version.SetString("Browser", product_name_);
     version.SetString("User-Agent", user_agent_);
-    version.SetString("V8-Version", v8::V8::GetVersion());
+    version.SetString("V8-Version", V8_VERSION_STRING);
 #if defined(OS_ANDROID)
     version.SetString("Android-Package",
         base::android::BuildInfo::GetInstance()->package_name());

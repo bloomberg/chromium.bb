@@ -30,7 +30,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_info.h"
 #include "net/base/network_change_notifier.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-version-string.h"
 
 #if (defined(OS_POSIX) && defined(USE_UDEV)) || defined(OS_WIN) || \
     defined(OS_MACOSX)
@@ -115,7 +115,7 @@ std::unique_ptr<base::DictionaryValue> GenerateTracingMetadataDict() {
 
   metadata_dict->SetString("network-type", GetNetworkTypeString());
   metadata_dict->SetString("product-version", GetContentClient()->GetProduct());
-  metadata_dict->SetString("v8-version", v8::V8::GetVersion());
+  metadata_dict->SetString("v8-version", V8_VERSION_STRING);
   metadata_dict->SetString("user-agent", GetContentClient()->GetUserAgent());
 
   // OS

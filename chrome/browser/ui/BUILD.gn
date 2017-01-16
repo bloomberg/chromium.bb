@@ -614,7 +614,7 @@ split_static_library("ui") {
     "//ui/strings",
     "//ui/surface",
     "//ui/web_dialogs",
-    "//v8",
+    "//v8:v8_version",
   ]
   allow_circular_includes_from = []
 
