@@ -349,12 +349,12 @@ void RenderSurfaceImpl::ClearLayerLists() {
 }
 
 int RenderSurfaceImpl::GetRenderPassId() {
-  return owning_layer_->id();
+  return id();
 }
 
 void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
   std::unique_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
-  pass->SetNew(owning_layer_->id(), content_rect(),
+  pass->SetNew(id(), content_rect(),
                gfx::IntersectRects(content_rect(),
                                    damage_tracker_->current_damage_rect()),
                draw_properties_.screen_space_transform);
