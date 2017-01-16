@@ -9,8 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "components/drive/chromeos/file_system_interface.h"
@@ -185,11 +184,10 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
   }
 
   // Cache file prepared for modification is available. Open it locally.
-  bool posted = base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock(),
       base::Bind(&OpenFile, local_path, file_flags),
       base::Bind(&RunOpenFileCallback, callback, close_callback));
-  DCHECK(posted);
 }
 
 }  // namespace
