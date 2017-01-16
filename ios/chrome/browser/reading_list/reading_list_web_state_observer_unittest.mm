@@ -56,7 +56,8 @@ class ReadingListWebStateObserverTest : public web::WebTest {
     test_web_state_.SetNavigationManager(std::move(test_navigation_manager));
     reading_list_model_ =
         base::MakeUnique<ReadingListModelImpl>(nullptr, nullptr);
-    reading_list_model_->AddEntry(GURL(kTestURL), kTestTitle);
+    reading_list_model_->AddEntry(GURL(kTestURL), kTestTitle,
+                                  reading_list::ADDED_VIA_CURRENT_APP);
     ReadingListWebStateObserver::FromWebState(&test_web_state_,
                                               reading_list_model_.get());
   }

@@ -242,7 +242,7 @@ void ReadingListModelImpl::SyncAddEntry(
   GURL url = entry->URL();
   entries_->insert(std::make_pair(url, std::move(*entry)));
   for (auto& observer : observers_) {
-    observer.ReadingListDidAddEntry(this, url);
+    observer.ReadingListDidAddEntry(this, url, reading_list::ADDED_VIA_SYNC);
     observer.ReadingListDidApplyChanges(this);
   }
 }
@@ -306,7 +306,8 @@ void ReadingListModelImpl::RemoveEntryByURLImpl(const GURL& url,
 
 const ReadingListEntry& ReadingListModelImpl::AddEntry(
     const GURL& url,
-    const std::string& title) {
+    const std::string& title,
+    reading_list::EntrySource source) {
   DCHECK(CalledOnValidThread());
   DCHECK(loaded());
   DCHECK(url.SchemeIsHTTPOrHTTPS());
@@ -327,7 +328,7 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
   }
 
   for (auto& observer : observers_) {
-    observer.ReadingListDidAddEntry(this, url);
+    observer.ReadingListDidAddEntry(this, url, source);
     observer.ReadingListDidApplyChanges(this);
   }
 

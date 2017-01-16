@@ -15,6 +15,13 @@
 
 namespace reading_list {
 class ReadingListLocal;
+
+// The different ways a reading list entry is added.
+// |ADDED_VIA_CURRENT_APP| is when the entry was added by the user from within
+// the current instance of the app.
+// |ADDED_VIA_EXTENSION| is when the entry was added via the share extension.
+// |ADDED_VIA_SYNC| is when the entry was added with sync.
+enum EntrySource { ADDED_VIA_CURRENT_APP, ADDED_VIA_EXTENSION, ADDED_VIA_SYNC };
 }
 
 namespace sync_pb {

@@ -13,6 +13,7 @@
 // TintedButton specialization that updates the tint color when the tools menu
 // is visible or when the reading list associated with |readingListModel|
 // contains unread items.
+// Draws and animates the icon of the button using UIBezierPaths.
 @interface ToolbarToolsMenuButton : TintedButton
 
 // Initializes and returns a newly allocated TintedButton with the specified
@@ -31,6 +32,10 @@
 // Notifies the button should alert user to the presence of reading list unseen
 // items.
 - (void)setReadingListContainsUnseenItems:(BOOL)readingListContainsUnseenItems;
+
+// Triggers an animation on the button to draw the user's attention to the
+// button.
+- (void)triggerAnimation;
 
 @end
 

@@ -54,9 +54,12 @@ void ReadingListModelBridge::ReadingListWillAddEntry(
 
 void ReadingListModelBridge::ReadingListDidAddEntry(
     const ReadingListModel* model,
-    const GURL& url) {
-  if ([observer_ respondsToSelector:@selector(readingListModel:didAddEntry:)]) {
-    [observer_ readingListModel:model didAddEntry:url];
+    const GURL& url,
+    reading_list::EntrySource source) {
+  if ([observer_ respondsToSelector:@selector(readingListModel:
+                                                   didAddEntry:
+                                                   entrySource:)]) {
+    [observer_ readingListModel:model didAddEntry:url entrySource:source];
   }
 }
 

@@ -231,7 +231,8 @@ class ReadingListModelTest : public ReadingListModelObserver,
     observer_add_ += 1;
   }
   void ReadingListDidAddEntry(const ReadingListModel* model,
-                              const GURL& url) override {
+                              const GURL& url,
+                              reading_list::EntrySource entry_source) override {
     observer_did_add_ += 1;
   }
   void ReadingListWillUpdateEntry(const ReadingListModel* model,
@@ -334,7 +335,8 @@ TEST_F(ReadingListModelTest, AddEntry) {
   ClearCounts();
 
   const ReadingListEntry& entry =
-      model_->AddEntry(GURL("http://example.com"), "\n  \tsample Test ");
+      model_->AddEntry(GURL("http://example.com"), "\n  \tsample Test ",
+                       reading_list::ADDED_VIA_CURRENT_APP);
   EXPECT_EQ(GURL("http://example.com"), entry.URL());
   EXPECT_EQ("sample Test", entry.Title());
 
@@ -371,7 +373,8 @@ TEST_F(ReadingListModelTest, SyncAddEntry) {
 TEST_F(ReadingListModelTest, SyncMergeEntry) {
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
   SetStorage(std::move(storage));
-  model_->AddEntry(GURL("http://example.com"), "sample");
+  model_->AddEntry(GURL("http://example.com"), "sample",
+                   reading_list::ADDED_VIA_CURRENT_APP);
   model_->SetEntryDistilledPath(GURL("http://example.com"),
                                 base::FilePath("distilled/page.html"));
   const ReadingListEntry* local_entry =
@@ -402,7 +405,8 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
 TEST_F(ReadingListModelTest, RemoveEntryByUrl) {
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
   SetStorage(std::move(storage));
-  model_->AddEntry(GURL("http://example.com"), "sample");
+  model_->AddEntry(GURL("http://example.com"), "sample",
+                   reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
   EXPECT_NE(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
   EXPECT_EQ(1ul, UnreadSize());
@@ -414,7 +418,8 @@ TEST_F(ReadingListModelTest, RemoveEntryByUrl) {
   EXPECT_EQ(0ul, ReadSize());
   EXPECT_EQ(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
 
-  model_->AddEntry(GURL("http://example.com"), "sample");
+  model_->AddEntry(GURL("http://example.com"), "sample",
+                   reading_list::ADDED_VIA_CURRENT_APP);
   model_->SetReadStatus(GURL("http://example.com"), true);
   ClearCounts();
   EXPECT_NE(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
@@ -431,7 +436,8 @@ TEST_F(ReadingListModelTest, RemoveEntryByUrl) {
 TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
   SetStorage(std::move(storage));
-  model_->AddEntry(GURL("http://example.com"), "sample");
+  model_->AddEntry(GURL("http://example.com"), "sample",
+                   reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
   EXPECT_NE(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
   EXPECT_EQ(1ul, UnreadSize());
@@ -443,7 +449,8 @@ TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
   EXPECT_EQ(0ul, ReadSize());
   EXPECT_EQ(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
 
-  model_->AddEntry(GURL("http://example.com"), "sample");
+  model_->AddEntry(GURL("http://example.com"), "sample",
+                   reading_list::ADDED_VIA_CURRENT_APP);
   model_->SetReadStatus(GURL("http://example.com"), true);
   ClearCounts();
   EXPECT_NE(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
@@ -458,7 +465,8 @@ TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
 }
 
 TEST_F(ReadingListModelTest, ReadEntry) {
-  model_->AddEntry(GURL("http://example.com"), "sample");
+  model_->AddEntry(GURL("http://example.com"), "sample",
+                   reading_list::ADDED_VIA_CURRENT_APP);
 
   ClearCounts();
   model_->SetReadStatus(GURL("http://example.com"), true);
@@ -479,7 +487,7 @@ TEST_F(ReadingListModelTest, EntryFromURL) {
   GURL url1("http://example.com");
   GURL url2("http://example2.com");
   std::string entry1_title = "foo bar qux";
-  model_->AddEntry(url1, entry1_title);
+  model_->AddEntry(url1, entry1_title, reading_list::ADDED_VIA_CURRENT_APP);
 
   // Check call with nullptr |read| parameter.
   const ReadingListEntry* entry1 = model_->GetEntryByURL(url1);
@@ -502,7 +510,8 @@ TEST_F(ReadingListModelTest, EntryFromURL) {
 
 TEST_F(ReadingListModelTest, UnreadEntry) {
   // Setup.
-  model_->AddEntry(GURL("http://example.com"), "sample");
+  model_->AddEntry(GURL("http://example.com"), "sample",
+                   reading_list::ADDED_VIA_CURRENT_APP);
   EXPECT_TRUE(model_->GetLocalUnseenFlag());
   model_->SetReadStatus(GURL("http://example.com"), true);
   ClearCounts();
@@ -570,7 +579,8 @@ TEST_F(ReadingListModelTest, BatchUpdatesReentrant) {
 
 TEST_F(ReadingListModelTest, UpdateEntryTitle) {
   const GURL gurl("http://example.com");
-  const ReadingListEntry& entry = model_->AddEntry(gurl, "sample");
+  const ReadingListEntry& entry =
+      model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
 
   model_->SetEntryTitle(gurl, "ping");
@@ -580,7 +590,8 @@ TEST_F(ReadingListModelTest, UpdateEntryTitle) {
 
 TEST_F(ReadingListModelTest, UpdateEntryDistilledState) {
   const GURL gurl("http://example.com");
-  const ReadingListEntry& entry = model_->AddEntry(gurl, "sample");
+  const ReadingListEntry& entry =
+      model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
 
   model_->SetEntryDistilledState(gurl, ReadingListEntry::PROCESSING);
@@ -590,7 +601,8 @@ TEST_F(ReadingListModelTest, UpdateEntryDistilledState) {
 
 TEST_F(ReadingListModelTest, UpdateDistilledPath) {
   const GURL gurl("http://example.com");
-  const ReadingListEntry& entry = model_->AddEntry(gurl, "sample");
+  const ReadingListEntry& entry =
+      model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
 
   model_->SetEntryDistilledPath(gurl, base::FilePath("distilled/page.html"));
@@ -601,7 +613,7 @@ TEST_F(ReadingListModelTest, UpdateDistilledPath) {
 
 TEST_F(ReadingListModelTest, UpdateReadEntryTitle) {
   const GURL gurl("http://example.com");
-  model_->AddEntry(gurl, "sample");
+  model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   model_->SetReadStatus(gurl, true);
   const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
   ClearCounts();
@@ -613,7 +625,7 @@ TEST_F(ReadingListModelTest, UpdateReadEntryTitle) {
 
 TEST_F(ReadingListModelTest, UpdateReadEntryState) {
   const GURL gurl("http://example.com");
-  model_->AddEntry(gurl, "sample");
+  model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   model_->SetReadStatus(gurl, true);
   const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
   ClearCounts();
@@ -625,7 +637,7 @@ TEST_F(ReadingListModelTest, UpdateReadEntryState) {
 
 TEST_F(ReadingListModelTest, UpdateReadDistilledPath) {
   const GURL gurl("http://example.com");
-  model_->AddEntry(gurl, "sample");
+  model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   model_->SetReadStatus(gurl, true);
   const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
   ClearCounts();

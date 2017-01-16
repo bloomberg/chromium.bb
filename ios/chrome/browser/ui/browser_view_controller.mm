@@ -3503,7 +3503,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   ReadingListModel* readingModel =
       ReadingListModelFactory::GetForBrowserState(_browserState);
-  readingModel->AddEntry(URL, base::SysNSStringToUTF8(title));
+  readingModel->AddEntry(URL, base::SysNSStringToUTF8(title),
+                         reading_list::ADDED_VIA_CURRENT_APP);
 
   NSString* snackBarMessage =
       l10n_util::GetNSString(IDS_IOS_READING_LIST_SNACKBAR_MESSAGE);

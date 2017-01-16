@@ -34,6 +34,21 @@
   return self;
 }
 
+- (void)updateButtonWithModel:(const ReadingListModel*)model {
+  DCHECK(model == _model);
+  BOOL readingListContainsUnseenItems = model->GetLocalUnseenFlag();
+  [_button setReadingListContainsUnseenItems:readingListContainsUnseenItems];
+}
+
+- (void)buttonPressed:(UIButton*)sender {
+  if (_model) {
+    _model->ResetLocalUnseenFlag();
+  }
+  [_button setReadingListContainsUnseenItems:NO];
+}
+
+#pragma mark - ReadingListModelBridgeObserver
+
 - (void)readingListModelLoaded:(const ReadingListModel*)model {
   [self updateButtonWithModel:model];
 }
@@ -47,17 +62,11 @@
   _model = nullptr;
 }
 
-- (void)updateButtonWithModel:(const ReadingListModel*)model {
-  DCHECK(model == _model);
-  BOOL readingListContainsUnseenItems = model->GetLocalUnseenFlag();
-  [_button setReadingListContainsUnseenItems:readingListContainsUnseenItems];
-}
-
-- (void)buttonPressed:(UIButton*)sender {
-  if (_model) {
-    _model->ResetLocalUnseenFlag();
-  }
-  [_button setReadingListContainsUnseenItems:NO];
+- (void)readingListModel:(const ReadingListModel*)model
+             didAddEntry:(const GURL&)url
+             entrySource:(reading_list::EntrySource)source {
+  if (source == reading_list::ADDED_VIA_CURRENT_APP)
+    [_button triggerAnimation];
 }
 
 @end

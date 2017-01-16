@@ -142,12 +142,16 @@ void OpenReadingList() {
 // enter edit mode.
 void AddEntriesAndEnterEdit() {
   ReadingListModel* model = GetReadingListModel();
-  model->AddEntry(GURL(kReadURL), std::string(kReadTitle));
+  model->AddEntry(GURL(kReadURL), std::string(kReadTitle),
+                  reading_list::ADDED_VIA_CURRENT_APP);
   model->SetReadStatus(GURL(kReadURL), true);
-  model->AddEntry(GURL(kReadURL2), std::string(kReadTitle2));
+  model->AddEntry(GURL(kReadURL2), std::string(kReadTitle2),
+                  reading_list::ADDED_VIA_CURRENT_APP);
   model->SetReadStatus(GURL(kReadURL2), true);
-  model->AddEntry(GURL(kUnreadURL), std::string(kUnreadTitle));
-  model->AddEntry(GURL(kUnreadURL2), std::string(kUnreadTitle2));
+  model->AddEntry(GURL(kUnreadURL), std::string(kUnreadTitle),
+                  reading_list::ADDED_VIA_CURRENT_APP);
+  model->AddEntry(GURL(kUnreadURL2), std::string(kUnreadTitle2),
+                  reading_list::ADDED_VIA_CURRENT_APP);
   OpenReadingList();
 
   TapButtonWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
@@ -237,7 +241,8 @@ size_t ModelReadSize(ReadingListModel* model) {
 
 // Tests that only the "Edit" button is showing when not editing.
 - (void)testVisibleButtonsNonEditingMode {
-  GetReadingListModel()->AddEntry(GURL(kUnreadURL), std::string(kUnreadTitle));
+  GetReadingListModel()->AddEntry(GURL(kUnreadURL), std::string(kUnreadTitle),
+                                  reading_list::ADDED_VIA_CURRENT_APP);
   OpenReadingList();
 
   AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_DELETE_BUTTON);

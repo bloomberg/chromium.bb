@@ -8,9 +8,10 @@
 #include <set>
 #include <vector>
 
+#include "components/reading_list/ios/reading_list_entry.h"
+
 class GURL;
 class ReadingListModel;
-class ReadingListEntry;
 
 // Observer for the Reading List model. In the observer methods care should be
 // taken to not modify the model.
@@ -58,8 +59,10 @@ class ReadingListModelObserver {
   // Invoked when elements have been added. This method is called after the
   // the entry has been added to the model and the entry can now be retrieved
   // from the model.
+  // |source| says where the entry came from.
   virtual void ReadingListDidAddEntry(const ReadingListModel* model,
-                                      const GURL& url) {}
+                                      const GURL& url,
+                                      reading_list::EntrySource source) {}
 
   // Invoked when an entry is about to change.
   virtual void ReadingListWillUpdateEntry(const ReadingListModel* model,

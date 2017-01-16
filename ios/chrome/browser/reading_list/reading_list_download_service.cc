@@ -94,7 +94,8 @@ void ReadingListDownloadService::ReadingListWillRemoveEntry(
 
 void ReadingListDownloadService::ReadingListDidAddEntry(
     const ReadingListModel* model,
-    const GURL& url) {
+    const GURL& url,
+    reading_list::EntrySource source) {
   DCHECK_EQ(reading_list_model_, model);
   ProcessNewEntry(url);
 }

@@ -60,7 +60,8 @@ class ReadingListModelImpl : public ReadingListModel,
   void RemoveEntryByURL(const GURL& url) override;
 
   const ReadingListEntry& AddEntry(const GURL& url,
-                                   const std::string& title) override;
+                                   const std::string& title,
+                                   reading_list::EntrySource source) override;
 
   void SetReadStatus(const GURL& url, bool read) override;
 

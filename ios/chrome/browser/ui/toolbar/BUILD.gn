@@ -31,9 +31,6 @@ bundle_data("resources") {
     "resources/toolbar_dark_newtab_incognito_active.png",
     "resources/toolbar_dark_newtab_incognito_active@2x.png",
     "resources/toolbar_dark_newtab_incognito_active@3x.png",
-    "resources/toolbar_tools.png",
-    "resources/toolbar_tools@2x.png",
-    "resources/toolbar_tools@3x.png",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",

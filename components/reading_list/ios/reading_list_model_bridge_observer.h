@@ -30,7 +30,8 @@
             willAddEntry:(const ReadingListEntry&)entry;
 
 - (void)readingListModel:(const ReadingListModel*)model
-             didAddEntry:(const GURL&)url;
+             didAddEntry:(const GURL&)url
+             entrySource:(reading_list::EntrySource)source;
 
 - (void)readingListModelBeganBatchUpdates:(const ReadingListModel*)model;
 - (void)readingListModelCompletedBatchUpdates:(const ReadingListModel*)model;
@@ -65,7 +66,8 @@ class ReadingListModelBridge : public ReadingListModelObserver {
   void ReadingListWillAddEntry(const ReadingListModel* model,
                                const ReadingListEntry& entry) override;
   void ReadingListDidAddEntry(const ReadingListModel* model,
-                              const GURL& url) override;
+                              const GURL& url,
+                              reading_list::EntrySource source) override;
   void ReadingListDidApplyChanges(ReadingListModel* model) override;
   void ReadingListWillUpdateEntry(const ReadingListModel* model,
                                   const GURL& url) override;

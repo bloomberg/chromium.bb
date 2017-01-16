@@ -113,9 +113,12 @@ class ReadingListViewControllerTest : public web::WebTestWithWebState {
 // Tests that reading list items are displayed.
 TEST_F(ReadingListViewControllerTest, DisplaysItems) {
   // Prefill some items.
-  reading_list_model_->AddEntry(GURL("https://chromium.org"), "news");
-  reading_list_model_->AddEntry(GURL("https://mail.chromium.org"), "mail");
-  reading_list_model_->AddEntry(GURL("https://foo.bar"), "Foo");
+  reading_list_model_->AddEntry(GURL("https://chromium.org"), "news",
+                                reading_list::ADDED_VIA_CURRENT_APP);
+  reading_list_model_->AddEntry(GURL("https://mail.chromium.org"), "mail",
+                                reading_list::ADDED_VIA_CURRENT_APP);
+  reading_list_model_->AddEntry(GURL("https://foo.bar"), "Foo",
+                                reading_list::ADDED_VIA_CURRENT_APP);
   reading_list_model_->SetReadStatus(GURL("https://foo.bar"), true);
 
   // Load view.
@@ -157,7 +160,8 @@ TEST_F(ReadingListViewControllerTest, OpensItems) {
       [OCMockObject partialMockForObject:reading_list_view_controller_.get()];
 
   GURL url("https://chromium.org");
-  reading_list_model_->AddEntry(url, "chromium");
+  reading_list_model_->AddEntry(url, "chromium",
+                                reading_list::ADDED_VIA_CURRENT_APP);
   [reading_list_view_controller_ view];
   [[partialMock expect] dismiss];
 

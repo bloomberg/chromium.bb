@@ -252,7 +252,8 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
 
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
   syncer::EntityDataMap remote_input;
-  model_->AddEntry(GURL("http://unread.example.com/"), "unread title");
+  model_->AddEntry(GURL("http://unread.example.com/"), "unread title",
+                   reading_list::ADDED_VIA_CURRENT_APP);
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromMilliseconds(10));
 
@@ -285,7 +286,8 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromMilliseconds(10));
   syncer::EntityDataMap remote_input;
-  model_->AddEntry(GURL("http://unread.example.com/"), "new unread title");
+  model_->AddEntry(GURL("http://unread.example.com/"), "new unread title",
+                   reading_list::ADDED_VIA_CURRENT_APP);
   AssertCounts(0, 0, 0, 0, 0);
 
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =

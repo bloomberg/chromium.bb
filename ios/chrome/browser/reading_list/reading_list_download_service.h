@@ -58,7 +58,8 @@ class ReadingListDownloadService
   void ReadingListWillRemoveEntry(const ReadingListModel* model,
                                   const GURL& url) override;
   void ReadingListDidAddEntry(const ReadingListModel* model,
-                              const GURL& url) override;
+                              const GURL& url,
+                              reading_list::EntrySource entry_source) override;
   void ReadingListDidMoveEntry(const ReadingListModel* model,
                                const GURL& url) override;
 

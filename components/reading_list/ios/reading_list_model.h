@@ -93,8 +93,10 @@ class ReadingListModel : public base::NonThreadSafe {
   // trimmed copy of |title.
   // The addition may be asynchronous, and the data will be available only once
   // the observers are notified.
-  virtual const ReadingListEntry& AddEntry(const GURL& url,
-                                           const std::string& title) = 0;
+  virtual const ReadingListEntry& AddEntry(
+      const GURL& url,
+      const std::string& title,
+      reading_list::EntrySource source) = 0;
 
   // Removes an entry. The removal may be asynchronous, and not happen
   // immediately.

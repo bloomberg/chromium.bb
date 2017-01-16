@@ -214,8 +214,9 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
                                      [entryType integerValue]);
                              if (type == app_group::READING_LIST_ITEM) {
                                LogHistogramReceivedItem(READINGLIST_ENTRY);
-                               _readingListModel->AddEntry(entryURL,
-                                                           entryTitle);
+                               _readingListModel->AddEntry(
+                                   entryURL, entryTitle,
+                                   reading_list::ADDED_VIA_EXTENSION);
                              }
                              if (type == app_group::BOOKMARK_ITEM) {
                                LogHistogramReceivedItem(BOOKMARK_ENTRY);
