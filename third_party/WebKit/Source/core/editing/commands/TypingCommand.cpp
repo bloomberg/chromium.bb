@@ -201,11 +201,6 @@ void TypingCommand::deleteSelection(Document& document,
     if (!lastTypingCommand->willAddTypingToOpenCommand(
             source, InputEvent::InputType::DeleteContentBackward))
       return;
-
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document.updateStyleAndLayoutIgnorePendingStylesheets();
-
     // InputMethodController uses this function to delete composition
     // selection.  It won't be aborted.
     lastTypingCommand->deleteSelection(options & SmartDelete,
@@ -235,12 +230,6 @@ void TypingCommand::deleteKeyPressed(Document& document,
         if (!lastTypingCommand->willAddTypingToOpenCommand(
                 source, InputEvent::InputType::DeleteContentBackward))
           return;
-
-        // TODO(editing-dev): The use of
-        // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-        // See http://crbug.com/590369 for more details.
-        document.updateStyleAndLayoutIgnorePendingStylesheets();
-
         EditingState editingState;
         lastTypingCommand->deleteKeyPressed(granularity, options & KillRing,
                                             &editingState);
@@ -270,11 +259,6 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document,
       if (!lastTypingCommand->willAddTypingToOpenCommand(
               source, InputEvent::InputType::DeleteContentForward))
         return;
-
-      // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
-      // needs to be audited.  See http://crbug.com/590369 for more details.
-      document.updateStyleAndLayoutIgnorePendingStylesheets();
-
       lastTypingCommand->forwardDeleteKeyPressed(
           granularity, options & KillRing, editingState);
       return;
@@ -395,11 +379,6 @@ void TypingCommand::insertText(Document& document,
     if (!lastTypingCommand->willAddTypingToOpenCommand(
             source, InputEvent::InputType::InsertText, newText))
       return;
-
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document.updateStyleAndLayoutIgnorePendingStylesheets();
-
     EditingState editingState;
     lastTypingCommand->insertText(newText, options & SelectInsertedText,
                                   &editingState);
@@ -454,11 +433,6 @@ bool TypingCommand::insertLineBreak(Document& document,
     if (!lastTypingCommand->willAddTypingToOpenCommand(
             source, InputEvent::InputType::InsertLineBreak))
       return false;
-
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document.updateStyleAndLayoutIgnorePendingStylesheets();
-
     EditingState editingState;
     lastTypingCommand->insertLineBreak(&editingState);
     return !editingState.isAborted();
@@ -475,11 +449,6 @@ bool TypingCommand::insertParagraphSeparatorInQuotedContent(
     if (!lastTypingCommand->willAddTypingToOpenCommand(
             source, InputEvent::InputType::InsertParagraph))
       return false;
-
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document.updateStyleAndLayoutIgnorePendingStylesheets();
-
     EditingState editingState;
     lastTypingCommand->insertParagraphSeparatorInQuotedContent(&editingState);
     return !editingState.isAborted();
@@ -498,11 +467,6 @@ bool TypingCommand::insertParagraphSeparator(Document& document,
     if (!lastTypingCommand->willAddTypingToOpenCommand(
             source, InputEvent::InputType::InsertParagraph))
       return false;
-
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document.updateStyleAndLayoutIgnorePendingStylesheets();
-
     EditingState editingState;
     lastTypingCommand->insertParagraphSeparator(&editingState);
     return !editingState.isAborted();
