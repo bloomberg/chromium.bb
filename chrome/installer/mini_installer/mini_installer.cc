@@ -15,7 +15,7 @@
 //   BufferSecurityCheck="false" compiler: /GS-
 //   EntryPointSymbol="MainEntryPoint" linker: /ENTRY
 //   IgnoreAllDefaultLibraries="true" linker: /NODEFAULTLIB
-//   OptimizeForWindows98="1"  liker: /OPT:NOWIN98
+//   OptimizeForWindows98="1" linker: /OPT:NOWIN98
 //   linker: /SAFESEH:NO
 
 // have the linker merge the sections, saving us ~500 bytes.
@@ -894,6 +894,19 @@ int MainEntryPoint() {
 
   ::ExitProcess(result.exit_code);
 }
+
+#if defined(ADDRESS_SANITIZER)
+// Executables instrumented with ASAN need CRT functions. We do not use
+// the /ENTRY switch for ASAN instrumented executable and a "main" function
+// is required.
+int WINAPI WinMain(HINSTANCE hInstance,
+                   HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine,
+                   int nCmdShow) {
+  MainEntryPoint();
+  return 0;
+}
+#endif
 
 // VC Express editions don't come with the memset CRT obj file and linking to
 // the obj files between versions becomes a bit problematic. Therefore,

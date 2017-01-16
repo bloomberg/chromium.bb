@@ -14,3 +14,21 @@ void HostEntryPoint() {
   int exit_code = remoting::HostMain(0, nullptr);
   ExitProcess(exit_code);
 }
+
+#if defined(ADDRESS_SANITIZER)
+// Executables instrumented with ASAN need CRT functions. We do not use
+// the /ENTRY switch for ASAN instrumented executable and a "main" function
+// is required.
+int WINAPI wWinMain (HINSTANCE hInstance,
+                     HINSTANCE hPrevInstance,
+                     LPSTR lpCmdLine,
+                     int nCmdShow) {
+  HostEntryPoint();
+  return 0;
+}
+
+int wmain() {
+  HostEntryPoint();
+  return 0;
+}
+#endif

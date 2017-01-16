@@ -276,10 +276,12 @@ executable("remoting_console") {
     "entry_point.cc",
   ]
 
-  ldflags = [
-    "/ENTRY:HostEntryPoint",
-    # "/NODEFAULTLIB",
-  ]
+  if (!is_asan) {
+    ldflags = [
+      "/ENTRY:HostEntryPoint",
+      # "/NODEFAULTLIB",
+    ]
+  }
 }
 
 executable("remoting_me2me_host") {
@@ -304,7 +306,12 @@ executable("remoting_me2me_host") {
 
   output_name = "remoting_host"
 
-  ldflags = [ "/ENTRY:HostEntryPoint" ]
+  if (!is_asan) {
+    ldflags = [
+      "/ENTRY:HostEntryPoint",
+      # "/NODEFAULTLIB",
+    ]
+  }
 }
 
 shared_library("remoting_core") {
@@ -440,10 +447,12 @@ executable("remoting_desktop") {
     "entry_point.cc",
   ]
 
-  ldflags = [
-    "/ENTRY:HostEntryPoint",
-    # "/NODEFAULTLIB",
-  ]
+  if (!is_asan) {
+    ldflags = [
+      "/ENTRY:HostEntryPoint",
+      # "/NODEFAULTLIB",
+    ]
+  }
 }
 
 executable("remoting_native_messaging_host") {

@@ -239,11 +239,14 @@ template("generate_mini_installer") {
     ]
 
     ldflags = [
-      "/ENTRY:MainEntryPoint",
       "/FIXED:NO",
       "/ignore:4199",
       "/NXCOMPAT",
     ]
+
+    if (!is_asan) {
+      ldflags += [ "/ENTRY:MainEntryPoint" ]
+    }
 
     libs = [ "setupapi.lib" ]
 
