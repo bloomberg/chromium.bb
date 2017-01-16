@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
@@ -127,7 +127,7 @@ void OpenNewTab(Profile* profile, const GURL& url) {
 // Reads the alternate URL from a GDoc file. When it fails, returns a file URL
 // for |file_path| as fallback.
 // Note that an alternate url is a URL to open a hosted document.
-GURL ReadUrlFromGDocOnBlockingPool(const base::FilePath& file_path) {
+GURL ReadUrlFromGDocAsync(const base::FilePath& file_path) {
   GURL url = drive::util::ReadUrlFromGDocFile(file_path);
   if (url.is_empty())
     url = net::FilePathToFileURL(file_path);
@@ -169,10 +169,9 @@ bool OpenFileWithBrowser(Profile* profile,
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).
       // Parse the file to extract the Docs url and open this url.
-      base::PostTaskAndReplyWithResult(
-          BrowserThread::GetBlockingPool(),
-          FROM_HERE,
-          base::Bind(&ReadUrlFromGDocOnBlockingPool, file_path),
+      base::PostTaskWithTraitsAndReplyWithResult(
+          FROM_HERE, base::TaskTraits().MayBlock(),
+          base::Bind(&ReadUrlFromGDocAsync, file_path),
           base::Bind(&OpenNewTab, profile));
     }
     return true;
