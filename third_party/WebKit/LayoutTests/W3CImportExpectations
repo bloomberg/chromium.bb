@@ -340,7 +340,7 @@ imported/wpt/url [ Skip ]
 # imported/wpt/user-timing [ Pass ]
 imported/wpt/vibration [ Skip ]
 ## Owners: bsheedy@chromium.org
-# imported/wpt/vr [ Pass ]
+# imported/wpt/webvr [ Pass ]
 imported/wpt/wai-aria [ Skip ]
 ## Owners: suzyh@chromium.org
 # imported/wpt/web-animations [ Pass ]
