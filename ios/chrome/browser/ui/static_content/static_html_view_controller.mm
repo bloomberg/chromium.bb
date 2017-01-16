@@ -13,6 +13,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -43,7 +44,8 @@
 }
 @end
 
-@interface StaticHtmlViewController ()<WKNavigationDelegate> {
+@interface StaticHtmlViewController ()<CRWContextMenuDelegate,
+                                       WKNavigationDelegate> {
  @private
   // The referrer that will be passed when navigating from this page.
   web::Referrer referrer_;
@@ -210,6 +212,18 @@
 }
 
 #pragma mark -
+#pragma mark CRWContextMenuDelegate implementation
+
+- (BOOL)webView:(WKWebView*)webView
+    handleContextMenu:(const web::ContextMenuParams&)params {
+  if ([delegate_
+          respondsToSelector:@selector(nativeContent:handleContextMenu:)]) {
+    return [delegate_ nativeContent:self handleContextMenu:params];
+  }
+  return NO;
+}
+
+#pragma mark -
 #pragma mark KVO callback
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -278,7 +292,8 @@
 
 - (void)ensureWebViewCreated {
   if (!webView_) {
-    WKWebView* webView = web::BuildWKWebView(CGRectZero, browserState_);
+    WKWebView* webView = web::BuildWKWebViewWithCustomContextMenu(
+        CGRectZero, browserState_, self);
     [webView addObserver:self forKeyPath:@"title" options:0 context:nullptr];
     [webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                  UIViewAutoresizingFlexibleHeight];

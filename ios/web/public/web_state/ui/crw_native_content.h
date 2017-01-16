@@ -10,6 +10,10 @@
 #import "ios/web/public/block_types.h"
 #include "url/gurl.h"
 
+namespace web {
+struct ContextMenuParams;
+}  // namespace web;
+
 @protocol CRWNativeContentDelegate;
 
 // Abstract methods needed for manipulating native content in the web content
@@ -100,6 +104,12 @@
 @optional
 // Called when the content supplies a new title.
 - (void)nativeContent:(id)content titleDidChange:(NSString*)title;
+
+// Called when the content triggers a context menu.
+// The client must return whether the context menu event was handled and the
+// system menu must be suppressed.
+- (BOOL)nativeContent:(id)content
+    handleContextMenu:(const web::ContextMenuParams&)params;
 
 @end
 

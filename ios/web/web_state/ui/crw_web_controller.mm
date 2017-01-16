@@ -37,7 +37,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/url_formatter/url_formatter.h"
 #import "ios/net/http_response_headers_util.h"
 #import "ios/net/nsurlrequest_util.h"
 #include "ios/web/history_state_util.h"
@@ -73,6 +72,7 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/page_display_state.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
@@ -87,6 +87,7 @@
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/page_viewport_state.h"
+#import "ios/web/web_state/ui/crw_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
@@ -217,14 +218,6 @@ enum ExternalURLRequestStatus {
   NUM_EXTERNAL_URL_REQUEST_STATUS
 };
 
-// Cancels touch events for the given gesture recognizer.
-void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
-  if (gesture_recognizer.enabled) {
-    gesture_recognizer.enabled = NO;
-    gesture_recognizer.enabled = YES;
-  }
-}
-
 // Utility function for getting the source of NSErrors received by WKWebViews.
 WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   DCHECK(error);
@@ -284,7 +277,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 }
 @end
 
-@interface CRWWebController ()<CRWNativeContentDelegate,
+@interface CRWWebController ()<CRWContextMenuDelegate,
+                               CRWNativeContentDelegate,
                                CRWSSLStatusUpdaterDataSource,
                                CRWSSLStatusUpdaterDelegate,
                                CRWWebControllerContainerViewDelegate,
@@ -363,15 +357,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // The touch tracking recognizer allowing us to decide if a navigation is
   // started by the user.
   base::scoped_nsobject<CRWTouchTrackingRecognizer> _touchTrackingRecognizer;
-  // Long press recognizer that allows showing context menus.
-  base::scoped_nsobject<UILongPressGestureRecognizer> _contextMenuRecognizer;
-  // DOM element information for the point where the user made the last touch.
-  // Can be nil if has not been calculated yet. Precalculation is necessary
-  // because retreiving DOM element relies on async API so element info can not
-  // be built on demand. May contain the following keys: @"href", @"src",
-  // @"title", @"referrerPolicy". All values are strings. Used for showing
-  // context menus.
-  base::scoped_nsobject<NSDictionary> _DOMElementForLastTouch;
+  // The controller that tracks long press and check context menu trigger.
+  base::scoped_nsobject<CRWContextMenuController> _contextMenuController;
   // Whether a click is in progress.
   BOOL _clickInProgress;
   // Data on the recorded last user interaction.
@@ -735,22 +722,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Sets scroll offset value for webview scroll view from |scrollState|.
 - (void)applyWebViewScrollOffsetFromScrollState:
     (const web::PageScrollState&)scrollState;
-// Asynchronously fetches full width of the rendered web page.
-- (void)fetchWebPageWidthWithCompletionHandler:(void (^)(CGFloat))handler;
-// Asynchronously fetches information about DOM element for the given point (in
-// UIView coordinates). |handler| can not be nil. See |_DOMElementForLastTouch|
-// for element format description.
-- (void)fetchDOMElementAtPoint:(CGPoint)point
-             completionHandler:(void (^)(NSDictionary*))handler;
-// Extracts context menu information from the given DOM element.
-- (web::ContextMenuParams)contextMenuParamsForElement:(NSDictionary*)element;
-// Sets the value of |_DOMElementForLastTouch|.
-- (void)setDOMElementForLastTouch:(NSDictionary*)element;
-// Called when the window has determined there was a long-press and context menu
-// must be shown.
-- (void)showContextMenu:(UIGestureRecognizer*)gestureRecognizer;
-// Cancels all touch events in the web view (long presses, tapping, scrolling).
-- (void)cancelAllTouches;
 // Returns the referrer for the current page.
 - (web::Referrer)currentReferrer;
 // Asynchronously returns the referrer policy for the current page.
@@ -988,14 +959,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 namespace {
 
 NSString* const kReferrerHeaderName = @"Referer";  // [sic]
-
-// The long press detection duration must be shorter than the UIWebView's
-// long click gesture recognizer's minimum duration. That is 0.55s.
-// If our detection duration is shorter, our gesture recognizer will fire
-// first, and if it fails the long click gesture (processed simultaneously)
-// still is able to complete.
-const NSTimeInterval kLongPressDurationSeconds = 0.55 - 0.1;
-const CGFloat kLongPressMoveDeltaPixels = 10.0;
 
 // The duration of the period following a screen touch during which the user is
 // still considered to be interacting with the page.
@@ -1304,48 +1267,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _webStateImpl = nullptr;
 }
 
-- (void)setDOMElementForLastTouch:(NSDictionary*)element {
-  _DOMElementForLastTouch.reset([element copy]);
-}
-
-- (void)showContextMenu:(UIGestureRecognizer*)gestureRecognizer {
-  // We don't want ongoing notification that the long press is held.
-  if ([gestureRecognizer state] != UIGestureRecognizerStateBegan)
-    return;
-
-  if (![_DOMElementForLastTouch count])
-    return;
-
-  web::ContextMenuParams params =
-      [self contextMenuParamsForElement:_DOMElementForLastTouch.get()];
-  params.view.reset([_webView retain]);
-  params.location = [gestureRecognizer locationInView:_webView];
-  if (self.webStateImpl->HandleContextMenu(params)) {
-    // Cancelling all touches has the intended side effect of suppressing the
-    // system's context menu.
-    [self cancelAllTouches];
-  }
-}
-
-- (void)cancelAllTouches {
-  // Disable web view scrolling.
-  CancelTouches(self.webScrollView.panGestureRecognizer);
-
-  // All user gestures are handled by a subview of web view scroll view
-  // (WKContentView).
-  for (UIView* subview in self.webScrollView.subviews) {
-    for (UIGestureRecognizer* recognizer in subview.gestureRecognizers) {
-      CancelTouches(recognizer);
-    }
-  }
-
-  // Just disabling/enabling the gesture recognizers is not enough to suppress
-  // the click handlers on the JS side. This JS performs the function of
-  // suppressing these handlers on the JS side.
-  NSString* suppressNextClick = @"__gCrWeb.suppressNextClick()";
-  [self executeJavaScript:suppressNextClick completionHandler:nil];
-}
-
 // TODO(shreyasv): This code is shared with SnapshotManager. Remove this and add
 // it as part of WebDelegate delegate API such that a default image is returned
 // immediately.
@@ -1581,29 +1502,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   [_windowIDJSManager inject];
-}
-
-// Set the specified recognizer to take priority over any recognizers in the
-// view that have a description containing the specified text fragment.
-+ (void)requireGestureRecognizerToFail:(UIGestureRecognizer*)recognizer
-                                inView:(UIView*)view
-                 containingDescription:(NSString*)fragment {
-  for (UIGestureRecognizer* iRecognizer in [view gestureRecognizers]) {
-    if (iRecognizer != recognizer) {
-      NSString* description = [iRecognizer description];
-      if ([description rangeOfString:fragment].length) {
-        [iRecognizer requireGestureRecognizerToFail:recognizer];
-        // requireGestureRecognizerToFail: doesn't retain the recognizer, so it
-        // is possible for |iRecognizer| to outlive |recognizer| and end up with
-        // a dangling pointer. Add a retaining associative reference to ensure
-        // that the lifetimes work out.
-        // Note that normally using the value as the key wouldn't make any
-        // sense, but here it's fine since nothing needs to look up the value.
-        objc_setAssociatedObject(view, recognizer, recognizer,
-                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-      }
-    }
-  }
 }
 
 - (CRWWebController*)createChildWebController {
@@ -3608,53 +3506,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 #pragma mark -
-#pragma mark UIGestureRecognizerDelegate
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
-    shouldRecognizeSimultaneouslyWithGestureRecognizer:
-        (UIGestureRecognizer*)otherGestureRecognizer {
-  // Allows the custom UILongPressGestureRecognizer to fire simultaneously with
-  // other recognizers.
-  return YES;
-}
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
-       shouldReceiveTouch:(UITouch*)touch {
-  // Expect only _contextMenuRecognizer.
-  DCHECK([gestureRecognizer isEqual:_contextMenuRecognizer]);
-
-  // This is custom long press gesture recognizer. By the time the gesture is
-  // recognized the web controller needs to know if there is a link under the
-  // touch. If there a link, the web controller will reject system's context
-  // menu and show another one. If for some reason context menu info is not
-  // fetched - system context menu will be shown.
-  [self setDOMElementForLastTouch:nil];
-  base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self fetchDOMElementAtPoint:[touch locationInView:_webView]
-             completionHandler:^(NSDictionary* element) {
-               [weakSelf setDOMElementForLastTouch:element];
-             }];
-  return YES;
-}
-
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
-  // Expect only _contextMenuRecognizer.
-  DCHECK([gestureRecognizer isEqual:_contextMenuRecognizer]);
-  if (!_webView) {
-    // Show the context menu iff currently displaying a web view.
-    // Do nothing for native views.
-    return NO;
-  }
-
-  // Fetching is considered as successful even if |_DOMElementForLastTouch| is
-  // empty. However if |_DOMElementForLastTouch| is empty then custom context
-  // menu should not be shown.
-  UMA_HISTOGRAM_BOOLEAN("WebController.FetchContextMenuInfoAsyncSucceeded",
-                        !!_DOMElementForLastTouch);
-  return [_DOMElementForLastTouch count];
-}
-
-#pragma mark -
 #pragma mark CRWRequestTrackerDelegate
 
 - (BOOL)isForStaticFileRequests {
@@ -4318,82 +4169,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 #pragma mark -
-#pragma mark Web Page Features
-
-- (void)fetchWebPageWidthWithCompletionHandler:(void (^)(CGFloat))handler {
-  if (!_webView) {
-    handler(0);
-    return;
-  }
-
-  [self executeJavaScript:@"__gCrWeb.getPageWidth();"
-        completionHandler:^(id pageWidth, NSError*) {
-          handler([base::mac::ObjCCastStrict<NSNumber>(pageWidth) floatValue]);
-        }];
-}
-
-- (void)fetchDOMElementAtPoint:(CGPoint)point
-             completionHandler:(void (^)(NSDictionary*))handler {
-  DCHECK(handler);
-  // Convert point into web page's coordinate system (which may be scaled and/or
-  // scrolled).
-  CGPoint scrollOffset = self.scrollPosition;
-  CGFloat webViewContentWidth = self.webScrollView.contentSize.width;
-  base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self fetchWebPageWidthWithCompletionHandler:^(CGFloat pageWidth) {
-    CGFloat scale = pageWidth / webViewContentWidth;
-    CGPoint localPoint = CGPointMake((point.x + scrollOffset.x) * scale,
-                                     (point.y + scrollOffset.y) * scale);
-    NSString* const kGetElementScript =
-        [NSString stringWithFormat:@"__gCrWeb.getElementFromPoint(%g, %g);",
-                                   localPoint.x, localPoint.y];
-    [weakSelf executeJavaScript:kGetElementScript
-              completionHandler:^(id element, NSError*) {
-                handler(base::mac::ObjCCastStrict<NSDictionary>(element));
-              }];
-  }];
-}
-
-- (web::ContextMenuParams)contextMenuParamsForElement:(NSDictionary*)element {
-  web::ContextMenuParams params;
-  NSString* title = nil;
-  NSString* href = element[@"href"];
-  if (href) {
-    params.link_url = GURL(base::SysNSStringToUTF8(href));
-    if (params.link_url.SchemeIs(url::kJavaScriptScheme)) {
-      title = @"JavaScript";
-    } else {
-      base::string16 URLText = url_formatter::FormatUrl(params.link_url);
-      title = base::SysUTF16ToNSString(URLText);
-    }
-  }
-  NSString* src = element[@"src"];
-  if (src) {
-    params.src_url = GURL(base::SysNSStringToUTF8(src));
-    if (!title)
-      title = [[src copy] autorelease];
-    if ([title hasPrefix:base::SysUTF8ToNSString(url::kDataScheme)])
-      title = nil;
-  }
-  NSString* titleAttribute = element[@"title"];
-  if (titleAttribute)
-    title = titleAttribute;
-  if (title) {
-    params.menu_title.reset([title copy]);
-  }
-  NSString* referrerPolicy = element[@"referrerPolicy"];
-  if (referrerPolicy) {
-    params.referrer_policy =
-        web::ReferrerPolicyFromString(base::SysNSStringToUTF8(referrerPolicy));
-  }
-  NSString* innerText = element[@"innerText"];
-  if ([innerText length] > 0) {
-    params.link_text.reset([innerText copy]);
-  }
-  return params;
-}
-
-#pragma mark -
 #pragma mark Fullscreen
 
 - (CGRect)visibleFrame {
@@ -4676,44 +4451,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           requireGestureRecognizerToFail:swipeRecognizer];
     }
 
-    // On iOS 4.x, there are two gesture recognizers on the UIWebView
-    // subclasses,
-    // that have a minimum tap threshold of 0.12s and 0.75s.
-    //
-    // My theory is that the shorter threshold recognizer performs the link
-    // highlight (grey highlight around links when it is tapped and held) while
-    // the longer threshold one pops up the context menu.
-    //
-    // To override the context menu, this recognizer needs to react faster than
-    // the 0.75s one. The below gesture recognizer is initialized with a
-    // detection duration a little lower than that (see
-    // kLongPressDurationSeconds). It also points the delegate to this class
-    // that
-    // allows simultaneously operate along with the other recognizers.
-    _contextMenuRecognizer.reset([[UILongPressGestureRecognizer alloc]
-        initWithTarget:self
-                action:@selector(showContextMenu:)]);
-    [_contextMenuRecognizer setMinimumPressDuration:kLongPressDurationSeconds];
-    [_contextMenuRecognizer setAllowableMovement:kLongPressMoveDeltaPixels];
-    [_contextMenuRecognizer setDelegate:self];
-    [_webView addGestureRecognizer:_contextMenuRecognizer];
-    // Certain system gesture handlers are known to conflict with our context
-    // menu handler, causing extra events to fire when the context menu is
-    // active.
-
-    // A number of solutions have been investigated. The lowest-risk solution
-    // appears to be to recurse through the web controller's recognizers,
-    // looking
-    // for fingerprints of the recognizers known to cause problems, which are
-    // then
-    // de-prioritized (below our own long click handler).
-    // Hunting for description fragments of system recognizers is undeniably
-    // brittle for future versions of iOS. If it does break the context menu
-    // events may leak (regressing b/5310177), but the app will otherwise work.
-    [CRWWebController requireGestureRecognizerToFail:_contextMenuRecognizer
-                                              inView:_webView
-                               containingDescription:
-                                   @"action=_highlightLongPressRecognized:"];
+    _contextMenuController.reset([[CRWContextMenuController alloc]
+           initWithWebView:_webView
+        injectionEvaluator:self
+                  delegate:self]);
 
     // Add all additional gesture recognizers to the web view.
     for (UIGestureRecognizer* recognizer in _gestureRecognizers.get()) {
@@ -4733,6 +4474,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (WKWebView*)webViewWithConfiguration:(WKWebViewConfiguration*)config {
+  // Do not attach the context menu controller immediately as the JavaScript
+  // delegate must be specified.
   return web::BuildWKWebView(CGRectZero, config,
                              self.webStateImpl->GetBrowserState(),
                              [self useDesktopUserAgent]);
@@ -5364,6 +5107,29 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (navigationItem == currentNavigationItem) {
     [self didUpdateSSLStatusForCurrentNavigationItem];
   }
+}
+
+#pragma mark -
+#pragma mark CRWWebContextMenuControllerDelegate methods
+
+- (BOOL)webView:(WKWebView*)webView
+    handleContextMenu:(const web::ContextMenuParams&)params {
+  DCHECK(webView == _webView);
+  if (_isBeingDestroyed) {
+    return NO;
+  }
+  return self.webStateImpl->HandleContextMenu(params);
+}
+
+#pragma mark -
+#pragma mark CRWNativeContentDelegate methods
+
+- (BOOL)nativeContent:(id)content
+    handleContextMenu:(const web::ContextMenuParams&)params {
+  if (_isBeingDestroyed) {
+    return NO;
+  }
+  return self.webStateImpl->HandleContextMenu(params);
 }
 
 #pragma mark -

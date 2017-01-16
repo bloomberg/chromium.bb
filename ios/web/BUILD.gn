@@ -148,6 +148,7 @@ source_set("web_arc") {
     "public/web_state/page_display_state.h",
     "public/web_state/page_display_state.mm",
     "public/web_state/ui/crw_content_view.h",
+    "public/web_state/ui/crw_context_menu_delegate.h",
     "public/web_state/ui/crw_generic_content_view.h",
     "public/web_state/ui/crw_native_content.h",
     "public/web_state/ui/crw_native_content_provider.h",
@@ -269,6 +270,8 @@ source_set("web") {
   ]
 
   sources = [
+    "web_state/ui/crw_context_menu_controller.h",
+    "web_state/ui/crw_context_menu_controller.mm",
     "web_state/ui/crw_web_controller.h",
     "web_state/ui/crw_web_controller.mm",
     "web_state/ui/crw_web_controller_container_view.h",

@@ -15,12 +15,19 @@
 namespace web {
 
 WKWebView* BuildWKWebView(CGRect frame, BrowserState* browser_state) {
+  return BuildWKWebViewWithCustomContextMenu(frame, browser_state, nil);
+}
+
+WKWebView* BuildWKWebViewWithCustomContextMenu(
+    CGRect frame,
+    BrowserState* browser_state,
+    id<CRWContextMenuDelegate> context_menu_delegate) {
   DCHECK(browser_state);
 
   WKWebViewConfigurationProvider& config_provider =
       WKWebViewConfigurationProvider::FromBrowserState(browser_state);
   return BuildWKWebView(frame, config_provider.GetWebViewConfiguration(),
-                        browser_state);
+                        browser_state, NO, context_menu_delegate);
 }
 
 }  // namespace web
