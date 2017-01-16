@@ -10,7 +10,6 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
-#import "ios/chrome/browser/ui/browser_ios.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
@@ -51,8 +50,7 @@ extern NSString* const kLocationBarResignsFirstResponderNotification;
 
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.
-@interface BrowserViewController : UIViewController<BrowserIOS,
-                                                    SideSwipeControllerDelegate,
+@interface BrowserViewController : UIViewController<SideSwipeControllerDelegate,
                                                     ToolbarOwner,
                                                     UrlLoader,
                                                     VoiceSearchPresenter,
@@ -92,6 +90,12 @@ extern NSString* const kLocationBarResignsFirstResponderNotification;
 
 // Returns whether or not text to speech is playing.
 @property(nonatomic, assign, readonly, getter=isPlayingTTS) BOOL playingTTS;
+
+// Returns the TabModel passed to the initializer.
+@property(nonatomic, assign, readonly) TabModel* tabModel;
+
+// Returns the ios::ChromeBrowserState passed to the initializer.
+@property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
 
 // Whether the receiver is currently the primary BVC.
 - (void)setPrimary:(BOOL)primary;

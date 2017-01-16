@@ -6,11 +6,13 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/session_service.h"
 #import "ios/chrome/browser/sessions/session_window.h"
@@ -66,7 +68,9 @@ PerfTestWithBVC::PerfTestWithBVC(std::string testGroup)
     : PerfTest(testGroup),
       slow_teardown_(false),
       web_client_(base::MakeUnique<ChromeWebClient>()),
-      provider_(ios::CreateChromeBrowserProvider()) {}
+      provider_(ios::CreateChromeBrowserProvider()),
+      browser_state_manager_(
+          base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())) {}
 
 PerfTestWithBVC::PerfTestWithBVC(std::string testGroup,
                                  std::string firstLabel,
@@ -83,7 +87,9 @@ PerfTestWithBVC::PerfTestWithBVC(std::string testGroup,
                repeat),
       slow_teardown_(slowTeardown),
       web_client_(base::MakeUnique<ChromeWebClient>()),
-      provider_(ios::CreateChromeBrowserProvider()) {}
+      provider_(ios::CreateChromeBrowserProvider()),
+      browser_state_manager_(
+          base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())) {}
 
 PerfTestWithBVC::~PerfTestWithBVC() {}
 

@@ -79,8 +79,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   explicit SyncSessionsClientImpl(ios::ChromeBrowserState* browser_state)
       : browser_state_(browser_state),
         window_delegates_getter_(
-            base::MakeUnique<TabModelSyncedWindowDelegatesGetter>(
-                browser_state)) {}
+            base::MakeUnique<TabModelSyncedWindowDelegatesGetter>()) {}
 
   ~SyncSessionsClientImpl() override {}
 
@@ -138,7 +137,8 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 
 IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
-      sync_sessions_client_(new SyncSessionsClientImpl(browser_state)),
+      sync_sessions_client_(
+          base::MakeUnique<SyncSessionsClientImpl>(browser_state)),
       weak_ptr_factory_(this) {}
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}

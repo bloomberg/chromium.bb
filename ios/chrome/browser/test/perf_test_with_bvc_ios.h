@@ -13,7 +13,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/test/base/perf_test_ios.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 
 @class BrowserViewController;
@@ -47,7 +47,7 @@ class PerfTestWithBVC : public PerfTest {
 
   web::ScopedTestingWebClient web_client_;
   IOSChromeScopedTestingChromeBrowserProvider provider_;
-  IOSChromeScopedTestingLocalState local_state_;
+  IOSChromeScopedTestingChromeBrowserStateManager browser_state_manager_;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestChromeBrowserState> incognito_chrome_browser_state_;

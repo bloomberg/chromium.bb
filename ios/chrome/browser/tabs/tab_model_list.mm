@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -84,4 +86,46 @@ NSArray<TabModel*>* GetTabModelsForChromeBrowserState(
   TabModelList* tab_model_list =
       TabModelList::GetForBrowserState(browser_state, false);
   return tab_model_list ? [tab_model_list->tab_models() allObjects] : nil;
+}
+
+TabModel* GetLastActiveTabModelForChromeBrowserState(
+    ios::ChromeBrowserState* browser_state) {
+  TabModelList* tab_model_list =
+      TabModelList::GetForBrowserState(browser_state, false);
+  if (!tab_model_list || [tab_model_list->tab_models() count] == 0u)
+    return nil;
+
+  // There is currently no way to mark a TabModel as active. Assert that there
+  // is only one TabModel associated with |browser_state| until it is possible
+  // to mark a TabModel as active.
+  DCHECK_EQ([tab_model_list->tab_models() count], 1u);
+  return [tab_model_list->tab_models() anyObject];
+}
+
+bool IsOffTheRecordSessionActive() {
+  std::vector<ios::ChromeBrowserState*> browser_states =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+
+  for (ios::ChromeBrowserState* browser_state : browser_states) {
+    DCHECK(!browser_state->IsOffTheRecord());
+    if (!browser_state->HasOffTheRecordChromeBrowserState())
+      continue;
+
+    ios::ChromeBrowserState* otr_browser_state =
+        browser_state->GetOffTheRecordChromeBrowserState();
+
+    TabModelList* tab_model_list =
+        TabModelList::GetForBrowserState(otr_browser_state, false);
+    if (!tab_model_list)
+      continue;
+
+    for (TabModel* tab_model in tab_model_list->tab_models()) {
+      if (![tab_model isEmpty])
+        return true;
+    }
+  }
+
+  return false;
 }

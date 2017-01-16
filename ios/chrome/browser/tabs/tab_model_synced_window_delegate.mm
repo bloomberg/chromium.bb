@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #include "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/browser_list_ios.h"
 #import "ios/web/public/web_state/web_state.h"
 
 TabModelSyncedWindowDelegate::TabModelSyncedWindowDelegate(TabModel* tab_model)
