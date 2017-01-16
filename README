@@ -15,7 +15,7 @@ with an older kernel.
 Compiling
 ---------
 
-libdrm  is  a  standard  autotools  packages and  follows  the  normal
+libdrm  is  a  standard  autotools  package and  follows  the  normal
 configure, build  and install steps.   The first step is  to configure
 the package, which is done by running the configure shell script:
 
@@ -37,5 +37,5 @@ and once make finishes successfully, install the package using
 
 	make install
 
-If you are install into a system location, you will need to be root to
-perform the install step.
+If you are installing into a system location, you will need to be root
+to perform the install step.
