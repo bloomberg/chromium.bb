@@ -62,6 +62,8 @@ complete.
   Mohammadreza Rashad.
 - New table for the International Phonetic Alphabet thanks to Ludovic
   Oger
+- Fixes for the French 6 and 8 dots tables thanks to Michel Such. Some
+  errors have been fixed and many unicode characters have been added.
 
 ** Backwards incompatible changes
 None
