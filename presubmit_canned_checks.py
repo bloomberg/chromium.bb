@@ -858,18 +858,19 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     if input_api.tbr:
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check')]
+    needed = 'LGTM from an OWNER'
+    output_fn = output_api.PresubmitError
     if input_api.change.issue:
       if input_api.dry_run:
-        return [output_api.PresubmitNotifyResult(
-            'This is a dry run, skipping OWNERS check')]
+        output_fn = lambda text: output_api.PresubmitNotifyResult(
+            'This is a dry run, but these failures would be reported on ' +
+            'commit:\n' + text)
     else:
       return [output_api.PresubmitError("OWNERS check failed: this change has "
           "no Rietveld issue number, so we can't check it for approvals.")]
-    needed = 'LGTM from an OWNER'
-    output = output_api.PresubmitError
   else:
     needed = 'OWNER reviewers'
-    output = output_api.PresubmitNotifyResult
+    output_fn = output_api.PresubmitNotifyResult
 
   affected_files = set([f.LocalPath() for f in
       input_api.AffectedFiles(file_filter=source_file_filter)])
@@ -891,17 +892,17 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
 
   if missing_files:
     output_list = [
-        output('Missing %s for these files:\n    %s' %
-               (needed, '\n    '.join(sorted(missing_files))))]
+        output_fn('Missing %s for these files:\n    %s' %
+                  (needed, '\n    '.join(sorted(missing_files))))]
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
-      output_list.append(output('Suggested OWNERS: ' +
+      output_list.append(output_fn('Suggested OWNERS: ' +
           '(Use "git-cl owners" to interactively select owners.)\n    %s' %
           ('\n    '.join(suggested_owners or []))))
     return output_list
 
   if input_api.is_committing and not reviewers:
-    return [output('Missing LGTM from someone other than %s' % owner_email)]
+    return [output_fn('Missing LGTM from someone other than %s' % owner_email)]
   return []
 
 def GetCodereviewOwnerAndReviewers(input_api, email_regexp, approval_needed):

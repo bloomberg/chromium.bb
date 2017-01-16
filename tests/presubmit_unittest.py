@@ -2194,9 +2194,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.dry_run = dry_run
 
     if not is_committing or (not tbr and issue):
-      if not dry_run:
-        affected_file.LocalPath().AndReturn('foo/xyz.cc')
-        input_api.AffectedFiles(file_filter=None).AndReturn([affected_file])
+      affected_file.LocalPath().AndReturn('foo/xyz.cc')
+      input_api.AffectedFiles(file_filter=None).AndReturn([affected_file])
       if issue and not rietveld_response and not gerrit_response:
         rietveld_response = {
           "owner_email": change.author_email,
@@ -2212,21 +2211,20 @@ class CannedChecksUnittest(PresubmitTestsBase):
       else:
         people = reviewers
 
-      if not dry_run:
-        if issue:
-          if rietveld_response:
-            input_api.rietveld.get_issue_properties(
-                issue=int(input_api.change.issue), messages=True).AndReturn(
-                    rietveld_response)
-          elif gerrit_response:
-            input_api.gerrit._FetchChangeDetail = lambda _: gerrit_response
+      if issue:
+        if rietveld_response:
+          input_api.rietveld.get_issue_properties(
+              issue=int(input_api.change.issue), messages=True).AndReturn(
+                  rietveld_response)
+        elif gerrit_response:
+          input_api.gerrit._FetchChangeDetail = lambda _: gerrit_response
 
-        people.add(change.author_email)
-        fake_db.files_not_covered_by(set(['foo/xyz.cc']),
-            people).AndReturn(uncovered_files)
-        if not is_committing and uncovered_files:
-          fake_db.reviewers_for(set(['foo']),
-              change.author_email).AndReturn(change.author_email)
+      people.add(change.author_email)
+      fake_db.files_not_covered_by(set(['foo/xyz.cc']),
+          people).AndReturn(uncovered_files)
+      if not is_committing and uncovered_files:
+        fake_db.reviewers_for(set(['foo']),
+            change.author_email).AndReturn(change.author_email)
 
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
@@ -2245,7 +2243,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
         dry_run=True,
         rietveld_response=response,
         reviewers=set(["ben@example.com"]),
-        expected_output='This is a dry run, skipping OWNERS check\n')
+        expected_output='This is a dry run, but these failures would be ' +
+                        'reported on commit:\nMissing LGTM from someone ' +
+                        'other than john@example.com\n')
 
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
         is_committing=False,
