@@ -101,7 +101,6 @@ class PLATFORM_EXPORT ImageBuffer {
   bool wasDrawnToAfterSnapshot() const {
     return m_snapshotState == DrawnToAfterSnapshot;
   }
-  void didDisableAcceleration() const;
 
   void setFilterQuality(SkFilterQuality filterQuality) {
     m_surface->setFilterQuality(filterQuality);
@@ -182,6 +181,7 @@ class PLATFORM_EXPORT ImageBuffer {
   intptr_t getGPUMemoryUsage() { return m_gpuMemoryUsage; }
 
   void disableAcceleration();
+  void setSurface(std::unique_ptr<ImageBufferSurface>);
 
   WeakPtrFactory<ImageBuffer> m_weakPtrFactory;
 

@@ -199,6 +199,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   ColorBehavior drawImageColorBehavior() const final;
 
+  void willDrawImage(CanvasImageSource*) const final;
+
  private:
   friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 

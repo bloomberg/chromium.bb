@@ -60,19 +60,10 @@ enum {
   // lists. Rationale: The allocation of large textures for canvas
   // tends to starve the compositor, and increase the probability of
   // failure of subsequent allocations required for double buffering.
-  PreferDisplayListOverGpuSizeThreshold = 4096 * 4096,
+  PreferDisplayListOverGpuSizeThreshold = 8096 * 4096,
 
   // Disable Acceleration heuristic parameters
   //===========================================
-
-  GetImageDataForcesNoAcceleration = 1,
-
-  // When a canvas is used as a source image, if its destination is
-  // non-accelerated and the source canvas is accelerated, a readback
-  // from the gpu is necessary. This option causes the source canvas to
-  // switch to non-accelerated when this situation is encountered to
-  // prevent future canvas-to-canvas draws from requiring a readback.
-  DisableAccelerationToAvoidReadbacks = 1,
 
   // When drawing very large images to canvases, there is a point where
   // GPU acceleration becomes inefficient due to texture upload overhead,
@@ -83,6 +74,27 @@ enum {
   DrawImageTextureUploadSoftSizeLimit = 4096 * 4096,
   DrawImageTextureUploadSoftSizeLimitScaleThreshold = 4,
   DrawImageTextureUploadHardSizeLimit = 8192 * 8192,
+
+  // GPU readback prevention heuristics
+  //====================================
+
+  GetImageDataForcesNoAcceleration = 1,
+
+  // When a canvas is used as a source image, if its destination is
+  // non-accelerated and the source canvas is accelerated, a readback
+  // from the gpu is necessary. This option causes the source canvas to
+  // switch to non-accelerated when this situation is encountered to
+  // prevent future canvas-to-canvas draws from requiring a readback.
+  DisableAccelerationToAvoidReadbacks = 0,
+
+  // See description of DisableAccelerationToAvoidReadbacks. This is the
+  // opposite strategy : accelerate the destination canvas. If both
+  // EnableAccelerationToAvoidReadbacks and
+  // DisableAccelerationToAvoidReadbacks are specified, we try to enable
+  // acceleration on the destination first. If that does not succeed,
+  // we disable acceleration on the source canvas. Either way, future
+  // readbacks are prevented.
+  EnableAccelerationToAvoidReadbacks = 1,
 
 };  // enum
 

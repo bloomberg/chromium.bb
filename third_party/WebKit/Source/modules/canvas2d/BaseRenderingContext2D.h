@@ -242,6 +242,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   virtual ColorBehavior drawImageColorBehavior() const = 0;
 
+  virtual void willDrawImage(CanvasImageSource*) const {}
+
   void restoreMatrixClipStack(SkCanvas*) const;
 
   DECLARE_VIRTUAL_TRACE();

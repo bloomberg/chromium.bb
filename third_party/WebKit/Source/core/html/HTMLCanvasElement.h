@@ -238,6 +238,8 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void detachContext() { m_context = nullptr; }
 
+  void willDrawImageTo2DContext(CanvasImageSource*);
+
  protected:
   void didMoveToNewDocument(Document& oldDocument) override;
 
@@ -250,7 +252,11 @@ class CORE_EXPORT HTMLCanvasElement final
   static ContextFactoryVector& renderingContextFactories();
   static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
-  bool shouldAccelerate(const IntSize&) const;
+  enum AccelerationCriteria {
+    NormalAccelerationCriteria,
+    IgnoreCanvasSizeAccelerationCriteria,
+  };
+  bool shouldAccelerate(AccelerationCriteria) const;
 
   void parseAttribute(const AttributeModificationParams&) override;
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
@@ -259,19 +265,16 @@ class CORE_EXPORT HTMLCanvasElement final
   void reset();
 
   std::unique_ptr<ImageBufferSurface> createWebGLImageBufferSurface(
-      const IntSize& deviceSize,
       OpacityMode);
   std::unique_ptr<ImageBufferSurface> createAcceleratedImageBufferSurface(
-      const IntSize& deviceSize,
       OpacityMode,
       int* msaaSampleCount);
   std::unique_ptr<ImageBufferSurface> createUnacceleratedImageBufferSurface(
-      const IntSize& deviceSize,
       OpacityMode);
   void createImageBuffer();
   void createImageBufferInternal(
       std::unique_ptr<ImageBufferSurface> externalSurface);
-  bool shouldUseDisplayList(const IntSize& deviceSize);
+  bool shouldUseDisplayList();
 
   void setSurfaceSize(const IntSize&);
 

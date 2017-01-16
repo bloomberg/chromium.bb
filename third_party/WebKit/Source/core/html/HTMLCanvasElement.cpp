@@ -793,7 +793,7 @@ bool HTMLCanvasElement::originClean() const {
   return m_originClean;
 }
 
-bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const {
+bool HTMLCanvasElement::shouldAccelerate(AccelerationCriteria criteria) const {
   if (m_context && !m_context->is2d())
     return false;
 
@@ -809,8 +809,8 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const {
   if (layoutBox() && !layoutBox()->hasAcceleratedCompositing())
     return false;
 
-  CheckedNumeric<int> checkedCanvasPixelCount = size.width();
-  checkedCanvasPixelCount *= size.height();
+  CheckedNumeric<int> checkedCanvasPixelCount = size().width();
+  checkedCanvasPixelCount *= size().height();
   if (!checkedCanvasPixelCount.IsValid())
     return false;
   int canvasPixelCount = checkedCanvasPixelCount.ValueOrDie();
@@ -832,10 +832,12 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const {
   }
 
   // Do not use acceleration for small canvas.
-  Settings* settings = document().settings();
-  if (!settings ||
-      canvasPixelCount < settings->getMinimumAccelerated2dCanvasSize())
-    return false;
+  if (criteria != IgnoreCanvasSizeAccelerationCriteria) {
+    Settings* settings = document().settings();
+    if (!settings ||
+        canvasPixelCount < settings->getMinimumAccelerated2dCanvasSize())
+      return false;
+  }
 
   // When GPU allocated memory runs low (due to having created too many
   // accelerated canvases), the compositor starves and browser becomes laggy.
@@ -873,7 +875,7 @@ class UnacceleratedSurfaceFactory
 
 }  // namespace
 
-bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize) {
+bool HTMLCanvasElement::shouldUseDisplayList() {
   if (m_context->colorSpace() != kLegacyCanvasColorSpace)
     return false;
 
@@ -887,15 +889,13 @@ bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize) {
 }
 
 std::unique_ptr<ImageBufferSurface>
-HTMLCanvasElement::createWebGLImageBufferSurface(const IntSize& deviceSize,
-                                                 OpacityMode opacityMode) {
+HTMLCanvasElement::createWebGLImageBufferSurface(OpacityMode opacityMode) {
   DCHECK(is3D());
   // If 3d, but the use of the canvas will be for non-accelerated content
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
   auto surface = WTF::wrapUnique(new AcceleratedImageBufferSurface(
-      deviceSize, opacityMode, m_context->skColorSpace(),
-      m_context->colorType()));
+      size(), opacityMode, m_context->skColorSpace(), m_context->colorType()));
   if (surface->isValid())
     return std::move(surface);
   return nullptr;
@@ -903,12 +903,8 @@ HTMLCanvasElement::createWebGLImageBufferSurface(const IntSize& deviceSize,
 
 std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::createAcceleratedImageBufferSurface(
-    const IntSize& deviceSize,
     OpacityMode opacityMode,
     int* msaaSampleCount) {
-  if (!shouldAccelerate(deviceSize))
-    return nullptr;
-
   if (document().settings()) {
     *msaaSampleCount =
         document().settings()->getAccelerated2dCanvasMSAASampleCount();
@@ -929,7 +925,7 @@ HTMLCanvasElement::createAcceleratedImageBufferSurface(
 
   std::unique_ptr<ImageBufferSurface> surface =
       WTF::wrapUnique(new Canvas2DImageBufferSurface(
-          std::move(contextProvider), deviceSize, *msaaSampleCount, opacityMode,
+          std::move(contextProvider), size(), *msaaSampleCount, opacityMode,
           Canvas2DLayerBridge::EnableAcceleration, m_context->skColorSpace(),
           m_context->colorType()));
   if (!surface->isValid()) {
@@ -945,12 +941,11 @@ HTMLCanvasElement::createAcceleratedImageBufferSurface(
 
 std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::createUnacceleratedImageBufferSurface(
-    const IntSize& deviceSize,
     OpacityMode opacityMode) {
-  if (shouldUseDisplayList(deviceSize)) {
+  if (shouldUseDisplayList()) {
     auto surface = WTF::wrapUnique(new RecordingImageBufferSurface(
-        deviceSize, WTF::wrapUnique(new UnacceleratedSurfaceFactory),
-        opacityMode, m_context->skColorSpace(), m_context->colorType()));
+        size(), WTF::wrapUnique(new UnacceleratedSurfaceFactory), opacityMode,
+        m_context->skColorSpace(), m_context->colorType()));
     if (surface->isValid()) {
       CanvasMetrics::countCanvasContextUsage(
           CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
@@ -961,9 +956,8 @@ HTMLCanvasElement::createUnacceleratedImageBufferSurface(
   }
 
   auto surfaceFactory = WTF::makeUnique<UnacceleratedSurfaceFactory>();
-  auto surface = surfaceFactory->createSurface(deviceSize, opacityMode,
-                                               m_context->skColorSpace(),
-                                               m_context->colorType());
+  auto surface = surfaceFactory->createSurface(
+      size(), opacityMode, m_context->skColorSpace(), m_context->colorType());
   if (surface->isValid()) {
     CanvasMetrics::countCanvasContextUsage(
         CanvasMetrics::Unaccelerated2DCanvasImageBufferCreated);
@@ -1000,12 +994,14 @@ void HTMLCanvasElement::createImageBufferInternal(
     if (externalSurface->isValid())
       surface = std::move(externalSurface);
   } else if (is3D()) {
-    surface = createWebGLImageBufferSurface(size(), opacityMode);
+    surface = createWebGLImageBufferSurface(opacityMode);
   } else {
-    surface = createAcceleratedImageBufferSurface(size(), opacityMode,
-                                                  &msaaSampleCount);
+    if (shouldAccelerate(NormalAccelerationCriteria)) {
+      surface =
+          createAcceleratedImageBufferSurface(opacityMode, &msaaSampleCount);
+    }
     if (!surface) {
-      surface = createUnacceleratedImageBufferSurface(size(), opacityMode);
+      surface = createUnacceleratedImageBufferSurface(opacityMode);
     }
   }
   if (!surface)
@@ -1024,7 +1020,6 @@ void HTMLCanvasElement::createImageBufferInternal(
     return;
   }
 
-  m_imageBuffer->setClient(this);
   // Enabling MSAA overrides a request to disable antialiasing. This is true
   // regardless of whether the rendering mode is accelerated or not. For
   // consistency, we don't want to apply AA in accelerated canvases but not in
@@ -1072,9 +1067,10 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const {
 
   // Four bytes per pixel per buffer.
   CheckedNumeric<intptr_t> checkedExternallyAllocatedMemory = 4 * bufferCount;
-  if (is3D())
+  if (is3D()) {
     checkedExternallyAllocatedMemory +=
         m_context->externallyAllocatedBytesPerPixel();
+  }
 
   checkedExternallyAllocatedMemory *= width();
   checkedExternallyAllocatedMemory *= height();
@@ -1214,6 +1210,21 @@ void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument) {
   HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
+void HTMLCanvasElement::willDrawImageTo2DContext(CanvasImageSource* source) {
+  if (ExpensiveCanvasHeuristicParameters::EnableAccelerationToAvoidReadbacks &&
+      source->isAccelerated() && !buffer()->isAccelerated() &&
+      shouldAccelerate(IgnoreCanvasSizeAccelerationCriteria)) {
+    OpacityMode opacityMode =
+        m_context->creationAttributes().alpha() ? NonOpaque : Opaque;
+    int msaaSampleCount = 0;
+    std::unique_ptr<ImageBufferSurface> surface =
+        createAcceleratedImageBufferSurface(opacityMode, &msaaSampleCount);
+    if (surface) {
+      buffer()->setSurface(std::move(surface));
+    }
+  }
+}
+
 PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
@@ -1261,8 +1272,9 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
             DisableAccelerationToAvoidReadbacks &&
         !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled() &&
         hint == PreferNoAcceleration && m_context->isAccelerated() &&
-        hasImageBuffer())
+        hasImageBuffer()) {
       buffer()->disableAcceleration();
+    }
     RefPtr<Image> image = renderingContext()->getImage(hint, reason);
     if (image) {
       skImage =

@@ -90,7 +90,7 @@ class CanvasRenderingContext2DAutoRestoreSkCanvas {
   explicit CanvasRenderingContext2DAutoRestoreSkCanvas(
       CanvasRenderingContext2D* context)
       : m_context(context), m_saveCount(0) {
-    ASSERT(m_context);
+    DCHECK(m_context);
     SkCanvas* c = m_context->drawingCanvas();
     if (c) {
       m_saveCount = c->getSaveCount();
@@ -195,7 +195,7 @@ void CanvasRenderingContext2D::didSetSurfaceSize() {
     return;
   // This code path is for restoring from an eviction
   // Restoring from surface failure is handled internally
-  ASSERT(m_contextLostMode != NotLostContext && !canvas()->hasImageBuffer());
+  DCHECK(m_contextLostMode != NotLostContext && !canvas()->hasImageBuffer());
 
   if (canvas()->buffer()) {
     if (contextLostRestoredEventsEnabled()) {
@@ -266,6 +266,10 @@ void CanvasRenderingContext2D::dispatchContextRestoredEvent(TimerBase*) {
     Event* event(Event::create(EventTypeNames::contextrestored));
     canvas()->dispatchEvent(event);
   }
+}
+
+void CanvasRenderingContext2D::willDrawImage(CanvasImageSource* source) const {
+  canvas()->willDrawImageTo2DContext(source);
 }
 
 ColorBehavior CanvasRenderingContext2D::drawImageColorBehavior() const {
@@ -452,7 +456,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
     HashMap<String, Font>::iterator i =
         m_fontsResolvedUsingCurrentStyle.find(newFont);
     if (i != m_fontsResolvedUsingCurrentStyle.end()) {
-      ASSERT(m_fontLRUList.contains(newFont));
+      DCHECK(m_fontLRUList.contains(newFont));
       m_fontLRUList.remove(newFont);
       m_fontLRUList.add(newFont);
       modifiableState().setFont(
@@ -474,7 +478,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
       canvas()->document().ensureStyleResolver().computeFont(fontStyle.get(),
                                                              *parsedStyle);
       m_fontsResolvedUsingCurrentStyle.add(newFont, fontStyle->font());
-      ASSERT(!m_fontLRUList.contains(newFont));
+      DCHECK(!m_fontLRUList.contains(newFont));
       m_fontLRUList.add(newFont);
       pruneLocalFontCache(canvasFontCache->hardMaxFonts());  // hard limit
       schedulePruneLocalFontCacheIfNeeded();                 // soft limit
@@ -682,7 +686,7 @@ static inline TextDirection toTextDirection(
     case CanvasRenderingContext2DState::DirectionLTR:
       return TextDirection::kLtr;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextDirection::kLtr;
 }
 
@@ -829,9 +833,10 @@ void CanvasRenderingContext2D::drawTextInternal(
   // anti-aliasing, which is expected when !creationAttributes().alpha(), so we
   // need to fall out of display list mode when drawing text to an opaque
   // canvas. crbug.com/583809
-  if (!creationAttributes().alpha() && !isAccelerated())
+  if (!creationAttributes().alpha() && !isAccelerated()) {
     canvas()->disableDeferral(
         DisableDeferralReasonSubPixelTextAntiAliasingSupport);
+  }
 
   const Font& font = accessFont();
   font.getFontDescription().setSubpixelAscentDescent(true);
@@ -1003,7 +1008,7 @@ void CanvasRenderingContext2D::drawFocusIfNeededInternal(const Path& path,
 
 bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path,
                                                     Element* element) {
-  ASSERT(element);
+  DCHECK(element);
   if (!state().isTransformInvertible())
     return false;
   if (path.isEmpty())
@@ -1090,9 +1095,10 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
 
   if (state().hasClip()) {
     hitRegionPath.intersectPath(state().getCurrentClipPath());
-    if (hitRegionPath.isEmpty())
+    if (hitRegionPath.isEmpty()) {
       exceptionState.throwDOMException(NotSupportedError,
                                        "The specified path has no pixels.");
+    }
   }
 
   if (!m_hitRegionManager)

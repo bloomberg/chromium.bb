@@ -1174,6 +1174,10 @@ void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext,
 
   validateStateStack();
 
+  willDrawImage(imageSource);
+
+  validateStateStack();
+
   // Heuristic for disabling acceleration based on anticipated texture upload
   // overhead.
   // See comments in ExpensiveCanvasHeuristicParameters.h for explanation.
