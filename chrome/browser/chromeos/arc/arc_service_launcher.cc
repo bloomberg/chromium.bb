@@ -98,19 +98,19 @@ void ArcServiceLauncher::Initialize() {
       base::MakeUnique<ArcBootPhaseMonitorBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcClipboardBridge>(arc_bridge_service));
-  arc_service_manager_->AddService(
-      base::MakeUnique<ArcFileSystemService>(arc_bridge_service));
   arc_service_manager_->AddService(base::MakeUnique<ArcCrashCollectorBridge>(
       arc_bridge_service, arc_service_manager_->blocking_task_runner()));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcDownloadsWatcherService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcEnterpriseReportingService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcFileSystemService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcImeService>(arc_bridge_service));
   arc_service_manager_->AddService(base::MakeUnique<ArcIntentHelperBridge>(
       arc_bridge_service, arc_service_manager_->icon_loader(),
       arc_service_manager_->activity_resolver()));
-  arc_service_manager_->AddService(
-      base::MakeUnique<ArcImeService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcMetricsService>(arc_bridge_service));
   arc_service_manager_->AddService(
