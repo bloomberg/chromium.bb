@@ -1362,25 +1362,24 @@ parse_panel_position(struct desktop *desktop, struct weston_config_section *s)
 {
 	char *position;
 
-	weston_config_section_get_string(s, "panel-position", &position, "top");
-	if (strcmp(position, "top") == 0)
-		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP;
-	else if (strcmp(position, "bottom") == 0)
-		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM;
-	else if (strcmp(position, "left") == 0)
-		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT;
-	else if (strcmp(position, "right") == 0)
-		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT;
-	else
-		fprintf(stderr, "Wrong panel position: %s\n", position);
-	free(position);
+	desktop->want_panel = 1;
 
-	if (desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP
-	    || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM
-	    || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT
-	    || desktop->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT) {
-		desktop->want_panel = 1;
+	weston_config_section_get_string(s, "panel-position", &position, "top");
+	if (strcmp(position, "top") == 0) {
+		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP;
+	} else if (strcmp(position, "bottom") == 0) {
+		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM;
+	} else if (strcmp(position, "left") == 0) {
+		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT;
+	} else if (strcmp(position, "right") == 0) {
+		desktop->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_RIGHT;
+	} else {
+		/* 'none' is valid here */
+		if (strcmp(position, "none") != 0)
+			fprintf(stderr, "Wrong panel position: %s\n", position);
+		desktop->want_panel = 0;
 	}
+	free(position);
 }
 
 static void
