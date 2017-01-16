@@ -218,11 +218,9 @@ PersistentMemoryAllocator::Iterator::GetNext(uint32_t* type_return) {
     // again. Failing will also load the existing value into "last" so there
     // is no need to do another such load when the while-loop restarts. A
     // "strong" compare-exchange is used because failing unnecessarily would
-    // mean repeating some fairly costly validations above. This operation
-    // is "relaxed" because the iterator has no other values to protect and
-    // the referenced object will be accessed via an "acquire" in GetAsObject.
+    // mean repeating some fairly costly validations above.
     if (last_record_.compare_exchange_strong(
-            last, next, std::memory_order_relaxed, std::memory_order_relaxed)) {
+            last, next, std::memory_order_acq_rel, std::memory_order_acquire)) {
       *type_return = block->type_id.load(std::memory_order_relaxed);
       break;
     }
@@ -638,6 +636,10 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
       return kReferenceNull;
     }
 
+    // Load information into the block header. There is no "release" of the
+    // data here because this memory can, currently, be seen only by the thread
+    // performing the allocation. When it comes time to share this, the thread
+    // will call MakeIterable() which does the release operation.
     block->size = size;
     block->cookie = kBlockCookieAllocated;
     block->type_id.store(type_id, std::memory_order_relaxed);
