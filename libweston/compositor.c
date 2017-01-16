@@ -2335,15 +2335,30 @@ output_repaint_timer_handler(void *data)
 {
 	struct weston_output *output = data;
 	struct weston_compositor *compositor = output->compositor;
+	int ret;
 
-	if (output->repaint_needed &&
-	    compositor->state != WESTON_COMPOSITOR_SLEEPING &&
-	    compositor->state != WESTON_COMPOSITOR_OFFSCREEN &&
-	    weston_output_repaint(output) == 0)
-		return 0;
+	/* If we're sleeping, drop the repaint machinery entirely; we will
+	 * explicitly repaint all outputs when we come back. */
+	if (compositor->state == WESTON_COMPOSITOR_SLEEPING ||
+	    compositor->state == WESTON_COMPOSITOR_OFFSCREEN)
+		goto err;
 
+	/* We don't actually need to repaint this output; drop it from
+	 * repaint until something causes damage. */
+	if (!output->repaint_needed)
+		goto err;
+
+	/* If repaint fails, we aren't going to get weston_output_finish_frame
+	 * to trigger a new repaint, so drop it from repaint and hope
+	 * something later schedules a successful repaint. */
+	ret = weston_output_repaint(output);
+	if (ret != 0)
+		goto err;
+
+	return 0;
+
+err:
 	weston_output_schedule_repaint_reset(output);
-
 	return 0;
 }
 
