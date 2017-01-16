@@ -156,7 +156,7 @@ int RenderSurfaceImpl::TransformTreeIndex() const {
 }
 
 int RenderSurfaceImpl::ClipTreeIndex() const {
-  return owning_layer_->clip_tree_index();
+  return OwningEffectNode()->clip_id;
 }
 
 int RenderSurfaceImpl::EffectTreeIndex() const {

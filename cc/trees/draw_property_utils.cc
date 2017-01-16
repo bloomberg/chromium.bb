@@ -1457,8 +1457,7 @@ void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
 
   const ClipNode* clip_node =
       property_trees->clip_tree.Node(render_surface->ClipTreeIndex());
-  SetSurfaceClipRect(property_trees->clip_tree.parent(clip_node),
-                     property_trees, render_surface);
+  SetSurfaceClipRect(clip_node, property_trees, render_surface);
 }
 
 #if DCHECK_IS_ON()
