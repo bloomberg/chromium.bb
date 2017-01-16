@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/task_util.h"
@@ -282,8 +281,10 @@ class TestGetContentCallback {
   ~TestGetContentCallback();
 
   const GetContentCallback& callback() const { return callback_; }
-  const ScopedVector<std::string>& data() const { return data_; }
-  ScopedVector<std::string>* mutable_data() { return &data_; }
+  const std::vector<std::unique_ptr<std::string>>& data() const {
+    return data_;
+  }
+  std::vector<std::unique_ptr<std::string>>* mutable_data() { return &data_; }
   std::string GetConcatenatedData() const;
 
  private:
@@ -291,7 +292,7 @@ class TestGetContentCallback {
                     std::unique_ptr<std::string> data);
 
   const GetContentCallback callback_;
-  ScopedVector<std::string> data_;
+  std::vector<std::unique_ptr<std::string>> data_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGetContentCallback);
 };

@@ -174,7 +174,7 @@ std::string TestGetContentCallback::GetConcatenatedData() const {
 
 void TestGetContentCallback::OnGetContent(google_apis::DriveApiErrorCode error,
                                           std::unique_ptr<std::string> data) {
-  data_.push_back(data.release());
+  data_.push_back(std::move(data));
 }
 
 }  // namespace test_util

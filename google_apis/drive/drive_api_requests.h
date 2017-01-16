@@ -15,7 +15,6 @@
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
@@ -1227,7 +1226,7 @@ class BatchUploadRequest : public UrlFetchRequestBase {
   typedef void* RequestID;
   // Obtains corresponding child entry of |request_id|. Returns NULL if the
   // entry is not found.
-  ScopedVector<BatchUploadChildEntry>::iterator GetChildEntry(
+  std::vector<std::unique_ptr<BatchUploadChildEntry>>::iterator GetChildEntry(
       RequestID request_id);
 
   // Called after child requests' |Prepare| method.
@@ -1241,7 +1240,7 @@ class BatchUploadRequest : public UrlFetchRequestBase {
 
   RequestSender* const sender_;
   const DriveApiUrlGenerator url_generator_;
-  ScopedVector<BatchUploadChildEntry> child_requests_;
+  std::vector<std::unique_ptr<BatchUploadChildEntry>> child_requests_;
 
   PrepareCallback prepare_callback_;
   bool committed_;
