@@ -6201,6 +6201,9 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_ACTIVE_DIRECTORY_POLICY_FETCH" desc="Error message shown on the enrollment screen when the system failed to fetch device policy from Active Directory.">
     Oops!  The system failed to fetch policy from Microsoft® Active Directory®.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_STORE_DM_TOKEN_FAILED" desc="Error message shown on the enrollment screen when the system failed to store DM token into the local state.">
+    Oops!  The system failed to store DM token on the device.
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
     Enterprise enrollment
   </message>

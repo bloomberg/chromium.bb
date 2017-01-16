@@ -227,6 +227,8 @@ enum MetricEnrollment {
   kMetricEnrollmentNoDeviceIdentification = 54,
   // Active Directory policy fetch failed.
   kMetricEnrollmentActiveDirectoryPolicyFetchFailed = 55,
+  // Failed to store DM token into the local state.
+  kMetricEnrollmentStoreDMTokenFailed = 56,
 };
 
 // Events related to policy refresh.

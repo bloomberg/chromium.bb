@@ -418,6 +418,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
     case policy::EnrollmentStatus::ACTIVE_DIRECTORY_POLICY_FETCH_FAILED:
       UMA(policy::kMetricEnrollmentActiveDirectoryPolicyFetchFailed);
       break;
+    case policy::EnrollmentStatus::DM_TOKEN_STORE_FAILED:
+      UMA(policy::kMetricEnrollmentStoreDMTokenFailed);
+      break;
   }
 }
 

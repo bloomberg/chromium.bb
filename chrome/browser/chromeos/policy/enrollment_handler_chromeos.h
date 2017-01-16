@@ -35,6 +35,7 @@ class AttestationFlow;
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
+class DMTokenStorage;
 class ServerBackedStateKeysBroker;
 
 // Implements the logic that establishes enterprise enrollment for Chromium OS
@@ -111,7 +112,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
     STEP_ROBOT_AUTH_FETCH = 6,    // Fetching device API auth code.
     STEP_ROBOT_AUTH_REFRESH = 7,  // Fetching device API refresh token.
     STEP_LOCK_DEVICE = 8,         // Writing installation-time attributes.
-    STEP_STORE_TOKEN_AND_ID = 9,  // Storing DM token and virtual device ID.
+    STEP_STORE_TOKEN = 9,         // Encrypting and storing DM token.
     STEP_STORE_ROBOT_AUTH = 10,   // Encrypting & writing robot refresh token.
     STEP_STORE_POLICY = 11,       // Storing policy and API refresh token. For
                                   // AD, includes policy fetch via authpolicyd.
@@ -145,6 +146,12 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   void HandleLockDeviceResult(
       chromeos::InstallAttributes::LockResult lock_result);
 
+  // Initiates storing DM token. For Active Directory devices only.
+  void StartStoreDMToken();
+
+  // Called after StartStoreDMtoken() is done.
+  void HandleDMTokenStoreResult(bool success);
+
   // Initiates storing of robot auth token.
   void StartStoreRobotAuth();
 
@@ -170,6 +177,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::unique_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<policy::DMTokenStorage> dm_token_storage_;
 
   EnrollmentConfig enrollment_config_;
   std::string auth_token_;

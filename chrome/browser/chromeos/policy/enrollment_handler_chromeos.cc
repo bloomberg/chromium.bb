@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
@@ -244,14 +245,6 @@ void EnrollmentHandlerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
 
 void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
   DCHECK_EQ(store_, store);
-  if (enrollment_step_ == STEP_STORE_TOKEN_AND_ID) {
-    // Calling OwnerSettingsServiceChromeOS::SetManagementSettings()
-    // on a non- enterprise-managed device will fail as
-    // DeviceCloudPolicyStore listens to all changes on device
-    // settings, and it calls OnStoreError() when the device is not
-    // enterprise-managed.
-    return;
-  }
   LOG(ERROR) << "Error in device policy store.";
   ReportResult(EnrollmentStatus::ForStoreError(store_->status(),
                                                store_->validation_status()));
@@ -423,12 +416,27 @@ void EnrollmentHandlerChromeOS::StartLockDevice() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void EnrollmentHandlerChromeOS::HandleDMTokenStoreResult(bool success) {
+  CHECK_EQ(STEP_STORE_TOKEN, enrollment_step_);
+  if (!success) {
+    ReportResult(
+        EnrollmentStatus::ForStatus(EnrollmentStatus::DM_TOKEN_STORE_FAILED));
+    return;
+  }
+
+  StartStoreRobotAuth();
+}
+
 void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
     chromeos::InstallAttributes::LockResult lock_result) {
   DCHECK_EQ(STEP_LOCK_DEVICE, enrollment_step_);
   switch (lock_result) {
     case chromeos::InstallAttributes::LOCK_SUCCESS:
-      StartStoreRobotAuth();
+      if (device_mode_ == DEVICE_MODE_ENTERPRISE_AD) {
+        StartStoreDMToken();
+      } else {
+        StartStoreRobotAuth();
+      }
       break;
     case chromeos::InstallAttributes::LOCK_NOT_READY:
       // We wait up to |kLockRetryTimeoutMs| milliseconds and if it hasn't
@@ -457,6 +465,17 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
       ReportResult(EnrollmentStatus::ForLockError(lock_result));
       break;
   }
+}
+
+void EnrollmentHandlerChromeOS::StartStoreDMToken() {
+  DCHECK(device_mode_ == DEVICE_MODE_ENTERPRISE_AD);
+  SetStep(STEP_STORE_TOKEN);
+  dm_token_storage_ = base::MakeUnique<policy::DMTokenStorage>(
+      g_browser_process->local_state());
+  dm_token_storage_->StoreDMToken(
+      client_->dm_token(),
+      base::Bind(&EnrollmentHandlerChromeOS::HandleDMTokenStoreResult,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentHandlerChromeOS::StartStoreRobotAuth() {

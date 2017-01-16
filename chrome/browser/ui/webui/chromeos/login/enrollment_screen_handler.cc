@@ -357,6 +357,9 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
       ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_ACTIVE_DIRECTORY_POLICY_FETCH,
                 false);
       return;
+    case policy::EnrollmentStatus::DM_TOKEN_STORE_FAILED:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_STORE_DM_TOKEN_FAILED, false);
+      return;
   }
   NOTREACHED();
 }
