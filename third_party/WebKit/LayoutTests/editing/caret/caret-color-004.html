@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <meta charset="utf-8">
 <title>CSS Basic User Interface Test: caret-color auto, black on white</title>
 <link rel="author" title="Florian Rivoal" href="mailto:florian@rivoal.net">
@@ -21,5 +21,10 @@
   <p>Test passes if, when the text area below is focused for editing, the text insertion caret is either black
   or some other color that contrasts well with the background.</p>
   <p>The shape of the caret, and whether it flashes, are not part of the test.</p>
-  <textarea autofocus></textarea>
+  <textarea id="test"></textarea>
+  <script>
+    window.onload = function() {
+      document.getElementById("test").focus();
+    }
+  </script>
 </body>

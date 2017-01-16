@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <meta charset="utf-8">
 <title>CSS Basic User Interface Test: caret-color: currentColor</title>
 <link rel="author" title="Chris Lilley" href="mailto:chris@w3.org">
@@ -26,6 +26,11 @@
   <p>Test passes if, when the text area below is focused for editing, the text insertion caret is green</p>
   <p>The shape of the caret, and whether it flashes, are not part of the test.</p>
   <div>
-    <textarea autofocus></textarea>
+    <textarea id="test"></textarea>
   </div>
+  <script>
+    window.onload = function() {
+      document.getElementById("test").focus();
+    }
+  </script>
 </body>
