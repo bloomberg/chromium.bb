@@ -31,6 +31,8 @@ class WebState;
 @protocol LogoVendor;
 @protocol TextFieldStyling;
 @protocol NativeAppWhitelistManager;
+@class Tab;
+@class TabModel;
 @class UITextField;
 @class UIView;
 @protocol UrlLoader;
@@ -97,6 +99,7 @@ class ChromeBrowserProvider {
   // TODO(rohitrao): Change from |id| to |TabModel*| once TabModel is moved into
   // the Chromium tree.
   virtual void InitializeCastService(id main_tab_model) const;
+  virtual void InitializeCastService(TabModel* main_tab_model) const;
 
   // Attaches any embedder-specific tab helpers to the given |web_state|.  The
   // owning |tab| is included for helpers that need access to information that
@@ -104,6 +107,7 @@ class ChromeBrowserProvider {
   // TODO(rohitrao): Change from |id| to |Tab*| once Tab is moved into the
   // Chromium tree.
   virtual void AttachTabHelpers(web::WebState* web_state, id tab) const;
+  virtual void AttachTabHelpers(web::WebState* web_state, Tab* tab) const;
 
   // Returns whether safe browsing is enabled. See the comment on
   // metrics_services_manager_client.h for details on |on_update_callback|.
