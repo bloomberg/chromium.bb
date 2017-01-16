@@ -20,6 +20,11 @@ namespace password_manager {
 
 class PasswordReuseDetectorConsumer;
 
+// Comparator that compares reversed strings.
+struct ReverseStringLess {
+  bool operator()(const base::string16& lhs, const base::string16& rhs) const;
+};
+
 // Per-profile class responsible for detection of password reuse, i.e. that the
 // user input on some site contains the password saved on another site.
 // It receives saved passwords through PasswordStoreConsumer interface.
@@ -47,14 +52,23 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
                   PasswordReuseDetectorConsumer* consumer);
 
  private:
+  using passwords_iterator = std::map<base::string16,
+                                      std::set<std::string>,
+                                      ReverseStringLess>::const_iterator;
+
   // Add password from |form| to |passwords_|.
   void AddPassword(const autofill::PasswordForm& form);
+
+  // Returns the iterator to |passwords_| that corresponds to the longest key in
+  // |passwords_| that is a suffix of |input|. Returns passwords_.end() in case
+  // when no key in |passwords_| is a prefix of |input|.
+  passwords_iterator FindSavedPassword(const base::string16& input);
 
   // Contains all passwords.
   // A key is a password.
   // A value is a set of registry controlled domains on which the password
   // saved.
-  std::map<base::string16, std::set<std::string>> passwords_;
+  std::map<base::string16, std::set<std::string>, ReverseStringLess> passwords_;
 
   // Number of passwords in |passwords_|, each password is calculated the number
   // of times how many different sites it's saved on.
