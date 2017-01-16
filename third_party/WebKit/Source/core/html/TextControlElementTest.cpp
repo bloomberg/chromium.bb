@@ -5,17 +5,10 @@
 #include "core/html/TextControlElement.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/Text.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/Position.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/VisibleUnits.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/FrameView.h"
-#include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/layout/LayoutTreeAsText.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/SpellCheckerClient.h"
 #include "core/testing/DummyPageHolder.h"
@@ -119,85 +112,6 @@ TEST_F(TextControlElementTest, SetSelectionRangeDoesNotCauseLayout) {
   EXPECT_EQ(startLayoutCount, layoutCount());
   newCaretRect = LayoutRect(frameSelection.absoluteCaretBounds());
   EXPECT_NE(oldCaretRect, newCaretRect);
-}
-
-typedef Position (*PositionFunction)(const Position&);
-typedef VisiblePosition (*VisblePositionFunction)(const VisiblePosition&);
-
-void testFunctionEquivalence(const Position& position,
-                             PositionFunction positionFunction,
-                             VisblePositionFunction visibleFunction) {
-  VisiblePosition visiblePosition = createVisiblePosition(position);
-  VisiblePosition expected = visibleFunction(visiblePosition);
-  VisiblePosition actual = createVisiblePosition(positionFunction(position));
-  EXPECT_EQ(expected.deepEquivalent(), actual.deepEquivalent());
-}
-
-static VisiblePosition startOfWord(const VisiblePosition& position) {
-  return startOfWord(position, LeftWordIfOnBoundary);
-}
-
-static VisiblePosition endOfWord(const VisiblePosition& position) {
-  return endOfWord(position, RightWordIfOnBoundary);
-}
-
-void testBoundary(Document& document, TextControlElement& textControl) {
-  document.updateStyleAndLayout();
-  for (unsigned i = 0; i < textControl.innerEditorValue().length(); i++) {
-    textControl.setSelectionRange(i, i);
-    Position position = document.frame()->selection().start();
-    SCOPED_TRACE(::testing::Message()
-                 << "offset " << position.computeEditingOffset() << " of "
-                 << nodePositionAsStringForTesting(position.anchorNode())
-                        .ascii()
-                        .data());
-    {
-      SCOPED_TRACE("TextControlElement::startOfWord");
-      testFunctionEquivalence(position, TextControlElement::startOfWord,
-                              startOfWord);
-    }
-    {
-      SCOPED_TRACE("TextControlElement::endOfWord");
-      testFunctionEquivalence(position, TextControlElement::endOfWord,
-                              endOfWord);
-    }
-    {
-      SCOPED_TRACE("TextControlElement::startOfSentence");
-      testFunctionEquivalence(position, TextControlElement::startOfSentence,
-                              startOfSentence);
-    }
-    {
-      SCOPED_TRACE("TextControlElement::endOfSentence");
-      testFunctionEquivalence(position, TextControlElement::endOfSentence,
-                              endOfSentence);
-    }
-  }
-}
-
-TEST_F(TextControlElementTest, WordAndSentenceBoundary) {
-  HTMLElement* innerText = textControl().innerEditorElement();
-  {
-    SCOPED_TRACE("String is value.");
-    innerText->removeChildren();
-    innerText->setNodeValue("Hel\nlo, text form.\n");
-    testBoundary(document(), textControl());
-  }
-  {
-    SCOPED_TRACE("A Text node and a BR element");
-    innerText->removeChildren();
-    innerText->setNodeValue("");
-    innerText->appendChild(Text::create(document(), "Hello, text form."));
-    innerText->appendChild(HTMLBRElement::create(document()));
-    testBoundary(document(), textControl());
-  }
-  {
-    SCOPED_TRACE("Text nodes.");
-    innerText->removeChildren();
-    innerText->setNodeValue("");
-    innerText->appendChild(Text::create(document(), "Hel\nlo, te"));
-    innerText->appendChild(Text::create(document(), "xt form."));
-    testBoundary(document(), textControl());
-  }
 }
 
 TEST_F(TextControlElementTest, IndexForPosition) {

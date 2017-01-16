@@ -137,15 +137,6 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   String directionForFormData() const;
 
-  // TODO(yoichio): Remove these functions.
-  // These functions don't cause synchronous layout and SpellChecker uses
-  // them to improve performance.
-  // Passed |Position| must point inside of a text form control.
-  static Position startOfWord(const Position&);
-  static Position endOfWord(const Position&);
-  static Position startOfSentence(const Position&);
-  static Position endOfSentence(const Position&);
-
  protected:
   TextControlElement(const QualifiedName&, Document&);
   bool isPlaceholderEmpty() const;
