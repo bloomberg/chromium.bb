@@ -567,6 +567,7 @@ TEST_F(KeyboardControllerTest, CloseKeyboard) {
   root_window()->RemoveChild(keyboard_container);
   ResetController();
   EXPECT_TRUE(IsKeyboardClosed());
+  keyboard::SetAccessibilityKeyboardEnabled(false);
 }
 
 class KeyboardControllerAnimationTest : public KeyboardControllerTest {
@@ -675,6 +676,8 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardShowOnFirstTap) {
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(ui()->GetKeyboardWindow());
   root_window()->AddChild(container);
+
+  keyboard::SetTouchKeyboardEnabled(true);
   controller()->SetKeyboardMode(FLOATING);
   container->AddChild(keyboard);
   // Mock focus on an input field.
