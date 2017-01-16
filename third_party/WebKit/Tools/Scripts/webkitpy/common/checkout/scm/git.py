@@ -211,7 +211,7 @@ class Git(object):
 
     def changed_files(self, git_commit=None):
         # FIXME: --diff-filter could be used to avoid the "extract_filenames" step.
-        status_command = [self.executable_name, 'diff', '-r', '--name-status',
+        status_command = ['diff', '-r', '--name-status',
                           "--no-renames", "--no-ext-diff", "--full-index", self._merge_base(git_commit)]
         # FIXME: I'm not sure we're returning the same set of files that SVN.changed_files is.
         # Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R)
