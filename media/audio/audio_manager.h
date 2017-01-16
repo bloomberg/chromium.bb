@@ -251,6 +251,9 @@ class MEDIA_EXPORT AudioManager {
   // Gets the name of the audio manager (e.g., Windows, Mac, PulseAudio).
   virtual const char* GetName() = 0;
 
+  // Limits the number of streams that can be created for testing purposes.
+  virtual void SetMaxStreamCountForTesting(int max_input, int max_output);
+
  protected:
   AudioManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner);

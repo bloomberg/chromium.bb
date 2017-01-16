@@ -68,6 +68,8 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
 
+  void SetMaxStreamCountForTesting(int max_input, int max_output) final;
+
   // AudioManagerBase:
 
   // Called internally by the audio stream when it has been closed.

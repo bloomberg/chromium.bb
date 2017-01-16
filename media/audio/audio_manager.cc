@@ -303,6 +303,10 @@ ScopedAudioManagerPtr CreateAudioManager(
     scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
     AudioLogFactory* audio_log_factory);
 
+void AudioManager::SetMaxStreamCountForTesting(int max_input, int max_output) {
+  NOTREACHED();
+}
+
 AudioManager::AudioManager(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner)

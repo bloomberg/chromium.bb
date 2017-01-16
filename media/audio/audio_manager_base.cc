@@ -433,4 +433,10 @@ std::unique_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
   return audio_log_factory_->CreateAudioLog(component);
 }
 
+void AudioManagerBase::SetMaxStreamCountForTesting(int max_input,
+                                                   int max_output) {
+  max_num_output_streams_ = max_output;
+  max_num_input_streams_ = max_input;
+}
+
 }  // namespace media

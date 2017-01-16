@@ -23,6 +23,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "media/audio/audio_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/perf/perf_test.h"
 
@@ -576,6 +577,31 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   NavigateToURL(shell(), url);
 
   EXPECT_EQ("ConstraintNotSatisfiedError",
+            ExecuteJavascriptAndReturnResult(call));
+}
+
+#if defined(OS_ANDROID)
+// Disabled until http://crbug.com/679302 is fixed.
+#define MAYBE_GetUserMediaFailToAccessAudioDevice \
+    DISABLED_GetUserMediaFailToAccessAudioDevice
+#else
+#define MAYBE_GetUserMediaFailToAccessAudioDevice \
+    GetUserMediaFailToAccessAudioDevice
+#endif
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       MAYBE_GetUserMediaFailToAccessAudioDevice) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  // Set the maximum allowed input and output streams to 0
+  // so that the call to create a new audio input stream will fail.
+  media::AudioManager::Get()->SetMaxStreamCountForTesting(0, 0);
+
+  const std::string call = base::StringPrintf(
+      "%s({video: false, audio: true});", kGetUserMediaAndExpectFailure);
+  EXPECT_EQ("TrackStartError",
             ExecuteJavascriptAndReturnResult(call));
 }
 
