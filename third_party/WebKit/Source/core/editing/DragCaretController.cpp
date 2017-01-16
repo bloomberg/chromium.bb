@@ -104,7 +104,6 @@ void DragCaretController::nodeWillBeRemoved(Node& node) {
 
 DEFINE_TRACE(DragCaretController) {
   visitor->trace(m_position);
-  visitor->trace(m_caretBase);
   SynchronousMutationObserver::trace(visitor);
 }
 

@@ -45,8 +45,6 @@ namespace blink {
 CaretBase::CaretBase() = default;
 CaretBase::~CaretBase() = default;
 
-DEFINE_TRACE(CaretBase) {}
-
 static inline bool caretRendersInsideNode(Node* node) {
   return node && !isDisplayInsideTable(node) && !editingIgnoresContent(*node);
 }
@@ -120,7 +118,7 @@ LayoutRect CaretBase::computeCaretRect(const VisiblePosition& caretPosition) {
 }
 
 IntRect CaretBase::absoluteBoundsForLocalRect(Node* node,
-                                              const LayoutRect& rect) const {
+                                              const LayoutRect& rect) {
   LayoutBlock* caretPainter = caretLayoutObject(node);
   if (!caretPainter)
     return IntRect();
@@ -152,7 +150,7 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect) {
       node->layoutObject()->invalidatePaintRectangle(inflatedRect, this);
 }
 
-bool CaretBase::shouldRepaintCaret(Node& node) const {
+bool CaretBase::shouldRepaintCaret(Node& node) {
   // If PositionAnchorType::BeforeAnchor or PositionAnchorType::AfterAnchor,
   // carets need to be repainted not only when the node is contentEditable but
   // also when its parentNode() is contentEditable.

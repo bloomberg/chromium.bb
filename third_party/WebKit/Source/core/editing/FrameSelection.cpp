@@ -106,7 +106,7 @@ FrameSelection::~FrameSelection() {}
 
 const DisplayItemClient& FrameSelection::caretDisplayItemClientForTesting()
     const {
-  return *m_frameCaret;
+  return m_frameCaret->displayItemClient();
 }
 
 const Document& FrameSelection::document() const {

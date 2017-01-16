@@ -27,20 +27,33 @@
 #define FrameCaret_h
 
 #include "core/CoreExport.h"
-#include "core/editing/CaretBase.h"
-#include "platform/geometry/IntRect.h"
+#include "core/editing/PositionWithAffinity.h"
+#include "platform/Timer.h"
+#include "platform/geometry/LayoutRect.h"
+#include "platform/heap/GarbageCollected.h"
+#include "platform/heap/Member.h"
+#include <memory>
 
 namespace blink {
 
+class CaretBase;
+class CharacterData;
+class DisplayItemClient;
+class Document;
+class GraphicsContext;
+class Node;
+class LocalFrame;
 class SelectionEditor;
 
 enum class CaretVisibility { Visible, Hidden };
 
-class CORE_EXPORT FrameCaret final : public CaretBase {
+class CORE_EXPORT FrameCaret final
+    : public GarbageCollectedFinalized<FrameCaret> {
  public:
   FrameCaret(LocalFrame&, const SelectionEditor&);
-  ~FrameCaret() override;
+  ~FrameCaret();
 
+  const DisplayItemClient& displayItemClient() const;
   bool isActive() const { return caretPosition().isNotNull(); }
 
   void updateAppearance();
@@ -75,7 +88,7 @@ class CORE_EXPORT FrameCaret final : public CaretBase {
   bool shouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
   bool isPreviousCaretDirtyForTesting() const { return m_previousCaretNode; }
 
-  DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE();
 
  private:
   friend class FrameSelectionTest;
@@ -88,6 +101,7 @@ class CORE_EXPORT FrameCaret final : public CaretBase {
 
   const Member<const SelectionEditor> m_selectionEditor;
   const Member<LocalFrame> m_frame;
+  const std::unique_ptr<CaretBase> m_caretBase;
   // The last node which painted the caret. Retained for clearing the old
   // caret when it moves.
   Member<Node> m_previousCaretNode;

@@ -27,7 +27,6 @@
 #ifndef CaretBase_h
 #define CaretBase_h
 
-#include "core/CoreExport.h"
 #include "core/editing/VisiblePosition.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -36,12 +35,10 @@
 
 namespace blink {
 
-class DisplayItemClient;
 class GraphicsContext;
 class LayoutBlock;
 
-class CORE_EXPORT CaretBase : public GarbageCollectedFinalized<CaretBase>,
-                              public DisplayItemClient {
+class CaretBase final : public DisplayItemClient {
   WTF_MAKE_NONCOPYABLE(CaretBase);
 
  public:
@@ -60,11 +57,13 @@ class CORE_EXPORT CaretBase : public GarbageCollectedFinalized<CaretBase>,
 
   // TODO(yosin): We should move |absoluteBoundsForLocalRect()| with
   // |VisiblePosition| to "FrameCaret.cpp" as static file local function.
-  IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
+  static IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&);
 
   // TODO(yosin): We should move |shouldRepaintCaret()| to "FrameCaret.cpp" as
   // static file local function.
-  bool shouldRepaintCaret(Node&) const;
+  static bool shouldRepaintCaret(Node&);
+  // TODO(yosin): We should make |paintCaret()| to non-static member and get rid
+  // |DisplayItemClient| parameter.
   static void paintCaret(Node*,
                          GraphicsContext&,
                          const DisplayItemClient&,
@@ -76,10 +75,8 @@ class CORE_EXPORT CaretBase : public GarbageCollectedFinalized<CaretBase>,
   void invalidateLocalCaretRect(Node*, const LayoutRect&);
 
   // DisplayItemClient methods.
-  LayoutRect visualRect() const override;
+  LayoutRect visualRect() const final;
   String debugName() const final;
-
-  DECLARE_VIRTUAL_TRACE();
 
  private:
   LayoutRect m_visualRect;
