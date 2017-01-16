@@ -22,11 +22,11 @@
 // End of SETTINGS_MEMBER_VARIABLES.
 
 #define SETTINGS_INITIALIZER_LIST \
-    {% for setting in settings if setting.initial and setting.type != 'bool' %}
+    {% for setting in settings if setting.initial is not none and setting.type != 'bool' %}
     , m_{{setting.name}}({{setting.initial}}) \
     {% endfor %}
-    {% for setting in settings if setting.initial and setting.type == 'bool' %}
-    , m_{{setting.name}}({{setting.initial}}) \
+    {% for setting in settings if setting.initial is not none and setting.type == 'bool' %}
+    , m_{{setting.name}}({{setting.initial|cpp_bool}}) \
     {% endfor %}
 // End of SETTINGS_INITIALIZER_LIST.
 

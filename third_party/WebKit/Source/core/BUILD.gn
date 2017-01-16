@@ -342,14 +342,14 @@ action("generated_settings_macros") {
   inputs = scripts_for_in_files + [
              "../build/scripts/make_settings.py",
              "../build/scripts/templates/SettingsMacros.h.tmpl",
-             "frame/Settings.in",
+             "frame/Settings.json5",
            ]
   outputs = [
     "$blink_core_output_dir/SettingsMacros.h",
   ]
 
   args = [
-    rebase_path("frame/Settings.in", root_build_dir),
+    rebase_path("frame/Settings.json5", root_build_dir),
     "--output_dir",
     rel_blink_core_gen_dir,
   ]
@@ -363,7 +363,7 @@ action("generated_testing_idls_settings") {
              "../build/scripts/templates/InternalSettingsGenerated.idl.tmpl",
              "../build/scripts/templates/InternalSettingsGenerated.cpp.tmpl",
              "../build/scripts/templates/InternalSettingsGenerated.h.tmpl",
-             "frame/Settings.in",
+             "frame/Settings.json5",
            ]
   outputs = [
     "$blink_core_output_dir/testing/InternalSettingsGenerated.idl",
@@ -372,7 +372,7 @@ action("generated_testing_idls_settings") {
   ]
 
   args = [
-    rebase_path("frame/Settings.in", root_build_dir),
+    rebase_path("frame/Settings.json5", root_build_dir),
     "--output_dir",
     "$rel_blink_core_gen_dir/testing",
   ]
@@ -494,8 +494,8 @@ process_in_files("make_core_generated_css_value_keywords") {
   script = "../build/scripts/make_css_value_keywords.py"
 
   in_files = [
-    "css/CSSValueKeywords.in",
-    "css/SVGCSSValueKeywords.in",
+    "css/CSSValueKeywords.json5",
+    "css/SVGCSSValueKeywords.json5",
   ]
   outputs = [
     "$blink_core_output_dir/CSSValueKeywords.cpp",

@@ -93,6 +93,16 @@ def script_name(entry):
     return os.path.basename(entry['name'])
 
 
+def cpp_bool(value):
+    if value is True:
+        return 'true'
+    if value is False:
+        return 'false'
+    # Return value as is, which for example may be a platform-dependent constant
+    # such as "defaultSelectTrailingWhitespaceEnabled".
+    return value
+
+
 def cpp_name(entry):
     return entry['ImplementedAs'] or script_name(entry)
 

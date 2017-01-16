@@ -29,9 +29,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
-import in_generator
-import template_expander
+
+import json5_generator
 import name_utilities
+import template_expander
 
 
 def to_passing_type(typename):
@@ -54,29 +55,24 @@ def to_idl_type(typename):
     return None
 
 
-class MakeSettingsWriter(in_generator.Writer):
-    defaults = {
-        'type': 'bool',
-        'initial': None,
-        'invalidate': None,
-    }
-    default_parameters = {}
+class MakeSettingsWriter(json5_generator.Writer):
     filters = {
+        'cpp_bool': name_utilities.cpp_bool,
         'upper_first': name_utilities.upper_first,
         'to_passing_type': to_passing_type,
         'to_idl_type': to_idl_type,
     }
 
-    def __init__(self, in_file_path):
-        super(MakeSettingsWriter, self).__init__(in_file_path)
+    def __init__(self, json5_file_path):
+        super(MakeSettingsWriter, self).__init__(json5_file_path)
 
-        self.in_file.name_dictionaries.sort(key=lambda entry: entry['name'])
+        self.json5_file.name_dictionaries.sort(key=lambda entry: entry['name'])
 
         self._outputs = {
             ('SettingsMacros.h'): self.generate_macros,
         }
         self._template_context = {
-            'settings': self.in_file.name_dictionaries,
+            'settings': self.json5_file.name_dictionaries,
         }
 
     @template_expander.use_jinja('SettingsMacros.h.tmpl', filters=filters)
@@ -85,4 +81,4 @@ class MakeSettingsWriter(in_generator.Writer):
 
 
 if __name__ == '__main__':
-    in_generator.Maker(MakeSettingsWriter).main(sys.argv)
+    json5_generator.Maker(MakeSettingsWriter).main()
