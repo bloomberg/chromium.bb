@@ -8,7 +8,6 @@
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
@@ -130,7 +129,8 @@ CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
 }
 
 const CSSValue* consumeSingleType(const CSSSyntaxComponent& syntax,
-                                  CSSParserTokenRange& range) {
+                                  CSSParserTokenRange& range,
+                                  const CSSParserContext* context) {
   using namespace CSSPropertyParserHelpers;
 
   switch (syntax.m_type) {
@@ -153,9 +153,7 @@ const CSSValue* consumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::Color:
       return consumeColor(range, HTMLStandardMode);
     case CSSSyntaxType::Image:
-      // TODO(timloh): This probably needs a proper parser context for relative
-      // URL resolution.
-      return consumeImage(range, strictCSSParserContext());
+      return consumeImage(range, context);
     case CSSSyntaxType::Url:
       return consumeUrl(range);
     case CSSSyntaxType::Integer:
@@ -177,25 +175,27 @@ const CSSValue* consumeSingleType(const CSSSyntaxComponent& syntax,
 }
 
 const CSSValue* consumeSyntaxComponent(const CSSSyntaxComponent& syntax,
-                                       CSSParserTokenRange range) {
+                                       CSSParserTokenRange range,
+                                       const CSSParserContext* context) {
   // CSS-wide keywords are already handled by the CSSPropertyParser
   if (syntax.m_repeatable) {
     CSSValueList* list = CSSValueList::createSpaceSeparated();
     while (!range.atEnd()) {
-      const CSSValue* value = consumeSingleType(syntax, range);
+      const CSSValue* value = consumeSingleType(syntax, range, context);
       if (!value)
         return nullptr;
       list->append(*value);
     }
     return list;
   }
-  const CSSValue* result = consumeSingleType(syntax, range);
+  const CSSValue* result = consumeSingleType(syntax, range, context);
   if (!range.atEnd())
     return nullptr;
   return result;
 }
 
 const CSSValue* CSSSyntaxDescriptor::parse(CSSParserTokenRange range,
+                                           const CSSParserContext* context,
                                            bool isAnimationTainted) const {
   if (isTokenStream()) {
     return CSSVariableParser::parseRegisteredPropertyValue(range, false,
@@ -203,7 +203,8 @@ const CSSValue* CSSSyntaxDescriptor::parse(CSSParserTokenRange range,
   }
   range.consumeWhitespace();
   for (const CSSSyntaxComponent& component : m_syntaxComponents) {
-    if (const CSSValue* result = consumeSyntaxComponent(component, range))
+    if (const CSSValue* result =
+            consumeSyntaxComponent(component, range, context))
       return result;
   }
   return CSSVariableParser::parseRegisteredPropertyValue(range, true,

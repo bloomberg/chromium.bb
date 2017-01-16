@@ -89,7 +89,7 @@ MutableStylePropertySet::SetResult CSSParserImpl::parseVariableValue(
       // TODO(timloh): This is a bit wasteful, we parse the registered property
       // to validate but throw away the result.
       if (registration &&
-          !registration->syntax().parse(tokenizer.tokenRange(),
+          !registration->syntax().parse(tokenizer.tokenRange(), context,
                                         isAnimationTainted)) {
         return MutableStylePropertySet::SetResult{didParse, didChange};
       }

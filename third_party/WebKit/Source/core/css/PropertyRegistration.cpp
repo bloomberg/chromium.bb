@@ -5,11 +5,14 @@
 #include "core/css/PropertyRegistration.h"
 
 #include "core/animation/CSSValueInterpolationType.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/PropertyDescriptor.h"
 #include "core/css/PropertyRegistry.h"
+#include "core/css/StyleSheetContents.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
@@ -108,8 +111,10 @@ void PropertyRegistration::registerProperty(
   if (descriptor.hasInitialValue()) {
     CSSTokenizer tokenizer(descriptor.initialValue());
     bool isAnimationTainted = false;
-    const CSSValue* initial =
-        syntaxDescriptor.parse(tokenizer.tokenRange(), isAnimationTainted);
+    const CSSValue* initial = syntaxDescriptor.parse(
+        tokenizer.tokenRange(),
+        document->elementSheet().contents()->parserContext(),
+        isAnimationTainted);
     if (!initial) {
       exceptionState.throwDOMException(
           SyntaxError,
