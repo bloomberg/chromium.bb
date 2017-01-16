@@ -209,9 +209,14 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     // connection.
   }
 
-  if (reason == LOGIN_FAILURE)
-    event_tracker_.ConnectionLoginFailed();
-  event_tracker_.EndConnectionAttempt();
+  // SignalConnectionReset can be called at any time without regard to whether
+  // a connection attempt is currently in progress. Only notify the event
+  // tracker if there is an event in progress.
+  if (event_tracker_.IsEventInProgress()) {
+    if (reason == LOGIN_FAILURE)
+      event_tracker_.ConnectionLoginFailed();
+    event_tracker_.EndConnectionAttempt();
+  }
 
   CloseSocket();
   DCHECK(!IsEndpointReachable());

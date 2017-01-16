@@ -602,7 +602,7 @@ TEST_F(ConnectionFactoryImplTest, MultipleFailuresWrapClientEvents) {
   // There should be one failed client event for each failed connection, but
   // there is a maximum cap of kMaxClientEvents, which is 30. There should also
   // be a single event which records the events which were discarded.
-  const auto client_events = GetClientEvents();
+  auto client_events = GetClientEvents();
   ASSERT_EQ(31, client_events.size());
 
   bool found_discarded_events = false;
@@ -626,8 +626,21 @@ TEST_F(ConnectionFactoryImplTest, MultipleFailuresWrapClientEvents) {
   EXPECT_TRUE(connected_server().is_valid());
 
   // Old client events should have been reset after the successful connection.
-  const auto new_client_events = GetClientEvents();
-  ASSERT_EQ(0, new_client_events.size());
+  client_events = GetClientEvents();
+  ASSERT_EQ(0, client_events.size());
+
+  // Test that EndConnectionAttempt doesn't write empty events to the tracker.
+  // There should be 2 events: 1) the successful connection which was previously
+  // established. 2) the unsuccessful connection triggered as a result of the
+  // SOCKET_FAILURE signal. The NETWORK_CHANGE signal should not cause an
+  // additional event since there is no in progress event.
+  factory()->SetConnectResult(net::ERR_CONNECTION_FAILED);
+  factory()->SignalConnectionReset(ConnectionFactory::SOCKET_FAILURE);
+  factory()->SignalConnectionReset(ConnectionFactory::NETWORK_CHANGE);
+  WaitForConnections();
+
+  client_events = GetClientEvents();
+  ASSERT_EQ(2, client_events.size());
 }
 
 }  // namespace gcm

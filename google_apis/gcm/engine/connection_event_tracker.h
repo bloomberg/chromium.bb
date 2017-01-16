@@ -22,6 +22,9 @@ class GCM_EXPORT ConnectionEventTracker {
   ConnectionEventTracker();
   ~ConnectionEventTracker();
 
+  // Returns a boolean indicating whether an attempt is currently in progress.
+  bool IsEventInProgress() const;
+
   // Start recording a new connection attempt. This should never be called if
   // a connection attempt is already ongoing.
   void StartConnectionAttempt();

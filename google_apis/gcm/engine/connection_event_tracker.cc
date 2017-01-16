@@ -25,6 +25,10 @@ ConnectionEventTracker::~ConnectionEventTracker() {
                             completed_events_.size(), kMaxClientEvents + 1);
 }
 
+bool ConnectionEventTracker::IsEventInProgress() const {
+  return current_event_.has_time_connection_started_ms();
+}
+
 void ConnectionEventTracker::StartConnectionAttempt() {
   // TODO(harkness): Can we dcheck here that there is not an in progress
   // connection?
@@ -36,14 +40,15 @@ void ConnectionEventTracker::StartConnectionAttempt() {
 }
 
 void ConnectionEventTracker::EndConnectionAttempt() {
-  // TODO(harkness): Modify tests so that we can put a DCHECK here.
+  DCHECK(IsEventInProgress());
+
   if (completed_events_.size() == kMaxClientEvents) {
     // Don't let the completed events grow beyond the max.
     completed_events_.pop_front();
     number_discarded_events_++;
   }
 
-  // Current event is now completed, so add it to our list of completed events.
+  // Current event is finished, so add it to our list of completed events.
   current_event_.set_time_connection_ended_ms(base::Time::Now().ToJavaTime());
   completed_events_.push_back(current_event_);
   current_event_.Clear();
