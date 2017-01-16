@@ -64,6 +64,8 @@ class ArcMetricsService
     void OnInstanceClosed() override;
 
     ArcMetricsService* arc_metrics_service_;
+
+    DISALLOW_COPY_AND_ASSIGN(ProcessObserver);
   };
 
   mojo::Binding<mojom::MetricsHost> binding_;
