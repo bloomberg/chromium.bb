@@ -93,6 +93,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   bool supportsDistribution() const { return isInV1ShadowTree(); }
   void didSlotChange(SlotChangeType);
+  void dispatchSlotChangeEvent();
+  void clearSlotChangeEventEnqueued() { m_slotchangeEventEnqueued = false; }
 
   static AtomicString normalizeSlotName(const AtomicString&);
 
@@ -106,7 +108,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void willRecalcStyle(StyleRecalcChange) final;
 
   void enqueueSlotChangeEvent();
-  void dispatchSlotChangeEvent();
 
   HeapVector<Member<Node>> m_assignedNodes;
   HeapVector<Member<Node>> m_distributedNodes;

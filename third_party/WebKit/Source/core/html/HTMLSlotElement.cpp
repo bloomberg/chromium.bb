@@ -149,7 +149,6 @@ void HTMLSlotElement::saveAndClearDistribution() {
 }
 
 void HTMLSlotElement::dispatchSlotChangeEvent() {
-  m_slotchangeEventEnqueued = false;
   Event* event = Event::createBubble(EventTypeNames::slotchange);
   event->setTarget(this);
   dispatchScopedEvent(event);
@@ -331,8 +330,7 @@ void HTMLSlotElement::didSlotChange(SlotChangeType slotChangeType) {
 void HTMLSlotElement::enqueueSlotChangeEvent() {
   if (m_slotchangeEventEnqueued)
     return;
-  Microtask::enqueueMicrotask(WTF::bind(
-      &HTMLSlotElement::dispatchSlotChangeEvent, wrapPersistent(this)));
+  MutationObserver::enqueueSlotChange(*this);
   m_slotchangeEventEnqueued = true;
 }
 

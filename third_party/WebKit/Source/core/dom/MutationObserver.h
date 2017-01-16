@@ -40,7 +40,9 @@
 
 namespace blink {
 
+class Document;
 class ExceptionState;
+class HTMLSlotElement;
 class MutationCallback;
 class MutationObserver;
 class MutationObserverInit;
@@ -81,6 +83,8 @@ class CORE_EXPORT MutationObserver final
   static MutationObserver* create(MutationCallback*);
   static void resumeSuspendedObservers();
   static void deliverMutations();
+  static void enqueueSlotChange(HTMLSlotElement&);
+  static void cleanSlotChangeList(Document&);
 
   ~MutationObserver();
 

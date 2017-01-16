@@ -2450,6 +2450,8 @@ void Document::shutdown() {
   if (registrationContext())
     registrationContext()->documentWasDetached();
 
+  MutationObserver::cleanSlotChangeList(*this);
+
   m_hoverNode = nullptr;
   m_activeHoverElement = nullptr;
   m_autofocusElement = nullptr;

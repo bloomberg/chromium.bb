@@ -37,6 +37,7 @@
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/Node.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include <algorithm>
 
@@ -171,16 +172,45 @@ static MutationObserverSet& activeMutationObservers() {
   return activeObservers;
 }
 
+using SlotChangeList = HeapVector<Member<HTMLSlotElement>>;
+
+// TODO(hayato): We should have a SlotChangeList for each unit of related
+// similar-origin browsing context.
+// https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts
+static SlotChangeList& activeSlotChangeList() {
+  DEFINE_STATIC_LOCAL(SlotChangeList, slotChangeList, (new SlotChangeList));
+  return slotChangeList;
+}
+
 static MutationObserverSet& suspendedMutationObservers() {
   DEFINE_STATIC_LOCAL(MutationObserverSet, suspendedObservers,
                       (new MutationObserverSet));
   return suspendedObservers;
 }
 
-static void activateObserver(MutationObserver* observer) {
-  if (activeMutationObservers().isEmpty())
+static void ensureEnqueueMicrotask() {
+  if (activeMutationObservers().isEmpty() && activeSlotChangeList().isEmpty())
     Microtask::enqueueMicrotask(WTF::bind(&MutationObserver::deliverMutations));
+}
 
+void MutationObserver::enqueueSlotChange(HTMLSlotElement& slot) {
+  DCHECK(isMainThread());
+  ensureEnqueueMicrotask();
+  activeSlotChangeList().push_back(&slot);
+}
+
+void MutationObserver::cleanSlotChangeList(Document& document) {
+  SlotChangeList kept;
+  kept.reserveCapacity(activeSlotChangeList().size());
+  for (auto& slot : activeSlotChangeList()) {
+    if (slot->document() != document)
+      kept.push_back(slot);
+  }
+  activeSlotChangeList().swap(kept);
+}
+
+static void activateObserver(MutationObserver* observer) {
+  ensureEnqueueMicrotask();
   activeMutationObservers().add(observer);
 }
 
@@ -257,10 +287,19 @@ void MutationObserver::resumeSuspendedObservers() {
 }
 
 void MutationObserver::deliverMutations() {
+  // These steps are defined in DOM Standard's "notify mutation observers".
+  // https://dom.spec.whatwg.org/#notify-mutation-observers
   DCHECK(isMainThread());
+
   MutationObserverVector observers;
   copyToVector(activeMutationObservers(), observers);
   activeMutationObservers().clear();
+
+  SlotChangeList slots;
+  slots.swap(activeSlotChangeList());
+  for (const auto& slot : slots)
+    slot->clearSlotChangeEventEnqueued();
+
   std::sort(observers.begin(), observers.end(), ObserverLessThan());
   for (const auto& observer : observers) {
     if (observer->shouldBeSuspended())
@@ -268,6 +307,8 @@ void MutationObserver::deliverMutations() {
     else
       observer->deliver();
   }
+  for (const auto& slot : slots)
+    slot->dispatchSlotChangeEvent();
 }
 
 DEFINE_TRACE(MutationObserver) {

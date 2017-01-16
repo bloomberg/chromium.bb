@@ -1215,8 +1215,6 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 crbug.com/619539 [ Win ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 crbug.com/619539 [ Win ] virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 
-crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
-
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 imported/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
