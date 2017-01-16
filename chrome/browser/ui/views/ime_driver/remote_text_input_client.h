@@ -13,8 +13,16 @@
 // ui::InputMethod::SetFocusedTextInputClient().
 class RemoteTextInputClient : public ui::TextInputClient {
  public:
-  explicit RemoteTextInputClient(ui::mojom::TextInputClientPtr remote_client);
+  RemoteTextInputClient(ui::mojom::TextInputClientPtr remote_client,
+                        ui::TextInputType text_input_type,
+                        ui::TextInputMode text_input_mode,
+                        base::i18n::TextDirection text_direction,
+                        int text_input_flags,
+                        gfx::Rect caret_bounds);
   ~RemoteTextInputClient() override;
+
+  void SetTextInputType(ui::TextInputType text_input_type);
+  void SetCaretBounds(const gfx::Rect& caret_bounds);
 
  private:
   // ui::TextInputClient:
@@ -48,6 +56,11 @@ class RemoteTextInputClient : public ui::TextInputClient {
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
 
   ui::mojom::TextInputClientPtr remote_client_;
+  ui::TextInputType text_input_type_;
+  ui::TextInputMode text_input_mode_;
+  base::i18n::TextDirection text_direction_;
+  int text_input_flags_;
+  gfx::Rect caret_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteTextInputClient);
 };

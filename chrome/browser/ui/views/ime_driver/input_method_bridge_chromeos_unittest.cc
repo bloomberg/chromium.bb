@@ -106,7 +106,11 @@ class InputMethodBridgeChromeOSTest : public testing::Test {
 
     ui::mojom::TextInputClientPtr client_ptr;
     client_ = base::MakeUnique<TestTextInputClient>(MakeRequest(&client_ptr));
-    input_method_ = base::MakeUnique<InputMethodBridge>(std::move(client_ptr));
+    input_method_ = base::MakeUnique<InputMethodBridge>(
+        base::MakeUnique<RemoteTextInputClient>(
+            std::move(client_ptr), ui::TEXT_INPUT_TYPE_TEXT,
+            ui::TEXT_INPUT_MODE_DEFAULT, base::i18n::LEFT_TO_RIGHT, 0,
+            gfx::Rect()));
   }
 
   bool ProcessKeyEvent(std::unique_ptr<ui::Event> event) {

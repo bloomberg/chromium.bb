@@ -23,10 +23,8 @@ class IMEDriver : public ui::mojom::IMEDriver {
 
  private:
   // ui::mojom::IMEDriver:
-  void StartSession(
-      int32_t session_id,
-      ui::mojom::TextInputClientPtr client,
-      ui::mojom::InputMethodRequest input_method_request) override;
+  void StartSession(int32_t session_id,
+                    ui::mojom::StartSessionDetailsPtr details) override;
   void CancelSession(int32_t session_id) override;
 
   std::map<int32_t, std::unique_ptr<mojo::Binding<ui::mojom::InputMethod>>>

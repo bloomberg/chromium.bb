@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_IME_DRIVER_INPUT_METHOD_BRIDGE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_VIEWS_IME_DRIVER_INPUT_METHOD_BRIDGE_CHROMEOS_H_
 
+#include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "ui/base/ime/input_method_chromeos.h"
 
@@ -12,7 +13,7 @@
 // forwards the received events to an instance of ui::InputMethodChromeOS.
 class InputMethodBridge : public ui::mojom::InputMethod {
  public:
-  explicit InputMethodBridge(ui::mojom::TextInputClientPtr client);
+  explicit InputMethodBridge(std::unique_ptr<RemoteTextInputClient> client);
   ~InputMethodBridge() override;
 
   // ui::mojom::InputMethod:
@@ -23,7 +24,7 @@ class InputMethodBridge : public ui::mojom::InputMethod {
   void CancelComposition() override;
 
  private:
-  std::unique_ptr<ui::TextInputClient> client_;
+  std::unique_ptr<RemoteTextInputClient> client_;
   std::unique_ptr<ui::InputMethodChromeOS> input_method_chromeos_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodBridge);

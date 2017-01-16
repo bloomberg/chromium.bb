@@ -12,10 +12,29 @@
 #include "base/strings/utf_string_conversions.h"
 
 RemoteTextInputClient::RemoteTextInputClient(
-    ui::mojom::TextInputClientPtr remote_client)
-    : remote_client_(std::move(remote_client)) {}
+    ui::mojom::TextInputClientPtr remote_client,
+    ui::TextInputType text_input_type,
+    ui::TextInputMode text_input_mode,
+    base::i18n::TextDirection text_direction,
+    int text_input_flags,
+    gfx::Rect caret_bounds)
+    : remote_client_(std::move(remote_client)),
+      text_input_type_(text_input_type),
+      text_input_mode_(text_input_mode),
+      text_direction_(text_direction),
+      text_input_flags_(text_input_flags),
+      caret_bounds_(caret_bounds) {}
 
 RemoteTextInputClient::~RemoteTextInputClient() {}
+
+void RemoteTextInputClient::SetTextInputType(
+    ui::TextInputType text_input_type) {
+  text_input_type_ = text_input_type;
+}
+
+void RemoteTextInputClient::SetCaretBounds(const gfx::Rect& caret_bounds) {
+  caret_bounds_ = caret_bounds;
+}
 
 void RemoteTextInputClient::SetCompositionText(
     const ui::CompositionText& composition) {
@@ -39,27 +58,19 @@ void RemoteTextInputClient::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType RemoteTextInputClient::GetTextInputType() const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
-  return ui::TEXT_INPUT_TYPE_TEXT;
+  return text_input_type_;
 }
 
 ui::TextInputMode RemoteTextInputClient::GetTextInputMode() const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
-  return ui::TEXT_INPUT_MODE_DEFAULT;
+  return text_input_mode_;
 }
 
 base::i18n::TextDirection RemoteTextInputClient::GetTextDirection() const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
-  return base::i18n::UNKNOWN_DIRECTION;
+  return text_direction_;
 }
 
 int RemoteTextInputClient::GetTextInputFlags() const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
-  return 0;
+  return text_input_flags_;
 }
 
 bool RemoteTextInputClient::CanComposeInline() const {
@@ -70,9 +81,7 @@ bool RemoteTextInputClient::CanComposeInline() const {
 }
 
 gfx::Rect RemoteTextInputClient::GetCaretBounds() const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return caret_bounds_;
 }
 
 bool RemoteTextInputClient::GetCompositionCharacterBounds(

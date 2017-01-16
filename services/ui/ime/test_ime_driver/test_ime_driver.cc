@@ -41,14 +41,12 @@ TestIMEDriver::TestIMEDriver() {}
 
 TestIMEDriver::~TestIMEDriver() {}
 
-void TestIMEDriver::StartSession(
-    int32_t session_id,
-    mojom::TextInputClientPtr client,
-    mojom::InputMethodRequest input_method_request) {
+void TestIMEDriver::StartSession(int32_t session_id,
+                                 mojom::StartSessionDetailsPtr details) {
   input_method_bindings_[session_id].reset(
       new mojo::Binding<mojom::InputMethod>(
-          new TestInputMethod(std::move(client)),
-          std::move(input_method_request)));
+          new TestInputMethod(std::move(details->client)),
+          std::move(details->input_method_request)));
 }
 
 void TestIMEDriver::CancelSession(int32_t session_id) {

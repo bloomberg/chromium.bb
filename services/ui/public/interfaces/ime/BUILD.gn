@@ -10,6 +10,7 @@ mojom("ime") {
   ]
 
   public_deps = [
+    "//mojo/common:common_custom_types",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/range/mojo",

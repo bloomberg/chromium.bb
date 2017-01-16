@@ -28,8 +28,7 @@ class IMEServerImpl : public mojom::IMEServer {
 
  private:
   // mojom::IMEServer:
-  void StartSession(mojom::TextInputClientPtr client,
-                    mojom::InputMethodRequest input_method) override;
+  void StartSession(mojom::StartSessionDetailsPtr details) override;
 
   void OnGotCatalogEntries(std::vector<catalog::mojom::EntryPtr> entries);
 
@@ -39,9 +38,7 @@ class IMEServerImpl : public mojom::IMEServer {
   mojom::IMEDriverPtr driver_;
   int current_id_;
 
-  using PendingRequest =
-      std::pair<mojom::TextInputClientPtr, mojom::InputMethodRequest>;
-  std::queue<PendingRequest> pending_requests_;
+  std::queue<mojom::StartSessionDetailsPtr> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEServerImpl);
 };

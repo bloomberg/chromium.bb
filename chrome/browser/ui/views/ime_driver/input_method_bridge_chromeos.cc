@@ -7,8 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 
-InputMethodBridge::InputMethodBridge(ui::mojom::TextInputClientPtr client)
-    : client_(base::MakeUnique<RemoteTextInputClient>(std::move(client))),
+InputMethodBridge::InputMethodBridge(
+    std::unique_ptr<RemoteTextInputClient> client)
+    : client_(std::move(client)),
       input_method_chromeos_(
           base::MakeUnique<ui::InputMethodChromeOS>(nullptr)) {
   input_method_chromeos_->SetFocusedTextInputClient(client_.get());
@@ -18,10 +19,12 @@ InputMethodBridge::~InputMethodBridge() {}
 
 void InputMethodBridge::OnTextInputTypeChanged(
     ui::TextInputType text_input_type) {
+  client_->SetTextInputType(text_input_type);
   input_method_chromeos_->OnTextInputTypeChanged(client_.get());
 }
 
 void InputMethodBridge::OnCaretBoundsChanged(const gfx::Rect& caret_bounds) {
+  client_->SetCaretBounds(caret_bounds);
   input_method_chromeos_->OnCaretBoundsChanged(client_.get());
 }
 

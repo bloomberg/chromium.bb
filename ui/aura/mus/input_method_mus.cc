@@ -92,9 +92,8 @@ void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {
     UpdateTextInputType();
   InputMethodBase::OnTextInputTypeChanged(client);
 
-  if (input_method_) {
+  if (input_method_)
     input_method_->OnTextInputTypeChanged(client->GetTextInputType());
-  }
 }
 
 void InputMethodMus::OnCaretBoundsChanged(const ui::TextInputClient* client) {
@@ -124,10 +123,22 @@ void InputMethodMus::OnDidChangeFocusedClient(
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
   UpdateTextInputType();
 
+  // TODO(moshayedi): crbug.com/681563. Handle when there is no focused clients.
+  if (!focused)
+    return;
+
   text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused);
   if (ime_server_) {
-    ime_server_->StartSession(text_input_client_->CreateInterfacePtrAndBind(),
-                              MakeRequest(&input_method_));
+    ui::mojom::StartSessionDetailsPtr details =
+        ui::mojom::StartSessionDetails::New();
+    details->client = text_input_client_->CreateInterfacePtrAndBind();
+    details->input_method_request = MakeRequest(&input_method_);
+    details->text_input_type = focused->GetTextInputType();
+    details->text_input_mode = focused->GetTextInputMode();
+    details->text_direction = focused->GetTextDirection();
+    details->text_input_flags = focused->GetTextInputFlags();
+    details->caret_bounds = focused->GetCaretBounds();
+    ime_server_->StartSession(std::move(details));
   }
 }
 

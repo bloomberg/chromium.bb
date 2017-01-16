@@ -93,7 +93,11 @@ TEST_F(IMEAppTest, ProcessKeyEvent) {
   TestTextInputClient client(MakeRequest(&client_ptr));
 
   ui::mojom::InputMethodPtr input_method;
-  ime_server_->StartSession(std::move(client_ptr), MakeRequest(&input_method));
+  ui::mojom::StartSessionDetailsPtr details =
+      ui::mojom::StartSessionDetails::New();
+  details->client = std::move(client_ptr);
+  details->input_method_request = MakeRequest(&input_method);
+  ime_server_->StartSession(std::move(details));
 
   // Send character key event.
   ui::KeyEvent char_event('A', ui::VKEY_A, 0);

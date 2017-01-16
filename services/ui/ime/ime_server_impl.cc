@@ -4,6 +4,7 @@
 
 #include "services/ui/ime/ime_server_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/ime/ime_registrar_impl.h"
@@ -46,26 +47,20 @@ void IMEServerImpl::OnDriverChanged(mojom::IMEDriverPtr driver) {
   driver_ = std::move(driver);
 
   while (!pending_requests_.empty()) {
-    driver_->StartSession(current_id_++,
-                          std::move(pending_requests_.front().first),
-                          std::move(pending_requests_.front().second));
+    driver_->StartSession(current_id_++, std::move(pending_requests_.front()));
     pending_requests_.pop();
   }
 }
 
-void IMEServerImpl::StartSession(
-    mojom::TextInputClientPtr client,
-    mojom::InputMethodRequest input_method_request) {
+void IMEServerImpl::StartSession(mojom::StartSessionDetailsPtr details) {
   if (driver_.get()) {
     // TODO(moshayedi): crbug.com/634431. This will forward all calls from
     // clients to the driver as they are. We may need to check |caret_bounds|
     // parameter of InputMethod::OnCaretBoundsChanged() here and limit them to
     // client's focused window.
-    driver_->StartSession(current_id_++, std::move(client),
-                          std::move(input_method_request));
+    driver_->StartSession(current_id_++, std::move(details));
   } else {
-    pending_requests_.push(
-        std::make_pair(std::move(client), std::move(input_method_request)));
+    pending_requests_.push(std::move(details));
   }
 }
 
