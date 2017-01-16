@@ -2333,3 +2333,6 @@ crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.ht
 
 # When WebAssembly is exposed in V8 (soon), this test has the wrong number of expected Object.getOwnPropertyNames() for global object.
 crbug.com/575167 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ NeedsManualRebaseline ]
+
+crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
+crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
