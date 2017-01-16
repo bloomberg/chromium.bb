@@ -21,6 +21,9 @@ var kRTCRTPStreamStats = new RTCStats_(null, {
   associateStatsId: 'string',
   isRemote: 'boolean',
   mediaType: 'string',
+  trackId: 'string',
+  // TODO(hbos): As soon as |mediaTrackId| has been renamed to |trackId|, remove
+  // this line. crbug.com/657854
   mediaTrackId: 'string',
   transportId: 'string',
   codecId: 'string',
@@ -93,6 +96,8 @@ gStatsWhitelist.set('outbound-rtp', kRTCOutboundRTPStreamStats);
 var kRTCPeerConnectionStats = new RTCStats_(null, {
   dataChannelsOpened: 'number',
   dataChannelsClosed: 'number',
+  dataChannelsRequested: 'number',
+  dataChannelsAccepted: 'number',
 });
 gStatsWhitelist.set('peer-connection', kRTCPeerConnectionStats);
 
@@ -117,6 +122,9 @@ var kRTCMediaStreamTrackStats = new RTCStats_(null, {
   remoteSource: 'boolean',
   ended: 'boolean',
   detached: 'boolean',
+  kind: 'string',
+  // TODO(hbos): As soon as |ssrcIds| has been removed, remove this line.
+  // crbug.com/659137
   ssrcIds: 'sequence_string',
   frameWidth: 'number',
   frameHeight: 'number',
@@ -160,6 +168,9 @@ var kRTCTransportStats = new RTCStats_(null, {
   bytesSent: 'number',
   bytesReceived: 'number',
   rtcpTransportStatsId: 'string',
+  dtlsState: 'string',
+  // TODO(hbos): As soon as |activeConnection| has been replaced by |dtlsState|,
+  // remove this line. crbug.com/653873
   activeConnection: 'boolean',
   selectedCandidatePairId: 'string',
   localCertificateId: 'string',
