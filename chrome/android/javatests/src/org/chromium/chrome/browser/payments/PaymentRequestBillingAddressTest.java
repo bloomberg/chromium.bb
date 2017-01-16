@@ -69,11 +69,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                 "Maggie Doe", "Google", "340 Main St", "CA", "", "", "90291", "", "US", "",
                 "jon.doe@gmail.com", "en-US"));
 
-        // Profile with empty billing address info (should not be presented to user).
+        // Profile with empty street address (should not be presented to user).
         String profile8 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
-                "" /* fullName */, "" /* companyName */, "" /* streetAddress */, "" /* region */,
-                "" /* locality */, "" /* dependentLocality */, "" /* postalCode */,
-                "" /* sortingCode */, "US", "310-310-6000", "jon.doe@gmail.com", "en-US"));
+                "Jerry Doe", "Google", "" /* streetAddress */, "CA", "Los Angeles", "", "90291", "",
+                "US", "310-310-6000", "jerry.doe@gmail.com", "en-US"));
 
         // This card has no billing address selected.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jane Doe",

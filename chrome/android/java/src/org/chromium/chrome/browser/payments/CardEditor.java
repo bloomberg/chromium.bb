@@ -179,8 +179,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             // Include only local profiles, because GUIDs of server profiles change on every browser
             // restart. Server profiles are not supported as billing addresses.
             if (!profile.getIsLocal()) continue;
-            // Do not include profiles with empty billing address info.
-            if (TextUtils.isEmpty(profile.getLabel())) continue;
+            // Do not include profiles without street address.
+            if (TextUtils.isEmpty(profile.getStreetAddress())) continue;
             mProfilesForBillingAddress.add(profile);
             Pair<Integer, Integer> editMessageResIds = AutofillAddress.getEditMessageAndTitleResIds(
                     AutofillAddress.checkAddressCompletionStatus(profile));
