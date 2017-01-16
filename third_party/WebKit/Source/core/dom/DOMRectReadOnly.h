@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class DOMRectInit;
 class ScriptValue;
 class ScriptState;
 
@@ -23,6 +24,7 @@ class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>,
                                  double y,
                                  double width,
                                  double height);
+  static DOMRectReadOnly* fromRect(const DOMRectInit&);
 
   double x() const { return m_x; }
   double y() const { return m_y; }

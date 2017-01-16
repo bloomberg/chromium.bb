@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "core/dom/DOMRectInit.h"
 
 namespace blink {
 
@@ -27,6 +28,10 @@ ScriptValue DOMRectReadOnly::toJSONForBinding(ScriptState* scriptState) const {
   result.addNumber("bottom", bottom());
   result.addNumber("left", left());
   return result.scriptValue();
+}
+
+DOMRectReadOnly* DOMRectReadOnly::fromRect(const DOMRectInit& other) {
+  return new DOMRectReadOnly(other.x(), other.y(), other.width(), other.height());
 }
 
 DOMRectReadOnly::DOMRectReadOnly(double x,

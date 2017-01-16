@@ -33,6 +33,8 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/dom/DOMPointInit.h",
   "$blink_core_output_dir/dom/DOMQuadInit.cpp",
   "$blink_core_output_dir/dom/DOMQuadInit.h",
+  "$blink_core_output_dir/dom/DOMRectInit.cpp",
+  "$blink_core_output_dir/dom/DOMRectInit.h",
   "$blink_core_output_dir/dom/ElementCreationOptions.cpp",
   "$blink_core_output_dir/dom/ElementCreationOptions.h",
   "$blink_core_output_dir/dom/ElementDefinitionOptions.cpp",

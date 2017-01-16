@@ -12,6 +12,8 @@
     // FIXME: Exposed=(Window,Worker)
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMRect : DOMRectReadOnly {
+    [NewObject] static DOMRect fromRect(optional DOMRectInit other);
+
     inherit attribute unrestricted double x;
     inherit attribute unrestricted double y;
     inherit attribute unrestricted double width;

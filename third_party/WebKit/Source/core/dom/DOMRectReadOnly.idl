@@ -10,6 +10,8 @@
     // FIXME: Exposed=(Window,Worker)
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMRectReadOnly {
+    [NewObject] static DOMRectReadOnly fromRect(optional DOMRectInit other);
+
     readonly attribute unrestricted double x;
     readonly attribute unrestricted double y;
     readonly attribute unrestricted double width;

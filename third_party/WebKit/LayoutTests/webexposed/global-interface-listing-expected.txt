@@ -1160,6 +1160,7 @@ interface DOMRect : DOMRectReadOnly
     setter x
     setter y
 interface DOMRectReadOnly
+    static method fromRect
     attribute @@toStringTag
     getter bottom
     getter height
