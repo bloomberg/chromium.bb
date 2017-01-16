@@ -311,7 +311,7 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual void didCancelCompositionOnSelectionChange() {}
   virtual void resetInputMethod() {}
   virtual void didUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) {}
-  virtual void showImeIfNeeded() {}
+  virtual void showVirtualKeyboard() {}
 
   virtual void registerViewportLayers() const {}
 

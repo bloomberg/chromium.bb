@@ -334,7 +334,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                         int composition_start,
                         int composition_end,
                         bool show_ime_if_needed,
-                        bool is_non_ime_change);
+                        bool reply_to_request);
   void OnBackgroundColorChanged(SkColor color);
 
   bool HasFocus();

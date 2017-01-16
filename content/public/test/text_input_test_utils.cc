@@ -396,10 +396,6 @@ void TextInputStateSender::SetShowImeIfNeeded(bool show_ime_if_needed) {
   text_input_state_->show_ime_if_needed = show_ime_if_needed;
 }
 
-void TextInputStateSender::SetIsNonImeChange(bool is_non_ime_change) {
-  text_input_state_->is_non_ime_change = is_non_ime_change;
-}
-
 TestInputMethodObserver::TestInputMethodObserver() {}
 
 TestInputMethodObserver::~TestInputMethodObserver() {}

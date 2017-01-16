@@ -1914,7 +1914,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private void updateImeAdapter(long nativeImeAdapterAndroid, int textInputType,
             int textInputFlags, int textInputMode, String text, int selectionStart,
             int selectionEnd, int compositionStart, int compositionEnd, boolean showImeIfNeeded,
-            boolean isNonImeChange) {
+            boolean replyToRequest) {
         try {
             TraceEvent.begin("ContentViewCore.updateImeAdapter");
             boolean focusedNodeEditable = (textInputType != TextInputType.NONE);
@@ -1924,7 +1924,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             mImeAdapter.updateKeyboardVisibility(
                     textInputType, textInputFlags, textInputMode, showImeIfNeeded);
             mImeAdapter.updateState(text, selectionStart, selectionEnd, compositionStart,
-                    compositionEnd, isNonImeChange);
+                    compositionEnd, replyToRequest);
 
             boolean editableToggled = (focusedNodeEditable != isFocusedNodeEditable());
             mSelectionPopupController.updateSelectionState(focusedNodeEditable,

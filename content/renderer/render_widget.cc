@@ -932,7 +932,7 @@ void RenderWidget::WillBeginCompositorFrame() {
   // The UpdateTextInputState can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
-  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
+  UpdateTextInputState();
   UpdateSelectionBounds();
 
   for (auto& observer : render_frame_proxies_)
@@ -1024,15 +1024,25 @@ void RenderWidget::SetInputHandler(RenderWidgetInputHandler* input_handler) {
   DCHECK(!input_handler_);
 }
 
-void RenderWidget::UpdateTextInputState(ShowIme show_ime,
-                                        ChangeSource change_source) {
+void RenderWidget::ShowVirtualKeyboard() {
+  UpdateTextInputStateInternal(true, false);
+}
+
+void RenderWidget::UpdateTextInputState() {
+  UpdateTextInputStateInternal(false, false);
+}
+
+void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
+                                                bool reply_to_request) {
   TRACE_EVENT0("renderer", "RenderWidget::UpdateTextInputState");
+
   if (ime_event_guard_) {
-    // show_ime should still be effective even if it was set inside the IME
+    DCHECK(!reply_to_request);
+    // show_virtual_keyboard should still be effective even if it was set inside
+    // the IME
     // event guard.
-    if (show_ime == ShowIme::IF_NEEDED) {
-      ime_event_guard_->set_show_ime(true);
-    }
+    if (show_virtual_keyboard)
+      ime_event_guard_->set_show_virtual_keyboard(true);
     return;
   }
 
@@ -1050,8 +1060,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
 
   // Only sends text input params if they are changed or if the ime should be
   // shown.
-  if (show_ime == ShowIme::IF_NEEDED ||
-      change_source == ChangeSource::FROM_IME ||
+  if (show_virtual_keyboard || reply_to_request ||
       text_input_type_ != new_type || text_input_mode_ != new_mode ||
       text_input_info_ != new_info ||
       can_compose_inline_ != new_can_compose_inline) {
@@ -1065,10 +1074,10 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
     params.composition_start = new_info.compositionStart;
     params.composition_end = new_info.compositionEnd;
     params.can_compose_inline = new_can_compose_inline;
-    params.show_ime_if_needed = (show_ime == ShowIme::IF_NEEDED);
-#if defined(OS_ANDROID) || defined(USE_AURA)
-    params.is_non_ime_change = (change_source == ChangeSource::FROM_NON_IME);
-#endif
+    // TODO(changwan): change instances of show_ime_if_needed to
+    // show_virtual_keyboard.
+    params.show_ime_if_needed = show_virtual_keyboard;
+    params.reply_to_request = reply_to_request;
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), params));
 
     text_input_info_ = new_info;
@@ -1739,10 +1748,8 @@ void RenderWidget::OnDragSourceSystemDragEnded() {
   static_cast<WebFrameWidget*>(GetWebWidget())->dragSourceSystemDragEnded();
 }
 
-void RenderWidget::showImeIfNeeded() {
-#if defined(OS_ANDROID) || defined(USE_AURA)
-  UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
-#endif
+void RenderWidget::showVirtualKeyboard() {
+  ShowVirtualKeyboard();
 
 // TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
 // virtual keyboard.
@@ -1814,7 +1821,7 @@ void RenderWidget::convertWindowToViewport(blink::WebFloatRect* rect) {
 void RenderWidget::OnRequestTextInputStateUpdate() {
   DCHECK(!ime_event_guard_);
   UpdateSelectionBounds();
-  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_IME);
+  UpdateTextInputStateInternal(false, true /* reply_to_request */);
 }
 #endif
 
@@ -1888,15 +1895,7 @@ void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
 
 void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
   if (ime_event_guard_ != guard) {
-#if defined(OS_ANDROID)
-    // In case a from-IME event (e.g. touch) ends up in not-from-IME event
-    // (e.g. long press gesture), we want to treat it as not-from-IME event
-    // so that ReplicaInputConnection can make changes to its Editable model.
-    // Therefore, we want to mark this text state update as 'from IME' only
-    // when all the nested events are all originating from IME.
-    ime_event_guard_->set_from_ime(
-        ime_event_guard_->from_ime() && guard->from_ime());
-#endif
+    DCHECK(!ime_event_guard_->reply_to_request());
     return;
   }
   ime_event_guard_ = nullptr;
@@ -1906,9 +1905,10 @@ void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
   // ime event.
   UpdateSelectionBounds();
 #if defined(OS_ANDROID)
-  UpdateTextInputState(
-      guard->show_ime() ? ShowIme::IF_NEEDED : ShowIme::HIDE_IME,
-      guard->from_ime() ? ChangeSource::FROM_IME : ChangeSource::FROM_NON_IME);
+  if (guard->show_virtual_keyboard())
+    ShowVirtualKeyboard();
+  else
+    UpdateTextInputState();
 #endif
 }
 
@@ -2123,14 +2123,14 @@ void RenderWidget::didHandleGestureEvent(
   if (event_cancelled)
     return;
   if (event.type() == WebInputEvent::GestureTap) {
-    UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
+    ShowVirtualKeyboard();
   } else if (event.type() == WebInputEvent::GestureLongPress) {
     DCHECK(GetWebWidget());
     blink::WebInputMethodController* controller = GetInputMethodController();
     if (!controller || controller->textInputInfo().value.isEmpty())
-      UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
+      UpdateTextInputState();
     else
-      UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
+      ShowVirtualKeyboard();
   }
 // TODO(ananta): Piggyback off existing IPCs to communicate this information,
 // crbug/420130.

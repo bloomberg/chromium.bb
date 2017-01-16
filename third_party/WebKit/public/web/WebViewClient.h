@@ -276,7 +276,7 @@ class WebViewClient : protected WebWidgetClient {
   void resetInputMethod() override {}
   WebScreenInfo screenInfo() override { return WebScreenInfo(); }
   void setTouchAction(WebTouchAction touchAction) override {}
-  void showImeIfNeeded() override {}
+  void showVirtualKeyboard() override {}
   void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition,
                                   const WebNode& tappedNode,
                                   bool pageChanged) override {}

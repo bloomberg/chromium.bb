@@ -25,18 +25,18 @@ namespace blink {
 class ImeRequestTrackingWebViewClient
     : public FrameTestHelpers::TestWebViewClient {
  public:
-  ImeRequestTrackingWebViewClient() : m_imeRequestCount(0) {}
+  ImeRequestTrackingWebViewClient() : m_virtualKeyboardRequestCount(0) {}
 
   // WebWidgetClient methods
-  void showImeIfNeeded() override { ++m_imeRequestCount; }
+  void showVirtualKeyboard() override { ++m_virtualKeyboardRequestCount; }
 
   // Local methds
-  void reset() { m_imeRequestCount = 0; }
+  void reset() { m_virtualKeyboardRequestCount = 0; }
 
-  int imeRequestCount() { return m_imeRequestCount; }
+  int virtualKeyboardRequestCount() { return m_virtualKeyboardRequestCount; }
 
  private:
-  int m_imeRequestCount;
+  int m_virtualKeyboardRequestCount;
 };
 
 class ImeOnFocusTest : public ::testing::Test {
@@ -85,7 +85,7 @@ void ImeOnFocusTest::focus(const AtomicString& element) {
 }
 
 void ImeOnFocusTest::runImeOnFocusTest(std::string fileName,
-                                       int expectedImeRequestCount,
+                                       int expectedVirtualKeyboardRequestCount,
                                        IntPoint tapPoint,
                                        const AtomicString& focusElement,
                                        std::string frame) {
@@ -100,7 +100,7 @@ void ImeOnFocusTest::runImeOnFocusTest(std::string fileName,
 
   if (!focusElement.isNull())
     focus(focusElement);
-  EXPECT_EQ(0, client.imeRequestCount());
+  EXPECT_EQ(0, client.virtualKeyboardRequestCount());
 
   if (tapPoint.x() >= 0 && tapPoint.y() >= 0)
     sendGestureTap(webView, tapPoint);
@@ -114,7 +114,8 @@ void ImeOnFocusTest::runImeOnFocusTest(std::string fileName,
 
   if (!focusElement.isNull())
     focus(focusElement);
-  EXPECT_EQ(expectedImeRequestCount, client.imeRequestCount());
+  EXPECT_EQ(expectedVirtualKeyboardRequestCount,
+            client.virtualKeyboardRequestCount());
 
   m_webViewHelper.reset();
 }

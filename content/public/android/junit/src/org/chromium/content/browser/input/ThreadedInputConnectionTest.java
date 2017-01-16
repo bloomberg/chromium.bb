@@ -80,12 +80,12 @@ public class ThreadedInputConnectionTest {
         mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, false, 0);
 
         // Renderer updates states asynchronously.
-        mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, true);
+        mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, false);
         mInOrder.verify(mImeAdapter).updateSelection(5, 5, 0, 5);
         assertEquals(0, mConnection.getQueueForTest().size());
 
         // Prepare to call requestTextInputStateUpdate.
-        mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, false);
+        mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, true);
         assertEquals(1, mConnection.getQueueForTest().size());
         when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
 
@@ -95,11 +95,11 @@ public class ThreadedInputConnectionTest {
         // IME app calls finishComposingText().
         mConnection.finishComposingText();
         mInOrder.verify(mImeAdapter).finishComposingText();
-        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, false);
         mInOrder.verify(mImeAdapter).updateSelection(5, 5, -1, -1);
 
         // Prepare to call requestTextInputStateUpdate.
-        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, false);
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
         assertEquals(1, mConnection.getQueueForTest().size());
         when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
 
@@ -124,7 +124,7 @@ public class ThreadedInputConnectionTest {
     @Feature({"TextInput"})
     public void testRenderChangeUpdatesSelection() {
         // User moves the cursor.
-        mConnection.updateStateOnUiThread("hello", 4, 4, -1, -1, true, true);
+        mConnection.updateStateOnUiThread("hello", 4, 4, -1, -1, true, false);
         mInOrder.verify(mImeAdapter).updateSelection(4, 4, -1, -1);
         assertEquals(0, mConnection.getQueueForTest().size());
     }
@@ -139,7 +139,7 @@ public class ThreadedInputConnectionTest {
         mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, true, 0);
 
         // Renderer updates states asynchronously.
-        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, false);
         mInOrder.verify(mImeAdapter, never()).updateSelection(5, 5, -1, -1);
         assertEquals(0, mConnection.getQueueForTest().size());
 
@@ -154,7 +154,7 @@ public class ThreadedInputConnectionTest {
         mInOrder.verify(mImeAdapter, never()).updateSelection(4, 4, -1, -1);
 
         // Prepare to call requestTextInputStateUpdate.
-        mConnection.updateStateOnUiThread("hello", 4, 4, -1, -1, true, false);
+        mConnection.updateStateOnUiThread("hello", 4, 4, -1, -1, true, true);
         assertEquals(1, mConnection.getQueueForTest().size());
         when(mImeAdapter.requestTextInputStateUpdate()).thenReturn(true);
 
@@ -212,7 +212,7 @@ public class ThreadedInputConnectionTest {
                     }
                 }));
         // Or it could be.
-        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
+        mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, false);
         assertEquals("hello",
                 ThreadUtils.runOnUiThreadBlockingNoException(new Callable<CharSequence>() {
                     @Override

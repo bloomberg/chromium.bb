@@ -264,8 +264,8 @@ class CONTENT_EXPORT RenderWidget
   void NotifyInputEventHandled(blink::WebInputEvent::Type handled_type,
                                InputEventAckState ack_result) override;
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
-  void UpdateTextInputState(ShowIme show_ime,
-                            ChangeSource change_source) override;
+  void ShowVirtualKeyboard() override;
+  void UpdateTextInputState() override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
@@ -297,7 +297,7 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebFloatSize& accumulatedOverscroll,
                      const blink::WebFloatPoint& position,
                      const blink::WebFloatSize& velocity) override;
-  void showImeIfNeeded() override;
+  void showVirtualKeyboard() override;
   void convertViewportToWindow(blink::WebRect* rect) override;
   void convertWindowToViewport(blink::WebFloatRect* rect) override;
   bool requestPointerLock() override;
@@ -808,6 +808,9 @@ class CONTENT_EXPORT RenderWidget
   // browser. It always returns true unless there is no WebFrameWidget to
   // handle the event, or there is no page focus.
   bool ShouldHandleImeEvents() const;
+
+  void UpdateTextInputStateInternal(bool show_virtual_keyboard,
+                                    bool reply_to_request);
 
   // Indicates whether this widget has focus.
   bool has_focus_;

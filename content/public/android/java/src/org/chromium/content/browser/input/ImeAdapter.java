@@ -304,10 +304,10 @@ public class ImeAdapter {
      *                         composition.
      * @param compositionEnd The character offset of the composition end, or -1 if there is no
      *                       selection.
-     * @param isNonImeChange True when the update was caused by non-IME (e.g. Javascript).
+     * @param replyToRequest True when the update was requested by IME.
      */
     public void updateState(String text, int selectionStart, int selectionEnd, int compositionStart,
-            int compositionEnd, boolean isNonImeChange) {
+            int compositionEnd, boolean replyToRequest) {
         if (mCursorAnchorInfoController != null && (!TextUtils.equals(mLastText, text)
                 || mLastSelectionStart != selectionStart || mLastSelectionEnd != selectionEnd
                 || mLastCompositionStart != compositionStart
@@ -324,7 +324,7 @@ public class ImeAdapter {
         boolean singleLine = mTextInputType != TextInputType.TEXT_AREA
                 && mTextInputType != TextInputType.CONTENT_EDITABLE;
         mInputConnection.updateStateOnUiThread(text, selectionStart, selectionEnd, compositionStart,
-                compositionEnd, singleLine, isNonImeChange);
+                compositionEnd, singleLine, replyToRequest);
     }
 
     /**

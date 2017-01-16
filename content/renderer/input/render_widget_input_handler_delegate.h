@@ -24,13 +24,6 @@ namespace content {
 
 class RenderWidgetInputHandler;
 
-enum class ShowIme { IF_NEEDED, HIDE_IME };
-
-enum class ChangeSource {
-  FROM_NON_IME,
-  FROM_IME,
-};
-
 // Consumers of RenderWidgetInputHandler implement this delegate in order to
 // transport input handling information across processes.
 class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
@@ -68,15 +61,14 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   // Notifies the delegate of the |input_handler| managing it.
   virtual void SetInputHandler(RenderWidgetInputHandler* input_handler) = 0;
 
-  // |show_ime| should be ShowIme::IF_NEEDED iff the update may cause the ime to
-  // be displayed, e.g. after a tap on an input field on mobile.
-  // |change_source| should be ChangeSource::FROM_NON_IME when the renderer has
-  // to wait for the browser to acknowledge the change before the renderer
-  // handles any more IME events. This is when the text change did not originate
-  // from the IME in the browser side, such as changes by JavaScript or
-  // autofill.
-  virtual void UpdateTextInputState(ShowIme show_ime,
-                                    ChangeSource change_source) = 0;
+  // Call this if virtual keyboard should be displayed, e.g. after a tap on an
+  // input field on mobile. Note that we do this just by setting a bit in
+  // text input state and update it to the browser such that browser process can
+  // be up to date when showing virtual keyboard.
+  virtual void ShowVirtualKeyboard() = 0;
+
+  // Send an update of text input state to the browser process.
+  virtual void UpdateTextInputState() = 0;
 
   // Notifies that a gesture event is about to be handled.
   // Returns true if no further handling is needed. In that case, the event

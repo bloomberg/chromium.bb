@@ -15,15 +15,14 @@ class ImeEventGuard {
   explicit ImeEventGuard(RenderWidget* widget);
   ~ImeEventGuard();
 
-  bool show_ime() const { return show_ime_; }
-  bool from_ime() const { return from_ime_; }
-  void set_show_ime(bool show_ime) { show_ime_ = show_ime; }
-  void set_from_ime(bool from_ime) { from_ime_ = from_ime; }
+  bool show_virtual_keyboard() const { return show_virtual_keyboard_; }
+  bool reply_to_request() const { return reply_to_request_; }
+  void set_show_virtual_keyboard(bool show) { show_virtual_keyboard_ = show; }
 
  private:
   RenderWidget* widget_;
-  bool show_ime_;
-  bool from_ime_;
+  bool show_virtual_keyboard_;
+  bool reply_to_request_;
 };
 }
 

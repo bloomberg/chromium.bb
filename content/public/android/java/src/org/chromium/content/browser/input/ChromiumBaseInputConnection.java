@@ -46,10 +46,10 @@ public interface ChromiumBaseInputConnection extends InputConnection {
      *                         composition.
      * @param compositionEnd The character offset of the composition end, or -1 if there is no
      *                       selection.
-     * @param isNonImeChange True when the update was caused by non-IME (e.g. Javascript).
+     * @param replyToRequest True when the update was made in a reply to IME's request.
      */
     void updateStateOnUiThread(String text, int selectionStart, int selectionEnd,
-            int compositionStart, int compositionEnd, boolean singleLine, boolean isNonImeChange);
+            int compositionStart, int compositionEnd, boolean singleLine, boolean replyToRequest);
 
     /**
      * Send key event on UI thread.

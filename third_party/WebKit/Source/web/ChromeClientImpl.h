@@ -199,7 +199,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void didCancelCompositionOnSelectionChange() override;
   void resetInputMethod() override;
-  void showImeIfNeeded() override;
+  void showVirtualKeyboard() override;
 
   void registerViewportLayers() const override;
 

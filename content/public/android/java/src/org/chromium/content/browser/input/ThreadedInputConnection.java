@@ -114,22 +114,21 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
     }
 
     @Override
-    public void updateStateOnUiThread(String text, final int selectionStart,
-            final int selectionEnd, final int compositionStart, final int compositionEnd,
-            boolean singleLine, final boolean isNonImeChange) {
+    public void updateStateOnUiThread(String text, final int selectionStart, final int selectionEnd,
+            final int compositionStart, final int compositionEnd, boolean singleLine,
+            final boolean replyToRequest) {
         ImeUtils.checkOnUiThread();
 
         // crbug.com/663880: Non-breaking spaces can cause the IME to get confused. Replace with
         // normal spaces.
         text = text.replace('\u00A0', ' ');
 
-        mCachedTextInputState =
-                new TextInputState(text, new Range(selectionStart, selectionEnd),
-                        new Range(compositionStart, compositionEnd), singleLine, !isNonImeChange);
+        mCachedTextInputState = new TextInputState(text, new Range(selectionStart, selectionEnd),
+                new Range(compositionStart, compositionEnd), singleLine, replyToRequest);
         if (DEBUG_LOGS) Log.w(TAG, "updateState: %s", mCachedTextInputState);
 
         addToQueueOnUiThread(mCachedTextInputState);
-        if (isNonImeChange) {
+        if (!replyToRequest) {
             mHandler.post(mProcessPendingInputStatesRunnable);
         }
     }
@@ -270,7 +269,7 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
             if (state.shouldUnblock()) {
                 if (DEBUG_LOGS) Log.w(TAG, "blockAndGetStateUpdate: unblocked");
                 return null;
-            } else if (state.fromIme()) {
+            } else if (state.replyToRequest()) {
                 if (shouldUpdateSelection) updateSelection(state);
                 if (DEBUG_LOGS) Log.w(TAG, "blockAndGetStateUpdate done: %d", mQueue.size());
                 return state;

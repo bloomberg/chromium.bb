@@ -1023,9 +1023,9 @@ void ChromeClientImpl::resetInputMethod() {
     m_webView->client()->resetInputMethod();
 }
 
-void ChromeClientImpl::showImeIfNeeded() {
+void ChromeClientImpl::showVirtualKeyboard() {
   if (m_webView->client())
-    m_webView->client()->showImeIfNeeded();
+    m_webView->client()->showVirtualKeyboard();
 }
 
 void ChromeClientImpl::showUnhandledTapUIIfNeeded(

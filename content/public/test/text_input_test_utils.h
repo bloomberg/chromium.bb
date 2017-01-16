@@ -160,7 +160,6 @@ class TextInputStateSender {
   void SetFlags(int flags);
   void SetCanComposeInline(bool can_compose_inline);
   void SetShowImeIfNeeded(bool show_ime_if_needed);
-  void SetIsNonImeChange(bool is_non_ime_change);
 
  private:
   std::unique_ptr<TextInputState> text_input_state_;

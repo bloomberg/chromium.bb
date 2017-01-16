@@ -604,8 +604,7 @@ void SchedulerRunIdleTasks(const base::Closure& callback) {
 void ForceTextInputStateUpdateForRenderFrame(RenderFrame* frame) {
   if (auto* render_widget =
           static_cast<RenderFrameImpl*>(frame)->GetRenderWidget()) {
-    render_widget->UpdateTextInputState(ShowIme::IF_NEEDED,
-                                        ChangeSource::FROM_NON_IME);
+    render_widget->ShowVirtualKeyboard();
   }
 }
 

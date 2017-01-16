@@ -129,9 +129,11 @@ void RenderWidgetMusConnection::SetInputHandler(
   input_handler_ = input_handler;
 }
 
-void RenderWidgetMusConnection::UpdateTextInputState(
-    ShowIme show_ime,
-    ChangeSource change_source) {
+void RenderWidgetMusConnection::ShowVirtualKeyboard() {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetMusConnection::UpdateTextInputState() {
   NOTIMPLEMENTED();
 }
 

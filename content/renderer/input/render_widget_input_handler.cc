@@ -279,7 +279,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
         static_cast<const WebKeyboardEvent&>(input_event);
     if (key_event.nativeKeyCode == AKEYCODE_DPAD_CENTER &&
         widget_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
-      widget_->showImeIfNeeded();
+      widget_->showVirtualKeyboard();
       prevent_default = true;
     }
 #endif
@@ -415,8 +415,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // of a processed touch end event.
   if (input_event.type() == WebInputEvent::TouchEnd &&
       processed != WebInputEventResult::NotHandled) {
-    delegate_->UpdateTextInputState(ShowIme::IF_NEEDED,
-                                    ChangeSource::FROM_NON_IME);
+    delegate_->ShowVirtualKeyboard();
   }
 #elif defined(USE_AURA)
   // Show the virtual keyboard if enabled and a user gesture triggers a focus
@@ -424,7 +423,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (processed != WebInputEventResult::NotHandled &&
       (input_event.type() == WebInputEvent::TouchEnd ||
        input_event.type() == WebInputEvent::MouseUp)) {
-    delegate_->UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_IME);
+    delegate_->ShowVirtualKeyboard();
   }
 #endif
 

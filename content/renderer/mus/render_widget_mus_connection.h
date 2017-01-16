@@ -57,8 +57,8 @@ class CONTENT_EXPORT RenderWidgetMusConnection
   void NotifyInputEventHandled(blink::WebInputEvent::Type handled_type,
                                InputEventAckState ack_result) override;
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
-  void UpdateTextInputState(ShowIme show_ime,
-                            ChangeSource change_source) override;
+  void ShowVirtualKeyboard() override;
+  void UpdateTextInputState() override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 

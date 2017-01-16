@@ -143,8 +143,8 @@ class WebWidgetClient {
   // the embedder of the touch actions that are permitted for this touch.
   virtual void setTouchAction(WebTouchAction touchAction) {}
 
-  // Request the browser to show the IME for current input type.
-  virtual void showImeIfNeeded() {}
+  // Request the browser to show virtual keyboard for current input type.
+  virtual void showVirtualKeyboard() {}
 
   // Request that the browser show a UI for an unhandled tap, if needed.
   // Invoked during the handling of a GestureTap input event whenever the
