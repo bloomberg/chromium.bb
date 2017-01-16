@@ -347,8 +347,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // just for the web IDL implementation.
   Element* scrollingElementNoLayout();
 
-  void addStyleReattachData(Node&, StyleReattachData&);
-  StyleReattachData getStyleReattachData(Node&);
+  void addStyleReattachData(const Node&, StyleReattachData&);
+  StyleReattachData getStyleReattachData(const Node&) const;
 
   String readyState() const;
 
@@ -1450,7 +1450,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // This HashMap is used to stash information (ComputedStyle, nextTextSibling)
   // generated in the Style Resolution phase that is required in the
   // Layout Tree construction phase.
-  HeapHashMap<Member<Node>, StyleReattachData> m_styleReattachDataMap;
+  HeapHashMap<Member<const Node>, StyleReattachData> m_styleReattachDataMap;
 
   bool m_wellFormed;
 
