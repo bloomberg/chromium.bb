@@ -18,32 +18,10 @@
 #import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
-@interface ProfileSigninConfirmationViewController (TestingAPI)
-
-@property(readonly, nonatomic) ui::ProfileSigninConfirmationDelegate* delegate;
-@property(readonly, nonatomic) NSButton* createProfileButton;
-@property(readonly, nonatomic) NSTextView* explanationField;
-
-@end
-
-@implementation ProfileSigninConfirmationViewController (TestingAPI)
-
-- (ui::ProfileSigninConfirmationDelegate*)delegate {
-  return delegate_.get();
-}
-
-- (NSButton*)createProfileButton {
-  return createProfileButton_.get();
-}
-
-- (NSTextView*)explanationField {
-  return explanationField_.get();
-}
-
-@end
-
 class ProfileSigninConfirmationViewControllerTest
-    : public InProcessBrowserTest {
+  : public InProcessBrowserTest,
+    public ui::ProfileSigninConfirmationDelegate {
+
  public:
   ProfileSigninConfirmationViewControllerTest()
     : window_(nil),
@@ -66,11 +44,11 @@ class ProfileSigninConfirmationViewControllerTest
         &ProfileSigninConfirmationViewControllerTest::OnClose,
         base::Unretained(this));
     controller_.reset([[ProfileSigninConfirmationViewController alloc]
-             initWithBrowser:browser()
-                    username:username()
-                    delegate:base::MakeUnique<TestSigninDelegate>(this)
-         closeDialogCallback:close
-        offerProfileCreation:offerProfileCreation]);
+                        initWithBrowser:browser()
+                               username:username()
+                               delegate:this
+                    closeDialogCallback:close
+                   offerProfileCreation:offerProfileCreation]);
     [[window_ contentView] addSubview:[controller_ view]];
     [window_ makeKeyAndOrderFront:NSApp];
     ASSERT_TRUE([window_ isVisible]);
@@ -85,6 +63,10 @@ class ProfileSigninConfirmationViewControllerTest
         IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE);
   }
 
+  // ui::ProfileSigninConfirmationDelegate:
+  void OnContinueSignin() override { continued_ = true; }
+  void OnCancelSignin() override { cancelled_ = true; }
+  void OnSigninWithNewProfile() override { created_ = true; }
   void OnClose() { closed_ = true; }
 
   // The window containing the dialog.
@@ -100,23 +82,6 @@ class ProfileSigninConfirmationViewControllerTest
   bool closed_;
 
  private:
-  class TestSigninDelegate : public ui::ProfileSigninConfirmationDelegate {
-   public:
-    explicit TestSigninDelegate(
-        ProfileSigninConfirmationViewControllerTest* client)
-        : client_(client) {}
-
-    // ui::ProfileSigninConfirmationDelegate:
-    void OnContinueSignin() override { client_->continued_ = true; }
-    void OnCancelSignin() override { client_->cancelled_ = true; }
-    void OnSigninWithNewProfile() override { client_->created_ = true; }
-
-   private:
-    ProfileSigninConfirmationViewControllerTest* client_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestSigninDelegate);
-  };
-
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationViewControllerTest);
 };
 

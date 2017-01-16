@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SYNC_PROFILE_SIGNIN_CONFIRMATION_DIALOG_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_SYNC_PROFILE_SIGNIN_CONFIRMATION_DIALOG_VIEWS_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
@@ -25,17 +23,16 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
                                              public views::ButtonListener {
  public:
   // Create and show the dialog, which owns itself.
-  static void ShowDialog(
-      Browser* browser,
-      Profile* profile,
-      const std::string& username,
-      std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate);
+  static void ShowDialog(Browser* browser,
+                         Profile* profile,
+                         const std::string& username,
+                         ui::ProfileSigninConfirmationDelegate* delegate);
 
  private:
   ProfileSigninConfirmationDialogViews(
       Browser* browser,
       const std::string& username,
-      std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate);
+      ui::ProfileSigninConfirmationDelegate* delegate);
   ~ProfileSigninConfirmationDialogViews() override;
 
   // views::DialogDelegateView:
@@ -72,7 +69,7 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   std::string username_;
 
   // Dialog button handler.
-  std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate_;
+  ui::ProfileSigninConfirmationDelegate* delegate_;
 
   // Whether the user should be prompted to create a new profile.
   bool prompt_for_new_profile_;
