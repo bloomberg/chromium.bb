@@ -1311,4 +1311,65 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
   EXPECT_EQ(1u, gl.destroyImageCount());
 }
 
+class FlushMockGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
+ public:
+  MOCK_METHOD0(Flush, void());
+};
+
+TEST_F(Canvas2DLayerBridgeTest, NoUnnecessaryFlushes) {
+  FlushMockGLES2Interface gl;
+  std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider =
+      WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
+
+  EXPECT_CALL(gl, Flush()).Times(0);
+  Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
+      std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
+      Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
+      kN32_SkColorType)));
+  EXPECT_FALSE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+
+  EXPECT_CALL(gl, Flush()).Times(0);
+  bridge->didDraw(FloatRect(0, 0, 1, 1));
+  EXPECT_TRUE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+
+  EXPECT_CALL(gl, Flush()).Times(1);
+  bridge->flushGpu();
+  EXPECT_FALSE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+
+  EXPECT_CALL(gl, Flush()).Times(0);
+  bridge->didDraw(FloatRect(0, 0, 1, 1));
+  EXPECT_TRUE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+
+  EXPECT_CALL(gl, Flush()).Times(1);
+  bridge->flushGpu();
+  EXPECT_FALSE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+
+  // No flush because already flushed since last draw
+  EXPECT_CALL(gl, Flush()).Times(0);
+  bridge->flushGpu();
+  EXPECT_FALSE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+
+  EXPECT_CALL(gl, Flush()).Times(0);
+  bridge->didDraw(FloatRect(0, 0, 1, 1));
+  EXPECT_TRUE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+
+  // Flushes recording, but not the gpu
+  EXPECT_CALL(gl, Flush()).Times(0);
+  bridge->flush();
+  EXPECT_FALSE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+
+  EXPECT_CALL(gl, Flush()).Times(1);
+  bridge->flushGpu();
+  EXPECT_FALSE(bridge->hasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl);
+}
+
 }  // namespace blink

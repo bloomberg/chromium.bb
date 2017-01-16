@@ -144,6 +144,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
   SkColorType colorType() const { return m_colorType; }
 
+  bool hasRecordedDrawCommands() { return m_haveRecordedDrawCommands; }
+
   sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason);
 
   // The values of the enum entries must not change because they are used for
