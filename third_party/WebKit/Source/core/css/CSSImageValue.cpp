@@ -102,6 +102,8 @@ bool CSSImageValue::hasFailedOrCanceledSubresources() const {
 }
 
 bool CSSImageValue::equals(const CSSImageValue& other) const {
+  if (m_absoluteURL.isEmpty() && other.m_absoluteURL.isEmpty())
+    return m_relativeURL == other.m_relativeURL;
   return m_absoluteURL == other.m_absoluteURL;
 }
 
