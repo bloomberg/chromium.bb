@@ -867,6 +867,8 @@ class CORE_EXPORT Node : public EventTarget {
 
   Node(TreeScope*, ConstructionType);
 
+  virtual void willMoveToNewDocument(Document& oldDocument,
+                                     Document& newDocument);
   virtual void didMoveToNewDocument(Document& oldDocument);
 
   void addedEventListener(const AtomicString& eventType,

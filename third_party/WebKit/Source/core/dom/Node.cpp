@@ -1826,6 +1826,14 @@ ExecutionContext* Node::getExecutionContext() const {
   return document().contextDocument();
 }
 
+void Node::willMoveToNewDocument(Document& oldDocument, Document& newDocument) {
+  if (!oldDocument.frameHost() ||
+      oldDocument.frameHost() == newDocument.frameHost())
+    return;
+
+  oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfFrameHost(*this);
+}
+
 void Node::didMoveToNewDocument(Document& oldDocument) {
   TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(oldDocument);
 
@@ -1838,14 +1846,10 @@ void Node::didMoveToNewDocument(Document& oldDocument) {
   }
 
   oldDocument.markers().removeMarkers(this);
-  if (oldDocument.frameHost() && !document().frameHost())
-    oldDocument.frameHost()->eventHandlerRegistry().didMoveOutOfFrameHost(
-        *this);
-  else if (document().frameHost() && !oldDocument.frameHost())
+  if (document().frameHost() &&
+      document().frameHost() != oldDocument.frameHost()) {
     document().frameHost()->eventHandlerRegistry().didMoveIntoFrameHost(*this);
-  else if (oldDocument.frameHost() != document().frameHost())
-    EventHandlerRegistry::didMoveBetweenFrameHosts(
-        *this, oldDocument.frameHost(), document().frameHost());
+  }
 
   if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
           registry = mutationObserverRegistry()) {

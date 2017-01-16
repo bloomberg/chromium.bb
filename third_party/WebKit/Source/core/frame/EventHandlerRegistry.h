@@ -63,9 +63,6 @@ class CORE_EXPORT EventHandlerRegistry final
 
   void didMoveIntoFrameHost(EventTarget&);
   void didMoveOutOfFrameHost(EventTarget&);
-  static void didMoveBetweenFrameHosts(EventTarget&,
-                                       FrameHost* oldFrameHost,
-                                       FrameHost* newFrameHost);
 
   // Either |documentDetached| or |didMove{Into,OutOf,Between}FrameHosts| must
   // be called whenever the FrameHost that is associated with a registered event

@@ -128,6 +128,8 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(
     Document& oldDocument,
     Document& newDocument) const {
   DCHECK_NE(oldDocument, newDocument);
+  // Note: at the start of this function, node.document() may already have
+  // changed to match |newDocument|, which is why |oldDocument| is passed in.
 
   if (node.hasRareData()) {
     NodeRareData* rareData = node.rareData();
@@ -135,6 +137,7 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(
       rareData->nodeLists()->adoptDocument(oldDocument, newDocument);
   }
 
+  node.willMoveToNewDocument(oldDocument, newDocument);
   oldDocument.moveNodeIteratorsToNewDocument(node, newDocument);
 
   if (node.getCustomElementState() == CustomElementState::Custom) {
