@@ -19,7 +19,7 @@ namespace {
 // create, to explain its existence.
 const char kExplanationMessage[] =
     "Because of quirks in the gnome libsecret API, Chrome needs to store a "
-    "dummy entry to quarantee that this keyring was properly unlocked. More "
+    "dummy entry to guarantee that this keyring was properly unlocked. More "
     "details at http://crbug.com/660005.";
 
 }  // namespace
