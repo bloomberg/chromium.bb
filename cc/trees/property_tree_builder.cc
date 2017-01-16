@@ -30,7 +30,6 @@ namespace cc {
 
 namespace {
 
-static const int kInvalidPropertyTreeNodeId = -1;
 static const int kRootPropertyTreeNodeId = 0;
 static const int kViewportClipTreeNodeId = 1;
 
@@ -670,7 +669,7 @@ bool AddTransformNodeIfNeeded(
                     ->transform_id);
   DCHECK_NE(
       data_for_children->property_trees->transform_tree.TargetId(node->id),
-      kInvalidPropertyTreeNodeId);
+      TransformTree::kInvalidNodeId);
 
   node->has_potential_animation = has_potentially_animated_transform;
   node->is_currently_animating = TransformIsAnimating(layer);
@@ -1173,7 +1172,7 @@ void AddScrollNodeIfNeeded(
     if (layer->scroll_clip_layer()) {
       clip_bounds = layer->scroll_clip_layer()->bounds();
       DCHECK(layer->scroll_clip_layer()->transform_tree_index() !=
-             kInvalidPropertyTreeNodeId);
+             TransformTree::kInvalidNodeId);
       node.max_scroll_offset_affected_by_page_scale =
           !data_from_ancestor.property_trees->transform_tree
                .Node(layer->scroll_clip_layer()->transform_tree_index())
@@ -1427,7 +1426,7 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.transform_fixed_parent = nullptr;
   data_for_recursion.render_target = kRootPropertyTreeNodeId;
   data_for_recursion.clip_tree_parent = kRootPropertyTreeNodeId;
-  data_for_recursion.effect_tree_parent = kInvalidPropertyTreeNodeId;
+  data_for_recursion.effect_tree_parent = EffectTree::kInvalidNodeId;
   data_for_recursion.scroll_tree_parent = kRootPropertyTreeNodeId;
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;

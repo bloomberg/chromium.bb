@@ -5,6 +5,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
+#include "cc/layers/layer.h"
 #include "cc/proto/cc_conversions.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/trees/clip_node.h"
@@ -13,13 +14,13 @@
 namespace cc {
 
 ClipNode::ClipNode()
-    : id(-1),
-      parent_id(-1),
-      owning_layer_id(-1),
+    : id(ClipTree::kInvalidNodeId),
+      parent_id(ClipTree::kInvalidNodeId),
+      owning_layer_id(Layer::INVALID_ID),
       clip_type(ClipType::NONE),
-      transform_id(-1),
-      target_transform_id(-1),
-      target_effect_id(-1),
+      transform_id(TransformTree::kInvalidNodeId),
+      target_transform_id(TransformTree::kInvalidNodeId),
+      target_effect_id(EffectTree::kInvalidNodeId),
       layer_clipping_uses_only_local_clip(false),
       layers_are_clipped(false),
       layers_are_clipped_when_surfaces_disabled(false),

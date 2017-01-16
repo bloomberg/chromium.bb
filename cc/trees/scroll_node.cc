@@ -5,16 +5,18 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/layers/layer.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/trees/element_id.h"
+#include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 
 namespace cc {
 
 ScrollNode::ScrollNode()
-    : id(-1),
-      parent_id(-1),
-      owning_layer_id(-1),
+    : id(ScrollTree::kInvalidNodeId),
+      parent_id(ScrollTree::kInvalidNodeId),
+      owning_layer_id(Layer::INVALID_ID),
       scrollable(false),
       main_thread_scrolling_reasons(
           MainThreadScrollingReason::kNotScrollingOnMain),

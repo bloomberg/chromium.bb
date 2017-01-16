@@ -156,7 +156,7 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   DidUpdateScrollState(layer_id);
   TransformTree& transform_tree = property_trees()->transform_tree;
   ScrollTree& scroll_tree = property_trees()->scroll_tree;
-  int transform_id = -1;
+  int transform_id = TransformTree::kInvalidNodeId;
 
   // If pending tree topology changed and we still want to notify the pending
   // tree about scroll offset in the active tree, we may not find the
@@ -171,7 +171,7 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
     return;
   }
 
-  if (transform_id != -1) {
+  if (transform_id != TransformTree::kInvalidNodeId) {
     TransformNode* node = transform_tree.Node(transform_id);
     if (node->scroll_offset != scroll_tree.current_scroll_offset(layer_id)) {
       node->scroll_offset = scroll_tree.current_scroll_offset(layer_id);
@@ -617,7 +617,8 @@ void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
   int old_id = scroll_node ? scroll_node->owning_layer_id : Layer::INVALID_ID;
   int new_id = layer ? layer->id() : Layer::INVALID_ID;
-  int new_scroll_node_id = layer ? layer->scroll_tree_index() : -1;
+  int new_scroll_node_id =
+      layer ? layer->scroll_tree_index() : ScrollTree::kInvalidNodeId;
   if (layer)
     last_scrolled_layer_id_ = new_id;
 

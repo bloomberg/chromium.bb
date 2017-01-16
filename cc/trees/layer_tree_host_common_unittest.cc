@@ -10656,7 +10656,6 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
                                                  parent2, nullptr);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root1.get());
 
-  const int kInvalidPropertyTreeNodeId = -1;
   const int kRootPropertyTreeNodeId = 0;
 
   // Property tree root
@@ -10667,8 +10666,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   ScrollTree& expected_scroll_tree = property_trees.scroll_tree;
   ScrollNode* property_tree_root = expected_scroll_tree.Node(0);
   property_tree_root->id = kRootPropertyTreeNodeId;
-  property_tree_root->parent_id = kInvalidPropertyTreeNodeId;
-  property_tree_root->owning_layer_id = kInvalidPropertyTreeNodeId;
+  property_tree_root->parent_id = ScrollTree::kInvalidNodeId;
+  property_tree_root->owning_layer_id = Layer::INVALID_ID;
   property_tree_root->scrollable = false;
   property_tree_root->main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;

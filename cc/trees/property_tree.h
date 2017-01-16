@@ -533,7 +533,7 @@ struct DrawTransformData {
   // performance.
   DrawTransformData()
       : update_number(-1),
-        target_id(-1),
+        target_id(EffectTree::kInvalidNodeId),
         transforms(gfx::Transform(), gfx::Transform()) {}
 };
 

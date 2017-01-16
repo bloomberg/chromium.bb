@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/layers/layer.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/skia_conversions.h"
 #include "cc/trees/effect_node.h"
+#include "cc/trees/property_tree.h"
 
 namespace cc {
 
 EffectNode::EffectNode()
-    : id(-1),
-      parent_id(-1),
-      owning_layer_id(-1),
+    : id(EffectTree::kInvalidNodeId),
+      parent_id(EffectTree::kInvalidNodeId),
+      owning_layer_id(Layer::INVALID_ID),
       opacity(1.f),
       screen_space_opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),

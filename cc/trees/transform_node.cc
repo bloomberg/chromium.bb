@@ -4,18 +4,20 @@
 
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
+#include "cc/layers/layer.h"
 #include "cc/proto/gfx_conversions.h"
+#include "cc/trees/property_tree.h"
 #include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 namespace cc {
 
 TransformNode::TransformNode()
-    : id(-1),
-      parent_id(-1),
-      owning_layer_id(-1),
+    : id(TransformTree::kInvalidNodeId),
+      parent_id(TransformTree::kInvalidNodeId),
+      owning_layer_id(Layer::INVALID_ID),
       sticky_position_constraint_id(-1),
-      source_node_id(-1),
+      source_node_id(TransformTree::kInvalidNodeId),
       sorting_context_id(0),
       needs_local_transform_update(true),
       node_and_ancestors_are_animated_or_invertible(true),

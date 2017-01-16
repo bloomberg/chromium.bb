@@ -923,7 +923,7 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
     // the surface to the space of the surface itself.
     int destination_id = effect_node->transform_id;
     int source_id;
-    if (effect_node->parent_id != -1) {
+    if (effect_node->parent_id != EffectTree::kInvalidNodeId) {
       // For non-root surfaces, transform only by sub-layer scale.
       source_id = destination_id;
     } else {
@@ -968,7 +968,7 @@ int EffectTree::ClosestAncestorWithCopyRequest(int id) const {
   if (node->has_copy_request)
     return node->id;
   else
-    return -1;
+    return EffectTree::kInvalidNodeId;
 }
 
 void EffectTree::AddMaskLayerId(int id) {
@@ -1981,9 +1981,10 @@ DrawTransformData& PropertyTrees::FetchDrawTransformsDataFromCache(
     int dest_id) const {
   for (auto& transform_data : cached_data_.draw_transforms[transform_id]) {
     // We initialize draw_transforms with 1 element vectors when
-    // ResetCachedData, so if we hit a -1 target id, it means it's the first
-    // time we compute draw transforms after reset.
-    if (transform_data.target_id == dest_id || transform_data.target_id == -1) {
+    // ResetCachedData, so if we hit an invalid target id, it means it's the
+    // first time we compute draw transforms after reset.
+    if (transform_data.target_id == dest_id ||
+        transform_data.target_id == EffectTree::kInvalidNodeId) {
       return transform_data;
     }
   }
