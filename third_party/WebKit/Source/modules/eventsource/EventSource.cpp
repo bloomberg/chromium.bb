@@ -177,8 +177,9 @@ void EventSource::connect() {
   CHECK(!m_loader);
   // InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient
   // will be called synchronously.
-  m_loader = ThreadableLoader::create(executionContext, this, options,
-                                      resourceLoaderOptions);
+  m_loader = ThreadableLoader::create(
+      executionContext, this, options, resourceLoaderOptions,
+      ThreadableLoader::ClientSpec::kEventSource);
   m_loader->start(request);
 }
 

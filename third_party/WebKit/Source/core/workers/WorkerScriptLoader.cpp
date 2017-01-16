@@ -112,8 +112,9 @@ void WorkerScriptLoader::loadAsynchronously(
   m_needToCancel = true;
   // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
   CHECK(!m_threadableLoader);
-  m_threadableLoader = ThreadableLoader::create(executionContext, this, options,
-                                                resourceLoaderOptions);
+  m_threadableLoader = ThreadableLoader::create(
+      executionContext, this, options, resourceLoaderOptions,
+      ThreadableLoader::ClientSpec::kWorkerScriptLoader);
   m_threadableLoader->start(request);
   if (m_failed)
     notifyFinished();

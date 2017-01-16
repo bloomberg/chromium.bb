@@ -62,11 +62,13 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                                         const ResourceRequest&,
                                         ThreadableLoaderClient&,
                                         const ThreadableLoaderOptions&,
-                                        const ResourceLoaderOptions&);
+                                        const ResourceLoaderOptions&,
+                                        ThreadableLoader::ClientSpec);
   static DocumentThreadableLoader* create(Document&,
                                           ThreadableLoaderClient*,
                                           const ThreadableLoaderOptions&,
-                                          const ResourceLoaderOptions&);
+                                          const ResourceLoaderOptions&,
+                                          ThreadableLoader::ClientSpec);
   ~DocumentThreadableLoader() override;
 
   void start(const ResourceRequest&) override;
@@ -85,7 +87,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                            ThreadableLoaderClient*,
                            BlockingBehavior,
                            const ThreadableLoaderOptions&,
-                           const ResourceLoaderOptions&);
+                           const ResourceLoaderOptions&,
+                           ClientSpec);
 
   void clear();
 
@@ -185,6 +188,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   Document& document() const;
 
   ThreadableLoaderClient* m_client;
+  const ClientSpec m_clientSpec;
   Member<Document> m_document;
 
   const ThreadableLoaderOptions m_options;

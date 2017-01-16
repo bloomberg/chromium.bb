@@ -1046,7 +1046,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
     CHECK(!m_loader);
     DCHECK(m_sendFlag);
     m_loader = ThreadableLoader::create(executionContext, this, options,
-                                        resourceLoaderOptions);
+                                        resourceLoaderOptions,
+                                        ThreadableLoader::ClientSpec::kXHR);
     m_loader->start(request);
 
     return;
@@ -1056,8 +1057,9 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   CHECK(!m_loader);
   // Use count for XHR synchronous requests.
   UseCounter::count(&executionContext, UseCounter::XMLHttpRequestSynchronous);
-  ThreadableLoader::loadResourceSynchronously(executionContext, request, *this,
-                                              options, resourceLoaderOptions);
+  ThreadableLoader::loadResourceSynchronously(
+      executionContext, request, *this, options, resourceLoaderOptions,
+      ThreadableLoader::ClientSpec::kXHR);
 
   throwForLoadFailureIfNeeded(exceptionState, String());
 }

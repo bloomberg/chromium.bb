@@ -118,12 +118,14 @@ void FileReaderLoader::start(ExecutionContext* executionContext,
   CHECK(!m_loader);
   if (m_client) {
     DCHECK(!m_loader);
-    m_loader = ThreadableLoader::create(*executionContext, this, options,
-                                        resourceLoaderOptions);
+    m_loader = ThreadableLoader::create(
+        *executionContext, this, options, resourceLoaderOptions,
+        ThreadableLoader::ClientSpec::kFileReaderLoader);
     m_loader->start(request);
   } else {
     ThreadableLoader::loadResourceSynchronously(
-        *executionContext, request, *this, options, resourceLoaderOptions);
+        *executionContext, request, *this, options, resourceLoaderOptions,
+        ThreadableLoader::ClientSpec::kFileReaderLoader);
   }
 }
 

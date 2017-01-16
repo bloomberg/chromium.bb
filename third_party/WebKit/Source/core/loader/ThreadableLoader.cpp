@@ -42,7 +42,8 @@ ThreadableLoader* ThreadableLoader::create(
     ExecutionContext& context,
     ThreadableLoaderClient* client,
     const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resourceLoaderOptions) {
+    const ResourceLoaderOptions& resourceLoaderOptions,
+    ClientSpec clientSpec) {
   DCHECK(client);
 
   if (context.isWorkerGlobalScope()) {
@@ -51,7 +52,7 @@ ThreadableLoader* ThreadableLoader::create(
   }
 
   return DocumentThreadableLoader::create(toDocument(context), client, options,
-                                          resourceLoaderOptions);
+                                          resourceLoaderOptions, clientSpec);
 }
 
 void ThreadableLoader::loadResourceSynchronously(
@@ -59,7 +60,8 @@ void ThreadableLoader::loadResourceSynchronously(
     const ResourceRequest& request,
     ThreadableLoaderClient& client,
     const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resourceLoaderOptions) {
+    const ResourceLoaderOptions& resourceLoaderOptions,
+    ClientSpec clientSpec) {
   if (context.isWorkerGlobalScope()) {
     WorkerThreadableLoader::loadResourceSynchronously(
         toWorkerGlobalScope(context), request, client, options,
@@ -68,7 +70,8 @@ void ThreadableLoader::loadResourceSynchronously(
   }
 
   DocumentThreadableLoader::loadResourceSynchronously(
-      toDocument(context), request, client, options, resourceLoaderOptions);
+      toDocument(context), request, client, options, resourceLoaderOptions,
+      clientSpec);
 }
 
 }  // namespace blink

@@ -840,9 +840,9 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag,
   InspectorInstrumentation::willStartFetch(m_executionContext, this);
   // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
   CHECK(!m_loader);
-  m_loader =
-      ThreadableLoader::create(*m_executionContext, this,
-                               threadableLoaderOptions, resourceLoaderOptions);
+  m_loader = ThreadableLoader::create(
+      *m_executionContext, this, threadableLoaderOptions, resourceLoaderOptions,
+      ThreadableLoader::ClientSpec::kFetchManager);
   m_loader->start(request);
 }
 
@@ -873,9 +873,9 @@ void FetchManager::Loader::performDataFetch() {
   threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
 
   InspectorInstrumentation::willStartFetch(m_executionContext, this);
-  m_loader =
-      ThreadableLoader::create(*m_executionContext, this,
-                               threadableLoaderOptions, resourceLoaderOptions);
+  m_loader = ThreadableLoader::create(
+      *m_executionContext, this, threadableLoaderOptions, resourceLoaderOptions,
+      ThreadableLoader::ClientSpec::kFetchManager);
   m_loader->start(request);
 }
 

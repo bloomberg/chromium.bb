@@ -671,8 +671,9 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::start(
   resourceLoaderOptions.requestInitiatorContext = WorkerContext;
   // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
   CHECK(!m_mainThreadLoader);
-  m_mainThreadLoader = DocumentThreadableLoader::create(document, this, options,
-                                                        resourceLoaderOptions);
+  m_mainThreadLoader = DocumentThreadableLoader::create(
+      document, this, options, resourceLoaderOptions,
+      ThreadableLoader::ClientSpec::kMainThreadLoaderHolder);
   m_mainThreadLoader->start(ResourceRequest(request.get()));
 }
 
