@@ -187,7 +187,8 @@ CompositeEditCommand::~CompositeEditCommand() {
   DCHECK(isTopLevelCommand() || !m_composition);
 }
 
-bool CompositeEditCommand::apply(EditCommandSource source) {
+// TODO(chongz): Fire 'beforeinput' based on |EditCommandSource|.
+bool CompositeEditCommand::apply(EditCommandSource) {
   DCHECK(!isCommandGroupWrapper());
   if (!endingSelection().isContentRichlyEditable()) {
     switch (inputType()) {
@@ -223,9 +224,6 @@ bool CompositeEditCommand::apply(EditCommandSource source) {
   // the creation of VisiblePositions).
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (!willApplyEditing(source))
-    return false;
-
   LocalFrame* frame = document().frame();
   DCHECK(frame);
   EditingState editingState;
@@ -250,11 +248,6 @@ EditCommandComposition* CompositeEditCommand::ensureComposition() {
     command->m_composition = EditCommandComposition::create(
         &document(), startingSelection(), endingSelection(), inputType());
   return command->m_composition.get();
-}
-
-bool CompositeEditCommand::willApplyEditing(EditCommandSource) {
-  // TODO(chongz): Move all the 'beforeinput' dispatching logic here.
-  return true;
 }
 
 bool CompositeEditCommand::preservesTypingStyle() const {

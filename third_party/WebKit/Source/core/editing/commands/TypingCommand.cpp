@@ -122,39 +122,6 @@ bool canAppendNewLineFeedToSelection(const VisibleSelection& selection) {
   return event->text().length();
 }
 
-InputEvent::InputType inputTypeForTypingCommand(
-    TypingCommand::ETypingCommand commandType,
-    TextGranularity granularity,
-    TypingCommand::TextCompositionType compositionType) {
-  using InputType = InputEvent::InputType;
-
-  switch (commandType) {
-    // TODO(chongz): |DeleteSelection| is used by IME but we don't have
-    // direction info.
-    case TypingCommand::DeleteSelection:
-      return InputType::DeleteContentBackward;
-    case TypingCommand::DeleteKey:
-      if (compositionType != TypingCommand::TextCompositionNone)
-        return InputType::DeleteComposedCharacterBackward;
-      return deletionInputTypeFromTextGranularity(DeleteDirection::Backward,
-                                                  granularity);
-    case TypingCommand::ForwardDeleteKey:
-      if (compositionType != TypingCommand::TextCompositionNone)
-        return InputType::DeleteComposedCharacterForward;
-      return deletionInputTypeFromTextGranularity(DeleteDirection::Forward,
-                                                  granularity);
-    case TypingCommand::InsertText:
-      return InputType::InsertText;
-    case TypingCommand::InsertLineBreak:
-      return InputType::InsertLineBreak;
-    case TypingCommand::InsertParagraphSeparator:
-    case TypingCommand::InsertParagraphSeparatorInQuotedContent:
-      return InputType::InsertParagraph;
-    default:
-      return InputType::None;
-  }
-}
-
 }  // anonymous namespace
 
 using namespace HTMLNames;
@@ -178,8 +145,6 @@ TypingCommand::TypingCommand(Document& document,
       m_shouldRetainAutocorrectionIndicator(options &
                                             RetainAutocorrectionIndicator),
       m_shouldPreventSpellChecking(options & PreventSpellChecking) {
-  m_inputType = inputTypeForTypingCommand(m_commandType, m_granularity,
-                                          m_compositionType);
   updatePreservesTypingStyle(m_commandType);
 }
 
@@ -198,9 +163,6 @@ void TypingCommand::deleteSelection(Document& document,
 
     lastTypingCommand->setShouldPreventSpellChecking(options &
                                                      PreventSpellChecking);
-    if (!lastTypingCommand->willAddTypingToOpenCommand(
-            source, InputEvent::InputType::DeleteContentBackward))
-      return;
     // InputMethodController uses this function to delete composition
     // selection.  It won't be aborted.
     lastTypingCommand->deleteSelection(options & SmartDelete,
@@ -227,9 +189,6 @@ void TypingCommand::deleteKeyPressed(Document& document,
                                                        frame);
         lastTypingCommand->setShouldPreventSpellChecking(options &
                                                          PreventSpellChecking);
-        if (!lastTypingCommand->willAddTypingToOpenCommand(
-                source, InputEvent::InputType::DeleteContentBackward))
-          return;
         EditingState editingState;
         lastTypingCommand->deleteKeyPressed(granularity, options & KillRing,
                                             &editingState);
@@ -256,9 +215,6 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document,
       updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand, frame);
       lastTypingCommand->setShouldPreventSpellChecking(options &
                                                        PreventSpellChecking);
-      if (!lastTypingCommand->willAddTypingToOpenCommand(
-              source, InputEvent::InputType::DeleteContentForward))
-        return;
       lastTypingCommand->forwardDeleteKeyPressed(
           granularity, options & KillRing, editingState);
       return;
@@ -270,9 +226,9 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document,
 }
 
 String TypingCommand::textDataForInputEvent() const {
-  if (m_inputType == InputEvent::InputType::InsertText)
+  if (m_commands.isEmpty() || isIncrementalInsertion())
     return m_textToInsert;
-  return CompositeEditCommand::textDataForInputEvent();
+  return m_commands.back()->textDataForInputEvent();
 }
 
 void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(
@@ -375,11 +331,8 @@ void TypingCommand::insertText(Document& document,
         options & RetainAutocorrectionIndicator);
     lastTypingCommand->setShouldPreventSpellChecking(options &
                                                      PreventSpellChecking);
-    lastTypingCommand->m_isIncrementalInsertion = isIncrementalInsertion;
-    if (!lastTypingCommand->willAddTypingToOpenCommand(
-            source, InputEvent::InputType::InsertText, newText))
-      return;
     EditingState editingState;
+    lastTypingCommand->m_isIncrementalInsertion = isIncrementalInsertion;
     lastTypingCommand->insertText(newText, options & SelectInsertedText,
                                   &editingState);
 
@@ -430,9 +383,6 @@ bool TypingCommand::insertLineBreak(Document& document,
   if (TypingCommand* lastTypingCommand =
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
     lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
-    if (!lastTypingCommand->willAddTypingToOpenCommand(
-            source, InputEvent::InputType::InsertLineBreak))
-      return false;
     EditingState editingState;
     lastTypingCommand->insertLineBreak(&editingState);
     return !editingState.isAborted();
@@ -446,9 +396,6 @@ bool TypingCommand::insertParagraphSeparatorInQuotedContent(
     EditCommandSource source) {
   if (TypingCommand* lastTypingCommand =
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
-    if (!lastTypingCommand->willAddTypingToOpenCommand(
-            source, InputEvent::InputType::InsertParagraph))
-      return false;
     EditingState editingState;
     lastTypingCommand->insertParagraphSeparatorInQuotedContent(&editingState);
     return !editingState.isAborted();
@@ -464,9 +411,6 @@ bool TypingCommand::insertParagraphSeparator(Document& document,
   if (TypingCommand* lastTypingCommand =
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
     lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
-    if (!lastTypingCommand->willAddTypingToOpenCommand(
-            source, InputEvent::InputType::InsertParagraph))
-      return false;
     EditingState editingState;
     lastTypingCommand->insertParagraphSeparator(&editingState);
     return !editingState.isAborted();
@@ -531,15 +475,33 @@ void TypingCommand::doApply(EditingState* editingState) {
 }
 
 InputEvent::InputType TypingCommand::inputType() const {
-  return m_inputType;
-}
+  using InputType = InputEvent::InputType;
 
-bool TypingCommand::willAddTypingToOpenCommand(EditCommandSource source,
-                                               InputEvent::InputType inputType,
-                                               const String& text) {
-  m_inputType = inputType;
-  m_textToInsert = text;
-  return willApplyEditing(source);
+  switch (m_commandType) {
+    // TODO(chongz): |DeleteSelection| is used by IME but we don't have
+    // direction info.
+    case DeleteSelection:
+      return InputType::DeleteContentBackward;
+    case DeleteKey:
+      if (m_compositionType != TextCompositionNone)
+        return InputType::DeleteComposedCharacterBackward;
+      return deletionInputTypeFromTextGranularity(DeleteDirection::Backward,
+                                                  m_granularity);
+    case ForwardDeleteKey:
+      if (m_compositionType != TextCompositionNone)
+        return InputType::DeleteComposedCharacterForward;
+      return deletionInputTypeFromTextGranularity(DeleteDirection::Forward,
+                                                  m_granularity);
+    case InsertText:
+      return InputType::InsertText;
+    case InsertLineBreak:
+      return InputType::InsertLineBreak;
+    case InsertParagraphSeparator:
+    case InsertParagraphSeparatorInQuotedContent:
+      return InputType::InsertParagraph;
+    default:
+      return InputType::None;
+  }
 }
 
 void TypingCommand::typingAddedToOpenCommand(
