@@ -162,13 +162,13 @@ class MockAudioInputController : public AudioInputController {
       media::AudioManager* audio_manager,
       AudioInputController::EventHandler* event_handler,
       media::UserInputMonitor* user_input_monitor)
-      : AudioInputController(event_handler,
+      : AudioInputController(std::move(task_runner),
+                             event_handler,
                              writer,
                              /*debug_writer*/ nullptr,
                              user_input_monitor,
                              /*agc*/ false) {
-    task_runner_ = std::move(task_runner);
-    task_runner_->PostTask(
+    GetTaskRunnerForTesting()->PostTask(
         FROM_HERE,
         base::Bind(&AudioInputController::EventHandler::OnCreated,
                    base::Unretained(event_handler), base::Unretained(this)));
@@ -178,7 +178,7 @@ class MockAudioInputController : public AudioInputController {
         .WillByDefault(SaveArg<0>(&file_name));
   }
 
-  EventHandler* handler() { return handler_; }
+  EventHandler* handler() { return GetHandlerForTesting(); }
 
   // File name that we pretend to do a debug recording to, if any.
   base::FilePath debug_file_name() { return file_name; }
@@ -202,7 +202,8 @@ class MockAudioInputController : public AudioInputController {
   void ExecuteClose(const base::Closure& task) {
     // Hop to audio manager thread before calling task, since this is the real
     // behavior.
-    task_runner_->PostTaskAndReply(FROM_HERE, base::Bind([]() {}), task);
+    GetTaskRunnerForTesting()->PostTaskAndReply(FROM_HERE, base::Bind([]() {}),
+                                                task);
   }
 
   base::FilePath file_name;

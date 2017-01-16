@@ -65,6 +65,9 @@ class TestAudioInputController : public AudioInputController {
   // Returns the event handler installed on the AudioInputController.
   EventHandler* event_handler() const { return event_handler_; }
 
+  // Returns a pointer to the audio callback for the AudioInputController.
+  SyncWriter* sync_writer() const { return sync_writer_; }
+
   // Notifies the TestAudioControllerOpened() event to the delegate (if any).
   void Record() override;
 
@@ -84,7 +87,8 @@ class TestAudioInputController : public AudioInputController {
   // These are not owned by us and expected to be valid for this object's
   // lifetime.
   TestAudioInputControllerFactory* factory_;
-  EventHandler* event_handler_;
+  EventHandler* const event_handler_;
+  SyncWriter* const sync_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAudioInputController);
 };

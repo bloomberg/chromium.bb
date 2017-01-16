@@ -15,16 +15,16 @@ TestAudioInputController::TestAudioInputController(
     EventHandler* event_handler,
     SyncWriter* sync_writer,
     UserInputMonitor* user_input_monitor)
-    : AudioInputController(event_handler,
+    : AudioInputController(audio_manager->GetTaskRunner(),
+                           event_handler,
                            sync_writer,
                            nullptr,
                            user_input_monitor,
                            false),
       audio_parameters_(audio_parameters),
       factory_(factory),
-      event_handler_(event_handler) {
-  task_runner_ = audio_manager->GetTaskRunner();
-}
+      event_handler_(event_handler),
+      sync_writer_(sync_writer) {}
 
 TestAudioInputController::~TestAudioInputController() {
   // Inform the factory so that it allows creating new instances in future.
@@ -37,7 +37,7 @@ void TestAudioInputController::Record() {
 }
 
 void TestAudioInputController::Close(const base::Closure& closed_task) {
-  task_runner_->PostTask(FROM_HERE, closed_task);
+  GetTaskRunnerForTesting()->PostTask(FROM_HERE, closed_task);
   if (factory_->delegate_)
     factory_->delegate_->TestAudioControllerClosed(this);
 }
@@ -59,8 +59,9 @@ AudioInputController* TestAudioInputControllerFactory::Create(
     AudioParameters params,
     UserInputMonitor* user_input_monitor) {
   DCHECK(!controller_);  // Only one test instance managed at a time.
-  controller_ = new TestAudioInputController(
-      this, audio_manager, params, event_handler, NULL, user_input_monitor);
+  controller_ =
+      new TestAudioInputController(this, audio_manager, params, event_handler,
+                                   sync_writer, user_input_monitor);
   return controller_;
 }
 

@@ -183,6 +183,12 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     CopyPacketToAudioBus();
   }
 
+  void OnData(media::AudioBus* data) {
+    auto* writer =
+        static_cast<AudioInputController::SyncWriter*>(recognizer_.get());
+    writer->Write(data, 0.0, false, 0);
+  }
+
  protected:
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<SpeechRecognizerImpl> recognizer_;
@@ -247,7 +253,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // full recording to complete.
   const size_t kNumChunks = 5;
   for (size_t i = 0; i < kNumChunks; ++i) {
-    controller->event_handler()->OnData(controller, audio_bus_.get());
+    OnData(audio_bus_.get());
     base::RunLoop().RunUntilIdle();
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
@@ -302,7 +308,7 @@ TEST_F(SpeechRecognizerImplTest, CancelWithData) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, audio_bus_.get());
+  OnData(audio_bus_.get());
   base::RunLoop().RunUntilIdle();
   recognizer_->AbortRecognition();
   base::RunLoop().RunUntilIdle();
@@ -323,7 +329,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, audio_bus_.get());
+  OnData(audio_bus_.get());
   base::RunLoop().RunUntilIdle();
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
@@ -359,7 +365,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, audio_bus_.get());
+  OnData(audio_bus_.get());
   base::RunLoop().RunUntilIdle();
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
@@ -412,7 +418,7 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
   ASSERT_TRUE(controller);
-  controller->event_handler()->OnData(controller, audio_bus_.get());
+  OnData(audio_bus_.get());
   controller->event_handler()->OnError(controller,
       AudioInputController::UNKNOWN_ERROR);
   base::RunLoop().RunUntilIdle();
@@ -438,7 +444,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
                      SpeechRecognitionEngine::kAudioPacketIntervalMs + 1;
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets; ++i) {
-    controller->event_handler()->OnData(controller, audio_bus_.get());
+    OnData(audio_bus_.get());
   }
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
@@ -467,12 +473,12 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
 
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets / 2; ++i) {
-    controller->event_handler()->OnData(controller, audio_bus_.get());
+    OnData(audio_bus_.get());
   }
 
   FillPacketWithTestWaveform();
   for (int i = 0; i < num_packets / 2; ++i) {
-    controller->event_handler()->OnData(controller, audio_bus_.get());
+    OnData(audio_bus_.get());
   }
 
   base::RunLoop().RunUntilIdle();
@@ -504,18 +510,18 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
                     SpeechRecognitionEngine::kAudioPacketIntervalMs;
   FillPacketWithNoise();
   for (int i = 0; i < num_packets; ++i) {
-    controller->event_handler()->OnData(controller, audio_bus_.get());
+    OnData(audio_bus_.get());
   }
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(-1.0f, volume_);  // No audio volume set yet.
 
   // The vector is already filled with zero value samples on create.
-  controller->event_handler()->OnData(controller, audio_bus_.get());
+  OnData(audio_bus_.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_FLOAT_EQ(0.74939233f, volume_);
 
   FillPacketWithTestWaveform();
-  controller->event_handler()->OnData(controller, audio_bus_.get());
+  OnData(audio_bus_.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_NEAR(0.89926866f, volume_, 0.00001f);
   EXPECT_FLOAT_EQ(0.75071919f, noise_volume_);

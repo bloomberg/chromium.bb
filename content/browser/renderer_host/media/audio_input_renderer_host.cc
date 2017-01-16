@@ -156,11 +156,6 @@ void AudioInputRendererHost::OnError(media::AudioInputController* controller,
                  base::RetainedRef(controller), error_code));
 }
 
-void AudioInputRendererHost::OnData(media::AudioInputController* controller,
-                                    const media::AudioBus* data) {
-  NOTREACHED() << "Only low-latency mode is supported.";
-}
-
 void AudioInputRendererHost::OnLog(media::AudioInputController* controller,
                                    const std::string& message) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -180,7 +175,6 @@ void AudioInputRendererHost::DoCompleteCreation(
   AudioEntry* entry = LookupByController(controller);
   DCHECK(entry);
   DCHECK(PeerHandle());
-  DCHECK(entry->controller->SharedMemoryAndSyncSocketMode());
 
   // Once the audio stream is created then complete the creation process by
   // mapping shared memory and sharing with the renderer process.

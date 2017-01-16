@@ -276,8 +276,10 @@ void SpeechRecognizerImpl::OnError(AudioInputController* controller,
                                      this, event_args));
 }
 
-void SpeechRecognizerImpl::OnData(AudioInputController* controller,
-                                  const AudioBus* data) {
+void SpeechRecognizerImpl::Write(const AudioBus* data,
+                                 double volume,
+                                 bool key_pressed,
+                                 uint32_t hardware_delay_bytes) {
   // Convert audio from native format to fixed format used by WebSpeech.
   FSMEventArgs event_args(EVENT_AUDIO_DATA);
   event_args.audio_data = audio_converter_->Convert(data);
@@ -296,6 +298,8 @@ void SpeechRecognizerImpl::OnData(AudioInputController* controller,
   // audio segments.
   CHECK(audio_converter_->data_was_converted());
 }
+
+void SpeechRecognizerImpl::Close() {}
 
 void SpeechRecognizerImpl::OnAudioClosed(AudioInputController*) {}
 
@@ -585,7 +589,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
       new OnDataConverter(input_parameters, output_parameters));
 
   audio_controller_ = AudioInputController::Create(
-      audio_manager, this, input_parameters, device_id_, NULL);
+      audio_manager, this, this, input_parameters, device_id_, NULL);
 
   if (!audio_controller_.get()) {
     return Abort(

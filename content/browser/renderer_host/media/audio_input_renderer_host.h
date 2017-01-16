@@ -108,8 +108,6 @@ class CONTENT_EXPORT AudioInputRendererHost
   void OnCreated(media::AudioInputController* controller) override;
   void OnError(media::AudioInputController* controller,
                media::AudioInputController::ErrorCode error_code) override;
-  void OnData(media::AudioInputController* controller,
-              const media::AudioBus* data) override;
   void OnLog(media::AudioInputController* controller,
              const std::string& message) override;
 
@@ -238,7 +236,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   AudioEntryMap audio_entries_;
 
   // Raw pointer of the UserInputMonitor.
-  media::UserInputMonitor* user_input_monitor_;
+  media::UserInputMonitor* const user_input_monitor_;
 
   std::unique_ptr<media::AudioLog> audio_log_;
 

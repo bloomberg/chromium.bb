@@ -94,8 +94,10 @@ class MEDIA_EXPORT AudioOutputStream {
   // The output stream does not take ownership of this callback.
   virtual void Start(AudioSourceCallback* callback) = 0;
 
-  // Stops playing audio. Effect might not be instantaneous as the hardware
-  // might have locked audio data that is processing.
+  // Stops playing audio.  The operation completes synchronously meaning that
+  // once Stop() has completed executing, no further callbacks will be made to
+  // the callback object that was supplied to Start() and it can be safely
+  // deleted.
   virtual void Stop() = 0;
 
   // Sets the relative volume, with range [0.0, 1.0] inclusive.
