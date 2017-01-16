@@ -313,7 +313,7 @@ void WindowGrid::Shutdown() {
         widget_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         kOverviewSelectorTransitionMilliseconds));
-    animation_settings.SetTweenType(gfx::Tween::EASE_IN_2);
+    animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     // CleanupAnimationObserver will delete itself (and the shield widget) when
@@ -661,7 +661,7 @@ void WindowGrid::InitShieldWidget() {
       widget_window->GetLayer()->GetAnimator());
   animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kOverviewSelectorTransitionMilliseconds));
-  animation_settings.SetTweenType(gfx::Tween::EASE_IN);
+  animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   shield_widget_->SetOpacity(kShieldOpacity);
