@@ -39,6 +39,9 @@ class View;
   // The keyDown event currently being handled, nil otherwise.
   NSEvent* keyDownEvent_;
 
+  // Whether there's an active key down event which is not handled yet.
+  BOOL hasUnhandledKeyDownEvent_;
+
   // The last tooltip text, used to limit updates.
   base::string16 lastTooltipText_;
 

@@ -200,19 +200,6 @@ base::string16 AttributedSubstringForRangeHelper(
   return substring;
 }
 
-// Returns a character event corresponding to |event|. |event| must be a
-// character event itself.
-ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
-  DCHECK([event type] == NSKeyDown || [event type] == NSKeyUp);
-  DCHECK_EQ(1u, [[event characters] length]);
-
-  // [NSEvent characters] already considers the pressed key modifiers. Hence
-  // send ui::EF_NONE as the key modifier to the KeyEvent constructor.
-  // E.g. For Alt+S, [NSEvent characters] is 'ß' and not 'S'.
-  return ui::KeyEvent([[event characters] characterAtIndex:0],
-                      ui::KeyboardCodeFromNSEvent(event), ui::EF_NONE);
-}
-
 NSAttributedString* GetAttributedString(
     const gfx::DecoratedText& decorated_text) {
   base::scoped_nsobject<NSMutableAttributedString> str(
@@ -462,12 +449,12 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (BOOL)handleUnhandledKeyDownAsKeyEvent {
-  if (!keyDownEvent_)
+  if (!hasUnhandledKeyDownEvent_)
     return NO;
 
   ui::KeyEvent event(keyDownEvent_);
   [self handleKeyEvent:&event];
-  keyDownEvent_ = nil;
+  hasUnhandledKeyDownEvent_ = NO;
   return event.handled();
 }
 
@@ -506,6 +493,42 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     text = [text string];
 
   bool isCharacterEvent = keyDownEvent_ && [text length] == 1;
+  // Pass the character event to the View hierarchy. Cases this handles (non-
+  // exhaustive)-
+  //    - Space key press on controls. Unlike Tab and newline which have
+  //      corresponding action messages, an insertText: message is generated for
+  //      the Space key (insertText:replacementRange: when there's an active
+  //      input context).
+  //    - Menu mnemonic selection.
+  // Note we create a custom character ui::KeyEvent (and not use the
+  // ui::KeyEvent(NSEvent*) constructor) since we can't just rely on the event
+  // key code to get the actual characters from the ui::KeyEvent. This for
+  // example is necessary for menu mnemonic selection of non-latin text.
+
+  // Don't generate a key event when there is active composition text. These key
+  // down events should be consumed by the IME and not reach the Views layer.
+  // For example, on pressing Return to commit composition text, if we passed a
+  // synthetic key event to the View hierarchy, it will have the effect of
+  // performing the default action on the current dialog. We do not want this.
+
+  // Also note that a single key down event can cause multiple
+  // insertText:replacementRange: action messages. Example, on pressing Alt+e,
+  // the accent (´) character is composed via setMarkedText:. Now on pressing
+  // the character 'r', two insertText:replacementRange: action messages are
+  // generated with the text value of accent (´) and 'r' respectively. The key
+  // down event will have characters field of length 2. The first of these
+  // insertText messages won't generate a KeyEvent since there'll be active
+  // marked text. However, a KeyEvent will be generated corresponding to 'r'.
+
+  // Currently there seems to be no use case to pass non-character events routed
+  // from insertText: handlers to the View hierarchy.
+  if (isCharacterEvent && ![self hasMarkedText]) {
+    ui::KeyEvent charEvent([text characterAtIndex:0],
+                           ui::KeyboardCodeFromNSEvent(keyDownEvent_),
+                           ui::EF_NONE);
+    [self handleKeyEvent:&charEvent];
+    hasUnhandledKeyDownEvent_ = NO;
+  }
 
   // Forward the |text| to |textInputClient_| if no menu is active.
   if (textInputClient_ && ![self activeMenuController]) {
@@ -518,34 +541,17 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     // modifiers.
 
     // Also, note we don't use |keyDownEvent_| to generate the synthetic
-    // ui::KeyEvent since for text inserted using an IME, [keyDownEvent_
-    // characters] might not be the same as |text|. This is because
-    // |keyDownEvent_| will correspond to the event that caused the composition
-    // text to be confirmed, say, Return key press.
+    // ui::KeyEvent since for composed text, [keyDownEvent_ characters] might
+    // not be the same as |text|. This is because |keyDownEvent_| will
+    // correspond to the event that caused the composition text to be confirmed,
+    // say, Return key press.
     if (isCharacterEvent) {
       textInputClient_->InsertChar(ui::KeyEvent([text characterAtIndex:0],
                                                 ui::VKEY_UNKNOWN, ui::EF_NONE));
     } else {
       textInputClient_->InsertText(base::SysNSStringToUTF16(text));
     }
-
-    keyDownEvent_ = nil;  // Handled.
-    return;
-  }
-
-  // Only handle the case where no. of characters is 1. Cases not handled (not
-  // an exhaustive list):
-  // - |text| contains a unicode surrogate pair, i.e. a single grapheme which
-  //   requires two 16 bit characters. Currently Views menu only supports
-  //   mnemonics using a single 16 bit character, so it is ok to ignore this
-  //   case.
-  // - Programmatically created events.
-  // - Input from IME. But this case should not occur since inputContext is
-  //   nil.
-  if (isCharacterEvent) {
-    ui::KeyEvent charEvent = GetCharacterEventFromNSEvent(keyDownEvent_);
-    [self handleKeyEvent:&charEvent];
-    keyDownEvent_ = nil;  // Handled.
+    hasUnhandledKeyDownEvent_ = NO;
   }
 }
 
@@ -804,12 +810,14 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)keyDown:(NSEvent*)theEvent {
   // Convert the event into an action message, according to OSX key mappings.
   keyDownEvent_ = theEvent;
+  hasUnhandledKeyDownEvent_ = YES;
   [self interpretKeyEvents:@[ theEvent ]];
 
   // If |keyDownEvent_| wasn't cleared during -interpretKeyEvents:, it wasn't
   // handled. Give Widget accelerators a chance to handle it.
   [self handleUnhandledKeyDownAsKeyEvent];
-  DCHECK(!keyDownEvent_);
+  DCHECK(!hasUnhandledKeyDownEvent_);
+  keyDownEvent_ = nil;
 }
 
 - (void)keyUp:(NSEvent*)theEvent {
@@ -1333,7 +1341,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
   if ([self respondsToSelector:selector]) {
     [self performSelector:selector withObject:nil];
-    keyDownEvent_ = nil;
+    hasUnhandledKeyDownEvent_ = NO;
     return;
   }
 
@@ -1412,7 +1420,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   composition.underlines.push_back(ui::CompositionUnderline(
       0, [text length], SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   textInputClient_->SetCompositionText(composition);
-  keyDownEvent_ = nil;  // Handled.
+  hasUnhandledKeyDownEvent_ = NO;
 }
 
 - (void)unmarkText {
@@ -1420,7 +1428,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return;
 
   textInputClient_->ConfirmCompositionText();
-  keyDownEvent_ = nil;  // Handled.
+  hasUnhandledKeyDownEvent_ = NO;
 }
 
 - (NSArray*)validAttributesForMarkedText {

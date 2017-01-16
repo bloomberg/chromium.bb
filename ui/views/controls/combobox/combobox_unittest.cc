@@ -18,6 +18,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/test/combobox_test_api.h"
 #include "ui/views/test/views_test_base.h"
@@ -206,7 +207,8 @@ class ComboboxTest : public ViewsTestBase {
     combobox_->set_id(1);
 
     widget_ = new Widget;
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(200, 200, 200, 200);
     widget_->Init(params);
     View* container = new View();
@@ -216,19 +218,19 @@ class ComboboxTest : public ViewsTestBase {
 
     combobox_->RequestFocus();
     combobox_->SizeToPreferredSize();
+
+    event_generator_ =
+        base::MakeUnique<ui::test::EventGenerator>(widget_->GetNativeWindow());
+    event_generator_->set_target(ui::test::EventGenerator::Target::WINDOW);
   }
 
  protected:
-  void SendKeyEvent(ui::KeyboardCode key_code) {
-    SendKeyEventWithType(key_code, ui::ET_KEY_PRESSED);
+  void PressKey(ui::KeyboardCode key_code) {
+    event_generator_->PressKey(key_code, ui::EF_NONE);
   }
 
-  void SendKeyEventWithType(ui::KeyboardCode key_code, ui::EventType type) {
-    ui::KeyEvent event(type, key_code, ui::EF_NONE);
-    FocusManager* focus_manager = widget_->GetFocusManager();
-    widget_->OnKeyEvent(&event);
-    if (!event.handled() && focus_manager)
-      focus_manager->OnKeyEvent(event);
+  void ReleaseKey(ui::KeyboardCode key_code) {
+    event_generator_->ReleaseKey(key_code, ui::EF_NONE);
   }
 
   View* GetFocusedView() {
@@ -267,28 +269,30 @@ class ComboboxTest : public ViewsTestBase {
   // The current menu show count.
   int menu_show_count_ = 0;
 
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ComboboxTest);
 };
 
 TEST_F(ComboboxTest, KeyTest) {
   InitCombobox(nullptr, Combobox::STYLE_NORMAL);
-  SendKeyEvent(ui::VKEY_END);
+  PressKey(ui::VKEY_END);
   EXPECT_EQ(combobox_->selected_index() + 1, model_->GetItemCount());
-  SendKeyEvent(ui::VKEY_HOME);
+  PressKey(ui::VKEY_HOME);
   EXPECT_EQ(combobox_->selected_index(), 0);
-  SendKeyEvent(ui::VKEY_DOWN);
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(combobox_->selected_index(), 2);
-  SendKeyEvent(ui::VKEY_RIGHT);
+  PressKey(ui::VKEY_RIGHT);
   EXPECT_EQ(combobox_->selected_index(), 2);
-  SendKeyEvent(ui::VKEY_LEFT);
+  PressKey(ui::VKEY_LEFT);
   EXPECT_EQ(combobox_->selected_index(), 2);
-  SendKeyEvent(ui::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(combobox_->selected_index(), 1);
-  SendKeyEvent(ui::VKEY_PRIOR);
+  PressKey(ui::VKEY_PRIOR);
   EXPECT_EQ(combobox_->selected_index(), 0);
-  SendKeyEvent(ui::VKEY_NEXT);
+  PressKey(ui::VKEY_NEXT);
   EXPECT_EQ(combobox_->selected_index(), model_->GetItemCount() - 1);
 }
 
@@ -302,7 +306,8 @@ TEST_F(ComboboxTest, DisabilityTest) {
   combobox_->SetEnabled(false);
 
   widget_ = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(100, 100, 100, 100);
   widget_->Init(params);
   View* container = new View();
@@ -318,17 +323,17 @@ TEST_F(ComboboxTest, SkipSeparatorSimple) {
   separators.insert(2);
   InitCombobox(&separators, Combobox::STYLE_NORMAL);
   EXPECT_EQ(0, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(1, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(3, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(1, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_HOME);
+  PressKey(ui::VKEY_HOME);
   EXPECT_EQ(0, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_PRIOR);
+  PressKey(ui::VKEY_PRIOR);
   EXPECT_EQ(0, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_END);
+  PressKey(ui::VKEY_END);
   EXPECT_EQ(9, combobox_->selected_index());
 }
 
@@ -339,17 +344,17 @@ TEST_F(ComboboxTest, SkipSeparatorBeginning) {
   separators.insert(0);
   InitCombobox(&separators, Combobox::STYLE_NORMAL);
   EXPECT_EQ(1, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(2, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(3, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(2, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_HOME);
+  PressKey(ui::VKEY_HOME);
   EXPECT_EQ(1, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_PRIOR);
+  PressKey(ui::VKEY_PRIOR);
   EXPECT_EQ(1, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_END);
+  PressKey(ui::VKEY_END);
   EXPECT_EQ(9, combobox_->selected_index());
 }
 
@@ -360,11 +365,11 @@ TEST_F(ComboboxTest, SkipSeparatorEnd) {
   separators.insert(TestComboboxModel::kItemCount - 1);
   InitCombobox(&separators, Combobox::STYLE_NORMAL);
   combobox_->SetSelectedIndex(8);
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(8, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(7, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_END);
+  PressKey(ui::VKEY_END);
   EXPECT_EQ(8, combobox_->selected_index());
 }
 
@@ -378,17 +383,17 @@ TEST_F(ComboboxTest, SkipMultipleSeparatorsAtBeginning) {
   separators.insert(2);
   InitCombobox(&separators, Combobox::STYLE_NORMAL);
   EXPECT_EQ(3, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(4, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(3, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_NEXT);
+  PressKey(ui::VKEY_NEXT);
   EXPECT_EQ(9, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_HOME);
+  PressKey(ui::VKEY_HOME);
   EXPECT_EQ(3, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_END);
+  PressKey(ui::VKEY_END);
   EXPECT_EQ(9, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_PRIOR);
+  PressKey(ui::VKEY_PRIOR);
   EXPECT_EQ(3, combobox_->selected_index());
 }
 
@@ -402,9 +407,9 @@ TEST_F(ComboboxTest, SkipMultipleAdjacentSeparatorsAtMiddle) {
   separators.insert(6);
   InitCombobox(&separators, Combobox::STYLE_NORMAL);
   combobox_->SetSelectedIndex(3);
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(7, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(3, combobox_->selected_index());
 }
 
@@ -418,17 +423,17 @@ TEST_F(ComboboxTest, SkipMultipleSeparatorsAtEnd) {
   separators.insert(9);
   InitCombobox(&separators, Combobox::STYLE_NORMAL);
   combobox_->SetSelectedIndex(6);
-  SendKeyEvent(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
   EXPECT_EQ(6, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_UP);
+  PressKey(ui::VKEY_UP);
   EXPECT_EQ(5, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_HOME);
+  PressKey(ui::VKEY_HOME);
   EXPECT_EQ(0, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_NEXT);
+  PressKey(ui::VKEY_NEXT);
   EXPECT_EQ(6, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_PRIOR);
+  PressKey(ui::VKEY_PRIOR);
   EXPECT_EQ(0, combobox_->selected_index());
-  SendKeyEvent(ui::VKEY_END);
+  PressKey(ui::VKEY_END);
   EXPECT_EQ(6, combobox_->selected_index());
 }
 
@@ -540,7 +545,7 @@ TEST_F(ComboboxTest, NotifyOnClickWithReturnKey) {
   combobox_->set_listener(&listener);
 
   // With STYLE_NORMAL, the click event is ignored. Instead the menu is shown.
-  SendKeyEvent(ui::VKEY_RETURN);
+  PressKey(ui::VKEY_RETURN);
   EXPECT_EQ(1, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
 }
@@ -552,7 +557,7 @@ TEST_F(ComboboxTest, NotifyOnClickWithReturnKeyActionStyle) {
   combobox_->set_listener(&listener);
 
   // With STYLE_ACTION, the click event is notified and the menu is not shown.
-  SendKeyEvent(ui::VKEY_RETURN);
+  PressKey(ui::VKEY_RETURN);
   EXPECT_EQ(0, menu_show_count_);
   EXPECT_TRUE(listener.on_perform_action_called());
   EXPECT_EQ(0, listener.perform_action_index());
@@ -565,11 +570,11 @@ TEST_F(ComboboxTest, NotifyOnClickWithSpaceKey) {
   combobox_->set_listener(&listener);
 
   // With STYLE_NORMAL, the click event is ignored. Instead the menu is shwon.
-  SendKeyEvent(ui::VKEY_SPACE);
+  PressKey(ui::VKEY_SPACE);
   EXPECT_EQ(1, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
 
-  SendKeyEventWithType(ui::VKEY_SPACE, ui::ET_KEY_RELEASED);
+  ReleaseKey(ui::VKEY_SPACE);
   EXPECT_EQ(1, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
 }
@@ -582,11 +587,11 @@ TEST_F(ComboboxTest, NotifyOnClickWithSpaceKeyActionStyle) {
 
   // With STYLE_ACTION, the click event is notified after releasing and the menu
   // is not shown.
-  SendKeyEvent(ui::VKEY_SPACE);
+  PressKey(ui::VKEY_SPACE);
   EXPECT_EQ(0, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
 
-  SendKeyEventWithType(ui::VKEY_SPACE, ui::ET_KEY_RELEASED);
+  ReleaseKey(ui::VKEY_SPACE);
   EXPECT_EQ(0, menu_show_count_);
   EXPECT_TRUE(listener.on_perform_action_called());
   EXPECT_EQ(0, listener.perform_action_index());
