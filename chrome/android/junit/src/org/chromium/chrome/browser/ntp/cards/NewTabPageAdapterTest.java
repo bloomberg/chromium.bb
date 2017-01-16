@@ -70,8 +70,8 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -101,6 +101,7 @@ public class NewTabPageAdapterTest {
         public final boolean mStatusCard;
         public boolean mActionButton;
         public boolean mProgressItem;
+        public SnippetArticle mFirstItem;
 
         public SectionDescriptor(int numSuggestions) {
             mNumSuggestions = numSuggestions;
@@ -114,6 +115,11 @@ public class NewTabPageAdapterTest {
 
         public SectionDescriptor withProgress() {
             mProgressItem = true;
+            return this;
+        }
+
+        public SectionDescriptor withFirstItem(SnippetArticle firstItem) {
+            mFirstItem = firstItem;
             return this;
         }
     }
@@ -145,6 +151,15 @@ public class NewTabPageAdapterTest {
 
         public void expect(SectionDescriptor descriptor) {
             expect(ItemViewType.HEADER);
+
+            if (descriptor.mFirstItem != null) {
+                if (mTreeNode.getSuggestionAt(mCurrentIndex) != descriptor.mFirstItem) {
+                    fail("Wrong snippet at position " + mCurrentIndex + "\n"
+                            + explainFailedExpectation(
+                                      mTreeNode, mCurrentIndex, ItemViewType.SNIPPET));
+                }
+            }
+
             for (int i = 1; i <= descriptor.mNumSuggestions; i++) {
                 expect(ItemViewType.SNIPPET);
             }
@@ -173,6 +188,9 @@ public class NewTabPageAdapterTest {
         MockitoAnnotations.initMocks(this);
 
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+
+        // Set empty variation params for the test.
+        CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
 
         // Initialise the sign in state. We will be signed in by default in the tests.
         assertFalse(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
@@ -219,18 +237,10 @@ public class NewTabPageAdapterTest {
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, suggestions);
 
         assertItemsFor(section(numSuggestions));
-
-        // The adapter should ignore any new incoming data.
-        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
-                Arrays.asList(new SnippetArticle[] {
-                        new SnippetArticle(0, "foo", "title1", "pub1", "txt1", "url", 0, 0, 0)}));
-
-        assertItemsFor(section(numSuggestions));
     }
 
     /**
-     * Tests that the adapter keeps listening for suggestion updates if it didn't get anything from
-     * a previous fetch.
+     * Tests that the adapter keeps listening for suggestion updates.
      */
     @Test
     @Feature({"Ntp"})
@@ -246,12 +256,6 @@ public class NewTabPageAdapterTest {
         mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, suggestions);
 
-        assertItemsFor(section(numSuggestions));
-
-        // The adapter should ignore any new incoming data.
-        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
-                Arrays.asList(new SnippetArticle[] {
-                        new SnippetArticle(0, "foo", "title1", "pub1", "txt1", "url", 0, 0, 0)}));
         assertItemsFor(section(numSuggestions));
     }
 
@@ -296,12 +300,9 @@ public class NewTabPageAdapterTest {
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, suggestions);
         assertItemsFor(section(3));
 
-        // If we have snippets, we should not load the new list (i.e. the extra item does *not*
-        // appear).
+        // Add another snippet.
         suggestions.add(new SnippetArticle(0, "https://site.com/url1", "title1", "pub1", "txt1",
                 "https://site.com/url1", 0, 0, 0));
-        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, suggestions);
-        assertItemsFor(section(3));
 
         // When snippets are disabled, we should not be able to load them.
         mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.SIGNED_OUT);
@@ -393,6 +394,72 @@ public class NewTabPageAdapterTest {
 
         reloadNtp();
         assertItemsFor();
+    }
+
+    /**
+     * Tests that the UI updates on updated suggestions.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testUIUpdatesOnNewSuggestionsWhenOtherSectionSeen() {
+        List<SnippetArticle> snippets = createDummySuggestions(4);
+        mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
+
+        List<SnippetArticle> bookmarks = createDummySuggestions(2);
+        mSource.setStatusForCategory(KnownCategories.BOOKMARKS, CategoryStatus.AVAILABLE);
+        mSource.setInfoForCategory(KnownCategories.BOOKMARKS,
+                new CategoryInfoBuilder(KnownCategories.BOOKMARKS).showIfEmpty().build());
+        mSource.setSuggestionsForCategory(KnownCategories.BOOKMARKS, bookmarks);
+
+        reloadNtp();
+        assertItemsFor(section(4), section(2));
+
+        mAdapter.getSectionListForTesting()
+                .getSectionForTesting(KnownCategories.BOOKMARKS)
+                .childSeen(2);
+
+        List<SnippetArticle> newSnippets = createDummySuggestions(3);
+        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, newSnippets);
+        assertItemsFor(section(3), section(2));
+
+        reloadNtp();
+        assertItemsFor(section(3), section(2));
+    }
+
+    /**
+    * Tests that the UI updates the first item of the section if the first item of some other
+    * section has been viewed.
+    */
+    @Test
+    @Feature({"Ntp"})
+    public void testUIUpdatesOnNewSuggestionsWhenFirstOfOtherSectionIsSeen() {
+        List<SnippetArticle> snippets = createDummySuggestions(4);
+        SnippetArticle earlier = snippets.get(0);
+        mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
+
+        List<SnippetArticle> bookmarks = createDummySuggestions(1);
+        mSource.setStatusForCategory(KnownCategories.BOOKMARKS, CategoryStatus.AVAILABLE);
+        mSource.setInfoForCategory(KnownCategories.BOOKMARKS,
+                new CategoryInfoBuilder(KnownCategories.BOOKMARKS).showIfEmpty().build());
+        mSource.setSuggestionsForCategory(KnownCategories.BOOKMARKS, bookmarks);
+
+        reloadNtp();
+        assertItemsFor(section(4), section(1));
+
+        mAdapter.getSectionListForTesting()
+                .getSectionForTesting(KnownCategories.BOOKMARKS)
+                .childSeen(1);
+
+        List<SnippetArticle> newSnippets = createDummySuggestions(3);
+        SnippetArticle newer = newSnippets.get(0);
+
+        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, newSnippets);
+        assertItemsFor(section(3).withFirstItem(newer), section(1));
+
+        reloadNtp();
+        assertItemsFor(section(3).withFirstItem(newer), section(1));
     }
 
     /** Tests whether a section stays visible if empty, if required. */
@@ -687,7 +754,6 @@ public class NewTabPageAdapterTest {
         reset(dataObserver);
         suggestionsSource.setSuggestionsForCategory(
                 KnownCategories.ARTICLES, createDummySuggestions(newSuggestionCount));
-        mAdapter.getSectionListForTesting().onNewSuggestions(KnownCategories.ARTICLES);
         verify(dataObserver).onItemRangeInserted(2, newSuggestionCount);
         verify(dataObserver).onItemRangeChanged(5 + newSuggestionCount, 1, null); // Spacer refresh
         verify(dataObserver, times(2)).onItemRangeRemoved(2 + newSuggestionCount, 1);

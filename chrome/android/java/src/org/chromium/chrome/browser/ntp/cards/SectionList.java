@@ -97,8 +97,8 @@ public class SectionList
             addChild(section);
         }
 
-        // Add the new suggestions.
-        setSuggestions(category, suggestions, categoryStatus);
+        // Set the new suggestions.
+        setSuggestions(category, suggestions, categoryStatus, /* replaceExisting = */ true);
 
         return suggestions.size();
     }
@@ -110,9 +110,6 @@ public class SectionList
 
         if (!canLoadSuggestions(category, status)) return;
 
-        // We never want to refresh the suggestions if we already have some content.
-        if (mSections.get(category).hasSuggestions()) return;
-
         List<SnippetArticle> suggestions =
                 mNewTabPageManager.getSuggestionsSource().getSuggestionsForCategory(category);
 
@@ -121,7 +118,7 @@ public class SectionList
         // At first, there might be no suggestions available, we wait until they have been fetched.
         if (suggestions.isEmpty()) return;
 
-        setSuggestions(category, suggestions, status);
+        setSuggestions(category, suggestions, status, /* replaceExisting = */ true);
     }
 
     @Override
@@ -130,7 +127,7 @@ public class SectionList
         int status = mNewTabPageManager.getSuggestionsSource().getCategoryStatus(category);
         if (!canLoadSuggestions(category, status)) return;
 
-        setSuggestions(category, suggestions, status);
+        setSuggestions(category, suggestions, status, /* replaceExisting = */ false);
     }
 
     @Override
@@ -173,8 +170,19 @@ public class SectionList
         resetSections(/* alwaysAllowEmptySections = */false);
     }
 
+    /**
+     * Puts {@code suggestions} into given {@code category}. It can either replace all existing
+     * suggestions with the new ones or append the new suggestions at the end of the list. This call
+     * may have no or only partial effect if changing the list of suggestions is not allowed (e.g.
+     * because the user has already seen the suggestions).
+     * @param category The category for which the suggestions should be set.
+     * @param suggestions The new list of suggestions for the given category.
+     * @param status The new category status.
+     * @param replaceExisting If true, {@code suggestions} replace the current list of suggestions.
+     * If false, {@code suggestions} are appended to current list of suggestions.
+     */
     private void setSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions,
-            @CategoryStatusEnum int status) {
+            @CategoryStatusEnum int status, boolean replaceExisting) {
         // Count the number of suggestions before this category.
         int globalPositionOffset = 0;
         for (Map.Entry<Integer, SuggestionsSection> entry : mSections.entrySet()) {
@@ -186,7 +194,7 @@ public class SectionList
             suggestion.mGlobalPosition = globalPositionOffset + suggestion.mPosition;
         }
 
-        mSections.get(category).addSuggestions(suggestions, status);
+        mSections.get(category).setSuggestions(suggestions, status, replaceExisting);
     }
 
     private boolean canLoadSuggestions(@CategoryInt int category, @CategoryStatusEnum int status) {

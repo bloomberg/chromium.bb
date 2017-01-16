@@ -7,12 +7,18 @@ package org.chromium.chrome.browser.ntp.cards;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.components.variations.VariationsAssociatedData;
+
+import java.util.Map;
 
 /**
  * Provides easy access to data for field trials to do with the Cards UI.
  */
 public final class CardsVariationParameters {
+    /** Map that stores substitution values for params. */
+    private static Map<String, String> sTestVariationParams;
+
     // Tags are limited to 20 characters.
     private static final String TAG = "CardsVariationParams";
 
@@ -24,12 +30,24 @@ public final class CardsVariationParameters {
     private static final String PARAM_FIRST_CARD_ANIMATION_MAX_RUNS =
             "first_card_animation_max_runs";
     private static final String PARAM_SCROLL_BELOW_THE_FOLD = "scroll_below_the_fold";
+    private static final String PARAM_IGNORE_UPDATES_FOR_EXISTING_SUGGESTIONS =
+            "ignore_updates_for_existing_suggestions";
 
     private static final String PARAM_DISABLED_VALUE = "off";
 
     private static final int FIRST_CARD_ANIMATION_DEFAULT_VALUE = 7;
 
     private CardsVariationParameters() {}
+
+    // TODO(jkrcal): Do a proper general fix in VariationsAssociatedData in the spirit of
+    // @EnableFeatures and ChromeFeatureList.
+    /**
+     * Sets the parameter values to use in JUnit tests, since native calls are not available there.
+     */
+    @VisibleForTesting
+    public static void setTestVariationParams(Map<String, String> variationParams) {
+        sTestVariationParams = variationParams;
+    }
 
     /**
      * Provides the value of the field trial to offset the peeking card (can be overridden
@@ -50,19 +68,23 @@ public final class CardsVariationParameters {
      * @return Whether the NTP should initially be scrolled below the fold.
      */
     public static boolean isScrollBelowTheFoldEnabled() {
-        return Boolean.parseBoolean(VariationsAssociatedData.getVariationParamValue(
-                FIELD_TRIAL_NAME, PARAM_SCROLL_BELOW_THE_FOLD));
+        return Boolean.parseBoolean(getParamValue(PARAM_SCROLL_BELOW_THE_FOLD));
+    }
+
+    /**
+     * @return Whether the NTP should ignore updates for suggestions that have not been seen yet.
+     */
+    public static boolean ignoreUpdatesForExistingSuggestions() {
+        return Boolean.parseBoolean(getParamValue(PARAM_IGNORE_UPDATES_FOR_EXISTING_SUGGESTIONS));
     }
 
     public static boolean isFaviconServiceEnabled() {
-        return !PARAM_DISABLED_VALUE.equals(VariationsAssociatedData.getVariationParamValue(
-                FIELD_TRIAL_NAME, PARAM_FAVICON_SERVICE_NAME));
+        return !PARAM_DISABLED_VALUE.equals(getParamValue(PARAM_FAVICON_SERVICE_NAME));
     }
 
     private static int getIntValue(String paramName, int defaultValue) {
         // TODO(jkrcal): Get parameter by feature name, not field trial name.
-        String value = VariationsAssociatedData.getVariationParamValue(
-                FIELD_TRIAL_NAME, paramName);
+        String value = getParamValue(paramName);
 
         if (!TextUtils.isEmpty(value)) {
             try {
@@ -73,5 +95,15 @@ public final class CardsVariationParameters {
         }
 
         return defaultValue;
+    }
+
+    private static String getParamValue(String paramName) {
+        if (sTestVariationParams != null) {
+            String value = sTestVariationParams.get(paramName);
+            if (value == null) return "";
+            return value;
+        }
+
+        return VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName);
     }
 }

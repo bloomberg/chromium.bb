@@ -610,6 +610,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * To be triggered when a snippet is bound to a ViewHolder.
      */
     public void onSnippetBound(View cardView) {
+        // Animate the peeking card.
         // We only run if the feature is enabled and once per NTP.
         if (!SnippetsConfig.isIncreasedCardVisibilityEnabled() || mFirstCardAnimationRun) return;
         mFirstCardAnimationRun = true;

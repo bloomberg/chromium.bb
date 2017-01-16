@@ -44,6 +44,13 @@ public class SuggestionsSection extends InnerNode {
 
     private boolean mIsNtpDestroyed;
 
+    // Keep track of impressions of the suggestions so that we replace only suggestions that
+    // have not been impressed, yet. We keep track of the first suggestion separately as the
+    // first is often impressed in the form of a peeking card and we still want to be able to
+    // replace something in this case.
+    private boolean mFirstSuggestionSeen;
+    private boolean mSubsequentSuggestionsSeen;
+
     /**
      * Delegate interface that allows dismissing this section without introducing
      * a circular dependency.
@@ -118,6 +125,17 @@ public class SuggestionsSection extends InnerNode {
 
             mSuggestions.clear();
             notifyItemRangeRemoved(0, itemCount);
+        }
+
+        /**
+         * Clears all suggestions except the first one.
+         */
+        private void clearAllButFirst() {
+            int itemCount = mSuggestions.size();
+            if (itemCount > 1) {
+                mSuggestions.subList(1, itemCount).clear();
+                notifyItemRangeRemoved(1, itemCount - 1);
+            }
         }
 
         public void addAll(List<SnippetArticle> suggestions) {
@@ -228,6 +246,32 @@ public class SuggestionsSection extends InnerNode {
         if (child == mSuggestionsList) refreshChildrenVisibility();
     }
 
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
+        super.onBindViewHolder(holder, position, payloads);
+        childSeen(position);
+    }
+
+    /**
+     * Sets the child at position {@code position} as being seen by the user.
+     * @param position Position in the list being shown (the first suggestion being at index 1,
+     * as at index 0, there is a non-suggestion).
+     */
+    @VisibleForTesting
+    public void childSeen(int position) {
+        Log.d(TAG, "childSeen: position %d in category %d", position, mCategoryInfo.getCategory());
+        assert getStartingOffsetForChild(mSuggestionsList) == 1;
+        if (getItemViewType(position) == ItemViewType.SNIPPET) {
+            // We assume all non-snippet cards come after all cards of type SNIPPET.
+            int positionAmongSuggestions = position - 1;
+            if (positionAmongSuggestions == 0) {
+                mFirstSuggestionSeen = true;
+            } else if (positionAmongSuggestions > 0) {
+                mSubsequentSuggestionsSeen = true;
+            }
+        }
+    }
+
     /**
      * Removes a suggestion. Does nothing if the ID is unknown.
      * @param idWithinCategory The ID of the suggestion to remove.
@@ -259,23 +303,51 @@ public class SuggestionsSection extends InnerNode {
         return suggestionIds;
     }
 
-    public void addSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
+    /**
+     * Puts {@code suggestions} into this section. It can either replace all existing suggestions
+     * with the new ones or append the new suggestions at the end of the list. This call may have no
+     * or only partial effect if changing the list of suggestions is not allowed (e.g. because the
+     * user has already seen the suggestions).
+     * @param suggestions The new list of suggestions for the given category.
+     * @param status The new category status.
+     * @param replaceExisting If true, {@code suggestions} replace the current list of suggestions.
+     * If false, {@code suggestions} are appended to current list of suggestions.
+     */
+    public void setSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status,
+            boolean replaceExisting) {
+        Log.d(TAG, "setSuggestions: previous number of suggestions: %d; replace existing: %b",
+                mSuggestionsList.getItemCount(), replaceExisting);
         if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestionsList.clear();
-        mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
 
-        Log.d(TAG, "addSuggestions: current number of suggestions: %d",
-                mSuggestionsList.getItemCount());
+        // Remove suggestions to be replaced.
+        if (replaceExisting && hasSuggestions()) {
+            if (CardsVariationParameters.ignoreUpdatesForExistingSuggestions()
+                    || mSubsequentSuggestionsSeen) {
+                Log.d(TAG, "setSuggestions: replacing existing suggestion not possible");
+                return;
+            }
 
-        int sizeBefore = suggestions.size();
+            if (mFirstSuggestionSeen) {
+                Log.d(TAG, "setSuggestions: keeping the first suggestion");
+                mSuggestionsList.clearAllButFirst();
 
-        // TODO(dgn): remove once the backend stops sending duplicates.
-        if (suggestions.removeAll(mSuggestionsList.mSuggestions)) {
-            Log.d(TAG, "addSuggestions: Removed duplicates from incoming suggestions. "
-                            + "Count changed from %d to %d",
-                    sizeBefore, suggestions.size());
+                // Make sure that {@code mSuggestionsList} will contain as many elements as newly
+                // provided in {@code suggestions}. Remove the kept first element from the new
+                // collection, if it repeats there. Otherwise, remove the last element of the new
+                // collection.
+                if (!suggestions.remove(mSuggestionsList.getSuggestionAt(0))) {
+                    suggestions.remove(suggestions.size() - 1);
+                }
+            } else {
+                Log.d(TAG, "setSuggestions: removing all suggestions");
+                mSuggestionsList.clear();
+            }
         }
 
+        mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
+
         mSuggestionsList.addAll(suggestions);
+
         for (SnippetArticle article : suggestions) {
             if (!article.requiresExactOfflinePage()) {
                 updateSnippetOfflineAvailability(article);

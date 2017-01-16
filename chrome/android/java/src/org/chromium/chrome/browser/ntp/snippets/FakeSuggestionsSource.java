@@ -168,6 +168,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
             return Collections.emptyList();
         }
         List<SnippetArticle> result = mSuggestions.get(category);
-        return result == null ? Collections.<SnippetArticle>emptyList() : result;
+        return result == null ? Collections.<SnippetArticle>emptyList()
+                              : new ArrayList<SnippetArticle>(result);
     }
 }
