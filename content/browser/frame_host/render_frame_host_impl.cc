@@ -1596,6 +1596,9 @@ void RenderFrameHostImpl::OnRendererConnect(
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
+  if (!is_active())
+    return;
+
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);

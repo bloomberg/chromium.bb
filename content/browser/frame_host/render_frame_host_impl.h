@@ -648,6 +648,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            RenderViewHostStaysActiveWithLateSwapoutACK);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            LoadEventForwardingWhilePendingDeletion);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           ContextMenuAfterCrossProcessNavigation);
 
   // IPC Message handlers.
   void OnDidAddMessageToConsole(int32_t level,

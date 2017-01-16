@@ -9068,4 +9068,34 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ("This page has no title.", result);
 }
 
+// Tests that trying to open a context menu in the old RFH after commiting a
+// navigation doesn't crash the browser. https://crbug.com/677266.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ContextMenuAfterCrossProcessNavigation) {
+  // Navigate to a.com.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Disable the swapout ACK and the swapout timer.
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  scoped_refptr<SwapoutACKMessageFilter> filter = new SwapoutACKMessageFilter();
+  rfh->GetProcess()->AddFilter(filter.get());
+  rfh->DisableSwapOutTimerForTesting();
+
+  // Open a popup on a.com to keep the process alive.
+  OpenPopup(shell(), embedded_test_server()->GetURL("a.com", "/title2.html"),
+            "foo");
+
+  // Cross-process navigation to b.com.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
+
+  // Pretend that a.com just requested a context menu. This used to cause a
+  // because the RenderWidgetHostView is destroyed when the frame is swapped and
+  // added to pending delete list.
+  rfh->OnMessageReceived(
+      FrameHostMsg_ContextMenu(rfh->GetRoutingID(), ContextMenuParams()));
+}
+
 }  // namespace content
