@@ -31,6 +31,9 @@ def _ParseArgs(args):
                       help='GYP-list of files to add as assets in the form '
                            '"srcPath:zipPath", where ":zipPath" is optional.',
                       default='[]')
+  parser.add_argument('--java-resources',
+                      help='GYP-list of java_resources JARs to include.',
+                      default='[]')
   parser.add_argument('--write-asset-list',
                       action='store_true',
                       help='Whether to create an assets/assets_list file.')
@@ -63,8 +66,6 @@ def _ParseArgs(args):
   parser.add_argument('--native-lib-placeholders',
                       help='GYP-list of native library placeholders to add.',
                       default='[]')
-  parser.add_argument('--emma-device-jar',
-                      help='Path to emma_device.jar to include.')
   parser.add_argument('--uncompress-shared-libraries',
                       action='store_true',
                       help='Uncompress shared libraries')
@@ -74,6 +75,7 @@ def _ParseArgs(args):
       options.uncompressed_assets)
   options.native_lib_placeholders = build_utils.ParseGnList(
       options.native_lib_placeholders)
+  options.java_resources = build_utils.ParseGnList(options.java_resources)
   all_libs = []
   for gyp_list in options.native_libs:
     all_libs.extend(build_utils.ParseGnList(gyp_list))
@@ -201,15 +203,15 @@ def main(args):
   if options.dex_file:
     input_paths.append(options.dex_file)
 
-  if options.emma_device_jar:
-    input_paths.append(options.emma_device_jar)
-
   input_strings = [options.android_abi,
                    options.native_lib_placeholders,
                    options.uncompress_shared_libraries]
 
   if options.secondary_android_abi:
     input_strings.append(options.secondary_android_abi)
+
+  if options.java_resources:
+    input_paths.extend(options.java_resources)
 
   _assets = _ExpandPaths(options.assets)
   _uncompressed_assets = _ExpandPaths(options.uncompressed_assets)
@@ -281,24 +283,23 @@ def main(args):
         for info in resource_infos[1:]:
           copy_resource(info)
 
-        # 6. Java resources. Used only when coverage is enabled, so order
-        # doesn't matter).
-        if options.emma_device_jar:
-          # Add EMMA Java resources to APK.
-          with zipfile.ZipFile(options.emma_device_jar, 'r') as emma_device_jar:
-            for apk_path in emma_device_jar.namelist():
+        # 6. Java resources that should be accessible via
+        # Class.getResourceAsStream(), in particular parts of Emma jar.
+        # Prebuilt jars may contain class files which we shouldn't include.
+        for java_resource in options.java_resources:
+          with zipfile.ZipFile(java_resource, 'r') as java_resource_jar:
+            for apk_path in java_resource_jar.namelist():
               apk_path_lower = apk_path.lower()
+
               if apk_path_lower.startswith('meta-inf/'):
                 continue
-
               if apk_path_lower.endswith('/'):
                 continue
-
               if apk_path_lower.endswith('.class'):
                 continue
 
-              build_utils.AddToZipHermetic(out_apk, apk_path,
-                                           data=emma_device_jar.read(apk_path))
+              build_utils.AddToZipHermetic(
+                  out_apk, apk_path, data=java_resource_jar.read(apk_path))
 
       shutil.move(tmp_apk, options.output_apk)
     finally:

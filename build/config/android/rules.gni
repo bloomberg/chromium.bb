@@ -2057,7 +2057,6 @@ if (enable_java_templates) {
       dex_path = final_dex_path
       load_library_from_apk = _load_library_from_apk
       create_density_splits = _create_density_splits
-      emma_instrument = emma_coverage && !_emma_never_instrument
 
       if (!defined(extensions_to_not_compress)) {
         # Allow icu data, v8 snapshots, and pak files to be loaded directly from
