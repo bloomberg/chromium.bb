@@ -20,7 +20,7 @@ TestToolbarModelIOS::TestToolbarModelIOS()
 
 TestToolbarModelIOS::~TestToolbarModelIOS() {}
 
-TestToolbarModel* TestToolbarModelIOS::GetToolbarModel() {
+ToolbarModel* TestToolbarModelIOS::GetToolbarModel() {
   return test_toolbar_model_.get();
 }
 
@@ -56,31 +56,3 @@ bool TestToolbarModelIOS::ShouldDisplayHintText() {
   return false;
 }
 
-base::string16 TestToolbarModelIOS::GetFormattedURL(size_t* prefix_end) const {
-  return test_toolbar_model_->GetFormattedURL(prefix_end);
-}
-
-GURL TestToolbarModelIOS::GetURL() const {
-  return test_toolbar_model_->GetURL();
-}
-
-security_state::SecurityLevel TestToolbarModelIOS::GetSecurityLevel(
-    bool ignore_editing) const {
-  return test_toolbar_model_->GetSecurityLevel(ignore_editing);
-}
-
-gfx::VectorIconId TestToolbarModelIOS::GetVectorIcon() const {
-  return test_toolbar_model_->GetVectorIcon();
-}
-
-base::string16 TestToolbarModelIOS::GetSecureVerboseText() const {
-  return test_toolbar_model_->GetSecureVerboseText();
-}
-
-base::string16 TestToolbarModelIOS::GetEVCertName() const {
-  return test_toolbar_model_->GetEVCertName();
-}
-
-bool TestToolbarModelIOS::ShouldDisplayURL() const {
-  return test_toolbar_model_->ShouldDisplayURL();
-}

@@ -9,10 +9,8 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
-#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_state/web_state.h"
 
 namespace {
@@ -36,6 +34,10 @@ ToolbarModelImplIOS::ToolbarModelImplIOS(ToolbarModelDelegateIOS* delegate) {
 }
 
 ToolbarModelImplIOS::~ToolbarModelImplIOS() {}
+
+ToolbarModel* ToolbarModelImplIOS::GetToolbarModel() {
+  return toolbar_model_.get();
+}
 
 bool ToolbarModelImplIOS::IsLoading() {
   // Please note, ToolbarModel's notion of isLoading is slightly different from
@@ -81,50 +83,3 @@ bool ToolbarModelImplIOS::ShouldDisplayHintText() {
   return [current_tab.webController wantsLocationBarHintText];
 }
 
-base::string16 ToolbarModelImplIOS::GetFormattedURL(size_t* prefix_end) const {
-  base::string16 formatted_url = toolbar_model_->GetFormattedURL(prefix_end);
-  Tab* current_tab = delegate_->GetCurrentTab();
-  if (!current_tab || !current_tab.webState ||
-      !current_tab.webState->GetNavigationManager() ||
-      !current_tab.webState->GetNavigationManager()->GetVisibleItem()) {
-    return formatted_url;
-  }
-  GURL url =
-      current_tab.webState->GetNavigationManager()->GetVisibleItem()->GetURL();
-  if (reading_list::IsOfflineURL(url) &&
-      GetSecurityLevel(true /*ignore_editing*/) ==
-          security_state::SecurityLevel::NONE) {
-    size_t removed = 0;
-    formatted_url =
-        reading_list::StripSchemeFromOnlineURL(formatted_url, &removed);
-    if (prefix_end) {
-      *prefix_end -= removed;
-    }
-  }
-  return formatted_url;
-}
-
-GURL ToolbarModelImplIOS::GetURL() const {
-  return toolbar_model_->GetURL();
-}
-
-security_state::SecurityLevel ToolbarModelImplIOS::GetSecurityLevel(
-    bool ignore_editing) const {
-  return toolbar_model_->GetSecurityLevel(ignore_editing);
-}
-
-gfx::VectorIconId ToolbarModelImplIOS::GetVectorIcon() const {
-  return toolbar_model_->GetVectorIcon();
-}
-
-base::string16 ToolbarModelImplIOS::GetSecureVerboseText() const {
-  return toolbar_model_->GetSecureVerboseText();
-}
-
-base::string16 ToolbarModelImplIOS::GetEVCertName() const {
-  return toolbar_model_->GetEVCertName();
-}
-
-bool ToolbarModelImplIOS::ShouldDisplayURL() const {
-  return toolbar_model_->ShouldDisplayURL();
-}

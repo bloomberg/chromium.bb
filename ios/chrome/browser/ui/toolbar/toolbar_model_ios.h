@@ -9,8 +9,15 @@
 
 #include "components/toolbar/toolbar_model.h"
 
-class ToolbarModelIOS : public ToolbarModel {
+// This class adds some IOS specific methods to the ToolbarModel.
+// It does not inherit from ToolbarModel on purpose.
+class ToolbarModelIOS {
  public:
+  virtual ~ToolbarModelIOS() {}
+
+  // Returns the |ToolbarModel| contained by this instance.
+  virtual ToolbarModel* GetToolbarModel() = 0;
+
   // Returns true if the current tab is currently loading.
   virtual bool IsLoading() = 0;
 

@@ -84,34 +84,3 @@ TEST(OfflineURLUtilsTest, IsOfflineURL) {
       reading_list::IsOfflineURL(GURL("chrome://offline/foobar?foo=bar")));
 }
 
-// Checks that https:// scheme is correctly removed by
-// StripSchemeFromOnlineURLTest.
-TEST(OfflineURLUtilsTest, StripSchemeFromOnlineURLTest) {
-  size_t removed_size;
-  base::string16 empty_url;
-  EXPECT_EQ(reading_list::StripSchemeFromOnlineURL(empty_url, &removed_size),
-            empty_url);
-  EXPECT_EQ(removed_size, 0u);
-
-  base::string16 https_url = base::UTF8ToUTF16("https://www.chromium.org/");
-  base::string16 trimmed_https_url = base::UTF8ToUTF16("www.chromium.org/");
-  EXPECT_EQ(reading_list::StripSchemeFromOnlineURL(https_url, &removed_size),
-            trimmed_https_url);
-  EXPECT_EQ(removed_size, 8u);
-  base::string16 http_url = base::UTF8ToUTF16("http://www.chromium.org/");
-  EXPECT_DCHECK_DEATH(
-      reading_list::StripSchemeFromOnlineURL(http_url, &removed_size));
-
-  base::string16 other_scheme_url =
-      base::UTF8ToUTF16("scheme://www.chromium.org/");
-  EXPECT_EQ(
-      reading_list::StripSchemeFromOnlineURL(other_scheme_url, &removed_size),
-      other_scheme_url);
-  EXPECT_EQ(removed_size, 0u);
-
-  base::string16 no_scheme_url = base::UTF8ToUTF16("www.chromium.org/");
-  EXPECT_EQ(
-      reading_list::StripSchemeFromOnlineURL(no_scheme_url, &removed_size),
-      no_scheme_url);
-  EXPECT_EQ(removed_size, 0u);
-}

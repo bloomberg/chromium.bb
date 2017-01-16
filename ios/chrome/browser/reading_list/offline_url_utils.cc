@@ -66,27 +66,4 @@ GURL FileURLForDistilledURL(const GURL& distilled_url,
 bool IsOfflineURL(const GURL& url) {
   return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
 }
-
-base::string16 StripSchemeFromOnlineURL(const base::string16& online_url,
-                                        size_t* removed_chars) {
-  base::string16 https_scheme = base::UTF8ToUTF16(base::StringPrintf(
-      "%s%s", url::kHttpsScheme, url::kStandardSchemeSeparator));
-  if (base::StartsWith(online_url, https_scheme,
-                       base::CompareCase::SENSITIVE)) {
-    if (removed_chars) {
-      *removed_chars = https_scheme.length();
-    }
-    return online_url.substr(https_scheme.length());
-  }
-  // http:// scheme should already have been trimmed at this point.
-  // DCHECK to detect formatting changes in omnibox.
-  DCHECK(!base::StartsWith(
-      online_url, base::UTF8ToUTF16(base::StringPrintf(
-                      "%s%s", url::kHttpScheme, url::kStandardSchemeSeparator)),
-      base::CompareCase::SENSITIVE));
-  if (removed_chars) {
-    *removed_chars = 0;
-  }
-  return online_url;
-}
 }
