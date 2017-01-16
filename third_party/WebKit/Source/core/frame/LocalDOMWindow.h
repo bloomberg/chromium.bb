@@ -42,7 +42,6 @@ namespace blink {
 
 class CustomElementRegistry;
 class DOMWindowEventQueue;
-class DOMWindowProperty;
 class DocumentInit;
 class EventQueue;
 class FrameConsole;
@@ -172,9 +171,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   CustomElementRegistry* customElements() const;
   CustomElementRegistry* maybeCustomElements() const;
 
-  void registerProperty(DOMWindowProperty*);
-  void unregisterProperty(DOMWindowProperty*);
-
   void registerEventListenerObserver(EventListenerObserver*);
 
   void frameDestroyed();
@@ -266,8 +262,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   TaskRunnerTimer<LocalDOMWindow> m_unusedPreloadsTimer;
 
   bool m_shouldPrintWhenFinishedLoading;
-
-  HeapHashSet<WeakMember<DOMWindowProperty>> m_properties;
 
   mutable Member<Screen> m_screen;
   mutable Member<History> m_history;

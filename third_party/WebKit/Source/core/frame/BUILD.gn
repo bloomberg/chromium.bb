@@ -21,8 +21,6 @@ blink_core_sources("frame") {
     "DOMWindowBase64.cpp",
     "DOMWindowBase64.h",
     "DOMWindowEventHandlers.h",
-    "DOMWindowProperty.cpp",
-    "DOMWindowProperty.h",
     "DOMWindowTimers.cpp",
     "DOMWindowTimers.h",
     "DeprecatedScheduleStyleRecalcDuringLayout.cpp",

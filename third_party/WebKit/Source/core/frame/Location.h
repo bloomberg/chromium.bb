@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMStringList.h"
-#include "core/frame/DOMWindowProperty.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -44,11 +43,9 @@ class Frame;
 class KURL;
 
 // This class corresponds to the JS Location API, which is the only DOM API
-// besides Window that is operable in a RemoteFrame. Rather than making
-// DOMWindowProperty support RemoteFrames and generating a lot code churn,
-// Location is implemented as a one-off with some custom lifetime management
-// code. Namely, it needs a manual call to reset() from DOMWindow::reset() to
-// ensure it doesn't retain a stale Frame pointer.
+// besides Window that is operable in a RemoteFrame. Location needs to be
+// manually updated in DOMWindow::reset() to ensure it doesn't retain a stale
+// Frame pointer.
 class CORE_EXPORT Location final : public GarbageCollected<Location>,
                                    public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

@@ -53,7 +53,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/BarProp.h"
 #include "core/frame/DOMVisualViewport.h"
-#include "core/frame/DOMWindowProperty.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
@@ -479,21 +478,9 @@ MediaQueryList* LocalDOMWindow::matchMedia(const String& media) {
 }
 
 void LocalDOMWindow::frameDestroyed() {
-  for (const auto& domWindowProperty : m_properties)
-    domWindowProperty->frameDestroyed();
-
   resetLocation();
-  m_properties.clear();
   removeAllEventListeners();
   disconnectFromFrame();
-}
-
-void LocalDOMWindow::registerProperty(DOMWindowProperty* property) {
-  m_properties.add(property);
-}
-
-void LocalDOMWindow::unregisterProperty(DOMWindowProperty* property) {
-  m_properties.remove(property);
 }
 
 void LocalDOMWindow::registerEventListenerObserver(
@@ -1609,7 +1596,6 @@ DOMWindow* LocalDOMWindow::open(const String& urlString,
 
 DEFINE_TRACE(LocalDOMWindow) {
   visitor->trace(m_document);
-  visitor->trace(m_properties);
   visitor->trace(m_screen);
   visitor->trace(m_history);
   visitor->trace(m_locationbar);

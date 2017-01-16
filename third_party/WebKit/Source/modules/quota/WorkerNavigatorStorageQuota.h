@@ -31,7 +31,6 @@
 #ifndef WorkerNavigatorStorageQuota_h
 #define WorkerNavigatorStorageQuota_h
 
-#include "core/frame/DOMWindowProperty.h"
 #include "core/workers/WorkerNavigator.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "platform/Supplementable.h"

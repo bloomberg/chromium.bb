@@ -155,9 +155,8 @@ bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow,
 }
 
 void DOMWindow::resetLocation() {
-  // Location needs to be reset manually because it doesn't inherit from
-  // DOMWindowProperty.  DOMWindowProperty is local-only, and Location needs to
-  // support remote windows, too.
+  // Location needs to be reset manually so that it doesn't retain a stale
+  // Frame pointer.
   if (m_location) {
     m_location->reset();
     m_location = nullptr;
