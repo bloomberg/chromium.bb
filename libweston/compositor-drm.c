@@ -1821,16 +1821,20 @@ find_crtc_for_connector(struct drm_backend *b,
 			drmModeRes *resources, drmModeConnector *connector)
 {
 	drmModeEncoder *encoder;
-	uint32_t possible_crtcs;
 	int i, j;
+	int ret = -1;
 
 	for (j = 0; j < connector->count_encoders; j++) {
+		uint32_t possible_crtcs, encoder_id, crtc_id;
+
 		encoder = drmModeGetEncoder(b->drm.fd, connector->encoders[j]);
 		if (encoder == NULL) {
 			weston_log("Failed to get encoder.\n");
-			return -1;
+			continue;
 		}
+		encoder_id = encoder->encoder_id;
 		possible_crtcs = encoder->possible_crtcs;
+		crtc_id = encoder->crtc_id;
 		drmModeFreeEncoder(encoder);
 
 		for (i = 0; i < resources->count_crtcs; i++) {
@@ -1840,11 +1844,21 @@ find_crtc_for_connector(struct drm_backend *b,
 			if (drm_output_find_by_crtc(b, resources->crtcs[i]))
 				continue;
 
-			return i;
+			/* Try to preserve the existing
+			 * CRTC -> encoder -> connector routing; it makes
+			 * initialisation faster, and also since we have a
+			 * very dumb picking algorithm, may preserve a better
+			 * choice. */
+			if (!connector->encoder_id ||
+			    (encoder_id == connector->encoder_id &&
+			     crtc_id == resources->crtcs[i]))
+				return i;
+
+			ret = i;
 		}
 	}
 
-	return -1;
+	return ret;
 }
 
 /* Init output state that depends on gl or gbm */
