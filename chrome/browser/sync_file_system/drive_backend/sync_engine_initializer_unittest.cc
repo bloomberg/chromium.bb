@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -107,32 +108,16 @@ class SyncEngineInitializerTest : public testing::Test {
 
   SyncStatusCode PopulateDatabase(
       const google_apis::FileResource& sync_root,
-      const google_apis::FileResource** app_roots,
-      size_t app_roots_count) {
+      const std::vector<std::unique_ptr<google_apis::FileResource>>&
+          app_root_list) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     std::unique_ptr<MetadataDatabase> database = MetadataDatabase::Create(
         database_path(), in_memory_env_.get(), &status);
     if (status != SYNC_STATUS_OK)
       return status;
 
-    // |app_root_list| must not own the resources here. Be sure to release
-    // ownership of all elements later.
-    // TODO(leonhsl) Need follow up: having two owners for a pointer is a
-    // dangerous pattern that we don't want to keep around.
-    std::vector<std::unique_ptr<google_apis::FileResource>> app_root_list;
-    for (size_t i = 0; i < app_roots_count; ++i) {
-      app_root_list.push_back(base::WrapUnique(
-          const_cast<google_apis::FileResource*>(app_roots[i])));
-    }
-
     status = database->PopulateInitialData(
         kInitialLargestChangeID, sync_root, app_root_list);
-
-    for_each(app_root_list.begin(), app_root_list.end(),
-             [](std::unique_ptr<google_apis::FileResource>& entry) {
-               entry.release();
-             });
-    app_root_list.clear();
     return status;
   }
 
@@ -279,26 +264,23 @@ TEST_F(SyncEngineInitializerTest, EmptyDatabase_RemoteSyncRootExists) {
 
 TEST_F(SyncEngineInitializerTest, DatabaseAlreadyInitialized) {
   std::unique_ptr<google_apis::FileResource> sync_root(CreateRemoteSyncRoot());
-  std::unique_ptr<google_apis::FileResource> app_root_1(
+  std::vector<std::unique_ptr<google_apis::FileResource>> app_root_list;
+  app_root_list.push_back(
       CreateRemoteFolder(sync_root->file_id(), "app-root 1"));
-  std::unique_ptr<google_apis::FileResource> app_root_2(
+  app_root_list.push_back(
       CreateRemoteFolder(sync_root->file_id(), "app-root 2"));
 
-  const google_apis::FileResource* app_roots[] = {
-    app_root_1.get(), app_root_2.get()
-  };
-  EXPECT_EQ(SYNC_STATUS_OK,
-            PopulateDatabase(*sync_root, app_roots, arraysize(app_roots)));
+  EXPECT_EQ(SYNC_STATUS_OK, PopulateDatabase(*sync_root, app_root_list));
 
   EXPECT_EQ(SYNC_STATUS_OK, RunInitializer());
 
   EXPECT_EQ(1u, CountTrackersForFile(sync_root->file_id()));
-  EXPECT_EQ(1u, CountTrackersForFile(app_root_1->file_id()));
-  EXPECT_EQ(1u, CountTrackersForFile(app_root_2->file_id()));
+  EXPECT_EQ(1u, CountTrackersForFile(app_root_list[0]->file_id()));
+  EXPECT_EQ(1u, CountTrackersForFile(app_root_list[1]->file_id()));
 
   EXPECT_TRUE(HasActiveTracker(sync_root->file_id()));
-  EXPECT_FALSE(HasActiveTracker(app_root_1->file_id()));
-  EXPECT_FALSE(HasActiveTracker(app_root_2->file_id()));
+  EXPECT_FALSE(HasActiveTracker(app_root_list[0]->file_id()));
+  EXPECT_FALSE(HasActiveTracker(app_root_list[1]->file_id()));
 
   EXPECT_EQ(3u, CountFileMetadata());
   EXPECT_EQ(3u, CountFileTracker());
