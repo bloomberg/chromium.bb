@@ -785,19 +785,24 @@ void Canvas2DLayerBridge::flushRecordingOnly() {
 }
 
 void Canvas2DLayerBridge::flush() {
-  if (!getOrCreateSurface())
+  if (!m_didDrawSinceLastFlush)
     return;
   TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
+  if (!getOrCreateSurface())
+    return;
   flushRecordingOnly();
   getOrCreateSurface()->getCanvas()->flush();
+  m_didDrawSinceLastFlush = false;
 }
 
 void Canvas2DLayerBridge::flushGpu() {
-  TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushGpu");
   flush();
   gpu::gles2::GLES2Interface* gl = contextGL();
-  if (isAccelerated() && gl)
+  if (isAccelerated() && gl && m_didDrawSinceLastGpuFlush) {
+    TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushGpu");
     gl->Flush();
+    m_didDrawSinceLastGpuFlush = false;
+  }
 }
 
 gpu::gles2::GLES2Interface* Canvas2DLayerBridge::contextGL() {
@@ -1053,6 +1058,8 @@ void Canvas2DLayerBridge::didDraw(const FloatRect& rect) {
     Platform::current()->currentThread()->addTaskObserver(this);
     m_isRegisteredTaskObserver = true;
   }
+  m_didDrawSinceLastFlush = true;
+  m_didDrawSinceLastGpuFlush = true;
 }
 
 void Canvas2DLayerBridge::prepareSurfaceForPaintingIfNeeded() {

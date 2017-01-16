@@ -266,6 +266,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   bool m_surfaceCreationFailedAtLeastOnce = false;
   bool m_hibernationScheduled = false;
   bool m_dontUseIdleSchedulingForTesting = false;
+  bool m_didDrawSinceLastFlush = false;
+  bool m_didDrawSinceLastGpuFlush = false;
 
   friend class Canvas2DLayerBridgeTest;
   friend class CanvasRenderingContext2DTest;
