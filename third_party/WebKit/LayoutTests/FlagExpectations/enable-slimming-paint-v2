@@ -588,6 +588,7 @@ Bug(none) fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.htm
 Bug(none) fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure ]
 Bug(none) fast/events/touch/compositor-touch-hit-rects-squashing.html [ Failure ]
 Bug(none) fast/events/touch/compositor-touch-hit-rects-trigger-commit.html [ Failure ]
+Bug(none) fast/events/touch/compositor-touch-hit-rects-transform-changed-nolayout.html [ Failure ]
 Bug(none) fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 Bug(none) fast/events/touch/gesture/gesture-scroll-by-page.html [ Failure ]
 Bug(none) fast/events/touch/gesture/gesture-scroll-by-pixel.html [ Failure ]
