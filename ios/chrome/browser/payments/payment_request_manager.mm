@@ -203,10 +203,12 @@ const std::string kCommandPrefix = "paymentRequest";
 }
 
 - (void)initializeWebViewForPaymentRequest {
-  DCHECK(_webStateEnabled);
+  if (_enabled) {
+    DCHECK(_webStateEnabled);
 
-  [_paymentRequestJsManager inject];
-  _isScriptInjected = YES;
+    [_paymentRequestJsManager inject];
+    _isScriptInjected = YES;
+  }
 }
 
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand {
@@ -319,10 +321,10 @@ const std::string kCommandPrefix = "paymentRequest";
 - (void)webState:(web::WebState*)webState
     didCommitNavigationWithDetails:
         (const web::LoadCommittedDetails&)load_details {
-  _isScriptInjected = NO;
   [self dismissUI];
-  [self initializeWebViewForPaymentRequest];
+  _isScriptInjected = NO;
   [self enableCurrentWebState];
+  [self initializeWebViewForPaymentRequest];
 }
 
 @end
