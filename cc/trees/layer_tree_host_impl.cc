@@ -585,7 +585,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
       device_viewport_point, type, layer_impl, &scroll_on_main_thread,
       &main_thread_scrolling_reasons);
 
-  if (!test_layer_impl)
+  if (scroll_on_main_thread)
     return false;
 
   if (scrolling_layer_impl == test_layer_impl)
@@ -1664,7 +1664,6 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     }
   }
 
-
   CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
   resource_provider_->PrepareSendToParent(resources,
@@ -2534,7 +2533,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
 
   // Walk up the hierarchy and look for a scrollable layer.
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
-  LayerImpl* potentially_scrolling_layer_impl = NULL;
+  LayerImpl* potentially_scrolling_layer_impl = nullptr;
   if (layer_impl) {
     ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
     for (; scroll_tree.parent(scroll_node);
@@ -2546,7 +2545,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       if (IsMainThreadScrolling(status, scroll_node)) {
         *scroll_on_main_thread = true;
         *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
-        return NULL;
+        return active_tree_->LayerById(scroll_node->owning_layer_id);
       }
 
       if (status.thread == InputHandler::SCROLL_ON_IMPL_THREAD &&
@@ -2575,7 +2574,6 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     if (IsMainThreadScrolling(status, scroll_node)) {
       *scroll_on_main_thread = true;
       *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
-      return NULL;
     }
   }
 
@@ -2687,15 +2685,15 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
         device_viewport_point, type, layer_impl, &scroll_on_main_thread,
         &scroll_status.main_thread_scrolling_reasons);
   }
-  if (scrolling_layer_impl)
-    scroll_affects_scroll_handler_ =
-        scrolling_layer_impl->layer_tree_impl()->have_scroll_event_handlers();
 
   if (scroll_on_main_thread) {
     RecordCompositorSlowScrollMetric(type, MAIN_THREAD);
 
     scroll_status.thread = SCROLL_ON_MAIN_THREAD;
     return scroll_status;
+  } else if (scrolling_layer_impl) {
+    scroll_affects_scroll_handler_ =
+        scrolling_layer_impl->layer_tree_impl()->have_scroll_event_handlers();
   }
 
   return ScrollBeginImpl(scroll_state, scrolling_layer_impl, type);
@@ -3251,7 +3249,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   // Check if mouse is over a scrollbar or not.
   // TODO(sahel): get rid of this extera checking when
   // FindScrollLayerForDeviceViewportPoint finds the proper layer for
-  // scrolling on main thread, as well.
+  // scrolling on main thread when mouse is over scrollbar as well.
   int new_id = Layer::INVALID_ID;
   if (layer_impl && layer_impl->ToScrollbarLayer())
     new_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();

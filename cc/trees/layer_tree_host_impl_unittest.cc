@@ -463,6 +463,8 @@ class LayerTreeHostImplTest : public testing::Test,
 
   void SetupMouseMoveAtWithDeviceScale(float device_scale_factor);
 
+  void SetupMouseMoveAtTestScrollbarStates(bool main_thread_scrolling);
+
   scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
 
  protected:
@@ -11600,7 +11602,8 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnCompositorFrameSinkChange) {
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 }
 
-TEST_F(LayerTreeHostImplTest, LayerTreeHostImplTestScrollbarStates) {
+void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
+    bool main_thread_scrolling) {
   LayerTreeSettings settings = DefaultSettings();
   settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
   settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
@@ -11625,6 +11628,11 @@ TEST_F(LayerTreeHostImplTest, LayerTreeHostImplTestScrollbarStates) {
       viewport_size);
   LayerImpl* root_scroll =
       host_impl_->active_tree()->OuterViewportScrollLayer();
+
+  if (main_thread_scrolling) {
+    root_scroll->set_main_thread_scrolling_reasons(
+        MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+  }
 
   // scrollbar_1 on root scroll.
   std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_1 =
@@ -11684,6 +11692,11 @@ TEST_F(LayerTreeHostImplTest, LayerTreeHostImplTestScrollbarStates) {
   child->SetDrawsContent(true);
   child->SetScrollClipLayer(child_clip_id);
 
+  if (main_thread_scrolling) {
+    child->set_main_thread_scrolling_reasons(
+        MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+  }
+
   scrollbar_2->SetScrollLayerId(child_scroll_id);
   scrollbar_2->SetDrawsContent(true);
   scrollbar_2->SetBounds(scrollbar_size_2);
@@ -11723,6 +11736,16 @@ TEST_F(LayerTreeHostImplTest, LayerTreeHostImplTestScrollbarStates) {
   EXPECT_TRUE(scrollbar_1_animation_controller->mouse_is_over_scrollbar());
   EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_near_scrollbar());
   EXPECT_FALSE(scrollbar_2_animation_controller->mouse_is_over_scrollbar());
+}
+
+TEST_F(LayerTreeHostImplTest,
+       LayerTreeHostImplTestScrollbarStatesInMainThreadScorlling) {
+  SetupMouseMoveAtTestScrollbarStates(true);
+}
+
+TEST_F(LayerTreeHostImplTest,
+       LayerTreeHostImplTestScrollbarStatesInNotMainThreadScorlling) {
+  SetupMouseMoveAtTestScrollbarStates(false);
 }
 
 }  // namespace
