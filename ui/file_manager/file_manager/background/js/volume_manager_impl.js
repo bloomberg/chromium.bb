@@ -331,6 +331,9 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
       case VolumeManagerCommon.VolumeType.PROVIDED:
         rootType = VolumeManagerCommon.RootType.PROVIDED;
         break;
+      case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
+        rootType = VolumeManagerCommon.RootType.MEDIA_VIEW;
+        break;
       default:
         // Programming error, throw an exception.
         throw new Error('Invalid volume type: ' + volumeInfo.volumeType);

@@ -306,6 +306,45 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
       url(../images/volumes/2x/cd_active.png) 2x);
 }
 
+[volume-type-icon='media_view'][volume-subtype='images_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/images.png) 1x,
+      url(../images/volumes/2x/images.png) 2x);
+}
+
+.tree-row[selected]
+    [volume-type-icon='media_view'][volume-subtype='images_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/images_active.png) 1x,
+      url(../images/volumes/2x/images_active.png) 2x);
+}
+
+[volume-type-icon='media_view'][volume-subtype='videos_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/videos.png) 1x,
+      url(../images/volumes/2x/videos.png) 2x);
+}
+
+.tree-row[selected]
+    [volume-type-icon='media_view'][volume-subtype='videos_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/videos_active.png) 1x,
+      url(../images/volumes/2x/videos_active.png) 2x);
+}
+
+[volume-type-icon='media_view'][volume-subtype='audio_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/audio.png) 1x,
+      url(../images/volumes/2x/audio.png) 2x);
+}
+
+.tree-row[selected]
+    [volume-type-icon='media_view'][volume-subtype='audio_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/audio_active.png) 1x,
+      url(../images/volumes/2x/audio_active.png) 2x);
+}
+
 [volume-type-icon='mtp'] {
   background-image: -webkit-image-set(
       url(../images/volumes/phone.png) 1x,

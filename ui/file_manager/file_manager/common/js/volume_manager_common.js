@@ -54,7 +54,10 @@ VolumeManagerCommon.RootType = {
   DRIVE_SHARED_WITH_ME: 'drive_shared_with_me',
 
   // Fake root for recent files on the drive.
-  DRIVE_RECENT: 'drive_recent'
+  DRIVE_RECENT: 'drive_recent',
+
+  // Root for media views.
+  MEDIA_VIEW: 'media_view',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -132,7 +135,8 @@ VolumeManagerCommon.VolumeType = {
   REMOVABLE: 'removable',
   ARCHIVE: 'archive',
   MTP: 'mtp',
-  PROVIDED: 'provided'
+  PROVIDED: 'provided',
+  MEDIA_VIEW: 'media_view',
 };
 
 /**
@@ -184,6 +188,8 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
       return VolumeManagerCommon.VolumeType.MTP;
     case VolumeManagerCommon.RootType.PROVIDED:
       return VolumeManagerCommon.VolumeType.PROVIDED;
+    case VolumeManagerCommon.RootType.MEDIA_VIEW:
+      return VolumeManagerCommon.VolumeType.MEDIA_VIEW;
   }
   assertNotReached('Unknown root type: ' + rootType);
 };
@@ -210,6 +216,31 @@ VolumeManagerCommon.VolumeInfoProvider = function() {};
  * @return {?VolumeInfo} The VolumeInfo instance or null if not found.
  */
 VolumeManagerCommon.VolumeInfoProvider.prototype.getVolumeInfo;
+
+/**
+ * List of media view root types.
+ *
+ * Keep this in sync with constants in arc_media_view_util.cc.
+ *
+ * @enum {string}
+ * @const
+ */
+VolumeManagerCommon.MediaViewRootType = {
+  IMAGES: 'images_root',
+  VIDEOS: 'videos_root',
+  AUDIO: 'audio_root',
+};
+Object.freeze(VolumeManagerCommon.MediaViewRootType);
+
+/**
+ * Obtains volume type from root type.
+ * @param {string} volumeId Volume ID.
+ * @return {VolumeManagerCommon.MediaViewRootType}
+ */
+VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = function(volumeId) {
+  return /** @type {VolumeManagerCommon.MediaViewRootType} */ (
+      volumeId.split(':', 2)[1]);
+};
 
 /**
  * Fake entries for Google Drive's virtual folders.

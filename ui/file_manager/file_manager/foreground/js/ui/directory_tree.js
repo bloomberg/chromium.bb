@@ -641,7 +641,14 @@ VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
         'style', 'background-image: ' + backgroundImage);
   }
   icon.setAttribute('volume-type-icon', volumeInfo.volumeType);
-  icon.setAttribute('volume-subtype', volumeInfo.deviceType || '');
+  if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
+    icon.setAttribute(
+        'volume-subtype',
+        VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
+            volumeInfo.volumeId));
+  } else {
+    icon.setAttribute('volume-subtype', volumeInfo.deviceType || '');
+  }
 };
 
 /**

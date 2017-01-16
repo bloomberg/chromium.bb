@@ -160,6 +160,15 @@ void AddStringsForDrive(base::DictionaryValue* dict) {
              IDS_FILE_BROWSER_SYNC_SERVICE_UNAVAILABLE_ERROR);
 }
 
+void AddStringsForMediaView(base::DictionaryValue* dict) {
+  SET_STRING("MEDIA_VIEW_AUDIO_ROOT_LABEL",
+             IDS_FILE_BROWSER_MEDIA_VIEW_AUDIO_ROOT_LABEL);
+  SET_STRING("MEDIA_VIEW_IMAGES_ROOT_LABEL",
+             IDS_FILE_BROWSER_MEDIA_VIEW_IMAGES_ROOT_LABEL);
+  SET_STRING("MEDIA_VIEW_VIDEOS_ROOT_LABEL",
+             IDS_FILE_BROWSER_MEDIA_VIEW_VIDEOS_ROOT_LABEL);
+}
+
 void AddStringsForGallery(base::DictionaryValue* dict) {
   SET_STRING("GALLERY_ASPECT_RATIO_16_9",
              IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_16_9);
@@ -357,6 +366,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   AddStringsForDrive(dict.get());
+  AddStringsForMediaView(dict.get());
   AddStringsForFileTypes(dict.get());
   AddStringsForGallery(dict.get());
   AddStringsForMediaPlayer(dict.get());

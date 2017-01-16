@@ -63,6 +63,20 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
     case VolumeManagerCommon.VolumeType.DRIVE:
       localizedLabel = str('DRIVE_DIRECTORY_LABEL');
       break;
+    case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
+      switch (VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
+          volumeMetadata.volumeId)) {
+        case VolumeManagerCommon.MediaViewRootType.IMAGES:
+          localizedLabel = str('MEDIA_VIEW_IMAGES_ROOT_LABEL');
+          break;
+        case VolumeManagerCommon.MediaViewRootType.VIDEOS:
+          localizedLabel = str('MEDIA_VIEW_VIDEOS_ROOT_LABEL');
+          break;
+        case VolumeManagerCommon.MediaViewRootType.AUDIO:
+          localizedLabel = str('MEDIA_VIEW_AUDIO_ROOT_LABEL');
+          break;
+      }
+      break;
     default:
       // TODO(mtomasz): Calculate volumeLabel for all types of volumes in the
       // C++ layer.
