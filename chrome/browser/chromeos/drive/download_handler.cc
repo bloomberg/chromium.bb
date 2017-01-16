@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -377,9 +378,8 @@ void DownloadHandler::OnCreateDirectory(
     FileError error) {
   DVLOG(1) << "OnCreateDirectory " << FileErrorToString(error);
   if (error == FILE_ERROR_OK) {
-    base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool(),
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock(),
         base::Bind(&GetDriveTempDownloadPath, drive_tmp_download_path_),
         callback);
   } else {
