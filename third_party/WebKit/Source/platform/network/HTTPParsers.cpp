@@ -703,13 +703,11 @@ CacheControlHeader parseCacheControlDirectives(
   cacheControlHeader.staleWhileRevalidate =
       std::numeric_limits<double>::quiet_NaN();
 
-  DEFINE_STATIC_LOCAL(const AtomicString, noCacheDirective, ("no-cache"));
-  DEFINE_STATIC_LOCAL(const AtomicString, noStoreDirective, ("no-store"));
-  DEFINE_STATIC_LOCAL(const AtomicString, mustRevalidateDirective,
-                      ("must-revalidate"));
-  DEFINE_STATIC_LOCAL(const AtomicString, maxAgeDirective, ("max-age"));
-  DEFINE_STATIC_LOCAL(const AtomicString, staleWhileRevalidateDirective,
-                      ("stale-while-revalidate"));
+  static const char noCacheDirective[] = "no-cache";
+  static const char noStoreDirective[] = "no-store";
+  static const char mustRevalidateDirective[] = "must-revalidate";
+  static const char maxAgeDirective[] = "max-age";
+  static const char staleWhileRevalidateDirective[] = "stale-while-revalidate";
 
   if (!cacheControlValue.isEmpty()) {
     Vector<std::pair<String, String>> directives;

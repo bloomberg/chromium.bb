@@ -4,9 +4,44 @@
 
 #include "platform/network/ResourceResponse.h"
 
+#include "platform/CrossThreadFunctional.h"
+#include "platform/WebTaskRunner.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+namespace {
+
+ResourceResponse createTestResponse() {
+  ResourceResponse response;
+  response.addHTTPHeaderField("age", "0");
+  response.addHTTPHeaderField("cache-control", "no-cache");
+  response.addHTTPHeaderField("date", "Tue, 17 Jan 2017 04:01:00 GMT");
+  response.addHTTPHeaderField("expires", "Tue, 17 Jan 2017 04:11:00 GMT");
+  response.addHTTPHeaderField("last-modified", "Tue, 17 Jan 2017 04:00:00 GMT");
+  response.addHTTPHeaderField("pragma", "public");
+  response.addHTTPHeaderField("etag", "abc");
+  response.addHTTPHeaderField("content-disposition",
+                              "attachment; filename=a.txt");
+  return response;
+}
+
+void runHeaderRelatedTest(const ResourceResponse& response) {
+  EXPECT_EQ(0, response.age());
+  EXPECT_NE(0, response.date());
+  EXPECT_NE(0, response.expires());
+  EXPECT_NE(0, response.lastModified());
+  EXPECT_EQ(true, response.cacheControlContainsNoCache());
+}
+
+void runInThread() {
+  ResourceResponse response(createTestResponse());
+  runHeaderRelatedTest(response);
+}
+
+}  // namespace
 
 TEST(ResourceResponseTest, SignedCertificateTimestampIsolatedCopy) {
   ResourceResponse::SignedCertificateTimestamp src(
@@ -30,6 +65,18 @@ TEST(ResourceResponseTest, SignedCertificateTimestampIsolatedCopy) {
   EXPECT_NE(src.m_signatureAlgorithm.impl(), dest.m_signatureAlgorithm.impl());
   EXPECT_EQ(src.m_signatureData, dest.m_signatureData);
   EXPECT_NE(src.m_signatureData.impl(), dest.m_signatureData.impl());
+}
+
+TEST(ResourceResponseTest, CrossThreadAtomicStrings) {
+  // This test checks that AtomicStrings in ResourceResponse doesn't cause the
+  // failure of ThreadRestrictionVerifier check.
+  ResourceResponse response(createTestResponse());
+  runHeaderRelatedTest(response);
+  std::unique_ptr<WebThread> thread =
+      WTF::wrapUnique(Platform::current()->createThread("WorkerThread"));
+  thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE,
+                                       crossThreadBind(&runInThread));
+  thread.reset();
 }
 
 }  // namespace blink
