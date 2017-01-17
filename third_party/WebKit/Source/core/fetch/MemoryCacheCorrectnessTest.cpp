@@ -232,7 +232,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshButNoCache) {
   EXPECT_NE(fresh200Nocache, fetched);
 }
 
-TEST_F(MemoryCacheCorrectnessTest, RequestWithNoCahe) {
+TEST_F(MemoryCacheCorrectnessTest, RequestWithNoCache) {
   ResourceRequest noCacheRequest;
   noCacheRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
   Resource* noCacheResource = resourceFromResourceRequest(noCacheRequest);
