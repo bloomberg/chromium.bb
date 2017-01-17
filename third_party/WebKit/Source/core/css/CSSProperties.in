@@ -364,7 +364,7 @@ speak inherited
 stop-color interpolable, svg, converter=convertColor
 stop-opacity interpolable, svg, converter=convertNumberOrPercentage
 stroke interpolable, inherited, svg, setter=setStrokePaint, custom_all
-stroke-dasharray interpolable, inherited, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray
+stroke-dasharray interpolable, inherited, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray, api_class
 stroke-dashoffset interpolable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertLength
 stroke-linecap svg, inherited, type_name=LineCap, name_for_methods=CapStyle
 stroke-linejoin svg, inherited, type_name=LineJoin, name_for_methods=JoinStyle

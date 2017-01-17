@@ -1711,22 +1711,6 @@ static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range) {
   return consumeUrl(range);
 }
 
-static CSSValue* consumeStrokeDasharray(CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueNone)
-    return consumeIdent(range);
-
-  CSSValueList* dashes = CSSValueList::createCommaSeparated();
-  do {
-    CSSPrimitiveValue* dash =
-        consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeNonNegative);
-    if (!dash || (consumeCommaIncludingWhitespace(range) && range.atEnd()))
-      return nullptr;
-    dashes->append(*dash);
-  } while (!range.atEnd());
-  return dashes;
-}
-
 static CSSValue* consumeBaselineShift(CSSParserTokenRange& range) {
   CSSValueID id = range.peek().id();
   if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
@@ -3332,8 +3316,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
       return consumeNumber(m_range, ValueRangeNonNegative);
-    case CSSPropertyStrokeDasharray:
-      return consumeStrokeDasharray(m_range);
     case CSSPropertyColumnRuleWidth:
       return consumeColumnRuleWidth(m_range, m_context->mode());
     case CSSPropertyStrokeOpacity:
