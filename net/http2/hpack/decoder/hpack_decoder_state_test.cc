@@ -6,21 +6,23 @@
 
 // Tests of HpackDecoderState.
 
-#include <algorithm>
-#include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
+#include "net/http2/hpack/hpack_string.h"
+#include "net/http2/http2_constants.h"
 #include "net/http2/tools/failure.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 using ::testing::Eq;
+using ::testing::HasSubstr;
 using ::testing::Mock;
 using ::testing::StrictMock;
 using base::StringPiece;
