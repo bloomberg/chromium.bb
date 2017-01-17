@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.os.StrictMode;
 
 import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrApi;
@@ -17,6 +18,7 @@ import com.google.vr.ndk.base.GvrApi;
  * use it, or API calls begin to silently fail.
  */
 public class VrDaydreamApiImpl implements VrDaydreamApi {
+    private static final String TAG = "VrDaydreamApiImpl";
     private final Activity mActivity;
 
     public VrDaydreamApiImpl(Activity activity) {
@@ -73,7 +75,13 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     public Boolean isDaydreamCurrentViewer() {
         DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
         if (daydreamApi == null) return false;
-        int type = daydreamApi.getCurrentViewerType();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        int type = GvrApi.ViewerType.CARDBOARD;
+        try {
+            type = daydreamApi.getCurrentViewerType();
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         daydreamApi.close();
         return type == GvrApi.ViewerType.DAYDREAM;
     }
