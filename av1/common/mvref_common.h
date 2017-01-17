@@ -345,6 +345,23 @@ static INLINE int_mv scale_mv(const MB_MODE_INFO *mbmi, int ref,
 
 // Checks that the given mi_row, mi_col and search point
 // are inside the borders of the tile.
+#if CONFIG_DEPENDENT_HORZTILES
+static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
+                            int mi_rows, int dependent_horz_tile_flag,
+                            const POSITION *mi_pos) {
+  if (dependent_horz_tile_flag) {
+    return !(mi_row + mi_pos->row < 0 ||
+             mi_col + mi_pos->col < tile->mi_col_start ||
+             mi_row + mi_pos->row >= mi_rows ||
+             mi_col + mi_pos->col >= tile->mi_col_end);
+  } else {
+    return !(mi_row + mi_pos->row < tile->mi_row_start ||
+             mi_col + mi_pos->col < tile->mi_col_start ||
+             mi_row + mi_pos->row >= tile->mi_row_end ||
+             mi_col + mi_pos->col >= tile->mi_col_end);
+  }
+}
+#else
 static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
                             const POSITION *mi_pos) {
   return !(mi_row + mi_pos->row < tile->mi_row_start ||
@@ -352,6 +369,7 @@ static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
            mi_row + mi_pos->row >= tile->mi_row_end ||
            mi_col + mi_pos->col >= tile->mi_col_end);
 }
+#endif
 
 static INLINE void lower_mv_precision(MV *mv, int allow_hp) {
   if (!allow_hp) {

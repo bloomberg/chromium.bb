@@ -242,6 +242,9 @@ typedef struct AV1EncoderConfig {
 
   int tile_columns;
   int tile_rows;
+#if CONFIG_DEPENDENT_HORZTILES
+  int dependent_horz_tiles;
+#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   int loop_filter_across_tiles_enabled;
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES

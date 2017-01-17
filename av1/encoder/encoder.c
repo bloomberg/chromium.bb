@@ -868,6 +868,11 @@ static void set_tile_info(AV1_COMP *cpi) {
   cm->tile_height = ALIGN_POWER_OF_TWO(cm->tile_height, MAX_MIB_SIZE_LOG2);
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_DEPENDENT_HORZTILES
+  cm->dependent_horz_tiles = cpi->oxcf.dependent_horz_tiles;
+  if (cm->log2_tile_rows == 0) cm->dependent_horz_tiles = 0;
+#endif
+
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   cm->loop_filter_across_tiles_enabled =
       cpi->oxcf.loop_filter_across_tiles_enabled;

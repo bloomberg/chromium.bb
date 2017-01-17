@@ -129,7 +129,12 @@ static void count_segs(const AV1_COMMON *cm, MACROBLOCKD *xd,
   xd->mi = mi;
   segment_id = xd->mi[0]->mbmi.segment_id;
 
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols,
+                 cm->dependent_horz_tiles);
+#else
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+#endif
 
   // Count the number of hits on each segment with no prediction
   no_pred_segcounts[segment_id]++;

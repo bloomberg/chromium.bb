@@ -1927,7 +1927,12 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
 
   cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols,
+                 cm->dependent_horz_tiles);
+#else
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+#endif
 
   if (frame_is_intra_only(cm)) {
     write_mb_modes_kf(cm, xd, xd->mi, w);
@@ -1998,10 +2003,15 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 
   bh = mi_size_high[m->mbmi.sb_type];
   bw = mi_size_wide[m->mbmi.sb_type];
-
   cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols,
+                 cm->dependent_horz_tiles);
+#else
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+#endif
+
 #if CONFIG_PVQ
   mbmi = &m->mbmi;
   bsize = mbmi->sb_type;
@@ -2474,8 +2484,14 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_SUPERTX
   mbmi = &cm->mi_grid_visible[mi_offset]->mbmi;
   xd->mi = cm->mi_grid_visible + mi_offset;
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mi_row_col(xd, tile, mi_row, mi_size_high[bsize], mi_col,
+                 mi_size_wide[bsize], cm->mi_rows, cm->mi_cols,
+                 cm->dependent_horz_tiles);
+#else
   set_mi_row_col(xd, tile, mi_row, mi_size_high[bsize], mi_col,
                  mi_size_wide[bsize], cm->mi_rows, cm->mi_cols);
+#endif
   if (!supertx_enabled && !frame_is_intra_only(cm) &&
       partition != PARTITION_NONE && bsize <= MAX_SUPERTX_BLOCK_SIZE &&
       !xd->lossless[0]) {
@@ -2564,8 +2580,13 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     const int bsh = mi_size_high[bsize];
     xd->mi = cm->mi_grid_visible + mi_offset;
     supertx_size = mbmi->tx_size;
+#if CONFIG_DEPENDENT_HORZTILES
+    set_mi_row_col(xd, tile, mi_row, bsh, mi_col, bsw, cm->mi_rows, cm->mi_cols,
+                   cm->dependent_horz_tiles);
+#else
     set_mi_row_col(xd, tile, mi_row, bsh, mi_col, bsw, cm->mi_rows,
                    cm->mi_cols);
+#endif
 
     assert(IMPLIES(!cm->seg.enabled, mbmi->segment_id_supertx == 0));
     assert(mbmi->segment_id_supertx < MAX_SEGMENTS);
@@ -2737,7 +2758,14 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   const int mi_col_start = tile->mi_col_start;
   const int mi_col_end = tile->mi_col_end;
   int mi_row, mi_col;
+
+#if CONFIG_DEPENDENT_HORZTILES
+  if (!cm->dependent_horz_tiles || mi_row_start == 0) {
+    av1_zero_above_context(cm, mi_col_start, mi_col_end);
+  }
+#else
   av1_zero_above_context(cm, mi_col_start, mi_col_end);
+#endif
 #if CONFIG_PVQ
   assert(cpi->td.mb.pvq_q->curr_pos == 0);
 #endif
@@ -3666,6 +3694,10 @@ static void write_tile_info(const AV1_COMMON *const cm,
   aom_wb_write_bit(wb, cm->log2_tile_rows != 0);
   if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
 #endif  // CONFIG_EXT_TILE
+
+#if CONFIG_DEPENDENT_HORZTILES
+  if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
+#endif
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   aom_wb_write_bit(wb, cm->loop_filter_across_tiles_enabled);

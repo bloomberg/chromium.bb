@@ -641,9 +641,14 @@ static MB_MODE_INFO *set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   xd->max_tx_size = max_txsize_lookup[bsize];
 #endif
 
-  // Distance of Mb to the various image edges. These are specified to 8th pel
-  // as they are always compared to values that are in 1/8th pel units
+// Distance of Mb to the various image edges. These are specified to 8th pel
+// as they are always compared to values that are in 1/8th pel units
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols,
+                 cm->dependent_horz_tiles);
+#else
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+#endif
 
   av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
   return &xd->mi[0]->mbmi;
@@ -664,8 +669,13 @@ static MB_MODE_INFO *set_offsets_extend(AV1_COMMON *const cm,
   const int offset = mi_row_ori * cm->mi_stride + mi_col_ori;
   xd->mi = cm->mi_grid_visible + offset;
   xd->mi[0] = cm->mi + offset;
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mi_row_col(xd, tile, mi_row_pred, bh, mi_col_pred, bw, cm->mi_rows,
+                 cm->mi_cols, cm->dependent_horz_tiles);
+#else
   set_mi_row_col(xd, tile, mi_row_pred, bh, mi_col_pred, bw, cm->mi_rows,
                  cm->mi_cols);
+#endif
 
   xd->up_available = (mi_row_ori > tile->mi_row_start);
   xd->left_available = (mi_col_ori > tile->mi_col_start);
@@ -688,7 +698,12 @@ static MB_MODE_INFO *set_mb_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   for (y = 0; y < y_mis; ++y)
     for (x = !y; x < x_mis; ++x) xd->mi[y * cm->mi_stride + x] = xd->mi[0];
 
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols,
+                 cm->dependent_horz_tiles);
+#else
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+#endif
   return &xd->mi[0]->mbmi;
 }
 
@@ -704,7 +719,12 @@ static void set_offsets_topblock(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   set_plane_n4(xd, bw, bh);
 
+#if CONFIG_DEPENDENT_HORZTILES
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols,
+                 cm->dependent_horz_tiles);
+#else
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+#endif
 
   av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
 }
@@ -2173,8 +2193,14 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
     xd->mi = cm->mi_grid_visible + offset;
     xd->mi[0] = cm->mi + offset;
+#if CONFIG_DEPENDENT_HORZTILES
+    set_mi_row_col(xd, tile, mi_row, mi_size_high[bsize], mi_col,
+                   mi_size_wide[bsize], cm->mi_rows, cm->mi_cols,
+                   cm->dependent_horz_tiles);
+#else
     set_mi_row_col(xd, tile, mi_row, mi_size_high[bsize], mi_col,
                    mi_size_wide[bsize], cm->mi_rows, cm->mi_cols);
+#endif
     set_skip_context(xd, mi_row, mi_col);
     skip = read_skip(cm, xd, xd->mi[0]->mbmi.segment_id_supertx, r);
     if (skip) {
@@ -2990,6 +3016,13 @@ static void read_tile_info(AV1Decoder *const pbi,
     pbi->tile_col_size_bytes = aom_rb_read_literal(rb, 2) + 1;
     pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
   }
+
+#if CONFIG_DEPENDENT_HORZTILES
+  if (cm->tile_rows <= 1)
+    cm->dependent_horz_tiles = aom_rb_read_bit(rb);
+  else
+    cm->dependent_horz_tiles = 0;
+#endif
 #else
   int min_log2_tile_cols, max_log2_tile_cols, max_ones;
   av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
@@ -3006,7 +3039,12 @@ static void read_tile_info(AV1Decoder *const pbi,
   // rows
   cm->log2_tile_rows = aom_rb_read_bit(rb);
   if (cm->log2_tile_rows) cm->log2_tile_rows += aom_rb_read_bit(rb);
-
+#if CONFIG_DEPENDENT_HORZTILES
+  if (cm->log2_tile_rows != 0)
+    cm->dependent_horz_tiles = aom_rb_read_bit(rb);
+  else
+    cm->dependent_horz_tiles = 0;
+#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -3479,7 +3517,14 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
       av1_tile_set_col(&tile_info, cm, col);
 
+#if CONFIG_DEPENDENT_HORZTILES
+      if (!cm->dependent_horz_tiles || tile_row == 0) {
+        av1_zero_above_context(cm, tile_info.mi_col_start,
+                               tile_info.mi_col_end);
+      }
+#else
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
+#endif
 
       for (mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
            mi_row += cm->mib_size) {
@@ -3490,7 +3535,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         for (mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
              mi_col += cm->mib_size) {
           av1_update_boundary_info(cm, &tile_info, mi_row, mi_col);
-
           decode_partition(pbi, &td->xd,
 #if CONFIG_SUPERTX
                            0,
@@ -3625,8 +3669,13 @@ static int tile_worker_hook(TileWorkerData *const tile_data,
 
   tile_data->error_info.setjmp = 1;
   tile_data->xd.error_info = &tile_data->error_info;
-
+#if CONFIG_DEPENDENT_HORZTILES
+  if (!cm->dependent_horz_tiles) {
+    av1_zero_above_context(&pbi->common, tile->mi_col_start, tile->mi_col_end);
+  }
+#else
   av1_zero_above_context(&pbi->common, tile->mi_col_start, tile->mi_col_end);
+#endif
 
   for (mi_row = tile->mi_row_start; mi_row < tile->mi_row_end;
        mi_row += cm->mib_size) {
