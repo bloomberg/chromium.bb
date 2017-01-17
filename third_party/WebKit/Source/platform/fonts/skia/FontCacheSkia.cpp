@@ -64,6 +64,10 @@ static sk_sp<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(
 
 namespace blink {
 
+AtomicString toAtomicString(const SkString& str) {
+  return AtomicString::fromUTF8(str.c_str(), str.size());
+}
+
 #if OS(ANDROID) || OS(LINUX)
 // Android special locale for retrieving the color emoji font
 // based on the proposed changes in UTR #51 for introducing
@@ -104,7 +108,7 @@ AtomicString FontCache::getFamilyNameForCharacter(
 
   SkString skiaFamilyName;
   typeface->getFamilyName(&skiaFamilyName);
-  return skiaFamilyName.c_str();
+  return toAtomicString(skiaFamilyName);
 }
 #endif
 

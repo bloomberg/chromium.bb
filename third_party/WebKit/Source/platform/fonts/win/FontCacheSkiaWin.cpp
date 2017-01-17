@@ -156,7 +156,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     if (typeface) {
       SkString skiaFamily;
       typeface->getFamilyName(&skiaFamily);
-      FontFaceCreationParams createByFamily(AtomicString(skiaFamily.c_str()));
+      FontFaceCreationParams createByFamily(toAtomicString(skiaFamily));
       data = getFontPlatformData(fontDescription, createByFamily);
     }
   }
@@ -229,7 +229,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
 }
 
 static inline bool equalIgnoringCase(const AtomicString& a, const SkString& b) {
-  return equalIgnoringCase(a, AtomicString::fromUTF8(b.c_str()));
+  return equalIgnoringCase(a, toAtomicString(b));
 }
 
 static bool typefacesMatchesFamily(const SkTypeface* tf,
