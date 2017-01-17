@@ -537,8 +537,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InspectUI>;
 #endif
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  if (url.host_piece() == chrome::kChromeUIChromeSigninHost &&
-      !profile->IsOffTheRecord())
+  if (url.host_piece() == chrome::kChromeUIChromeSigninHost)
     return &NewWebUI<InlineLoginUI>;
   if (url.host_piece() == chrome::kChromeUIMdUserManagerHost)
     return &NewWebUI<MDUserManagerUI>;
