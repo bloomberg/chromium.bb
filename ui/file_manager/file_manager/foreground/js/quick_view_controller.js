@@ -15,13 +15,14 @@
  * @param {!QuickViewUma} quickViewUma
  * @param {!MetadataBoxController} metadataBoxController
  * @param {DialogType} dialogType
+ * @param {!VolumeManagerWrapper} volumeManager
  *
  * @constructor
  */
 function QuickViewController(
     metadataModel, selectionHandler, listContainer, quickViewModel,
     taskController, fileListSelectionModel, quickViewUma,
-    metadataBoxController, dialogType) {
+    metadataBoxController, dialogType, volumeManager) {
   /**
    * @type {FilesQuickView}
    * @private
@@ -83,6 +84,12 @@ function QuickViewController(
   this.dialogType_ = dialogType;
 
   /**
+   * @type {!VolumeManagerWrapper}
+   * @private
+   */
+  this.volumeManager_ = volumeManager;
+
+  /**
    * Current selection of selectionHandler.
    *
    * @type {!Array<!FileEntry>}
@@ -100,6 +107,28 @@ function QuickViewController(
       this.display_(QuickViewUma.WayToOpen.CONTEXT_MENU);
   }.bind(this));
 }
+
+/**
+ * List of local volume types.
+ *
+ * In this context, "local" means that files in that volume are directly
+ * accessible from the Chrome browser process by Linux VFS paths. In this
+ * regard, media views are NOT local even though files in media views are
+ * actually stored in the local disk.
+ *
+ * Due to access control of WebView, non-local files can not be previewed
+ * with Quick View unless thumbnails are provided (which is the case with
+ * Drive).
+ *
+ * @type {!Array<!VolumeManagerCommon.VolumeType>}
+ * @const
+ * @private
+ */
+QuickViewController.LOCAL_VOLUME_TYPES_ = [
+  VolumeManagerCommon.VolumeType.ARCHIVE,
+  VolumeManagerCommon.VolumeType.DOWNLOADS,
+  VolumeManagerCommon.VolumeType.REMOVABLE,
+];
 
 /**
  * Initialize the controller with quick view which will be lazily loaded.
@@ -258,7 +287,7 @@ QuickViewController.prototype.updateQuickView_ = function() {
   this.quickViewUma_.onEntryChanged(entry);
   return Promise
       .all([
-        this.metadataModel_.get([entry], ['thumbnailUrl', 'externalFileUrl']),
+        this.metadataModel_.get([entry], ['thumbnailUrl']),
         this.getAvailableTasks_(entry)
       ])
       .then(function(values) {
@@ -325,7 +354,13 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
     hasTask: tasks.length > 0,
   };
 
-  if (item.externalFileUrl) {
+  var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+  var localFile =
+      volumeInfo &&
+      QuickViewController.LOCAL_VOLUME_TYPES_.indexOf(
+          volumeInfo.volumeType) >= 0;
+
+  if (!localFile) {
     switch (type) {
       case 'image':
         if (item.thumbnailUrl) {
@@ -349,7 +384,7 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
         }
         break;
     }
-    // If the file is in Drive, we ask user to open it with external app.
+    // We ask user to open it with external app.
     return Promise.resolve(params);
   }
 
