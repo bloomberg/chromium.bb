@@ -168,11 +168,10 @@ void CaretBase::invalidateCaretRect(Node* node,
 
 void CaretBase::paintCaret(Node* node,
                            GraphicsContext& context,
-                           const DisplayItemClient& client,
                            const LayoutRect& caretLocalRect,
                            const LayoutPoint& paintOffset,
                            DisplayItem::Type displayItemType) {
-  if (DrawingRecorder::useCachedDrawingIfPossible(context, client,
+  if (DrawingRecorder::useCachedDrawingIfPossible(context, *this,
                                                   displayItemType))
     return;
 
@@ -184,7 +183,7 @@ void CaretBase::paintCaret(Node* node,
   const Color caretColor =
       node->layoutObject()->resolveColor(CSSPropertyCaretColor);
   IntRect paintRect = pixelSnappedIntRect(drawingRect);
-  DrawingRecorder drawingRecorder(context, client, DisplayItem::kCaret,
+  DrawingRecorder drawingRecorder(context, *this, DisplayItem::kCaret,
                                   paintRect);
   context.fillRect(paintRect, caretColor);
 }

@@ -62,14 +62,12 @@ class CaretBase final : public DisplayItemClient {
   // TODO(yosin): We should move |shouldRepaintCaret()| to "FrameCaret.cpp" as
   // static file local function.
   static bool shouldRepaintCaret(Node&);
-  // TODO(yosin): We should make |paintCaret()| to non-static member and get rid
-  // |DisplayItemClient| parameter.
-  static void paintCaret(Node*,
-                         GraphicsContext&,
-                         const DisplayItemClient&,
-                         const LayoutRect& caretLocalRect,
-                         const LayoutPoint&,
-                         DisplayItem::Type);
+
+  void paintCaret(Node*,
+                  GraphicsContext&,
+                  const LayoutRect& caretLocalRect,
+                  const LayoutPoint&,
+                  DisplayItem::Type);
 
   static LayoutBlock* caretLayoutObject(Node*);
   void invalidateLocalCaretRect(Node*, const LayoutRect&);

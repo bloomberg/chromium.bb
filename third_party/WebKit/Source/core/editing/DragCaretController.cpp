@@ -111,9 +111,8 @@ void DragCaretController::paintDragCaret(LocalFrame* frame,
                                          GraphicsContext& context,
                                          const LayoutPoint& paintOffset) const {
   if (m_position.anchorNode()->document().frame() == frame) {
-    CaretBase::paintCaret(m_position.anchorNode(), context, *m_caretBase,
-                          m_caretLocalRect, paintOffset,
-                          DisplayItem::kDragCaret);
+    m_caretBase->paintCaret(m_position.anchorNode(), context, m_caretLocalRect,
+                            paintOffset, DisplayItem::kDragCaret);
   }
 }
 

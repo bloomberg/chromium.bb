@@ -255,8 +255,8 @@ void FrameCaret::paintCaret(GraphicsContext& context,
 
   const LayoutRect caretLocalRect =
       CaretBase::computeCaretRect(caretPosition());
-  CaretBase::paintCaret(caretPosition().anchorNode(), context, *m_caretBase,
-                        caretLocalRect, paintOffset, DisplayItem::kCaret);
+  m_caretBase->paintCaret(caretPosition().anchorNode(), context, caretLocalRect,
+                          paintOffset, DisplayItem::kCaret);
 }
 
 void FrameCaret::dataWillChange(const CharacterData& node) {
