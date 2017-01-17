@@ -578,8 +578,7 @@ DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
     return 0.0;
 
   double timeInSeconds = monotonicTime - timeOrigin;
-  if (timeInSeconds < 0)
-    return 0.0;
+  DCHECK_GE(timeInSeconds, 0);
   return convertSecondsToDOMHighResTimeStamp(
       clampTimeResolution(timeInSeconds));
 }

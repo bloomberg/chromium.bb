@@ -75,6 +75,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   // http://www.w3.org/TR/hr-time-2/#privacy-security
   static double clampTimeResolution(double timeSeconds);
 
+  // monotonicTime needs to be no smaller than timeOrigin.
   static DOMHighResTimeStamp monotonicTimeToDOMHighResTimeStamp(
       double timeOrigin,
       double monotonicTime);
@@ -82,7 +83,8 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   // Translate given platform monotonic time in seconds into a high resolution
   // DOMHighResTimeStamp in milliseconds. The result timestamp is relative to
   // document's time origin and has a time resolution that is safe for
-  // exposing to web.
+  // exposing to web. The monotonic time provided needs to be no smaller than
+  // document's time origin.
   DOMHighResTimeStamp monotonicTimeToDOMHighResTimeStamp(double) const;
   DOMHighResTimeStamp now() const;
 
