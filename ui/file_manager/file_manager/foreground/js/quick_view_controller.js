@@ -291,61 +291,61 @@ QuickViewController.prototype.getQuickViewParameters_ = function(entry, items) {
     filePath: entry.name,
   };
 
-  /**
-   * @type function(!FileEntry): !Promise<!File>
-   */
-  var getFile = function(entry) {
-    return new Promise(function(resolve, reject) {
-      entry.file(resolve, reject);
-    });
-  };
+  if (item.externalFileUrl) {
+    switch (type) {
+      case 'image':
+        if (item.thumbnailUrl) {
+          return this.loadThumbnailFromDrive_(item.thumbnailUrl)
+              .then(function(result) {
+                if (result.status === 'success')
+                  params.contentUrl = result.data;
+                return params;
+              }.bind(this));
+        }
+        break;
+      case 'video':
+        if (item.thumbnailUrl) {
+          return this.loadThumbnailFromDrive_(item.thumbnailUrl)
+              .then(function(result) {
+                if (result.status === 'success') {
+                  params.videoPoster = result.data;
+                }
+                return params;
+              });
+        }
+        break;
+    }
+    // If the file is in Drive, we ask user to open it with external app.
+    return Promise.resolve(params);
+  }
 
-  if (type === 'image') {
-    if (item.externalFileUrl) {
-      if (item.thumbnailUrl) {
-        return this.loadThumbnailFromDrive_(item.thumbnailUrl)
-            .then(function(result) {
-              if (result.status === 'success')
-                params.contentUrl = result.data;
-              return params;
-            }.bind(this));
-      }
-    } else {
-      return getFile(entry).then(function(file) {
+  /**
+   * @type {!Promise<!File>}
+   */
+  var getFile = new Promise(function(resolve, reject) {
+    entry.file(resolve, reject);
+  });
+
+  switch (type) {
+    case 'image':
+      return getFile.then(function(file) {
         params.contentUrl = URL.createObjectURL(file);
         return params;
       });
-    }
-  } else if (type === 'video') {
-    if (item.externalFileUrl) {
-      if (item.thumbnailUrl) {
-        return this.loadThumbnailFromDrive_(item.thumbnailUrl)
-            .then(function(result) {
-              if (result.status === 'success') {
-                params.videoPoster = result.data;
-              }
-              return params;
-            });
-      }
-    } else {
+    case 'video':
       params.autoplay = true;
       if (item.thumbnailUrl) {
         params.videoPoster = item.thumbnailUrl;
       }
-      return getFile(entry).then(function(file) {
+      return getFile.then(function(file) {
         params.contentUrl = URL.createObjectURL(file);
         return params;
       });
-    }
-  } else if (type === 'audio') {
-    if (item.externalFileUrl) {
-      // If the file is in Drive, we ask user to open it with external app.
-    } else {
+    case 'audio':
       params.autoplay = true;
       return Promise
           .all([
-            this.metadataModel_.get([entry], ['contentThumbnailUrl']),
-            getFile(entry)
+            this.metadataModel_.get([entry], ['contentThumbnailUrl']), getFile
           ])
           .then(function(values) {
             /** @type {!Array<!MetadataItem>} */
@@ -359,14 +359,12 @@ QuickViewController.prototype.getQuickViewParameters_ = function(entry, items) {
             params.contentUrl = URL.createObjectURL(file);
             return params;
           });
-    }
-  }
-  if (item.externalFileUrl || type === '.folder') {
-    return Promise.resolve(params);
+    case '.folder':
+      return Promise.resolve(params);
   }
   return Promise
       .all([
-        getFile(entry),
+        getFile,
         new Promise(function(resolve) {
           chrome.fileManagerPrivate.getFileTasks([entry], resolve);
         })
