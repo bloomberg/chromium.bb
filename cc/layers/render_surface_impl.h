@@ -163,8 +163,6 @@ class CC_EXPORT RenderSurfaceImpl {
 
   const EffectNode* OwningEffectNode() const;
 
-  LayerImpl* owning_layer_;
-
   LayerTreeImpl* layer_tree_impl_;
   int stable_effect_id_;
   int effect_tree_index_;
