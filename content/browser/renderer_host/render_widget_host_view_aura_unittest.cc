@@ -4750,4 +4750,19 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
 }
 #endif
 
+// This test verifies that when any view on the page cancels an ongoing
+// composition, the RenderWidgetHostViewAura will receive the notification and
+// the current composition is canceled.
+TEST_F(InputMethodStateAuraTest, ImeCancelCompositionForAllViews) {
+  for (auto* view : views_) {
+    ActivateViewForTextInputManager(view, ui::TEXT_INPUT_TYPE_TEXT);
+    // There is no composition in the beginning.
+    EXPECT_FALSE(has_composition_text());
+    SetHasCompositionTextToTrue();
+    view->ImeCancelComposition();
+    // The composition must have been canceled.
+    EXPECT_FALSE(has_composition_text());
+  }
+}
+
 }  // namespace content
