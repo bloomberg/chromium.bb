@@ -103,4 +103,11 @@ Found: window
 Checking 'document[   [  win'
 Found: window
 
+Checking 'I|mag'
+Found: Image
+Found: Infinity
+
+Checking 'var x = (do|);'
+Found: document
+
 

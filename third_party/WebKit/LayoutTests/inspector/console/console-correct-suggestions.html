@@ -20,8 +20,11 @@ function test()
     var consoleEditor;
     function testCompletions(text, expected, force)
     {
-        consoleEditor.setText(text);
-        consoleEditor.setSelection(Common.TextRange.createFromLocation(Infinity, Infinity));
+        var cursorPosition = text.indexOf('|');
+        if (cursorPosition < 0)
+            cursorPosition = Infinity;
+        consoleEditor.setText(text.replace('|', ''));
+        consoleEditor.setSelection(Common.TextRange.createFromLocation(0, cursorPosition));
         consoleEditor._autocompleteController.autocomplete(force);
         return InspectorTest.addSnifferPromise(consoleEditor._autocompleteController, "_onSuggestionsShownForTest").then(checkExpected);
 
@@ -78,7 +81,9 @@ function test()
         () => testCompletions("var should", ["shouldNotFindThisFunction"]),
         () => testCompletions("document[[win", ["window"]),
         () => testCompletions("document[   [win", ["window"]),
-        () => testCompletions("document[   [  win", ["window"])
+        () => testCompletions("document[   [  win", ["window"]),
+        () => testCompletions('I|mag', ['Image', 'Infinity']),
+        () => testCompletions('var x = (do|);', ['document'])
     ]).then(InspectorTest.completeTest);
 
 }
