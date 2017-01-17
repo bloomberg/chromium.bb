@@ -371,8 +371,9 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
-// Tests that if alt job succeeds and main job is blocked, |request_| completion
-// will clean up JobController. Regression test for crbug.com/678768.
+// Tests that if alt job succeeds and main job is blocked, main job should be
+// cancelled immediately. |request_| completion will clean up the JobController.
+// Regression test for crbug.com/678768.
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        AltJobSucceedsMainJobBlockedControllerDestroyed) {
   ProxyConfig proxy_config;
@@ -407,9 +408,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
       .WillOnce(Invoke(DeleteHttpStreamPointer));
   job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
 
-  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_FALSE(job_controller_->main_job());
   EXPECT_TRUE(job_controller_->alternative_job());
-  EXPECT_TRUE(JobControllerPeer::main_job_is_blocked(job_controller_));
 
   // Invoke OnRequestComplete() which should delete |job_controller_| from
   // |factory_|.

@@ -152,13 +152,6 @@ void HttpStreamFactoryImpl::JobController::OnRequestComplete() {
     } else {
       DCHECK(bound_job_->job_type() == ALTERNATIVE);
       alternative_job_.reset();
-      // If ResumeMainJob() is not executed, reset |main_job_|. Otherwise,
-      // OnOrphanedJobComplete() will clean up |this| when the job completes.
-      // Use |main_job_is_blocked_| and |!main_job_wait_time_.is_zero()| instead
-      // of |main_job_|->is_waiting() because |main_job_| can be in proxy
-      // resolution step.
-      if (main_job_ && (main_job_is_blocked_ || !main_job_wait_time_.is_zero()))
-        main_job_.reset();
     }
     bound_job_ = nullptr;
   }
@@ -743,7 +736,17 @@ void HttpStreamFactoryImpl::JobController::OrphanUnboundJob() {
   } else if (bound_job_->job_type() == ALTERNATIVE && main_job_) {
     // Orphan main job.
     factory_->request_map_.erase(main_job_.get());
-    main_job_->Orphan();
+    // If ResumeMainJob() is not executed, reset |main_job_|. Otherwise,
+    // OnOrphanedJobComplete() will clean up |this| when the job completes.
+    // Use |main_job_is_blocked_| and |!main_job_wait_time_.is_zero()| instead
+    // of |main_job_|->is_waiting() because |main_job_| can be in proxy
+    // resolution step.
+    if (main_job_ && (main_job_is_blocked_ || !main_job_wait_time_.is_zero())) {
+      DCHECK(alternative_job_);
+      main_job_.reset();
+    } else {
+      main_job_->Orphan();
+    }
   }
 }
 
