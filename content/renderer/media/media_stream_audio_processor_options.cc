@@ -467,6 +467,8 @@ void GetAudioProcessingStats(
   stats->echo_delay_std_ms = apm_stats.delay_standard_deviation;
 
   stats->residual_echo_likelihood = apm_stats.residual_echo_likelihood;
+  stats->residual_echo_likelihood_recent_max =
+      apm_stats.residual_echo_likelihood_recent_max;
 }
 
 std::vector<webrtc::Point> GetArrayGeometryPreferringConstraints(
