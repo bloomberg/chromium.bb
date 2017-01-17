@@ -30,16 +30,10 @@ service_manifest("manifest") {
 
 source_set("lib") {
   sources = [
-    "buffer_tracker_factory_impl.cc",
-    "buffer_tracker_factory_impl.h",
     "device_factory_media_to_mojo_adapter.cc",
     "device_factory_media_to_mojo_adapter.h",
     "device_media_to_mojo_adapter.cc",
     "device_media_to_mojo_adapter.h",
-    "mojo_shared_memory_buffer_handle.cc",
-    "mojo_shared_memory_buffer_handle.h",
-    "mojo_shared_memory_buffer_tracker.cc",
-    "mojo_shared_memory_buffer_tracker.h",
     "receiver_mojo_to_media_adapter.cc",
     "receiver_mojo_to_media_adapter.h",
   ]

@@ -27,8 +27,8 @@ VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
 
 VideoCaptureBufferPoolImpl::~VideoCaptureBufferPoolImpl() {}
 
-mojo::ScopedSharedBufferHandle VideoCaptureBufferPoolImpl::GetHandleForTransit(
-    int buffer_id) {
+mojo::ScopedSharedBufferHandle
+VideoCaptureBufferPoolImpl::GetHandleForInterProcessTransit(int buffer_id) {
   base::AutoLock lock(lock_);
 
   VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
@@ -39,18 +39,30 @@ mojo::ScopedSharedBufferHandle VideoCaptureBufferPoolImpl::GetHandleForTransit(
   return tracker->GetHandleForTransit();
 }
 
-std::unique_ptr<VideoCaptureBufferHandle>
-VideoCaptureBufferPoolImpl::GetBufferHandle(int buffer_id) {
+base::SharedMemoryHandle
+VideoCaptureBufferPoolImpl::GetNonOwnedSharedMemoryHandleForLegacyIPC(
+    int buffer_id) {
   base::AutoLock lock(lock_);
 
   VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
   if (!tracker) {
     NOTREACHED() << "Invalid buffer_id.";
-    return std::unique_ptr<VideoCaptureBufferHandle>();
+    return base::SharedMemoryHandle();
+  }
+  return tracker->GetNonOwnedSharedMemoryHandleForLegacyIPC();
+}
+
+std::unique_ptr<VideoCaptureBufferHandle>
+VideoCaptureBufferPoolImpl::GetHandleForInProcessAccess(int buffer_id) {
+  base::AutoLock lock(lock_);
+
+  VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
+  if (!tracker) {
+    NOTREACHED() << "Invalid buffer_id.";
+    return nullptr;
   }
 
-  DCHECK(tracker->held_by_producer());
-  return tracker->GetBufferHandle();
+  return tracker->GetMemoryMappedAccess();
 }
 
 int VideoCaptureBufferPoolImpl::ReserveForProducer(

@@ -21,8 +21,9 @@ class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
             VideoPixelStorage storage_type,
             base::Lock* lock) override;
 
-  std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle() override;
+  std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() override;
   mojo::ScopedSharedBufferHandle GetHandleForTransit() override;
+  base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
 
  private:
   friend class SharedMemoryBufferHandle;
@@ -42,14 +43,9 @@ class SharedMemoryBufferHandle : public VideoCaptureBufferHandle {
   explicit SharedMemoryBufferHandle(SharedMemoryBufferTracker* tracker);
   ~SharedMemoryBufferHandle() override;
 
-  gfx::Size dimensions() const override;
   size_t mapped_size() const override;
-  void* data(int plane) override;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::FileDescriptor AsPlatformFile() override;
-#endif
-  bool IsBackedByVideoFrame() const override;
-  scoped_refptr<VideoFrame> GetVideoFrame() override;
+  uint8_t* data() override;
+  const uint8_t* data() const override;
 
  private:
   SharedMemoryBufferTracker* const tracker_;

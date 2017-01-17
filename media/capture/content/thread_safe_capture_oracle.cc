@@ -61,7 +61,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
 
   gfx::Size visible_size;
   gfx::Size coded_size;
-  std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer;
+  media::VideoCaptureDevice::Client::Buffer output_buffer;
   double attenuated_utilization;
   int frame_number;
   base::TimeDelta estimated_frame_duration;
@@ -93,7 +93,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       output_buffer = client_->ResurrectLastOutputBuffer(
           coded_size, params_.requested_format.pixel_format,
           params_.requested_format.pixel_storage, frame_number);
-      if (!output_buffer) {
+      if (!output_buffer.is_valid()) {
         TRACE_EVENT_INSTANT0("gpu.capture", "ResurrectionFailed",
                              TRACE_EVENT_SCOPE_THREAD);
         return false;
@@ -110,7 +110,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     attenuated_utilization = client_->GetBufferPoolUtilization() *
                              (100.0 / kTargetMaxPoolUtilizationPercent);
 
-    if (!output_buffer) {
+    if (!output_buffer.is_valid()) {
       TRACE_EVENT_INSTANT2(
           "gpu.capture", "PipelineLimited", TRACE_EVENT_SCOPE_THREAD, "trigger",
           VideoCaptureOracle::EventAsString(event), "atten_util_percent",
@@ -131,16 +131,17 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
         base::saturated_cast<int>(attenuated_utilization * 100.0 + 0.5));
   }
 
-  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.get(),
+  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.id(),
                            "frame_number", frame_number, "trigger",
                            VideoCaptureOracle::EventAsString(event));
 
+  auto output_buffer_access =
+      output_buffer.handle_provider()->GetHandleForInProcessAccess();
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, params_.requested_format.pixel_storage);
   *storage = VideoFrame::WrapExternalSharedMemory(
       params_.requested_format.pixel_format, coded_size,
-      gfx::Rect(visible_size), visible_size,
-      static_cast<uint8_t*>(output_buffer->data()),
-      output_buffer->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
+      gfx::Rect(visible_size), visible_size, output_buffer_access->data(),
+      output_buffer_access->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
       base::TimeDelta());
   // If creating the VideoFrame wrapper failed, call DidCaptureFrame() with
   // !success to execute the required post-capture steps (tracing, notification
@@ -199,13 +200,13 @@ void ThreadSafeCaptureOracle::ReportError(
 
 void ThreadSafeCaptureOracle::DidCaptureFrame(
     int frame_number,
-    std::unique_ptr<VideoCaptureDevice::Client::Buffer> buffer,
+    VideoCaptureDevice::Client::Buffer buffer,
     base::TimeTicks capture_begin_time,
     base::TimeDelta estimated_frame_duration,
     scoped_refptr<VideoFrame> frame,
     base::TimeTicks reference_time,
     bool success) {
-  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", buffer.get(), "success",
+  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", buffer.id(), "success",
                          success, "timestamp",
                          reference_time.ToInternalValue());
 

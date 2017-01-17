@@ -17,7 +17,7 @@ class CAPTURE_EXPORT VideoFrameReceiver {
   virtual ~VideoFrameReceiver(){};
 
   virtual void OnIncomingCapturedVideoFrame(
-      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      media::VideoCaptureDevice::Client::Buffer buffer,
       scoped_refptr<media::VideoFrame> frame) = 0;
   virtual void OnError() = 0;
   virtual void OnLog(const std::string& message) = 0;

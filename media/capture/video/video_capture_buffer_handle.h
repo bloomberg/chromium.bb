@@ -17,14 +17,9 @@ namespace media {
 class CAPTURE_EXPORT VideoCaptureBufferHandle {
  public:
   virtual ~VideoCaptureBufferHandle() {}
-  virtual gfx::Size dimensions() const = 0;
   virtual size_t mapped_size() const = 0;
-  virtual void* data(int plane) = 0;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  virtual base::FileDescriptor AsPlatformFile() = 0;
-#endif
-  virtual bool IsBackedByVideoFrame() const = 0;
-  virtual scoped_refptr<VideoFrame> GetVideoFrame() = 0;
+  virtual uint8_t* data() = 0;
+  virtual const uint8_t* data() const = 0;
 };
 
 }  // namespace media

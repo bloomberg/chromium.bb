@@ -67,10 +67,8 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
 
   base::WeakPtr<VideoCaptureController> GetWeakPtrForIOThread();
 
-  // A FrameBufferPool must to be set in order for video frames to be
-  // processed. While no FrameBufferPool is set, incoming video frames are
-  // ignored. It is legal to reset a previously set FrameBufferPool by calling
-  // this method with a nullptr.
+  // A FrameBufferPool may optionally be set in order to receive notifications
+  // when a frame is starting to get consumed and has finished getting consumed.
   void SetFrameBufferPool(
       std::unique_ptr<media::FrameBufferPool> frame_buffer_pool);
 
@@ -132,7 +130,7 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
 
   // Implementation of media::VideoFrameReceiver interface:
   void OnIncomingCapturedVideoFrame(
-      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      media::VideoCaptureDevice::Client::Buffer buffer,
       scoped_refptr<media::VideoFrame> frame) override;
   void OnError() override;
   void OnLog(const std::string& message) override;
@@ -148,8 +146,7 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
         int buffer_id,
         int frame_feedback_id,
         media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer,
-        media::FrameBufferPool* frame_buffer_pool,
-        scoped_refptr<media::VideoFrame> frame);
+        media::FrameBufferPool* frame_buffer_pool);
     ~BufferState();
     BufferState(const BufferState& other);
     void RecordConsumerUtilization(double utilization);
@@ -165,15 +162,9 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
     const int frame_feedback_id_;
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer_;
     media::FrameBufferPool* frame_buffer_pool_;
-    const scoped_refptr<media::VideoFrame> frame_;
     double max_consumer_utilization_;
     int consumer_hold_count_;
   };
-
-  // Notify renderer that a new buffer has been created.
-  void DoNewBufferOnIOThread(ControllerClient* client,
-                             media::VideoCaptureDevice::Client::Buffer* buffer,
-                             const scoped_refptr<media::VideoFrame>& frame);
 
   // Find a client of |id| and |handler| in |clients|.
   ControllerClient* FindClient(VideoCaptureControllerID id,

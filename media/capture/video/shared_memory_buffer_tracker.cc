@@ -30,7 +30,7 @@ bool SharedMemoryBufferTracker::Init(const gfx::Size& dimensions,
 }
 
 std::unique_ptr<VideoCaptureBufferHandle>
-SharedMemoryBufferTracker::GetBufferHandle() {
+SharedMemoryBufferTracker::GetMemoryMappedAccess() {
   return base::MakeUnique<SharedMemoryBufferHandle>(this);
 }
 
@@ -41,37 +41,27 @@ SharedMemoryBufferTracker::GetHandleForTransit() {
       mapped_size_, false /* read_only */);
 }
 
+base::SharedMemoryHandle
+SharedMemoryBufferTracker::GetNonOwnedSharedMemoryHandleForLegacyIPC() {
+  return shared_memory_.handle();
+}
+
 SharedMemoryBufferHandle::SharedMemoryBufferHandle(
     SharedMemoryBufferTracker* tracker)
     : tracker_(tracker) {}
 
 SharedMemoryBufferHandle::~SharedMemoryBufferHandle() = default;
 
-gfx::Size SharedMemoryBufferHandle::dimensions() const {
-  return tracker_->dimensions();
-}
-
 size_t SharedMemoryBufferHandle::mapped_size() const {
   return tracker_->mapped_size_;
 }
 
-void* SharedMemoryBufferHandle::data(int plane) {
-  DCHECK_EQ(0, plane);
-  return tracker_->shared_memory_.memory();
+uint8_t* SharedMemoryBufferHandle::data() {
+  return static_cast<uint8_t*>(tracker_->shared_memory_.memory());
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-base::FileDescriptor SharedMemoryBufferHandle::AsPlatformFile() {
-  return tracker_->shared_memory_.handle();
-}
-#endif
-
-bool SharedMemoryBufferHandle::IsBackedByVideoFrame() const {
-  return false;
-}
-
-scoped_refptr<VideoFrame> SharedMemoryBufferHandle::GetVideoFrame() {
-  return scoped_refptr<VideoFrame>();
+const uint8_t* SharedMemoryBufferHandle::data() const {
+  return static_cast<const uint8_t*>(tracker_->shared_memory_.memory());
 }
 
 }  // namespace media
