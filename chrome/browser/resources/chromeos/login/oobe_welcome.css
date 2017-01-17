@@ -6,7 +6,7 @@
 #languageScreen .language-selection-entry {
   border-top: 1px solid lightgrey;
   height: 44px;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
 #languageScreen .language-selection-entry:last-of-type {

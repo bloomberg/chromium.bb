@@ -11,3 +11,7 @@
 #container {
   height: 100%;
 }
+
+#container select  {
+ width: 100%;
+}

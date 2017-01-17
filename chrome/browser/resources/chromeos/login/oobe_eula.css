@@ -11,7 +11,6 @@ a {
 #installationSettings,
 #logging {
   font: 13px Roboto, sans-serif;
-  margin: 0 20px;
 }
 
 #installationSettings {
@@ -24,15 +23,12 @@ a {
 }
 
 #usageStats {
-  --paper-checkbox-size: 16px;
+  --paper-checkbox-size: 20px;
+  --paper-checkbox-checked-color: rgb(66, 133, 244); /* #4285f4 */
   /* End padding must be greater than --paper-checkbox-label-spacing */
   -webkit-padding-end: 16px;
   max-width: 550px;
   padding-bottom: 20px;
-}
-
-#accept-button-text {
-  text-transform: uppercase;
 }
 
 .bottom-buttons {

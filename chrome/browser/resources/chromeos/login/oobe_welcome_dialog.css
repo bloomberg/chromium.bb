@@ -14,12 +14,13 @@
   color: rgba(0, 0, 0, 0.87);
   font-family: Roboto, sans-serif;
   font-size: 38px;
-  font-weight: normal;
+  font-weight: 300; /* roboto-light */
   margin: 120px 0 30px 0;
 }
 
 #welcomeIllustration {
   height: 300px;
+  padding-top: 14px;
   width: 390px;
 }
 

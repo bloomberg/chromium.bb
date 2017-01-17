@@ -20,15 +20,10 @@ oobe-dialog h1.title {
   margin: 36px 0 0 0; /* = 64 - font height*/
 }
 
-oobe-dialog[welcome-screen] h1.title {
-  font-size: 38px;
-  margin: 22px 0 0 0; /* = 64 - font height*/
-}
-
 oobe-dialog .subtitle {
   color: rgba(0, 0, 0, 0.87);
   font-size: 13px;
-  margin: 27px 0 0 0; /* = 40 - line-height */
+  margin: 23px 0 0 0; /* = 40 - 4 (adjustment) - line-height */
 }
 
 oobe-dialog .bottom-buttons {
