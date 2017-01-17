@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
-#include "chrome/common/features.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowsingDataRemover is responsible for removing data related to browsing:

@@ -32,8 +32,6 @@
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
-#include "extensions/features/features.h"
-#include "media/media_features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_network_session.h"
