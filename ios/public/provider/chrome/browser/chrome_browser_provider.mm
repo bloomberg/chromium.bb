@@ -53,10 +53,6 @@ ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
   return nullptr;
 }
 
-std::string ChromeBrowserProvider::DataReductionProxyAvailability() {
-  return "default";
-}
-
 std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }

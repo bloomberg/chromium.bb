@@ -81,8 +81,6 @@ class ChromeBrowserProvider {
   virtual ChromeIdentityService* GetChromeIdentityService();
   // Returns an instance of a GeolocationUpdaterProvider.
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
-  // Returns "enabled", "disabled", or "default".
-  virtual std::string DataReductionProxyAvailability();
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
   // Creates and returns a new styled text field with the given |frame|.
