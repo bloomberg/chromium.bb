@@ -239,8 +239,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
     if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding))
       decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
 
-    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWVP8Encoding) ||
-        base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding)) {
+    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {
       encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
     }
   }

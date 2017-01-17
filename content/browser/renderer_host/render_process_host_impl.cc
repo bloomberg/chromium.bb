@@ -1827,7 +1827,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if BUILDFLAG(ENABLE_WEBRTC)
     switches::kDisableWebRtcHWDecoding,
-    switches::kDisableWebRtcHWVP8Encoding,
+    switches::kDisableWebRtcHWEncoding,
     switches::kEnableWebRtcStunOrigin,
     switches::kEnforceWebRtcIPPermissionCheck,
     switches::kForceWebRtcIPHandlingPolicy,
