@@ -9,11 +9,14 @@
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "net/base/url_util.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 
 namespace {
@@ -93,6 +96,23 @@ InstallableManager::InstallableManager(content::WebContents* web_contents)
       weak_factory_(this) { }
 
 InstallableManager::~InstallableManager() = default;
+
+// static
+bool InstallableManager::IsContentSecure(content::WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+
+  // Whitelist localhost. Check the VisibleURL to match what the
+  // SecurityStateTabHelper looks at.
+  if (net::IsLocalhost(web_contents->GetVisibleURL().HostNoBrackets()))
+    return true;
+
+  security_state::SecurityInfo security_info;
+  SecurityStateTabHelper::FromWebContents(web_contents)
+      ->GetSecurityInfo(&security_info);
+  return security_info.security_level == security_state::SECURE ||
+         security_info.security_level == security_state::EV_SECURE;
+}
 
 // static
 int InstallableManager::GetMinimumIconSizeInPx() {

@@ -84,6 +84,10 @@ class InstallableManager
   explicit InstallableManager(content::WebContents* web_contents);
   ~InstallableManager() override;
 
+  // Returns true if the overall security state of |web_contents| is sufficient
+  // to be considered installable.
+  static bool IsContentSecure(content::WebContents* web_contents);
+
   // Returns the minimum icon size in pixels for a site to be installable.
   // TODO(dominickn): consolidate this concept with minimum_icon_size_in_px
   // across all platforms.

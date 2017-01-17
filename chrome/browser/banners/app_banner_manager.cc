@@ -22,7 +22,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/installation/installation.mojom.h"
@@ -106,7 +105,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
 
   // A secure origin is required to show banners, so exit early if we see the
   // URL is invalid.
-  if (!content::IsOriginSecure(validated_url)) {
+  if (!InstallableManager::IsContentSecure(contents)) {
     ReportStatus(contents, NOT_FROM_SECURE_ORIGIN);
     Stop();
     return;

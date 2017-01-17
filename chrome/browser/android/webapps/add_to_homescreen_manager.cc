@@ -17,10 +17,10 @@
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
 #include "jni/AddToHomescreenManager_jni.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -77,7 +77,7 @@ void AddToHomescreenManager::AddShortcut(
 void AddToHomescreenManager::Start(content::WebContents* web_contents) {
   bool check_webapk_compatible = false;
   if (ChromeWebApkHost::AreWebApkEnabled() &&
-      content::IsOriginSecure(web_contents->GetLastCommittedURL())) {
+      InstallableManager::IsContentSecure(web_contents)) {
     check_webapk_compatible = true;
   } else {
     ShowDialog();
