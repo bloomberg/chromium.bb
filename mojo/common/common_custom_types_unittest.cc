@@ -307,6 +307,7 @@ TEST_F(CommonCustomTypesTest, Value) {
   dict->Set("some_binary",
             base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
   dict->Set("null_value", base::Value::CreateNullValue());
+  dict->SetIntegerWithoutPathExpansion("non_nested.int", 10);
   {
     std::unique_ptr<base::ListValue> dict_list(new base::ListValue());
     dict_list->AppendString("string");

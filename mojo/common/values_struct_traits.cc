@@ -39,7 +39,7 @@ bool StructTraits<common::mojom::DictionaryValueDataView,
     if (!view.keys().Read(i, &key) || !view.values().Read(i, &value))
       return false;
 
-    dictionary_value->Set(key, std::move(value));
+    dictionary_value->SetWithoutPathExpansion(key, std::move(value));
   }
   *value_out = std::move(dictionary_value);
   return true;
