@@ -34,9 +34,9 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   bool canContainRangeEndPoint() const final { return false; }
 
   // FrameOwner overrides:
-  ScrollbarMode scrollingMode() const override { return m_scrollingMode; }
-  int marginWidth() const override { return m_marginWidth; }
-  int marginHeight() const override { return m_marginHeight; }
+  ScrollbarMode scrollingMode() const final { return m_scrollingMode; }
+  int marginWidth() const final { return m_marginWidth; }
+  int marginHeight() const final { return m_marginHeight; }
 
  protected:
   HTMLFrameElementBase(const QualifiedName&, Document&);

@@ -48,11 +48,23 @@ class WebLocalFrame : public WebFrame {
                                             WebFrameClient*,
                                             WebFrame* opener = nullptr);
 
-  // Used to create a provisional local frame in prepration for replacing a
-  // remote frame if the load commits. The returned frame is only partially
-  // attached to the frame tree: it has the same parent as its potential
-  // replacee but is invisible to the rest of the frames in the frame tree.
-  // If the load commits, call swap() to fully attach this frame.
+  // Used to create a provisional local frame. Currently, it's possible for a
+  // provisional navigation not to commit (i.e. it might turn into a download),
+  // but this can only be determined by actually trying to load it. The loading
+  // process depends on having a corresponding LocalFrame in Blink to hold all
+  // the pending state.
+  //
+  // When a provisional frame is first created, it is only partially attached to
+  // the frame tree. This means that though a provisional frame might have a
+  // frame owner, the frame owner's content frame does not point back at the
+  // provisional frame. Similarly, though a provisional frame may have a parent
+  // frame pointer, the parent frame's children list will not contain the
+  // provisional frame. Thus, a provisional frame is invisible to the rest of
+  // Blink unless the navigation commits and the provisional frame is fully
+  // attached to the frame tree by calling swap().
+  //
+  // Otherwise, if the load should not commit, call detach() to discard the
+  // frame.
   BLINK_EXPORT static WebLocalFrame* createProvisional(WebFrameClient*,
                                                        WebRemoteFrame*,
                                                        WebSandboxFlags);

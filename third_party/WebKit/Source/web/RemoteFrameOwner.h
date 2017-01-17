@@ -29,6 +29,7 @@ class RemoteFrameOwner final
   }
 
   // FrameOwner overrides:
+  Frame* contentFrame() const override { return m_frame.get(); }
   void setContentFrame(Frame&) override;
   void clearContentFrame() override;
   SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }

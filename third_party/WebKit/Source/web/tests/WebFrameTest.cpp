@@ -8729,6 +8729,38 @@ TEST_F(WebFrameSwapTest, SwapLastChild) {
   remoteFrame->close();
 }
 
+TEST_F(WebFrameSwapTest, DetachProvisionalFrame) {
+  FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
+  WebRemoteFrameImpl* remoteFrame = WebRemoteFrameImpl::create(
+      WebTreeScopeType::Document, &remoteFrameClient);
+  swapAndVerifyMiddleChildConsistency("local->remote", mainFrame(),
+                                      remoteFrame);
+
+  FrameTestHelpers::TestWebFrameClient client;
+  WebLocalFrameImpl* provisionalFrame = WebLocalFrameImpl::createProvisional(
+      &client, remoteFrame, WebSandboxFlags::None);
+
+  // The provisional frame should have a local frame owner.
+  FrameOwner* owner = provisionalFrame->frame()->owner();
+  ASSERT_TRUE(owner->isLocal());
+
+  // But the owner should point to |remoteFrame|, since the new frame is still
+  // provisional.
+  EXPECT_EQ(remoteFrame->frame(), owner->contentFrame());
+
+  // After detaching the provisional frame, the frame owner should still point
+  // at |remoteFrame|.
+  provisionalFrame->detach();
+
+  // The owner should not be affected by detaching the provisional frame, so it
+  // should still point to |remoteFrame|.
+  EXPECT_EQ(remoteFrame->frame(), owner->contentFrame());
+
+  // Manually reset to break WebViewHelper's dependency on the stack allocated
+  // TestWebFrameClient.
+  reset();
+}
+
 void WebFrameTest::swapAndVerifySubframeConsistency(const char* const message,
                                                     WebFrame* oldFrame,
                                                     WebFrame* newFrame) {

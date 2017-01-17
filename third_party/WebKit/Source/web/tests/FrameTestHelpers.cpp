@@ -289,6 +289,26 @@ void WebViewHelper::resize(WebSize size) {
 
 TestWebFrameClient::TestWebFrameClient() {}
 
+// TODO(dcheng): https://crbug.com/578349 tracks the removal of this code. This
+// override exists only to handle the confusing provisional frame case.
+void TestWebFrameClient::frameDetached(WebLocalFrame* frame, DetachType type) {
+  if (type == DetachType::Remove && frame->parent()) {
+    // Since this may be detaching a provisional frame, make sure |child| is
+    // actually linked into the frame tree (i.e. it is present in its parent
+    // node's children list) before trying to remove it as a child.
+    for (WebFrame* child = frame->parent()->firstChild(); child;
+         child = child->nextSibling()) {
+      if (child == frame)
+        frame->parent()->removeChild(frame);
+    }
+  }
+
+  if (frame->frameWidget())
+    frame->frameWidget()->close();
+
+  frame->close();
+}
+
 WebLocalFrame* TestWebFrameClient::createChildFrame(
     WebLocalFrame* parent,
     WebTreeScopeType scope,

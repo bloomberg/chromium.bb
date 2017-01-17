@@ -73,11 +73,10 @@ class CORE_EXPORT HTMLIFrameElement final
 
   ReferrerPolicy referrerPolicyAttribute() override;
 
+  // FrameOwner overrides:
   bool allowFullscreen() const override { return m_allowFullscreen; }
   bool allowPaymentRequest() const override { return m_allowPaymentRequest; }
-
   AtomicString csp() const override { return m_csp; }
-
   const WebVector<WebPermissionType>& delegatedPermissions() const override {
     return m_delegatedPermissions;
   }

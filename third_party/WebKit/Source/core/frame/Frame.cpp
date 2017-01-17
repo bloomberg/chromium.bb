@@ -82,7 +82,13 @@ void Frame::detach(FrameDetachType type) {
 
 void Frame::disconnectOwnerElement() {
   if (m_owner) {
-    m_owner->clearContentFrame();
+    // Ocassionally, provisional frames need to be detached, but it shouldn't
+    // affect the frame tree structure. Make sure the frame owner's content
+    // frame actually refers to this frame before clearing it.
+    // TODO(dcheng): https://crbug.com/578349 tracks the cleanup for this once
+    // it's no longer needed.
+    if (m_owner->contentFrame() == this)
+      m_owner->clearContentFrame();
     m_owner = nullptr;
   }
 }

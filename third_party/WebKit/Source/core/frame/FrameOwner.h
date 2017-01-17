@@ -27,6 +27,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool isLocal() const = 0;
   virtual bool isRemote() const = 0;
 
+  virtual Frame* contentFrame() const = 0;
   virtual void setContentFrame(Frame&) = 0;
   virtual void clearContentFrame() = 0;
 
@@ -47,6 +48,9 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual const WebVector<WebPermissionType>& delegatedPermissions() const = 0;
 };
 
+// TODO(dcheng): This class is an internal implementation detail of provisional
+// frames. Move this into WebLocalFrameImpl.cpp and remove existing dependencies
+// on it.
 class CORE_EXPORT DummyFrameOwner
     : public GarbageCollectedFinalized<DummyFrameOwner>,
       public FrameOwner {
@@ -58,6 +62,7 @@ class CORE_EXPORT DummyFrameOwner
   DEFINE_INLINE_VIRTUAL_TRACE() { FrameOwner::trace(visitor); }
 
   // FrameOwner overrides:
+  Frame* contentFrame() const override { return nullptr; }
   void setContentFrame(Frame&) override {}
   void clearContentFrame() override {}
   SandboxFlags getSandboxFlags() const override { return SandboxNone; }

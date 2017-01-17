@@ -237,6 +237,7 @@ class TestWebFrameClient : public WebFrameClient {
  public:
   TestWebFrameClient();
 
+  void frameDetached(WebLocalFrame*, DetachType) override;
   WebLocalFrame* createChildFrame(WebLocalFrame* parent,
                                   WebTreeScopeType,
                                   const WebString& name,

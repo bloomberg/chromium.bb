@@ -44,7 +44,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
  public:
   ~HTMLFrameOwnerElement() override;
 
-  Frame* contentFrame() const { return m_contentFrame; }
   DOMWindow* contentWindow() const;
   Document* contentDocument() const;
 
@@ -76,10 +75,11 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   };
 
   // FrameOwner overrides:
-  void setContentFrame(Frame&) override;
-  void clearContentFrame() override;
-  void dispatchLoad() override;
-  SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
+  Frame* contentFrame() const final { return m_contentFrame; }
+  void setContentFrame(Frame&) final;
+  void clearContentFrame() final;
+  void dispatchLoad() final;
+  SandboxFlags getSandboxFlags() const final { return m_sandboxFlags; }
   bool canRenderFallbackContent() const override { return false; }
   void renderFallbackContent() override {}
   ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
@@ -106,8 +106,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
  private:
   // Intentionally private to prevent redundant checks when the type is
   // already HTMLFrameOwnerElement.
-  bool isLocal() const override { return true; }
-  bool isRemote() const override { return false; }
+  bool isLocal() const final { return true; }
+  bool isRemote() const final { return false; }
 
   bool isFrameOwnerElement() const final { return true; }
 
