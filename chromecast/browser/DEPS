@@ -25,6 +25,7 @@ include_rules = [
   "+services/service_manager/public",
   "+ui/aura",
   "+ui/base",
+  "+ui/base/ime",
   "+ui/compositor",
   "+ui/events",
   "+ui/gfx",

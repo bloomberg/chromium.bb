@@ -43,7 +43,8 @@ class EvdevThread : public base::Thread {
         new InputDeviceFactoryEvdevProxy(base::ThreadTaskRunnerHandle::Get(),
                                          input_device_factory_->GetWeakPtr()));
 
-    cursor_->InitializeOnEvdev();
+    if (cursor_)
+      cursor_->InitializeOnEvdev();
 
     init_runner_->PostTask(FROM_HERE,
                            base::Bind(init_callback_, base::Passed(&proxy)));

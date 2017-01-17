@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
+#include "chromecast/base/version.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/graphics/cast_vsync_settings.h"
 #include "content/public/browser/render_view_host.h"
@@ -24,6 +25,8 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/ime/input_method.h"
 #endif
 
 namespace chromecast {
@@ -58,6 +61,41 @@ class CastFillLayout : public aura::LayoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(CastFillLayout);
 };
+
+// An aura::WindowTreeHost that correctly converts input events.
+class CastWindowTreeHost : public aura::WindowTreeHostPlatform {
+ public:
+  CastWindowTreeHost(bool enable_input, const gfx::Rect& bounds);
+  ~CastWindowTreeHost() override;
+
+  // aura::WindowTreeHostPlatform implementation:
+  void DispatchEvent(ui::Event* event) override;
+
+ private:
+  const bool enable_input_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastWindowTreeHost);
+};
+
+CastWindowTreeHost::CastWindowTreeHost(bool enable_input,
+                                       const gfx::Rect& bounds)
+    : WindowTreeHostPlatform(bounds), enable_input_(enable_input) {}
+
+CastWindowTreeHost::~CastWindowTreeHost() {}
+
+void CastWindowTreeHost::DispatchEvent(ui::Event* event) {
+  if (!enable_input_) {
+    return;
+  }
+
+  if (event->IsKeyEvent()) {
+    // Convert a RawKeyDown into a character insertion; otherwise
+    // the WebContents will ignore most keyboard input.
+    GetInputMethod()->DispatchKeyEvent(event->AsKeyEvent());
+  } else {
+    WindowTreeHostPlatform::DispatchEvent(event);
+  }
+}
 #endif
 
 // static
@@ -91,8 +129,8 @@ void CastContentWindowLinux::ShowWebContents(
   gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
   CHECK(aura::Env::GetInstance());
-  window_tree_host_.reset(
-      aura::WindowTreeHost::Create(gfx::Rect(display_size)));
+  window_tree_host_.reset(new CastWindowTreeHost(
+      CAST_IS_DEBUG_BUILD() /* enable input */, gfx::Rect(display_size)));
   window_tree_host_->InitHost();
   window_tree_host_->window()->Show();
   window_tree_host_->window()->SetLayoutManager(

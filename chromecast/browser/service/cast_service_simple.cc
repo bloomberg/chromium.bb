@@ -60,6 +60,7 @@ void CastServiceSimple::StartInternal() {
   web_contents_->GetController().LoadURL(startup_url_, content::Referrer(),
                                          ui::PAGE_TRANSITION_TYPED,
                                          std::string());
+  web_contents_->Focus();
 }
 
 void CastServiceSimple::StopInternal() {

@@ -14,6 +14,10 @@
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/cast_egl_platform_shlib.h"
 #include "ui/display/types/native_display_delegate.h"
+#include "ui/events/ozone/device/device_manager.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"
 #include "ui/ozone/platform/cast/platform_window_cast.h"
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
@@ -61,13 +65,13 @@ class OzonePlatformCast : public OzonePlatform {
     return cursor_factory_.get();
   }
   InputController* GetInputController() override {
-    return input_controller_.get();
+    return event_factory_ozone_->input_controller();
   }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
-    return nullptr;  // no input injection support
+    return event_factory_ozone_->CreateSystemInputInjector();
   }
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
@@ -82,9 +86,9 @@ class OzonePlatformCast : public OzonePlatform {
   }
 
   void InitializeUI() override {
+    device_manager_ = CreateDeviceManager();
     overlay_manager_.reset(new OverlayManagerCast());
     cursor_factory_.reset(new CursorFactoryOzone());
-    input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     // Enable dummy software rendering support if GPU process disabled
@@ -96,6 +100,14 @@ class OzonePlatformCast : public OzonePlatform {
         base::CommandLine::ForCurrentProcess()->HasSwitch("disable-gpu");
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        base::MakeUnique<StubKeyboardLayoutEngine>());
+    ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
+        ->SetCurrentLayoutByName("us");
+    event_factory_ozone_.reset(new EventFactoryEvdev(
+        nullptr, device_manager_.get(),
+        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
+
     if (enable_dummy_software_rendering)
       surface_factory_.reset(new SurfaceFactoryCast());
   }
@@ -104,12 +116,13 @@ class OzonePlatformCast : public OzonePlatform {
   }
 
  private:
+  std::unique_ptr<DeviceManager> device_manager_;
   std::unique_ptr<CastEglPlatform> egl_platform_;
   std::unique_ptr<SurfaceFactoryCast> surface_factory_;
   std::unique_ptr<CursorFactoryOzone> cursor_factory_;
-  std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
+  std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformCast);
 };
