@@ -44,6 +44,9 @@ const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
 const char kDoPreventPreloadValue[] = "1";
 const char kXssiEscape[] = ")]}'\n";
 
+// The version of the Contextual Cards API that we want to invoke.
+const int kContextualCardsNoIntegration = 0;
+
 const double kMinimumDelayBetweenRequestSeconds = 1;
 
 // Decodes the given response from the search term resolution request and sets
@@ -253,26 +256,24 @@ GURL ContextualSearchDelegate::BuildRequestUrl() {
   std::string selected_text_escaped(
       net::EscapeQueryParamValue(context_->selected_text, true));
   std::string base_page_url = context_->page_url.spec();
-  bool use_resolved_search_term = context_->use_resolved_search_term;
 
-  std::string request = GetSearchTermResolutionUrlString(
-      selected_text_escaped, base_page_url, use_resolved_search_term);
+  std::string request =
+      GetSearchTermResolutionUrlString(selected_text_escaped, base_page_url);
 
   return GURL(request);
 }
 
 std::string ContextualSearchDelegate::GetSearchTermResolutionUrlString(
     const std::string& selected_text,
-    const std::string& base_page_url,
-    const bool use_resolved_search_term) {
+    const std::string& base_page_url) {
   TemplateURL* template_url = template_url_service_->GetDefaultSearchProvider();
 
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      kContextualSearchRequestVersion, selected_text, base_page_url,
-      use_resolved_search_term);
+      kContextualSearchRequestVersion, kContextualCardsNoIntegration,
+      std::string());
 
   search_terms_args.contextual_search_params = params;
 

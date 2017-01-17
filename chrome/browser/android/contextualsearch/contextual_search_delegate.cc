@@ -248,8 +248,7 @@ std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
   }
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      kContextualSearchRequestVersion, selected_text, std::string(),
-      contextual_cards_version);
+      kContextualSearchRequestVersion, contextual_cards_version, std::string());
 
   search_terms_args.contextual_search_params = params;
 

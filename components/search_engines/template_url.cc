@@ -207,39 +207,15 @@ TemplateURLRef::SearchTermsArgs::~SearchTermsArgs() {
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
     ContextualSearchParams()
     : version(-1),
-      start(base::string16::npos),
-      end(base::string16::npos),
       contextual_cards_version(0) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     int version,
-    const std::string& selection,
-    const std::string& base_page_url,
-    int contextual_cards_version)
+    int contextual_cards_version,
+    const std::string& home_country)
     : version(version),
-      start(base::string16::npos),
-      end(base::string16::npos),
-      selection(selection),
-      base_page_url(base_page_url),
-      contextual_cards_version(contextual_cards_version) {}
-
-TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
-    int version,
-    size_t start,
-    size_t end,
-    const std::string& selection,
-    const std::string& content,
-    const std::string& base_page_url,
-    const std::string& encoding,
-    int contextual_cards_version)
-    : version(version),
-      start(start),
-      end(end),
-      selection(selection),
-      content(content),
-      base_page_url(base_page_url),
-      encoding(encoding),
-      contextual_cards_version(contextual_cards_version) {}
+      contextual_cards_version(contextual_cards_version),
+      home_country(home_country) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const ContextualSearchParams& other) = default;
@@ -1015,24 +991,12 @@ std::string TemplateURLRef::HandleReplacements(
             search_terms_args.contextual_search_params;
         std::vector<std::string> args;
 
-        if (params.start != std::string::npos)
-          args.push_back("ctxs_start=" + base::SizeTToString(params.start));
-        if (params.end != std::string::npos)
-          args.push_back("ctxs_end=" + base::SizeTToString(params.end));
-
-        if (!params.selection.empty())
-          args.push_back("q=" + params.selection);
-        if (!params.content.empty())
-          args.push_back("ctxs_content=" + params.content);
-        if (!params.base_page_url.empty())
-          args.push_back("ctxsl_url=" + params.base_page_url);
-        if (!params.encoding.empty())
-          args.push_back("ctxs_encoding=" + params.encoding);
-
         if (params.contextual_cards_version > 0) {
           args.push_back("ctxsl_coca=" +
                          base::IntToString(params.contextual_cards_version));
         }
+        if (!params.home_country.empty())
+          args.push_back("ctxs_hc=" + params.home_country);
 
         HandleReplacement(std::string(), base::JoinString(args, "&"), *i, &url);
         break;

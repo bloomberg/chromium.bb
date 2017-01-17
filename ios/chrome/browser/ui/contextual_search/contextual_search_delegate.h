@@ -90,8 +90,7 @@ class ContextualSearchDelegate
   // the given parameters.
   std::string GetSearchTermResolutionUrlString(
       const std::string& selected_text,
-      const std::string& base_page_url,
-      const bool use_resolved_search_term);
+      const std::string& base_page_url);
 
   // Populates the discourse context and adds it to the HTTP header of the
   // search term resolution request.
