@@ -62,7 +62,8 @@
       <div class="title-text layout self-start">
         $i18n{displayArrangementTitle}
       </div>
-      <div class="secondary layout self-start">
+      <div class="secondary layout self-start"
+          hidden="[[!hasMultipleDisplays_(displays)]]">
         $i18n{displayArrangementText}
       </div>
       <display-layout id="displayLayout"
@@ -70,7 +71,7 @@
           on-select-display="onSelectDisplay_">
       </display-layout>
     </div>
-    <div hidden="[[!showDisplayTabMenu_(displays)]]" class="settings-box">
+    <div hidden="[[!hasMultipleDisplays_(displays)]]" class="settings-box">
       <paper-tabs noink selected="[[selectedDisplay.id]]" class="display-tabs"
           on-iron-select="onSelectDisplayTab_" attr-for-selected="display-id">
         <template is="dom-repeat" items="[[displays]]">
@@ -78,7 +79,7 @@
         </template>
       </paper-tabs>
     </div>
-    <div hidden="[[showDisplayTabMenu_(displays)]]"
+    <div hidden="[[hasMultipleDisplays_(displays)]]"
         class="settings-box line-only"></div>
     <div class="settings-box layout vertical first">
       <h2>[[selectedDisplay.name]]</h2>

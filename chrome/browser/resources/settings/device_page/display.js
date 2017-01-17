@@ -184,7 +184,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDisplayTabMenu_: function(displays) {
+  hasMultipleDisplays_: function(displays) {
     return displays.length > 1;
   },
 
