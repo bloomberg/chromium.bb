@@ -169,13 +169,13 @@ TEST_F(LayoutObjectTest, FloatUnderInline) {
   EXPECT_EQ(container, floating->container());
   EXPECT_EQ(container, floating->containingBlock());
 
-  bool ancestorSkipped = false;
-  EXPECT_EQ(container, floating->container(layeredSpan, &ancestorSkipped));
-  EXPECT_TRUE(ancestorSkipped);
+  LayoutObject::AncestorSkipInfo skipInfo(layeredSpan);
+  EXPECT_EQ(container, floating->container(&skipInfo));
+  EXPECT_TRUE(skipInfo.ancestorSkipped());
 
-  ancestorSkipped = false;
-  EXPECT_EQ(container, floating->container(container, &ancestorSkipped));
-  EXPECT_FALSE(ancestorSkipped);
+  skipInfo = LayoutObject::AncestorSkipInfo(container);
+  EXPECT_EQ(container, floating->container(&skipInfo));
+  EXPECT_FALSE(skipInfo.ancestorSkipped());
 }
 
 TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {

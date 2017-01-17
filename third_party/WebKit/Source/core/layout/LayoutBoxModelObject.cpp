@@ -1201,8 +1201,8 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(
     LayoutGeometryMap& geometryMap) const {
   ASSERT(ancestorToStopAt != this);
 
-  bool ancestorSkipped;
-  LayoutObject* container = this->container(ancestorToStopAt, &ancestorSkipped);
+  AncestorSkipInfo skipInfo(ancestorToStopAt);
+  LayoutObject* container = this->container(&skipInfo);
   if (!container)
     return nullptr;
 
@@ -1211,7 +1211,7 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(
   bool containsFixedPosition = canContainFixedPositionObjects();
 
   LayoutSize adjustmentForSkippedAncestor;
-  if (ancestorSkipped) {
+  if (skipInfo.ancestorSkipped()) {
     // There can't be a transform between paintInvalidationContainer and
     // ancestorToStopAt, because transforms create containers, so it should be
     // safe to just subtract the delta between the ancestor and
@@ -1251,7 +1251,7 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(
     geometryMap.push(this, containerOffset, flags, LayoutSize());
   }
 
-  return ancestorSkipped ? ancestorToStopAt : container;
+  return skipInfo.ancestorSkipped() ? ancestorToStopAt : container;
 }
 
 void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject,

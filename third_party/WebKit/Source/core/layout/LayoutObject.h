@@ -895,6 +895,52 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return isLayoutBlockFlow() || isLayoutButton();
   }
 
+  // May be optionally passed to container() and various other similar methods
+  // that search the ancestry for some sort of containing block. Used to
+  // determine if we skipped certain objects while walking the ancestry.
+  class AncestorSkipInfo {
+   public:
+    AncestorSkipInfo(const LayoutObject* ancestor, bool checkForFilters = false)
+        : m_ancestor(ancestor), m_checkForFilters(checkForFilters) {}
+
+    // Update skip info output based on the layout object passed.
+    void update(const LayoutObject& object) {
+      if (&object == m_ancestor)
+        m_ancestorSkipped = true;
+      if (m_checkForFilters && object.hasFilterInducingProperty())
+        m_filterSkipped = true;
+    }
+
+    // TODO(mstensho): Get rid of this. It's just a temporary thing to retain
+    // old behavior in LayoutObject::container().
+    void resetOutput() {
+      m_ancestorSkipped = false;
+      m_filterSkipped = false;
+    }
+
+    bool ancestorSkipped() const { return m_ancestorSkipped; }
+    bool filterSkipped() const {
+      DCHECK(m_checkForFilters);
+      return m_filterSkipped;
+    }
+
+   private:
+    // Input: A potential ancestor to look for. If we walk past this one while
+    // walking the ancestry in search of some containing block, ancestorSkipped
+    // will be set to true.
+    const LayoutObject* m_ancestor;
+    // Input: When set, we'll check if we skip objects with filter inducing
+    // properties.
+    bool m_checkForFilters;
+
+    // Output: Set to true if |ancestor| was walked past while walking the
+    // ancestry.
+    bool m_ancestorSkipped = false;
+    // Output: Set to true if we walked past a filter object. This will be set
+    // regardless of the value of |ancestor|.
+    bool m_filterSkipped = false;
+  };
+
   // This function returns the containing block of the object.
   // Due to CSS being inconsistent, a containing block can be a relatively
   // positioned inline, thus we can't return a LayoutBlock from this function.
@@ -914,23 +960,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // walk the containing block chain. See e.g. markContainerChainForLayout.
   // It is also used for correctly sizing absolutely positioned elements
   // (point 3 above).
-  //
-  // If |ancestor| and |ancestorSkipped| are not null, on return
-  // *ancestorSkipped is true if the layoutObject returned is an ancestor of
-  // |ancestor|.
-  LayoutObject* container(const LayoutBoxModelObject* ancestor = nullptr,
-                          bool* ancestorSkipped = nullptr,
-                          bool* filterSkipped = nullptr) const;
+  LayoutObject* container(AncestorSkipInfo* = nullptr) const;
   // Finds the container as if this object is fixed-position.
-  LayoutBlock* containerForFixedPosition(
-      const LayoutBoxModelObject* ancestor = nullptr,
-      bool* ancestorSkipped = nullptr,
-      bool* filterSkipped = nullptr) const;
+  LayoutBlock* containerForFixedPosition(AncestorSkipInfo* = nullptr) const;
   // Finds the containing block as if this object is absolute-position.
   LayoutBlock* containingBlockForAbsolutePosition(
-      const LayoutBoxModelObject* ancestor = nullptr,
-      bool* ancestorSkipped = nullptr,
-      bool* filterSkipped = nullptr) const;
+      AncestorSkipInfo* = nullptr) const;
 
   virtual LayoutObject* hoverAncestor() const { return parent(); }
 
@@ -1119,9 +1154,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   //
   // See container() for the function that returns the containing block.
   // See LayoutBlock.h for some extra explanations on containing blocks.
-  LayoutBlock* containingBlock(const LayoutBoxModelObject* ancestor = nullptr,
-                               bool* ancestorSkipped = nullptr,
-                               bool* filterSkipped = nullptr) const;
+  LayoutBlock* containingBlock(AncestorSkipInfo* = nullptr) const;
 
   bool canContainAbsolutePositionObjects() const {
     return m_style->canContainAbsolutePositionObjects() ||
@@ -2035,10 +2068,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
       const LayoutBoxModelObject& paintInvalidationContainer);
 
-  LayoutObject* containerForAbsolutePosition(
-      const LayoutBoxModelObject* ancestor = nullptr,
-      bool* ancestorSkipped = nullptr,
-      bool* filterSkipped = nullptr) const;
+  LayoutObject* containerForAbsolutePosition(AncestorSkipInfo* = nullptr) const;
 
   const LayoutBoxModelObject* enclosingCompositedContainer() const;
 

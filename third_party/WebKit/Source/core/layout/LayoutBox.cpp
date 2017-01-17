@@ -2334,10 +2334,8 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
   if (ancestor == this)
     return true;
 
-  bool ancestorSkipped;
-  bool filterSkipped;
-  LayoutObject* container =
-      this->container(ancestor, &ancestorSkipped, &filterSkipped);
+  AncestorSkipInfo skipInfo(ancestor, true);
+  LayoutObject* container = this->container(&skipInfo);
   LayoutBox* tableRowContainer = nullptr;
   // Skip table row because cells and rows are in the same coordinate space (see
   // below, however for more comments about when |ancestor| is the table row).
@@ -2351,7 +2349,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
   if (!container)
     return true;
 
-  if (filterSkipped)
+  if (skipInfo.filterSkipped())
     inflateVisualRectForFilterUnderContainer(rect, *container, ancestor);
 
   // We are now in our parent container's coordinate space. Apply our transform
@@ -2407,7 +2405,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
           rect, visualRectFlags))
     return false;
 
-  if (ancestorSkipped) {
+  if (skipInfo.ancestorSkipped()) {
     // If the ancestor is below the container, then we need to map the rect into
     // ancestor's coordinates.
     LayoutSize containerOffset =

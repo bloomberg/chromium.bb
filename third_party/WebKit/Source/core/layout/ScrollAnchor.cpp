@@ -119,9 +119,9 @@ static bool candidateMayMoveWithScroller(const LayoutObject* candidate,
       return false;
   }
 
-  bool skippedByContainerLookup = false;
-  candidate->container(scrollerLayoutBox(scroller), &skippedByContainerLookup);
-  return !skippedByContainerLookup;
+  LayoutObject::AncestorSkipInfo skipInfo(scrollerLayoutBox(scroller));
+  candidate->container(&skipInfo);
+  return !skipInfo.ancestorSkipped();
 }
 
 ScrollAnchor::ExamineResult ScrollAnchor::examine(

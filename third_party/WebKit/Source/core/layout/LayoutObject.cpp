@@ -859,43 +859,27 @@ inline void LayoutObject::invalidateContainerPreferredLogicalWidths() {
 }
 
 LayoutObject* LayoutObject::containerForAbsolutePosition(
-    const LayoutBoxModelObject* ancestor,
-    bool* ancestorSkipped,
-    bool* filterSkipped) const {
-  DCHECK(!ancestorSkipped || !*ancestorSkipped);
-  DCHECK(!filterSkipped || !*filterSkipped);
-
+    AncestorSkipInfo* skipInfo) const {
   // We technically just want our containing block, but we may not have one if
   // we're part of an uninstalled subtree. We'll climb as high as we can though.
   for (LayoutObject* object = parent(); object; object = object->parent()) {
     if (object->canContainAbsolutePositionObjects())
       return object;
-
-    if (ancestorSkipped && object == ancestor)
-      *ancestorSkipped = true;
-
-    if (filterSkipped && object->hasFilterInducingProperty())
-      *filterSkipped = true;
+    if (skipInfo)
+      skipInfo->update(*object);
   }
   return nullptr;
 }
 
 LayoutBlock* LayoutObject::containerForFixedPosition(
-    const LayoutBoxModelObject* ancestor,
-    bool* ancestorSkipped,
-    bool* filterSkipped) const {
-  DCHECK(!ancestorSkipped || !*ancestorSkipped);
-  DCHECK(!filterSkipped || !*filterSkipped);
+    AncestorSkipInfo* skipInfo) const {
   DCHECK(!isText());
 
   LayoutObject* object = parent();
   for (; object && !object->canContainFixedPositionObjects();
        object = object->parent()) {
-    if (ancestorSkipped && object == ancestor)
-      *ancestorSkipped = true;
-
-    if (filterSkipped && object->hasFilterInducingProperty())
-      *filterSkipped = true;
+    if (skipInfo)
+      skipInfo->update(*object);
   }
 
   ASSERT(!object || !object->isAnonymousBlock());
@@ -903,11 +887,8 @@ LayoutBlock* LayoutObject::containerForFixedPosition(
 }
 
 LayoutBlock* LayoutObject::containingBlockForAbsolutePosition(
-    const LayoutBoxModelObject* ancestor,
-    bool* ancestorSkipped,
-    bool* filterSkipped) const {
-  LayoutObject* object =
-      containerForAbsolutePosition(ancestor, ancestorSkipped, filterSkipped);
+    AncestorSkipInfo* skipInfo) const {
+  LayoutObject* object = containerForAbsolutePosition(skipInfo);
 
   // For relpositioned inlines, we return the nearest non-anonymous enclosing
   // block. We don't try to return the inline itself. This allows us to avoid
@@ -916,14 +897,14 @@ LayoutBlock* LayoutObject::containingBlockForAbsolutePosition(
   // can actually be used to obtain the inline directly.
   if (object && object->isInline() && !object->isAtomicInlineLevel()) {
     DCHECK(object->style()->hasInFlowPosition());
-    object = object->containingBlock(ancestor, ancestorSkipped, filterSkipped);
+    object = object->containingBlock(skipInfo);
   }
 
   if (object && !object->isLayoutBlock())
-    object = object->containingBlock(ancestor, ancestorSkipped, filterSkipped);
+    object = object->containingBlock(skipInfo);
 
   while (object && object->isAnonymousBlock())
-    object = object->containingBlock(ancestor, ancestorSkipped, filterSkipped);
+    object = object->containingBlock(skipInfo);
 
   if (!object || !object->isLayoutBlock())
     return nullptr;  // This can still happen in case of an orphaned tree
@@ -931,32 +912,23 @@ LayoutBlock* LayoutObject::containingBlockForAbsolutePosition(
   return toLayoutBlock(object);
 }
 
-LayoutBlock* LayoutObject::containingBlock(const LayoutBoxModelObject* ancestor,
-                                           bool* ancestorSkipped,
-                                           bool* filterSkipped) const {
+LayoutBlock* LayoutObject::containingBlock(AncestorSkipInfo* skipInfo) const {
   LayoutObject* object = parent();
   if (!object && isLayoutScrollbarPart())
     object = toLayoutScrollbarPart(this)->layoutObjectOwningScrollbar();
   if (!isTextOrSVGChild()) {
-    if (m_style->position() == FixedPosition) {
-      return containerForFixedPosition(ancestor, ancestorSkipped,
-                                       filterSkipped);
-    }
-    if (m_style->position() == AbsolutePosition) {
-      return containingBlockForAbsolutePosition(ancestor, ancestorSkipped,
-                                                filterSkipped);
-    }
+    if (m_style->position() == FixedPosition)
+      return containerForFixedPosition(skipInfo);
+    if (m_style->position() == AbsolutePosition)
+      return containingBlockForAbsolutePosition(skipInfo);
   }
   if (isColumnSpanAll()) {
     object = spannerPlaceholder()->containingBlock();
   } else {
     while (object && ((object->isInline() && !object->isAtomicInlineLevel()) ||
                       !object->isLayoutBlock())) {
-      if (ancestorSkipped && object == ancestor)
-        *ancestorSkipped = true;
-
-      if (filterSkipped && object->hasFilterInducingProperty())
-        *filterSkipped = true;
+      if (skipInfo)
+        skipInfo->update(*object);
       object = object->parent();
     }
   }
@@ -2076,8 +2048,8 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   if (ancestor == this)
     return;
 
-  bool ancestorSkipped;
-  const LayoutObject* container = this->container(ancestor, &ancestorSkipped);
+  AncestorSkipInfo skipInfo(ancestor);
+  const LayoutObject* container = this->container(&skipInfo);
   if (!container)
     return;
 
@@ -2122,7 +2094,7 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                    : TransformState::FlattenTransform);
   }
 
-  if (ancestorSkipped) {
+  if (skipInfo.ancestorSkipped()) {
     // There can't be a transform between |ancestor| and |o|, because transforms
     // create containers, so it should be safe to just subtract the delta
     // between the ancestor and |o|.
@@ -2157,8 +2129,8 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   if (this == ancestor)
     return;
 
-  bool ancestorSkipped;
-  LayoutObject* container = this->container(ancestor, &ancestorSkipped);
+  AncestorSkipInfo skipInfo(ancestor);
+  LayoutObject* container = this->container(&skipInfo);
   if (!container)
     return;
 
@@ -2172,7 +2144,7 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     }
   }
 
-  if (!ancestorSkipped)
+  if (!skipInfo.ancestorSkipped())
     container->mapAncestorToLocal(ancestor, transformState, mode);
 
   LayoutSize containerOffset = offsetFromContainer(container);
@@ -2207,7 +2179,7 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
         toLayoutBox(container)->flipForWritingMode(LayoutPoint(centerPoint)));
   }
 
-  if (ancestorSkipped) {
+  if (skipInfo.ancestorSkipped()) {
     containerOffset = ancestor->offsetFromAncestorContainer(container);
     transformState.move(-containerOffset.width(), -containerOffset.height());
     // If the ancestor is fixed, then the rect is already in its coordinates so
@@ -2479,44 +2451,37 @@ RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation(
   return DoNotRespectImageOrientation;
 }
 
-LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor,
-                                      bool* ancestorSkipped,
-                                      bool* filterSkipped) const {
-  if (ancestorSkipped)
-    *ancestorSkipped = false;
-  if (filterSkipped)
-    *filterSkipped = false;
+LayoutObject* LayoutObject::container(AncestorSkipInfo* skipInfo) const {
+  // TODO(mstensho): Get rid of this. Nobody should call this method with those
+  // flags already set.
+  if (skipInfo)
+    skipInfo->resetOutput();
 
   if (isTextOrSVGChild())
     return parent();
 
   EPosition pos = m_style->position();
   if (pos == FixedPosition)
-    return containerForFixedPosition(ancestor, ancestorSkipped, filterSkipped);
+    return containerForFixedPosition(skipInfo);
 
   if (pos == AbsolutePosition) {
-    return containerForAbsolutePosition(ancestor, ancestorSkipped,
-                                        filterSkipped);
+    return containerForAbsolutePosition(skipInfo);
   }
 
   if (isColumnSpanAll()) {
     LayoutObject* multicolContainer = spannerPlaceholder()->container();
-    if ((ancestorSkipped && ancestor) || filterSkipped) {
+    if (skipInfo) {
       // We jumped directly from the spanner to the multicol container. Need to
       // check if we skipped |ancestor| or filter/reflection on the way.
       for (LayoutObject* walker = parent();
-           walker && walker != multicolContainer; walker = walker->parent()) {
-        if (ancestorSkipped && walker == ancestor)
-          *ancestorSkipped = true;
-        if (filterSkipped && walker->hasFilterInducingProperty())
-          *filterSkipped = true;
-      }
+           walker && walker != multicolContainer; walker = walker->parent())
+        skipInfo->update(*walker);
     }
     return multicolContainer;
   }
 
   if (isFloating())
-    return containingBlock(ancestor, ancestorSkipped, filterSkipped);
+    return containingBlock(skipInfo);
 
   return parent();
 }
