@@ -108,7 +108,18 @@ ExtensionFunction::ResponseAction AudioSetActiveDevicesFunction::Run() {
       AudioAPI::GetFactoryInstance()->Get(browser_context())->GetService();
   DCHECK(service);
 
-  service->SetActiveDevices(params->ids);
+  if (params->ids.as_device_id_lists) {
+    if (!service->SetActiveDeviceLists(
+            params->ids.as_device_id_lists->input,
+            params->ids.as_device_id_lists->output)) {
+      return RespondNow(Error("Failed to set active devices."));
+    }
+  } else if (params->ids.as_strings) {
+    // TODO(tbarzic): This way of setting active devices is deprecated - have
+    // this return error for apps that were not whitelisted for deprecated
+    // version of audio API.
+    service->SetActiveDevices(*params->ids.as_strings);
+  }
   return RespondNow(NoArguments());
 }
 

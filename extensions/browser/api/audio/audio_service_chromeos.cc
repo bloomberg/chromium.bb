@@ -48,6 +48,9 @@ class AudioServiceImpl : public AudioService,
   // Start to query audio device information.
   bool GetInfo(OutputInfo* output_info_out, InputInfo* input_info_out) override;
   void SetActiveDevices(const DeviceIdList& device_list) override;
+  bool SetActiveDeviceLists(
+      const std::unique_ptr<DeviceIdList>& input_devices,
+      const std::unique_ptr<DeviceIdList>& output_devives) override;
   bool SetDeviceProperties(const std::string& device_id,
                            bool muted,
                            int volume,
@@ -69,8 +72,10 @@ class AudioServiceImpl : public AudioService,
   void NotifyMuteChanged(bool is_input, bool is_muted);
   void NotifyDevicesChanged();
 
-  bool FindDevice(uint64_t id, chromeos::AudioDevice* device);
   uint64_t GetIdFromStr(const std::string& id_str);
+  bool GetAudioNodeIdList(const DeviceIdList& ids,
+                          bool is_input,
+                          chromeos::CrasAudioHandler::NodeIdList* node_ids);
 
   // List of observers.
   base::ObserverList<AudioService::Observer> observer_list_;
@@ -150,12 +155,43 @@ void AudioServiceImpl::SetActiveDevices(const DeviceIdList& device_list) {
     return;
 
   chromeos::CrasAudioHandler::NodeIdList id_list;
-  for (size_t i = 0; i < device_list.size(); ++i) {
-    chromeos::AudioDevice device;
-    if (FindDevice(GetIdFromStr(device_list[i]), &device))
-      id_list.push_back(device.id);
+  for (const auto& id : device_list) {
+    const chromeos::AudioDevice* device =
+        cras_audio_handler_->GetDeviceFromId(GetIdFromStr(id));
+    if (device)
+      id_list.push_back(device->id);
   }
   cras_audio_handler_->ChangeActiveNodes(id_list);
+}
+
+bool AudioServiceImpl::SetActiveDeviceLists(
+    const std::unique_ptr<DeviceIdList>& input_ids,
+    const std::unique_ptr<DeviceIdList>& output_ids) {
+  DCHECK(cras_audio_handler_);
+  if (!cras_audio_handler_)
+    return false;
+
+  chromeos::CrasAudioHandler::NodeIdList input_nodes;
+  if (input_ids.get() && !GetAudioNodeIdList(*input_ids, true, &input_nodes))
+    return false;
+
+  chromeos::CrasAudioHandler::NodeIdList output_nodes;
+  if (output_ids.get() &&
+      !GetAudioNodeIdList(*output_ids, false, &output_nodes)) {
+    return false;
+  }
+
+  bool success = true;
+  if (output_ids.get()) {
+    success = cras_audio_handler_->SetActiveOutputNodes(output_nodes);
+    DCHECK(success);
+  }
+
+  if (input_ids.get()) {
+    success = success && cras_audio_handler_->SetActiveInputNodes(input_nodes);
+    DCHECK(success);
+  }
+  return success;
 }
 
 bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,
@@ -166,34 +202,21 @@ bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,
   if (!cras_audio_handler_)
     return false;
 
-  chromeos::AudioDevice device;
-  bool found = FindDevice(GetIdFromStr(device_id), &device);
-  if (!found)
+  const chromeos::AudioDevice* device =
+      cras_audio_handler_->GetDeviceFromId(GetIdFromStr(device_id));
+  if (!device)
     return false;
 
-  cras_audio_handler_->SetMuteForDevice(device.id, muted);
+  cras_audio_handler_->SetMuteForDevice(device->id, muted);
 
-  if (!device.is_input && volume != -1) {
-    cras_audio_handler_->SetVolumeGainPercentForDevice(device.id, volume);
+  if (!device->is_input && volume != -1) {
+    cras_audio_handler_->SetVolumeGainPercentForDevice(device->id, volume);
     return true;
-  } else if (device.is_input && gain != -1) {
-    cras_audio_handler_->SetVolumeGainPercentForDevice(device.id, gain);
+  } else if (device->is_input && gain != -1) {
+    cras_audio_handler_->SetVolumeGainPercentForDevice(device->id, gain);
     return true;
   }
 
-  return false;
-}
-
-bool AudioServiceImpl::FindDevice(uint64_t id, chromeos::AudioDevice* device) {
-  chromeos::AudioDeviceList devices;
-  cras_audio_handler_->GetAudioDevices(&devices);
-
-  for (size_t i = 0; i < devices.size(); ++i) {
-    if (devices[i].id == id) {
-      *device = devices[i];
-      return true;
-    }
-  }
   return false;
 }
 
@@ -203,6 +226,22 @@ uint64_t AudioServiceImpl::GetIdFromStr(const std::string& id_str) {
     return 0;
   else
     return device_id;
+}
+
+bool AudioServiceImpl::GetAudioNodeIdList(
+    const DeviceIdList& ids,
+    bool is_input,
+    chromeos::CrasAudioHandler::NodeIdList* node_ids) {
+  for (const auto& device_id : ids) {
+    const chromeos::AudioDevice* device =
+        cras_audio_handler_->GetDeviceFromId(GetIdFromStr(device_id));
+    if (!device)
+      return false;
+    if (device->is_input != is_input)
+      return false;
+    node_ids->push_back(device->id);
+  }
+  return true;
 }
 
 void AudioServiceImpl::OnOutputNodeVolumeChanged(uint64_t id, int volume) {

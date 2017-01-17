@@ -268,13 +268,36 @@ void CrasAudioHandler::ChangeActiveNodes(const NodeIdList& new_active_ids) {
       output_devices.push_back(*device);
   }
   if (!input_devices.empty())
-    SetActiveNodes(input_devices, true /* is_input */);
+    SetActiveDevices(input_devices, true /* is_input */);
   if (!output_devices.empty())
-    SetActiveNodes(output_devices, false /* is_input */);
+    SetActiveDevices(output_devices, false /* is_input */);
 }
 
-void CrasAudioHandler::SetActiveNodes(const AudioDeviceList& devices,
+bool CrasAudioHandler::SetActiveInputNodes(const NodeIdList& node_ids) {
+  return SetActiveNodes(node_ids, true /* is_input */);
+}
+
+bool CrasAudioHandler::SetActiveOutputNodes(const NodeIdList& node_ids) {
+  return SetActiveNodes(node_ids, false /* is_input */);
+}
+
+bool CrasAudioHandler::SetActiveNodes(const NodeIdList& node_ids,
                                       bool is_input) {
+  chromeos::AudioDeviceList devices;
+  for (uint64_t id : node_ids) {
+    const chromeos::AudioDevice* device = GetDeviceFromId(id);
+    if (!device || device->is_input != is_input)
+      return false;
+
+    devices.push_back(*device);
+  }
+
+  SetActiveDevices(devices, is_input);
+  return true;
+}
+
+void CrasAudioHandler::SetActiveDevices(const AudioDeviceList& devices,
+                                        bool is_input) {
   std::set<uint64_t> new_active_ids;
   for (const auto& active_device : devices) {
     CHECK_EQ(is_input, active_device.is_input);

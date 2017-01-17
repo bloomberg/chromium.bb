@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_AUDIO_AUDIO_SERVICE_H_
 #define EXTENSIONS_BROWSER_API_AUDIO_AUDIO_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -54,6 +55,20 @@ class AudioService {
   // Returns true on success.
   virtual bool GetInfo(OutputInfo* output_info_out,
                        InputInfo* input_info_out) = 0;
+
+  // Sets set of active inputs to devices defined by IDs in |input_devices|,
+  // and set of active outputs to devices defined by IDs in |output_devices|.
+  // If either of |input_devices| or |output_devices| is not set, associated
+  // set of active devices will remain unchanged.
+  // If either list is empty, all active devices of associated type will be
+  // deactivated.
+  // Returns whether the operation succeeded - on failure there will be no
+  // changes to active devices.
+  // Note that device ID lists should contain only existing device ID of
+  // appropriate type in order for the method to succeed.
+  virtual bool SetActiveDeviceLists(
+      const std::unique_ptr<DeviceIdList>& input_devices,
+      const std::unique_ptr<DeviceIdList>& output_devives) = 0;
 
   // Sets the active devices to the devices specified by |device_list|.
   // It can pass in the "complete" active device list of either input

@@ -56,6 +56,16 @@ function deviceListToExpectedDevicesMap(devices) {
   return expectedDevicesMap;
 }
 
+function getActiveDeviceIds(deviceList) {
+  return deviceList
+      .filter(function(device) {return device.isActive;})
+      .map(function(device) {return device.id});
+}
+
+function getDevices(callback) {
+  chrome.audio.getInfo(chrome.test.callbackPass(callback));
+}
+
 chrome.test.runTests([
   function getInfoTest() {
     // Test output devices. Maps device ID -> tested device properties.
@@ -90,14 +100,13 @@ chrome.test.runTests([
       }
     };
 
-    chrome.audio.getInfo(
-        chrome.test.callbackPass(function(outputInfo, inputInfo) {
-          assertDevicesMatch(kTestOutputDevices, outputInfo);
-          assertDevicesMatch(kTestInputDevices, inputInfo);
-        }));
+    getDevices(function(outputInfo, inputInfo) {
+      assertDevicesMatch(kTestOutputDevices, outputInfo);
+      assertDevicesMatch(kTestInputDevices, inputInfo);
+    });
   },
 
-  function setActiveDevicesTest() {
+  function deprecatedSetActiveDevicesTest() {
     //Test output devices. Maps device ID -> tested device properties.
     var kTestOutputDevices = {
       '30001': {
@@ -134,18 +143,15 @@ chrome.test.runTests([
       '30003',
       '40002'
     ], chrome.test.callbackPass(function() {
-      chrome.audio.getInfo(
-          chrome.test.callbackPass(function(outputInfo, inputInfo) {
-            assertDevicesMatch(kTestOutputDevices, outputInfo);
-            assertDevicesMatch(kTestInputDevices, inputInfo);
-          }));
+      getDevices(function(outputInfo, inputInfo) {
+        assertDevicesMatch(kTestOutputDevices, outputInfo);
+        assertDevicesMatch(kTestInputDevices, inputInfo);
+      });
     }));
   },
 
   function setPropertiesTest() {
-    chrome.audio.getInfo(function(originalOutputInfo, originalInputInfo) {
-      chrome.test.assertNoLastError();
-
+    getDevices(function(originalOutputInfo, originalInputInfo) {
       var expectedInput = deviceListToExpectedDevicesMap(originalInputInfo);
       // Update expected input devices with values that should be changed in
       // test.
@@ -172,7 +178,7 @@ chrome.test.runTests([
           isMuted: true,
           gain: 55
         }, chrome.test.callbackPass(function() {
-          chrome.audio.getInfo(
+          getDevices(
             chrome.test.callbackPass(function(outputInfo, inputInfo) {
               assertDevicesMatch(expectedInput, inputInfo);
               assertDevicesMatch(expectedOutput, outputInfo);
@@ -183,8 +189,7 @@ chrome.test.runTests([
   },
 
   function setPropertiesInvalidValuesTest() {
-    chrome.audio.getInfo(function(originalOutputInfo, originalInputInfo) {
-      chrome.test.assertNoLastError();
+    getDevices(function(originalOutputInfo, originalInputInfo) {
       var expectedInput = deviceListToExpectedDevicesMap(originalInputInfo);
       var expectedOutput = deviceListToExpectedDevicesMap(originalOutputInfo);
 
@@ -199,13 +204,103 @@ chrome.test.runTests([
           volume:55
         }, chrome.test.callbackFail('Could not set properties', function() {
           // Assert that device properties haven't changed.
-          chrome.audio.getInfo(
-              chrome.test.callbackPass(function(outputInfo, inputInfo) {
-                assertDevicesMatch(expectedOutput, outputInfo);
-                assertDevicesMatch(expectedInput, inputInfo);
-              }));
+          getDevices(function(outputInfo, inputInfo) {
+            assertDevicesMatch(expectedOutput, outputInfo);
+            assertDevicesMatch(expectedInput, inputInfo);
+          });
         }));
       }));
     });
-  }
+  },
+
+  function setActiveDevicesTest() {
+    chrome.audio.setActiveDevices({
+      input: ['40002', '40003'],
+      output: ['30001']
+    }, chrome.test.callbackPass(function() {
+      getDevices(function(outputs, inputs) {
+        chrome.test.assertEq(
+            ['40002', '40003'], getActiveDeviceIds(inputs).sort());
+        chrome.test.assertEq(['30001'], getActiveDeviceIds(outputs));
+      });
+    }));
+  },
+
+  function setActiveDevicesOutputOnlyTest() {
+    getDevices(function(originalOutputs, originalInputs) {
+      var originalActiveInputs = getActiveDeviceIds(originalInputs);
+      chrome.test.assertTrue(originalActiveInputs.length > 0);
+
+      chrome.audio.setActiveDevices({
+        output: ['30003']
+      }, chrome.test.callbackPass(function() {
+        getDevices(function(outputs, inputs) {
+          chrome.test.assertEq(
+              originalActiveInputs.sort(), getActiveDeviceIds(inputs).sort());
+          chrome.test.assertEq(['30003'], getActiveDeviceIds(outputs));
+        });
+      }));
+    });
+  },
+
+  function setActiveDevicesFailInputTest() {
+    getDevices(function(originalOutputs, originalInputs) {
+      var originalActiveInputs = getActiveDeviceIds(originalInputs).sort();
+      chrome.test.assertTrue(originalActiveInputs.length > 0);
+
+      var originalActiveOutputs = getActiveDeviceIds(originalOutputs).sort();
+      chrome.test.assertTrue(originalActiveOutputs.length > 0);
+
+      chrome.audio.setActiveDevices({
+        input: ['0000000'],  /* does not exist */
+        output: []
+      }, chrome.test.callbackFail('Failed to set active devices.', function() {
+        getDevices(function(outputs, inputs) {
+          chrome.test.assertEq(
+              originalActiveInputs, getActiveDeviceIds(inputs).sort());
+          chrome.test.assertEq(
+              originalActiveOutputs, getActiveDeviceIds(outputs).sort());
+        });
+      }));
+    });
+  },
+
+  function setActiveDevicesFailOutputTest() {
+    getDevices(function(originalOutputs, originalInputs) {
+      var originalActiveInputs = getActiveDeviceIds(originalInputs).sort();
+      chrome.test.assertTrue(originalActiveInputs.length > 0);
+
+      var originalActiveOutputs = getActiveDeviceIds(originalOutputs).sort();
+      chrome.test.assertTrue(originalActiveOutputs.length > 0);
+
+      chrome.audio.setActiveDevices({
+        input: [],
+        output: ['40001'] /* id is input node ID */
+      }, chrome.test.callbackFail('Failed to set active devices.', function() {
+        getDevices(function(outputs, inputs) {
+          chrome.test.assertEq(
+              originalActiveInputs, getActiveDeviceIds(inputs).sort());
+          chrome.test.assertEq(
+              originalActiveOutputs, getActiveDeviceIds(outputs).sort());
+        });
+      }));
+    });
+  },
+
+  function clearActiveDevicesTest() {
+    getDevices(function(originalOutputs, originalInputs) {
+      chrome.test.assertTrue(getActiveDeviceIds(originalInputs).length > 0);
+      chrome.test.assertTrue(getActiveDeviceIds(originalOutputs).length > 0);
+
+      chrome.audio.setActiveDevices({
+        input: [],
+        output: []
+      }, chrome.test.callbackPass(function() {
+        getDevices(function(outputs, inputs) {
+          chrome.test.assertEq([], getActiveDeviceIds(inputs));
+          chrome.test.assertEq([], getActiveDeviceIds(outputs));
+        });
+      }));
+    });
+  },
 ]);
