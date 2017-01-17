@@ -66,7 +66,7 @@ cr.define('options', function() {
       var lockScreen = document.querySelector('settings-lock-screen');
 
       var checkbox =
-          lockScreen.root.querySelector('div.settings-box.single-column');
+          lockScreen.root.querySelector('div.settings-box');
       checkbox.hidden = true;
 
       var passwordPrompt = lockScreen.root.

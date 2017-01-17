@@ -141,6 +141,18 @@ constexpr char kSetupPinJSPath[] = "people_page/setup_pin_dialog.js";
 constexpr char kSettingsRouteHTMLPath[] = "route.html";
 constexpr char kSettingsRouteJSPath[] = "route.js";
 constexpr char kSettingsSharedCSSHTMLPath[] = "settings_shared_css.html";
+constexpr char kSettingsBooleanControlBehaviorHTMLPath[] =
+    "controls/settings_boolean_control_behavior.html";
+constexpr char kSettingsBooleanControlBehaviorJSPath[] =
+    "controls/settings_boolean_control_behavior.js";
+constexpr char kSettingsPrefControlBehaviorHTMLPath[] =
+    "controls/pref_control_behavior.html";
+constexpr char kSettingsPrefControlBehaviorJSPath[] =
+    "controls/pref_control_behavior.js";
+constexpr char kSettingsToggleButtonHTMLPath[] =
+    "controls/settings_toggle_button.html";
+constexpr char kSettingsToggleButtonJSPath[] =
+    "controls/settings_toggle_button.js";
 constexpr char kSettingsVarsCSSHTMLPath[] = "settings_vars_css.html";
 constexpr char kSettingsPrefsBehaviorHTMLPath[] = "prefs/prefs_behavior.html";
 constexpr char kSettingsPrefsBehaviorJSPath[] = "prefs/prefs_behavior.js";
@@ -277,6 +289,17 @@ void OptionsUIHTMLSource::CreateDataSourceMap() {
   path_to_idr_map_[kSettingsRouteHTMLPath] = IDR_OPTIONS_ROUTE_HTML;
   path_to_idr_map_[kSettingsRouteJSPath] = IDR_OPTIONS_ROUTE_JS;
   path_to_idr_map_[kSettingsSharedCSSHTMLPath] = IDR_SETTINGS_SHARED_CSS_HTML;
+  path_to_idr_map_[kSettingsBooleanControlBehaviorHTMLPath] =
+      IDR_SETTINGS_BOOLEAN_CONTROL_BEHAVIOR_HTML;
+  path_to_idr_map_[kSettingsBooleanControlBehaviorJSPath] =
+      IDR_SETTINGS_BOOLEAN_CONTROL_BEHAVIOR_JS;
+  path_to_idr_map_[kSettingsPrefControlBehaviorHTMLPath] =
+      IDR_SETTINGS_PREF_CONTROL_BEHAVIOR_HTML;
+  path_to_idr_map_[kSettingsPrefControlBehaviorJSPath] =
+      IDR_SETTINGS_PREF_CONTROL_BEHAVIOR_JS;
+  path_to_idr_map_[kSettingsToggleButtonHTMLPath] =
+      IDR_SETTINGS_TOGGLE_BUTTON_HTML;
+  path_to_idr_map_[kSettingsToggleButtonJSPath] = IDR_SETTINGS_TOGGLE_BUTTON_JS;
   path_to_idr_map_[kSettingsVarsCSSHTMLPath] = IDR_SETTINGS_VARS_CSS_HTML;
   path_to_idr_map_[kSettingsPrefsBehaviorHTMLPath] =
       IDR_SETTINGS_PREFS_BEHAVIOR_HTML;
