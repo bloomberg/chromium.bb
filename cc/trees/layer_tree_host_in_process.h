@@ -299,6 +299,9 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   int id_;
   bool next_commit_forces_redraw_ = false;
   bool next_commit_forces_recalculate_raster_scales_ = false;
+  // Track when we're inside a main frame to see if compositor is being
+  // destroyed midway which causes a crash. crbug.com/654672
+  bool inside_main_frame_ = false;
 
   TaskGraphRunner* task_graph_runner_;
 

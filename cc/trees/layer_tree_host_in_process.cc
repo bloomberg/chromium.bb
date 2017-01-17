@@ -197,6 +197,9 @@ void LayerTreeHostInProcess::InitializeProxy(std::unique_ptr<Proxy> proxy) {
 }
 
 LayerTreeHostInProcess::~LayerTreeHostInProcess() {
+  // Track when we're inside a main frame to see if compositor is being
+  // destroyed midway which causes a crash. crbug.com/654672
+  CHECK(!inside_main_frame_);
   TRACE_EVENT0("cc", "LayerTreeHostInProcess::~LayerTreeHostInProcess");
 
   // Clear any references into the LayerTreeHostInProcess.
@@ -258,12 +261,14 @@ LayerTreeHostInProcess::GetSurfaceSequenceGenerator() {
 }
 
 void LayerTreeHostInProcess::WillBeginMainFrame() {
+  inside_main_frame_ = true;
   devtools_instrumentation::WillBeginMainThreadFrame(GetId(),
                                                      SourceFrameNumber());
   client_->WillBeginMainFrame();
 }
 
 void LayerTreeHostInProcess::DidBeginMainFrame() {
+  inside_main_frame_ = false;
   client_->DidBeginMainFrame();
 }
 
