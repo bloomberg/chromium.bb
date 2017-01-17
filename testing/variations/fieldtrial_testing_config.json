@@ -1217,24 +1217,6 @@
             ]
         }
     ],
-    "NewAudioRenderingMixingStrategy": [
-        {
-            "platforms": [
-                "android",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NewAudioRenderingMixingStrategy"
-                    ]
-                }
-            ]
-        }
-    ],
     "NewProfileManagement": [
         {
             "platforms": [
