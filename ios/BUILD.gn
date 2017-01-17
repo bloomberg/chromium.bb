@@ -41,11 +41,6 @@ group("all") {
       "//ios/testing:all_tests",
       "//ios/web:all_tests",
       "//ios/web/shell/test:all_tests",
-
-      # Those dependencies are currently only used from downstream code
-      # and will be removed once the dependent code has been upstreamed.
-      "//ios/chrome/share_extension",
-      "//ios/chrome/today_extension",
     ]
   }
 }
