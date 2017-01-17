@@ -2853,6 +2853,22 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         }
     }
 
+    @CalledByNative
+    private boolean canShowInterstitial() {
+        int loc[] = new int[2];
+        mContainerView.getLocationOnScreen(loc);
+        // TODO(sgurun) implement a better strategy here.
+        if (mContainerView.getWidth() < 500 || mContainerView.getHeight() < 500) {
+            return false;
+        }
+        if (mContainerView.getVisibility() != View.VISIBLE) {
+            return false;
+        }
+        // TODO(timvolodine) other potential improvements mentioned:
+        // consider content, not attached webviews, giant webviews, ..
+        return true;
+    }
+
     // -------------------------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------------------------

@@ -208,6 +208,10 @@ void AwBrowserContext::PreMainMessageLoopRun() {
                  base::Unretained(this)));
   web_restriction_provider_->SetAuthority(
       user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
+
+  safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager();
+  safe_browsing_db_manager_ =
+      new safe_browsing::RemoteSafeBrowsingDatabaseManager();
 }
 
 void AwBrowserContext::OnWebRestrictionsAuthorityChanged() {
@@ -375,6 +379,24 @@ web_restrictions::WebRestrictionsClient*
 AwBrowserContext::GetWebRestrictionProvider() {
   DCHECK(web_restriction_provider_);
   return web_restriction_provider_.get();
+}
+
+AwSafeBrowsingUIManager* AwBrowserContext::GetSafeBrowsingUIManager() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return safe_browsing_ui_manager_.get();
+}
+
+safe_browsing::RemoteSafeBrowsingDatabaseManager*
+AwBrowserContext::GetSafeBrowsingDBManager() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!safe_browsing_db_manager_started_) {
+    // V4ProtocolConfig is not used. Just create one with empty values..
+    safe_browsing::V4ProtocolConfig config("", false, "", "");
+    safe_browsing_db_manager_->StartOnIOThread(
+        url_request_context_getter_.get(), config);
+    safe_browsing_db_manager_started_ = true;
+  }
+  return safe_browsing_db_manager_.get();
 }
 
 void AwBrowserContext::RebuildTable(

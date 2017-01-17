@@ -62,6 +62,10 @@
   PlatformServiceBridgeGoogle(...);
 }
 -dontnote com.android.webview.chromium.PlatformServiceBridgeGoogle
+-keep class com.android.webview.chromium.AwSafeBrowsingApiHandler {
+  AwSafeBrowsingApiHandler(...);
+}
+-dontnote com.android.webview.chromium.AwSafeBrowsingApiHandler
 
 #TODO(hush): remove after N release. crbug.com/546762
 -keep class com.android.webview.chromium.ContentSettingsAdapter {

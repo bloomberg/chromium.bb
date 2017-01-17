@@ -9,4 +9,8 @@ namespace switches {
 const char kSyncOnDrawHardware[] = "sync-on-draw-hardware";
 const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 
+// used to enable safebrowsing functionality in webview
+const char kWebViewEnableSafeBrowsingSupport[] =
+    "webview-enable-safebrowsing-support";
+
 }  // namespace switches

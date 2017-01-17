@@ -17,6 +17,10 @@ namespace content {
 class BrowserMainRunner;
 }
 
+namespace safe_browsing {
+class SafeBrowsingApiHandler;
+}
+
 namespace android_webview {
 
 class AwContentBrowserClient;
@@ -58,6 +62,8 @@ class AwMainDelegate : public content::ContentMainDelegate,
   std::unique_ptr<AwContentBrowserClient> content_browser_client_;
   std::unique_ptr<AwContentGpuClient> content_gpu_client_;
   std::unique_ptr<AwContentRendererClient> content_renderer_client_;
+  std::unique_ptr<safe_browsing::SafeBrowsingApiHandler>
+      safe_browsing_api_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMainDelegate);
 };
