@@ -148,7 +148,45 @@ class APIBindingUnittest : public APIBindingTest {
 
   void TearDown() override {
     request_handler_.reset();
+    event_handler_.reset();
+    binding_.reset();
     APIBindingTest::TearDown();
+  }
+
+  void SetFunctions(const char* functions) {
+    binding_functions_ = ListValueFromString(functions);
+    ASSERT_TRUE(binding_functions_);
+  }
+
+  void SetEvents(const char* events) {
+    binding_events_ = ListValueFromString(events);
+    ASSERT_TRUE(binding_events_);
+  }
+
+  void SetTypes(const char* types) {
+    binding_types_ = ListValueFromString(types);
+    ASSERT_TRUE(binding_types_);
+  }
+
+  void SetHooks(std::unique_ptr<APIBindingHooks> hooks) {
+    binding_hooks_ = std::move(hooks);
+    ASSERT_TRUE(binding_hooks_);
+  }
+
+  void InitializeBinding() {
+    if (!binding_hooks_) {
+      binding_hooks_ =
+          base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync());
+    }
+    binding_ = base::MakeUnique<APIBinding>(
+        "test", binding_functions_.get(), binding_types_.get(),
+        binding_events_.get(),
+        base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+        std::move(binding_hooks_), &type_refs_);
+    EXPECT_EQ(!binding_types_.get(), type_refs_.empty());
+    event_handler_ = base::MakeUnique<APIEventHandler>(
+        base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                   base::Bind(&OnEventListenersChanged));
   }
 
   void ExpectPass(v8::Local<v8::Object> object,
@@ -177,8 +215,11 @@ class APIBindingUnittest : public APIBindingTest {
   }
 
   bool HandlerWasInvoked() const { return arguments_ != nullptr; }
-  const std::string& last_request_id() const { return last_request_id_; }
+  APIBinding* binding() { return binding_.get(); }
+  APIEventHandler* event_handler() { return event_handler_.get(); }
   APIRequestHandler* request_handler() { return request_handler_.get(); }
+  const ArgumentSpec::RefMap& type_refs() const { return type_refs_; }
+  const std::string& last_request_id() const { return last_request_id_; }
 
  private:
   void RunTest(v8::Local<v8::Context> context,
@@ -191,8 +232,16 @@ class APIBindingUnittest : public APIBindingTest {
 
   std::unique_ptr<base::ListValue> arguments_;
   bool had_callback_ = false;
+  std::unique_ptr<APIBinding> binding_;
+  std::unique_ptr<APIEventHandler> event_handler_;
   std::unique_ptr<APIRequestHandler> request_handler_;
+  ArgumentSpec::RefMap type_refs_;
   std::string last_request_id_;
+
+  std::unique_ptr<base::ListValue> binding_functions_;
+  std::unique_ptr<base::ListValue> binding_events_;
+  std::unique_ptr<base::ListValue> binding_types_;
+  std::unique_ptr<APIBindingHooks> binding_hooks_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingUnittest);
 };
@@ -229,20 +278,13 @@ void APIBindingUnittest::RunTest(v8::Local<v8::Context> context,
 }
 
 TEST_F(APIBindingUnittest, TestEmptyAPI) {
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "empty", nullptr, nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
-  EXPECT_TRUE(refs.empty());
+  InitializeBinding();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
   EXPECT_EQ(
       0u,
       binding_object->GetOwnPropertyNames(context).ToLocalChecked()->Length());
@@ -251,22 +293,14 @@ TEST_F(APIBindingUnittest, TestEmptyAPI) {
 TEST_F(APIBindingUnittest, Test) {
   // TODO(devlin): Move this test to an api_signature_unittest file? It really
   // only tests parsing.
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
-  EXPECT_TRUE(refs.empty());
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.oneString('foo');", "['foo']", false);
   ExpectPass(binding_object, "obj.oneString('');", "['']", false);
@@ -353,21 +387,14 @@ TEST_F(APIBindingUnittest, EnumValues) {
       "  'enum': [{'name': 'omega'}]"
       "}]";
 
-  std::unique_ptr<base::ListValue> types = ListValueFromString(kTypes);
-  ASSERT_TRUE(types);
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "test", nullptr, types.get(), nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
+  SetTypes(kTypes);
+  InitializeBinding();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   const char kExpected[] =
       "{'ALPHA':'alpha','CAMEL_CASE':'camelCase','HYPHEN_ATED':'Hyphen-ated',"
@@ -407,27 +434,18 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
       "   }]"
       "}]";
 
-  std::unique_ptr<base::ListValue> functions =
-      ListValueFromString(kRefFunctions);
-  ASSERT_TRUE(functions);
-  std::unique_ptr<base::ListValue> types = ListValueFromString(kTypes);
-  ASSERT_TRUE(types);
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "test", functions.get(), types.get(), nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
-  EXPECT_EQ(2u, refs.size());
-  EXPECT_TRUE(base::ContainsKey(refs, "refObj"));
-  EXPECT_TRUE(base::ContainsKey(refs, "refEnum"));
+  SetFunctions(kRefFunctions);
+  SetTypes(kTypes);
+  InitializeBinding();
+  EXPECT_EQ(2u, type_refs().size());
+  EXPECT_TRUE(base::ContainsKey(type_refs(), "refObj"));
+  EXPECT_TRUE(base::ContainsKey(type_refs(), "refEnum"));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo'})",
              "[{'prop1':'foo'}]", false);
@@ -457,14 +475,8 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
       "  'name': 'restrictedTwo',"
       "  'parameters': []"
       "}]";
-  std::unique_ptr<base::ListValue> functions =
-      ListValueFromString(kRestrictedFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
+  SetFunctions(kRestrictedFunctions);
+  InitializeBinding();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -477,10 +489,8 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
     return name == "test.allowedOne" || name == "test.allowedTwo";
   };
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(is_available));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(is_available));
 
   auto is_defined = [&binding_object, context](const std::string& name) {
     v8::Local<v8::Value> val =
@@ -498,24 +508,15 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
 // Tests that events specified in the API are created as properties of the API
 // object.
 TEST_F(APIBindingUnittest, TestEventCreation) {
-  const char kEvents[] = "[{'name': 'onFoo'}, {'name': 'onBar'}]";
-  std::unique_ptr<base::ListValue> events = ListValueFromString(kEvents);
-  ASSERT_TRUE(events);
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "test", functions.get(), nullptr, events.get(),
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
+  SetEvents("[{'name': 'onFoo'}, {'name': 'onBar'}]");
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   // Event behavior is tested in the APIEventHandler unittests as well as the
   // APIBindingsSystem tests, so we really only need to check that the events
@@ -537,22 +538,14 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
 }
 
 TEST_F(APIBindingUnittest, TestDisposedContext) {
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
-  EXPECT_TRUE(refs.empty());
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> func =
       FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
@@ -571,20 +564,13 @@ TEST_F(APIBindingUnittest, MultipleContexts) {
   gin::ContextHolder holder_b(isolate());
   holder_b.SetContext(context_b);
 
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object_a = binding.CreateInstance(
-      context_a, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
-  v8::Local<v8::Object> binding_object_b = binding.CreateInstance(
-      context_b, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object_a = binding()->CreateInstance(
+      context_a, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object_b = binding()->CreateInstance(
+      context_b, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   ExpectPass(context_a, binding_object_a, "obj.oneString('foo');", "['foo']",
              false);
@@ -597,9 +583,7 @@ TEST_F(APIBindingUnittest, MultipleContexts) {
 
 // Tests adding custom hooks for an API method.
 TEST_F(APIBindingUnittest, TestCustomHooks) {
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
+  SetFunctions(kFunctions);
 
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
@@ -620,20 +604,15 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
     return result;
   };
   hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
+  SetHooks(std::move(hooks));
 
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      std::move(hooks), &refs);
-  EXPECT_TRUE(refs.empty());
+  InitializeBinding();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
 
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   // First try calling the oneString() method, which has a custom hook
   // installed.
@@ -669,20 +648,12 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
       v8::Global<v8::String>(isolate(), source_string),
       v8::Global<v8::String>(isolate(), source_name));
 
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
+  SetFunctions(kFunctions);
+  SetHooks(std::move(hooks));
+  InitializeBinding();
 
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      std::move(hooks), &refs);
-  EXPECT_TRUE(refs.empty());
-
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   // First try calling with an invalid invocation. An error should be raised and
   // the hook should never have been called, since the arguments didn't match.
@@ -699,11 +670,8 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
   v8::Local<v8::Value> args[] = {binding_object};
   RunFunction(func, context, 1, args);
 
-  std::unique_ptr<base::Value> response_args =
-      GetBaseValuePropertyFromObject(context->Global(), context,
-                                     "requestArguments");
-  ASSERT_TRUE(response_args);
-  EXPECT_EQ("[\"foo\"]", ValueToString(*response_args));
+  EXPECT_EQ("[\"foo\"]", GetStringPropertyFromObject(
+                             context->Global(), context, "requestArguments"));
 
   // Other methods, like stringAndInt(), should behave normally.
   ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]",
@@ -735,20 +703,12 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
       v8::Global<v8::String>(isolate(), source_string),
       v8::Global<v8::String>(isolate(), source_name));
 
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
+  SetHooks(std::move(hooks));
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      std::move(hooks), &refs);
-  EXPECT_TRUE(refs.empty());
-
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   // Call the method with a hook. Since the hook updates arguments before
   // validation, we should be able to pass in invalid arguments and still
@@ -801,20 +761,12 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
       v8::Global<v8::String>(isolate(), source_string),
       v8::Global<v8::String>(isolate(), source_name));
 
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
+  SetHooks(std::move(hooks));
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      std::move(hooks), &refs);
-  EXPECT_TRUE(refs.empty());
-
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> function =
       FunctionFromString(context,
@@ -851,20 +803,12 @@ TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
       v8::Global<v8::String>(isolate(), source_string),
       v8::Global<v8::String>(isolate(), source_name));
 
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
+  SetHooks(std::move(hooks));
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      std::move(hooks), &refs);
-  EXPECT_TRUE(refs.empty());
-
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> function =
       FunctionFromString(context,
@@ -920,20 +864,12 @@ TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
       v8::Global<v8::String>(isolate(), source_string),
       v8::Global<v8::String>(isolate(), source_name));
 
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
+  SetHooks(std::move(hooks));
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      std::move(hooks), &refs);
-  EXPECT_TRUE(refs.empty());
-
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   v8::Local<v8::Function> function =
       FunctionFromString(context,
@@ -979,20 +915,12 @@ TEST_F(APIBindingUnittest,
   };
   hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
 
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
+  SetHooks(std::move(hooks));
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      std::move(hooks), &refs);
-  EXPECT_TRUE(refs.empty());
-
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   {
     // Test an invocation that we expect to throw an exception.
@@ -1043,20 +971,12 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
       v8::Global<v8::String>(isolate(), source_string),
       v8::Global<v8::String>(isolate(), source_name));
 
-  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
-  ASSERT_TRUE(functions);
-  ArgumentSpec::RefMap refs;
+  SetHooks(std::move(hooks));
+  SetFunctions(kFunctions);
+  InitializeBinding();
 
-  APIBinding binding(
-      "test", functions.get(), nullptr, nullptr,
-      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      std::move(hooks), &refs);
-  EXPECT_TRUE(refs.empty());
-
-  APIEventHandler event_handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-                                base::Bind(&OnEventListenersChanged));
-  v8::Local<v8::Object> binding_object = binding.CreateInstance(
-      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(
+      context, isolate(), event_handler(), base::Bind(&AllowAllAPIs));
 
   // Try calling the method with an invalid signature. Since it's invalid, we
   // should never enter the hook.
