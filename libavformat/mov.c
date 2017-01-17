@@ -4241,7 +4241,6 @@ static int mov_read_trun(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         return AVERROR_EOF;
 
     frag->implicit_offset = offset;
-    // TODO(liberato): the following line was from origin/master.
     st->duration = sc->track_end = dts + sc->time_offset;
 
     sc->track_end = dts + sc->time_offset;

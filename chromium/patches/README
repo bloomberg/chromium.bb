@@ -32,6 +32,8 @@ Current patches:
     headers when building with the component build.
     strtod.h was added, so it may not appear in diffs that ignore additions.
     f3299330654ac1b40c50b3cbcae619f42eb7d838 added an include to snprintf.c.
+    4fe9bb85b83fffe4c3640493ef6655b0992a822c re-adds an "undef strod" and
+    new strtod decl to fix Windows compilation issues to strtod.c .
 
   Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
@@ -84,9 +86,6 @@ Current patches:
     text tracks.  crbug.com/681886 .
 
   Changes to libavformat/mp3dec.c
-    Fixes for MSAN Use-of-uninitialized-value. http://crbug.com/666874.
-    TODO(chcunningham): Submit upstream.
-
     Other changes: TODO(chcunningham/dalecurtis): https://crbug.com/504623 -
     Determine whether these changes are still necessary and either remove or
     document them.
