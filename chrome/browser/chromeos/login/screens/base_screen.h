@@ -43,11 +43,6 @@ class BaseScreen {
 
   // ---- New Implementation ----
 
-  // Called to perform initialization of the screen. UI is guaranteed to exist
-  // at this point. Screen can alter context, resulting context will be passed
-  // to JS. This method will be called once per instance of the Screen object.
-  virtual void Initialize(::login::ScreenContext* context);
-
   // Called when screen appears.
   virtual void OnShow();
   // Called when screen disappears, either because it finished it's work, or

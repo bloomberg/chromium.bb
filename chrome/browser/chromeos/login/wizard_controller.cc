@@ -362,15 +362,10 @@ BaseScreen* WizardController::GetScreen(OobeScreen screen) {
 
 BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
-    std::unique_ptr<NetworkScreen> screen(
-        new NetworkScreen(this, this, oobe_ui_->GetNetworkView()));
-    screen->Initialize(nullptr /* context */);
-    return screen.release();
+    return new NetworkScreen(this, this, oobe_ui_->GetNetworkView());
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
-    std::unique_ptr<UpdateScreen> screen(new UpdateScreen(
-        this, oobe_ui_->GetUpdateView(), remora_controller_.get()));
-    screen->Initialize(nullptr /* context */);
-    return screen.release();
+    return new UpdateScreen(this, oobe_ui_->GetUpdateView(),
+                            remora_controller_.get());
   } else if (screen == OobeScreen::SCREEN_USER_IMAGE_PICKER) {
     return new UserImageScreen(this, oobe_ui_->GetUserImageView());
   } else if (screen == OobeScreen::SCREEN_OOBE_EULA) {
@@ -399,10 +394,8 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
     return new SupervisedUserCreationScreen(
         this, oobe_ui_->GetSupervisedUserCreationScreenActor());
   } else if (screen == OobeScreen::SCREEN_OOBE_HID_DETECTION) {
-    std::unique_ptr<HIDDetectionScreen> screen(new chromeos::HIDDetectionScreen(
-        this, oobe_ui_->GetHIDDetectionView()));
-    screen->Initialize(nullptr /* context */);
-    return screen.release();
+    return new chromeos::HIDDetectionScreen(this,
+                                            oobe_ui_->GetHIDDetectionView());
   } else if (screen == OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK) {
     return new AutoEnrollmentCheckScreen(
         this, oobe_ui_->GetAutoEnrollmentCheckScreenActor());

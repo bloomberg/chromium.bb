@@ -50,7 +50,6 @@ class HIDDetectionScreen : public HIDDetectionModel,
   // HIDDetectionModel implementation:
   void Show() override;
   void Hide() override;
-  void Initialize(::login::ScreenContext* context) override;
   void OnContinueButtonClicked() override;
   void OnViewDestroyed(HIDDetectionView* view) override;
   void CheckIsScreenRequired(

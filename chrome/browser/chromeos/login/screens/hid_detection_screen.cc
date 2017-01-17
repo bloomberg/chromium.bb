@@ -57,6 +57,9 @@ HIDDetectionScreen::HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
   DCHECK(view_);
   if (view_)
     view_->Bind(*this);
+
+  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+      &HIDDetectionScreen::InitializeAdapter, weak_ptr_factory_.GetWeakPtr()));
 }
 
 HIDDetectionScreen::~HIDDetectionScreen() {
@@ -92,14 +95,6 @@ void HIDDetectionScreen::Hide() {
                              base::Bind(&base::DoNothing));
   if (view_)
     view_->Hide();
-}
-
-void HIDDetectionScreen::Initialize(::login::ScreenContext* context) {
-  HIDDetectionModel::Initialize(context);
-
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&HIDDetectionScreen::InitializeAdapter,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HIDDetectionScreen::OnContinueButtonClicked() {

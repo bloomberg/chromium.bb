@@ -65,6 +65,8 @@ NetworkScreen::NetworkScreen(BaseScreenDelegate* base_screen_delegate,
 
   input_method::InputMethodManager::Get()->AddObserver(this);
   InitializeTimezoneObserver();
+  OnSystemTimezoneChanged();
+  UpdateLanguageList();
 }
 
 NetworkScreen::~NetworkScreen() {
@@ -102,12 +104,6 @@ void NetworkScreen::Hide() {
   timezone_subscription_.reset();
   if (view_)
     view_->Hide();
-}
-
-void NetworkScreen::Initialize(::login::ScreenContext* context) {
-  NetworkModel::Initialize(context);
-  OnSystemTimezoneChanged();
-  UpdateLanguageList();
 }
 
 void NetworkScreen::OnViewDestroyed(NetworkView* view) {

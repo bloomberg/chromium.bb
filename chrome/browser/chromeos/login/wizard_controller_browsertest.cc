@@ -423,7 +423,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
     mock_network_screen_.reset(new MockNetworkScreen(
         WizardController::default_controller(),
         WizardController::default_controller(), GetOobeUI()->GetNetworkView()));
-    mock_network_screen_->Initialize(nullptr /* context */);
     WizardController::default_controller()
         ->screens_[OobeScreen::SCREEN_OOBE_NETWORK] = mock_network_screen_;
     EXPECT_CALL(*mock_network_screen_, Show()).Times(0);

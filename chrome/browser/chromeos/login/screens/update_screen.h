@@ -44,7 +44,6 @@ class UpdateScreen : public UpdateModel,
   // UpdateModel:
   void Show() override;
   void Hide() override;
-  void Initialize(::login::ScreenContext* context) override;
   void OnViewDestroyed(UpdateView* view) override;
   void OnUserAction(const std::string& action_id) override;
   void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;

@@ -73,19 +73,11 @@ BaseScreen::BaseScreen(BaseScreenDelegate* base_screen_delegate,
 
 BaseScreen::~BaseScreen() {}
 
-void BaseScreen::Initialize(::login::ScreenContext* context) {
-  if (context)
-    context_.CopyFrom(*context);
-}
+void BaseScreen::OnShow() {}
 
-void BaseScreen::OnShow() {
-}
+void BaseScreen::OnHide() {}
 
-void BaseScreen::OnHide() {
-}
-
-void BaseScreen::OnClose() {
-}
+void BaseScreen::OnClose() {}
 
 bool BaseScreen::IsStatusAreaDisplayed() {
   return true;

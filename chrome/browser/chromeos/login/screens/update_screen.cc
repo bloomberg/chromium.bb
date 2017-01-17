@@ -341,10 +341,6 @@ void UpdateScreen::Hide() {
   is_shown_ = false;
 }
 
-void UpdateScreen::Initialize(::login::ScreenContext* context) {
-  UpdateModel::Initialize(context);
-}
-
 void UpdateScreen::OnViewDestroyed(UpdateView* view) {
   if (view_ == view)
     view_ = nullptr;
