@@ -376,11 +376,13 @@ StringView consumeUrlAsStringView(CSSParserTokenRange& range) {
   return StringView();
 }
 
-CSSURIValue* consumeUrl(CSSParserTokenRange& range) {
+CSSURIValue* consumeUrl(CSSParserTokenRange& range,
+                        const CSSParserContext* context) {
   StringView url = consumeUrlAsStringView(range);
   if (url.isNull())
     return nullptr;
-  return CSSURIValue::create(url.toString());
+  String urlString = url.toString();
+  return CSSURIValue::create(urlString, context->completeURL(urlString));
 }
 
 static int clampRGBComponent(const CSSPrimitiveValue& value) {

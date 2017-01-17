@@ -112,6 +112,28 @@ bool CSSValue::hasFailedOrCanceledSubresources() const {
   return false;
 }
 
+bool CSSValue::mayContainUrl() const {
+  if (isValueList())
+    return toCSSValueList(*this).mayContainUrl();
+  return isImageValue() || isURIValue();
+}
+
+void CSSValue::reResolveUrl(const Document& document) const {
+  // TODO(fs): Should handle all values that can contain URLs.
+  if (isImageValue()) {
+    toCSSImageValue(*this).reResolveURL(document);
+    return;
+  }
+  if (isURIValue()) {
+    toCSSURIValue(*this).reResolveUrl(document);
+    return;
+  }
+  if (isValueList()) {
+    toCSSValueList(*this).reResolveUrl(document);
+    return;
+  }
+}
+
 template <class ChildClassType>
 inline static bool compareCSSValues(const CSSValue& first,
                                     const CSSValue& second) {

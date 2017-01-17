@@ -27,6 +27,7 @@
 
 namespace blink {
 
+class Document;
 class Length;
 
 class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
@@ -147,6 +148,8 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   }
 
   bool hasFailedOrCanceledSubresources() const;
+  bool mayContainUrl() const;
+  void reResolveUrl(const Document&) const;
 
   bool equals(const CSSValue&) const;
 

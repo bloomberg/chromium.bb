@@ -63,6 +63,9 @@ class CORE_EXPORT CSSValueList : public CSSValue {
 
   bool hasFailedOrCanceledSubresources() const;
 
+  bool mayContainUrl() const;
+  void reResolveUrl(const Document&) const;
+
   DECLARE_TRACE_AFTER_DISPATCH();
 
  protected:

@@ -40,9 +40,9 @@
 #include "core/animation/CustomCompositorAnimations.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSValue.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
@@ -3606,9 +3606,7 @@ static bool needsURLResolutionForInlineStyle(const Element& element,
   if (!style)
     return false;
   for (unsigned i = 0; i < style->propertyCount(); ++i) {
-    // FIXME: Should handle all URL-based properties: CSSImageSetValue,
-    // CSSCursorImageValue, etc.
-    if (style->propertyAt(i).value().isImageValue())
+    if (style->propertyAt(i).value().mayContainUrl())
       return true;
   }
   return false;
@@ -3617,11 +3615,9 @@ static bool needsURLResolutionForInlineStyle(const Element& element,
 static void reResolveURLsInInlineStyle(const Document& document,
                                        MutableStylePropertySet& style) {
   for (unsigned i = 0; i < style.propertyCount(); ++i) {
-    StylePropertySet::PropertyReference property = style.propertyAt(i);
-    // FIXME: Should handle all URL-based properties: CSSImageSetValue,
-    // CSSCursorImageValue, etc.
-    if (property.value().isImageValue())
-      toCSSImageValue(property.value()).reResolveURL(document);
+    const CSSValue& value = style.propertyAt(i).value();
+    if (value.mayContainUrl())
+      value.reResolveUrl(document);
   }
 }
 

@@ -155,7 +155,7 @@ const CSSValue* consumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::Image:
       return consumeImage(range, context);
     case CSSSyntaxType::Url:
-      return consumeUrl(range);
+      return consumeUrl(range, context);
     case CSSSyntaxType::Integer:
       return consumeInteger(range);
     case CSSSyntaxType::Angle:

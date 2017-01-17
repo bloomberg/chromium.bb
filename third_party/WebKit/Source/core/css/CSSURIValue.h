@@ -11,30 +11,43 @@
 namespace blink {
 
 class Document;
+class KURL;
 class SVGElementProxy;
 
 class CSSURIValue : public CSSValue {
  public:
-  static CSSURIValue* create(const String& str) { return new CSSURIValue(str); }
+  static CSSURIValue* create(const String& relativeUrl, const KURL& url) {
+    return new CSSURIValue(AtomicString(relativeUrl), url);
+  }
+  static CSSURIValue* create(const AtomicString& absoluteUrl) {
+    return new CSSURIValue(absoluteUrl, absoluteUrl);
+  }
   ~CSSURIValue();
 
-  SVGElementProxy& ensureElementProxy(Document&) const;
+  SVGElementProxy& ensureElementProxy(const Document&) const;
+  void reResolveUrl(const Document&) const;
 
-  const String& value() const { return m_url; }
-  const String& url() const { return m_url; }
+  const String& value() const { return m_relativeUrl; }
 
   String customCSSText() const;
 
+  bool isLocal(const Document&) const;
   bool equals(const CSSURIValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  explicit CSSURIValue(const String&);
+  CSSURIValue(const AtomicString&, const KURL&);
+  CSSURIValue(const AtomicString& relativeUrl, const AtomicString& absoluteUrl);
 
-  String m_url;
+  KURL absoluteUrl() const;
+  AtomicString fragmentIdentifier() const;
+
+  AtomicString m_relativeUrl;
+  bool m_isLocal;
 
   mutable Member<SVGElementProxy> m_proxy;
+  mutable AtomicString m_absoluteUrl;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSURIValue, isURIValue());

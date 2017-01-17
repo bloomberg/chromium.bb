@@ -1187,7 +1187,7 @@ static CSSValue* consumeFilter(CSSParserTokenRange& range,
 
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   do {
-    CSSValue* filterValue = consumeUrl(range);
+    CSSValue* filterValue = consumeUrl(range, context);
     if (!filterValue) {
       filterValue = consumeFilterFunction(range, context);
       if (!filterValue)
@@ -1581,16 +1581,16 @@ static CSSValue* consumePositionY(CSSParserTokenRange& range,
 }
 
 static CSSValue* consumePaintStroke(CSSParserTokenRange& range,
-                                    CSSParserMode cssParserMode) {
+                                    const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
-  CSSURIValue* url = consumeUrl(range);
+  CSSURIValue* url = consumeUrl(range, context);
   if (url) {
     CSSValue* parsedValue = nullptr;
     if (range.peek().id() == CSSValueNone)
       parsedValue = consumeIdent(range);
     else
-      parsedValue = consumeColor(range, cssParserMode);
+      parsedValue = consumeColor(range, context->mode());
     if (parsedValue) {
       CSSValueList* values = CSSValueList::createSpaceSeparated();
       values->append(*url);
@@ -1599,13 +1599,14 @@ static CSSValue* consumePaintStroke(CSSParserTokenRange& range,
     }
     return url;
   }
-  return consumeColor(range, cssParserMode);
+  return consumeColor(range, context->mode());
 }
 
-static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range) {
+static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range,
+                                  const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
-  return consumeUrl(range);
+  return consumeUrl(range, context);
 }
 
 static CSSValue* consumeBaselineShift(CSSParserTokenRange& range) {
@@ -2029,7 +2030,7 @@ static CSSValue* consumeClipPath(CSSParserTokenRange& range,
                                  const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
-  if (CSSURIValue* url = consumeUrl(range))
+  if (CSSURIValue* url = consumeUrl(range, context))
     return url;
   return consumeBasicShape(range, context);
 }
@@ -3194,12 +3195,12 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumePositionY(m_range, m_context->mode());
     case CSSPropertyFill:
     case CSSPropertyStroke:
-      return consumePaintStroke(m_range, m_context->mode());
+      return consumePaintStroke(m_range, m_context);
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:
     case CSSPropertyMask:
-      return consumeNoneOrURI(m_range);
+      return consumeNoneOrURI(m_range, m_context);
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
       return consumeNumber(m_range, ValueRangeNonNegative);

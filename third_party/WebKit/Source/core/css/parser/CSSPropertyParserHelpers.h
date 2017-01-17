@@ -66,7 +66,7 @@ CSSIdentifierValue* consumeIdent(CSSParserTokenRange&);
 CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange&);
 CSSStringValue* consumeString(CSSParserTokenRange&);
 StringView consumeUrlAsStringView(CSSParserTokenRange&);
-CSSURIValue* consumeUrl(CSSParserTokenRange&);
+CSSURIValue* consumeUrl(CSSParserTokenRange&, const CSSParserContext*);
 
 CSSValue* consumeColor(CSSParserTokenRange&,
                        CSSParserMode,

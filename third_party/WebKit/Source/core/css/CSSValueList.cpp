@@ -124,6 +124,19 @@ bool CSSValueList::hasFailedOrCanceledSubresources() const {
   return false;
 }
 
+bool CSSValueList::mayContainUrl() const {
+  for (const auto& value : m_values) {
+    if (value->mayContainUrl())
+      return true;
+  }
+  return false;
+}
+
+void CSSValueList::reResolveUrl(const Document& document) const {
+  for (const auto& value : m_values)
+    value->reResolveUrl(document);
+}
+
 DEFINE_TRACE_AFTER_DISPATCH(CSSValueList) {
   visitor->trace(m_values);
   CSSValue::traceAfterDispatch(visitor);
