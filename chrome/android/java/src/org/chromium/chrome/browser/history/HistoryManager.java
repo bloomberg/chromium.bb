@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
@@ -141,6 +142,11 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         } else if (item.getItemId() == R.id.selection_mode_open_in_new_tab) {
             openItemsInNewTabs(mSelectionDelegate.getSelectedItems(), false);
             mSelectionDelegate.clearSelection();
+            return true;
+        } else if (item.getItemId() == R.id.selection_mode_copy_link) {
+            recordUserActionWithOptionalSearch("CopyLink");
+            Clipboard clipboard = new Clipboard(mActivity);
+            clipboard.setText(mSelectionDelegate.getSelectedItems().get(0).getUrl());
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_incognito) {
             openItemsInNewTabs(mSelectionDelegate.getSelectedItems(), true);

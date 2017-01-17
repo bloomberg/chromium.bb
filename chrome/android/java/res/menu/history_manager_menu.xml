@@ -28,6 +28,10 @@
             android:icon="@drawable/ic_delete_white_24dp"
             android:title="@string/remove"
             chrome:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/selection_mode_copy_link"
+            android:title="@string/copy_link"
+            chrome:showAsAction="never" />
        <item
             android:id="@+id/selection_mode_open_in_new_tab"
             android:title="@string/contextmenu_open_in_new_tab"
@@ -36,6 +40,5 @@
             android:id="@+id/selection_mode_open_in_incognito"
             android:title="@string/contextmenu_open_in_incognito_tab"
             chrome:showAsAction="never" />
-       <!-- TODO(twellington): add copy link item -->
      </group>
 </menu>

@@ -206,6 +206,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SEARCH" desc="The label for a search button.">
         Search
       </message>
+      <message name="IDS_COPY_LINK" desc="The label for a menu item to copy a link. [CHAR-LIMIT=30]">
+        Copy link
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">

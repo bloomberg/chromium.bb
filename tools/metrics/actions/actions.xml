@@ -1155,6 +1155,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.HistoryPage.CopyLink">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User copied the URL for an item on the native Android history page.
+  </description>
+</action>
+
 <action name="Android.HistoryPage.LoadMoreOnScroll">
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1204,6 +1211,14 @@ should be able to be added at any place in this file.
   <owner>twellington@chromium.org</owner>
   <description>
     User tapped the search icon on the native Android history page.
+  </description>
+</action>
+
+<action name="Android.HistoryPage.Search.CopyLink">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User copied the URL for an item while searching on the native Android
+    history page.
   </description>
 </action>
 

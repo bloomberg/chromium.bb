@@ -8,6 +8,8 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
@@ -17,6 +19,7 @@ import android.provider.Browser;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
@@ -426,6 +429,40 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         });
         assertEquals(View.GONE, toolbarShadow.getVisibility());
         assertEquals(View.GONE, toolbarSearchView.getVisibility());
+    }
+
+    @SmallTest
+    public void testCopyLink() throws Exception {
+        final ClipboardManager clipboardManager = (ClipboardManager)
+                getActivity().getSystemService(getActivity().CLIPBOARD_SERVICE);
+        assertNotNull(clipboardManager);
+        // Clear the clipboard to make sure we start with a clean state.
+        clipboardManager.setPrimaryClip(ClipData.newPlainText(null, ""));
+
+        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
+
+        // Check that the copy link item is visible when one item is selected.
+        toggleItemSelection(2);
+        assertTrue(toolbar.getItemById(R.id.selection_mode_copy_link).isVisible());
+
+        // Check that link is copied to the clipboard.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(mHistoryManager.getToolbarForTests().getMenu()
+                        .performIdentifierAction(R.id.selection_mode_copy_link, 0));
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return TextUtils.equals(mItem1.getUrl(), clipboardManager.getText());
+            }
+        });
+
+        // Check that the copy link item is not visible when more than one item is selected.
+        toggleItemSelection(3);
+        assertFalse(toolbar.getItemById(R.id.selection_mode_copy_link).isVisible());
     }
 
     private void toggleItemSelection(int position) throws Exception {

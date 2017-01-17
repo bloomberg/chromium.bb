@@ -137,6 +137,9 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
                         numSelected, numSelected));
             }
 
+            // The copy link option should only be visible when one item is selected.
+            getItemById(R.id.selection_mode_copy_link).setVisible(numSelected == 1);
+
             if (!wasSelectionEnabled) {
                 mManager.recordUserActionWithOptionalSearch("SelectionEstablished");
             }
