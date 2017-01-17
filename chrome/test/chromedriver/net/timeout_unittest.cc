@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/test/gtest_util.h"
 #include "chrome/test/chromedriver/net/timeout.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,9 +29,7 @@ TEST(TimeoutTest, SetDuration) {
   // It's ok to set the same duration again, since nothing changes.
   timeout.SetDuration(TimeDelta::FromSeconds(1));
 
-#if DCHECK_IS_ON() && GTEST_HAS_DEATH_TEST && !defined(OS_ANDROID)
-  EXPECT_DEATH(timeout.SetDuration(TimeDelta::FromMinutes(30)), "");
-#endif  // DCHECK_IS_ON() && GTEST_HAS_DEATH_TEST && !defined(OS_ANDROID)
+  EXPECT_DCHECK_DEATH(timeout.SetDuration(TimeDelta::FromMinutes(30)));
 }
 
 TEST(TimeoutTest, Derive) {

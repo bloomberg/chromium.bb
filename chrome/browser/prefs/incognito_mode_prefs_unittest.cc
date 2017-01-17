@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 
+#include "base/test/gtest_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,22 +56,12 @@ TEST_F(IncognitoModePrefsTest, GetAvailability) {
 
 typedef IncognitoModePrefsTest IncognitoModePrefsDeathTest;
 
-#if GTEST_HAS_DEATH_TEST
 TEST_F(IncognitoModePrefsDeathTest, GetAvailabilityBadValue) {
   prefs_.SetUserPref(prefs::kIncognitoModeAvailability,
                      new base::FundamentalValue(-1));
-#if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEATH({
+  EXPECT_DCHECK_DEATH({
     IncognitoModePrefs::Availability availability =
         IncognitoModePrefs::GetAvailability(&prefs_);
     EXPECT_EQ(IncognitoModePrefs::ENABLED, availability);
-  }, "");
-#else
-  EXPECT_DEBUG_DEATH({
-    IncognitoModePrefs::Availability availability =
-        IncognitoModePrefs::GetAvailability(&prefs_);
-    EXPECT_EQ(IncognitoModePrefs::ENABLED, availability);
-  }, "");
-#endif
+  });
 }
-#endif  // GTEST_HAS_DEATH_TEST

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -329,17 +330,7 @@ TEST_F(BindingCallbackTest, DeleteCallbackBeforeBindingDeathTest) {
   EXPECT_EQ(7, server_impl.last_server_value_seen());
   EXPECT_EQ(0, last_client_callback_value_seen_);
 
-#if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) && !defined(OS_ANDROID)
-  // Delete the callback without running it. This should cause a crash in debug
-  // builds due to a DCHECK.
-  std::string regex("Check failed: !is_valid");
-#if defined(OS_WIN)
-  // TODO(msw): Fix MOJO_DCHECK logs and EXPECT_DEATH* on Win: crbug.com/535014
-  regex.clear();
-#endif  // OS_WIN
-  EXPECT_DEATH_IF_SUPPORTED(server_impl.DeleteCallback(), regex.c_str());
-#endif  // (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)) &&
-        // !defined(OS_ANDROID)
+  EXPECT_DCHECK_DEATH(server_impl.DeleteCallback());
 }
 
 }  // namespace
