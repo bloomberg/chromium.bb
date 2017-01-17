@@ -22,8 +22,9 @@
 # Références :
 # - Code braille français uniformisé pour la transcription des textes imprimés (CBFU) - Deuxième édition Septembre 2008
 # - Notation mathématique braille - Première édition janvier 2007
+# - IPA Braille: An Updated Tactile Representation of the International Phonetic Alphabet - Edited by Robert Englebretson, Ph.D. <http://www.iceb.org/icebipa.htm>
 
-# Last updated on January 12, 2017
+# Last updated on January 17, 2017
 ################################################################################
 
 # lettres grecques
@@ -185,18 +186,18 @@ math \x2194 5-12456 ↔ flèche à gauche et droite
 
 
 # Signes suscrits
-#unicode à vérifier : math \X23DC 4-25 ⏜ arc (top parenthesis)
+#unicode approprié ? math \X23DC 4-25 ⏜ arc (top parenthesis)
 # angle saillant : pas d'équivalence unicode pour la notation française courante (LaTex : widehat). voir \X2220
 math \X20D7 46-25 ⃗ vecteur
 # tenseur d'ordre n : séquence non reproductible: vecteur, lettre, exposant n ; braille : 46-25-4-1345 lettre
 math \X0305 456-25 ̅  mesure algébrique, congugué de...
-#unicode à vérifier : math \X035D 4-4-25 ͝  arc sous-tendu par un angle rentrant (COMBINING DOUBLE BREVE)
+#unicode approprié ? math \X035D 4-4-25 ͝  arc sous-tendu par un angle rentrant (COMBINING DOUBLE BREVE)
 # angle rentrant : pas d'équivalence unicode pour la notation française courante
 # vecteur axial : pas d'équivalence unicode pour la flèche suscrite
 # tilde
 # flèche circulaire de sens négatif : pas d'équivalence unicode pour la flèche suscrite
 # T renversé : pas d'équivalence unicode pour le signe suscrit
-# dague : pas d'équivalence pour le signe suscrit
+# dague : pas d'équivalence unicode pour le signe suscrit
 math \X033F 45-456-25 ̿  double barre horizontale
 math \X20D6 456-46-25 ⃖  fèche horizontale dirigée vers la gauche
 
@@ -256,18 +257,30 @@ math \X221E 45-14 ∞ infini
 math \X2220 45-25 ∠ angle
 
 # complément de fractions de base
-math \x2153 16-34-146 ⅓ 1/3 
+math \x2153 16-34-146 ⅓ 1/3
 math \x2154 126-34-146 ⅔ 2/3
 math \x2155 16-34-156 ⅕ 1/5
 math \x2156 126-34-156 ⅖ 2/5
 math \x2157 146-34-156 ⅗ 3/5
 math \x2158 1456-34-156 ⅘ 4/5
 math \x2159 16-34-1246 ⅙ 1/6
-math \x2150 16-34-12456 ⅐
-math \x215a 156-34-1246 ⅚ 1/7
+math \x2150 16-34-12456 ⅐ 1/7
+math \x215a 156-34-1246 ⅚ 5/6
 math \x215b 16-34-1256 ⅛ 1/8
 math \x215c 146-34-1256 ⅜ 3/8
 math \x215d 156-34-1256 ⅝ 5/8
 math \x215e 12456-34-1256 ⅞ 7/8
 math \x2151 16-34-246 ⅑ 1/9
 math \x2152 16-34-16-3456 ⅒ 1/10
+
+# phonèmes français de l'alphabet phonétique international
+sign \X0283 156         # ʃ - esh - voiceless postalveolar fricative
+sign \X0292 2346        # ʒ - ezh - voiced postalveolar fricative
+sign \X0272 123456      # ɲ - left-tail n (at left) - voiced palatal nasal
+# sign \X025B 345       # ɛ - epsilon - open-mid front unrounded vowel - Ligne commentée car conflit avec l'alphabet grec, à prendre en compte dans vos transcriptions.
+sign \X0251 16          # ɑ - script a - open back unrounded vowel
+sign \X0254 126         # ɔ - open o - open-mid back rounded vowel
+sign \X00F8 1256        # ø - slashed o - close-mid front rounded vowel
+sign \X0259 26          # ə - schwa - mid central vowel
+sign \X0265 256-125     # ɥ - turned h - voiced labial-palatal approximant
+sign \X0303 4-12456     # ̃  - tilde above - nasalized
