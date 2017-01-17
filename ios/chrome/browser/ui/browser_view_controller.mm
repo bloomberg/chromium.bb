@@ -2455,20 +2455,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     if (web::UrlHasWebScheme(link)) {
       web::Referrer referrer([_model currentTab].url, params.referrer_policy);
 
-      if (reading_list::switches::IsReadingListEnabled()) {
-        NSString* innerText = params.link_text;
-        if ([innerText length] > 0) {
-          // Add to reading list.
-          title = l10n_util::GetNSStringWithFixup(
-              IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST);
-          action = ^{
-            Record(ACTION_READ_LATER, isImage, isLink);
-            [weakSelf addToReadingListURL:link title:innerText];
-          };
-          [_contextMenuCoordinator addItemWithTitle:title action:action];
-        }
-      }
-
       // Open in New Tab.
       title = l10n_util::GetNSStringWithFixup(
           IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
@@ -2495,6 +2481,20 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                               appendTo:kCurrentTab];
         };
         [_contextMenuCoordinator addItemWithTitle:title action:action];
+      }
+
+      if (reading_list::switches::IsReadingListEnabled()) {
+        NSString* innerText = params.link_text;
+        if ([innerText length] > 0) {
+          // Add to reading list.
+          title = l10n_util::GetNSStringWithFixup(
+              IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST);
+          action = ^{
+            Record(ACTION_READ_LATER, isImage, isLink);
+            [weakSelf addToReadingListURL:link title:innerText];
+          };
+          [_contextMenuCoordinator addItemWithTitle:title action:action];
+        }
       }
     }
     // Copy Link.
