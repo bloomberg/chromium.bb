@@ -1274,7 +1274,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public static int getSecurityIconResource(
             int securityLevel, boolean isSmallDevice, boolean isOfflinePage) {
         // Both conditions should be met, because isOfflinePage might take longer to be cleared.
-        if (securityLevel == ConnectionSecurityLevel.NONE && isOfflinePage) {
+        // HTTP_SHOW_WARNING added because of field trail causing http://crbug.com/671453.
+        if ((securityLevel == ConnectionSecurityLevel.NONE
+                    || securityLevel == ConnectionSecurityLevel.HTTP_SHOW_WARNING)
+                && isOfflinePage) {
             return R.drawable.offline_pin_round;
         }
         switch (securityLevel) {
@@ -1424,10 +1427,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     private void updateVerboseStatusVisibility() {
         // Because is offline page is cleared a bit slower, we also ensure that connection security
-        // level is NONE.
+        // level is NONE or HTTP_SHOW_WARNING (http://crbug.com/671453).
         boolean verboseStatusVisible = !mUrlHasFocus && getCurrentTab() != null
                 && getCurrentTab().isOfflinePage()
-                && getSecurityLevel() == ConnectionSecurityLevel.NONE;
+                && (getSecurityLevel() == ConnectionSecurityLevel.NONE
+                           || getSecurityLevel() == ConnectionSecurityLevel.HTTP_SHOW_WARNING);
 
         int verboseStatusVisibility = verboseStatusVisible ? VISIBLE : GONE;
 
