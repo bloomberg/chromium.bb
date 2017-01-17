@@ -126,9 +126,9 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event) {
     }
   }
   if (inputElement) {
-    document.setFocusedElement(
-        inputElement,
-        FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
+    document.setFocusedElement(inputElement,
+                               FocusParams(SelectionBehaviorOnFocus::Restore,
+                                           WebFocusTypeNone, nullptr));
     inputElement->dispatchSimulatedClick(event, SendNoEvents);
     event->setDefaultHandled();
     return;
