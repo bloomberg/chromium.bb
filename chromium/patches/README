@@ -24,6 +24,8 @@ Current patches:
     mips64el. In M56 roll, returned to previous logic here to prevent population
     of CFLAGS etc with various -mips32r* which broke builds.
 
+    Turned off check for stdatomic.h, since it is banned in chromium.
+
   Changes/additions to compat/msvcrt/{snprintf.c,snprintf.h}
   Changes/additions to compat/{strtod.c,strtod.h}
     Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
