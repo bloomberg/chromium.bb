@@ -120,13 +120,18 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledCommitted) {
   GURL distilled_url =
       reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
 
-  test_navigation_manager_->GetPendingItem()->SetURL(url);
+  // Test on commited entry, there must be no pending item.
+  test_navigation_manager_->SetPendingItem(nullptr);
+  test_navigation_manager_->GetLastCommittedItem()->SetURL(url);
   test_web_state_.SetLoading(true);
   test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::FAILURE);
   test_web_state_.SetLoading(false);
 
-  EXPECT_FALSE(test_navigation_manager_->ReloadCalled());
-  EXPECT_EQ(test_web_state_.LastOpenedUrl(), distilled_url);
+  EXPECT_TRUE(test_navigation_manager_->ReloadCalled());
+  EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetVirtualURL(),
+            url);
+  EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetURL(),
+            distilled_url);
   EXPECT_TRUE(entry->IsRead());
 }
 

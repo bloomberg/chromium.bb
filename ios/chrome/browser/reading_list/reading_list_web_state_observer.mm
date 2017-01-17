@@ -282,18 +282,39 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
   DCHECK(entry->DistilledState() == ReadingListEntry::PROCESSED);
   GURL url =
       reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
-  web::NavigationManager* manager = web_state()->GetNavigationManager();
-  web::NavigationItem* item = manager->GetPendingItem();
-  if (item) {
+  web::NavigationManager* navigationManager =
+      web_state()->GetNavigationManager();
+  web::NavigationItem* item = navigationManager->GetPendingItem();
+  if (!item) {
+    // Either the loading finished on error and the item is already committed,
+    // or the page is being reloaded and due to crbug.com/676129. there is no
+    // pending item. Either way, the correct item to reuse is the last committed
+    // item.
+    // TODO(crbug.com/676129): this case can be removed.
+    item = navigationManager->GetLastCommittedItem();
+    item->SetURL(url);
+    item->SetVirtualURL(pending_url_);
+    navigationManager->Reload(false);
+  } else if (navigationManager->GetPendingItemIndex() != -1 &&
+             navigationManager->GetItemAtIndex(
+                 navigationManager->GetPendingItemIndex()) == item) {
+    // The navigation corresponds to a back/forward. The item on the stack can
+    // be reused for the offline navigation.
+    // TODO(crbug.com/665189): GetPendingItemIndex() will return currentEntry()
+    // if navigating to a new URL. Test the addresses to verify that
+    // GetPendingItemIndex() actually returns the pending item index. Remove
+    // this extra test on item addresses once bug 665189 is fixed.
+    item->SetURL(url);
+    item->SetVirtualURL(pending_url_);
+    navigationManager->GoToIndex(navigationManager->GetPendingItemIndex());
+  } else {
+    // The pending item corresponds to a new navigation and will be discarded
+    // on next navigation.
+    // Trigger a new navigation on the offline URL.
     web::WebState::OpenURLParams params(url, item->GetReferrer(),
                                         WindowOpenDisposition::CURRENT_TAB,
                                         item->GetTransitionType(), NO);
     web_state()->OpenURL(params);
-  } else {
-    item = manager->GetLastCommittedItem();
-    item->SetURL(url);
-    item->SetVirtualURL(pending_url_);
-    web_state()->GetNavigationManager()->Reload(false);
   }
   reading_list_model_->SetReadStatus(entry->URL(), true);
   UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
