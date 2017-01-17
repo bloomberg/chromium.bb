@@ -2487,9 +2487,8 @@ void Document::shutdown() {
 
   frameHost()->eventHandlerRegistry().documentDetached(*this);
 
-  // Since |Document| class has multiple |LifecycleNotifier| as base class,
-  // we need to have |static_cast<SynchronousMutationNotifier>| here.
-  static_cast<SynchronousMutationNotifier*>(this)->notifyContextDestroyed();
+  // Signal destruction to mutation observers.
+  SynchronousMutationNotifier::notifyContextDestroyed();
   m_frame->selection().documentDetached(*this);
 
   // If this Document is associated with a live DocumentLoader, the
