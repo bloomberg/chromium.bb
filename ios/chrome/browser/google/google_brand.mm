@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/google/google_brand.h"
 
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -17,7 +18,9 @@ bool GetBrand(std::string* brand) {
   if (!ios::GetChromeBrowserProvider())
     return false;
 
-  brand->assign(ios::GetChromeBrowserProvider()->GetDistributionBrandCode());
+  brand->assign(ios::GetChromeBrowserProvider()
+                    ->GetAppDistributionProvider()
+                    ->GetDistributionBrandCode());
   return true;
 }
 
