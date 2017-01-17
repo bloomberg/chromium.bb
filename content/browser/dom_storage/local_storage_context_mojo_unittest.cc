@@ -25,6 +25,8 @@
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 using leveldb::StdStringToUint8Vector;
 using leveldb::Uint8VectorToStdString;
@@ -112,7 +114,7 @@ class LocalStorageContextMojoTest : public testing::Test {
     if (!context_) {
       context_ =
           base::MakeUnique<LocalStorageContextMojo>(nullptr, base::FilePath());
-      context_->SetDatabaseForTesting(db_binding_.CreateInterfacePtrAndBind());
+      db_binding_.Bind(context_->DatabaseRequestForTesting());
     }
     return context_.get();
   }
@@ -137,7 +139,8 @@ class LocalStorageContextMojoTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   MockLevelDBDatabase db_;
-  mojo::Binding<leveldb::mojom::LevelDBDatabase> db_binding_;
+  mojo::AssociatedGroup associated_group_;
+  mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding_;
 
   std::unique_ptr<LocalStorageContextMojo> context_;
 
@@ -728,6 +731,59 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_OnDisk) {
 
   // Should be able to re-open.
   context.reset(new LocalStorageContextMojo(connector(), test_path));
+  EXPECT_TRUE(DoTestGet(context.get(), key, &result));
+  EXPECT_EQ(value, result);
+}
+
+// Enable when http://crbug.com/677194 is fixed and ServiceTest works
+// correctly on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_InvalidVersionOnDisk DISABLED_InvalidVersionOnDisk
+#else
+#define MAYBE_InvalidVersionOnDisk InvalidVersionOnDisk
+#endif
+TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
+  base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
+
+  // Create context and add some data to it.
+  auto context =
+      base::MakeUnique<LocalStorageContextMojo>(connector(), test_path);
+  auto key = StdStringToUint8Vector("key");
+  auto value = StdStringToUint8Vector("value");
+
+  DoTestPut(context.get(), key, value);
+  std::vector<uint8_t> result;
+  EXPECT_TRUE(DoTestGet(context.get(), key, &result));
+  EXPECT_EQ(value, result);
+
+  context.reset();
+  base::RunLoop().RunUntilIdle();
+
+  {
+    // Mess up version number in database.
+    leveldb_env::ChromiumEnv env;
+    leveldb::DB* db = nullptr;
+    leveldb::Options options;
+    options.env = &env;
+    base::FilePath db_path =
+        temp_path().Append(test_path).Append(FILE_PATH_LITERAL("leveldb"));
+    ASSERT_TRUE(leveldb::DB::Open(options, db_path.AsUTF8Unsafe(), &db).ok());
+    std::unique_ptr<leveldb::DB> db_owner(db);
+    ASSERT_TRUE(db->Put(leveldb::WriteOptions(), "VERSION", "argh").ok());
+  }
+
+  // Make sure data is gone.
+  context = base::MakeUnique<LocalStorageContextMojo>(connector(), test_path);
+  EXPECT_FALSE(DoTestGet(context.get(), key, &result));
+
+  // Write data again.
+  DoTestPut(context.get(), key, value);
+
+  context.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // Data should have been preserved now.
+  context = base::MakeUnique<LocalStorageContextMojo>(connector(), test_path);
   EXPECT_TRUE(DoTestGet(context.get(), key, &result));
   EXPECT_EQ(value, result);
 }

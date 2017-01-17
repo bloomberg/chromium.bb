@@ -42,7 +42,7 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   void DeleteStorageForPhysicalOrigin(const url::Origin& origin);
   void Flush();
 
-  void SetDatabaseForTesting(leveldb::mojom::LevelDBDatabasePtr database);
+  leveldb::mojom::LevelDBDatabaseAssociatedRequest DatabaseRequestForTesting();
 
  private:
   // Runs |callback| immediately if already connected to a database, otherwise
@@ -57,11 +57,16 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   void OnUserServiceConnectionComplete();
   void OnUserServiceConnectionError();
 
-  // Part of our asynchronous directory opening called from OpenLocalStorage().
+  // Part of our asynchronous directory opening called from RunWhenConnected().
+  void InitiateConnection(bool in_memory_only = false);
   void OnDirectoryOpened(filesystem::mojom::FileError err);
   void OnDatabaseOpened(leveldb::mojom::DatabaseError status);
   void OnGotDatabaseVersion(leveldb::mojom::DatabaseError status,
                             const std::vector<uint8_t>& value);
+  void OnConnectionFinished();
+  void DeleteAndRecreateDatabase();
+  void OnDBDestroyed(bool recreate_in_memory,
+                     leveldb::mojom::DatabaseError status);
 
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
@@ -96,7 +101,8 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   filesystem::mojom::DirectoryPtr directory_;
 
   leveldb::mojom::LevelDBServicePtr leveldb_service_;
-  leveldb::mojom::LevelDBDatabasePtr database_;
+  leveldb::mojom::LevelDBDatabaseAssociatedPtr database_;
+  bool tried_to_recreate_ = false;
 
   std::vector<base::OnceClosure> on_database_opened_callbacks_;
 

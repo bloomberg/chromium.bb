@@ -50,7 +50,8 @@ std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
 }
 
 void NoOpSuccess(bool success) {}
-}
+
+}  // namespace
 
 LocalStorageContextMojo::LocalStorageContextMojo(
     service_manager::Connector* connector,
@@ -102,12 +103,14 @@ void LocalStorageContextMojo::Flush() {
     it.second->ScheduleImmediateCommit();
 }
 
-void LocalStorageContextMojo::SetDatabaseForTesting(
-    leveldb::mojom::LevelDBDatabasePtr database) {
+leveldb::mojom::LevelDBDatabaseAssociatedRequest
+LocalStorageContextMojo::DatabaseRequestForTesting() {
   DCHECK_EQ(connection_state_, NO_CONNECTION);
   connection_state_ = CONNECTION_IN_PROGRESS;
-  database_ = std::move(database);
+  leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
+      MakeRequestForTesting(&database_);
   OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
+  return request;
 }
 
 void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
@@ -123,22 +126,7 @@ void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
         base::Bind(&LocalStorageContextMojo::OnUserServiceConnectionError,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    if (!subdirectory_.empty()) {
-      // We were given a subdirectory to write to. Get it and use a disk backed
-      // database.
-      file_service_connection_->GetInterface(&file_system_);
-      file_system_->GetSubDirectory(
-          subdirectory_.AsUTF8Unsafe(), MakeRequest(&directory_),
-          base::Bind(&LocalStorageContextMojo::OnDirectoryOpened,
-                     weak_ptr_factory_.GetWeakPtr()));
-    } else {
-      // We were not given a subdirectory. Use a memory backed database.
-      file_service_connection_->GetInterface(&leveldb_service_);
-      leveldb_service_->OpenInMemory(
-          MakeRequest(&database_),
-          base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
-                     weak_ptr_factory_.GetWeakPtr()));
-    }
+    InitiateConnection();
   }
 
   if (connection_state_ == CONNECTION_IN_PROGRESS) {
@@ -204,7 +192,26 @@ void LocalStorageContextMojo::OnUserServiceConnectionError() {
   CHECK(false);
 }
 
-// Part of our asynchronous directory opening called from OpenLocalStorage().
+void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
+  DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
+  if (!subdirectory_.empty() && !in_memory_only) {
+    // We were given a subdirectory to write to. Get it and use a disk backed
+    // database.
+    file_service_connection_->GetInterface(&file_system_);
+    file_system_->GetSubDirectory(
+        subdirectory_.AsUTF8Unsafe(), MakeRequest(&directory_),
+        base::Bind(&LocalStorageContextMojo::OnDirectoryOpened,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // We were not given a subdirectory. Use a memory backed database.
+    file_service_connection_->GetInterface(&leveldb_service_);
+    leveldb_service_->OpenInMemory(
+        MakeRequest(&database_, leveldb_service_.associated_group()),
+        base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
 void LocalStorageContextMojo::OnDirectoryOpened(
     filesystem::mojom::FileError err) {
   if (err != filesystem::mojom::FileError::OK) {
@@ -218,11 +225,15 @@ void LocalStorageContextMojo::OnDirectoryOpened(
   // database.
   file_service_connection_->GetInterface(&leveldb_service_);
 
+  // We might still need to use the directory, so create a clone.
+  filesystem::mojom::DirectoryPtr directory_clone;
+  directory_->Clone(MakeRequest(&directory_clone));
+
   auto options = leveldb::mojom::OpenOptions::New();
   options->create_if_missing = true;
   leveldb_service_->OpenWithOptions(
-      std::move(options), std::move(directory_), "leveldb",
-      MakeRequest(&database_),
+      std::move(options), std::move(directory_clone), "leveldb",
+      MakeRequest(&database_, leveldb_service_.associated_group()),
       base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -233,13 +244,7 @@ void LocalStorageContextMojo::OnDatabaseOpened(
     // If we failed to open the database, reset the service object so we pass
     // null pointers to our wrappers.
     database_.reset();
-    leveldb_service_.reset();
   }
-
-  // We no longer need the file service; we've either transferred |directory_|
-  // to the leveldb service, or we got a file error and no more is possible.
-  directory_.reset();
-  file_system_.reset();
 
   // Verify DB schema version.
   if (database_) {
@@ -266,16 +271,29 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
     if (!base::StringToInt64(leveldb::Uint8VectorToStdString(value),
                              &db_version) ||
         db_version < kMinSchemaVersion || db_version > kCurrentSchemaVersion) {
-      // TODO(mek): delete and recreate database, rather than failing outright.
-      database_ = nullptr;
+      DeleteAndRecreateDatabase();
+      return;
     }
 
     database_initialized_ = true;
   } else {
     // Other read error. Possibly database corruption.
-    // TODO(mek): delete and recreate database, rather than failing outright.
-    database_ = nullptr;
+    DeleteAndRecreateDatabase();
+    return;
   }
+
+  OnConnectionFinished();
+}
+
+void LocalStorageContextMojo::OnConnectionFinished() {
+  DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
+
+  // We no longer need the file service; we've either transferred |directory_|
+  // to the leveldb service, or we got a file error and no more is possible.
+  directory_.reset();
+  file_system_.reset();
+  if (!database_)
+    leveldb_service_.reset();
 
   // |database_| should be known to either be valid or invalid by now. Run our
   // delayed bindings.
@@ -283,6 +301,55 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
   for (size_t i = 0; i < on_database_opened_callbacks_.size(); ++i)
     std::move(on_database_opened_callbacks_[i]).Run();
   on_database_opened_callbacks_.clear();
+}
+
+void LocalStorageContextMojo::DeleteAndRecreateDatabase() {
+  // For now don't support deletion and recreation when already connected.
+  DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
+
+  bool recreate_in_memory = false;
+
+  // If tried to recreate database on disk already, try again but this time
+  // in memory.
+  if (tried_to_recreate_ && !subdirectory_.empty()) {
+    recreate_in_memory = true;
+  } else if (tried_to_recreate_) {
+    // Give up completely, run without any database.
+    database_ = nullptr;
+    OnConnectionFinished();
+    return;
+  }
+
+  tried_to_recreate_ = true;
+
+  // Unit tests might not have a file_service_connection_, in which case there
+  // is nothing to retry.
+  if (!file_service_connection_) {
+    database_ = nullptr;
+    OnConnectionFinished();
+    return;
+  }
+
+  // Close and destroy database, and try again.
+  database_ = nullptr;
+  if (directory_.is_bound()) {
+    leveldb_service_->Destroy(
+        std::move(directory_), "leveldb",
+        base::Bind(&LocalStorageContextMojo::OnDBDestroyed,
+                   weak_ptr_factory_.GetWeakPtr(), recreate_in_memory));
+  } else {
+    // No directory, so nothing to destroy. Retrying to recreate will probably
+    // fail, but try anyway.
+    InitiateConnection(recreate_in_memory);
+  }
+}
+
+void LocalStorageContextMojo::OnDBDestroyed(
+    bool recreate_in_memory,
+    leveldb::mojom::DatabaseError status) {
+  // We're essentially ignoring the status here. Even if destroying failed we
+  // still want to go ahead and try to recreate.
+  InitiateConnection(recreate_in_memory);
 }
 
 // The (possibly delayed) implementation of OpenLocalStorage(). Can be called

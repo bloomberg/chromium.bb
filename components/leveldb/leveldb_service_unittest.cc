@@ -95,7 +95,7 @@ void DatabaseSyncDeletePrefixed(mojom::LevelDBDatabase* database,
 }
 
 void LevelDBSyncOpenInMemory(mojom::LevelDBService* leveldb,
-                             mojom::LevelDBDatabaseRequest database,
+                             mojom::LevelDBDatabaseAssociatedRequest database,
                              mojom::DatabaseError* out_error) {
   base::RunLoop run_loop;
   leveldb->OpenInMemory(std::move(database),
@@ -143,8 +143,10 @@ class LevelDBServiceTest : public service_manager::test::ServiceTest {
 
 TEST_F(LevelDBServiceTest, Basic) {
   mojom::DatabaseError error;
-  mojom::LevelDBDatabasePtr database;
-  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  mojom::LevelDBDatabaseAssociatedPtr database;
+  LevelDBSyncOpenInMemory(leveldb().get(),
+                          MakeRequest(&database, leveldb().associated_group()),
+                          &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Write a key to the database.
@@ -177,8 +179,10 @@ TEST_F(LevelDBServiceTest, Basic) {
 
 TEST_F(LevelDBServiceTest, WriteBatch) {
   mojom::DatabaseError error;
-  mojom::LevelDBDatabasePtr database;
-  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  mojom::LevelDBDatabaseAssociatedPtr database;
+  LevelDBSyncOpenInMemory(leveldb().get(),
+                          MakeRequest(&database, leveldb().associated_group()),
+                          &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Write a key to the database.
@@ -259,14 +263,15 @@ TEST_F(LevelDBServiceTest, Reconnect) {
     filesystem::mojom::DirectoryPtr directory;
     temp_directory->Clone(MakeRequest(&directory));
 
-    mojom::LevelDBDatabasePtr database;
+    mojom::LevelDBDatabaseAssociatedPtr database;
     leveldb::mojom::OpenOptionsPtr options = leveldb::mojom::OpenOptions::New();
     options->error_if_exists = true;
     options->create_if_missing = true;
     base::RunLoop run_loop;
-    leveldb()->OpenWithOptions(std::move(options), std::move(directory), "test",
-                               MakeRequest(&database),
-                               Capture(&error, run_loop.QuitClosure()));
+    leveldb()->OpenWithOptions(
+        std::move(options), std::move(directory), "test",
+        MakeRequest(&database, leveldb().associated_group()),
+        Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
 
@@ -283,9 +288,10 @@ TEST_F(LevelDBServiceTest, Reconnect) {
     temp_directory->Clone(MakeRequest(&directory));
 
     // Reconnect to the database.
-    mojom::LevelDBDatabasePtr database;
+    mojom::LevelDBDatabaseAssociatedPtr database;
     base::RunLoop run_loop;
-    leveldb()->Open(std::move(directory), "test", MakeRequest(&database),
+    leveldb()->Open(std::move(directory), "test",
+                    MakeRequest(&database, leveldb().associated_group()),
                     Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
@@ -299,10 +305,81 @@ TEST_F(LevelDBServiceTest, Reconnect) {
   }
 }
 
+TEST_F(LevelDBServiceTest, Destroy) {
+  mojom::DatabaseError error;
+
+  filesystem::mojom::DirectoryPtr temp_directory;
+  GetTempDirectory(&temp_directory);
+
+  {
+    filesystem::mojom::DirectoryPtr directory;
+    temp_directory->Clone(MakeRequest(&directory));
+
+    mojom::LevelDBDatabaseAssociatedPtr database;
+    leveldb::mojom::OpenOptionsPtr options = leveldb::mojom::OpenOptions::New();
+    options->error_if_exists = true;
+    options->create_if_missing = true;
+    base::RunLoop run_loop;
+    leveldb()->OpenWithOptions(
+        std::move(options), std::move(directory), "test",
+        MakeRequest(&database, leveldb().associated_group()),
+        Capture(&error, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(mojom::DatabaseError::OK, error);
+
+    // Write a key to the database.
+    error = mojom::DatabaseError::INVALID_ARGUMENT;
+    DatabaseSyncPut(database.get(), "key", "value", &error);
+    EXPECT_EQ(mojom::DatabaseError::OK, error);
+
+    // The database should go out of scope here.
+  }
+
+  {
+    filesystem::mojom::DirectoryPtr directory;
+    temp_directory->Clone(MakeRequest(&directory));
+
+    // Destroy the database.
+    base::RunLoop run_loop;
+    leveldb()->Destroy(std::move(directory), "test",
+                       Capture(&error, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(mojom::DatabaseError::OK, error);
+  }
+
+  {
+    filesystem::mojom::DirectoryPtr directory;
+    temp_directory->Clone(MakeRequest(&directory));
+
+    // Reconnect to the database should fail.
+    mojom::LevelDBDatabaseAssociatedPtr database;
+    base::RunLoop run_loop;
+    leveldb()->Open(std::move(directory), "test",
+                    MakeRequest(&database, leveldb().associated_group()),
+                    Capture(&error, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(mojom::DatabaseError::INVALID_ARGUMENT, error);
+  }
+
+  {
+    filesystem::mojom::DirectoryPtr directory;
+    temp_directory->Clone(MakeRequest(&directory));
+
+    // Destroying a non-existant database should still succeed.
+    base::RunLoop run_loop;
+    leveldb()->Destroy(std::move(directory), "test",
+                       Capture(&error, run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_EQ(mojom::DatabaseError::OK, error);
+  }
+}
+
 TEST_F(LevelDBServiceTest, GetSnapshotSimple) {
   mojom::DatabaseError error;
-  mojom::LevelDBDatabasePtr database;
-  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  mojom::LevelDBDatabaseAssociatedPtr database;
+  LevelDBSyncOpenInMemory(leveldb().get(),
+                          MakeRequest(&database, leveldb().associated_group()),
+                          &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   base::UnguessableToken snapshot;
@@ -314,8 +391,10 @@ TEST_F(LevelDBServiceTest, GetSnapshotSimple) {
 
 TEST_F(LevelDBServiceTest, GetFromSnapshots) {
   mojom::DatabaseError error;
-  mojom::LevelDBDatabasePtr database;
-  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  mojom::LevelDBDatabaseAssociatedPtr database;
+  LevelDBSyncOpenInMemory(leveldb().get(),
+                          MakeRequest(&database, leveldb().associated_group()),
+                          &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Write a key to the database.
@@ -355,9 +434,11 @@ TEST_F(LevelDBServiceTest, GetFromSnapshots) {
 }
 
 TEST_F(LevelDBServiceTest, InvalidArgumentOnInvalidSnapshot) {
-  mojom::LevelDBDatabasePtr database;
+  mojom::LevelDBDatabaseAssociatedPtr database;
   mojom::DatabaseError error = mojom::DatabaseError::INVALID_ARGUMENT;
-  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  LevelDBSyncOpenInMemory(leveldb().get(),
+                          MakeRequest(&database, leveldb().associated_group()),
+                          &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   base::UnguessableToken invalid_snapshot = base::UnguessableToken::Create();
@@ -373,9 +454,11 @@ TEST_F(LevelDBServiceTest, InvalidArgumentOnInvalidSnapshot) {
 }
 
 TEST_F(LevelDBServiceTest, MemoryDBReadWrite) {
-  mojom::LevelDBDatabasePtr database;
+  mojom::LevelDBDatabaseAssociatedPtr database;
   mojom::DatabaseError error = mojom::DatabaseError::INVALID_ARGUMENT;
-  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  LevelDBSyncOpenInMemory(leveldb().get(),
+                          MakeRequest(&database, leveldb().associated_group()),
+                          &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Write a key to the database.
@@ -409,8 +492,10 @@ TEST_F(LevelDBServiceTest, MemoryDBReadWrite) {
 TEST_F(LevelDBServiceTest, Prefixed) {
   // Open an in memory database for speed.
   mojom::DatabaseError error = mojom::DatabaseError::INVALID_ARGUMENT;
-  mojom::LevelDBDatabasePtr database;
-  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  mojom::LevelDBDatabaseAssociatedPtr database;
+  LevelDBSyncOpenInMemory(leveldb().get(),
+                          MakeRequest(&database, leveldb().associated_group()),
+                          &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   const std::string prefix("prefix");

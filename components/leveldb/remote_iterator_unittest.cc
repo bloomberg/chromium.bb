@@ -52,8 +52,9 @@ class RemoteIteratorTest : public service_manager::test::ServiceTest {
 
     mojom::DatabaseError error;
     base::RunLoop run_loop;
-    leveldb()->OpenInMemory(MakeRequest(&database_),
-                            Capture(&error, run_loop.QuitClosure()));
+    leveldb()->OpenInMemory(
+        MakeRequest(&database_, leveldb().associated_group()),
+        Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
 
@@ -78,11 +79,11 @@ class RemoteIteratorTest : public service_manager::test::ServiceTest {
   }
 
   mojom::LevelDBServicePtr& leveldb() { return leveldb_; }
-  mojom::LevelDBDatabasePtr& database() { return database_; }
+  mojom::LevelDBDatabaseAssociatedPtr& database() { return database_; }
 
  private:
   mojom::LevelDBServicePtr leveldb_;
-  mojom::LevelDBDatabasePtr database_;
+  mojom::LevelDBDatabaseAssociatedPtr database_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteIteratorTest);
 };
