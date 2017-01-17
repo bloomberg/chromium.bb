@@ -2162,7 +2162,7 @@ Color ComputedStyle::colorIncludingFallback(int colorProperty,
 
 Color ComputedStyle::visitedDependentColor(int colorProperty) const {
   Color unvisitedColor = colorIncludingFallback(colorProperty, false);
-  if (insideLink() != InsideVisitedLink)
+  if (insideLink() != EInsideLink::kInsideVisitedLink)
     return unvisitedColor;
 
   Color visitedColor = colorIncludingFallback(colorProperty, true);

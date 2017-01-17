@@ -693,11 +693,11 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
   if (element->isLink()) {
     state.style()->setIsLink(true);
     EInsideLink linkState = state.elementLinkState();
-    if (linkState != NotInsideLink) {
+    if (linkState != EInsideLink::kNotInsideLink) {
       bool forceVisited = InspectorInstrumentation::forcePseudoState(
           element, CSSSelector::PseudoVisited);
       if (forceVisited)
-        linkState = InsideVisitedLink;
+        linkState = EInsideLink::kInsideVisitedLink;
     }
     state.style()->setInsideLink(linkState);
   }
@@ -1114,7 +1114,7 @@ bool StyleResolver::applyAnimatedStandardProperties(
   if (state.animationUpdate().isEmpty())
     return false;
 
-  if (state.style()->insideLink() != NotInsideLink) {
+  if (state.style()->insideLink() != EInsideLink::kNotInsideLink) {
     DCHECK(state.applyPropertyToRegularStyle());
     state.setApplyPropertyToVisitedLinkStyle(true);
   }
@@ -1541,7 +1541,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
   if (!shouldUpdateNeedsApplyPass && !needsApplyPass.get(priority, isImportant))
     return;
 
-  if (state.style()->insideLink() != NotInsideLink) {
+  if (state.style()->insideLink() != EInsideLink::kNotInsideLink) {
     for (const auto& matchedProperties : range) {
       unsigned linkMatchType = matchedProperties.m_types.linkMatchType;
       // FIXME: It would be nicer to pass these as arguments but that requires

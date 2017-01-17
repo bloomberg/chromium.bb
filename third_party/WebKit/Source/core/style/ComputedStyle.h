@@ -301,7 +301,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     ComputedStyleBase::setBitDefaults();
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
-    m_inheritedData.m_insideLink = NotInsideLink;
+    m_inheritedData.m_insideLink =
+        static_cast<unsigned>(EInsideLink::kNotInsideLink);
 
     m_nonInheritedData.m_effectiveDisplay =
         m_nonInheritedData.m_originalDisplay =
@@ -2592,7 +2593,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return static_cast<EInsideLink>(m_inheritedData.m_insideLink);
   }
   void setInsideLink(EInsideLink insideLink) {
-    m_inheritedData.m_insideLink = insideLink;
+    m_inheritedData.m_insideLink = static_cast<unsigned>(insideLink);
   }
 
   bool hasExplicitlyInheritedProperties() const {

@@ -119,22 +119,22 @@ EInsideLink VisitedLinkState::determineLinkStateSlowCase(
   const AtomicString& attribute = linkAttribute(element);
 
   if (attribute.isNull())
-    return NotInsideLink;  // This can happen for <img usemap>
+    return EInsideLink::kNotInsideLink;  // This can happen for <img usemap>
 
   // An empty attribute refers to the document itself which is always
   // visited. It is useful to check this explicitly so that visited
   // links can be tested in platform independent manner, without
   // explicit support in the test harness.
   if (attribute.isEmpty())
-    return InsideVisitedLink;
+    return EInsideLink::kInsideVisitedLink;
 
   if (LinkHash hash = linkHashForElement(element, attribute)) {
     m_linksCheckedForVisitedState.add(hash);
     if (Platform::current()->isLinkVisited(hash))
-      return InsideVisitedLink;
+      return EInsideLink::kInsideVisitedLink;
   }
 
-  return InsideUnvisitedLink;
+  return EInsideLink::kInsideUnvisitedLink;
 }
 
 DEFINE_TRACE(VisitedLinkState) {

@@ -52,7 +52,7 @@ class VisitedLinkState : public GarbageCollectedFinalized<VisitedLinkState> {
   EInsideLink determineLinkState(const Element& element) {
     if (element.isLink())
       return determineLinkStateSlowCase(element);
-    return NotInsideLink;
+    return EInsideLink::kNotInsideLink;
   }
 
   DECLARE_TRACE();

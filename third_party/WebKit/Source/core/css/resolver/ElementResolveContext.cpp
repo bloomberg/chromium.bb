@@ -36,7 +36,7 @@ ElementResolveContext::ElementResolveContext(const Document& document)
       m_rootElementStyle(document.documentElement()
                              ? document.documentElement()->computedStyle()
                              : document.computedStyle()),
-      m_elementLinkState(NotInsideLink),
+      m_elementLinkState(EInsideLink::kNotInsideLink),
       m_distributedToInsertionPoint(false) {}
 
 ElementResolveContext::ElementResolveContext(Element& element)
