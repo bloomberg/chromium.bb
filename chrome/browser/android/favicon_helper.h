@@ -10,8 +10,17 @@
 #include <memory>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/favicon_base/favicon_types.h"
+#include "url/gurl.h"
+
+namespace content {
+class  WebContents;
+}
+
+class Profile;
 
 class FaviconHelper {
  public:
@@ -43,6 +52,34 @@ class FaviconHelper {
   static bool RegisterFaviconHelper(JNIEnv* env);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FaviconHelperTest, GetLargestSizeIndex);
+
+  static void OnFaviconImageResultAvailable(
+      const base::android::ScopedJavaGlobalRef<jobject>&
+          j_availability_callback,
+      Profile* profile,
+      content::WebContents* web_contents,
+      const GURL& page_url,
+      const GURL& icon_url,
+      favicon_base::IconType icon_type,
+      bool is_temporary,
+      const favicon_base::FaviconImageResult& result);
+
+  static void OnFaviconDownloaded(
+      const base::android::ScopedJavaGlobalRef<jobject>&
+          j_availability_callback,
+      Profile* profile,
+      const GURL& page_url,
+      favicon_base::IconType icon_type,
+      bool is_temporary,
+      int download_request_id,
+      int http_status_code,
+      const GURL& image_url,
+      const std::vector<SkBitmap>& bitmaps,
+      const std::vector<gfx::Size>& original_sizes);
+
+  static size_t GetLargestSizeIndex(const std::vector<gfx::Size>& sizes);
+
   std::unique_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;
 
   virtual ~FaviconHelper();

@@ -69,69 +69,6 @@ void OnLocalFaviconAvailable(
                                                j_favicon_bitmap, j_icon_url);
 }
 
-size_t GetLargestSizeIndex(const std::vector<gfx::Size>& sizes) {
-  DCHECK(!sizes.empty());
-  size_t ret = 0;
-  for (size_t i = 1; i < sizes.size(); ++i) {
-    if (sizes[ret].GetArea() < sizes[i].GetArea())
-      ret = i;
-  }
-  return ret;
-}
-
-void OnFaviconDownloaded(
-    const ScopedJavaGlobalRef<jobject>& j_availability_callback,
-    Profile* profile,
-    const GURL& page_url,
-    favicon_base::IconType icon_type,
-    bool is_temporary,
-    int download_request_id,
-    int http_status_code,
-    const GURL& image_url,
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<gfx::Size>& original_sizes) {
-  bool success = !bitmaps.empty();
-  if (success) {
-    // Only keep the largest icon available.
-    gfx::Image image = gfx::Image(gfx::ImageSkia(
-        gfx::ImageSkiaRep(bitmaps[GetLargestSizeIndex(original_sizes)], 0)));
-    favicon_base::SetFaviconColorSpace(&image);
-    favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
-        profile, ServiceAccessType::IMPLICIT_ACCESS);
-    service->SetFavicons(page_url, image_url, icon_type, image);
-
-    if (is_temporary)
-      service->SetFaviconOutOfDateForPage(page_url);
-  }
-
-  JNIEnv* env = AttachCurrentThread();
-  Java_IconAvailabilityCallback_onIconAvailabilityChecked(
-      env, j_availability_callback, success);
-}
-
-void OnFaviconImageResultAvailable(
-    const ScopedJavaGlobalRef<jobject>& j_availability_callback,
-    Profile* profile,
-    content::WebContents* web_contents,
-    const GURL& page_url,
-    const GURL& icon_url,
-    favicon_base::IconType icon_type,
-    bool is_temporary,
-    const favicon_base::FaviconImageResult& result) {
-  // If there already is a favicon, return immediately.
-  if (!result.image.IsEmpty()) {
-    JNIEnv* env = AttachCurrentThread();
-    Java_IconAvailabilityCallback_onIconAvailabilityChecked(
-        env, j_availability_callback, false);
-    return;
-  }
-
-  web_contents->DownloadImage(
-      icon_url, true, 0, false,
-      base::Bind(OnFaviconDownloaded, j_availability_callback, profile,
-                 page_url, icon_type, is_temporary));
-}
-
 }  // namespace
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
@@ -260,6 +197,85 @@ static jint GetDominantColorForBitmap(JNIEnv* env,
 }
 
 // static
+
+// Return the index of |sizes| whose area is largest but not exceeds int type
+// range. If all |sizes|'s area exceed int type range, return the first one.
+size_t FaviconHelper::GetLargestSizeIndex(const std::vector<gfx::Size>& sizes) {
+  DCHECK(!sizes.empty());
+  size_t ret = 0;
+  // Find the first element whose area doesn't exceed max value, then use it
+  // to compare with rest elements to find largest size index.
+  for (size_t i = 0; i < sizes.size(); ++i) {
+    base::CheckedNumeric<int> checked_area = sizes[i].GetCheckedArea();
+    if (checked_area.IsValid()) {
+      ret = i;
+      int largest_area = checked_area.ValueOrDie();
+      for (i = ret + 1; i < sizes.size(); ++i) {
+        int area = sizes[i].GetCheckedArea().ValueOrDefault(-1);
+        if (largest_area < area) {
+          ret = i;
+          largest_area = area;
+        }
+      }
+    }
+  }
+  return ret;
+}
+
+void FaviconHelper::OnFaviconDownloaded(
+    const ScopedJavaGlobalRef<jobject>& j_availability_callback,
+    Profile* profile,
+    const GURL& page_url,
+    favicon_base::IconType icon_type,
+    bool is_temporary,
+    int download_request_id,
+    int http_status_code,
+    const GURL& image_url,
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_sizes) {
+  bool success = !bitmaps.empty();
+  if (success) {
+    // Only keep the largest icon available.
+    gfx::Image image = gfx::Image(gfx::ImageSkia(
+        gfx::ImageSkiaRep(bitmaps[GetLargestSizeIndex(original_sizes)], 0)));
+    favicon_base::SetFaviconColorSpace(&image);
+    favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
+        profile, ServiceAccessType::IMPLICIT_ACCESS);
+    service->SetFavicons(page_url, image_url, icon_type, image);
+
+    if (is_temporary)
+      service->SetFaviconOutOfDateForPage(page_url);
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_IconAvailabilityCallback_onIconAvailabilityChecked(
+      env, j_availability_callback, success);
+}
+
+
+void FaviconHelper::OnFaviconImageResultAvailable(
+    const ScopedJavaGlobalRef<jobject>& j_availability_callback,
+    Profile* profile,
+    content::WebContents* web_contents,
+    const GURL& page_url,
+    const GURL& icon_url,
+    favicon_base::IconType icon_type,
+    bool is_temporary,
+    const favicon_base::FaviconImageResult& result) {
+  // If there already is a favicon, return immediately.
+  if (!result.image.IsEmpty()) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_IconAvailabilityCallback_onIconAvailabilityChecked(
+        env, j_availability_callback, false);
+    return;
+  }
+
+  web_contents->DownloadImage(
+      icon_url, true, 0, false,
+      base::Bind(OnFaviconDownloaded, j_availability_callback, profile,
+                 page_url, icon_type, is_temporary));
+}
+
 bool FaviconHelper::RegisterFaviconHelper(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
