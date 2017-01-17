@@ -1356,7 +1356,7 @@ ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 	struct ivi_layout_view *ivi_view, *next;
 
 	if (ivilayer == NULL) {
-		weston_log("ivi_layout_layer_remove: invalid argument\n");
+		weston_log("ivi_layout_layer_destroy: invalid argument\n");
 		return;
 	}
 
