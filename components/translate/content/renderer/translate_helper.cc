@@ -24,22 +24,20 @@
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebLanguageDetectionDetails.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
 using base::ASCIIToUTF16;
 using blink::WebDocument;
-using blink::WebElement;
 using blink::WebLocalFrame;
-using blink::WebNode;
 using blink::WebScriptSource;
 using blink::WebSecurityOrigin;
 using blink::WebString;
 using blink::WebVector;
+using blink::WebLanguageDetectionDetails;
 
 namespace {
 
@@ -60,46 +58,6 @@ const char kAutoDetectionLanguage[] = "auto";
 
 // Isolated world sets following content-security-policy.
 const char kContentSecurityPolicy[] = "script-src 'self' 'unsafe-eval'";
-
-// Returns whether the page associated with |document| is a candidate for
-// translation.  Some pages can explictly specify (via a meta-tag) that they
-// should not be translated.
-// TODO(dglazkov): This logic should be moved into Blink.
-bool HasNoTranslateMeta(WebDocument* document) {
-  WebElement head = document->head();
-  if (head.isNull() || head.firstChild().isNull())
-    return false;
-
-  const WebString meta(ASCIIToUTF16("meta"));
-  const WebString name(ASCIIToUTF16("name"));
-  const WebString google(ASCIIToUTF16("google"));
-  const WebString value(ASCIIToUTF16("value"));
-  const WebString content(ASCIIToUTF16("content"));
-
-  for (WebNode child = head.firstChild(); !child.isNull();
-       child = child.nextSibling()) {
-    if (!child.isElementNode())
-      continue;
-    WebElement element = child.to<WebElement>();
-    // Check if a tag is <meta>.
-    if (!element.hasHTMLTagName(meta))
-      continue;
-    // Check if the tag contains name="google".
-    WebString attribute = element.getAttribute(name);
-    if (attribute.isNull() || attribute != google)
-      continue;
-    // Check if the tag contains value="notranslate", or content="notranslate".
-    attribute = element.getAttribute(value);
-    if (attribute.isNull())
-      attribute = element.getAttribute(content);
-    if (attribute.isNull())
-      continue;
-    if (base::LowerCaseEqualsASCII(base::StringPiece16(attribute),
-                                   "notranslate"))
-      return true;
-  }
-  return false;
-}
 
 }  // namespace
 
@@ -139,13 +97,10 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
     return;
 
   WebDocument document = main_frame->document();
-  std::string content_language = document.contentLanguage().utf8();
-  WebElement html_element = document.documentElement();
-  std::string html_lang;
-  // |html_element| can be null element, e.g. in
-  // BrowserTest.WindowOpenClose.
-  if (!html_element.isNull())
-    html_lang = html_element.getAttribute("lang").utf8();
+  WebLanguageDetectionDetails web_detection_details =
+      WebLanguageDetectionDetails::collectLanguageDetectionDetails(document);
+  std::string content_language = web_detection_details.contentLanguage.utf8();
+  std::string html_lang = web_detection_details.htmlLanguage.utf8();
   std::string cld_language;
   bool is_cld_reliable;
   std::string language = DeterminePageLanguage(
@@ -156,14 +111,13 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
 
   language_determined_time_ = base::TimeTicks::Now();
 
-  GURL url(document.url());
   LanguageDetectionDetails details;
   details.time = base::Time::Now();
-  details.url = url;
+  details.url = web_detection_details.url;
   details.content_language = content_language;
   details.cld_language = cld_language;
   details.is_cld_reliable = is_cld_reliable;
-  details.has_notranslate = HasNoTranslateMeta(&document);
+  details.has_notranslate = web_detection_details.hasNoTranslateMeta;
   details.html_root_language = html_lang;
   details.adopted_language = language;
 

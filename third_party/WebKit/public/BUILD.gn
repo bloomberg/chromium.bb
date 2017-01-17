@@ -491,6 +491,7 @@ source_set("blink_headers") {
     "web/WebInputMethodController.h",
     "web/WebKit.h",
     "web/WebLabelElement.h",
+    "web/WebLanguageDetectionDetails.h",
     "web/WebLeakDetector.h",
     "web/WebLocalFrame.h",
     "web/WebMeaningfulLayout.h",

@@ -199,6 +199,7 @@ component("web") {
     "WebInputMethodControllerImpl.h",
     "WebKit.cpp",
     "WebLabelElement.cpp",
+    "WebLanguageDetectionDetails.cpp",
     "WebLeakDetector.cpp",
     "WebLocalFrameImpl.cpp",
     "WebLocalFrameImpl.h",
