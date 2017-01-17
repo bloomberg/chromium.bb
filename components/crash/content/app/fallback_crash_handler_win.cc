@@ -392,11 +392,6 @@ bool FallbackCrashHandler::GenerateCrashDump(const std::string& product,
   crashpad::CrashReportDatabase::CallErrorWritingCrashReport on_error(
       database.get(), report);
 
-  // TODO(siggi): Go big on the detail here for Canary/Dev channels.
-  const uint32_t kMinidumpType = MiniDumpWithUnloadedModules |
-                                 MiniDumpWithProcessThreadData |
-                                 MiniDumpWithThreadInfo;
-
   MINIDUMP_EXCEPTION_INFORMATION exc_info = {};
   exc_info.ThreadId = thread_id_;
   exc_info.ExceptionPointers =
@@ -438,9 +433,18 @@ bool FallbackCrashHandler::GenerateCrashDump(const std::string& product,
   if (!dump_file.IsValid())
     return false;
 
+  uint32_t minidump_type = MiniDumpWithUnloadedModules |
+                                 MiniDumpWithProcessThreadData |
+                                 MiniDumpWithThreadInfo;
+
+  // Capture more detail for canary and dev channels. The prefix search caters
+  // for the soon to be outdated "-m" suffixed multi-install channels.
+  if (channel.find("canary") == 0 || channel.find("dev") == 0)
+    minidump_type |= MiniDumpWithIndirectlyReferencedMemory;
+
   // Write the minidump to the temp file, and then copy the data to the
   // Crashpad-provided handle, as the latter is only open for write.
-  if (!MiniDumpWriteDumpWithCrashpadInfo(process_, kMinidumpType, &exc_info,
+  if (!MiniDumpWriteDumpWithCrashpadInfo(process_, minidump_type, &exc_info,
                                          crash_keys, client_id, report->uuid,
                                          &dump_file) ||
       !AppendFileContents(&dump_file, report->handle)) {
