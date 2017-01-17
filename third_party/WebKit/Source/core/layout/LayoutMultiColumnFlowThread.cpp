@@ -463,17 +463,19 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(
     DCHECK(!m_columnSetsInvalidated);
     if (m_multiColumnSetList.isEmpty())
       return nullptr;
-    if (offset < LayoutUnit())
-      return m_multiColumnSetList.first();
+    if (offset < LayoutUnit()) {
+      columnSet = m_multiColumnSetList.first();
+    } else {
+      MultiColumnSetSearchAdapter adapter(offset);
+      m_multiColumnSetIntervalTree
+          .allOverlapsWithAdapter<MultiColumnSetSearchAdapter>(adapter);
 
-    MultiColumnSetSearchAdapter adapter(offset);
-    m_multiColumnSetIntervalTree
-        .allOverlapsWithAdapter<MultiColumnSetSearchAdapter>(adapter);
-
-    // If no set was found, the offset is in the flow thread overflow.
-    if (!adapter.result() && !m_multiColumnSetList.isEmpty())
-      return m_multiColumnSetList.last();
-    columnSet = adapter.result();
+      // If no set was found, the offset is in the flow thread overflow.
+      if (!adapter.result() && !m_multiColumnSetList.isEmpty())
+        columnSet = m_multiColumnSetList.last();
+      else
+        columnSet = adapter.result();
+    }
   }
   if (pageBoundaryRule == AssociateWithFormerPage && columnSet &&
       offset == columnSet->logicalTopInFlowThread()) {
@@ -483,7 +485,19 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(
     // previous column set.
     if (LayoutMultiColumnSet* previousSet =
             columnSet->previousSiblingMultiColumnSet())
-      return previousSet;
+      columnSet = previousSet;
+  }
+  // Avoid returning zero-height column sets, if possible. We found a column set
+  // based on a flow thread coordinate. If multiple column sets share that
+  // coordinate (because we have zero-height column sets between column
+  // spanners, for instance), look for one that has a height.
+  for (LayoutMultiColumnSet* walker = columnSet; walker;
+       walker = walker->nextSiblingMultiColumnSet()) {
+    if (!walker->isPageLogicalHeightKnown())
+      continue;
+    if (walker->logicalTopInFlowThread() == offset)
+      return walker;
+    break;
   }
   return columnSet;
 }
