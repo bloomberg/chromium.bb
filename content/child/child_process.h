@@ -79,6 +79,10 @@ class CONTENT_EXPORT ChildProcess {
 
   static void WaitForDebugger(const std::string& label);
  private:
+  // Initializes TaskScheduler. May be overridden to initialize TaskScheduler
+  // with custom arguments.
+  virtual void InitializeTaskScheduler();
+
   int ref_count_;
 
   // An event that will be signalled when we shutdown.
@@ -91,6 +95,9 @@ class CONTENT_EXPORT ChildProcess {
   // it depends on it (indirectly through IPC::SyncChannel).  Same for
   // io_thread_.
   std::unique_ptr<ChildThreadImpl> main_thread_;
+
+  // Whether this ChildProcess initialized TaskScheduler.
+  bool initialized_task_scheduler_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcess);
 };

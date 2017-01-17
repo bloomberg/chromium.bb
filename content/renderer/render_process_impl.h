@@ -23,6 +23,8 @@ class RenderProcessImpl : public RenderProcess {
   int GetEnabledBindings() const override;
 
  private:
+  void InitializeTaskScheduler() override;
+
   // Bitwise-ORed set of extra bindings that have been enabled anywhere in this
   // process.  See BindingsPolicy for details.
   int enabled_bindings_;

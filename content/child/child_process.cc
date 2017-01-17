@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
@@ -47,6 +48,15 @@ ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority)
 
   base::StatisticsRecorder::Initialize();
 
+  // Initialize TaskScheduler if not already done. A TaskScheduler may already
+  // exist when ChildProcess is instantiated in the browser process or in a
+  // test process.
+  if (!base::TaskScheduler::GetInstance()) {
+    InitializeTaskScheduler();
+    DCHECK(base::TaskScheduler::GetInstance());
+    initialized_task_scheduler_ = true;
+  }
+
   // We can't recover from failing to start the IO thread.
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = io_thread_priority;
@@ -80,6 +90,11 @@ ChildProcess::~ChildProcess() {
 
   g_lazy_tls.Pointer()->Set(NULL);
   io_thread_.Stop();
+
+  if (initialized_task_scheduler_) {
+    DCHECK(base::TaskScheduler::GetInstance());
+    base::TaskScheduler::GetInstance()->Shutdown();
+  }
 }
 
 ChildThreadImpl* ChildProcess::main_thread() {
@@ -160,6 +175,11 @@ void ChildProcess::WaitForDebugger(const std::string& label) {
   pause();
 #endif  // defined(OS_ANDROID)
 #endif  // defined(OS_POSIX)
+}
+
+void ChildProcess::InitializeTaskScheduler() {
+  constexpr int kMaxThreads = 2;
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxThreads);
 }
 
 }  // namespace content

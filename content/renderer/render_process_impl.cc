@@ -126,33 +126,6 @@ size_t DefaultRendererWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
   return is_background ? BACKGROUND : FOREGROUND;
 }
 
-void InitializeTaskScheduler() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
-    // There should already be a TaskScheduler when the renderer runs inside the
-    // browser process.
-    DCHECK(base::TaskScheduler::GetInstance());
-    return;
-  }
-  DCHECK(!base::TaskScheduler::GetInstance());
-
-  std::vector<base::SchedulerWorkerPoolParams> params_vector;
-  base::TaskScheduler::WorkerPoolIndexForTraitsCallback
-      index_to_traits_callback;
-  content::GetContentClient()->renderer()->GetTaskSchedulerInitializationParams(
-      &params_vector, &index_to_traits_callback);
-
-  if (params_vector.empty()) {
-    params_vector = GetDefaultSchedulerWorkerPoolParams();
-    index_to_traits_callback =
-        base::Bind(&DefaultRendererWorkerPoolIndexForTraits);
-  }
-  DCHECK(index_to_traits_callback);
-
-  base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
-      params_vector, index_to_traits_callback);
-}
-
 }  // namespace
 
 namespace content {
@@ -213,8 +186,6 @@ RenderProcessImpl::RenderProcessImpl()
 
   SiteIsolationStatsGatherer::SetEnabled(
       GetContentClient()->renderer()->ShouldGatherSiteIsolationStats());
-
-  InitializeTaskScheduler();
 }
 
 RenderProcessImpl::~RenderProcessImpl() {
@@ -223,12 +194,6 @@ RenderProcessImpl::~RenderProcessImpl() {
   if (count)
     DLOG(ERROR) << "WebFrame LEAKED " << count << " TIMES";
 #endif
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
-    DCHECK(base::TaskScheduler::GetInstance());
-    base::TaskScheduler::GetInstance()->Shutdown();
-  }
 
   GetShutDownEvent()->Signal();
 }
@@ -239,6 +204,24 @@ void RenderProcessImpl::AddBindings(int bindings) {
 
 int RenderProcessImpl::GetEnabledBindings() const {
   return enabled_bindings_;
+}
+
+void RenderProcessImpl::InitializeTaskScheduler() {
+  std::vector<base::SchedulerWorkerPoolParams> params_vector;
+  base::TaskScheduler::WorkerPoolIndexForTraitsCallback
+      index_to_traits_callback;
+  content::GetContentClient()->renderer()->GetTaskSchedulerInitializationParams(
+      &params_vector, &index_to_traits_callback);
+
+  if (params_vector.empty()) {
+    params_vector = GetDefaultSchedulerWorkerPoolParams();
+    index_to_traits_callback =
+        base::Bind(&DefaultRendererWorkerPoolIndexForTraits);
+  }
+  DCHECK(index_to_traits_callback);
+
+  base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
+      params_vector, index_to_traits_callback);
 }
 
 }  // namespace content
