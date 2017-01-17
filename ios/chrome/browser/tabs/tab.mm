@@ -70,7 +70,6 @@
 #include "ios/chrome/browser/metrics/ios_chrome_origins_seen_service_factory.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/native_app_launcher/native_app_navigation_controller.h"
-#import "ios/chrome/browser/net/metrics_network_client_manager.h"
 #import "ios/chrome/browser/passwords/credential_manager.h"
 #import "ios/chrome/browser/passwords/js_credential_manager.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
@@ -130,7 +129,6 @@
 #import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/interstitials/web_interstitial.h"
@@ -333,10 +331,6 @@ enum class RendererTerminationTabState {
 
   // C++ observer to implement the credential management JavaScript API.
   std::unique_ptr<CredentialManager> credentialManager_;
-
-  // Client factory created for metrics tracking. The Tab will signal page
-  // load starts and finishes to this.
-  base::scoped_nsobject<MetricsNetworkClientManager> metricsClientManager_;
 }
 
 // Returns the current sessionEntry for the sesionController associated with
@@ -506,16 +500,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [owner_ updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
 }
 
-// Registers |factory| with |tracker| on the IO thread.
-void AddNetworkClientFactoryOnIOThread(
-    web::RequestTrackerImpl* tracker,
-    CRNForwardingNetworkClientFactory* factory) {
-  base::scoped_nsobject<CRNForwardingNetworkClientFactory> scoped_factory(
-      [factory retain]);
-  tracker->PostIOTask(base::Bind(&net::RequestTracker::AddNetworkClientFactory,
-                                 tracker, scoped_factory));
-}
-
 }  // anonymous namespace
 
 @implementation Tab
@@ -649,11 +633,6 @@ void AddNetworkClientFactoryOnIOThread(
         self.webState,
         ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());
     [self setShouldObserveFaviconChanges:YES];
-    web::RequestTrackerImpl* requestTracker =
-        webStateImpl_->GetRequestTracker();
-
-    metricsClientManager_.reset([[MetricsNetworkClientManager alloc] init]);
-    AddNetworkClientFactoryOnIOThread(requestTracker, metricsClientManager_);
 
     if (parentModel && parentModel.syncedWindowDelegate) {
       IOSChromeSessionTabHelper::FromWebState(self.webState)
@@ -1798,7 +1777,6 @@ void AddNetworkClientFactoryOnIOThread(
       postNotificationName:
           kTabClosingCurrentDocumentNotificationForCrashReporting
                     object:self];
-  [metricsClientManager_ pageLoadStarted:URL];
 }
 
 - (void)webCancelStartLoadingRequest {
@@ -1902,7 +1880,6 @@ void AddNetworkClientFactoryOnIOThread(
     [self handleExportableFile:headers.get()];
   }
 
-  [metricsClientManager_ pageLoadCompleted];
   [parentTabModel_ notifyTabChanged:self];
 
   if (parentTabModel_) {
