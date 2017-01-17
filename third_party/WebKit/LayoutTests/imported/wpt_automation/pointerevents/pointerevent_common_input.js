@@ -160,8 +160,29 @@ function touchScrollInTarget(targetSelector, direction) {
       scrollPageIfNeeded(targetSelector, document);
       var target = document.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      chrome.gpuBenchmarking.smoothScrollBy(scrollOffset, resolve,
-          targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, touchSourceType, direction);
+      var xPosition = targetRect.left + boundaryOffset;
+      var yPosition = targetRect.top + boundaryOffset;
+      var newXPosition = xPosition;
+      var newYPosition = yPosition;
+      if (direction == "down")
+        newYPosition -= scrollOffset;
+      else if (direction == "up")
+        newYPosition += scrollOffset;
+      else if (direction == "right")
+        newXPosition -= scrollOffset;
+      else if (direction == "left")
+        newXPosition += scrollOffset;
+      else
+        throw("Scroll direction '" + direction + "' is not expected, we expecte 'down', 'up', 'left' or 'right'");
+
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {"source": "touch",
+         "actions": [
+            { "name": "pointerDown", "x": xPosition, "y": yPosition },
+            { "name": "pointerMove", "x": newXPosition, "y": newYPosition },
+            { "name": "pause", "duration": 0.1 },
+            { "name": "pointerUp" }
+        ]}], resolve);
     } else {
       reject();
     }
@@ -174,9 +195,17 @@ function pinchZoomInTarget(targetSelector, scale) {
       scrollPageIfNeeded(targetSelector, document);
       var target = document.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      chrome.gpuBenchmarking.pinchBy(scale, targetRect.left + (targetRect.width/2), targetRect.top + (targetRect.height/2), function() {
-        resolve();
-      });
+      var xPosition = targetRect.left + (targetRect.width/2);
+      var yPosition1 = targetRect.top + (targetRect.height/2) - 10;
+      var yPosition2 = targetRect.top + (targetRect.height/2) + 10;
+      var text = '[{"source": "touch", "actions": [{ "name": "pointerDown", "x":' + xPosition +', "y":' + yPosition1 +' },';
+      for (var offset=10; offset<80; offset+=10)
+        text += '{ "name": "pointerMove", "x":' + xPosition +', "y":' + (yPosition1 - offset) +' },';
+      text += '{ "name": "pointerUp" }]}, {"source": "touch", "actions": [{ "name": "pointerDown", "x":' + xPosition +', "y":' + yPosition2 +' },';
+      for (var offset=10; offset<80; offset+=10)
+        text += '{ "name": "pointerMove", "x":' + xPosition +', "y":' + (yPosition2 + offset) +' },';
+      text += '{ "name": "pointerUp" }]}]';
+      chrome.gpuBenchmarking.pointerActionSequence(JSON.parse(text), resolve);
     } else {
       reject();
     }

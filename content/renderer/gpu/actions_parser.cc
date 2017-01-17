@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "cc/output/begin_frame_args.h"
 
 namespace content {
 
@@ -131,9 +132,6 @@ bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
     return false;
   }
 
-  if (actions->GetSize() > longest_action_sequence_)
-    longest_action_sequence_ = actions->GetSize();
-
   if (!ParseActions(*actions))
     return false;
 
@@ -152,6 +150,10 @@ bool ActionsParser::ParseActions(const base::ListValue& actions) {
       return false;
     }
   }
+
+  if (param_list.size() > longest_action_sequence_)
+    longest_action_sequence_ = param_list.size();
+
   pointer_actions_list_.push_back(param_list);
   return true;
 }
@@ -190,6 +192,24 @@ bool ActionsParser::ParseAction(
     return false;
   }
 
+  double duration = 0;
+  int num_idle = 0;
+  if (pointer_action_type ==
+      SyntheticPointerActionParams::PointerActionType::IDLE) {
+    num_idle = 1;
+    if (action.HasKey("duration") && !action.GetDouble("duration", &duration)) {
+      error_message_ = base::StringPrintf(
+          "actions[%d].actions.x is not a number", action_index_);
+      return false;
+    }
+  }
+
+  // If users pause for given seconds, we convert to the number of idle frames.
+  if (duration > 0) {
+    num_idle = static_cast<int>(std::ceil(
+        duration / cc::BeginFrameArgs::DefaultInterval().InSecondsF()));
+  }
+
   SyntheticPointerActionParams action_param(pointer_action_type);
   action_param.set_index(action_index_);
   if (pointer_action_type ==
@@ -199,6 +219,12 @@ bool ActionsParser::ParseAction(
     action_param.set_position(gfx::PointF(position_x, position_y));
   }
   param_list.push_back(action_param);
+
+  // We queue all the IDLE actions in the action parameter list to make sure we
+  // will pause long enough on the given pointer.
+  for (int count = 1; count < num_idle; ++count)
+    param_list.push_back(action_param);
+
   return true;
 }
 
