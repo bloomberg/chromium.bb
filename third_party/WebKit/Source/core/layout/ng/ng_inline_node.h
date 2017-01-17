@@ -18,6 +18,7 @@
 namespace blink {
 
 class ComputedStyle;
+class LayoutBlockFlow;
 class LayoutObject;
 class LayoutUnit;
 class NGConstraintSpace;
@@ -48,6 +49,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   Vector<NGLayoutInlineItem>& Items() { return items_; }
   NGLayoutInlineItemRange Items(unsigned start_index, unsigned end_index);
+
+  LayoutBlockFlow* GetLayoutBlockFlow() const;
+  void GetLayoutTextOffsets(Vector<unsigned, 32>*);
 
   bool IsBidiEnabled() const { return is_bidi_enabled_; }
 
@@ -86,14 +90,18 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 // element where possible.
 class NGLayoutInlineItem {
  public:
-  NGLayoutInlineItem(unsigned start, unsigned end, const ComputedStyle* style)
+  NGLayoutInlineItem(unsigned start,
+                     unsigned end,
+                     const ComputedStyle* style,
+                     LayoutObject* layout_object = nullptr)
       : start_offset_(start),
         end_offset_(end),
         bidi_level_(UBIDI_LTR),
         script_(USCRIPT_INVALID_CODE),
         fallback_priority_(FontFallbackPriority::Invalid),
         rotate_sideways_(false),
-        style_(style) {
+        style_(style),
+        layout_object_(layout_object) {
     DCHECK(end >= start);
   }
 
@@ -105,6 +113,7 @@ class NGLayoutInlineItem {
   UBiDiLevel BidiLevel() const { return bidi_level_; }
   UScriptCode Script() const { return script_; }
   const ComputedStyle* Style() const { return style_; }
+  LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   void SetEndOffset(unsigned);
 
@@ -127,6 +136,7 @@ class NGLayoutInlineItem {
   bool rotate_sideways_;
   const ComputedStyle* style_;
   Vector<RefPtr<const ShapeResult>> shape_results_;
+  LayoutObject* layout_object_;
 
   friend class NGInlineNode;
 };

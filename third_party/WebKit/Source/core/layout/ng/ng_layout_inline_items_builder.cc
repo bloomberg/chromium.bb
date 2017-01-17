@@ -96,10 +96,11 @@ static bool ShouldRemoveNewline(const StringBuilder& before,
 }
 
 void NGLayoutInlineItemsBuilder::Append(const String& string,
-                                        const ComputedStyle* style) {
+                                        const ComputedStyle* style,
+                                        LayoutObject* layout_object) {
   if (string.isEmpty()) {
     unsigned offset = text_.length();
-    items_->push_back(NGLayoutInlineItem(offset, offset, style));
+    items_->push_back(NGLayoutInlineItem(offset, offset, style, layout_object));
     return;
   }
 
@@ -149,13 +150,22 @@ void NGLayoutInlineItemsBuilder::Append(const String& string,
     }
   }
 
-  items_->push_back(NGLayoutInlineItem(start_offset, text_.length(), style));
+  items_->push_back(
+      NGLayoutInlineItem(start_offset, text_.length(), style, layout_object));
 }
 
-void NGLayoutInlineItemsBuilder::Append(UChar character) {
+void NGLayoutInlineItemsBuilder::Append(UChar character,
+                                        const ComputedStyle* style,
+                                        LayoutObject* layout_object) {
   DCHECK(character != spaceCharacter && character != tabulationCharacter &&
          character != newlineCharacter && character != zeroWidthSpaceCharacter);
-  AppendAsOpaqueToSpaceCollapsing(character);
+  if (has_pending_newline_)
+    ProcessPendingNewline(emptyString(), nullptr);
+
+  text_.append(character);
+  unsigned end_offset = text_.length();
+  items_->push_back(
+      NGLayoutInlineItem(end_offset - 1, end_offset, style, layout_object));
   is_last_collapsible_space_ = false;
 }
 

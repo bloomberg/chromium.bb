@@ -46,13 +46,20 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   // When appending, spaces are collapsed according to CSS Text, The white space
   // processing rules
   // https://drafts.csswg.org/css-text-3/#white-space-rules
-  void Append(const String&, const ComputedStyle*);
+  // @param style The style for the string.
+  // If a nullptr, it should skip shaping. Atomic inlines and bidi controls use
+  // this.
+  // @param LayoutObject The LayoutObject for the string.
+  // If a nullptr, it does not generate BidiRun. Bidi controls use this.
+  void Append(const String&, const ComputedStyle*, LayoutObject* = nullptr);
 
   // Append a character.
   // Currently this function is for adding control characters such as
   // objectReplacementCharacter, and does not support all space collapsing logic
   // as its String version does.
-  void Append(UChar);
+  // See the String version for using nullptr for ComputedStyle and
+  // LayoutObject.
+  void Append(UChar, const ComputedStyle* = nullptr, LayoutObject* = nullptr);
 
   // Append a character.
   // The character is opaque to space collapsing that spaces before this

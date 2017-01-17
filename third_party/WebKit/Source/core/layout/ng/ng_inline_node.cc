@@ -4,12 +4,14 @@
 
 #include "core/layout/ng/ng_inline_node.h"
 
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/ng/ng_bidi_paragraph.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_layout_inline_items_builder.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
@@ -80,7 +82,7 @@ void NGInlineNode::CollectInlines(LayoutObject* start,
   while (node) {
     if (node->isText()) {
       builder->SetIsSVGText(node->isSVGInlineText());
-      builder->Append(toLayoutText(node)->text(), node->style());
+      builder->Append(toLayoutText(node)->text(), node->style(), node);
     } else if (node->isFloating() || node->isOutOfFlowPositioned()) {
       // Skip positioned objects.
     } else if (!node->isInline()) {
@@ -91,7 +93,7 @@ void NGInlineNode::CollectInlines(LayoutObject* start,
       // For atomic inlines add a unicode "object replacement character" to
       // signal the presence of a non-text object to the unicode bidi algorithm.
       if (node->isAtomicInlineLevel()) {
-        builder->Append(objectReplacementCharacter);
+        builder->Append(objectReplacementCharacter, nullptr, node);
       }
 
       // Otherwise traverse to children if they exist.
@@ -239,8 +241,6 @@ bool NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
     return false;
   }
 
-  // TODO(layout-dev): Implement copying of fragment data to LayoutObject tree.
-
   // Reset algorithm for future use
   layout_algorithm_ = nullptr;
   return true;
@@ -255,6 +255,50 @@ NGInlineNode* NGInlineNode::NextSibling() {
                         : nullptr;
   }
   return next_sibling_;
+}
+
+// Find the first LayoutBlockFlow in the ancestor chain of |start_inilne_|.
+LayoutBlockFlow* NGInlineNode::GetLayoutBlockFlow() const {
+  for (LayoutObject* layout_object = start_inline_->parent(); layout_object;
+       layout_object = layout_object->parent()) {
+    if (layout_object->isLayoutBlockFlow())
+      return toLayoutBlockFlow(layout_object);
+  }
+  ASSERT_NOT_REACHED();
+  return nullptr;
+}
+
+// Compute the delta of text offsets between NGInlineNode and LayoutText.
+// This map is needed to produce InlineTextBox since its offsets are to
+// LayoutText.
+// TODO(kojii): Since NGInlineNode has text after whitespace collapsed, the
+// length may not match with LayoutText. This function updates LayoutText to
+// match, but this needs more careful coding, if we keep copying to layoutobject
+// tree.
+void NGInlineNode::GetLayoutTextOffsets(
+    Vector<unsigned, 32>* text_offsets_out) {
+  LayoutText* current_text = nullptr;
+  unsigned current_offset = 0;
+  for (unsigned i = 0; i < items_.size(); i++) {
+    const NGLayoutInlineItem& item = items_[i];
+    LayoutObject* next_object = item.GetLayoutObject();
+    LayoutText* next_text = next_object && next_object->isText()
+                                ? toLayoutText(next_object)
+                                : nullptr;
+    if (next_text != current_text) {
+      if (current_text &&
+          current_text->textLength() != item.StartOffset() - current_offset) {
+        current_text->setText(Text(current_offset, item.StartOffset()).impl());
+      }
+      current_text = next_text;
+      current_offset = item.StartOffset();
+    }
+    (*text_offsets_out)[i] = current_offset;
+  }
+  if (current_text &&
+      current_text->textLength() != text_content_.length() - current_offset) {
+    current_text->setText(Text(current_offset, text_content_.length()).impl());
+  }
 }
 
 DEFINE_TRACE(NGInlineNode) {

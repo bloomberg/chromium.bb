@@ -7,6 +7,7 @@
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
+#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_length_utils.h"
@@ -69,6 +70,7 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
     case kStateFinalize:
       line_builder_->CreateFragments(builder_);
       *fragment_out = builder_->ToBoxFragment();
+      line_builder_->CopyFragmentDataToLayoutBlockFlow();
       state_ = kStateInit;
       return kNewFragment;
   };

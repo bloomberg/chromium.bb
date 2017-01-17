@@ -162,6 +162,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                          LayoutUnit position) const override;
 
   RootInlineBox* createAndAppendRootInlineBox();
+  RootInlineBox* constructLine(BidiRunList<BidiRun>&, const LineInfo&);
 
   // Return the number of lines in *this* block flow. Does not recurse into
   // block flow children.
@@ -872,7 +873,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   InlineFlowBox* createLineBoxes(LineLayoutItem,
                                  const LineInfo&,
                                  InlineBox* childBox);
-  RootInlineBox* constructLine(BidiRunList<BidiRun>&, const LineInfo&);
   void setMarginsForRubyRun(BidiRun*,
                             LayoutRubyRun*,
                             LayoutObject*,

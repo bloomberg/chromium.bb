@@ -4,6 +4,10 @@
 
 #include "core/layout/ng/ng_line_builder.h"
 
+#include "core/layout/BidiRun.h"
+#include "core/layout/LayoutBlockFlow.h"
+#include "core/layout/line/LineInfo.h"
+#include "core/layout/line/RootInlineBox.h"
 #include "core/layout/ng/ng_bidi_paragraph.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -11,6 +15,7 @@
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/text/BidiRunList.h"
 
 namespace blink {
 
@@ -43,10 +48,13 @@ void NGLineBuilder::CreateLine() {
   const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
   for (const auto& line_item_chunk : line_item_chunks_) {
     const NGLayoutInlineItem& start_item = items[line_item_chunk.start_index];
-    const ComputedStyle* style = start_item.Style();
     // Skip bidi controls.
-    if (!style)
+    if (!start_item.GetLayoutObject())
       continue;
+    const ComputedStyle* style = start_item.Style();
+    // TODO(kojii): Handling atomic inline needs more thoughts.
+    if (!style)
+      style = start_item.GetLayoutObject()->style();
 
     // TODO(kojii): The block size for a text fragment isn't clear, revisit when
     // we implement line box layout.
@@ -67,6 +75,11 @@ void NGLineBuilder::CreateLine() {
     inline_offset += line_item_chunk.inline_size;
   }
   DCHECK_EQ(fragments_.size(), offsets_.size());
+
+  line_box_data_list_.grow(line_box_data_list_.size() + 1);
+  LineBoxData& line_box_data = line_box_data_list_.back();
+  line_box_data.fragment_end = fragments_.size();
+  line_box_data.inline_size = inline_offset;
 
   max_inline_size_ = std::max(max_inline_size_, inline_offset);
   // TODO(kojii): Implement block size when we support baseline alignment.
@@ -125,6 +138,81 @@ void NGLineBuilder::CreateFragments(NGFragmentBuilder* container_builder) {
       .SetInlineOverflow(max_inline_size_)
       .SetBlockSize(content_size_)
       .SetBlockOverflow(content_size_);
+}
+
+void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
+  LayoutBlockFlow* block = inline_box_->GetLayoutBlockFlow();
+  block->deleteLineBoxTree();
+
+  Vector<NGLayoutInlineItem>& items = inline_box_->Items();
+  Vector<unsigned, 32> text_offsets(items.size());
+  inline_box_->GetLayoutTextOffsets(&text_offsets);
+
+  HeapVector<Member<const NGFragment>, 32> fragments_for_bidi_runs;
+  fragments_for_bidi_runs.reserveInitialCapacity(items.size());
+  BidiRunList<BidiRun> bidi_runs;
+  LineInfo line_info;
+  unsigned fragment_index = 0;
+  for (const auto& line_box_data : line_box_data_list_) {
+    // Create a BidiRunList for this line.
+    for (; fragment_index < line_box_data.fragment_end; fragment_index++) {
+      const NGFragment* fragment = fragments_[fragment_index];
+      const NGPhysicalTextFragment* text_fragment =
+          toNGPhysicalTextFragment(fragment->PhysicalFragment());
+      // TODO(kojii): needs to reverse for RTL?
+      for (unsigned item_index = text_fragment->StartIndex();
+           item_index < text_fragment->EndIndex(); item_index++) {
+        const NGLayoutInlineItem& item = items[item_index];
+        LayoutObject* layout_object = item.GetLayoutObject();
+        if (!layout_object)  // Skip bidi controls.
+          continue;
+        BidiRun* run;
+        if (layout_object->isText()) {
+          unsigned text_offset = text_offsets[item_index];
+          run = new BidiRun(item.StartOffset() - text_offset,
+                            item.EndOffset() - text_offset, item.BidiLevel(),
+                            LineLayoutItem(layout_object));
+        } else {
+          DCHECK(layout_object->isAtomicInlineLevel());
+          run = new BidiRun(0, 1, item.BidiLevel(),
+                            LineLayoutItem(layout_object));
+        }
+        bidi_runs.addRun(run);
+        fragments_for_bidi_runs.append(fragment);
+      }
+    }
+    // TODO(kojii): bidi needs to find the logical last run.
+    bidi_runs.setLogicallyLastRun(bidi_runs.lastRun());
+
+    // Create a RootInlineBox from BidiRunList. InlineBoxes created for the
+    // RootInlineBox are set to Bidirun::m_box.
+    line_info.setEmpty(false);
+    // TODO(kojii): Implement setFirstLine, LastLine, etc.
+    RootInlineBox* line_box = block->constructLine(bidi_runs, line_info);
+
+    // Copy fragments data to InlineBoxes.
+    DCHECK_EQ(fragments_for_bidi_runs.size(), bidi_runs.runCount());
+    BidiRun* run = bidi_runs.firstRun();
+    for (const auto& fragment : fragments_for_bidi_runs) {
+      DCHECK(run);
+      InlineBox* inline_box = run->m_box;
+      inline_box->setLogicalWidth(fragment->InlineSize());
+      inline_box->setLogicalLeft(fragment->InlineOffset());
+      inline_box->setLogicalTop(fragment->BlockOffset());
+      run = run->next();
+    }
+    DCHECK(!run);
+
+    // Copy LineBoxData to RootInlineBox.
+    line_box->setLogicalWidth(line_box_data.inline_size);
+    // TODO(kojii): Compute top/bottom/leading in |CreateLine()| and store in
+    // line_box_data.
+    line_box->setLineTopBottomPositions(LayoutUnit(), LayoutUnit(100),
+                                        LayoutUnit(), LayoutUnit(100));
+
+    bidi_runs.deleteRuns();
+    fragments_for_bidi_runs.clear();
+  }
 }
 
 DEFINE_TRACE(NGLineBuilder) {

@@ -57,7 +57,10 @@ bool NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
     for (; i < items.size(); i++) {
       const NGLayoutInlineItem& item = items[i];
       // Split chunks before bidi controls, or at bidi level boundaries.
-      if (!item.Style() || item.BidiLevel() != start_item.BidiLevel()) {
+      // Also split at LayoutObject boundaries to generate InlineBox in
+      // |CopyFragmentDataToLayoutBlockFlow()|.
+      if (item.GetLayoutObject() != start_item.GetLayoutObject() ||
+          !item.Style() || item.BidiLevel() != start_item.BidiLevel()) {
         break;
       }
       inline_size += item.InlineSize();

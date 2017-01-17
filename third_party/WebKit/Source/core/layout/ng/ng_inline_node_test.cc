@@ -30,7 +30,10 @@ class NGInlineNodeForTest : public NGInlineNode {
   void Append(const String& text, const ComputedStyle* style = nullptr) {
     unsigned start = text_content_.length();
     text_content_.append(text);
-    items_.push_back(NGLayoutInlineItem(start, start + text.length(), style));
+    // Pass non-null LayoutObject to indicate this is a text from LayoutText.
+    LayoutObject* layout_object = reinterpret_cast<LayoutObject*>(1);
+    items_.push_back(
+        NGLayoutInlineItem(start, start + text.length(), style, layout_object));
   }
 
   void Append(UChar character) {

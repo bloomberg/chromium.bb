@@ -46,6 +46,17 @@ struct BidiRun : BidiCharacterRun {
     m_hasHyphen = false;
   }
 
+  BidiRun(int start,
+          int stop,
+          unsigned char level,
+          LineLayoutItem lineLayoutItem)
+      : BidiCharacterRun(start, stop, level),
+        m_lineLayoutItem(lineLayoutItem),
+        m_box(nullptr) {
+    // Stored in base class to save space.
+    m_hasHyphen = false;
+  }
+
   BidiRun* next() { return static_cast<BidiRun*>(m_next); }
 
  public:

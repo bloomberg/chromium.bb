@@ -32,6 +32,12 @@ class CORE_EXPORT NGLineBuilder final
   // Create fragments for lines created by |CreateLine()|.
   void CreateFragments(NGFragmentBuilder*);
 
+  // Copy fragment data of all lines created by this NGLineBuilder to
+  // LayoutBlockFlow.
+  // This must run after |CreateFragments()|, and after the fragments it created
+  // are placed.
+  void CopyFragmentDataToLayoutBlockFlow();
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -43,11 +49,22 @@ class CORE_EXPORT NGLineBuilder final
     LayoutUnit inline_size;
   };
 
+  // LineBoxData is a set of data for a line box that are computed in early
+  // phases, such as in |CreateLine()|, and will be used in later phases.
+  // TODO(kojii): Not sure if all these data are needed in fragment tree. If
+  // they are, we can create a linebox fragment, store them there, and this
+  // isn't needed. For now, we're trying to minimize data in fragments.
+  struct LineBoxData {
+    unsigned fragment_end;
+    LayoutUnit inline_size;
+  };
+
   Member<NGInlineNode> inline_box_;
   Member<const NGConstraintSpace> constraint_space_;
   HeapVector<Member<NGFragment>, 32> fragments_;
   Vector<NGLogicalOffset, 32> offsets_;
   Vector<LineItemChunk, 32> line_item_chunks_;
+  Vector<LineBoxData, 32> line_box_data_list_;
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
 

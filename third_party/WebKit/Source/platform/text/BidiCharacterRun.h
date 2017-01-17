@@ -60,6 +60,13 @@ struct BidiCharacterRun {
     }
   }
 
+  BidiCharacterRun(int start, int stop, unsigned char level)
+      : m_override(false),
+        m_level(level),
+        m_next(0),
+        m_start(start),
+        m_stop(stop) {}
+
   // BidiCharacterRun are allocated out of the rendering partition.
   PLATFORM_EXPORT void* operator new(size_t);
   PLATFORM_EXPORT void operator delete(void*);
