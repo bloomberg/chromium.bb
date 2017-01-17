@@ -12,6 +12,8 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
@@ -27,9 +29,9 @@
 
 @implementation TabStripView
 
-@synthesize controller = controller_;
 @synthesize dropArrowShown = dropArrowShown_;
 @synthesize dropArrowPosition = dropArrowPosition_;
+@synthesize inATabDraggingOverlayWindow = inATabDraggingOverlayWindow_;
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
@@ -96,6 +98,43 @@
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  bool hasCustomThemeImage = themeProvider &&
+      themeProvider->HasCustomImage(IDR_THEME_FRAME);
+  BOOL supportsVibrancy = [self visualEffectView] != nil;
+  BOOL isMainWindow = [[self window] isMainWindow];
+
+  // If in Material Design mode, decrease the tabstrip background's translucency
+  // by overlaying it with a partially-transparent gray (but only if not themed,
+  // and not being used to drag tabs between browser windows). The gray is
+  // somewhat opaque for Incognito mode, very opaque for non-Incognito mode, and
+  // completely opaque when the window is not active.
+  if (themeProvider && !hasCustomThemeImage && !inATabDraggingOverlayWindow_) {
+    NSColor* theColor = nil;
+    if (isMainWindow) {
+      if (supportsVibrancy &&
+          !themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
+        theColor = themeProvider->GetNSColor(
+            ThemeProperties::COLOR_FRAME_VIBRANCY_OVERLAY);
+      } else if (!supportsVibrancy && themeProvider->InIncognitoMode()) {
+        theColor = [NSColor colorWithSRGBRed:20 / 255.
+                                       green:22 / 255.
+                                        blue:24 / 255.
+                                       alpha:1];
+      } else {
+        theColor = themeProvider->GetNSColor(ThemeProperties::COLOR_FRAME);
+      }
+    } else {
+      theColor = themeProvider->GetNSColor(
+          ThemeProperties::COLOR_FRAME_INACTIVE);
+    }
+
+    if (theColor) {
+      [theColor set];
+      NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
+    }
+  }
+
   [self drawBottomEdge:dirtyRect];
 
   // Draw drop-indicator arrow (if appropriate).
@@ -308,14 +347,85 @@
   newTabButton_.reset([button retain]);
 }
 
+- (NSVisualEffectView*)visualEffectView {
+  // NSVisualEffectView is only available on OS X 10.10 and higher.
+  if (!base::mac::IsAtLeastOS10_10())
+    return nil;
+
+  NSView* rootView = [[self window] contentView];
+  if (!chrome::ShouldUseFullSizeContentView()) {
+    rootView = [rootView superview];
+  }
+
+  Class nsVisualEffectViewClass = NSClassFromString(@"NSVisualEffectView");
+  DCHECK(nsVisualEffectViewClass);
+  for (NSView* view in [rootView subviews]) {
+    if ([view isKindOfClass:nsVisualEffectViewClass]) {
+      return base::mac::ObjCCast<NSVisualEffectView>(view);
+    }
+  }
+  return nil;
+}
+
+- (void)setController:(TabStripController*)controller {
+  controller_ = controller;
+  // If tearing down the browser window, there's nothing more to do.
+  if (!controller_) {
+    return;
+  }
+
+  // Finish configuring the NSVisualEffectView so that it matches the window's
+  // theme.
+  NSVisualEffectView* visualEffectView = [self visualEffectView];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (!visualEffectView || !themeProvider) {
+    return;
+  }
+
+  // Themes with custom frame images don't use vibrancy. Otherwise, if Incognito
+  // use Material Dark.
+  if (themeProvider->HasCustomImage(IDR_THEME_FRAME) ||
+      themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
+    [visualEffectView setState:NSVisualEffectStateInactive];
+  } else if (themeProvider->InIncognitoMode()) {
+    [visualEffectView setMaterial:NSVisualEffectMaterialDark];
+    [visualEffectView setAppearance:
+        [NSAppearance appearanceNamed:NSAppearanceNameVibrantDark]];
+  }
+}
+
 // ThemedWindowDrawing implementation.
 
 - (void)windowDidChangeTheme {
   [self setNeedsDisplay:YES];
+  [self updateVisualEffectState];
 }
 
 - (void)windowDidChangeActive {
   [self setNeedsDisplay:YES];
+}
+
+- (void)setVisualEffectsDisabledForFullscreen:(BOOL)disabled {
+  visualEffectsDisabledForFullscreen_ = disabled;
+  [self updateVisualEffectState];
+}
+
+- (void)updateVisualEffectState {
+  // Configure the NSVisualEffectView so that it does nothing if the user has
+  // switched to a custom theme, or uses vibrancy if the user has switched back
+  // to the default theme.
+  NSVisualEffectView* visualEffectView = [self visualEffectView];
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (!visualEffectView || !themeProvider) {
+    return;
+  }
+  if (visualEffectsDisabledForFullscreen_ ||
+      themeProvider->HasCustomImage(IDR_THEME_FRAME) ||
+      themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
+    [visualEffectView setState:NSVisualEffectStateInactive];
+  } else {
+    [visualEffectView setState:NSVisualEffectStateFollowsWindowActiveState];
+  }
 }
 
 @end

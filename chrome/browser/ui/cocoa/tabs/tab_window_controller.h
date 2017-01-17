@@ -18,7 +18,7 @@
 
 @class FastResizeView;
 @class FocusTracker;
-@class TabStripBackgroundView;
+@class NSVisualEffectView;
 @class TabStripView;
 @class TabView;
 
@@ -26,7 +26,10 @@
  @private
   // Wrapper view around web content, and the developer tools view.
   base::scoped_nsobject<FastResizeView> tabContentArea_;
-  base::scoped_nsobject<TabStripBackgroundView> tabStripBackgroundView_;
+  base::scoped_nsobject<NSView> tabStripBackgroundView_;
+
+  // Used to blur the titlebar. nil if window does not have titlebar.
+  base::scoped_nsobject<NSVisualEffectView> visualEffectView_;
 
   // The tab strip overlaps the titlebar of the window.
   base::scoped_nsobject<TabStripView> tabStripView_;

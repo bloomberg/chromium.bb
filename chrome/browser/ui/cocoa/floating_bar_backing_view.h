@@ -7,10 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 
 // A custom view that draws the tab strip background for fullscreen windows.
-@interface FloatingBarBackingView : TabStripBackgroundView
+@interface FloatingBarBackingView : NSView<ThemedWindowDrawing>
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_FLOATING_BAR_BACKING_VIEW_H_

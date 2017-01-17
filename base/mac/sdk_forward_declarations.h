@@ -76,6 +76,8 @@ extern "C" {
 #if !defined(MAC_OS_X_VERSION_10_10) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10
 BASE_EXPORT extern NSString* const NSUserActivityTypeBrowsingWeb;
+BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
+BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 #endif  // MAC_OS_X_VERSION_10_10
 }  // extern "C"
 
@@ -108,6 +110,10 @@ BASE_EXPORT extern NSString* const NSUserActivityTypeBrowsingWeb;
 - (void)viewDidLoad;
 @end
 
+@interface NSWindow (YosemiteSDK)
+- (void)setTitlebarAppearsTransparent:(BOOL)flag;
+@end
+
 @interface NSProcessInfo (YosemiteSDK)
 @property(readonly) NSOperatingSystemVersion operatingSystemVersion;
 @end
@@ -115,6 +121,12 @@ BASE_EXPORT extern NSString* const NSUserActivityTypeBrowsingWeb;
 @interface NSLayoutConstraint (YosemiteSDK)
 @property(getter=isActive) BOOL active;
 @end
+
+@interface NSVisualEffectView (YosemiteSDK)
+- (void)setState:(NSVisualEffectState)state;
+@end
+
+@class NSVisualEffectView;
 
 #endif  // MAC_OS_X_VERSION_10_10
 
