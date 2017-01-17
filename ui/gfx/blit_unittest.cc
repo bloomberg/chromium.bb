@@ -154,7 +154,7 @@ TEST(Blit, WithSharedMemory) {
   base::SharedMemoryHandle section = shared_mem.handle();
   std::unique_ptr<SkCanvas> canvas =
       skia::CreatePlatformCanvasWithSharedSection(kCanvasWidth, kCanvasHeight,
-                                                  true, section.GetHandle(),
+                                                  false, section.GetHandle(),
                                                   skia::RETURN_NULL_ON_FAILURE);
   ASSERT_TRUE(canvas);
   shared_mem.Close();
