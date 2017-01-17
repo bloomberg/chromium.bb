@@ -98,8 +98,12 @@ class GaiaScreenHandler : public BaseScreenHandler,
                            const std::string& password,
                            bool using_saml);
 
-  void HandleCompleteAdAuthentication(const std::string& user_name,
+  void HandleCompleteAdAuthentication(const std::string& username,
                                       const std::string& password);
+
+  void HandleCompleteAdPasswordChange(const std::string& username,
+                                      const std::string& old_password,
+                                      const std::string& new_password);
 
   void HandleUsingSAMLAPI();
   void HandleScrapedPasswordCount(int password_count);
@@ -139,7 +143,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
                 const std::string& uid);
 
   // Callback for writing password into pipe.
-  void OnPasswordPipeReady(const std::string& user_name,
+  void OnPasswordPipeReady(const std::string& username,
                            const Key& key,
                            base::ScopedFD password_fd);
 

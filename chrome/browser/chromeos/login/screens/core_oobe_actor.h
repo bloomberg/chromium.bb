@@ -43,6 +43,8 @@ class CoreOobeActor {
   virtual void InitDemoModeDetection() = 0;
   virtual void StopDemoModeDetection() = 0;
   virtual void UpdateKeyboardState() = 0;
+  virtual void ShowActiveDirectoryPasswordChangeScreen(
+      const std::string& username) = 0;
 };
 
 }  // namespace chromeos

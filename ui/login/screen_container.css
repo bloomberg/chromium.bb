@@ -99,6 +99,7 @@
 #oobe.kiosk-enable #inner-container,
 #oobe.oauth-enrollment #inner-container,
 #oobe.password-changed #inner-container,
+#oobe.ad-password-change #inner-container,
 #oobe.reset #inner-container,
 #oobe.supervised-user-creation #inner-container,
 #oobe.supervised-user-creation-dialog #inner-container,

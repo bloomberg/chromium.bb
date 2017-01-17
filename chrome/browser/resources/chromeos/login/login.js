@@ -36,6 +36,7 @@ cr.define('cr.ui.Oobe', function() {
       login.FatalErrorScreen.register();
       login.DeviceDisabledScreen.register();
       login.UnrecoverableCryptohomeErrorScreen.register();
+      login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));

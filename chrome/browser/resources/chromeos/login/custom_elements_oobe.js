@@ -34,3 +34,4 @@
 // <include src="oobe_welcome_dialog.js">
 // <include src="oobe_welcome.js">
 // <include src="offline_ad_login.js">
+// <include src="active_directory_password_change.js">

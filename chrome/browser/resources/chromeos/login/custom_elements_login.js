@@ -16,3 +16,4 @@
 // <include src="navigation_bar.js">
 // <include src="unrecoverable_cryptohome_error_card.js">
 // <include src="offline_ad_login.js">
+// <include src="active_directory_password_change.js">

@@ -6248,6 +6248,24 @@ All users must sign out to continue.
   <message name="IDS_AD_LOGIN_PASSWORD" desc="Label for Password input field on both AD domain join and AD Authorization user screens..">
     Password
   </message>
+  <message name="IDS_AD_PASSWORD_CHANGE_OLD_PASSWORD" desc="Old password field hint on the Active Directory password change dialog.">
+    Enter old password
+  </message>
+  <message name="IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD" desc="New password field hint on the Active Directory password change dialog.">
+    Enter new password
+  </message>
+  <message name="IDS_AD_PASSWORD_CHANGE_REPEAT_NEW_PASSWORD" desc="Repeat of the new password field hint on the Active Directory password change dialog.">
+    Confirm new password
+  </message>
+  <message name="IDS_AD_PASSWORD_CHANGE_MESSAGE" desc="Message to the user that the Active Directory administrator requires the user to change his/her password.">
+    <ph name="USER_NAME">$1</ph>, your administrator requires you to change your password.
+  </message>
+  <message name="IDS_AD_PASSWORD_CHANGE_INVALID_PASSWORD" desc="Error message for the old password field on the Active Directory password change dialog.">
+    The password you entered is incorrect.
+  </message>
+  <message name="IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH" desc="Error message in case new password fields does not match on the Active Directory password change dialog.">
+    Passwords do not match.
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
     Optional — enter new or update existing information to be associated with this device.
   </message>

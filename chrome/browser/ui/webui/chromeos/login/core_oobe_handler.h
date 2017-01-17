@@ -119,6 +119,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   void SetClientAreaSize(int width, int height) override;
   void ShowDeviceResetScreen() override;
   void ShowEnableDebuggingScreen() override;
+  void ShowActiveDirectoryPasswordChangeScreen(
+      const std::string& username) override;
 
   void InitDemoModeDetection() override;
   void StopDemoModeDetection() override;

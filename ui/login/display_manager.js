@@ -34,6 +34,8 @@
 /** @const */ var SCREEN_DEVICE_DISABLED = 'device-disabled';
 /** @const */ var SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR =
     'unrecoverable-cryptohome-error';
+/** @const */ var SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE =
+    'ad-password-change';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -1000,6 +1002,15 @@ cr.define('cr.ui.login', function() {
    */
   DisplayManager.showTpmError = function() {
     login.TPMErrorMessageScreen.show();
+  };
+
+  /**
+   * Shows password change screen for Active Directory users.
+   * @param {string} username Display name of the user whose password is being
+   * changed.
+   */
+  DisplayManager.showActiveDirectoryPasswordChangeScreen = function(username) {
+    login.ActiveDirectoryPasswordChangeScreen.show(username);
   };
 
   /**

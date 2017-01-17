@@ -237,6 +237,11 @@ void CoreOobeHandler::ShowEnableDebuggingScreen() {
   }
 }
 
+void CoreOobeHandler::ShowActiveDirectoryPasswordChangeScreen(
+    const std::string& username) {
+  CallJSOrDefer("showActiveDirectoryPasswordChangeScreen", username);
+}
+
 void CoreOobeHandler::ShowSignInUI(const std::string& email) {
   CallJSOrDefer("showSigninUI", email);
 }

@@ -117,6 +117,7 @@ cr.define('cr.ui.Oobe', function() {
       login.ControllerPairingScreen.register();
       login.HostPairingScreen.register();
       login.DeviceDisabledScreen.register();
+      login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));

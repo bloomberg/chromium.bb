@@ -416,6 +416,8 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleAuthExtensionLoaded);
   AddCallback("completeAdAuthentication",
               &GaiaScreenHandler::HandleCompleteAdAuthentication);
+  AddCallback("completeAdPasswordChange",
+              &GaiaScreenHandler::HandleCompleteAdPasswordChange);
 }
 
 void GaiaScreenHandler::OnPortalDetectionCompleted(
@@ -503,36 +505,74 @@ void GaiaScreenHandler::DoAdAuth(const std::string& username,
                                  const Key& key,
                                  authpolicy::ErrorType error,
                                  const std::string& uid) {
-  if (error == authpolicy::ERROR_NONE && !uid.empty()) {
-    const AccountId account_id(
-        GetAccountId(username, uid, AccountType::ACTIVE_DIRECTORY));
-    UserContext user_context(account_id);
-    user_context.SetKey(key);
-    user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
-    user_context.SetIsUsingOAuth(false);
-    user_context.SetUserType(
-        user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
-    Delegate()->CompleteLogin(user_context);
-  } else {
-    // TODO(rsorokin): Proper error handling.
-    DLOG(ERROR) << "Failed to auth " << username << ", code " << error;
-    LoadAuthExtension(true, false /* offline */);
+  switch (error) {
+    case authpolicy::ERROR_NONE: {
+      DCHECK(!uid.empty());
+      const AccountId account_id(
+          GetAccountId(username, uid, AccountType::ACTIVE_DIRECTORY));
+      UserContext user_context(account_id);
+      user_context.SetKey(key);
+      user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
+      user_context.SetIsUsingOAuth(false);
+      user_context.SetUserType(
+          user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+      Delegate()->CompleteLogin(user_context);
+      break;
+    }
+    case authpolicy::ERROR_PASSWORD_EXPIRED:
+      core_oobe_actor_->ShowActiveDirectoryPasswordChangeScreen(username);
+      break;
+    case authpolicy::ERROR_UNKNOWN:
+    case authpolicy::ERROR_DBUS_FAILURE:
+    case authpolicy::ERROR_PARSE_UPN_FAILED:
+    case authpolicy::ERROR_BAD_USER_NAME:
+    case authpolicy::ERROR_BAD_PASSWORD:
+    case authpolicy::ERROR_CANNOT_RESOLVE_KDC:
+    case authpolicy::ERROR_KINIT_FAILED:
+    case authpolicy::ERROR_NET_FAILED:
+    case authpolicy::ERROR_SMBCLIENT_FAILED:
+    case authpolicy::ERROR_PARSE_FAILED:
+    case authpolicy::ERROR_PARSE_PREG_FAILED:
+    case authpolicy::ERROR_BAD_GPOS:
+    case authpolicy::ERROR_LOCAL_IO:
+    case authpolicy::ERROR_NOT_JOINED:
+    case authpolicy::ERROR_NOT_LOGGED_IN:
+    case authpolicy::ERROR_STORE_POLICY_FAILED:
+      LoadAuthExtension(true, false /* offline */);
+      break;
+    default:
+      // TODO(rsorokin): Proper error handling.
+      DLOG(WARNING) << "Unhandled error code: " << error;
+      LoadAuthExtension(true, false /* offline */);
   }
 }
 
 void GaiaScreenHandler::HandleCompleteAdAuthentication(
-    const std::string& user_name,
+    const std::string& username,
     const std::string& password) {
-  Delegate()->SetDisplayEmail(user_name);
-  set_populated_email(user_name);
+  Delegate()->SetDisplayEmail(username);
+  set_populated_email(username);
 
   login::GetPipeReadEnd(
       password,
       base::Bind(&GaiaScreenHandler::OnPasswordPipeReady,
-                 weak_factory_.GetWeakPtr(), user_name, Key(password)));
+                 weak_factory_.GetWeakPtr(), username, Key(password)));
 }
 
-void GaiaScreenHandler::OnPasswordPipeReady(const std::string& user_name,
+void GaiaScreenHandler::HandleCompleteAdPasswordChange(
+    const std::string& username,
+    const std::string& old_password,
+    const std::string& new_password) {
+  Delegate()->SetDisplayEmail(username);
+  set_populated_email(username);
+
+  login::GetPipeReadEnd(
+      old_password + "\n" + new_password + "\n" + new_password,
+      base::Bind(&GaiaScreenHandler::OnPasswordPipeReady,
+                 weak_factory_.GetWeakPtr(), username, Key(new_password)));
+}
+
+void GaiaScreenHandler::OnPasswordPipeReady(const std::string& username,
                                             const Key& key,
                                             base::ScopedFD password_fd) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -543,9 +583,9 @@ void GaiaScreenHandler::OnPasswordPipeReady(const std::string& user_name,
   chromeos::AuthPolicyClient* client =
       chromeos::DBusThreadManager::Get()->GetAuthPolicyClient();
   client->AuthenticateUser(
-      user_name, password_fd.get(),
+      username, password_fd.get(),
       base::Bind(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
-                 user_name, key));
+                 username, key));
 }
 
 void GaiaScreenHandler::HandleCompleteAuthentication(
