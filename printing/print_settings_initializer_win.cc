@@ -12,26 +12,29 @@ namespace printing {
 
 namespace {
 
+bool HasEscapeSupprt(HDC hdc, DWORD escape) {
+  const char* ptr = reinterpret_cast<const char*>(&escape);
+  return ExtEscape(hdc, QUERYESCSUPPORT, sizeof(escape), ptr, 0, nullptr) > 0;
+}
+
+bool IsTechnology(HDC hdc, const char* technology) {
+  if (::GetDeviceCaps(hdc, TECHNOLOGY) != DT_RASPRINTER)
+    return false;
+
+  if (!HasEscapeSupprt(hdc, GETTECHNOLOGY))
+    return false;
+
+  char buf[256];
+  memset(buf, 0, sizeof(buf));
+  if (ExtEscape(hdc, GETTECHNOLOGY, 0, nullptr, sizeof(buf) - 1, buf) <= 0)
+    return false;
+  return strcmp(buf, technology) == 0;
+}
+
 bool IsPrinterXPS(HDC hdc) {
-  int device_type = ::GetDeviceCaps(hdc, TECHNOLOGY);
-  if (device_type != DT_RASPRINTER)
-    return false;
-
-  const DWORD escape = GETTECHNOLOGY;
-  const char* escape_ptr = reinterpret_cast<const char*>(&escape);
-  int ret =
-      ExtEscape(hdc, QUERYESCSUPPORT, sizeof(escape), escape_ptr, 0, nullptr);
-  if (ret <= 0)
-    return false;
-
-  char buffer[256];
-  memset(buffer, 0, sizeof(buffer));
-  ret = ExtEscape(hdc, GETTECHNOLOGY, 0, nullptr, sizeof(buffer) - 1, buffer);
-  if (ret <= 0)
-    return false;
-
-  static const char kXPSDriver[] = "http://schemas.microsoft.com/xps/2005/06";
-  return strcmp(buffer, kXPSDriver) == 0;
+  static constexpr char kXPSDriver[] =
+      "http://schemas.microsoft.com/xps/2005/06";
+  return IsTechnology(hdc, kXPSDriver);
 }
 
 }  // namespace
