@@ -152,7 +152,7 @@ bool RenderSurfaceImpl::HasCopyRequest() const {
 }
 
 int RenderSurfaceImpl::TransformTreeIndex() const {
-  return owning_layer_->transform_tree_index();
+  return OwningEffectNode()->transform_id;
 }
 
 int RenderSurfaceImpl::ClipTreeIndex() const {

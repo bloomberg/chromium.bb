@@ -49,6 +49,7 @@ TransformTree::TransformTree()
       device_scale_factor_(1.f),
       device_transform_scale_factor_(1.f) {
   cached_data_.push_back(TransformCachedNodeData());
+  cached_data_[kRootNodeId].target_id = kRootNodeId;
 }
 
 TransformTree::~TransformTree() = default;
@@ -117,6 +118,7 @@ void TransformTree::clear() {
   nodes_affected_by_outer_viewport_bounds_delta_.clear();
   cached_data_.clear();
   cached_data_.push_back(TransformCachedNodeData());
+  cached_data_[kRootNodeId].target_id = kRootNodeId;
   sticky_position_data_.clear();
 
 #if DCHECK_IS_ON()
@@ -2067,8 +2069,7 @@ void PropertyTrees::UpdateCachedNumber() {
 gfx::Transform PropertyTrees::ToScreenSpaceTransformWithoutSurfaceContentsScale(
     int transform_id,
     int effect_id) const {
-  DCHECK_GT(transform_id, 0);
-  if (transform_id == 1) {
+  if (transform_id == TransformTree::kRootNodeId) {
     return gfx::Transform();
   }
   gfx::Transform screen_space_transform = transform_tree.ToScreen(transform_id);

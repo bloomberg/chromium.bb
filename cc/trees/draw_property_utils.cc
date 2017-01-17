@@ -1278,7 +1278,7 @@ static void SetSurfaceDrawTransform(const PropertyTrees* property_trees,
   const EffectNode* effect_node =
       effect_tree.Node(render_surface->EffectTreeIndex());
   // The draw transform of root render surface is identity tranform.
-  if (transform_node->id == 1) {
+  if (transform_node->id == TransformTree::kRootNodeId) {
     render_surface->SetDrawTransform(gfx::Transform());
     return;
   }
