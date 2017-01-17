@@ -5,6 +5,7 @@
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/split_static_library.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
@@ -14,8 +15,9 @@ import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 if (is_component_build) {
   link_target_type = "source_set"
 } else {
-  link_target_type = "static_library"
+  link_target_type = "split_static_library"
 }
+
 target(link_target_type, "renderer") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
@@ -386,6 +388,15 @@ target(link_target_type, "renderer") {
     "webscrollbarbehavior_impl_mac.h",
     "webscrollbarbehavior_impl_mac.mm",
   ]
+
+  if (!is_component_build) {
+    if (is_win && is_official_build) {
+      split_count = 2  # In certain configurations a full renderer.lib can
+                       # be 2+ GB which breaks some Windows tools.
+    } else {
+      split_count = 1
+    }
+  }
 
   configs += [
     "//content:content_implementation",
