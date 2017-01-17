@@ -108,13 +108,27 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   }
 }
 
+namespace {
+
+bool CanvasIsUnclipped(const SkCanvas* canvas) {
+  if (!canvas->isClipRect())
+    return false;
+
+  SkIRect bounds;
+  if (!canvas->getClipDeviceBounds(&bounds))
+    return false;
+
+  SkISize size = canvas->getBaseLayerSize();
+  return bounds.contains(0, 0, size.width(), size.height());
+}
+
+}  // namespace
+
 void RasterSource::PrepareForPlaybackToCanvas(SkCanvas* canvas) const {
   // TODO(hendrikw): See if we can split this up into separate functions.
 
-  if (canvas->getClipStack()->quickContains(
-          SkRect::MakeFromIRect(canvas->imageInfo().bounds()))) {
+  if (CanvasIsUnclipped(canvas))
     canvas->discard();
-  }
 
   // If this raster source has opaque contents, it is guaranteeing that it will
   // draw an opaque rect the size of the layer.  If it is not, then we must
