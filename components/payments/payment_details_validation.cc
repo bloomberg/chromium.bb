@@ -44,15 +44,15 @@ bool validateShippingOptionOrPaymentItem(
     return false;
   }
 
-  if (item->amount->currencySystem.has_value() &&
-      item->amount->currencySystem.value().empty()) {
+  if (item->amount->currency_system.has_value() &&
+      item->amount->currency_system.value().empty()) {
     *error_message = "Currency system can't be empty";
     return false;
   }
 
   if (!payments::PaymentsValidators::isValidCurrencyCodeFormat(
-          item->amount->currency, item->amount->currencySystem.has_value()
-                                      ? item->amount->currencySystem.value()
+          item->amount->currency, item->amount->currency_system.has_value()
+                                      ? item->amount->currency_system.value()
                                       : "",
           error_message)) {
     return false;

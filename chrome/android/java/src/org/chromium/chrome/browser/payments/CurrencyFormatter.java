@@ -37,7 +37,8 @@ public class CurrencyFormatter {
         assert currencyCode != null : "currencyCode should not be null";
         assert userLocale != null : "userLocale should not be null";
 
-        // Note that this technically leaks the native object.
+        // Note that this pointer could leak the native object. The called must call destroy() to
+        // ensure that the native object is destroyed.
         mCurrencyFormatterAndroid = nativeInitCurrencyFormatterAndroid(
                 currencyCode, currencySystem == null ? "" : currencySystem, userLocale.toString());
     }

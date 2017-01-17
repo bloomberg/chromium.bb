@@ -42,13 +42,13 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
 
   CurrencyFormatter* formatter = request()->GetOrCreateCurrencyFormatter(
       request()->details()->total->amount->currency,
-      request()->details()->total->amount->currencySystem,
+      request()->details()->total->amount->currency_system,
       g_browser_process->GetApplicationLocale());
   layout->StartRow(0, 0);
   layout->AddView(new views::Label(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT,
       base::UTF8ToUTF16(request()->details()->total->label),
-      base::UTF8ToUTF16(request()->details()->total->amount->currency),
+      base::UTF8ToUTF16(formatter->formatted_currency_code()),
       formatter->Format(request()->details()->total->amount->value))));
 
   return payments::CreatePaymentView(

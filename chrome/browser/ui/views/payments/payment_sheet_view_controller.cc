@@ -161,12 +161,12 @@ std::unique_ptr<views::View>
 PaymentSheetViewController::CreateOrderSummarySectionContent() {
   CurrencyFormatter* formatter = request()->GetOrCreateCurrencyFormatter(
       request()->details()->total->amount->currency,
-      request()->details()->total->amount->currencySystem,
+      request()->details()->total->amount->currency_system,
       g_browser_process->GetApplicationLocale());
   base::string16 label_value = l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT,
       base::UTF8ToUTF16(request()->details()->total->label),
-      base::UTF8ToUTF16(request()->details()->total->amount->currency),
+      base::UTF8ToUTF16(formatter->formatted_currency_code()),
       formatter->Format(request()->details()->total->amount->value));
 
   return base::MakeUnique<views::Label>(label_value);
