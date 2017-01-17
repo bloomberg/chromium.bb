@@ -59,11 +59,6 @@ UITextField<TextFieldStyling>* ChromiumBrowserProvider::CreateStyledTextField(
   return [[ChromiumStyledTextField alloc] initWithFrame:CGRectZero];
 }
 
-void ChromiumBrowserProvider::InitializeCastService(id main_tab_model) const {}
-
-void ChromiumBrowserProvider::AttachTabHelpers(web::WebState* web_state,
-                                               id tab) const {}
-
 VoiceSearchProvider* ChromiumBrowserProvider::GetVoiceSearchProvider() const {
   return voice_search_provider_.get();
 }

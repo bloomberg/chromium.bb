@@ -20,8 +20,6 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
   ios::ChromeIdentityService* GetChromeIdentityService() override;
   UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const override NS_RETURNS_RETAINED;
-  void InitializeCastService(id main_tab_model) const override;
-  void AttachTabHelpers(web::WebState* web_state, id tab) const override;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
   id<LogoVendor> CreateLogoVendor(ios::ChromeBrowserState* browser_state,
                                   id<UrlLoader> loader) const override

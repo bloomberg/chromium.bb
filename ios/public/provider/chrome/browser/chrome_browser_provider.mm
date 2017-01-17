@@ -74,17 +74,8 @@ id<AppRatingPrompt> ChromeBrowserProvider::CreateAppRatingPrompt() const {
   return nil;
 }
 
-void ChromeBrowserProvider::InitializeCastService(id main_tab_model) const {
-  NOTREACHED() << "Use InitializeCastService(TabModel* main_tab_model)";
-}
-
 void ChromeBrowserProvider::InitializeCastService(
     TabModel* main_tab_model) const {}
-
-void ChromeBrowserProvider::AttachTabHelpers(web::WebState* web_state,
-                                             id tab) const {
-  NOTREACHED() << "Use AttachTabHelpers(web::WebState* web_state, Tab* tab)";
-}
 
 void ChromeBrowserProvider::AttachTabHelpers(web::WebState* web_state,
                                              Tab* tab) const {}
