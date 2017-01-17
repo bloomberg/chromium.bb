@@ -98,6 +98,8 @@ crbug.com/506754 http/tests/serviceworker/chromium/window-close-during-registrat
 crbug.com/506754 virtual/mojo-loading/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 crbug.com/506754 virtual/service-worker-navigation-preload/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 virtual/service-worker-navigation-preload/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
+crbug.com/506754 virtual/service-worker-navigation-preload-disabled/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
+crbug.com/506754 virtual/service-worker-navigation-preload-disabled/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (Web Audio).
