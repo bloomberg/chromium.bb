@@ -1458,6 +1458,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
     WebFrameClient* client,
     WebRemoteFrame* oldWebFrame,
     WebSandboxFlags flags) {
+  DCHECK(client);
   WebLocalFrameImpl* webFrame = new WebLocalFrameImpl(oldWebFrame, client);
   Frame* oldFrame = oldWebFrame->toImplBase()->frame();
   webFrame->setParent(oldWebFrame->parent());
@@ -1471,8 +1472,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   // reuse it here.
   LocalFrame* frame = LocalFrame::create(
       webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner,
-      client ? client->interfaceProvider() : nullptr,
-      client ? client->interfaceRegistry() : nullptr);
+      client->interfaceProvider(), client->interfaceRegistry());
   // Set the name and unique name directly, bypassing any of the normal logic
   // to calculate unique name.
   frame->tree().setPrecalculatedName(
