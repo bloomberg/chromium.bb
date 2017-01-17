@@ -1049,6 +1049,9 @@
     <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the options for a new connection. Only visible by screen reader software.">
       Add network connection
     </message>
+    <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION_NOT_ALLOWED" desc="Settings > Internet > Message when Add connection is not allowed.">
+      Add connection is disabled by your administrator.
+    </message>
     <message name="IDS_SETTINGS_INTERNET_ADD_WIFI" desc="Settings > Internet > Add Wi-Fi label.">
       Add Wi-Fi...
     </message>
@@ -1220,6 +1223,9 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT" desc="Settings > Internet > Network details: The label for the button to disconnect from a network.">
       Disconnect
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED" desc="Settings > Internet > Message when connecting to a non policy network is not allowed.">
+      Connecting to this network is disabled by your administrator.
     </message>
     <message name="IDS_SETTINGS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
       Ethernet

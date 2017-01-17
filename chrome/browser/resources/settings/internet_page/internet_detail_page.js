@@ -72,6 +72,9 @@ Polymer({
       value: null,
     },
 
+    /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
+    globalPolicy: Object,
+
     /**
      * Interface for networkingPrivate calls, passed from internet_page.
      * @type {NetworkingPrivate}
@@ -342,10 +345,25 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
-  showConnect_: function(networkProperties) {
+  connectNotAllowed_: function(networkProperties, globalPolicy) {
+    return networkProperties.Type == CrOnc.Type.WI_FI &&
+        !!globalPolicy.AllowOnlyPolicyNetworksToConnect &&
+        !this.isPolicySource(networkProperties.Source);
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @return {boolean}
+   * @private
+   */
+  showConnect_: function(networkProperties, globalPolicy) {
+    if (this.connectNotAllowed_(networkProperties, globalPolicy))
+      return false;
     return networkProperties.Type != CrOnc.Type.ETHERNET &&
         networkProperties.ConnectionState ==
         CrOnc.ConnectionState.NOT_CONNECTED;
@@ -389,10 +407,13 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
-  showConfigure_: function(networkProperties) {
+  showConfigure_: function(networkProperties, globalPolicy) {
+    if (this.connectNotAllowed_(networkProperties, globalPolicy))
+      return false;
     var type = networkProperties.Type;
     if (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.WI_MAX)
       return false;
@@ -444,11 +465,12 @@ Polymer({
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @param {?CrOnc.NetworkStateProperties} defaultNetwork
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  enableConnect_: function(networkProperties, defaultNetwork) {
-    if (!this.showConnect_(networkProperties))
+  enableConnect_: function(networkProperties, defaultNetwork, globalPolicy) {
+    if (!this.showConnect_(networkProperties, globalPolicy))
       return false;
     if (networkProperties.Type == CrOnc.Type.CELLULAR &&
         CrOnc.isSimLocked(networkProperties)) {
@@ -638,11 +660,28 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @return {boolean}
+   * @private
+   */
+  enableAutoConnect_: function(networkProperties, globalPolicy) {
+    if (networkProperties.Type == CrOnc.Type.WI_FI &&
+        !!globalPolicy.AllowOnlyPolicyNetworksToAutoconnect &&
+        !this.isPolicySource(networkProperties.Source)) {
+      return false;
+    }
+    return !this.isNetworkPolicyEnforced(
+        this.getManagedAutoConnect_(networkProperties));
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {!CrOnc.ManagedProperty|undefined} Managed AutoConnect property.
    * @private
    */
-  getManagedAutoConnect_: function() {
-    return CrOnc.getManagedAutoConnect(this.networkProperties);
+  getManagedAutoConnect_: function(networkProperties) {
+    return CrOnc.getManagedAutoConnect(networkProperties);
   },
 
   /**

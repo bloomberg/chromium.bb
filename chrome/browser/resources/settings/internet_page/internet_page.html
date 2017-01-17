@@ -34,43 +34,55 @@
         <network-summary on-show-detail="onShowDetail_"
             default-network="{{defaultNetwork}}"
             on-show-known-networks="onShowKnownNetworks_"
+            global-policy="[[globalPolicy_]]"
             networking-private="[[networkingPrivate]]">
         </network-summary>
-        <div actionable class="settings-box two-line"
-            on-tap="onExpandAddConnectionsTap_">
-          <div class="start layout horizontal center">
-            <iron-icon icon="cr:add"></iron-icon>
-            <div>$i18n{internetAddConnection}</div>
-          </div>
-          <cr-expand-button alt="$i18n{internetAddConnectionExpandA11yLabel}"
-              id="expandAddConnections" expanded="{{addConnectionExpanded_}}">
-          </cr-expand-button>
-        </div>
-        <template is="dom-if" if="[[addConnectionExpanded_]]">
-          <div actionable class="settings-box continuation center"
-              on-tap="onAddWiFiTap_">
-            <div class="start add-no-icon">$i18n{internetAddWiFi}</div>
-            <button class="icon-external" is="paper-icon-button-light"></button>
-          </div>
-          <div actionable class="settings-box continuation center"
-              on-tap="onAddVPNTap_">
-            <div class="start add-no-icon">$i18n{internetAddVPN}</div>
-            <button class="icon-external" is="paper-icon-button-light"></button>
-          </div>
-          <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
-            <div actionable class="settings-box continuation center"
-                on-tap="onAddThirdPartyVpnTap_" provider="[[item]]">
-              <div class="start add-no-icon">
-                [[getAddThirdParrtyVpnLabel_(item)]]
-              </div>
+        <template is="dom-if" if="[[allowAddConnection_(globalPolicy_)]]">
+          <div actionable class="settings-box two-line"
+              on-tap="onExpandAddConnectionsTap_">
+            <div class="start layout horizontal center">
+              <iron-icon icon="cr:add"></iron-icon>
+              <div>$i18n{internetAddConnection}</div>
             </div>
+            <cr-expand-button alt="$i18n{internetAddConnectionExpandA11yLabel}"
+                id="expandAddConnections" expanded="{{addConnectionExpanded_}}">
+            </cr-expand-button>
+          </div>
+          <template is="dom-if" if="[[addConnectionExpanded_]]">
+            <div actionable class="settings-box continuation center"
+                on-tap="onAddWiFiTap_">
+              <div class="start add-no-icon">$i18n{internetAddWiFi}</div>
+              <button class="icon-external" is="paper-icon-button-light">
+              </button>
+            </div>
+            <div actionable class="settings-box continuation center"
+                on-tap="onAddVPNTap_">
+              <div class="start add-no-icon">$i18n{internetAddVPN}</div>
+              <button class="icon-external" is="paper-icon-button-light">
+              </button>
+            </div>
+            <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
+              <div actionable class="settings-box continuation center"
+                  on-tap="onAddThirdPartyVpnTap_" provider="[[item]]">
+                <div class="start add-no-icon">
+                  [[getAddThirdParrtyVpnLabel_(item)]]
+                </div>
+              </div>
+            </template>
           </template>
+        </template>
+        <template is="dom-if" if="[[!allowAddConnection_(globalPolicy_)]]">
+          <div class="settings-box">
+            <iron-icon class="policy" icon="cr:domain"></iron-icon>
+            <div>$i18n{internetAddConnectionNotAllowed}</div>
+          </div>
         </template>
       </neon-animatable>
       <template is="dom-if" route-path="/networkDetail" no-search>
         <settings-subpage page-title="$i18n{internetDetailPageTitle}">
           <settings-internet-detail-page prefs="{{prefs}}"
               default-network="[[defaultNetwork]]"
+              global-policy="[[globalPolicy_]]"
               networking-private="[[networkingPrivate]]">
           </settings-internet-detail-page>
         </settings-subpage>

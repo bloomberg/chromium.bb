@@ -70,13 +70,13 @@ var CrPolicyNetworkBehavior = {
   },
 
   /**
-   * @param {String} source
+   * @param {string|undefined} source
    * @return {boolean}
    * @private
    */
   isPolicySource: function(source) {
-    return source == CrOnc.Source.DEVICE_POLICY ||
-        source == CrOnc.Source.USER_POLICY;
+    return !!source && (source == CrOnc.Source.DEVICE_POLICY ||
+                        source == CrOnc.Source.USER_POLICY);
   },
 
   /**

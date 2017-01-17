@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
@@ -7,6 +8,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="/prefs/prefs.html">
@@ -116,13 +118,14 @@
             $i18n{networkButtonActivate}
           </paper-button>
           <paper-button class="secondary-button" on-tap="onConfigureTap_"
-              hidden$="[[!showConfigure_(networkProperties)]]">
+              hidden$="[[!showConfigure_(networkProperties, globalPolicy)]]">
             $i18n{networkButtonConfigure}
           </paper-button>
         </template>
         <paper-button class="primary-button" on-tap="onConnectTap_"
-            hidden$="[[!showConnect_(networkProperties)]]"
-            disabled="[[!enableConnect_(networkProperties, defaultNetwork)]]">
+            hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
+            disabled="[[!enableConnect_(networkProperties, defaultNetwork,
+                      globalPolicy)]]">
           $i18n{networkButtonConnect}
         </paper-button>
         <paper-button class="primary-button" on-tap="onDisconnectTap_"
@@ -132,7 +135,12 @@
       </div>
     </div>
 
-    <!-- Shared. -->
+    <!-- Disabled by policy / Shared messages. -->
+    <div class="settings-box continuation"
+        hidden$="[[!connectNotAllowed_(networkProperties, globalPolicy)]]">
+      <iron-icon class="policy" icon="cr:domain"></iron-icon>
+      <div>$i18n{networkConnectNotAllowed}</div>
+    </div>
     <div class="settings-box continuation"
         hidden$="[[!showShared_(networkProperties)]]">
       $i18n{networkShared}
@@ -142,8 +150,7 @@
       <!-- Show message for non primary users. -->
       <div class="settings-box continuation single-column">
         <div class="layout horizontal center">
-          <iron-icon tabindex="0" icon="cr:group">
-          </iron-icon>
+          <iron-icon class="policy" icon="cr:group"></iron-icon>
           <div>[[i18n('networkPrimaryUserControlled', primaryUserEmail_)]]</div>
         </div>
       </div>
@@ -172,8 +179,8 @@
                 property="[[getManagedAutoConnect_(networkProperties)]]">
             </cr-policy-network-indicator>
             <paper-toggle-button checked="{{autoConnect_}}"
-                disabled="[[isNetworkPolicyEnforced(
-                    getManagedAutoConnect_(networkProperties))]]">
+                disabled="[[!enableAutoConnect_(networkProperties,
+                          globalPolicy)]]">
             </paper-toggle-button>
           </div>
         </template>

@@ -800,9 +800,11 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
 void AddInternetStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"internetAddConnection", IDS_SETTINGS_INTERNET_ADD_CONNECTION},
-      {"internetAddThirdPartyVPN", IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN},
       {"internetAddConnectionExpandA11yLabel",
        IDS_SETTINGS_INTERNET_ADD_CONNECTION_EXPAND_ACCESSIBILITY_LABEL},
+      {"internetAddConnectionNotAllowed",
+       IDS_SETTINGS_INTERNET_ADD_CONNECTION_NOT_ALLOWED},
+      {"internetAddThirdPartyVPN", IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN},
       {"internetAddVPN", IDS_SETTINGS_INTERNET_ADD_VPN},
       {"internetAddWiFi", IDS_SETTINGS_INTERNET_ADD_WIFI},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
@@ -822,6 +824,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkButtonDisconnect", IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT},
       {"networkButtonForget", IDS_SETTINGS_INTERNET_BUTTON_FORGET},
       {"networkButtonViewAccount", IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT},
+      {"networkConnectNotAllowed", IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED},
       {"networkIPAddress", IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS},
       {"networkIPConfigAuto", IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO},
       {"networkPrefer", IDS_SETTINGS_INTERNET_NETWORK_PREFER},

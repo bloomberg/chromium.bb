@@ -35,6 +35,8 @@ var NetworkStateListObject;
 Polymer({
   is: 'network-summary',
 
+  behaviors: [CrPolicyNetworkBehavior],
+
   properties: {
     /**
      * Highest priority connected network or null.
@@ -45,6 +47,9 @@ Polymer({
       value: null,
       notify: true,
     },
+
+    /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
+    globalPolicy: Object,
 
     /**
      * Interface for networkingPrivate calls, passed from internet_page.
@@ -167,7 +172,7 @@ Polymer({
    */
   onSelected_: function(event) {
     var state = event.detail;
-    if (this.canConnect_(state)) {
+    if (this.canConnect_(state, this.globalPolicy)) {
       this.connectToNetwork_(state);
       return;
     }
@@ -223,11 +228,17 @@ Polymer({
   /**
    * Determines whether or not a network state can be connected to.
    * @param {!CrOnc.NetworkStateProperties} state The network state.
+   * @param {!chrome.networkingPrivate.GlobalPolicy|undefined} globalPolicy
    * @private
    */
-  canConnect_: function(state) {
+  canConnect_: function(state, globalPolicy) {
     if (state.Type == CrOnc.Type.ETHERNET ||
         state.Type == CrOnc.Type.VPN && !this.defaultNetwork) {
+      return false;
+    }
+    if (state.Type == CrOnc.Type.WI_FI && !!globalPolicy &&
+        globalPolicy.AllowOnlyPolicyNetworksToConnect &&
+        !this.isPolicySource(state.Source)) {
       return false;
     }
     return state.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;

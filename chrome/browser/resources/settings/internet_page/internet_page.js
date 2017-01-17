@@ -43,6 +43,9 @@ Polymer({
       value: false,
     },
 
+    /** @private {!chrome.networkingPrivate.GlobalPolicy|undefined} */
+    globalPolicy_: Object,
+
     /**
      * List of third party VPN providers.
      * @type {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>}
@@ -73,6 +76,10 @@ Polymer({
     chrome.management.onDisabled.addListener(this.boundOnExtensionDisabled_);
 
     chrome.management.getAll(this.onGetAllExtensions_.bind(this));
+
+    this.networkingPrivate.getGlobalPolicy(function(policy) {
+      this.globalPolicy_ = policy;
+    }.bind(this));
   },
 
   /** @override */
@@ -223,6 +230,14 @@ Polymer({
    */
   onExtensionDisabled_: function(extension) {
     this.onExtensionRemoved_(extension.id);
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @return {boolean}
+   */
+  allowAddConnection_(globalPolicy) {
+    return !globalPolicy.AllowOnlyPolicyNetworksToConnect;
   },
 
   /**
