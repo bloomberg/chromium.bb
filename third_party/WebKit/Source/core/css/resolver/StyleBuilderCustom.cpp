@@ -927,6 +927,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(
     else
       initial = true;
   }
+  DCHECK(initial ^ inherit);
 
   state.style()->removeVariable(name, isInheritedProperty);
   if (initial) {
