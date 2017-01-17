@@ -17,7 +17,6 @@ class MockTCPClientSocket : public net::TCPClientSocket {
   MockTCPClientSocket();
   virtual ~MockTCPClientSocket();
 
-  // Copied from MockTCPClientSocket in blimp/net/test_common.h
   MOCK_METHOD3(Read, int(net::IOBuffer*, int, const net::CompletionCallback&));
   MOCK_METHOD3(Write, int(net::IOBuffer*, int, const net::CompletionCallback&));
   MOCK_METHOD1(SetReceiveBufferSize, int(int32_t));

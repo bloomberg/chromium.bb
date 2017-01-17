@@ -12,7 +12,6 @@
 #include "blimp/common/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/blob_channel.pb.h"
-#include "blimp/net/test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -34,7 +34,6 @@ group("blimp_tests") {
 test("blimp_unittests") {
   deps = [
     "//blimp/common:unit_tests",
-    "//blimp/net:unit_tests",
     "//blimp/test:run_all_unittests",
   ]
 

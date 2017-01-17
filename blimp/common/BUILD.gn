@@ -77,7 +77,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//blimp/common/proto",
-    "//blimp/net:test_support",
     "//crypto",
     "//testing/gmock",
     "//testing/gtest",
