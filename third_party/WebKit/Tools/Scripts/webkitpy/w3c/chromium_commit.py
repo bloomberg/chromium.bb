@@ -6,7 +6,7 @@ from webkitpy.common.memoized import memoized
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.w3c.deps_updater import DepsUpdater
 
-CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
+CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
 
 class ChromiumCommit(object):
@@ -97,7 +97,7 @@ class ChromiumCommit(object):
     @memoized
     def absolute_chromium_wpt_dir(self):
         finder = WebKitFinder(self.host.filesystem)
-        return finder.path_from_webkit_base('LayoutTests', 'imported', 'wpt')
+        return finder.path_from_webkit_base('LayoutTests', 'external', 'wpt')
 
     @memoized
     def absolute_chromium_dir(self):

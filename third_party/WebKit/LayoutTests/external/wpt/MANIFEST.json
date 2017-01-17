@@ -3721,6 +3721,11 @@
      {}
     ]
    ],
+   "./MANIFEST.json": [
+    [
+     {}
+    ]
+   ],
    "./README.md": [
     [
      {}
@@ -11626,17 +11631,17 @@
      {}
     ]
    ],
+   "html/infrastructure/common-dom-interfaces/collections/domstringlist-interface-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/infrastructure/common-dom-interfaces/collections/domstringlist.idl": [
     [
      {}
     ]
    ],
    "html/infrastructure/common-dom-interfaces/collections/htmlallcollection-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/infrastructure/common-dom-interfaces/collections/htmlformcontrolscollection-expected.txt": [
     [
      {}
     ]
@@ -15632,16 +15637,6 @@
     ]
    ],
    "shadow-dom/untriaged/shadow-trees/text-decoration-001-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-005-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-007-expected.txt": [
     [
      {}
     ]
@@ -32230,6 +32225,10 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
+  "./MANIFEST.json": [
+   "d79db8fcd8e92d6e9f11497645f20ddf9c8c1454",
+   "support"
+  ],
   "./README.md": [
    "e9590560efb0d37ab870037edaafc1c47dc7a785",
    "support"
@@ -33751,7 +33750,7 @@
    "support"
   ],
   "common/vendor-prefix.js": [
-   "b80ec842b65a3423dd789a2226f2ba3caf598049",
+   "2807645fda3cb1decbb944627b038fc87ef019a0",
    "support"
   ],
   "css-values/unset-value-storage.html": [
@@ -43970,6 +43969,10 @@
    "de0ed7f283f4e17155cd3fc07dd5cb688d6fd8be",
    "support"
   ],
+  "html/infrastructure/common-dom-interfaces/collections/domstringlist-interface-expected.txt": [
+   "4ba4f7e089dc138e38eb1d1a9d5265d7cd5fcd1f",
+   "support"
+  ],
   "html/infrastructure/common-dom-interfaces/collections/domstringlist-interface.html": [
    "ca8af91733f0b0704409e26f17d4a14977ce14f7",
    "testharness"
@@ -43997,10 +44000,6 @@
   "html/infrastructure/common-dom-interfaces/collections/htmlallcollection.html": [
    "eeb932d95184b11190af6a2e8be2adccc5a84601",
    "testharness"
-  ],
-  "html/infrastructure/common-dom-interfaces/collections/htmlformcontrolscollection-expected.txt": [
-   "56cd34c13fbf4af2d59315923cf0fbf6640c525d",
-   "support"
   ],
   "html/infrastructure/common-dom-interfaces/collections/htmlformcontrolscollection.html": [
    "d7e37f34db97de971957d5d206b59e7eb5ad9ea7",
@@ -45891,7 +45890,7 @@
    "testharness"
   ],
   "html/semantics/forms/constraints/form-validation-willValidate-expected.txt": [
-   "85a9ca04ea4434cd951e4b07f8f7c553080722a1",
+   "6368c9833e8d42238ce77beb1ec2b6a76ea6329a",
    "support"
   ],
   "html/semantics/forms/constraints/form-validation-willValidate.html": [
@@ -45911,7 +45910,7 @@
    "support"
   ],
   "html/semantics/forms/form-control-infrastructure/form-expected.txt": [
-   "27ddd9af649030e99ad4619154b5428b2a3ad4f4",
+   "be0ac035245e3fc36109d4e226ccc8b23a6b0956",
    "support"
   ],
   "html/semantics/forms/form-control-infrastructure/form.html": [
@@ -46307,7 +46306,7 @@
    "testharness"
   ],
   "html/semantics/forms/the-label-element/labelable-elements-expected.txt": [
-   "c9ac6ce41587b4cc84f381d5f2ca166ce542ddba",
+   "c6dc7e25b7e14358654c177200c5b6f3f0b6ff67",
    "support"
   ],
   "html/semantics/forms/the-label-element/labelable-elements.html": [
@@ -47255,7 +47254,7 @@
    "testharness"
   ],
   "html/semantics/scripting-1/the-template-element/template-element/template-as-a-descendant-expected.txt": [
-   "32835eebfcf817a0141e63cae19d2c6c6c44d8ca",
+   "c06d7bc3eeb4515852a63016030db6670270e707",
    "support"
   ],
   "html/semantics/scripting-1/the-template-element/template-element/template-as-a-descendant.html": [
@@ -48971,7 +48970,7 @@
    "testharness"
   ],
   "innerText/setter-expected.txt": [
-   "209263e59ee152ccaac3b4656390d70d37688a9a",
+   "d2a48d1272ac8afb43e853c03abba8577e96125a",
    "support"
   ],
   "innerText/setter-tests.js": [
@@ -51426,17 +51425,9 @@
    "40ecd0a73bb36eac6b693cbe267f9302e9f1b293",
    "testharness"
   ],
-  "shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-005-expected.txt": [
-   "4c11bdb06fa7aa494cc411211fe2e1ca39366438",
-   "support"
-  ],
   "shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-005.html": [
    "5ae6183c89375354f0a92728db4e912ff4f04da7",
    "testharness"
-  ],
-  "shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-007-expected.txt": [
-   "538a97e2baab263678d42600e16070758a52ae1e",
-   "support"
   ],
   "shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/test-007.html": [
    "bd06a5b6abdedd3c280b9a8749b2eb1514f81654",

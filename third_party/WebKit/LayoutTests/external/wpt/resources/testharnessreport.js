@@ -54,9 +54,9 @@
 
     var localPathRegExp;
     if (document.URL.startsWith("file:///")) {
-        var index = document.URL.indexOf("/imported/wpt");
+        var index = document.URL.indexOf("/external/wpt");
         if (index >= 0) {
-            var localPath = document.URL.substring("file:///".length, index + "/imported/wpt".length);
+            var localPath = document.URL.substring("file:///".length, index + "/external/wpt".length);
             localPathRegExp = new RegExp(localPath.replace(/(\W)/g, "\\$1"), "g");
         }
     }
@@ -97,7 +97,7 @@
 
     // Returns a directory part relative to WPT root and a basename part of the
     // current test. e.g.
-    // Current test: file:///.../LayoutTests/imported/wpt/pointerevents/foobar.html
+    // Current test: file:///.../LayoutTests/external/wpt/pointerevents/foobar.html
     // Output: "/pointerevents/foobar"
     function pathAndBaseNameInWPT() {
         var path = location.pathname;
@@ -113,7 +113,7 @@
         var pathAndBase = pathAndBaseNameInWPT();
         if (!pathAndBase)
             return;
-        var automationPath = location.pathname.replace(/\/imported\/wpt\/.*$/, '/imported/wpt_automation');
+        var automationPath = location.pathname.replace(/\/imported\/wpt\/.*$/, '/external/wpt_automation');
         if (location.hostname == 'web-platform.test')
             automationPath = '/wpt_automation';
 

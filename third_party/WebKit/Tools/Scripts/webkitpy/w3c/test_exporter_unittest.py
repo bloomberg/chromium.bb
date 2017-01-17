@@ -101,9 +101,9 @@ class TestExporterTest(unittest.TestCase):
             ['git', 'remote'],
             ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'rev-parse', '--show-toplevel'],
-            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--', 'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--', 'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
-             '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt'],
+             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
             ['git', 'format-patch', '-1', '--stdout', 'badbeef8', '--', 'some', 'files'],
             ['git', 'reset', '--hard', 'HEAD'],
             ['git', 'clean', '-fdx'],
@@ -136,9 +136,9 @@ class TestExporterTest(unittest.TestCase):
             ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
-             'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+             'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
-             '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt']])
+             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt']])
 
     def test_ignores_reverted_commits_with_noexport_true(self):
         self.host.executive = mock_command_exec({
@@ -158,9 +158,9 @@ class TestExporterTest(unittest.TestCase):
             ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
-             'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+             'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
-             '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt']])
+             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt']])
 
     def test_ignores_commits_that_start_with_import(self):
         self.host.executive = mock_command_exec({
@@ -180,6 +180,6 @@ class TestExporterTest(unittest.TestCase):
             ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
-             'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+             'badbeef8/third_party/WebKit/LayoutTests/external/wpt/'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
-             '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt']])
+             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt']])

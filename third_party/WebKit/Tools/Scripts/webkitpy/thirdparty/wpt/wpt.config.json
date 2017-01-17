@@ -21,7 +21,7 @@
   "aliases": [
     {
       "url-path": "/wpt_automation/",
-      "local-dir": "../../../../../../LayoutTests/imported/wpt_automation"
+      "local-dir": "../../../../../../LayoutTests/external/wpt_automation"
     },
     {
       "url-path": "/resources/testharnessreport.js",

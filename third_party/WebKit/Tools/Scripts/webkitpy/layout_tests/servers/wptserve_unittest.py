@@ -26,7 +26,7 @@ class TestWPTServe(LoggingTestCase):
                 '--config',
                 '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json',
                 '--doc_root',
-                '/test.checkout/LayoutTests/imported/wpt'
+                '/test.checkout/LayoutTests/external/wpt'
             ])
 
     def test_init_env(self):

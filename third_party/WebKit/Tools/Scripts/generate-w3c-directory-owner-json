@@ -39,7 +39,7 @@ def convert_csv_to_json(filename, output_filename=None, field_names=None, skip_k
     with open(filename) as csv_file:
         reader = csv.DictReader(csv_file, fieldnames=field_names)
         for row in reader:
-            if not row['directory'].startswith('imported'):
+            if not row['directory'].startswith('external'):
                 continue
             if skip_keys:
                 for s in skip_keys:

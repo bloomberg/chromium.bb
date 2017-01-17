@@ -97,7 +97,7 @@ class DepsUpdaterTest(unittest.TestCase):
         updater = DepsUpdater(host)
         updater._generate_manifest(
             '/mock-checkout/third_party/WebKit/css',
-            '/mock-checkout/third_party/WebKit/LayoutTests/imported/csswg-test')
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/csswg-test')
         self.assertEqual(host.executive.calls, [])
 
     def test_generate_manifest_successful_run(self):
@@ -107,7 +107,7 @@ class DepsUpdaterTest(unittest.TestCase):
         updater = DepsUpdater(host)
         updater._generate_manifest(
             '/mock-checkout/third_party/WebKit/wpt',
-            '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt')
+            '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt')
         self.assertEqual(
             host.executive.calls,
             [
@@ -115,11 +115,11 @@ class DepsUpdaterTest(unittest.TestCase):
                     '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
                     '--work',
                     '--tests-root',
-                    '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt'
+                    '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'
                 ],
                 [
                     'git',
                     'add',
-                    '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/MANIFEST.json'
+                    '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/MANIFEST.json'
                 ]
             ])

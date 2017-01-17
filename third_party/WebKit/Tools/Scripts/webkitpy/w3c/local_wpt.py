@@ -13,7 +13,7 @@ WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-test
 WPT_TMP_DIR = '/tmp/wpt'
 WPT_SSH_URL = 'git@github.com:w3c/web-platform-tests.git'
 REMOTE_NAME = 'github'
-CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
+CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
 _log = logging.getLogger(__name__)
 

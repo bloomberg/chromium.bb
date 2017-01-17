@@ -705,7 +705,7 @@ class Port(object):
         return extension in Port._supported_file_extensions
 
     def is_test_file(self, filesystem, dirname, filename):
-        match = re.search(r'[/\\]imported[/\\]wpt([/\\].*)?$', dirname)
+        match = re.search(r'[/\\]external[/\\]wpt([/\\].*)?$', dirname)
         if match:
             if match.group(1):
                 path_in_wpt = match.group(1)[1:].replace('\\', '/') + '/' + filename
@@ -721,7 +721,7 @@ class Port(object):
         tests = []
         for file_path in files:
             # Path separators are normalized by relative_test_filename().
-            match = re.search(r'imported/wpt/(.*)$', file_path)
+            match = re.search(r'external/wpt/(.*)$', file_path)
             if not match:
                 tests.append(file_path)
                 continue
@@ -740,7 +740,7 @@ class Port(object):
 
     @memoized
     def _wpt_manifest(self):
-        path = self._filesystem.join(self.layout_tests_dir(), 'imported', 'wpt', 'MANIFEST.json')
+        path = self._filesystem.join(self.layout_tests_dir(), 'external', 'wpt', 'MANIFEST.json')
         return json.loads(self._filesystem.read_text_file(path))
 
     def _manifest_items_for_path(self, path_in_wpt):
@@ -1154,7 +1154,7 @@ class Port(object):
     @staticmethod
     def is_wptserve_test(test):
         """Whether wptserve should be used for a given test if enabled."""
-        return test.startswith("imported/wpt/")
+        return test.startswith("external/wpt/")
 
     def should_use_wptserve(self, test):
         return self.is_wptserve_enabled() and self.is_wptserve_test(test)

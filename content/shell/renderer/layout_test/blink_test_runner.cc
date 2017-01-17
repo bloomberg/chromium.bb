@@ -242,7 +242,7 @@ WebURL RewriteAbsolutePathInWPT(const std::string& utf8_url) {
   base::FilePath new_path =
       LayoutTestRenderThreadObserver::GetInstance()
           ->webkit_source_dir()
-          .Append(FILE_PATH_LITERAL("LayoutTests/imported/wpt/"))
+          .Append(FILE_PATH_LITERAL("LayoutTests/external/wpt/"))
           .AppendASCII(path);
   return WebURL(net::FilePathToFileURL(new_path));
 }

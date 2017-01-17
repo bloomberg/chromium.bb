@@ -61,8 +61,8 @@ crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Cra
 crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 
-crbug.com/662477 imported/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Leak ]
-crbug.com/662477 imported/wpt/html/webappapis/scripting/events/onerroreventhandler.html [ Leak ]
+crbug.com/662477 external/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Leak ]
+crbug.com/662477 external/wpt/html/webappapis/scripting/events/onerroreventhandler.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (fast).
@@ -78,7 +78,7 @@ crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
 # The leak detector's result for ActiveDOMObject (especially IndexedDB) is
 # flaky and we need to fix the leak detector (crbug.com/507224). Until then,
 # the tests for IndexedDB are skipped.
-crbug.com/506752 imported/wpt/IndexedDB/ [ Skip ]
+crbug.com/506752 external/wpt/IndexedDB/ [ Skip ]
 crbug.com/506752 storage/indexeddb/ [ Skip ]
 
 # -----------------------------------------------------------------
@@ -113,20 +113,20 @@ crbug.com/578297 [ Linux ] http/tests/media/media-source/mediasource-appendstrea
 crbug.com/578297 [ Linux ] virtual/mojo-loading/http/tests/media/media-source/mediasource-appendstream-quota-exceeded.html [ Slow ]
 
 # -----------------------------------------------------------------
-# Leaks in imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/*
+# Leaks in external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/*
 # -----------------------------------------------------------------
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001a.html [ Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001b.html [ Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-002.xhtml [ Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-16.html [ Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-18.html [ Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html [ Pass Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Pass Leak ]
-crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-007.html [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001a.html [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001b.html [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-whitespace-handling-002.xhtml [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-16.html [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-18.html [ Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html [ Pass Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Pass Leak ]
+crbug.com/594309 [ Linux ] external/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-007.html [ Leak ]
 
 crbug.com/664874 http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
 crbug.com/664874 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]

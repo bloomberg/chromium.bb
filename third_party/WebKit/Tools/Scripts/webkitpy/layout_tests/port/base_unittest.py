@@ -242,7 +242,7 @@ class PortTest(unittest.TestCase):
 
     @staticmethod
     def _add_manifest_to_mock_file_system(filesystem):
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/MANIFEST.json', json.dumps({
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/MANIFEST.json', json.dumps({
             'items': {
                 'testharness': {
                     'dom/ranges/Range-attributes.html': [
@@ -256,27 +256,27 @@ class PortTest(unittest.TestCase):
                 'manual': {},
                 'reftest': {},
             }}))
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/dom/ranges/Range-attributes.html', '')
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/console/console-is-a-namespace.any.js', '')
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/common/blank.html', 'foo')
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/dom/ranges/Range-attributes.html', '')
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/console/console-is-a-namespace.any.js', '')
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/common/blank.html', 'foo')
 
     def test_find_none_if_not_in_manifest(self):
         port = self.make_port(with_tests=True)
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
-        self.assertNotIn('imported/wpt/common/blank.html', port.tests([]))
+        self.assertNotIn('external/wpt/common/blank.html', port.tests([]))
 
     def test_find_one_if_in_manifest(self):
         port = self.make_port(with_tests=True)
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
-        self.assertIn('imported/wpt/dom/ranges/Range-attributes.html', port.tests([]))
-        self.assertNotIn('imported/wpt/console/console-is-a-namespace.any.js', port.tests([]))
-        self.assertEqual(port.tests(['imported']), ['imported/wpt/dom/ranges/Range-attributes.html'])
-        self.assertEqual(port.tests(['imported/']), ['imported/wpt/dom/ranges/Range-attributes.html'])
-        self.assertEqual(port.tests(['imported/csswg-test']), [])
-        self.assertEqual(port.tests(['imported/wpt']), ['imported/wpt/dom/ranges/Range-attributes.html'])
-        self.assertEqual(port.tests(['imported/wpt/']), ['imported/wpt/dom/ranges/Range-attributes.html'])
-        self.assertEqual(port.tests(['imported/wpt/dom/ranges/Range-attributes.html']),
-                         ['imported/wpt/dom/ranges/Range-attributes.html'])
+        self.assertIn('external/wpt/dom/ranges/Range-attributes.html', port.tests([]))
+        self.assertNotIn('external/wpt/console/console-is-a-namespace.any.js', port.tests([]))
+        self.assertEqual(port.tests(['external']), ['external/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['external/']), ['external/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['external/csswg-test']), [])
+        self.assertEqual(port.tests(['external/wpt']), ['external/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['external/wpt/']), ['external/wpt/dom/ranges/Range-attributes.html'])
+        self.assertEqual(port.tests(['external/wpt/dom/ranges/Range-attributes.html']),
+                         ['external/wpt/dom/ranges/Range-attributes.html'])
 
     def test_is_test_file(self):
         port = self.make_port(with_tests=True)
@@ -307,16 +307,16 @@ class PortTest(unittest.TestCase):
         PortTest._add_manifest_to_mock_file_system(filesystem)
 
         # A file not in MANIFEST.json is not a test even if it has .html suffix.
-        self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt/common', 'blank.html'))
+        self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt/common', 'blank.html'))
 
         # .js is not a test in general, but it is if MANIFEST.json contains an
         # entry for it.
-        self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt/console', 'console-is-a-namespace.any.js'))
+        self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt/console', 'console-is-a-namespace.any.js'))
 
-        # A file in imported/wpt, not a sub directory.
-        self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt', 'testharness_runner.html'))
-        # A file in imported/wpt_automation.
-        self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt_automation', 'foo.html'))
+        # A file in external/wpt, not a sub directory.
+        self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt', 'testharness_runner.html'))
+        # A file in external/wpt_automation.
+        self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt_automation', 'foo.html'))
 
     def test_parse_reftest_list(self):
         port = self.make_port(with_tests=True)
@@ -461,7 +461,7 @@ class PortTest(unittest.TestCase):
 
     def test_is_wptserve_test(self):
         port = self.make_port()
-        self.assertTrue(port.is_wptserve_test('imported/wpt/foo/bar.html'))
+        self.assertTrue(port.is_wptserve_test('external/wpt/foo/bar.html'))
         self.assertFalse(port.is_wptserve_test('http/wpt/foo.html'))
 
     def test_default_results_directory(self):

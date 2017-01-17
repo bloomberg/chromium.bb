@@ -9,7 +9,7 @@ from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.test_exporter_unittest import mock_command_exec
 
-CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
+CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
 
 class ChromiumCommitTest(unittest.TestCase):

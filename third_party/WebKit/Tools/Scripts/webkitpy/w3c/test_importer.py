@@ -432,7 +432,7 @@ class TestImporter(object):
 
         # Conversion is not necessary for any tests in wpt now; see http://crbug.com/654081.
         # Note, we want to move away from converting files, see http://crbug.com/663773.
-        if re.search(r'[/\\]imported[/\\]wpt[/\\]', dest_dir):
+        if re.search(r'[/\\]external[/\\]wpt[/\\]', dest_dir):
             return False
 
         # Only HTML, XHTML and CSS files should be converted.

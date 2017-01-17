@@ -9,7 +9,7 @@ from webkitpy.w3c.chromium_commit import ChromiumCommit
 
 _log = logging.getLogger(__name__)
 
-CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
+CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
 
 class TestExporter(object):

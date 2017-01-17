@@ -17,7 +17,7 @@ from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 
-# Import destination directories (under LayoutTests/imported/).
+# Import destination directories (under LayoutTests/external/).
 WPT_DEST_NAME = 'wpt'
 CSS_DEST_NAME = 'csswg-test'
 
@@ -139,11 +139,11 @@ class DepsUpdater(object):
         ]
         for filename, wpt_subdir in resources_to_copy_to_wpt:
             source = self.path_from_webkit_base('LayoutTests', 'resources', filename)
-            destination = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, wpt_subdir, filename)
+            destination = self.path_from_webkit_base('LayoutTests', 'external', WPT_DEST_NAME, wpt_subdir, filename)
             self.copyfile(source, destination)
             self.run(['git', 'add', destination])
         for filename, wpt_subdir in resources_to_copy_from_wpt:
-            source = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, wpt_subdir, filename)
+            source = self.path_from_webkit_base('LayoutTests', 'external', WPT_DEST_NAME, wpt_subdir, filename)
             destination = self.path_from_webkit_base('LayoutTests', 'resources', filename)
             self.copyfile(source, destination)
             self.run(['git', 'add', destination])
@@ -190,19 +190,19 @@ class DepsUpdater(object):
         _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=temp_repo_path)
         master_commitish = show_ref_output.split()[0]
 
-        _log.info('Cleaning out tests from LayoutTests/imported/%s.', dest_dir_name)
-        dest_path = self.path_from_webkit_base('LayoutTests', 'imported', dest_dir_name)
+        _log.info('Cleaning out tests from LayoutTests/external/%s.', dest_dir_name)
+        dest_path = self.path_from_webkit_base('LayoutTests', 'external', dest_dir_name)
         is_not_baseline_filter = lambda fs, dirname, basename: not self.is_baseline(basename)
         files_to_delete = self.fs.files_under(dest_path, file_filter=is_not_baseline_filter)
         for subpath in files_to_delete:
-            self.remove('LayoutTests', 'imported', subpath)
+            self.remove('LayoutTests', 'external', subpath)
 
         _log.info('Importing the tests.')
         src_repo = self.path_from_webkit_base(dest_dir_name)
         import_path = self.path_from_webkit_base('Tools', 'Scripts', 'import-w3c-tests')
-        self.run([self.host.executable, import_path, '-d', 'imported', src_repo])
+        self.run([self.host.executable, import_path, '-d', 'external', src_repo])
 
-        self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % dest_dir_name])
+        self.run(['git', 'add', '--all', 'LayoutTests/external/%s' % dest_dir_name])
 
         _log.info('Deleting any orphaned baselines.')
 

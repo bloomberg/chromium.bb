@@ -352,7 +352,7 @@
   },
   {
     "prefix": "mojo-localstorage",
-    "base": "imported/wpt/webstorage",
+    "base": "external/wpt/webstorage",
     "args": ["--mojo-local-storage"]
   },
   {
