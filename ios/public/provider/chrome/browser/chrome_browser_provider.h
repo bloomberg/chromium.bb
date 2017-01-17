@@ -83,8 +83,6 @@ class ChromeBrowserProvider {
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Returns "enabled", "disabled", or "default".
   virtual std::string DataReductionProxyAvailability();
-  // Returns the distribution brand code.
-  virtual std::string GetDistributionBrandCode();
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
   // Creates and returns a new styled text field with the given |frame|.

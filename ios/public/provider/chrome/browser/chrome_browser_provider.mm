@@ -57,10 +57,6 @@ std::string ChromeBrowserProvider::DataReductionProxyAvailability() {
   return "default";
 }
 
-std::string ChromeBrowserProvider::GetDistributionBrandCode() {
-  return std::string();
-}
-
 std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
