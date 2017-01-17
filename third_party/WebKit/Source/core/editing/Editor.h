@@ -34,7 +34,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
-#include "core/editing/commands/CompositeEditCommand.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/events/InputEvent.h"
@@ -99,12 +98,12 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void copy();
   void paste(EditCommandSource);
   void pasteAsPlainText(EditCommandSource);
-  void performDelete(EditCommandSource);
+  void performDelete();
 
   static void countEvent(ExecutionContext*, const Event*);
   void copyImage(const HitTestResult&);
 
-  void transpose(EditCommandSource);
+  void transpose();
 
   void respondToChangedContents(const VisibleSelection& endingSelection);
 
@@ -112,32 +111,24 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   TriState selectionHasStyle(CSSPropertyID, const String& value) const;
   String selectionStartCSSPropertyValue(CSSPropertyID);
 
-  void removeFormattingAndStyle(EditCommandSource);
+  void removeFormattingAndStyle();
 
   void registerCommandGroup(CompositeEditCommand* commandGroupWrapper);
   void clearLastEditCommand();
 
-  bool deleteWithDirection(EditCommandSource,
-                           DeleteDirection,
+  bool deleteWithDirection(DeleteDirection,
                            TextGranularity,
                            bool killRing,
                            bool isTypingAction);
   void deleteSelectionWithSmartDelete(
-      EditCommandSource,
       DeleteMode,
       InputEvent::InputType,
       const Position& referenceMovePosition = Position());
 
-  void applyStyle(EditCommandSource, StylePropertySet*, InputEvent::InputType);
-  void applyParagraphStyle(EditCommandSource,
-                           StylePropertySet*,
-                           InputEvent::InputType);
-  void applyStyleToSelection(EditCommandSource,
-                             StylePropertySet*,
-                             InputEvent::InputType);
-  void applyParagraphStyleToSelection(EditCommandSource,
-                                      StylePropertySet*,
-                                      InputEvent::InputType);
+  void applyStyle(StylePropertySet*, InputEvent::InputType);
+  void applyParagraphStyle(StylePropertySet*, InputEvent::InputType);
+  void applyStyleToSelection(StylePropertySet*, InputEvent::InputType);
+  void applyParagraphStyleToSelection(StylePropertySet*, InputEvent::InputType);
 
   void appliedEditing(CompositeEditCommand*);
   void unappliedEditing(EditCommandComposition*);
@@ -193,8 +184,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool executeCommand(const String& commandName, const String& value);
 
   bool insertText(const String&, KeyboardEvent* triggeringEvent);
-  bool insertTextWithoutSendingTextEvent(EditCommandSource,
-                                         const String&,
+  bool insertTextWithoutSendingTextEvent(const String&,
                                          bool selectInsertedText,
                                          TextEvent* triggeringEvent);
   bool insertLineBreak();
@@ -204,9 +194,9 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void toggleOverwriteModeEnabled();
 
   bool canUndo();
-  void undo(EditCommandSource);
+  void undo();
   bool canRedo();
-  void redo(EditCommandSource);
+  void redo();
 
   void setBaseWritingDirection(WritingDirection);
 
@@ -250,9 +240,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   const VisibleSelection& mark() const;  // Mark, to be used as emacs uses it.
   void setMark(const VisibleSelection&);
 
-  void computeAndSetTypingStyle(EditCommandSource,
-                                StylePropertySet*,
-                                InputEvent::InputType);
+  void computeAndSetTypingStyle(StylePropertySet*, InputEvent::InputType);
 
   // |firstRectForRange| requires up-to-date layout.
   IntRect firstRectForRange(const EphemeralRange&) const;
@@ -263,22 +251,18 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool markedTextMatchesAreHighlighted() const;
   void setMarkedTextMatchesAreHighlighted(bool);
 
-  void replaceSelectionWithFragment(EditCommandSource,
-                                    DocumentFragment*,
+  void replaceSelectionWithFragment(DocumentFragment*,
                                     bool selectReplacement,
                                     bool smartReplace,
                                     bool matchStyle,
                                     InputEvent::InputType);
-  void replaceSelectionWithText(EditCommandSource,
-                                const String&,
+  void replaceSelectionWithText(const String&,
                                 bool selectReplacement,
                                 bool smartReplace,
                                 InputEvent::InputType);
 
   // Implementation of WebLocalFrameImpl::replaceSelection.
   void replaceSelection(const String&);
-  // Implementation of SpellChecker::replaceMisspelledRange.
-  void replaceSelectionForSpellChecker(const String&);
 
   void replaceSelectionAfterDragging(DocumentFragment*,
                                      InsertMode,

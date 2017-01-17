@@ -229,13 +229,12 @@ bool Editor::handleTextEvent(TextEvent* event) {
   if (event->isPaste()) {
     if (event->pastingFragment()) {
       replaceSelectionWithFragment(
-          EditCommandSource::kMenuOrKeyBinding, event->pastingFragment(), false,
-          event->shouldSmartReplace(), event->shouldMatchStyle(),
-          InputEvent::InputType::InsertFromPaste);
+          event->pastingFragment(), false, event->shouldSmartReplace(),
+          event->shouldMatchStyle(), InputEvent::InputType::InsertFromPaste);
     } else {
-      replaceSelectionWithText(
-          EditCommandSource::kMenuOrKeyBinding, event->data(), false,
-          event->shouldSmartReplace(), InputEvent::InputType::InsertFromPaste);
+      replaceSelectionWithText(event->data(), false,
+                               event->shouldSmartReplace(),
+                               InputEvent::InputType::InsertFromPaste);
     }
     return true;
   }
@@ -258,8 +257,7 @@ bool Editor::handleTextEvent(TextEvent* event) {
     insertLineBreak();
   }
 
-  return insertTextWithoutSendingTextEvent(EditCommandSource::kMenuOrKeyBinding,
-                                           data, false, event);
+  return insertTextWithoutSendingTextEvent(data, false, event);
 }
 
 bool Editor::canEdit() const {
@@ -339,8 +337,7 @@ bool Editor::isSelectTrailingWhitespaceEnabled() const {
   return false;
 }
 
-bool Editor::deleteWithDirection(EditCommandSource source,
-                                 DeleteDirection direction,
+bool Editor::deleteWithDirection(DeleteDirection direction,
                                  TextGranularity granularity,
                                  bool killRing,
                                  bool isTypingAction) {
@@ -359,7 +356,6 @@ bool Editor::deleteWithDirection(EditCommandSource source,
       if (killRing)
         addToKillRing(selectedRange());
       deleteSelectionWithSmartDelete(
-          source,
           canSmartCopyOrDelete() ? DeleteMode::Smart : DeleteMode::Simple,
           deletionInputTypeFromTextGranularity(direction, granularity));
       // Implicitly calls revealSelectionAfterEditingOperation().
@@ -396,9 +392,7 @@ bool Editor::deleteWithDirection(EditCommandSource source,
   return true;
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
 void Editor::deleteSelectionWithSmartDelete(
-    EditCommandSource,
     DeleteMode deleteMode,
     InputEvent::InputType inputType,
     const Position& referenceMovePosition) {
@@ -591,9 +585,7 @@ bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard) {
   return smartInsertDeleteEnabled() && pasteboard->canSmartReplace();
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
-void Editor::replaceSelectionWithFragment(EditCommandSource,
-                                          DocumentFragment* fragment,
+void Editor::replaceSelectionWithFragment(DocumentFragment* fragment,
                                           bool selectReplacement,
                                           bool smartReplace,
                                           bool matchStyle,
@@ -619,14 +611,13 @@ void Editor::replaceSelectionWithFragment(EditCommandSource,
   revealSelectionAfterEditingOperation();
 }
 
-void Editor::replaceSelectionWithText(EditCommandSource source,
-                                      const String& text,
+void Editor::replaceSelectionWithText(const String& text,
                                       bool selectReplacement,
                                       bool smartReplace,
                                       InputEvent::InputType inputType) {
-  replaceSelectionWithFragment(
-      source, createFragmentFromText(selectedRange(), text), selectReplacement,
-      smartReplace, true, inputType);
+  replaceSelectionWithFragment(createFragmentFromText(selectedRange(), text),
+                               selectReplacement, smartReplace, true,
+                               inputType);
 }
 
 // TODO(xiaochengh): Merge it with |replaceSelectionWithFragment()|.
@@ -665,8 +656,7 @@ bool Editor::deleteSelectionAfterDraggingWithEvents(
 
   if (shouldDelete && dragSource->isConnected()) {
     deleteSelectionWithSmartDelete(
-        EditCommandSource::kMenuOrKeyBinding, deleteMode,
-        InputEvent::InputType::DeleteByDrag, referenceMovePosition);
+        deleteMode, InputEvent::InputType::DeleteByDrag, referenceMovePosition);
   }
 
   return true;
@@ -730,8 +720,7 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection) {
   client().respondToChangedContents();
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
-void Editor::removeFormattingAndStyle(EditCommandSource) {
+void Editor::removeFormattingAndStyle() {
   DCHECK(frame().document());
   RemoveFormatCommand::create(*frame().document())->apply();
 }
@@ -757,15 +746,14 @@ Element* Editor::findEventTargetFromSelection() const {
   return findEventTargetFrom(frame().selection().selection());
 }
 
-void Editor::applyStyle(EditCommandSource source,
-                        StylePropertySet* style,
+void Editor::applyStyle(StylePropertySet* style,
                         InputEvent::InputType inputType) {
   switch (frame().selection().getSelectionType()) {
     case NoSelection:
       // do nothing
       break;
     case CaretSelection:
-      computeAndSetTypingStyle(source, style, inputType);
+      computeAndSetTypingStyle(style, inputType);
       break;
     case RangeSelection:
       if (style) {
@@ -778,9 +766,7 @@ void Editor::applyStyle(EditCommandSource source,
   }
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
-void Editor::applyParagraphStyle(EditCommandSource,
-                                 StylePropertySet* style,
+void Editor::applyParagraphStyle(StylePropertySet* style,
                                  InputEvent::InputType inputType) {
   if (frame().selection().isNone() || !style)
     return;
@@ -790,22 +776,20 @@ void Editor::applyParagraphStyle(EditCommandSource,
       ->apply();
 }
 
-void Editor::applyStyleToSelection(EditCommandSource source,
-                                   StylePropertySet* style,
+void Editor::applyStyleToSelection(StylePropertySet* style,
                                    InputEvent::InputType inputType) {
   if (!style || style->isEmpty() || !canEditRichly())
     return;
 
-  applyStyle(source, style, inputType);
+  applyStyle(style, inputType);
 }
 
-void Editor::applyParagraphStyleToSelection(EditCommandSource source,
-                                            StylePropertySet* style,
+void Editor::applyParagraphStyleToSelection(StylePropertySet* style,
                                             InputEvent::InputType inputType) {
   if (!style || style->isEmpty() || !canEditRichly())
     return;
 
-  applyParagraphStyle(source, style, inputType);
+  applyParagraphStyle(style, inputType);
 }
 
 bool Editor::selectionStartHasStyle(CSSPropertyID propertyID,
@@ -999,8 +983,7 @@ bool Editor::insertText(const String& text, KeyboardEvent* triggeringEvent) {
   return frame().eventHandler().handleTextInputEvent(text, triggeringEvent);
 }
 
-bool Editor::insertTextWithoutSendingTextEvent(EditCommandSource source,
-                                               const String& text,
+bool Editor::insertTextWithoutSendingTextEvent(const String& text,
                                                bool selectInsertedText,
                                                TextEvent* triggeringEvent) {
   if (text.isEmpty())
@@ -1105,7 +1088,7 @@ void Editor::cut(EditCommandSource source) {
         return;
     }
     deleteSelectionWithSmartDelete(
-        source, canSmartCopyOrDelete() ? DeleteMode::Smart : DeleteMode::Simple,
+        canSmartCopyOrDelete() ? DeleteMode::Smart : DeleteMode::Simple,
         InputEvent::InputType::DeleteByCut);
   }
 }
@@ -1182,7 +1165,7 @@ void Editor::pasteAsPlainText(EditCommandSource source) {
   pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
 }
 
-void Editor::performDelete(EditCommandSource source) {
+void Editor::performDelete() {
   if (!canDelete())
     return;
 
@@ -1195,7 +1178,7 @@ void Editor::performDelete(EditCommandSource source) {
   // TODO(chongz): |Editor::performDelete()| has no direction.
   // https://github.com/w3c/editing/issues/130
   deleteSelectionWithSmartDelete(
-      source, canSmartCopyOrDelete() ? DeleteMode::Smart : DeleteMode::Simple,
+      canSmartCopyOrDelete() ? DeleteMode::Smart : DeleteMode::Simple,
       InputEvent::InputType::DeleteContentBackward);
 
   // clear the "start new kill ring sequence" setting, because it was set to
@@ -1282,8 +1265,7 @@ bool Editor::canUndo() {
   return m_undoStack->canUndo();
 }
 
-// TODO(chongz): Fire 'beforeinput' for user triggered undo.
-void Editor::undo(EditCommandSource) {
+void Editor::undo() {
   m_undoStack->undo();
 }
 
@@ -1291,8 +1273,7 @@ bool Editor::canRedo() {
   return m_undoStack->canRedo();
 }
 
-// TODO(chongz): Fire 'beforeinput' for user triggered redo.
-void Editor::redo(EditCommandSource) {
+void Editor::redo() {
   m_undoStack->redo();
 }
 
@@ -1316,8 +1297,7 @@ void Editor::setBaseWritingDirection(WritingDirection direction) {
           : direction == RightToLeftWritingDirection ? "rtl" : "inherit",
       false);
   applyParagraphStyleToSelection(
-      EditCommandSource::kMenuOrKeyBinding, style,
-      InputEvent::InputType::FormatSetBlockTextDirection);
+      style, InputEvent::InputType::FormatSetBlockTextDirection);
 }
 
 void Editor::revealSelectionAfterEditingOperation(
@@ -1328,7 +1308,7 @@ void Editor::revealSelectionAfterEditingOperation(
   frame().selection().revealSelection(alignment, revealExtentOption);
 }
 
-void Editor::transpose(EditCommandSource source) {
+void Editor::transpose() {
   if (!canEdit())
     return;
 
@@ -1365,7 +1345,7 @@ void Editor::transpose(EditCommandSource source) {
   // Insert the transposed characters.
   // TODO(chongz): Once we add |InsertTranspose| in |InputEvent::InputType|, we
   // should use it instead of |InsertFromPaste|.
-  replaceSelectionWithText(source, transposed, false, false,
+  replaceSelectionWithText(transposed, false, false,
                            InputEvent::InputType::InsertFromPaste);
 }
 
@@ -1446,9 +1426,7 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const {
                  startCaretRect.height());
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
-void Editor::computeAndSetTypingStyle(EditCommandSource,
-                                      StylePropertySet* style,
+void Editor::computeAndSetTypingStyle(StylePropertySet* style,
                                       InputEvent::InputType inputType) {
   if (!style || style->isEmpty()) {
     frame().selection().clearTypingStyle();
@@ -1720,17 +1698,7 @@ void Editor::replaceSelection(const String& text) {
   DCHECK(!frame().document()->needsLayoutTreeUpdate());
   bool selectReplacement = behavior().shouldSelectReplacement();
   bool smartReplace = true;
-  replaceSelectionWithText(EditCommandSource::kMenuOrKeyBinding, text,
-                           selectReplacement, smartReplace,
-                           InputEvent::InputType::InsertReplacementText);
-}
-
-void Editor::replaceSelectionForSpellChecker(const String& text) {
-  DCHECK(!frame().document()->needsLayoutTreeUpdate());
-  const bool kSelectReplacement = false;
-  const bool kSmartReplace = false;
-  replaceSelectionWithText(EditCommandSource::kMenuOrKeyBinding, text,
-                           kSelectReplacement, kSmartReplace,
+  replaceSelectionWithText(text, selectReplacement, smartReplace,
                            InputEvent::InputType::InsertReplacementText);
 }
 
