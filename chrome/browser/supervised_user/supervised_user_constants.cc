@@ -12,6 +12,7 @@ const char kContentPackDefaultFilteringBehavior[] =
     "ContentPackDefaultFilteringBehavior";
 const char kContentPackManualBehaviorHosts[] = "ContentPackManualBehaviorHosts";
 const char kContentPackManualBehaviorURLs[] = "ContentPackManualBehaviorURLs";
+const char kCookiesAlwaysAllowed[] = "CookiesAlwaysAllowed";
 const char kForceSafeSearch[] = "ForceSafeSearch";
 const char kGeolocationDisabled[] = "GeolocationDisabled";
 const char kRecordHistory[] = "RecordHistory";

@@ -16,6 +16,7 @@ namespace {
 struct ContentSettingsFromSupervisedSettingsEntry {
   const char* setting_name;
   ContentSettingsType content_type;
+  ContentSetting content_setting;
 };
 
 const ContentSettingsFromSupervisedSettingsEntry
@@ -23,12 +24,19 @@ const ContentSettingsFromSupervisedSettingsEntry
   {
     supervised_users::kGeolocationDisabled,
     CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTING_BLOCK,
   }, {
     supervised_users::kCameraMicDisabled,
     CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+    CONTENT_SETTING_BLOCK,
   }, {
     supervised_users::kCameraMicDisabled,
     CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+    CONTENT_SETTING_BLOCK,
+  }, {
+    supervised_users::kCookiesAlwaysAllowed,
+    CONTENT_SETTINGS_TYPE_COOKIES,
+    CONTENT_SETTING_ALLOW,
   }
 };
 
@@ -56,9 +64,8 @@ std::unique_ptr<RuleIterator> SupervisedProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  std::unique_ptr<base::AutoLock> auto_lock(new base::AutoLock(lock_));
-  return value_map_.GetRuleIterator(content_type, resource_identifier,
-                                    std::move(auto_lock));
+  base::AutoLock auto_lock(lock_);
+  return value_map_.GetRuleIterator(content_type, resource_identifier);
 }
 
 void SupervisedProvider::OnSupervisedSettingsAvailable(
@@ -68,21 +75,23 @@ void SupervisedProvider::OnSupervisedSettingsAvailable(
   {
     base::AutoLock auto_lock(lock_);
     for (const auto& entry : kContentSettingsFromSupervisedSettingsMap) {
-      bool new_value = false;
+      ContentSetting new_setting = CONTENT_SETTING_DEFAULT;
       if (settings && settings->HasKey(entry.setting_name)) {
-        bool is_bool = settings->GetBoolean(entry.setting_name, &new_value);
+        bool new_is_set = false;
+        bool is_bool = settings->GetBoolean(entry.setting_name, &new_is_set);
         DCHECK(is_bool);
+        if (new_is_set)
+          new_setting = entry.content_setting;
       }
-      bool old_value = !value_map_.IsContentSettingEnabled(entry.content_type);
-      if (new_value != old_value) {
+      if (new_setting != value_map_.GetContentSetting(entry.content_type)) {
         to_notify.push_back(entry.content_type);
-        value_map_.SetContentSettingDisabled(entry.content_type, new_value);
+        value_map_.SetContentSetting(entry.content_type, new_setting);
       }
     }
   }
-  for (const auto& notification : to_notify) {
+  for (ContentSettingsType type : to_notify) {
     NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
-                    notification, std::string());
+                    type, std::string());
   }
 }
 

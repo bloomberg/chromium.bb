@@ -10,7 +10,7 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "components/content_settings/core/browser/content_settings_binary_value_map.h"
+#include "components/content_settings/core/browser/content_settings_global_value_map.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 
 class SupervisedUserSettingsService;
@@ -41,11 +41,11 @@ class SupervisedProvider : public ObservableProvider {
 
   void ShutdownOnUIThread() override;
 
+ private:
   // Callback on receiving settings from the supervised user settings service.
   void OnSupervisedSettingsAvailable(const base::DictionaryValue* settings);
 
- private:
-  BinaryValueMap value_map_;
+  GlobalValueMap value_map_;
 
   // Used around accesses to the |value_map_| object to guarantee
   // thread safety.

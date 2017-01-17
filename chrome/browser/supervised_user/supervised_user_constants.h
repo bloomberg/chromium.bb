@@ -14,6 +14,7 @@ extern const char kCameraMicDisabled[];
 extern const char kContentPackDefaultFilteringBehavior[];
 extern const char kContentPackManualBehaviorHosts[];
 extern const char kContentPackManualBehaviorURLs[];
+extern const char kCookiesAlwaysAllowed[];
 extern const char kForceSafeSearch[];
 extern const char kGeolocationDisabled[];
 extern const char kRecordHistory[];
