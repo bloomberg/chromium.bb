@@ -182,13 +182,6 @@ InspectorTest.invokeAsyncWithTimeline = function(functionName, doneCallback)
     }
 }
 
-InspectorTest.loadTimelineRecords = function(records)
-{
-    var model = UI.panels.timeline._model;
-    model.reset();
-    records.forEach(model._addRecord, model);
-}
-
 InspectorTest.performActionsAndPrint = function(actions, typeName, includeTimeStamps)
 {
     function callback()
@@ -208,21 +201,17 @@ InspectorTest.printTimelineRecords = function(typeName, formatter)
     InspectorTest.timelineModel().forAllRecords(InspectorTest._printTimlineRecord.bind(InspectorTest, typeName, formatter));
 };
 
-InspectorTest.detailsTextForTraceEvent = function(traceEvent)
-{
-    return Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(traceEvent,
-        SDK.targetManager.mainTarget(),
-        new Components.Linkifier());
-}
-
 InspectorTest.printTimelineRecordsWithDetails = function(typeName)
 {
     function detailsFormatter(recordType, record)
     {
         if (recordType && recordType !== record.type())
             return;
-        var event = record.traceEvent();
-        InspectorTest.addResult("Text details for " + record.type() + ": " + InspectorTest.detailsTextForTraceEvent(event));
+        const event = record.traceEvent();
+        const details = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event,
+            SDK.targetManager.mainTarget(),
+            new Components.Linkifier());
+        InspectorTest.addResult(`Text details for ${record.type()}: ${details}`);
         if (TimelineModel.TimelineData.forEvent(event).warning)
             InspectorTest.addResult(record.type() + " has a warning");
     }
@@ -251,27 +240,18 @@ InspectorTest.walkTimelineEventTreeUnderNode = function(callback, root, level)
 
 InspectorTest.printTimestampRecords = function(typeName, formatter)
 {
-    InspectorTest.innerPrintTimelineRecords(InspectorTest.timelineModel().eventDividerRecords(), typeName, formatter);
-};
-
-InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
-{
-    for (var i = 0; i < records.length; ++i)
-        InspectorTest._printTimlineRecord(typeName, formatter, records[i]);
+    const records = InspectorTest.timelineModel().eventDividerRecords();
+    for (let record of records)
+        InspectorTest._printTimlineRecord(typeName, formatter, record);
 };
 
 InspectorTest._printTimlineRecord = function(typeName, formatter, record)
 {
     if (typeName && record.type() === typeName)
-        InspectorTest.printTimelineRecordProperties(record);
+        InspectorTest.printTraceEventProperties(record.traceEvent());
     if (formatter)
         formatter(record);
 };
-
-InspectorTest.printTimelineRecordProperties = function(record)
-{
-    InspectorTest.printTraceEventProperties(record.traceEvent());
-}
 
 InspectorTest.printTraceEventPropertiesIfNameMatches = function(set, traceEvent)
 {
@@ -311,28 +291,9 @@ InspectorTest.printTraceEventProperties = function(traceEvent)
     InspectorTest.addObject(object, InspectorTest.timelinePropertyFormatters);
 };
 
-InspectorTest.findFirstTimelineRecord = function(type)
+InspectorTest.findTimelineEvent = function(name, index)
 {
-    return InspectorTest.findTimelineRecord(type, 0);
-}
-
-// Find the (n+1)th timeline record of a specific type.
-InspectorTest.findTimelineRecord = function(type, n)
-{
-    var result;
-    function findByType(record)
-    {
-        if (record.type() !== type)
-            return false;
-        if (n === 0) {
-            result = record;
-            return true;
-        }
-        n--;
-        return false;
-    }
-    InspectorTest.timelineModel().forAllRecords(findByType);
-    return result;
+    return InspectorTest.timelineModel().mainThreadEvents().filter(e => e.name === name)[index || 0];
 }
 
 InspectorTest.FakeFileReader = function(input, delegate, callback)
@@ -367,8 +328,8 @@ InspectorTest.dumpFrame = function(frame)
 
 InspectorTest.dumpInvalidations = function(recordType, index, comment)
 {
-    var record = InspectorTest.findTimelineRecord(recordType, index || 0);
-    InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(record._event), InspectorTest.InvalidationFormatters, "", comment);
+    var event = InspectorTest.findTimelineEvent(recordType, index || 0);
+    InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(event), InspectorTest.InvalidationFormatters, "", comment);
 }
 
 InspectorTest.dumpFlameChartProvider = function(provider, includeGroups)

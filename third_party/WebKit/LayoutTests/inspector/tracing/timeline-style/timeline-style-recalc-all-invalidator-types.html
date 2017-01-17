@@ -71,8 +71,8 @@ function test()
         function testIdWithoutStyleChange(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeIdWithoutStyleChangeAndDisplay", function() {
-                var record = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree);
-                InspectorTest.assertTrue(record === undefined, "There should be no style recalculation for an id change without style changes.");
+                var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree);
+                InspectorTest.assertTrue(!event, "There should be no style recalculation for an id change without style changes.");
                 next();
             });
         },

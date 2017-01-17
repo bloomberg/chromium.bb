@@ -25,11 +25,10 @@ function test()
     Runtime.experiments.enableForTest("timelineInvalidationTracking");
 
     InspectorTest.invokeAsyncWithTimeline("display", function() {
-        var record = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.Paint);
-        InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(record._event), InspectorTest.InvalidationFormatters, "", "paint invalidations");
+        var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+        InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(event), InspectorTest.InvalidationFormatters, "", "paint invalidations");
 
         var linkifier = new Components.Linkifier();
-        var event = record.traceEvent();
         var target = InspectorTest.timelineModel().targetByEvent(event);
         var contentHelper = new Timeline.TimelineDetailsContentHelper(target, linkifier, true);
         Timeline.TimelineUIUtils._generateCauses(event, target, null, contentHelper);

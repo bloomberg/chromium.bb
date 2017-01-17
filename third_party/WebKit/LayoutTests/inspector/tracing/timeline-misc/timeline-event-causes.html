@@ -28,9 +28,8 @@ function test()
             function finishAndRunNextTest()
             {
                 var linkifier = new Components.Linkifier();
-                var record = InspectorTest.findFirstTimelineRecord("TimerFire");
-                InspectorTest.check(record, "Should receive a TimerFire record.");
-                var event = record.traceEvent();
+                var event = InspectorTest.findTimelineEvent("TimerFire");
+                InspectorTest.check(event, "Should receive a TimerFire event.");
                 var contentHelper = new Timeline.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
                 Timeline.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
@@ -55,9 +54,8 @@ function test()
             function finishAndRunNextTest()
             {
                 var linkifier = new Components.Linkifier();
-                var record = InspectorTest.findFirstTimelineRecord("FireAnimationFrame");
-                InspectorTest.check(record, "Should receive a FireAnimationFrame record.");
-                var event = record.traceEvent();
+                var event = InspectorTest.findTimelineEvent("FireAnimationFrame");
+                InspectorTest.check(event, "Should receive a FireAnimationFrame event.");
                 var contentHelper = new Timeline.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
                 Timeline.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
@@ -84,9 +82,8 @@ function test()
             function finishAndRunNextTest()
             {
                 var linkifier = new Components.Linkifier();
-                var record = InspectorTest.findFirstTimelineRecord("UpdateLayoutTree");
-                InspectorTest.check(record, "Should receive a UpdateLayoutTree record.");
-                var event = record.traceEvent();
+                var event = InspectorTest.findTimelineEvent("UpdateLayoutTree");
+                InspectorTest.check(event, "Should receive a UpdateLayoutTree event.");
                 var contentHelper = new Timeline.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
                 Timeline.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
@@ -113,9 +110,8 @@ function test()
             function finishAndRunNextTest()
             {
                 var linkifier = new Components.Linkifier();
-                var record = InspectorTest.findFirstTimelineRecord("Layout");
-                InspectorTest.check(record, "Should receive a Layout record.");
-                var event = record.traceEvent();
+                var event = InspectorTest.findTimelineEvent("Layout");
+                InspectorTest.check(event, "Should receive a Layout event.");
                 var contentHelper = new Timeline.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
                 Timeline.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();

@@ -20,8 +20,8 @@ function test()
 
     function onRecordingDone()
     {
-        var record = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.Paint);
-        InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(record._event), InspectorTest.InvalidationFormatters, "", "Scroll invalidations");
+        var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+        InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(event), InspectorTest.InvalidationFormatters, "", "Scroll invalidations");
         InspectorTest.completeTest();
     };
 }

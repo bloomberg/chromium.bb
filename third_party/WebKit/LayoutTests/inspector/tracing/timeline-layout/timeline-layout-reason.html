@@ -30,8 +30,7 @@ function test()
     InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
     function onTimelineRecorded()
     {
-        var layoutRecord = InspectorTest.findFirstTimelineRecord("Layout");
-        var event = layoutRecord.traceEvent();
+        var event = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
         var initiator = TimelineModel.TimelineData.forEvent(event).initiator();
         InspectorTest.addResult("layout invalidated: " + TimelineModel.TimelineData.forEvent(initiator).stackTrace[0].functionName);
         InspectorTest.addResult("layout forced: " + TimelineModel.TimelineData.forEvent(event).stackTrace[0].functionName);

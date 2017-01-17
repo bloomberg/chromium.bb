@@ -26,31 +26,28 @@ function test()
 
     function finish()
     {
-        var lastRecordStartTime;
-        function format(record)
-        {
-            if (record.type() === TimelineModel.TimelineModel.RecordType.ResourceSendRequest)
-                printSend(record);
-            else if (record.type() === TimelineModel.TimelineModel.RecordType.ResourceReceiveResponse)
-                printReceive(record);
-            else if (record.type() === TimelineModel.TimelineModel.RecordType.ResourceFinish)
-                printFinish(record);
-       }
-        model.forAllRecords(format);
+        model.mainThreadEvents().forEach(event => {
+            if (event.name === TimelineModel.TimelineModel.RecordType.ResourceSendRequest)
+                printSend(event);
+            else if (event.name === TimelineModel.TimelineModel.RecordType.ResourceReceiveResponse)
+                printReceive(event);
+            else if (event.name === TimelineModel.TimelineModel.RecordType.ResourceFinish)
+                printFinish(event);
+        });
         InspectorTest.completeTest();
     }
 
-    function printRecord(record)
+    function printEvent(event)
     {
         InspectorTest.addResult("");
-        InspectorTest.printTimelineRecordProperties(record);
-        InspectorTest.addResult("Text details for " + record.type() + ": " + Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent()));
+        InspectorTest.printTraceEventProperties(event);
+        InspectorTest.addResult(`Text details for ${event.name}: ` + Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event));
     }
 
-    function printSend(record)
+    function printSend(event)
     {
-        printRecord(record);
-        var data = record.traceEvent().args["data"];
+        printEvent(event);
+        var data = event.args["data"];
         requestId = data.requestId;
         if (data.url === undefined)
             InspectorTest.addResult("* No 'url' property in record");
@@ -58,20 +55,20 @@ function test()
             InspectorTest.addResult("* Didn't find URL: " + scriptUrl);
     }
 
-    function printReceive(record)
+    function printReceive(event)
     {
-        printRecord(record);
-        var data = record.traceEvent().args["data"];
+        printEvent(event);
+        var data = event.args["data"];
         if (requestId !== data.requestId)
             InspectorTest.addResult("Didn't find matching requestId: " + requestId);
         if (data.statusCode !== 0)
             InspectorTest.addResult("Response received status: " + data.statusCode);
     }
 
-    function printFinish(record)
+    function printFinish(event)
     {
-        printRecord(record);
-        var data = record.traceEvent().args["data"];
+        printEvent(event);
+        var data = event.args["data"];
         if (requestId !== data.requestId)
             InspectorTest.addResult("Didn't find matching requestId: " + requestId);
         if (data.didFail)

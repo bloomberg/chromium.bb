@@ -40,8 +40,8 @@ function test()
         {
             InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
                 // The first paint corresponds to the local frame and should have no invalidations.
-                var firstPaintRecord = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.Paint);
-                var firstInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(firstPaintRecord._event);
+                var firstPaintEvent = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+                var firstInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(firstPaintEvent);
                 InspectorTest.assertEquals(firstInvalidations, null);
 
                 // The second paint corresponds to the subframe and should have our layout/style invalidations.

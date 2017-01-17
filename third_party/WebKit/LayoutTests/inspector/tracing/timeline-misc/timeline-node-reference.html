@@ -25,10 +25,10 @@ function test()
          InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
     });
 
-    function clickValueLink(record, row)
+    function clickValueLink(event, row)
     {
         var panel = UI.panels.timeline;
-        Timeline.TimelineUIUtils.buildTraceEventDetails(record.traceEvent(), panel._model, new Components.Linkifier(), true, onDetailsContentReady);
+        Timeline.TimelineUIUtils.buildTraceEventDetails(event, panel._model, new Components.Linkifier(), true, onDetailsContentReady);
 
         function onDetailsContentReady(element)
         {
@@ -44,9 +44,9 @@ function test()
 
     function onTimelineRecorded(records)
     {
-        var layoutRecord = InspectorTest.findFirstTimelineRecord("Layout");
+        var layoutEvent = InspectorTest.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
         UI.context.addFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
-        clickValueLink(layoutRecord, "Layout root");
+        clickValueLink(layoutEvent, "Layout root");
     }
 
     function onSelectedNodeChanged()
