@@ -89,6 +89,9 @@ Current patches:
     compile error C4114, since EbmlSyntax struct is already defined with const.
     TODO: push upstream.
 
+    Revert upstream 7a9db61da39fbfaa910c10c0719be595a7d06f3d to fix seeking with
+    text tracks.  crbug.com/681886 .
+
   Changes to libavformat/mp3dec.c
     Fixes for MSAN Use-of-uninitialized-value. http://crbug.com/666874.
     TODO(chcunningham): Submit upstream.
