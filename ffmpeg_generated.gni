@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -48,7 +48,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavcodec/mdct_fixed_32.c",
     "libavcodec/mdct_float.c",
     "libavcodec/mediacodec.c",
-    "libavcodec/mpeg12data.c",
+    "libavcodec/mpeg12framerate.c",
     "libavcodec/mpeg4audio.c",
     "libavcodec/mpegaudiodata.c",
     "libavcodec/options.c",
@@ -150,6 +150,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavutil/reverse.c",
     "libavutil/samplefmt.c",
     "libavutil/sha.c",
+    "libavutil/spherical.c",
     "libavutil/stereo3d.c",
     "libavutil/tea.c",
     "libavutil/threadmessage.c",
