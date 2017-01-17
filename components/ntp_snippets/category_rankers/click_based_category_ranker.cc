@@ -9,9 +9,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace ntp_snippets {
 
@@ -56,10 +58,18 @@ const int kDecayFactorNumerator = 91;
 const int kDecayFactorDenominator = 100;  // pow(0.91, 7) = 0.517
 
 // Number of positions by which a dismissed category is downgraded.
-const int kDismissedCategoryPenalty = 1;
+const int kDefaultDismissedCategoryPenalty = 1;
+const char* kDismissedCategoryPenaltyParamName =
+    "click_based_category_ranker-dismissed_category_penalty";
 
 const char kCategoryIdKey[] = "category";
 const char kClicksKey[] = "clicks";
+
+int GetDismissedCategoryPenaltyVariationValue() {
+  return variations::GetVariationParamByFeatureAsInt(
+      kCategoryRanker, kDismissedCategoryPenaltyParamName,
+      kDefaultDismissedCategoryPenalty);
+}
 
 }  // namespace
 
@@ -188,8 +198,14 @@ void ClickBasedCategoryRanker::OnCategoryDismissed(Category category) {
     return;
   }
 
+  const int penalty = GetDismissedCategoryPenaltyVariationValue();
+  if (penalty == 0) {
+    // The dismissed category penalty is turned off, the call is ignored.
+    return;
+  }
+
   std::vector<RankedCategory>::iterator current = FindCategory(category);
-  for (int downgrade = 0; downgrade < kDismissedCategoryPenalty; ++downgrade) {
+  for (int downgrade = 0; downgrade < penalty; ++downgrade) {
     std::vector<RankedCategory>::iterator next = current + 1;
     if (next == ordered_categories_.end()) {
       break;
@@ -232,7 +248,7 @@ int ClickBasedCategoryRanker::GetNumTopCategoriesWithExtraMargin() {
 
 // static
 int ClickBasedCategoryRanker::GetDismissedCategoryPenalty() {
-  return kDismissedCategoryPenalty;
+  return GetDismissedCategoryPenaltyVariationValue();
 }
 
 ClickBasedCategoryRanker::RankedCategory::RankedCategory(Category category,
