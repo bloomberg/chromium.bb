@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/mock_callback.h"
 #include "content/browser/audio_manager_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,19 +41,8 @@ const char kEmptyDeviceId[] = "";
 const char kInvalidDeviceId[] = "invalid-device-id";
 const char kSalt[] = "salt";
 
-struct MockListener {
-  MOCK_METHOD4(MockAuthorizationCallback,
-               void(media::OutputDeviceStatus status,
-                    bool should_send_id,
-                    const media::AudioParameters& params,
-                    const std::string& id));
-
-  AudioOutputAuthorizationHandler::AuthorizationCompletedCallback
-  GetCallback() {
-    return base::Bind(&MockListener::MockAuthorizationCallback,
-                      base::Unretained(this));
-  }
-};
+using MockAuthorizationCallback = base::MockCallback<
+    AudioOutputAuthorizationHandler::AuthorizationCompletedCallback>;
 
 url::Origin SecurityOrigin() {
   return url::Origin(GURL(kSecurityOriginString));
@@ -155,10 +145,9 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
 };
 
 TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
-  MockListener listener;
+  MockAuthorizationCallback listener;
   EXPECT_CALL(listener,
-              MockAuthorizationCallback(media::OUTPUT_DEVICE_STATUS_OK, false,
-                                        _, kDefaultDeviceId))
+              Run(media::OUTPUT_DEVICE_STATUS_OK, false, _, kDefaultDeviceId))
       .Times(1);
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
@@ -168,7 +157,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
       BrowserThread::IO, FROM_HERE,
       (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
                   base::Unretained(handler.get()), kRenderFrameId, 0,
-                  kDefaultDeviceId, SecurityOrigin(), listener.GetCallback())));
+                  kDefaultDeviceId, SecurityOrigin(), listener.Get())));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -177,10 +166,9 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
 
 TEST_F(AudioOutputAuthorizationHandlerTest,
        AuthorizeDefaultDeviceByEmptyId_Ok) {
-  MockListener listener;
+  MockAuthorizationCallback listener;
   EXPECT_CALL(listener,
-              MockAuthorizationCallback(media::OUTPUT_DEVICE_STATUS_OK, false,
-                                        _, kDefaultDeviceId))
+              Run(media::OUTPUT_DEVICE_STATUS_OK, false, _, kDefaultDeviceId))
       .Times(1);
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
@@ -190,7 +178,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       BrowserThread::IO, FROM_HERE,
       (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
                   base::Unretained(handler.get()), kRenderFrameId, 0,
-                  kEmptyDeviceId, SecurityOrigin(), listener.GetCallback())));
+                  kEmptyDeviceId, SecurityOrigin(), listener.Get())));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -203,7 +191,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   std::string hashed_id = MediaStreamManager::GetHMACForMediaDeviceID(
       kSalt, SecurityOrigin(), raw_nondefault_id);
 
-  MockListener listener;
+  MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
           GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
@@ -214,8 +202,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           base::Unretained(handler.get()), false));
   SyncWithAllThreads();
 
-  EXPECT_CALL(listener, MockAuthorizationCallback(
-                            media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
+  EXPECT_CALL(listener, Run(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
                             false, _, std::string()))
       .Times(1);
 
@@ -223,7 +210,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       BrowserThread::IO, FROM_HERE,
       (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
                   base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
-                  SecurityOrigin(), listener.GetCallback())));
+                  SecurityOrigin(), listener.Get())));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -235,7 +222,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   std::string raw_nondefault_id = GetRawNondefaultId();
   std::string hashed_id = MediaStreamManager::GetHMACForMediaDeviceID(
       kSalt, SecurityOrigin(), raw_nondefault_id);
-  MockListener listener;
+  MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
           GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
@@ -246,15 +233,14 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           base::Unretained(handler.get()), true));
 
   EXPECT_CALL(listener,
-              MockAuthorizationCallback(media::OUTPUT_DEVICE_STATUS_OK, false,
-                                        _, raw_nondefault_id))
+              Run(media::OUTPUT_DEVICE_STATUS_OK, false, _, raw_nondefault_id))
       .Times(1);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
                   base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
-                  SecurityOrigin(), listener.GetCallback())));
+                  SecurityOrigin(), listener.Get())));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -266,22 +252,21 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeInvalidDeviceId_NotFound) {
       base::MakeUnique<TestBrowserContext>();
   std::unique_ptr<MockRenderProcessHost> RPH =
       base::MakeUnique<MockRenderProcessHost>(context.get());
-  MockListener listener;
+  MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
           GetAudioManager(), GetMediaStreamManager(), RPH->GetID(), kSalt);
   EXPECT_EQ(RPH->bad_msg_count(), 0);
 
   EXPECT_CALL(listener,
-              MockAuthorizationCallback(
-                  media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, _, _, _))
+              Run(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, _, _, _))
       .Times(1);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
                   base::Unretained(handler.get()), kRenderFrameId, 0,
-                  kInvalidDeviceId, SecurityOrigin(), listener.GetCallback())));
+                  kInvalidDeviceId, SecurityOrigin(), listener.Get())));
 
   SyncWithAllThreads();
   // It is possible to request an invalid device id from JS APIs,
@@ -302,19 +287,19 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       base::MakeUnique<TestBrowserContext>();
   std::unique_ptr<MockRenderProcessHost> RPH =
       base::MakeUnique<MockRenderProcessHost>(context.get());
-  MockListener listener;
+  MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
           GetAudioManager(), GetMediaStreamManager(), RPH->GetID(), kSalt);
 
   EXPECT_EQ(RPH->bad_msg_count(), 0);
-  EXPECT_CALL(listener, MockAuthorizationCallback(_, _, _, _)).Times(0);
+  EXPECT_CALL(listener, Run(_, _, _, _)).Times(0);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
                   base::Unretained(handler.get()), kRenderFrameId, 0, hashed_id,
-                  BadSecurityOrigin(), listener.GetCallback())));
+                  BadSecurityOrigin(), listener.Get())));
 
   SyncWithAllThreads();
   EXPECT_EQ(RPH->bad_msg_count(), 1);
@@ -326,21 +311,20 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 
 TEST_F(AudioOutputAuthorizationHandlerTest,
        AuthorizeWithSessionIdWithoutDevice_GivesDefault) {
-  MockListener listener;
+  MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       base::MakeUnique<AudioOutputAuthorizationHandler>(
           GetAudioManager(), GetMediaStreamManager(), kRenderProcessId, kSalt);
 
   EXPECT_CALL(listener,
-              MockAuthorizationCallback(media::OUTPUT_DEVICE_STATUS_OK, false,
-                                        _, kDefaultDeviceId))
+              Run(media::OUTPUT_DEVICE_STATUS_OK, false, _, kDefaultDeviceId))
       .Times(1);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       (base::Bind(&AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
                   base::Unretained(handler.get()), kRenderFrameId, kSessionId,
-                  std::string(), BadSecurityOrigin(), listener.GetCallback())));
+                  std::string(), BadSecurityOrigin(), listener.Get())));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
