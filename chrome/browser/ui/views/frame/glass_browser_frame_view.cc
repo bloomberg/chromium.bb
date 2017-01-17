@@ -508,9 +508,9 @@ int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
 
 int GlassBrowserFrameView::WindowTopY() const {
   // The window top is SM_CYSIZEFRAME pixels when maximized (see the comment in
-  // FrameTopBorderThickness()) and 1 pixel when restored. Unfortunately we
-  // can't represent either of those at hidpi without using non-integral dips,
-  // so we return the closest reasonable values instead.
+  // FrameTopBorderThickness()) and floor(system dsf) pixels when restored.
+  // Unfortunately we can't represent either of those at hidpi without using
+  // non-integral dips, so we return the closest reasonable values instead.
   return IsMaximized() ? FrameTopBorderThickness(false) : 1;
 }
 
@@ -576,8 +576,11 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   gfx::ScopedCanvas scoped_canvas(canvas);
   float scale = canvas->UndoDeviceScaleFactor();
   // This is the pixel-accurate version of WindowTopY(). Scaling the DIP values
-  // here compounds precision error, which exposes unpainted client area.
-  const int y = IsMaximized() ? FrameTopBorderThicknessPx(false) : 1;
+  // here compounds precision error, which exposes unpainted client area. When
+  // restored it uses the system dsf instead of the per-monitor dsf to match
+  // Windows' behavior.
+  const int y = IsMaximized() ? FrameTopBorderThicknessPx(false)
+                              : std::floor(display::win::GetDPIScale());
 
   // Draw the top of the accent border.
   //
