@@ -19,7 +19,7 @@ function display()
 
 function test()
 {
-    UI.panels.timeline._captureJSProfileSetting.set(false);
+    UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
     InspectorTest.startTimeline(function() { InspectorTest.reloadPage(pageReloaded); });
 
     function pageReloaded()
