@@ -67,12 +67,10 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
 
   base::WeakPtr<VideoCaptureController> GetWeakPtrForIOThread();
 
-  // Factory code creating instances of VideoCaptureController must set a
-  // FrameBufferPool before any of the media::VideoFrameReceiver are used.
-  // Setting the observer is done in this method separate from the constructor
-  // in order to allow use the media::VideoFrameReceiver methods
-  // before the observer can be provided. (This is the case with
-  // VideoCaptureManager).
+  // A FrameBufferPool must to be set in order for video frames to be
+  // processed. While no FrameBufferPool is set, incoming video frames are
+  // ignored. It is legal to reset a previously set FrameBufferPool by calling
+  // this method with a nullptr.
   void SetFrameBufferPool(
       std::unique_ptr<media::FrameBufferPool> frame_buffer_pool);
 

@@ -148,11 +148,13 @@ bool VideoCaptureController::BufferState::HasZeroConsumerHoldCount() {
 
 void VideoCaptureController::BufferState::SetConsumerFeedbackObserver(
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   consumer_feedback_observer_ = consumer_feedback_observer;
 }
 
 void VideoCaptureController::BufferState::SetFrameBufferPool(
     media::FrameBufferPool* frame_buffer_pool) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   frame_buffer_pool_ = frame_buffer_pool;
 }
 
@@ -372,7 +374,9 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     scoped_refptr<VideoFrame> frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(frame_buffer_pool_);
+  if (!frame_buffer_pool_)
+    return;
+
   const int buffer_id = buffer->id();
   DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);
 
@@ -475,7 +479,6 @@ void VideoCaptureController::OnLog(const std::string& message) {
 
 void VideoCaptureController::OnBufferDestroyed(int buffer_id_to_drop) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(frame_buffer_pool_);
 
   for (const auto& client : controller_clients_) {
     if (client->session_closed)
