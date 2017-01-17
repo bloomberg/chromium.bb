@@ -580,7 +580,15 @@ id<GREYMatcher> goButtonMatcher() {
 // Tests that submitting a POST-based form by tapping the 'Go' button on the
 // keyboard navigates to the correct URL and the back button works as expected
 // afterwards.
-- (void)testBrowsingPostEntryWithKeyboard {
+// TODO(crbug.com/670380): Enable this test on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testBrowsingPostEntryWithKeyboard \
+  testBrowsingPostEntryWithKeyboard
+#else
+#define MAYBE_testBrowsingPostEntryWithKeyboard \
+  FLAKY_testBrowsingPostEntryWithKeyboard
+#endif
+- (void)MAYBE_testBrowsingPostEntryWithKeyboard {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL =
