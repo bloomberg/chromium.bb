@@ -11,6 +11,7 @@ import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -151,11 +152,10 @@ public class PhysicalWeb {
     }
 
     /**
-     * Creates an Intent that sends the user to the list of Physical Web URLs.
+     * Starts the Activity that shows the list of Physical Web URLs.
      */
-    public static Intent createListUrlsIntent() {
-        return new Intent(Intent.ACTION_VIEW)
-                .addCategory(Intent.CATEGORY_BROWSABLE)
-                .setData(Uri.parse(UrlConstants.PHYSICAL_WEB_URL));
+    public static void showUrlList() {
+        IntentHandler.startChromeLauncherActivityForTrustedIntent(
+                new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.PHYSICAL_WEB_URL)));
     }
 }

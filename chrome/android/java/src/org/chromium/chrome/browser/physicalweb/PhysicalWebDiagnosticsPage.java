@@ -17,7 +17,6 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.location.LocationUtils;
@@ -64,8 +63,7 @@ public class PhysicalWebDiagnosticsPage extends BasicNativePage {
             @Override
             public void onClick(View v) {
                 PhysicalWebUma.onActivityReferral(ListUrlsActivity.DIAGNOSTICS_REFERER);
-                IntentHandler.startChromeLauncherActivityForTrustedIntent(
-                        PhysicalWeb.createListUrlsIntent());
+                PhysicalWeb.showUrlList();
             }
         });
 
