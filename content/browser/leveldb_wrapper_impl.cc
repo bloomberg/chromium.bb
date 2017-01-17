@@ -11,6 +11,11 @@
 
 namespace content {
 
+void LevelDBWrapperImpl::Delegate::MigrateData(
+    base::OnceCallback<void(std::unique_ptr<ValueMap>)> callback) {
+  std::move(callback).Run(nullptr);
+}
+
 bool LevelDBWrapperImpl::s_aggressive_flushing_enabled_ = false;
 
 LevelDBWrapperImpl::RateLimiter::RateLimiter(size_t desired_rate,
@@ -41,11 +46,9 @@ LevelDBWrapperImpl::LevelDBWrapperImpl(
     base::TimeDelta default_commit_delay,
     int max_bytes_per_hour,
     int max_commits_per_hour,
-    const base::Closure& no_bindings_callback,
-    const PrepareToCommitCallback& prepare_to_commit_callback)
+    Delegate* delegate)
     : prefix_(leveldb::StdStringToUint8Vector(prefix)),
-      no_bindings_callback_(no_bindings_callback),
-      prepare_to_commit_callback_(prepare_to_commit_callback),
+      delegate_(delegate),
       database_(database),
       bytes_used_(0),
       max_size_(max_size),
@@ -251,7 +254,7 @@ void LevelDBWrapperImpl::OnConnectionError() {
   // no_bindings_callback_ until all those tasks have completed.
   if (!on_load_complete_tasks_.empty())
     return;
-  no_bindings_callback_.Run();
+  delegate_->OnNoBindings();
 }
 
 void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
@@ -261,21 +264,28 @@ void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
     return;
 
   if (!database_) {
-    OnLoadComplete(leveldb::mojom::DatabaseError::IO_ERROR,
-                   std::vector<leveldb::mojom::KeyValuePtr>());
+    OnMapLoaded(leveldb::mojom::DatabaseError::IO_ERROR,
+                std::vector<leveldb::mojom::KeyValuePtr>());
     return;
   }
 
   // TODO(michaeln): Import from sqlite localstorage db.
-  database_->GetPrefixed(prefix_,
-                         base::Bind(&LevelDBWrapperImpl::OnLoadComplete,
-                                    weak_ptr_factory_.GetWeakPtr()));
+  database_->GetPrefixed(prefix_, base::Bind(&LevelDBWrapperImpl::OnMapLoaded,
+                                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LevelDBWrapperImpl::OnLoadComplete(
+void LevelDBWrapperImpl::OnMapLoaded(
     leveldb::mojom::DatabaseError status,
     std::vector<leveldb::mojom::KeyValuePtr> data) {
   DCHECK(!map_);
+
+  if (data.empty() && status == leveldb::mojom::DatabaseError::OK) {
+    delegate_->MigrateData(
+        base::BindOnce(&LevelDBWrapperImpl::OnGotMigrationData,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
   map_.reset(new ValueMap);
   bytes_used_ = 0;
   for (auto& it : data) {
@@ -291,6 +301,26 @@ void LevelDBWrapperImpl::OnLoadComplete(
   if (status != leveldb::mojom::DatabaseError::OK)
     database_ = nullptr;
 
+  OnLoadComplete();
+}
+
+void LevelDBWrapperImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
+  map_ = data ? std::move(data) : base::MakeUnique<ValueMap>();
+  bytes_used_ = 0;
+  for (const auto& it : *map_)
+    bytes_used_ += it.first.size() + it.second.size();
+
+  if (database_ && !empty()) {
+    CreateCommitBatchIfNeeded();
+    for (const auto& it : *map_)
+      commit_batch_->changed_keys.insert(it.first);
+    CommitChanges();
+  }
+
+  OnLoadComplete();
+}
+
+void LevelDBWrapperImpl::OnLoadComplete() {
   std::vector<base::Closure> tasks;
   on_load_complete_tasks_.swap(tasks);
   for (auto& task : tasks)
@@ -299,7 +329,7 @@ void LevelDBWrapperImpl::OnLoadComplete(
   // We might need to call the no_bindings_callback_ here if bindings became
   // empty while waiting for load to complete.
   if (bindings_.empty())
-    no_bindings_callback_.Run();
+    delegate_->OnNoBindings();
 }
 
 void LevelDBWrapperImpl::CreateCommitBatchIfNeeded() {
@@ -352,7 +382,7 @@ void LevelDBWrapperImpl::CommitChanges() {
 
   // Commit all our changes in a single batch.
   std::vector<leveldb::mojom::BatchedOperationPtr> operations =
-      prepare_to_commit_callback_.Run(*this);
+      delegate_->PrepareToCommit();
   if (commit_batch_->clear_all_first) {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
@@ -395,6 +425,7 @@ void LevelDBWrapperImpl::OnCommitComplete(leveldb::mojom::DatabaseError error) {
   // TODO(michaeln): What if it fails, uma here or in the DB class?
   --commit_batches_in_flight_;
   StartCommitTimer();
+  delegate_->DidCommit(error);
 }
 
 }  // namespace content

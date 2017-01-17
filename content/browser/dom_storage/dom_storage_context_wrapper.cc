@@ -83,18 +83,6 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
     const base::FilePath& profile_path,
     const base::FilePath& local_partition_path,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMojoLocalStorage)) {
-    base::FilePath storage_dir;
-    if (!profile_path.empty())
-      storage_dir = local_partition_path.AppendASCII(kLocalStorageDirectory);
-    // TODO(michaeln): Enable writing to disk when db is versioned,
-    // for now using an empty subdirectory to use an in-memory db.
-    // subdirectory_(subdirectory),
-    mojo_state_.reset(new LocalStorageContextMojo(
-        connector, base::FilePath() /* storage_dir */));
-  }
-
   base::FilePath data_path;
   if (!profile_path.empty())
     data_path = profile_path.Append(local_partition_path);
@@ -133,6 +121,21 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
       special_storage_policy,
       new DOMStorageWorkerPoolTaskRunner(std::move(primary_sequence),
                                          std::move(commit_sequence)));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMojoLocalStorage)) {
+    base::FilePath storage_dir;
+    if (!profile_path.empty())
+      storage_dir = local_partition_path.AppendASCII(kLocalStorageDirectory);
+    // TODO(michaeln): Enable writing to disk when db is versioned,
+    // for now using an empty subdirectory to use an in-memory db.
+    // subdirectory_(subdirectory),
+    mojo_state_.reset(new LocalStorageContextMojo(
+        connector, context_->task_runner(),
+        data_path.empty() ? data_path
+                          : data_path.AppendASCII(kLocalStorageDirectory),
+        base::FilePath() /* storage_dir */));
+  }
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);

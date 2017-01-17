@@ -32,9 +32,18 @@ namespace content {
 // 4) Throttles requests to avoid overwhelming the disk.
 class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
-  using PrepareToCommitCallback =
-      base::Callback<std::vector<leveldb::mojom::BatchedOperationPtr>(
-          const LevelDBWrapperImpl&)>;
+  using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
+  using ValueMapCallback = base::OnceCallback<void(std::unique_ptr<ValueMap>)>;
+
+  class CONTENT_EXPORT Delegate {
+   public:
+    virtual void OnNoBindings() = 0;
+    virtual std::vector<leveldb::mojom::BatchedOperationPtr>
+    PrepareToCommit() = 0;
+    virtual void DidCommit(leveldb::mojom::DatabaseError error) = 0;
+    // Called during loading if no data was found. Needs to call |callback|.
+    virtual void MigrateData(ValueMapCallback callback);
+  };
 
   // |no_bindings_callback| will be called when this object has no more
   // bindings and all pending modifications have been processed.
@@ -44,12 +53,12 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
                      base::TimeDelta default_commit_delay,
                      int max_bytes_per_hour,
                      int max_commits_per_hour,
-                     const base::Closure& no_bindings_callback,
-                     const PrepareToCommitCallback& prepare_to_commit_callback);
+                     Delegate* delegate);
   ~LevelDBWrapperImpl() override;
 
   void Bind(mojom::LevelDBWrapperRequest request);
 
+  bool empty() const { return bytes_used_ == 0; }
   size_t bytes_used() const { return bytes_used_; }
 
   // Commence aggressive flushing. This should be called early during startup,
@@ -82,8 +91,6 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
       const GetAllCallback& callback) override;
 
  private:
-  using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
-
   // Used to rate limit commits.
   class RateLimiter {
    public:
@@ -117,8 +124,10 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   void OnConnectionError();
   void LoadMap(const base::Closure& completion_callback);
-  void OnLoadComplete(leveldb::mojom::DatabaseError status,
-                      std::vector<leveldb::mojom::KeyValuePtr> data);
+  void OnMapLoaded(leveldb::mojom::DatabaseError status,
+                   std::vector<leveldb::mojom::KeyValuePtr> data);
+  void OnGotMigrationData(std::unique_ptr<ValueMap> data);
+  void OnLoadComplete();
   void CreateCommitBatchIfNeeded();
   void StartCommitTimer();
   base::TimeDelta ComputeCommitDelay() const;
@@ -128,8 +137,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   std::vector<uint8_t> prefix_;
   mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::LevelDBObserver> observers_;
-  base::Closure no_bindings_callback_;
-  PrepareToCommitCallback prepare_to_commit_callback_;
+  Delegate* delegate_;
   leveldb::mojom::LevelDBDatabase* database_;
   std::unique_ptr<ValueMap> map_;
   std::vector<base::Closure> on_load_complete_tasks_;

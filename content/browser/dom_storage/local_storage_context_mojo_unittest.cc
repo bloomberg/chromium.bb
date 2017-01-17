@@ -7,8 +7,14 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/leveldb/public/cpp/util.h"
+#include "content/browser/dom_storage/dom_storage_area.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/dom_storage_namespace.h"
+#include "content/browser/dom_storage/dom_storage_task_runner.h"
+#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -52,6 +58,13 @@ void GetCallback(const base::Closure& callback,
   *success_out = success;
   *value_out = value;
   callback.Run();
+}
+
+void NoOpGet(bool success, const std::vector<uint8_t>& value) {}
+
+std::vector<uint8_t> String16ToUint8Vector(const base::string16& input) {
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(input.data());
+  return std::vector<uint8_t>(data, data + input.size() * sizeof(base::char16));
 }
 
 class TestLevelDBObserver : public mojom::LevelDBObserver {
@@ -108,16 +121,41 @@ class TestLevelDBObserver : public mojom::LevelDBObserver {
 
 class LocalStorageContextMojoTest : public testing::Test {
  public:
-  LocalStorageContextMojoTest() : db_(&mock_data_), db_binding_(&db_) {}
+  LocalStorageContextMojoTest()
+      : db_(&mock_data_),
+        db_binding_(&db_),
+        task_runner_(new MockDOMStorageTaskRunner(
+            base::ThreadTaskRunnerHandle::Get().get())) {
+    EXPECT_TRUE(temp_path_.CreateUniqueTempDir());
+    dom_storage_context_ = new DOMStorageContextImpl(
+        temp_path_.GetPath(), base::FilePath(), nullptr, task_runner_);
+  }
+
+  ~LocalStorageContextMojoTest() override {
+    if (dom_storage_context_)
+      dom_storage_context_->Shutdown();
+  }
 
   LocalStorageContextMojo* context() {
     if (!context_) {
-      context_ =
-          base::MakeUnique<LocalStorageContextMojo>(nullptr, base::FilePath());
+      context_ = base::MakeUnique<LocalStorageContextMojo>(
+          nullptr, task_runner_, temp_path_.GetPath(),
+          base::FilePath(FILE_PATH_LITERAL("leveldb")));
       db_binding_.Bind(context_->DatabaseRequestForTesting());
     }
     return context_.get();
   }
+
+  DOMStorageNamespace* local_storage_namespace() {
+    return dom_storage_context_->GetStorageNamespace(kLocalStorageNamespaceId);
+  }
+
+  void FlushAndPurgeDOMStorageMemory() {
+    dom_storage_context_->Flush();
+    base::RunLoop().RunUntilIdle();
+    dom_storage_context_->PurgeMemory(DOMStorageContextImpl::PURGE_AGGRESSIVE);
+  }
+
   const std::map<std::vector<uint8_t>, std::vector<uint8_t>>& mock_data() {
     return mock_data_;
   }
@@ -137,10 +175,14 @@ class LocalStorageContextMojoTest : public testing::Test {
 
  private:
   TestBrowserThreadBundle thread_bundle_;
+  base::ScopedTempDir temp_path_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   MockLevelDBDatabase db_;
   mojo::AssociatedGroup associated_group_;
   mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding_;
+
+  scoped_refptr<MockDOMStorageTaskRunner> task_runner_;
+  scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
 
   std::unique_ptr<LocalStorageContextMojo> context_;
 
@@ -531,6 +573,49 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageForPhysicalOrigin) {
   }
 }
 
+TEST_F(LocalStorageContextMojoTest, Migration) {
+  url::Origin origin1(GURL("http://foobar.com"));
+  url::Origin origin2(GURL("http://example.com"));
+  base::string16 key = base::ASCIIToUTF16("key");
+  base::string16 value = base::ASCIIToUTF16("value");
+
+  DOMStorageNamespace* local = local_storage_namespace();
+  DOMStorageArea* area = local->OpenStorageArea(origin1.GetURL());
+  base::NullableString16 dummy;
+  area->SetItem(key, value, &dummy);
+  local->CloseStorageArea(area);
+  FlushAndPurgeDOMStorageMemory();
+
+  // Opening origin2 and accessing its data should not migrate anything.
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
+  wrapper->Get(std::vector<uint8_t>(), base::Bind(&NoOpGet));
+  wrapper.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(mock_data().empty());
+
+  // Opening origin1 and accessing its data should migrate its storage.
+  context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
+  wrapper->Get(std::vector<uint8_t>(), base::Bind(&NoOpGet));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(mock_data().empty());
+
+  base::RunLoop run_loop;
+  bool success = false;
+  std::vector<uint8_t> result;
+  wrapper->Get(
+      String16ToUint8Vector(key),
+      base::Bind(&GetCallback, run_loop.QuitClosure(), &success, &result));
+  run_loop.Run();
+  EXPECT_TRUE(success);
+  EXPECT_EQ(String16ToUint8Vector(value), result);
+
+  // Origin1 should no longer exist in old storage.
+  area = local->OpenStorageArea(origin1.GetURL());
+  ASSERT_EQ(0u, area->Length());
+  local->CloseStorageArea(area);
+}
+
 namespace {
 
 class ServiceTestClient : public service_manager::test::ServiceTestClient,
@@ -589,7 +674,6 @@ class LocalStorageContextMojoTestWithService
   }
 
   void TearDown() override {
-    temp_path_.Take();
     ServiceTest::TearDown();
   }
 
@@ -650,8 +734,8 @@ class LocalStorageContextMojoTestWithService
 #define MAYBE_InMemory InMemory
 #endif
 TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemory) {
-  auto context =
-      base::MakeUnique<LocalStorageContextMojo>(connector(), base::FilePath());
+  auto context = base::MakeUnique<LocalStorageContextMojo>(
+      connector(), nullptr, base::FilePath(), base::FilePath());
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -671,7 +755,8 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemory) {
   EXPECT_TRUE(FirstEntryInDir().empty());
 
   // Re-opening should get fresh data.
-  context.reset(new LocalStorageContextMojo(connector(), base::FilePath()));
+  context = base::MakeUnique<LocalStorageContextMojo>(
+      connector(), nullptr, base::FilePath(), base::FilePath());
   EXPECT_FALSE(DoTestGet(context.get(), key, &result));
 }
 
@@ -684,7 +769,8 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemory) {
 #endif
 TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemoryInvalidPath) {
   auto context = base::MakeUnique<LocalStorageContextMojo>(
-      connector(), base::FilePath(FILE_PATH_LITERAL("../../")));
+      connector(), nullptr, base::FilePath(),
+      base::FilePath(FILE_PATH_LITERAL("../../")));
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -713,8 +799,8 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InMemoryInvalidPath) {
 #endif
 TEST_F(LocalStorageContextMojoTestWithService, MAYBE_OnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
-  auto context =
-      base::MakeUnique<LocalStorageContextMojo>(connector(), test_path);
+  auto context = base::MakeUnique<LocalStorageContextMojo>(
+      connector(), nullptr, base::FilePath(), test_path);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -730,7 +816,8 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_OnDisk) {
   EXPECT_EQ(test_path, FirstEntryInDir().BaseName());
 
   // Should be able to re-open.
-  context.reset(new LocalStorageContextMojo(connector(), test_path));
+  context = base::MakeUnique<LocalStorageContextMojo>(
+      connector(), nullptr, base::FilePath(), test_path);
   EXPECT_TRUE(DoTestGet(context.get(), key, &result));
   EXPECT_EQ(value, result);
 }
@@ -746,8 +833,8 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
 
   // Create context and add some data to it.
-  auto context =
-      base::MakeUnique<LocalStorageContextMojo>(connector(), test_path);
+  auto context = base::MakeUnique<LocalStorageContextMojo>(
+      connector(), nullptr, base::FilePath(), test_path);
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -773,7 +860,8 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
   }
 
   // Make sure data is gone.
-  context = base::MakeUnique<LocalStorageContextMojo>(connector(), test_path);
+  context = base::MakeUnique<LocalStorageContextMojo>(
+      connector(), nullptr, base::FilePath(), test_path);
   EXPECT_FALSE(DoTestGet(context.get(), key, &result));
 
   // Write data again.
@@ -783,7 +871,8 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
   base::RunLoop().RunUntilIdle();
 
   // Data should have been preserved now.
-  context = base::MakeUnique<LocalStorageContextMojo>(connector(), test_path);
+  context = base::MakeUnique<LocalStorageContextMojo>(
+      connector(), nullptr, base::FilePath(), test_path);
   EXPECT_TRUE(DoTestGet(context.get(), key, &result));
   EXPECT_EQ(value, result);
 }

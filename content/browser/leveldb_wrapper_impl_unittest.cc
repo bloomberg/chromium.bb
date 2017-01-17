@@ -52,11 +52,14 @@ class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
   base::Closure m_callback;
 };
 
-void NoOp() {}
-std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommitNoOp(
-    const LevelDBWrapperImpl&) {
-  return std::vector<leveldb::mojom::BatchedOperationPtr>();
-}
+class MockDelegate : public LevelDBWrapperImpl::Delegate {
+ public:
+  void OnNoBindings() override {}
+  std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommit() override {
+    return std::vector<leveldb::mojom::BatchedOperationPtr>();
+  }
+  void DidCommit(leveldb::mojom::DatabaseError error) override {}
+};
 
 void GetCallback(const base::Closure& callback,
                  bool* success_out,
@@ -98,8 +101,7 @@ class LevelDBWrapperImplTest : public testing::Test,
                           base::TimeDelta::FromSeconds(5),
                           10 * 1024 * 1024 /* max_bytes_per_hour */,
                           60 /* max_commits_per_hour */,
-                          base::Bind(&NoOp),
-                          base::Bind(&PrepareToCommitNoOp)),
+                          &delegate_),
         observer_binding_(this) {
     set_mock_data(std::string(kTestPrefix) + "def", "defdata");
     set_mock_data(std::string(kTestPrefix) + "123", "123data");
@@ -209,6 +211,7 @@ class LevelDBWrapperImplTest : public testing::Test,
   TestBrowserThreadBundle thread_bundle_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   MockLevelDBDatabase db_;
+  MockDelegate delegate_;
   LevelDBWrapperImpl level_db_wrapper_;
   mojom::LevelDBWrapperPtr level_db_wrapper_ptr_;
   mojo::AssociatedBinding<mojom::LevelDBObserver> observer_binding_;
