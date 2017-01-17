@@ -237,6 +237,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       deferred_initialization_pending_(false),
       codec_needs_reset_(false),
       defer_surface_creation_(false),
+      last_release_task_type_(TaskType::AUTO_CODEC),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -366,6 +367,7 @@ bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
 
   codec_config_->surface =
       picture_buffer_manager_.Initialize(config_.surface_id);
+  codec_config_->surface_texture = picture_buffer_manager_.surface_texture();
   if (codec_config_->surface.IsEmpty())
     return false;
 
@@ -873,11 +875,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
   DCHECK_NE(state_, WAITING_FOR_CODEC);
   state_ = WAITING_FOR_CODEC;
 
-  if (media_codec_) {
-    AVDACodecAllocator::Instance()->ReleaseMediaCodec(
-        std::move(media_codec_), codec_config_->task_type, config_.surface_id);
-    picture_buffer_manager_.CodecChanged(nullptr);
-  }
+  ReleaseCodec();
 
   base::Optional<TaskType> task_type =
       AVDACodecAllocator::Instance()->TaskTypeForAllocation();
@@ -1142,14 +1140,25 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
   // our weak refs.
   weak_this_factory_.InvalidateWeakPtrs();
   g_avda_manager.Get().StopTimer(this);
-  if (media_codec_) {
-    AVDACodecAllocator::Instance()->ReleaseMediaCodec(
-        std::move(media_codec_), codec_config_->task_type, config_.surface_id);
-  }
+  ReleaseCodec();
 
   // We no longer care about |surface_id|, in case we did before.  It's okay
   // if we have no surface and/or weren't the owner or a waiter.
   AVDACodecAllocator::Instance()->DeallocateSurface(this, config_.surface_id);
+
+  // Hop the SurfaceTexture release call through the task runner used last time
+  // we released a codec. This ensures that we release the surface texture after
+  // the codec it's attached to (if any) is released. It's not sufficient to use
+  // |codec_config_->task_type| because that might have changed since we
+  // released the codec this surface was attached to.
+  if (codec_config_->surface_texture) {
+    AVDACodecAllocator::Instance()
+        ->TaskRunnerFor(last_release_task_type_)
+        ->PostTaskAndReply(
+            FROM_HERE, base::Bind(&base::DoNothing),
+            base::Bind(&gl::SurfaceTexture::ReleaseSurfaceTexture,
+                       codec_config_->surface_texture));
+  }
 
   delete this;
 }
@@ -1198,11 +1207,7 @@ void AndroidVideoDecodeAccelerator::OnSurfaceDestroyed() {
   // when configuration completes and it notices that |state_| has changed to
   // SURFACE_DESTROYED.
   state_ = SURFACE_DESTROYED;
-  if (media_codec_) {
-    AVDACodecAllocator::Instance()->ReleaseMediaCodec(
-        std::move(media_codec_), codec_config_->task_type, config_.surface_id);
-    picture_buffer_manager_.CodecChanged(nullptr);
-  }
+  ReleaseCodec();
 
   // If we're draining, signal completion now because the drain can no longer
   // proceed.
@@ -1466,31 +1471,29 @@ bool AndroidVideoDecodeAccelerator::UpdateSurface() {
     success = false;
   }
 
+  gl::ScopedJavaSurface new_surface;
   if (success) {
-    codec_config_->surface = picture_buffer_manager_.Initialize(new_surface_id);
-    if (codec_config_->surface.IsEmpty()) {
+    new_surface = picture_buffer_manager_.Initialize(new_surface_id);
+    if (new_surface.IsEmpty()) {
       NOTIFY_ERROR(PLATFORM_FAILURE, "Failed to switch surfaces.");
       success = false;
     }
   }
 
   if (success && media_codec_ &&
-      !media_codec_->SetSurface(codec_config_->surface.j_surface().obj())) {
+      !media_codec_->SetSurface(new_surface.j_surface().obj())) {
     NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCodec failed to switch surfaces.");
     success = false;
   }
 
   if (success) {
     config_.surface_id = new_surface_id;
+    codec_config_->surface = std::move(new_surface);
+    codec_config_->surface_texture = picture_buffer_manager_.surface_texture();
   } else {
     // This might be called from OnSurfaceDestroyed(), so we have to release the
     // MediaCodec if we failed to switch the surface.
-    if (media_codec_) {
-      AVDACodecAllocator::Instance()->ReleaseMediaCodec(
-          std::move(media_codec_), codec_config_->task_type,
-          previous_surface_id);
-      picture_buffer_manager_.CodecChanged(nullptr);
-    }
+    ReleaseCodec();
     AVDACodecAllocator::Instance()->DeallocateSurface(this, new_surface_id);
   }
 
@@ -1498,6 +1501,16 @@ bool AndroidVideoDecodeAccelerator::UpdateSurface() {
   AVDACodecAllocator::Instance()->DeallocateSurface(this, previous_surface_id);
 
   return success;
+}
+
+void AndroidVideoDecodeAccelerator::ReleaseCodec() {
+  if (!media_codec_)
+    return;
+
+  picture_buffer_manager_.CodecChanged(nullptr);
+  AVDACodecAllocator::Instance()->ReleaseMediaCodec(
+      std::move(media_codec_), codec_config_->task_type, config_.surface_id);
+  last_release_task_type_ = codec_config_->task_type;
 }
 
 }  // namespace media

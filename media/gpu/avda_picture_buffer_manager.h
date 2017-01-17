@@ -82,6 +82,10 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
   // Are there any unrendered picture buffers oustanding?
   bool HasUnrenderedPictures() const;
 
+  scoped_refptr<gl::SurfaceTexture> surface_texture() {
+    return surface_texture_;
+  }
+
   // Returns the GL texture target that the PictureBuffer textures use.
   // Always use OES textures even though this will cause flickering in dev tools
   // when inspecting a fullscreen video.  See http://crbug.com/592798

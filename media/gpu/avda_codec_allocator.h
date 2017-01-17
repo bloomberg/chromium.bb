@@ -54,6 +54,10 @@ class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
   gl::ScopedJavaSurface surface;
   int surface_id = SurfaceManager::kNoSurfaceID;
 
+  // The SurfaceTexture attached to |surface|, or nullptr if |surface| is
+  // SurfaceView backed.
+  scoped_refptr<gl::SurfaceTexture> surface_texture;
+
   // The MediaCrypto that MediaCodec is configured with for an encrypted stream.
   MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto;
 
@@ -160,6 +164,9 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // both threads are hung.
   base::Optional<TaskType> TaskTypeForAllocation();
 
+  // Return the task runner for tasks of type |type|.
+  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerFor(TaskType task_type);
+
   // Return a reference to the thread for unit tests.
   base::Thread& GetThreadForTesting(TaskType task_type);
 
@@ -202,9 +209,6 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   AVDACodecAllocator(base::TickClock* tick_clock = nullptr,
                      base::WaitableEvent* stop_event = nullptr);
   ~AVDACodecAllocator();
-
-  // Return the task runner for tasks of type |type|.
-  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerFor(TaskType task_type);
 
   void OnMediaCodecAndSurfaceReleased(int surface_id);
 

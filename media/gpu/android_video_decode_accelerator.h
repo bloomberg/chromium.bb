@@ -28,6 +28,7 @@
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gl/android/scoped_java_surface.h"
+#include "ui/gl/android/surface_texture.h"
 
 namespace media {
 class SharedMemoryRegion;
@@ -215,6 +216,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // error if the surface change fails. Returns false on failure.
   bool UpdateSurface();
 
+  // Release |media_codec_| if it's not null, and notify
+  // |picture_buffer_manager_|.
+  void ReleaseCodec();
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
@@ -321,6 +326,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // switched to when possible. Cleared during OnSurfaceDestroyed() and if all
   // pictures have been rendered in DequeueOutput().
   base::Optional<int32_t> pending_surface_id_;
+
+  // The task type used for the last codec release. For posting SurfaceTexture
+  // release to the same thread.
+  TaskType last_release_task_type_;
 
   // Copy of the VDA::Config we were given.
   Config config_;
