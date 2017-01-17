@@ -279,9 +279,9 @@ ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}
 
 void ChromeRenderThreadObserver::RegisterMojoInterfaces(
     content::AssociatedInterfaceRegistry* associated_interfaces) {
-  associated_interfaces->AddInterface(
-      base::Bind(&ChromeRenderThreadObserver::OnRendererInterfaceRequest,
-                 base::Unretained(this)));
+  associated_interfaces->AddInterface(base::Bind(
+      &ChromeRenderThreadObserver::OnRendererConfigurationAssociatedRequest,
+      base::Unretained(this)));
 }
 
 void ChromeRenderThreadObserver::UnregisterMojoInterfaces(
@@ -331,7 +331,7 @@ void ChromeRenderThreadObserver::SetContentSettingRules(
   content_setting_rules_ = rules;
 }
 
-void ChromeRenderThreadObserver::OnRendererInterfaceRequest(
+void ChromeRenderThreadObserver::OnRendererConfigurationAssociatedRequest(
     chrome::mojom::RendererConfigurationAssociatedRequest request) {
   DCHECK(!renderer_configuration_binding_.is_bound());
   renderer_configuration_binding_.Bind(std::move(request));

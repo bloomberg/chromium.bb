@@ -65,7 +65,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   void SetContentSettingRules(
       const RendererContentSettingRules& rules) override;
 
-  void OnRendererInterfaceRequest(
+  void OnRendererConfigurationAssociatedRequest(
       chrome::mojom::RendererConfigurationAssociatedRequest request);
 
   void OnSetFieldTrialGroup(const std::string& trial_name,
