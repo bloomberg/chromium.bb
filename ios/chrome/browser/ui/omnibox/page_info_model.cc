@@ -131,7 +131,7 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
     description.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
     icon_id = ssl.security_style == web::SECURITY_STYLE_UNAUTHENTICATED
-                  ? ICON_NONE
+                  ? ICON_STATE_INFO
                   : ICON_STATE_ERROR;
 
     const base::string16 bullet = base::UTF8ToUTF16("\n • ");
@@ -160,11 +160,12 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
   if (!ssl.certificate) {
     // Not HTTPS.
     icon_id = ssl.security_style == web::SECURITY_STYLE_UNAUTHENTICATED
-                  ? ICON_NONE
+                  ? ICON_STATE_INFO
                   : ICON_STATE_ERROR;
-    description.assign(l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
-        subject_name));
+    description.assign(
+        l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_SUMMARY));
+    description += base::ASCIIToUTF16("\n\n");
+    description += l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_DETAILS);
   } else if (ssl.security_bits < 0) {
     if (ssl.content_status == web::SSLStatus::DISPLAYED_INSECURE_CONTENT) {
       DCHECK(description.empty());

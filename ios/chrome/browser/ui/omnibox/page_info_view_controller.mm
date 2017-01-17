@@ -469,9 +469,9 @@ void PageInfoModelBubbleBridge::OnPageInfoModelChanged() {
       NOTREACHED();
       return nil;
     case PageInfoModel::BUTTON_SHOW_SECURITY_HELP:
-      messageId = IDS_PAGE_INFO_HELP_CENTER_LINK;
+      messageId = IDS_LEARN_MORE;
       tag = IDC_SHOW_SECURITY_HELP;
-      accessibilityID = @"What do these mean?";
+      accessibilityID = @"Learn more";
       break;
     case PageInfoModel::BUTTON_RELOAD:
       messageId = IDS_IOS_PAGE_INFO_RELOAD;
