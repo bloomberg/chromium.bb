@@ -802,6 +802,13 @@ void RenderWidgetHostViewAndroid::OnImeCompositionRangeChanged(
   ime_adapter_android_.SetCharacterBounds(character_bounds);
 }
 
+void RenderWidgetHostViewAndroid::OnImeCancelComposition(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
+  DCHECK_EQ(text_input_manager_, text_input_manager);
+  ime_adapter_android_.CancelComposition();
+}
+
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
   if (cached_background_color_ == color)
     return;
@@ -919,11 +926,6 @@ void RenderWidgetHostViewAndroid::SetMultiTouchZoomSupportEnabled(
     bool enabled) {
   gesture_provider_.SetMultiTouchZoomSupportEnabled(enabled);
 }
-
-void RenderWidgetHostViewAndroid::ImeCancelComposition() {
-  ime_adapter_android_.CancelComposition();
-}
-
 
 void RenderWidgetHostViewAndroid::FocusedNodeChanged(
     bool is_editable_node,

@@ -104,7 +104,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   float GetBottomControlsHeight() const override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void ImeCancelComposition() override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   void RenderProcessGone(base::TerminationStatus status,
@@ -253,6 +252,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnImeCompositionRangeChanged(
       TextInputManager* text_input_manager,
       RenderWidgetHostViewBase* updated_view) override;
+  void OnImeCancelComposition(TextInputManager* text_input_manager,
+                              RenderWidgetHostViewBase* updated_view) override;
 
  private:
   void RunAckCallbacks();
