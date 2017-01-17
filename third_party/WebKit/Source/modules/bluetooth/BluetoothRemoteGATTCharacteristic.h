@@ -102,7 +102,7 @@ class BluetoothRemoteGATTCharacteristic final
  private:
   friend class BluetoothRemoteGATTDescriptor;
 
-  BluetoothRemoteGATTServer* gatt() { return m_service->device()->gatt(); }
+  BluetoothRemoteGATTServer* getGatt() { return m_service->device()->gatt(); }
 
   void ReadValueCallback(ScriptPromiseResolver*,
                          mojom::blink::WebBluetoothResult,

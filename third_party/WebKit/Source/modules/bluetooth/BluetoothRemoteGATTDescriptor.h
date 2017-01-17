@@ -53,7 +53,7 @@ class BluetoothRemoteGATTDescriptor final
  private:
   friend class DescriptorReadValueCallback;
 
-  BluetoothRemoteGATTServer* getGatt() { return m_characteristic->gatt(); }
+  BluetoothRemoteGATTServer* getGatt() { return m_characteristic->getGatt(); }
 
   mojom::blink::WebBluetoothRemoteGATTDescriptorPtr m_descriptor;
   Member<BluetoothRemoteGATTCharacteristic> m_characteristic;
