@@ -4,11 +4,15 @@
 
 #import "ios/chrome/browser/ui/suggestions/suggestions_article_item.h"
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
+// Tests that configureCell: set all the fields of the cell.
 TEST(SuggestionsArticleItemTest, CellIsConfigured) {
   NSString* title = @"testTitle";
   NSString* subtitle = @"testSubtitle";
