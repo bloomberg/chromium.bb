@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/suggestions/suggestions_commands.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_view_controller.h"
+#import "ios/showcase/common/protocol_alerter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,6 +16,7 @@
 
 @property(nonatomic, strong)
     SuggestionsViewController* suggestionViewController;
+@property(nonatomic, strong) ProtocolAlerter* alerter;
 
 @end
 
@@ -22,10 +24,15 @@
 
 @synthesize baseViewController;
 @synthesize suggestionViewController = _suggestionViewController;
+@synthesize alerter = _alerter;
 
 #pragma mark - Coordinator
 
 - (void)start {
+  self.alerter = [[ProtocolAlerter alloc]
+      initWithProtocols:@[ @protocol(SuggestionsCommands) ]];
+  self.alerter.baseViewController = self.baseViewController;
+
   _suggestionViewController = [[SuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
 
@@ -41,6 +48,15 @@
   [self.suggestionViewController addTextItem:@"Button clicked"
                                     subtitle:@"Item Added!"
                                    toSection:5];
+}
+
+- (void)openReadingList {
+  [static_cast<id<SuggestionsCommands>>(self.alerter) openReadingList];
+}
+
+- (void)openFirstPageOfReadingList {
+  [static_cast<id<SuggestionsCommands>>(self.alerter)
+      openFirstPageOfReadingList];
 }
 
 @end

@@ -16,6 +16,9 @@ source_set("suggestions") {
     "suggestions_item.h",
     "suggestions_item.mm",
     "suggestions_item_actions.h",
+    "suggestions_stack_item.h",
+    "suggestions_stack_item.mm",
+    "suggestions_stack_item_actions.h",
     "suggestions_view_controller.h",
     "suggestions_view_controller.mm",
   ]
@@ -38,6 +41,7 @@ source_set("unit_tests") {
     "suggestions_article_item_unittest.mm",
     "suggestions_expandable_item_unittest.mm",
     "suggestions_item_unittest.mm",
+    "suggestions_stack_item_unittest.mm",
   ]
   deps = [
     ":suggestions",

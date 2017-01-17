@@ -7,17 +7,26 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+
 @class SuggestionsViewController;
+
+// Enum defining the ItemType of this SuggestionsCollectionUpdater.
+typedef NS_ENUM(NSInteger, ItemType) {
+  ItemTypeText = kItemTypeEnumZero,
+  ItemTypeArticle,
+  ItemTypeExpand,
+  ItemTypeStack,
+};
 
 // Updater for a CollectionViewController populating it with some items and
 // handling the items addition.
 @interface SuggestionsCollectionUpdater : NSObject
 
-// |collectionViewController| this Updater will update.
-- (instancetype)initWithCollectionViewController:
-    (SuggestionsViewController*)collectionViewController
-    NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+// |collectionViewController| this Updater will update. Needs to be set before
+// adding items.
+@property(nonatomic, assign)
+    SuggestionsViewController* collectionViewController;
 
 // Adds a text item with a |title| and a |subtitle| in the section numbered
 // |section|. If |section| is greater than the current number of section, it
@@ -25,6 +34,9 @@
 - (void)addTextItem:(NSString*)title
            subtitle:(NSString*)subtitle
           toSection:(NSInteger)inputSection;
+
+// Returns whether the section should use the default, non-card style.
+- (BOOL)shouldUseCustomStyleForSection:(NSInteger)section;
 
 @end
 

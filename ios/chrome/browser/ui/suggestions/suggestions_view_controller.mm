@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/suggestions/suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_commands.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_item_actions.h"
+#import "ios/chrome/browser/ui/suggestions/suggestions_stack_item.h"
+#import "ios/chrome/browser/ui/suggestions/suggestions_stack_item_actions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,7 +23,8 @@ namespace {
 const NSTimeInterval kAnimationDuration = 0.35;
 }  // namespace
 
-@interface SuggestionsViewController ()<SuggestionsItemActions>
+@interface SuggestionsViewController ()<SuggestionsItemActions,
+                                        SuggestionsStackItemActions>
 
 @property(nonatomic, strong) SuggestionsCollectionUpdater* collectionUpdater;
 
@@ -41,27 +44,24 @@ const NSTimeInterval kAnimationDuration = 0.35;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  _collectionUpdater = [[SuggestionsCollectionUpdater alloc]
-      initWithCollectionViewController:self];
+  _collectionUpdater = [[SuggestionsCollectionUpdater alloc] init];
+  _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
 }
 
-#pragma mark - MDCCollectionViewStylingDelegate
+#pragma mark - UICollectionViewDelegate
 
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
+- (void)collectionView:(UICollectionView*)collectionView
+    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
+  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  UIEdgeInsets inset = [self collectionView:collectionView
-                                     layout:collectionView.collectionViewLayout
-                     insetForSectionAtIndex:indexPath.section];
-
-  return [MDCCollectionViewCell
-      cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds) -
-                                 inset.left - inset.right
-                         forItem:item];
+  if (item.type == ItemTypeStack) {
+    [self.suggestionCommandHandler openReadingList];
+  }
 }
 
 #pragma mark - SuggestionsExpandableCellDelegate
@@ -88,6 +88,46 @@ const NSTimeInterval kAnimationDuration = 0.35;
   [self.collectionUpdater addTextItem:title
                              subtitle:subtitle
                             toSection:inputSection];
+}
+
+#pragma mark - SuggestionsStackItemActions
+
+- (void)openReadingListFirstItem:(id)sender {
+  [self.suggestionCommandHandler openFirstPageOfReadingList];
+}
+
+#pragma mark - MDCCollectionViewStylingDelegate
+
+- (UIColor*)collectionView:(nonnull UICollectionView*)collectionView
+    cellBackgroundColorAtIndexPath:(nonnull NSIndexPath*)indexPath {
+  if ([self.collectionUpdater
+          shouldUseCustomStyleForSection:indexPath.section]) {
+    return [UIColor clearColor];
+  }
+  return [UIColor whiteColor];
+}
+
+- (BOOL)collectionView:(nonnull UICollectionView*)collectionView
+    shouldHideItemBackgroundAtIndexPath:(nonnull NSIndexPath*)indexPath {
+  if ([self.collectionUpdater
+          shouldUseCustomStyleForSection:indexPath.section]) {
+    return YES;
+  }
+  return NO;
+}
+
+- (CGFloat)collectionView:(UICollectionView*)collectionView
+    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+  UIEdgeInsets inset = [self collectionView:collectionView
+                                     layout:collectionView.collectionViewLayout
+                     insetForSectionAtIndex:indexPath.section];
+
+  return [MDCCollectionViewCell
+      cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds) -
+                                 inset.left - inset.right
+                         forItem:item];
 }
 
 #pragma mark - Private
