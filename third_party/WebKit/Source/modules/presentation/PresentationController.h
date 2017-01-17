@@ -65,7 +65,7 @@ class MODULES_EXPORT PresentationController final
   // Called by the Presentation object when the default request is updated
   // in order to notify the client about the change of default presentation
   // url.
-  void setDefaultRequestUrl(const KURL&);
+  void setDefaultRequestUrl(const WTF::Vector<KURL>&);
 
   // Handling of running connections.
   void registerConnection(PresentationConnection*);

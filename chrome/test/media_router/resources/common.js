@@ -18,7 +18,7 @@ if (window.location.href.indexOf('__is_android__=true') >= 0) {
 } else {
   presentationUrl = "http://www.google.com/#__testprovider__=true";
 }
-var startSessionRequest = new PresentationRequest(presentationUrl);
+var startSessionRequest = new PresentationRequest([presentationUrl]);
 var defaultRequestSessionId = null;
 var lastExecutionResult = null;
 var useDomAutomationController = !!window.domAutomationController;

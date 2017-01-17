@@ -7,6 +7,8 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/presentation/PresentationConnection.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -114,14 +116,16 @@ void PresentationController::setPresentation(Presentation* presentation) {
   m_presentation = presentation;
 }
 
-void PresentationController::setDefaultRequestUrl(const KURL& url) {
+void PresentationController::setDefaultRequestUrl(
+    const WTF::Vector<KURL>& urls) {
   if (!m_client)
     return;
 
-  // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
-  WebVector<WebURL> presentationUrls(static_cast<size_t>(1));
-  if (url.isValid())
-    presentationUrls[0] = url;
+  WebVector<WebURL> presentationUrls(urls.size());
+  for (size_t i = 0; i < urls.size(); ++i) {
+    if (urls[i].isValid())
+      presentationUrls[i] = urls[i];
+  }
 
   m_client->setDefaultPresentationUrls(presentationUrls);
 }

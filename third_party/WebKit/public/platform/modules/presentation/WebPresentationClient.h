@@ -87,7 +87,7 @@ class WebPresentationClient {
   // Called when the frame wants to know the availability of a presentation
   // display for |availabilityUrl|.
   virtual void getAvailability(
-      const WebURL& availabilityUrl,
+      const WebVector<WebURL>& availabilityUrls,
       std::unique_ptr<WebPresentationAvailabilityCallbacks>) = 0;
 
   // Start listening to changes in presentation displays availability. The

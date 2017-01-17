@@ -13,7 +13,9 @@
 #include "modules/presentation/PresentationPromiseProperty.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -34,7 +36,7 @@ class MODULES_EXPORT PresentationAvailability final
 
  public:
   static PresentationAvailability* take(PresentationAvailabilityProperty*,
-                                        const KURL&,
+                                        const WTF::Vector<KURL>&,
                                         bool);
   ~PresentationAvailability() override;
 
@@ -44,7 +46,7 @@ class MODULES_EXPORT PresentationAvailability final
 
   // WebPresentationAvailabilityObserver implementation.
   void availabilityChanged(bool) override;
-  const WebURL url() const override;
+  const WebVector<WebURL>& urls() const override;
 
   // ScriptWrappable implementation.
   bool hasPendingActivity() const final;
@@ -79,12 +81,12 @@ class MODULES_EXPORT PresentationAvailability final
     Inactive,
   };
 
-  PresentationAvailability(ExecutionContext*, const KURL&, bool);
+  PresentationAvailability(ExecutionContext*, const WTF::Vector<KURL>&, bool);
 
   void setState(State);
   void updateListening();
 
-  const KURL m_url;
+  WebVector<WebURL> m_urls;
   bool m_value;
   State m_state;
 };

@@ -278,6 +278,7 @@ source_set("unit_tests") {
     "peerconnection/RTCDataChannelTest.cpp",
     "presentation/PresentationAvailabilityTest.cpp",
     "presentation/PresentationReceiverTest.cpp",
+    "presentation/PresentationRequestTest.cpp",
     "push_messaging/PushManagerTest.cpp",
     "push_messaging/PushMessageDataTest.cpp",
     "remoteplayback/RemotePlaybackTest.cpp",

@@ -51,15 +51,6 @@ Settings* settings(ExecutionContext* executionContext) {
   return document->settings();
 }
 
-ScriptPromise rejectWithMixedContentException(ScriptState* scriptState,
-                                              const String& url) {
-  return ScriptPromise::rejectWithDOMException(
-      scriptState,
-      DOMException::create(SecurityError,
-                           "Presentation of an insecure document [" + url +
-                               "] is prohibited from a secure context."));
-}
-
 ScriptPromise rejectWithSandBoxException(ScriptState* scriptState) {
   return ScriptPromise::rejectWithDOMException(
       scriptState, DOMException::create(SecurityError,
@@ -74,14 +65,42 @@ PresentationRequest* PresentationRequest::create(
     ExecutionContext* executionContext,
     const String& url,
     ExceptionState& exceptionState) {
-  KURL parsedUrl = KURL(executionContext->url(), url);
-  if (!parsedUrl.isValid() || parsedUrl.protocolIsAbout()) {
-    exceptionState.throwTypeError("'" + url +
-                                  "' can't be resolved to a valid URL.");
+  Vector<String> urls(1);
+  urls[0] = url;
+  return create(executionContext, urls, exceptionState);
+}
+
+PresentationRequest* PresentationRequest::create(
+    ExecutionContext* executionContext,
+    const Vector<String>& urls,
+    ExceptionState& exceptionState) {
+  if (urls.isEmpty()) {
+    exceptionState.throwDOMException(NotSupportedError,
+                                     "Do not support empty sequence of URLs.");
     return nullptr;
   }
 
-  return new PresentationRequest(executionContext, parsedUrl);
+  Vector<KURL> parsedUrls(urls.size());
+  for (size_t i = 0; i < urls.size(); ++i) {
+    const KURL& parsedUrl = KURL(executionContext->url(), urls[i]);
+
+    if (!parsedUrl.isValid() || parsedUrl.protocolIsAbout()) {
+      exceptionState.throwDOMException(
+          SyntaxError, "'" + urls[i] + "' can't be resolved to a valid URL.");
+      return nullptr;
+    }
+
+    if (MixedContentChecker::isMixedContent(
+            executionContext->getSecurityOrigin(), parsedUrl)) {
+      exceptionState.throwDOMException(
+          SecurityError, "Presentation of an insecure document [" + urls[i] +
+                             "] is prohibited from a secure context.");
+      return nullptr;
+    }
+
+    parsedUrls[i] = parsedUrl;
+  }
+  return new PresentationRequest(executionContext, parsedUrls);
 }
 
 const AtomicString& PresentationRequest::interfaceName() const {
@@ -120,11 +139,6 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
             InvalidAccessError,
             "PresentationRequest::start() requires user gesture."));
 
-  if (MixedContentChecker::isMixedContent(
-          getExecutionContext()->getSecurityOrigin(), m_url)) {
-    return rejectWithMixedContentException(scriptState, m_url.getString());
-  }
-
   if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
     return rejectWithSandBoxException(scriptState);
 
@@ -137,22 +151,13 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
             "The PresentationRequest is no longer associated to a frame."));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
-  WebVector<WebURL> presentationUrls(static_cast<size_t>(1U));
-  presentationUrls[0] = m_url;
   client->startSession(
-      presentationUrls,
-      WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
+      m_urls, WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
   return resolver->promise();
 }
 
 ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
                                              const String& id) {
-  if (MixedContentChecker::isMixedContent(
-          getExecutionContext()->getSecurityOrigin(), m_url)) {
-    return rejectWithMixedContentException(scriptState, m_url.getString());
-  }
-
   if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
     return rejectWithSandBoxException(scriptState);
 
@@ -165,35 +170,26 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
             "The PresentationRequest is no longer associated to a frame."));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
-  WebVector<WebURL> presentationUrls(static_cast<size_t>(1U));
-  presentationUrls[0] = m_url;
 
   PresentationController* controller =
       presentationController(getExecutionContext());
   DCHECK(controller);
 
   PresentationConnection* existingConnection =
-      controller->findExistingConnection(presentationUrls, id);
+      controller->findExistingConnection(m_urls, id);
   if (existingConnection) {
     client->joinSession(
-        presentationUrls, id,
-        WTF::makeUnique<ExistingPresentationConnectionCallbacks>(
-            resolver, existingConnection));
+        m_urls, id, WTF::makeUnique<ExistingPresentationConnectionCallbacks>(
+                        resolver, existingConnection));
   } else {
     client->joinSession(
-        presentationUrls, id,
+        m_urls, id,
         WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
   }
   return resolver->promise();
 }
 
 ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState) {
-  if (MixedContentChecker::isMixedContent(
-          getExecutionContext()->getSecurityOrigin(), m_url)) {
-    return rejectWithMixedContentException(scriptState, m_url.getString());
-  }
-
   if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
     return rejectWithSandBoxException(scriptState);
 
@@ -210,15 +206,15 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState) {
         scriptState->getExecutionContext(), this,
         PresentationAvailabilityProperty::Ready);
 
-    client->getAvailability(m_url,
+    client->getAvailability(m_urls,
                             WTF::makeUnique<PresentationAvailabilityCallbacks>(
-                                m_availabilityProperty, m_url));
+                                m_availabilityProperty, m_urls));
   }
   return m_availabilityProperty->promise(scriptState->world());
 }
 
-const KURL& PresentationRequest::url() const {
-  return m_url;
+const Vector<KURL>& PresentationRequest::urls() const {
+  return m_urls;
 }
 
 DEFINE_TRACE(PresentationRequest) {
@@ -228,7 +224,7 @@ DEFINE_TRACE(PresentationRequest) {
 }
 
 PresentationRequest::PresentationRequest(ExecutionContext* executionContext,
-                                         const KURL& url)
-    : ContextLifecycleObserver(executionContext), m_url(url) {}
+                                         const Vector<KURL>& urls)
+    : ContextLifecycleObserver(executionContext), m_urls(urls) {}
 
 }  // namespace blink

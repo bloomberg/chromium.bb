@@ -10,6 +10,8 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationReceiver.h"
 #include "modules/presentation/PresentationRequest.h"
+#include "platform/weborigin/KURL.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -45,7 +47,8 @@ void Presentation::setDefaultRequest(PresentationRequest* request) {
   PresentationController* controller = PresentationController::from(*frame());
   if (!controller)
     return;
-  controller->setDefaultRequestUrl(request ? request->url() : KURL());
+  controller->setDefaultRequestUrl(request ? request->urls()
+                                           : WTF::Vector<KURL>());
 }
 
 PresentationReceiver* Presentation::receiver() {

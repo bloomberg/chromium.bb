@@ -52,6 +52,7 @@ class PresentationConnection final : public EventTargetWithInlineData,
   DECLARE_VIRTUAL_TRACE();
 
   const String& id() const { return m_id; }
+  const String& url() const { return m_url; }
   const WTF::AtomicString& state() const;
 
   void send(const String& message, ExceptionState&);

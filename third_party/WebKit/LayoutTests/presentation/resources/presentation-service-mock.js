@@ -40,3 +40,18 @@ let presentationServiceMock = loadMojoModules(
 
       return new PresentationServiceMock(mojo.frameInterfaces);
     });
+
+function waitForClick(callback, button) {
+  button.addEventListener('click', callback, { once: true });
+
+  if (!('eventSender' in window))
+    return;
+
+  var boundingRect = button.getBoundingClientRect();
+  var x = boundingRect.left + boundingRect.width / 2;
+  var y = boundingRect.top + boundingRect.height / 2;
+
+  eventSender.mouseMoveTo(x, y);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}

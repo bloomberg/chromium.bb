@@ -14,6 +14,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -32,6 +33,9 @@ class MODULES_EXPORT PresentationRequest final
   static PresentationRequest* create(ExecutionContext*,
                                      const String& url,
                                      ExceptionState&);
+  static PresentationRequest* create(ExecutionContext*,
+                                     const Vector<String>& urls,
+                                     ExceptionState&);
 
   // EventTarget implementation.
   const AtomicString& interfaceName() const override;
@@ -44,7 +48,7 @@ class MODULES_EXPORT PresentationRequest final
   ScriptPromise reconnect(ScriptState*, const String& id);
   ScriptPromise getAvailability(ScriptState*);
 
-  const KURL& url() const;
+  const Vector<KURL>& urls() const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
 
@@ -56,10 +60,10 @@ class MODULES_EXPORT PresentationRequest final
                           RegisteredEventListener&) override;
 
  private:
-  PresentationRequest(ExecutionContext*, const KURL&);
+  PresentationRequest(ExecutionContext*, const Vector<KURL>&);
 
   Member<PresentationAvailabilityProperty> m_availabilityProperty;
-  KURL m_url;
+  Vector<KURL> m_urls;
 };
 
 }  // namespace blink

@@ -48,14 +48,15 @@ namespace content {
 class MockPresentationAvailabilityObserver
     : public WebPresentationAvailabilityObserver {
  public:
-  explicit MockPresentationAvailabilityObserver(WebURL url) : url_(url) {}
+  explicit MockPresentationAvailabilityObserver(const WebVector<WebURL>& urls)
+      : urls_(urls) {}
   ~MockPresentationAvailabilityObserver() override {}
 
   MOCK_METHOD1(availabilityChanged, void(bool is_available));
-  const WebURL url() const override { return url_; }
+  const WebVector<WebURL>& urls() const override { return urls_; }
 
  private:
-  const WebURL url_;
+  const WebVector<WebURL> urls_;
 };
 
 class MockPresentationService : public PresentationService {
@@ -192,7 +193,7 @@ class PresentationDispatcherTest : public ::testing::Test {
         urls_(WebVector<WebURL>(gurls_)),
         presentation_id_(WebString::fromUTF8("test-id")),
         array_buffer_(WebArrayBuffer::create(4, 1)),
-        observer_(url1_),
+        observer_(urls_),
         dispatcher_(&presentation_service_) {}
   ~PresentationDispatcherTest() override {}
 
@@ -385,7 +386,7 @@ TEST_F(PresentationDispatcherTest, TestListenForScreenAvailability) {
   base::RunLoop run_loop1;
   EXPECT_CALL(presentation_service_, ListenForScreenAvailability(gurl1_));
   dispatcher_.getAvailability(
-      url1_, base::MakeUnique<WebPresentationAvailabilityCallbacks>());
+      urls_, base::MakeUnique<WebPresentationAvailabilityCallbacks>());
   dispatcher_.OnScreenAvailabilityUpdated(url1_, true);
   run_loop1.RunUntilIdle();
 

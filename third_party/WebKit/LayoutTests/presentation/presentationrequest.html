@@ -6,22 +6,35 @@
 <script src="../resources/gc.js"></script>
 <script>
 
-async_test(function(t) {
-  var request = new PresentationRequest("http://example.com");
-  request.start().catch(t.step_func(function(e) {
-    assert_true(e instanceof DOMException);
-    assert_equals(e.name, "InvalidAccessError");
-    assert_equals(e.message, "PresentationRequest::start() requires user gesture.");
-    t.done();
-  }));
-}, "Test that the PresentationRequest.start() requires user gesture.")
+var presentationUrl = "http://example.com";
+var presentationUrls = [presentationUrl, "cast://google.com/app_id=deadbeef"];
 
-test(function() {
-  navigator.presentation.defaultRequest = new PresentationRequest("http://example.com");
+var expectedException = new DOMException('PresentationRequest::start() requires user gesture.', 'InvalidAccessError');
+
+promise_test(function(t) {
+  var request = new PresentationRequest(presentationUrl);
+  return promise_rejects(t, expectedException, request.start());
+}, "Test that the PresentationRequest.start() with one URL requires user gesture.")
+
+promise_test(function(t) {
+  var request = new PresentationRequest(presentationUrls);
+  return promise_rejects(t, expectedException, request.start());
+}, "Test that the PresentationRequest.start() with multiple URLs requires user gesture.")
+
+var testGarbageCollection = function(requestArgument) {
+  navigator.presentation.defaultRequest = new PresentationRequest(requestArgument);
   navigator.presentation.defaultRequest.onconnectionavailable = function() {  };
   gc();
   assert_not_equals(navigator.presentation.defaultRequest.onconnectionavailable, undefined);
-}, "Test that navigator.presentation.defaultRequest.onconnectionavailable isn't reset after gc()");
+};
+
+test(function() {
+  testGarbageCollection(presentationUrl);
+}, "Test that navigator.presentation.defaultRequest.onconnectionavailable with one URL isn't reset after gc().");
+
+test(function() {
+  testGarbageCollection(presentationUrls);
+}, "Test that navigator.presentation.defaultRequest.onconnectionavailable with multiple URLs isn't reset after gc().");
 
 test(function() {
   var request = new PresentationRequest("http://example.com");

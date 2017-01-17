@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(mlamouri): double-check link after spec changes have landed.
 // https://w3c.github.io/presentation-api/#interface-presentationrequest
 
 [
     ActiveScriptWrappable,
     ConstructorCallWith=ExecutionContext,
-    Constructor(DOMString url),
+    Constructor(USVString url),
+    Constructor(sequence<USVString> urls),
     DependentLifetime,
     MeasureAs=PresentationRequestConstructor,
     RaisesException=Constructor,

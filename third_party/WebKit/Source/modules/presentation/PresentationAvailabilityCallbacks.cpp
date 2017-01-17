@@ -15,8 +15,8 @@ namespace blink {
 
 PresentationAvailabilityCallbacks::PresentationAvailabilityCallbacks(
     PresentationAvailabilityProperty* resolver,
-    const KURL& url)
-    : m_resolver(resolver), m_url(url) {
+    const Vector<KURL>& urls)
+    : m_resolver(resolver), m_urls(urls) {
   ASSERT(m_resolver);
 }
 
@@ -27,7 +27,7 @@ void PresentationAvailabilityCallbacks::onSuccess(bool value) {
       m_resolver->getExecutionContext()->isContextDestroyed())
     return;
   m_resolver->resolve(
-      PresentationAvailability::take(m_resolver.get(), m_url, value));
+      PresentationAvailability::take(m_resolver.get(), m_urls, value));
 }
 
 void PresentationAvailabilityCallbacks::onError(

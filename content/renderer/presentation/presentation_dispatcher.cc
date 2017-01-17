@@ -261,8 +261,10 @@ void PresentationDispatcher::terminateSession(
 }
 
 void PresentationDispatcher::getAvailability(
-    const blink::WebURL& availabilityUrl,
+    const blink::WebVector<blink::WebURL>& availabilityUrls,
     std::unique_ptr<blink::WebPresentationAvailabilityCallbacks> callbacks) {
+  // TODO(mfoltz): Pass all URLs to PresentationService. See crbug.com/627655.
+  const blink::WebURL& availabilityUrl = availabilityUrls[0];
   AvailabilityStatus* status = nullptr;
   auto status_it = availability_status_.find(availabilityUrl);
   if (status_it == availability_status_.end()) {
@@ -287,10 +289,12 @@ void PresentationDispatcher::getAvailability(
 
 void PresentationDispatcher::startListening(
     blink::WebPresentationAvailabilityObserver* observer) {
-  auto status_it = availability_status_.find(observer->url());
+  // TODO(mfoltz): Pass all URLs to PresentationService. See crbug.com/627655.
+  const blink::WebURL& availabilityUrl = observer->urls()[0];
+  auto status_it = availability_status_.find(availabilityUrl);
   if (status_it == availability_status_.end()) {
     DLOG(WARNING) << "Start listening for availability for unknown URL "
-                  << GURL(observer->url());
+                  << GURL(availabilityUrl);
     return;
   }
   status_it->second->availability_observers.insert(observer);
@@ -299,10 +303,12 @@ void PresentationDispatcher::startListening(
 
 void PresentationDispatcher::stopListening(
     blink::WebPresentationAvailabilityObserver* observer) {
-  auto status_it = availability_status_.find(observer->url());
+  // TODO(mfoltz): Pass all URLs to PresentationService. See crbug.com/627655.
+  const blink::WebURL& availabilityUrl = observer->urls()[0];
+  auto status_it = availability_status_.find(availabilityUrl);
   if (status_it == availability_status_.end()) {
     DLOG(WARNING) << "Stop listening for availability for unknown URL "
-                  << GURL(observer->url());
+                  << GURL(availabilityUrl);
     return;
   }
   status_it->second->availability_observers.erase(observer);

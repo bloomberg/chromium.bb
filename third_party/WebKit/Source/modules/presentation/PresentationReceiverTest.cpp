@@ -42,10 +42,10 @@ class MockWebPresentationClient : public WebPresentationClient {
     return joinSession_(presentationUrls, presentationId, callbacks);
   }
 
-  void getAvailability(const WebURL& availabilityURL,
+  void getAvailability(const WebVector<WebURL>& availabilityURLs,
                        std::unique_ptr<WebPresentationAvailabilityCallbacks>
                            callbacks) override {
-    return getAvailability_(availabilityURL, callbacks);
+    return getAvailability_(availabilityURLs, callbacks);
   }
 
  public:
@@ -88,7 +88,7 @@ class MockWebPresentationClient : public WebPresentationClient {
                     const WebString& presentationId));
 
   MOCK_METHOD2(getAvailability_,
-               void(const WebURL& availabilityUrl,
+               void(const WebVector<WebURL>& availabilityUrls,
                     std::unique_ptr<WebPresentationAvailabilityCallbacks>&));
 
   MOCK_METHOD1(startListening, void(WebPresentationAvailabilityObserver*));

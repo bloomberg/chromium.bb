@@ -29,7 +29,17 @@ test(function() {
   assert_equals(typeof(request.onconnectionavailable), "object");
 
   assert_true(request instanceof EventTarget);
-}, "Test PresentationRequest API types.");
+}, "Test PresentationRequest API types for a single URL.");
+
+test(function() {
+  var request = new PresentationRequest(["http://example.com", "cast://google.com/app_id=deadbeef"]);
+  assert_equals(typeof(request.start), "function");
+  assert_equals(typeof(request.reconnect), "function");
+  assert_equals(typeof(request.getAvailability), "function");
+  assert_equals(typeof(request.onconnectionavailable), "object");
+
+  assert_true(request instanceof EventTarget);
+}, "Test PresentationRequest API types for multiple URLs.");
 
 </script>
 </body>

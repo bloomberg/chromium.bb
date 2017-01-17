@@ -3915,6 +3915,7 @@ interface PresentationConnection : EventTarget
     getter onmessage
     getter onterminate
     getter state
+    getter url
     method close
     method constructor
     method send

@@ -111,7 +111,7 @@ class CONTENT_EXPORT PresentationDispatcher
   void terminateSession(const blink::WebURL& presentationUrl,
                         const blink::WebString& presentationId) override;
   void getAvailability(
-      const blink::WebURL& availabilityUrl,
+      const blink::WebVector<blink::WebURL>& availabilityUrl,
       std::unique_ptr<blink::WebPresentationAvailabilityCallbacks> callbacks)
       override;
   void startListening(blink::WebPresentationAvailabilityObserver*) override;
