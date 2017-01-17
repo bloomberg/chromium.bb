@@ -2,5 +2,5 @@ include_rules = [
   "+dbus",
   "+jni",
   "+ui/android",
-  "+ui/gfx/x",
+  "+ui/gfx",
 ]

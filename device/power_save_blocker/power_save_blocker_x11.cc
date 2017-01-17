@@ -32,6 +32,7 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {
@@ -436,6 +437,9 @@ bool PowerSaveBlocker::Delegate::DPMSEnabled() {
 
 bool PowerSaveBlocker::Delegate::XSSAvailable() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  // X Screen Saver isn't accessible in headless mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
+    return false;
   XDisplay* display = gfx::GetXDisplay();
   int dummy;
   int major;
@@ -452,6 +456,9 @@ bool PowerSaveBlocker::Delegate::XSSAvailable() {
 
 DBusAPI PowerSaveBlocker::Delegate::SelectAPI() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  // Power saving APIs are not accessible in headless mode.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
+    return NO_API;
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:

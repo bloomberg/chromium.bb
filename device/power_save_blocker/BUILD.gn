@@ -35,7 +35,10 @@ component("power_save_blocker") {
     if (!is_chromeos) {
       configs += [ "//build/config/linux:xscrnsaver" ]
     }
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/gfx",
+      "//ui/gfx/x",
+    ]
   }
 
   # Dealing with power_save_blocker_{x11,ozone}.cc is a little complicated
