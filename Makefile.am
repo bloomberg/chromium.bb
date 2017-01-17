@@ -1387,13 +1387,6 @@ nodist_viewporter_weston_SOURCES =		\
 viewporter_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 viewporter_weston_LDADD = libtest-client.la
 
-if ENABLE_EGL
-weston_tests += buffer-count.weston
-buffer_count_weston_SOURCES = tests/buffer-count-test.c
-buffer_count_weston_CFLAGS = $(AM_CFLAGS) $(EGL_TESTS_CFLAGS) $(TEST_CLIENT_CFLAGS)
-buffer_count_weston_LDADD = libtest-client.la $(EGL_TESTS_LIBS)
-endif
-
 if ENABLE_XWAYLAND_TEST
 weston_tests +=	xwayland-test.weston
 xwayland_test_weston_SOURCES = tests/xwayland-test.c

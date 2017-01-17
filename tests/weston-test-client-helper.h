@@ -182,9 +182,6 @@ frame_callback_wait_nofail(struct client *client, int *done);
 
 #define frame_callback_wait(c, d) assert(frame_callback_wait_nofail((c), (d)))
 
-int
-get_n_egl_buffers(struct client *client);
-
 void
 skip(const char *fmt, ...);
 
