@@ -899,6 +899,8 @@ component("platform") {
     "graphics/WebGraphicsContext3DProviderWrapper.h",
     "graphics/compositing/PaintArtifactCompositor.cpp",
     "graphics/compositing/PaintArtifactCompositor.h",
+    "graphics/compositing/PropertyTreeManager.cpp",
+    "graphics/compositing/PropertyTreeManager.h",
     "graphics/cpu/arm/WebGLImageConversionNEON.h",
     "graphics/cpu/mips/WebGLImageConversionMSA.h",
     "graphics/cpu/x86/WebGLImageConversionSSE.h",
