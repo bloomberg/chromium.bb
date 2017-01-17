@@ -93,7 +93,8 @@ PrintPreviewWebUITest.prototype = {
         startGetLocalDestinations: function() {},
         startGetPrivetDestinations: function() {},
         startGetExtensionDestinations: function() {},
-        startGetLocalDestinationCapabilities: function(destinationId) {}
+        startGetLocalDestinationCapabilities: function(destinationId) {},
+        startGetPreview: function() {},
       };
       var oldNativeLayerEventType = print_preview.NativeLayer.EventType;
       var oldDuplexMode = print_preview.NativeLayer.DuplexMode;
@@ -1278,4 +1279,42 @@ TEST_F('PrintPreviewWebUITest', 'TestAdvancedSettings2Options', function() {
       querySelector('.search-box-area'), true);
 
   this.waitForAnimationToEnd('more-settings');
+});
+
+// Test that initialization with saved destination only issues one call
+// to startPreview.
+TEST_F('PrintPreviewWebUITest', 'TestInitIssuesOneRequest', function() {
+  // Load in a bunch of recent destinations with non null capabilities.
+  var origin = cr.isChromeOS ? 'chrome_os' : 'local';
+  var initSettings = {
+    version: 2,
+    recentDestinations: [1, 2, 3].map(function(i) {
+      return {
+        id: 'ID' + i, origin: origin, account: '',
+        capabilities: getCddTemplate('ID' + i), name: '',
+        extensionId: '', extensionName: ''
+      };
+    }),
+  };
+  this.initialSettings_.serializedAppStateStr_ = JSON.stringify(initSettings);
+  this.setCapabilities(getCddTemplate('ID1'));
+  this.setCapabilities(getCddTemplate('ID2'));
+  this.setCapabilities(getCddTemplate('ID3'));
+
+  // Use a real preview generator.
+  printPreview.previewArea_.previewGenerator_ =
+      new print_preview.PreviewGenerator(printPreview.destinationStore_,
+        printPreview.printTicketStore_, this.nativeLayer_,
+        printPreview.documentInfo_);
+
+  // Preview generator starts out with inFlightRequestId_ == -1. The id
+  // increments by 1 for each startGetPreview call it makes. It should only
+  // make one such call during initialization or there will be a race; see
+  // crbug.com/666595
+  expectEquals(printPreview.previewArea_.previewGenerator_.inFlightRequestId_,
+    -1);
+  this.setInitialSettings();
+  expectEquals(printPreview.previewArea_.previewGenerator_.inFlightRequestId_,
+    0);
+  testDone();
 });
