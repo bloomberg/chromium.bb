@@ -403,7 +403,11 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
     result = CREATE_HISTOGRAM_ALLOCATOR_ERROR;
   }
   RecordCreateHistogramResult(result);
-  NOTREACHED() << "error=" << result;
+
+  // Crash for failures caused by internal bugs but not "full" which is
+  // dependent on outside code.
+  if (result != CREATE_HISTOGRAM_ALLOCATOR_FULL)
+    NOTREACHED() << memory_allocator_->Name() << ", error=" << result;
 
   return nullptr;
 }
