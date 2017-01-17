@@ -1218,7 +1218,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
             popup_model->result().default_match()->destination_url.spec());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
+#if defined(OS_WIN)
+#define MAYBE_DeleteItem DISABLED_DeleteItem
+#else
+#define MAYBE_DeleteItem DeleteItem
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DeleteItem) {
   // Disable the search provider, to make sure the popup contains only history
   // items.
   TemplateURLService* model =
