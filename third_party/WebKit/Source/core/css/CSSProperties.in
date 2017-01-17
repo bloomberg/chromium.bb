@@ -342,7 +342,7 @@ perspective interpolable, converter=convertPerspective
 perspective-origin interpolable, converter=convertPosition
 pointer-events inherited, independent, keyword_only, keywords=[none|auto|stroke|fill|painted|visible|visibleStroke|visibleFill|visiblePainted|bounding-box|all], initial_keyword=auto
 position custom_inherit
-quotes inherited, converter=convertQuotes
+quotes inherited, converter=convertQuotes, api_class
 resize custom_value
 right typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 r interpolable, svg, converter=convertLength

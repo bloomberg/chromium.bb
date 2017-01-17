@@ -329,19 +329,10 @@ static CSSValue* consumeFontFeatureSettings(CSSParserTokenRange& range) {
   return settings;
 }
 
-static CSSValue* consumeQuotes(CSSParserTokenRange& range) {
+static CSSValue* consumeWebkitHighlight(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
-  CSSValueList* values = CSSValueList::createSpaceSeparated();
-  while (!range.atEnd()) {
-    CSSStringValue* parsedValue = consumeString(range);
-    if (!parsedValue)
-      return nullptr;
-    values->append(*parsedValue);
-  }
-  if (values->length() && values->length() % 2 == 0)
-    return values;
-  return nullptr;
+  return consumeString(range);
 }
 
 class FontVariantLigaturesParser {
@@ -2993,8 +2984,8 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     return cssPropertyDesc.parseSingleValue(m_range, m_context);
 
   switch (property) {
-    case CSSPropertyQuotes:
-      return consumeQuotes(m_range);
+    case CSSPropertyWebkitHighlight:
+      return consumeWebkitHighlight(m_range);
     case CSSPropertyFontVariantCaps:
       return consumeFontVariantCaps(m_range);
     case CSSPropertyFontVariantLigatures:
