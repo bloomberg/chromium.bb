@@ -34,6 +34,7 @@ class IOSNTPTilesInternalsMessageHandlerBridge
   void RegisterMessages() override;
 
   // ntp_tiles::NTPTilesInternalsMessageHandlerClient
+  bool SupportsNTPTiles() override;
   bool DoesSourceExist(ntp_tiles::NTPTileSource source) override;
   std::unique_ptr<ntp_tiles::MostVisitedSites> MakeMostVisitedSites() override;
   std::unique_ptr<ntp_tiles::PopularSites> MakePopularSites() override;
@@ -52,6 +53,11 @@ class IOSNTPTilesInternalsMessageHandlerBridge
 
 void IOSNTPTilesInternalsMessageHandlerBridge::RegisterMessages() {
   handler_.RegisterMessages(this);
+}
+
+bool IOSNTPTilesInternalsMessageHandlerBridge::SupportsNTPTiles() {
+  auto* state = ios::ChromeBrowserState::FromWebUIIOS(web_ui());
+  return !state->HasOffTheRecordChromeBrowserState();
 }
 
 bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(

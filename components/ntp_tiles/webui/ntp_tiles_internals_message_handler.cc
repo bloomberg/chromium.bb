@@ -44,6 +44,9 @@ void NTPTilesInternalsMessageHandler::RegisterMessages(
 
 void NTPTilesInternalsMessageHandler::HandleRegisterForEvents(
     const base::ListValue* args) {
+  if (!client_->SupportsNTPTiles()) {
+    return;
+  }
   DCHECK(args->empty());
 
   SendSourceInfo();
@@ -54,6 +57,9 @@ void NTPTilesInternalsMessageHandler::HandleRegisterForEvents(
 
 void NTPTilesInternalsMessageHandler::HandleUpdate(
     const base::ListValue* args) {
+  if (!client_->SupportsNTPTiles()) {
+    return;
+  }
   const base::DictionaryValue* dict = nullptr;
   DCHECK_EQ(1u, args->GetSize());
   args->GetDictionary(0, &dict);

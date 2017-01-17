@@ -42,6 +42,7 @@ class ChromeNTPTilesInternalsMessageHandlerClient
   void RegisterMessages() override;
 
   // ntp_tiles::NTPTilesInternalsMessageHandlerClient
+  bool SupportsNTPTiles() override;
   bool DoesSourceExist(ntp_tiles::NTPTileSource source) override;
   std::unique_ptr<ntp_tiles::MostVisitedSites> MakeMostVisitedSites() override;
   std::unique_ptr<ntp_tiles::PopularSites> MakePopularSites() override;
@@ -60,6 +61,11 @@ class ChromeNTPTilesInternalsMessageHandlerClient
 
 void ChromeNTPTilesInternalsMessageHandlerClient::RegisterMessages() {
   handler_.RegisterMessages(this);
+}
+
+bool ChromeNTPTilesInternalsMessageHandlerClient::SupportsNTPTiles() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  return !(profile->IsGuestSession() || profile->IsOffTheRecord());
 }
 
 bool ChromeNTPTilesInternalsMessageHandlerClient::DoesSourceExist(

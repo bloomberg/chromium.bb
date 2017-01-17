@@ -31,6 +31,9 @@ class NTPTilesInternalsMessageHandlerClient {
   // Returns the PrefService for the embedder and containing WebUI page.
   virtual PrefService* GetPrefs() = 0;
 
+  // False if in a browser mode (e.g. incognito) where tiles aren't supported.
+  virtual bool SupportsNTPTiles() = 0;
+
   // Returns true if the given source is enabled (even if, in practice, none of
   // the tiles would come from it).
   virtual bool DoesSourceExist(NTPTileSource source) = 0;
