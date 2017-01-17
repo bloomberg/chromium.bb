@@ -147,10 +147,14 @@
 #      'target_name': 'quick_view_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'quick_view_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+     {
+       'target_name': 'quick_view_model',
+       'dependencies': [
+         '../../../../../ui/webui/resources/js/compiled_resources2.gyp:cr',
+         '../../../../../ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+       ],
+       'includes': ['../../../compile_js2.gypi'],
+     },
 #    {
 #      'target_name': 'quick_view_uma',
 #      'includes': ['../../../compile_js2.gypi'],
