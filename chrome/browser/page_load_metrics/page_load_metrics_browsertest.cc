@@ -49,6 +49,7 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
 
   base::HistogramTester histogram_tester_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsBrowserTest);
 };
 
@@ -85,6 +86,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
       internal::kHistogramParseBlockedOnScriptLoad, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramParseBlockedOnScriptExecution, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
 
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
   // have been recorded.
@@ -548,4 +550,18 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
       "PageLoad.CSSTiming.Update.BeforeFirstContentfulPaint", 1);
   histogram_tester_.ExpectTotalCount(
       "PageLoad.CSSTiming.ParseAndUpdate.BeforeFirstContentfulPaint", 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSize) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
+                                              "/page_load_metrics/large.html"));
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
+
+  // Verify that there is a single sample recorded in the 10kB bucket (the size
+  // of the main HTML response).
+  histogram_tester_.ExpectBucketCount(internal::kHistogramTotalBytes, 10, 1);
 }

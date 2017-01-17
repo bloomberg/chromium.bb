@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/user_input_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "content/public/browser/global_request_id.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -133,6 +135,8 @@ class PageLoadTracker {
                   int aborted_chain_size_same_url);
   ~PageLoadTracker();
   void Redirect(content::NavigationHandle* navigation_handle);
+  void WillProcessNavigationResponse(
+      content::NavigationHandle* navigation_handle);
   void Commit(content::NavigationHandle* navigation_handle);
   void FailedProvisionalLoad(content::NavigationHandle* navigation_handle);
   void WebContentsHidden();
@@ -210,6 +214,14 @@ class PageLoadTracker {
 
   UserInputTracker* input_tracker() { return &input_tracker_; }
 
+  // Whether this PageLoadTracker has a navigation GlobalRequestID that matches
+  // the given request_id. This method will return false before
+  // WillProcessNavigationResponse has been invoked, as PageLoadTracker doesn't
+  // know its GlobalRequestID until WillProcessNavigationResponse has been
+  // invoked.
+  bool HasMatchingNavigationRequestID(
+      const content::GlobalRequestID& request_id) const;
+
  private:
   // This function converts a TimeTicks value taken in the browser process
   // to navigation_start_ if:
@@ -278,6 +290,8 @@ class PageLoadTracker {
   PageLoadMetadata metadata_;
 
   ui::PageTransition page_transition_;
+
+  base::Optional<content::GlobalRequestID> navigation_request_id_;
 
   // Whether this page load was user initiated.
   UserInitiatedInfo user_initiated_info_;

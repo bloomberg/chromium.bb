@@ -66,11 +66,15 @@ class MetricsWebContentsObserver
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
 
-  // This method is forwarded from the MetricsNavigationThrottle.
+  // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);
+  void WillProcessNavigationResponse(
+      content::NavigationHandle* navigation_handle);
 
-  // A resource request completed on the IO thread.
-  void OnRequestComplete(content::ResourceType resource_type,
+  // A resource request completed on the IO thread. This method is invoked on
+  // the UI thread.
+  void OnRequestComplete(const content::GlobalRequestID& request_id,
+                         content::ResourceType resource_type,
                          bool was_cached,
                          bool used_data_reduction_proxy,
                          int64_t raw_body_bytes,
@@ -96,6 +100,14 @@ class MetricsWebContentsObserver
   void HandleCommittedNavigationForTrackedLoad(
       content::NavigationHandle* navigation_handle,
       std::unique_ptr<PageLoadTracker> tracker);
+
+  // Return a PageLoadTracker (either provisional or committed) that matches the
+  // given request attributes, or nullptr if there are no matching
+  // PageLoadTrackers.
+  PageLoadTracker* GetTrackerOrNullForRequest(
+      const content::GlobalRequestID& request_id,
+      content::ResourceType resource_type,
+      base::TimeTicks creation_time);
 
   // Notify all loads, provisional and committed, that we performed an action
   // that might abort them.

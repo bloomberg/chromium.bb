@@ -18,6 +18,7 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "ui/base/page_transition_types.h"
 
 // This macro invokes the specified method on each observer, passing the
@@ -425,6 +426,20 @@ void PageLoadTracker::WebContentsShown() {
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnShown);
 }
 
+void PageLoadTracker::WillProcessNavigationResponse(
+    content::NavigationHandle* navigation_handle) {
+  // PlzNavigate: NavigationHandle::GetGlobalRequestID() sometimes returns an
+  // uninitialized GlobalRequestID. Bail early in this case. See
+  // crbug.com/680841 for details.
+  if (content::IsBrowserSideNavigationEnabled() &&
+      navigation_handle->GetGlobalRequestID() == content::GlobalRequestID())
+    return;
+
+  DCHECK(!navigation_request_id_.has_value());
+  navigation_request_id_ = navigation_handle->GetGlobalRequestID();
+  DCHECK(navigation_request_id_.value() != content::GlobalRequestID());
+}
+
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   committed_url_ = navigation_handle->GetURL();
   // Some transitions (like CLIENT_REDIRECT) are only known at commit time.
@@ -594,6 +609,13 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
       first_background_time, first_foreground_time, started_in_foreground_,
       user_initiated_info_, committed_url_, start_url_, abort_type_,
       abort_user_initiated_info_, time_to_abort, metadata_);
+}
+
+bool PageLoadTracker::HasMatchingNavigationRequestID(
+    const content::GlobalRequestID& request_id) const {
+  DCHECK(request_id != content::GlobalRequestID());
+  return navigation_request_id_.has_value() &&
+         navigation_request_id_.value() == request_id;
 }
 
 void PageLoadTracker::NotifyAbort(UserAbortType abort_type,

@@ -28,6 +28,16 @@ MetricsNavigationThrottle::WillStartRequest() {
   return content::NavigationThrottle::PROCEED;
 }
 
+content::NavigationThrottle::ThrottleCheckResult
+MetricsNavigationThrottle::WillProcessResponse() {
+  MetricsWebContentsObserver* observer =
+      MetricsWebContentsObserver::FromWebContents(
+          navigation_handle()->GetWebContents());
+  if (observer)
+    observer->WillProcessNavigationResponse(navigation_handle());
+  return content::NavigationThrottle::PROCEED;
+}
+
 MetricsNavigationThrottle::MetricsNavigationThrottle(
     content::NavigationHandle* handle)
     : content::NavigationThrottle(handle) {}

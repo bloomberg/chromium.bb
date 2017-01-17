@@ -353,6 +353,7 @@ void LogMainFrameMetricsOnUIThread(const GURL& url,
 void NotifyUIThreadOfRequestComplete(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
+    const content::GlobalRequestID& request_id,
     ResourceType resource_type,
     bool was_cached,
     bool used_data_reduction_proxy,
@@ -377,8 +378,8 @@ void NotifyUIThreadOfRequestComplete(
           web_contents);
   if (metrics_observer) {
     metrics_observer->OnRequestComplete(
-        resource_type, was_cached, used_data_reduction_proxy, raw_body_bytes,
-        original_content_length, request_creation_time);
+        request_id, resource_type, was_cached, used_data_reduction_proxy,
+        raw_body_bytes, original_content_length, request_creation_time);
   }
 }
 
@@ -847,9 +848,9 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NotifyUIThreadOfRequestComplete,
                  info->GetWebContentsGetterForRequest(), url_request->url(),
-                 info->GetResourceType(), url_request->was_cached(),
-                 used_data_reduction_proxy, net_error,
-                 url_request->GetTotalReceivedBytes(),
+                 info->GetGlobalRequestID(), info->GetResourceType(),
+                 url_request->was_cached(), used_data_reduction_proxy,
+                 net_error, url_request->GetTotalReceivedBytes(),
                  url_request->GetRawBodyBytes(), original_content_length,
                  url_request->creation_time(),
                  base::TimeTicks::Now() - url_request->creation_time()));

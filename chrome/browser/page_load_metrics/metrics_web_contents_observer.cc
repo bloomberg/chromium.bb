@@ -20,6 +20,7 @@
 #include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -175,29 +176,74 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
           chain_size_same_url)));
 }
 
+void MetricsWebContentsObserver::WillProcessNavigationResponse(
+    content::NavigationHandle* navigation_handle) {
+  auto it = provisional_loads_.find(navigation_handle);
+  if (it == provisional_loads_.end())
+    return;
+  it->second->WillProcessNavigationResponse(navigation_handle);
+}
+
+PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
+    const content::GlobalRequestID& request_id,
+    content::ResourceType resource_type,
+    base::TimeTicks creation_time) {
+  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+    // The main frame request can complete either before or after commit, so we
+    // look at both provisional loads and the committed load to find a
+    // PageLoadTracker with a matching request id. See https://goo.gl/6TzCYN for
+    // more details.
+    for (const auto& kv : provisional_loads_) {
+      PageLoadTracker* candidate = kv.second.get();
+      if (candidate->HasMatchingNavigationRequestID(request_id)) {
+        return candidate;
+      }
+    }
+    if (committed_load_ &&
+        committed_load_->HasMatchingNavigationRequestID(request_id)) {
+      return committed_load_.get();
+    }
+  } else {
+    // Non main frame resources are always associated with the currently
+    // committed load. If the resource request was started before this
+    // navigation then it should be ignored.
+
+    // TODO(jkarlin): There is a race here. Consider the following sequence:
+    // 1. renderer has a committed page A
+    // 2. navigation is initiated to page B
+    // 3. page A initiates URLRequests (e.g. in the unload handler)
+    // 4. page B commits
+    // 5. the URLRequests initiated by A complete
+    // In the above example, the URLRequests initiated by A will be attributed
+    // to page load B. This should be relatively rare but we may want to fix
+    // this at some point. We could fix this by comparing the URLRequest
+    // creation time against the committed load's commit time, however more
+    // investigation is needed to confirm that all cases would be handled
+    // correctly (for example Link: preloads).
+    if (committed_load_ &&
+        creation_time >= committed_load_->navigation_start()) {
+      return committed_load_.get();
+    }
+  }
+  return nullptr;
+}
+
 void MetricsWebContentsObserver::OnRequestComplete(
+    const content::GlobalRequestID& request_id,
     content::ResourceType resource_type,
     bool was_cached,
     bool used_data_reduction_proxy,
     int64_t raw_body_bytes,
     int64_t original_content_length,
     base::TimeTicks creation_time) {
-  // If the navigation hasn't committed yet then we'll miss the resource (this
-  // happens on the new tab page). Also, if the resource request was started
-  // before this navigation then it should be ignored.
-  // TODO(jkarlin): There is a race here. If a renderer starts URLRequests for
-  // page A after navigating (but before comitting) to page B, then page A's
-  // requests might wind up counting toward page B's size. This should be
-  // relatively rare but we may want to fix this at some point.
-  if (!committed_load_ || creation_time < committed_load_->navigation_start()) {
-    return;
+  PageLoadTracker* tracker =
+      GetTrackerOrNullForRequest(request_id, resource_type, creation_time);
+  if (tracker) {
+    ExtraRequestInfo extra_request_info(
+        was_cached, raw_body_bytes, used_data_reduction_proxy,
+        was_cached ? 0 : original_content_length);
+    tracker->OnLoadedResource(extra_request_info);
   }
-
-  ExtraRequestInfo extra_request_info(was_cached, raw_body_bytes,
-                                      used_data_reduction_proxy,
-                                      was_cached ? 0 : original_content_length);
-
-  committed_load_->OnLoadedResource(extra_request_info);
 }
 
 const PageLoadExtraInfo

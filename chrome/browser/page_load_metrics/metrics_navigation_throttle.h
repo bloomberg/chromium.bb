@@ -24,6 +24,8 @@ class MetricsNavigationThrottle : public content::NavigationThrottle {
 
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
+  content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
+      override;
 
  private:
   explicit MetricsNavigationThrottle(content::NavigationHandle* handle);
