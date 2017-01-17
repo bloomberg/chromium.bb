@@ -1080,7 +1080,6 @@ void Animation::addedEventListener(
 }
 
 void Animation::pauseForTesting(double pauseTime) {
-  RELEASE_ASSERT(!paused());
   setCurrentTimeInternal(pauseTime, TimingUpdateOnDemand);
   if (hasActiveAnimationsOnCompositor())
     toKeyframeEffectReadOnly(m_content.get())
