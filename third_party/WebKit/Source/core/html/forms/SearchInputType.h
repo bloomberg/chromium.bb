@@ -59,7 +59,7 @@ class SearchInputType final : public BaseTextInputType {
   void startSearchEventTimer();
   void updateCancelButtonVisibility();
 
-  Timer<SearchInputType> m_searchEventTimer;
+  TaskRunnerTimer<SearchInputType> m_searchEventTimer;
 };
 
 }  // namespace blink

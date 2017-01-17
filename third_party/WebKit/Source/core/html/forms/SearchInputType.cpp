@@ -48,7 +48,10 @@ using namespace HTMLNames;
 
 inline SearchInputType::SearchInputType(HTMLInputElement& element)
     : BaseTextInputType(element),
-      m_searchEventTimer(this, &SearchInputType::searchEventTimerFired) {}
+      m_searchEventTimer(
+          TaskRunnerHelper::get(TaskType::UserInteraction, &element.document()),
+          this,
+          &SearchInputType::searchEventTimerFired) {}
 
 InputType* SearchInputType::create(HTMLInputElement& element) {
   return new SearchInputType(element);
