@@ -143,7 +143,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     // get USS as stable as possible.
     sync_service->RegisterDataTypeController(
         base::MakeUnique<ModelTypeController>(
-            syncer::DEVICE_INFO, base::Bind(&base::debug::DumpWithoutCrashing),
+            syncer::DEVICE_INFO,
+            base::Bind(base::IgnoreResult(&base::debug::DumpWithoutCrashing)),
             sync_client_, ui_thread_));
   } else {
     sync_service->RegisterDataTypeController(
@@ -158,7 +159,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     if (base::FeatureList::IsEnabled(switches::kSyncUSSAutocomplete)) {
       sync_service->RegisterDataTypeController(
           base::MakeUnique<ModelTypeController>(
-              syncer::AUTOFILL, base::Bind(&base::debug::DumpWithoutCrashing),
+              syncer::AUTOFILL,
+              base::Bind(base::IgnoreResult(&base::debug::DumpWithoutCrashing)),
               sync_client_, db_thread_));
     } else {
       sync_service->RegisterDataTypeController(
