@@ -941,7 +941,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   _tabStripController.reset();
   _infoBarContainer.reset();
   _readingListMenuNotifier.reset();
-  _bookmarkModel->RemoveObserver(_bookmarkModelBridge.get());
+  if (_bookmarkModel)
+    _bookmarkModel->RemoveObserver(_bookmarkModelBridge.get());
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -1656,10 +1657,13 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   _imageFetcher->SetRequestContextGetter(_browserState->GetRequestContext());
   _dominantColorCache.reset([[NSMutableDictionary alloc] init]);
 
-  // Register for bookmark changed notification.
-  _bookmarkModelBridge.reset(new BrowserBookmarkModelBridge(self));
+  // Register for bookmark changed notification (BookmarkModel may be null
+  // during testing, so explicitly support this).
   _bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(_browserState);
-  _bookmarkModel->AddObserver(_bookmarkModelBridge.get());
+  if (_bookmarkModel) {
+    _bookmarkModelBridge.reset(new BrowserBookmarkModelBridge(self));
+    _bookmarkModel->AddObserver(_bookmarkModelBridge.get());
+  }
 }
 
 - (void)ensureViewCreated {
@@ -2155,7 +2159,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   // TODO(noyau): this is incorrect, the caller should know that the model is
   // not loaded yet.
-  if (!_bookmarkModel->loaded())
+  if (!_bookmarkModel || !_bookmarkModel->loaded())
     return filesReferencedByTabs;
 
   std::vector<bookmarks::BookmarkModel::URLAndTitle> bookmarks;

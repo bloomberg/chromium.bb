@@ -7,8 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
@@ -22,14 +20,8 @@ class BrowserViewWranglerTest : public PlatformTest {
   BrowserViewWranglerTest() {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
-    chrome_browser_state_->CreateBookmarkModel(false);
-    bookmarks::BookmarkModel* bookmark_model =
-        ios::BookmarkModelFactory::GetForBrowserState(
-            chrome_browser_state_.get());
-    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
   }
 
-  // SessionWindow, used to create the TabModel, needs to run on the web thread.
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
