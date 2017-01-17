@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/mojo/GeometryStructTraits.h"
+#include "third_party/WebKit/Source/platform/mojo/GeometryStructTraits.h"
 
 namespace mojo {
 
 // static
-bool StructTraits<gfx::mojom::blink::Size::DataView, ::blink::WebSize>::Read(
-    gfx::mojom::blink::Size::DataView data,
+bool StructTraits<gfx::mojom::SizeDataView, ::blink::WebSize>::Read(
+    gfx::mojom::SizeDataView data,
     ::blink::WebSize* out) {
   if (data.width() < 0 || data.height() < 0)
     return false;

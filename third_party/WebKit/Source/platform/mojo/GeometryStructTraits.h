@@ -5,17 +5,16 @@
 #ifndef GeometryStructTraits_h
 #define GeometryStructTraits_h
 
-#include "platform/PlatformExport.h"
-#include "ui/gfx/geometry/mojo/geometry.mojom-blink.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
+#include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct PLATFORM_EXPORT
-    StructTraits<gfx::mojom::blink::Size::DataView, ::blink::WebSize> {
+struct StructTraits<gfx::mojom::SizeDataView, ::blink::WebSize> {
   static int width(const ::blink::WebSize& size) { return size.width; }
   static int height(const ::blink::WebSize& size) { return size.height; }
-  static bool Read(gfx::mojom::blink::Size::DataView, ::blink::WebSize* out);
+  static bool Read(gfx::mojom::SizeDataView, ::blink::WebSize* out);
 };
 
 }  // namespace mojo

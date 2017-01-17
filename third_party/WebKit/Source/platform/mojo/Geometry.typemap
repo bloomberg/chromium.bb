@@ -10,6 +10,7 @@ traits_headers =
 # Note: consumers of this typemap must themselves depend on platform.
 deps = [
   "//mojo/public/cpp/bindings",
+  "//third_party/WebKit/Source/platform/mojo:geometry_struct_traits",
 ]
 
 # TODO(zqzhang): ideally, gfx.mojom.Size should be mapped into ::blink::IntSize.
