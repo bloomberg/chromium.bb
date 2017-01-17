@@ -200,8 +200,9 @@ public class NewTabPageView extends FrameLayout
          * Opens a content suggestion and records related metrics.
          * @param windowOpenDisposition How to open (current tab, new tab, new window etc).
          * @param article The content suggestion to open.
+         * @param categoryIndex The index of the category |article| belongs to.
          */
-        void openSnippet(int windowOpenDisposition, SnippetArticle article);
+        void openSnippet(int windowOpenDisposition, SnippetArticle article, int categoryIndex);
 
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.

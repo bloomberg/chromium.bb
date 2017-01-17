@@ -147,10 +147,11 @@ public class SnippetsBridge implements SuggestionsSource {
                 suggestion.mPublishTimestampMilliseconds, suggestion.mScore);
     }
 
-    public void onSuggestionOpened(SnippetArticle suggestion, int windowOpenDisposition) {
+    public void onSuggestionOpened(
+            SnippetArticle suggestion, int categoryIndex, int windowOpenDisposition) {
         assert mNativeSnippetsBridge != 0;
         nativeOnSuggestionOpened(mNativeSnippetsBridge, suggestion.mGlobalPosition,
-                suggestion.mCategory, suggestion.mPosition,
+                suggestion.mCategory, categoryIndex, suggestion.mPosition,
                 suggestion.mPublishTimestampMilliseconds, suggestion.mScore, windowOpenDisposition);
     }
 
@@ -313,8 +314,8 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeOnSuggestionShown(long nativeNTPSnippetsBridge, int globalPosition,
             int category, int categoryPosition, long publishTimestampMs, float score);
     private native void nativeOnSuggestionOpened(long nativeNTPSnippetsBridge, int globalPosition,
-            int category, int categoryPosition, long publishTimestampMs, float score,
-            int windowOpenDisposition);
+            int category, int categoryIndex, int categoryPosition, long publishTimestampMs,
+            float score, int windowOpenDisposition);
     private native void nativeOnSuggestionMenuOpened(long nativeNTPSnippetsBridge,
             int globalPosition, int category, int categoryPosition, long publishTimestampMs,
             float score);

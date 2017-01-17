@@ -51,7 +51,7 @@ public class SectionList
         SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
         int[] categories = suggestionsSource.getCategories();
         int[] suggestionsPerCategory = new int[categories.length];
-        int i = 0;
+        int categoryIndex = 0;
         for (int category : categories) {
             int categoryStatus = suggestionsSource.getCategoryStatus(category);
             if (categoryStatus == CategoryStatus.LOADING_ERROR
@@ -59,8 +59,11 @@ public class SectionList
                     || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED)
                 continue;
 
-            suggestionsPerCategory[i++] =
+            suggestionsPerCategory[categoryIndex] =
                     resetSection(category, categoryStatus, alwaysAllowEmptySections);
+            SuggestionsSection section = mSections.get(category);
+            if (section != null) section.setCategoryIndex(categoryIndex);
+            ++categoryIndex;
         }
 
         mNewTabPageManager.trackSnippetsPageImpression(categories, suggestionsPerCategory);

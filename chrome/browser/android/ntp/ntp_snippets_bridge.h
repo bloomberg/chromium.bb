@@ -105,6 +105,7 @@ class NTPSnippetsBridge
                           const base::android::JavaParamRef<jobject>& obj,
                           jint global_position,
                           jint j_category_id,
+                          jint category_index,
                           jint category_position,
                           jlong publish_timestamp_ms,
                           jfloat score,

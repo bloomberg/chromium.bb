@@ -70,6 +70,7 @@ public class SnippetArticleViewHolder
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
     private SuggestionsCategoryInfo mCategoryInfo;
+    private int mCategoryIndex;
     private int mPublisherFaviconSizePx;
 
     private final boolean mUseFaviconService;
@@ -117,12 +118,12 @@ public class SnippetArticleViewHolder
 
     @Override
     public void onCardTapped() {
-        mNewTabPageManager.openSnippet(WindowOpenDisposition.CURRENT_TAB, mArticle);
+        mNewTabPageManager.openSnippet(WindowOpenDisposition.CURRENT_TAB, mArticle, mCategoryIndex);
     }
 
     @Override
     public void openItem(int windowDisposition) {
-        mNewTabPageManager.openSnippet(windowDisposition, mArticle);
+        mNewTabPageManager.openSnippet(windowDisposition, mArticle, mCategoryIndex);
     }
 
     @Override
@@ -223,8 +224,8 @@ public class SnippetArticleViewHolder
                 BidiFormatter.getInstance().unicodeWrap(article.mPublisher), relativeTimeSpan);
     }
 
-    public void onBindViewHolder(
-            SnippetArticle article, SuggestionsCategoryInfo categoryInfo, List<Object> payloads) {
+    public void onBindViewHolder(SnippetArticle article, SuggestionsCategoryInfo categoryInfo,
+            List<Object> payloads, int categoryIndex) {
         if (!payloads.isEmpty() && article.equals(mArticle)) {
             performPartialBind(payloads);
             return;
@@ -234,6 +235,7 @@ public class SnippetArticleViewHolder
 
         mArticle = article;
         mCategoryInfo = categoryInfo;
+        mCategoryIndex = categoryIndex;
         updateLayout();
 
         mHeadlineTextView.setText(mArticle.mTitle);

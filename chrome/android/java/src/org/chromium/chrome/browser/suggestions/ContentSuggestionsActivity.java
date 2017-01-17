@@ -109,7 +109,8 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
         public void trackSnippetCategoryActionClick(int category, int position) {}
 
         @Override
-        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {}
+        public void openSnippet(
+                int windowOpenDisposition, SnippetArticle article, int categoryIndex) {}
 
         @Override
         public void focusSearchBox(boolean beginVoiceSearch, String pastedText) {}

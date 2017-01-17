@@ -280,7 +280,8 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public void trackSnippetCategoryActionClick(int category, int position) {}
 
         @Override
-        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
+        public void openSnippet(
+                int windowOpenDisposition, SnippetArticle article, int categoryIndex) {
             throw new UnsupportedOperationException();
         }
 

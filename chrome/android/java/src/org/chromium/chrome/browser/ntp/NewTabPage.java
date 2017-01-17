@@ -368,9 +368,15 @@ public class NewTabPage
             }
         }
 
+        public void trackSnippetOpened(
+                int windowOpenDisposition, SnippetArticle article, int categoryIndex) {
+            mSnippetsBridge.onSuggestionOpened(article, categoryIndex, windowOpenDisposition);
+        }
+
         @Override
-        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
-            mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
+        public void openSnippet(
+                int windowOpenDisposition, SnippetArticle article, int categoryIndex) {
+            trackSnippetOpened(windowOpenDisposition, article, categoryIndex);
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
             if (article.mIsAssetDownload) {

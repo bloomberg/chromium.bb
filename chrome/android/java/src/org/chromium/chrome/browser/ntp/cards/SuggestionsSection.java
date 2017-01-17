@@ -80,11 +80,20 @@ public class SuggestionsSection extends InnerNode {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
         private final NewTabPageManager mNewTabPageManager;
         private final SuggestionsCategoryInfo mCategoryInfo;
+        private int mCategoryIndex;
 
         public SuggestionsList(NewTabPageManager newTabPageManager,
                 SuggestionsCategoryInfo categoryInfo) {
             mNewTabPageManager = newTabPageManager;
             mCategoryInfo = categoryInfo;
+        }
+
+        public void setCategoryIndex(int categoryIndex) {
+            mCategoryIndex = categoryIndex;
+        }
+
+        public int getCategoryIndex() {
+            return mCategoryIndex;
         }
 
         @Override
@@ -105,7 +114,8 @@ public class SuggestionsSection extends InnerNode {
             checkIndex(position);
             assert holder instanceof SnippetArticleViewHolder;
             ((SnippetArticleViewHolder) holder)
-                    .onBindViewHolder(getSuggestionAt(position), mCategoryInfo, payloads);
+                    .onBindViewHolder(
+                            getSuggestionAt(position), mCategoryInfo, payloads, mCategoryIndex);
         }
 
         @Override
@@ -424,6 +434,14 @@ public class SuggestionsSection extends InnerNode {
 
     public SuggestionsCategoryInfo getCategoryInfo() {
         return mCategoryInfo;
+    }
+
+    public int getCategoryIndex() {
+        return mSuggestionsList.getCategoryIndex();
+    }
+
+    public void setCategoryIndex(int categoryIndex) {
+        mSuggestionsList.setCategoryIndex(categoryIndex);
     }
 
     public String getHeaderText() {
