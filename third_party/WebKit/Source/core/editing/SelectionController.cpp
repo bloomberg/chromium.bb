@@ -167,16 +167,6 @@ bool SelectionController::handleMousePressEventSingleClick(
   // link or image.
   bool extendSelection = isExtendingSelection(event);
 
-  // Don't restart the selection when the mouse is pressed on an
-  // existing selection so we can allow for text dragging.
-  if (FrameView* view = m_frame->view()) {
-    LayoutPoint vPoint = view->rootFrameToContents(event.event().position());
-    if (!extendSelection && selection().contains(vPoint)) {
-      m_mouseDownWasSingleClickInSelection = true;
-      return false;
-    }
-  }
-
   const VisiblePositionInFlatTree& visibleHitPos =
       visiblePositionOfHitTestResult(event.hitTestResult());
   const VisiblePositionInFlatTree& visiblePos =
@@ -186,6 +176,25 @@ bool SelectionController::handleMousePressEventSingleClick(
           : visibleHitPos;
   const VisibleSelectionInFlatTree& selection =
       this->selection().visibleSelection<EditingInFlatTreeStrategy>();
+
+  // Don't restart the selection when the mouse is pressed on an
+  // existing selection so we can allow for text dragging.
+  if (FrameView* view = m_frame->view()) {
+    const LayoutPoint vPoint =
+        view->rootFrameToContents(event.event().position());
+    if (!extendSelection && this->selection().contains(vPoint)) {
+      m_mouseDownWasSingleClickInSelection = true;
+      if (!event.event().fromTouch())
+        return false;
+
+      if (!this->selection().isHandleVisible()) {
+        updateSelectionForMouseDownDispatchingSelectStart(
+            innerNode, selection, CharacterGranularity,
+            HandleVisibility::Visible);
+        return false;
+      }
+    }
+  }
 
   if (extendSelection && !selection.isNone()) {
     // Note: "fast/events/shift-click-user-select-none.html" makes
@@ -211,20 +220,35 @@ bool SelectionController::handleMousePressEventSingleClick(
 
     updateSelectionForMouseDownDispatchingSelectStart(
         innerNode, createVisibleSelection(builder.build()),
-        this->selection().granularity());
+        this->selection().granularity(), HandleVisibility::NotVisible);
     return false;
   }
 
   if (m_selectionState == SelectionState::ExtendedSelection) {
-    updateSelectionForMouseDownDispatchingSelectStart(innerNode, selection,
-                                                      CharacterGranularity);
+    updateSelectionForMouseDownDispatchingSelectStart(
+        innerNode, selection, CharacterGranularity,
+        HandleVisibility::NotVisible);
     return false;
   }
 
   if (visiblePos.isNull()) {
     updateSelectionForMouseDownDispatchingSelectStart(
-        innerNode, VisibleSelectionInFlatTree(), CharacterGranularity);
+        innerNode, VisibleSelectionInFlatTree(), CharacterGranularity,
+        HandleVisibility::NotVisible);
     return false;
+  }
+
+  bool isHandleVisible = false;
+  if (hasEditableStyle(*innerNode)) {
+    const bool isTextBoxEmpty =
+        createVisibleSelection(SelectionInFlatTree::Builder()
+                                   .selectAllChildren(*innerNode)
+                                   .build())
+            .isCaret();
+    const bool notLeftClick = event.event().pointerProperties().button !=
+                              WebPointerProperties::Button::Left;
+    if (!isTextBoxEmpty || notLeftClick)
+      isHandleVisible = event.event().fromTouch();
   }
 
   updateSelectionForMouseDownDispatchingSelectStart(
@@ -234,7 +258,8 @@ bool SelectionController::handleMousePressEventSingleClick(
                          SelectionInFlatTree::Builder()
                              .collapse(visiblePos.toPositionWithAffinity())
                              .build())),
-      CharacterGranularity);
+      CharacterGranularity, isHandleVisible ? HandleVisibility::Visible
+                                            : HandleVisibility::NotVisible);
   return false;
 }
 
@@ -364,13 +389,15 @@ void SelectionController::updateSelectionForMouseDrag(
   }
 
   setNonDirectionalSelectionIfNeeded(newSelection, selection().granularity(),
-                                     AdjustEndpointsAtBidiBoundary);
+                                     AdjustEndpointsAtBidiBoundary,
+                                     HandleVisibility::NotVisible);
 }
 
 bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(
     Node* targetNode,
     const VisibleSelectionInFlatTree& selection,
-    TextGranularity granularity) {
+    TextGranularity granularity,
+    HandleVisibility handleVisibility) {
   if (targetNode && targetNode->layoutObject() &&
       !targetNode->layoutObject()->isSelectable())
     return false;
@@ -393,7 +420,7 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(
   }
 
   setNonDirectionalSelectionIfNeeded(selection, granularity,
-                                     DoNotAdjustEndpoints);
+                                     DoNotAdjustEndpoints, handleVisibility);
 
   return true;
 }
@@ -427,6 +454,7 @@ bool SelectionController::selectClosestWordFromHitTestResult(
                                    .build());
   }
 
+  HandleVisibility visibility = HandleVisibility::NotVisible;
   if (selectInputEventType == SelectInputEventType::Touch) {
     // If node doesn't have text except space, tab or line break, do not
     // select that 'empty' area.
@@ -444,6 +472,8 @@ bool SelectionController::selectClosestWordFromHitTestResult(
                 newSelection.rootEditableElement())
                 .deepEquivalent())
       return false;
+
+    visibility = HandleVisibility::Visible;
   }
 
   if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend)
@@ -451,7 +481,7 @@ bool SelectionController::selectClosestWordFromHitTestResult(
 
   return updateSelectionForMouseDownDispatchingSelectStart(
       innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection),
-      WordGranularity);
+      WordGranularity, visibility);
 }
 
 void SelectionController::selectClosestMisspellingFromHitTestResult(
@@ -485,7 +515,7 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(
 
   updateSelectionForMouseDownDispatchingSelectStart(
       innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection),
-      WordGranularity);
+      WordGranularity, HandleVisibility::NotVisible);
 }
 
 void SelectionController::selectClosestWordFromMouseEvent(
@@ -542,7 +572,7 @@ void SelectionController::selectClosestWordOrLinkFromMouseEvent(
 
   updateSelectionForMouseDownDispatchingSelectStart(
       innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection),
-      WordGranularity);
+      WordGranularity, HandleVisibility::NotVisible);
 }
 
 // TODO(xiaochengh): We should not use reference to return value.
@@ -600,7 +630,8 @@ static void adjustEndpointsAtBidiBoundary(
 void SelectionController::setNonDirectionalSelectionIfNeeded(
     const VisibleSelectionInFlatTree& passedNewSelection,
     TextGranularity granularity,
-    EndPointsAdjustmentMode endpointsAdjustmentMode) {
+    EndPointsAdjustmentMode endpointsAdjustmentMode,
+    HandleVisibility handleVisibility) {
   VisibleSelectionInFlatTree newSelection = passedNewSelection;
   bool isDirectional =
       m_frame->editor().behavior().shouldConsiderSelectionAsDirectional() ||
@@ -640,11 +671,18 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
 
   // Adjusting base and extent will make newSelection always directional
   newSelection.setIsDirectional(isDirectional);
-  if (selection().visibleSelection<EditingInFlatTreeStrategy>() == newSelection)
+  const bool isHandleVisible = handleVisibility == HandleVisibility::Visible;
+  if (selection().visibleSelection<EditingInFlatTreeStrategy>() ==
+          newSelection &&
+      selection().isHandleVisible() == isHandleVisible)
     return;
 
   const FrameSelection::SetSelectionOptions options =
-      FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle;
+      isHandleVisible
+          ? FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle |
+                FrameSelection::HandleVisible
+          : FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle;
+
   selection().setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded,
                            granularity);
 }
@@ -667,7 +705,7 @@ void SelectionController::setCaretAtHitTestResult(
                          SelectionInFlatTree::Builder()
                              .collapse(visiblePos.toPositionWithAffinity())
                              .build())),
-      CharacterGranularity);
+      CharacterGranularity, HandleVisibility::Visible);
 }
 
 bool SelectionController::handleMousePressEventDoubleClick(
@@ -730,9 +768,13 @@ bool SelectionController::handleMousePressEventTripleClick(
                                    .build());
   }
 
+  const bool isHandleVisible =
+      event.event().fromTouch() && newSelection.isRange();
+
   return updateSelectionForMouseDownDispatchingSelectStart(
       innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection),
-      ParagraphGranularity);
+      ParagraphGranularity, isHandleVisible ? HandleVisibility::Visible
+                                            : HandleVisibility::NotVisible);
 }
 
 void SelectionController::handleMousePressEvent(

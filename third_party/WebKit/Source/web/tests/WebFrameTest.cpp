@@ -5612,7 +5612,7 @@ class CompositedSelectionBoundsTest : public WebFrameTest {
     m_webViewHelper.resize(WebSize(640, 480));
   }
 
-  void runTest(const char* testFile) {
+  void runTestWithNoSelection(const char* testFile) {
     registerMockedHttpURLLoad(testFile);
     m_webViewHelper.webView()->setFocus(true);
     FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(),
@@ -5623,26 +5623,97 @@ class CompositedSelectionBoundsTest : public WebFrameTest {
     const WebSelectionBound* selectStart = m_fakeSelectionLayerTreeView.start();
     const WebSelectionBound* selectEnd = m_fakeSelectionLayerTreeView.end();
 
+    EXPECT_FALSE(selection);
+    EXPECT_FALSE(selectStart);
+    EXPECT_FALSE(selectEnd);
+  }
+
+  void runTest(const char* testFile) {
+    registerMockedHttpURLLoad(testFile);
+    m_webViewHelper.webView()->setFocus(true);
+    FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(),
+                                m_baseURL + testFile);
+    m_webViewHelper.webView()->updateAllLifecyclePhases();
+
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     v8::Local<v8::Value> result =
         m_webViewHelper.webView()->mainFrameImpl()->executeScriptAndReturnValue(
             WebScriptSource("expectedResult"));
-    if (result.IsEmpty() || (*result)->IsUndefined()) {
-      EXPECT_FALSE(selection);
-      EXPECT_FALSE(selectStart);
-      EXPECT_FALSE(selectEnd);
-      return;
-    }
+    ASSERT_FALSE(result.IsEmpty() || (*result)->IsUndefined());
+
+    ASSERT_TRUE((*result)->IsArray());
+    v8::Array& expectedResult = *v8::Array::Cast(*result);
+    ASSERT_GE(expectedResult.Length(), 10u);
+
+    v8::Local<v8::Context> context =
+        v8::Isolate::GetCurrent()->GetCurrentContext();
+
+    const int startEdgeTopInLayerX = expectedResult.Get(context, 1)
+                                         .ToLocalChecked()
+                                         .As<v8::Int32>()
+                                         ->Value();
+    const int startEdgeTopInLayerY = expectedResult.Get(context, 2)
+                                         .ToLocalChecked()
+                                         .As<v8::Int32>()
+                                         ->Value();
+    const int startEdgeBottomInLayerX = expectedResult.Get(context, 3)
+                                            .ToLocalChecked()
+                                            .As<v8::Int32>()
+                                            ->Value();
+    const int startEdgeBottomInLayerY = expectedResult.Get(context, 4)
+                                            .ToLocalChecked()
+                                            .As<v8::Int32>()
+                                            ->Value();
+
+    const int endEdgeTopInLayerX = expectedResult.Get(context, 6)
+                                       .ToLocalChecked()
+                                       .As<v8::Int32>()
+                                       ->Value();
+    const int endEdgeTopInLayerY = expectedResult.Get(context, 7)
+                                       .ToLocalChecked()
+                                       .As<v8::Int32>()
+                                       ->Value();
+    const int endEdgeBottomInLayerX = expectedResult.Get(context, 8)
+                                          .ToLocalChecked()
+                                          .As<v8::Int32>()
+                                          ->Value();
+    const int endEdgeBottomInLayerY = expectedResult.Get(context, 9)
+                                          .ToLocalChecked()
+                                          .As<v8::Int32>()
+                                          ->Value();
+
+    const IntPoint hitPoint =
+        IntPoint((startEdgeTopInLayerX + startEdgeBottomInLayerX +
+                  endEdgeTopInLayerX + endEdgeBottomInLayerX) /
+                     4,
+                 (startEdgeTopInLayerY + startEdgeBottomInLayerY +
+                  endEdgeTopInLayerY + endEdgeBottomInLayerY) /
+                         4 +
+                     3);
+
+    WebGestureEvent gestureEvent(WebInputEvent::GestureTap,
+                                 WebInputEvent::NoModifiers,
+                                 WebInputEvent::TimeStampForTesting);
+    gestureEvent.setFrameScale(1);
+    gestureEvent.x = gestureEvent.globalX = hitPoint.x();
+    gestureEvent.y = gestureEvent.globalY = hitPoint.y();
+    gestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
+
+    m_webViewHelper.webView()
+        ->mainFrameImpl()
+        ->frame()
+        ->eventHandler()
+        .handleGestureEvent(gestureEvent);
+
+    const WebSelection* selection = m_fakeSelectionLayerTreeView.selection();
+    const WebSelectionBound* selectStart = m_fakeSelectionLayerTreeView.start();
+    const WebSelectionBound* selectEnd = m_fakeSelectionLayerTreeView.end();
 
     ASSERT_TRUE(selection);
     ASSERT_TRUE(selectStart);
     ASSERT_TRUE(selectEnd);
 
     EXPECT_FALSE(selection->isNone());
-
-    ASSERT_TRUE((*result)->IsArray());
-    v8::Array& expectedResult = *v8::Array::Cast(*result);
-    ASSERT_GE(expectedResult.Length(), 10u);
 
     blink::Node* layerOwnerNodeForStart = V8Node::toImplWithTypeCheck(
         v8::Isolate::GetCurrent(), expectedResult.Get(0));
@@ -5654,23 +5725,10 @@ class CompositedSelectionBoundsTest : public WebFrameTest {
                   ->platformLayer()
                   ->id(),
               selectStart->layerId);
-    v8::Local<v8::Context> context =
-        v8::Isolate::GetCurrent()->GetCurrentContext();
-    EXPECT_EQ(expectedResult.Get(context, 1)
-                  .ToLocalChecked()
-                  .As<v8::Int32>()
-                  ->Value(),
-              selectStart->edgeTopInLayer.x);
-    EXPECT_EQ(expectedResult.Get(context, 2)
-                  .ToLocalChecked()
-                  .As<v8::Int32>()
-                  ->Value(),
-              selectStart->edgeTopInLayer.y);
-    EXPECT_EQ(expectedResult.Get(context, 3)
-                  .ToLocalChecked()
-                  .As<v8::Int32>()
-                  ->Value(),
-              selectStart->edgeBottomInLayer.x);
+
+    EXPECT_EQ(startEdgeTopInLayerX, selectStart->edgeTopInLayer.x);
+    EXPECT_EQ(startEdgeTopInLayerY, selectStart->edgeTopInLayer.y);
+    EXPECT_EQ(startEdgeBottomInLayerX, selectStart->edgeBottomInLayer.x);
 
     blink::Node* layerOwnerNodeForEnd = V8Node::toImplWithTypeCheck(
         v8::Isolate::GetCurrent(),
@@ -5684,21 +5742,10 @@ class CompositedSelectionBoundsTest : public WebFrameTest {
                   ->platformLayer()
                   ->id(),
               selectEnd->layerId);
-    EXPECT_EQ(expectedResult.Get(context, 6)
-                  .ToLocalChecked()
-                  .As<v8::Int32>()
-                  ->Value(),
-              selectEnd->edgeTopInLayer.x);
-    EXPECT_EQ(expectedResult.Get(context, 7)
-                  .ToLocalChecked()
-                  .As<v8::Int32>()
-                  ->Value(),
-              selectEnd->edgeTopInLayer.y);
-    EXPECT_EQ(expectedResult.Get(context, 8)
-                  .ToLocalChecked()
-                  .As<v8::Int32>()
-                  ->Value(),
-              selectEnd->edgeBottomInLayer.x);
+
+    EXPECT_EQ(endEdgeTopInLayerX, selectEnd->edgeTopInLayer.x);
+    EXPECT_EQ(endEdgeTopInLayerY, selectEnd->edgeTopInLayer.y);
+    EXPECT_EQ(endEdgeBottomInLayerX, selectEnd->edgeBottomInLayer.x);
 
     // Platform differences can introduce small stylistic deviations in
     // y-axis positioning, the details of which aren't relevant to
@@ -5710,17 +5757,11 @@ class CompositedSelectionBoundsTest : public WebFrameTest {
                            .ToLocalChecked()
                            .As<v8::Int32>()
                            ->Value();
-    int yBottomDeviation = expectedResult.Get(context, 4)
-                               .ToLocalChecked()
-                               .As<v8::Int32>()
-                               ->Value() -
-                           selectStart->edgeBottomInLayer.y;
+    int yBottomDeviation =
+        startEdgeBottomInLayerY - selectStart->edgeBottomInLayer.y;
     EXPECT_GE(yBottomEpsilon, std::abs(yBottomDeviation));
-    EXPECT_EQ(yBottomDeviation, expectedResult.Get(context, 9)
-                                        .ToLocalChecked()
-                                        .As<v8::Int32>()
-                                        ->Value() -
-                                    selectEnd->edgeBottomInLayer.y);
+    EXPECT_EQ(yBottomDeviation,
+              endEdgeBottomInLayerY - selectEnd->edgeBottomInLayer.y);
 
     if (expectedResult.Length() >= 12) {
       EXPECT_EQ(expectedResult.Get(context, 10)
@@ -5753,11 +5794,16 @@ class CompositedSelectionBoundsTest : public WebFrameTest {
 };
 
 TEST_F(CompositedSelectionBoundsTest, None) {
-  runTest("composited_selection_bounds_none.html");
+  runTestWithNoSelection("composited_selection_bounds_none.html");
 }
 TEST_F(CompositedSelectionBoundsTest, NoneReadonlyCaret) {
-  runTest("composited_selection_bounds_none_readonly_caret.html");
+  runTestWithNoSelection(
+      "composited_selection_bounds_none_readonly_caret.html");
 }
+TEST_F(CompositedSelectionBoundsTest, DetachedFrame) {
+  runTestWithNoSelection("composited_selection_bounds_detached_frame.html");
+}
+
 TEST_F(CompositedSelectionBoundsTest, Basic) {
   runTest("composited_selection_bounds_basic.html");
 }
@@ -5773,95 +5819,15 @@ TEST_F(CompositedSelectionBoundsTest, VerticalLeftToRight) {
 TEST_F(CompositedSelectionBoundsTest, SplitLayer) {
   runTest("composited_selection_bounds_split_layer.html");
 }
-TEST_F(CompositedSelectionBoundsTest, EmptyLayer) {
-  runTest("composited_selection_bounds_empty_layer.html");
-}
 TEST_F(CompositedSelectionBoundsTest, Iframe) {
   runTestWithMultipleFiles("composited_selection_bounds_iframe.html",
                            "composited_selection_bounds_basic.html", nullptr);
-}
-TEST_F(CompositedSelectionBoundsTest, DetachedFrame) {
-  runTest("composited_selection_bounds_detached_frame.html");
 }
 TEST_F(CompositedSelectionBoundsTest, Editable) {
   runTest("composited_selection_bounds_editable.html");
 }
 TEST_F(CompositedSelectionBoundsTest, EditableDiv) {
   runTest("composited_selection_bounds_editable_div.html");
-}
-TEST_F(CompositedSelectionBoundsTest, EmptyEditableInput) {
-  runTest("composited_selection_bounds_empty_editable_input.html");
-}
-TEST_F(CompositedSelectionBoundsTest, EmptyEditableArea) {
-  runTest("composited_selection_bounds_empty_editable_area.html");
-}
-
-// Fails on Mac ASan 64 bot. https://crbug.com/588769.
-#if OS(MACOSX) && defined(ADDRESS_SANITIZER)
-TEST_P(ParameterizedWebFrameTest, DISABLED_CompositedSelectionBoundsCleared)
-#else
-TEST_P(ParameterizedWebFrameTest, CompositedSelectionBoundsCleared)
-#endif
-{
-  RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
-
-  registerMockedHttpURLLoad("select_range_basic.html");
-  registerMockedHttpURLLoad("select_range_scroll.html");
-
-  int viewWidth = 500;
-  int viewHeight = 500;
-
-  CompositedSelectionBoundsTestWebViewClient fakeSelectionWebViewClient;
-  CompositedSelectionBoundsTestLayerTreeView& fakeSelectionLayerTreeView =
-      fakeSelectionWebViewClient.selectionLayerTreeView();
-
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initialize(true, nullptr, &fakeSelectionWebViewClient, nullptr);
-  webViewHelper.webView()->settings()->setDefaultFontSize(12);
-  webViewHelper.webView()->setDefaultPageScaleLimits(1, 1);
-  webViewHelper.resize(WebSize(viewWidth, viewHeight));
-  webViewHelper.webView()->setFocus(true);
-  FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(),
-                              m_baseURL + "select_range_basic.html");
-
-  // The frame starts with no selection.
-  WebLocalFrame* frame = webViewHelper.webView()->mainFrameImpl();
-  ASSERT_TRUE(frame->hasSelection());
-  EXPECT_TRUE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
-
-  // The selection cleared notification should be triggered upon layout.
-  frame->executeCommand(WebString::fromUTF8("Unselect"));
-  ASSERT_FALSE(frame->hasSelection());
-  EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
-  webViewHelper.webView()->updateAllLifecyclePhases();
-  EXPECT_TRUE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
-
-  frame->executeCommand(WebString::fromUTF8("SelectAll"));
-  webViewHelper.webView()->updateAllLifecyclePhases();
-  ASSERT_TRUE(frame->hasSelection());
-  EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
-
-  FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(),
-                              m_baseURL + "select_range_scroll.html");
-  ASSERT_TRUE(frame->hasSelection());
-  EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
-
-  // Transitions between non-empty selections should not trigger a clearing.
-  WebRect startWebRect;
-  WebRect endWebRect;
-  webViewHelper.webView()->selectionBounds(startWebRect, endWebRect);
-  WebPoint movedEnd(bottomRightMinusOne(endWebRect));
-  endWebRect.x -= 20;
-  frame->selectRange(topLeft(startWebRect), movedEnd);
-  webViewHelper.webView()->updateAllLifecyclePhases();
-  ASSERT_TRUE(frame->hasSelection());
-  EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
-
-  frame = webViewHelper.webView()->mainFrameImpl();
-  frame->executeCommand(WebString::fromUTF8("Unselect"));
-  webViewHelper.webView()->updateAllLifecyclePhases();
-  ASSERT_FALSE(frame->hasSelection());
-  EXPECT_TRUE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
 }
 
 class DisambiguationPopupTestWebViewClient

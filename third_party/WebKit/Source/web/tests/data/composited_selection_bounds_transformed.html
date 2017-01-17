@@ -7,7 +7,7 @@
         font-family: ahem;
     }
     #text {
-        transform: rotate(30deg);
+        transform: rotate(-30deg);
     }
 </style>
 <div id="text">The quick brown fox jumped over the lazy dog.</div>
@@ -18,6 +18,6 @@
     range.setEnd(textNode, 25);
     document.getSelection().addRange(range);
 
-    window.expectedResult = [document, 157, -87, 151, -77, document, 313, 3, 307, 13];
+    window.expectedResult = [document, 151, 105, 157, 115, document, 307, 15, 313, 25];
 </script>
 

@@ -933,8 +933,8 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
                                               std::move(frame));
   }
-  SelectionUpdated(selection.is_editable, selection.is_empty_text_form_control,
-                   selection.start, selection.end);
+  selection_controller_->OnSelectionBoundsChanged(selection.start,
+                                                  selection.end);
 }
 
 void RenderWidgetHostViewAura::ClearCompositorFrame() {
@@ -2241,16 +2241,6 @@ void RenderWidgetHostViewAura::ForwardKeyboardEvent(
 #endif
 
   target_host->ForwardKeyboardEvent(event);
-}
-
-void RenderWidgetHostViewAura::SelectionUpdated(
-    bool is_editable,
-    bool is_empty_text_form_control,
-    const gfx::SelectionBound& start,
-    const gfx::SelectionBound& end) {
-  selection_controller_->OnSelectionEditable(is_editable);
-  selection_controller_->OnSelectionEmpty(is_empty_text_form_control);
-  selection_controller_->OnSelectionBoundsChanged(start, end);
 }
 
 void RenderWidgetHostViewAura::CreateSelectionController() {

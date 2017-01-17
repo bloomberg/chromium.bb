@@ -177,7 +177,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // StylusTextSelectorClient implementation.
   void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;
   void OnStylusSelectUpdate(float x, float y) override;
-  void OnStylusSelectEnd() override;
+  void OnStylusSelectEnd() override {};
   void OnStylusSelectTap(base::TimeTicks time, float x, float y) override;
 
   // ui::TouchSelectionControllerClient implementation.

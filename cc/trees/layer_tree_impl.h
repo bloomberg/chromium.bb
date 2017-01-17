@@ -402,6 +402,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void RegisterSelection(const LayerSelection& selection);
 
+  bool GetAndResetHandleVisibilityChanged();
+
   // Compute the current selection handle location and visbility with respect to
   // the viewport.
   void GetViewportSelection(Selection<gfx::SelectionBound>* selection);
@@ -536,6 +538,8 @@ class CC_EXPORT LayerTreeImpl {
   bool next_activation_forces_redraw_;
 
   bool has_ever_been_drawn_;
+
+  bool handle_visibility_changed_;
 
   std::vector<std::unique_ptr<SwapPromise>> swap_promise_list_;
   std::vector<std::unique_ptr<SwapPromise>> pinned_swap_promise_list_;

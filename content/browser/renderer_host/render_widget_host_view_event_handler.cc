@@ -641,16 +641,12 @@ void RenderWidgetHostViewEventHandler::HandleGestureForTouchSelection(
     ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_LONG_PRESS:
-      if (delegate_->selection_controller()->WillHandleLongPressEvent(
-              event->time_stamp(), event->location_f())) {
-        event->SetHandled();
-      }
+      delegate_->selection_controller()->HandleLongPressEvent(
+          event->time_stamp(), event->location_f());
       break;
     case ui::ET_GESTURE_TAP:
-      if (delegate_->selection_controller()->WillHandleTapEvent(
-              event->location_f(), event->details().tap_count())) {
-        event->SetHandled();
-      }
+      delegate_->selection_controller()->HandleTapEvent(
+          event->location_f(), event->details().tap_count());
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       delegate_->selection_controller_client()->OnScrollStarted();

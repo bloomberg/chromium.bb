@@ -7,7 +7,7 @@
         font-family: ahem;
     }
 </style>
-<div contentEditable="true">
+<div id="text" contentEditable="true">
     The quick brown fox jumped over the lazy dog.
 </div>
 <script>
@@ -16,6 +16,6 @@
 
     var expectEditable = true;
     var expectEmptyTextFormControl = false;
-    window.expectedResult = [document, 11, 11, 11, 25, document, 11, 11, 11, 25, expectEditable, expectEmptyTextFormControl];
+    window.expectedResult = [document, 8, 8, 8, 20, document, 8, 8, 8, 20, expectEditable, expectEmptyTextFormControl];
 </script>
 

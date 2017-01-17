@@ -790,10 +790,18 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
                             active_tree_->hud_layer()->IsAnimatingHUDContents();
   bool resources_must_be_resent =
       compositor_frame_sink_->capabilities().can_force_reclaim_resources;
+  // When touch handle visibility changes there is no visible damage
+  // because touch handles are composited in the browser. However we
+  // still want the browser to be notified that the handles changed
+  // through the |ViewHostMsg_SwapCompositorFrame| IPC so we keep
+  // track of handle visibility changes through |handle_visibility_changed|.
+  bool handle_visibility_changed =
+      active_tree_->GetAndResetHandleVisibilityChanged();
   if (root_surface_has_contributing_layers &&
       root_surface_has_no_visible_damage &&
       !active_tree_->property_trees()->effect_tree.HasCopyRequests() &&
-      !resources_must_be_resent && !hud_wants_to_draw_) {
+      !resources_must_be_resent && !hud_wants_to_draw_ &&
+      !handle_visibility_changed) {
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
     frame->has_no_damage = true;

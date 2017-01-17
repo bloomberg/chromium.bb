@@ -826,10 +826,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
 
-            case SelectionEventType.SELECTION_ESTABLISHED:
-            case SelectionEventType.SELECTION_DISSOLVED:
-                break;
-
             default:
                 assert false : "Invalid selection event type.";
         }

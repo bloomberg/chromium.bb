@@ -14,9 +14,9 @@
     var range = document.createRange();
     var textNode = document.getElementById("text").firstChild;
     range.setStart(textNode, 10);
-    range.setEnd(textNode, 25);
+    range.setEnd(textNode, 35);
     document.getSelection().addRange(range);
 
-    window.expectedResult = [document, 68, 8, 68, 20, document, 248, 8, 248, 20];
+    window.expectedResult = [document, 68, 8, 68, 20, document, 368, 8, 368, 20];
 </script>
 

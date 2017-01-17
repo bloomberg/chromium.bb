@@ -767,27 +767,26 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Waits for the selection to be dissolved.
+     * Waits for the selection to be empty.
      * Use this method any time a test repeatedly establishes and dissolves a selection to ensure
      * that the selection has been completely dissolved before simulating the next selection event.
      * This is needed because the renderer's notification of a selection going away is async,
      * and a subsequent tap may think there's a current selection until it has been dissolved.
      */
-    private void waitForSelectionDissolved() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Selection never dissolved.") {
+    private void waitForSelectionEmpty() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria("Selection never empty.") {
             @Override
             public boolean isSatisfied() {
-                return !mSelectionController.isSelectionEstablished();
+                return mSelectionController.isSelectionEmpty();
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
-
     /**
      * Waits for the panel to close and then waits for the selection to dissolve.
      */
-    private void waitForPanelToCloseAndSelectionDissolved() throws InterruptedException {
+    private void waitForPanelToCloseAndSelectionEmpty() throws InterruptedException {
         waitForPanelToClose();
-        waitForSelectionDissolved();
+        waitForSelectionEmpty();
     }
 
     private void waitToPreventDoubleTapRecognition() throws InterruptedException {
@@ -900,7 +899,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private void clickToExpandAndClosePanel() throws InterruptedException, TimeoutException {
         clickWordNode("states");
         tapBarToExpandAndClosePanel();
-        waitForSelectionDissolved();
+        waitForSelectionEmpty();
     }
 
     /**
@@ -946,7 +945,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         simulateTapSearch("search");
         waitForPanelToPeek();
         closePanel();
-        waitForPanelToCloseAndSelectionDissolved();
+        waitForPanelToCloseAndSelectionEmpty();
     }
 
     /**
@@ -961,7 +960,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         simulateLimitedTapSearch("search");
         waitForPanelToPeek();
         closePanel();
-        waitForPanelToCloseAndSelectionDissolved();
+        waitForPanelToCloseAndSelectionEmpty();
     }
 
     /**
@@ -1256,7 +1255,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertLoadedNoUrl();  // No load after long-press until opening panel.
         clickNode("question-mark");
         waitForGestureProcessing();
-        waitForPanelToCloseAndSelectionDissolved();
+        waitForPanelToCloseAndSelectionEmpty();
         assertNull(getSelectedText());
         assertLoadedNoUrl();
     }
@@ -1335,7 +1334,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         clickWordNode("states-far");
         waitForPanelToPeek();
         clickNode("button");
-        waitForPanelToCloseAndSelectionDissolved();
+        waitForPanelToCloseAndSelectionEmpty();
     }
 
     /**
@@ -1797,7 +1796,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
         // Now we're at the limit, a tap should be ignored.
         clickNode("states");
-        waitForPanelToCloseAndSelectionDissolved();
+        waitForPanelToCloseAndSelectionEmpty();
         assertTapPromoCounterEnabledAt(2);
 
         // An open should disable the counter, but we need to use long-press (tap is now disabled).
@@ -2027,7 +2026,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         mPolicy.setTapLimitForUndecidedForTesting(PLENTY_OF_TAPS);
         for (int i = 0; i < 50; i++) {
             clickToTriggerPrefetch();
-            waitForSelectionDissolved();
+            waitForSelectionEmpty();
             assertSearchTermRequested();
         }
     }

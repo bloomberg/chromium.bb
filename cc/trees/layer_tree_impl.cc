@@ -82,6 +82,7 @@ LayerTreeImpl::LayerTreeImpl(
       needs_full_tree_sync_(true),
       next_activation_forces_redraw_(false),
       has_ever_been_drawn_(false),
+      handle_visibility_changed_(false),
       have_scroll_event_handlers_(false),
       event_listener_properties_(),
       browser_controls_shrink_blink_size_(false),
@@ -1985,7 +1986,17 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
 }
 
 void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {
+  if (selection_ == selection)
+    return;
+
+  handle_visibility_changed_ = true;
   selection_ = selection;
+}
+
+bool LayerTreeImpl::GetAndResetHandleVisibilityChanged() {
+  bool curr_handle_visibility_changed = handle_visibility_changed_;
+  handle_visibility_changed_ = false;
+  return curr_handle_visibility_changed;
 }
 
 static gfx::SelectionBound ComputeViewportSelectionBound(

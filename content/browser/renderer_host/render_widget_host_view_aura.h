@@ -454,13 +454,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Called when the parent window hierarchy for our window changes.
   void ParentHierarchyChanged();
 
-  // Helper function to be called whenever new selection information is
-  // received. It will update selection controller.
-  void SelectionUpdated(bool is_editable,
-                        bool is_empty_text_form_control,
-                        const gfx::SelectionBound& start,
-                        const gfx::SelectionBound& end);
-
   // Helper function to create a selection controller.
   void CreateSelectionController();
 

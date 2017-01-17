@@ -85,24 +85,18 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   // cease further handling of the event.
   bool WillHandleTouchEvent(const MotionEvent& event);
 
-  // To be called before forwarding a tap event. This allows automatically
-  // showing the insertion handle from subsequent bounds changes.
+  // To be called before forwarding a tap event.
   // |tap_count| is tap index in a repeated sequence, i.e., 1 for the first
   // tap, 2 for the second tap, etc...
-  bool WillHandleTapEvent(const gfx::PointF& location, int tap_count);
+  void HandleTapEvent(const gfx::PointF& location, int tap_count);
 
-  // To be called before forwarding a longpress event. This allows automatically
-  // showing the selection or insertion handles from subsequent bounds changes.
-  bool WillHandleLongPressEvent(base::TimeTicks event_time,
+  // To be called before forwarding a longpress event.
+  void HandleLongPressEvent(base::TimeTicks event_time,
                                 const gfx::PointF& location);
 
   // To be called before forwarding a gesture scroll begin event to prevent
   // long-press drag.
   void OnScrollBeginEvent();
-
-  // Allow showing the selection handles from the most recent selection bounds
-  // update (if valid), or a future valid bounds update.
-  void AllowShowingFromCurrentSelection();
 
   // Hide the handles and suppress bounds updates until the next explicit
   // showing allowance.
@@ -110,12 +104,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   // Override the handle visibility according to |hidden|.
   void SetTemporarilyHidden(bool hidden);
-
-  // To be called when the editability of the focused region changes.
-  void OnSelectionEditable(bool editable);
-
-  // To be called when the contents of the focused region changes.
-  void OnSelectionEmpty(bool empty);
 
   // Ticks an active animation, as requested to the client by |SetNeedsAnimate|.
   // Returns true if an animation is active and requires further ticking.
@@ -140,10 +128,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   const gfx::SelectionBound& end() const { return end_; }
 
   ActiveStatus active_status() const { return active_status_; }
-
-  bool insertion_active_or_requested() const {
-    return activate_insertion_automatically_;
-  }
 
  private:
   friend class TouchSelectionControllerTestApi;
@@ -170,10 +154,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   gfx::PointF GetSelectionStart() const override;
   gfx::PointF GetSelectionEnd() const override;
 
-  void ShowInsertionHandleAutomatically();
-  void ShowSelectionHandlesAutomatically();
-  bool WillHandleTapOrLongPress(const gfx::PointF& location);
-
   void OnInsertionChanged();
   void OnSelectionChanged();
 
@@ -183,12 +163,13 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   // Returns true if selection mode was newly (re)activated.
   bool ActivateSelectionIfNecessary();
   void DeactivateSelection();
-  void ForceNextUpdateIfInactive();
   void UpdateHandleLayoutIfNecessary();
 
   bool WillHandleTouchEventForLongPressDrag(const MotionEvent& event);
   void SetTemporarilyHiddenForLongPressDrag(bool hidden);
   void RefreshHandleVisibility();
+
+  void HideHandles();
 
   gfx::Vector2dF GetStartLineOffset() const;
   gfx::Vector2dF GetEndLineOffset() const;
@@ -201,10 +182,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   TouchSelectionControllerClient* const client_;
   const Config config_;
 
-  // Whether to force an update on the next selection event even if the
-  // cached selection matches the new selection.
-  bool force_next_update_;
-
+  // TODO(amaralp): This is not necessary. Remove it.
   InputEventType response_pending_input_event_;
 
   gfx::SelectionBound start_;
@@ -215,14 +193,9 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   ActiveStatus active_status_;
 
   std::unique_ptr<TouchHandle> insertion_handle_;
-  bool activate_insertion_automatically_;
 
   std::unique_ptr<TouchHandle> start_selection_handle_;
   std::unique_ptr<TouchHandle> end_selection_handle_;
-  bool activate_selection_automatically_;
-
-  bool selection_empty_;
-  bool selection_editable_;
 
   bool temporarily_hidden_;
 
@@ -244,6 +217,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   // Determines whether the entire touch sequence should be consumed or not.
   bool consume_touch_sequence_;
+
+  bool show_touch_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionController);
 };

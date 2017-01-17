@@ -26,6 +26,7 @@ class EventHandlerTest : public ::testing::Test {
 
   Page& page() const { return m_dummyPageHolder->page(); }
   Document& document() const { return m_dummyPageHolder->document(); }
+  FrameSelection& selection() const { return document().frame()->selection(); }
 
   void setHtmlInnerHTML(const char* htmlContent);
 
@@ -47,6 +48,33 @@ class TapEventBuilder : public WebGestureEvent {
     data.tap.height = 5;
     m_frameScale = 1;
   }
+};
+
+class LongPressEventBuilder : public WebGestureEvent {
+ public:
+  LongPressEventBuilder(IntPoint position) : WebGestureEvent() {
+    m_type = WebInputEvent::GestureLongPress;
+    x = globalX = position.x();
+    y = globalY = position.y();
+    sourceDevice = WebGestureDeviceTouchscreen;
+    data.longPress.width = 5;
+    data.longPress.height = 5;
+    m_frameScale = 1;
+  }
+};
+
+class MousePressEventBuilder : public PlatformMouseEvent {
+ public:
+  MousePressEventBuilder(IntPoint position,
+                         int clickCount,
+                         WebMouseEvent::Button button)
+      : PlatformMouseEvent(position,
+                           position,
+                           button,
+                           PlatformEvent::MousePressed,
+                           clickCount,
+                           static_cast<PlatformEvent::Modifiers>(0),
+                           TimeTicks::Now()) {}
 };
 
 void EventHandlerTest::SetUp() {
@@ -100,10 +128,9 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
       TimeTicks::Now());
   document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
 
-  FrameSelection& selection = document().frame()->selection();
-  ASSERT_TRUE(selection.isRange());
+  ASSERT_TRUE(selection().isRange());
   Range* range =
-      createRange(selection.selection().toNormalizedEphemeralRange());
+      createRange(selection().selection().toNormalizedEphemeralRange());
   ASSERT_TRUE(range);
   EXPECT_EQ("Line 1\nLine 2", range->text());
 }
@@ -115,34 +142,33 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
       "<body contenteditable='true'><span class='line' id='line'>One Two "
       "Three</span></body>");
 
-  FrameSelection& selection = document().frame()->selection();
   Node* line = document().getElementById("line")->firstChild();
 
   TapEventBuilder singleTapEvent(IntPoint(0, 0), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
-  ASSERT_TRUE(selection.isCaret());
-  EXPECT_EQ(Position(line, 0), selection.start());
+  ASSERT_TRUE(selection().isCaret());
+  EXPECT_EQ(Position(line, 0), selection().start());
 
   // Multi-tap events on editable elements should trigger selection, just
   // like multi-click events.
   TapEventBuilder doubleTapEvent(IntPoint(0, 0), 2);
   document().frame()->eventHandler().handleGestureEvent(doubleTapEvent);
-  ASSERT_TRUE(selection.isRange());
-  EXPECT_EQ(Position(line, 0), selection.start());
+  ASSERT_TRUE(selection().isRange());
+  EXPECT_EQ(Position(line, 0), selection().start());
   if (document().frame()->editor().isSelectTrailingWhitespaceEnabled()) {
-    EXPECT_EQ(Position(line, 4), selection.end());
-    EXPECT_EQ("One ", WebString(selection.selectedText()).utf8());
+    EXPECT_EQ(Position(line, 4), selection().end());
+    EXPECT_EQ("One ", WebString(selection().selectedText()).utf8());
   } else {
-    EXPECT_EQ(Position(line, 3), selection.end());
-    EXPECT_EQ("One", WebString(selection.selectedText()).utf8());
+    EXPECT_EQ(Position(line, 3), selection().end());
+    EXPECT_EQ("One", WebString(selection().selectedText()).utf8());
   }
 
   TapEventBuilder tripleTapEvent(IntPoint(0, 0), 3);
   document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
-  ASSERT_TRUE(selection.isRange());
-  EXPECT_EQ(Position(line, 0), selection.start());
-  EXPECT_EQ(Position(line, 13), selection.end());
-  EXPECT_EQ("One Two Three", WebString(selection.selectedText()).utf8());
+  ASSERT_TRUE(selection().isRange());
+  EXPECT_EQ(Position(line, 0), selection().start());
+  EXPECT_EQ(Position(line, 13), selection().end());
+  EXPECT_EQ("One Two Three", WebString(selection().selectedText()).utf8());
 }
 
 TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {
@@ -151,24 +177,23 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {
       "height: 30px; } </style>"
       "<span class='line' id='line'>One Two Three</span>");
 
-  FrameSelection& selection = document().frame()->selection();
   Node* line = document().getElementById("line")->firstChild();
 
   TapEventBuilder singleTapEvent(IntPoint(0, 0), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
-  ASSERT_TRUE(selection.isCaret());
-  EXPECT_EQ(Position(line, 0), selection.start());
+  ASSERT_TRUE(selection().isCaret());
+  EXPECT_EQ(Position(line, 0), selection().start());
 
   // As the text is readonly, multi-tap events should not trigger selection.
   TapEventBuilder doubleTapEvent(IntPoint(0, 0), 2);
   document().frame()->eventHandler().handleGestureEvent(doubleTapEvent);
-  ASSERT_TRUE(selection.isCaret());
-  EXPECT_EQ(Position(line, 0), selection.start());
+  ASSERT_TRUE(selection().isCaret());
+  EXPECT_EQ(Position(line, 0), selection().start());
 
   TapEventBuilder tripleTapEvent(IntPoint(0, 0), 3);
   document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
-  ASSERT_TRUE(selection.isCaret());
-  EXPECT_EQ(Position(line, 0), selection.start());
+  ASSERT_TRUE(selection().isCaret());
+  EXPECT_EQ(Position(line, 0), selection().start());
 }
 
 TEST_F(EventHandlerTest, draggedInlinePositionTest) {
@@ -255,6 +280,106 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
   EXPECT_EQ(
       WebInputEventResult::HandledApplication,
       document().frame()->eventHandler().sendContextMenuEvent(mouseDownEvent));
+}
+
+TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnTap) {
+  setHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
+
+  TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
+  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+
+  ASSERT_TRUE(selection().isCaret());
+  ASSERT_FALSE(selection().isHandleVisible());
+}
+
+TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnTap) {
+  setHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
+
+  TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
+  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+
+  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(selection().isHandleVisible());
+}
+
+TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
+  setHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
+
+  LongPressEventBuilder longPressEvent(IntPoint(200, 200));
+  document().frame()->eventHandler().handleGestureEvent(longPressEvent);
+
+  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(selection().isHandleVisible());
+
+  // Single Tap on an empty edit field should clear insertion handle
+  TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
+  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+
+  ASSERT_TRUE(selection().isCaret());
+  ASSERT_FALSE(selection().isHandleVisible());
+}
+
+TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnLongPress) {
+  setHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
+
+  LongPressEventBuilder longPressEvent(IntPoint(200, 200));
+  document().frame()->eventHandler().handleGestureEvent(longPressEvent);
+
+  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(selection().isHandleVisible());
+}
+
+TEST_F(EventHandlerTest, ClearHandleAfterTap) {
+  setHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
+
+  // Show handle
+  LongPressEventBuilder longPressEvent(IntPoint(200, 200));
+  document().frame()->eventHandler().handleGestureEvent(longPressEvent);
+
+  ASSERT_TRUE(selection().isCaret());
+  ASSERT_TRUE(selection().isHandleVisible());
+
+  // Tap away from text area should clear handle
+  TapEventBuilder singleTapEvent(IntPoint(700, 700), 1);
+  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+
+  ASSERT_TRUE(selection().isNone());
+  ASSERT_FALSE(selection().isHandleVisible());
+}
+
+TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
+  setHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
+
+  MousePressEventBuilder leftMousePressEvent(
+      IntPoint(200, 200), 1, WebPointerProperties::Button::Left);
+  document().frame()->eventHandler().handleMousePressEvent(leftMousePressEvent);
+
+  ASSERT_TRUE(selection().isCaret());
+  ASSERT_FALSE(selection().isHandleVisible());
+
+  MousePressEventBuilder rightMousePressEvent(
+      IntPoint(200, 200), 1, WebPointerProperties::Button::Right);
+  document().frame()->eventHandler().handleMousePressEvent(
+      rightMousePressEvent);
+
+  ASSERT_TRUE(selection().isCaret());
+  ASSERT_FALSE(selection().isHandleVisible());
+
+  MousePressEventBuilder doubleClickMousePressEvent(
+      IntPoint(200, 200), 2, WebPointerProperties::Button::Left);
+  document().frame()->eventHandler().handleMousePressEvent(
+      doubleClickMousePressEvent);
+
+  ASSERT_TRUE(selection().isRange());
+  ASSERT_FALSE(selection().isHandleVisible());
+
+  MousePressEventBuilder tripleClickMousePressEvent(
+      IntPoint(200, 200), 3, WebPointerProperties::Button::Left);
+  document().frame()->eventHandler().handleMousePressEvent(
+      tripleClickMousePressEvent);
+
+  ASSERT_TRUE(selection().isRange());
+  ASSERT_FALSE(selection().isHandleVisible());
 }
 
 }  // namespace blink

@@ -10,7 +10,6 @@ async_test(function(t) {
             return;
         }
         doSetSelectionRange('focus');
-        doSetSelectionRange('mousedown');
         doSetSelectionRange('mouseup');
         doSetSelectionRange('click');
         t.done();
@@ -26,13 +25,8 @@ async_test(function(t) {
         eventSender.gestureTapDown(tx, ty);
         eventSender.gestureShowPress(tx, ty);
         eventSender.gestureTap(tx, ty);
-        if (eventType === 'mousedown') {
-            assert_equals(textfield.selectionStart, 0);
-            assert_equals(textfield.selectionEnd, 0);
-        } else {
-            assert_equals(textfield.selectionStart, 0);
-            assert_equals(textfield.selectionEnd, 5);
-        }
+        assert_equals(textfield.selectionStart, 0);
+        assert_equals(textfield.selectionEnd, 5);
         textfield.setSelectionRange(0, 0);
         textfield.removeEventListener(eventType, setSelectionRange);
     }
