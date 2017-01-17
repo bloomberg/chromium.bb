@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -29,9 +30,11 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome_elf/chrome_elf_main.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/crashpad.h"
+#include "components/crash/content/app/fallback_crash_handling_win.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -196,6 +199,24 @@ bool RemoveAppCompatFlagsEntry() {
   return false;
 }
 
+int RunFallbackCrashHandler(const base::CommandLine& cmd_line) {
+  // Retrieve the product & version details we need to report the crash
+  // correctly.
+  wchar_t exe_file[MAX_PATH] = {};
+  CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
+
+  base::string16 product_name;
+  base::string16 version;
+  base::string16 channel_name;
+  base::string16 special_build;
+  install_static::GetExecutableVersionDetails(exe_file, &product_name, &version,
+                                              &special_build, &channel_name);
+
+  return crash_reporter::RunAsFallbackCrashHandler(
+      cmd_line, base::UTF16ToUTF8(product_name), base::UTF16ToUTF8(version),
+      base::UTF16ToUTF8(channel_name));
+}
+
 }  // namespace
 
 #if defined(SYZYASAN)
@@ -228,8 +249,11 @@ int main() {
          HasValidWindowsPrefetchArgument(*command_line));
 
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    crash_reporter::SetupFallbackCrashHandling(*command_line);
     return crash_reporter::RunAsCrashpadHandler(
         *base::CommandLine::ForCurrentProcess());
+  } else if (process_type == crash_reporter::switches::kFallbackCrashHandler) {
+    return RunFallbackCrashHandler(*command_line);
   }
 
   const base::TimeTicks exe_entry_point_ticks = base::TimeTicks::Now();

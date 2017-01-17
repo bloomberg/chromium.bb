@@ -45,6 +45,8 @@ class FallbackCrashHandler {
                          const std::string& channel,
                          const std::string& process_type);
 
+  const base::Process& process() const { return process_; }
+
  private:
   base::Process process_;
   base::PlatformThreadId thread_id_;

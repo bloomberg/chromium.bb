@@ -70,12 +70,15 @@ if (is_win) {
       "fallback_crash_handler_launcher_win.h",
       "fallback_crash_handler_win.cc",
       "fallback_crash_handler_win.h",
+      "fallback_crash_handling_win.cc",
+      "fallback_crash_handling_win.h",
       "run_as_crashpad_handler_win.cc",
       "run_as_crashpad_handler_win.h",
     ]
 
     deps = [
       "//base",
+      "//chrome/install_static:install_static_util",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler:handler_lib",
       "//third_party/crashpad/crashpad/minidump",
@@ -221,6 +224,7 @@ source_set("unit_tests") {
     "crash_keys_win_unittest.cc",
     "fallback_crash_handler_launcher_win_unittest.cc",
     "fallback_crash_handler_win_unittest.cc",
+    "fallback_crash_handling_win_unittest.cc",
   ]
   deps = [
     ":lib",

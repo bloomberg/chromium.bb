@@ -253,7 +253,10 @@ void ChromeCrashReporterClient::InitializeCrashReportingForProcess() {
 
   std::wstring process_type = install_static::GetSwitchValueFromCommandLine(
       ::GetCommandLine(), install_static::kProcessType);
-  if (process_type != install_static::kCrashpadHandler) {
+  // Don't set up Crashpad crash reporting in the Crashpad handler itself, nor
+  // in the fallback crash handler for the Crashpad handler process.
+  if (process_type != install_static::kCrashpadHandler &&
+      process_type != install_static::kFallbackHandler) {
     crash_reporter::SetCrashReporterClient(instance);
     crash_reporter::InitializeCrashpadWithEmbeddedHandler(
         process_type.empty(), install_static::UTF16ToUTF8(process_type));

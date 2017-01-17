@@ -35,6 +35,8 @@ const wchar_t kRestartInfo[] = L"CHROME_RESTART";
 const wchar_t kRtlLocale[] = L"RIGHT_TO_LEFT";
 
 const wchar_t kCrashpadHandler[] = L"crashpad-handler";
+const wchar_t kFallbackHandler[] = L"fallback-handler";
+
 const wchar_t kProcessType[] = L"type";
 const wchar_t kUserDataDirSwitch[] = L"user-data-dir";
 const wchar_t kUtilityProcess[] = L"utility";

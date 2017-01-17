@@ -28,8 +28,8 @@ bool FallbackCrashHandlerLauncher::Initialize(
     const base::CommandLine& program,
     const base::FilePath& crashpad_database) {
   // Open an inheritable handle to self. This will be inherited to the handler.
-  const DWORD kAccessMask =
-      PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_DUP_HANDLE;
+  const DWORD kAccessMask = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ |
+                            PROCESS_DUP_HANDLE | PROCESS_TERMINATE;
   self_process_handle_.Set(
       OpenProcess(kAccessMask, TRUE, ::GetCurrentProcessId()));
   if (!self_process_handle_.IsValid())

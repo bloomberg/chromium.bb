@@ -43,6 +43,7 @@ extern const wchar_t kRtlLocale[];
 // https://crbug.com/604923
 // Unify these constants with those defined in content_switches.h.
 extern const wchar_t kCrashpadHandler[];
+extern const wchar_t kFallbackHandler[];
 extern const wchar_t kProcessType[];
 extern const wchar_t kUserDataDirSwitch[];
 extern const wchar_t kUtilityProcess[];

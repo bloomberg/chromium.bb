@@ -161,23 +161,30 @@ bool MinidumpUpdater::AppendSimpleDictionary(
   // Write the key/value pairs and collect their locations.
   std::vector<crashpad::MinidumpSimpleStringDictionaryEntry> entries;
   for (const auto& kv : crash_keys) {
+    // The key of a key/value pair should never be empty.
+    DCHECK(!kv.first.empty());
+
     crashpad::MinidumpSimpleStringDictionaryEntry entry = {0};
 
-    entry.key = next_available_byte;
-    uint32_t key_len = base::saturated_cast<uint32_t>(kv.first.size());
-    if (!WriteAndAdvance(&key_len, sizeof(key_len), &next_available_byte) ||
-        !WriteAndAdvance(&kv.first[0], key_len, &next_available_byte)) {
-      return false;
-    }
+    // Skip this key/value if the value is empty.
+    if (!kv.second.empty()) {
+      entry.key = next_available_byte;
+      uint32_t key_len = base::saturated_cast<uint32_t>(kv.first.size());
+      if (!WriteAndAdvance(&key_len, sizeof(key_len), &next_available_byte) ||
+          !WriteAndAdvance(&kv.first[0], key_len, &next_available_byte)) {
+        return false;
+      }
 
-    entry.value = next_available_byte;
-    uint32_t value_len = base::saturated_cast<uint32_t>(kv.second.size());
-    if (!WriteAndAdvance(&value_len, sizeof(value_len), &next_available_byte) ||
-        !WriteAndAdvance(&kv.second[0], value_len, &next_available_byte)) {
-      return false;
-    }
+      entry.value = next_available_byte;
+      uint32_t value_len = base::saturated_cast<uint32_t>(kv.second.size());
+      if (!WriteAndAdvance(&value_len, sizeof(value_len),
+                           &next_available_byte) ||
+          !WriteAndAdvance(&kv.second[0], value_len, &next_available_byte)) {
+        return false;
+      }
 
-    entries.push_back(entry);
+      entries.push_back(entry);
+    }
   }
 
   // Write the dictionary array itself - note the array is count-prefixed.
@@ -340,10 +347,11 @@ bool FallbackCrashHandler::ParseCommandLine(const base::CommandLine& cmd_line) {
     return false;
 
   // Retrieve the thread id argument.
-  unsigned thread_id = 0;
+  unsigned int thread_id = 0;
   if (!base::StringToUint(cmd_line.GetSwitchValueASCII("thread"), &thread_id)) {
     return false;
   }
+  thread_id_ = thread_id;
 
   // Retrieve the "exception-pointers" argument.
   uint64_t uint_exc_ptrs = 0;
