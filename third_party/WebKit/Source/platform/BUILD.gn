@@ -1689,6 +1689,7 @@ test("blink_platform_unittests") {
     "blob/BlobDataTest.cpp",
     "clipboard/ClipboardUtilitiesTest.cpp",
     "exported/FilePathConversionTest.cpp",
+    "exported/WebStringTest.cpp",
     "feature_policy/FeaturePolicyTest.cpp",
     "fonts/AcceptLanguagesResolverTest.cpp",
     "fonts/FontCacheTest.cpp",

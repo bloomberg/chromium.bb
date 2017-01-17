@@ -66,6 +66,11 @@ namespace blink {
 // * webstring.utf16()
 // * WebString::toNullableString16(webstring)
 //
+// Note that if you need to convert the UTF8 string converted from WebString
+// back to WebString with fromUTF8() you may want to specify Strict
+// UTF8ConversionMode when you call utf8(), as fromUTF8 rejects strings
+// with invalid UTF8 characters.
+//
 // Some types like GURL and base::FilePath can directly take either utf-8 or
 // utf-16 strings. Use following methods to convert WebString to/from GURL or
 // FilePath rather than going through intermediate string types:
@@ -79,6 +84,16 @@ namespace blink {
 //
 class WebString {
  public:
+  enum class UTF8ConversionMode {
+    // Ignores errors for invalid characters.
+    kLenient,
+    // Errors out on invalid characters, returns null string.
+    kStrict,
+    // Replace invalid characters with 0xFFFD.
+    // (This is the same conversion mode as base::UTF16ToUTF8)
+    kStrictReplacingErrorsWithFFFD,
+  };
+
   ~WebString() { reset(); }
 
   WebString() {}
@@ -104,7 +119,8 @@ class WebString {
   bool isEmpty() const { return !length(); }
   bool isNull() const { return m_private.isNull(); }
 
-  BLINK_COMMON_EXPORT std::string utf8() const;
+  BLINK_COMMON_EXPORT std::string utf8(
+      UTF8ConversionMode = UTF8ConversionMode::kLenient) const;
 
   BLINK_COMMON_EXPORT static WebString fromUTF8(const char* data,
                                                 size_t length);

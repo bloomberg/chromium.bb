@@ -46,7 +46,9 @@ class StringUTF8Adaptor final {
   DISALLOW_NEW();
 
  public:
-  explicit StringUTF8Adaptor(const String& string) : m_data(0), m_length(0) {
+  StringUTF8Adaptor(const String& string,
+                    UTF8ConversionMode mode = LenientUTF8Conversion)
+      : m_data(0), m_length(0) {
     if (string.isEmpty())
       return;
     // Unfortunately, 8 bit WTFStrings are encoded in Latin-1 and GURL uses
@@ -57,7 +59,7 @@ class StringUTF8Adaptor final {
       m_data = reinterpret_cast<const char*>(string.characters8());
       m_length = string.length();
     } else {
-      m_utf8Buffer = string.utf8();
+      m_utf8Buffer = string.utf8(mode);
       m_data = m_utf8Buffer.data();
       m_length = m_utf8Buffer.length();
     }
