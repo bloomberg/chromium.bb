@@ -17,7 +17,7 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
-#import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
+#import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_container_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -87,7 +87,8 @@
 - (void)showTabAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK(_placeholderWebState);
 
-  TabCoordinator* tabCoordinator = [[TabCoordinator alloc] init];
+  TabStripContainerCoordinator* tabCoordinator =
+      [[TabStripContainerCoordinator alloc] init];
   tabCoordinator.webState = _placeholderWebState.get();
   tabCoordinator.presentationKey = indexPath;
   [self addChildCoordinator:tabCoordinator];

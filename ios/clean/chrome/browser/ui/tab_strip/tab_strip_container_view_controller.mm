@@ -44,7 +44,7 @@ CGFloat kStripHeight = 200.0;
 
 // Called after a new strip view controller is set, but before
 // |-didMoveToParentViewController:| is called on that view controller.
-- (void)didAddStripViewController;
+- (void)didAddTabStripViewController;
 
 // Methods to populate the constraint properties.
 - (void)updateContentConstraintsWithStrip;
@@ -87,7 +87,7 @@ CGFloat kStripHeight = 200.0;
   [self.contentViewController didMoveToParentViewController:self];
 }
 
-- (void)setStripViewController:(UIViewController*)tabStripViewController {
+- (void)setTabStripViewController:(UIViewController*)tabStripViewController {
   if (self.tabStripViewController == tabStripViewController)
     return;
 
@@ -101,7 +101,7 @@ CGFloat kStripHeight = 200.0;
   tabStripViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:tabStripViewController.view];
   _tabStripViewController = tabStripViewController;
-  [self didAddStripViewController];
+  [self didAddTabStripViewController];
   [self.view setNeedsUpdateConstraints];
   [self.tabStripViewController didMoveToParentViewController:self];
 }
@@ -181,7 +181,7 @@ CGFloat kStripHeight = 200.0;
   }
 }
 
-- (void)didAddStripViewController {
+- (void)didAddTabStripViewController {
   [self updateStripConstraints];
   // If there's already a content view controller, update the constraints for
   // that, too.

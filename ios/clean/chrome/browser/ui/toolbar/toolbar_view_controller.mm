@@ -8,7 +8,7 @@
 
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 
-#import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
+#import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tools_menu_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
 
@@ -35,7 +35,7 @@
   [tabSwitcher setTitle:@"⊞" forState:UIControlStateNormal];
   tabSwitcher.titleLabel.font = [UIFont systemFontOfSize:24.0];
   [tabSwitcher addTarget:nil
-                  action:@selector(showTabGrid:)
+                  action:@selector(toggleTabStrip:)
         forControlEvents:UIControlEventTouchUpInside];
 
   // Placeholder omnibox.

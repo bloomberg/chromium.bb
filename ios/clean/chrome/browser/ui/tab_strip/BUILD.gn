@@ -2,6 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("tab_strip") {
+  sources = [
+    "tab_strip_container_coordinator.h",
+    "tab_strip_container_coordinator.mm",
+  ]
+  deps = [
+    ":tab_strip_ui",
+    "//base",
+    "//ios/clean/chrome/browser",
+    "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/animators",
+    "//ios/clean/chrome/browser/ui/tab",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("tab_strip_ui") {
   sources = [
     "tab_strip_container_view_controller.h",
