@@ -9,6 +9,8 @@ var FilesQuickView = Polymer({
     // File media type, e.g. image, video.
     type: String,
     filePath: String,
+    // If there is a task to open the file.
+    hasTask: Boolean,
     // URLs should be accessible from webview since contets are rendered inside
     // it. Hint: use URL.createObjectURL.
     contentUrl: String,
@@ -41,6 +43,7 @@ var FilesQuickView = Polymer({
   clear: function() {
     this.type = '';
     this.filePath = '';
+    this.hasTask = false;
     this.contentUrl = '';
     this.videoPoster = '';
     this.audioArtwork = '';

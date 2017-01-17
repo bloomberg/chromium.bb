@@ -548,7 +548,7 @@ FileManager.prototype = /** @struct */ {
         assert(this.metadataModel_), assert(this.selectionHandler_),
         assert(this.ui_.listContainer), assert(this.quickViewModel_),
         assert(this.taskController_), fileListSelectionModel,
-        assert(this.quickViewUma_), metadataBoxController);
+        assert(this.quickViewUma_), metadataBoxController, this.dialogType);
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       importer.importEnabled().then(
