@@ -296,8 +296,8 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWSC(
     result = product->get_ProductName(product_name.Receive());
     if (FAILED(result))
       return RESULT_FAILED_TO_GET_PRODUCT_NAME;
-    std::string name =
-        base::SysWideToUTF8(std::wstring(product_name, product_name.Length()));
+    std::string name = TrimVersionOfAvProductName(
+        base::SysWideToUTF8(std::wstring(product_name, product_name.Length())));
     product_name.Release();
     if (ShouldReportFullNames())
       av_product.set_product_name(name);
@@ -427,7 +427,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
 
     // Owned by ScopedVariant.
     BSTR temp_bstr = V_BSTR(display_name.ptr());
-    std::string name(base::SysWideToUTF8(
+    std::string name = TrimVersionOfAvProductName(base::SysWideToUTF8(
         std::wstring(temp_bstr, ::SysStringLen(temp_bstr))));
 
     if (ShouldReportFullNames())
