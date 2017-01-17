@@ -1458,6 +1458,7 @@ test("browser_tests") {
       "../browser/extensions/api/webrtc_logging_private/webrtc_event_log_apitest.cc",
       "../browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc",
       "../browser/extensions/api/webstore_private/webstore_private_apitest.cc",
+      "../browser/extensions/api_binding_perf_browsertest.cc",
       "../browser/extensions/app_background_page_apitest.cc",
       "../browser/extensions/app_process_apitest.cc",
       "../browser/extensions/app_window_overrides_browsertest.cc",
