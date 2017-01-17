@@ -39,9 +39,9 @@ void NetMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
   DCHECK(!log_hash.empty());
   current_fetch_->AddExtraRequestHeader("X-Chrome-UMA-Log-SHA1: " + log_hash);
 
-  // We already drop cookies server-side, but we might as well strip them out
-  // client-side as well.
+  // Drop cookies and auth data.
   current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                               net::LOAD_DO_NOT_SEND_AUTH_DATA |
                                net::LOAD_DO_NOT_SEND_COOKIES);
   current_fetch_->Start();
 }
