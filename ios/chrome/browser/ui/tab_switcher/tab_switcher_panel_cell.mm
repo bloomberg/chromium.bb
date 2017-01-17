@@ -230,6 +230,8 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   CGSize snapshotSize = cellSize;
   snapshotSize.height -= tabSwitcherLocalSessionCellTopBarHeight();
   base::WeakNSObject<TabSwitcherLocalSessionCell> weakCell(self);
+  DCHECK(self.delegate);
+  DCHECK([self cache]);
   _currentPendingSnapshotRequest =
       [[self cache] requestSnapshotForTab:tab
                                  withSize:snapshotSize

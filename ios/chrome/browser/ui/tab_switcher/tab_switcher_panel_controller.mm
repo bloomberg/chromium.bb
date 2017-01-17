@@ -237,6 +237,7 @@ void FillVectorWithHashesUsingDistantSession(
     [panelCell setTitle:SysUTF16ToNSString(tab->title)];
     [panelCell setSessionGURL:tab->virtual_url
              withBrowserState:[_model browserState]];
+    [panelCell setDelegate:self];
   } else {
     NSString* identifier = [TabSwitcherLocalSessionCell identifier];
     TabSwitcherLocalSessionCell* panelCell =
@@ -247,10 +248,10 @@ void FillVectorWithHashesUsingDistantSession(
 
     Tab* tab = _localSession->tabs()[tabIndex];
     [panelCell setSessionType:_sessionType];
+    [panelCell setDelegate:self];
     [panelCell setAppearanceForTab:tab cellSize:[_panelView cellSize]];
   }
   DCHECK(cell);
-  cell.delegate = self;
   return cell;
 }
 

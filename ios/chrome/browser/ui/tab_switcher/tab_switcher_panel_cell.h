@@ -44,6 +44,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 @property(nonatomic, readonly) UIView* topBar;
 
 // Sets the cell's appearance using information in |tab|.
+// The delegate needs to be set before calling this method.
 - (void)setAppearanceForTab:(Tab*)tab cellSize:(CGSize)cellSize;
 // Sets the cell's appearance depending on |type|.
 - (void)setSessionType:(TabSwitcherSessionType)type;
