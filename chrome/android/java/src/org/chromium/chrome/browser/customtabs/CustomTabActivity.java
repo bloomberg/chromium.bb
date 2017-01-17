@@ -959,6 +959,8 @@ public class CustomTabActivity extends ChromeActivity {
             };
 
             mMainTab = null;
+            // mHasCreatedTabEarly == true => mMainTab != null in the rest of the code.
+            mHasCreatedTabEarly = false;
             tab.detachAndStartReparenting(intent, startActivityOptions, finalizeCallback);
         } else {
             // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
