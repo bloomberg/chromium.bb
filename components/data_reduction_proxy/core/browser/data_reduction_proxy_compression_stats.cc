@@ -374,11 +374,6 @@ void DataReductionProxyCompressionStats::Init() {
         weak_factory_.GetWeakPtr()));
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kClearDataReductionProxyDataSavings)) {
-    ClearDataSavingStatistics();
-  }
-
   if (delay_.is_zero())
     return;
 

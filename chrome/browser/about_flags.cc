@@ -1538,11 +1538,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(
          data_reduction_proxy::switches::kEnableDataReductionProxyLitePage)},
-    {"clear-data-reduction-proxy-data-savings",
-     IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME,
-     IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(
-         data_reduction_proxy::switches::kClearDataReductionProxyDataSavings)},
 #if defined(OS_ANDROID)
     {"enable-data-reduction-proxy-savings-promo",
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_NAME,

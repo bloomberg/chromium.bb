@@ -30,8 +30,6 @@ public class DataReductionPromoSnackbarController implements SnackbarManager.Sna
     public static final String PROMO_FIELD_TRIAL_NAME = "DataCompressionProxyPromoVisibility";
     private static final String ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_SWITCH =
             "enable-data-reduction-proxy-savings-promo";
-    private static final String CLEAR_DATA_REDUCTION_PROXY_DATA_SAVINGS_SWITCH =
-            "clear-data-reduction-proxy-data-savings";
     private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
     private static final long BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
 
@@ -79,10 +77,6 @@ public class DataReductionPromoSnackbarController implements SnackbarManager.Sna
                     mPromoDataSavingsMB[i] = -1;
                 }
             }
-        }
-
-        if (CommandLine.getInstance().hasSwitch(CLEAR_DATA_REDUCTION_PROXY_DATA_SAVINGS_SWITCH)) {
-            DataReductionPromoUtils.saveSnackbarPromoDisplayed(0);
         }
     }
 

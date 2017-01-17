@@ -11,7 +11,6 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 
-extern const char kClearDataReductionProxyDataSavings[];
 extern const char kDataReductionProxy[];
 extern const char kDataReductionProxyConfigURL[];
 extern const char kDataReductionProxyExperiment[];

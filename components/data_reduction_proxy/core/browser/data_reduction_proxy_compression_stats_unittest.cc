@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -543,27 +542,7 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   VerifyPrefs(dict);
 }
 
-TEST_F(DataReductionProxyCompressionStatsTest,
-       ClearPrefsOnRestartEnabled) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(
-      data_reduction_proxy::switches::kClearDataReductionProxyDataSavings);
-
-  base::ListValue list_value;
-  list_value.Insert(
-      0, base::MakeUnique<base::StringValue>(base::Int64ToString(1234)));
-  pref_service()->Set(prefs::kDailyHttpOriginalContentLength, list_value);
-
-  ResetCompressionStatsWithDelay(
-      base::TimeDelta::FromMinutes(kWriteDelayMinutes));
-
-  const base::ListValue* value = pref_service()->GetList(
-      prefs::kDailyHttpOriginalContentLength);
-  EXPECT_EQ(0u, value->GetSize());
-}
-
-TEST_F(DataReductionProxyCompressionStatsTest,
-       ClearPrefsOnRestartDisabled) {
+TEST_F(DataReductionProxyCompressionStatsTest, StatsRestoredOnOnRestart) {
   base::ListValue list_value;
   list_value.Insert(
       0, base::MakeUnique<base::StringValue>(base::Int64ToString(1234)));

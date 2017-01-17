@@ -7,10 +7,6 @@
 namespace data_reduction_proxy {
 namespace switches {
 
-// Clear data savings on Chrome startup.
-const char kClearDataReductionProxyDataSavings[] =
-    "clear-data-reduction-proxy-data-savings";
-
 // The origin of the data reduction proxy.
 const char kDataReductionProxy[]         = "spdy-proxy-auth-origin";
 
