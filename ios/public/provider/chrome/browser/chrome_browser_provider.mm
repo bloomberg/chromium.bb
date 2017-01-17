@@ -72,11 +72,6 @@ void ChromeBrowserProvider::InitializeCastService(
 void ChromeBrowserProvider::AttachTabHelpers(web::WebState* web_state,
                                              Tab* tab) const {}
 
-bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
-    const base::Closure& on_update_callback) {
-  return false;
-}
-
 VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {
   return nullptr;
 }

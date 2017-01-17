@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/variations/ios_chrome_variations_service_client.h"
 #include "ios/chrome/browser/variations/ios_ui_string_overrider_factory.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -97,8 +96,7 @@ IOSChromeMetricsServicesManagerClient::GetURLRequestContext() {
 
 bool IOSChromeMetricsServicesManagerClient::IsSafeBrowsingEnabled(
     const base::Closure& on_update_callback) {
-  return ios::GetChromeBrowserProvider()->IsSafeBrowsingEnabled(
-      on_update_callback);
+  return false;
 }
 
 bool IOSChromeMetricsServicesManagerClient::IsMetricsReportingEnabled() {

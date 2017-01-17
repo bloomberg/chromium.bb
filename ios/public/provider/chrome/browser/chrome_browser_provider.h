@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 
 class AppDistributionProvider;
@@ -98,10 +97,6 @@ class ChromeBrowserProvider {
   // owning |tab| is included for helpers that need access to information that
   // is not yet available through web::WebState.
   virtual void AttachTabHelpers(web::WebState* web_state, Tab* tab) const;
-
-  // Returns whether safe browsing is enabled. See the comment on
-  // metrics_services_manager_client.h for details on |on_update_callback|.
-  virtual bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback);
 
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;

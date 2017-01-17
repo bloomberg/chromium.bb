@@ -52,7 +52,6 @@ source_set("metrics") {
     "//ios/chrome/browser/variations",
     "//ios/chrome/browser/variations:ios_chrome_ui_string_overrider_factory",
     "//ios/chrome/common",
-    "//ios/public/provider/chrome/browser",
     "//ios/web",
   ]
 }
