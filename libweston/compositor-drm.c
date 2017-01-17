@@ -2210,9 +2210,12 @@ drm_output_choose_initial_mode(struct drm_backend *backend,
 	drmModeModeInfo drm_modeline;
 	int32_t width = 0;
 	int32_t height = 0;
+	uint32_t refresh = 0;
+	int n;
 
 	if (mode == WESTON_DRM_BACKEND_OUTPUT_PREFERRED && modeline) {
-		if (sscanf(modeline, "%dx%d", &width, &height) != 2) {
+		n = sscanf(modeline, "%dx%d@%d", &width, &height, &refresh);
+		if (n != 2 && n != 3) {
 			width = -1;
 
 			if (parse_modeline(modeline, &drm_modeline) == 0) {
@@ -2228,7 +2231,8 @@ drm_output_choose_initial_mode(struct drm_backend *backend,
 
 	wl_list_for_each_reverse(drm_mode, &output->base.mode_list, base.link) {
 		if (width == drm_mode->base.width &&
-		    height == drm_mode->base.height)
+		    height == drm_mode->base.height &&
+		    (refresh == 0 || refresh == drm_mode->mode_info.vrefresh))
 			configured = drm_mode;
 
 		if (memcmp(current_mode, &drm_mode->mode_info,
