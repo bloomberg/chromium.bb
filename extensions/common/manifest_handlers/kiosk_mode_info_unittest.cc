@@ -32,11 +32,13 @@ TEST_F(KioskModeInfoManifestTest, MultipleSecondaryApps) {
       std::equal(parsed_ids.begin(), parsed_ids.end(), expected_ids));
 }
 
-TEST_F(KioskModeInfoManifestTest, RequiredPlatformVersionOptional) {
+TEST_F(KioskModeInfoManifestTest,
+       RequiredPlatformVersionAndAlwaysUpdateAreOptional) {
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("kiosk_required_platform_version_not_present.json"));
   KioskModeInfo* info = KioskModeInfo::Get(extension.get());
   EXPECT_TRUE(info->required_platform_version.empty());
+  EXPECT_FALSE(info->always_update);
 }
 
 TEST_F(KioskModeInfoManifestTest, RequiredPlatformVersion) {
@@ -51,6 +53,25 @@ TEST_F(KioskModeInfoManifestTest, RequiredPlatformVersionInvalid) {
                      manifest_errors::kInvalidKioskRequiredPlatformVersion);
   LoadAndExpectError("kiosk_required_platform_version_invalid.json",
                      manifest_errors::kInvalidKioskRequiredPlatformVersion);
+}
+
+TEST_F(KioskModeInfoManifestTest, AlwaysUpdate) {
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("kiosk_always_update.json"));
+  KioskModeInfo* info = KioskModeInfo::Get(extension.get());
+  EXPECT_TRUE(info->always_update);
+}
+
+TEST_F(KioskModeInfoManifestTest, AlwaysUpdateFalse) {
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("kiosk_always_update_false.json"));
+  KioskModeInfo* info = KioskModeInfo::Get(extension.get());
+  EXPECT_FALSE(info->always_update);
+}
+
+TEST_F(KioskModeInfoManifestTest, AlwaysUpdateInvalid) {
+  LoadAndExpectError("kiosk_always_update_invalid.json",
+                     manifest_errors::kInvalidKioskAlwaysUpdate);
 }
 
 }  // namespace extensions

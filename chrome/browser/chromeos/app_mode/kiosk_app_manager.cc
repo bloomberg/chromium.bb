@@ -653,6 +653,10 @@ bool KioskAppManager::IsPlatformCompliantWithApp(
   if (info == nullptr)
     return true;
 
+  // Compliant if the app wants to be always updated.
+  if (info->always_update)
+    return true;
+
   return IsPlatformCompliant(info->required_platform_version);
 }
 

@@ -22,10 +22,12 @@ using api::extensions_manifest_types::KioskSecondaryAppsType;
 
 KioskModeInfo::KioskModeInfo(KioskStatus kiosk_status,
                              const std::vector<std::string>& secondary_app_ids,
-                             const std::string& required_platform_version)
+                             const std::string& required_platform_version,
+                             bool always_update)
     : kiosk_status(kiosk_status),
       secondary_app_ids(secondary_app_ids),
-      required_platform_version(required_platform_version) {}
+      required_platform_version(required_platform_version),
+      always_update(always_update) {}
 
 KioskModeInfo::~KioskModeInfo() {
 }
@@ -137,9 +139,18 @@ bool KioskModeHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
+  // Optional kiosk.always_update key.
+  bool always_update = false;
+  if (manifest->HasPath(keys::kKioskAlwaysUpdate) &&
+      !manifest->GetBoolean(keys::kKioskAlwaysUpdate, &always_update)) {
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidKioskAlwaysUpdate);
+    return false;
+  }
+
   extension->SetManifestData(
       keys::kKioskMode,
-      new KioskModeInfo(kiosk_status, ids, required_platform_version));
+      new KioskModeInfo(kiosk_status, ids, required_platform_version,
+                        always_update));
 
   return true;
 }

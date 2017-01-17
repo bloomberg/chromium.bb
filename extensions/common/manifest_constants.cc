@@ -68,6 +68,7 @@ const char kJs[] = "js";
 const char kKey[] = "key";
 const char kKeycode[] = "keyCode";
 const char kKiosk[] = "kiosk";
+const char kKioskAlwaysUpdate[] = "kiosk.always_update";
 const char kKioskEnabled[] = "kiosk_enabled";
 const char kKioskOnly[] = "kiosk_only";
 const char kKioskMode[] = "kiosk_mode";
@@ -472,6 +473,8 @@ const char kInvalidKeyBindingTooMany[] =
 const char kInvalidKeyBindingUnknownPlatform[] =
     "Unknown platform for 'command[*]': *. Valid values are: 'windows', 'mac'"
     " 'chromeos', 'linux' and 'default'.";
+const char kInvalidKioskAlwaysUpdate[] =
+    "Invalid value for 'kiosk.always_update'.";
 const char kInvalidKioskEnabled[] =
     "Invalid value for 'kiosk_enabled'.";
 const char kInvalidKioskOnly[] =
