@@ -24,7 +24,7 @@
 // The ImageSkia provided by extensions::IconImage contains ImageSkiaReps that
 // are computed and updated using the following algorithm (if no default icon
 // was supplied, transparent icon is considered the default):
-// - |LoadImageForScaleFactors()| searches the extension for an icon of an
+// - |LoadImageForScale()| searches the extension for an icon of an
 //   appropriate size. If the extension doesn't have a icon resource needed for
 //   the image representation, the default icon's representation for the
 //   requested scale factor is returned by ImageSkiaSource.
@@ -111,10 +111,8 @@ void IconImage::Source::ResetHost() {
 
 gfx::ImageSkiaRep IconImage::Source::GetImageForScale(float scale) {
   gfx::ImageSkiaRep representation;
-  if (host_) {
-    representation =
-        host_->LoadImageForScaleFactor(ui::GetSupportedScaleFactor(scale));
-  }
+  if (host_)
+    representation = host_->LoadImageForScale(scale);
 
   if (!representation.is_null())
     return representation;
@@ -168,13 +166,11 @@ IconImage::~IconImage() {
   source_->ResetHost();
 }
 
-gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
-    ui::ScaleFactor scale_factor) {
+gfx::ImageSkiaRep IconImage::LoadImageForScale(float scale) {
   // Do nothing if extension is unloaded.
   if (!extension_)
     return gfx::ImageSkiaRep();
 
-  const float scale = ui::GetScaleForScaleFactor(scale_factor);
   const int resource_size_in_pixel =
       static_cast<int>(resource_size_in_dip_ * scale);
 
@@ -199,9 +195,7 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   std::vector<ImageLoader::ImageRepresentation> info_list;
   info_list.push_back(ImageLoader::ImageRepresentation(
       resource, ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-      gfx::ScaleToFlooredSize(
-          gfx::Size(resource_size_in_dip_, resource_size_in_dip_), scale),
-      scale_factor));
+      gfx::Size(resource_size_in_pixel, resource_size_in_pixel), scale));
 
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(browser_context_);

@@ -49,7 +49,7 @@ class ImageLoader : public KeyedService {
     ImageRepresentation(const ExtensionResource& resource,
                         ResizeCondition resize_condition,
                         const gfx::Size& desired_size,
-                        ui::ScaleFactor scale_factor);
+                        float scale_factor);
     ~ImageRepresentation();
 
     // Extension resource to load.
@@ -62,7 +62,7 @@ class ImageLoader : public KeyedService {
     gfx::Size desired_size;
 
     // |scale_factor| is used to construct the loaded gfx::ImageSkia.
-    ui::ScaleFactor scale_factor;
+    float scale_factor;
   };
 
   struct LoadResult;
@@ -87,8 +87,10 @@ class ImageLoader : public KeyedService {
                       const gfx::Size& max_size,
                       const ImageLoaderImageCallback& callback);
 
-  // Loads and returns a gfx::Image that has representations at all supported
-  // scale factors.
+  // Loads a gfx::Image that has representations at all scale factors we are
+  // likely to care about. That includes every scale for which we pack resources
+  // in ResourceBundle plus the scale for all currently attached displays. The
+  // image is returned via |callback|.
   void LoadImageAtEveryScaleFactorAsync(
       const Extension* extension,
       const gfx::Size& dip_size,

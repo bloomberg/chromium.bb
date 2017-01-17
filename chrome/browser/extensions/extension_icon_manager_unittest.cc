@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
+#include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
@@ -18,6 +21,9 @@
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
+#include "ui/display/display_list.h"
+#include "ui/display/display_switches.h"
+#include "ui/display/test/test_screen.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -26,6 +32,31 @@
 
 namespace extensions {
 namespace {
+
+class ScopedSetDeviceScaleFactor {
+ public:
+  explicit ScopedSetDeviceScaleFactor(float scale) {
+    display::Display::ResetForceDeviceScaleFactorForTesting();
+    // It should be enough just to call Display::SetScaleAndBounds, but on Mac
+    // that rounds the scale unless there's a forced device scale factor.
+    command_line_.GetProcessCommandLine()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor, base::StringPrintf("%3.2f", scale));
+    // This has to be inited after fiddling with the command line.
+    test_screen_ = base::MakeUnique<display::test::TestScreen>();
+    display::Screen::SetScreenInstance(test_screen_.get());
+  }
+
+  ~ScopedSetDeviceScaleFactor() {
+    display::Display::ResetForceDeviceScaleFactorForTesting();
+    display::Screen::SetScreenInstance(nullptr);
+  }
+
+ private:
+  std::unique_ptr<display::test::TestScreen> test_screen_;
+  base::test::ScopedCommandLine command_line_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetDeviceScaleFactor);
+};
 
 using content::BrowserThread;
 
@@ -232,13 +263,17 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
 
   for (size_t i = 0; i < supported_scales.size(); ++i) {
     SCOPED_TRACE(testing::Message() << "Test case: " << i);
+    // Since active Displays' scale factors are also taken into account, to make
+    // the logic in this test work, we need to set the scale factor to one of
+    // the "supported" scales.
+    ScopedSetDeviceScaleFactor scoped_dsf(
+        ui::GetScaleForScaleFactor(supported_scales[i][0]));
     ui::test::ScopedSetSupportedScaleFactors scoped(supported_scales[i]);
     TestIconManager icon_manager(this);
 
     icon_manager.LoadIcon(profile.get(), extension.get());
     WaitForImageLoad();
     gfx::Image icon = icon_manager.GetIcon(extension->id());
-
     // Determine if the default icon fallback will be used. We'll use the
     // default when none of the supported scale factors can find an appropriate
     // icon.
@@ -272,6 +307,16 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
         EXPECT_EQ(ui::IsSupportedScale(scale), has_representation);
     }
   }
+
+  // Now check that the scale factors for active displays are respected, even
+  // when it's not a supported scale.
+  EXPECT_FALSE(ui::IsSupportedScale(ui::SCALE_FACTOR_150P));
+  ScopedSetDeviceScaleFactor scoped_dsf(1.5f);
+  TestIconManager icon_manager(this);
+  icon_manager.LoadIcon(profile.get(), extension.get());
+  WaitForImageLoad();
+  gfx::ImageSkia icon = icon_manager.GetIcon(extension->id()).AsImageSkia();
+  EXPECT_TRUE(icon.HasRepresentation(1.5f));
 }
 
 }  // namespace

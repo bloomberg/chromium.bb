@@ -207,10 +207,8 @@ TEST_F(ImageLoaderTest, MultipleImages) {
     ExtensionResource resource = IconsInfo::GetIconResource(
         extension.get(), sizes[i], ExtensionIconSet::MATCH_EXACTLY);
     info_list.push_back(ImageLoader::ImageRepresentation(
-        resource,
-        ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
-        gfx::Size(sizes[i], sizes[i]),
-        ui::SCALE_FACTOR_NONE));
+        resource, ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
+        gfx::Size(sizes[i], sizes[i]), 1.f));
   }
 
   ImageLoader loader;
@@ -252,10 +250,8 @@ TEST_F(ImageLoaderTest, LoadImageFamily) {
     ExtensionResource resource = IconsInfo::GetIconResource(
         extension.get(), sizes[i], ExtensionIconSet::MATCH_EXACTLY);
     info_list.push_back(ImageLoader::ImageRepresentation(
-        resource,
-        ImageLoader::ImageRepresentation::NEVER_RESIZE,
-        gfx::Size(sizes[i], sizes[i]),
-        ui::SCALE_FACTOR_100P));
+        resource, ImageLoader::ImageRepresentation::NEVER_RESIZE,
+        gfx::Size(sizes[i], sizes[i]), 1.f));
   }
 
   // Add a second icon of 200P which should get grouped with the smaller icon's
@@ -265,11 +261,10 @@ TEST_F(ImageLoaderTest, LoadImageFamily) {
                                  extension_misc::EXTENSION_ICON_SMALLISH,
                                  ExtensionIconSet::MATCH_EXACTLY);
   info_list.push_back(ImageLoader::ImageRepresentation(
-      resource,
-      ImageLoader::ImageRepresentation::NEVER_RESIZE,
+      resource, ImageLoader::ImageRepresentation::NEVER_RESIZE,
       gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
                 extension_misc::EXTENSION_ICON_BITTY),
-      ui::SCALE_FACTOR_200P));
+      2.f));
 
   ImageLoader loader;
   loader.LoadImageFamilyAsync(extension.get(),

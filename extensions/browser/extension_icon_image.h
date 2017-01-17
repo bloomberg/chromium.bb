@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_icon_set.h"
-#include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -90,9 +89,9 @@ class IconImage : public content::NotificationObserver {
   // If representation loading is asynchronous, an empty image
   // representation is returned. When the representation gets loaded the
   // observers' OnExtensionIconImageLoaded() will be called.
-  gfx::ImageSkiaRep LoadImageForScaleFactor(ui::ScaleFactor scale_factor);
+  gfx::ImageSkiaRep LoadImageForScale(float scale);
 
-  void OnImageLoaded(float scale_factor, const gfx::Image& image);
+  void OnImageLoaded(float scale, const gfx::Image& image);
 
   // content::NotificationObserver overrides:
   void Observe(int type,

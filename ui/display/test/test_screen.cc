@@ -10,7 +10,7 @@ namespace display {
 namespace test {
 
 TestScreen::TestScreen() {
-  Display display;
+  Display display(1, gfx::Rect(0, 0, 100, 100));
   ProcessDisplayChanged(display, true /* is_primary */);
 }
 
