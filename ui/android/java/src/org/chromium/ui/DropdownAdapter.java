@@ -141,6 +141,14 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             ApiCompatibilityUtils.setMarginStart(layoutParams, labelMargin);
             ApiCompatibilityUtils.setMarginEnd(layoutParams, labelMargin);
             labelView.setLayoutParams(layoutParams);
+            if (item.isMultilineLabel()) {
+                // If there is a multiline label, we add extra padding top and bottom because
+                // WRAP_CONTENT, defined above for multiline labels, leaves none.
+                int existingStart = ApiCompatibilityUtils.getPaddingStart(labelView);
+                int existingEnd = ApiCompatibilityUtils.getPaddingEnd(labelView);
+                ApiCompatibilityUtils.setPaddingRelative(
+                        labelView, existingStart, labelMargin, existingEnd, labelMargin);
+            }
         }
 
         labelView.setEnabled(item.isEnabled());
