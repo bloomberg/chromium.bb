@@ -613,14 +613,6 @@ static CSSValue* consumeSpacing(CSSParserTokenRange& range,
                        UnitlessQuirk::Allow);
 }
 
-static CSSValue* consumeTabSize(CSSParserTokenRange& range,
-                                CSSParserMode cssParserMode) {
-  CSSPrimitiveValue* parsedValue = consumeInteger(range, 0);
-  if (parsedValue)
-    return parsedValue;
-  return consumeLength(range, cssParserMode, ValueRangeNonNegative);
-}
-
 static CSSValue* consumeTextSizeAdjust(CSSParserTokenRange& range,
                                        CSSParserMode cssParserMode) {
   if (range.peek().id() == CSSValueAuto)
@@ -3106,8 +3098,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyLetterSpacing:
     case CSSPropertyWordSpacing:
       return consumeSpacing(m_range, m_context->mode());
-    case CSSPropertyTabSize:
-      return consumeTabSize(m_range, m_context->mode());
     case CSSPropertyTextSizeAdjust:
       return consumeTextSizeAdjust(m_range, m_context->mode());
     case CSSPropertyFontSize:
