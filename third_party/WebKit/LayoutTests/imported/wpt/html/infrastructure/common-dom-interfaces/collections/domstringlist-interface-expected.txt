@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+PASS DOMStringList IDL tests 
+PASS DOMStringList interface: existence and properties of interface object 
+PASS DOMStringList interface object length 
+PASS DOMStringList interface object name 
+FAIL DOMStringList interface: existence and properties of interface prototype object assert_equals: class string of DOMStringList.prototype expected "[object DOMStringListPrototype]" but got "[object DOMStringList]"
+PASS DOMStringList interface: existence and properties of interface prototype object's "constructor" property 
+PASS DOMStringList interface: attribute length 
+PASS DOMStringList interface: operation item(unsigned long) 
+PASS DOMStringList interface: operation contains(DOMString) 
+PASS DOMStringList must be primary interface of location.ancestorOrigins 
+PASS Stringification of location.ancestorOrigins 
+PASS DOMStringList interface: location.ancestorOrigins must inherit property "length" with the proper type (0) 
+PASS DOMStringList interface: location.ancestorOrigins must inherit property "item" with the proper type (1) 
+PASS DOMStringList interface: calling item(unsigned long) on location.ancestorOrigins with too few arguments must throw TypeError 
+PASS DOMStringList interface: location.ancestorOrigins must inherit property "contains" with the proper type (2) 
+PASS DOMStringList interface: calling contains(DOMString) on location.ancestorOrigins with too few arguments must throw TypeError 
+Harness: the test ran to completion.
+

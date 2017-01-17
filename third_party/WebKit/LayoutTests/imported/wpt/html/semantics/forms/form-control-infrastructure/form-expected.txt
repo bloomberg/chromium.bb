@@ -2,9 +2,6 @@ This is a testharness.js-based test.
 PASS button.form 
 PASS fieldset.form 
 PASS input.form 
-FAIL keygen.form assert_equals: expected (object) Element node <form id="form">
-<p><button id="button">button</button>
-<... but got (undefined) undefined
 PASS object.form 
 PASS output.form 
 PASS select.form 

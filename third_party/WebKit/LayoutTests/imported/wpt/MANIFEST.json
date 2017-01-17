@@ -265,6 +265,12 @@
      {}
     ]
    ],
+   "pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html": [
+    [
+     "/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html",
+     {}
+    ]
+   ],
    "pointerevents/pointerevent_attributes_hoverable_pointers-manual.html": [
     [
      "/pointerevents/pointerevent_attributes_hoverable_pointers-manual.html",
@@ -4810,6 +4816,11 @@
      {}
     ]
    ],
+   "domparsing/createContextualFragment-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "domparsing/innerhtml-01-expected.txt": [
     [
      {}
@@ -7526,11 +7537,6 @@
     ]
    ],
    "html/dom/reflection-metadata-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/reflection-misc-expected.txt": [
     [
      {}
     ]
@@ -11620,6 +11626,11 @@
      {}
     ]
    ],
+   "html/infrastructure/common-dom-interfaces/collections/domstringlist.idl": [
+    [
+     {}
+    ]
+   ],
    "html/infrastructure/common-dom-interfaces/collections/htmlallcollection-expected.txt": [
     [
      {}
@@ -14355,6 +14366,11 @@
      {}
     ]
    ],
+   "innerText/setter-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "innerText/setter-tests.js": [
     [
      {}
@@ -16526,6 +16542,11 @@
     ]
    ],
    "webstorage/storage_builtins-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvr/idlharness-expected.txt": [
     [
      {}
     ]
@@ -24014,14 +24035,6 @@
      }
     ]
    ],
-   "html/dom/reflection-misc.html": [
-    [
-     "/html/dom/reflection-misc.html",
-     {
-      "timeout": "long"
-     }
-    ]
-   ],
    "html/dom/reflection-obsolete.html": [
     [
      "/html/dom/reflection-obsolete.html",
@@ -24153,6 +24166,24 @@
    "html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-default-value.html": [
     [
      "/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-default-value.html",
+     {}
+    ]
+   ],
+   "html/infrastructure/common-dom-interfaces/collections/domstringlist-interface.html": [
+    [
+     "/html/infrastructure/common-dom-interfaces/collections/domstringlist-interface.html",
+     {}
+    ]
+   ],
+   "html/infrastructure/common-dom-interfaces/collections/domstringlist-interface.worker.js": [
+    [
+     "/html/infrastructure/common-dom-interfaces/collections/domstringlist-interface.worker.html",
+     {}
+    ]
+   ],
+   "html/infrastructure/common-dom-interfaces/collections/domstringlist.html": [
+    [
+     "/html/infrastructure/common-dom-interfaces/collections/domstringlist.html",
      {}
     ]
    ],
@@ -32200,7 +32231,7 @@
    "support"
   ],
   "./README.md": [
-   "930f9755157d0a3da03b6a6f67c3ba12c05b22c4",
+   "e9590560efb0d37ab870037edaafc1c47dc7a785",
    "support"
   ],
   "./check_stability.py": [
@@ -35610,6 +35641,10 @@
   "domparsing/XMLSerializer-serializeToString.html": [
    "f981058d771b4e6a0936e9f496527fe6177b2479",
    "testharness"
+  ],
+  "domparsing/createContextualFragment-expected.txt": [
+   "6fec3d7f117871eb0e4373c0977300f323886564",
+   "support"
   ],
   "domparsing/createContextualFragment.html": [
    "e3d576cab516b137b3c758f4ab7528303a28744a",
@@ -40528,7 +40563,7 @@
    "support"
   ],
   "html/dom/reflection-embedded-expected.txt": [
-   "0f9696b0830a2ee07d4e00bdc4a6aa9b0ed3d189",
+   "b9c46fed5ba5e31ef958673fea6059153ab74969",
    "support"
   ],
   "html/dom/reflection-embedded.html": [
@@ -40553,14 +40588,6 @@
   ],
   "html/dom/reflection-metadata.html": [
    "91c3a4fdf4585fec9ef901ac060656849e47accc",
-   "testharness"
-  ],
-  "html/dom/reflection-misc-expected.txt": [
-   "a9a3fc4851308339e3f36ddc1cfa9ae660336d07",
-   "support"
-  ],
-  "html/dom/reflection-misc.html": [
-   "7f8de0ad7188dfc54234eb85b37fdc3248c0886e",
    "testharness"
   ],
   "html/dom/reflection-obsolete-expected.txt": [
@@ -43943,6 +43970,22 @@
    "de0ed7f283f4e17155cd3fc07dd5cb688d6fd8be",
    "support"
   ],
+  "html/infrastructure/common-dom-interfaces/collections/domstringlist-interface.html": [
+   "ca8af91733f0b0704409e26f17d4a14977ce14f7",
+   "testharness"
+  ],
+  "html/infrastructure/common-dom-interfaces/collections/domstringlist-interface.worker.js": [
+   "2e35f55a86d31d98e69ad1013c18ab1ff9d9be02",
+   "testharness"
+  ],
+  "html/infrastructure/common-dom-interfaces/collections/domstringlist.html": [
+   "b51c104271ba1cc404de0d68fd004b4e4ecb0d8c",
+   "testharness"
+  ],
+  "html/infrastructure/common-dom-interfaces/collections/domstringlist.idl": [
+   "3b23d2861e3e3037ef3364781394d1b3e8371bae",
+   "support"
+  ],
   "html/infrastructure/common-dom-interfaces/collections/historical.html": [
    "bbfb3cfbf6a9f5cf7f48eb048f0f6a2047386e41",
    "testharness"
@@ -43960,7 +44003,7 @@
    "support"
   ],
   "html/infrastructure/common-dom-interfaces/collections/htmlformcontrolscollection.html": [
-   "1820c5daf000c5ec6a406434f2e42edfff4ed3ad",
+   "d7e37f34db97de971957d5d206b59e7eb5ad9ea7",
    "testharness"
   ],
   "html/infrastructure/common-dom-interfaces/collections/htmloptionscollection-expected.txt": [
@@ -44696,7 +44739,7 @@
    "support"
   ],
   "html/resources/common.js": [
-   "b6d4631ff396a97cfd9b899c1fa348d01dee6ebd",
+   "6b4bdb2032fb40bf9ccdf6d827cfd367f34a78f9",
    "support"
   ],
   "html/semantics/disabled-elements/disabledElement.html": [
@@ -45852,7 +45895,7 @@
    "support"
   ],
   "html/semantics/forms/constraints/form-validation-willValidate.html": [
-   "7aea32e4780bad32ab256d94feed464c864158af",
+   "fda957c08b1a84c691ce64b08a0b18592ff70a2d",
    "testharness"
   ],
   "html/semantics/forms/constraints/inputwillvalidate.html": [
@@ -45872,7 +45915,7 @@
    "support"
   ],
   "html/semantics/forms/form-control-infrastructure/form.html": [
-   "61bff6734ea9c31f91e456a67e9b491bc11ab624",
+   "1605a4d3965075882f97b5712b3c3bf1b2f5f6c4",
    "testharness"
   ],
   "html/semantics/forms/form-submission-0/contains.json": [
@@ -45900,7 +45943,7 @@
    "testharness"
   ],
   "html/semantics/forms/resetting-a-form/reset-form.html": [
-   "8f3bf4f89c3605f5cbeb65242caf4ffb10ece9d6",
+   "73e4daacde901f0dc1babb9136f4bcebd98b0250",
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/original-id.json": [
@@ -46032,7 +46075,7 @@
    "support"
   ],
   "html/semantics/forms/the-form-element/form-nameditem.html": [
-   "1947b2cb928721c9eba8a588d97b6dc77bf14288",
+   "928a0029fbad4251a30dc660de10ad6fd7f08def",
    "testharness"
   ],
   "html/semantics/forms/the-form-element/resources/form-action-url-iframe.html": [
@@ -46268,7 +46311,7 @@
    "support"
   ],
   "html/semantics/forms/the-label-element/labelable-elements.html": [
-   "c986614de7fdda8ee41869e6dfda2f512cf4df95",
+   "fcb095273778268e18f45ae4bfb831ebdabde738",
    "testharness"
   ],
   "html/semantics/forms/the-legend-element/legend-form.html": [
@@ -46816,7 +46859,7 @@
    "testharness"
   ],
   "html/semantics/interfaces.js": [
-   "d50a20fbc3305953f9a5f48c299ff019371ac290",
+   "ca5bd62a7392b8dfb9aada99372e44e518b722d6",
    "support"
   ],
   "html/semantics/links/downloading-resources/contains.json": [
@@ -47216,7 +47259,7 @@
    "support"
   ],
   "html/semantics/scripting-1/the-template-element/template-element/template-as-a-descendant.html": [
-   "3e1f551b68d4d3c95b8e50cf96308ea2258a76b7",
+   "661adb3f098161bf4535d9184e175612cfcab886",
    "testharness"
   ],
   "html/semantics/scripting-1/the-template-element/template-element/template-content-node-document.html": [
@@ -48927,12 +48970,16 @@
    "644b5b18359d26db9cd4d037b075ca016e2337b5",
    "testharness"
   ],
+  "innerText/setter-expected.txt": [
+   "209263e59ee152ccaac3b4656390d70d37688a9a",
+   "support"
+  ],
   "innerText/setter-tests.js": [
-   "21cf96bdb5c7c77684c92df45650d054c173d3f2",
+   "8d59eda6625ecbc94de223ae03f09b3fdf1f4def",
    "support"
   ],
   "innerText/setter.html": [
-   "34c84d25188b369a46a1919398bcde4fafc2d4b3",
+   "c7b9fa4c3e9b504ebd035c4b2fbe5d9e0f7616f7",
    "testharness"
   ],
   "input-events/idlharness.html": [
@@ -49115,6 +49162,10 @@
    "91a8bd86357b0d96ba3ab8f08f88c28436de484c",
    "support"
   ],
+  "pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html": [
+   "cba44e2dd2a3c54106bfecc6cdd407643e2ba995",
+   "manual"
+  ],
   "pointerevents/idlharness-expected.txt": [
    "c78797644b8d399b294dd5d30e853b1cd86e5fe1",
    "support"
@@ -49244,11 +49295,11 @@
    "manual"
   ],
   "pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html": [
-   "246898b5718e51a3db76fa841fb00c3cfcb0df20",
+   "2b08fe3eb773d9516801e1eb4f4d7d72b739c1c7",
    "manual"
   ],
   "pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html": [
-   "4e1b5b9aa263cb41d4aef15b2b52570903557818",
+   "b8fc3192509af5a0e7ba15a9b9d8b440f565551c",
    "manual"
   ],
   "pointerevents/pointerevent_setpointercapture_disconnected-manual.html": [
@@ -52846,6 +52897,10 @@
   "webstorage/storage_supported_property_names.html": [
    "19fd5ede17b9c7e9d234e855eb7dd7fe343bc73e",
    "testharness"
+  ],
+  "webvr/idlharness-expected.txt": [
+   "8929a16ee3585369c3c94cb89ac1db19681445d5",
+   "support"
   ],
   "webvr/idlharness.html": [
    "ecfd51818c20d46b9983bb1d045a9308fc9a26b7",
