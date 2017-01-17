@@ -52,10 +52,6 @@ class CaretBase final : public DisplayItemClient {
   static LayoutRect computeCaretRect(const PositionWithAffinity& caretPosition);
   static IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&);
 
-  // TODO(yosin): We should move |shouldRepaintCaret()| to "FrameCaret.cpp" as
-  // static file local function.
-  static bool shouldRepaintCaret(Node&);
-
   void paintCaret(Node*,
                   GraphicsContext&,
                   const LayoutRect& caretLocalRect,

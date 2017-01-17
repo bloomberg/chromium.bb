@@ -166,6 +166,15 @@ bool FrameCaret::caretPositionIsValidForDocument(
   return caretPosition().document() == document && !caretPosition().isOrphan();
 }
 
+static bool shouldRepaintCaret(Node& node) {
+  // If PositionAnchorType::BeforeAnchor or PositionAnchorType::AfterAnchor,
+  // carets need to be repainted not only when the node is contentEditable but
+  // also when its parentNode() is contentEditable.
+  node.document().updateStyleAndLayoutTree();
+  return hasEditableStyle(node) ||
+         (node.parentNode() && hasEditableStyle(*node.parentNode()));
+}
+
 void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
   if (!m_caretRectDirty)
     return;
@@ -202,11 +211,11 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
     return;
 
   if (m_previousCaretAnchorNode &&
-      CaretBase::shouldRepaintCaret(*m_previousCaretAnchorNode)) {
+      shouldRepaintCaret(*m_previousCaretAnchorNode)) {
     m_caretBase->invalidateLocalCaretRect(m_previousCaretAnchorNode.get(),
                                           m_previousCaretRect);
   }
-  if (newAnchorNode && CaretBase::shouldRepaintCaret(*newAnchorNode))
+  if (newAnchorNode && shouldRepaintCaret(*newAnchorNode))
     m_caretBase->invalidateLocalCaretRect(newAnchorNode, newRect);
   m_previousCaretNode = newNode;
   m_previousCaretAnchorNode = newAnchorNode;

@@ -146,15 +146,6 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect) {
       node->layoutObject()->invalidatePaintRectangle(inflatedRect, this);
 }
 
-bool CaretBase::shouldRepaintCaret(Node& node) {
-  // If PositionAnchorType::BeforeAnchor or PositionAnchorType::AfterAnchor,
-  // carets need to be repainted not only when the node is contentEditable but
-  // also when its parentNode() is contentEditable.
-  node.document().updateStyleAndLayoutTree();
-  return hasEditableStyle(node) ||
-         (node.parentNode() && hasEditableStyle(*node.parentNode()));
-}
-
 void CaretBase::invalidateCaretRect(Node* node,
                                     const LayoutRect& caretLocalRect) {
   node->document().updateStyleAndLayoutTree();
