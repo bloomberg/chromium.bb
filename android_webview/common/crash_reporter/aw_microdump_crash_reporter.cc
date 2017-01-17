@@ -179,5 +179,9 @@ bool IsCrashReporterEnabled() {
   return breakpad::IsCrashReporterEnabled();
 }
 
+void SuppressDumpGeneration() {
+  breakpad::SuppressDumpGeneration();
+}
+
 }  // namespace crash_reporter
 }  // namespace android_webview

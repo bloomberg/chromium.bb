@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "android_webview/common/aw_descriptors.h"
+#include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -46,6 +47,7 @@ void AwBrowserTerminator::ProcessTerminationStatus(
   if (pipe->Peek() >= sizeof(int)) {
     int exit_code;
     pipe->Receive(&exit_code, sizeof(exit_code));
+    crash_reporter::SuppressDumpGeneration();
     LOG(FATAL) << "Renderer process crash detected (code " << exit_code
                << "). Terminating browser.";
   } else {

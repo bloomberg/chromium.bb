@@ -101,6 +101,8 @@ ExceptionHandler* g_breakpad = nullptr;
 const char* g_asan_report_str = nullptr;
 #endif
 #if defined(OS_ANDROID)
+#define G_DUMPS_SUPPRESSED_MAGIC 0x5AFECEDE
+uint32_t g_dumps_suppressed = 0;
 char* g_process_type = nullptr;
 ExceptionHandler* g_microdump = nullptr;
 int g_signal_code_pipe_fd = -1;
@@ -575,17 +577,6 @@ void WriteAndroidPackage(MimeWriter& writer,
 }
 #endif  // defined(OS_ANDROID)
 
-void DumpProcess() {
-  if (g_breakpad)
-    g_breakpad->WriteMinidump();
-
-#if defined(OS_ANDROID)
-  // If microdumps are enabled write also a microdump on the system log.
-  if (g_microdump)
-    g_microdump->WriteMinidump();
-#endif
-}
-
 #if defined(OS_ANDROID)
 const char kGoogleBreakpad[] = "google-breakpad";
 #endif
@@ -603,6 +594,10 @@ size_t WriteNewline() {
 }
 
 #if defined(OS_ANDROID)
+bool ShouldGenerateDump(void *context) {
+  return g_dumps_suppressed != G_DUMPS_SUPPRESSED_MAGIC;
+}
+
 void AndroidLogWriteHorizontalRule() {
   __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
                       "### ### ### ### ### ### ### ### ### ### ### ### ###");
@@ -644,7 +639,22 @@ bool FinalizeCrashDoneAndroid(bool is_browser_process) {
   }
   return false;
 }
-#endif
+
+bool MicrodumpCrashDone(const MinidumpDescriptor& minidump,
+                        void* context,
+                        bool succeeded) {
+  // WARNING: this code runs in a compromised context. It may not call into
+  // libc nor allocate memory normally.
+  if (!succeeded) {
+    static const char msg[] = "Microdump crash handler failed.\n";
+    WriteLog(msg, sizeof(msg) - 1);
+    return false;
+  }
+
+  const bool is_browser_process = (context != nullptr);
+  return FinalizeCrashDoneAndroid(is_browser_process);
+}
+#endif  // defined(OS_ANDROID)
 
 bool CrashDone(const MinidumpDescriptor& minidump,
                const bool upload,
@@ -715,6 +725,31 @@ bool CrashDoneUpload(const MinidumpDescriptor& minidump,
 }
 #endif
 
+void DumpProcess() {
+#if defined(OS_ANDROID)
+  // Don't use g_breakpad and g_microdump directly here, because their
+  // output might currently be suppressed.
+  if (g_breakpad) {
+    ExceptionHandler(g_breakpad->minidump_descriptor(),
+                     nullptr,
+                     CrashDoneNoUpload,
+                     nullptr,
+                     false, -1).WriteMinidump();
+  }
+  // If microdumps are enabled write also a microdump on the system log.
+  if (g_microdump) {
+    ExceptionHandler(g_microdump->minidump_descriptor(),
+                     nullptr,
+                     MicrodumpCrashDone,
+                     nullptr,
+                     false, -1).WriteMinidump();
+  }
+#else
+  if (g_breakpad)
+    g_breakpad->WriteMinidump();
+#endif
+}
+
 #if defined(ADDRESS_SANITIZER)
 extern "C"
 void __asan_set_error_report_callback(void (*cb)(const char*));
@@ -756,7 +791,11 @@ void EnableCrashDumping(bool unattended) {
   if (unattended) {
     g_breakpad = new ExceptionHandler(
         minidump_descriptor,
+#if defined(OS_ANDROID)
+        ShouldGenerateDump,
+#else
         nullptr,
+#endif
         CrashDoneNoUpload,
         nullptr,
         true,  // Install handlers.
@@ -777,21 +816,6 @@ void EnableCrashDumping(bool unattended) {
 }
 
 #if defined(OS_ANDROID)
-bool MicrodumpCrashDone(const MinidumpDescriptor& minidump,
-                        void* context,
-                        bool succeeded) {
-  // WARNING: this code runs in a compromised context. It may not call into
-  // libc nor allocate memory normally.
-  if (!succeeded) {
-    static const char msg[] = "Microdump crash handler failed.\n";
-    WriteLog(msg, sizeof(msg) - 1);
-    return false;
-  }
-
-  const bool is_browser_process = (context != nullptr);
-  return FinalizeCrashDoneAndroid(is_browser_process);
-}
-
 bool WriteSignalCodeToPipe(const void* crash_context,
                            size_t crash_context_size,
                            void* context) {
@@ -865,8 +889,8 @@ void EnableNonBrowserCrashDumping(const std::string& process_type,
   const size_t process_type_len = process_type.size() + 1;
   g_process_type = new char[process_type_len];
   strncpy(g_process_type, process_type.c_str(), process_type_len);
-  new google_breakpad::ExceptionHandler(MinidumpDescriptor(minidump_fd),
-      nullptr, CrashDoneInProcessNoUpload, nullptr, true, -1);
+  new ExceptionHandler(MinidumpDescriptor(minidump_fd), ShouldGenerateDump,
+                       CrashDoneInProcessNoUpload, nullptr, true, -1);
 }
 
 void MicrodumpInfo::SetGpuFingerprint(const std::string& gpu_fingerprint) {
@@ -923,7 +947,7 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
   }
 
   g_microdump =
-      new ExceptionHandler(descriptor, nullptr, MicrodumpCrashDone,
+      new ExceptionHandler(descriptor, ShouldGenerateDump, MicrodumpCrashDone,
                            reinterpret_cast<void*>(is_browser_process),
                            true,  // Install handlers.
                            -1);   // Server file descriptor. -1 for in-process.
@@ -1945,6 +1969,10 @@ void GenerateMinidumpOnDemandForAndroid(int dump_fd) {
                      false, -1)
         .WriteMinidump();
   }
+}
+
+void SuppressDumpGeneration() {
+  g_dumps_suppressed = G_DUMPS_SUPPRESSED_MAGIC;
 }
 #endif  // OS_ANDROID
 
