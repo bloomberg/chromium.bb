@@ -408,6 +408,7 @@ component("views") {
     "//ui/resources",
     "//ui/strings",
     "//ui/views/resources",
+    "//ui/views/resources/vector_icons",
     "//url",
   ]
 

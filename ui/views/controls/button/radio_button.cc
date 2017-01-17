@@ -10,9 +10,9 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/resources/grit/views_resources.h"
+#include "ui/views/resources/vector_icons/vector_icons.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -152,9 +152,8 @@ void RadioButton::PaintFocusRing(gfx::Canvas* canvas, const SkPaint& paint) {
                      image()->width() / 2, paint);
 }
 
-gfx::VectorIconId RadioButton::GetVectorIconId() const {
-  return checked() ? gfx::VectorIconId::RADIO_BUTTON_ACTIVE
-                   : gfx::VectorIconId::RADIO_BUTTON_NORMAL;
+const gfx::VectorIcon& RadioButton::GetVectorIcon() const {
+  return checked() ? kRadioButtonActiveIcon : kRadioButtonNormalIcon;
 }
 
 }  // namespace views

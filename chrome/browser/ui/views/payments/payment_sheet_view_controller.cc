@@ -23,7 +23,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -32,6 +31,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/resources/vector_icons/vector_icons.h"
 #include "ui/views/view.h"
 
 namespace payments {
@@ -105,7 +105,7 @@ class PaymentSheetRow : public views::CustomButton {
 
     views::ImageView* chevron = new views::ImageView();
     chevron->SetImage(gfx::CreateVectorIcon(
-        gfx::VectorIconId::SUBMENU_ARROW,
+        views::kSubmenuArrowIcon,
         color_utils::DeriveDefaultIconColor(name_label->enabled_color())));
     layout->AddView(chevron);
   }

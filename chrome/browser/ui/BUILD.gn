@@ -1897,6 +1897,9 @@ split_static_library("ui") {
         "views/website_settings/chooser_bubble_ui_view.h",
         "views/website_settings/permission_prompt_impl_views.cc",
       ]
+
+      deps += [ "//ui/views/resources/vector_icons" ]
+
       if (use_aura) {
         deps += [
           "//services/ui/public/cpp",
