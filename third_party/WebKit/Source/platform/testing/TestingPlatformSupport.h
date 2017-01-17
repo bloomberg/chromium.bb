@@ -84,33 +84,6 @@ class TestingCompositorSupport : public WebCompositorSupport {
       bool isLeftSideVerticalScrollbar) override;
 };
 
-class TestingPlatformMockScheduler : public WebScheduler {
-  WTF_MAKE_NONCOPYABLE(TestingPlatformMockScheduler);
-
- public:
-  TestingPlatformMockScheduler();
-  ~TestingPlatformMockScheduler() override;
-
-  // WebScheduler implementation:
-  WebTaskRunner* loadingTaskRunner() override { return nullptr; }
-  WebTaskRunner* timerTaskRunner() override { return nullptr; }
-  void shutdown() override {}
-  bool shouldYieldForHighPriorityWork() override { return false; }
-  bool canExceedIdleDeadlineIfRequired() override { return false; }
-  void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override {}
-  void postNonNestableIdleTask(const WebTraceLocation&,
-                               WebThread::IdleTask*) override {}
-  std::unique_ptr<WebViewScheduler> createWebViewScheduler(
-      InterventionReporter*,
-      WebViewScheduler::WebViewSchedulerSettings*) override {
-    return nullptr;
-  }
-  void suspendTimerQueue() override {}
-  void resumeTimerQueue() override {}
-  void addPendingNavigation(WebScheduler::NavigatingFrameType) override {}
-  void removePendingNavigation(WebScheduler::NavigatingFrameType) override {}
-};
-
 // A base class to override Platform methods for testing.  You can override the
 // behavior by subclassing TestingPlatformSupport or using
 // ScopedTestingPlatformSupport (see below).

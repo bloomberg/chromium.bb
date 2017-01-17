@@ -131,9 +131,6 @@ TestingCompositorSupport::createSolidColorScrollbarLayer(
   return nullptr;
 }
 
-TestingPlatformMockScheduler::TestingPlatformMockScheduler() {}
-TestingPlatformMockScheduler::~TestingPlatformMockScheduler() {}
-
 TestingPlatformSupport::TestingPlatformSupport()
     : TestingPlatformSupport(TestingPlatformSupport::Config()) {}
 
