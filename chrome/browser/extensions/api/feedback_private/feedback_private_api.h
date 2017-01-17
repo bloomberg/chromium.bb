@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
 #include "chrome/common/extensions/api/feedback_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
@@ -81,18 +82,17 @@ class FeedbackPrivateGetUserEmailFunction : public UIThreadExtensionFunction {
 };
 
 class FeedbackPrivateGetSystemInformationFunction
-    : public ChromeAsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.getSystemInformation",
                              FEEDBACKPRIVATE_GETSYSTEMINFORMATION);
 
  protected:
   ~FeedbackPrivateGetSystemInformationFunction() override {}
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
-  void OnCompleted(
-      const std::vector<api::feedback_private::SystemInformation>& sys_info);
+  void OnCompleted(std::unique_ptr<system_logs::SystemLogsResponse> sys_info);
 };
 
 class FeedbackPrivateSendFeedbackFunction

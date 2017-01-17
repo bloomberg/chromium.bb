@@ -16,27 +16,9 @@
 #include "net/base/network_change_notifier.h"
 
 using content::BrowserThread;
-using extensions::api::feedback_private::SystemInformation;
 using feedback::FeedbackData;
 
 namespace extensions {
-
-namespace {
-
-void PopulateSystemInfo(SystemInformationList* sys_info_list,
-                        const std::string& key,
-                        const std::string& value) {
-  base::DictionaryValue sys_info_value;
-  sys_info_value.Set("key", new base::StringValue(key));
-  sys_info_value.Set("value", new base::StringValue(value));
-
-  SystemInformation sys_info;
-  SystemInformation::Populate(sys_info_value, &sys_info);
-
-  sys_info_list->push_back(std::move(sys_info));
-}
-
-}  // namespace
 
 FeedbackService::FeedbackService() {
 }
@@ -73,11 +55,10 @@ void FeedbackService::SendFeedback(
 }
 
 void FeedbackService::GetSystemInformation(
-    const GetSystemInformationCallback& callback) {
+    const system_logs::SysLogsFetcherCallback& callback) {
   system_logs::ScrubbedSystemLogsFetcher* fetcher =
       new system_logs::ScrubbedSystemLogsFetcher();
-  fetcher->Fetch(base::Bind(&FeedbackService::OnSystemLogsFetchComplete,
-                            AsWeakPtr(), callback));
+  fetcher->Fetch(callback);
 }
 
 void FeedbackService::AttachedFileCallback(
@@ -102,18 +83,6 @@ void FeedbackService::ScreenshotCallback(
     feedback_data->set_image(std::move(data));
 
   CompleteSendFeedback(feedback_data, callback);
-}
-
-void FeedbackService::OnSystemLogsFetchComplete(
-    const GetSystemInformationCallback& callback,
-    std::unique_ptr<system_logs::SystemLogsResponse> sys_info_map) {
-  SystemInformationList sys_info_list;
-  if (sys_info_map.get()) {
-    for (const auto& itr : *sys_info_map)
-      PopulateSystemInfo(&sys_info_list, itr.first, itr.second);
-  }
-
-  callback.Run(sys_info_list);
 }
 
 void FeedbackService::CompleteSendFeedback(

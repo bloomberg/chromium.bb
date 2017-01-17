@@ -23,22 +23,16 @@ extensions::FeedbackService* GetFeedbackService(Profile* profile) {
       ->GetService();
 }
 
-void OnGetSystemInformation(Profile* profile,
-                            const std::string& description,
-                            const SendSysLogFeedbackCallback& callback,
-                            const extensions::SystemInformationList& sys_info) {
+void OnGetSystemInformation(
+    Profile* profile,
+    const std::string& description,
+    const SendSysLogFeedbackCallback& callback,
+    std::unique_ptr<system_logs::SystemLogsResponse> sys_info) {
   scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
 
   feedback_data->set_context(profile);
   feedback_data->set_description(description);
-
-  std::unique_ptr<FeedbackData::SystemLogsMap> sys_logs(
-      new FeedbackData::SystemLogsMap);
-  for (const extensions::api::feedback_private::SystemInformation& info :
-       sys_info) {
-    (*sys_logs.get())[info.key] = info.value;
-  }
-  feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
+  feedback_data->SetAndCompressSystemInfo(std::move(sys_info));
 
   GetFeedbackService(profile)->SendFeedback(profile, feedback_data, callback);
 }

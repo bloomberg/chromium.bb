@@ -14,15 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/browser/feedback/system_logs/scrubbed_system_logs_fetcher.h"
-#include "chrome/common/extensions/api/feedback_private.h"
 #include "components/feedback/feedback_data.h"
 
 class Profile;
 
 namespace extensions {
-
-using SystemInformationList =
-    std::vector<api::feedback_private::SystemInformation>;
 
 // The feedback service provides the ability to gather the various pieces of
 // data needed to send a feedback report and then send the report once all
@@ -35,9 +31,6 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
   // offline).
   using SendFeedbackCallback = base::Callback<void(bool)>;
 
-  using GetSystemInformationCallback =
-      base::Callback<void(const SystemInformationList&)>;
-
   FeedbackService();
   virtual ~FeedbackService();
 
@@ -48,7 +41,8 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
 
   // Start to gather system information.
   // The |callback| will be invoked once the query is completed.
-  void GetSystemInformation(const GetSystemInformationCallback& callback);
+  void GetSystemInformation(
+      const system_logs::SysLogsFetcherCallback& callback);
 
  private:
   // Callbacks to receive blob data.
@@ -60,10 +54,6 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
                           const SendFeedbackCallback& callback,
                           std::unique_ptr<std::string> data,
                           int64_t total_blob_length);
-
-  void OnSystemLogsFetchComplete(
-      const GetSystemInformationCallback& callback,
-      std::unique_ptr<system_logs::SystemLogsResponse> sys_info);
 
   // Checks if we have read all the blobs we need to; signals the feedback
   // data object once all the requisite data has been populated.
