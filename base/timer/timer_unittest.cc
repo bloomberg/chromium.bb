@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -554,6 +555,50 @@ TEST(TimerTest, MessageLoopShutdown) {
   }  // OneShotTimers destruct.  SHOULD NOT CRASH, of course.
 
   EXPECT_FALSE(did_run.IsSignaled());
+}
+
+// Ref counted class which owns a Timer. The class passes a reference to itself
+// via the |user_task| parameter in Timer::Start(). |Timer::user_task_| might
+// end up holding the last reference to the class.
+class OneShotSelfOwningTimerTester
+    : public RefCounted<OneShotSelfOwningTimerTester> {
+ public:
+  OneShotSelfOwningTimerTester() = default;
+
+  void StartTimer() {
+    // Start timer with long delay in order to test the timer getting destroyed
+    // while a timer task is still pending.
+    timer_.Start(FROM_HERE, TimeDelta::FromDays(1),
+                 base::Bind(&OneShotSelfOwningTimerTester::Run, this));
+  }
+
+ private:
+  friend class RefCounted<OneShotSelfOwningTimerTester>;
+  ~OneShotSelfOwningTimerTester() = default;
+
+  void Run() {
+    ADD_FAILURE() << "Timer unexpectedly fired.";
+  }
+
+  OneShotTimer timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(OneShotSelfOwningTimerTester);
+};
+
+TEST(TimerTest, MessageLoopShutdownSelfOwningTimer) {
+  // This test verifies that shutdown of the message loop does not cause crashes
+  // if there is a pending timer not yet fired and |Timer::user_task_| owns the
+  // timer. The test may only trigger exceptions if debug heap checking is
+  // enabled.
+
+  MessageLoop loop;
+  scoped_refptr<OneShotSelfOwningTimerTester> tester =
+      new OneShotSelfOwningTimerTester();
+
+  std::move(tester)->StartTimer();
+  // |Timer::user_task_| owns sole reference to |tester|.
+
+  // MessageLoop destructs by falling out of scope. SHOULD NOT CRASH.
 }
 
 void TimerTestCallback() {

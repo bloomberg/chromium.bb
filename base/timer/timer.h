@@ -163,8 +163,10 @@ class BASE_EXPORT Timer {
 
   // Stop running task (if any) and abandon scheduled task (if any).
   void StopAndAbandon() {
-    Stop();
     AbandonScheduledTask();
+
+    Stop();
+    // No more member accesses here: |this| could be deleted at this point.
   }
 
   // When non-NULL, the scheduled_task_ is waiting in the MessageLoop to call
