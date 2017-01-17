@@ -2425,8 +2425,7 @@ void FrameView::performPostLayoutTasks() {
 
   m_postLayoutTasksTimer.stop();
 
-  m_frame->selection().setCaretRectNeedsUpdate();
-  m_frame->selection().updateAppearance();
+  m_frame->selection().didLayout();
 
   ASSERT(m_frame->document());
 

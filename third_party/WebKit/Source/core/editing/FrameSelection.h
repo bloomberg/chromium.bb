@@ -215,9 +215,9 @@ class CORE_EXPORT FrameSelection final
   void didMergeTextNodes(const Text& oldNode, unsigned offset);
   void didSplitTextNode(const Text& oldNode);
 
+  void didLayout();
   bool isAppearanceDirty() const;
   void commitAppearanceIfNeeded(LayoutView&);
-  void updateAppearance();
   void setCaretVisible(bool caretIsVisible);
   bool isCaretBoundsDirty() const;
   void setCaretRectNeedsUpdate();
@@ -269,6 +269,7 @@ class CORE_EXPORT FrameSelection final
       RevealExtentOption = DoNotRevealExtent);
   void setSelectionFromNone();
 
+  void updateAppearance();
   bool shouldShowBlockCursor() const;
   void setShouldShowBlockCursor(bool);
 

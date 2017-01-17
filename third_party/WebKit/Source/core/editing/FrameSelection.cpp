@@ -1042,6 +1042,11 @@ void FrameSelection::commitAppearanceIfNeeded(LayoutView& layoutView) {
   return m_pendingSelection->commit(layoutView);
 }
 
+void FrameSelection::didLayout() {
+  setCaretRectNeedsUpdate();
+  updateAppearance();
+}
+
 void FrameSelection::updateAppearance() {
   m_frameCaret->updateAppearance();
 
