@@ -5,9 +5,9 @@
 #ifndef SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_TEST_SERVICE_TEST_H_
 #define SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_TEST_SERVICE_TEST_H_
 
+#include "base/test/mock_callback.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/video_capture/public/interfaces/service.mojom.h"
-#include "services/video_capture/test/mock_device_descriptor_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {
@@ -23,7 +23,8 @@ class ServiceTest : public service_manager::test::ServiceTest {
  protected:
   mojom::ServicePtr service_;
   mojom::DeviceFactoryPtr factory_;
-  MockDeviceDescriptorReceiver descriptor_receiver_;
+  base::MockCallback<mojom::DeviceFactory::EnumerateDeviceDescriptorsCallback>
+      descriptor_receiver_;
 };
 
 }  // namespace video_capture

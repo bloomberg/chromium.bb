@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_TEST_FAKE_DEVICE_TEST_H_
 #define SERVICES_VIDEO_CAPTURE_TEST_FAKE_DEVICE_TEST_H_
 
+#include "base/test/mock_callback.h"
 #include "services/video_capture/public/cpp/capture_settings.h"
 #include "services/video_capture/test/fake_device_descriptor_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,19 +22,8 @@ class FakeDeviceTest : public FakeDeviceDescriptorTest {
   void SetUp() override;
 
  protected:
-  class MockSupportedFormatsReceiver {
-   public:
-    MockSupportedFormatsReceiver();
-    ~MockSupportedFormatsReceiver();
-
-    MOCK_METHOD1(OnGetSupportedFormatsCallback,
-                 void(const std::vector<I420CaptureFormat>&));
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(MockSupportedFormatsReceiver);
-  };
-
-  MockSupportedFormatsReceiver supported_formats_receiver_;
+  base::MockCallback<mojom::DeviceFactory::GetSupportedFormatsCallback>
+      supported_formats_receiver_;
   I420CaptureFormat fake_device_first_supported_format_;
   CaptureSettings requestable_settings_;
   mojom::DevicePtr fake_device_proxy_;

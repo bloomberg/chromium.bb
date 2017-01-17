@@ -5,11 +5,11 @@
 #ifndef SERVICES_VIDEO_CAPTURE_TEST_MOCK_DEVICE_TEST_H_
 #define SERVICES_VIDEO_CAPTURE_TEST_MOCK_DEVICE_TEST_H_
 
+#include "base/test/mock_callback.h"
 #include "media/capture/video/video_capture_device.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/capture_settings.h"
 #include "services/video_capture/public/interfaces/service.mojom.h"
-#include "services/video_capture/test/mock_device_descriptor_receiver.h"
 #include "services/video_capture/test/mock_device_factory.h"
 #include "services/video_capture/test/mock_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +56,8 @@ class MockDeviceTest : public ::testing::Test {
 
   mojom::DeviceFactoryPtr factory_;
   std::unique_ptr<mojo::Binding<mojom::DeviceFactory>> mock_factory_binding_;
-  MockDeviceDescriptorReceiver descriptor_receiver_;
+  base::MockCallback<mojom::DeviceFactory::EnumerateDeviceDescriptorsCallback>
+      descriptor_receiver_;
 
   MockDevice mock_device_;
   std::unique_ptr<MockReceiver> mock_receiver_;

@@ -11,12 +11,6 @@ using testing::Invoke;
 
 namespace video_capture {
 
-FakeDeviceTest::MockSupportedFormatsReceiver::MockSupportedFormatsReceiver() =
-    default;
-
-FakeDeviceTest::MockSupportedFormatsReceiver::~MockSupportedFormatsReceiver() =
-    default;
-
 FakeDeviceTest::FakeDeviceTest() : FakeDeviceDescriptorTest() {}
 
 FakeDeviceTest::~FakeDeviceTest() = default;
@@ -26,16 +20,14 @@ void FakeDeviceTest::SetUp() {
 
   // Query factory for supported formats of fake device
   base::RunLoop wait_loop;
-  EXPECT_CALL(supported_formats_receiver_, OnGetSupportedFormatsCallback(_))
+  EXPECT_CALL(supported_formats_receiver_, Run(_))
       .WillOnce(Invoke(
           [this, &wait_loop](const std::vector<I420CaptureFormat>& formats) {
             fake_device_first_supported_format_ = formats[0];
             wait_loop.Quit();
           }));
-  factory_->GetSupportedFormats(
-      fake_device_descriptor_.device_id,
-      base::Bind(&MockSupportedFormatsReceiver::OnGetSupportedFormatsCallback,
-                 base::Unretained(&supported_formats_receiver_)));
+  factory_->GetSupportedFormats(fake_device_descriptor_.device_id,
+                                supported_formats_receiver_.Get());
   wait_loop.Run();
 
   requestable_settings_.format = fake_device_first_supported_format_;

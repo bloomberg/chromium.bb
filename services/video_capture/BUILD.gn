@@ -64,8 +64,6 @@ test("video_capture_unittests") {
     "test/fake_device_test.cc",
     "test/fake_device_test.h",
     "test/fake_device_unittest.cc",
-    "test/mock_device_descriptor_receiver.cc",
-    "test/mock_device_descriptor_receiver.h",
     "test/mock_device_factory.cc",
     "test/mock_device_factory.h",
     "test/mock_device_test.cc",
