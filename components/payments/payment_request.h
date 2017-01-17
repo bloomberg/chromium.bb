@@ -12,6 +12,10 @@
 #include "components/payments/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace autofill {
+class CreditCard;
+}
+
 namespace content {
 class WebContents;
 }
@@ -53,8 +57,12 @@ class PaymentRequest : payments::mojom::PaymentRequest {
       const base::Optional<std::string> currency_system,
       const std::string& locale_name);
 
-  payments::mojom::PaymentDetails* details() { return details_.get(); }
+  // Returns the currently selected credit card for this PaymentRequest flow.
+  // It's not guaranteed to be complete. Returns nullptr if there is no selected
+  // card.
+  autofill::CreditCard* GetCurrentlySelectedCreditCard();
 
+  payments::mojom::PaymentDetails* details() { return details_.get(); }
   content::WebContents* web_contents() { return web_contents_; }
 
  private:

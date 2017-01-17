@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -13,11 +14,18 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/currency_formatter.h"
 #include "components/payments/payment_request.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/insets.h"
@@ -30,6 +38,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/resources/vector_icons/vector_icons.h"
 #include "ui/views/view.h"
@@ -41,6 +50,7 @@ enum class PaymentSheetViewControllerTags {
   // The tag for the button that navigates to the Order Summary sheet.
   SHOW_ORDER_SUMMARY_BUTTON = static_cast<int>(
       payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX),
+  SHOW_PAYMENT_METHOD_BUTTON,
 };
 
 // Creates a clickable row to be displayed in the Payment Sheet. It contains
@@ -49,6 +59,7 @@ enum class PaymentSheetViewControllerTags {
 // may be present, the difference between the two being that content is pinned
 // to the left and extra_content is pinned to the right.
 // The row also displays a light gray horizontal ruler on its lower boundary.
+// The name column has a fixed width equal to |name_column_width|.
 // +----------------------------+
 // | Name | Content | Extra | > |
 // +~~~~~~~~~~~~~~~~~~~~~~~~~~~~+ <-- ruler
@@ -57,12 +68,13 @@ class PaymentSheetRow : public views::CustomButton {
   PaymentSheetRow(views::ButtonListener* listener,
                   const base::string16& section_name,
                   std::unique_ptr<views::View> content_view,
-                  std::unique_ptr<views::View> extra_content_view)
+                  std::unique_ptr<views::View> extra_content_view,
+                  int name_column_width)
     : views::CustomButton(listener) {
     SetBorder(views::CreateSolidSidedBorder(0, 0, 1, 0, SK_ColorLTGRAY));
     views::GridLayout* layout = new views::GridLayout(this);
 
-    constexpr int kRowVerticalInset = 18;
+    constexpr int kRowVerticalInset = 8;
     // The rows have extra inset compared to the header so that their right edge
     // lines up with the close button's X rather than its invisible right edge.
     constexpr int kRowExtraRightInset = 8;
@@ -72,16 +84,23 @@ class PaymentSheetRow : public views::CustomButton {
 
     views::ColumnSet* columns = layout->AddColumnSet(0);
     // A column for the section name.
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                       0, views::GridLayout::USE_PREF, 0, 0);
+    columns->AddColumn(views::GridLayout::LEADING,
+                       views::GridLayout::LEADING,
+                       0,
+                       views::GridLayout::FIXED,
+                       name_column_width,
+                       0);
+
+    constexpr int kPaddingColumnsWidth = 25;
+    columns->AddPaddingColumn(0, kPaddingColumnsWidth);
+
     // A column for the content.
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                        1, views::GridLayout::USE_PREF, 0, 0);
     // A column for the extra content.
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        0, views::GridLayout::USE_PREF, 0, 0);
 
-    constexpr int kPaddingColumnsWidth = 25;
     columns->AddPaddingColumn(0, kPaddingColumnsWidth);
     // A column for the chevron.
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
@@ -113,12 +132,38 @@ class PaymentSheetRow : public views::CustomButton {
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetRow);
 };
 
+int ComputeWidestNameColumnViewWidth() {
+  // The name colums in each row should all have the same width, large enough to
+  // accomodate the longest piece of text they contain. Because of this, each
+  // row's GridLayout requires its first column to have a fixed width of the
+  // correct size. To measure the required size, layout a label with each
+  // section name, measure its width, then initialize |widest_column_width|
+  // with the largest value.
+  std::vector<int> section_names {
+    IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME,
+    IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME,
+  };
+
+  int widest_column_width = 0;
+
+  views::Label label(base::ASCIIToUTF16(""));
+  for (int name_id : section_names) {
+    label.SetText(l10n_util::GetStringUTF16(name_id));
+    widest_column_width = std::max(
+        label.GetPreferredSize().width(),
+        widest_column_width);
+  }
+
+  return widest_column_width;
+}
+
 }  // namespace
 
 PaymentSheetViewController::PaymentSheetViewController(
     PaymentRequest* request,
     PaymentRequestDialog* dialog)
-    : PaymentRequestSheetController(request, dialog) {}
+    : PaymentRequestSheetController(request, dialog),
+      widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {}
 
 PaymentSheetViewController::~PaymentSheetViewController() {}
 
@@ -133,6 +178,8 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
 
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentSheetSummaryRow().release());
+  layout->StartRow(0, 0);
+  layout->AddView(CreatePaymentMethodRow().release());
 
   return CreatePaymentView(
       CreateSheetHeaderView(
@@ -151,6 +198,10 @@ void PaymentSheetViewController::ButtonPressed(
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON):
       dialog()->ShowOrderSummary();
+      break;
+    case static_cast<int>(
+        PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON):
+      dialog()->ShowPaymentMethodSheet();
       break;
     default:
       NOTREACHED();
@@ -172,15 +223,77 @@ PaymentSheetViewController::CreateOrderSummarySectionContent() {
   return base::MakeUnique<views::Label>(label_value);
 }
 
+// Creates the Order Summary row, which contains an "Order Summary" label,
+// a Total Amount label, and a Chevron.
+// +----------------------------------------------+
+// | Order Summary           Total USD $12.34   > |
+// +----------------------------------------------+
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   std::unique_ptr<views::Button> section = base::MakeUnique<PaymentSheetRow>(
       this,
       l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME),
       std::unique_ptr<views::View>(nullptr),
-      CreateOrderSummarySectionContent());
+      CreateOrderSummarySectionContent(),
+      widest_name_column_view_width_);
   section->set_tag(static_cast<int>(
       PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON));
+  return section;
+}
+
+// Creates the Payment Method row, which contains a "Payment" label, the user's
+// masked Credit Card details, the icon for the selected card, and a chevron.
+// +----------------------------------------------+
+// | Payment         Visa ****0000                |
+// |                 John Smith        | VISA | > |
+// |                                              |
+// +----------------------------------------------+
+std::unique_ptr<views::Button>
+PaymentSheetViewController::CreatePaymentMethodRow() {
+  autofill::CreditCard* selected_card =
+      request()->GetCurrentlySelectedCreditCard();
+
+  std::unique_ptr<views::View> content_view;
+  std::unique_ptr<views::ImageView> card_icon_view;
+  if (selected_card) {
+    content_view = base::MakeUnique<views::View>();
+
+    views::GridLayout* layout = new views::GridLayout(content_view.get());
+    content_view->SetLayoutManager(layout);
+    views::ColumnSet* columns = layout->AddColumnSet(0);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                       1, views::GridLayout::USE_PREF, 0, 0);
+
+    layout->StartRow(0, 0);
+    layout->AddView(new views::Label(selected_card->TypeAndLastFourDigits()));
+    layout->StartRow(0, 0);
+    layout->AddView(new views::Label(
+        selected_card->GetInfo(
+            autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
+            g_browser_process->GetApplicationLocale())));
+
+    card_icon_view = base::MakeUnique<views::ImageView>();
+    card_icon_view->SetImage(
+      ResourceBundle::GetSharedInstance()
+          .GetImageNamed(autofill::data_util::GetPaymentRequestData(
+              selected_card->type()).icon_resource_id)
+          .AsImageSkia());
+    card_icon_view->SetBorder(
+        views::CreateRoundedRectBorder(1, 3, SK_ColorLTGRAY));
+
+    constexpr gfx::Size kCardIconSize = gfx::Size(32, 20);
+    card_icon_view->SetImageSize(kCardIconSize);
+  }
+
+  std::unique_ptr<views::Button> section = base::MakeUnique<PaymentSheetRow>(
+      this,
+      l10n_util::GetStringUTF16(
+          IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME),
+      std::move(content_view),
+      std::move(card_icon_view),
+      widest_name_column_view_width_);
+  section->set_tag(static_cast<int>(
+      PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON));
   return section;
 }
 

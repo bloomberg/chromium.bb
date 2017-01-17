@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_PAYMENTS_PAYMENT_REQUEST_DELEGATE_H_
 #define COMPONENTS_PAYMENTS_PAYMENT_REQUEST_DELEGATE_H_
 
+namespace autofill {
+class PersonalDataManager;
+}
+
 namespace payments {
 
 class PaymentRequest;
@@ -15,6 +19,9 @@ class PaymentRequestDelegate {
 
   // Shows the Payment Request dialog for the given |request|.
   virtual void ShowPaymentRequestDialog(PaymentRequest* request) = 0;
+
+  // Gets the PersonalDataManager associated with this PaymentRequest flow.
+  virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
 };
 
 }  // namespace payments

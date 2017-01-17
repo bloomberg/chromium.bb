@@ -33,6 +33,9 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
 
   std::unique_ptr<views::View> CreateOrderSummarySectionContent();
   std::unique_ptr<views::Button> CreatePaymentSheetSummaryRow();
+  std::unique_ptr<views::Button> CreatePaymentMethodRow();
+
+  const int widest_name_column_view_width_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewController);
 };

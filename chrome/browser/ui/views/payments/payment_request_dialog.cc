@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
+#include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -95,6 +96,13 @@ void PaymentRequestDialog::ShowOrderSummary() {
   view_stack_.Push(CreateViewAndInstallController<OrderSummaryViewController>(
                        &controller_map_, request_, this),
                    true);
+}
+
+void PaymentRequestDialog::ShowPaymentMethodSheet() {
+    view_stack_.Push(
+        CreateViewAndInstallController<PaymentMethodViewController>(
+            &controller_map_, request_, this),
+        true);
 }
 
 void PaymentRequestDialog::CloseDialog() {

@@ -21,7 +21,8 @@ void CreatePaymentRequestForWebContents(
   DCHECK(web_contents);
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents,
-                             base::MakeUnique<ChromePaymentRequestDelegate>(),
+                             base::MakeUnique<ChromePaymentRequestDelegate>(
+                                web_contents),
                              std::move(request));
 }
 

@@ -42,6 +42,7 @@ if (!is_ios) {
     deps = [
       ":payment_request",
       ":payment_validation",
+      "//components/autofill/core/browser",
       "//content/public/browser",
       "//mojo/public/cpp/bindings",
     ]

@@ -33,9 +33,6 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   // A column for the title.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                      1, views::GridLayout::USE_PREF, 0, 0);
-  // A column for the close button.
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
   if (!show_back_arrow) {
@@ -52,11 +49,6 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   views::Label* title_label = new views::Label(title);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(title_label);
-  views::Button* close_button =
-      views::BubbleFrameView::CreateCloseButton(delegate);
-  close_button->set_tag(static_cast<int>(
-      PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
-  layout->AddView(close_button);
 
   return container;
 }

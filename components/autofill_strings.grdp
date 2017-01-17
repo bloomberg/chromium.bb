@@ -354,4 +354,8 @@
   <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT" desc="The format specifier of the Total label in the Order Summary section of the Payment Sheet of the Payment Request dialog.">
     <ph name="TOTAL_LABEL">$1<ex>Total</ex></ph> <ph name="CURRENCY_CODE">$2<ex>USD</ex></ph> <ph name="FORMATTED_TOTAL_AMOUNT">$3<ex>$ 12.34</ex></ph>
   </message>
+  <message name="IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME" desc="The name of the Payment Method section in the Payment Sheet of the Payment Request dialog.">
+    Payment
+  </message>
+
 </grit-part>
