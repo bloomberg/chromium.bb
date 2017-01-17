@@ -161,37 +161,6 @@ work around this, turn off the sandbox (via `export CHROME_DEVEL_SANDBOX=`).
 For further information, please refer to
 http://google-perftools.googlecode.com/svn/trunk/doc/heapprofile.html.
 
-### Massif
-
-[Massif](http://valgrind.org/docs/manual/mc-manual.html) is a
-[Valgrind](https://www.chromium.org/developers/how-tos/using-valgrind)-based heap
-profiler. It is much slower than the heap profiler from google-perftools, but it
-may have some advantages. (In particular, it handles the multi-process
-executables well).
-
-First, you will need to build massif from valgrind-variant project yourself,
-it's [easy](http://code.google.com/p/valgrind-variant/wiki/HowTo).
-
-Then, make sure your Chromium is built using the
-[valgrind instructions](https://www.chromium.org/developers/how-tos/using-valgrind).
-Now, you can run massif like this:
-
-```
-path-to-valgrind-variant/valgrind/inst/bin/valgrind \
-   --fullpath-after=/chromium/src/ \
-   --trace-children-skip=*npviewer*,/bin/uname,/bin/sh,/usr/bin/which,/bin/ps,/bin/grep,/usr/bin/linux32 \
-   --trace-children=yes \
-   --tool=massif \
-   out/Release/chrome --noerrdialogs --disable-hang-monitor --other-chrome-flags
-```
-
-The result will be stored in massif.out.PID files, which you can post-process
-with [ms_print](http://valgrind.org/docs/manual/mc-manual.html).
-
-TODO(kcc) sometimes when closing a tab the main process kills the tab process
-before massif completes writing it's log file. Need a flag that tells the main
-process to wait longer.
-
 ## Paint profiling
 
 You can use Xephyr to profile how chrome repaints the screen. Xephyr is a

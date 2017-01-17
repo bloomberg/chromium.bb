@@ -40,27 +40,6 @@ If `fast/dom/object-plugin-hides-properties.html` and
 
     sudo apt-get remove totem-mozilla
 
-
-## Running layout tests under valgrind on Linux
-
-As above, but use `tools/valgrind/chrome_tests.sh -t webkit` instead.  e.g.
-
-    sh tools/valgrind/chrome_tests.sh -t webkit LayoutTests/fast/
-
-This defaults to using --debug.  Read the script for more details.
-
-If you're trying to reproduce a run from the valgrind buildbot, look for the
-`--run_chunk=XX:YY` line in the bot's log. You can rerun exactly as the bot did
-with the commands.
-
-```shell
-cd ~/chromium/src
-echo XX > valgrind_layout_chunk.txt
-sh tools/valgrind/chrome_tests.sh -t layout -n YY
-```
-
-That will run the XXth chunk of YY layout tests.
-
 ## Configuration tips
 
 *   Use an optimized `content_shell` when rebaselining or running a lot of

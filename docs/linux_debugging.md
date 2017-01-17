@@ -411,29 +411,6 @@ If some messages show as unknown, check if the list of IPC message headers in
 up to date. In case this file reference goes out of date, try looking for usage
 of macros like `IPC_MESSAGE_LOG_ENABLED` or `IPC_MESSAGE_MACROS_LOG_ENABLED`.
 
-## Using valgrind
-
-To run valgrind on the browser and renderer processes, with our suppression file
-and flags:
-
-    $ cd $CHROMIUM_ROOT/src
-    $ tools/valgrind/valgrind.sh out/Debug/chrome
-
-You can use valgrind on chrome and/or on the renderers e.g
-`valgrind --smc-check=all ../sconsbuild/Debug/chrome`
-or by passing valgrind as the argument to `--render-cmd-prefix`.
-
-Beware that there are several valgrind "false positives" e.g. pickle, sqlite and
-some instances in webkit that are ignorable. On systems with prelink and address
-space randomization (e.g. Fedora), you may also see valgrind errors in libstdc++
-on startup and in gnome-breakpad.
-
-Valgrind doesn't seem to play nice with tcmalloc. To disable tcmalloc set the GN arg:
-
-    use_allocator="none"
-
-and rebuild.
-
 ## Profiling
 
 See
