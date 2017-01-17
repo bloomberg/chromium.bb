@@ -705,48 +705,6 @@ static CSSValue* consumeSnapHeight(CSSParserTokenRange& range,
   return list;
 }
 
-static CSSValue* consumeTextIndent(CSSParserTokenRange& range,
-                                   CSSParserMode cssParserMode) {
-  // [ <length> | <percentage> ] && hanging? && each-line?
-  // Keywords only allowed when css3Text is enabled.
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-
-  bool hasLengthOrPercentage = false;
-  bool hasEachLine = false;
-  bool hasHanging = false;
-
-  do {
-    if (!hasLengthOrPercentage) {
-      if (CSSValue* textIndent = consumeLengthOrPercent(
-              range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow)) {
-        list->append(*textIndent);
-        hasLengthOrPercentage = true;
-        continue;
-      }
-    }
-
-    if (RuntimeEnabledFeatures::css3TextEnabled()) {
-      CSSValueID id = range.peek().id();
-      if (!hasEachLine && id == CSSValueEachLine) {
-        list->append(*consumeIdent(range));
-        hasEachLine = true;
-        continue;
-      }
-      if (!hasHanging && id == CSSValueHanging) {
-        list->append(*consumeIdent(range));
-        hasHanging = true;
-        continue;
-      }
-    }
-    return nullptr;
-  } while (!range.atEnd());
-
-  if (!hasLengthOrPercentage)
-    return nullptr;
-
-  return list;
-}
-
 static bool validWidthOrHeightKeyword(CSSValueID id,
                                       const CSSParserContext* context) {
   if (id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent ||
@@ -3115,8 +3073,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
                             property == CSSPropertyCounterIncrement ? 1 : 0);
     case CSSPropertySnapHeight:
       return consumeSnapHeight(m_range, m_context->mode());
-    case CSSPropertyTextIndent:
-      return consumeTextIndent(m_range, m_context->mode());
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:
       return consumeMaxWidthOrHeight(m_range, m_context, UnitlessQuirk::Allow);
