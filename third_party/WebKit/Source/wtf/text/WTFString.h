@@ -426,6 +426,7 @@ class WTF_EXPORT String {
   }
 
 #ifndef NDEBUG
+  // For use in the debugger.
   void show() const;
 #endif
 

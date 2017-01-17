@@ -42,6 +42,31 @@ namespace WTF {
 
 using namespace Unicode;
 
+namespace {
+
+Vector<char> asciiDebug(StringImpl* impl) {
+  if (!impl)
+    return asciiDebug(String("[null]").impl());
+
+  Vector<char> buffer;
+  for (unsigned i = 0; i < impl->length(); ++i) {
+    UChar ch = (*impl)[i];
+    if (isASCIIPrintable(ch)) {
+      if (ch == '\\')
+        buffer.push_back('\\');
+      buffer.push_back(static_cast<char>(ch));
+    } else {
+      buffer.push_back('\\');
+      buffer.push_back('u');
+      appendUnsignedAsHexFixedSize(ch, buffer, 4);
+    }
+  }
+  buffer.push_back('\0');
+  return buffer;
+}
+
+}  // namespace
+
 // Construct a string with UTF-16 data.
 String::String(const UChar* characters, unsigned length)
     : m_impl(characters ? StringImpl::create(characters, length) : nullptr) {}
@@ -811,46 +836,10 @@ std::ostream& operator<<(std::ostream& out, const String& string) {
   return out << '"';
 }
 
-}  // namespace WTF
-
 #ifndef NDEBUG
-// For use in the debugger
-String* string(const char*);
-Vector<char> asciiDebug(StringImpl*);
-Vector<char> asciiDebug(String&);
-
 void String::show() const {
   dataLogF("%s\n", asciiDebug(impl()).data());
 }
-
-String* string(const char* s) {
-  // leaks memory!
-  return new String(s);
-}
-
-Vector<char> asciiDebug(StringImpl* impl) {
-  if (!impl)
-    return asciiDebug(String("[null]").impl());
-
-  Vector<char> buffer;
-  for (unsigned i = 0; i < impl->length(); ++i) {
-    UChar ch = (*impl)[i];
-    if (isASCIIPrintable(ch)) {
-      if (ch == '\\')
-        buffer.push_back('\\');
-      buffer.push_back(static_cast<char>(ch));
-    } else {
-      buffer.push_back('\\');
-      buffer.push_back('u');
-      appendUnsignedAsHexFixedSize(ch, buffer, 4);
-    }
-  }
-  buffer.push_back('\0');
-  return buffer;
-}
-
-Vector<char> asciiDebug(String& string) {
-  return asciiDebug(string.impl());
-}
-
 #endif
+
+}  // namespace WTF
