@@ -181,9 +181,48 @@ where:
 
 ## Appendix
 
-### Other benchmarks
+There are a few other benchmarks maintained by the memory-infra team.
+These also use the same set of metrics as system health, but have differences
+on the kind of stories that they run.
 
-Other benchmarks maintained by the memory-infra team are:
+### memory.top_10_mobile
+
+The *top-10-mobile* benchmarks are in the process of being deprecated
+in favor of system health benchmarks. This process, however, hasn't been
+finalized and currently they are still the reference benchmark used for
+decision making in the Android release process. Therefore, **it is important
+to diagnose and fix regressions caught by these benchmarks**.
+
+*   [memory.top_10_mobile][memory_py] - Cycle between:
+
+    - load a page on Chrome, wait for it to load, [force garbage collection
+      and measure memory][measure];
+    - push Chrome to the background, force garbage collection and measure
+      memory again.
+
+    Repeat for each of 10 pages *without closing the browser*.
+
+    Close the browser, re-open and repeat the full page set a total of 5 times.
+
+    Story groups are either `foreground` or `background` depending on the state
+    of the browser at the time of measurement.
+
+*   [memory.top_10_mobile_stress][memory_py] - same as above, but keeps a single
+    instance of the browser open for the whole duration of the test and
+    *does not* force any garbage collection.
+
+The main difference to watch out between these and system health benchmarks is
+that, since a single browser instance is kept open and shared by many
+individual stories, they are not independent of each other. In particular, **do
+not use the `--story-filter` argument when trying to reproduce regressions**
+on these benchmarks, as doing so will affect the results.
+
+[measure]: https://github.com/catapult-project/catapult/blob/master/telemetry/telemetry/internal/actions/action_runner.py#L133
+
+### Dual browser benchmarks
+
+Dual browser benchmarks are intended to assess the memory implications of
+shared resources between Chrome and WebView.
 
 *   [memory.dual_browser_test][memory_py] - cycle between doing Google searches
     on a WebView-based browser (a stand-in for the Google Search app) and
@@ -196,15 +235,5 @@ Other benchmarks maintained by the memory-infra team are:
     test is run for 60 iterations keeping both browsers alive for the whole
     duration of the test and without forcing garbage collection. Intended as a
     last-resort net to catch memory leaks not apparent on shorter tests.
-
-*   [memory.top_10_mobile][memory_py] - cycle between loading a page on Chrome,
-    pushing the browser to the background, and then back to the foreground.
-    *(To be deprecated in favor of system_health.memory_mobile.)*
-
-    Story groups are either `foreground` or `background` indicating the state
-    of the browser at the time of measurement.
-
-*   [memory.top_10_mobile_stress][memory_py] - same as above, but keeps a single
-    instance of the browser open for 5 repetitions. *(To be deprecated.)*
 
 [memory_py]: https://chromium.googlesource.com/chromium/src/+/master/tools/perf/benchmarks/memory.py
