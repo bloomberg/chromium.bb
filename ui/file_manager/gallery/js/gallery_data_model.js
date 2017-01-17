@@ -42,14 +42,6 @@ function GalleryDataModel(metadataModel, opt_watcher) {
  */
 GalleryDataModel.MAX_FULL_IMAGE_CACHE_ = 3;
 
-/**
- * Maximum number of screen size image cache.
- * @type {number}
- * @const
- * @private
- */
-GalleryDataModel.MAX_SCREEN_IMAGE_CACHE_ = 5;
-
 GalleryDataModel.prototype = {
   __proto__: cr.ui.ArrayDataModel.prototype
 };
