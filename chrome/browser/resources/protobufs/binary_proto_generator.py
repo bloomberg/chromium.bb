@@ -9,12 +9,66 @@
 """
 
 import abc
+import imp
 import optparse
 import os
 import re
 import subprocess
 import sys
 import traceback
+
+
+class GoogleProtobufModuleImporter:
+  """A custom module importer for importing google.protobuf.
+
+  See PEP #302 (https://www.python.org/dev/peps/pep-0302/) for full information
+  on the Importer Protocol.
+  """
+
+  def __init__(self, paths):
+    """Creates a loader that searches |paths| for google.protobuf modules."""
+    self._paths = paths
+
+  def _fullname_to_filepath(self, fullname):
+    """Converts a full module name to a corresponding path to a .py file.
+
+    e.g. google.protobuf.text_format -> pyproto/google/protobuf/text_format.py
+    """
+    for path in self._paths:
+      filepath = os.path.join(path, fullname.replace('.', os.sep) + '.py')
+      if os.path.isfile(filepath):
+        return filepath
+    return None
+
+  def _module_exists(self, fullname):
+    return self._fullname_to_filepath(fullname) is not None
+
+  def find_module(self, fullname, path=None):
+    """Returns a loader module for the google.protobuf module in pyproto."""
+    if (fullname.startswith('google.protobuf.')
+        and self._module_exists(fullname)):
+      # Per PEP #302, this will result in self.load_module getting used
+      # to load |fullname|.
+      return self
+
+    # Per PEP #302, if the module cannot be loaded, then return None.
+    return None
+
+  def load_module(self, fullname):
+    """Loads the module specified by |fullname| and returns the module."""
+    if fullname in sys.modules:
+      # Per PEP #302, if |fullname| is in sys.modules, it must be returned.
+      return sys.modules[fullname]
+
+    if (not fullname.startswith('google.protobuf.') or
+        not self._module_exists(fullname)):
+      # Per PEP #302, raise ImportError if the requested module/package
+      # cannot be loaded. This should never get reached for this simple loader,
+      # but is included for completeness.
+      raise ImportError(fullname)
+
+    filepath = self._fullname_to_filepath(fullname)
+    return imp.load_source(fullname, filepath)
 
 class BinaryProtoGenerator:
 
@@ -34,6 +88,15 @@ class BinaryProtoGenerator:
       # Put the path to our proto libraries in front, so that we don't use
       # system protobuf.
       sys.path.insert(1, path)
+
+    if self._IsInVirtualEnv():
+      # Add a custom module loader. When run in a virtualenv that has
+      # google.protobuf installed, the site-package was getting searched first
+      # despite that pyproto/ is at the start of the sys.path. The module
+      # loaders in the meta_path precede all other imports (including even
+      # builtins), which allows the proper google.protobuf from pyproto to be
+      # found.
+      sys.meta_path.append(GoogleProtobufModuleImporter(paths))
 
     import google.protobuf.text_format as text_format
     globals()['text_format'] = text_format
