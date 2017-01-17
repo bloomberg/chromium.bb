@@ -151,12 +151,16 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 - (void)initializeActionSheet;
 // Exits the editing mode and update the toolbar state with animation.
 - (void)exitEditingModeAnimated:(BOOL)animated;
-// Applies |action| to every cell in the section |identifier|.
+// Applies |updater| to the URL of every cell in the section |identifier|. The
+// updates are done in reverse order of the cells in the section to keep the
+// order. The monitoring of the model updates are suspended during this time.
 - (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
                      usingEntryUpdater:(EntryUpdater)updater;
-// Applies |action| to every selected element of collection view. The monitoring
-// of the model updates is stopped during this time.
-- (void)updateSelectedItemsWithEntryUpdater:(EntryUpdater)updater;
+// Applies |updater| to the URL of every element in |indexPaths|. The updates
+// are done in reverse order |indexPaths| to keep the order. The monitoring of
+// the model updates are suspended during this time.
+- (void)updateIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
+       usingEntryUpdater:(EntryUpdater)updater;
 // Logs the deletions histograms for the entry with |url|.
 - (void)logDeletionHistogramsForEntry:(const GURL&)url;
 // Move all the items from |sourceSectionIdentifier| to
@@ -810,24 +814,26 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 - (void)markItemsRead {
   base::RecordAction(base::UserMetricsAction("MobileReadingListMarkRead"));
-  [self updateSelectedItemsWithEntryUpdater:^(const GURL& url) {
-    [self readingListModel]->SetReadStatus(url, true);
-  }];
-
   NSArray* sortedIndexPaths = [self.collectionView.indexPathsForSelectedItems
       sortedArrayUsingSelector:@selector(compare:)];
+  [self updateIndexPaths:sortedIndexPaths
+       usingEntryUpdater:^(const GURL& url) {
+         [self readingListModel]->SetReadStatus(url, true);
+       }];
+
   [self exitEditingModeAnimated:YES];
   [self moveSelectedItems:sortedIndexPaths toSection:SectionIdentifierRead];
 }
 
 - (void)markItemsUnread {
   base::RecordAction(base::UserMetricsAction("MobileReadingListMarkUnread"));
-  [self updateSelectedItemsWithEntryUpdater:^(const GURL& url) {
-    [self readingListModel]->SetReadStatus(url, false);
-  }];
-
   NSArray* sortedIndexPaths = [self.collectionView.indexPathsForSelectedItems
       sortedArrayUsingSelector:@selector(compare:)];
+  [self updateIndexPaths:sortedIndexPaths
+       usingEntryUpdater:^(const GURL& url) {
+         [self readingListModel]->SetReadStatus(url, false);
+       }];
+
   [self exitEditingModeAnimated:YES];
   [self moveSelectedItems:sortedIndexPaths toSection:SectionIdentifierUnread];
 }
@@ -864,12 +870,13 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)deleteSelectedItems {
-  [self updateSelectedItemsWithEntryUpdater:^(const GURL& url) {
-    [self logDeletionHistogramsForEntry:url];
-    [self readingListModel]->RemoveEntryByURL(url);
-  }];
-
   NSArray* indexPaths = [self.collectionView.indexPathsForSelectedItems copy];
+  [self updateIndexPaths:indexPaths
+       usingEntryUpdater:^(const GURL& url) {
+         [self logDeletionHistogramsForEntry:url];
+         [self readingListModel]->RemoveEntryByURL(url);
+       }];
+
   [self exitEditingModeAnimated:YES];
 
   [self.collectionView performBatchUpdates:^{
@@ -889,21 +896,27 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 - (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
                      usingEntryUpdater:(EntryUpdater)updater {
+  _shouldMonitorModel = NO;
   auto token = self.readingListModel->BeginBatchUpdates();
   NSArray* readItems =
       [self.collectionViewModel itemsInSectionWithIdentifier:identifier];
-  for (id item in readItems) {
+  // Read the objects in reverse order to keep the order (last modified first).
+  for (id item in [readItems reverseObjectEnumerator]) {
     ReadingListCollectionViewItem* readingListItem =
         base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
     if (updater)
       updater(readingListItem.url);
   }
+  token.reset();
+  _shouldMonitorModel = YES;
 }
 
-- (void)updateSelectedItemsWithEntryUpdater:(EntryUpdater)updater {
+- (void)updateIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
+       usingEntryUpdater:(EntryUpdater)updater {
   _shouldMonitorModel = NO;
   auto token = self.readingListModel->BeginBatchUpdates();
-  for (NSIndexPath* index in self.collectionView.indexPathsForSelectedItems) {
+  // Read the objects in reverse order to keep the order (last modified first).
+  for (NSIndexPath* index in [indexPaths reverseObjectEnumerator]) {
     CollectionViewItem* cell = [self.collectionViewModel itemAtIndexPath:index];
     ReadingListCollectionViewItem* readingListItem =
         base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(cell);
@@ -988,9 +1001,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
         sectionForSectionIdentifier:sectionIdentifier];
 
     NSInteger newItemIndex = 0;
-    // In order to make sure the we do not end modifying the wrong item, we have
-    // to take the items in the reverse order of the indexPaths.
-    for (NSIndexPath* index in [sortedIndexPaths reverseObjectEnumerator]) {
+    for (NSIndexPath* index in sortedIndexPaths) {
       // The |sortedIndexPaths| is a copy of the index paths before the
       // destination section has been added if necessary. The section part of
       // the index potentially needs to be updated.
@@ -1005,13 +1016,16 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
       NSIndexPath* updatedIndex =
           [NSIndexPath indexPathForItem:index.item inSection:updatedSection];
+      NSIndexPath* indexForModel =
+          [NSIndexPath indexPathForItem:index.item - newItemIndex
+                              inSection:updatedSection];
 
       // Index of the item in the new section. The newItemIndex is the index of
       // this item in the targeted section.
       NSIndexPath* newIndexPath =
           [NSIndexPath indexPathForItem:newItemIndex++ inSection:section];
       [self collectionView:self.collectionView
-          willMoveItemAtIndexPath:updatedIndex
+          willMoveItemAtIndexPath:indexForModel
                       toIndexPath:newIndexPath];
       [self.collectionView moveItemAtIndexPath:updatedIndex
                                    toIndexPath:newIndexPath];
