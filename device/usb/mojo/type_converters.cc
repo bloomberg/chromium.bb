@@ -17,24 +17,6 @@
 namespace mojo {
 
 // static
-device::UsbDeviceFilter
-TypeConverter<device::UsbDeviceFilter, device::usb::DeviceFilterPtr>::Convert(
-    const device::usb::DeviceFilterPtr& mojo_filter) {
-  device::UsbDeviceFilter filter;
-  if (mojo_filter->has_vendor_id)
-    filter.SetVendorId(mojo_filter->vendor_id);
-  if (mojo_filter->has_product_id)
-    filter.SetProductId(mojo_filter->product_id);
-  if (mojo_filter->has_class_code)
-    filter.SetInterfaceClass(mojo_filter->class_code);
-  if (mojo_filter->has_subclass_code)
-    filter.SetInterfaceSubclass(mojo_filter->subclass_code);
-  if (mojo_filter->has_protocol_code)
-    filter.SetInterfaceProtocol(mojo_filter->protocol_code);
-  return filter;
-}
-
-// static
 device::usb::TransferDirection
 TypeConverter<device::usb::TransferDirection, device::UsbEndpointDirection>::
     Convert(const device::UsbEndpointDirection& direction) {

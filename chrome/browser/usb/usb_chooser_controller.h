@@ -23,7 +23,7 @@ class RenderFrameHost;
 
 namespace device {
 class UsbDevice;
-class UsbDeviceFilter;
+struct UsbDeviceFilter;
 }
 
 // UsbChooserController creates a chooser for WebUSB.
@@ -33,7 +33,7 @@ class UsbChooserController : public ChooserController,
  public:
   UsbChooserController(
       content::RenderFrameHost* render_frame_host,
-      const std::vector<device::usb::DeviceFilterPtr>& device_filters,
+      const std::vector<device::UsbDeviceFilter>& device_filters,
       const device::usb::ChooserService::GetPermissionCallback& callback);
   ~UsbChooserController() override;
 

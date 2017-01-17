@@ -368,21 +368,16 @@ ConfigDescriptor ConvertConfigDescriptor(const UsbConfigDescriptor& input) {
 
 void ConvertDeviceFilter(const usb::DeviceFilter& input,
                          UsbDeviceFilter* output) {
-  if (input.vendor_id) {
-    output->SetVendorId(*input.vendor_id);
-  }
-  if (input.product_id) {
-    output->SetProductId(*input.product_id);
-  }
-  if (input.interface_class) {
-    output->SetInterfaceClass(*input.interface_class);
-  }
-  if (input.interface_subclass) {
-    output->SetInterfaceSubclass(*input.interface_subclass);
-  }
-  if (input.interface_protocol) {
-    output->SetInterfaceProtocol(*input.interface_protocol);
-  }
+  if (input.vendor_id)
+    output->vendor_id = *input.vendor_id;
+  if (input.product_id)
+    output->product_id = *input.product_id;
+  if (input.interface_class)
+    output->interface_class = *input.interface_class;
+  if (input.interface_subclass)
+    output->interface_subclass = *input.interface_subclass;
+  if (input.interface_protocol)
+    output->interface_protocol = *input.interface_protocol;
 }
 
 }  // namespace
@@ -598,10 +593,9 @@ ExtensionFunction::ResponseAction UsbGetDevicesFunction::Run() {
   }
   if (parameters->options.vendor_id) {
     filters_.resize(filters_.size() + 1);
-    filters_.back().SetVendorId(*parameters->options.vendor_id);
-    if (parameters->options.product_id) {
-      filters_.back().SetProductId(*parameters->options.product_id);
-    }
+    filters_.back().vendor_id = *parameters->options.vendor_id;
+    if (parameters->options.product_id)
+      filters_.back().product_id = *parameters->options.product_id;
   }
 
   UsbService* service = device::DeviceClient::Get()->GetUsbService();

@@ -29,7 +29,7 @@ WebUsbChooserService::~WebUsbChooserService() {
 }
 
 void WebUsbChooserService::GetPermission(
-    std::vector<device::usb::DeviceFilterPtr> device_filters,
+    const std::vector<device::UsbDeviceFilter>& device_filters,
     const GetPermissionCallback& callback) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);

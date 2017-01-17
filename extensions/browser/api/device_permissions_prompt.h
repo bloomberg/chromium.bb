@@ -25,7 +25,7 @@ namespace device {
 class HidDeviceFilter;
 class HidDeviceInfo;
 class UsbDevice;
-class UsbDeviceFilter;
+struct UsbDeviceFilter;
 }
 
 namespace extensions {

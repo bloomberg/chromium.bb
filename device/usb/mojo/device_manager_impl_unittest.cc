@@ -122,11 +122,10 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
   DeviceManagerPtr device_manager = ConnectToDeviceManager();
 
   EnumerationOptionsPtr options = EnumerationOptions::New();
-  auto filter = DeviceFilter::New();
-  filter->has_vendor_id = true;
-  filter->vendor_id = 0x1234;
+  UsbDeviceFilter filter;
+  filter.vendor_id = 0x1234;
   options->filters.emplace();
-  options->filters->push_back(std::move(filter));
+  options->filters->push_back(filter);
 
   std::set<std::string> guids;
   guids.insert(device0->guid());

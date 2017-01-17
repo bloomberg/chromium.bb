@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
@@ -23,63 +24,29 @@ const char kInterfaceProtocolKey[] = "interfaceProtocol";
 
 }  // namespace
 
-UsbDeviceFilter::UsbDeviceFilter()
-    : vendor_id_set_(false),
-      product_id_set_(false),
-      interface_class_set_(false),
-      interface_subclass_set_(false),
-      interface_protocol_set_(false) {
-}
+UsbDeviceFilter::UsbDeviceFilter() = default;
 
 UsbDeviceFilter::UsbDeviceFilter(const UsbDeviceFilter& other) = default;
 
-UsbDeviceFilter::~UsbDeviceFilter() {
-}
-
-void UsbDeviceFilter::SetVendorId(uint16_t vendor_id) {
-  vendor_id_set_ = true;
-  vendor_id_ = vendor_id;
-}
-
-void UsbDeviceFilter::SetProductId(uint16_t product_id) {
-  product_id_set_ = true;
-  product_id_ = product_id;
-}
-
-void UsbDeviceFilter::SetInterfaceClass(uint8_t interface_class) {
-  interface_class_set_ = true;
-  interface_class_ = interface_class;
-}
-
-void UsbDeviceFilter::SetInterfaceSubclass(uint8_t interface_subclass) {
-  interface_subclass_set_ = true;
-  interface_subclass_ = interface_subclass;
-}
-
-void UsbDeviceFilter::SetInterfaceProtocol(uint8_t interface_protocol) {
-  interface_protocol_set_ = true;
-  interface_protocol_ = interface_protocol;
-}
+UsbDeviceFilter::~UsbDeviceFilter() = default;
 
 bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
-  if (vendor_id_set_) {
-    if (device->vendor_id() != vendor_id_) {
+  if (vendor_id) {
+    if (device->vendor_id() != *vendor_id)
       return false;
-    }
 
-    if (product_id_set_ && device->product_id() != product_id_) {
+    if (product_id && device->product_id() != *product_id)
       return false;
-    }
   }
 
-  if (interface_class_set_) {
+  if (interface_class) {
     for (const UsbConfigDescriptor& config : device->configurations()) {
       for (const UsbInterfaceDescriptor& iface : config.interfaces) {
-        if (iface.interface_class == interface_class_ &&
-            (!interface_subclass_set_ ||
-             (iface.interface_subclass == interface_subclass_ &&
-              (!interface_protocol_set_ ||
-               iface.interface_protocol == interface_protocol_)))) {
+        if (iface.interface_class == *interface_class &&
+            (!interface_subclass ||
+             (iface.interface_subclass == *interface_subclass &&
+              (!interface_protocol ||
+               iface.interface_protocol == *interface_protocol)))) {
           return true;
         }
       }
@@ -92,22 +59,20 @@ bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
 }
 
 std::unique_ptr<base::Value> UsbDeviceFilter::ToValue() const {
-  std::unique_ptr<base::DictionaryValue> obj(new base::DictionaryValue());
+  auto obj = base::MakeUnique<base::DictionaryValue>();
 
-  if (vendor_id_set_) {
-    obj->SetInteger(kVendorIdKey, vendor_id_);
-    if (product_id_set_) {
-      obj->SetInteger(kProductIdKey, product_id_);
-    }
+  if (vendor_id) {
+    obj->SetInteger(kVendorIdKey, *vendor_id);
+    if (product_id)
+      obj->SetInteger(kProductIdKey, *product_id);
   }
 
-  if (interface_class_set_) {
-    obj->SetInteger(kInterfaceClassKey, interface_class_);
-    if (interface_subclass_set_) {
-      obj->SetInteger(kInterfaceSubclassKey, interface_subclass_);
-      if (interface_protocol_set_) {
-        obj->SetInteger(kInterfaceProtocolKey, interface_protocol_);
-      }
+  if (interface_class) {
+    obj->SetInteger(kInterfaceClassKey, *interface_class);
+    if (interface_subclass) {
+      obj->SetInteger(kInterfaceSubclassKey, *interface_subclass);
+      if (interface_protocol)
+        obj->SetInteger(kInterfaceProtocolKey, *interface_protocol);
     }
   }
 
@@ -120,12 +85,9 @@ bool UsbDeviceFilter::MatchesAny(scoped_refptr<UsbDevice> device,
   if (filters.empty())
     return true;
 
-  for (std::vector<UsbDeviceFilter>::const_iterator i = filters.begin();
-       i != filters.end();
-       ++i) {
-    if (i->Matches(device)) {
+  for (const auto& filter : filters) {
+    if (filter.Matches(device))
       return true;
-    }
   }
   return false;
 }

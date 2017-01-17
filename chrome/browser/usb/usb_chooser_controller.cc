@@ -72,8 +72,8 @@ base::string16 GetDeviceName(scoped_refptr<device::UsbDevice> device) {
 }  // namespace
 
 UsbChooserController::UsbChooserController(
-    content::RenderFrameHost* render_frame_host,
-    const std::vector<device::usb::DeviceFilterPtr>& device_filters,
+    RenderFrameHost* render_frame_host,
+    const std::vector<device::UsbDeviceFilter>& device_filters,
     const device::usb::ChooserService::GetPermissionCallback& callback)
     : ChooserController(render_frame_host,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
@@ -81,6 +81,7 @@ UsbChooserController::UsbChooserController(
       render_frame_host_(render_frame_host),
       callback_(callback),
       usb_service_observer_(this),
+      filters_(device_filters),
       weak_factory_(this) {
   device::UsbService* usb_service =
       device::DeviceClient::Get()->GetUsbService();
@@ -89,9 +90,6 @@ UsbChooserController::UsbChooserController(
 
   if (!usb_service_observer_.IsObserving(usb_service))
     usb_service_observer_.Add(usb_service);
-
-  filters_ =
-      mojo::ConvertTo<std::vector<device::UsbDeviceFilter>>(device_filters);
 
   usb_service->GetDevices(base::Bind(&UsbChooserController::GotUsbDeviceList,
                                      weak_factory_.GetWeakPtr()));

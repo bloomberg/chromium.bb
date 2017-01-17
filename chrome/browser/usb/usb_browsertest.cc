@@ -73,10 +73,10 @@ class FakeChooserService : public device::usb::ChooserService {
   ~FakeChooserService() override {}
 
   // device::usb::ChooserService:
-  void GetPermission(std::vector<device::usb::DeviceFilterPtr> device_filters,
+  void GetPermission(const std::vector<device::UsbDeviceFilter>& device_filters,
                      const GetPermissionCallback& callback) override {
     auto chooser_controller = base::MakeUnique<UsbChooserController>(
-        render_frame_host_, std::move(device_filters), callback);
+        render_frame_host_, device_filters, callback);
     new FakeChooserView(std::move(chooser_controller));
   }
 

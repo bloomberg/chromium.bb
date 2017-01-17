@@ -47,7 +47,7 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    std::vector<device::usb::DeviceFilterPtr> device_filters;
+    std::vector<device::UsbDeviceFilter> device_filters;
     device::usb::ChooserService::GetPermissionCallback callback;
     content::WebContentsTester* web_contents_tester =
         content::WebContentsTester::For(web_contents());

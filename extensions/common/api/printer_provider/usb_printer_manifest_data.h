@@ -11,7 +11,7 @@
 
 namespace device {
 class UsbDevice;
-class UsbDeviceFilter;
+struct UsbDeviceFilter;
 }
 
 namespace extensions {

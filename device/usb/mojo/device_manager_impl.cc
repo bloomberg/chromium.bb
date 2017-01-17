@@ -88,7 +88,7 @@ void DeviceManagerImpl::OnGetDevices(
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   std::vector<UsbDeviceFilter> filters;
   if (options && options->filters)
-    filters = mojo::ConvertTo<std::vector<UsbDeviceFilter>>(*options->filters);
+    filters.swap(*options->filters);
 
   std::vector<DeviceInfoPtr> device_infos;
   for (const auto& device : devices) {

@@ -317,10 +317,9 @@ void PrinterDetector::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
   }
 
   device::UsbDeviceFilter printer_filter;
-  printer_filter.SetInterfaceClass(kPrinterInterfaceClass);
-  if (!printer_filter.Matches(device)) {
+  printer_filter.interface_class = kPrinterInterfaceClass;
+  if (!printer_filter.Matches(device))
     return;
-  }
 
   notification_ui_manager_ = notification_ui_manager_
                                  ? notification_ui_manager_
