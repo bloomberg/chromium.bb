@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #include <stdint.h>
 
-#include "base/mac/scoped_block.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 
 namespace app_group {
@@ -20,8 +19,7 @@ namespace main_app {
 
 // Iterates through the extensions pending logs and deletes them.
 // Calls |callback| on each log before deleting.
-void ProcessPendingLogs(
-    const base::mac::ScopedBlock<ProceduralBlockWithData>& callback);
+void ProcessPendingLogs(ProceduralBlockWithData callback);
 
 // Enables the metrics collecting in extensions. The extensions will
 // use |clientID| as client ID, and |brandCode| as brand code in the logs.
