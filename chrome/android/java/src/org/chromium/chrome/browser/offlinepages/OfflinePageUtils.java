@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.BatteryManager;
@@ -636,9 +638,41 @@ public class OfflinePageUtils {
         Intent batteryStatus = context.registerReceiver(null, filter);
         if (batteryStatus == null) return null;
 
-        return new DeviceConditions(isPowerConnected(batteryStatus),
-                batteryPercentage(batteryStatus),
-                NetworkChangeNotifier.getInstance().getCurrentConnectionType());
+        // Get the connection type from chromium's internal object.
+        int connectionType = NetworkChangeNotifier.getInstance().getCurrentConnectionType();
+
+        // Sometimes the NetworkConnectionNotifier lags the actual connection type, especially when
+        // the GCM NM wakes us from doze state.  If we are really connected, report the connection
+        // type from android.
+        if (connectionType == ConnectionType.CONNECTION_NONE) {
+            // Get the connection type from android in case chromium's type is not yet set.
+            ConnectivityManager cm =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+            if (isConnected) {
+                connectionType = convertAndroidNetworkTypeToConnectionType(activeNetwork.getType());
+            }
+        }
+
+        return new DeviceConditions(
+                isPowerConnected(batteryStatus), batteryPercentage(batteryStatus), connectionType);
+    }
+
+    /** Returns the NCN network type corresponding to the connectivity manager network type */
+    protected int convertAndroidNetworkTypeToConnectionType(int connectivityManagerNetworkType) {
+        if (connectivityManagerNetworkType == ConnectivityManager.TYPE_WIFI) {
+            return ConnectionType.CONNECTION_WIFI;
+        }
+        // for mobile, we don't know if it is 2G, 3G, or 4G, default to worst case of 2G.
+        if (connectivityManagerNetworkType == ConnectivityManager.TYPE_MOBILE) {
+            return ConnectionType.CONNECTION_2G;
+        }
+        if (connectivityManagerNetworkType == ConnectivityManager.TYPE_BLUETOOTH) {
+            return ConnectionType.CONNECTION_BLUETOOTH;
+        }
+        // Since NetworkConnectivityManager doesn't understand the other types, call them UNKNOWN.
+        return ConnectionType.CONNECTION_UNKNOWN;
     }
 
     @VisibleForTesting
