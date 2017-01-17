@@ -64,6 +64,7 @@
 #include "components/previews/core/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
@@ -103,6 +104,10 @@
 #if BUILDFLAG(ENABLE_WEBRTC)
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
 #include "chrome/browser/media/webrtc/webrtc_log_util.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #endif
 
 using base::UserMetricsAction;
@@ -287,6 +292,9 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       clear_webrtc_logs_(sub_task_forward_callback_),
 #endif
       clear_auto_sign_in_(sub_task_forward_callback_),
+#if BUILDFLAG(ENABLE_PLUGINS)
+      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context)),
+#endif
 #if defined(OS_ANDROID)
       webapp_registry_(new WebappRegistry()),
 #endif
@@ -791,6 +799,46 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   }
 
   //////////////////////////////////////////////////////////////////////////////
+  // REMOVE_PLUGINS
+  // Plugins are known to //content and their bulk deletion is implemented in
+  // PluginDataRemover. However, the filtered deletion uses
+  // BrowsingDataFlashLSOHelper which (currently) has strong dependencies
+  // on //chrome.
+  // TODO(msramek): Investigate these dependencies and move the plugin deletion
+  // to BrowsingDataRemoverImpl in //content. Note that code in //content
+  // can simply take advantage of PluginDataRemover directly to delete plugin
+  // data in bulk.
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Plugin is data not separated for protected and unprotected web origins. We
+  // check the origin_type_mask_ to prevent unintended deletion.
+  if (remove_mask & BrowsingDataRemover::REMOVE_PLUGIN_DATA &&
+      origin_type_mask & BrowsingDataHelper::UNPROTECTED_WEB) {
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
+    clear_plugin_data_count_ = 1;
+
+    if (filter_builder.IsEmptyBlacklist()) {
+      DCHECK(!plugin_data_remover_);
+      plugin_data_remover_.reset(
+          content::PluginDataRemover::Create(profile_));
+      base::WaitableEvent* event =
+          plugin_data_remover_->StartRemoving(delete_begin_);
+
+      base::WaitableEventWatcher::EventCallback watcher_callback = base::Bind(
+          &ChromeBrowsingDataRemoverDelegate::OnWaitableEventSignaled,
+          weak_ptr_factory_.GetWeakPtr());
+      watcher_.StartWatching(event, watcher_callback);
+    } else {
+      // TODO(msramek): Store filters from the currently executed task on the
+      // object to avoid having to copy them to callback methods.
+      flash_lso_helper_->StartFetching(base::Bind(
+          &ChromeBrowsingDataRemoverDelegate::OnSitesWithFlashDataFetched,
+          weak_ptr_factory_.GetWeakPtr(),
+          filter_builder.BuildPluginFilter()));
+    }
+  }
+#endif
+
+  //////////////////////////////////////////////////////////////////////////////
   // REMOVE_MEDIA_LICENSES
   if (remove_mask & BrowsingDataRemover::REMOVE_MEDIA_LICENSES) {
     // TODO(jrummell): This UMA should be renamed to indicate it is for Media
@@ -903,13 +951,21 @@ bool ChromeBrowsingDataRemoverDelegate::AllDone() {
 #if BUILDFLAG(ENABLE_WEBRTC)
          !clear_webrtc_logs_.is_pending() &&
 #endif
-         !clear_auto_sign_in_.is_pending();
+         !clear_auto_sign_in_.is_pending() &&
+         !clear_plugin_data_count_;
 }
 
 #if defined(OS_ANDROID)
 void ChromeBrowsingDataRemoverDelegate::OverrideWebappRegistryForTesting(
     std::unique_ptr<WebappRegistry> webapp_registry) {
   webapp_registry_ = std::move(webapp_registry);
+}
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+void ChromeBrowsingDataRemoverDelegate::OverrideFlashLSOHelperForTesting(
+    scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper) {
+  flash_lso_helper_ = flash_lso_helper;
 }
 #endif
 
@@ -932,16 +988,6 @@ void ChromeBrowsingDataRemoverDelegate::OnClearedCookies() {
   NotifyIfDone();
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-void ChromeBrowsingDataRemoverDelegate::
-OnDeauthorizeFlashContentLicensesCompleted(
-    uint32_t request_id,
-    bool /* success */) {
-  DCHECK_EQ(request_id, deauthorize_flash_content_licenses_request_id_);
-  clear_flash_content_licenses_.GetCompletionCallback().Run();
-}
-#endif
-
 #if defined(OS_CHROMEOS)
 void ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys(
     chromeos::DBusMethodCallStatus call_status,
@@ -949,5 +995,56 @@ void ChromeBrowsingDataRemoverDelegate::OnClearPlatformKeys(
   LOG_IF(ERROR, call_status != chromeos::DBUS_METHOD_CALL_SUCCESS || !result)
       << "Failed to clear platform keys.";
   clear_platform_keys_.GetCompletionCallback().Run();
+}
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+void ChromeBrowsingDataRemoverDelegate::OnWaitableEventSignaled(
+    base::WaitableEvent* waitable_event) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  DCHECK_EQ(1, clear_plugin_data_count_);
+  clear_plugin_data_count_ = 0;
+
+  plugin_data_remover_.reset();
+  watcher_.StopWatching();
+  NotifyIfDone();
+}
+
+void ChromeBrowsingDataRemoverDelegate::OnSitesWithFlashDataFetched(
+    base::Callback<bool(const std::string&)> plugin_filter,
+    const std::vector<std::string>& sites) {
+  DCHECK_EQ(1, clear_plugin_data_count_);
+  clear_plugin_data_count_ = 0;
+
+  std::vector<std::string> sites_to_delete;
+  for (const std::string& site : sites) {
+    if (plugin_filter.Run(site))
+      sites_to_delete.push_back(site);
+  }
+
+  clear_plugin_data_count_ = sites_to_delete.size();
+
+  for (const std::string& site : sites_to_delete) {
+    flash_lso_helper_->DeleteFlashLSOsForSite(
+        site,
+        base::Bind(&ChromeBrowsingDataRemoverDelegate::OnFlashDataDeleted,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  NotifyIfDone();
+}
+
+void ChromeBrowsingDataRemoverDelegate::OnFlashDataDeleted() {
+  clear_plugin_data_count_--;
+  NotifyIfDone();
+}
+
+void ChromeBrowsingDataRemoverDelegate::
+OnDeauthorizeFlashContentLicensesCompleted(
+    uint32_t request_id,
+    bool /* success */) {
+  DCHECK_EQ(request_id, deauthorize_flash_content_licenses_request_id_);
+  clear_flash_content_licenses_.GetCompletionCallback().Run();
 }
 #endif

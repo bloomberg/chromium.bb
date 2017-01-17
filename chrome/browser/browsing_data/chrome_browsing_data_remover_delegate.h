@@ -29,11 +29,13 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #endif
 
+class BrowsingDataFlashLSOHelper;
 class Profile;
 class WebappRegistry;
 
 namespace content {
 class BrowserContext;
+class PluginDataRemover;
 }
 
 // A delegate used by BrowsingDataRemover to delete data specific to Chrome
@@ -87,6 +89,12 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
       std::unique_ptr<WebappRegistry> webapp_registry);
 #endif
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Used for testing.
+  void OverrideFlashLSOHelperForTesting(
+      scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper);
+#endif
+
  private:
   // If AllDone(), calls the callback provided in RemoveEmbedderData().
   void NotifyIfDone();
@@ -107,6 +115,17 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
   void OnClearedCookies();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+  // Called when plugin data has been cleared. Invokes NotifyIfDone.
+  void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
+
+  // Called when the list of |sites| storing Flash LSO cookies is fetched.
+  void OnSitesWithFlashDataFetched(
+      base::Callback<bool(const std::string&)> plugin_filter,
+      const std::vector<std::string>& sites);
+
+  // Indicates that LSO cookies for one website have been deleted.
+  void OnFlashDataDeleted();
+
   // PepperFlashSettingsManager::Client implementation.
   void OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
                                                   bool success) override;
@@ -152,13 +171,22 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
   SubTask clear_precache_history_;
   SubTask clear_offline_page_data_;
 #endif
-
 #if BUILDFLAG(ENABLE_WEBRTC)
   SubTask clear_webrtc_logs_;
 #endif
   SubTask clear_auto_sign_in_;
+  // Counts the number of plugin data tasks. Should be the number of LSO cookies
+  // to be deleted, or 1 while we're fetching LSO cookies or deleting in bulk.
+  int clear_plugin_data_count_ = 0;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+  // Used to delete plugin data.
+  std::unique_ptr<content::PluginDataRemover> plugin_data_remover_;
+  base::WaitableEventWatcher watcher_;
+
+  // Used for per-site plugin data deletion.
+  scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
+
   uint32_t deauthorize_flash_content_licenses_request_id_ = 0;
 
   // Used to deauthorize content licenses for Pepper Flash.

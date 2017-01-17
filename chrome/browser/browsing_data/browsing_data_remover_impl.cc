@@ -29,7 +29,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_errors.h"
@@ -44,10 +43,6 @@
 #include "ppapi/features/features.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/origin.h"
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#endif
 
 using base::UserMetricsAction;
 using content::BrowserContext;
@@ -160,9 +155,6 @@ BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
       remove_mask_(-1),
       origin_type_mask_(-1),
       is_removing_(false),
-#if BUILDFLAG(ENABLE_PLUGINS)
-      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context_)),
-#endif
       sub_task_forward_callback_(
           base::Bind(&BrowsingDataRemoverImpl::NotifyIfDone,
                      base::Unretained(this))),
@@ -501,38 +493,6 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  // REMOVE_PLUGINS
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Plugin is data not separated for protected and unprotected web origins. We
-  // check the origin_type_mask_ to prevent unintended deletion.
-  if (remove_mask & REMOVE_PLUGIN_DATA &&
-      origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
-    clear_plugin_data_count_ = 1;
-
-    if (filter_builder.IsEmptyBlacklist()) {
-      DCHECK(!plugin_data_remover_);
-      plugin_data_remover_.reset(
-          content::PluginDataRemover::Create(browser_context_));
-      base::WaitableEvent* event =
-          plugin_data_remover_->StartRemoving(delete_begin_);
-
-      base::WaitableEventWatcher::EventCallback watcher_callback =
-          base::Bind(&BrowsingDataRemoverImpl::OnWaitableEventSignaled,
-                     weak_ptr_factory_.GetWeakPtr());
-      watcher_.StartWatching(event, watcher_callback);
-    } else {
-      // TODO(msramek): Store filters from the currently executed task on the
-      // object to avoid having to copy them to callback methods.
-      flash_lso_helper_->StartFetching(base::Bind(
-          &BrowsingDataRemoverImpl::OnSitesWithFlashDataFetched,
-          weak_ptr_factory_.GetWeakPtr(),
-          filter_builder.BuildPluginFilter()));
-    }
-  }
-#endif
-
-  //////////////////////////////////////////////////////////////////////////////
   // CACHE
   if (remove_mask & REMOVE_CACHE) {
     // Tell the renderers to clear their cache.
@@ -605,13 +565,6 @@ void BrowsingDataRemoverImpl::OverrideStoragePartitionForTesting(
   storage_partition_for_testing_ = storage_partition;
 }
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-void BrowsingDataRemoverImpl::OverrideFlashLSOHelperForTesting(
-    scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper) {
-  flash_lso_helper_ = flash_lso_helper;
-}
-#endif
-
 const base::Time& BrowsingDataRemoverImpl::GetLastUsedBeginTime() {
   return delete_begin_;
 }
@@ -650,8 +603,7 @@ bool BrowsingDataRemoverImpl::AllDone() {
          !clear_cache_.is_pending() &&
          !clear_channel_ids_.is_pending() &&
          !clear_http_auth_cache_.is_pending() &&
-         !clear_storage_partition_data_.is_pending() &&
-         !clear_plugin_data_count_;
+         !clear_storage_partition_data_.is_pending();
 }
 
 void BrowsingDataRemoverImpl::Notify() {
@@ -708,46 +660,3 @@ void BrowsingDataRemoverImpl::NotifyIfDone() {
 
   Notify();
 }
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-void BrowsingDataRemoverImpl::OnWaitableEventSignaled(
-    base::WaitableEvent* waitable_event) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  DCHECK_EQ(1, clear_plugin_data_count_);
-  clear_plugin_data_count_ = 0;
-
-  plugin_data_remover_.reset();
-  watcher_.StopWatching();
-  NotifyIfDone();
-}
-
-void BrowsingDataRemoverImpl::OnSitesWithFlashDataFetched(
-    base::Callback<bool(const std::string&)> plugin_filter,
-    const std::vector<std::string>& sites) {
-  DCHECK_EQ(1, clear_plugin_data_count_);
-  clear_plugin_data_count_ = 0;
-
-  std::vector<std::string> sites_to_delete;
-  for (const std::string& site : sites) {
-    if (plugin_filter.Run(site))
-      sites_to_delete.push_back(site);
-  }
-
-  clear_plugin_data_count_ = sites_to_delete.size();
-
-  for (const std::string& site : sites_to_delete) {
-    flash_lso_helper_->DeleteFlashLSOsForSite(
-        site,
-        base::Bind(&BrowsingDataRemoverImpl::OnFlashDataDeleted,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  NotifyIfDone();
-}
-
-void BrowsingDataRemoverImpl::OnFlashDataDeleted() {
-  clear_plugin_data_count_--;
-  NotifyIfDone();
-}
-#endif

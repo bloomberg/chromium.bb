@@ -25,12 +25,10 @@
 #include "url/gurl.h"
 
 class BrowsingDataFilterBuilder;
-class BrowsingDataFlashLSOHelper;
 class BrowsingDataRemoverFactory;
 
 namespace content {
 class BrowserContext;
-class PluginDataRemover;
 class StoragePartition;
 }
 
@@ -132,11 +130,6 @@ class BrowsingDataRemoverImpl :
   void OverrideStoragePartitionForTesting(
       content::StoragePartition* storage_partition);
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  void OverrideFlashLSOHelperForTesting(
-      scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper);
-#endif
-
  protected:
   // Use BrowsingDataRemoverFactory::GetForBrowserContext to get an instance of
   // this class. The constructor is protected so that the class is mockable.
@@ -190,19 +183,6 @@ class BrowsingDataRemoverImpl :
   // Setter for |is_removing_|; DCHECKs that we can only start removing if we're
   // not already removing, and vice-versa.
   void SetRemoving(bool is_removing);
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Called when plugin data has been cleared. Invokes NotifyIfDone.
-  void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
-
-  // Called when the list of |sites| storing Flash LSO cookies is fetched.
-  void OnSitesWithFlashDataFetched(
-      base::Callback<bool(const std::string&)> plugin_filter,
-      const std::vector<std::string>& sites);
-
-  // Indicates that LSO cookies for one website have been deleted.
-  void OnFlashDataDeleted();
-#endif
 
   // Executes the next removal task. Called after the previous task was finished
   // or directly from Remove() if the task queue was empty.
@@ -260,15 +240,6 @@ class BrowsingDataRemoverImpl :
   // to artificially delay completion. Used for testing.
   static CompletionInhibitor* completion_inhibitor_;
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Used to delete plugin data.
-  std::unique_ptr<content::PluginDataRemover> plugin_data_remover_;
-  base::WaitableEventWatcher watcher_;
-
-  // Used for per-site plugin data deletion.
-  scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
-#endif
-
   // A callback to NotifyIfDone() used by SubTasks instances.
   const base::Closure sub_task_forward_callback_;
 
@@ -280,9 +251,6 @@ class BrowsingDataRemoverImpl :
   SubTask clear_channel_ids_;
   SubTask clear_http_auth_cache_;
   SubTask clear_storage_partition_data_;
-  // Counts the number of plugin data tasks. Should be the number of LSO cookies
-  // to be deleted, or 1 while we're fetching LSO cookies or deleting in bulk.
-  int clear_plugin_data_count_ = 0;
 
   // Observers of the global state and individual tasks.
   base::ObserverList<Observer, true> observer_list_;

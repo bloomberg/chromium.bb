@@ -1111,9 +1111,9 @@ class RemovePluginDataTester {
  public:
   explicit RemovePluginDataTester(TestingProfile* profile)
       : helper_(new TestBrowsingDataFlashLSOHelper(profile)) {
-    static_cast<BrowsingDataRemoverImpl*>(
-        BrowsingDataRemoverFactory::GetForBrowserContext(profile))
-            ->OverrideFlashLSOHelperForTesting(helper_);
+    static_cast<ChromeBrowsingDataRemoverDelegate*>(
+        BrowsingDataRemoverFactory::GetForBrowserContext(profile)
+            ->GetEmbedderDelegate())->OverrideFlashLSOHelperForTesting(helper_);
   }
 
   void AddDomain(const std::string& domain) {
