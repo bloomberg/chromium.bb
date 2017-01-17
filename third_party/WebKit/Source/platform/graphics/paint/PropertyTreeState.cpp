@@ -73,4 +73,13 @@ const PropertyTreeState* PropertyTreeStateIterator::next() {
   return nullptr;
 }
 
+#if DCHECK_IS_ON()
+
+String PropertyTreeState::toTreeString() const {
+  return transform()->toTreeString() + "\n" + clip()->toTreeString() + "\n" +
+         effect()->toTreeString() + "\n" + scroll()->toTreeString();
+}
+
+#endif
+
 }  // namespace blink
