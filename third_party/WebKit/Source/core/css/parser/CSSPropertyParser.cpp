@@ -3307,8 +3307,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
       return consumeBorderRadiusCorner(m_range, m_context->mode());
-    case CSSPropertyWebkitBoxFlexGroup:
-      return consumeInteger(m_range, 0);
     case CSSPropertyOrder:
       return consumeInteger(m_range);
     case CSSPropertyVerticalAlign:

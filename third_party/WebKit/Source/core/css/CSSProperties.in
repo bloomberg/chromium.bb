@@ -415,7 +415,7 @@ y interpolable, svg, converter=convertLength
 -webkit-box-decoration-break
 -webkit-box-direction inherited, independent, keyword_only, keywords=[normal|reverse], initial_keyword=normal
 -webkit-box-flex type_name=float
--webkit-box-flex-group type_name=unsigned int
+-webkit-box-flex-group type_name=unsigned int, api_class
 -webkit-box-lines
 -webkit-box-ordinal-group type_name=unsigned int
 -webkit-box-orient
