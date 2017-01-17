@@ -35,7 +35,12 @@ ServiceWorkerReadFromCacheJob::ServiceWorkerReadFromCacheJob(
       resource_id_(resource_id),
       context_(context),
       version_(version),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(version_);
+  DCHECK(resource_type_ == RESOURCE_TYPE_SCRIPT ||
+         (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER &&
+          version_->script_url() == request_->url()));
+}
 
 ServiceWorkerReadFromCacheJob::~ServiceWorkerReadFromCacheJob() {
 }
@@ -165,11 +170,8 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
   if (is_range_request())
     SetupRangeResponse(http_info_io_buffer_->response_data_size);
   http_info_io_buffer_ = nullptr;
-  if (is_main_script()) {
-    // TODO(nhiroki): Temporary check for debugging (https://crbug.com/485900).
-    CHECK_EQ(request_->url(), version_->script_url());
+  if (is_main_script())
     version_->SetMainScriptHttpResponseInfo(*http_info_);
-  }
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerReadFromCacheJob::ReadInfo",
                          this,

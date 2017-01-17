@@ -661,9 +661,6 @@ void ServiceWorkerVersion::RunAfterStartWorker(
     const StatusCallback& error_callback) {
   if (running_status() == EmbeddedWorkerStatus::RUNNING) {
     DCHECK(start_callbacks_.empty());
-    // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
-    // resolved.
-    CHECK(GetMainScriptHttpResponseInfo());
     task.Run();
     return;
   }
@@ -1520,9 +1517,6 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
 
   switch (running_status()) {
     case EmbeddedWorkerStatus::RUNNING:
-      // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
-      // resolved.
-      CHECK(GetMainScriptHttpResponseInfo());
       RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
       return;
     case EmbeddedWorkerStatus::STARTING:
@@ -1953,11 +1947,6 @@ void ServiceWorkerVersion::OnBeginEvent() {
 
 void ServiceWorkerVersion::FinishStartWorker(ServiceWorkerStatusCode status) {
   start_worker_first_purpose_ = base::nullopt;
-  if (status == SERVICE_WORKER_OK) {
-    // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
-    // resolved.
-    CHECK(GetMainScriptHttpResponseInfo());
-  }
   RunCallbacks(this, &start_callbacks_, status);
 }
 

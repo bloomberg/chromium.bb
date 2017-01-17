@@ -81,6 +81,10 @@ ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
       did_notify_started_(false),
       did_notify_finished_(false),
       weak_factory_(this) {
+  DCHECK(version_);
+  DCHECK(resource_type_ == RESOURCE_TYPE_SCRIPT ||
+         (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER &&
+          version_->script_url() == url_));
   InitNetRequest(extra_load_flags);
 }
 
@@ -299,9 +303,6 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
   }
 
   if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER) {
-    // TODO(nhiroki): Temporary check for debugging (https://crbug.com/485900).
-    CHECK_EQ(version_->script_url(), url_);
-
     std::string mime_type;
     request->GetMimeType(&mime_type);
     if (mime_type != "application/x-javascript" &&

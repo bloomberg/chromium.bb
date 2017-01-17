@@ -599,8 +599,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   }
 
   // We should have a response now.
-  // TODO(falken): Turn to DCHECK once https://crbug.com/485900 is resolved.
-  CHECK_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, fetch_result);
+  DCHECK_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, fetch_result);
 
   // A response with status code 0 is Blink telling us to respond with network
   // error.
@@ -621,15 +620,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   DCHECK(version);
   const net::HttpResponseInfo* main_script_http_info =
       version->GetMainScriptHttpResponseInfo();
-  CHECK(main_script_http_info);
-  if (main_script_http_info) {
-    // In normal case |main_script_http_info| must be set while starting the
-    // ServiceWorker. But when the ServiceWorker registration database was not
-    // written correctly, it may be null.
-    // TODO(horo): Change this line to DCHECK when crbug.com/485900 is fixed.
-    http_response_info_.reset(
-        new net::HttpResponseInfo(*main_script_http_info));
-  }
+  DCHECK(main_script_http_info);
+  http_response_info_.reset(new net::HttpResponseInfo(*main_script_http_info));
 
   // Set up a request for reading the stream.
   if (response.stream_url.is_valid()) {
