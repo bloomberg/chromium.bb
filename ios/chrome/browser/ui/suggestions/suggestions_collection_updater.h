@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class CollectionViewController;
+@class SuggestionsViewController;
 
 // Updater for a CollectionViewController populating it with some items and
 // handling the items addition.
@@ -15,7 +15,7 @@
 
 // |collectionViewController| this Updater will update.
 - (instancetype)initWithCollectionViewController:
-    (CollectionViewController*)collectionViewController
+    (SuggestionsViewController*)collectionViewController
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

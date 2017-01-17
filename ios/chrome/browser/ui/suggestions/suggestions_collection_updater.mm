@@ -4,10 +4,13 @@
 
 #import "ios/chrome/browser/ui/suggestions/suggestions_collection_updater.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_article_item.h"
+#import "ios/chrome/browser/ui/suggestions/suggestions_expandable_item.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_item.h"
+#import "ios/chrome/browser/ui/suggestions/suggestions_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -23,11 +26,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @implementation SuggestionsCollectionUpdater {
-  CollectionViewController* _collectionViewController;
+  SuggestionsViewController* _collectionViewController;
 }
 
 - (instancetype)initWithCollectionViewController:
-    (CollectionViewController*)collectionViewController {
+    (SuggestionsViewController*)collectionViewController {
   self = [super init];
   if (self) {
     _collectionViewController = collectionViewController;
@@ -48,6 +51,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                   @"spawn on multiple lines"
                             image:[UIImage imageNamed:@"distillation_success"]]
           toSectionWithIdentifier:sectionIdentifier];
+      SuggestionsExpandableItem* expandableItem =
+          [[SuggestionsExpandableItem alloc]
+              initWithType:ItemTypeExpand
+                     title:@"Title of an Expandable Article"
+                  subtitle:@"This Article can be expanded to display "
+                           @"additional information or interaction "
+                           @"options"
+                     image:[UIImage imageNamed:@"distillation_fail"]
+                detailText:@"Details shown only when the article is "
+                           @"expanded. It can be displayed on "
+                           @"multiple lines."];
+      expandableItem.delegate = collectionViewController;
+      [model addItem:expandableItem toSectionWithIdentifier:sectionIdentifier];
       sectionIdentifier++;
     }
   }

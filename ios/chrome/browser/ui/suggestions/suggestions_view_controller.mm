@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/suggestions/suggestions_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/suggestions/expandable_item.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_commands.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_item_actions.h"
@@ -15,9 +17,17 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const NSTimeInterval kAnimationDuration = 0.35;
+}  // namespace
+
 @interface SuggestionsViewController ()<SuggestionsItemActions>
 
 @property(nonatomic, strong) SuggestionsCollectionUpdater* collectionUpdater;
+
+// Expand or collapse the |cell|, if it is a SuggestionsExpandableCell,
+// according to |expand|.
+- (void)expand:(BOOL)expand cell:(UICollectionViewCell*)cell;
 
 @end
 
@@ -54,6 +64,16 @@
                          forItem:item];
 }
 
+#pragma mark - SuggestionsExpandableCellDelegate
+
+- (void)collapseCell:(UICollectionViewCell*)cell {
+  [self expand:NO cell:cell];
+}
+
+- (void)expandCell:(UICollectionViewCell*)cell {
+  [self expand:YES cell:cell];
+}
+
 #pragma mark - SuggestionsItemActions
 
 - (void)addNewItem:(id)sender {
@@ -68,6 +88,31 @@
   [self.collectionUpdater addTextItem:title
                              subtitle:subtitle
                             toSection:inputSection];
+}
+
+#pragma mark - Private
+
+- (void)expand:(BOOL)expand cell:(UICollectionViewCell*)cell {
+  NSIndexPath* indexPath = [self.collectionView indexPathForCell:cell];
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+  if ([item conformsToProtocol:@protocol(SuggestionsExpandableArticle)]) {
+    id<SuggestionsExpandableArticle> expandableItem =
+        (id<SuggestionsExpandableArticle>)item;
+
+    NSInteger sectionIdentifier = [self.collectionViewModel
+        sectionIdentifierForSection:indexPath.section];
+
+    expandableItem.expanded = expand;
+    [self reconfigureCellsForItems:@[ item ]
+           inSectionWithIdentifier:sectionIdentifier];
+
+    [UIView
+        animateWithDuration:kAnimationDuration
+                 animations:^{
+                   [self.collectionView.collectionViewLayout invalidateLayout];
+                 }];
+  }
 }
 
 @end

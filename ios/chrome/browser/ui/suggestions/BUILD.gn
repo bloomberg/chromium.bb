@@ -5,11 +5,14 @@
 source_set("suggestions") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "expandable_item.h",
     "suggestions_article_item.h",
     "suggestions_article_item.mm",
     "suggestions_collection_updater.h",
     "suggestions_collection_updater.mm",
     "suggestions_commands.h",
+    "suggestions_expandable_item.h",
+    "suggestions_expandable_item.mm",
     "suggestions_item.h",
     "suggestions_item.mm",
     "suggestions_item_actions.h",
@@ -21,6 +24,7 @@ source_set("suggestions") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/third_party/material_roboto_font_loader_ios",
+    "//ui/base",
   ]
   public_deps = [
     "//ios/third_party/material_components_ios",
@@ -31,10 +35,13 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "suggestions_article_item_unittest.mm",
+    "suggestions_expandable_item_unittest.mm",
+    "suggestions_item_unittest.mm",
   ]
   deps = [
     ":suggestions",
     "//ios/chrome/browser/ui/collection_view",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }
