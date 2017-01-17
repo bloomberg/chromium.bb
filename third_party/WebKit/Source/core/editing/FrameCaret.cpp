@@ -234,7 +234,8 @@ IntRect FrameCaret::absoluteCaretBounds() {
   }
   return CaretBase::absoluteBoundsForLocalRect(
       caretNode,
-      CaretBase::computeCaretRect(createVisiblePosition(caretPosition())));
+      CaretBase::computeCaretRect(
+          createVisiblePosition(caretPosition()).toPositionWithAffinity()));
 }
 
 void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor) {

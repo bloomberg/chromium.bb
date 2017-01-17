@@ -113,10 +113,6 @@ LayoutRect CaretBase::computeCaretRect(
                                     caretLocalRect);
 }
 
-LayoutRect CaretBase::computeCaretRect(const VisiblePosition& caretPosition) {
-  return computeCaretRect(caretPosition.toPositionWithAffinity());
-}
-
 IntRect CaretBase::absoluteBoundsForLocalRect(Node* node,
                                               const LayoutRect& rect) {
   LayoutBlock* caretPainter = caretLayoutObject(node);

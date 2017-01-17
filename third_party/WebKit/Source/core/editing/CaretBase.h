@@ -27,7 +27,7 @@
 #ifndef CaretBase_h
 #define CaretBase_h
 
-#include "core/editing/VisiblePosition.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -50,13 +50,6 @@ class CaretBase final : public DisplayItemClient {
   // PositionWithAffinity version if possible.
   // A position in HTMLTextFromControlElement is a typical example.
   static LayoutRect computeCaretRect(const PositionWithAffinity& caretPosition);
-
-  // TODO(yosin): We should move |computeCaretRect()| with |VisiblePosition| to
-  // "FrameCaret.cpp" as static file local function.
-  static LayoutRect computeCaretRect(const VisiblePosition& caretPosition);
-
-  // TODO(yosin): We should move |absoluteBoundsForLocalRect()| with
-  // |VisiblePosition| to "FrameCaret.cpp" as static file local function.
   static IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&);
 
   // TODO(yosin): We should move |shouldRepaintCaret()| to "FrameCaret.cpp" as
