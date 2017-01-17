@@ -1392,7 +1392,8 @@ void CacheStorageCache::InitGotCacheSize(const base::Closure& callback,
   if (cache_size_ != CacheStorage::kSizeUnknown && cache_size_ != cache_size) {
     // TODO(cmumford): Add UMA for this.
     LOG(ERROR) << "Cache size/index mismatch";
-    DCHECK_EQ(cache_size_, cache_size);
+    // Disabled for crbug.com/681900.
+    // DCHECK_EQ(cache_size_, cache_size);
   }
   cache_size_ = cache_size;
   initializing_ = false;
