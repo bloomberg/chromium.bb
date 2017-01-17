@@ -156,6 +156,7 @@ public class PhysicalWeb {
      */
     public static void showUrlList() {
         IntentHandler.startChromeLauncherActivityForTrustedIntent(
-                new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.PHYSICAL_WEB_URL)));
+                new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.PHYSICAL_WEB_URL))
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 }

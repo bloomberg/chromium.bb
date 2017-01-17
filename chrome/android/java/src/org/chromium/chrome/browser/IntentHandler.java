@@ -574,6 +574,10 @@ public class IntentHandler {
                     new ComponentName(appContext.getPackageName(), componentClassName));
         }
 
+        // Because we are starting this activity from the application context, we need
+        // FLAG_ACTIVITY_NEW_TASK on pre-N versions of Android.  On N+ we can get away with
+        // specifying a task ID or not specifying an options bundle.
+        assert (copiedIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0;
         addTrustedIntentExtras(copiedIntent);
         appContext.startActivity(copiedIntent);
     }
