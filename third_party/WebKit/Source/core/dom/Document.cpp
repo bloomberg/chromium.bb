@@ -4947,17 +4947,31 @@ void Document::setEncodingData(const DocumentEncodingData& newData) {
 
 KURL Document::completeURL(const String& url) const {
   String trimmed = url.stripWhiteSpace();
+  KURL completed = completeURLWithOverride(url, m_baseURL);
+
   bool newline = trimmed.contains('\n') || trimmed.contains('\r');
-  bool brace = trimmed.contains('<');
-  if (newline)
-    UseCounter::count(*this, UseCounter::DocumentCompleteURLContainingNewline);
-  if (brace) {
-    UseCounter::count(*this,
-                      UseCounter::DocumentCompleteURLContainingOpenBrace);
-  }
-  if (newline && brace) {
+  bool lessThan = trimmed.contains('<');
+  if ((newline || lessThan) && completed.protocolIsInHTTPFamily()) {
+    if (newline) {
+      UseCounter::count(*this,
+                        UseCounter::DocumentCompleteURLHTTPContainingNewline);
+    }
+    if (lessThan) {
+      UseCounter::count(*this,
+                        UseCounter::DocumentCompleteURLHTTPContainingLessThan);
+    }
+    if (newline && lessThan) {
+      UseCounter::count(
+          *this,
+          UseCounter::DocumentCompleteURLHTTPContainingNewlineAndLessThan);
+
+      if (RuntimeEnabledFeatures::restrictCompleteURLCharacterSetEnabled())
+        return KURL();
+    }
+  } else if (newline || lessThan) {
     UseCounter::count(
-        *this, UseCounter::DocumentCompleteURLContainingNewlineAndOpenBrace);
+        *this,
+        UseCounter::DocumentCompleteURLNonHTTPContainingNewlineOrLessThan);
   }
   return completeURLWithOverride(url, m_baseURL);
 }

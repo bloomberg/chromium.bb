@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="./resources/helper.js"></script>
+<body>
+<script>
+  // We're injecting markup via `srcdoc` so, confusingly, we need to
+  // entity-escape the "raw" content, and double-escape the "escaped"
+  // content.
+  var rawBrace = "&lt;";
+  var escapedBrace = "&amp;lt;";
+  var rawNewline = "&#10;";
+  var escapedNewline = "&amp;#10;";
+
+  var abeSizedPng = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEwAAABnAQMAAACQMjadAAAAA1BMVEX///+nxBvIAAAAEUlEQVQ4y2MYBaNgFIwCegAABG0AAd5G4RkAAAAASUVORK5CYII=";
+  var abeSizedPngWithNewline = abeSizedPng.replace("i", "i\n");
+
+  var should_block = [
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a${rawNewline}b${rawBrace}c">`,
+    `
+      <img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a
+        b${rawBrace}c
+      ">
+    `,
+  ];
+
+  should_block.forEach(markup => {
+    async_test(t => {
+      var i = createFrame(`${markup}`);
+      assert_img_not_loaded(t, i);
+    }, markup.replace(/[\n\r]/g, ''));
+  });
+
+  var should_load = [
+
+    // `data:` and `javascript:` URLs don't check the content:
+    `<img id="dangling" src="${abeSizedPngWithNewline}">`,
+
+    // Just one or the other isn't enough:
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?data=a${rawNewline}b">`,
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a${rawBrace}b">`,
+
+    // Entity-escaped characters don't trigger blocking:
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?data=a${escapedNewline}b">`,
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a${escapedBrace}b">`,
+    `<img id="dangling" src="http://127.0.0.1:8000/security/resources/abe.png?img=a${escapedNewline}b${escapedBrace}c">`,
+
+    // Leading and trailing whitespace is stripped:
+    `
+      <img id="dangling" src="
+        http://127.0.0.1:8000/security/resources/abe.png
+      ">
+      <input type=hidden name=csrf value=sekrit>
+    `,
+    `
+      <img id="dangling" src="
+      http://127.0.0.1:8000/security/resources/abe.png?img=${escapedBrace}
+      ">
+      <input type=hidden name=csrf value=sekrit>
+    `,
+    `
+      <img id="dangling" src="
+      http://127.0.0.1:8000/security/resources/abe.png?img=${escapedNewline}
+      ">
+      <input type=hidden name=csrf value=sekrit>
+    `,
+  ];
+
+  should_load.forEach(markup => {
+    async_test(t => {
+      var i = createFrame(`${markup} <element attr="" another=''>`);
+      assert_img_loaded(t, i);
+    }, markup.replace(/[\n\r]/g, ''));
+  });
+</script>
+  

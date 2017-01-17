@@ -286,3 +286,4 @@ BackgroundVideoTrackOptimization status=stable
 PerformancePaintTiming status=test
 HideNonceContentAttribute status=experimental
 UnclosedFormControlIsInvalid status=experimental
+RestrictCompleteURLCharacterSet status=experimental

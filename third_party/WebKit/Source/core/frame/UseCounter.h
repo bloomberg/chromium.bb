@@ -1435,9 +1435,10 @@ class CORE_EXPORT UseCounter {
     V8AssigmentExpressionLHSIsCallInStrict = 1765,
     V8PromiseConstructorReturnedUndefined = 1766,
     FormSubmittedWithUnclosedFormControl = 1767,
-    DocumentCompleteURLContainingNewline = 1768,
-    DocumentCompleteURLContainingOpenBrace = 1769,
-    DocumentCompleteURLContainingNewlineAndOpenBrace = 1770,
+    DocumentCompleteURLHTTPContainingNewline = 1768,
+    DocumentCompleteURLHTTPContainingLessThan = 1769,
+    DocumentCompleteURLHTTPContainingNewlineAndLessThan = 1770,
+    DocumentCompleteURLNonHTTPContainingNewlineOrLessThan = 1771,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

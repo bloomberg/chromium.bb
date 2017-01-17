@@ -4,6 +4,16 @@ function assert_no_message_from_frame(test, frame) {
   }));
 }
 
+function appendFrameAndGetElement(test, frame) {
+  return new Promise((resolve, reject) => {
+    frame.onload = test.step_func(_ => {
+      frame.onload = null;
+      resolve(frame.contentDocument.querySelector('#dangling'));
+    });
+    document.body.appendChild(frame);
+  });
+}
+
 function appendAndSubmit(test, frame) {
   return new Promise((resolve, reject) => {
     frame.onload = test.step_func(_ => {
@@ -27,6 +37,22 @@ function assert_no_submission(test, frame) {
     .then(test.step_func_done(result => {
       assert_equals(result, "error");
       frame.remove();
+    }));
+}
+
+function assert_img_loaded(test, frame) {
+  appendFrameAndGetElement(test, frame)
+    .then(test.step_func_done(img => {
+      assert_equals(img.naturalHeight, 103, "Height");
+      assert_equals(img.naturalWidth, 76, "Width");
+    }));
+}
+
+function assert_img_not_loaded(test, frame) {
+  appendFrameAndGetElement(test, frame)
+    .then(test.step_func_done(img => {
+      assert_equals(img.naturalHeight, 0, "Height");
+      assert_equals(img.naturalWidth, 0, "Width");
     }));
 }
 
