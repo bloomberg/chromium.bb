@@ -97,7 +97,6 @@ bool CompositorFilterOperations::operator==(
   return m_filterOperations == o.m_filterOperations;
 }
 
-#if DCHECK_IS_ON()
 bool CompositorFilterOperations::equalsIgnoringReferenceFilters(
     const CompositorFilterOperations& o) const {
   size_t size = m_filterOperations.size();
@@ -115,7 +114,6 @@ bool CompositorFilterOperations::equalsIgnoringReferenceFilters(
   }
   return true;
 }
-#endif
 
 String CompositorFilterOperations::toString() const {
   return m_filterOperations.ToString().c_str();

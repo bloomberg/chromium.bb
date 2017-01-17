@@ -40,12 +40,14 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
   void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
   bool equals(const DisplayItem& other) const final {
-    // TODO(wangxianzhu): compare m_imageFilter and m_webFilterOperations.
-    const auto& other_display_item =
-        static_cast<const BeginFilterDisplayItem&>(other);
-    return DisplayItem::equals(other) &&
-           m_bounds == other_display_item.m_bounds &&
-           m_origin == other_display_item.m_origin;
+    if (!DisplayItem::equals(other))
+      return false;
+    const auto& otherItem = static_cast<const BeginFilterDisplayItem&>(other);
+    // Ignores changes of reference filters because SkImageFilter doesn't have
+    // an equality operator.
+    return m_bounds == otherItem.m_bounds && m_origin == otherItem.m_origin &&
+           m_compositorFilterOperations.equalsIgnoringReferenceFilters(
+               otherItem.m_compositorFilterOperations);
   }
 
   // FIXME: m_imageFilter should be replaced with m_webFilterOperations when

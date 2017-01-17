@@ -48,9 +48,7 @@ class PLATFORM_EXPORT CompositorFilterOperations {
     return !(*this == o);
   }
 
-#if DCHECK_IS_ON()
   bool equalsIgnoringReferenceFilters(const CompositorFilterOperations&) const;
-#endif
 
   String toString() const;
 
