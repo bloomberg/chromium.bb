@@ -5,6 +5,7 @@
 import fnmatch
 import imp
 import logging
+import os
 import posixpath
 import signal
 import thread
@@ -205,11 +206,13 @@ class LocalDeviceTestRun(test_run.TestRun):
     raise NotImplementedError
 
   @staticmethod
-  def _JsonToTrace(json_path, html_path):
+  def _JsonToTrace(json_path, html_path, delete_json=True):
     # First argument is call site.
     cmd = [__file__, json_path, '--title', 'Android Test Runner Trace',
            '--output', html_path]
     trace2html.Main(cmd)
+    if delete_json:
+      os.remove(json_path)
 
 
 class NoTestsError(Exception):
