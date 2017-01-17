@@ -191,7 +191,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
 
     token_cache[scan[c]] = av1_pt_energy_class[token];
-    ctx_eob = get_coef_context(nb, token_cache, c + 1);
+    ctx_eob = get_coef_context(nb, token_cache, AOMMIN(c + 1, max_eob - 1));
     band_eob = c < max_eob - 1 ? *band_translate : band_eob;
     prob_eob = coef_probs[band_eob][ctx_eob];
 
@@ -260,7 +260,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     if (v) dqcoeff[scan[c]] = aom_read_bit(r, ACCT_STR) ? -v : v;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
 
-    if (c + 1 < max_eob && token) {
+    if (token) {
       if (counts) ++eob_branch_count[band_eob][ctx_eob];
       if (!aom_read(r, prob_eob[EOB_CONTEXT_NODE], ACCT_STR)) {
         //        INCREMENT_COUNT(EOB_MODEL_TOKEN);

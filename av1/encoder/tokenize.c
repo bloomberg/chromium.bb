@@ -480,11 +480,12 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
       ec_ctx->coef_tail_cdfs[tx_size][type][ref];
   unsigned int(*const blockz_count)[2] =
       td->counts->blockz_count[txsize_sqr_map[tx_size]][type][ref];
+  int c2;
 #endif
+  const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   unsigned int(*const eob_branch)[COEFF_CONTEXTS] =
       td->counts->eob_branch[txsize_sqr_map[tx_size]][type][ref];
   const uint8_t *const band = get_band_translate(tx_size);
-  const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   int skip_eob = 0;
   int16_t token;
   EXTRABIT extra;
@@ -509,15 +510,13 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
     token_cache[scan[c]] = av1_pt_energy_class[token];
     ++c;
-    pt = get_coef_context(nb, token_cache, c);
+    pt = get_coef_context(nb, token_cache, AOMMIN(c, seg_eob - 1));
     skip_eob = (token == ZERO_TOKEN);
   }
-  if (c < seg_eob) {
-    assert(!skip_eob);  // The last token must be non-zero.
-    add_token(&t, coef_probs[band[c]][pt], NULL, NULL, 0, EOB_TOKEN, 0,
-              counts[band[c]][pt]);
-    ++eob_branch[band[c]][pt];
-  }
+  c2 = AOMMIN(c, seg_eob - 1);
+  add_token(&t, coef_probs[band[c2]][pt], NULL, NULL, 0, EOB_TOKEN, 0,
+            counts[band[c2]][pt]);
+  ++eob_branch[band[c2]][pt];
 #else
   while (c < eob) {
     const int v = qcoeff[scan[c]];
