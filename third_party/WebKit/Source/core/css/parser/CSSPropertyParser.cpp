@@ -815,41 +815,6 @@ static CSSValue* consumeMarginOrOffset(CSSParserTokenRange& range,
   return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, unitless);
 }
 
-static CSSValue* consumeClipComponent(CSSParserTokenRange& range,
-                                      CSSParserMode cssParserMode) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  return consumeLength(range, cssParserMode, ValueRangeAll,
-                       UnitlessQuirk::Allow);
-}
-
-static CSSValue* consumeClip(CSSParserTokenRange& range,
-                             CSSParserMode cssParserMode) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-
-  if (range.peek().functionId() != CSSValueRect)
-    return nullptr;
-
-  CSSParserTokenRange args = consumeFunction(range);
-  // rect(t, r, b, l) || rect(t r b l)
-  CSSValue* top = consumeClipComponent(args, cssParserMode);
-  if (!top)
-    return nullptr;
-  bool needsComma = consumeCommaIncludingWhitespace(args);
-  CSSValue* right = consumeClipComponent(args, cssParserMode);
-  if (!right || (needsComma && !consumeCommaIncludingWhitespace(args)))
-    return nullptr;
-  CSSValue* bottom = consumeClipComponent(args, cssParserMode);
-  if (!bottom || (needsComma && !consumeCommaIncludingWhitespace(args)))
-    return nullptr;
-  CSSValue* left = consumeClipComponent(args, cssParserMode);
-  if (!left || !args.atEnd())
-    return nullptr;
-  return CSSQuadValue::create(top, right, bottom, left,
-                              CSSQuadValue::SerializeAsRect);
-}
-
 static bool consumePan(CSSParserTokenRange& range,
                        CSSValue*& panX,
                        CSSValue*& panY,
@@ -3223,8 +3188,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeLengthOrPercent(m_range, m_context->mode(),
                                     ValueRangeNonNegative,
                                     UnitlessQuirk::Allow);
-    case CSSPropertyClip:
-      return consumeClip(m_range, m_context->mode());
     case CSSPropertyTouchAction:
       return consumeTouchAction(m_range);
     case CSSPropertyScrollSnapDestination:
@@ -3262,9 +3225,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
           unresolvedProperty == CSSPropertyAliasWebkitAnimationName);
     case CSSPropertyGridColumnGap:
     case CSSPropertyGridRowGap:
-      return consumeLengthOrPercent(m_range, m_context->mode(),
-                                    ValueRangeNonNegative);
-    case CSSPropertyShapeMargin:
       return consumeLengthOrPercent(m_range, m_context->mode(),
                                     ValueRangeNonNegative);
     case CSSPropertyShapeImageThreshold:
