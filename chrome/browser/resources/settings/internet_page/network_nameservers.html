@@ -27,7 +27,7 @@
         <paper-input-container no-label-float>
           <input id="nameserver[[index]]" is="iron-input" value="[[item]]"
               disabled="[[!canEdit_(editable, nameserversType_)]]"
-              on-blur="onValueChange_">
+              on-change="onValueChange_">
         </paper-input-container>
       </template>
     </div>

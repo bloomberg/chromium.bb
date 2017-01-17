@@ -34,7 +34,7 @@ Polymer({
    * Event triggered when the input value changes.
    * @private
    */
-  onValueChanged_: function() {
+  onValueChange_: function() {
     this.browserProxy_.updateCupsPrinter(this.printer.printerId,
                                          this.printer.printerName);
   },

@@ -86,7 +86,7 @@ Polymer({
   },
 
   /** @private */
-  onBlur_: function() {
+  onChange_: function() {
     this.$.searchIcon.hidden = true;
     this.$.dropdownIcon.hidden = false;
   },

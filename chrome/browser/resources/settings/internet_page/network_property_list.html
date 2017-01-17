@@ -49,7 +49,7 @@
           <paper-input-container no-label-float>
             <input id="[[item]]" is="iron-input"
                 value="[[getPropertyValue_(item, prefix, propertyDict)]]"
-                on-blur="onValueChange_">
+                on-change="onValueChange_">
           </paper-input-container>
         </template>
         <!-- Editable Password property value -->
@@ -58,7 +58,7 @@
           <paper-input-container no-label-float>
             <input id="[[item]]" is="iron-input" type="password"
                 value="[[getPropertyValue_(item, prefix, propertyDict)]]"
-                on-blur="onValueChange_">
+                on-change="onValueChange_">
           </paper-input-container>
         </template>
         <!-- TODO(stevenjb): Support other types. -->
