@@ -14,6 +14,14 @@ android_aidl("common_aidl") {
   ]
 }
 
+android_aidl("is_ready_to_pay_service_aidl") {
+  interface_file = "java/src/org/chromium/payments_common.aidl"
+  sources = [
+    "java/src/org/chromium/IsReadyToPayService.aidl",
+    "java/src/org/chromium/IsReadyToPayServiceCallback.aidl",
+  ]
+}
+
 android_resources("content_java_resources") {
   deps = [
     ":content_strings_grd",
@@ -61,6 +69,7 @@ android_library("content_java") {
 
   srcjar_deps = [
     ":common_aidl",
+    ":is_ready_to_pay_service_aidl",
     ":content_public_android_java_enums_srcjar",
     "//content/browser/accessibility:content_browser_accessibility_java_enums_srcjar",
     "//ui/touch_selection:ui_touch_selection_enums_srcjar",

@@ -5,12 +5,19 @@
 package org.chromium.chrome.browser.payments;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.JsonWriter;
 
+import org.chromium.IsReadyToPayService;
+import org.chromium.IsReadyToPayServiceCallback;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -39,14 +46,30 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     private static final String EXTRA_DETAILS = "details";
     private static final String EXTRA_INSTRUMENT_DETAILS = "instrumentDetails";
     private static final String EMPTY_JSON_DATA = "{}";
-
     private final Handler mHandler;
     private final WebContents mWebContents;
+    private final Intent mIsReadyToPayIntent;
     private final Intent mPayIntent;
     private final Set<String> mMethodNames;
-    private String mIsReadyToPayService;
+    private IsReadyToPayService mIsReadyToPayService;
+    private InstrumentsCallback mInstrumentsCallback;
     private InstrumentDetailsCallback mInstrumentDetailsCallback;
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mIsReadyToPayService = IsReadyToPayService.Stub.asInterface(service);
+            if (mIsReadyToPayService == null) {
+                respondToGetInstrumentsQuery(null);
+            } else {
+                sendIsReadyToPayIntentToPaymentApp();
+            }
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            respondToGetInstrumentsQuery(null);
+        }
+    };
     /**
      * Builds the point of interaction with a locally installed 3rd party native Android payment
      * app.
@@ -63,6 +86,8 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         mHandler = new Handler();
         mWebContents = webContents;
         mPayIntent = new Intent();
+        mIsReadyToPayIntent = new Intent();
+        mIsReadyToPayIntent.setPackage(packageName);
         mPayIntent.setClassName(packageName, activity);
         mPayIntent.setAction(ACTION_PAY);
         mMethodNames = new HashSet<>();
@@ -73,22 +98,83 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         mMethodNames.add(methodName);
     }
 
-    /** @param service The name of the "is ready to pay" service in the payment app. */
-    public void setIsReadyToPayService(String service) {
-        mIsReadyToPayService = service;
+    /** @param className The class name of the "is ready to pay" service in the payment app. */
+    public void setIsReadyToPayAction(String className) {
+        mIsReadyToPayIntent.setClassName(mIsReadyToPayIntent.getPackage(), className);
     }
 
     @Override
     public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
-            final InstrumentsCallback callback) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                List<PaymentInstrument> instruments = new ArrayList<>();
-                instruments.add(AndroidPaymentApp.this);
-                callback.onInstrumentsReady(AndroidPaymentApp.this, instruments);
+            InstrumentsCallback callback) {
+        mInstrumentsCallback = callback;
+        if (mIsReadyToPayIntent.getPackage() == null) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    respondToGetInstrumentsQuery(AndroidPaymentApp.this);
+                }
+            });
+            return;
+        }
+        Bundle extras = new Bundle();
+        extras.putString(EXTRA_METHOD_NAME, mMethodNames.iterator().next());
+        extras.putString(EXTRA_ORIGIN, origin);
+        PaymentMethodData data = methodData.get(mMethodNames.iterator().next());
+        extras.putString(EXTRA_DATA, data == null ? EMPTY_JSON_DATA : data.stringifiedData);
+        mIsReadyToPayIntent.putExtras(extras);
+
+        if (mIsReadyToPayService != null) {
+            sendIsReadyToPayIntentToPaymentApp();
+        } else {
+            ContentViewCore contentView = ContentViewCore.fromWebContents(mWebContents);
+            if (contentView == null) {
+                notifyError();
+                return;
             }
-        });
+
+            WindowAndroid window = contentView.getWindowAndroid();
+            if (window == null) {
+                notifyError();
+                return;
+            }
+
+            try {
+                window.getApplicationContext().bindService(
+                        mIsReadyToPayIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+            } catch (SecurityException e) {
+                respondToGetInstrumentsQuery(null);
+            }
+        }
+    }
+
+    private void respondToGetInstrumentsQuery(PaymentInstrument instrument) {
+        List<PaymentInstrument> instruments = null;
+        if (instrument != null) {
+            instruments = new ArrayList<>();
+            instruments.add(instrument);
+        }
+        mInstrumentsCallback.onInstrumentsReady(this, instruments);
+    }
+
+    private void sendIsReadyToPayIntentToPaymentApp() {
+        assert mIsReadyToPayService != null;
+        IsReadyToPayServiceCallback.Stub callback = new IsReadyToPayServiceCallback.Stub() {
+            @Override
+            public void handleIsReadyToPay(boolean isReadyToPay) throws RemoteException {
+                if (isReadyToPay) {
+                    respondToGetInstrumentsQuery(AndroidPaymentApp.this);
+                } else {
+                    respondToGetInstrumentsQuery(null);
+                }
+            }
+        };
+        try {
+            mIsReadyToPayService.isReadyToPay(callback);
+        } catch (Throwable e) {
+            /** Many undocument exceptions are not caught in the remote Service but passed on to
+                the Service caller, see writeException in Parcel.java. */
+            respondToGetInstrumentsQuery(null);
+        }
     }
 
     @Override

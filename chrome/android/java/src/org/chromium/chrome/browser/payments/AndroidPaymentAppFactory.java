@@ -74,7 +74,7 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
             ResolveInfo match = matches.get(i);
             String packageName = match.serviceInfo.packageName;
             AndroidPaymentApp installedApp = installedApps.get(packageName);
-            if (installedApp != null) installedApp.setIsReadyToPayService(match.serviceInfo.name);
+            if (installedApp != null) installedApp.setIsReadyToPayAction(match.serviceInfo.name);
         }
 
         callback.onAllPaymentAppsCreated();
