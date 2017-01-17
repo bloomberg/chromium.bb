@@ -19,56 +19,6 @@ namespace {
 // Reference to the single instance of the RequestTrackerFactory.
 RequestTracker::RequestTrackerFactory* g_request_tracker_factory = nullptr;
 
-// Array of network client factories that should be added to any new request
-// tracker.
-class GlobalNetworkClientFactories {
- public:
-  static GlobalNetworkClientFactories* GetInstance() {
-    if (!g_global_network_client_factories)
-      g_global_network_client_factories = new GlobalNetworkClientFactories;
-    return g_global_network_client_factories;
-  }
-
-  // Gets the factories.
-  NSArray* GetFactories() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return factories_.get();
-  }
-
-  // Adds a factory.
-  void AddFactory(CRNForwardingNetworkClientFactory* factory) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK_EQ(NSNotFound,
-              static_cast<NSInteger>([factories_ indexOfObject:factory]));
-    DCHECK(!IsSelectorOverriden(factory, @selector(clientHandlingRequest:)));
-    DCHECK(!IsSelectorOverriden(factory,
-                                @selector(clientHandlingResponse:request:)));
-    DCHECK(!IsSelectorOverriden(
-               factory, @selector(clientHandlingRedirect:url:response:)));
-    [factories_ addObject:factory];
-  }
-
-  // Returns true if |factory| re-implements |selector|.
-  // Only used for debugging.
-  bool IsSelectorOverriden(CRNForwardingNetworkClientFactory* factory,
-                           SEL selector) {
-    return
-        [factory methodForSelector:selector] !=
-        [CRNForwardingNetworkClientFactory instanceMethodForSelector:selector];
-  }
-
- private:
-  GlobalNetworkClientFactories() : factories_([[NSMutableArray alloc] init]) {}
-
-  base::scoped_nsobject<NSMutableArray> factories_;
-  base::ThreadChecker thread_checker_;
-
-  static GlobalNetworkClientFactories* g_global_network_client_factories;
-};
-
-GlobalNetworkClientFactories*
-    GlobalNetworkClientFactories::g_global_network_client_factories = nullptr;
-
 }  // namespace
 
 RequestTracker::RequestTrackerFactory::~RequestTrackerFactory() {
@@ -108,12 +58,6 @@ void RequestTracker::AddNetworkClientFactory(
   }
 }
 
-// static
-void RequestTracker::AddGlobalNetworkClientFactory(
-    CRNForwardingNetworkClientFactory* factory) {
-  GlobalNetworkClientFactories::GetInstance()->AddFactory(factory);
-}
-
 RequestTracker::RequestTracker()
     : client_factories_([[NSMutableArray alloc] init]),
       initialized_(false),
@@ -139,22 +83,6 @@ void RequestTracker::Init() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!initialized_);
   initialized_ = true;
-  for (CRNForwardingNetworkClientFactory* factory in
-           GlobalNetworkClientFactories::GetInstance()->GetFactories()) {
-    AddNetworkClientFactory(factory);
-  }
-}
-
-// static
-NSArray* RequestTracker::GlobalClientsHandlingAnyRequest() {
-  NSMutableArray* applicable_clients = [NSMutableArray array];
-  for (CRNForwardingNetworkClientFactory* factory in
-           GlobalNetworkClientFactories::GetInstance()->GetFactories()) {
-    CRNForwardingNetworkClient* client = [factory clientHandlingAnyRequest];
-    if (client)
-      [applicable_clients addObject:client];
-  }
-  return applicable_clients;
 }
 
 NSArray* RequestTracker::ClientsHandlingAnyRequest() {
