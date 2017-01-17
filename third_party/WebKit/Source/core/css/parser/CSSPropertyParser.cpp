@@ -1349,33 +1349,6 @@ bool CSSPropertyParser::consumeOffsetShorthand(bool important) {
   return true;
 }
 
-static CSSValue* consumeTextEmphasisStyle(CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueNone)
-    return consumeIdent(range);
-
-  if (CSSValue* textEmphasisStyle = consumeString(range))
-    return textEmphasisStyle;
-
-  CSSIdentifierValue* fill = consumeIdent<CSSValueFilled, CSSValueOpen>(range);
-  CSSIdentifierValue* shape =
-      consumeIdent<CSSValueDot, CSSValueCircle, CSSValueDoubleCircle,
-                   CSSValueTriangle, CSSValueSesame>(range);
-  if (!fill)
-    fill = consumeIdent<CSSValueFilled, CSSValueOpen>(range);
-  if (fill && shape) {
-    CSSValueList* parsedValues = CSSValueList::createSpaceSeparated();
-    parsedValues->append(*fill);
-    parsedValues->append(*shape);
-    return parsedValues;
-  }
-  if (fill)
-    return fill;
-  if (shape)
-    return shape;
-  return nullptr;
-}
-
 static CSSValue* consumeOutlineColor(CSSParserTokenRange& range,
                                      CSSParserMode cssParserMode) {
   // Allow the special focus color even in HTML Standard parsing mode.
@@ -3213,8 +3186,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation:
       return consumeOffsetRotate(m_range);
-    case CSSPropertyWebkitTextEmphasisStyle:
-      return consumeTextEmphasisStyle(m_range);
     case CSSPropertyOutlineColor:
       return consumeOutlineColor(m_range, m_context->mode());
     case CSSPropertyOutlineWidth:

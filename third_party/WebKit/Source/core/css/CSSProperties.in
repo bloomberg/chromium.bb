@@ -459,7 +459,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-text-combine inherited, type_name=TextCombine, name_for_methods=TextCombine
 -webkit-text-emphasis-color inherited, custom_all
 -webkit-text-emphasis-position inherited, type_name=TextEmphasisPosition
--webkit-text-emphasis-style inherited, custom_all
+-webkit-text-emphasis-style inherited, custom_all, api_class
 -webkit-text-fill-color inherited, custom_all
 -webkit-text-security inherited
 -webkit-text-stroke-color interpolable, inherited, custom_all

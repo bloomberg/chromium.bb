@@ -370,6 +370,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIWebkitHighlight.cpp",
     "properties/CSSPropertyAPIWebkitLineClamp.cpp",
     "properties/CSSPropertyAPIWebkitPadding.cpp",
+    "properties/CSSPropertyAPIWebkitTextEmphasisStyle.cpp",
     "properties/CSSPropertyAPIWebkitTransformOriginZ.cpp",
     "properties/CSSPropertyAPIWillChange.cpp",
     "properties/CSSPropertyAPIZIndex.cpp",
