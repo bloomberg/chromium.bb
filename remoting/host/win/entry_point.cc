@@ -21,7 +21,7 @@ void HostEntryPoint() {
 // is required.
 int WINAPI wWinMain (HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
-                     LPSTR lpCmdLine,
+                     LPWSTR lpCmdLine,
                      int nCmdShow) {
   HostEntryPoint();
   return 0;
