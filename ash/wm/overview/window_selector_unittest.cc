@@ -68,7 +68,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
@@ -323,8 +323,8 @@ class WindowSelectorTest : public test::AshTestBase {
     return window->close_button_->GetWidget();
   }
 
-  views::LabelButton* GetLabelButtonView(WindowSelectorItem* window) {
-    return window->window_label_button_view_;
+  views::Label* GetLabelView(WindowSelectorItem* window) {
+    return window->label_view_;
   }
 
   // Tests that a window is contained within a given WindowSelectorItem, and
@@ -1569,17 +1569,17 @@ TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
   window->SetTitle(window_title);
   ToggleOverview();
   WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back();
-  views::LabelButton* label = GetLabelButtonView(window_item);
+  views::Label* label = GetLabelView(window_item);
   // Has the label view been created?
   ASSERT_TRUE(label);
 
   // Verify the label matches the window title.
-  EXPECT_EQ(label->GetText(), window_title);
+  EXPECT_EQ(label->text(), window_title);
 
   // Update the window title and check that the label is updated, too.
   base::string16 updated_title = base::UTF8ToUTF16("Updated title");
   window->SetTitle(updated_title);
-  EXPECT_EQ(label->GetText(), updated_title);
+  EXPECT_EQ(label->text(), updated_title);
 
   // Labels are located based on target_bounds, not the actual window item
   // bounds.
