@@ -15,6 +15,10 @@ namespace bad_message {
 namespace {
 
 void LogBadMessage(BadMessageReason reason) {
+  // TODO(creis): We should add a crash key similar to the "bad_message_reason"
+  // key logged in content::bad_message::ReceivedBadMessage, for disambiguating
+  // multiple kills in the same method.  It's important not to overlap with the
+  // content::bad_message::BadMessageReason enum values.
   LOG(ERROR) << "Terminating extension renderer for bad IPC message, reason "
              << reason;
   UMA_HISTOGRAM_SPARSE_SLOWLY("Stability.BadMessageTerminated.Extensions",

@@ -31,6 +31,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api_activity_monitor.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -79,43 +80,30 @@ struct Static {
 };
 base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
 
-// Kills the specified process because it sends us a malformed message.
-// Track the specific function's |histogram_value|, as this may indicate a bug
-// in that API's implementation on the renderer.
-void KillBadMessageSender(const base::Process& process,
-                          functions::HistogramValue histogram_value) {
+void LogBadMessage(functions::HistogramValue histogram_value) {
+  content::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
+  // Track the specific function's |histogram_value|, as this may indicate a
+  // bug in that API's implementation.
+  UMA_HISTOGRAM_ENUMERATION("Extensions.BadMessageFunctionName",
+                            histogram_value, functions::ENUM_BOUNDARY);
+}
+
+template <class T>
+void ReceivedBadMessage(T* bad_message_sender,
+                        bad_message::BadMessageReason reason,
+                        functions::HistogramValue histogram_value) {
+  LogBadMessage(histogram_value);
   // The renderer has done validation before sending extension api requests.
   // Therefore, we should never receive a request that is invalid in a way
   // that JSON validation in the renderer should have caught. It could be an
   // attacker trying to exploit the browser, so we crash the renderer instead.
-  LOG(ERROR) << "Terminating renderer because of malformed extension message.";
-  if (content::RenderProcessHost::run_renderer_in_process()) {
-    // In single process mode it is better if we don't suicide but just crash.
-    CHECK(false);
-    return;
-  }
-
-  NOTREACHED();
-  content::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
-  UMA_HISTOGRAM_ENUMERATION("Extensions.BadMessageFunctionName",
-                            histogram_value, functions::ENUM_BOUNDARY);
-  if (process.IsValid())
-    process.Terminate(content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+  bad_message::ReceivedBadMessage(bad_message_sender, reason);
 }
 
-void KillBadMessageSenderRPH(content::RenderProcessHost* sender_process_host,
-                             functions::HistogramValue histogram_value) {
-  base::Process peer_process =
-      content::RenderProcessHost::run_renderer_in_process()
-          ? base::Process::Current()
-          : base::Process::DeprecatedGetProcessFromHandle(
-                sender_process_host->GetHandle());
-  KillBadMessageSender(peer_process, histogram_value);
-}
-
+template <class T>
 void CommonResponseCallback(IPC::Sender* ipc_sender,
                             int routing_id,
-                            const base::Process& peer_process,
+                            T* bad_message_sender,
                             int request_id,
                             ExtensionFunction::ResponseType type,
                             const base::ListValue& results,
@@ -124,7 +112,8 @@ void CommonResponseCallback(IPC::Sender* ipc_sender,
   DCHECK(ipc_sender);
 
   if (type == ExtensionFunction::BAD_MESSAGE) {
-    KillBadMessageSender(peer_process, histogram_value);
+    ReceivedBadMessage(bad_message_sender, bad_message::EFD_BAD_MESSAGE,
+                       histogram_value);
     return;
   }
 
@@ -144,10 +133,8 @@ void IOThreadResponseCallback(
   if (!ipc_sender.get())
     return;
 
-  base::Process peer_process =
-      base::Process::DeprecatedGetProcessFromHandle(ipc_sender->PeerHandle());
-  CommonResponseCallback(ipc_sender.get(), routing_id, peer_process, request_id,
-                         type, results, error, histogram_value);
+  CommonResponseCallback(ipc_sender.get(), routing_id, ipc_sender.get(),
+                         request_id, type, results, error, histogram_value);
 }
 
 }  // namespace
@@ -195,15 +182,10 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
                                     const base::ListValue& results,
                                     const std::string& error,
                                     functions::HistogramValue histogram_value) {
-    base::Process process =
-        content::RenderProcessHost::run_renderer_in_process()
-            ? base::Process::Current()
-            : base::Process::DeprecatedGetProcessFromHandle(
-                  render_frame_host_->GetProcess()->GetHandle());
     CommonResponseCallback(render_frame_host_,
                            render_frame_host_->GetRoutingID(),
-                           process, request_id, type, results, error,
-                           histogram_value);
+                           render_frame_host_->GetProcess(), request_id, type,
+                           results, error, histogram_value);
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
@@ -266,7 +248,8 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
     content::RenderProcessHost* sender =
         content::RenderProcessHost::FromID(render_process_id_);
     if (type == ExtensionFunction::BAD_MESSAGE) {
-      KillBadMessageSenderRPH(sender, histogram_value);
+      ReceivedBadMessage(sender, bad_message::EFD_BAD_MESSAGE_WORKER,
+                         histogram_value);
       return;
     }
     DCHECK(sender);
