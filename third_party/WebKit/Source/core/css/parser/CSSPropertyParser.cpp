@@ -344,12 +344,6 @@ static CSSValue* consumeQuotes(CSSParserTokenRange& range) {
   return nullptr;
 }
 
-static CSSValue* consumeWebkitHighlight(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-  return consumeString(range);
-}
-
 class FontVariantLigaturesParser {
   STACK_ALLOCATED();
 
@@ -3039,8 +3033,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
   switch (property) {
     case CSSPropertyQuotes:
       return consumeQuotes(m_range);
-    case CSSPropertyWebkitHighlight:
-      return consumeWebkitHighlight(m_range);
     case CSSPropertyFontVariantCaps:
       return consumeFontVariantCaps(m_range);
     case CSSPropertyFontVariantLigatures:
