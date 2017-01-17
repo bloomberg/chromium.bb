@@ -156,42 +156,42 @@ TEST_F(WebRtcVideoCapturerAdapterTest, SendsWithCopyTextureFrameCallback) {
 
 TEST_F(WebRtcVideoCapturerAdapterTest,
        NonScreencastAdapterDoesNotAdaptContentHintDetail) {
-  // Non-screenshare adapter should not adapt frames when detailed is set.
+  // Non-screenshare adapter should not adapt frames when detail is set.
   TestContentHintResolutionAdaptation(
       false, blink::WebMediaStreamTrack::ContentHintType::None, true,
-      blink::WebMediaStreamTrack::ContentHintType::VideoDetailed, false);
+      blink::WebMediaStreamTrack::ContentHintType::VideoDetail, false);
 }
 
 TEST_F(WebRtcVideoCapturerAdapterTest,
        NonScreencastAdapterAdaptsContentHintFluid) {
-  // Non-screenshare adapter should still adapt frames when fluid is set.
+  // Non-screenshare adapter should still adapt frames when motion is set.
   TestContentHintResolutionAdaptation(
       false, blink::WebMediaStreamTrack::ContentHintType::None, true,
-      blink::WebMediaStreamTrack::ContentHintType::VideoFluid, true);
+      blink::WebMediaStreamTrack::ContentHintType::VideoMotion, true);
 }
 
 TEST_F(WebRtcVideoCapturerAdapterTest,
        ScreencastAdapterAdaptsContentHintFluid) {
-  // Screenshare adapter should adapt frames when fluid is set.
+  // Screenshare adapter should adapt frames when motion is set.
   TestContentHintResolutionAdaptation(
       true, blink::WebMediaStreamTrack::ContentHintType::None, false,
-      blink::WebMediaStreamTrack::ContentHintType::VideoFluid, true);
+      blink::WebMediaStreamTrack::ContentHintType::VideoMotion, true);
 }
 
 TEST_F(WebRtcVideoCapturerAdapterTest,
        ScreencastAdapterDoesNotAdaptContentHintDetailed) {
-  // Screenshare adapter should still not adapt frames when detailed is set.
+  // Screenshare adapter should still not adapt frames when detail is set.
   TestContentHintResolutionAdaptation(
       true, blink::WebMediaStreamTrack::ContentHintType::None, false,
-      blink::WebMediaStreamTrack::ContentHintType::VideoDetailed, false);
+      blink::WebMediaStreamTrack::ContentHintType::VideoDetail, false);
 }
 
 TEST_F(WebRtcVideoCapturerAdapterTest, RespectsConstructionTimeContentHint) {
-  // Non-screenshare adapter constructed with detailed content hint should not
+  // Non-screenshare adapter constructed with detail content hint should not
   // adapt before SetContentHint is run.
   TestContentHintResolutionAdaptation(
-      false, blink::WebMediaStreamTrack::ContentHintType::VideoDetailed, false,
-      blink::WebMediaStreamTrack::ContentHintType::VideoFluid, true);
+      false, blink::WebMediaStreamTrack::ContentHintType::VideoDetail, false,
+      blink::WebMediaStreamTrack::ContentHintType::VideoMotion, true);
 }
 
 }  // namespace content

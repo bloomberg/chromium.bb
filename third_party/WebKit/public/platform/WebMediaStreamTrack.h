@@ -64,8 +64,8 @@ class WebMediaStreamTrack {
     None,
     AudioSpeech,
     AudioMusic,
-    VideoFluid,
-    VideoDetailed
+    VideoMotion,
+    VideoDetail
   };
 
   WebMediaStreamTrack() {}

@@ -322,11 +322,11 @@ bool WebRtcVideoCapturerAdapter::IsScreencast() const {
 bool WebRtcVideoCapturerAdapter::ShouldAdaptResolution() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (content_hint_ ==
-      blink::WebMediaStreamTrack::ContentHintType::VideoFluid) {
+      blink::WebMediaStreamTrack::ContentHintType::VideoMotion) {
     return true;
   }
   if (content_hint_ ==
-      blink::WebMediaStreamTrack::ContentHintType::VideoDetailed) {
+      blink::WebMediaStreamTrack::ContentHintType::VideoDetail) {
     return false;
   }
   // Screencast does not adapt by default.

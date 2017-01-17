@@ -106,8 +106,8 @@ void MediaStreamComponent::setContentHint(
     case WebMediaStreamTrack::ContentHintType::AudioMusic:
       DCHECK_EQ(MediaStreamSource::TypeAudio, source()->type());
       break;
-    case WebMediaStreamTrack::ContentHintType::VideoFluid:
-    case WebMediaStreamTrack::ContentHintType::VideoDetailed:
+    case WebMediaStreamTrack::ContentHintType::VideoMotion:
+    case WebMediaStreamTrack::ContentHintType::VideoDetail:
       DCHECK_EQ(MediaStreamSource::TypeVideo, source()->type());
       break;
   }

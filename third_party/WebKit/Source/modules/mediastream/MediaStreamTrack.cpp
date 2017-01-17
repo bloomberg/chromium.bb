@@ -47,8 +47,8 @@ namespace {
 static const char kContentHintStringNone[] = "";
 static const char kContentHintStringAudioSpeech[] = "speech";
 static const char kContentHintStringAudioMusic[] = "music";
-static const char kContentHintStringVideoFluid[] = "fluid";
-static const char kContentHintStringVideoDetailed[] = "detailed";
+static const char kContentHintStringVideoMotion[] = "motion";
+static const char kContentHintStringVideoDetail[] = "detail";
 }  // namespace
 
 MediaStreamTrack* MediaStreamTrack::create(ExecutionContext* context,
@@ -121,10 +121,10 @@ String MediaStreamTrack::contentHint() const {
       return kContentHintStringAudioSpeech;
     case WebMediaStreamTrack::ContentHintType::AudioMusic:
       return kContentHintStringAudioMusic;
-    case WebMediaStreamTrack::ContentHintType::VideoFluid:
-      return kContentHintStringVideoFluid;
-    case WebMediaStreamTrack::ContentHintType::VideoDetailed:
-      return kContentHintStringVideoDetailed;
+    case WebMediaStreamTrack::ContentHintType::VideoMotion:
+      return kContentHintStringVideoMotion;
+    case WebMediaStreamTrack::ContentHintType::VideoDetail:
+      return kContentHintStringVideoDetail;
   }
 
   NOTREACHED();
@@ -152,10 +152,10 @@ void MediaStreamTrack::setContentHint(const String& hint) {
     case MediaStreamSource::TypeVideo:
       if (hint == kContentHintStringNone) {
         translatedHint = WebMediaStreamTrack::ContentHintType::None;
-      } else if (hint == kContentHintStringVideoFluid) {
-        translatedHint = WebMediaStreamTrack::ContentHintType::VideoFluid;
-      } else if (hint == kContentHintStringVideoDetailed) {
-        translatedHint = WebMediaStreamTrack::ContentHintType::VideoDetailed;
+      } else if (hint == kContentHintStringVideoMotion) {
+        translatedHint = WebMediaStreamTrack::ContentHintType::VideoMotion;
+      } else if (hint == kContentHintStringVideoDetail) {
+        translatedHint = WebMediaStreamTrack::ContentHintType::VideoDetail;
       } else {
         // TODO(pbos): Log warning?
         // Invalid values for video are to be ignored (similar to invalid enum
