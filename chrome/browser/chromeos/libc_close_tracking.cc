@@ -134,6 +134,10 @@ int CloseOverride(int fd) {
     return ret;
   }
 
+  // Only capture EBADF. Let caller handle other errors.
+  if (close_errno.captured_errno() != EBADF)
+    return ret;
+
   const base::debug::StackTrace* const last_close_stack =
       g_stack_tracker->GetStack(fd);
   if (!last_close_stack) {
