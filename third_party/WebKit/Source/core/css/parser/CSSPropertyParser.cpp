@@ -813,17 +813,6 @@ static CSSValue* consumeTouchAction(CSSParserTokenRange& range) {
   return list;
 }
 
-static CSSPrimitiveValue* consumeLineClamp(CSSParserTokenRange& range) {
-  if (range.peek().type() != PercentageToken &&
-      range.peek().type() != NumberToken)
-    return nullptr;
-  CSSPrimitiveValue* clampValue = consumePercent(range, ValueRangeNonNegative);
-  if (clampValue)
-    return clampValue;
-  // When specifying number of lines, don't allow 0 as a valid value.
-  return consumePositiveInteger(range);
-}
-
 static CSSValue* consumeLocale(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueAuto)
     return consumeIdent(range);
@@ -3116,8 +3105,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyObjectPosition:
     case CSSPropertyPerspectiveOrigin:
       return consumePosition(m_range, m_context->mode(), UnitlessQuirk::Forbid);
-    case CSSPropertyWebkitLineClamp:
-      return consumeLineClamp(m_range);
     case CSSPropertyWebkitFontSizeDelta:
       return consumeLength(m_range, m_context->mode(), ValueRangeAll,
                            UnitlessQuirk::Allow);

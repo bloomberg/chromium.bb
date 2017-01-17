@@ -368,6 +368,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPITranslate.cpp",
     "properties/CSSPropertyAPIWebkitBoxFlexGroup.cpp",
     "properties/CSSPropertyAPIWebkitHighlight.cpp",
+    "properties/CSSPropertyAPIWebkitLineClamp.cpp",
     "properties/CSSPropertyAPIWebkitPadding.cpp",
     "properties/CSSPropertyAPIWebkitTransformOriginZ.cpp",
     "properties/CSSPropertyAPIWillChange.cpp",
