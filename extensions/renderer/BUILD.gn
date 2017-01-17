@@ -313,6 +313,7 @@ source_set("unit_tests") {
   deps = [
     ":renderer",
     "//base",
+    "//base/test:test_support",
     "//components/crx_file:crx_file",
     "//content/public/child",
     "//extensions:extensions_renderer_resources",
