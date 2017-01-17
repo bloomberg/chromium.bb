@@ -146,24 +146,26 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
 
  public:
   AddingClient(DummyClient* client, Resource* resource)
-      : m_dummyClient(client),
-        m_resource(resource),
-        m_removeClientTimer(this, &AddingClient::removeClient) {}
+      : m_dummyClient(client), m_resource(resource) {}
 
   ~AddingClient() override {}
 
   // ResourceClient implementation.
   void notifyFinished(Resource* resource) override {
     // First schedule an asynchronous task to remove the client.
-    // We do not expect the client to be called.
-    m_removeClientTimer.startOneShot(0, BLINK_FROM_HERE);
+    // We do not expect a client to be called if the client is removed before
+    // a callback invocation task queued inside addClient() is scheduled.
+    Platform::current()
+        ->currentThread()
+        ->scheduler()
+        ->loadingTaskRunner()
+        ->postTask(BLINK_FROM_HERE, WTF::bind(&AddingClient::removeClient,
+                                              wrapPersistent(this)));
     resource->addClient(m_dummyClient);
   }
   String debugName() const override { return "AddingClient"; }
 
-  void removeClient(TimerBase* timer) {
-    m_resource->removeClient(m_dummyClient);
-  }
+  void removeClient() { m_resource->removeClient(m_dummyClient); }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_dummyClient);
@@ -174,7 +176,6 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
  private:
   Member<DummyClient> m_dummyClient;
   Member<Resource> m_resource;
-  Timer<AddingClient> m_removeClientTimer;
 };
 
 TEST(RawResourceTest, RevalidationSucceeded) {
