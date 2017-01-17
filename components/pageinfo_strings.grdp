@@ -79,9 +79,6 @@
   <message name="IDS_PAGE_INFO_SECURITY_TAB_NO_REVOCATION_MECHANISM" desc="The text of the identity section when there is no certificate revocation mechanism.">
     The certificate does not specify a mechanism to check whether it has been revoked.
   </message>
-  <message name="IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE" desc="This message is displayed when the server hasn't been updated to fix a recent security issues. TLS here is an acronym and need not be translated. 'renegotiation' is a technical term describing a process of agreeing on a new set of security parameters and secrets. 'extension' here should be taken to mean 'amendment' rather than elongation.">
-    The server does not support the TLS renegotiation extension.
-  </message>
   <message name="IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION" desc="This message gives the version of the SSL protocol used to protect the HTTPS connection.">
     The connection uses <ph name="SSL_VERSION">$1<ex>TLS 1.0</ex></ph>.
   </message>

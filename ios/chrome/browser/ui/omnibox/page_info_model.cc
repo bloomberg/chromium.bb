@@ -221,9 +221,6 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
         l10n_util::GetStringFUTF16(IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION,
                                    base::ASCIIToUTF16(ssl_version_str));
 
-    bool no_renegotiation =
-        (ssl.connection_status &
-         net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
     const char *key_exchange, *cipher, *mac;
     bool is_aead;
     bool is_tls13;
@@ -240,12 +237,6 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS,
           base::ASCIIToUTF16(cipher), base::ASCIIToUTF16(mac),
           base::ASCIIToUTF16(key_exchange));
-    }
-
-    if (no_renegotiation) {
-      description += base::ASCIIToUTF16("\n\n");
-      description += l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE);
     }
   }
 

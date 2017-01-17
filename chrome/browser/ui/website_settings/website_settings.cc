@@ -598,9 +598,6 @@ void WebsiteSettings::Init(const GURL& url,
         IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION,
         ASCIIToUTF16(ssl_version_str));
 
-    bool no_renegotiation =
-        (security_info.connection_status &
-         net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
     const char *key_exchange, *cipher, *mac;
     bool is_aead, is_tls13;
     net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
@@ -630,12 +627,6 @@ void WebsiteSettings::Init(const GURL& url,
         site_connection_status_ <
             SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE) {
       site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
-    }
-
-    if (no_renegotiation) {
-      site_connection_details_ += ASCIIToUTF16("\n\n");
-      site_connection_details_ += l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE);
     }
   }
 
