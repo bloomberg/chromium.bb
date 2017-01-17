@@ -767,4 +767,37 @@ void ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
                               size);
 }
 
+void ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
+    ServiceWorkerContextRequestHandler::CreateJobStatus status,
+    bool is_installed,
+    bool is_main_script) {
+  const int value = static_cast<int>(status);
+  const int max = static_cast<int>(
+      ServiceWorkerContextRequestHandler::CreateJobStatus::NUM_TYPES);
+  if (is_installed) {
+    if (is_main_script) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
+          "MainScript",
+          value, max);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
+          "ImportedScript",
+          value, max);
+    }
+  } else {
+    if (is_main_script) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+          value, max);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.ContextRequestHandlerStatus.NewWorker."
+          "ImportedScript",
+          value, max);
+    }
+  }
+}
+
 }  // namespace content

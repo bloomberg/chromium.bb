@@ -290,6 +290,13 @@ class ServiceWorkerMetrics {
   // navigation preload request is to be sent.
   static void RecordNavigationPreloadRequestHeaderSize(size_t size);
 
+  // Records the result of trying to handle a request for a service worker
+  // script.
+  static void RecordContextRequestHandlerStatus(
+      ServiceWorkerContextRequestHandler::CreateJobStatus status,
+      bool is_installed,
+      bool is_main_script);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

@@ -19,22 +19,38 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerContextRequestHandler
     : public ServiceWorkerRequestHandler {
  public:
+  // The result status for MaybeCreateJob. Used in histograms. Append-only.
   enum class CreateJobStatus {
+    // Unitialized status.
     UNINITIALIZED,
-    WRITE_JOB_FOR_REGISTER,
-    WRITE_JOB_FOR_UPDATE,
+    // A ServiceWorkerWriteToCacheJob was created.
+    WRITE_JOB,
+    // A ServiceWorkerWriteToCacheJob was created with an incumbent script to
+    // compare against.
+    WRITE_JOB_WITH_INCUMBENT,
+    // A ServiceWorkerReadFromCacheJob was created.
     READ_JOB,
-    // When a new worker imports a script that was already imported.
+    // A ServiceWorkerReadFromCacheJob was created for a new worker that is
+    // importing a script that was already imported.
     READ_JOB_FOR_DUPLICATE_SCRIPT_IMPORT,
+    // A job could not be created because there is no live
+    // ServiceWorkerProviderHost.
     ERROR_NO_PROVIDER,
-    ERROR_NO_VERSION,
+    // A job could not be created because the ServiceWorkerVersion is in status
+    // REDUNDANT.
     ERROR_REDUNDANT_VERSION,
+    // A job could not be created because there is no live
+    // ServiceWorkerContextCore.
     ERROR_NO_CONTEXT,
+    // A job could not be created because a redirect occurred.
     ERROR_REDIRECT,
-    // When an installed worker imports a script that was not stored at
-    // installation time.
+    // A job was not created because an installed worker is importing a script
+    // that was not stored at installation time.
     ERROR_UNINSTALLED_SCRIPT_IMPORT,
+    // A job could not be created because there are no resource ids available.
     ERROR_OUT_OF_RESOURCE_IDS,
+    // Add new types here.
+
     NUM_TYPES
   };
 

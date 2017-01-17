@@ -65,18 +65,16 @@ std::string ServiceWorkerContextRequestHandler::CreateJobStatusToString(
   switch (status) {
     case CreateJobStatus::UNINITIALIZED:
       return "UNINITIALIZED";
-    case CreateJobStatus::WRITE_JOB_FOR_REGISTER:
-      return "WRITE_JOB_FOR_REGISTER";
-    case CreateJobStatus::WRITE_JOB_FOR_UPDATE:
-      return "WRITE_JOB_FOR_UPDATE";
+    case CreateJobStatus::WRITE_JOB:
+      return "WRITE_JOB";
+    case CreateJobStatus::WRITE_JOB_WITH_INCUMBENT:
+      return "WRITE_JOB_WITH_INCUMBENT";
     case CreateJobStatus::READ_JOB:
       return "READ_JOB";
     case CreateJobStatus::READ_JOB_FOR_DUPLICATE_SCRIPT_IMPORT:
       return "READ_JOB_FOR_DUPLICATE_SCRIPT_IMPORT";
     case CreateJobStatus::ERROR_NO_PROVIDER:
       return "ERROR_NO_PROVIDER";
-    case CreateJobStatus::ERROR_NO_VERSION:
-      return "ERROR_NO_VERSION";
     case CreateJobStatus::ERROR_REDUNDANT_VERSION:
       return "ERROR_REDUNDANT_VERSION";
     case CreateJobStatus::ERROR_NO_CONTEXT:
@@ -113,7 +111,8 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   net::URLRequestJob* job =
       MaybeCreateJobImpl(request, network_delegate, &status);
   const bool is_main_script = resource_type_ == RESOURCE_TYPE_SERVICE_WORKER;
-  // TODO(falken): Add UMA for CreateJobStatus.
+  ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
+      status, IsInstalled(version_.get()), is_main_script);
   if (is_main_script)
     version_->NotifyMainScriptJobCreated(status);
   if (job)
@@ -146,18 +145,15 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     CreateJobStatus* out_status) {
-  if (!provider_host_) {
-    *out_status = CreateJobStatus::ERROR_NO_PROVIDER;
-    return nullptr;
-  }
   if (!context_) {
     *out_status = CreateJobStatus::ERROR_NO_CONTEXT;
     return nullptr;
   }
-  if (!version_) {
-    *out_status = CreateJobStatus::ERROR_NO_VERSION;
+  if (!provider_host_) {
+    *out_status = CreateJobStatus::ERROR_NO_PROVIDER;
     return nullptr;
   }
+
   // This could happen if browser-side has set the status to redundant but the
   // worker has not yet stopped. The worker is already doomed so just reject the
   // request. Handle it specially here because otherwise it'd be unclear whether
@@ -227,15 +223,16 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
                                              ? registration->waiting_version()
                                              : registration->active_version();
   int64_t incumbent_resource_id = kInvalidServiceWorkerResourceId;
-  if (stored_version && stored_version->script_url() == request->url()) {
-    incumbent_resource_id =
-        stored_version->script_cache_map()->LookupResourceId(request->url());
-  }
-  if (is_main_script)
+  if (is_main_script) {
+    if (stored_version && stored_version->script_url() == request->url()) {
+      incumbent_resource_id =
+          stored_version->script_cache_map()->LookupResourceId(request->url());
+    }
     version_->embedded_worker()->OnURLJobCreatedForMainScript();
+  }
   *out_status = incumbent_resource_id == kInvalidServiceWorkerResourceId
-                    ? CreateJobStatus::WRITE_JOB_FOR_REGISTER
-                    : CreateJobStatus::WRITE_JOB_FOR_UPDATE;
+                    ? CreateJobStatus::WRITE_JOB
+                    : CreateJobStatus::WRITE_JOB_WITH_INCUMBENT;
   return new ServiceWorkerWriteToCacheJob(
       request, network_delegate, resource_type_, context_, version_.get(),
       extra_load_flags, resource_id, incumbent_resource_id);

@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -29,12 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
-namespace {
-
-void EmptyCallback() {}
-
-}  // namespace
 
 class MockHttpProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
@@ -62,29 +57,19 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
 
     // A new unstored registration/version.
     scope_ = GURL("https://host/scope/");
     script_url_ = GURL("https://host/script.js");
+    import_script_url_ = GURL("https://host/import.js");
     registration_ = new ServiceWorkerRegistration(
         scope_, 1L, context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(
-        registration_.get(), script_url_, 1L, context()->AsWeakPtr());
-
-    // A provider host for the version.
-    std::unique_ptr<ServiceWorkerProviderHost> host(
-        new ServiceWorkerProviderHost(
-            helper_->mock_render_process_id(),
-            MSG_ROUTING_NONE /* render_frame_id */, 1 /* provider_id */,
-            SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
-            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
-            context()->AsWeakPtr(), nullptr));
-    provider_host_ = host->AsWeakPtr();
-    context()->AddProviderHost(std::move(host));
-    provider_host_->running_hosted_version_ = version_;
-
-    context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
-    base::RunLoop().RunUntilIdle();
+    version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
+                                        context()->storage()->NewVersionId(),
+                                        context()->AsWeakPtr());
+    SetUpProvider();
 
     std::unique_ptr<MockHttpProtocolHandler> handler(
         new MockHttpProtocolHandler(
@@ -101,11 +86,43 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
 
   ServiceWorkerContextCore* context() const { return helper_->context(); }
 
-  EmbeddedWorkerTestHelper* helper() { return helper_.get(); }
-  ServiceWorkerVersion* version() { return version_.get(); }
-  ServiceWorkerProviderHost* provider_host() { return provider_host_.get(); }
-  storage::BlobStorageContext* blob_storage_context() {
-    return &blob_storage_context_;
+  void SetUpProvider() {
+    std::unique_ptr<ServiceWorkerProviderHost> host(
+        new ServiceWorkerProviderHost(
+            helper_->mock_render_process_id(),
+            MSG_ROUTING_NONE /* render_frame_id */, 1 /* provider_id */,
+            SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+            ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
+            context()->AsWeakPtr(), nullptr));
+    provider_host_ = host->AsWeakPtr();
+    context()->AddProviderHost(std::move(host));
+    provider_host_->running_hosted_version_ = version_;
+  }
+
+  std::unique_ptr<net::URLRequest> CreateRequest(const GURL& url) {
+    return url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY,
+                                              &url_request_delegate_);
+  }
+
+  // Creates a ServiceWorkerContextHandler directly.
+  std::unique_ptr<ServiceWorkerContextRequestHandler> CreateHandler(
+      ResourceType resource_type) {
+    return base::MakeUnique<ServiceWorkerContextRequestHandler>(
+        context()->AsWeakPtr(), provider_host_,
+        base::WeakPtr<storage::BlobStorageContext>(), resource_type);
+  }
+
+  // Associates a ServiceWorkerRequestHandler with a request. Use this instead
+  // of CreateHandler if you want to actually start the request to test what the
+  // job created by the handler does.
+  void InitializeHandler(net::URLRequest* request) {
+    ServiceWorkerRequestHandler::InitializeHandler(
+        request, helper_->context_wrapper(), &blob_storage_context_,
+        helper_->mock_render_process_id(), provider_host_->provider_id(),
+        false /* skip_service_worker */, FETCH_REQUEST_MODE_NO_CORS,
+        FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
+        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr);
   }
 
  protected:
@@ -119,6 +136,7 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
   net::URLRequestJobFactoryImpl url_request_job_factory_;
   GURL scope_;
   GURL script_url_;
+  GURL import_script_url_;
   storage::BlobStorageContext blob_storage_context_;
 };
 
@@ -129,19 +147,20 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
   version_->SetStatus(ServiceWorkerVersion::NEW);
 
   // Conduct a resource fetch for the main script.
-  const GURL kScriptUrl("https://host/script.js");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+  base::HistogramTester histograms;
+  std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
   std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
-      new ServiceWorkerContextRequestHandler(
-          context()->AsWeakPtr(), provider_host_,
-          base::WeakPtr<storage::BlobStorageContext>(),
-          RESOURCE_TYPE_SERVICE_WORKER));
+      CreateHandler(RESOURCE_TYPE_SERVICE_WORKER));
   std::unique_ptr<net::URLRequestJob> job(
       handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
       static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
+  histograms.ExpectUniqueSample(
+      "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+      static_cast<int>(
+          ServiceWorkerContextRequestHandler::CreateJobStatus::WRITE_JOB),
+      1);
 
   // Verify the net request is not initialized to bypass the browser cache.
   EXPECT_FALSE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
@@ -155,19 +174,20 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
   version_->SetStatus(ServiceWorkerVersion::NEW);
 
   // Conduct a resource fetch for the main script.
-  const GURL kScriptUrl("https://host/script.js");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+  base::HistogramTester histograms;
+  std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
   std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
-      new ServiceWorkerContextRequestHandler(
-          context()->AsWeakPtr(), provider_host_,
-          base::WeakPtr<storage::BlobStorageContext>(),
-          RESOURCE_TYPE_SERVICE_WORKER));
+      CreateHandler(RESOURCE_TYPE_SERVICE_WORKER));
   std::unique_ptr<net::URLRequestJob> job(
       handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
       static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
+  histograms.ExpectUniqueSample(
+      "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+      static_cast<int>(
+          ServiceWorkerContextRequestHandler::CreateJobStatus::WRITE_JOB),
+      1);
 
   // Verify the net request is initialized to bypass the browser cache.
   EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
@@ -181,14 +201,9 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
   version_->set_force_bypass_cache_for_scripts(true);
 
   // Conduct a resource fetch for the main script.
-  const GURL kScriptUrl("https://host/script.js");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+  std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
   std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
-      new ServiceWorkerContextRequestHandler(
-          context()->AsWeakPtr(), provider_host_,
-          base::WeakPtr<storage::BlobStorageContext>(),
-          RESOURCE_TYPE_SERVICE_WORKER));
+      CreateHandler(RESOURCE_TYPE_SERVICE_WORKER));
   std::unique_ptr<net::URLRequestJob> job(
       handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
@@ -204,20 +219,21 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
   version_->SetStatus(ServiceWorkerVersion::NEW);
 
   // Conduct a resource fetch for the main script.
-  const GURL kScriptUrl("https://host/script.js");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+  base::HistogramTester histograms;
+  std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
   std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
-      new ServiceWorkerContextRequestHandler(
-          context()->AsWeakPtr(), provider_host_,
-          base::WeakPtr<storage::BlobStorageContext>(),
-          RESOURCE_TYPE_SERVICE_WORKER));
+      CreateHandler(RESOURCE_TYPE_SERVICE_WORKER));
   std::unique_ptr<net::URLRequestJob> job(
       handler->MaybeCreateJob(request.get(), nullptr, nullptr));
   ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
       static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
 
+  histograms.ExpectUniqueSample(
+      "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+      static_cast<int>(
+          ServiceWorkerContextRequestHandler::CreateJobStatus::WRITE_JOB),
+      1);
   // Verify that the request is properly annotated as originating from a
   // Service Worker.
   EXPECT_TRUE(ResourceRequestInfo::OriginatedFromServiceWorker(
@@ -230,9 +246,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
        SkipServiceWorkerForServiceWorkerRequest) {
   // Conduct a resource fetch for the main script.
   version_->SetStatus(ServiceWorkerVersion::NEW);
-  const GURL kScriptUrl("https://host/script.js");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
+  std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
   ServiceWorkerRequestHandler::InitializeHandler(
       request.get(), helper_->context_wrapper(), &blob_storage_context_,
       helper_->mock_render_process_id(), provider_host_->provider_id(),
@@ -246,25 +260,182 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
   EXPECT_TRUE(handler);
 }
 
-TEST_F(ServiceWorkerContextRequestHandlerTest, RedundantVersion) {
-  // Create a redundant version.
-  version_->SetStatus(ServiceWorkerVersion::REDUNDANT);
+TEST_F(ServiceWorkerContextRequestHandlerTest, NewWorker) {
+  // Conduct a resource fetch for the main script.
+  {
+    base::HistogramTester histograms;
+    std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
+    std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
+        CreateHandler(RESOURCE_TYPE_SERVICE_WORKER));
+    std::unique_ptr<net::URLRequestJob> job(
+        handler->MaybeCreateJob(request.get(), nullptr, nullptr));
+    EXPECT_TRUE(job);
+    histograms.ExpectUniqueSample(
+        "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+        static_cast<int>(
+            ServiceWorkerContextRequestHandler::CreateJobStatus::WRITE_JOB),
+        1);
+  }
+
+  // Conduct a resource fetch for an imported script.
+  {
+    base::HistogramTester histograms;
+    std::unique_ptr<net::URLRequest> request(CreateRequest(import_script_url_));
+    std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
+        CreateHandler(RESOURCE_TYPE_SCRIPT));
+    std::unique_ptr<net::URLRequestJob> job(
+        handler->MaybeCreateJob(request.get(), nullptr, nullptr));
+    EXPECT_TRUE(job);
+    histograms.ExpectUniqueSample(
+        "ServiceWorker.ContextRequestHandlerStatus.NewWorker.ImportedScript",
+        static_cast<int>(
+            ServiceWorkerContextRequestHandler::CreateJobStatus::WRITE_JOB),
+        1);
+  }
+}
+
+TEST_F(ServiceWorkerContextRequestHandlerTest, InstalledWorker) {
+  using Resource = ServiceWorkerDatabase::ResourceRecord;
+  std::vector<Resource> resources = {
+      Resource(context()->storage()->NewResourceId(), script_url_, 100),
+      Resource(context()->storage()->NewResourceId(), import_script_url_, 100)};
+  version_->script_cache_map()->SetResources(resources);
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
 
   // Conduct a resource fetch for the main script.
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      version_->script_url(), net::DEFAULT_PRIORITY, &url_request_delegate_);
-  ServiceWorkerRequestHandler::InitializeHandler(
-      request.get(), helper()->context_wrapper(), blob_storage_context(),
-      helper()->mock_render_process_id(), provider_host()->provider_id(),
-      true /* skip_service_worker */, FETCH_REQUEST_MODE_NO_CORS,
-      FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
-      RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
-      REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr);
+  {
+    base::HistogramTester histograms;
+    std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
+    std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
+        CreateHandler(RESOURCE_TYPE_SERVICE_WORKER));
+    std::unique_ptr<net::URLRequestJob> job(
+        handler->MaybeCreateJob(request.get(), nullptr, nullptr));
+    EXPECT_TRUE(job);
+    histograms.ExpectUniqueSample(
+        "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker.MainScript",
+        static_cast<int>(
+            ServiceWorkerContextRequestHandler::CreateJobStatus::READ_JOB),
+        1);
+  }
 
-  // Verify that the request fails.
-  request->Start();
-  base::RunLoop().Run();
-  EXPECT_EQ(net::ERR_FAILED, url_request_delegate_.request_status());
+  // Conduct a resource fetch for an imported script.
+  {
+    base::HistogramTester histograms;
+    std::unique_ptr<net::URLRequest> request(CreateRequest(import_script_url_));
+    std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
+        CreateHandler(RESOURCE_TYPE_SCRIPT));
+    std::unique_ptr<net::URLRequestJob> job(
+        handler->MaybeCreateJob(request.get(), nullptr, nullptr));
+    EXPECT_TRUE(job);
+    histograms.ExpectUniqueSample(
+        "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
+        "ImportedScript",
+        static_cast<int>(
+            ServiceWorkerContextRequestHandler::CreateJobStatus::READ_JOB),
+        1);
+  }
+}
+
+TEST_F(ServiceWorkerContextRequestHandlerTest, Incumbent) {
+  // Make an incumbent version.
+  scoped_refptr<ServiceWorkerVersion> incumbent = new ServiceWorkerVersion(
+      registration_.get(), script_url_, context()->storage()->NewVersionId(),
+      context()->AsWeakPtr());
+  incumbent->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  std::vector<ServiceWorkerDatabase::ResourceRecord> resources = {
+      ServiceWorkerDatabase::ResourceRecord(
+          context()->storage()->NewResourceId(), script_url_, 100)};
+  incumbent->script_cache_map()->SetResources(resources);
+  incumbent->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(incumbent);
+
+  // Make a new version.
+  version_->SetStatus(ServiceWorkerVersion::NEW);
+
+  // Conduct a resource fetch for the main script.
+  base::HistogramTester histograms;
+  std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
+  std::unique_ptr<ServiceWorkerContextRequestHandler> handler(
+      CreateHandler(RESOURCE_TYPE_SERVICE_WORKER));
+  std::unique_ptr<net::URLRequestJob> job(
+      handler->MaybeCreateJob(request.get(), nullptr, nullptr));
+  histograms.ExpectUniqueSample(
+      "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+      static_cast<int>(ServiceWorkerContextRequestHandler::CreateJobStatus::
+                           WRITE_JOB_WITH_INCUMBENT),
+      1);
+}
+
+TEST_F(ServiceWorkerContextRequestHandlerTest, ErrorCases) {
+  {
+    // Set up a request.
+    base::HistogramTester histograms;
+    std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
+    InitializeHandler(request.get());
+
+    // Make the version redundant.
+    version_->SetStatus(ServiceWorkerVersion::REDUNDANT);
+
+    // Verify that the request fails.
+    request->Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(net::ERR_FAILED, url_request_delegate_.request_status());
+    histograms.ExpectUniqueSample(
+        "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+        static_cast<int>(ServiceWorkerContextRequestHandler::CreateJobStatus::
+                             ERROR_REDUNDANT_VERSION),
+        1);
+  }
+  // Return the version to normal.
+  version_->SetStatus(ServiceWorkerVersion::NEW);
+
+  {
+    // Set up a request.
+    base::HistogramTester histograms;
+    std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
+    InitializeHandler(request.get());
+
+    // Remove the host.
+    context()->RemoveProviderHost(helper_->mock_render_process_id(),
+                                  provider_host_->provider_id());
+
+    // Verify that the request fails.
+    request->Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(net::ERR_FAILED, url_request_delegate_.request_status());
+    histograms.ExpectUniqueSample(
+        "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+        static_cast<int>(ServiceWorkerContextRequestHandler::CreateJobStatus::
+                             ERROR_NO_PROVIDER),
+        1);
+  }
+  // Recreate the host.
+  SetUpProvider();
+
+  {
+    // Set up a request.
+    base::HistogramTester histograms;
+    std::unique_ptr<net::URLRequest> request(CreateRequest(script_url_));
+    InitializeHandler(request.get());
+
+    // Destroy the context.
+    helper_->ShutdownContext();
+    base::RunLoop().RunUntilIdle();
+
+    // Verify that the request fails.
+    request->Start();
+    base::RunLoop().Run();
+    EXPECT_EQ(net::ERR_FAILED, url_request_delegate_.request_status());
+    histograms.ExpectUniqueSample(
+        "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
+        static_cast<int>(ServiceWorkerContextRequestHandler::CreateJobStatus::
+                             ERROR_NO_CONTEXT),
+        1);
+  }
 }
 
 }  // namespace content
