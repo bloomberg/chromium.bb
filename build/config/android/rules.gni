@@ -1195,6 +1195,86 @@ if (enable_java_templates) {
     }
   }
 
+  # Combines all dependent .jar files into a single .jar file.
+  #
+  # Variables:
+  #   output: Path to the output jar.
+  #   override_build_config: Use a pre-existing .build_config. Must be of type
+  #     "apk".
+  #   use_interface_jars: Use all dependent interface .jars rather than
+  #     implementation .jars.
+  #   direct_deps_only: Do not recurse on deps.
+  #   data, deps, testonly, visibility: Usual meaning.
+  #
+  # Example
+  #   dist_jar("lib_fatjar") {
+  #     deps = [ ":my_java_lib" ]
+  #   }
+  template("dist_jar") {
+    if (defined(invoker.override_build_config)) {
+      _build_config = invoker.override_build_config
+    } else {
+      _build_config = "$target_gen_dir/$target_name.build_config"
+      _build_config_target_name = "${target_name}__build_config"
+
+      write_build_config(_build_config_target_name) {
+        forward_variables_from(invoker, [ "testonly" ])
+        type = "dist_jar"
+        if (defined(invoker.deps)) {
+          possible_config_deps = invoker.deps
+        }
+        build_config = _build_config
+      }
+    }
+
+    action(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "data",
+                               "deps",
+                               "testonly",
+                               "visibility",
+                             ])
+      script = "//build/android/gyp/create_dist_jar.py"
+      depfile = "$target_gen_dir/$target_name.d"
+
+      inputs = [
+        _build_config,
+      ]
+
+      outputs = [
+        invoker.output,
+      ]
+
+      if (defined(_build_config_target_name)) {
+        deps += [ ":$_build_config_target_name" ]
+      }
+
+      args = [
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
+        "--output",
+        rebase_path(invoker.output, root_build_dir),
+      ]
+
+      _rebased_build_config = rebase_path(_build_config, root_build_dir)
+      if (defined(invoker.direct_deps_only) && invoker.direct_deps_only) {
+        if (defined(invoker.use_interface_jars) && invoker.use_interface_jars) {
+          args += [ "--inputs=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
+        } else {
+          args +=
+              [ "--inputs=@FileArg($_rebased_build_config:javac:classpath)" ]
+        }
+      } else {
+        if (defined(invoker.use_interface_jars) && invoker.use_interface_jars) {
+          args += [ "--inputs=@FileArg($_rebased_build_config:dist_jar:all_interface_jars)" ]
+        } else {
+          args += [ "--inputs=@FileArg($_rebased_build_config:dist_jar:dependency_jars)" ]
+        }
+      }
+    }
+  }
+
   # Declare an Android library target
   #
   # This target creates an Android library containing java code and Android
@@ -1832,28 +1912,16 @@ if (enable_java_templates) {
     # able to just do that calculation at build time instead.
     if (defined(invoker.dist_ijar_path)) {
       _dist_ijar_path = invoker.dist_ijar_path
-      action("${_template_name}_dist_ijar") {
-        script = "//build/android/gyp/create_dist_jar.py"
-        depfile = "$target_gen_dir/$target_name.d"
-        inputs = [
-          _build_config,
-        ]
-        outputs = [
-          "${_dist_ijar_path}",
-        ]
+      dist_jar("${_template_name}_dist_ijar") {
+        override_build_config = _build_config
+        output = _dist_ijar_path
         data = [
           _dist_ijar_path,
         ]
-        args = [
-          "--depfile",
-          rebase_path(depfile, root_build_dir),
-          "--output",
-          rebase_path("${_dist_ijar_path}", root_build_dir),
-          "--inputs=@FileArg($_rebased_build_config:dist_jar:all_interface_jars)",
-        ]
+        use_interface_jars = true
         deps = [
-          ":$build_config_target",  # Generates the build config file.
-          ":$java_target",  # Generates the jar file.
+          ":$build_config_target",
+          ":$java_target",
         ]
       }
     }

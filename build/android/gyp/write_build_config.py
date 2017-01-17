@@ -342,6 +342,7 @@ def main(argv):
       'android_resources': ['build_config', 'resources_zip'],
       'android_apk': ['build_config', 'jar_path', 'dex_path', 'resources_zip'],
       'deps_dex': ['build_config', 'dex_path'],
+      'dist_jar': ['build_config'],
       'resource_rewriter': ['build_config'],
       'group': ['build_config'],
   }
@@ -456,9 +457,9 @@ def main(argv):
       deps_info['incremental_install_script_path'] = (
           options.incremental_install_script_path)
 
+  if options.type in ('java_binary', 'java_library', 'android_apk', 'dist_jar'):
     # Classpath values filled in below (after applying tested_apk_config).
     config['javac'] = {}
-
 
   if options.type in ('java_binary', 'java_library'):
     # Only resources might have srcjars (normal srcjar targets are listed in
@@ -548,7 +549,7 @@ def main(argv):
   if options.type in ['android_apk', 'deps_dex']:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
-  if options.type in ('java_binary', 'java_library', 'android_apk'):
+  if options.type in ('java_binary', 'java_library', 'android_apk', 'dist_jar'):
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
     java_full_classpath = [c['jar_path'] for c in all_library_deps]
 
@@ -627,7 +628,7 @@ def main(argv):
     dex_config = config['final_dex']
     dex_config['dependency_dex_files'] = deps_dex_files
 
-  if options.type in ('java_binary', 'java_library', 'android_apk'):
+  if options.type in ('java_binary', 'java_library', 'android_apk', 'dist_jar'):
     config['javac']['classpath'] = javac_classpath
     config['javac']['interface_classpath'] = [
         _AsInterfaceJar(p) for p in javac_classpath]
@@ -635,14 +636,19 @@ def main(argv):
       'full_classpath': java_full_classpath
     }
 
-  if options.type == 'android_apk':
+  if options.type in ('android_apk', 'dist_jar'):
     dependency_jars = [c['jar_path'] for c in all_library_deps]
-    all_interface_jars = [
-        _AsInterfaceJar(p) for p in dependency_jars + [options.jar_path]]
+    all_interface_jars = [_AsInterfaceJar(p) for p in dependency_jars]
+    if options.type == 'android_apk':
+      all_interface_jars.append(_AsInterfaceJar(options.jar_path))
+
     config['dist_jar'] = {
       'dependency_jars': dependency_jars,
       'all_interface_jars': all_interface_jars,
     }
+
+  if options.type == 'android_apk':
+    dependency_jars = [c['jar_path'] for c in all_library_deps]
     manifest = AndroidManifest(options.android_manifest)
     deps_info['package_name'] = manifest.GetPackageName()
     if not options.tested_apk_config and manifest.GetInstrumentation():

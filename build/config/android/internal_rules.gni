@@ -59,7 +59,7 @@ template("write_build_config") {
   # Don't need to enforce naming scheme for these targets since we never
   # consider them in dependency chains.
   if (!_is_prebuilt_binary && type != "android_apk" && type != "java_binary" &&
-      type != "resource_rewriter") {
+      type != "resource_rewriter" && type != "dist_jar") {
     set_sources_assignment_filter(_java_target_whitelist)
     _parent_invoker = invoker.invoker
     _target_label =
@@ -86,8 +86,9 @@ template("write_build_config") {
 
     assert(type == "android_apk" || type == "java_library" ||
            type == "android_resources" || type == "deps_dex" ||
-           type == "android_assets" || type == "resource_rewriter" ||
-           type == "java_binary" || type == "group" || type == "java_prebuilt")
+           type == "dist_jar" || type == "android_assets" ||
+           type == "resource_rewriter" || type == "java_binary" ||
+           type == "group" || type == "java_prebuilt")
 
     forward_variables_from(invoker,
                            [
