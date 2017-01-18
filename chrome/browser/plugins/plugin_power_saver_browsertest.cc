@@ -616,7 +616,8 @@ class PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest
 };
 
 // Flaky on Mac. crbug.com/680544
-#if defined(OS_MACOSX)
+// Flaky on Win7. crbug.com/682039
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_BlockSameOriginTinyPlugin DISABLED_BlockSameOriginTinyPlugin
 #else
 #define MAYBE_BlockSameOriginTinyPlugin BlockSameOriginTinyPlugin
