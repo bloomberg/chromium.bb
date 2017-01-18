@@ -3,18 +3,29 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<iframe></iframe>
 <script>
 
-if (location.href.endsWith('#after-reload')) {
-  test(function() {
-    assert_equals(navigator.presentation.defaultRequest, null);
-  }, "Test that navigator.defaultRequest isn't kept alive after reload.")
-} else {
-  navigator.presentation.defaultRequest = new PresentationRequest("https://example.org");
+var iframe = document.querySelector('iframe');
 
-  location.href += '#after-reload';
-  location.reload();
-}
+async_test(t => {
+  iframe.onload = t.step_func(() => {
+    var presentation = iframe.contentWindow.navigator.presentation;
+    if (iframe.src.endsWith('#after-reload')) {
+      assert_equals(presentation.defaultRequest, null);
+      t.done();
+    } else {
+      presentation.defaultRequest = new PresentationRequest("https://example.org");
+      assert_not_equals(presentation.defaultRequest, null);
+
+      iframe.src += '#after-reload';
+      iframe.contentWindow.location.reload(true);
+    }
+  });
+
+  // Navigate the iframe
+  iframe.src = 'resources/blank.html';
+}, "Test that navigator.defaultRequest isn't kept alive after reload.");
 
 </script>
 </body>
