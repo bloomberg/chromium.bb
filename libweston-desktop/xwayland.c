@@ -131,12 +131,19 @@ weston_desktop_xwayland_surface_committed(struct weston_desktop_surface *dsurfac
 					  int32_t sx, int32_t sy)
 {
 	struct weston_desktop_xwayland_surface *surface = user_data;
+	struct weston_geometry oldgeom;
+
+	assert(dsurface == surface->surface);
 
 #ifdef WM_DEBUG
 	weston_log("%s: xwayland surface %p\n", __func__, surface);
 #endif
 
 	if (surface->has_next_geometry) {
+		oldgeom = weston_desktop_surface_get_geometry(surface->surface);
+		sx -= surface->next_geometry.x - oldgeom.x;
+		sy -= surface->next_geometry.y - oldgeom.x;
+
 		surface->has_next_geometry = false;
 		weston_desktop_surface_set_geometry(surface->surface,
 						    surface->next_geometry);
