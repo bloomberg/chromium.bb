@@ -74,14 +74,11 @@ TilingSetRasterQueueAll::TilingSetRasterQueueAll(
   }
 
   // Set up the stages.
-  if (use_low_res_tiling && prioritize_low_res)
+  if (use_low_res_tiling)
     stages_->push_back(IterationStage(LOW_RES, TilePriority::NOW));
 
   if (use_high_res_tiling)
     stages_->push_back(IterationStage(HIGH_RES, TilePriority::NOW));
-
-  if (low_res_tiling && !prioritize_low_res)
-    stages_->push_back(IterationStage(LOW_RES, TilePriority::NOW));
 
   if (use_active_non_ideal_pending_high_res_tiling) {
     stages_->push_back(
