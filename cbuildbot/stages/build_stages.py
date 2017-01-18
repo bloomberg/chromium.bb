@@ -10,6 +10,7 @@ import glob
 import os
 
 from chromite.cbuildbot import buildbucket_lib
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import repository
@@ -25,6 +26,7 @@ from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
+from chromite.lib import path_util
 
 
 class CleanUpStage(generic_stages.BuilderStage):
@@ -381,7 +383,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       logging.info('Recording packages under test')
       self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
-  @osutils.TempDirDecorator
   def PerformStage(self):
     # If we have rietveld patches, always compile Chrome from source.
     noworkon = not self._run.options.rietveld_patches
@@ -389,25 +390,38 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     self.VerifyChromeBinpkg(packages)
     self.RecordPackagesUnderTest(packages)
 
-    event_file = os.path.join(self.tempdir, 'build-events.json')
 
     try:
-      commands.Build(self._build_root,
-                     self._current_board,
-                     build_autotest=self._run.ShouldBuildAutotest(),
-                     usepkg=self._run.config.usepkg_build_packages,
-                     chrome_binhost_only=self._run.config.chrome_binhost_only,
-                     packages=packages,
-                     skip_chroot_upgrade=True,
-                     chrome_root=self._run.options.chrome_root,
-                     noworkon=noworkon,
-                     noretry=self._run.config.nobuildretry,
-                     extra_env=self._portage_extra_env,
-                     event_file=event_file,)
+      event_filename = 'build-events.json'
+      event_file = os.path.join(self.archive_path, event_filename)
+      logging.info('Logging events to %s', event_file)
+      event_file_in_chroot = path_util.ToChrootPath(event_file)
+    except cbuildbot_run.VersionNotSetError:
+      #TODO(chingcodes): Add better detection of archive options
+      logging.info('Unable to archive, disabling build events file')
+      event_filename = None
+      event_file = None
+      event_file_in_chroot = None
 
-    finally:
-      if os.path.isfile(event_file):
-        self.UploadArtifact(event_file, strict=False)
+
+    commands.Build(self._build_root,
+                   self._current_board,
+                   build_autotest=self._run.ShouldBuildAutotest(),
+                   usepkg=self._run.config.usepkg_build_packages,
+                   chrome_binhost_only=self._run.config.chrome_binhost_only,
+                   packages=packages,
+                   skip_chroot_upgrade=True,
+                   chrome_root=self._run.options.chrome_root,
+                   noworkon=noworkon,
+                   noretry=self._run.config.nobuildretry,
+                   extra_env=self._portage_extra_env,
+                   event_file=event_file_in_chroot,)
+
+    if event_file and os.path.isfile(event_file):
+      logging.info('Archive build-events.json file')
+      self.UploadArtifact(event_filename, archive=False, strict=True)
+    else:
+      logging.info('No build-events.json file to archive')
 
     if self._update_metadata:
       # TODO: Consider moving this into its own stage if there are other similar
