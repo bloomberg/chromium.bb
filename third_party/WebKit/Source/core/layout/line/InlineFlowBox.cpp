@@ -628,6 +628,7 @@ void InlineFlowBox::computeLogicalBoxHeights(
     // child box's baseline and the root box's baseline. The value is negative
     // if the child box's baseline is above the root box's baseline, and it is
     // positive if the child box's baseline is below the root box's baseline.
+    DCHECK(rootBox);
     curr->setLogicalTop(
         rootBox->verticalPositionForBox(curr, verticalPositionCache));
 
