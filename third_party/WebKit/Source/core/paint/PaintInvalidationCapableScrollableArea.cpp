@@ -5,6 +5,7 @@
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutScrollbar.h"
@@ -202,6 +203,40 @@ LayoutRect PaintInvalidationCapableScrollableArea::visualRectForScrollbarParts()
 void PaintInvalidationCapableScrollableArea::
     scrollControlWasSetNeedsPaintInvalidation() {
   layoutBox()->setMayNeedPaintInvalidation();
+}
+
+void PaintInvalidationCapableScrollableArea::didScrollWithScrollbar(
+    ScrollbarPart part,
+    ScrollbarOrientation orientation) {
+  UseCounter::Feature scrollbarUseUMA;
+  switch (part) {
+    case BackButtonStartPart:
+    case ForwardButtonStartPart:
+    case BackButtonEndPart:
+    case ForwardButtonEndPart:
+      scrollbarUseUMA =
+          (orientation == VerticalScrollbar
+               ? UseCounter::ScrollbarUseVerticalScrollbarButton
+               : UseCounter::ScrollbarUseHorizontalScrollbarButton);
+      break;
+    case ThumbPart:
+      scrollbarUseUMA =
+          (orientation == VerticalScrollbar
+               ? UseCounter::ScrollbarUseVerticalScrollbarThumb
+               : UseCounter::ScrollbarUseHorizontalScrollbarThumb);
+      break;
+    case BackTrackPart:
+    case ForwardTrackPart:
+      scrollbarUseUMA =
+          (orientation == VerticalScrollbar
+               ? UseCounter::ScrollbarUseVerticalScrollbarTrack
+               : UseCounter::ScrollbarUseHorizontalScrollbarTrack);
+      break;
+    default:
+      return;
+  }
+
+  UseCounter::count(layoutBox()->document(), scrollbarUseUMA);
 }
 
 }  // namespace blink

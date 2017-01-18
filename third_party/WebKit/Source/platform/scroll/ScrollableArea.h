@@ -364,6 +364,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollAnchor* scrollAnchor() { return nullptr; }
 
+  virtual void didScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) {}
+
  protected:
   ScrollableArea();
 

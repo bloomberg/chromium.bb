@@ -317,6 +317,10 @@ void Scrollbar::setPressedPart(ScrollbarPart part) {
       || m_hoveredPart != NoPart)
     setNeedsPaintInvalidation(
         static_cast<ScrollbarPart>(m_pressedPart | m_hoveredPart | part));
+
+  if (getScrollableArea())
+    getScrollableArea()->didScrollWithScrollbar(part, orientation());
+
   m_pressedPart = part;
 }
 

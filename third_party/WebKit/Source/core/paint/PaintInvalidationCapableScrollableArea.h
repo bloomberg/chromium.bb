@@ -40,6 +40,8 @@ class CORE_EXPORT PaintInvalidationCapableScrollableArea
 
   LayoutRect visualRectForScrollbarParts() const override;
 
+  void didScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) override;
+
  private:
   virtual LayoutScrollbarPart* scrollCorner() const = 0;
   virtual LayoutScrollbarPart* resizer() const = 0;

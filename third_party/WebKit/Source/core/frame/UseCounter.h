@@ -1435,6 +1435,12 @@ class CORE_EXPORT UseCounter {
     CSSSelectorInternalMediaControlsTextTrackListItemInput = 1774,
     CSSSelectorInternalMediaControlsTextTrackListKindCaptions = 1775,
     CSSSelectorInternalMediaControlsTextTrackListKindSubtitles = 1776,
+    ScrollbarUseVerticalScrollbarButton = 1777,
+    ScrollbarUseVerticalScrollbarThumb = 1778,
+    ScrollbarUseVerticalScrollbarTrack = 1779,
+    ScrollbarUseHorizontalScrollbarButton = 1780,
+    ScrollbarUseHorizontalScrollbarThumb = 1781,
+    ScrollbarUseHorizontalScrollbarTrack = 1782,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
