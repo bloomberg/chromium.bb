@@ -301,36 +301,6 @@ TEST_F(BoxReaderTest, ScanChildrenWithInvalidChild) {
   EXPECT_FALSE(reader->ReadChild(&child));
 }
 
-TEST_F(BoxReaderTest, ReadAllChildrenWithInvalidChild) {
-  // This data is not a valid 'emsg' box. It is just used as a top-level box
-  // as ReadTopLevelBox() has a restricted set of boxes it allows.
-  // The nested 'trun' box is used as it includes a count of the number
-  // of samples. The data specifies a large number of samples, but only 1
-  // is actually included in the box. Verifying that the large count does not
-  // cause an int32_t overflow which would allow parsing of TrackFragmentRun
-  // to read past the end of the buffer.
-  static const uint8_t kData[] = {
-      0x00, 0x00, 0x00, 0x28, 'e',  'm',  's',  'g',  // outer box
-      0x00, 0x00, 0x00, 0x20, 't',  'r',  'u',  'n',  // nested box
-      0x00, 0x00, 0x0f, 0x00,  // version = 0, flags = samples present
-      0xff, 0xff, 0xff, 0xff,  // count = max, but only 1 actually included
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-  bool err;
-  std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
-
-  EXPECT_FALSE(err);
-  EXPECT_TRUE(reader);
-  EXPECT_EQ(FOURCC_EMSG, reader->type());
-
-  // Reading the child should fail since the number of samples specified
-  // doesn't match what is in the box.
-  std::vector<TrackFragmentRun> children;
-  EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
-}
-
 TEST_F(BoxReaderTest, ReadAllChildrenWithChildLargerThanParent) {
   static const uint8_t kData[] = {
       0x00, 0x00, 0x00, 0x10, 's', 'k', 'i', 'p',  // outer box
@@ -347,6 +317,54 @@ TEST_F(BoxReaderTest, ReadAllChildrenWithChildLargerThanParent) {
 
   std::vector<PsshBox> tmp;
   EXPECT_FALSE(reader->ReadAllChildren(&tmp));
+}
+
+TEST_F(BoxReaderTest, TrunSampleCount32bitOverflow) {
+  // This data is not a valid 'emsg' box. It is just used as a top-level box
+  // as ReadTopLevelBox() has a restricted set of boxes it allows.
+  // The nested 'trun' box specifies an unusually high number of samples, though
+  // only one sample is actually included in the box. The values for "sample
+  // count" and "flags" are chosen such that their 32-bit product will overflow
+  // to a very small number (4), leading to incorrect assumptions about bytes
+  // available and ultimately OOB reads. http://crbug.com/679640
+  static const uint8_t kData[] = {
+      0x00, 0x00, 0x00, 0x28,
+      'e',  'm',  's',  'g',  // outer box
+      0x00, 0x00, 0x00, 0x20,
+      't',  'r',  'u',  'n',  // nested box
+      0x00, 0x00,             // version = 0
+      0x03, 0x00,  // flags = 2 fields present (sample duration and sample size)
+      0x80, 0x00, 0x00, 0x02,  // sample count = 2147483650
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,  // only one sample present
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00};
+
+  bool err;
+  std::unique_ptr<BoxReader> reader(
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+
+  EXPECT_FALSE(err);
+  EXPECT_TRUE(reader);
+  EXPECT_EQ(FOURCC_EMSG, reader->type());
+
+// Overflow is only triggered/caught on 32-bit systems. 64-bit systems will
+// instead fail parsing because kData does not have enough bytes to describe
+// the large number of samples.
+#if defined(ARCH_CPU_32_BITS)
+  const int kOverflowLogCount = 1;
+#else
+  const int kOverflowLogCount = 0;
+#endif
+
+  EXPECT_MEDIA_LOG(
+      HasSubstr("Extreme TRUN sample count exceeds system address space"))
+      .Times(kOverflowLogCount);
+
+  // Reading the child should fail since the number of samples specified
+  // doesn't match what is in the box.
+  std::vector<TrackFragmentRun> children;
+  EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
 }
 
 }  // namespace mp4

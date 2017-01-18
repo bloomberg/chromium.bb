@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_types.h"
@@ -1122,16 +1123,31 @@ bool TrackFragmentRun::Parse(BoxReader* reader) {
 
   int fields = sample_duration_present + sample_size_present +
       sample_flags_present + sample_composition_time_offsets_present;
-  RCHECK(reader->HasBytes(fields * sample_count));
 
-  if (sample_duration_present)
+  // |bytes_needed| is potentially 64-bit. Cast |sample_count| from uint32_t to
+  // size_t to avoid multiplication overflow.
+  base::CheckedNumeric<size_t> bytes_needed =
+      base::CheckMul(fields, static_cast<size_t>(sample_count));
+  RCHECK_MEDIA_LOGGED(bytes_needed.IsValid(), reader->media_log(),
+                      "Extreme TRUN sample count exceeds system address space");
+  RCHECK(reader->HasBytes(bytes_needed.ValueOrDie()));
+
+  if (sample_duration_present) {
+    RCHECK(sample_count <= sample_durations.max_size());
     sample_durations.resize(sample_count);
-  if (sample_size_present)
+  }
+  if (sample_size_present) {
+    RCHECK(sample_count <= sample_sizes.max_size());
     sample_sizes.resize(sample_count);
-  if (sample_flags_present)
+  }
+  if (sample_flags_present) {
+    RCHECK(sample_count <= sample_flags.max_size());
     sample_flags.resize(sample_count);
-  if (sample_composition_time_offsets_present)
+  }
+  if (sample_composition_time_offsets_present) {
+    RCHECK(sample_count <= sample_composition_time_offsets.max_size());
     sample_composition_time_offsets.resize(sample_count);
+  }
 
   for (uint32_t i = 0; i < sample_count; ++i) {
     if (sample_duration_present)
