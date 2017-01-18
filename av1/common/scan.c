@@ -6493,6 +6493,9 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
 static uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                    TX_TYPE tx_type) {
   switch (tx_size) {
+#if CONFIG_CB4X4
+    case TX_2X2: return fc->non_zero_prob_2x2[tx_type];
+#endif
     case TX_4X4: return fc->non_zero_prob_4X4[tx_type];
     case TX_8X8: return fc->non_zero_prob_8X8[tx_type];
     case TX_16X16: return fc->non_zero_prob_16X16[tx_type];
@@ -6504,6 +6507,9 @@ static uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                TX_TYPE tx_type) {
   switch (tx_size) {
+#if CONFIG_CB4X4
+    case TX_2X2: return fc->scan_2x2[tx_type];
+#endif
     case TX_4X4: return fc->scan_4X4[tx_type];
     case TX_8X8: return fc->scan_8X8[tx_type];
     case TX_16X16: return fc->scan_16X16[tx_type];
@@ -6515,6 +6521,9 @@ static int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                 TX_TYPE tx_type) {
   switch (tx_size) {
+#if CONFIG_CB4X4
+    case TX_2X2: return fc->iscan_2x2[tx_type];
+#endif
     case TX_4X4: return fc->iscan_4X4[tx_type];
     case TX_8X8: return fc->iscan_8X8[tx_type];
     case TX_16X16: return fc->iscan_16X16[tx_type];
@@ -6526,6 +6535,9 @@ static int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                              TX_TYPE tx_type) {
   switch (tx_size) {
+#if CONFIG_CB4X4
+    case TX_2X2: return fc->nb_2x2[tx_type];
+#endif
     case TX_4X4: return fc->nb_4X4[tx_type];
     case TX_8X8: return fc->nb_8X8[tx_type];
     case TX_16X16: return fc->nb_16X16[tx_type];
@@ -6537,6 +6549,9 @@ static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
                                      TX_TYPE tx_type) {
   switch (tx_size) {
+#if CONFIG_CB4X4
+    case TX_2X2: return counts->non_zero_count_2x2[tx_type];
+#endif
     case TX_4X4: return counts->non_zero_count_4X4[tx_type];
     case TX_8X8: return counts->non_zero_count_8X8[tx_type];
     case TX_16X16: return counts->non_zero_count_16X16[tx_type];
@@ -6716,7 +6731,7 @@ void av1_update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
 void av1_init_scan_order(AV1_COMMON *cm) {
   TX_SIZE tx_size;
   TX_TYPE tx_type;
-  for (tx_size = TX_4X4; tx_size < TX_SIZES; ++tx_size) {
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
       uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
       const int tx2d_size = tx_size_2d[tx_size];
