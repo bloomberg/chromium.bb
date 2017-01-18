@@ -25,7 +25,7 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
     return false;
 
   // Ignore synthesized keyboard events. See http://crbug.com/23221.
-  if (event.type == content::NativeWebKeyboardEvent::Char)
+  if (event.type() == content::NativeWebKeyboardEvent::Char)
     return false;
 
   // If the event was not synthesized it should have an os_event.
