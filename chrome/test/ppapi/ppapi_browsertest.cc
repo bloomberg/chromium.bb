@@ -251,7 +251,8 @@ TEST_PPAPI_NACL(Graphics2D_Paint)
 TEST_PPAPI_NACL(Graphics2D_Scroll)
 TEST_PPAPI_NACL(Graphics2D_Replace)
 TEST_PPAPI_NACL(Graphics2D_Flush)
-TEST_PPAPI_NACL(Graphics2D_FlushOffscreenUpdate)
+// TODO(crbug.com/682275): Flaky on Ubuntu.
+// TEST_PPAPI_NACL(Graphics2D_FlushOffscreenUpdate)
 TEST_PPAPI_NACL(Graphics2D_BindNull)
 
 #if defined(OS_WIN)
