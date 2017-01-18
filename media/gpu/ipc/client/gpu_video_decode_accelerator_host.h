@@ -103,7 +103,8 @@ class GpuVideoDecodeAcceleratorHost
   // constructed.
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
-  // WeakPtr factory for posting tasks back to itself.
+  // WeakPtr for posting tasks to ourself.
+  base::WeakPtr<GpuVideoDecodeAcceleratorHost> weak_this_;
   base::WeakPtrFactory<GpuVideoDecodeAcceleratorHost> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecodeAcceleratorHost);

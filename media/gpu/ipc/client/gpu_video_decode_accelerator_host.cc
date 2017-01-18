@@ -26,6 +26,8 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
       weak_this_factory_(this) {
   DCHECK(channel_);
   DCHECK(impl_);
+
+  weak_this_ = weak_this_factory_.GetWeakPtr();
   impl_->AddDeletionObserver(this);
 }
 
@@ -87,7 +89,7 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(const Config& config,
     return false;
 
   int32_t route_id = channel_->GenerateRouteID();
-  channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
+  channel_->AddRoute(route_id, weak_this_);
 
   bool succeeded = false;
   Send(new GpuCommandBufferMsg_CreateVideoDecoder(impl_->route_id(), config,
@@ -189,8 +191,8 @@ void GpuVideoDecodeAcceleratorHost::OnWillDeleteImpl() {
 
   // The gpu::CommandBufferProxyImpl is going away; error out this VDA.
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuVideoDecodeAcceleratorHost::OnChannelError,
-                            weak_this_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::Bind(&GpuVideoDecodeAcceleratorHost::OnChannelError, weak_this_));
 }
 
 void GpuVideoDecodeAcceleratorHost::PostNotifyError(Error error) {
@@ -198,7 +200,7 @@ void GpuVideoDecodeAcceleratorHost::PostNotifyError(Error error) {
   DVLOG(2) << "PostNotifyError(): error=" << error;
   media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GpuVideoDecodeAcceleratorHost::OnNotifyError,
-                            weak_this_factory_.GetWeakPtr(), error));
+                            weak_this_, error));
 }
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
