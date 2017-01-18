@@ -22,9 +22,15 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
   void DispatchEvent(SyntheticGestureTarget* target,
                      const base::TimeTicks& timestamp) override;
 
-  void Press(float x, float y, int index) override;
+  void Press(float x,
+             float y,
+             int index,
+             SyntheticPointerActionParams::Button button =
+                 SyntheticPointerActionParams::Button::LEFT) override;
   void Move(float x, float y, int index) override;
-  void Release(int index) override;
+  void Release(int index,
+               SyntheticPointerActionParams::Button button =
+                   SyntheticPointerActionParams::Button::LEFT) override;
 
   bool UserInputCheck(
       const SyntheticPointerActionParams& params) const override;

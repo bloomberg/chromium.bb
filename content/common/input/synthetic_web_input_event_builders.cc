@@ -37,12 +37,8 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
   result.y = window_y;
   result.windowX = window_x;
   result.windowY = window_y;
-
-  if (type == WebInputEvent::MouseDown || type == WebInputEvent::MouseUp)
-    result.button = WebMouseEvent::Button::Left;
-  else
-    result.button = WebMouseEvent::Button::NoButton;
-
+  result.setModifiers(modifiers);
+  result.pointerType = blink::WebPointerProperties::PointerType::Mouse;
   return result;
 }
 

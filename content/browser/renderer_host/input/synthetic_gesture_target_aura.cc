@@ -112,22 +112,17 @@ WebMouseEventTypeToEventType(blink::WebInputEvent::Type web_type) {
   return ui::ET_UNKNOWN;
 }
 
-int WebMouseEventButtonToFlags(blink::WebMouseEvent::Button button) {
-  switch (button) {
-    case blink::WebMouseEvent::Button::Left:
-      return ui::EF_LEFT_MOUSE_BUTTON;
+int WebEventModifiersToEventFlags(int modifiers) {
+  int flags = 0;
 
-    case blink::WebMouseEvent::Button::Middle:
-      return ui::EF_MIDDLE_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::LeftButtonDown)
+    flags |= ui::EF_LEFT_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::MiddleButtonDown)
+    flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::RightButtonDown)
+    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
 
-    case blink::WebMouseEvent::Button::Right:
-      return ui::EF_RIGHT_MOUSE_BUTTON;
-
-    default:
-      NOTREACHED();
-  }
-
-  return 0;
+  return flags;
 }
 
 }  // namespace
@@ -136,7 +131,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info) {
   ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type());
-  int flags = WebMouseEventButtonToFlags(web_mouse.button);
+  int flags = WebEventModifiersToEventFlags(web_mouse.modifiers());
   ui::MouseEvent mouse_event(event_type, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), flags, flags);
   gfx::PointF location(web_mouse.x * device_scale_factor_,

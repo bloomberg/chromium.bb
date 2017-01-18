@@ -58,6 +58,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticPointerActionParams::PointerActionType,
     content::SyntheticPointerActionParams::PointerActionType::
         POINTER_ACTION_TYPE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(
+    content::SyntheticPointerActionParams::Button,
+    content::SyntheticPointerActionParams::Button::BUTTON_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::TouchAction, content::TOUCH_ACTION_MAX)
@@ -115,6 +118,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionParams)
   IPC_STRUCT_TRAITS_MEMBER(pointer_action_type_)
   IPC_STRUCT_TRAITS_MEMBER(index_)
   IPC_STRUCT_TRAITS_MEMBER(position_)
+  IPC_STRUCT_TRAITS_MEMBER(button_)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionListParams)

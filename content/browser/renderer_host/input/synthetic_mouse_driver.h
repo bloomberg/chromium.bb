@@ -20,15 +20,23 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
   void DispatchEvent(SyntheticGestureTarget* target,
                      const base::TimeTicks& timestamp) override;
 
-  void Press(float x, float y, int index = 0) override;
+  void Press(float x,
+             float y,
+             int index = 0,
+             SyntheticPointerActionParams::Button button =
+                 SyntheticPointerActionParams::Button::LEFT) override;
   void Move(float x, float y, int index = 0) override;
-  void Release(int index = 0) override;
+  void Release(int index = 0,
+               SyntheticPointerActionParams::Button button =
+                   SyntheticPointerActionParams::Button::LEFT) override;
 
   bool UserInputCheck(
       const SyntheticPointerActionParams& params) const override;
 
  private:
   blink::WebMouseEvent mouse_event_;
+  unsigned last_modifiers_;
+
   DISALLOW_COPY_AND_ASSIGN(SyntheticMouseDriver);
 };
 

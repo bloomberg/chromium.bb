@@ -54,21 +54,22 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
   DCHECK_LT(num_actions_dispatched_, params_.params.size());
   SyntheticPointerActionListParams::ParamList& param_list =
       params_.params[num_actions_dispatched_];
-  for (SyntheticPointerActionParams& param : param_list) {
+  for (const SyntheticPointerActionParams& param : param_list) {
     if (!synthetic_pointer_driver_->UserInputCheck(param))
       return INVALID;
 
     switch (param.pointer_action_type()) {
       case SyntheticPointerActionParams::PointerActionType::PRESS:
         synthetic_pointer_driver_->Press(param.position().x(),
-                                         param.position().y(), param.index());
+                                         param.position().y(), param.index(),
+                                         param.button());
         break;
       case SyntheticPointerActionParams::PointerActionType::MOVE:
         synthetic_pointer_driver_->Move(param.position().x(),
                                         param.position().y(), param.index());
         break;
       case SyntheticPointerActionParams::PointerActionType::RELEASE:
-        synthetic_pointer_driver_->Release(param.index());
+        synthetic_pointer_driver_->Release(param.index(), param.button());
         break;
       case SyntheticPointerActionParams::PointerActionType::IDLE:
         break;

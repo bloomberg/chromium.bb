@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_param_traits.h"
 #include "content/common/input/synthetic_gesture_params.h"
+#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ipc_fuzzer {
@@ -31,6 +32,8 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     POINTER_ACTION_TYPE_MAX = IDLE
   };
 
+  enum class Button { LEFT, MIDDLE, RIGHT, BUTTON_MAX = RIGHT };
+
   SyntheticPointerActionParams();
   SyntheticPointerActionParams(PointerActionType action_type);
   ~SyntheticPointerActionParams();
@@ -51,6 +54,12 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     position_ = position;
   }
 
+  void set_button(Button button) {
+    DCHECK(pointer_action_type_ == PointerActionType::PRESS ||
+           pointer_action_type_ == PointerActionType::RELEASE);
+    button_ = button;
+  }
+
   PointerActionType pointer_action_type() const { return pointer_action_type_; }
 
   int index() const {
@@ -65,6 +74,17 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     return position_;
   }
 
+  Button button() const {
+    DCHECK(pointer_action_type_ == PointerActionType::PRESS ||
+           pointer_action_type_ == PointerActionType::RELEASE);
+    return button_;
+  }
+
+  static unsigned GetWebMouseEventModifier(
+      SyntheticPointerActionParams::Button button);
+  static blink::WebMouseEvent::Button GetWebMouseEventButton(
+      SyntheticPointerActionParams::Button button);
+
  private:
   friend struct IPC::ParamTraits<content::SyntheticPointerActionParams>;
   friend struct ipc_fuzzer::FuzzTraits<content::SyntheticPointerActionParams>;
@@ -75,6 +95,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
   // The index of the pointer in the pointer action sequence passed from the
   // user API.
   int index_;
+  Button button_;
 };
 
 }  // namespace content
