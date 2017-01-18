@@ -65,13 +65,11 @@ class CC_EXPORT PropertyTree {
   int Insert(const T& tree_node, int parent_id);
 
   T* Node(int i) {
-    // TODO(vollick): remove this.
-    CHECK(i < static_cast<int>(nodes_.size()));
+    DCHECK(i < static_cast<int>(nodes_.size()));
     return i > kInvalidNodeId ? &nodes_[i] : nullptr;
   }
   const T* Node(int i) const {
-    // TODO(vollick): remove this.
-    CHECK(i < static_cast<int>(nodes_.size()));
+    DCHECK(i < static_cast<int>(nodes_.size()));
     return i > kInvalidNodeId ? &nodes_[i] : nullptr;
   }
 
