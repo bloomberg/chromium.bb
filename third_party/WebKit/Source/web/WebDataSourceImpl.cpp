@@ -45,6 +45,8 @@ WebDataSourceImpl* WebDataSourceImpl::create(
     const ResourceRequest& request,
     const SubstituteData& data,
     ClientRedirectPolicy clientRedirectPolicy) {
+  DCHECK(frame);
+
   return new WebDataSourceImpl(frame, request, data, clientRedirectPolicy);
 }
 

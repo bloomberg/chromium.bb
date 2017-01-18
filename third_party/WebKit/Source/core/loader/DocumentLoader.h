@@ -60,6 +60,7 @@ class ResourceFetcher;
 class DocumentInit;
 class LocalFrame;
 class FrameLoader;
+class FrameLoaderClient;
 class ResourceTimingInfo;
 class WebDocumentSubresourceFilter;
 struct ViewportDescriptionWrapper;
@@ -74,6 +75,8 @@ class CORE_EXPORT DocumentLoader
                                 const ResourceRequest& request,
                                 const SubstituteData& data,
                                 ClientRedirectPolicy clientRedirectPolicy) {
+    DCHECK(frame);
+
     return new DocumentLoader(frame, request, data, clientRedirectPolicy);
   }
   ~DocumentLoader() override;
@@ -200,7 +203,10 @@ class CORE_EXPORT DocumentLoader
                     const KURL& overridingURL = KURL());
   void endWriting();
 
-  FrameLoader* frameLoader() const;
+  // Use these method only where it's guaranteed that |m_frame| hasn't been
+  // cleared.
+  FrameLoader& frameLoader() const;
+  FrameLoaderClient& frameLoaderClient() const;
 
   void commitIfReady();
   void commitData(const char* bytes, size_t length);
@@ -210,6 +216,8 @@ class CORE_EXPORT DocumentLoader
 
   void finishedLoading(double finishTime);
   void cancelLoadAfterCSPDenied(const ResourceResponse&);
+
+  // RawResourceClient implementation
   bool redirectReceived(Resource*,
                         const ResourceRequest&,
                         const ResourceResponse&) final;
@@ -217,9 +225,12 @@ class CORE_EXPORT DocumentLoader
                         const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) final;
   void dataReceived(Resource*, const char* data, size_t length) final;
-  void processData(const char* data, size_t length);
+
+  // ResourceClient implementation
   void notifyFinished(Resource*) final;
   String debugName() const override { return "DocumentLoader"; }
+
+  void processData(const char* data, size_t length);
 
   bool maybeLoadEmpty();
 

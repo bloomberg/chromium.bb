@@ -147,6 +147,8 @@ DocumentLoader* EmptyFrameLoaderClient::createDocumentLoader(
     const ResourceRequest& request,
     const SubstituteData& substituteData,
     ClientRedirectPolicy clientRedirectPolicy) {
+  DCHECK(frame);
+
   return DocumentLoader::create(frame, request, substituteData,
                                 clientRedirectPolicy);
 }

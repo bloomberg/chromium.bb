@@ -117,16 +117,28 @@ DocumentLoader::DocumentLoader(LocalFrame* frame,
       m_state(NotStarted),
       m_inDataReceived(false),
       m_dataBuffer(SharedBuffer::create()) {
+  DCHECK(m_frame);
+
   // The document URL needs to be added to the head of the list as that is
   // where the redirects originated.
   if (m_isClientRedirect)
     appendRedirect(m_frame->document()->url());
 }
 
-FrameLoader* DocumentLoader::frameLoader() const {
-  if (!m_frame)
-    return nullptr;
-  return &m_frame->loader();
+FrameLoader& DocumentLoader::frameLoader() const {
+  DCHECK(m_frame);
+  return m_frame->loader();
+}
+
+FrameLoaderClient& DocumentLoader::frameLoaderClient() const {
+  DCHECK(m_frame);
+  FrameLoaderClient* client = m_frame->client();
+  // LocalFrame clears its |m_client| only after detaching all DocumentLoaders
+  // (i.e. calls detachFromFrame() which clears |m_frame|) owned by the
+  // LocalFrame's FrameLoader. So, if |m_frame| is non nullptr, |client| is
+  // also non nullptr.
+  DCHECK(client);
+  return *client;
 }
 
 DocumentLoader::~DocumentLoader() {
@@ -222,8 +234,7 @@ void DocumentLoader::didRedirect(const KURL& oldURL, const KURL& newURL) {
   // If a redirection happens during a back/forward navigation, don't restore
   // any state from the old HistoryItem. There is a provisional history item for
   // back/forward navigation only. In the other case, clearing it is a no-op.
-  DCHECK(frameLoader());
-  frameLoader()->clearProvisionalHistoryItem();
+  frameLoader().clearProvisionalHistoryItem();
 }
 
 void DocumentLoader::dispatchLinkHeaderPreloads(
@@ -236,16 +247,16 @@ void DocumentLoader::dispatchLinkHeaderPreloads(
 }
 
 void DocumentLoader::didChangePerformanceTiming() {
-  if (frame() && frame()->isMainFrame() && m_state >= Committed) {
-    frameLoader()->client()->didChangePerformanceTiming();
+  if (m_frame && m_frame->isMainFrame() && m_state >= Committed) {
+    frameLoaderClient().didChangePerformanceTiming();
   }
 }
 
 void DocumentLoader::didObserveLoadingBehavior(
     WebLoadingBehaviorFlag behavior) {
-  if (frame() && frame()->isMainFrame()) {
+  if (m_frame && m_frame->isMainFrame()) {
     DCHECK_GE(m_state, Committed);
-    frameLoader()->client()->didObserveLoadingBehavior(behavior);
+    frameLoaderClient().didObserveLoadingBehavior(behavior);
   }
 }
 
@@ -272,7 +283,7 @@ const KURL& DocumentLoader::urlForHistory() const {
 void DocumentLoader::commitIfReady() {
   if (m_state < Committed) {
     m_state = Committed;
-    frameLoader()->commitProvisionalLoad();
+    frameLoader().commitProvisionalLoad();
   }
 }
 
@@ -294,7 +305,7 @@ void DocumentLoader::notifyFinished(Resource* resource) {
         m_mainResource.get());
   }
 
-  frameLoader()->loadFailed(this, m_mainResource->resourceError());
+  frameLoader().loadFailed(this, m_mainResource->resourceError());
   clearMainResourceHandle();
 }
 
@@ -311,7 +322,7 @@ void DocumentLoader::finishedLoading(double finishTime) {
   timing().setResponseEnd(responseEndTime);
 
   commitIfReady();
-  if (!frameLoader())
+  if (!m_frame)
     return;
 
   if (!maybeCreateArchive()) {
@@ -347,6 +358,7 @@ bool DocumentLoader::redirectReceived(
     Resource* resource,
     const ResourceRequest& request,
     const ResourceResponse& redirectResponse) {
+  DCHECK(m_frame);
   DCHECK_EQ(resource, m_mainResource);
   DCHECK(!redirectResponse.isNull());
   m_request = request;
@@ -361,7 +373,7 @@ bool DocumentLoader::redirectReceived(
     m_fetcher->stopFetching();
     return false;
   }
-  if (!frameLoader()->shouldContinueForNavigationPolicy(
+  if (!frameLoader().shouldContinueForNavigationPolicy(
           m_request, SubstituteData(), this, CheckContentSecurityPolicy,
           m_navigationType, NavigationPolicyCurrentTab,
           replacesCurrentHistoryItem(), isClientRedirect(), nullptr)) {
@@ -372,7 +384,7 @@ bool DocumentLoader::redirectReceived(
   DCHECK(timing().fetchStart());
   appendRedirect(requestURL);
   didRedirect(redirectResponse.url(), requestURL);
-  frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
+  frameLoaderClient().dispatchDidReceiveServerRedirectForProvisionalLoad();
 
   return true;
 }
@@ -439,7 +451,7 @@ void DocumentLoader::responseReceived(
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK_EQ(m_mainResource, resource);
   DCHECK(!handle);
-  DCHECK(frame());
+  DCHECK(m_frame);
 
   m_applicationCacheHost->didReceiveResponseForMainResource(response);
 
@@ -460,29 +472,29 @@ void DocumentLoader::responseReceived(
   }
 
   if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
-      !frameLoader()->requiredCSP().isEmpty()) {
+      !frameLoader().requiredCSP().isEmpty()) {
     SecurityOrigin* parentSecurityOrigin =
-        frame()->tree().parent()->securityContext()->getSecurityOrigin();
+        m_frame->tree().parent()->securityContext()->getSecurityOrigin();
     if (ContentSecurityPolicy::shouldEnforceEmbeddersPolicy(
             response, parentSecurityOrigin)) {
       m_contentSecurityPolicy->addPolicyFromHeaderValue(
-          frameLoader()->requiredCSP(), ContentSecurityPolicyHeaderTypeEnforce,
+          frameLoader().requiredCSP(), ContentSecurityPolicyHeaderTypeEnforce,
           ContentSecurityPolicyHeaderSourceHTTP);
     } else {
       ContentSecurityPolicy* embeddingCSP = ContentSecurityPolicy::create();
       embeddingCSP->addPolicyFromHeaderValue(
-          frameLoader()->requiredCSP(), ContentSecurityPolicyHeaderTypeEnforce,
+          frameLoader().requiredCSP(), ContentSecurityPolicyHeaderTypeEnforce,
           ContentSecurityPolicyHeaderSourceHTTP);
       if (!embeddingCSP->subsumes(*m_contentSecurityPolicy)) {
         String message = "Refused to display '" +
                          response.url().elidedString() +
                          "' because it has not opted-into the following policy "
                          "required by its embedder: '" +
-                         frameLoader()->requiredCSP() + "'.";
+                         frameLoader().requiredCSP() + "'.";
         ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(
             SecurityMessageSource, ErrorMessageLevel, message, response.url(),
             mainResourceIdentifier());
-        frame()->document()->addConsoleMessage(consoleMessage);
+        m_frame->document()->addConsoleMessage(consoleMessage);
         cancelLoadAfterCSPDenied(response);
         return;
       }
@@ -605,7 +617,7 @@ void DocumentLoader::processData(const char* data, size_t length) {
   if (isArchiveMIMEType(response().mimeType()))
     return;
   commitIfReady();
-  if (!frameLoader())
+  if (!m_frame)
     return;
   commitData(data, length);
 
@@ -630,8 +642,8 @@ void DocumentLoader::detachFromFrame() {
   // frame have any loads active, so go ahead and kill all the loads.
   m_fetcher->stopFetching();
 
-  if (frameLoader() && !sentDidFinishLoad())
-    frameLoader()->loadFailed(this, ResourceError::cancelledError(url()));
+  if (m_frame && !sentDidFinishLoad())
+    frameLoader().loadFailed(this, ResourceError::cancelledError(url()));
 
   // If that load cancellation triggered another detach, leave.
   // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
@@ -692,7 +704,7 @@ bool DocumentLoader::maybeLoadEmpty() {
     return false;
 
   if (m_request.url().isEmpty() &&
-      !frameLoader()->stateMachine()->creatingInitialEmptyDocument())
+      !frameLoader().stateMachine()->creatingInitialEmptyDocument())
     m_request.setURL(blankURL());
   m_response =
       ResourceResponse(m_request.url(), "text/html", 0, nullAtom, String());

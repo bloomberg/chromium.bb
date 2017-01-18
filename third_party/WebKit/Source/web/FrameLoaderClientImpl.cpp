@@ -680,6 +680,8 @@ DocumentLoader* FrameLoaderClientImpl::createDocumentLoader(
     const ResourceRequest& request,
     const SubstituteData& data,
     ClientRedirectPolicy clientRedirectPolicy) {
+  DCHECK(frame);
+
   WebDataSourceImpl* ds =
       WebDataSourceImpl::create(frame, request, data, clientRedirectPolicy);
   if (m_webFrame->client())
