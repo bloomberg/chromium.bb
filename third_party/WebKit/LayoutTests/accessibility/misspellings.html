@@ -118,9 +118,8 @@
 
     currentTest.action();
 
-    // Force idle time spell checker to run.
-    if (window.testRunner)
-      testRunner.runIdleTasks(() => {});
+    // TODO(xiaochengh): Force idle time spell checker to run after it is
+    // enabled in layout tests.
   }
 
   add_result_callback(testObject => {
