@@ -129,6 +129,11 @@ void ScrollingCoordinator::notifyGeometryChanged() {
 }
 
 void ScrollingCoordinator::notifyTransformChanged(const LayoutBox& box) {
+  DCHECK(m_page);
+  if (!m_page->mainFrame()->isLocalFrame() ||
+      !m_page->deprecatedLocalMainFrame()->view())
+    return;
+
   if (m_page->deprecatedLocalMainFrame()->view()->needsLayout())
     return;
 
