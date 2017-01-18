@@ -1128,15 +1128,21 @@ void PaintLayerCompositor::ensureRootLayer() {
     m_overflowControlsHostLayer = GraphicsLayer::create(this);
     m_containerLayer = GraphicsLayer::create(this);
 
+    // TODO(skobes): When root layer scrolling is enabled, we should not even
+    // create m_scrollLayer or most of the layers in PLC.
     m_scrollLayer = GraphicsLayer::create(this);
     if (ScrollingCoordinator* scrollingCoordinator =
             this->scrollingCoordinator())
       scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(
           m_scrollLayer.get(), true);
 
-    m_scrollLayer->setElementId(createCompositorElementId(
-        DOMNodeIds::idForNode(&m_layoutView.document()),
-        CompositorSubElementId::Scroll));
+    // In RLS mode, LayoutView scrolling contents layer gets this element ID (in
+    // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties).
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+      m_scrollLayer->setElementId(createCompositorElementId(
+          DOMNodeIds::idForNode(&m_layoutView.document()),
+          CompositorSubElementId::Scroll));
+    }
 
     // Hook them up
     m_overflowControlsHostLayer->addChild(m_containerLayer.get());
