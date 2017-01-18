@@ -179,6 +179,70 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest, ShouldSortByDistance) {
 }
 
 TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldConsiderPagesWithoutDistanceEstimateFurthest) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  // |CreateDummyPhysicalWebPages| builds pages with distances 1, 2 and 3
+  // respectively.
+  std::unique_ptr<base::ListValue> pages =
+      CreateDummyPhysicalWebPages({3, 2, 1});
+  DictionaryValue* second_page;
+  // Set the second page distance estimate to unknown.
+  ASSERT_TRUE(pages->GetDictionary(1, &second_page));
+  second_page->SetDouble(physical_web::kDistanceEstimateKey, -1);
+  physical_web_data_source()->SetMetadata(std::move(pages));
+  EXPECT_CALL(
+      *observer(),
+      OnNewSuggestions(_, provided_category(),
+                       ElementsAre(HasUrl("https://resolved_url.com/3"),
+                                   HasUrl("https://resolved_url.com/1"),
+                                   HasUrl("https://resolved_url.com/2"))));
+  CreateProvider();
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldNotShowSuggestionsWithSameGroupId) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  // |CreateDummyPhysicalWebPages| builds pages with distances 1, 2
+  // respectively.
+  std::unique_ptr<base::ListValue> pages = CreateDummyPhysicalWebPages({2, 1});
+  for (int i = 0; i < 2; ++i) {
+    DictionaryValue* page;
+    ASSERT_TRUE(pages->GetDictionary(i, &page));
+    page->SetString(physical_web::kGroupIdKey, "some_group_id");
+  }
+
+  physical_web_data_source()->SetMetadata(std::move(pages));
+  // The closest page should be reported.
+  EXPECT_CALL(
+      *observer(),
+      OnNewSuggestions(_, provided_category(),
+                       ElementsAre(HasUrl("https://resolved_url.com/2"))));
+  CreateProvider();
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
+       ShouldShowSuggestionsWithEmptyGroupId) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+  std::unique_ptr<base::ListValue> pages = CreateDummyPhysicalWebPages({1, 2});
+  for (int i = 0; i < 2; ++i) {
+    DictionaryValue* page;
+    pages->GetDictionary(i, &page);
+    page->SetString(physical_web::kGroupIdKey, "");
+  }
+
+  physical_web_data_source()->SetMetadata(std::move(pages));
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(
+                  _, provided_category(),
+                  UnorderedElementsAre(HasUrl("https://resolved_url.com/1"),
+                                       HasUrl("https://resolved_url.com/2"))));
+  CreateProvider();
+}
+
+TEST_F(PhysicalWebPageSuggestionsProviderTest,
        FetchMoreShouldFilterAndReturnSortedSuggestions) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();

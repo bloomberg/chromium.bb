@@ -37,6 +37,14 @@ namespace {
 
 const size_t kMaxSuggestionsCount = 10;
 
+std::string GetGroupId(const DictionaryValue& page_dictionary) {
+  std::string group_id;
+  if (!page_dictionary.GetString(physical_web::kGroupIdKey, &group_id)) {
+    LOG(DFATAL) << physical_web::kGroupIdKey << " field is missing.";
+  }
+  return group_id;
+}
+
 std::string GetPageId(const DictionaryValue& page_dictionary) {
   std::string raw_resolved_url;
   if (!page_dictionary.GetString(physical_web::kResolvedUrlKey,
@@ -44,6 +52,62 @@ std::string GetPageId(const DictionaryValue& page_dictionary) {
     LOG(DFATAL) << physical_web::kResolvedUrlKey << " field is missing.";
   }
   return raw_resolved_url;
+}
+
+bool CompareByDistance(const DictionaryValue* left,
+                       const DictionaryValue* right) {
+  double left_distance, right_distance;
+  bool success =
+      left->GetDouble(physical_web::kDistanceEstimateKey, &left_distance);
+  success =
+      right->GetDouble(physical_web::kDistanceEstimateKey, &right_distance) &&
+      success;
+  if (!success) {
+    LOG(DFATAL) << "Distance field is missing.";
+  }
+
+  // When there is no estimate, the value is <= 0, so we implicitly treat it as
+  // infinity.
+  bool is_left_estimated = left_distance > 0;
+  bool is_right_estimated = right_distance > 0;
+
+  if (is_left_estimated != is_right_estimated)
+    return is_left_estimated;
+  return left_distance < right_distance;
+}
+
+void FilterOutByGroupId(
+    std::vector<const DictionaryValue*>* page_dictionaries) {
+  // |std::unique| only removes duplicates that immediately follow each other.
+  // Thus, first, we have to sort by group_id and distance and only then remove
+  // duplicates.
+  std::sort(page_dictionaries->begin(), page_dictionaries->end(),
+            [](const DictionaryValue* left, const DictionaryValue* right) {
+              std::string left_group_id = GetGroupId(*left);
+              std::string right_group_id = GetGroupId(*right);
+
+              if (left_group_id != right_group_id) {
+                return left_group_id < right_group_id;
+              }
+
+              // We want closest pages first, so in case of same group_id we
+              // sort by distance.
+              return CompareByDistance(left, right);
+            });
+
+  // Each empty group_id must be treated as unique, so we do not apply
+  // std::unique to them at all.
+  auto nonempty_group_id_begin = std::find_if(
+      page_dictionaries->begin(), page_dictionaries->end(),
+      [](const DictionaryValue* page) { return !GetGroupId(*page).empty(); });
+
+  auto new_end = std::unique(
+      nonempty_group_id_begin, page_dictionaries->end(),
+      [](const DictionaryValue* left, const DictionaryValue* right) {
+        return GetGroupId(*left) == GetGroupId(*right);
+      });
+
+  page_dictionaries->erase(new_end, page_dictionaries->end());
 }
 
 }  // namespace
@@ -222,19 +286,10 @@ PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
     StoreDismissedIDsToPrefs(new_dismissed_ids);
   }
 
+  FilterOutByGroupId(&page_dictionaries);
+
   std::sort(page_dictionaries.begin(), page_dictionaries.end(),
-            [](const DictionaryValue* left, const DictionaryValue* right) {
-              double left_distance, right_distance;
-              bool success = left->GetDouble(physical_web::kDistanceEstimateKey,
-                                             &left_distance);
-              success = right->GetDouble(physical_web::kDistanceEstimateKey,
-                                         &right_distance) &&
-                        success;
-              if (!success) {
-                LOG(DFATAL) << "Distance field is missing.";
-              }
-              return left_distance < right_distance;
-            });
+            CompareByDistance);
 
   std::vector<ContentSuggestion> suggestions;
   for (const DictionaryValue* page_dictionary : page_dictionaries) {

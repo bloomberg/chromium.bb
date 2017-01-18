@@ -17,6 +17,7 @@ namespace physical_web {
 std::unique_ptr<DictionaryValue> CreatePhysicalWebPage(
     const std::string& resolved_url,
     double distance_estimate,
+    const std::string& group_id,
     int scan_timestamp,
     const std::string& title,
     const std::string& description,
@@ -24,6 +25,7 @@ std::unique_ptr<DictionaryValue> CreatePhysicalWebPage(
   auto page = base::MakeUnique<DictionaryValue>();
   page->SetString(kScannedUrlKey, scanned_url);
   page->SetDouble(kDistanceEstimateKey, distance_estimate);
+  page->SetString(kGroupIdKey, group_id);
   // TODO(crbug.com/667722): Remove this integer workaround once timestamp is
   // fixed.
   page->SetInteger(kScanTimestampKey, scan_timestamp);
@@ -38,8 +40,8 @@ std::unique_ptr<DictionaryValue> CreateDummyPhysicalWebPage(int id,
                                                             int timestamp) {
   const std::string id_string = base::IntToString(id);
   return CreatePhysicalWebPage("https://resolved_url.com/" + id_string,
-                               distance, timestamp, "title " + id_string,
-                               "description " + id_string,
+                               distance, /*group_id=*/std::string(), timestamp,
+                               "title " + id_string, "description " + id_string,
                                "https://scanned_url.com/" + id_string);
 }
 

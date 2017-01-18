@@ -23,6 +23,7 @@ namespace physical_web {
 std::unique_ptr<base::DictionaryValue> CreatePhysicalWebPage(
     const std::string& resolved_url,
     double distance_estimate,
+    const std::string& group_id,
     int scan_timestamp,
     const std::string& title,
     const std::string& description,
