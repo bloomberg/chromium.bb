@@ -75,10 +75,10 @@ const AudioNodeInfo kUSBCameraMic = {
 
 AudioNode CreateAudioNode(const AudioNodeInfo& info, int version) {
   return AudioNode(info.is_input, info.id, version == 2,
-                   // stable_device_id:
-                   info.stable_id ^ (version == 1 ? 0 : 0xFFFF),
-                   // stable_device_id_old:
-                   version == 1 ? 0 : info.stable_id, info.device_name,
+                   // stable_device_id_v1:
+                   info.stable_id,
+                   // stable_device_id_v2:
+                   version == 2 ? info.stable_id ^ 0xFFFF : 0, info.device_name,
                    info.type, info.name, false, 0);
 }
 
@@ -138,8 +138,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, AudioV2StableId) {
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
-  AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 1),
-                               CreateAudioNode(kHDMIOutput, 1)};
+  AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 2),
+                               CreateAudioNode(kHDMIOutput, 2)};
   SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
 
   // Verify the jabra speaker is the active output device.
@@ -168,8 +168,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
-  AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 1),
-                               CreateAudioNode(kHDMIOutput, 1)};
+  AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 2),
+                               CreateAudioNode(kHDMIOutput, 2)};
   SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
 
   // Verify the jabra speaker is the active output device.
@@ -197,12 +197,12 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
-  AudioNodeList audio_nodes = {CreateAudioNode(kJabraMic1, 1),
-                               CreateAudioNode(kUSBCameraMic, 1)};
+  AudioNodeList audio_nodes = {CreateAudioNode(kJabraMic1, 2),
+                               CreateAudioNode(kUSBCameraMic, 2)};
   SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
 
   // Set the jabra mic to be the active input device.
-  AudioDevice jabra_mic(CreateAudioNode(kJabraMic1, 1));
+  AudioDevice jabra_mic(CreateAudioNode(kJabraMic1, 2));
   cras_audio_handler_->SwitchToDevice(
       jabra_mic, true, chromeos::CrasAudioHandler::ACTIVATE_BY_USER);
   EXPECT_EQ(kJabraMic1.id, cras_audio_handler_->GetPrimaryActiveInputNode());
@@ -227,8 +227,8 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
-  AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 1),
-                               CreateAudioNode(kJabraSpeaker2, 1)};
+  AudioNodeList audio_nodes = {CreateAudioNode(kJabraSpeaker1, 2),
+                               CreateAudioNode(kJabraSpeaker2, 2)};
   SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
   const size_t init_device_size = audio_nodes.size();
 
@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
   // Plug in HDMI output.
-  audio_nodes.push_back(CreateAudioNode(kHDMIOutput, 1));
+  audio_nodes.push_back(CreateAudioNode(kHDMIOutput, 2));
   ChangeAudioNodes(audio_nodes);
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_device_size + 1, audio_devices.size());
@@ -254,9 +254,9 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
 }
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
-  AudioNodeList audio_nodes = {CreateAudioNode(kJabraMic1, 1),
-                               CreateAudioNode(kJabraMic2, 1),
-                               CreateAudioNode(kUSBCameraMic, 1)};
+  AudioNodeList audio_nodes = {CreateAudioNode(kJabraMic1, 2),
+                               CreateAudioNode(kJabraMic2, 2),
+                               CreateAudioNode(kUSBCameraMic, 2)};
   SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
   const size_t init_device_size = audio_nodes.size();
 

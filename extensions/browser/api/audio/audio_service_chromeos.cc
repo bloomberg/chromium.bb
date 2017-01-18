@@ -23,18 +23,6 @@ using api::audio::OutputDeviceInfo;
 using api::audio::InputDeviceInfo;
 using api::audio::AudioDeviceInfo;
 
-uint64_t GetStableDeviceId(const chromeos::AudioDevice& device) {
-  // TODO(tbarzic): Update audio API to expose new stable device ID version.
-  // For now, for the sake of backward compatibility, use deprecated version.
-  // http://crbug.com/673392
-  if (device.stable_device_id_version == 1)
-    return device.stable_device_id;
-  if (device.stable_device_id_version == 2)
-    return device.deprecated_stable_device_id;
-  NOTREACHED() << "Unsupported stable audio devide id version.";
-  return 0;
-}
-
 class AudioServiceImpl : public AudioService,
                          public chromeos::CrasAudioHandler::AudioObserver {
  public:
@@ -320,7 +308,7 @@ void AudioServiceImpl::NotifyDevicesChanged() {
                   devices[i].id)
             : cras_audio_handler_->GetInputGainPercentForDevice(devices[i].id);
     info.stable_device_id.reset(
-        new std::string(base::Uint64ToString(GetStableDeviceId(devices[i]))));
+        new std::string(base::Uint64ToString(devices[i].stable_device_id)));
 
     devices_info_list.push_back(std::move(info));
   }

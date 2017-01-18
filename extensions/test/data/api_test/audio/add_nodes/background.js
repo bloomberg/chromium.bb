@@ -20,21 +20,21 @@ chrome.test.runTests([
 
      chrome.test.assertEq([{
         id: '30001',
-        stableDeviceId: '80001',
+        stableDeviceId: '116606' /* 80001 ^ 0xFFFF */,
         isInput: false,
         deviceType: 'USB',
         deviceName: 'Jabra Speaker',
         displayName: 'Jabra Speaker 1'
       }, {
         id: '30002',
-        stableDeviceId: '80002',
+        stableDeviceId: '116605' /* 80002 ^ 0xFFFF */,
         isInput: false,
         deviceType: 'USB',
         deviceName: 'Jabra Speaker',
         displayName: 'Jabra Speaker 2'
       }, {
         id: '30003',
-        stableDeviceId: '80003',
+        stableDeviceId: '116604' /* 80003 ^ 0xFFFF */,
         isInput: false,
         deviceType: 'HDMI',
         deviceName: 'HDMI output',
