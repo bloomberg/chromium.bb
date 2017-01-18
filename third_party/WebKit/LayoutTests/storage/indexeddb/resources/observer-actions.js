@@ -71,6 +71,25 @@ function indexeddb_observers_actions(db1_name, db2_name, error_callback) {
   perform_db2_actions_part1();
 }
 
+function increment_key_actions(db_name, num_iters, key) {
+  var open_request = indexedDB.open(db_name);
+  open_request.onsuccess = function() {
+    var db = open_request.result;
+
+    var increment_number = function(old_value, num_left) {
+      if (num_left == 0) return;
+      var txn = db.transaction(['store'], 'readwrite');
+      var os = txn.objectStore('store');
+      var new_value = old_value + 1;
+      os.put(new_value, key);
+      txn.oncomplete = function() {
+        increment_number(new_value, num_left - 1);
+      };
+    };
+    increment_number(0, num_iters);
+  };
+};
+
 if (isWorker && location.hash != "") {
   var hash = location.hash.split("#")[1];
   var names = JSON.parse(decodeURIComponent(hash));
@@ -78,6 +97,9 @@ if (isWorker && location.hash != "") {
   var errorCallback = function(event) {
     console.log('Error in actions: ' + event.target.error.message);
   }
-
-  indexeddb_observers_actions(names.db1_name, names.db2_name, errorCallback);
+  if (names.incrementing_actions) {
+    increment_key_actions(names.db_name, names.num_iters, names.key);
+  } else {
+    indexeddb_observers_actions(names.db1_name, names.db2_name, errorCallback);
+  }
 }

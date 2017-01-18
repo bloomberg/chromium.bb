@@ -77,8 +77,18 @@ class CONTENT_EXPORT IndexedDBConnection {
   // TODO(dmurph): Change that so this doesn't need to ignore unknown ids.
   void RemoveTransaction(int64_t id);
 
+  // Returns a new transaction id for an observer transaction.
+  // Unique per connection.
+  int64_t NewObserverTransactionId();
+
  private:
   const int32_t id_;
+
+  // The renderer-created transactions are in the right 32 bits of the
+  // transaction id, and the observer (browser-created) transactions are in the
+  // left 32 bits.
+  // This keeps track of the left 32 bits. Unsigned for defined overflow.
+  uint32_t next_observer_transaction_id_ = 1;
 
   // The process id of the child process this connection is associated with.
   // Tracked for IndexedDBContextImpl::GetAllOriginsDetails and debugging.

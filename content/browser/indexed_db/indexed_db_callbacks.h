@@ -35,6 +35,10 @@ struct IndexedDBValue;
 class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
+  // Destructively converts an IndexedDBValue to a Mojo Value.
+  static ::indexed_db::mojom::ValuePtr ConvertAndEraseValue(
+      IndexedDBValue* value);
+
   IndexedDBCallbacks(
       scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
       const url::Origin& origin,

@@ -44,6 +44,10 @@ class CONTENT_EXPORT IndexedDBObserver {
     return object_store_ids_;
   }
 
+  void set_object_store_ids(std::set<int64_t> ids) {
+    object_store_ids_ = std::move(ids);
+  }
+
   bool IsRecordingType(blink::WebIDBOperationType type) const {
     DCHECK_NE(type, blink::WebIDBOperationTypeCount);
     return options_.operation_types[type];

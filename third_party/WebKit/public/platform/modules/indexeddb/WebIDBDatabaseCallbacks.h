@@ -31,6 +31,8 @@
 #include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace blink {
 
@@ -48,7 +50,10 @@ class WebIDBDatabaseCallbacks {
   virtual void onChanges(
       const std::unordered_map<int32_t, std::vector<int32_t>>&
           observation_index_map,
-      const WebVector<WebIDBObservation>& observations) = 0;
+      const WebVector<WebIDBObservation>& observations,
+      const std::unordered_map<int32_t,
+                               std::pair<int64_t, std::vector<int64_t>>>&
+          transactions) = 0;
   virtual void detach() = 0;
 };
 

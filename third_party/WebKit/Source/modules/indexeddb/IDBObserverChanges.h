@@ -22,9 +22,15 @@ class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBObserverChanges* create(IDBDatabase*,
-                                    const WebVector<WebIDBObservation>&,
-                                    const WebVector<int32_t>& observationIndex);
+  static IDBObserverChanges* create(
+      IDBDatabase*,
+      const WebVector<WebIDBObservation>&,
+      const WebVector<int32_t>& observationIndices);
+  static IDBObserverChanges* create(
+      IDBDatabase*,
+      IDBTransaction*,
+      const WebVector<WebIDBObservation>&,
+      const WebVector<int32_t>& observationIndices);
 
   DECLARE_TRACE();
 
@@ -35,11 +41,12 @@ class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
 
  private:
   IDBObserverChanges(IDBDatabase*,
+                     IDBTransaction*,
                      const WebVector<WebIDBObservation>&,
-                     const WebVector<int32_t>& observationIndex);
+                     const WebVector<int32_t>& observationIndices);
 
   void extractChanges(const WebVector<WebIDBObservation>&,
-                      const WebVector<int32_t>& observationIndex);
+                      const WebVector<int32_t>& observationIndices);
 
   Member<IDBDatabase> m_database;
   Member<IDBTransaction> m_transaction;

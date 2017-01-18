@@ -1,146 +1,82 @@
 if (this.importScripts) {
     importScripts('../../../resources/testharness.js');
+    importScripts('testharness-helpers.js');
     importScripts('generic-idb-operations.js');
 }
 
 async_test(function(t) {
   var dbname = location.pathname + ' - ' + 'empty transaction';
-  var openRequest = indexedDB.open(dbname);
-  var callback_count = 0;
-  var obs = new IDBObserver(t.step_func(function() { callback_count++; }));
-
-  openRequest.onupgradeneeded = t.step_func(function() {
-      openRequest.result.createObjectStore('store');
-  });
-  openRequest.onsuccess = t.step_func(function() {
-    var db = openRequest.result;
+  var obs = new IDBObserver(t.step_func(() => { t.done(); }));
+  delete_then_open(t, dbname, function(t, db, request) {
+    db.createObjectStore('store');
+  }, function(t, db) {
     var tx1 = db.transaction('store', 'readwrite');
-    var tx2 = db.transaction('store', 'readwrite');
     obs.observe(db, tx1, {operationTypes: ['put']});
-    tx2.objectStore('store').put(1, 1);
-    tx1.oncomplete = t.step_func(function() {
-      countCallbacks(callback_count, 0);
-    });
-    tx2.oncomplete = t.step_func(function() {
-      countCallbacks(callback_count, 1);
-      t.done();
-    });
     tx1.onerror = t.unreached_func('transaction should not fail');
+    var tx2 = db.transaction('store', 'readwrite');
+    tx2.objectStore('store').put(1, 1);
     tx2.onerror = t.unreached_func('transaction should not fail');
   });
 }, 'Registering observe call with empty transaction');
 
 async_test(function(t) {
-  var dbname = location.pathname + ' - ' + 'observer in version change';
-  var openRequest = indexedDB.open(dbname);
-  var callback_count = 0;
-  var obs;
-  openRequest.onupgradeneeded = t.step_func(function() {
-      openRequest.result.createObjectStore('store');
-      obs = new IDBObserver(t.step_func(function(changes) { callback_count++; }));
-  });
-  openRequest.onsuccess = t.step_func(function() {
-    var db = openRequest.result;
-    var tx1 = db.transaction('store', 'readwrite');
-    var tx2 = db.transaction('store', 'readwrite');
-    tx1.objectStore('store').get(1);
-    tx2.objectStore('store').put(1, 1);
-    obs.observe(db, tx1, { operationTypes: ['put'] });
-    tx1.oncomplete = t.step_func(function() {
-      countCallbacks(callback_count, 0);
-    });
-    tx2.oncomplete = t.step_func(function() {
-      countCallbacks(callback_count, 1);
-      t.done();
-    });
-    tx1.onerror = t.unreached_func('transaction should not fail');
-    tx2.onerror = t.unreached_func('transaction should not fail');
-   });
-  }, 'Create IDBObserver during version change');
+  var dbname = location.pathname + ' - ' + 'observe in version change';
+  var obs = new IDBObserver(t.step_func(function(changes) { }));
 
-async_test(function(t) {
-  var dbname = location.pathname + ' - ' + 'ignore observe call';
-  var openRequest = indexedDB.open(dbname);
-  var callback_count = 0;
-  var obs = new IDBObserver(t.step_func(function() { callback_count++; }));
-  openRequest.onupgradeneeded = t.step_func(function() {
-      var db = openRequest.result;
-      db.createObjectStore('store');
-      obs.observe(db, openRequest.transaction, { operationTypes: ['put'] });
-  });
-  openRequest.onsuccess = t.step_func(function() {
-    var db = openRequest.result;
-    var tx = db.transaction('store', 'readwrite');
-    tx.objectStore('store').put(1, 1);
-    tx.oncomplete = t.step_func(function() {
-      countCallbacks(callback_count, 0);
-      t.done();
+  delete_then_open(t, dbname, function(t, db, request) {
+    request.result.createObjectStore('store');
+    assert_throws(null, function() {
+      obs.observe(db, request.transaction, { operationTypes: ['put'] });
     });
-    tx.onerror = t.unreached_func('transaction should not fail');
-  });
-}, 'Observe call during version change ignored');
+    t.done();
+  }, function() {});
+}, 'Cannot observe during version change');
 
 async_test(function(t) {
   var dbname = location.pathname + ' - ' + 'abort associated transaction';
-  var openRequest = indexedDB.open(dbname);
-  var callback_count = 0;
-  var obs = new IDBObserver(t.step_func(function() { callback_count++; }));
-  openRequest.onupgradeneeded = t.step_func(function() {
-    openRequest.result.createObjectStore('store');
-  });
-  openRequest.onsuccess = t.step_func(function() {
-    var db = openRequest.result;
+  var obs = new IDBObserver(t.unreached_func('Observe in aborted transaction should be ignored'));
+  delete_then_open(t, dbname, function(t, db, request) {
+    request.result.createObjectStore('store');
+  }, function(t, db) {
     var tx1 = db.transaction('store', 'readwrite');
-    var tx2 = db.transaction('store', 'readwrite');
     tx1.objectStore('store').get(1);
-    tx2.objectStore('store').put(1, 1);
     obs.observe(db, tx1, { operationTypes: ['put'] });
+    tx1.oncomplete = t.unreached_func('transaction should not complete');
     tx1.abort();
 
-    tx1.onabort = t.step_func(function(){
-      countCallbacks(callback_count, 0);
-    });
-    tx1.oncomplete = t.unreached_func('transaction should not complete');
+    var tx2 = db.transaction('store', 'readwrite');
+    tx2.objectStore('store').put(1, 1);
+    tx2.onerror = t.unreached_func('transaction error should not fail');
     tx2.oncomplete = t.step_func(function() {
-      countCallbacks(callback_count, 0);
       t.done();
     });
-    tx2.onerror = t.unreached_func('transaction error should not fail');
   });
 }, 'Abort transaction associated with observer');
 
 async_test(function(t) {
-  var dbname = location.pathname + ' - ' + 'abort transaction';
-  var openRequest = indexedDB.open(dbname);
+  var dbname = location.pathname + ' - ' + 'abort transaction not recorded';
   var callback_count = 0;
-  var obs = new IDBObserver(t.step_func(function() { callback_count++; }));
-  openRequest.onupgradeneeded = t.step_func(function() {
-    openRequest.result.createObjectStore('store');
-  });
-  openRequest.onsuccess = t.step_func(function() {
-    var db = openRequest.result;
-    var tx1 = db.transaction('store', 'readwrite');
-    var tx2 = db.transaction('store', 'readwrite');
-    var tx3 = db.transaction('store', 'readwrite');
-    tx1.objectStore('store').get(1);
-    tx2.objectStore('store').put(1, 1);
-    tx3.objectStore('store').put(1, 1);
-    obs.observe(db, tx1, { operationTypes: ['put'] });
-    tx2.abort();
-    tx1.oncomplete = t.step_func(function() {
-      countCallbacks(callback_count, 0);
-    });
-    tx2.oncomplete = t.unreached_func('transaction should not complete');
-    tx2.onabort = t.step_func(function() {
-      countCallbacks(callback_count, 0);
-    });
-    tx3.oncomplete = t.step_func(function() {
-      countCallbacks(callback_count, 1);
+  var obs = new IDBObserver(t.step_func(function(changes) {
+      assert_equals(changes.records.get('store')[0].key.lower, 1);
       t.done();
-    });
+    }));
+
+  delete_then_open(t, dbname, function(t, db, request) {
+    request.result.createObjectStore('store');
+  }, function(t, db) {
+    var tx1 = db.transaction('store', 'readwrite');
+    obs.observe(db, tx1, { operationTypes: ['put'] });
     tx1.onerror = t.unreached_func('transaction should not fail');
+
+    var tx2 = db.transaction('store', 'readwrite');
+    tx2.objectStore('store').put(2, 2);
+    tx2.oncomplete = t.unreached_func('transaction should not complete');
+    tx2.abort();
+
+    var tx3 = db.transaction('store', 'readwrite');
+    tx3.objectStore('store').put(1, 1);
     tx3.onerror = t.unreached_func('transaction should not fail');
   });
-}, 'Abort transaction recorded by observer');
+}, 'Aborted transaction not recorded by observer');
 
 done();

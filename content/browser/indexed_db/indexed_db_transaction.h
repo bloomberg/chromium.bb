@@ -23,6 +23,7 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
+#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace content {
@@ -55,6 +56,10 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // Called by the transaction coordinator when this transaction is unblocked.
   void Start();
 
+  // Grabs a snapshot from the database immediately, then starts the
+  // transaction.
+  void GrabSnapshotThenStart();
+
   blink::WebIDBTransactionMode mode() const { return mode_; }
   const std::set<int64_t>& scope() const { return object_store_ids_; }
 
@@ -79,10 +84,9 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // Adds observation for the connection.
   void AddObservation(int32_t connection_id,
                       ::indexed_db::mojom::ObservationPtr observation);
-  // Adds the last observation index to observer_id's list of recorded
-  // observation indices.
-  void RecordObserverForLastObservation(int32_t connection_id,
-                                        int32_t observer_id);
+
+  ::indexed_db::mojom::ObserverChangesPtr* GetPendingChangesForConnection(
+      int32_t connection_id);
 
   IndexedDBBackingStore::Transaction* BackingStoreTransaction() {
     return transaction_.get();

@@ -27,6 +27,17 @@ void IndexedDBTransactionCoordinator::DidCreateTransaction(
   ProcessQueuedTransactions();
 }
 
+// Observer transactions jump to the front of the queue.
+void IndexedDBTransactionCoordinator::DidCreateObserverTransaction(
+    IndexedDBTransaction* transaction) {
+  DCHECK(!queued_transactions_.count(transaction));
+  DCHECK(!started_transactions_.count(transaction));
+  DCHECK_EQ(IndexedDBTransaction::CREATED, transaction->state());
+
+  started_transactions_.insert_front(transaction);
+  ProcessQueuedTransactions();
+}
+
 void IndexedDBTransactionCoordinator::DidFinishTransaction(
     IndexedDBTransaction* transaction) {
   if (queued_transactions_.count(transaction)) {

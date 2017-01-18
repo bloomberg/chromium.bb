@@ -226,6 +226,13 @@ void IndexedDBTransaction::Start() {
   RunTasksIfStarted();
 }
 
+void IndexedDBTransaction::GrabSnapshotThenStart() {
+  DCHECK(!backing_store_transaction_begun_);
+  transaction_->Begin();
+  backing_store_transaction_begun_ = true;
+  Start();
+}
+
 class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
  public:
   explicit BlobWriteCallbackImpl(
@@ -363,10 +370,8 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
           "txn.id", id());
       callbacks_->OnComplete(*this);
     }
-    if (!pending_observers_.empty() && connection_) {
+    if (!pending_observers_.empty() && connection_)
       connection_->ActivatePendingObservers(std::move(pending_observers_));
-      pending_observers_.clear();
-    }
 
     database_->TransactionFinished(this, true);
     // RemoveTransaction will delete |this|.
@@ -481,6 +486,7 @@ void IndexedDBTransaction::CloseOpenCursors() {
 void IndexedDBTransaction::AddPendingObserver(
     int32_t observer_id,
     const IndexedDBObserver::Options& options) {
+  DCHECK_NE(mode(), blink::WebIDBTransactionModeVersionChange);
   pending_observers_.push_back(base::MakeUnique<IndexedDBObserver>(
       observer_id, object_store_ids_, options));
 }
@@ -509,13 +515,12 @@ void IndexedDBTransaction::AddObservation(
   it->second->observations.push_back(std::move(observation));
 }
 
-void IndexedDBTransaction::RecordObserverForLastObservation(
-    int32_t connection_id,
-    int32_t observer_id) {
+::indexed_db::mojom::ObserverChangesPtr*
+IndexedDBTransaction::GetPendingChangesForConnection(int32_t connection_id) {
   auto it = connection_changes_map_.find(connection_id);
-  DCHECK(it != connection_changes_map_.end());
-  it->second->observation_index_map[observer_id].push_back(
-      it->second->observations.size() - 1);
+  if (it != connection_changes_map_.end())
+    return &it->second;
+  return nullptr;
 }
 
 }  // namespace content

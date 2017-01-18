@@ -40,6 +40,12 @@ void IDBObserver::observe(IDBDatabase* database,
         TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
     return;
   }
+  if (transaction->isVersionChange()) {
+    exceptionState.throwDOMException(
+        TransactionInactiveError,
+        IDBDatabase::cannotObserveVersionChangeTransaction);
+    return;
+  }
   if (!database->backend()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      IDBDatabase::databaseClosedErrorMessage);
@@ -74,7 +80,7 @@ void IDBObserver::observe(IDBDatabase* database,
 
   int32_t observerId =
       database->addObserver(this, transaction->id(), options.transaction(),
-                            options.values(), options.noRecords(), types);
+                            options.noRecords(), options.values(), types);
   m_observerIds.add(observerId, database);
 }
 

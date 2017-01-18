@@ -26,9 +26,12 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     }
   };
   var connection = null;
+  var observedTimes = 0;
   var observeFunction = function(changes) {
-    compareChanges(changes, expectedChanges);
-    assert_true(connection != null);
+    assert_true(connection != null, "Observer called before db opened.");
+    observedTimes++;
+    assert_equals(1, observedTimes, "Observer was called after calling unobserve.");
+    assertChangesEqual(changes, expectedChanges);
     obs.unobserve(connection);
     t.done();
   };
@@ -68,9 +71,12 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   };
 
   var connection = null;
+  var observedTimes = 0;
   var observeFunction = function(changes) {
-    compareChanges(changes, expectedChanges);
-    assert_true(connection != null);
+    assert_true(connection != null, "Observer called before db opened.");
+    observedTimes++;
+    assert_equals(1, observedTimes, "Observer was called after calling unobserve.");
+    assertChangesEqual(changes, expectedChanges);
     obs.unobserve(connection);
     t.done();
   };
@@ -90,14 +96,84 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   var expectedChanges = {
     dbName: db1_name,
     records: {
+      'store2': [{type: 'add', key: 'z', value: 'z'}]
+    }
+  };
+
+  var connection = null;
+  var observedTimes = 0;
+  var observeFunction = function(changes) {
+    assert_true(connection != null, "Observer called before db opened.");
+    observedTimes++;
+    assert_equals(1, observedTimes, "Observer was called after calling unobserve.");
+    assertChangesEqual(changes, expectedChanges);
+    obs.unobserve(connection);
+    t.done();
+  };
+
+  var obs = new IDBObserver(t.step_func(observeFunction));
+
+  openDB(t, db1_name, t.step_func(function(db) {
+    connection = db;
+    var txn = db.transaction(['store2'], 'readonly');
+    obs.observe(db, txn, {operationTypes: ['add'], values: true});
+    txn.oncomplete = observers_added_callback;
+    txn.onerror = t.unreached_func('transaction should not fail')
+  }));
+}, 'IDB Observers: Values');
+
+
+indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callback) {
+  var expectedChanges = {
+    dbName: db1_name,
+    records: {
+      'store2': [{type: 'add', key: 'z'}],
+    }
+  };
+
+  var connection = null;
+  var observedTimes = 0;
+  var observeFunction = function(changes) {
+    assert_true(connection != null, "Observer called before db opened.");
+    observedTimes++;
+    assert_equals(1, observedTimes, "Observer was called after calling unobserve.");
+    assertChangesEqual(changes, expectedChanges);
+    obs.unobserve(connection);
+    assert_true(changes.transaction != null);
+    var store2 = changes.transaction.objectStore('store2');
+    var request = store2.get('z');
+    request.onsuccess = t.step_func(function() {
+      assert_equals(request.result, 'z');
+      t.done();
+    });
+  };
+
+  var obs = new IDBObserver(t.step_func(observeFunction));
+
+  openDB(t, db1_name, t.step_func(function(db) {
+    connection = db;
+    var txn = db.transaction(['store2'], 'readonly');
+    obs.observe(db, txn, {operationTypes: ['add'], transaction: true});
+    txn.oncomplete = observers_added_callback;
+    txn.onerror = t.unreached_func('transaction should not fail')
+  }));
+}, 'IDB Observers: Transaction');
+
+indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callback) {
+  var expectedChanges = {
+    dbName: db1_name,
+    records: {
       'store2': [{type: 'add', key: 'z'}]
     }
   };
 
   var connection = null;
+  var observedTimes = 0;
   var observeFunction = function(changes) {
-    compareChanges(changes, expectedChanges);
-    assert_true(connection != null);
+    assert_true(connection != null, "Observer called before db opened.");
+    observedTimes++;
+    assert_equals(1, observedTimes, "Observer was called after calling unobserve.");
+    assertChangesEqual(changes, expectedChanges);
     obs.unobserve(connection);
     t.done();
   };
@@ -139,11 +215,11 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   var observeFunction = function(changes) {
     pendingObserves = pendingObserves - 1;
     if (changes.database.name === db1_name) {
-      compareChanges(changes, expectedChanges1);
+      assertChangesEqual(changes, expectedChanges1);
       assert_true(connection1 != null);
       obs.unobserve(connection1);
     } else if (changes.database.name === db2_name) {
-      compareChanges(changes, expectedChanges2);
+      assertChangesEqual(changes, expectedChanges2);
       assert_true(connection2 != null);
       obs.unobserve(connection2);
     }
@@ -187,10 +263,10 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   var connection = null;
   var pendingObserves = 2;
   var observeFunction = function(changes) {
-    compareChanges(changes, expectedChanges);
+    assertChangesEqual(changes, expectedChanges);
     pendingObserves = pendingObserves - 1;
     if (pendingObserves === 0) {
-      assert_true(connection != null);
+      assert_true(connection != null, "Observer called before db opened.");
       obs.unobserve(connection);
       t.done();
     } else if (pendingObserves < 0) {
@@ -227,16 +303,18 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   var connection = null;
   var changeNumber = 0;
   var observeFunction = function(changes) {
-    assert_true(connection != null);
-    if (changeNumber === 0) {
-      compareChanges(changes, expectedChanges1);
-    } else if(changeNumber === 1) {
-      compareChanges(changes, expectedChanges2);
+    assert_true(connection != null, "Observer called before db opened.");
+    if (changes.records.has('store1')) {
+      assertChangesEqual(changes, expectedChanges1);
+    } else if(changes.records.has('store2')) {
+      assertChangesEqual(changes, expectedChanges2);
+    }
+    ++changeNumber;
+    assert_less_than_equal(changeNumber, 2, "incorrect pendingObserves");
+    if (changeNumber == 2) {
       obs.unobserve(connection);
       t.done();
     }
-    ++changeNumber;
-    assert_less_than_equal(changeNumber, 1, "incorrect pendingObserves");
   };
 
   var obs = new IDBObserver(t.step_func(observeFunction));
@@ -294,16 +372,16 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
 
     if (changes.database === connection1) {
       assert_true(firstRound, "connection 1 should have been unobserved");
-      compareChanges(changes, partOneChanges1);
+      assertChangesEqual(changes, partOneChanges1);
       obs.unobserve(connection1);
     } else if (changes.database === connection2) {
       if (firstRound)
-        compareChanges(changes, partOneChanges2);
+        assertChangesEqual(changes, partOneChanges2);
       else
-        compareChanges(changes, partTwoChanges2);
+        assertChangesEqual(changes, partTwoChanges2);
     } else if (changes.database === connection3) {
       assert_true(firstRound, "connection 3 should have been unobserved ");
-      compareChanges(changes, partOneChanges3);
+      assertChangesEqual(changes, partOneChanges3);
       obs.unobserve(connection3);
     } else {
       assert_unreached('Unknown connection supplied with changes.');
@@ -347,7 +425,11 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   var connection1 = null;
   var connection2 = null;
 
+  var observedTimes = 0;
   var observeFunction = function(changes) {
+    assert_true(connection2 != null, "Observer called before db opened.");
+    observedTimes++;
+    assert_equals(1, observedTimes, "Observer was called after calling unobserve.");
     assert_equals(changes.database, connection2);
     obs.unobserve(connection2);
     t.done();
@@ -433,9 +515,9 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
       connection1Observes = connection1Observes + 1;
       assert_true(connection1Observes <= 2);
       if (changes.records.has('store1')) {
-        compareChanges(changes, expectedChanges1);
+        assertChangesEqual(changes, expectedChanges1);
       } else if (changes.records.has('store2')) {
-        compareChanges(changes, expectedChanges2);
+        assertChangesEqual(changes, expectedChanges2);
       } else {
         assert_unreached("unknown changes");
       }
@@ -505,9 +587,9 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
       connection1Observes = connection1Observes + 1;
       assert_true(connection1Observes <= 2);
       if (changes.records.has('store1')) {
-        compareChanges(changes, expectedChanges1);
+        assertChangesEqual(changes, expectedChanges1);
       } else if (changes.records.has('store2')) {
-        compareChanges(changes, expectedChanges2);
+        assertChangesEqual(changes, expectedChanges2);
       } else {
         assert_unreached("unknown changes");
       }

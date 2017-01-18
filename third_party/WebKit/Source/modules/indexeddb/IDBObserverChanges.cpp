@@ -31,28 +31,40 @@ ScriptValue IDBObserverChanges::records(ScriptState* scriptState) {
 IDBObserverChanges* IDBObserverChanges::create(
     IDBDatabase* database,
     const WebVector<WebIDBObservation>& observations,
-    const WebVector<int32_t>& observationIndex) {
-  return new IDBObserverChanges(database, observations, observationIndex);
+    const WebVector<int32_t>& observationIndices) {
+  return new IDBObserverChanges(database, nullptr, observations,
+                                observationIndices);
+}
+
+IDBObserverChanges* IDBObserverChanges::create(
+    IDBDatabase* database,
+    IDBTransaction* transaction,
+    const WebVector<WebIDBObservation>& observations,
+    const WebVector<int32_t>& observationIndices) {
+  return new IDBObserverChanges(database, transaction, observations,
+                                observationIndices);
 }
 
 IDBObserverChanges::IDBObserverChanges(
     IDBDatabase* database,
+    IDBTransaction* transaction,
     const WebVector<WebIDBObservation>& observations,
-    const WebVector<int32_t>& observationIndex)
-    : m_database(database) {
-  extractChanges(observations, observationIndex);
+    const WebVector<int32_t>& observationIndices)
+    : m_database(database), m_transaction(transaction) {
+  extractChanges(observations, observationIndices);
 }
 
 void IDBObserverChanges::extractChanges(
     const WebVector<WebIDBObservation>& observations,
-    const WebVector<int32_t>& observationIndex) {
+    const WebVector<int32_t>& observationIndices) {
   // TODO(dmurph): Avoid getting and setting repeated times.
-  for (const auto& idx : observationIndex)
+  for (const auto& idx : observationIndices) {
     m_records
         .add(observations[idx].objectStoreId,
              HeapVector<Member<IDBObservation>>())
         .storedValue->value.push_back(
             IDBObservation::create(observations[idx]));
+  }
 }
 
 DEFINE_TRACE(IDBObserverChanges) {

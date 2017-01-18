@@ -148,10 +148,17 @@ struct Observation {
   int64 object_store_id;
   OperationType type;
   KeyRange key_range;
+  Value? value;
+};
+
+struct ObserverTransaction {
+  int64 id;
+  array<int64> scope;
 };
 
 struct ObserverChanges {
   map<int32, array<int32>> observation_index_map;
+  map<int32, ObserverTransaction> transaction_map;
   array<Observation> observations;
 };
 

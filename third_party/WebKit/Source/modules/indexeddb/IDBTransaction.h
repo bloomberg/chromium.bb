@@ -61,6 +61,11 @@ class MODULES_EXPORT IDBTransaction final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static IDBTransaction* createObserver(ExecutionContext*,
+                                        int64_t,
+                                        const HashSet<String>& scope,
+                                        IDBDatabase*);
+
   static IDBTransaction* createNonVersionChange(ScriptState*,
                                                 int64_t,
                                                 const HashSet<String>& scope,
@@ -141,6 +146,12 @@ class MODULES_EXPORT IDBTransaction final
 
  private:
   using IDBObjectStoreMap = HeapHashMap<String, Member<IDBObjectStore>>;
+
+  // For observer transactions.
+  IDBTransaction(ExecutionContext*,
+                 int64_t,
+                 const HashSet<String>& scope,
+                 IDBDatabase*);
 
   // For non-upgrade transactions.
   IDBTransaction(ScriptState*,

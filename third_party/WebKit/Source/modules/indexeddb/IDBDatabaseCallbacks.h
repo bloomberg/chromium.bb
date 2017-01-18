@@ -43,6 +43,10 @@ struct WebIDBObservation;
 class MODULES_EXPORT IDBDatabaseCallbacks
     : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
  public:
+  // Maps observer to transaction, which needs an id and a scope.
+  using TransactionMap =
+      std::unordered_map<int32_t, std::pair<int64_t, std::vector<int64_t>>>;
+
   static IDBDatabaseCallbacks* create();
   virtual ~IDBDatabaseCallbacks();
   DECLARE_TRACE();
@@ -56,7 +60,8 @@ class MODULES_EXPORT IDBDatabaseCallbacks
   virtual void onChanges(
       const std::unordered_map<int32_t, std::vector<int32_t>>&
           observation_index_map,
-      const WebVector<WebIDBObservation>& observations);
+      const WebVector<WebIDBObservation>& observations,
+      const TransactionMap& transactions);
 
   void connect(IDBDatabase*);
 

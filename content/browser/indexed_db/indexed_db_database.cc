@@ -800,12 +800,11 @@ void IndexedDBDatabase::AddPendingObserver(
   transaction->AddPendingObserver(observer_id, options);
 }
 
-// TODO(palakj): Augment the function with IDBValue later. Issue
-// crbug.com/609934.
 void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
                                           int64_t object_store_id,
                                           blink::WebIDBOperationType type,
-                                          const IndexedDBKeyRange& key_range) {
+                                          const IndexedDBKeyRange& key_range,
+                                          const IndexedDBValue* value) {
   for (auto* connection : connections_) {
     bool recorded = false;
     for (const auto& observer : connection->active_observers()) {
@@ -821,8 +820,28 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
         transaction->AddObservation(connection->id(), std::move(observation));
         recorded = true;
       }
-      transaction->RecordObserverForLastObservation(connection->id(),
-                                                    observer->id());
+      ::indexed_db::mojom::ObserverChangesPtr& changes =
+          *transaction->GetPendingChangesForConnection(connection->id());
+
+      changes->observation_index_map[observer->id()].push_back(
+          changes->observations.size() - 1);
+      if (observer->include_transaction() &&
+          !base::ContainsKey(changes->transaction_map, observer->id())) {
+        auto mojo_transaction = ::indexed_db::mojom::ObserverTransaction::New();
+        mojo_transaction->id = connection->NewObserverTransactionId();
+        mojo_transaction->scope.insert(mojo_transaction->scope.end(),
+                                       observer->object_store_ids().begin(),
+                                       observer->object_store_ids().end());
+        changes->transaction_map[observer->id()] = std::move(mojo_transaction);
+      }
+      if (value && observer->values() && !changes->observations.back()->value) {
+        // TODO(dmurph): Avoid any and all IndexedDBValue copies. Perhaps defer
+        // this until the end of the transaction, where we can safely erase the
+        // indexeddb value. crbug.com/682363
+        IndexedDBValue copy = *value;
+        changes->observations.back()->value =
+            IndexedDBCallbacks::ConvertAndEraseValue(&copy);
+      }
     }
   }
 }
@@ -831,8 +850,25 @@ void IndexedDBDatabase::SendObservations(
     std::map<int32_t, ::indexed_db::mojom::ObserverChangesPtr> changes_map) {
   for (auto* conn : connections_) {
     auto it = changes_map.find(conn->id());
-    if (it != changes_map.end())
-      conn->callbacks()->OnDatabaseChange(std::move(it->second));
+    if (it == changes_map.end())
+      continue;
+
+    // Start all of the transactions.
+    ::indexed_db::mojom::ObserverChangesPtr& changes = it->second;
+    for (const auto& transaction_pair : changes->transaction_map) {
+      std::set<int64_t> scope(transaction_pair.second->scope.begin(),
+                              transaction_pair.second->scope.end());
+      IndexedDBTransaction* transaction = conn->CreateTransaction(
+          transaction_pair.second->id, scope,
+          blink::WebIDBTransactionModeReadOnly,
+          new IndexedDBBackingStore::Transaction(backing_store_.get()));
+      DCHECK(transaction);
+      transaction_coordinator_.DidCreateObserverTransaction(transaction);
+      transaction_count_++;
+      transaction->GrabSnapshotThenStart();
+    }
+
+    conn->callbacks()->OnDatabaseChange(std::move(it->second));
   }
 }
 
@@ -1336,7 +1372,7 @@ leveldb::Status IndexedDBDatabase::PutOperation(
                     params->put_mode == blink::WebIDBPutModeAddOnly
                         ? blink::WebIDBAdd
                         : blink::WebIDBPut,
-                    IndexedDBKeyRange(*key));
+                    IndexedDBKeyRange(*key), &params->value);
   return s;
 }
 
@@ -1650,7 +1686,7 @@ leveldb::Status IndexedDBDatabase::DeleteRangeOperation(
     return s;
   callbacks->OnSuccess();
   FilterObservation(transaction, object_store_id, blink::WebIDBDelete,
-                    *key_range);
+                    *key_range, nullptr);
   return s;
 }
 
@@ -1680,7 +1716,7 @@ leveldb::Status IndexedDBDatabase::ClearOperation(
   callbacks->OnSuccess();
 
   FilterObservation(transaction, object_store_id, blink::WebIDBClear,
-                    IndexedDBKeyRange());
+                    IndexedDBKeyRange(), nullptr);
   return s;
 }
 

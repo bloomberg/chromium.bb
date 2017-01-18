@@ -4,7 +4,11 @@
 
 #include "content/child/indexed_db/indexed_db_database_callbacks_impl.h"
 
+#include <unordered_map>
+#include <utility>
+
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/child/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
@@ -41,10 +45,26 @@ void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
     web_observation.type = observation->type;
     web_observation.keyRange =
         WebIDBKeyRangeBuilder::Build(observation->key_range);
-    // TODO(palakj): Assign value to web_observation.
+    if (observation->value) {
+      IndexedDBCallbacksImpl::ConvertValue(observation->value,
+                                           &web_observation.value);
+    }
     web_observations.push_back(std::move(web_observation));
   }
-  callbacks->onChanges(changes->observation_index_map, web_observations);
+  std::unordered_map<int32_t, std::pair<int64_t, std::vector<int64_t>>>
+      observer_transactions;
+
+  for (const auto& transaction_pair : changes->transaction_map) {
+    std::pair<int64_t, std::vector<int64_t>>& obs_txn =
+        observer_transactions[transaction_pair.first];
+    obs_txn.first = transaction_pair.second->id;
+    for (int64_t scope : transaction_pair.second->scope) {
+      obs_txn.second.push_back(scope);
+    }
+  }
+
+  callbacks->onChanges(changes->observation_index_map, web_observations,
+                       observer_transactions);
 }
 
 }  // namespace

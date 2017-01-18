@@ -33,6 +33,13 @@ class list_set {
     return *this;
   }
 
+  void insert_front(const T& elem) {
+    if (set_.find(elem) != set_.end())
+      return;
+    set_.insert(elem);
+    list_.push_front(elem);
+  }
+
   void insert(const T& elem) {
     if (set_.find(elem) != set_.end())
       return;

@@ -14,19 +14,21 @@
 
 #include "base/macros.h"
 #include "content/browser/indexed_db/list_set.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 class IndexedDBTransaction;
 
 // Transactions are executed in the order the were created.
-class IndexedDBTransactionCoordinator {
+class CONTENT_EXPORT IndexedDBTransactionCoordinator {
  public:
   IndexedDBTransactionCoordinator();
   ~IndexedDBTransactionCoordinator();
 
   // Called by transactions as they start and finish.
   void DidCreateTransaction(IndexedDBTransaction* transaction);
+  void DidCreateObserverTransaction(IndexedDBTransaction* transaction);
   void DidFinishTransaction(IndexedDBTransaction* transaction);
 
   bool IsRunningVersionChangeTransaction() const;
@@ -39,6 +41,8 @@ class IndexedDBTransactionCoordinator {
   std::vector<const IndexedDBTransaction*> GetTransactions() const;
 
  private:
+  friend class IndexedDBTransactionCoordinatorTest;
+
   void ProcessQueuedTransactions();
   bool CanStartTransaction(IndexedDBTransaction* const transaction,
                            const std::set<int64_t>& locked_scope) const;

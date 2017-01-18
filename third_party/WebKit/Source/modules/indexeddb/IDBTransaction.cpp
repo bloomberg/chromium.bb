@@ -40,11 +40,24 @@
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "wtf/PtrUtil.h"
+
 #include <memory>
 
 using blink::WebIDBDatabase;
 
 namespace blink {
+
+IDBTransaction* IDBTransaction::createObserver(
+    ExecutionContext* executionContext,
+    int64_t id,
+    const HashSet<String>& scope,
+    IDBDatabase* db) {
+  DCHECK(!scope.isEmpty()) << "Observer transactions must operate on a "
+                              "well-defined set of stores";
+  IDBTransaction* transaction =
+      new IDBTransaction(executionContext, id, scope, db);
+  return transaction;
+}
 
 IDBTransaction* IDBTransaction::createNonVersionChange(
     ScriptState* scriptState,
@@ -90,6 +103,22 @@ class DeactivateTransactionTask : public V8PerIsolateData::EndOfScopeTask {
 };
 
 }  // namespace
+
+IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
+                               int64_t id,
+                               const HashSet<String>& scope,
+                               IDBDatabase* db)
+    : ContextLifecycleObserver(executionContext),
+      m_id(id),
+      m_database(db),
+      m_mode(WebIDBTransactionModeReadOnly),
+      m_scope(scope),
+      m_state(Active) {
+  DCHECK(m_database);
+  DCHECK(!m_scope.isEmpty()) << "Observer transactions must operate "
+                                "on a well-defined set of stores";
+  m_database->transactionCreated(this);
+}
 
 IDBTransaction::IDBTransaction(ScriptState* scriptState,
                                int64_t id,

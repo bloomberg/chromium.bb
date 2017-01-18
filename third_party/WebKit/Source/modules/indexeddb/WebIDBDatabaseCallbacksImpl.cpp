@@ -27,6 +27,7 @@
 
 #include "core/dom/DOMException.h"
 #include "wtf/PtrUtil.h"
+
 #include <memory>
 
 namespace blink {
@@ -73,9 +74,10 @@ void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId) {
 void WebIDBDatabaseCallbacksImpl::onChanges(
     const std::unordered_map<int32_t, std::vector<int32_t>>&
         observation_index_map,
-    const WebVector<WebIDBObservation>& observations) {
+    const WebVector<WebIDBObservation>& observations,
+    const IDBDatabaseCallbacks::TransactionMap& transactions) {
   if (m_callbacks)
-    m_callbacks->onChanges(observation_index_map, observations);
+    m_callbacks->onChanges(observation_index_map, observations, transactions);
 }
 
 void WebIDBDatabaseCallbacksImpl::detach() {

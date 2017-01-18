@@ -32,6 +32,7 @@
 #include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+
 #include <memory>
 
 namespace blink {
@@ -49,9 +50,11 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   void onVersionChange(long long oldVersion, long long newVersion) override;
   void onAbort(long long transactionId, const WebIDBDatabaseError&) override;
   void onComplete(long long transactionId) override;
-  void onChanges(const std::unordered_map<int32_t, std::vector<int32_t>>&
-                     observation_index_map,
-                 const WebVector<WebIDBObservation>& observations) override;
+  void onChanges(
+      const std::unordered_map<int32_t, std::vector<int32_t>>&
+          observation_index_map,
+      const WebVector<WebIDBObservation>& observations,
+      const IDBDatabaseCallbacks::TransactionMap& transactions) override;
   void detach() override;
 
  private:

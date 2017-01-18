@@ -139,10 +139,12 @@ class CONTENT_EXPORT IndexedDBDatabase
                           int32_t observer_id,
                           const IndexedDBObserver::Options& options);
 
+  // |value| can be null for delete and clear operations.
   void FilterObservation(IndexedDBTransaction*,
                          int64_t object_store_id,
                          blink::WebIDBOperationType type,
-                         const IndexedDBKeyRange& key_range);
+                         const IndexedDBKeyRange& key_range,
+                         const IndexedDBValue* value);
   void SendObservations(
       std::map<int32_t, ::indexed_db::mojom::ObserverChangesPtr> change_map);
 

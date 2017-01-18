@@ -10,6 +10,7 @@
 
 namespace blink {
 class WebIDBCallbacks;
+struct WebIDBValue;
 }
 
 namespace content {
@@ -67,6 +68,9 @@ class IndexedDBCallbacksImpl : public indexed_db::mojom::Callbacks {
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);
   };
+
+  static void ConvertValue(const indexed_db::mojom::ValuePtr& value,
+                           blink::WebIDBValue* web_value);
 
   IndexedDBCallbacksImpl(std::unique_ptr<blink::WebIDBCallbacks> callbacks,
                          int64_t transaction_id,

@@ -65,8 +65,19 @@ void ConvertDatabaseMetadata(const content::IndexedDBDatabaseMetadata& metadata,
     ConvertObjectStoreMetadata(iter.second, &output->objectStores[i++]);
 }
 
-void ConvertValue(const indexed_db::mojom::ValuePtr& value,
-                  WebIDBValue* web_value) {
+void ConvertReturnValue(const indexed_db::mojom::ReturnValuePtr& value,
+                        WebIDBValue* web_value) {
+  IndexedDBCallbacksImpl::ConvertValue(value->value, web_value);
+  web_value->primaryKey = WebIDBKeyBuilder::Build(value->primary_key);
+  web_value->keyPath = WebIDBKeyPathBuilder::Build(value->key_path);
+}
+
+}  // namespace
+
+// static
+void IndexedDBCallbacksImpl::ConvertValue(
+    const indexed_db::mojom::ValuePtr& value,
+    WebIDBValue* web_value) {
   if (value->bits.empty())
     return;
 
@@ -92,14 +103,6 @@ void ConvertValue(const indexed_db::mojom::ValuePtr& value,
   web_value->webBlobInfo.swap(local_blob_info);
 }
 
-void ConvertReturnValue(const indexed_db::mojom::ReturnValuePtr& value,
-                        WebIDBValue* web_value) {
-  ConvertValue(value->value, web_value);
-  web_value->primaryKey = WebIDBKeyBuilder::Build(value->primary_key);
-  web_value->keyPath = WebIDBKeyPathBuilder::Build(value->key_path);
-}
-
-}  // namespace
 
 IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(
     std::unique_ptr<WebIDBCallbacks> callbacks,
@@ -301,7 +304,7 @@ void IndexedDBCallbacksImpl::InternalState::SuccessCursor(
     indexed_db::mojom::ValuePtr value) {
   WebIDBValue web_value;
   if (value)
-    ConvertValue(value, &web_value);
+    IndexedDBCallbacksImpl::ConvertValue(value, &web_value);
 
   WebIDBCursorImpl* cursor =
       new WebIDBCursorImpl(std::move(cursor_info), transaction_id_, io_runner_);

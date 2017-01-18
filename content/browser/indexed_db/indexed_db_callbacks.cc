@@ -76,15 +76,6 @@ void ConvertBlobInfo(
   return mojo_value;
 }
 
-// Destructively converts an IndexedDBValue to a Mojo Value.
-::indexed_db::mojom::ValuePtr ConvertValue(IndexedDBValue* value) {
-  auto mojo_value = ::indexed_db::mojom::Value::New();
-  if (!value->empty())
-    swap(mojo_value->bits, value->bits);
-  ConvertBlobInfo(value->blob_info, &mojo_value->blob_or_file_info);
-  return mojo_value;
-}
-
 }  // namespace
 
 class IndexedDBCallbacks::IOThreadHelper {
@@ -139,6 +130,16 @@ class IndexedDBCallbacks::IOThreadHelper {
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
 };
+
+// static
+::indexed_db::mojom::ValuePtr IndexedDBCallbacks::ConvertAndEraseValue(
+    IndexedDBValue* value) {
+  auto mojo_value = ::indexed_db::mojom::Value::New();
+  if (!value->empty())
+    swap(mojo_value->bits, value->bits);
+  ConvertBlobInfo(value->blob_info, &mojo_value->blob_or_file_info);
+  return mojo_value;
+}
 
 IndexedDBCallbacks::IndexedDBCallbacks(
     scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
@@ -291,7 +292,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
   ::indexed_db::mojom::ValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
   if (value) {
-    mojo_value = ConvertValue(value);
+    mojo_value = ConvertAndEraseValue(value);
     blob_info.swap(value->blob_info);
   }
 
@@ -316,7 +317,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
   ::indexed_db::mojom::ValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
   if (value) {
-    mojo_value = ConvertValue(value);
+    mojo_value = ConvertAndEraseValue(value);
     blob_info.swap(value->blob_info);
   }
 
@@ -343,7 +344,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
   std::vector<::indexed_db::mojom::ValuePtr> mojo_values;
   mojo_values.reserve(values->size());
   for (size_t i = 0; i < values->size(); ++i)
-    mojo_values.push_back(ConvertValue(&(*values)[i]));
+    mojo_values.push_back(ConvertAndEraseValue(&(*values)[i]));
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

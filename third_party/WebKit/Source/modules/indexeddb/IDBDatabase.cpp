@@ -46,6 +46,7 @@
 #include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/Atomics.h"
+
 #include <limits>
 #include <memory>
 
@@ -53,6 +54,8 @@ using blink::WebIDBDatabase;
 
 namespace blink {
 
+const char IDBDatabase::cannotObserveVersionChangeTransaction[] =
+    "An observer cannot target a version change transaction.";
 const char IDBDatabase::indexDeletedErrorMessage[] =
     "The index or its object store has been deleted.";
 const char IDBDatabase::indexNameTakenErrorMessage[] =
@@ -177,14 +180,31 @@ void IDBDatabase::onComplete(int64_t transactionId) {
 void IDBDatabase::onChanges(
     const std::unordered_map<int32_t, std::vector<int32_t>>&
         observation_index_map,
-    const WebVector<WebIDBObservation>& observations) {
+    const WebVector<WebIDBObservation>& observations,
+    const IDBDatabaseCallbacks::TransactionMap& transactions) {
   for (const auto& map_entry : observation_index_map) {
     auto it = m_observers.find(map_entry.first);
     if (it != m_observers.end()) {
       IDBObserver* observer = it->value;
+
+      IDBTransaction* transaction = nullptr;
+      auto it = transactions.find(map_entry.first);
+      if (it != transactions.end()) {
+        const std::pair<int64_t, std::vector<int64_t>>& obs_txn = it->second;
+        HashSet<String> stores;
+        for (int64_t store_id : obs_txn.second) {
+          stores.add(m_metadata.objectStores.get(store_id)->name);
+        }
+
+        transaction = IDBTransaction::createObserver(
+            getExecutionContext(), obs_txn.first, stores, this);
+      }
+
       observer->callback()->call(
-          observer,
-          IDBObserverChanges::create(this, observations, map_entry.second));
+          observer, IDBObserverChanges::create(this, transaction, observations,
+                                               map_entry.second));
+      if (transaction)
+        transaction->setActive(false);
     }
   }
 }

@@ -158,4 +158,12 @@ void IndexedDBConnection::RemoveTransaction(int64_t id) {
   transactions_.erase(id);
 }
 
+int64_t IndexedDBConnection::NewObserverTransactionId() {
+  // When we overflow to 0, reset the ID to 1 (id of 0 is reserved for upgrade
+  // transactions).
+  if (next_observer_transaction_id_ == 0)
+    next_observer_transaction_id_ = 1;
+  return static_cast<int64_t>(next_observer_transaction_id_++) << 32;
+}
+
 }  // namespace content

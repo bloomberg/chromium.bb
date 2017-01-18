@@ -45,6 +45,7 @@
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+
 #include <memory>
 
 namespace blink {
@@ -118,7 +119,8 @@ class MODULES_EXPORT IDBDatabase final
   void onComplete(int64_t);
   void onChanges(const std::unordered_map<int32_t, std::vector<int32_t>>&
                      observation_index_map,
-                 const WebVector<WebIDBObservation>& observations);
+                 const WebVector<WebIDBObservation>& observations,
+                 const IDBDatabaseCallbacks::TransactionMap& transactions);
 
   // ScriptWrappable
   bool hasPendingActivity() const final;
@@ -149,6 +151,7 @@ class MODULES_EXPORT IDBDatabase final
   static int64_t nextTransactionId();
   static int32_t nextObserverId();
 
+  static const char cannotObserveVersionChangeTransaction[];
   static const char indexDeletedErrorMessage[];
   static const char indexNameTakenErrorMessage[];
   static const char isKeyCursorErrorMessage[];
