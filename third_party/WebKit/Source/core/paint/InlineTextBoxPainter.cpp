@@ -1134,13 +1134,8 @@ void InlineTextBoxPainter::paintDecorations(
           context, FloatPoint(localOrigin) + FloatPoint(0, lineThroughOffset),
           width.toFloat(), decoration, textDecorationThickness, doubleOffset, 0,
           antialiasDecoration);
-      if (skipIntercepts) {
-        textPainter.clipDecorationsStripe(
-            -baseline + decorationPainter.decorationBounds().y() -
-                FloatPoint(localOrigin).y(),
-            decorationPainter.decorationBounds().height(),
-            textDecorationThickness);
-      }
+      // No skip: ink for line-through,
+      // compare https://github.com/w3c/csswg-drafts/issues/711
       decorationPainter.paint();
     }
   }
