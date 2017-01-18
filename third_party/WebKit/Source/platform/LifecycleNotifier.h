@@ -112,8 +112,8 @@ class HasContextDestroyed {
 template <typename Observer,
           typename T,
           bool = HasContextDestroyed<Observer, T>::value>
-class NotifyContextDestroyed {
-  STATIC_ONLY(NotifyContextDestroyed);
+class ContextDestroyedNotifier {
+  STATIC_ONLY(ContextDestroyedNotifier);
 
  public:
   static void call(Observer* observer, T* context) {
@@ -122,8 +122,8 @@ class NotifyContextDestroyed {
 };
 
 template <typename Observer, typename T>
-class NotifyContextDestroyed<Observer, T, false> {
-  STATIC_ONLY(NotifyContextDestroyed);
+class ContextDestroyedNotifier<Observer, T, false> {
+  STATIC_ONLY(ContextDestroyedNotifier);
 
  public:
   static void call(Observer*, T*) {}
@@ -137,7 +137,7 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed() {
   m_observers.swap(observers);
   for (Observer* observer : observers) {
     DCHECK(observer->lifecycleContext() == context());
-    NotifyContextDestroyed<Observer, T>::call(observer, context());
+    ContextDestroyedNotifier<Observer, T>::call(observer, context());
     observer->clearContext();
   }
 }
