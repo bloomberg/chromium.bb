@@ -472,12 +472,15 @@ static int od_compute_var_4x4(od_coeff *x, int stride) {
   return (s2 - (sum * sum >> 4)) >> 4;
 }
 
+/* OD_DIST_LP_MID controls the frequency weighting filter used for computing
+   the distortion. For a value X, the filter is [1 X 1]/(X + 2) and
+   is applied both horizontally and vertically. For X=5, the filter is
+   a good approximation for the OD_QM8_Q4_HVS quantization matrix. */
+#define OD_DIST_LP_MID (5)
+#define OD_DIST_LP_NORM (OD_DIST_LP_MID + 2)
+
 static double od_compute_dist_8x8(int qm, int use_activity_masking, od_coeff *x,
-                                  od_coeff *y, int stride) {
-  od_coeff e[8 * 8];
-  od_coeff et[8 * 8];
-  int16_t src[8 * 8];
-  tran_low_t coeff[8 * 8];
+                                  od_coeff *y, od_coeff *e_lp, int stride) {
   double sum;
   int min_var;
   double mean_var;
@@ -487,7 +490,6 @@ static double od_compute_dist_8x8(int qm, int use_activity_masking, od_coeff *x,
   int i;
   int j;
   double vardist;
-  FWD_TXFM_PARAM fwd_txfm_param;
 
   vardist = 0;
   OD_ASSERT(qm != OD_FLAT_QM);
@@ -526,27 +528,11 @@ static double od_compute_dist_8x8(int qm, int use_activity_masking, od_coeff *x,
   sum = 0;
   for (i = 0; i < 8; i++) {
     for (j = 0; j < 8; j++)
-      e[8 * i + j] = x[i * stride + j] - y[i * stride + j];
+      sum += e_lp[i * stride + j] * (double)e_lp[i * stride + j];
   }
-
-  for (i = 0; i < 8; i++)
-    for (j = 0; j < 8; j++) src[8 * i + j] = e[8 * i + j];
-
-  fwd_txfm_param.tx_type = DCT_DCT;
-  fwd_txfm_param.tx_size = TX_8X8;
-  fwd_txfm_param.lossless = 0;
-
-  fwd_txfm(&src[0], &coeff[0], 8, &fwd_txfm_param);
-
-  for (i = 0; i < 8; i++)
-    for (j = 0; j < 8; j++) et[8 * i + j] = coeff[8 * i + j] >> 3;
-
-  sum = 0;
-  for (i = 0; i < 8; i++)
-    for (j = 0; j < 8; j++)
-      sum += et[8 * i + j] * (double)et[8 * i + j] * 16. /
-             OD_QM8_Q4_HVS[i * 8 + j];
-
+  /* Normalize the filter to unit DC response. */
+  sum *= 1. / (OD_DIST_LP_NORM * OD_DIST_LP_NORM * OD_DIST_LP_NORM *
+               OD_DIST_LP_NORM);
   return activity * activity * (sum + vardist);
 }
 
@@ -569,11 +555,43 @@ static double od_compute_dist(int qm, int activity_masking, od_coeff *x,
       sum += tmp * tmp;
     }
   } else {
+    int j;
+    DECLARE_ALIGNED(16, od_coeff, e[MAX_TX_SQUARE]);
+    DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
+    DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
+    int mid = OD_DIST_LP_MID;
+    for (i = 0; i < bsize_h; i++) {
+      for (j = 0; j < bsize_w; j++) {
+        e[i * bsize_w + j] = x[i * bsize_w + j] - y[i * bsize_w + j];
+      }
+    }
+    for (i = 0; i < bsize_h; i++) {
+      tmp[i * bsize_w] = mid * e[i * bsize_w] + 2 * e[i * bsize_w + 1];
+      tmp[i * bsize_w + bsize_w - 1] =
+          mid * e[i * bsize_w + bsize_w - 1] + 2 * e[i * bsize_w + bsize_w - 2];
+      for (j = 1; j < bsize_w - 1; j++) {
+        tmp[i * bsize_w + j] = mid * e[i * bsize_w + j] +
+                               e[i * bsize_w + j - 1] + e[i * bsize_w + j + 1];
+      }
+    }
+    for (j = 0; j < bsize_w; j++) {
+      e_lp[j] = mid * tmp[j] + 2 * tmp[bsize_w + j];
+      e_lp[(bsize_h - 1) * bsize_w + j] =
+          mid * tmp[(bsize_h - 1) * bsize_w + j] +
+          2 * tmp[(bsize_h - 2) * bsize_w + j];
+    }
+    for (i = 1; i < bsize_h - 1; i++) {
+      for (j = 0; j < bsize_w; j++) {
+        e_lp[i * bsize_w + j] = mid * tmp[i * bsize_w + j] +
+                                tmp[(i - 1) * bsize_w + j] +
+                                tmp[(i + 1) * bsize_w + j];
+      }
+    }
     for (i = 0; i < bsize_h; i += 8) {
-      int j;
       for (j = 0; j < bsize_w; j += 8) {
         sum += od_compute_dist_8x8(qm, activity_masking, &x[i * bsize_w + j],
-                                   &y[i * bsize_w + j], bsize_w);
+                                   &y[i * bsize_w + j], &e_lp[i * bsize_w + j],
+                                   bsize_w);
       }
     }
     /* Compensate for the fact that the quantization matrix lowers the
