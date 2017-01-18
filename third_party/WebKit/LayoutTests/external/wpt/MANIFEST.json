@@ -7573,6 +7573,11 @@
      {}
     ]
    ],
+   "html/dom/reflection-misc-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/dom/reflection-obsolete-expected.txt": [
     [
      {}
@@ -12753,17 +12758,7 @@
      {}
     ]
    ],
-   "html/semantics/forms/constraints/form-validation-validity-valid-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/forms/constraints/form-validation-validity-valueMissing-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/forms/constraints/form-validation-willValidate-expected.txt": [
     [
      {}
     ]
@@ -40612,6 +40607,10 @@
    "91c3a4fdf4585fec9ef901ac060656849e47accc",
    "testharness"
   ],
+  "html/dom/reflection-misc-expected.txt": [
+   "340cbaa02e34e42a9727114eb86302bd80681cc8",
+   "support"
+  ],
   "html/dom/reflection-misc.html": [
    "7f8de0ad7188dfc54234eb85b37fdc3248c0886e",
    "testharness"
@@ -45900,10 +45899,6 @@
    "f77270ff6c2e47d93aee22406576a0c5c4ccb45b",
    "testharness"
   ],
-  "html/semantics/forms/constraints/form-validation-validity-valid-expected.txt": [
-   "4b66776645675a9f1ddaeb83ca824fc9a0e554cf",
-   "support"
-  ],
   "html/semantics/forms/constraints/form-validation-validity-valid.html": [
    "c6ddb5e16769a9bf2540b2a13c03d6a9cd24c688",
    "testharness"
@@ -45915,10 +45910,6 @@
   "html/semantics/forms/constraints/form-validation-validity-valueMissing.html": [
    "3a2f071252c7cd9d09c78db0277bb8482305476b",
    "testharness"
-  ],
-  "html/semantics/forms/constraints/form-validation-willValidate-expected.txt": [
-   "6368c9833e8d42238ce77beb1ec2b6a76ea6329a",
-   "support"
   ],
   "html/semantics/forms/constraints/form-validation-willValidate.html": [
    "cfdb71233ab64d4ce815f186fa334db67941451d",
