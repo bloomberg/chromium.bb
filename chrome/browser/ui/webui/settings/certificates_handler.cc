@@ -718,13 +718,13 @@ void CertificatesHandler::HandleImportPersonalPasswordSelected(
   CHECK(args->GetString(1, &password_));
 
   if (use_hardware_backed_) {
-    module_ = certificate_manager_model_->cert_db()->GetPrivateModule();
+    slot_ = certificate_manager_model_->cert_db()->GetPrivateSlot();
   } else {
-    module_ = certificate_manager_model_->cert_db()->GetPublicModule();
+    slot_ = certificate_manager_model_->cert_db()->GetPublicSlot();
   }
 
   net::CryptoModuleList modules;
-  modules.push_back(module_);
+  modules.push_back(net::CryptoModule::CreateFromHandle(slot_.get()));
   chrome::UnlockSlotsIfNecessary(
       modules, chrome::kCryptoModulePasswordCertImport,
       net::HostPortPair(),  // unused.
@@ -740,7 +740,7 @@ void CertificatesHandler::ImportPersonalSlotUnlocked() {
   // for Chrome OS when the "Import and Bind" option is chosen.
   bool is_extractable = !use_hardware_backed_;
   int result = certificate_manager_model_->ImportFromPKCS12(
-      module_->os_module_handle(), file_data_, password_, is_extractable);
+      slot_.get(), file_data_, password_, is_extractable);
   ImportExportCleanup();
   int string_id;
   switch (result) {
@@ -782,7 +782,7 @@ void CertificatesHandler::ImportExportCleanup() {
   file_data_.clear();
   use_hardware_backed_ = false;
   selected_cert_list_.clear();
-  module_ = NULL;
+  slot_.reset();
   tracker_.TryCancelAll();
 
   // There may be pending file dialogs, we need to tell them that we've gone

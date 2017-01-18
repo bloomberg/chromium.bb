@@ -176,7 +176,7 @@ class CertificateManagerHandler
   std::string file_data_;
   net::CertificateList selected_cert_list_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  scoped_refptr<net::CryptoModule> module_;
+  crypto::ScopedPK11Slot slot_;
 
   // Used in reading and writing certificate files.
   base::CancelableTaskTracker tracker_;
