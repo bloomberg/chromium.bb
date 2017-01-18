@@ -111,26 +111,48 @@ class DistillerWebStateObserver : public web::WebStateObserver {
   void PageLoaded(
       web::PageLoadCompletionStatus load_completion_status) override;
   void WebStateDestroyed() override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
 
  private:
   DistillerPageIOS* distiller_page_;  // weak, owns this object.
+  bool loading_;
 };
 
 DistillerWebStateObserver::DistillerWebStateObserver(
     web::WebState* web_state,
     DistillerPageIOS* distiller_page)
-    : web::WebStateObserver(web_state), distiller_page_(distiller_page) {
+    : web::WebStateObserver(web_state),
+      distiller_page_(distiller_page),
+      loading_(false) {
   DCHECK(web_state);
   DCHECK(distiller_page_);
 }
 
 void DistillerWebStateObserver::PageLoaded(
     web::PageLoadCompletionStatus load_completion_status) {
+  if (!loading_) {
+    return;
+  }
+  loading_ = false;
   distiller_page_->OnLoadURLDone(load_completion_status);
 }
 
 void DistillerWebStateObserver::WebStateDestroyed() {
   distiller_page_->DetachWebState();
+}
+
+void DistillerWebStateObserver::DidStartLoading() {
+  loading_ = true;
+}
+
+void DistillerWebStateObserver::DidStopLoading() {
+  if (web_state()->IsShowingWebInterstitial()) {
+    // If there is an interstitial, stop the distillation.
+    // The interstitial is not displayed to the user who cannot choose to
+    // continue.
+    PageLoaded(web::PageLoadCompletionStatus::FAILURE);
+  }
 }
 
 #pragma mark -
@@ -161,6 +183,10 @@ std::unique_ptr<web::WebState> DistillerPageIOS::DetachWebState() {
   web_state_observer_.reset();
   web_state_.reset();
   return old_web_state;
+}
+
+web::WebState* DistillerPageIOS::CurrentWebState() {
+  return web_state_.get();
 }
 
 void DistillerPageIOS::DistillPageImpl(const GURL& url,

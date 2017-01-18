@@ -39,6 +39,10 @@ class ReadingListDistillerPage : public dom_distiller::DistillerPageIOS {
  private:
   void DelayedOnLoadURLDone(
       web::PageLoadCompletionStatus load_completion_status);
+
+  // Returns wether there is the loading has no error and if the distillation
+  // can continue.
+  bool IsLoadingSuccess(web::PageLoadCompletionStatus load_completion_status);
   FaviconWebStateDispatcher* web_state_dispatcher_;
   base::WeakPtrFactory<ReadingListDistillerPage> weak_ptr_factory_;
 };

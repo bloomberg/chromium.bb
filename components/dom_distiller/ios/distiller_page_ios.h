@@ -41,6 +41,9 @@ class DistillerPageIOS : public DistillerPage {
   // |DistillPageImpl| and |OnDistillationDone|.
   virtual std::unique_ptr<web::WebState> DetachWebState();
 
+  // Return the current WebState.
+  virtual web::WebState* CurrentWebState();
+
   // Called by |web_state_observer_| once the page has finished loading.
   virtual void OnLoadURLDone(
       web::PageLoadCompletionStatus load_completion_status);

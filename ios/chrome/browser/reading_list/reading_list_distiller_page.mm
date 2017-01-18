@@ -8,7 +8,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/reading_list/favicon_web_state_dispatcher_impl.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "net/cert/cert_status_flags.h"
 
 namespace {
 // The delay between the page load and the distillation in seconds.
@@ -53,9 +57,37 @@ void ReadingListDistillerPage::OnDistillationDone(const GURL& page_url,
   DistillerPageIOS::OnDistillationDone(page_url, value);
 }
 
-void ReadingListDistillerPage::OnLoadURLDone(
+bool ReadingListDistillerPage::IsLoadingSuccess(
     web::PageLoadCompletionStatus load_completion_status) {
   if (load_completion_status == web::PageLoadCompletionStatus::FAILURE) {
+    return false;
+  }
+  if (!CurrentWebState() || !CurrentWebState()->GetNavigationManager() ||
+      !CurrentWebState()->GetNavigationManager()->GetLastCommittedItem()) {
+    // Only distill fully loaded, committed pages. If the page was not fully
+    // loaded, web::PageLoadCompletionStatus::FAILURE should have been passed to
+    // OnLoadURLDone. But check that the item exist before using it anyway.
+    return false;
+  }
+  web::NavigationItem* item =
+      CurrentWebState()->GetNavigationManager()->GetLastCommittedItem();
+  if (!item->GetURL().SchemeIsCryptographic()) {
+    // HTTP is allowed.
+    return true;
+  }
+
+  // On SSL connections, check there was no error.
+  const web::SSLStatus& ssl_status = item->GetSSL();
+  if (net::IsCertStatusError(ssl_status.cert_status) &&
+      !net::IsCertStatusMinorError(ssl_status.cert_status)) {
+    return false;
+  }
+  return true;
+}
+
+void ReadingListDistillerPage::OnLoadURLDone(
+    web::PageLoadCompletionStatus load_completion_status) {
+  if (!IsLoadingSuccess(load_completion_status)) {
     DistillerPageIOS::OnLoadURLDone(load_completion_status);
     return;
   }
