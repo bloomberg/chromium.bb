@@ -49,36 +49,18 @@ std::string GetReportContents(net::URLRequest* request,
                 AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
             encrypted_request.algorithm());
   std::string decrypted_report;
-  certificate_reporting::ErrorReporter::DecryptErrorReport(
-      server_private_key, encrypted_request, &decrypted_report);
+  EXPECT_TRUE(certificate_reporting::ErrorReporter::DecryptErrorReport(
+      server_private_key, encrypted_request, &decrypted_report));
   return decrypted_report;
-}
-
-// Checks that the serialized reports in |observed_reports| have the same
-// hostnames as |expected_hostnames|.
-void CompareHostnames(const std::set<std::string>& expected_hostnames,
-                      const std::set<std::string>& observed_reports,
-                      const std::string& comparison_type) {
-  std::set<std::string> observed_hostnames;
-  for (const std::string& serialized_report : observed_reports) {
-    certificate_reporting::ErrorReport report;
-    ASSERT_TRUE(report.InitializeFromString(serialized_report));
-    observed_hostnames.insert(report.hostname());
-  }
-  EXPECT_EQ(expected_hostnames, observed_hostnames)
-      << "Comparison failed for " << comparison_type << " reports.";
 }
 
 void WaitReports(
     certificate_reporting_test_utils::RequestObserver* observer,
     const certificate_reporting_test_utils::ReportExpectation& expectation) {
   observer->Wait(expectation.num_reports());
-  CompareHostnames(expectation.successful_reports,
-                   observer->successful_reports(), "successful");
-  CompareHostnames(expectation.failed_reports, observer->failed_reports(),
-                   "failed");
-  CompareHostnames(expectation.delayed_reports, observer->delayed_reports(),
-                   "delayed");
+  EXPECT_EQ(expectation.successful_reports, observer->successful_reports());
+  EXPECT_EQ(expectation.failed_reports, observer->failed_reports());
+  EXPECT_EQ(expectation.delayed_reports, observer->delayed_reports());
   observer->ClearObservedReports();
 }
 
@@ -112,15 +94,21 @@ void RequestObserver::Wait(unsigned int num_events_to_wait_for) {
 void RequestObserver::OnRequest(const std::string& serialized_report,
                                 ReportSendingResult report_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  certificate_reporting::ErrorReport report;
+  EXPECT_TRUE(report.InitializeFromString(serialized_report));
+
   switch (report_type) {
     case REPORTS_SUCCESSFUL:
-      successful_reports_.insert(serialized_report);
+      successful_reports_[report.hostname()] =
+          report.is_retry_upload() ? RETRIED : NOT_RETRIED;
       break;
     case REPORTS_FAIL:
-      failed_reports_.insert(serialized_report);
+      failed_reports_[report.hostname()] =
+          report.is_retry_upload() ? RETRIED : NOT_RETRIED;
       break;
     case REPORTS_DELAY:
-      delayed_reports_.insert(serialized_report);
+      delayed_reports_[report.hostname()] =
+          report.is_retry_upload() ? RETRIED : NOT_RETRIED;
       break;
   }
 
@@ -138,17 +126,17 @@ void RequestObserver::OnRequest(const std::string& serialized_report,
   }
 }
 
-const std::set<std::string>& RequestObserver::successful_reports() const {
+const ObservedReportMap& RequestObserver::successful_reports() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return successful_reports_;
 }
 
-const std::set<std::string>& RequestObserver::failed_reports() const {
+const ObservedReportMap& RequestObserver::failed_reports() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return failed_reports_;
 }
 
-const std::set<std::string>& RequestObserver::delayed_reports() const {
+const ObservedReportMap& RequestObserver::delayed_reports() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return delayed_reports_;
 }
@@ -242,19 +230,19 @@ net::URLRequestJob* CertReportJobInterceptor::MaybeInterceptRequest(
     net::NetworkDelegate* network_delegate) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  const std::string uploaded_report =
+  const std::string serialized_report =
       GetReportContents(request, server_private_key_);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&CertReportJobInterceptor::RequestCreated,
-                 weak_factory_.GetWeakPtr(), uploaded_report,
+                 weak_factory_.GetWeakPtr(), serialized_report,
                  expected_report_result_));
 
   if (expected_report_result_ == REPORTS_FAIL) {
     return new DelayableCertReportURLRequestJob(
         false, true, request, network_delegate,
         base::Bind(&CertReportJobInterceptor::RequestDestructed,
-                   base::Unretained(this), uploaded_report,
+                   base::Unretained(this), serialized_report,
                    expected_report_result_));
 
   } else if (expected_report_result_ == REPORTS_DELAY) {
@@ -263,7 +251,7 @@ net::URLRequestJob* CertReportJobInterceptor::MaybeInterceptRequest(
         new DelayableCertReportURLRequestJob(
             true, false, request, network_delegate,
             base::Bind(&CertReportJobInterceptor::RequestDestructed,
-                       base::Unretained(this), uploaded_report,
+                       base::Unretained(this), serialized_report,
                        expected_report_result_));
     delayed_request_ = job->GetWeakPtr();
     return job;
@@ -272,7 +260,7 @@ net::URLRequestJob* CertReportJobInterceptor::MaybeInterceptRequest(
   return new DelayableCertReportURLRequestJob(
       false, false, request, network_delegate,
       base::Bind(&CertReportJobInterceptor::RequestDestructed,
-                 base::Unretained(this), uploaded_report,
+                 base::Unretained(this), serialized_report,
                  expected_report_result_));
 }
 
@@ -317,15 +305,16 @@ void CertReportJobInterceptor::ResumeOnIOThread() {
 }
 
 void CertReportJobInterceptor::RequestCreated(
-    const std::string& uploaded_report,
+    const std::string& serialized_report,
     ReportSendingResult expected_report_result) const {
-  request_created_observer_.OnRequest(uploaded_report, expected_report_result);
+  request_created_observer_.OnRequest(serialized_report,
+                                      expected_report_result);
 }
 
 void CertReportJobInterceptor::RequestDestructed(
-    const std::string& uploaded_report,
+    const std::string& serialized_report,
     ReportSendingResult expected_report_result) const {
-  request_destroyed_observer_.OnRequest(uploaded_report,
+  request_destroyed_observer_.OnRequest(serialized_report,
                                         expected_report_result);
 }
 
@@ -337,23 +326,21 @@ ReportExpectation::~ReportExpectation() {}
 
 // static
 ReportExpectation ReportExpectation::Successful(
-    const std::set<std::string>& reports) {
+    const ObservedReportMap& reports) {
   ReportExpectation expectation;
   expectation.successful_reports = reports;
   return expectation;
 }
 
 // static
-ReportExpectation ReportExpectation::Failed(
-    const std::set<std::string>& reports) {
+ReportExpectation ReportExpectation::Failed(const ObservedReportMap& reports) {
   ReportExpectation expectation;
   expectation.failed_reports = reports;
   return expectation;
 }
 
 // static
-ReportExpectation ReportExpectation::Delayed(
-    const std::set<std::string>& reports) {
+ReportExpectation ReportExpectation::Delayed(const ObservedReportMap& reports) {
   ReportExpectation expectation;
   expectation.delayed_reports = reports;
   return expectation;

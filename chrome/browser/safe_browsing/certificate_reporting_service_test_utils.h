@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CERTIFICATE_REPORTING_SERVICE_TEST_UTILS_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CERTIFICATE_REPORTING_SERVICE_TEST_UTILS_H_
 
-#include <set>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -23,6 +23,13 @@ class NetworkDelegate;
 
 namespace certificate_reporting_test_utils {
 
+enum RetryStatus {
+  NOT_RETRIED = 0,
+  RETRIED = 1,
+};
+
+typedef std::unordered_map<std::string, RetryStatus> ObservedReportMap;
+
 // Syntactic sugar for wrapping report expectations in a more readable way.
 // Passed to WaitForRequestDeletions() as input.
 // Example:
@@ -35,16 +42,16 @@ struct ReportExpectation {
   ReportExpectation(const ReportExpectation& other);
   ~ReportExpectation();
   // Returns an expectation where all reports in |reports| succeed.
-  static ReportExpectation Successful(const std::set<std::string>& reports);
+  static ReportExpectation Successful(const ObservedReportMap& reports);
   // Returns an expectation where all reports in |reports| fail.
-  static ReportExpectation Failed(const std::set<std::string>& reports);
+  static ReportExpectation Failed(const ObservedReportMap& reports);
   // Returns an expectation where all reports in |reports| are delayed.
-  static ReportExpectation Delayed(const std::set<std::string>& reports);
+  static ReportExpectation Delayed(const ObservedReportMap& reports);
   // Total number of reports expected.
   int num_reports() const;
-  std::set<std::string> successful_reports;
-  std::set<std::string> failed_reports;
-  std::set<std::string> delayed_reports;
+  ObservedReportMap successful_reports;
+  ObservedReportMap failed_reports;
+  ObservedReportMap delayed_reports;
 };
 
 // Failure mode of the report sending attempts.
@@ -74,9 +81,9 @@ class RequestObserver {
                  ReportSendingResult report_type);
 
   // These must be called on the UI thread.
-  const std::set<std::string>& successful_reports() const;
-  const std::set<std::string>& failed_reports() const;
-  const std::set<std::string>& delayed_reports() const;
+  const ObservedReportMap& successful_reports() const;
+  const ObservedReportMap& failed_reports() const;
+  const ObservedReportMap& delayed_reports() const;
   void ClearObservedReports();
 
  private:
@@ -84,9 +91,9 @@ class RequestObserver {
   unsigned int num_received_events_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  std::set<std::string> successful_reports_;
-  std::set<std::string> failed_reports_;
-  std::set<std::string> delayed_reports_;
+  ObservedReportMap successful_reports_;
+  ObservedReportMap failed_reports_;
+  ObservedReportMap delayed_reports_;
 };
 
 // A URLRequestJob that can be delayed until Resume() is called. Returns an
@@ -152,9 +159,9 @@ class CertReportJobInterceptor : public net::URLRequestInterceptor {
  private:
   void SetFailureModeOnIOThread(ReportSendingResult expected_report_result);
   void ResumeOnIOThread();
-  void RequestCreated(const std::string& uploaded_report,
+  void RequestCreated(const std::string& serialized_report,
                       ReportSendingResult expected_report_result) const;
-  void RequestDestructed(const std::string& uploaded_report,
+  void RequestDestructed(const std::string& serialized_report,
                          ReportSendingResult expected_report_result) const;
 
   mutable std::set<std::string> successful_reports_;

@@ -37,6 +37,7 @@
 using certificate_reporting_test_utils::CertificateReportingServiceTestHelper;
 using certificate_reporting_test_utils::CertificateReportingServiceObserver;
 using certificate_reporting_test_utils::ReportExpectation;
+using certificate_reporting_test_utils::RetryStatus;
 
 namespace {
 
@@ -74,6 +75,17 @@ std::string MakeReport(const std::string& hostname) {
   std::string serialized_report;
   EXPECT_TRUE(report.Serialize(&serialized_report));
   return serialized_report;
+}
+
+void CheckReport(const CertificateReportingService::Report& report,
+                 const std::string& expected_hostname,
+                 bool expected_is_retry_upload,
+                 const base::Time& expected_creation_time) {
+  certificate_reporting::ErrorReport error_report;
+  EXPECT_TRUE(error_report.InitializeFromString(report.serialized_report));
+  EXPECT_EQ(expected_hostname, error_report.hostname());
+  EXPECT_EQ(expected_is_retry_upload, error_report.is_retry_upload());
+  EXPECT_EQ(expected_creation_time, report.creation_time);
 }
 
 void ClearURLHandlers() {
@@ -186,7 +198,7 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
   SetExpectedFailedReportCountOnTearDown(6);
 
   std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
-  base::Time reference_time = base::Time::Now();
+  const base::Time reference_time = base::Time::Now();
   clock->SetNow(reference_time);
 
   const GURL kFailureURL =
@@ -210,37 +222,32 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
   EXPECT_EQ(0u, reporter.inflight_report_count_for_testing());
 
   // Sending a failed report will put the report in the retry list.
-  reporter.Send("report1");
+  reporter.Send(MakeReport("report1"));
   EXPECT_EQ(1u, reporter.inflight_report_count_for_testing());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0u, reporter.inflight_report_count_for_testing());
   ASSERT_EQ(1u, list->items().size());
-  EXPECT_EQ("report1", list->items()[0].serialized_report);
-  EXPECT_EQ(reference_time, list->items()[0].creation_time);
+  CheckReport(list->items()[0], "report1", false, reference_time);
 
   // Sending a second failed report will also put it in the retry list.
   clock->Advance(base::TimeDelta::FromSeconds(10));
-  reporter.Send("report2");
+  reporter.Send(MakeReport("report2"));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(2u, list->items().size());
-  EXPECT_EQ("report2", list->items()[0].serialized_report);
-  EXPECT_EQ(reference_time + base::TimeDelta::FromSeconds(10),
-            list->items()[0].creation_time);
-  EXPECT_EQ("report1", list->items()[1].serialized_report);
-  EXPECT_EQ(reference_time, list->items()[1].creation_time);
+  CheckReport(list->items()[0], "report2", false,
+              reference_time + base::TimeDelta::FromSeconds(10));
+  CheckReport(list->items()[1], "report1", false, reference_time);
 
   // Sending a third report should remove the first report from the retry list.
   clock->Advance(base::TimeDelta::FromSeconds(10));
-  reporter.Send("report3");
+  reporter.Send(MakeReport("report3"));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(2u, list->items().size());
-  EXPECT_EQ("report3", list->items()[0].serialized_report);
-  EXPECT_EQ(reference_time + base::TimeDelta::FromSeconds(20),
-            list->items()[0].creation_time);
-  EXPECT_EQ("report2", list->items()[1].serialized_report);
-  EXPECT_EQ(reference_time + base::TimeDelta::FromSeconds(10),
-            list->items()[1].creation_time);
+  CheckReport(list->items()[0], "report3", false,
+              reference_time + base::TimeDelta::FromSeconds(20));
+  CheckReport(list->items()[1], "report2", false,
+              reference_time + base::TimeDelta::FromSeconds(10));
 
   // Retry sending all pending reports. All should fail and get added to the
   // retry list again. Report creation time doesn't change for retried reports.
@@ -248,12 +255,10 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
   reporter.SendPending();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(2u, list->items().size());
-  EXPECT_EQ("report3", list->items()[0].serialized_report);
-  EXPECT_EQ(reference_time + base::TimeDelta::FromSeconds(20),
-            list->items()[0].creation_time);
-  EXPECT_EQ("report2", list->items()[1].serialized_report);
-  EXPECT_EQ(reference_time + base::TimeDelta::FromSeconds(10),
-            list->items()[1].creation_time);
+  CheckReport(list->items()[0], "report3", true,
+              reference_time + base::TimeDelta::FromSeconds(20));
+  CheckReport(list->items()[1], "report2", true,
+              reference_time + base::TimeDelta::FromSeconds(10));
 
   // Advance the clock to 115 seconds. This makes report3 95 seconds old, and
   // report2 105 seconds old. report2 should be dropped because it's older than
@@ -263,12 +268,11 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
   EXPECT_EQ(1u, reporter.inflight_report_count_for_testing());
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, list->items().size());
-  EXPECT_EQ("report3", list->items()[0].serialized_report);
-  EXPECT_EQ(reference_time + base::TimeDelta::FromSeconds(20),
-            list->items()[0].creation_time);
+  CheckReport(list->items()[0], "report3", true,
+              reference_time + base::TimeDelta::FromSeconds(20));
 
-  // Retry again, this time successfully. There should be no pending reports
-  // left.
+  // Send pending reports again, this time successfully. There should be no
+  // pending reports left.
   const GURL kSuccessURL =
       net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
   certificate_error_reporter->set_upload_url_for_testing(kSuccessURL);
@@ -453,7 +457,21 @@ class CertificateReportingServiceTest : public ::testing::Test {
   CertificateReportingServiceObserver service_observer_;
 };
 
-TEST_F(CertificateReportingServiceTest, Send) {
+TEST_F(CertificateReportingServiceTest, SendSuccessful) {
+  SetExpectedFailedReportCountOnTearDown(0);
+
+  // Let all reports succeed.
+  test_helper()->SetFailureMode(certificate_reporting_test_utils::
+                                    ReportSendingResult::REPORTS_SUCCESSFUL);
+
+  service()->Send(MakeReport("report0"));
+  service()->Send(MakeReport("report1"));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({{"report0", RetryStatus::NOT_RETRIED},
+                                     {"report1", RetryStatus::NOT_RETRIED}}));
+}
+
+TEST_F(CertificateReportingServiceTest, SendFailure) {
   SetExpectedFailedReportCountOnTearDown(4);
 
   // Let all reports fail.
@@ -464,12 +482,13 @@ TEST_F(CertificateReportingServiceTest, Send) {
   service()->Send(MakeReport("report0"));
   service()->Send(MakeReport("report1"));
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0", "report1"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED},
+                                 {"report1", RetryStatus::NOT_RETRIED}}));
 
   // Send pending reports. Previously queued reports should be queued again.
   service()->SendPending();
-  test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0", "report1"}));
+  test_helper()->WaitForRequestsDestroyed(ReportExpectation::Failed(
+      {{"report0", RetryStatus::RETRIED}, {"report1", RetryStatus::RETRIED}}));
 
   // Let all reports succeed.
   test_helper()->SetFailureMode(certificate_reporting_test_utils::
@@ -478,13 +497,13 @@ TEST_F(CertificateReportingServiceTest, Send) {
   // Send a third report. This should not be queued.
   service()->Send(MakeReport("report2"));
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report2"}));
+      ReportExpectation::Successful({{"report2", RetryStatus::NOT_RETRIED}}));
 
   // Send pending reports. Previously failed and queued two reports should be
   // observed.
   service()->SendPending();
-  test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report0", "report1"}));
+  test_helper()->WaitForRequestsDestroyed(ReportExpectation::Successful(
+      {{"report0", RetryStatus::RETRIED}, {"report1", RetryStatus::RETRIED}}));
 }
 
 TEST_F(CertificateReportingServiceTest, Disabled_ShouldNotSend) {
@@ -506,7 +525,7 @@ TEST_F(CertificateReportingServiceTest, Disabled_ShouldNotSend) {
 
   service()->Send(MakeReport("report1"));
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report1"}));
+      ReportExpectation::Successful({{"report1", RetryStatus::NOT_RETRIED}}));
 }
 
 TEST_F(CertificateReportingServiceTest, Disabled_ShouldClearPendingReports) {
@@ -518,7 +537,7 @@ TEST_F(CertificateReportingServiceTest, Disabled_ShouldClearPendingReports) {
 
   service()->Send(MakeReport("report0"));
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Disable the service.
   SetServiceEnabledAndWait(false);
@@ -547,7 +566,8 @@ TEST_F(CertificateReportingServiceTest, DontSendOldReports) {
   AdvanceClock(base::TimeDelta::FromHours(5));
   service()->Send(MakeReport("report1"));
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0", "report1"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED},
+                                 {"report1", RetryStatus::NOT_RETRIED}}));
 
   // Advance the clock to 20 hours, putting it 25 hours ahead of the reference
   // time. This makes the report0 older than max age (24 hours). The report1 is
@@ -557,12 +577,12 @@ TEST_F(CertificateReportingServiceTest, DontSendOldReports) {
   // report1 should be queued again.
   service()->SendPending();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1"}));
+      ReportExpectation::Failed({{"report1", RetryStatus::RETRIED}}));
 
   // Send a third report.
   service()->Send(MakeReport("report2"));
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report2"}));
+      ReportExpectation::Failed({{"report2", RetryStatus::NOT_RETRIED}}));
 
   // Advance the clock 5 hours. The report1 will now be 25 hours old.
   AdvanceClock(base::TimeDelta::FromHours(5));
@@ -570,7 +590,7 @@ TEST_F(CertificateReportingServiceTest, DontSendOldReports) {
   // report2 should be queued again.
   service()->SendPending();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report2"}));
+      ReportExpectation::Failed({{"report2", RetryStatus::RETRIED}}));
 
   // Advance the clock 20 hours again so that report2 is 25 hours old and is
   // older than max age (24 hours)
@@ -604,14 +624,19 @@ TEST_F(CertificateReportingServiceTest, DiscardOldReports) {
   AdvanceClock(base::TimeDelta::FromHours(5));
   service()->Send(MakeReport("report3"));
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0", "report1", "report2", "report3"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED},
+                                 {"report1", RetryStatus::NOT_RETRIED},
+                                 {"report2", RetryStatus::NOT_RETRIED},
+                                 {"report3", RetryStatus::NOT_RETRIED}}));
 
   // Send pending reports. Four reports were generated above, but the service
   // only queues three reports, so the very first one should be dropped since
   // it's the oldest.
   service()->SendPending();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1", "report2", "report3"}));
+      ReportExpectation::Failed({{"report1", RetryStatus::RETRIED},
+                                 {"report2", RetryStatus::RETRIED},
+                                 {"report3", RetryStatus::RETRIED}}));
 
   // Let all reports succeed.
   test_helper()->SetFailureMode(certificate_reporting_test_utils::
@@ -626,8 +651,8 @@ TEST_F(CertificateReportingServiceTest, DiscardOldReports) {
   // Send pending reports. Only report2 and report3 should be sent, report1
   // should be ignored because it's too old.
   service()->SendPending();
-  test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report2", "report3"}));
+  test_helper()->WaitForRequestsDestroyed(ReportExpectation::Successful(
+      {{"report2", RetryStatus::RETRIED}, {"report3", RetryStatus::RETRIED}}));
 
   // Do a final send. No reports should be sent.
   service()->SendPending();
@@ -648,7 +673,7 @@ TEST_F(CertificateReportingServiceTest, Delayed_Resumed) {
   // successfully sent.
   test_helper()->ResumeDelayedRequest();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Delayed({"report0"}));
+      ReportExpectation::Delayed({{"report0", RetryStatus::NOT_RETRIED}}));
 }
 
 // Delayed reports should cleaned when the service is reset.
@@ -682,5 +707,6 @@ TEST_F(CertificateReportingServiceTest, Delayed_Reset) {
   // Resume delayed report. Two reports are successfully sent.
   test_helper()->ResumeDelayedRequest();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Delayed({"report0", "report1"}));
+      ReportExpectation::Delayed({{"report0", RetryStatus::NOT_RETRIED},
+                                  {"report1", RetryStatus::NOT_RETRIED}}));
 }

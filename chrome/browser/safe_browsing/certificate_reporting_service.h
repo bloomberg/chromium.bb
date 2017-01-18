@@ -60,12 +60,14 @@ class CertificateReportingService : public KeyedService {
     int report_id;
     base::Time creation_time;
     std::string serialized_report;
+    bool is_retried;
     Report(int report_id,
            base::Time creation_time,
            const std::string& serialized_report)
         : report_id(report_id),
           creation_time(creation_time),
-          serialized_report(serialized_report) {}
+          serialized_report(serialized_report),
+          is_retried(false) {}
   };
 
   // This class contains a number of reports, sorted by the first time the

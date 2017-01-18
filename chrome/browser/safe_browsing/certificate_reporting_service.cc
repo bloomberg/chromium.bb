@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "components/certificate_reporting/error_report.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -109,11 +110,20 @@ void CertificateReportingService::Reporter::SendPending() {
   // Copy pending reports and clear the retry list.
   std::vector<Report> items = retry_list_->items();
   retry_list_->Clear();
-  for (const Report& report : items) {
+  for (Report& report : items) {
     if (report.creation_time < now - report_ttl_) {
       // Report too old, ignore.
       continue;
     }
+    if (!report.is_retried) {
+      // If this is the first retry, deserialize the report, set its retry bit
+      // and serialize again.
+      certificate_reporting::ErrorReport error_report;
+      CHECK(error_report.InitializeFromString(report.serialized_report));
+      error_report.SetIsRetryUpload(true);
+      CHECK(error_report.Serialize(&report.serialized_report));
+    }
+    report.is_retried = true;
     SendInternal(report);
   }
 }

@@ -160,8 +160,16 @@ void ErrorReport::AddNetworkTimeInfo(
   network_time_info->set_network_time_query_behavior(report_behavior);
 }
 
+void ErrorReport::SetIsRetryUpload(bool is_retry_upload) {
+  cert_report_->set_is_retry_upload(is_retry_upload);
+}
+
 const std::string& ErrorReport::hostname() const {
   return cert_report_->hostname();
+}
+
+bool ErrorReport::is_retry_upload() const {
+  return cert_report_->is_retry_upload();
 }
 
 }  // namespace certificate_reporting

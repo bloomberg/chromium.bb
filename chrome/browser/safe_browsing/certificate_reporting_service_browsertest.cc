@@ -38,6 +38,7 @@
 using certificate_reporting_test_utils::CertificateReportingServiceTestHelper;
 using certificate_reporting_test_utils::CertificateReportingServiceObserver;
 using certificate_reporting_test_utils::ReportExpectation;
+using certificate_reporting_test_utils::RetryStatus;
 
 namespace {
 
@@ -234,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Reporting is opted in, so the report should succeed.
   SendReport("report0");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report0"}));
+      ReportExpectation::Successful({{"report0", RetryStatus::NOT_RETRIED}}));
 }
 
 // Tests that report send attempts are not cancelled when extended reporting is
@@ -253,12 +254,12 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Send a failed report.
   SendReport("report0");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Send another failed report.
   SendReport("report1");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1"}));
+      ReportExpectation::Failed({{"report1", RetryStatus::NOT_RETRIED}}));
 
   // Let all report uploads complete successfully now.
   test_helper()->SetFailureMode(certificate_reporting_test_utils::
@@ -267,13 +268,13 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Send another report. This time the report should be successfully sent.
   SendReport("report2");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report2"}));
+      ReportExpectation::Successful({{"report2", RetryStatus::NOT_RETRIED}}));
 
   // Send all pending reports. The two previously failed reports should have
   // been queued, and now be sent successfully.
   SendPendingReports();
-  test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report0", "report1"}));
+  test_helper()->WaitForRequestsDestroyed(ReportExpectation::Successful(
+      {{"report0", RetryStatus::RETRIED}, {"report1", RetryStatus::RETRIED}}));
 
   // Try sending pending reports again. Since there is no pending report,
   // nothing should be sent this time. If any report is sent, test teardown
@@ -296,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Send a failed report.
   SendReport("report0");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Disable reporting. This should clear all pending reports.
   ChangeOptInAndWait(
@@ -329,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // A failed report should be observed.
   SendReport("report0");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Disable reporting. This should reset the reporting service and
   // clear all pending reports.
@@ -360,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Send a delayed report.
   SendReport("report0");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Disable SafeBrowsing. This should clear all pending reports.
   ToggleSafeBrowsingAndWaitForServiceReset(false);
@@ -373,14 +374,14 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   ToggleSafeBrowsingAndWaitForServiceReset(true);
   SendReport("report1");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1"}));
+      ReportExpectation::Failed({{"report1", RetryStatus::NOT_RETRIED}}));
 
   // Queued report should now be successfully sent.
   test_helper()->SetFailureMode(certificate_reporting_test_utils::
                                     ReportSendingResult::REPORTS_SUCCESSFUL);
   SendPendingReports();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report1"}));
+      ReportExpectation::Successful({{"report1", RetryStatus::RETRIED}}));
 }
 
 // CertificateReportingService should ignore reports older than the report TTL.
@@ -406,13 +407,13 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Send a failed report.
   SendReport("report0");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Advance the clock a bit and trigger another failed report.
   clock->Advance(base::TimeDelta::FromHours(5));
   SendReport("report1");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1"}));
+      ReportExpectation::Failed({{"report1", RetryStatus::NOT_RETRIED}}));
 
   // Advance the clock to 20 hours, putting it 25 hours ahead of the reference
   // time. This makes report0 older than 24 hours. report1 is now 20 hours.
@@ -422,12 +423,12 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // report1 should be queued again.
   SendPendingReports();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1"}));
+      ReportExpectation::Failed({{"report1", RetryStatus::RETRIED}}));
 
   // Trigger another failed report.
   SendReport("report2");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report2"}));
+      ReportExpectation::Failed({{"report2", RetryStatus::NOT_RETRIED}}));
 
   // Advance the clock 5 hours. report1 will now be 25 hours old.
   clock->Advance(base::TimeDelta::FromHours(5));
@@ -436,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // report2 should be queued again.
   SendPendingReports();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report2"}));
+      ReportExpectation::Failed({{"report2", RetryStatus::RETRIED}}));
 
   // Advance the clock 20 hours again so that report2 is 25 hours old and is
   // older than max age (24 hours).
@@ -473,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Trigger a failed report.
   SendReport("report0");
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report0"}));
+      ReportExpectation::Failed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Trigger three more reports within five hours of each other. After this:
   // report0 is 0 hours after reference time (15 hours old).
@@ -490,14 +491,18 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   SendReport("report3");
 
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1", "report2", "report3"}));
+      ReportExpectation::Failed({{"report1", RetryStatus::NOT_RETRIED},
+                                 {"report2", RetryStatus::NOT_RETRIED},
+                                 {"report3", RetryStatus::NOT_RETRIED}}));
 
   // Send pending reports. Four reports were generated above, but the service
   // only queues three reports, so report0 should be dropped since it's the
   // oldest.
   SendPendingReports();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1", "report2", "report3"}));
+      ReportExpectation::Failed({{"report1", RetryStatus::RETRIED},
+                                 {"report2", RetryStatus::RETRIED},
+                                 {"report3", RetryStatus::RETRIED}}));
 
   // Let all reports succeed.
   test_helper()->SetFailureMode(certificate_reporting_test_utils::
@@ -513,8 +518,8 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Send pending reports. Only reports 2 and 3 should be sent, report 1
   // should be ignored because it's too old.
   SendPendingReports();
-  test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Successful({"report2", "report3"}));
+  test_helper()->WaitForRequestsDestroyed(ReportExpectation::Successful(
+      {{"report2", RetryStatus::RETRIED}, {"report3", RetryStatus::RETRIED}}));
 }
 
 IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
@@ -530,14 +535,14 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Trigger a report that hangs.
   SendReport("report0");
   test_helper()->WaitForRequestsCreated(
-      ReportExpectation::Delayed({"report0"}));
+      ReportExpectation::Delayed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Resume the report upload. The report upload should successfully complete.
   // The interceptor only observes request creations and not response
   // completions, so there is nothing to observe.
   test_helper()->ResumeDelayedRequest();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Delayed({"report0"}));
+      ReportExpectation::Delayed({{"report0", RetryStatus::NOT_RETRIED}}));
 }
 
 // Same as above, but the service is shut down before resuming the delayed
@@ -555,13 +560,13 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest,
   // Trigger a report that hangs.
   SendReport("report0");
   test_helper()->WaitForRequestsCreated(
-      ReportExpectation::Delayed({"report0"}));
+      ReportExpectation::Delayed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Shutdown the service and resume the report upload. Shouldn't crash.
   service()->Shutdown();
   test_helper()->ResumeDelayedRequest();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Delayed({"report0"}));
+      ReportExpectation::Delayed({{"report0", RetryStatus::NOT_RETRIED}}));
 }
 
 // Trigger a delayed report, then disable Safebrowsing. Certificate reporting
@@ -578,12 +583,12 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest, Delayed_Reset) {
   // Trigger a report that hangs.
   SendReport("report0");
   test_helper()->WaitForRequestsCreated(
-      ReportExpectation::Delayed({"report0"}));
+      ReportExpectation::Delayed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Disable SafeBrowsing. This should clear all pending reports.
   ToggleSafeBrowsingAndWaitForServiceReset(false);
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Delayed({"report0"}));
+      ReportExpectation::Delayed({{"report0", RetryStatus::NOT_RETRIED}}));
 
   // Resume delayed report. No response should be observed since all pending
   // reports should be cleared.
@@ -596,12 +601,12 @@ IN_PROC_BROWSER_TEST_F(CertificateReportingServiceBrowserTest, Delayed_Reset) {
   // Trigger a report that hangs.
   SendReport("report1");
   test_helper()->WaitForRequestsCreated(
-      ReportExpectation::Delayed({"report1"}));
+      ReportExpectation::Delayed({{"report1", RetryStatus::NOT_RETRIED}}));
 
   // Resume the delayed report and wait for it to complete.
   test_helper()->ResumeDelayedRequest();
   test_helper()->WaitForRequestsDestroyed(
-      ReportExpectation::Delayed({"report1"}));
+      ReportExpectation::Delayed({{"report1", RetryStatus::NOT_RETRIED}}));
 }
 
 }  // namespace safe_browsing

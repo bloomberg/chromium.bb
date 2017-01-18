@@ -126,4 +126,8 @@ message CertLoggerRequest {
   // Information about features that were enabled or disabled for the
   // user that might affect certificate validation.
   optional CertLoggerFeaturesInfo features_info = 10;
+
+  // False when the report is attempted to be uploaded for the first time. True
+  // in all other uploads.
+  optional bool is_retry_upload = 11;
 };
