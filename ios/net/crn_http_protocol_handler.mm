@@ -341,11 +341,8 @@ void HttpProtocolHandlerCore::OnReceivedRedirect(
   DVLOG(2) << "Redirect, to client:";
   LogNSURLRequest(request_);
 #endif  // !defined(NDEBUG)
-  if (tracker_) {
+  if (tracker_)
     tracker_->StopRedirectedRequest(request);
-    // Add clients from tracker that depend on redirect data.
-    PushClients(tracker_->ClientsHandlingRedirect(*request, new_url, response));
-  }
 
   [top_level_client_ wasRedirectedToRequest:request_
                               nativeRequest:request
@@ -501,10 +498,6 @@ void HttpProtocolHandlerCore::StartReading() {
     long long expectedContentLength = [response expectedContentLength];
     if (expectedContentLength > 0)
       tracker_->CaptureExpectedLength(net_request_, expectedContentLength);
-
-    // Add clients from tracker.
-    PushClients(
-        tracker_->ClientsHandlingRequestAndResponse(*net_request_, response));
   }
 
   // Don't call any function on the response from now on, as the client may be
@@ -660,11 +653,6 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
     return;
   }
 
-  if (tracker_) {
-    // Set up any clients that can operate regardless of the request
-    PushClients(tracker_->ClientsHandlingAnyRequest());
-  }
-
   // Now that all of the network clients are set up, if there was an error with
   // the URL, it can be raised and all of the clients will have a chance to
   // handle it.
@@ -695,10 +683,6 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
 #endif  // !defined(NDEBUG)
 
   CopyHttpHeaders(request_, net_request_);
-
-  // Add network clients.
-  if (tracker_)
-    PushClients(tracker_->ClientsHandlingRequest(*net_request_));
 
   [top_level_client_ didCreateNativeRequest:net_request_];
   SetLoadFlags();
