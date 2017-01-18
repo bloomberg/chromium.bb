@@ -66,6 +66,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia'], bug=631317)
     self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
         ['win', 'nvidia'], bug=672380)
+    self.Fail('conformance2/rendering/' +
+        'draw-with-integer-texture-base-level.html',
+        ['win', 'nvidia'], bug=679639)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
@@ -207,6 +210,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=679684)
 
     # Mac Retina NVIDIA
+    self.Fail('conformance/textures/misc/cube-map-uploads-out-of-order.html',
+        ['mac', ('nvidia', 0xfe9)], bug=473739)
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', ('nvidia', 0xfe9)], bug=641209)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
@@ -678,6 +683,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image/' +
         'tex-3d-rg8ui-rg_integer-unsigned_byte.html',
         ['linux', ('nvidia', 0xf02)], bug=680282)
+    self.Fail('conformance2/textures/image_data/tex-2d-rg32f-rg-float.html',
+        ['linux', 'nvidia'], bug=682190)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
