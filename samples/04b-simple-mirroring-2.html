@@ -279,7 +279,7 @@ found in the LICENSE file.
           } else {
             gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
             mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width / webglCanvas.height, 0.1, 1024.0);
-            cubeSea.render(projectionMat, frameData.leftViewMatrix, stats);
+            cubeSea.render(projectionMat, frameData.leftViewMatrix, stats, t);
             stats.renderOrtho();
           }
         } else {
