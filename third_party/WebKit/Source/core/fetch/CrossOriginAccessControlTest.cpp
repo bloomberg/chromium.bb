@@ -48,7 +48,11 @@ TEST_F(CreateAccessControlPreflightRequestTest, ExcludeSimpleHeaders) {
   ResourceRequest preflight =
       createAccessControlPreflightRequest(request, m_securityOrigin.get());
 
-  EXPECT_EQ("", preflight.httpHeaderField("Access-Control-Request-Headers"));
+  // Do not emit empty-valued headers; an empty list of non-"CORS safelisted"
+  // request headers should cause "Access-Control-Request-Headers:" to be
+  // left out in the preflight request.
+  EXPECT_EQ(nullAtom,
+            preflight.httpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST_F(CreateAccessControlPreflightRequestTest,
@@ -59,7 +63,9 @@ TEST_F(CreateAccessControlPreflightRequestTest,
   ResourceRequest preflight =
       createAccessControlPreflightRequest(request, m_securityOrigin.get());
 
-  EXPECT_EQ("", preflight.httpHeaderField("Access-Control-Request-Headers"));
+  // Empty list also; see comment in test above.
+  EXPECT_EQ(nullAtom,
+            preflight.httpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST_F(CreateAccessControlPreflightRequestTest, IncludeNonSimpleHeader) {

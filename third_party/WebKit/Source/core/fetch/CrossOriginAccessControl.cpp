@@ -70,6 +70,8 @@ static AtomicString createAccessControlRequestHeadersHeader(
     }
     filteredHeaders.push_back(header.key.lower());
   }
+  if (!filteredHeaders.size())
+    return nullAtom;
 
   // Sort header names lexicographically.
   std::sort(filteredHeaders.begin(), filteredHeaders.end(),
@@ -106,10 +108,11 @@ ResourceRequest createAccessControlPreflightRequest(
         HTTPNames::Access_Control_Request_External, "true");
   }
 
-  if (request.httpHeaderFields().size() > 0) {
+  AtomicString requestHeaders =
+      createAccessControlRequestHeadersHeader(request.httpHeaderFields());
+  if (requestHeaders != nullAtom) {
     preflightRequest.setHTTPHeaderField(
-        HTTPNames::Access_Control_Request_Headers,
-        createAccessControlRequestHeadersHeader(request.httpHeaderFields()));
+        HTTPNames::Access_Control_Request_Headers, requestHeaders);
   }
 
   return preflightRequest;

@@ -167,6 +167,15 @@ var TEST_TARGETS = [];
        '&PACRHeaders=x-serviceworker-test&PreflightTest=200',
        [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
        [checkMethod, hasCustomHeader]],
+
+      // Verify that Access-Control-Request-Headers: is not present in preflight
+      // if its value is the empty list - https://crbug.com/633729
+      [OTHER_BASE_URL + 'mode=cors&credentials=same-origin&method=' + method +
+       '&headers=SAFE&ACAOrigin=*&PACAOrigin=*&PACAMethods=' + method +
+       '&PACRHeaders=missing&PACRMethod=' + method + '&PreflightTest=200',
+       [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+       [checkMethod]],
+
       // Test Access-Control-Request-Headers is sorted https://crbug.com/452391
       [OTHER_BASE_URL + 'mode=cors&credentials=same-origin&method=' + method +
        '&headers=CUSTOM2&ACAOrigin=*&PACAOrigin=*&PACAMethods=' + method +

@@ -319,6 +319,12 @@ function getRequestInit(params) {
                        ['X-ServiceWorker-s', 'test1'],
                        ['X-ServiceWorker-Test', 'test3'],
                        ['X-ServiceWorker-U', 'test5']];
+  } else if (params['headers'] === 'SAFE') {
+    init['headers'] = [['Accept', '*/*'],
+                       ['Accept-Language', 'en-us,de'],
+                       ['Content-Language', 'en-us'],
+                       ['Content-Type', 'text/plain'],
+                       ['Save-data', 'on']];
   } else if (params['headers'] === '{}') {
     init['headers'] = {};
   }

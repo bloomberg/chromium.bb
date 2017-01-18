@@ -8,6 +8,8 @@ $prefix = '';
 // - Use $_GET['PreflightTest'] as HTTP status code.
 // - Check Access-Control-Request-Method/Headers headers with
 //   PACRMethod/Headers parameter, if set, in preflight.
+//   The special value 'missing' for PACRHeaders can be used to
+//   test for the absence of ACRHeaders on the preflight request.
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS' && isset($_GET['PreflightTest'])) {
     $prefix = 'P';
 
@@ -17,11 +19,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS' && isset($_GET['PreflightTest'])) {
         header("HTTP/1.1 400");
         exit;
     }
-    if (isset($_GET['PACRHeaders']) &&
-        $_GET['PACRHeaders'] !=
-        $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']) {
-        header("HTTP/1.1 400");
-        exit;
+    if (isset($_GET['PACRHeaders'])) {
+       if ($_GET['PACRHeaders'] == 'missing') {
+           if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
+               header("HTTP/1.1 400");
+               exit;
+           }
+       } else if ($_GET['PACRHeaders'] !=
+                  $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']) {
+           header("HTTP/1.1 400");
+           exit;
+       }
     }
     // Preflight must not include Cookie headers.
     if (isset($_SERVER['HTTP_COOKIE'])) {
