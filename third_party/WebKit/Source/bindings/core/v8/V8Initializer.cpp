@@ -394,8 +394,9 @@ void V8Initializer::initializeMainThread() {
 
   // NOTE: Some threads (namely utility threads) don't have a scheduler.
   WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
+  // TODO(altimin): Consider switching to timerTaskRunner here.
   v8::Isolate* isolate = V8PerIsolateData::initialize(
-      scheduler ? scheduler->timerTaskRunner()
+      scheduler ? scheduler->loadingTaskRunner()
                 : Platform::current()->currentThread()->getWebTaskRunner());
 
   initializeV8Common(isolate);
