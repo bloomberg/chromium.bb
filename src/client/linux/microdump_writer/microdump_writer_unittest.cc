@@ -60,18 +60,11 @@ typedef testing::Test MicrodumpWriterTest;
 MicrodumpExtraInfo MakeMicrodumpExtraInfo(
     const char* build_fingerprint,
     const char* product_info,
-    const char* gpu_fingerprint,
-    bool suppress_microdump_based_on_interest_range = false,
-    uintptr_t interest_range_start = 0,
-    uintptr_t interest_range_end = 0) {
+    const char* gpu_fingerprint) {
   MicrodumpExtraInfo info;
   info.build_fingerprint = build_fingerprint;
   info.product_info = product_info;
   info.gpu_fingerprint = gpu_fingerprint;
-  info.suppress_microdump_based_on_interest_range =
-      suppress_microdump_based_on_interest_range;
-  info.interest_range_start = interest_range_start;
-  info.interest_range_end = interest_range_end;
   return info;
 }
 
@@ -82,7 +75,9 @@ bool ContainsMicrodump(const std::string& buf) {
 
 void CrashAndGetMicrodump(const MappingList& mappings,
                           const MicrodumpExtraInfo& microdump_extra_info,
-                          std::string* microdump) {
+                          std::string* microdump,
+                          bool skip_dump_if_principal_mapping_not_referenced = false,
+                          uintptr_t address_within_principal_mapping = 0) {
   int fds[2];
   ASSERT_NE(-1, pipe(fds));
 
@@ -116,7 +111,8 @@ void CrashAndGetMicrodump(const MappingList& mappings,
   ASSERT_NE(-1, dup2(err_fd, STDERR_FILENO));
 
   ASSERT_TRUE(WriteMicrodump(child, &context, sizeof(context), mappings,
-                             microdump_extra_info));
+                             skip_dump_if_principal_mapping_not_referenced,
+                             address_within_principal_mapping, microdump_extra_info));
 
   // Revert stderr back to the console.
   dup2(save_err, STDERR_FILENO);
@@ -239,13 +235,12 @@ TEST(MicrodumpWriterTest, NoOutputIfUninteresting) {
   const char kGPUFingerprint[] =
       "Qualcomm;Adreno (TM) 330;OpenGL ES 3.0 V@104.0 AU@  (GIT@Id3510ff6dc)";
   const MicrodumpExtraInfo kMicrodumpExtraInfo(
-      MakeMicrodumpExtraInfo(kBuildFingerprint, kProductInfo, kGPUFingerprint,
-                             true, 0xdeadbeef, 0xdeadbeef - 1));
+      MakeMicrodumpExtraInfo(kBuildFingerprint, kProductInfo, kGPUFingerprint));
 
   std::string buf;
   MappingList no_mappings;
 
-  CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf);
+  CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf, true, 0);
   ASSERT_FALSE(ContainsMicrodump(buf));
 }
 
@@ -259,15 +254,13 @@ TEST(MicrodumpWriterTest, OutputIfInteresting) {
       "Qualcomm;Adreno (TM) 330;OpenGL ES 3.0 V@104.0 AU@  (GIT@Id3510ff6dc)";
 
   const MicrodumpExtraInfo kMicrodumpExtraInfo(
-      MakeMicrodumpExtraInfo(kBuildFingerprint, kProductInfo, kGPUFingerprint,
-                             true,
-                             reinterpret_cast<uintptr_t>(&__executable_start),
-                             reinterpret_cast<uintptr_t>(&__etext)));
+      MakeMicrodumpExtraInfo(kBuildFingerprint, kProductInfo, kGPUFingerprint));
 
   std::string buf;
   MappingList no_mappings;
 
-  CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf);
+  CrashAndGetMicrodump(no_mappings, kMicrodumpExtraInfo, &buf, true,
+                       reinterpret_cast<uintptr_t>(CrashAndGetMicrodump));
   ASSERT_TRUE(ContainsMicrodump(buf));
 }
 

@@ -103,6 +103,11 @@ class LinuxDumper {
   const wasteful_vector<pid_t> &threads() { return threads_; }
   const wasteful_vector<MappingInfo*> &mappings() { return mappings_; }
   const MappingInfo* FindMapping(const void* address) const;
+  // Find the mapping which the given memory address falls in. Unlike
+  // FindMapping, this method uses the unadjusted mapping address
+  // ranges from the kernel, rather than the ranges that have had the
+  // load bias applied.
+  const MappingInfo* FindMappingNoBias(uintptr_t address) const;
   const wasteful_vector<elf_aux_val_t>& auxv() { return auxv_; }
 
   // Find a block of memory to take as the stack given the top of stack pointer.
@@ -110,6 +115,19 @@ class LinuxDumper {
   //   stack_len: (output) the length of the memory area
   //   stack_top: the current top of the stack
   bool GetStackInfo(const void** stack, size_t* stack_len, uintptr_t stack_top);
+
+  // Test whether |stack_copy| contains a pointer-aligned word that
+  // could be an address within a given mapping.
+  //   stack_copy: a copy of the stack to check. |stack_copy| might
+  //               not be word aligned, but it represents word aligned
+  //               data copied from another location.
+  //   stack_len: the length of the allocation pointed to by |stack_copy|.
+  //   sp_offset: the offset relative to stack_copy that reflects the
+  //              current value of the stack pointer.
+  //   mapping: the mapping against which to test stack words.
+  bool StackHasPointerToMapping(const uint8_t* stack_copy, size_t stack_len,
+                                uintptr_t sp_offset,
+                                const MappingInfo& mapping);
 
   PageAllocator* allocator() { return &allocator_; }
 

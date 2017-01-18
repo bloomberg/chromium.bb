@@ -53,14 +53,18 @@ class MinidumpDescriptor {
   MinidumpDescriptor()
       : mode_(kUninitialized),
         fd_(-1),
-        size_limit_(-1) {}
+        size_limit_(-1),
+        address_within_principal_mapping_(0),
+        skip_dump_if_principal_mapping_not_referenced_(false) {}
 
   explicit MinidumpDescriptor(const string& directory)
       : mode_(kWriteMinidumpToFile),
         fd_(-1),
         directory_(directory),
         c_path_(NULL),
-        size_limit_(-1) {
+        size_limit_(-1),
+        address_within_principal_mapping_(0),
+        skip_dump_if_principal_mapping_not_referenced_(false) {
     assert(!directory.empty());
   }
 
@@ -68,14 +72,18 @@ class MinidumpDescriptor {
       : mode_(kWriteMinidumpToFd),
         fd_(fd),
         c_path_(NULL),
-        size_limit_(-1) {
+        size_limit_(-1),
+        address_within_principal_mapping_(0),
+        skip_dump_if_principal_mapping_not_referenced_(false) {
     assert(fd != -1);
   }
 
   explicit MinidumpDescriptor(const MicrodumpOnConsole&)
       : mode_(kWriteMicrodumpToConsole),
         fd_(-1),
-        size_limit_(-1) {}
+        size_limit_(-1),
+        address_within_principal_mapping_(0),
+        skip_dump_if_principal_mapping_not_referenced_(false) {}
 
   explicit MinidumpDescriptor(const MinidumpDescriptor& descriptor);
   MinidumpDescriptor& operator=(const MinidumpDescriptor& descriptor);
@@ -100,6 +108,23 @@ class MinidumpDescriptor {
 
   off_t size_limit() const { return size_limit_; }
   void set_size_limit(off_t limit) { size_limit_ = limit; }
+
+  uintptr_t address_within_principal_mapping() const {
+    return address_within_principal_mapping_;
+  }
+  void set_address_within_principal_mapping(
+      uintptr_t address_within_principal_mapping) {
+    address_within_principal_mapping_ = address_within_principal_mapping;
+  }
+
+  bool skip_dump_if_principal_mapping_not_referenced() {
+    return skip_dump_if_principal_mapping_not_referenced_;
+  }
+  void set_skip_dump_if_principal_mapping_not_referenced(
+      bool skip_dump_if_principal_mapping_not_referenced) {
+    skip_dump_if_principal_mapping_not_referenced_ =
+        skip_dump_if_principal_mapping_not_referenced;
+  }
 
   MicrodumpExtraInfo* microdump_extra_info() {
     assert(IsMicrodumpOnConsole());
@@ -131,6 +156,16 @@ class MinidumpDescriptor {
   const char* c_path_;
 
   off_t size_limit_;
+
+  // This member points somewhere into the main module for this
+  // process (the module that is considerered interesting for the
+  // purposes of debugging crashes).
+  uintptr_t address_within_principal_mapping_;
+
+  // If set, threads that do not reference the address range
+  // associated with |address_within_principal_mapping_| will not have their
+  // stacks logged.
+  bool skip_dump_if_principal_mapping_not_referenced_;
 
   // The extra microdump data (e.g. product name/version, build
   // fingerprint, gpu fingerprint) that should be appended to the dump

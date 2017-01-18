@@ -40,23 +40,11 @@ struct MicrodumpExtraInfo {
   const char* gpu_fingerprint;
   const char* process_type;
 
-  // |interest_range_start| and |interest_range_end| specify a range
-  // in the target process address space. Microdumps are only
-  // generated if the PC or a word on the captured stack point into
-  // this range, or |suppress_microdump_based_on_interest_range| is
-  // false.
-  bool suppress_microdump_based_on_interest_range;
-  uintptr_t interest_range_start;
-  uintptr_t interest_range_end;
-
   MicrodumpExtraInfo()
       : build_fingerprint(NULL),
         product_info(NULL),
         gpu_fingerprint(NULL),
-        process_type(NULL),
-        suppress_microdump_based_on_interest_range(false),
-        interest_range_start(0),
-        interest_range_end(0) {}
+        process_type(NULL) {}
 };
 
 }

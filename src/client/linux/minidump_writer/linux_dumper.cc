@@ -530,6 +530,8 @@ bool LinuxDumper::EnumerateMappings() {
           }
           MappingInfo* const module = new(allocator_) MappingInfo;
           my_memset(module, 0, sizeof(MappingInfo));
+          module->system_mapping_info.start_addr = start_addr;
+          module->system_mapping_info.end_addr = end_addr;
           module->start_addr = start_addr;
           module->size = end_addr - start_addr;
           module->offset = offset;
@@ -703,6 +705,31 @@ bool LinuxDumper::GetStackInfo(const void** stack, size_t* stack_len,
   return true;
 }
 
+bool LinuxDumper::StackHasPointerToMapping(const uint8_t* stack_copy,
+                                           size_t stack_len,
+                                           uintptr_t sp_offset,
+                                           const MappingInfo& mapping) {
+  // Loop over all stack words that would have been on the stack in
+  // the target process (i.e. are word aligned, and at addresses >=
+  // the stack pointer).  Regardless of the alignment of |stack_copy|,
+  // the memory starting at |stack_copy| + |offset| represents an
+  // aligned word in the target process.
+  const uintptr_t low_addr = mapping.system_mapping_info.start_addr;
+  const uintptr_t high_addr = mapping.system_mapping_info.end_addr;
+  const uintptr_t offset =
+      (sp_offset + sizeof(uintptr_t) - 1) & ~(sizeof(uintptr_t) - 1);
+
+  for (const uint8_t* sp = stack_copy + offset;
+       sp <= stack_copy + stack_len - sizeof(uintptr_t);
+       sp += sizeof(uintptr_t)) {
+    uintptr_t addr;
+    my_memcpy(&addr, sp, sizeof(uintptr_t));
+    if (low_addr <= addr && addr <= high_addr)
+      return true;
+  }
+  return false;
+}
+
 // Find the mapping which the given memory address falls in.
 const MappingInfo* LinuxDumper::FindMapping(const void* address) const {
   const uintptr_t addr = (uintptr_t) address;
@@ -713,6 +740,19 @@ const MappingInfo* LinuxDumper::FindMapping(const void* address) const {
       return mappings_[i];
   }
 
+  return NULL;
+}
+
+// Find the mapping which the given memory address falls in. Uses the
+// unadjusted mapping address range from the kernel, rather than the
+// biased range.
+const MappingInfo* LinuxDumper::FindMappingNoBias(uintptr_t address) const {
+  for (size_t i = 0; i < mappings_.size(); ++i) {
+    if (address >= mappings_[i]->system_mapping_info.start_addr &&
+        address < mappings_[i]->system_mapping_info.end_addr) {
+      return mappings_[i];
+    }
+  }
   return NULL;
 }
 
