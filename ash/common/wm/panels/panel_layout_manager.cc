@@ -552,6 +552,11 @@ void PanelLayoutManager::OnShelfIconPositionsChanged() {
 // PanelLayoutManager private implementation:
 
 void PanelLayoutManager::MinimizePanel(WmWindow* panel) {
+  // Clusterfuzz can trigger panel accelerators before the shelf is created.
+  // TODO(jamescook): Revert this after http://crbug.com/648964 is fixed.
+  if (!shelf_)
+    return;
+
   panel->SetVisibilityAnimationType(
       wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
   ui::Layer* layer = panel->GetLayer();
@@ -739,6 +744,11 @@ void PanelLayoutManager::Relayout() {
 }
 
 void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
+  // Clusterfuzz can trigger panel accelerators before the shelf is created.
+  // TODO(jamescook): Revert this after http://crbug.com/648964 is fixed.
+  if (!shelf_)
+    return;
+
   if (!active_panel) {
     if (!last_active_panel_)
       return;
@@ -789,6 +799,11 @@ void PanelLayoutManager::UpdateStacking(WmWindow* active_panel) {
 }
 
 void PanelLayoutManager::UpdateCallouts() {
+  // Clusterfuzz can trigger panel accelerators before the shelf is created.
+  // TODO(jamescook): Revert this after http://crbug.com/648964 is fixed.
+  if (!shelf_)
+    return;
+
   const bool horizontal = IsHorizontalAlignment(shelf_->GetAlignment());
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {

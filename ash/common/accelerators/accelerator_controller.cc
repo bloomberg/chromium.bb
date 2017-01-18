@@ -1139,6 +1139,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_in_pinned_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
+  // TODO(xiyuan): Replace with SessionController. http://crbug.com/648964
   if (!wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted() &&
       actions_allowed_at_login_screen_.find(action) ==
           actions_allowed_at_login_screen_.end()) {
