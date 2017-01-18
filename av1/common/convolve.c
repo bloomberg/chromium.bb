@@ -53,7 +53,8 @@ void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
           tmp = ROUND_POWER_OF_TWO(tmp + sum, 1);
         else
           tmp = sum;
-        conv_params->dst[y * conv_params->dst_stride + x] = tmp;
+        conv_params->dst[y * conv_params->dst_stride + x] =
+            clamp(tmp, INT32_MIN, INT32_MAX);
       }
 
       x_q4 += x_step_q4;
@@ -95,7 +96,8 @@ void av1_convolve_vert_c(const uint8_t *src, int src_stride, uint8_t *dst,
           tmp = ROUND_POWER_OF_TWO(tmp + sum, 1);
         else
           tmp = sum;
-        conv_params->dst[y * conv_params->dst_stride + x] = tmp;
+        conv_params->dst[y * conv_params->dst_stride + x] =
+            clamp(tmp, INT32_MIN, INT32_MAX);
       }
 
       y_q4 += y_step_q4;
@@ -129,9 +131,9 @@ static void convolve_copy(const uint8_t *src, int src_stride, uint8_t *dst,
           dst[c] = clip_pixel(ROUND_POWER_OF_TWO(dst[c] + src[c], 1));
         } else {
           int tmp = conv_params->dst[r * conv_params->dst_stride + c];
-          tmp =
-              ROUND_POWER_OF_TWO(tmp + (((uint16_t)src[c]) << FILTER_BITS), 1);
-          conv_params->dst[r * conv_params->dst_stride + c] = tmp;
+          tmp = ROUND_POWER_OF_TWO(tmp + (((int32_t)src[c]) << FILTER_BITS), 1);
+          conv_params->dst[r * conv_params->dst_stride + c] =
+              clamp(tmp, INT32_MIN, INT32_MAX);
         }
       }
       src += src_stride;
@@ -194,6 +196,19 @@ void av1_convolve_vert_facade(const uint8_t *src, int src_stride, uint8_t *dst,
     }
   }
 }
+
+#if CONVOLVE_POST_ROUNDING
+void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
+                           int dst_stride, int w, int h) {
+  int r, c;
+  for (r = 0; r < h; ++r) {
+    for (c = 0; c < w; ++c) {
+      dst[r * dst_stride + c] =
+          clip_pixel(ROUND_POWER_OF_TWO(src[r * src_stride + c], FILTER_BITS));
+    }
+  }
+}
+#endif  // CONVOLVE_POST_ROUNDING
 
 void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
                   int dst_stride, int w, int h,

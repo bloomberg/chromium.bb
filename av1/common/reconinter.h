@@ -44,13 +44,15 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
 
 #if CONFIG_DUAL_FILTER
   if (interp_filter_params_x.taps == SUBPEL_TAPS &&
-      interp_filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2) {
+      interp_filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2 &&
+      conv_params->round == CONVOLVE_OPT_ROUND) {
     const int16_t *kernel_x =
         av1_get_interp_filter_subpel_kernel(interp_filter_params_x, subpel_x);
     const int16_t *kernel_y =
         av1_get_interp_filter_subpel_kernel(interp_filter_params_y, subpel_y);
 #else
-  if (interp_filter_params.taps == SUBPEL_TAPS && w > 2 && h > 2) {
+  if (interp_filter_params.taps == SUBPEL_TAPS && w > 2 && h > 2 &&
+      conv_params->round == CONVOLVE_OPT_ROUND) {
     const int16_t *kernel_x =
         av1_get_interp_filter_subpel_kernel(interp_filter_params, subpel_x);
     const int16_t *kernel_y =
