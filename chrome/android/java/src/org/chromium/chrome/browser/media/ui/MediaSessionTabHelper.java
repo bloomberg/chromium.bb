@@ -341,7 +341,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         mTab = tab;
         mTab.addObserver(mTabObserver);
         mMediaImageManager = new MediaImageManager(
-            MINIMAL_FAVICON_SIZE, MediaNotificationManager.getMaximumLargeIconSize());
+                MINIMAL_FAVICON_SIZE, MediaNotificationManager.getIdealMediaImageSize());
         if (mTab.getWebContents() != null) setWebContents(tab.getWebContents());
 
         Activity activity = getActivityFromTab(mTab);
@@ -412,7 +412,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                                         || icon.getHeight() < mFavicon.getHeight())) {
             return false;
         }
-        mFavicon = MediaNotificationManager.scaleIconForDisplay(icon);
+        mFavicon = MediaNotificationManager.scaleIconToIdealSize(icon);
         return true;
     }
 
@@ -465,7 +465,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
 
     @Override
     public void onImageDownloaded(Bitmap image) {
-        mPageMediaImage = MediaNotificationManager.scaleIconForDisplay(image);
+        mPageMediaImage = MediaNotificationManager.scaleIconToIdealSize(image);
         updateNotificationImage();
     }
 
