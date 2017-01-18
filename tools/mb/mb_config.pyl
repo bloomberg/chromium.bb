@@ -1582,7 +1582,7 @@
     },
 
     'clang_tot': {
-      'gn_args': 'llvm_force_head_revision=true clang_use_chrome_plugins=false',
+      'gn_args': 'llvm_force_head_revision=true clang_use_chrome_plugins=false enable_nocompile_tests=false',
       'mixins': ['clang'],
     },
 
