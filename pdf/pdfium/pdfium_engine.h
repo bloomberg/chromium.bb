@@ -775,6 +775,8 @@ class PDFiumEngineExports : public PDFEngineExports {
       PDFEnsureTypefaceCharactersAccessible func) override;
 
   void SetPDFUseGDIPrinting(bool enable) override;
+
+  void SetPDFPostscriptPrintingLevel(int postscript_level) override;
 #endif  // defined(OS_WIN)
   bool RenderPDFPageToBitmap(const void* pdf_buffer,
                              int pdf_buffer_size,

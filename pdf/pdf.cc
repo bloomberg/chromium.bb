@@ -123,6 +123,10 @@ void SetPDFEnsureTypefaceCharactersAccessible(
 void SetPDFUseGDIPrinting(bool enable) {
   PDFEngineExports::Get()->SetPDFUseGDIPrinting(enable);
 }
+
+void SetPDFPostscriptPrintingLevel(int postscript_level) {
+  PDFEngineExports::Get()->SetPDFPostscriptPrintingLevel(postscript_level);
+}
 #endif  // defined(OS_WIN)
 
 bool GetPDFDocInfo(const void* pdf_buffer,

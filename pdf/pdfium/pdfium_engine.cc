@@ -4103,6 +4103,12 @@ void PDFiumEngineExports::SetPDFEnsureTypefaceCharactersAccessible(
 void PDFiumEngineExports::SetPDFUseGDIPrinting(bool enable) {
   FPDF_SetPrintTextWithGDI(enable);
 }
+
+void PDFiumEngineExports::SetPDFPostscriptPrintingLevel(
+    int postscript_level) {
+  FPDF_SetPrintPostscriptLevel(postscript_level);
+}
+
 #endif  // defined(OS_WIN)
 
 bool PDFiumEngineExports::RenderPDFPageToBitmap(

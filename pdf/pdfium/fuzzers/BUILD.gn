@@ -35,10 +35,24 @@ fuzzer_test("pdf_cmap_fuzzer") {
   ]
 }
 
+fuzzer_test("pdf_codec_a85_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/libfuzzer:pdf_codec_a85_fuzzer",
+  ]
+}
+
 fuzzer_test("pdf_codec_fax_fuzzer") {
   sources = []
   deps = [
     "//third_party/pdfium/testing/libfuzzer:pdf_codec_fax_fuzzer",
+  ]
+}
+
+fuzzer_test("pdf_codec_rle_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/libfuzzer:pdf_codec_rle_fuzzer",
   ]
 }
 

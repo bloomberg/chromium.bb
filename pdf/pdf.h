@@ -82,6 +82,8 @@ void SetPDFEnsureTypefaceCharactersAccessible(
     PDFEnsureTypefaceCharactersAccessible func);
 
 void SetPDFUseGDIPrinting(bool enable);
+
+void SetPDFPostscriptPrintingLevel(int postscript_level);
 #endif  // defined(OS_WIN)
 
 // |page_count| and |max_page_width| are optional and can be NULL.

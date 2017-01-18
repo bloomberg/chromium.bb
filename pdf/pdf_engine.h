@@ -341,6 +341,8 @@ class PDFEngineExports {
       PDFEnsureTypefaceCharactersAccessible func) = 0;
 
   virtual void SetPDFUseGDIPrinting(bool enable) = 0;
+
+  virtual void SetPDFPostscriptPrintingLevel(int postscript_level) = 0;
 #endif  // defined(OS_WIN)
 
   // See the definition of RenderPDFPageToBitmap in pdf.cc for details.
