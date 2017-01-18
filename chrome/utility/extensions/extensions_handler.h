@@ -67,10 +67,6 @@ class ExtensionsHandler : public UtilityMessageHandler {
       const std::vector<picasa::FolderINIContents>& folders_inis);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_WIN)
-  void OnGetWiFiCredentials(const std::string& network_guid);
-#endif  // defined(OS_WIN)
-
   UtilityHandler utility_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsHandler);

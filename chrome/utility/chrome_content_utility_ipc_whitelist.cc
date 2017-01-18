@@ -14,9 +14,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 const uint32_t kMessageWhitelist[] = {
-#if defined(OS_WIN)
-    ChromeUtilityHostMsg_GetWiFiCredentials::ID,
-#endif  // defined(OS_WIN)
     ChromeUtilityMsg_ImageWriter_Cancel::ID,
     ChromeUtilityMsg_ImageWriter_Write::ID,
     ChromeUtilityMsg_ImageWriter_Verify::ID};

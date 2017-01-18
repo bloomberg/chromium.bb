@@ -28,6 +28,10 @@ mojom("mojo_bindings") {
     "media_parser.mojom",
   ]
 
+  if (is_win) {
+    sources += [ "wifi_credentials_getter.mojom" ]
+  }
+
   public_deps = [
     "//mojo/common:common_custom_types",
   ]

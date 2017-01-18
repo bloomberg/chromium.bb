@@ -32,6 +32,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/common/extensions/wifi_credentials_getter.mojom.h"
 #include "chrome/utility/media_galleries/itunes_pref_parser_win.h"
 #include "components/wifi/wifi_service.h"
 #endif  // defined(OS_WIN)
@@ -95,6 +96,46 @@ class MediaParserImpl : public extensions::mojom::MediaParser {
   DISALLOW_COPY_AND_ASSIGN(MediaParserImpl);
 };
 
+#if defined(OS_WIN)
+class WiFiCredentialsGetterImpl
+    : public extensions::mojom::WiFiCredentialsGetter {
+ public:
+  WiFiCredentialsGetterImpl() = default;
+  ~WiFiCredentialsGetterImpl() override = default;
+
+  static void Create(extensions::mojom::WiFiCredentialsGetterRequest request) {
+    mojo::MakeStrongBinding(base::MakeUnique<WiFiCredentialsGetterImpl>(),
+                            std::move(request));
+  }
+
+ private:
+  // extensions::mojom::WiFiCredentialsGetter:
+  void GetWiFiCredentials(const std::string& ssid,
+                          const GetWiFiCredentialsCallback& callback) override {
+    if (ssid == kWiFiTestNetwork) {
+      callback.Run(true, ssid);  // test-mode: return the ssid in key_data.
+      return;
+    }
+
+    std::unique_ptr<wifi::WiFiService> wifi_service(
+        wifi::WiFiService::Create());
+    wifi_service->Initialize(nullptr);
+
+    std::string key_data;
+    std::string error;
+    wifi_service->GetKeyFromSystem(ssid, &key_data, &error);
+
+    const bool success = error.empty();
+    if (!success)
+      key_data.clear();
+
+    callback.Run(success, key_data);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(WiFiCredentialsGetterImpl);
+};
+#endif  // defined(OS_WIN)
+
 }  // namespace
 
 namespace extensions {
@@ -117,10 +158,14 @@ void ExtensionsHandler::ExposeInterfacesToBrowser(
     service_manager::InterfaceRegistry* registry,
     ChromeContentUtilityClient* utility_client,
     bool running_elevated) {
-  // If our process runs with elevated privileges, only add elevated
-  // Mojo services to the interface registry.
-  if (running_elevated)
+  // If our process runs with elevated privileges, only add elevated Mojo
+  // services to the interface registry.
+  if (running_elevated) {
+#if defined(OS_WIN)
+    registry->AddInterface(base::Bind(&WiFiCredentialsGetterImpl::Create));
+#endif
     return;
+  }
 
   registry->AddInterface(base::Bind(&MediaParserImpl::Create, utility_client));
 }
@@ -143,11 +188,6 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_IndexPicasaAlbumsContents,
                         OnIndexPicasaAlbumsContents)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetWiFiCredentials,
-                        OnGetWiFiCredentials)
-#endif  // defined(OS_WIN)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -226,18 +266,5 @@ void ExtensionsHandler::OnIndexPicasaAlbumsContents(
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-void ExtensionsHandler::OnGetWiFiCredentials(const std::string& network_guid) {
-  std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
-  wifi_service->Initialize(NULL);
-
-  std::string key_data;
-  std::string error;
-  wifi_service->GetKeyFromSystem(network_guid, &key_data, &error);
-
-  Send(new ChromeUtilityHostMsg_GotWiFiCredentials(key_data, error.empty()));
-}
-#endif  // defined(OS_WIN)
 
 }  // namespace extensions

@@ -168,16 +168,3 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ImageWriter_Failed,
 // Periodic status update about the progress of an operation.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ImageWriter_Progress,
                      int64_t /* number of bytes processed */)
-
-#if defined(OS_WIN)
-// Get plain-text WiFi credentials from the system (requires UAC privilege
-// elevation).
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GetWiFiCredentials,
-                     std::string /* ssid */)
-
-// Reply after getting WiFi credentials from the system. |success| is false if
-// error occurred.
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GotWiFiCredentials,
-                     std::string /* key_data */,
-                     bool /* success */)
-#endif  // defined(OS_WIN)

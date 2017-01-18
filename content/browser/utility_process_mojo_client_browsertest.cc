@@ -20,7 +20,7 @@ namespace content {
 // Test fixture used to make different Mojo calls to the utility process.
 class UtilityProcessMojoClientBrowserTest : public ContentBrowserTest {
  public:
-  void StartMojoService(bool disable_sandbox) {
+  void StartMojoService(bool disable_sandbox, bool run_elevated = false) {
     mojo_client_.reset(new UtilityProcessMojoClient<mojom::TestService>(
         base::ASCIIToUTF16("TestMojoProcess")));
 
@@ -31,6 +31,14 @@ class UtilityProcessMojoClientBrowserTest : public ContentBrowserTest {
     // This test case needs to have the sandbox disabled.
     if (disable_sandbox)
       mojo_client_->set_disable_sandbox();
+#if defined(OS_WIN)
+    // This test case needs utility process privilege elevation.
+    if (run_elevated) {
+      CHECK(disable_sandbox);
+      mojo_client_->set_run_elevated();
+    }
+#endif  // defined(OS_WIN)
+
     mojo_client_->Start();
   }
 
@@ -136,6 +144,28 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, SandboxSuccess) {
   EXPECT_TRUE(sandbox_succeeded_);
   EXPECT_FALSE(error_happened_);
 }
-#endif
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+// Call a function that succeeds with process elevation. Elevation is only
+// available on WIN, and is used to permit UAC prompts for operations that
+// need user approval before proceeding.
+IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, ElevatedSuccess) {
+  base::RunLoop run_loop;
+  done_closure_ = run_loop.QuitClosure();
+
+  bool elevated_utility_process = true;
+  StartMojoService(true, elevated_utility_process);
+
+  mojo_client_->service()->CreateFolder(
+      base::Bind(&UtilityProcessMojoClientBrowserTest::OnCreateFolderFinished,
+                 base::Unretained(this)));
+
+  run_loop.Run();
+  EXPECT_TRUE(response_received_);
+  EXPECT_TRUE(sandbox_succeeded_);
+  EXPECT_FALSE(error_happened_);
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace content

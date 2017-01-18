@@ -8,6 +8,7 @@
           "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::ShellHandler",
           "extensions::mojom::MediaParser",
+          "extensions::mojom::WiFiCredentialsGetter",
           "net::interfaces::ProxyResolverFactory",
           "safe_json::mojom::SafeJsonParser"
         ]

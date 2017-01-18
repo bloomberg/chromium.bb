@@ -48,6 +48,14 @@ class UtilityProcessMojoClient {
     helper_->set_disable_sandbox();
   }
 
+#if defined(OS_WIN)
+  // Allow the utility process to run with elevated privileges.
+  void set_run_elevated() {
+    DCHECK(!start_called_);
+    helper_->set_run_elevated();
+  }
+#endif  // defined(OS_WIN)
+
   // Starts the utility process and connect to the remote Mojo service.
   void Start() {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -96,15 +104,30 @@ class UtilityProcessMojoClient {
 
     void set_disable_sandbox() { disable_sandbox_ = true; }
 
+#if defined(OS_WIN)
+    void set_run_elevated() {
+      disable_sandbox_ = true;
+      run_elevated_ = true;
+    }
+#endif  // defined(OS_WIN)
+
    private:
     // Starts the utility process and connects to the remote Mojo service.
     void StartOnIOThread(const std::string& mojo_interface_name,
                          mojo::ScopedMessagePipeHandle interface_pipe) {
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
       utility_host_ = UtilityProcessHost::Create(nullptr, nullptr)->AsWeakPtr();
       utility_host_->SetName(process_name_);
+
       if (disable_sandbox_)
         utility_host_->DisableSandbox();
+#if defined(OS_WIN)
+      if (run_elevated_) {
+        DCHECK(disable_sandbox_);
+        utility_host_->ElevatePrivileges();
+      }
+#endif  // defined(OS_WIN)
 
       utility_host_->Start();
 
@@ -115,6 +138,9 @@ class UtilityProcessMojoClient {
     // Properties of the utility process.
     base::string16 process_name_;
     bool disable_sandbox_ = false;
+#if defined(OS_WIN)
+    bool run_elevated_ = false;
+#endif  // defined(OS_WIN)
 
     // Must only be accessed on the IO thread.
     base::WeakPtr<UtilityProcessHost> utility_host_;
