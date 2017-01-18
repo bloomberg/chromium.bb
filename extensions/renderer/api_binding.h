@@ -27,6 +27,7 @@ class Arguments;
 namespace extensions {
 class APIBindingHooks;
 class APIEventHandler;
+class APIRequestHandler;
 class APISignature;
 
 // A class that vends v8::Objects for extension APIs. These APIs have function
@@ -39,16 +40,24 @@ class APISignature;
 // contexts.
 class APIBinding {
  public:
-  // The callback to called when an API method is invoked with matching
-  // arguments. This passes the name of the api method and the arguments it
-  // was passed, as well as the current isolate, context, and callback value.
-  // Note that the callback can be empty if none was passed.
-  using APIMethodCallback =
-      base::Callback<void(const std::string& name,
-                          std::unique_ptr<base::ListValue> arguments,
-                          v8::Isolate*,
-                          v8::Local<v8::Context>,
-                          v8::Local<v8::Function>)>;
+  // TODO(devlin): We may want to coalesce this with the
+  // ExtensionHostMsg_Request_Params IPC struct.
+  struct Request {
+    Request();
+    ~Request();
+
+    int request_id = -1;
+    std::string method_name;
+    bool has_callback = false;
+    bool has_user_gesture = false;
+    std::unique_ptr<base::ListValue> arguments;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Request);
+  };
+
+  using SendRequestMethod =
+      base::Callback<void(std::unique_ptr<Request>, v8::Local<v8::Context>)>;
 
   // The callback for determining if a given API method (specified by |name|)
   // is available.
@@ -64,9 +73,10 @@ class APIBinding {
              const base::ListValue* function_definitions,
              const base::ListValue* type_definitions,
              const base::ListValue* event_definitions,
-             const APIMethodCallback& callback,
+             const SendRequestMethod& callback,
              std::unique_ptr<APIBindingHooks> binding_hooks,
-             ArgumentSpec::RefMap* type_refs);
+             ArgumentSpec::RefMap* type_refs,
+             APIRequestHandler* request_handler);
   ~APIBinding();
 
   // Returns a new v8::Object for the API this APIBinding represents.
@@ -104,13 +114,17 @@ class APIBinding {
   std::map<std::string, std::vector<EnumEntry>> enums_;
 
   // The callback to use when an API is invoked with valid arguments.
-  APIMethodCallback method_callback_;
+  SendRequestMethod method_callback_;
 
   // The registered hooks for this API.
   std::unique_ptr<APIBindingHooks> binding_hooks_;
 
   // The reference map for all known types; required to outlive this object.
   const ArgumentSpec::RefMap* type_refs_;
+
+  // The associated request handler, shared between this and other bindings.
+  // Required to outlive this object.
+  APIRequestHandler* request_handler_;
 
   base::WeakPtrFactory<APIBinding> weak_factory_;
 

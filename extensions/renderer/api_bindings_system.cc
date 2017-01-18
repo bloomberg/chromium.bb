@@ -11,14 +11,11 @@
 
 namespace extensions {
 
-APIBindingsSystem::Request::Request() {}
-APIBindingsSystem::Request::~Request() {}
-
 APIBindingsSystem::APIBindingsSystem(
     const binding::RunJSFunction& call_js,
     const binding::RunJSFunctionSync& call_js_sync,
     const GetAPISchemaMethod& get_api_schema,
-    const SendRequestMethod& send_request,
+    const APIBinding::SendRequestMethod& send_request,
     const APIEventHandler::EventListenersChangedMethod& event_listeners_changed)
     : request_handler_(call_js),
       event_handler_(call_js, event_listeners_changed),
@@ -70,8 +67,7 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
 
   return base::MakeUnique<APIBinding>(
       api_name, function_definitions, type_definitions, event_definitions,
-      base::Bind(&APIBindingsSystem::OnAPICall, base::Unretained(this)),
-      std::move(hooks), &type_reference_map_);
+      send_request_, std::move(hooks), &type_reference_map_, &request_handler_);
 }
 
 void APIBindingsSystem::CompleteRequest(int request_id,
@@ -93,25 +89,6 @@ APIBindingHooks* APIBindingsSystem::GetHooksForAPI(
   if (!hooks)
     hooks = base::MakeUnique<APIBindingHooks>(call_js_sync_);
   return hooks.get();
-}
-
-void APIBindingsSystem::OnAPICall(const std::string& name,
-                                  std::unique_ptr<base::ListValue> arguments,
-                                  v8::Isolate* isolate,
-                                  v8::Local<v8::Context> context,
-                                  v8::Local<v8::Function> callback) {
-  auto request = base::MakeUnique<Request>();
-  if (!callback.IsEmpty()) {
-    request->request_id =
-        request_handler_.AddPendingRequest(isolate, callback, context);
-    request->has_callback = true;
-  }
-  // TODO(devlin): Query and curry user gestures around.
-  request->has_user_gesture = false;
-  request->arguments = std::move(arguments);
-  request->method_name = name;
-
-  send_request_.Run(std::move(request), context);
 }
 
 }  // namespace extensions

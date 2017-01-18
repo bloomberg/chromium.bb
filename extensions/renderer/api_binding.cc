@@ -15,6 +15,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_binding_hooks.h"
 #include "extensions/renderer/api_event_handler.h"
+#include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_signature.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/arguments.h"
@@ -71,6 +72,9 @@ void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 }  // namespace
 
+APIBinding::Request::Request() {}
+APIBinding::Request::~Request() {}
+
 struct APIBinding::MethodData {
   MethodData(std::string full_name,
              const base::ListValue& method_signature)
@@ -92,13 +96,15 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* function_definitions,
                        const base::ListValue* type_definitions,
                        const base::ListValue* event_definitions,
-                       const APIMethodCallback& callback,
+                       const SendRequestMethod& callback,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
-                       ArgumentSpec::RefMap* type_refs)
+                       ArgumentSpec::RefMap* type_refs,
+                       APIRequestHandler* request_handler)
     : api_name_(api_name),
       method_callback_(callback),
       binding_hooks_(std::move(binding_hooks)),
       type_refs_(type_refs),
+      request_handler_(request_handler),
       weak_factory_(this) {
   DCHECK(!method_callback_.is_null());
   if (function_definitions) {
@@ -305,9 +311,18 @@ void APIBinding::HandleCall(const std::string& name,
     return;
   }
 
-  DCHECK(converted_arguments);
-  method_callback_.Run(name, std::move(converted_arguments), isolate, context,
-                       callback);
+  auto request = base::MakeUnique<Request>();
+  if (!callback.IsEmpty()) {
+    request->request_id =
+        request_handler_->AddPendingRequest(isolate, callback, context);
+    request->has_callback = true;
+  }
+  // TODO(devlin): Query and curry user gestures around.
+  request->has_user_gesture = false;
+  request->arguments = std::move(converted_arguments);
+  request->method_name = name;
+
+  method_callback_.Run(std::move(request), context);
 }
 
 }  // namespace extensions

@@ -124,18 +124,10 @@ void OnEventListenersChanged(const std::string& event_name,
 
 class APIBindingUnittest : public APIBindingTest {
  public:
-  void OnFunctionCall(const std::string& name,
-                      std::unique_ptr<base::ListValue> arguments,
-                      v8::Isolate* isolate,
-                      v8::Local<v8::Context> context,
-                      v8::Local<v8::Function> callback) {
-    last_request_id_.clear();
-    arguments_ = std::move(arguments);
-    had_callback_ = !callback.IsEmpty();
-    if (!callback.IsEmpty()) {
-      last_request_id_ =
-          request_handler_->AddPendingRequest(isolate, callback, context);
-    }
+  void OnFunctionCall(std::unique_ptr<APIBinding::Request> request,
+                      v8::Local<v8::Context> context) {
+    arguments_ = std::move(request->arguments);
+    had_callback_ = request->has_callback;
   }
 
  protected:
@@ -182,7 +174,7 @@ class APIBindingUnittest : public APIBindingTest {
         "test", binding_functions_.get(), binding_types_.get(),
         binding_events_.get(),
         base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-        std::move(binding_hooks_), &type_refs_);
+        std::move(binding_hooks_), &type_refs_, request_handler_.get());
     EXPECT_EQ(!binding_types_.get(), type_refs_.empty());
     event_handler_ = base::MakeUnique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
@@ -219,7 +211,6 @@ class APIBindingUnittest : public APIBindingTest {
   APIEventHandler* event_handler() { return event_handler_.get(); }
   APIRequestHandler* request_handler() { return request_handler_.get(); }
   const ArgumentSpec::RefMap& type_refs() const { return type_refs_; }
-  const std::string& last_request_id() const { return last_request_id_; }
 
  private:
   void RunTest(v8::Local<v8::Context> context,
@@ -236,7 +227,6 @@ class APIBindingUnittest : public APIBindingTest {
   std::unique_ptr<APIEventHandler> event_handler_;
   std::unique_ptr<APIRequestHandler> request_handler_;
   ArgumentSpec::RefMap type_refs_;
-  std::string last_request_id_;
 
   std::unique_ptr<base::ListValue> binding_functions_;
   std::unique_ptr<base::ListValue> binding_events_;
