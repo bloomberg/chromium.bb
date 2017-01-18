@@ -125,7 +125,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
 #if OS(LINUX) || OS(ANDROID)
       m_style(FontRenderStyle::querySystem(m_family,
                                            m_textSize,
-                                           m_typeface->style())),
+                                           m_typeface->fontStyle())),
 #endif
       m_harfBuzzFace(nullptr),
       m_isHashTableDeletedValue(false)
@@ -158,7 +158,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> tf,
 #if OS(LINUX) || OS(ANDROID)
       m_style(FontRenderStyle::querySystem(m_family,
                                            m_textSize,
-                                           m_typeface->style())),
+                                           m_typeface->fontStyle())),
 #endif
       m_isHashTableDeletedValue(false)
 #if OS(WIN)

@@ -30,8 +30,8 @@
 #ifndef FontRenderStyle_h
 #define FontRenderStyle_h
 
+#include "SkFontStyle.h"
 #include "SkPaint.h"
-#include "SkTypeface.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/CString.h"
@@ -71,7 +71,7 @@ struct FontRenderStyle {
 
   static FontRenderStyle querySystem(const CString& family,
                                      float textSize,
-                                     SkTypeface::Style typefaceStyle);
+                                     SkFontStyle);
   void applyToPaint(SkPaint&, float deviceScaleFactor) const;
 
   // Each of the use* members below can take one of three values:

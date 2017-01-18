@@ -50,7 +50,7 @@ void FontRenderStyle::setSubpixelRendering(bool useSubpixelRendering) {
 // static
 FontRenderStyle FontRenderStyle::querySystem(const CString& family,
                                              float textSize,
-                                             SkTypeface::Style typefaceStyle) {
+                                             SkFontStyle fontStyle) {
   WebFontRenderStyle style;
 #if OS(ANDROID)
   style.setDefaults();
@@ -60,7 +60,10 @@ FontRenderStyle FontRenderStyle::querySystem(const CString& family,
   if (!family.length() || !Platform::current()->sandboxSupport()) {
     style.setDefaults();
   } else {
-    const int sizeAndStyle = (((int)textSize) << 2) | (typefaceStyle & 3);
+    bool isBold = fontStyle.weight() >= SkFontStyle::kSemiBold_Weight;
+    bool isItalic = fontStyle.slant() != SkFontStyle::kUpright_Slant;
+    const int sizeAndStyle =
+        (((int)textSize) << 2) | (((int)isBold) << 1) | (((int)isItalic) << 0);
     Platform::current()->sandboxSupport()->getWebFontRenderStyleForStrike(
         family.data(), sizeAndStyle, &style);
   }
