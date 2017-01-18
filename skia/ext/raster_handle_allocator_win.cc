@@ -118,7 +118,7 @@ std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
     bool is_opaque,
     HANDLE shared_section,
     OnFailureType failure_type) {
-  SkAlphaType alpha = is_opaque ? kPremul_SkAlphaType : kOpaque_SkAlphaType;
+  SkAlphaType alpha = is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
   SkImageInfo info = SkImageInfo::MakeN32(width, height, alpha);
   size_t row_bytes = PlatformCanvasStrideForWidth(width);
 
