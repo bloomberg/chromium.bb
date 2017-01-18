@@ -171,7 +171,7 @@ function testStartStopAndRecorderState() {
 function testStartAndDataAvailable(mimeType) {
   var videoSize = 0;
   var emptyBlobs = 0;
-  var timeStamps = [];
+  var lastTimecode = NaN;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createAndStartMediaRecorder(stream, mimeType);
@@ -179,11 +179,14 @@ function testStartAndDataAvailable(mimeType) {
       .then(function(recorder) {
         // Save history of Blobs received via dataavailable.
         recorder.ondataavailable = function(event) {
-          timeStamps.push(event.timeStamp);
           if (event.data.size > 0)
             videoSize += event.data.size;
           else
             emptyBlobs += 1;
+
+          if (!isNaN(lastTimecode))
+            assertTrue(event.timecode > lastTimecode, 'timecodes');
+          lastTimecode = event.timecode;
         };
       })
       .then(function() {
@@ -210,6 +213,7 @@ function testStartWithTimeSlice(mimeType) {
   var videoSize = 0;
   var emptyBlobs = 0;
   var timeStamps = [];
+  var lastTimecode = NaN;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createAndStartMediaRecorder(stream, mimeType,
@@ -222,6 +226,10 @@ function testStartWithTimeSlice(mimeType) {
             videoSize += event.data.size;
           else
             emptyBlobs += 1;
+
+          if (!isNaN(lastTimecode))
+            assertTrue(event.timecode > lastTimecode, 'timecodes');
+          lastTimecode = event.timecode;
         };
       })
       .then(function() {
@@ -289,6 +297,7 @@ function testIllegalResumeThrowsDOMError() {
 function testResumeAndDataAvailable(mimeType) {
   var videoSize = 0;
   var emptyBlobs = 0;
+  var lastTimecode = NaN;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createAndStartMediaRecorder(stream, mimeType);
@@ -302,6 +311,10 @@ function testResumeAndDataAvailable(mimeType) {
             console.log('This dataavailable event is empty', event);
             emptyBlobs += 1;
           }
+
+          if (!isNaN(lastTimecode))
+            assertTrue(event.timecode > lastTimecode, 'timecodes');
+          lastTimecode = event.timecode;
         };
         recorder.resume();
       })
@@ -414,6 +427,7 @@ function testIllegalPauseThrowsDOMError() {
 function testRecordRemotePeerConnection(mimeType) {
   var videoSize = 0;
   var timeStamps = [];
+  var lastTimecode = NaN;
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(localStream) {
         return setupPeerConnection(localStream);
@@ -425,6 +439,10 @@ function testRecordRemotePeerConnection(mimeType) {
         recorder.ondataavailable = function(event) {
           timeStamps.push(event.timeStamp);
           videoSize += event.data.size;
+
+          if (!isNaN(lastTimecode))
+            assertTrue(event.timecode > lastTimecode, 'timecodes');
+          lastTimecode = event.timecode;
         };
         recorder.start(0);
       })
@@ -492,10 +510,14 @@ function testTwoChannelAudio() {
   var dest = context.createMediaStreamDestination();
   dest.channelCount = 2;
   oscillator.connect(dest);
+  var lastTimecode = NaN;
   createMediaRecorder(dest.stream, DEFAULT_RECORDER_MIME_TYPE)
       .then(function(recorder) {
         recorder.ondataavailable = function(event) {
           audioSize += event.data.size;
+          if (!isNaN(lastTimecode))
+            assertTrue(event.timecode > lastTimecode, 'timecodes');
+          lastTimecode = event.timecode;
         };
         recorder.start(0);
         oscillator.start();
