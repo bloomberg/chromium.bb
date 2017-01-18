@@ -180,12 +180,15 @@ public class SuggestionsSection extends InnerNode {
         }
 
         public void updateSuggestionOfflineId(SnippetArticle article, Long newId) {
+            int index = mSuggestions.indexOf(article);
+            // The suggestions could have been removed / replaced in the meantime.
+            if (index == -1) return;
+
             Long oldId = article.getOfflinePageOfflineId();
             article.setOfflinePageOfflineId(newId);
 
             if ((oldId == null) == (newId == null)) return;
-            notifyItemChanged(mSuggestions.indexOf(article),
-                    SnippetArticleViewHolder.PARTIAL_UPDATE_OFFLINE_ID);
+            notifyItemChanged(index, SnippetArticleViewHolder.PARTIAL_UPDATE_OFFLINE_ID);
         }
     }
 
