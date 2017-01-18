@@ -34,6 +34,9 @@
 #include "clang/Tooling/Refactoring.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/ErrorOr.h"
+#include "llvm/Support/LineIterator.h"
+#include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/TargetSelect.h"
 
 #include "EditTracker.h"
@@ -49,6 +52,7 @@ const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
 const char kGeneratedFileRegex[] = "^gen/|/gen/";
 const char kGMockMethodNamePrefix[] = "gmock_";
+const char kMethodBlocklistParamName[] = "method-blocklist";
 
 template <typename MatcherType, typename NodeType>
 bool IsMatching(const MatcherType& matcher,
@@ -117,6 +121,115 @@ AST_MATCHER_P(clang::CXXMethodDecl,
   }
 
   return false;
+}
+
+class MethodBlocklist {
+ public:
+  explicit MethodBlocklist(const std::string& filepath) {
+    if (!filepath.empty())
+      ParseInputFile(filepath);
+  }
+
+  bool Contains(const clang::CXXMethodDecl& method) const {
+    auto it = method_to_class_to_args_.find(method.getName());
+    if (it == method_to_class_to_args_.end())
+      return false;
+
+    const clang::CXXRecordDecl* actual_class = method.getParent();
+    assert(actual_class &&
+           "Hopefully |getParent()| can find the class even for non-inlined "
+           "method definitions (where CXXRecordDecl is not a parent AST node "
+           "of CXXMethodDecl.");
+
+    const llvm::StringMap<std::set<unsigned>>& class_to_args = it->second;
+    auto it2 = class_to_args.find(actual_class->getName());
+    if (it2 == class_to_args.end())
+      return false;
+
+    const std::set<unsigned>& arg_counts = it2->second;
+    unsigned method_param_count = method.param_size();
+    unsigned method_non_optional_param_count = method_param_count;
+    for (const clang::ParmVarDecl* param : method.parameters()) {
+      if (param->hasInit())
+        method_non_optional_param_count--;
+    }
+    bool found_matching_arg_count =
+        std::any_of(arg_counts.begin(), arg_counts.end(),
+                    [method_param_count,
+                     method_non_optional_param_count](unsigned arg_count) {
+                      return (method_non_optional_param_count <= arg_count) &&
+                             (arg_count <= method_param_count);
+                    });
+
+    // No need to verify here that |actual_class| is in the |blink| namespace -
+    // this will be done by other matchers elsewhere.
+
+    // TODO(lukasza): Do we need to consider return type and/or param types?
+
+    return found_matching_arg_count;
+  }
+
+ private:
+  // Each line is expected to have the following format:
+  // <class name>:::<method name>:::<number of arguments>
+  void ParseInputFile(const std::string& filepath) {
+    llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> file_or_err =
+        llvm::MemoryBuffer::getFile(filepath);
+    if (std::error_code err = file_or_err.getError()) {
+      llvm::errs() << "ERROR: Cannot open the file specified in --"
+                   << kMethodBlocklistParamName << " argument: " << filepath
+                   << ": " << err.message() << "\n";
+      assert(false);
+      return;
+    }
+
+    llvm::line_iterator it(**file_or_err, true /* SkipBlanks */, '#');
+    for (; !it.is_at_eof(); ++it) {
+      llvm::StringRef line = it->trim();
+      if (line.empty())
+        continue;
+
+      // Split the line into ':::'-delimited parts.
+      const size_t kExpectedNumberOfParts = 3;
+      llvm::SmallVector<llvm::StringRef, kExpectedNumberOfParts> parts;
+      line.split(parts, ":::");
+      if (parts.size() != kExpectedNumberOfParts) {
+        llvm::errs() << "ERROR: Parsing error - expected "
+                     << kExpectedNumberOfParts
+                     << " ':::'-delimited parts: " << filepath << ":"
+                     << it.line_number() << ": " << line << "\n";
+        assert(false);
+        continue;
+      }
+
+      // Parse individual parts.
+      llvm::StringRef class_name = parts[0];
+      llvm::StringRef method_name = parts[1];
+      unsigned number_of_method_args;
+      if (parts[2].getAsInteger(0, number_of_method_args)) {
+        llvm::errs() << "ERROR: Parsing error - '" << parts[2] << "' "
+                     << "is not an unsigned integer: " << filepath << ":"
+                     << it.line_number() << ": " << line << "\n";
+        assert(false);
+        continue;
+      }
+
+      // Store the new entry.
+      method_to_class_to_args_[method_name][class_name].insert(
+          number_of_method_args);
+    }
+  }
+
+  // Stores methods to blacklist in a map:
+  // method name -> class name -> set of all allowed numbers of arguments.
+  llvm::StringMap<llvm::StringMap<std::set<unsigned>>> method_to_class_to_args_;
+};
+
+AST_MATCHER_P(clang::CXXMethodDecl,
+              isBlocklistedMethod,
+              MethodBlocklist,
+              Blocklist) {
+  return Blocklist.Contains(Node);
 }
 
 // If |InnerMatcher| matches |top|, then the returned matcher will match:
@@ -1275,6 +1388,9 @@ int main(int argc, const char* argv[]) {
   llvm::InitializeNativeTargetAsmParser();
   llvm::cl::OptionCategory category(
       "rewrite_to_chrome_style: convert Blink style to Chrome style.");
+  llvm::cl::opt<std::string> blocklisted_methods_file(
+      kMethodBlocklistParamName, llvm::cl::value_desc("filepath"),
+      llvm::cl::desc("file listing methods to be blocked (not renamed)"));
   CommonOptionsParser options(argc, argv, category);
   clang::tooling::ClangTool tool(options.getCompilations(),
                                  options.getSourcePathList());
@@ -1431,8 +1547,10 @@ int main(int argc, const char* argv[]) {
   // but that override something we are rewriting should also be rewritten. So
   // we use includeAllOverriddenMethods() to check these rules not just for the
   // method being matched but for the methods it overrides also.
+  MethodBlocklist method_blocklist(blocklisted_methods_file);
   auto is_blink_method = includeAllOverriddenMethods(
-      allOf(in_blink_namespace, unless(isBlacklistedMethod())));
+      allOf(in_blink_namespace, unless(isBlacklistedMethod()),
+            unless(isBlocklistedMethod(method_blocklist))));
   auto method_decl_matcher = id(
       "decl",
       cxxMethodDecl(
