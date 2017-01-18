@@ -2681,8 +2681,6 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 	wl_signal_add(&window->surface->destroy_signal,
 		      &window->surface_destroy_listener);
 
-	weston_wm_window_schedule_repaint(window);
-
 	if (!xwayland_interface)
 		return;
 
@@ -2742,6 +2740,11 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 			xwayland_interface->set_toplevel(window->shsurf);
 		}
 	}
+
+	if (window->frame_id == XCB_WINDOW_NONE)
+		weston_wm_window_set_pending_state_OR(window);
+	else
+		weston_wm_window_set_pending_state(window);
 }
 
 const struct weston_xwayland_surface_api surface_api = {
