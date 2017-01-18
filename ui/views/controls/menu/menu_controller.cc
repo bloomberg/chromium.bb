@@ -2576,9 +2576,6 @@ void MenuController::ExitAsyncRun() {
   // ExitMenuRun unwinds nested delegates
   internal::MenuControllerDelegate* delegate = delegate_;
   MenuItemView* result = ExitMenuRun();
-  // MenuController may have been deleted when releasing ViewsDelegate ref.
-  if (!GetActiveInstance())
-    return;
   delegate->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
                          result, accept_event_flags_);
   // MenuController may have been deleted by |delegate|.
@@ -2591,10 +2588,6 @@ MenuItemView* MenuController::ExitMenuRun() {
   // showing.
   if (async_run_ && ViewsDelegate::GetInstance())
     ViewsDelegate::GetInstance()->ReleaseRef();
-
-  // Releasing the lock can result in Chrome shutting down, deleting this.
-  if (!GetActiveInstance())
-    return nullptr;
 
   // Close any open menus.
   SetSelection(nullptr, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
