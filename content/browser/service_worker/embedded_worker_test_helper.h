@@ -197,6 +197,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const PushEventPayload& payload,
       const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
           callback);
+  virtual void OnPaymentRequestEvent(
+      payments::mojom::PaymentAppRequestDataPtr data,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchPaymentRequestEventCallback& callback);
 
   // These functions simulate sending an EmbeddedHostMsg message through the
   // legacy IPC system to the browser.
@@ -237,6 +241,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const PushEventPayload& payload,
       const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
           callback);
+  void OnPaymentRequestEventStub(
+      payments::mojom::PaymentAppRequestDataPtr data,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchPaymentRequestEventCallback& callback);
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
 

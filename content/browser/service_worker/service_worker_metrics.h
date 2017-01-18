@@ -115,6 +115,7 @@ class ServiceWorkerMetrics {
     // Used when external consumers want to add a request to
     // ServiceWorkerVersion to keep it alive.
     EXTERNAL_REQUEST = 21,
+    PAYMENT_REQUEST = 22,
     // Add new events to record here.
     NUM_TYPES
   };

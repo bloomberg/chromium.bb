@@ -174,6 +174,24 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                                   const GURL& origin,
                                   const FindRegistrationCallback& callback);
 
+  // Returns the registration for |registration_id|. It is guaranteed that the
+  // returned registration has the activated worker.
+  //
+  // Generally |FindReadyRegistrationForId| should be used to look up a
+  // registration by |registration_id| since it's more efficient. But if a
+  // |registration_id| is all that is available this method can be used instead.
+  //
+  //  - If the registration is not found, returns ERROR_NOT_FOUND.
+  //  - If the registration has neither the waiting version nor the active
+  //    version, returns ERROR_NOT_FOUND.
+  //  - If the registration does not have the active version but has the waiting
+  //    version, activates the waiting version and runs |callback| when it is
+  //    activated.
+  //
+  // Must be called from the IO thread.
+  void FindReadyRegistrationForIdOnly(int64_t registration_id,
+                                      const FindRegistrationCallback& callback);
+
   // All these methods must be called from the IO thread.
   void GetAllRegistrations(const GetRegistrationsInfosCallback& callback);
   void GetRegistrationUserData(int64_t registration_id,

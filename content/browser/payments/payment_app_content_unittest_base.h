@@ -19,7 +19,6 @@
 namespace content {
 
 class BrowserContext;
-class EmbeddedWorkerTestHelper;
 class PaymentAppContextImpl;
 class StoragePartitionImpl;
 class TestBrowserThreadBundle;
@@ -41,12 +40,19 @@ class PaymentAppContentUnitTestBase : public testing::Test {
       const std::string& name);
   void UnregisterServiceWorker(const GURL& scope_url);
 
+  void ResetPaymentAppInvoked() const;
+  bool payment_app_invoked() const;
+  int64_t last_sw_registration_id() const;
+  const GURL& last_sw_scope_url() const;
+
  private:
+  class PaymentAppForWorkerTestHelper;
+
   StoragePartitionImpl* storage_partition();
   PaymentAppContextImpl* payment_app_context();
 
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
-  std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
+  std::unique_ptr<PaymentAppForWorkerTestHelper> worker_helper_;
   std::vector<payments::mojom::PaymentAppManagerPtr> payment_app_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppContentUnitTestBase);

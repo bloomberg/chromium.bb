@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -41,21 +42,69 @@ void UnregisterServiceWorkerCallback(bool* called,
 
 }  // namespace
 
+class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
+    : public EmbeddedWorkerTestHelper {
+ public:
+  PaymentAppForWorkerTestHelper()
+      : EmbeddedWorkerTestHelper(base::FilePath()),
+        was_dispatched_(false),
+        last_sw_registration_id_(kInvalidServiceWorkerRegistrationId) {}
+  ~PaymentAppForWorkerTestHelper() override {}
+
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request) override {
+    ServiceWorkerVersion* version =
+        context()->GetLiveVersion(service_worker_version_id);
+    version->SetMainScriptHttpResponseInfo(
+        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
+    last_sw_registration_id_ = version->registration_id();
+    last_sw_scope_ = scope;
+    EmbeddedWorkerTestHelper::OnStartWorker(
+        embedded_worker_id, service_worker_version_id, scope, script_url,
+        pause_after_download, std::move(request));
+  }
+
+  void OnPaymentRequestEvent(
+      payments::mojom::PaymentAppRequestDataPtr data,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchPaymentRequestEventCallback& callback) override {
+    ASSERT_FALSE(was_dispatched_);
+    EmbeddedWorkerTestHelper::OnPaymentRequestEvent(std::move(data), callback);
+    was_dispatched_ = true;
+  }
+
+  bool was_dispatched_;
+  int64_t last_sw_registration_id_;
+  GURL last_sw_scope_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentAppForWorkerTestHelper);
+};
+
 PaymentAppContentUnitTestBase::PaymentAppContentUnitTestBase()
     : thread_bundle_(
           new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)),
-      embedded_worker_helper_(new EmbeddedWorkerTestHelper(base::FilePath())) {
-  embedded_worker_helper_->context_wrapper()->set_storage_partition(
-      storage_partition());
-  payment_app_context()->Init(embedded_worker_helper_->context_wrapper());
+      worker_helper_(new PaymentAppForWorkerTestHelper()) {
+  worker_helper_->context_wrapper()->set_storage_partition(storage_partition());
+  storage_partition()->service_worker_context_->Shutdown();
+  base::RunLoop().RunUntilIdle();
+
+  storage_partition()->service_worker_context_ =
+      worker_helper_->context_wrapper();
+  payment_app_context()->Init(worker_helper_->context_wrapper());
   base::RunLoop().RunUntilIdle();
 }
 
 PaymentAppContentUnitTestBase::~PaymentAppContentUnitTestBase() {}
 
 BrowserContext* PaymentAppContentUnitTestBase::browser_context() {
-  DCHECK(embedded_worker_helper_);
-  return embedded_worker_helper_->browser_context();
+  DCHECK(worker_helper_);
+  return worker_helper_->browser_context();
 }
 
 PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
@@ -63,7 +112,7 @@ PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
     const GURL& sw_script_url) {
   // Register service worker for payment app manager.
   bool called = false;
-  embedded_worker_helper_->context()->RegisterServiceWorker(
+  worker_helper_->context()->RegisterServiceWorker(
       scope_url, sw_script_url, nullptr,
       base::Bind(&RegisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
@@ -142,10 +191,26 @@ void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
     const GURL& scope_url) {
   // Unregister service worker.
   bool called = false;
-  embedded_worker_helper_->context()->UnregisterServiceWorker(
+  worker_helper_->context()->UnregisterServiceWorker(
       scope_url, base::Bind(&UnregisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
+}
+
+void PaymentAppContentUnitTestBase::ResetPaymentAppInvoked() const {
+  worker_helper_->was_dispatched_ = false;
+}
+
+bool PaymentAppContentUnitTestBase::payment_app_invoked() const {
+  return worker_helper_->was_dispatched_;
+}
+
+int64_t PaymentAppContentUnitTestBase::last_sw_registration_id() const {
+  return worker_helper_->last_sw_registration_id_;
+}
+
+const GURL& PaymentAppContentUnitTestBase::last_sw_scope_url() const {
+  return worker_helper_->last_sw_scope_;
 }
 
 StoragePartitionImpl* PaymentAppContentUnitTestBase::storage_partition() {

@@ -229,6 +229,7 @@ static_library("test_support") {
     "//cc/surfaces",
     "//components/display_compositor",
     "//components/leveldb/public/interfaces",
+    "//components/payments:payment_app",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/speech/proto",

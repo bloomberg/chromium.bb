@@ -50,6 +50,13 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+  void InvokePaymentApp(int64_t registration_id,
+                        payments::mojom::PaymentAppRequestDataPtr data) {
+    PaymentAppProviderImpl::GetInstance()->InvokePaymentApp(
+        browser_context(), registration_id, std::move(data));
+    base::RunLoop().RunUntilIdle();
+  }
+
   void CreatePaymentApp(const GURL& scope_url, const GURL& sw_script_url) {
     PaymentAppManager* manager =
         CreatePaymentAppManager(scope_url, sw_script_url);
@@ -68,7 +75,7 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
   DISALLOW_COPY_AND_ASSIGN(PaymentAppProviderTest);
 };
 
-TEST_F(PaymentAppProviderTest, Test) {
+TEST_F(PaymentAppProviderTest, GetAllManifestsTest) {
   static const struct {
     const char* scopeUrl;
     const char* scriptUrl;
@@ -99,6 +106,40 @@ TEST_F(PaymentAppProviderTest, Test) {
     ASSERT_EQ(1U, manifest.second->options[0]->enabled_methods.size());
     EXPECT_EQ("visa", manifest.second->options[0]->enabled_methods[0]);
   }
+}
+
+TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
+  static const struct {
+    const char* scopeUrl;
+    const char* scriptUrl;
+  } kPaymentAppInfo[] = {
+      {"https://example.com/a", "https://example.com/a/script.js"},
+      {"https://example.com/b", "https://example.com/b/script.js"},
+      {"https://example.com/c", "https://example.com/c/script.js"}};
+
+  for (size_t i = 0; i < arraysize(kPaymentAppInfo); i++) {
+    CreatePaymentApp(GURL(kPaymentAppInfo[i].scopeUrl),
+                     GURL(kPaymentAppInfo[i].scriptUrl));
+  }
+
+  PaymentAppProvider::Manifests manifests;
+  bool called = false;
+  GetAllManifests(base::Bind(&GetAllManifestsCallback, &called, &manifests));
+  ASSERT_TRUE(called);
+  ASSERT_EQ(3U, manifests.size());
+
+  payments::mojom::PaymentAppRequestDataPtr data =
+      payments::mojom::PaymentAppRequestData::New();
+  data->methodData.push_back(payments::mojom::PaymentMethodData::New());
+  data->total = payments::mojom::PaymentItem::New();
+  data->total->amount = payments::mojom::PaymentCurrencyAmount::New();
+
+  EXPECT_FALSE(payment_app_invoked());
+  InvokePaymentApp(manifests[1].first, std::move(data));
+
+  ASSERT_TRUE(payment_app_invoked());
+  EXPECT_EQ(manifests[1].first, last_sw_registration_id());
+  EXPECT_EQ(GURL(kPaymentAppInfo[1].scopeUrl), last_sw_scope_url());
 }
 
 }  // namespace content

@@ -5,7 +5,11 @@
 #include "content/browser/payments/payment_app_provider_impl.h"
 
 #include "content/browser/payments/payment_app_context_impl.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -21,12 +25,72 @@ void DidGetAllManifestsOnIO(
 }
 
 void GetAllManifestsOnIO(
-    const scoped_refptr<PaymentAppContextImpl>& payment_app_context,
+    scoped_refptr<PaymentAppContextImpl> payment_app_context,
     const PaymentAppProvider::GetAllManifestsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context->payment_app_database()->ReadAllManifests(
       base::Bind(&DidGetAllManifestsOnIO, callback));
+}
+
+void DidDispatchPaymentRequestEvent(
+    scoped_refptr<ServiceWorkerVersion> active_version,
+    int request_id,
+    ServiceWorkerStatusCode service_worker_status,
+    base::Time dispatch_event_time) {
+  active_version->FinishRequest(request_id,
+                                service_worker_status == SERVICE_WORKER_OK,
+                                dispatch_event_time);
+}
+
+void DispatchPaymentRequestEventError(
+    ServiceWorkerStatusCode service_worker_status) {
+  NOTIMPLEMENTED();
+}
+
+void DispatchPaymentRequestEvent(
+    payments::mojom::PaymentAppRequestDataPtr data,
+    scoped_refptr<ServiceWorkerVersion> active_version) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(active_version);
+
+  int request_id = active_version->StartRequest(
+      ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
+      base::Bind(&DispatchPaymentRequestEventError));
+
+  active_version->event_dispatcher()->DispatchPaymentRequestEvent(
+      std::move(data),
+      base::Bind(&DidDispatchPaymentRequestEvent, active_version, request_id));
+}
+
+void DidFindRegistrationOnIO(
+    payments::mojom::PaymentAppRequestDataPtr data,
+    ServiceWorkerStatusCode service_worker_status,
+    scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (service_worker_status != SERVICE_WORKER_OK)
+    return;
+
+  ServiceWorkerVersion* active_version =
+      service_worker_registration->active_version();
+  DCHECK(active_version);
+  active_version->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
+      base::Bind(&DispatchPaymentRequestEvent, base::Passed(std::move(data)),
+                 make_scoped_refptr(active_version)),
+      base::Bind(&DispatchPaymentRequestEventError));
+}
+
+void FindRegistrationOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    int64_t registration_id,
+    payments::mojom::PaymentAppRequestDataPtr data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context->FindReadyRegistrationForIdOnly(
+      registration_id,
+      base::Bind(&DidFindRegistrationOnIO, base::Passed(std::move(data))));
 }
 
 }  // namespace
@@ -61,7 +125,17 @@ void PaymentAppProviderImpl::InvokePaymentApp(
     BrowserContext* browser_context,
     int64_t registration_id,
     payments::mojom::PaymentAppRequestDataPtr data) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context));
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
+      partition->GetServiceWorkerContext();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&FindRegistrationOnIO, std::move(service_worker_context),
+                 registration_id, base::Passed(std::move(data))));
 }
 
 PaymentAppProviderImpl::PaymentAppProviderImpl() {}
