@@ -1158,7 +1158,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 #endif  // CONFIG_PALETTE
 
-static void write_tx_type(const AV1_COMMON *const cm,
+static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
                           const MB_MODE_INFO *const mbmi,
 #if CONFIG_SUPERTX
                           const int supertx_enabled,
@@ -1174,7 +1174,9 @@ static void write_tx_type(const AV1_COMMON *const cm,
 #if CONFIG_EXT_TX
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
     const BLOCK_SIZE bsize = mbmi->sb_type;
-    if (get_ext_tx_types(tx_size, bsize, is_inter) > 1 && cm->base_qindex > 0 &&
+    if (get_ext_tx_types(tx_size, bsize, is_inter) > 1 &&
+        ((!cm->seg.enabled && cm->base_qindex > 0) ||
+         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
         !mbmi->skip &&
 #if CONFIG_SUPERTX
         !supertx_enabled &&
@@ -1199,7 +1201,10 @@ static void write_tx_type(const AV1_COMMON *const cm,
       }
     }
 #else
-    if (tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
+    if (tx_size < TX_32X32 &&
+        ((!cm->seg.enabled && cm->base_qindex > 0) ||
+         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
+        !mbmi->skip &&
 #if CONFIG_SUPERTX
         !supertx_enabled &&
 #endif  // CONFIG_SUPERTX
@@ -1643,7 +1648,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #endif  // CONFIG_DUAL_FILTE || CONFIG_WARPED_MOTION
   }
 
-  write_tx_type(cm, mbmi,
+  write_tx_type(cm, xd, mbmi,
 #if CONFIG_SUPERTX
                 supertx_enabled,
 #endif
@@ -1738,7 +1743,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (bsize >= BLOCK_8X8) write_filter_intra_mode_info(cm, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
 
-  write_tx_type(cm, mbmi,
+  write_tx_type(cm, xd, mbmi,
 #if CONFIG_SUPERTX
                 0,
 #endif
@@ -3442,16 +3447,33 @@ static void update_seg_probs(AV1_COMP *cpi, aom_writer *w) {
 }
 #endif
 
-static void write_tx_mode(TX_MODE mode, struct aom_write_bit_buffer *wb) {
+static void write_tx_mode(AV1_COMMON *cm, MACROBLOCKD *xd, TX_MODE *mode,
+                          struct aom_write_bit_buffer *wb) {
+  int i, all_lossless = 1;
+
+  if (cm->seg.enabled) {
+    for (i = 0; i < MAX_SEGMENTS; ++i) {
+      if (!xd->lossless[i]) {
+        all_lossless = 0;
+        break;
+      }
+    }
+  } else {
+    all_lossless = xd->lossless[0];
+  }
+  if (all_lossless) {
+    *mode = ONLY_4X4;
+    return;
+  }
 #if CONFIG_TX64X64
-  aom_wb_write_bit(wb, mode == TX_MODE_SELECT);
-  if (mode != TX_MODE_SELECT) {
-    aom_wb_write_literal(wb, AOMMIN(mode, ALLOW_32X32), 2);
-    if (mode >= ALLOW_32X32) aom_wb_write_bit(wb, mode == ALLOW_64X64);
+  aom_wb_write_bit(wb, *mode == TX_MODE_SELECT);
+  if (*mode != TX_MODE_SELECT) {
+    aom_wb_write_literal(wb, AOMMIN(*mode, ALLOW_32X32), 2);
+    if (*mode >= ALLOW_32X32) aom_wb_write_bit(wb, *mode == ALLOW_64X64);
   }
 #else
-  aom_wb_write_bit(wb, mode == TX_MODE_SELECT);
-  if (mode != TX_MODE_SELECT) aom_wb_write_literal(wb, mode, 2);
+  aom_wb_write_bit(wb, *mode == TX_MODE_SELECT);
+  if (*mode != TX_MODE_SELECT) aom_wb_write_literal(wb, *mode, 2);
 #endif  // CONFIG_TX64X64
 }
 
@@ -4243,10 +4265,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   }
 #endif
 
-  if (!cm->seg.enabled && xd->lossless[0])
-    cm->tx_mode = ONLY_4X4;
-  else
-    write_tx_mode(cm->tx_mode, wb);
+  write_tx_mode(cm, xd, &cm->tx_mode, wb);
 
   if (cpi->allow_comp_inter_inter) {
     const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;

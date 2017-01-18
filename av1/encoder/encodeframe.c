@@ -4727,7 +4727,19 @@ static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
 }
 
 static TX_MODE select_tx_mode(const AV1_COMP *cpi, MACROBLOCKD *const xd) {
-  if (xd->lossless[0]) return ONLY_4X4;
+  int i, all_lossless = 1;
+
+  if (cpi->common.seg.enabled) {
+    for (i = 0; i < MAX_SEGMENTS; ++i) {
+      if (!xd->lossless[i]) {
+        all_lossless = 0;
+        break;
+      }
+    }
+  } else {
+    all_lossless = xd->lossless[0];
+  }
+  if (all_lossless) return ONLY_4X4;
   if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
     return ALLOW_32X32 + CONFIG_TX64X64;
   else if (cpi->sf.tx_size_search_method == USE_FULL_RD ||
@@ -5002,6 +5014,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                            : cm->base_qindex;
     xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&
                       cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
+    xd->qindex[i] = qindex;
   }
 
   if (!cm->seg.enabled && xd->lossless[0]) x->optimize = 0;

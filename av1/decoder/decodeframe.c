@@ -125,10 +125,27 @@ static int decode_unsigned_max(struct aom_read_bit_buffer *rb, int max) {
   return data > max ? max : data;
 }
 
-static TX_MODE read_tx_mode(struct aom_read_bit_buffer *rb) {
+static TX_MODE read_tx_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
+                            struct aom_read_bit_buffer *rb) {
+  int i, all_lossless = 1;
 #if CONFIG_TX64X64
-  TX_MODE tx_mode =
-      aom_rb_read_bit(rb) ? TX_MODE_SELECT : aom_rb_read_literal(rb, 2);
+  TX_MODE tx_mode;
+#endif
+
+  if (cm->seg.enabled) {
+    for (i = 0; i < MAX_SEGMENTS; ++i) {
+      if (!xd->lossless[i]) {
+        all_lossless = 0;
+        break;
+      }
+    }
+  } else {
+    all_lossless = xd->lossless[0];
+  }
+
+  if (all_lossless) return ONLY_4X4;
+#if CONFIG_TX64X64
+  tx_mode = aom_rb_read_bit(rb) ? TX_MODE_SELECT : aom_rb_read_literal(rb, 2);
   if (tx_mode == ALLOW_32X32) tx_mode += aom_rb_read_bit(rb);
   return tx_mode;
 #else
@@ -4228,8 +4245,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   }
 
   setup_segmentation_dequant(cm);
-  cm->tx_mode =
-      (!cm->seg.enabled && xd->lossless[0]) ? ONLY_4X4 : read_tx_mode(rb);
+  cm->tx_mode = read_tx_mode(cm, xd, rb);
   cm->reference_mode = read_frame_reference_mode(cm, rb);
 
   read_tile_info(pbi, rb);

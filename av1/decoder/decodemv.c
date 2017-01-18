@@ -700,7 +700,9 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_EXT_TX
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
     if (get_ext_tx_types(tx_size, mbmi->sb_type, inter_block) > 1 &&
-        cm->base_qindex > 0 && !mbmi->skip &&
+        ((!cm->seg.enabled && cm->base_qindex > 0) ||
+         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
+        !mbmi->skip &&
 #if CONFIG_SUPERTX
         !supertx_enabled &&
 #endif  // CONFIG_SUPERTX
@@ -731,12 +733,17 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       mbmi->tx_type = DCT_DCT;
     }
 #else
-    if (tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
+
+    if (tx_size < TX_32X32 &&
+        ((!cm->seg.enabled && cm->base_qindex > 0) ||
+         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
+        !mbmi->skip &&
 #if CONFIG_SUPERTX
         !supertx_enabled &&
 #endif  // CONFIG_SUPERTX
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       FRAME_COUNTS *counts = xd->counts;
+
       if (inter_block) {
 #if CONFIG_EC_MULTISYMBOL
         mbmi->tx_type = av1_ext_tx_inv[aom_read_symbol(
