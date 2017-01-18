@@ -4,6 +4,8 @@
 
 #include "ui/views/layout/box_layout.h"
 
+#include <algorithm>
+
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
@@ -108,6 +110,10 @@ void BoxLayout::Layout(View* host) {
     if (!child->visible())
       continue;
 
+    // TODO(bruthig): Fix this. The main axis should be calculated before
+    // the cross axis size because child Views may calculate their cross axis
+    // size based on their main axis size. See https://crbug.com/682266.
+
     // Calculate cross axis size.
     gfx::Rect bounds(child_area);
     SetMainAxisPosition(main_position, &bounds);
@@ -137,6 +143,8 @@ void BoxLayout::Layout(View* host) {
     }
 
     // Set main axis size.
+    // TODO(bruthig): Use the allocated width to determine the cross axis size.
+    // See https://crbug.com/682266.
     int child_main_axis_size = MainAxisSizeForView(child, child_area.width());
     SetMainAxisSize(child_main_axis_size + current_padding, &bounds);
     if (MainAxisSize(bounds) > 0 || GetFlexForView(child) > 0)
@@ -248,6 +256,8 @@ int BoxLayout::MainAxisSizeForView(const View* view,
 }
 
 int BoxLayout::CrossAxisSizeForView(const View* view) const {
+  // TODO(bruthig): For horizontal case use the available width and not the
+  // preferred width. See https://crbug.com/682266.
   return orientation_ == kVertical
              ? view->GetPreferredSize().width()
              : view->GetHeightForWidth(view->GetPreferredSize().width());
@@ -260,7 +270,7 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(const View* host,
   if (orientation_ == kHorizontal) {
     // Horizontal layouts ignore |child_area_width|, meaning they mimic the
     // default behavior of GridLayout::GetPreferredHeightForWidth().
-    // TODO(estade): fix this if it ever becomes a problem.
+    // TODO(estade|bruthig): Fix this See // https://crbug.com/682266.
     int position = 0;
     for (int i = 0; i < host->child_count(); ++i) {
       const View* child = host->child_at(i);
@@ -308,4 +318,4 @@ gfx::Size BoxLayout::NonChildSize(const View* host) const {
                    insets.height() + inside_border_insets_.height());
 }
 
-} // namespace views
+}  // namespace views
