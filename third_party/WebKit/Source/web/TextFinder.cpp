@@ -31,6 +31,7 @@
 #include "web/TextFinder.h"
 
 #include "core/dom/Range.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/VisibleSelection.h"
@@ -84,7 +85,10 @@ class TextFinder::DeferredScopeStringMatches
                              int identifier,
                              const WebString& searchText,
                              const WebFindOptions& options)
-      : m_timer(this, &DeferredScopeStringMatches::doTimeout),
+      : m_timer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
+                                      textFinder->ownerFrame().frame()),
+                this,
+                &DeferredScopeStringMatches::doTimeout),
         m_textFinder(textFinder),
         m_identifier(identifier),
         m_searchText(searchText),
@@ -97,7 +101,7 @@ class TextFinder::DeferredScopeStringMatches
                                              m_options);
   }
 
-  Timer<DeferredScopeStringMatches> m_timer;
+  TaskRunnerTimer<DeferredScopeStringMatches> m_timer;
   Member<TextFinder> m_textFinder;
   const int m_identifier;
   const WebString m_searchText;
