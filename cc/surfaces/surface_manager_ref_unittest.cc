@@ -14,8 +14,14 @@
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_sequence_generator.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::ElementsAre;
+using testing::UnorderedElementsAre;
+
 namespace cc {
+
 namespace {
 
 constexpr FrameSinkId kFrameSink1(1, 0);
@@ -30,6 +36,8 @@ class StubSurfaceFactoryClient : public SurfaceFactoryClient {
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {}
 };
 
+}  // namespace
+
 // Tests for reference tracking in SurfaceManager.
 class SurfaceManagerRefTest : public testing::Test {
  public:
@@ -43,6 +51,14 @@ class SurfaceManagerRefTest : public testing::Test {
         .SubmitCompositorFrame(local_frame_id, CompositorFrame(),
                                SurfaceFactory::DrawCallback());
     return SurfaceId(frame_sink_id, local_frame_id);
+  }
+
+  SurfaceId CreateSurface(uint32_t client_id,
+                          uint32_t sink_id,
+                          uint32_t local_id) {
+    return CreateSurface(
+        FrameSinkId(client_id, sink_id),
+        LocalFrameId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
   }
 
   // Destroy Surface with |surface_id|.
@@ -62,13 +78,40 @@ class SurfaceManagerRefTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     // Start each test with a fresh SurfaceManager instance.
-    manager_ = base::MakeUnique<SurfaceManager>();
+    manager_ = base::MakeUnique<SurfaceManager>(
+        SurfaceManager::LifetimeType::REFERENCES);
   }
   void TearDown() override {
     for (auto& factory : factories_)
       factory.second->EvictSurface();
     factories_.clear();
     manager_.reset();
+  }
+
+  // Returns all the references from the given surface id.
+  SurfaceManager::SurfaceIdSet GetReferencesFrom(const SurfaceId& surface_id) {
+    return manager().parent_to_child_refs_[surface_id];
+  }
+
+  SurfaceManager::SurfaceIdSet GetReferencesFromRoot() {
+    return GetReferencesFrom(manager().GetRootSurfaceId());
+  }
+
+  // Returns all the temporary references for the given frame sink id.
+  std::vector<LocalFrameId> GetTempReferencesFor(
+      const FrameSinkId& frame_sink_id) {
+    return manager().temp_references_[frame_sink_id];
+  }
+
+  // Temporary references are stored as a map in SurfaceManager. This method
+  // converts the map to a vector.
+  std::vector<SurfaceId> GetAllTempReferences() {
+    std::vector<SurfaceId> temp_references;
+    for (auto& map_entry : manager().temp_references_) {
+      for (auto local_frame_id : map_entry.second)
+        temp_references.push_back(SurfaceId(map_entry.first, local_frame_id));
+    }
+    return temp_references;
   }
 
   std::unordered_map<FrameSinkId,
@@ -78,8 +121,6 @@ class SurfaceManagerRefTest : public testing::Test {
   std::unique_ptr<SurfaceManager> manager_;
   StubSurfaceFactoryClient client_;
 };
-
-}  // namespace
 
 TEST_F(SurfaceManagerRefTest, AddReference) {
   SurfaceId id1 = CreateSurface(kFrameSink1, kLocalFrame1);
@@ -221,40 +262,6 @@ TEST_F(SurfaceManagerRefTest, CheckGCRecusiveFull) {
   EXPECT_EQ(manager().GetSurfaceForId(id3), nullptr);
 }
 
-TEST_F(SurfaceManagerRefTest, CheckGCWithSequences) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, kLocalFrame1);
-  SurfaceId id2 = CreateSurface(kFrameSink2, kLocalFrame1);
-
-  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
-  manager().AddSurfaceReference(id1, id2);
-
-  SurfaceId id3 = CreateSurface(kFrameSink3, kLocalFrame1);
-  Surface* surface3 = manager().GetSurfaceForId(id3);
-
-  // Add destruction dependency from |id2| to |id3|.
-  manager().RegisterFrameSinkId(kFrameSink2);
-  SurfaceSequence sequence(kFrameSink2, 1u);
-  surface3->AddDestructionDependency(sequence);
-  EXPECT_EQ(surface3->GetDestructionDependencyCount(), 1u);
-
-  // Surface for |id3| isn't delete yet because it has a valid destruction
-  // dependency from |kFrameSink2|.
-  DestroySurface(id3);
-  EXPECT_NE(manager().GetSurfaceForId(id3), nullptr);
-
-  // Surface for |id2| isn't deleted because it has a reference.
-  DestroySurface(id2);
-  EXPECT_NE(manager().GetSurfaceForId(id2), nullptr);
-
-  // Satisfy destruction dependency on |id3| and delete during GC.
-  manager().SatisfySequence(sequence);
-  EXPECT_EQ(manager().GetSurfaceForId(id3), nullptr);
-
-  // Remove ref on |id2| and delete during GC.
-  manager().RemoveSurfaceReference(id1, id2);
-  EXPECT_EQ(manager().GetSurfaceForId(id2), nullptr);
-}
-
 TEST_F(SurfaceManagerRefTest, TryAddReferenceToBadSurface) {
   // Not creating an accompanying Surface and SurfaceFactory.
   SurfaceId id(FrameSinkId(100u, 200u),
@@ -284,10 +291,17 @@ TEST_F(SurfaceManagerRefTest, TryDoubleAddReference) {
 TEST_F(SurfaceManagerRefTest, TryAddSelfReference) {
   SurfaceId id1 = CreateSurface(kFrameSink1, kLocalFrame1);
 
-  // Adding a self reference should be ignored without crashing.
+  // A temporary reference must exist to |id1|.
+  EXPECT_EQ(manager().GetSurfaceReferenceCount(id1), 1u);
+
+  // Try to add a self reference. This should fail.
   manager().AddSurfaceReference(id1, id1);
-  EXPECT_EQ(manager().GetSurfaceReferenceCount(id1), 0u);
+
+  // Adding a self reference should be ignored without crashing.
   EXPECT_EQ(manager().GetReferencedSurfaceCount(id1), 0u);
+
+  // The temporary reference to |id1| must still exist.
+  EXPECT_EQ(manager().GetSurfaceReferenceCount(id1), 1u);
 }
 
 TEST_F(SurfaceManagerRefTest, TryRemoveBadReference) {
@@ -299,6 +313,126 @@ TEST_F(SurfaceManagerRefTest, TryRemoveBadReference) {
   manager().RemoveSurfaceReference(id2, id1);
   EXPECT_EQ(manager().GetReferencedSurfaceCount(id1), 1u);
   EXPECT_EQ(manager().GetSurfaceReferenceCount(id2), 1u);
+}
+
+TEST_F(SurfaceManagerRefTest, AddSurfaceThenReference) {
+  // Create a new surface.
+  const SurfaceId surface_id = CreateSurface(2, 1, 1);
+
+  // A temporary reference must be added to |surface_id|.
+  EXPECT_THAT(GetAllTempReferences(), ElementsAre(surface_id));
+  EXPECT_THAT(GetReferencesFromRoot(), ElementsAre(surface_id));
+
+  // Create |parent_id| and add a real reference from it to |surface_id|.
+  const SurfaceId parent_id = CreateSurface(1, 1, 1);
+  manager().AddSurfaceReference(parent_id, surface_id);
+
+  // The temporary reference to |surface_id| should be gone.
+  // The only temporary reference should be to |parent_id|.
+  // There must be a real reference from |parent_id| to |child_id|.
+  EXPECT_THAT(GetAllTempReferences(), ElementsAre(parent_id));
+  EXPECT_THAT(GetReferencesFromRoot(), ElementsAre(parent_id));
+  EXPECT_THAT(GetReferencesFrom(parent_id), ElementsAre(surface_id));
+}
+
+TEST_F(SurfaceManagerRefTest, AddSurfaceThenRootReference) {
+  // Create a new surface.
+  const SurfaceId surface_id = CreateSurface(1, 1, 1);
+
+  // Temporary reference should be added to |surface_id|.
+  EXPECT_THAT(GetAllTempReferences(), ElementsAre(surface_id));
+  EXPECT_THAT(GetReferencesFromRoot(), ElementsAre(surface_id));
+
+  // Add a real reference from root to |surface_id|.
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), surface_id);
+
+  // The temporary reference should be gone.
+  // There should now be a real reference from root to |surface_id|.
+  EXPECT_TRUE(GetAllTempReferences().empty());
+  EXPECT_THAT(GetReferencesFromRoot(), ElementsAre(surface_id));
+}
+
+TEST_F(SurfaceManagerRefTest, AddTwoSurfacesThenOneReference) {
+  // Create two surfaces with different FrameSinkIds.
+  const SurfaceId surface_id1 = CreateSurface(2, 1, 1);
+  const SurfaceId surface_id2 = CreateSurface(3, 1, 1);
+
+  // Temporary reference should be added for both surfaces.
+  EXPECT_THAT(GetAllTempReferences(),
+              UnorderedElementsAre(surface_id1, surface_id2));
+  EXPECT_THAT(GetReferencesFromRoot(),
+              UnorderedElementsAre(surface_id1, surface_id2));
+
+  // Create |parent_id| and add a real reference from it to |surface_id1|.
+  const SurfaceId parent_id = CreateSurface(1, 1, 1);
+  manager().AddSurfaceReference(parent_id, surface_id1);
+
+  // Real reference must be added to |surface_id1| and the temporary reference
+  // to it must be gone.
+  // There should still be a temporary reference left to |surface_id2|.
+  // A temporary reference to |parent_id| must be created.
+  EXPECT_THAT(GetAllTempReferences(),
+              UnorderedElementsAre(parent_id, surface_id2));
+  EXPECT_THAT(GetReferencesFromRoot(),
+              UnorderedElementsAre(parent_id, surface_id2));
+  EXPECT_THAT(GetReferencesFrom(parent_id), ElementsAre(surface_id1));
+}
+
+TEST_F(SurfaceManagerRefTest, AddSurfacesSkipReference) {
+  // Add two surfaces that have the same FrameSinkId. This would happen when a
+  // client submits two CompositorFrames before parent submits a new
+  // CompositorFrame.
+  const SurfaceId surface_id1 = CreateSurface(2, 1, 2);
+  const SurfaceId surface_id2 = CreateSurface(2, 1, 1);
+
+  // Temporary references should be added for both surfaces and they should be
+  // stored in the order of creation.
+  EXPECT_THAT(
+      GetTempReferencesFor(surface_id1.frame_sink_id()),
+      ElementsAre(surface_id1.local_frame_id(), surface_id2.local_frame_id()));
+  EXPECT_THAT(GetReferencesFromRoot(),
+              UnorderedElementsAre(surface_id1, surface_id2));
+
+  // Create |parent_id| and add a reference from it to |surface_id2| which was
+  // created later.
+  const SurfaceId parent_id = CreateSurface(1, 1, 1);
+  manager().AddSurfaceReference(parent_id, surface_id2);
+
+  // The real reference should be added for |surface_id2| and the temporary
+  // references to both |surface_id1| and |surface_id2| should be gone.
+  // There should be a temporary reference to |parent_id|.
+  EXPECT_THAT(GetAllTempReferences(), ElementsAre(parent_id));
+  EXPECT_THAT(GetReferencesFromRoot(), ElementsAre(parent_id));
+  EXPECT_THAT(GetReferencesFrom(parent_id), ElementsAre(surface_id2));
+}
+
+TEST_F(SurfaceManagerRefTest, RemoveFirstTempRefOnly) {
+  // Add two surfaces that have the same FrameSinkId. This would happen when a
+  // client submits two CFs before parent submits a new CF.
+  const SurfaceId surface_id1 = CreateSurface(2, 1, 1);
+  const SurfaceId surface_id2 = CreateSurface(2, 1, 2);
+
+  // Temporary references should be added for both surfaces and they should be
+  // stored in the order of creation.
+  EXPECT_THAT(
+      GetTempReferencesFor(surface_id1.frame_sink_id()),
+      ElementsAre(surface_id1.local_frame_id(), surface_id2.local_frame_id()));
+  EXPECT_THAT(GetReferencesFromRoot(),
+              UnorderedElementsAre(surface_id1, surface_id2));
+
+  // Create |parent_id| and add a reference from it to |surface_id1| which was
+  // created earlier.
+  const SurfaceId parent_id = CreateSurface(1, 1, 1);
+  manager().AddSurfaceReference(parent_id, surface_id1);
+
+  // The real reference should be added for |surface_id1| and its temporary
+  // reference should be removed. The temporary reference for |surface_id2|
+  // should remain. A temporary reference must be added for |parent_id|.
+  EXPECT_THAT(GetAllTempReferences(),
+              UnorderedElementsAre(parent_id, surface_id2));
+  EXPECT_THAT(GetReferencesFromRoot(),
+              UnorderedElementsAre(parent_id, surface_id2));
+  EXPECT_THAT(GetReferencesFrom(parent_id), ElementsAre(surface_id1));
 }
 
 }  // namespace cc

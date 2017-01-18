@@ -38,11 +38,6 @@ class SyntheticBeginFrameSource;
 
 namespace ui {
 
-namespace test {
-class DisplayCompositorTest;
-}
-
-class DisplayCompositorClient;
 class GpuCompositorFrameSink;
 
 // The DisplayCompositor object is an object global to the Window Server app
@@ -97,11 +92,6 @@ class DisplayCompositor : public cc::SurfaceObserver,
       cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
 
  private:
-  friend class test::DisplayCompositorTest;
-
-  void AddSurfaceReference(const cc::SurfaceReference& ref);
-  void RemoveSurfaceReference(const cc::SurfaceReference& ref);
-
   std::unique_ptr<cc::Display> CreateDisplay(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
@@ -143,16 +133,6 @@ class DisplayCompositor : public cc::SurfaceObserver,
       compositor_frame_sinks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // SurfaceIds that have temporary references from top level root so they
-  // aren't GC'd before DisplayCompositorClient can add a real reference. This
-  // is basically a collection of surface ids, for example:
-  //   cc::SurfaceId surface_id(key, value[index]);
-  // The LocalFrameIds are stored in the order the surfaces are created in.
-  std::unordered_map<cc::FrameSinkId,
-                     std::vector<cc::LocalFrameId>,
-                     cc::FrameSinkIdHash>
-      temp_references_;
 
   base::ThreadChecker thread_checker_;
 

@@ -137,6 +137,8 @@ class CC_SURFACES_EXPORT SurfaceManager
   }
 
  private:
+  friend class SurfaceManagerRefTest;
+
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
 
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
@@ -157,6 +159,11 @@ class CC_SURFACES_EXPORT SurfaceManager
   // references without triggered GC.
   void RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
                                   const SurfaceId& child_id);
+
+  // Adds a reference from parent id to child id without dealing with temporary
+  // references.
+  void AddSurfaceReferenceImpl(const SurfaceId& parent_id,
+                               const SurfaceId& child_id);
 
 #if DCHECK_IS_ON()
   // Recursively prints surface references starting at |surface_id| to |str|.
@@ -226,6 +233,14 @@ class CC_SURFACES_EXPORT SurfaceManager
   // The DirectSurfaceReferenceFactory that uses this manager to create surface
   // references.
   scoped_refptr<SurfaceReferenceFactory> reference_factory_;
+
+  // SurfaceIds that have temporary references from top level root so they
+  // aren't GC'd before a real reference is added. This is basically a
+  // collection of surface ids, for example:
+  //   SurfaceId surface_id(key, value[index]);
+  // The LocalFrameIds are stored in the order the surfaces are created in.
+  std::unordered_map<FrameSinkId, std::vector<LocalFrameId>, FrameSinkIdHash>
+      temp_references_;
 
   base::WeakPtrFactory<SurfaceManager> weak_factory_;
 
