@@ -77,4 +77,40 @@ Polymer({
   isDisconnected_: function(device) {
     return !device.connected && !device.connecting;
   },
+
+  /**
+   * Returns device type icon's ID corresponding to the given device.
+   * To be consistent with the Bluetooth device list in system menu, this
+   * mapping needs to be synced with ash::tray::GetBluetoothDeviceIcon().
+   *
+   * @param {!chrome.bluetooth.Device} device
+   * @return {string}
+   * @private
+   */
+  getDeviceIcon_: function(device) {
+    switch (device.type) {
+      case 'computer':
+        return 'settings:computer';
+      case 'phone':
+        return 'settings:smartphone';
+      case 'audio':
+      case 'carAudio':
+        return 'settings:headset';
+      case 'video':
+        return 'settings:videocam';
+      case 'joystick':
+      case 'gamepad':
+        return 'settings:gamepad';
+      case 'keyboard':
+      case 'keyboardMouseCombo':
+        return 'settings:keyboard';
+      case 'tablet':
+        return 'settings:tablet';
+      case 'mouse':
+        return 'settings:mouse';
+      default:
+        return device.connected ?
+            'settings:bluetooth-connected' : 'settings:bluetooth';
+    }
+  },
 });

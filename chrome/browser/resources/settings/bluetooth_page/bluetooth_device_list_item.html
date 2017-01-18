@@ -9,8 +9,12 @@
 
 <dom-module id="bluetooth-device-list-item">
   <style include="settings-shared">
-    iron-icon {
+    #check {
       -webkit-padding-start: 10px;
+    }
+
+    #deviceIcon {
+      -webkit-padding-end: 10px;
     }
 
     span.name {
@@ -23,10 +27,12 @@
   </style>
   <template>
     <div class="flex layout horizontal center" dropdown$="[[dropdownOpened]]">
+      <iron-icon id="deviceIcon" icon="[[getDeviceIcon_(device)]]">
+      </iron-icon>
       <span class="name" connected$="[[device.connected]]">
         [[getDeviceName_(device)]]
       </span>
-      <iron-icon icon="cr:check" hidden$="[[!device.connected]]">
+      <iron-icon id="check" icon="cr:check" hidden$="[[!device.connected]]">
       </iron-icon>
       <span class="flex"></span>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
