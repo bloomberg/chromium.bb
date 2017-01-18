@@ -15,3 +15,5 @@ per-file ime_menu*=shuchen@chromium.org
 # DeviceLocalAccount reviewers. bartfab@ is primary, atwilson@ is backup.
 per-file device_local_account*=atwilson@chromium.org
 per-file device_local_account*=bartfab@chromium.org
+
+# COMPONENT: Platform>Extensions

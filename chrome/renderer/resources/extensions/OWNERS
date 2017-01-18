@@ -12,3 +12,5 @@ per-file media_galleries*.js=file://chrome/browser/media_galleries/OWNERS
 per-file notifications_*.js=dewittj@chromium.org
 per-file searchbox_api.js=dcblack@chromium.org
 per-file searchbox_api.js=file://chrome/browser/search/OWNERS
+
+# COMPONENT: Platform>Extensions

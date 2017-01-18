@@ -2,3 +2,5 @@
 # chrome/browser/extensions/OWNERS
 reillyg@chromium.org
 rockot@chromium.org
+
+# COMPONENT: Platform>Extensions>API
