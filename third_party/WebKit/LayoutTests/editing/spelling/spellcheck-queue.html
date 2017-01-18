@@ -41,4 +41,26 @@ spellcheck_test(
     '</div>'
   ].join(''),
   'Spellchecker handles multiple requests.');
+
+// Regression test for crbug.com/681760
+spellcheck_test(
+  [
+    '<textarea id="textarea1"></textarea>',
+    '<textarea id="textarea2"></textarea>'
+  ].join(''),
+  document => {
+    const textarea1 = document.getElementById('textarea1');
+    const textarea2 = document.getElementById('textarea2');
+    textarea1.focus();
+    document.execCommand('insertText', false, 'foo.');
+    textarea2.focus();
+    document.execCommand('insertText', false, 'baz.');
+    textarea1.focus();
+    document.execCommand('insertText', false, 'zz.');
+  },
+  [
+    '<textarea id="textarea1">#foo#.#zz#.</textarea>',
+    '<textarea id="textarea2">#baz#.</textarea>'
+  ].join(''),
+  'Spellchecker invokes requests in sequence order.');
 </script>

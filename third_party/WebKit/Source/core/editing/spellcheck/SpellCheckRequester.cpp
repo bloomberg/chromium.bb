@@ -33,6 +33,7 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/TextControlElement.h"
 #include "platform/text/TextCheckerClient.h"
 
 namespace blink {
@@ -226,13 +227,14 @@ void SpellCheckRequester::enqueueRequest(SpellCheckRequest* request) {
   // Spellcheck requests for chunks of text in the same element should not
   // overwrite each other.
   if (!continuation) {
-    for (auto& requestQueue : m_requestQueue) {
-      if (request->rootEditableElement() != requestQueue->rootEditableElement())
-        continue;
-
-      requestQueue = request;
-      return;
-    }
+    RequestQueue::const_iterator sameElementRequest =
+        std::find_if(m_requestQueue.begin(), m_requestQueue.end(),
+                     [request](const SpellCheckRequest* queuedRequest) -> bool {
+                       return request->rootEditableElement() ==
+                              queuedRequest->rootEditableElement();
+                     });
+    if (sameElementRequest != m_requestQueue.end())
+      m_requestQueue.remove(sameElementRequest);
   }
 
   m_requestQueue.append(request);
@@ -249,8 +251,8 @@ void SpellCheckRequester::didCheck(int sequence,
 
   frame().spellChecker().markAndReplaceFor(m_processingRequest, results);
 
-  if (m_lastProcessedSequence < sequence)
-    m_lastProcessedSequence = sequence;
+  DCHECK_LT(m_lastProcessedSequence, sequence);
+  m_lastProcessedSequence = sequence;
 
   clearProcessingRequest();
   if (!m_requestQueue.isEmpty())
