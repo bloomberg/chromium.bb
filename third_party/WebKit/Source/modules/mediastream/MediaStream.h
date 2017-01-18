@@ -113,7 +113,7 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   MediaStreamTrackVector m_videoTracks;
   Member<MediaStreamDescriptor> m_descriptor;
 
-  Timer<MediaStream> m_scheduledEventTimer;
+  TaskRunnerTimer<MediaStream> m_scheduledEventTimer;
   HeapVector<Member<Event>> m_scheduledEvents;
 };
 

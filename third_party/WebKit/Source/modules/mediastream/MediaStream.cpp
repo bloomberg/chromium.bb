@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "modules/mediastream/MediaStreamTrackEvent.h"
@@ -98,7 +99,10 @@ MediaStream::MediaStream(ExecutionContext* context,
                          MediaStreamDescriptor* streamDescriptor)
     : ContextClient(context),
       m_descriptor(streamDescriptor),
-      m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired) {
+      m_scheduledEventTimer(
+          TaskRunnerHelper::get(TaskType::MediaElementEvent, context),
+          this,
+          &MediaStream::scheduledEventTimerFired) {
   m_descriptor->setClient(this);
 
   size_t numberOfAudioTracks = m_descriptor->numberOfAudioComponents();
@@ -128,7 +132,10 @@ MediaStream::MediaStream(ExecutionContext* context,
                          const MediaStreamTrackVector& audioTracks,
                          const MediaStreamTrackVector& videoTracks)
     : ContextClient(context),
-      m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired) {
+      m_scheduledEventTimer(
+          TaskRunnerHelper::get(TaskType::MediaElementEvent, context),
+          this,
+          &MediaStream::scheduledEventTimerFired) {
   MediaStreamComponentVector audioComponents;
   MediaStreamComponentVector videoComponents;
 
