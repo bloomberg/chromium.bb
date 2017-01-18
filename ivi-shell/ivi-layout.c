@@ -1773,8 +1773,6 @@ ivi_layout_layer_add_surface(struct ivi_layout_layer *ivilayer,
 	ivi_view = get_ivi_view(ivilayer, addsurf);
 	if (!ivi_view)
 		ivi_view = ivi_view_create(ivilayer, addsurf);
-	else if (ivi_view_is_rendered(ivi_view))
-		return IVI_SUCCEEDED;
 
 	wl_list_remove(&ivi_view->pending_link);
 	wl_list_insert(&ivilayer->pending.view_list, &ivi_view->pending_link);
