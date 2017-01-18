@@ -394,6 +394,9 @@ void V8Initializer::initializeMainThread() {
 
   // NOTE: Some threads (namely utility threads) don't have a scheduler.
   WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
+  // When timer task runner is used for PerIsolateData, GC tasks are getting
+  // throttled and memory usage goes up. For now we're using loading task queue
+  // to prevent this.
   // TODO(altimin): Consider switching to timerTaskRunner here.
   v8::Isolate* isolate = V8PerIsolateData::initialize(
       scheduler ? scheduler->loadingTaskRunner()
