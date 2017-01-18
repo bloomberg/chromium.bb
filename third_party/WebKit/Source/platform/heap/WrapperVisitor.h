@@ -91,7 +91,7 @@ class PLATFORM_EXPORT WrapperVisitor {
 
  public:
   template <typename T>
-  static NEVER_INLINE void missedWriteBarrier() {
+  static NOINLINE void missedWriteBarrier() {
     NOTREACHED();
   }
 
@@ -167,7 +167,7 @@ class PLATFORM_EXPORT WrapperVisitor {
   }
 
   template <typename T>
-  void markAndPushToMarkingDeque(const T* traceable) const {
+  ALWAYS_INLINE void markAndPushToMarkingDeque(const T* traceable) const {
     if (pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
                            TraceTrait<T>::heapObjectHeader,
                            WrapperVisitor::missedWriteBarrier<T>, traceable)) {
