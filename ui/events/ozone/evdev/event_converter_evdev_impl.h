@@ -19,6 +19,7 @@
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
+#include "ui/events/ozone/evdev/scoped_input_device.h"
 
 struct input_event;
 
@@ -29,7 +30,7 @@ class DeviceEventDispatcherEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
     : public EventConverterEvdev {
  public:
-  EventConverterEvdevImpl(int fd,
+  EventConverterEvdevImpl(ScopedInputDevice fd,
                           base::FilePath path,
                           int id,
                           const EventDeviceInfo& info,
@@ -63,6 +64,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   // Flush events delimited by EV_SYN. This is useful for handling
   // non-axis-aligned movement properly.
   void FlushEvents(const input_event& input);
+
+  // Input device file descriptor.
+  ScopedInputDevice input_device_fd_;
 
   // Input modalities for this device.
   bool has_keyboard_;

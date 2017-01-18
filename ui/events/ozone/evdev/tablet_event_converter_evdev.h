@@ -14,6 +14,7 @@
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/evdev/scoped_input_device.h"
 
 struct input_event;
 
@@ -24,7 +25,7 @@ class DeviceEventDispatcherEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
     : public EventConverterEvdev {
  public:
-  TabletEventConverterEvdev(int fd,
+  TabletEventConverterEvdev(ScopedInputDevice fd,
                             base::FilePath path,
                             int id,
                             CursorDelegateEvdev* cursor,
@@ -47,6 +48,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
   // Flush events delimited by EV_SYN. This is useful for handling
   // non-axis-aligned movement properly.
   void FlushEvents(const input_event& input);
+
+  // Input device file descriptor.
+  ScopedInputDevice input_device_fd_;
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;

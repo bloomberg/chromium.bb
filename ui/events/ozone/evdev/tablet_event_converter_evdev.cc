@@ -31,19 +31,20 @@ EventPointerType GetToolType(int button_tool) {
 }  // namespace
 
 TabletEventConverterEvdev::TabletEventConverterEvdev(
-    int fd,
+    ScopedInputDevice fd,
     base::FilePath path,
     int id,
     CursorDelegateEvdev* cursor,
     const EventDeviceInfo& info,
     DeviceEventDispatcherEvdev* dispatcher)
-    : EventConverterEvdev(fd,
+    : EventConverterEvdev(fd.get(),
                           path,
                           id,
                           info.device_type(),
                           info.name(),
                           info.vendor_id(),
                           info.product_id()),
+      input_device_fd_(std::move(fd)),
       cursor_(cursor),
       dispatcher_(dispatcher) {
   x_abs_min_ = info.GetAbsMinimum(ABS_X);

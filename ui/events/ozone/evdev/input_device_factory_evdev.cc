@@ -82,7 +82,7 @@ void SetGestureBoolProperty(GesturePropertyProvider* provider,
 
 std::unique_ptr<EventConverterEvdev> CreateConverter(
     const OpenInputDeviceParams& params,
-    int fd,
+    ScopedInputDevice fd,
     const EventDeviceInfo& devinfo) {
 #if defined(USE_EVDEV_GESTURES)
   // Touchpad or mouse: use gestures library.
@@ -92,16 +92,17 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
         base::MakeUnique<GestureInterpreterLibevdevCros>(
             params.id, params.cursor, params.gesture_property_provider,
             params.dispatcher);
-    return base::MakeUnique<EventReaderLibevdevCros>(
-        fd, params.path, params.id, devinfo, std::move(gesture_interp));
+    return base::MakeUnique<EventReaderLibevdevCros>(std::move(fd), params.path,
+                                                     params.id, devinfo,
+                                                     std::move(gesture_interp));
   }
 #endif
 
   // Touchscreen: use TouchEventConverterEvdev.
   if (devinfo.HasTouchscreen()) {
     std::unique_ptr<TouchEventConverterEvdev> converter(
-        new TouchEventConverterEvdev(fd, params.path, params.id, devinfo,
-                                     params.dispatcher));
+        new TouchEventConverterEvdev(std::move(fd), params.path, params.id,
+                                     devinfo, params.dispatcher));
     converter->Initialize(devinfo);
     return std::move(converter);
   }
@@ -109,11 +110,13 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
   // Graphics tablet
   if (devinfo.HasTablet())
     return base::WrapUnique<EventConverterEvdev>(new TabletEventConverterEvdev(
-        fd, params.path, params.id, params.cursor, devinfo, params.dispatcher));
+        std::move(fd), params.path, params.id, params.cursor, devinfo,
+        params.dispatcher));
 
   // Everything else: use EventConverterEvdevImpl.
-  return base::WrapUnique<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
-      fd, params.path, params.id, devinfo, params.cursor, params.dispatcher));
+  return base::WrapUnique<EventConverterEvdevImpl>(
+      new EventConverterEvdevImpl(std::move(fd), params.path, params.id,
+                                  devinfo, params.cursor, params.dispatcher));
 }
 
 // Open an input device and construct an EventConverterEvdev.
@@ -122,8 +125,8 @@ std::unique_ptr<EventConverterEvdev> OpenInputDevice(
   const base::FilePath& path = params.path;
   TRACE_EVENT1("evdev", "OpenInputDevice", "path", path.value());
 
-  int fd = open(path.value().c_str(), O_RDWR | O_NONBLOCK);
-  if (fd < 0) {
+  ScopedInputDevice fd(open(path.value().c_str(), O_RDWR | O_NONBLOCK));
+  if (fd.get() < 0) {
     PLOG(ERROR) << "Cannot open " << path.value();
     return nullptr;
   }
@@ -132,17 +135,16 @@ std::unique_ptr<EventConverterEvdev> OpenInputDevice(
   // expects event timestamps to correlate to the monotonic clock
   // (base::TimeTicks).
   unsigned int clk = CLOCK_MONOTONIC;
-  if (ioctl(fd, EVIOCSCLOCKID, &clk))
+  if (ioctl(fd.get(), EVIOCSCLOCKID, &clk))
     PLOG(ERROR) << "failed to set CLOCK_MONOTONIC";
 
   EventDeviceInfo devinfo;
-  if (!devinfo.Initialize(fd, path)) {
+  if (!devinfo.Initialize(fd.get(), path)) {
     LOG(ERROR) << "Failed to get device information for " << path.value();
-    close(fd);
     return nullptr;
   }
 
-  return CreateConverter(params, fd, devinfo);
+  return CreateConverter(params, std::move(fd), devinfo);
 }
 
 }  // namespace

@@ -78,7 +78,7 @@ namespace ui {
 
 class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
  public:
-  MockTabletEventConverterEvdev(int fd,
+  MockTabletEventConverterEvdev(ScopedInputDevice fd,
                                 base::FilePath path,
                                 CursorDelegateEvdev* cursor,
                                 const EventDeviceInfo& devinfo,
@@ -131,12 +131,12 @@ class MockTabletCursorEvdev : public CursorDelegateEvdev {
 };
 
 MockTabletEventConverterEvdev::MockTabletEventConverterEvdev(
-    int fd,
+    ScopedInputDevice fd,
     base::FilePath path,
     CursorDelegateEvdev* cursor,
     const EventDeviceInfo& devinfo,
     DeviceEventDispatcherEvdev* dispatcher)
-    : TabletEventConverterEvdev(fd,
+    : TabletEventConverterEvdev(std::move(fd),
                                 path,
                                 1,
                                 cursor,
@@ -173,13 +173,6 @@ class TabletEventConverterEvdevTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    // Set up pipe to satisfy message pump (unused).
-    int evdev_io[2];
-    if (pipe(evdev_io))
-      PLOG(FATAL) << "failed pipe";
-    events_in_ = evdev_io[0];
-    events_out_ = evdev_io[1];
-
     cursor_.reset(new ui::MockTabletCursorEvdev());
     device_manager_ = ui::CreateDeviceManagerForTest();
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
@@ -197,11 +190,18 @@ class TabletEventConverterEvdevTest : public testing::Test {
 
   ui::MockTabletEventConverterEvdev* CreateDevice(
       const ui::DeviceCapabilities& caps) {
+    // Set up pipe to satisfy message pump (unused).
+    int evdev_io[2];
+    if (pipe(evdev_io))
+      PLOG(FATAL) << "failed pipe";
+    ui::ScopedInputDevice events_in(evdev_io[0]);
+    events_out_.reset(evdev_io[1]);
+
     ui::EventDeviceInfo devinfo;
     CapabilitiesToDeviceInfo(caps, &devinfo);
     return new ui::MockTabletEventConverterEvdev(
-        events_in_, base::FilePath(kTestDevicePath), cursor_.get(), devinfo,
-        dispatcher_.get());
+        std::move(events_in), base::FilePath(kTestDevicePath), cursor_.get(),
+        devinfo, dispatcher_.get());
   }
 
   ui::CursorDelegateEvdev* cursor() { return cursor_.get(); }
@@ -227,8 +227,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
 
   std::vector<std::unique_ptr<ui::Event>> dispatched_events_;
 
-  int events_out_;
-  int events_in_;
+  ui::ScopedInputDevice events_out_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletEventConverterEvdevTest);
 };

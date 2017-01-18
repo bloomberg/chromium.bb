@@ -15,6 +15,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
+#include "ui/events/ozone/evdev/scoped_input_device.h"
 
 namespace ui {
 
@@ -30,29 +31,28 @@ const int kSwitchStylusInserted = 15;
 }  // namespace
 
 EventConverterEvdevImpl::EventConverterEvdevImpl(
-    int fd,
+    ScopedInputDevice fd,
     base::FilePath path,
     int id,
     const EventDeviceInfo& devinfo,
     CursorDelegateEvdev* cursor,
     DeviceEventDispatcherEvdev* dispatcher)
-    : EventConverterEvdev(fd,
+    : EventConverterEvdev(fd.get(),
                           path,
                           id,
                           devinfo.device_type(),
                           devinfo.name(),
                           devinfo.vendor_id(),
                           devinfo.product_id()),
+      input_device_fd_(std::move(fd)),
       has_keyboard_(devinfo.HasKeyboard()),
       has_touchpad_(devinfo.HasTouchpad()),
       has_caps_lock_led_(devinfo.HasLedEvent(LED_CAPSL)),
       cursor_(cursor),
-      dispatcher_(dispatcher) {
-}
+      dispatcher_(dispatcher) {}
 
 EventConverterEvdevImpl::~EventConverterEvdevImpl() {
   DCHECK(!enabled_);
-  close(fd_);
 }
 
 void EventConverterEvdevImpl::OnFileCanReadWithoutBlocking(int fd) {

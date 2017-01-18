@@ -19,6 +19,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/evdev/scoped_input_device.h"
 #include "ui/events/ozone/evdev/touch_evdev_debug_buffer.h"
 
 namespace ui {
@@ -30,7 +31,7 @@ struct InProgressTouchEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev {
  public:
-  TouchEventConverterEvdev(int fd,
+  TouchEventConverterEvdev(ScopedInputDevice fd,
                            base::FilePath path,
                            int id,
                            const EventDeviceInfo& devinfo,
@@ -87,6 +88,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   float ScalePressure(int32_t value);
 
   int NextTrackingId();
+
+  // Input device file descriptor.
+  ScopedInputDevice input_device_fd_;
 
   // Dispatcher for events.
   DeviceEventDispatcherEvdev* dispatcher_;

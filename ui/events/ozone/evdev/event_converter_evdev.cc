@@ -34,8 +34,6 @@ EventConverterEvdev::EventConverterEvdev(int fd,
 EventConverterEvdev::~EventConverterEvdev() {
   DCHECK(!enabled_);
   DCHECK(!watching_);
-  if (fd_ >= 0)
-    close(fd_);
 }
 
 void EventConverterEvdev::Start() {

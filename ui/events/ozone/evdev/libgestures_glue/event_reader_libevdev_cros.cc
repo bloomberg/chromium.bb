@@ -28,12 +28,12 @@ std::string FormatLog(const char* fmt, va_list args) {
 }  // namespace
 
 EventReaderLibevdevCros::EventReaderLibevdevCros(
-    int fd,
+    ScopedInputDevice fd,
     const base::FilePath& path,
     int id,
     const EventDeviceInfo& devinfo,
     std::unique_ptr<Delegate> delegate)
-    : EventConverterEvdev(fd,
+    : EventConverterEvdev(fd.get(),
                           path,
                           id,
                           devinfo.device_type(),
@@ -53,7 +53,7 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(
   evdev_.log_udata = this;
   evdev_.syn_report = OnSynReport;
   evdev_.syn_report_udata = this;
-  evdev_.fd = fd;
+  evdev_.fd = fd.release();
 
   memset(&evstate_, 0, sizeof(evstate_));
   evdev_.evstate = &evstate_;
@@ -67,7 +67,6 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(
 EventReaderLibevdevCros::~EventReaderLibevdevCros() {
   DCHECK(!watching_);
   EvdevClose(&evdev_);
-  fd_ = -1;
 }
 
 EventReaderLibevdevCros::Delegate::~Delegate() {}
