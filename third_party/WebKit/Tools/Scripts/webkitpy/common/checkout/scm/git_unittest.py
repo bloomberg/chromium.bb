@@ -8,7 +8,6 @@ from webkitpy.common.system.executive import Executive, ScriptError
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.checkout.scm.detection import detect_scm_system
 from webkitpy.common.checkout.scm.git import Git
 
 
@@ -26,13 +25,14 @@ class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
         self._write_text_file('foo_file', 'foo')
         self._run(['git', 'add', 'foo_file'])
         self._run(['git', 'commit', '-am', 'dummy commit'])
-        self.untracking_scm = detect_scm_system(self.untracking_checkout_path)
+        self.untracking_scm = Git(cwd=self.untracking_checkout_path, filesystem=self.filesystem, executive=self.executive)
 
         # Then set up a second git repo that tracks the first one.
         self.tracking_git_checkout_path = self._mkdtemp(suffix='-git_unittest_tracking')
         self._run(['git', 'clone', '--quiet', self.untracking_checkout_path, self.tracking_git_checkout_path])
         self._chdir(self.tracking_git_checkout_path)
-        self.tracking_scm = detect_scm_system(self.tracking_git_checkout_path)
+        self.tracking_scm = Git(cwd=self.tracking_git_checkout_path, filesystem=self.filesystem, executive=self.executive)
+
 
     def tearDown(self):
         self._chdir(self.original_cwd)

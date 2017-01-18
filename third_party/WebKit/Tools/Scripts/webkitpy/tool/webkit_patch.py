@@ -70,7 +70,7 @@ class WebKitPatch(Host):
             "-v", "--verbose", action="store_true", dest="verbose", default=False,
             help="enable all logging"),
         optparse.make_option(
-            "-d", "--directory", action="append", dest="patch_directories", default=[],
+            "-d", "--directory", action="append", default=[],
             help="Directory to look at for changed files"),
     ]
 
@@ -112,7 +112,7 @@ class WebKitPatch(Host):
 
         command.set_option_parser(option_parser)
         (options, args) = command.parse_args(args)
-        self._handle_global_options(options)
+        self.initialize_scm()
 
         (should_execute, failure_reason) = self._should_execute_command(command)
         if not should_execute:
@@ -148,10 +148,6 @@ class WebKitPatch(Host):
         global_options = self.global_options or []
         for option in global_options:
             option_parser.add_option(option)
-
-    # FIXME: This may be unnecessary since we pass global options to all commands during execute() as well.
-    def _handle_global_options(self, options):
-        self.initialize_scm(options.patch_directories)
 
     def _should_execute_command(self, command):
         if command.requires_local_commits and not self.scm().supports_local_commits():

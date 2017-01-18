@@ -30,7 +30,7 @@
 import logging
 import sys
 
-from webkitpy.common.checkout.scm.detection import SCMDetector
+from webkitpy.common.checkout.scm.git import Git
 from webkitpy.common.config.builders import BUILDERS
 from webkitpy.common.net.buildbot import BuildBot
 from webkitpy.common.net import web
@@ -98,18 +98,32 @@ class Host(SystemHost):
                 # don't provide use shell=True. Rather than use shell=True on Windows,
                 # We hack the git.bat name into the SVN class.
                 _log.debug('Engaging git.bat Windows hack.')
-                from webkitpy.common.checkout.scm.git import Git
                 Git.executable_name = 'git.bat'
             except OSError:
                 _log.debug('Failed to engage git.bat Windows hack.')
 
-    def initialize_scm(self, patch_directories=None):
-        if sys.platform == "win32":
+    def initialize_scm(self):
+        # TODO(qyearsley): Refactor this so that scm is initialized
+        # when self.scm() is called the first time; put any initialization
+        # code in the git module.
+        if sys.platform == 'win32':
             self._engage_awesome_windows_hacks()
-        detector = SCMDetector(self.filesystem, self.executive)
-        self._scm = detector.default_scm(patch_directories)
 
-    def scm(self):
+        cwd = self.filesystem.abspath(self.filesystem.getcwd())
+        if Git.in_working_directory(cwd, executive=self.executive):
+            self._scm = Git(cwd=cwd, filesystem=self.filesystem, executive=self.executive)
+            return
+
+        script_directory = self.filesystem.abspath(
+            self.filesystem.dirname(self.filesystem.path_to_module(self.__module__)))
+        _log.info('The current directory (%s) is not in a git repo, trying script directory %s.', cwd, script_directory)
+        if Git.in_working_directory(script_directory, executive=self.executive):
+            self._scm = Git(cwd=script_directory, filesystem=self.filesystem, executive=self.executive)
+            return
+
+        raise Exception('FATAL: Failed to find Git repo for %s or %s' % (cwd, script_directory))
+
+    def scm(self,):
         return self._scm
 
     def scm_for_path(self, path):
@@ -117,4 +131,4 @@ class Host(SystemHost):
         # callers call initialize_scm() (to remove patch_directories) and scm().
         if sys.platform == "win32":
             self._engage_awesome_windows_hacks()
-        return SCMDetector(self.filesystem, self.executive).detect_scm_system(path)
+        return Git(cwd=path, executive=self.executive, filesystem=self.filesystem)

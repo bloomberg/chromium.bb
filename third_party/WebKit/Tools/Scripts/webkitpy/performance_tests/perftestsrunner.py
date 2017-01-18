@@ -36,7 +36,6 @@ import time
 import datetime
 
 from webkitpy.common import find_files
-from webkitpy.common.checkout.scm.detection import SCMDetector
 from webkitpy.common.host import Host
 from webkitpy.common.net.file_uploader import FileUploader
 from webkitpy.performance_tests.perftest import PerfTestFactory
@@ -263,9 +262,9 @@ class PerfTestsRunner(object):
     def _generate_results_dict(self, timestamp, description, platform, builder_name, build_number):
         revisions = {}
         path = self._port.repository_path()
-        scm = SCMDetector(self._host.filesystem, self._host.executive).detect_scm_system(path) or self._host.scm()
-        revision = str(scm.commit_position(path))
-        revisions['chromium'] = {'revision': revision, 'timestamp': scm.timestamp_of_revision(path, revision)}
+        git = self._host.scm_for_path(path)
+        revision = str(git.commit_position(path))
+        revisions['chromium'] = {'revision': revision, 'timestamp': git.timestamp_of_revision(path, revision)}
 
         meta_info = {
             'description': description,
