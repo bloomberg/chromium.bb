@@ -23,7 +23,7 @@ __gCrWeb.paymentRequestManager = {
 
   /**
    * The pending PaymentResponse, if any. Used by the app side to invoke the
-   * associated resolve or reject function.
+   * associated resolve function.
    * @type {window.PaymentResponse}
    */
   pendingResponse: null
@@ -187,6 +187,7 @@ window.PaymentRequest.prototype.resolve = function(paymentResponseData) {
   this.resolve_ = null;
   this.reject_ = null;
   __gCrWeb['paymentRequestManager'].pendingRequest = null;
+  __gCrWeb['paymentRequestManager'].pendingResponse = paymentResponse;
 }
 
 /**
@@ -324,13 +325,6 @@ window.PaymentResponse = function(methodName, details) {
    * @private
    */
   this.resolve_ = null;
-
-  /**
-   * The pending reject function provided to the Promise returned by complete().
-   * @type {?function(string)}
-   * @private
-   */
-  this.reject_ = null;
 };
 
 /**
@@ -340,12 +334,6 @@ window.PaymentResponse = function(methodName, details) {
  *     been closed.
  */
 window.PaymentResponse.prototype.complete = function(success) {
-  if (__gCrWeb['paymentRequestManager'].pendingResponse) {
-    throw new Error(
-        'Internal PaymentRequest error: A response is already pending.');
-  }
-  __gCrWeb['paymentRequestManager'].pendingResponse = this;
-
   var message = {
     'command': 'paymentRequest.responseComplete'
   };
@@ -354,7 +342,9 @@ window.PaymentResponse.prototype.complete = function(success) {
   var self = this;
   return new Promise(function(resolve, reject) {
     self.resolve_ = resolve;
-    self.reject_ = reject;
+    // Any reject function provided is ignored because the spec includes no
+    // provision for rejecting the response promise. User agents are directed to
+    // always resolve the promise.
   });
 };
 
@@ -362,31 +352,16 @@ window.PaymentResponse.prototype.complete = function(success) {
  * Resolves the pending Promise. Should only be called by the app-side logic.
  */
 window.PaymentResponse.prototype.resolve = function() {
+  // If the page has not yet provided a resolve function, do nothing. This can
+  // happen in the case where the UI times out while waiting for the page to
+  // call complete().
   if (!this.resolve_) {
-    throw new Error("Internal PaymentRequest error: resolve function missing.");
+    return;
   }
 
   this.resolve_();
 
   this.resolve_ = null;
-  this.reject_ = null;
-  __gCrWeb['paymentRequestManager'].pendingResponse = null;
-}
-
-/**
- * Rejects the pending Promise. Should only be called by the app-side logic.
- * @param {!string} message An error message explaining why the Promise is being
- *     rejected.
- */
-window.PaymentResponse.prototype.reject = function(message) {
-  if (!this.reject_) {
-    throw new Error("Internal PaymentRequest error: reject function missing.");
-  }
-
-  this.reject_(message);
-
-  this.resolve_ = null;
-  this.reject_ = null;
   __gCrWeb['paymentRequestManager'].pendingResponse = null;
 }
 

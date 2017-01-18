@@ -15,6 +15,10 @@ class PaymentResponse;
 // an app-side interface for interacting with it.
 @interface JSPaymentRequestManager : CRWJSInjectionManager
 
+// Executes a JS noop function. This is used to work around an issue where the
+// JS event queue is blocked while presenting the Payment Request UI.
+- (void)executeNoop;
+
 // Resolves the JavaScript promise associated with the current PaymentRequest
 // with the a JSON serialization of |paymentResponse|. |completionHandler| will
 // be invoked after the operation has completed with YES if successful.
@@ -32,11 +36,9 @@ class PaymentResponse;
 // YES if successful.
 - (void)resolveResponsePromise:(void (^)(BOOL))completionHandler;
 
-// Rejects the JavaScript promise associated with the current PaymentResponse
-// with the supplied |errorMessage|. |completionHandler| will be invoked after
-// the operation has completed with YES if successful.
-- (void)rejectResponsePromise:(NSString*)errorMessage
-            completionHandler:(void (^)(BOOL))completionHandler;
+// Note that there is no rejectResponsePromise method because the spec includes
+// no provision for rejecting the response promise. User agents are directed to
+// always resolve the promise.
 
 @end
 

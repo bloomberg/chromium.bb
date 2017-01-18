@@ -6,7 +6,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
-#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "ios/web/public/payments/payment_request.h"
@@ -34,6 +33,10 @@ NSString* JSONEscape(NSString* JSON) {
 
 @implementation JSPaymentRequestManager
 
+- (void)executeNoop {
+  [self executeScript:@"Function.prototype()" completionHandler:nil];
+}
+
 - (void)resolveRequestPromise:(const web::PaymentResponse&)paymentResponse
             completionHandler:(void (^)(BOOL))completionHandler {
   std::unique_ptr<base::DictionaryValue> paymentResponseData =
@@ -59,15 +62,6 @@ NSString* JSONEscape(NSString* JSON) {
 - (void)resolveResponsePromise:(void (^)(BOOL))completionHandler {
   NSString* script =
       @"__gCrWeb['paymentRequestManager'].pendingResponse.resolve()";
-  [self executeScript:script completionHandler:completionHandler];
-}
-
-- (void)rejectResponsePromise:(NSString*)errorMessage
-            completionHandler:(void (^)(BOOL))completionHandler {
-  NSString* script = [NSString
-      stringWithFormat:
-          @"__gCrWeb['paymentRequestManager'].pendingResponse.reject(%@)",
-          JSONEscape(errorMessage)];
   [self executeScript:script completionHandler:completionHandler];
 }
 

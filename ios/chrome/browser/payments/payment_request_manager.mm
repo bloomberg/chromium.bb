@@ -32,6 +32,14 @@
 namespace {
 // Command prefix for injected JavaScript.
 const std::string kCommandPrefix = "paymentRequest";
+
+// Time interval between attempts to unblock the webview's JS event queue.
+const NSTimeInterval kNoopInterval = 0.1;
+
+// Time interval before closing the UI if the page has not yet called
+// PaymentResponse.complete().
+const NSTimeInterval kTimeoutInterval = 60.0;
+
 }  // namespace
 
 @interface PaymentRequestManager ()<CRWWebStateObserver,
@@ -65,6 +73,13 @@ const std::string kCommandPrefix = "paymentRequest";
 
   // Coordinator used to create and present the PaymentRequest view controller.
   base::scoped_nsobject<PaymentRequestCoordinator> _paymentRequestCoordinator;
+
+  // Timer used to periodically unblock the webview's JS event queue.
+  base::scoped_nsobject<NSTimer> _unblockEventQueueTimer;
+
+  // Timer used to close the UI if the page does not call
+  // PaymentResponse.complete() in a timely fashion.
+  base::scoped_nsobject<NSTimer> _paymentResponseTimeoutTimer;
 }
 
 // Synchronous method executed by -asynchronouslyEnablePaymentRequest:
@@ -274,9 +289,11 @@ const std::string kCommandPrefix = "paymentRequest";
   // TODO(crbug.com/602666): Check that there *is* a pending response here.
   // TODO(crbug.com/602666): Indicate success or failure in the UI.
 
+  [_unblockEventQueueTimer invalidate];
+  [_paymentResponseTimeoutTimer invalidate];
+
   [self dismissUI];
 
-  // TODO(crbug.com/602666): Reject the promise on failure.
   [_paymentRequestJsManager resolveResponsePromise:nil];
 
   return YES;
@@ -314,6 +331,26 @@ const std::string kCommandPrefix = "paymentRequest";
     (web::PaymentResponse)paymentResponse {
   [_paymentRequestJsManager resolveRequestPromise:paymentResponse
                                 completionHandler:nil];
+
+  // Establish a timer that periodically prompts the JS manager to execute a
+  // noop. This works around an issue where the JS event queue is blocked while
+  // presenting the Payment Request UI.
+  _unblockEventQueueTimer.reset(
+      [[NSTimer scheduledTimerWithTimeInterval:kNoopInterval
+                                        target:_paymentRequestJsManager
+                                      selector:@selector(executeNoop)
+                                      userInfo:nil
+                                       repeats:YES] retain]);
+
+  // Per the spec, if the page does not call PaymentResponse.complete() within
+  // some timeout period, user agents may behave as if the complete() method was
+  // called with no arguments.
+  _paymentResponseTimeoutTimer.reset(
+      [[NSTimer scheduledTimerWithTimeInterval:kTimeoutInterval
+                                        target:self
+                                      selector:@selector(handleResponseComplete)
+                                      userInfo:nil
+                                       repeats:NO] retain]);
 }
 
 #pragma mark - CRWWebStateObserver methods
