@@ -9,9 +9,11 @@
 #include <winternl.h>  // For UNICODE_STRING.
 
 #include <string>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
@@ -96,22 +98,19 @@ constexpr wchar_t kNtDll[] = L"ntdll.dll";
 constexpr char kLdrRegisterDllNotification[] = "LdrRegisterDllNotification";
 constexpr char kLdrUnregisterDllNotification[] = "LdrUnregisterDllNotification";
 
-// Helper function for converting a UNICODE_STRING to a UTF8 std::string.
-std::string ToString(const UNICODE_STRING* str) {
-  std::string s;
-  base::WideToUTF8(str->Buffer, str->Length / sizeof(wchar_t), &s);
-  return s;
+// Helper function for converting a UNICODE_STRING to a FilePath.
+base::FilePath ToFilePath(const UNICODE_STRING* str) {
+  return base::FilePath(
+      base::StringPiece16(str->Buffer, str->Length / sizeof(wchar_t)));
 }
 
 template <typename NotificationDataType>
 void OnModuleEvent(mojom::ModuleEventType event_type,
                    const NotificationDataType& notification_data,
                    const ModuleWatcher::OnModuleEventCallback& callback) {
-  mojom::ModuleEvent event;
-  event.event_type = event_type;
-  event.module_path = ToString(notification_data.FullDllName);
-  event.load_address = reinterpret_cast<uintptr_t>(notification_data.DllBase);
-  event.size = notification_data.SizeOfImage;
+  ModuleWatcher::ModuleEvent event(
+      event_type, ToFilePath(notification_data.FullDllName),
+      notification_data.DllBase, notification_data.SizeOfImage);
   callback.Run(event);
 }
 
@@ -119,14 +118,14 @@ void OnModuleEvent(mojom::ModuleEventType event_type,
 
 // static
 std::unique_ptr<ModuleWatcher> ModuleWatcher::Create(
-    const OnModuleEventCallback& callback) {
+    OnModuleEventCallback callback) {
   // If a ModuleWatcher already exists then bail out.
   base::AutoLock lock(g_module_watcher_lock.Get());
   if (g_module_watcher_instance)
     return nullptr;
 
   // This thread acquired the right to create a ModuleWatcher, so do so.
-  g_module_watcher_instance = new ModuleWatcher(callback);
+  g_module_watcher_instance = new ModuleWatcher(std::move(callback));
   return base::WrapUnique(g_module_watcher_instance);
 }
 
@@ -174,15 +173,11 @@ void ModuleWatcher::EnumerateAlreadyLoadedModules() {
 
   // Walk the module list.
   MODULEENTRY32 module = {sizeof(module)};
-  std::string path;
   for (BOOL result = ::Module32First(snap.Get(), &module); result != FALSE;
        result = ::Module32Next(snap.Get(), &module)) {
-    base::WideToUTF8(module.szExePath, ::wcslen(module.szExePath), &path);
-    mojom::ModuleEvent event;
-    event.event_type = mojom::ModuleEventType::MODULE_ALREADY_LOADED;
-    event.module_path = path;
-    event.load_address = reinterpret_cast<uintptr_t>(module.modBaseAddr);
-    event.size = module.modBaseSize;
+    ModuleEvent event(mojom::ModuleEventType::MODULE_ALREADY_LOADED,
+                      base::FilePath(module.szExePath), module.modBaseAddr,
+                      module.modBaseSize);
     callback_.Run(event);
   }
 
@@ -225,8 +220,8 @@ void __stdcall ModuleWatcher::LoaderNotificationCallback(
   }
 }
 
-ModuleWatcher::ModuleWatcher(const OnModuleEventCallback& callback)
-    : callback_(callback) {
+ModuleWatcher::ModuleWatcher(OnModuleEventCallback callback)
+    : callback_(std::move(callback)) {
   RegisterDllNotificationCallback();
   EnumerateAlreadyLoadedModules();
 }

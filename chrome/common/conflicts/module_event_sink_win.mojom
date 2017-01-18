@@ -14,14 +14,10 @@ enum ModuleEventType {
   MODULE_UNLOADED,
 };
 
-// A notification about a module being loaded or unloaded.
-struct ModuleEvent {
-  // The type of event.
-  ModuleEventType event_type;
-  // The full path to the module being loaded or unloaded.
-  string module_path;
-  // The load address of the module.
-  uint64 load_address;
-  // The size of the module in memory, in bytes.
-  uint32 size;
+// Interface for a remote consumer of module events.
+interface ModuleEventSink {
+  // Notifies the module database of a module event in a remote process. The
+  // module is identified only by its load address, which is sufficient for
+  // any process to safely look up the module.
+  OnModuleEvent(ModuleEventType event_type, uint64 load_address);
 };
