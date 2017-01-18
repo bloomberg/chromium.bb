@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("suggestions") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "image_fetcher_impl.h",
     "image_fetcher_impl.mm",
