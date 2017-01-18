@@ -5,6 +5,7 @@
 #include "components/physical_web/webui/physical_web_base_message_handler.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
@@ -32,15 +33,26 @@ void PhysicalWebBaseMessageHandler::HandleRequestNearbyURLs(
     const base::ListValue* args) {
   base::DictionaryValue results;
 
-  std::unique_ptr<base::ListValue> metadata =
-      GetPhysicalWebDataSource()->GetMetadata();
+  std::unique_ptr<physical_web::MetadataList> metadata_list =
+      GetPhysicalWebDataSource()->GetMetadataList();
 
-  // Add item indices. When an item is selected, the index of the selected item
-  // is recorded in a UMA histogram.
-  for (size_t i = 0; i < metadata->GetSize(); i++) {
-    base::DictionaryValue* metadata_item = nullptr;
-    metadata->GetDictionary(i, &metadata_item);
-    metadata_item->SetInteger(physical_web_ui::kIndex, static_cast<int>(i));
+  auto metadata = base::MakeUnique<base::ListValue>();
+  int index = 0;
+  for (const auto& metadata_list_item : *metadata_list) {
+    auto metadata_item = base::MakeUnique<base::DictionaryValue>();
+    metadata_item->SetString(physical_web_ui::kResolvedUrl,
+                             metadata_list_item.resolved_url.spec());
+    metadata_item->SetString(physical_web_ui::kPageInfoIcon,
+                             metadata_list_item.icon_url.spec());
+    metadata_item->SetString(physical_web_ui::kPageInfoTitle,
+                             metadata_list_item.title);
+    metadata_item->SetString(physical_web_ui::kPageInfoDescription,
+                             metadata_list_item.description);
+    // Add the item index so when an item is selected, the index can be recorded
+    // in a UMA histogram.
+    metadata_item->SetInteger(physical_web_ui::kIndex, index);
+    metadata->Append(std::move(metadata_item));
+    ++index;
   }
 
   results.Set(physical_web_ui::kMetadata, metadata.release());
