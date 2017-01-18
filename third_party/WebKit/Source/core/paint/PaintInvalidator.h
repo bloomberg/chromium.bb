@@ -94,10 +94,6 @@ class PaintInvalidator {
   void processPendingDelayedPaintInvalidations();
 
  private:
-  LayoutRect mapLocalRectToPaintInvalidationBacking(
-      const LayoutObject&,
-      const FloatRect&,
-      const PaintInvalidatorContext&);
   LayoutRect computeVisualRectInBacking(const LayoutObject&,
                                         const PaintInvalidatorContext&);
   LayoutPoint computeLocationInBacking(const LayoutObject&,

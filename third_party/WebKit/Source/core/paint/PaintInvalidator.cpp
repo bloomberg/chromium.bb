@@ -20,14 +20,15 @@
 
 namespace blink {
 
+template <typename Rect>
 static LayoutRect slowMapToVisualRectInAncestorSpace(
     const LayoutObject& object,
     const LayoutBoxModelObject& ancestor,
-    const FloatRect& rect) {
+    const Rect& rect) {
   if (object.isSVGChild()) {
     LayoutRect result;
-    SVGLayoutSupport::mapToVisualRectInAncestorSpace(object, &ancestor, rect,
-                                                     result);
+    SVGLayoutSupport::mapToVisualRectInAncestorSpace(object, &ancestor,
+                                                     FloatRect(rect), result);
     return result;
   }
 
@@ -43,10 +44,13 @@ static LayoutRect slowMapToVisualRectInAncestorSpace(
 // TODO(wangxianzhu): Combine this into
 // PaintInvalidator::mapLocalRectToBacking() when removing
 // PaintInvalidationState.
+// This function is templatized to avoid FloatRect<->LayoutRect conversions
+// which affect performance.
+template <typename Rect, typename Point>
 static LayoutRect mapLocalRectToPaintInvalidationBacking(
     GeometryMapper& geometryMapper,
     const LayoutObject& object,
-    const FloatRect& localRect,
+    const Rect& localRect,
     const PaintInvalidatorContext& context) {
   bool isSVGChild = object.isSVGChild();
 
@@ -54,7 +58,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   // currently in "physical coordinates with flipped block-flow direction"
   // (see LayoutBoxModelObject.h) but we need them to be in physical
   // coordinates.
-  FloatRect rect = localRect;
+  Rect rect = localRect;
   // Writing-mode flipping doesn't apply to non-root SVG.
   if (!isSVGChild) {
     if (object.isBox()) {
@@ -76,7 +80,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     // For SVG, the input rect is in local SVG coordinates in which paint
     // offset doesn't apply.
     if (!isSVGChild)
-      rect.moveBy(FloatPoint(object.paintOffset()));
+      rect.moveBy(Point(object.paintOffset()));
     // Use enclosingIntRect to ensure the final visual rect will cover the
     // rect in source coordinates no matter if the painting will use pixel
     // snapping.
@@ -94,11 +98,11 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     // For non-root SVG, the input rect is in local SVG coordinates in which
     // paint offset doesn't apply.
     if (!isSVGChild) {
-      rect.moveBy(FloatPoint(object.paintOffset()));
+      rect.moveBy(Point(object.paintOffset()));
       // Use enclosingIntRect to ensure the final visual rect will cover the
       // rect in source coordinates no matter if the painting will use pixel
       // snapping.
-      rect = enclosingIntRect(rect);
+      rect = Rect(enclosingIntRect(rect));
     }
 
     const auto* containerContentsProperties =
@@ -114,7 +118,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
           context.treeBuilderContext.current.transform,
           context.treeBuilderContext.current.clip, nullptr, nullptr);
       result = LayoutRect(geometryMapper.sourceToDestinationVisualRect(
-          rect, currentTreeState, *containerContentsProperties));
+          FloatRect(rect), currentTreeState, *containerContentsProperties));
     }
 
     // Convert the result to the container's contents space.
@@ -133,28 +137,20 @@ void PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
   GeometryMapper geometryMapper;
-  rect = blink::mapLocalRectToPaintInvalidationBacking(geometryMapper, object,
-                                                       FloatRect(rect), *this);
-}
-
-LayoutRect PaintInvalidator::mapLocalRectToPaintInvalidationBacking(
-    const LayoutObject& object,
-    const FloatRect& localRect,
-    const PaintInvalidatorContext& context) {
-  return blink::mapLocalRectToPaintInvalidationBacking(m_geometryMapper, object,
-                                                       localRect, context);
+  rect = blink::mapLocalRectToPaintInvalidationBacking<LayoutRect, LayoutPoint>(
+      geometryMapper, object, rect, *this);
 }
 
 LayoutRect PaintInvalidator::computeVisualRectInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
-  FloatRect localRect;
-  if (object.isSVGChild())
-    localRect = SVGLayoutSupport::localVisualRect(object);
-  else
-    localRect = FloatRect(object.localVisualRect());
-
-  return mapLocalRectToPaintInvalidationBacking(object, localRect, context);
+  if (object.isSVGChild()) {
+    FloatRect localRect = SVGLayoutSupport::localVisualRect(object);
+    return mapLocalRectToPaintInvalidationBacking<FloatRect, FloatPoint>(
+        m_geometryMapper, object, localRect, context);
+  }
+  return mapLocalRectToPaintInvalidationBacking<LayoutRect, LayoutPoint>(
+      m_geometryMapper, object, object.localVisualRect(), context);
 }
 
 LayoutPoint PaintInvalidator::computeLocationInBacking(
