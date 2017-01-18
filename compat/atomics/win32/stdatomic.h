@@ -100,6 +100,9 @@ do {                                    \
 #define atomic_exchange_explicit(object, desired, order) \
     atomic_exchange(object, desired)
 
+// Chromium: commented out since it doesn't compile on Windows, and also isn't
+// used anywhere.
+#if 0
 static inline int atomic_compare_exchange_strong(intptr_t *object, intptr_t *expected,
                                                  intptr_t desired)
 {
@@ -107,6 +110,7 @@ static inline int atomic_compare_exchange_strong(intptr_t *object, intptr_t *exp
     *expected = InterlockedCompareExchangePointer(object, desired, old);
     return *expected == old;
 }
+#endif
 
 #define atomic_compare_exchange_strong_explicit(object, expected, desired, success, failure) \
     atomic_compare_exchange_strong(object, expected, desired)

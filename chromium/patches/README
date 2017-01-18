@@ -26,6 +26,10 @@ Current patches:
 
     Turned off check for stdatomic.h, since it is banned in chromium.
 
+  Changes/additions to compat/atomics/win32/stdatomic.h
+    Commented out atomic_compare_exchange_strong, since it doesn't compile and
+    isn't used.
+
   Changes/additions to compat/msvcrt/{snprintf.c,snprintf.h}
   Changes/additions to compat/{strtod.c,strtod.h}
     Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
@@ -87,6 +91,9 @@ Current patches:
     Revert upstream 7a9db61da39fbfaa910c10c0719be595a7d06f3d to fix seeking with
     text tracks.  crbug.com/681886 .
 
+    Removed 'const' from 'static const EbmlSyntax...', since EbmlSyntax is a
+    const struct.  MSVC complains.
+
   Changes to libavformat/mp3dec.c
     Other changes: TODO(chcunningham/dalecurtis): https://crbug.com/504623 -
     Determine whether these changes are still necessary and either remove or
@@ -106,6 +113,10 @@ Current patches:
   Changes to libavutil/arm/intmath.h
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
     av_clip_intp2_arm() due to compilation failure.
+
+  Changes to libavutil/cpu.c
+    Switch to compat/atomics/win32/stdatomic.h for win32, since it doesn't
+    provide stdatomic.h .
 
   Changes to libavutil/mem.c
     Enable av_max_alloc(0) to remove alloc size bound.
