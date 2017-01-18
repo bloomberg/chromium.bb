@@ -210,8 +210,7 @@ void IDBDatabase::onChanges(
 }
 
 DOMStringList* IDBDatabase::objectStoreNames() const {
-  DOMStringList* objectStoreNames =
-      DOMStringList::create(DOMStringList::IndexedDB);
+  DOMStringList* objectStoreNames = DOMStringList::create();
   for (const auto& it : m_metadata.objectStores)
     objectStoreNames->append(it.value->name);
   objectStoreNames->sort();

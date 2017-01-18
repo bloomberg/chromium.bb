@@ -467,8 +467,7 @@ DOMStringList* IDBTransaction::objectStoreNames() const {
   if (isVersionChange())
     return m_database->objectStoreNames();
 
-  DOMStringList* objectStoreNames =
-      DOMStringList::create(DOMStringList::IndexedDB);
+  DOMStringList* objectStoreNames = DOMStringList::create();
   for (const String& objectStoreName : m_scope)
     objectStoreNames->append(objectStoreName);
   objectStoreNames->sort();

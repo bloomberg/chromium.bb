@@ -124,7 +124,7 @@ class GetDatabaseNamesCallback final : public EventListener {
     std::unique_ptr<protocol::Array<String>> databaseNames =
         protocol::Array<String>::create();
     for (size_t i = 0; i < databaseNamesList->length(); ++i)
-      databaseNames->addItem(databaseNamesList->anonymousIndexedGetter(i));
+      databaseNames->addItem(databaseNamesList->item(i));
     m_requestCallback->sendSuccess(std::move(databaseNames));
   }
 

@@ -30,7 +30,7 @@
 ] interface IDBObjectStore {
     [RaisesException=Setter] attribute DOMString name;
     [CallWith=ScriptState] readonly attribute any keyPath;
-    [Measure] readonly attribute DOMStringList indexNames;
+    readonly attribute DOMStringList indexNames;
     readonly attribute IDBTransaction transaction;
     readonly attribute boolean autoIncrement;
 

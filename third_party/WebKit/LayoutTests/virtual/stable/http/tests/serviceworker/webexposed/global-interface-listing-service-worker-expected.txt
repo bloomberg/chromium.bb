@@ -94,6 +94,11 @@ interface DOMException
     getter name
     method constructor
     method toString
+interface DOMStringList
+    getter length
+    method constructor
+    method contains
+    method item
 interface DataView
     getter buffer
     getter byteLength

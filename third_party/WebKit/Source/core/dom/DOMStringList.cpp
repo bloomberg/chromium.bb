@@ -25,55 +25,20 @@
 
 #include "core/dom/DOMStringList.h"
 
-#include "bindings/core/v8/ScriptState.h"
-#include "core/frame/UseCounter.h"
 #include <algorithm>
 
 namespace blink {
 
-String DOMStringList::anonymousIndexedGetter(unsigned index) const {
+String DOMStringList::item(unsigned index) const {
   if (index >= m_strings.size())
     return String();
   return m_strings[index];
 }
 
-String DOMStringList::item(ScriptState* scriptState, unsigned index) const {
-  switch (m_source) {
-    case DOMStringList::IndexedDB:
-      UseCounter::count(
-          scriptState->getExecutionContext(),
-          UseCounter::DOMStringList_Item_AttributeGetter_IndexedDB);
-      break;
-    case DOMStringList::Location:
-      UseCounter::count(
-          scriptState->getExecutionContext(),
-          UseCounter::DOMStringList_Item_AttributeGetter_Location);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  return anonymousIndexedGetter(index);
-}
-
-bool DOMStringList::contains(ScriptState* scriptState,
-                             const String& string) const {
-  switch (m_source) {
-    case DOMStringList::IndexedDB:
-      UseCounter::count(scriptState->getExecutionContext(),
-                        UseCounter::DOMStringList_Contains_Method_IndexedDB);
-      break;
-    case DOMStringList::Location:
-      UseCounter::count(scriptState->getExecutionContext(),
-                        UseCounter::DOMStringList_Contains_Method_Location);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  // FIXME: Currently, all consumers of DOMStringList store fairly small lists
-  // and thus an O(n) algorithm is OK.  But this may need to be optimized if
-  // larger amounts of data are stored in m_strings.
+bool DOMStringList::contains(const String& string) const {
+  // All producers of DOMStringList have reasonably small lists; an O(n)
+  // algorithm is preferred over maintaining an additional structure just for
+  // lookups.
   for (const auto& item : m_strings) {
     if (item == string)
       return true;

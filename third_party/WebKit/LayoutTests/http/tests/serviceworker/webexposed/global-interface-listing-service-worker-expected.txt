@@ -217,6 +217,11 @@ interface DOMMatrixReadOnly
     method toString
     method transformPoint
     method translate
+interface DOMStringList
+    getter length
+    method constructor
+    method contains
+    method item
 interface DataView
     getter buffer
     getter byteLength

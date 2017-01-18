@@ -109,7 +109,7 @@ String Location::origin() const {
 }
 
 DOMStringList* Location::ancestorOrigins() const {
-  DOMStringList* origins = DOMStringList::create(DOMStringList::Location);
+  DOMStringList* origins = DOMStringList::create();
   if (!m_frame)
     return origins;
   for (Frame* frame = m_frame->tree().parent(); frame;

@@ -228,6 +228,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toString
 [Worker]     method transformPoint
 [Worker]     method translate
+[Worker] interface DOMStringList
+[Worker]     attribute @@toStringTag
+[Worker]     getter length
+[Worker]     method @@iterator
+[Worker]     method constructor
+[Worker]     method contains
+[Worker]     method item
 [Worker] interface DataView
 [Worker]     attribute @@toStringTag
 [Worker]     getter buffer
