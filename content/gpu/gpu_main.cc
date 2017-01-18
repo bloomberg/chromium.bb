@@ -29,6 +29,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/result_codes.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -304,7 +305,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     base::RunLoop().Run();
   }
 
-  return dead_on_arrival ? 2 : 0;
+  return dead_on_arrival ? RESULT_CODE_GPU_DEAD_ON_ARRIVAL : 0;
 }
 
 namespace {

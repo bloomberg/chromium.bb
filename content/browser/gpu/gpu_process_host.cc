@@ -521,7 +521,10 @@ GpuProcessHost::~GpuProcessHost() {
                               base::TERMINATION_STATUS_MAX_ENUM);
 
     if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
-        status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
+        status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
+        status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
+      // Windows always returns PROCESS_CRASHED on abnormal termination, as it
+      // doesn't have a way to distinguish the two.
       UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
                                 exit_code,
                                 RESULT_CODE_LAST_CODE);

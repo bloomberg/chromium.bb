@@ -32,6 +32,9 @@ enum ResultCode {
   // A bad message caused the process termination.
   RESULT_CODE_KILLED_BAD_MESSAGE,
 
+  // The GPU process exited because initialization failed.
+  RESULT_CODE_GPU_DEAD_ON_ARRIVAL,
+
   // Last return code (keep this last).
   RESULT_CODE_LAST_CODE
 };
