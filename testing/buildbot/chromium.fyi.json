@@ -265,19 +265,6 @@
         "test": "base_unittests"
       },
       {
-        "override_isolate_target": "blimp_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "4",
-              "device_type": "gce_x86"
-            }
-          ]
-        },
-        "test": "blimp_unittests"
-      },
-      {
         "override_isolate_target": "blink_heap_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -919,19 +906,6 @@
         "test": "base_unittests"
       },
       {
-        "override_isolate_target": "blimp_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "device_type": "coho"
-            }
-          ]
-        },
-        "test": "blimp_unittests"
-      },
-      {
         "override_isolate_target": "blink_heap_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1540,81 +1514,6 @@
       }
     ]
   },
-  "Blimp Android Client": {
-    "gtest_tests": [
-      {
-        "override_isolate_target": "blimp_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:25755a2c316937ee44a6432163dc5e2f9c85cf58"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "android_devices": "4",
-              "device_os": "MMB29Q",
-              "device_type": "bullhead"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "blimp_unittests"
-      }
-    ]
-  },
-  "Blimp Linux Engine": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blimp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ipc_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "net_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "sandbox_linux_unittests"
-      }
-    ]
-  },
   "Browser Side Navigation Linux": {
     "gtest_tests": [
       {
@@ -1699,12 +1598,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blimp_unittests"
       },
       {
         "swarming": {
@@ -2082,12 +1975,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blimp_unittests"
       },
       {
         "swarming": {
@@ -3698,19 +3585,6 @@
           ]
         },
         "test": "base_unittests"
-      },
-      {
-        "override_isolate_target": "blimp_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "device_type": "coho"
-            }
-          ]
-        },
-        "test": "blimp_unittests"
       },
       {
         "override_isolate_target": "blink_heap_unittests",
@@ -11262,12 +11136,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "blimp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "blink_heap_unittests"
       },
       {
@@ -12896,23 +12764,6 @@
         "args": [
           "--test-arguments=--site-per-process"
         ],
-        "name": "site_per_process_blimp_unittests",
-        "override_isolate_target": "blimp_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "4",
-              "device_type": "bullhead"
-            }
-          ]
-        },
-        "test": "blimp_unittests"
-      },
-      {
-        "args": [
-          "--test-arguments=--site-per-process"
-        ],
         "name": "site_per_process_components_browsertests",
         "override_isolate_target": "components_browsertests",
         "swarming": {
@@ -12955,15 +12806,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "app_shell_unittests"
-      },
-      {
-        "args": [
-          "--site-per-process"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blimp_unittests"
       },
       {
         "args": [
@@ -13223,12 +13065,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blimp_unittests"
       },
       {
         "swarming": {
@@ -13585,12 +13421,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blimp_unittests"
       },
       {
         "swarming": {

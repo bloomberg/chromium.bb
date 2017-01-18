@@ -8,9 +8,6 @@
         "test": "base_unittests"
       },
       {
-        "test": "blimp_unittests"
-      },
-      {
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -108,9 +105,6 @@
       },
       {
         "test": "base_unittests"
-      },
-      {
-        "test": "blimp_unittests"
       },
       {
         "override_compile_targets": [
@@ -213,9 +207,6 @@
       },
       {
         "test": "base_unittests"
-      },
-      {
-        "test": "blimp_unittests"
       },
       {
         "override_compile_targets": [
@@ -1383,12 +1374,6 @@
         "test": "base_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "blimp_unittests"
-      },
-      {
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -1581,12 +1566,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "blimp_unittests"
       },
       {
         "override_compile_targets": [

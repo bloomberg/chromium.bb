@@ -100,14 +100,6 @@
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
       'Android deterministic (dbg)': 'android_debug_bot',
       'Android x64 Tests': 'android_shared_release_bot_x64',
-      'Blimp Android Client':
-        '//build/args/bots/chromium.fyi/blimp_client_rel.gn',
-      'Blimp Linux Engine':
-        '//build/args/bots/chromium.fyi/blimp_engine_rel.gn',
-      'Blimp Client Engine Integration': {
-        'client': '//build/args/bots/chromium.fyi/blimp_client_rel.gn',
-        'engine': '//build/args/bots/chromium.fyi/blimp_engine_rel.gn',
-      },
       'Browser Side Navigation Linux': 'release_bot',
       'CFI Linux CF': 'cfi_full_cfi_diag_release_static',
       'CFI Linux ToT': 'cfi_full_clang_tot_release_static',
@@ -266,7 +258,6 @@
       'Android Clang Builder (dbg)': 'android_clang_asan_errorprone_findbugs_debug_bot_minimal_symbols',
       'Android Tests (dbg)': 'android_debug_static_bot',
       'Android Tests': 'android_release_bot_minimal_symbols',
-      'Blimp Linux (dbg)': '//build/args/bots/chromium.linux/blimp_linux_dbg.gn',
       'Cast Android (dbg)': 'android_cast_debug_static_bot',
       'Cast Linux': 'cast_release_bot',
       'Linux Builder (dbg)': 'debug_bot',
@@ -422,10 +413,6 @@
       'Windows Dev': 'debug_bot',
     },
 
-    'official.android': {
-      'blimp-engine': '//build/args/bots/official.android/blimp-engine.gn',
-    },
-
     'official.desktop': {
       'mac64': 'official',
       'precise64': 'official',
@@ -525,7 +512,6 @@
     },
 
     'tryserver.chromium.linux': {
-      'blimp_linux_dbg': '//build/args/bots/chromium.linux/blimp_linux_dbg.gn',
       'Chromium Linux Codesearch Builder': 'codesearch',
       'ChromiumOS Codesearch Builder': 'codesearch',
       'cast_shell_linux': 'cast_release_trybot',
