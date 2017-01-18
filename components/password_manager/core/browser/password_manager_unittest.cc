@@ -391,7 +391,9 @@ TEST_F(PasswordManagerTest, FormSubmit) {
   observed.push_back(form);
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  EXPECT_FALSE(manager()->IsPasswordFieldDetectedOnPage());
   manager()->OnPasswordFormsParsed(&driver_, observed);
+  EXPECT_TRUE(manager()->IsPasswordFieldDetectedOnPage());
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
@@ -407,6 +409,7 @@ TEST_F(PasswordManagerTest, FormSubmit) {
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  EXPECT_FALSE(manager()->IsPasswordFieldDetectedOnPage());
 
   // Simulate saving the form, as if the info bar was accepted.
   EXPECT_CALL(*store_, AddLogin(FormMatches(form)));

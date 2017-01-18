@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -55,8 +56,10 @@ void PasswordReuseDetectionManager::OnReuseFound(
     logger->LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
                       saved_domain);
   }
-  metrics_util::LogPasswordReuse(password.size(), saved_passwords,
-                                 number_matches);
+
+  metrics_util::LogPasswordReuse(
+      password.size(), saved_passwords, number_matches,
+      client_->GetPasswordManager()->IsPasswordFieldDetectedOnPage());
 }
 
 }  // namespace password_manager

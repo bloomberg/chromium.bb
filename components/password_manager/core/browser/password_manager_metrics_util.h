@@ -172,6 +172,12 @@ enum CredentialManagerGetMediation {
   CREDENTIAL_MANAGER_GET_UNMEDIATED
 };
 
+enum PasswordReusePasswordFieldDetected {
+  NO_PASSWORD_FIELD,
+  HAS_PASSWORD_FIELD,
+  PASSWORD_REUSE_PASSWORD_FIELD_DETECTED_COUNT
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
@@ -230,7 +236,8 @@ void LogCredentialManagerGetResult(CredentialManagerGetResult result,
 // Log the password reuse.
 void LogPasswordReuse(int password_length,
                       int saved_passwords,
-                      int number_matches);
+                      int number_matches,
+                      bool password_field_detected);
 
 }  // namespace metrics_util
 

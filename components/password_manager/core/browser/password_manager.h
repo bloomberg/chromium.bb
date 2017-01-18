@@ -172,6 +172,9 @@ class PasswordManager : public LoginModel {
   // visible forms.
   void DropFormManagers();
 
+  // Returns true if password element is detected on the current page.
+  bool IsPasswordFieldDetectedOnPage();
+
   PasswordManagerClient* client() { return client_; }
 
 #if defined(UNIT_TEST)

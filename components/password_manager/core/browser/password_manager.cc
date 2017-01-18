@@ -382,6 +382,10 @@ void PasswordManager::DropFormManagers() {
   all_visible_forms_.clear();
 }
 
+bool PasswordManager::IsPasswordFieldDetectedOnPage() {
+  return !pending_login_managers_.empty();
+}
+
 void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
                                     const GURL& form_origin,
                                     BrowserSavePasswordProgressLogger* logger) {
