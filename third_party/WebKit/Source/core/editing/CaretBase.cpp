@@ -113,18 +113,6 @@ LayoutRect CaretBase::computeCaretRect(
                                     caretLocalRect);
 }
 
-IntRect CaretBase::absoluteBoundsForLocalRect(Node* node,
-                                              const LayoutRect& rect) {
-  LayoutBlock* caretPainter = caretLayoutObject(node);
-  if (!caretPainter)
-    return IntRect();
-
-  LayoutRect localRect(rect);
-  caretPainter->flipForWritingMode(localRect);
-  return caretPainter->localToAbsoluteQuad(FloatRect(localRect))
-      .enclosingBoundingBox();
-}
-
 // TODO(yoichio): |node| is FrameSelection::m_previousCaretNode and this is bad
 // design. We should use only previous layoutObject or Rectangle to invalidate
 // old caret.

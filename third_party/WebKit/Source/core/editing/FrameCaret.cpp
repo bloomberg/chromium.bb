@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/TextControlElement.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/page/Page.h"
@@ -223,6 +224,17 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
   m_previousCaretVisibility = m_caretVisibility;
 }
 
+static IntRect absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) {
+  LayoutBlock* caretPainter = CaretBase::caretLayoutObject(node);
+  if (!caretPainter)
+    return IntRect();
+
+  LayoutRect localRect(rect);
+  caretPainter->flipForWritingMode(localRect);
+  return caretPainter->localToAbsoluteQuad(FloatRect(localRect))
+      .enclosingBoundingBox();
+}
+
 // TDOO(yosin): We should mark |FrameCaret::absoluteCaretBounds()| to |const|.
 IntRect FrameCaret::absoluteCaretBounds() {
   DCHECK_NE(m_frame->document()->lifecycle().state(),
@@ -233,15 +245,15 @@ IntRect FrameCaret::absoluteCaretBounds() {
 
   Node* const caretNode = caretPosition().anchorNode();
   if (!isActive())
-    return CaretBase::absoluteBoundsForLocalRect(caretNode, LayoutRect());
+    return absoluteBoundsForLocalRect(caretNode, LayoutRect());
   // TODO(yosin): We should get rid of text control short path since layout
   // tree is clean.
   if (enclosingTextControl(caretPosition().position()) &&
       isVisuallyEquivalentCandidate(caretPosition().position())) {
-    return CaretBase::absoluteBoundsForLocalRect(
+    return absoluteBoundsForLocalRect(
         caretNode, CaretBase::computeCaretRect(caretPosition()));
   }
-  return CaretBase::absoluteBoundsForLocalRect(
+  return absoluteBoundsForLocalRect(
       caretNode,
       CaretBase::computeCaretRect(
           createVisiblePosition(caretPosition()).toPositionWithAffinity()));

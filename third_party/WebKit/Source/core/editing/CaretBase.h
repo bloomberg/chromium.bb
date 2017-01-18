@@ -50,7 +50,6 @@ class CaretBase final : public DisplayItemClient {
   // PositionWithAffinity version if possible.
   // A position in HTMLTextFromControlElement is a typical example.
   static LayoutRect computeCaretRect(const PositionWithAffinity& caretPosition);
-  static IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&);
 
   void paintCaret(Node*,
                   GraphicsContext&,
