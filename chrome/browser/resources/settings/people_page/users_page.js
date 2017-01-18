@@ -6,14 +6,6 @@
  * @fileoverview
  * 'settings-users-page' is the settings page for managing user accounts on
  * the device.
- *
- * Example:
- *
- *    <neon-animated-pages>
- *      <settings-users-page prefs="{{prefs}}">
- *      </settings-users-page>
- *      ... other pages ...
- *    </neon-animated-pages>
  */
 Polymer({
   is: 'settings-users-page',
@@ -38,10 +30,6 @@ Polymer({
       type: Boolean,
       value: false
     },
-  },
-
-  keyBindings: {
-    'enter': 'addUser_'
   },
 
   /** @override */
