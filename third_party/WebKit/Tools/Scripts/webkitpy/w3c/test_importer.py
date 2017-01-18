@@ -130,7 +130,7 @@ def parse_args():
     parser.add_option('--ignore-expectations', action='store_true', default=False,
                       help='Ignore the W3CImportExpectations file and import everything.')
     parser.add_option('--dry-run', action='store_true', default=False,
-                      help='Dryrun only (don\'t actually write any results).')
+                      help='Dry run only (don\'t actually write any results).')
 
     options, args = parser.parse_args()
     if len(args) != 1:
@@ -185,16 +185,16 @@ class TestImporter(object):
 
             # Files in 'tools' are not for browser testing, so we skip them.
             # See: http://testthewebforward.org/docs/test-format-guidelines.html#tools
-            DIRS_TO_SKIP = ('.git', 'test-plan', 'tools')
+            dirs_to_skip = ('.git', 'test-plan', 'tools')
 
             # We copy all files in 'support', including HTML without metadata.
             # See: http://testthewebforward.org/docs/test-format-guidelines.html#support-files
-            DIRS_TO_INCLUDE = ('resources', 'support')
+            dirs_to_include = ('resources', 'support')
 
             if dirs:
-                for d in DIRS_TO_SKIP:
-                    if d in dirs:
-                        dirs.remove(d)
+                for name in dirs_to_skip:
+                    if name in dirs:
+                        dirs.remove(name)
 
                 for path in paths_to_skip:
                     path_base = path.replace(self.options.destination + '/', '')
@@ -240,7 +240,7 @@ class TestImporter(object):
                     copy_list.append({'src': fullpath, 'dest': filename})
                     continue
 
-                if self.filesystem.basename(root) in DIRS_TO_INCLUDE:
+                if self.filesystem.basename(root) in dirs_to_include:
                     copy_list.append({'src': fullpath, 'dest': filename})
                     continue
 
