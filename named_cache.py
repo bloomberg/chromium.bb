@@ -5,6 +5,7 @@
 """This file implements Named Caches."""
 
 import contextlib
+import logging
 import optparse
 import os
 import random
@@ -98,8 +99,10 @@ class CacheManager(object):
     if path is None:
       path = self._allocate_dir()
       create_named_link = True
+      logging.info('Created %r for %r', path, name)
     abs_path = os.path.join(self.root_dir, path)
 
+    # TODO(maruel): That's weird, it should exist already.
     file_path.ensure_tree(abs_path)
     self._lru.add(name, path)
 
@@ -111,6 +114,7 @@ class CacheManager(object):
         file_path.remove(named_path)
       else:
         file_path.ensure_tree(os.path.dirname(named_path))
+      logging.info('Symlink %r to %r', named_path, abs_path)
       fs.symlink(abs_path, named_path)
 
     return abs_path
@@ -148,6 +152,7 @@ class CacheManager(object):
     """
     self._lock.assert_locked()
     for name, path in named_caches:
+      logging.info('Named cache %r -> %r', name, path)
       try:
         if os.path.isabs(path):
           raise Error('named cache path must not be absolute')
@@ -155,7 +160,9 @@ class CacheManager(object):
           raise Error('named cache path must not contain ".."')
         symlink_path = os.path.abspath(os.path.join(root, path))
         file_path.ensure_tree(os.path.dirname(symlink_path))
-        fs.symlink(self.request(name), symlink_path)
+        requested = self.request(name)
+        logging.info('Symlink %r to %r', symlink_path, requested)
+        fs.symlink(requested, symlink_path)
       except (OSError, Error) as ex:
         raise Error(
             'cannot create a symlink for cache named "%s" at "%s": %s' % (
@@ -176,10 +183,13 @@ class CacheManager(object):
       return
 
     free_space = 0
-    if min_free_space is not None:
-      file_path.get_free_space(self.root_dir)
-    while ((min_free_space is not None and free_space < min_free_space)
+    if min_free_space:
+      free_space = file_path.get_free_space(self.root_dir)
+    while ((min_free_space and free_space < min_free_space)
            or len(self._lru) > MAX_CACHE_SIZE):
+      logging.info(
+          'Making space for named cache %s > %s or %s > %s',
+          free_space, min_free_space, len(self._lru), MAX_CACHE_SIZE)
       try:
         name, (path, _) = self._lru.get_oldest()
       except KeyError:
@@ -189,8 +199,9 @@ class CacheManager(object):
         fs.unlink(named_dir)
       path_abs = os.path.join(self.root_dir, path)
       if os.path.isdir(path_abs):
+        logging.info('Removing named cache %s', path_abs)
         file_path.rmtree(path_abs)
-      if min_free_space is not None:
+      if min_free_space:
         free_space = file_path.get_free_space(self.root_dir)
       self._lru.pop(name)
 
