@@ -52,11 +52,36 @@ class ConnectParams {
     return std::move(pid_receiver_request_);
   }
 
+  void set_interface_request_info(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) {
+    interface_name_ = interface_name;
+    interface_pipe_ = std::move(interface_pipe);
+  }
+  const std::string& interface_name() const {
+    return interface_name_;
+  }
+  bool HasInterfaceRequestInfo() const {
+    return !interface_name_.empty() && interface_pipe_.is_valid();
+  }
+  mojo::ScopedMessagePipeHandle TakeInterfaceRequestPipe() {
+    return std::move(interface_pipe_);
+  }
+
   void set_connect_callback(const mojom::Connector::ConnectCallback& value) {
     connect_callback_ = value;
   }
   const mojom::Connector::ConnectCallback& connect_callback() const {
     return connect_callback_;
+  }
+
+  void set_bind_interface_callback(
+      const mojom::Connector::BindInterfaceCallback& callback) {
+    bind_interface_callback_ = callback;
+  }
+  const mojom::Connector::BindInterfaceCallback&
+      bind_interface_callback() const {
+    return bind_interface_callback_;
   }
 
  private:
@@ -69,7 +94,10 @@ class ConnectParams {
   mojom::InterfaceProviderRequest remote_interfaces_;
   mojom::ServicePtr service_;
   mojom::PIDReceiverRequest pid_receiver_request_;
+  std::string interface_name_;
+  mojo::ScopedMessagePipeHandle interface_pipe_;
   mojom::Connector::ConnectCallback connect_callback_;
+  mojom::Connector::BindInterfaceCallback bind_interface_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);
 };
