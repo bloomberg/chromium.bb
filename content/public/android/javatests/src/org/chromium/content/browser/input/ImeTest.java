@@ -22,6 +22,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
@@ -535,8 +536,9 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForSelectActionBarStatus(true);
     }
 
-    @SmallTest
-    @Feature({"TextInput"})
+    // @SmallTest
+    // @Feature({"TextInput"})
+    @DisabledTest
     public void testLongPressInputWhileComposingText() throws Exception {
         assertWaitForSelectActionBarStatus(false);
         setComposingText("Sample Text", 1);
