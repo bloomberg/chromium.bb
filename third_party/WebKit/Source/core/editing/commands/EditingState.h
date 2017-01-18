@@ -5,6 +5,7 @@
 #ifndef EditingState_h
 #define EditingState_h
 
+#include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
@@ -21,7 +22,7 @@ namespace blink {
 //  if (editingState.isAborted())
 //      return;
 //
-class EditingState final {
+class CORE_EXPORT EditingState final {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(EditingState);
 

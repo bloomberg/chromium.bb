@@ -271,6 +271,9 @@ void CompositeEditCommand::insertNodeBefore(
     EditingState* editingState,
     ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable) {
   DCHECK_NE(document().body(), refChild);
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
   ABORT_EDITING_COMMAND_IF(!hasEditableStyle(*refChild->parentNode()) &&
                            refChild->parentNode()->inActiveDocument());
   applyCommandToComposite(
