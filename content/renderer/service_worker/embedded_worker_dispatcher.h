@@ -61,20 +61,20 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
     std::unique_ptr<EmbeddedWorkerDevToolsAgent> devtools_agent_;
   };
 
-  void OnStartWorker(const EmbeddedWorkerStartParams& params);
   void OnStopWorker(int embedded_worker_id);
   void OnResumeAfterDownload(int embedded_worker_id);
   void OnAddMessageToConsole(int embedded_worker_id,
                              ConsoleMessageLevel level,
                              const std::string& message);
 
+  std::unique_ptr<WorkerWrapper> StartWorkerContext(
+      const EmbeddedWorkerStartParams& params,
+      std::unique_ptr<ServiceWorkerContextClient> context_client);
+
   // These methods are used by EmbeddedWorkerInstanceClientImpl to keep
   // consistency between chromium IPC and mojo IPC.
   // TODO(shimazu): Remove them after all messages for EmbeddedWorker are
   // replaced by mojo IPC. (Tracking issue: https://crbug.com/629701)
-  std::unique_ptr<WorkerWrapper> StartWorkerContext(
-      const EmbeddedWorkerStartParams& params,
-      std::unique_ptr<ServiceWorkerContextClient> context_client);
   void RegisterWorker(int embedded_worker_id,
                       std::unique_ptr<WorkerWrapper> wrapper);
   void UnregisterWorker(int embedded_worker_id);

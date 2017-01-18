@@ -216,7 +216,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                                      bool wait_for_debugger);
 
   // Sends StartWorker message via Mojo.
-  ServiceWorkerStatusCode SendMojoStartWorker(
+  ServiceWorkerStatusCode SendStartWorker(
       std::unique_ptr<EmbeddedWorkerStartParams> params);
 
   // Called back from StartTask after a start worker message is sent.
@@ -306,7 +306,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // |client_| is used to send messages to the renderer process.
   mojom::EmbeddedWorkerInstanceClientPtr client_;
 
-  // TODO(shimazu): Remove this after non-mojo StartWorker is removed.
+  // TODO(shimazu): Remove this after EmbeddedWorkerStartParams is changed to
+  // a mojo struct.
   mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
 
   // Whether devtools is attached or not.

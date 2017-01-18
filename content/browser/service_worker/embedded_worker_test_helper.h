@@ -209,7 +209,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   EmbeddedWorkerRegistry* registry();
 
  private:
-  class MockEmbeddedWorkerSetup;
   class MockServiceWorkerEventDispatcher;
 
   void OnStartWorkerStub(const EmbeddedWorkerStartParams& params,

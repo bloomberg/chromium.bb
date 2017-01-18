@@ -19,7 +19,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
-#include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -101,20 +100,6 @@ void SetupOnUI(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(callback, worker_devtools_agent_route_id, wait_for_debugger));
-}
-
-void SetupEventDispatcherOnUIThread(
-    int process_id,
-    int thread_id,
-    mojom::ServiceWorkerEventDispatcherRequest request) {
-  DCHECK(!ServiceWorkerUtils::IsMojoForServiceWorkerEnabled());
-  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  // |rph| or its InterfaceProvider may be NULL in unit tests.
-  if (!rph || !rph->GetRemoteInterfaces())
-    return;
-  mojom::EmbeddedWorkerSetupPtr setup;
-  rph->GetRemoteInterfaces()->GetInterface(&setup);
-  setup->AttachServiceWorkerEventDispatcher(thread_id, std::move(request));
 }
 
 void CallDetach(EmbeddedWorkerInstance* instance) {
@@ -401,41 +386,13 @@ class EmbeddedWorkerInstance::StartTask {
     params->worker_devtools_agent_route_id = worker_devtools_agent_route_id;
     params->wait_for_debugger = wait_for_debugger;
 
-    if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled())
-      SendMojoStartWorker(std::move(params));
-    else
-      SendStartWorker(std::move(params));
-  }
-
-  void SendStartWorker(std::unique_ptr<EmbeddedWorkerStartParams> params) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    ServiceWorkerStatusCode status = instance_->registry_->SendStartWorker(
-        std::move(params), instance_->process_id());
-    TRACE_EVENT_ASYNC_STEP_PAST1(
-        "ServiceWorker", "EmbeddedWorkerInstance::Start", this,
-        "SendStartWorker", "Status", ServiceWorkerStatusToString(status));
-    if (status != SERVICE_WORKER_OK) {
-      StatusCallback callback = start_callback_;
-      start_callback_.Reset();
-      instance_->OnStartFailed(callback, status);
-      // |this| may be destroyed.
-      return;
-    }
-    instance_->OnStartWorkerMessageSent();
-
-    // |start_callback_| will be called via RunStartCallback() when the script
-    // is evaluated.
-  }
-
-  void SendMojoStartWorker(std::unique_ptr<EmbeddedWorkerStartParams> params) {
     ServiceWorkerStatusCode status =
-        instance_->SendMojoStartWorker(std::move(params));
+        instance_->SendStartWorker(std::move(params));
     if (status != SERVICE_WORKER_OK) {
       StatusCallback callback = start_callback_;
       start_callback_.Reset();
       instance_->OnStartFailed(callback, status);
       // |this| may be destroyed.
-      return;
     }
   }
 
@@ -499,12 +456,10 @@ void EmbeddedWorkerInstance::Start(
   params->wait_for_debugger = false;
   params->settings.v8_cache_options = GetV8CacheOptions();
 
-  mojom::EmbeddedWorkerInstanceClientRequest request;
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    request = mojo::MakeRequest(&client_);
-    client_.set_connection_error_handler(
-        base::Bind(&CallDetach, base::Unretained(this)));
-  }
+  mojom::EmbeddedWorkerInstanceClientRequest request =
+      mojo::MakeRequest(&client_);
+  client_.set_connection_error_handler(
+      base::Bind(&CallDetach, base::Unretained(this)));
 
   pending_dispatcher_request_ = std::move(dispatcher_request);
 
@@ -635,15 +590,15 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
     observer.OnRegisteredToDevToolsManager();
 }
 
-ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMojoStartWorker(
+ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
     std::unique_ptr<EmbeddedWorkerStartParams> params) {
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
   DCHECK(pending_dispatcher_request_.is_pending());
   client_->StartWorker(*params, std::move(pending_dispatcher_request_));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
-  TRACE_EVENT_ASYNC_STEP_PAST1("ServiceWorker", "EmbeddedWorkerInstance::Start",
-                               this, "SendStartWorker", "Status", "mojo");
+  TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker", "EmbeddedWorkerInstance::Start",
+                               this, "SendStartWorker");
   OnStartWorkerMessageSent();
   return SERVICE_WORKER_OK;
 }
@@ -743,16 +698,6 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   thread_id_ = thread_id;
   for (auto& observer : listener_list_)
     observer.OnThreadStarted();
-
-  // The pending request is sent at StartWorker if mojo for the service worker
-  // is enabled.
-  if (!ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    DCHECK(pending_dispatcher_request_.is_pending());
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(SetupEventDispatcherOnUIThread, process_id(), thread_id_,
-                   base::Passed(&pending_dispatcher_request_)));
-  }
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {

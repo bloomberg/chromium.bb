@@ -46,7 +46,6 @@ bool EmbeddedWorkerDispatcher::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerDispatcher, message)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_StartWorker, OnStartWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_StopWorker, OnStopWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_ResumeAfterDownload,
                         OnResumeAfterDownload)
@@ -62,17 +61,6 @@ void EmbeddedWorkerDispatcher::WorkerContextDestroyed(
   RenderThreadImpl::current()->thread_safe_sender()->Send(
       new EmbeddedWorkerHostMsg_WorkerStopped(embedded_worker_id));
   UnregisterWorker(embedded_worker_id);
-}
-
-void EmbeddedWorkerDispatcher::OnStartWorker(
-    const EmbeddedWorkerStartParams& params) {
-  DCHECK(!workers_.Lookup(params.embedded_worker_id));
-  TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerDispatcher::OnStartWorker");
-  std::unique_ptr<WorkerWrapper> wrapper = StartWorkerContext(
-      params, base::MakeUnique<ServiceWorkerContextClient>(
-                  params.embedded_worker_id, params.service_worker_version_id,
-                  params.scope, params.script_url));
-  RegisterWorker(params.embedded_worker_id, std::move(wrapper));
 }
 
 void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {

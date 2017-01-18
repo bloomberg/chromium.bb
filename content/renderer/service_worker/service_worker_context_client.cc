@@ -397,19 +397,6 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       "PrepareWorker");
 }
 
-ServiceWorkerContextClient::ServiceWorkerContextClient(
-    int embedded_worker_id,
-    int64_t service_worker_version_id,
-    const GURL& service_worker_scope,
-    const GURL& script_url)
-    : ServiceWorkerContextClient::ServiceWorkerContextClient(
-          embedded_worker_id,
-          service_worker_version_id,
-          service_worker_scope,
-          script_url,
-          mojom::ServiceWorkerEventDispatcherRequest(),
-          nullptr) {}
-
 ServiceWorkerContextClient::~ServiceWorkerContextClient() {}
 
 void ServiceWorkerContextClient::OnMessageReceived(
@@ -541,10 +528,10 @@ void ServiceWorkerContextClient::workerContextStarted(
   DCHECK_NE(registration_info.registration_id,
             kInvalidServiceWorkerRegistrationId);
 
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    DCHECK(pending_dispatcher_request_.is_pending());
-    BindEventDispatcher(std::move(pending_dispatcher_request_));
-  }
+  DCHECK(pending_dispatcher_request_.is_pending());
+  DCHECK(!context_->event_dispatcher_binding.is_bound());
+  context_->event_dispatcher_binding.Bind(
+      std::move(pending_dispatcher_request_));
 
   SetRegistrationInServiceWorkerGlobalScope(registration_info, version_attrs);
 
@@ -1269,13 +1256,6 @@ void ServiceWorkerContextClient::OnNavigationPreloadError(
     int fetch_event_id,
     std::unique_ptr<blink::WebServiceWorkerError> error) {
   proxy_->onNavigationPreloadError(fetch_event_id, std::move(error));
-}
-
-void ServiceWorkerContextClient::BindEventDispatcher(
-    mojom::ServiceWorkerEventDispatcherRequest request) {
-  DCHECK(context_);
-  DCHECK(!context_->event_dispatcher_binding.is_bound());
-  context_->event_dispatcher_binding.Bind(std::move(request));
 }
 
 base::WeakPtr<ServiceWorkerContextClient>

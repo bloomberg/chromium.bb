@@ -28,7 +28,6 @@ class Sender;
 namespace content {
 
 class EmbeddedWorkerInstance;
-struct EmbeddedWorkerStartParams;
 class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 
@@ -58,9 +57,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   std::unique_ptr<EmbeddedWorkerInstance> CreateWorker();
 
   // Called from EmbeddedWorkerInstance, relayed to the child process.
-  ServiceWorkerStatusCode SendStartWorker(
-      std::unique_ptr<EmbeddedWorkerStartParams> params,
-      int process_id);
   ServiceWorkerStatusCode StopWorker(int process_id,
                                      int embedded_worker_id);
 

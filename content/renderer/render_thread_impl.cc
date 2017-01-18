@@ -74,7 +74,6 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
-#include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
@@ -361,36 +360,6 @@ class FrameFactoryImpl : public mojom::FrameFactory {
 
 void CreateFrameFactory(mojom::FrameFactoryRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<FrameFactoryImpl>(),
-                          std::move(request));
-}
-
-void SetupEmbeddedWorkerOnWorkerThread(
-    mojom::ServiceWorkerEventDispatcherRequest request) {
-  ServiceWorkerContextClient* client =
-      ServiceWorkerContextClient::ThreadSpecificInstance();
-  // It is possible for client to be null if for some reason the worker died
-  // before this call made it to the worker thread. In that case just do
-  // nothing and let mojo close the connection.
-  if (!client)
-    return;
-  client->BindEventDispatcher(std::move(request));
-}
-
-class EmbeddedWorkerSetupImpl : public mojom::EmbeddedWorkerSetup {
- public:
-  EmbeddedWorkerSetupImpl() = default;
-
-  void AttachServiceWorkerEventDispatcher(
-      int32_t thread_id,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
-    WorkerThreadRegistry::Instance()->GetTaskRunnerFor(thread_id)->PostTask(
-        FROM_HERE,
-        base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&request)));
-  }
-};
-
-void CreateEmbeddedWorkerSetup(mojom::EmbeddedWorkerSetupRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<EmbeddedWorkerSetupImpl>(),
                           std::move(request));
 }
 
@@ -906,7 +875,6 @@ void RenderThreadImpl::Init(
       GetInterfaceRegistry());
 
   GetInterfaceRegistry()->AddInterface(base::Bind(&CreateFrameFactory));
-  GetInterfaceRegistry()->AddInterface(base::Bind(&CreateEmbeddedWorkerSetup));
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&EmbeddedWorkerInstanceClientImpl::Create,
                  base::Unretained(embedded_worker_dispatcher_.get())));

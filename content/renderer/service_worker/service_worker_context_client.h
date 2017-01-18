@@ -89,18 +89,11 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const GURL& script_url,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client);
-  ServiceWorkerContextClient(int embedded_worker_id,
-                             int64_t service_worker_version_id,
-                             const GURL& service_worker_scope,
-                             const GURL& script_url);
   ~ServiceWorkerContextClient() override;
 
   void OnMessageReceived(int thread_id,
                          int embedded_worker_id,
                          const IPC::Message& message);
-
-  // Called after the worker has started.
-  void BindEventDispatcher(mojom::ServiceWorkerEventDispatcherRequest request);
 
   // WebServiceWorkerContextClient overrides.
   blink::WebURL scope() const override;

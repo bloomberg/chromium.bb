@@ -20,7 +20,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
-#include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -57,22 +56,6 @@ class MockMessagePortMessageFilter : public MessagePortMessageFilter {
 };
 
 }  // namespace
-
-class EmbeddedWorkerTestHelper::MockEmbeddedWorkerSetup
-    : public mojom::EmbeddedWorkerSetup {
- public:
-  static void Create(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                     mojom::EmbeddedWorkerSetupRequest request) {
-    // TODO(shimazu): Remove this mock after EmbeddedWorkerSetup is removed.
-    NOTREACHED();
-  }
-
-  void AttachServiceWorkerEventDispatcher(
-      int32_t thread_id,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
-    NOTREACHED();
-  }
-};
 
 EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
     MockEmbeddedWorkerInstanceClient(
@@ -562,8 +545,6 @@ std::unique_ptr<service_manager::InterfaceRegistry>
 EmbeddedWorkerTestHelper::CreateInterfaceRegistry(MockRenderProcessHost* rph) {
   auto registry =
       base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
-  registry->AddInterface(
-      base::Bind(&MockEmbeddedWorkerSetup::Create, AsWeakPtr()));
   registry->AddInterface(
       base::Bind(&MockEmbeddedWorkerInstanceClient::Bind, AsWeakPtr()));
 
