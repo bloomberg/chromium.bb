@@ -36,7 +36,9 @@ namespace offline_pages {
 RequestCoordinatorFactory::RequestCoordinatorFactory()
     : BrowserContextKeyedServiceFactory(
           "OfflineRequestCoordinator",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(OfflinePageModelFactory::GetInstance());
+}
 
 // static
 RequestCoordinatorFactory* RequestCoordinatorFactory::GetInstance() {
