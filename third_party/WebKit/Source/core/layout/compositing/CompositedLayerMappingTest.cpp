@@ -11,6 +11,7 @@
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "public/platform/WebContentLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -1244,6 +1245,58 @@ TEST_P(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
   ASSERT_TRUE(childMapping);
   EXPECT_FALSE(childMapping->ancestorClippingLayer());
   EXPECT_FALSE(childMapping->ancestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest, StickyPositionContentOffset) {
+  setBodyInnerHTML(
+      "<div style='width: 400px; height: 400px; overflow: auto; "
+      "will-change: transform;' >"
+      "    <div id='sticky1' style='position: sticky; top: 0px; width: 100px; "
+      "height: 100px; box-shadow: -5px -5px 5px 0 black; "
+      "will-change: transform;'></div>"
+      "    <div style='height: 2000px;'></div>"
+      "</div>"
+
+      "<div style='width: 400px; height: 400px; overflow: auto; "
+      "will-change: transform;' >"
+      "    <div id='sticky2' style='position: sticky; top: 0px; width: 100px; "
+      "height: 100px; will-change: transform;'>"
+      "        <div style='position: absolute; top: -50px; left: -50px; "
+      "width: 5px; height: 5px; background: red;'></div></div>"
+      "    <div style='height: 2000px;'></div>"
+      "</div>");
+  document().view()->updateLifecycleToCompositingCleanPlusScrolling();
+
+  CompositedLayerMapping* sticky1 =
+      toLayoutBlock(getLayoutObjectByElementId("sticky1"))
+          ->layer()
+          ->compositedLayerMapping();
+  CompositedLayerMapping* sticky2 =
+      toLayoutBlock(getLayoutObjectByElementId("sticky2"))
+          ->layer()
+          ->compositedLayerMapping();
+
+  // Box offsets the content by the combination of the shadow offset and blur
+  // radius plus an additional pixel of anti-aliasing.
+  ASSERT_TRUE(sticky1);
+  WebLayerStickyPositionConstraint constraint1 =
+      sticky1->mainGraphicsLayer()
+          ->contentLayer()
+          ->layer()
+          ->stickyPositionConstraint();
+  EXPECT_EQ(IntPoint(-11, -11),
+            IntPoint(constraint1.parentRelativeStickyBoxOffset));
+
+  // Since the nested div will be squashed into the same composited layer the
+  // sticky element is offset by the nested element's offset.
+  ASSERT_TRUE(sticky2);
+  WebLayerStickyPositionConstraint constraint2 =
+      sticky2->mainGraphicsLayer()
+          ->contentLayer()
+          ->layer()
+          ->stickyPositionConstraint();
+  EXPECT_EQ(IntPoint(-50, -50),
+            IntPoint(constraint2.parentRelativeStickyBoxOffset));
 }
 
 }  // namespace blink

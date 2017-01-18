@@ -235,7 +235,6 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer() {
   updateTransform(layoutObject()->styleRef());
   updateFilters(layoutObject()->styleRef());
   updateBackdropFilters(layoutObject()->styleRef());
-  updateStickyConstraints(layoutObject()->styleRef());
   updateLayerBlendMode(layoutObject()->styleRef());
   updateIsRootForIsolatedGroup();
 }
@@ -315,7 +314,9 @@ void CompositedLayerMapping::updateStickyConstraints(
                                enclosingLayerOffset);
     FloatPoint stickyBoxOffset =
         constraints.scrollContainerRelativeStickyBoxRect().location();
-    stickyBoxOffset.moveBy(FloatPoint(-enclosingLayerOffset));
+    DCHECK(!m_contentOffsetInCompositingLayerDirty);
+    stickyBoxOffset.moveBy(FloatPoint(-enclosingLayerOffset) -
+                           FloatSize(contentOffsetInCompositingLayer()));
 
     webConstraint.isSticky = true;
     webConstraint.isAnchoredLeft =
@@ -943,8 +944,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
   if (!layoutObject()->style()->isRunningBackdropFilterAnimationOnCompositor())
     updateBackdropFilters(layoutObject()->styleRef());
 
-  updateStickyConstraints(layoutObject()->styleRef());
-
   // We compute everything relative to the enclosing compositing layer.
   IntRect ancestorCompositingBounds;
   if (compositingContainer) {
@@ -981,6 +980,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
                                           graphicsLayerParentLocation);
   updateContentsOffsetInCompositingLayer(snappedOffsetFromCompositedAncestor,
                                          graphicsLayerParentLocation);
+  updateStickyConstraints(layoutObject()->styleRef());
   updateSquashingLayerGeometry(
       graphicsLayerParentLocation, compositingContainer, m_squashedLayers,
       m_squashingLayer.get(), &m_squashingLayerOffsetFromTransformedAncestor,
