@@ -716,15 +716,19 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object) {
   if (object->isTablePart())
     return false;
 
-  if (object->style()->containsLayout() && object->style()->containsSize())
+  const ComputedStyle* style = object->style();
+  if (style->containsLayout() && style->containsSize())
     return true;
 
   if (!object->hasOverflowClip())
     return false;
 
-  if (object->style()->width().isIntrinsicOrAuto() ||
-      object->style()->height().isIntrinsicOrAuto() ||
-      object->style()->height().isPercentOrCalc())
+  // If either dimension is percent-based, intrinsic, or anything but fixed,
+  // this object cannot form a re-layout boundary. A non-fixed computed logical
+  // height will allow the object to grow and shrink based on the content
+  // inside. The same goes for for logical width, if this objects is inside a
+  // shrink-to-fit container, for instance.
+  if (!style->width().isFixed() || !style->height().isFixed())
     return false;
 
   // Scrollbar parts can be removed during layout. Avoid the complexity of
