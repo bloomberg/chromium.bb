@@ -1,0 +1,39 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module memory_instrumentation.mojom;
+
+enum DumpType {
+  PERIODIC_INTERVAL,
+  EXPLICITLY_TRIGGERED,
+  PEAK_MEMORY_USAGE
+};
+
+enum LevelOfDetail {
+  BACKGROUND,
+  LIGHT,
+  DETAILED
+};
+
+struct RequestArgs {
+  uint64 dump_guid;
+  DumpType dump_type;
+  LevelOfDetail level_of_detail;
+};
+
+// There should be at most one implementation of this interface per process.
+interface ProcessLocalDumpManager {
+  // When successful, the dump is appended in the process-local trace buffer of
+  // the target process and only an ACK is returned.
+  RequestProcessMemoryDump(RequestArgs args) =>
+      (uint64 dump_guid, bool success);
+};
+
+// Memory Infra service implements this interface. ProcessLocalDumpManagers
+// register themselves using the RegisterProcessLocalDumpManager method and
+// suggest a global memory dump using the RequestGlobalMemoryDump method.
+interface Coordinator {
+  RegisterProcessLocalDumpManager(ProcessLocalDumpManager local_manager);
+  RequestGlobalMemoryDump(RequestArgs args) => (uint64 dump_guid, bool success);
+};
