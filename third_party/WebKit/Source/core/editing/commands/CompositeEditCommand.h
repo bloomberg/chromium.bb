@@ -51,6 +51,19 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
 
   ~CompositeEditCommand() override;
 
+  const VisibleSelection& startingSelection() const {
+    return m_startingSelection;
+  }
+  const VisibleSelection& endingSelection() const { return m_endingSelection; }
+
+  void setStartingSelection(const VisibleSelection&);
+  void setEndingSelection(const SelectionInDOMTree&);
+  // TODO(yosin): |setEndingVisibleSelection()| will take |SelectionInUndoStep|
+  // You should not use this function other than copying existing selection.
+  void setEndingVisibleSelection(const VisibleSelection&);
+
+  void setParent(CompositeEditCommand*) override;
+
   // Returns |false| if the command failed.  e.g. It's aborted.
   bool apply();
   bool isFirstCommand(EditCommand* command) {
@@ -223,6 +236,8 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
  private:
   bool isCompositeEditCommand() const final { return true; }
 
+  VisibleSelection m_startingSelection;
+  VisibleSelection m_endingSelection;
   Member<UndoStep> m_undoStep;
 };
 

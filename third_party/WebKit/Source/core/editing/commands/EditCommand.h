@@ -41,14 +41,9 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
  public:
   virtual ~EditCommand();
 
-  void setParent(CompositeEditCommand*);
+  virtual void setParent(CompositeEditCommand*);
 
   virtual InputEvent::InputType inputType() const;
-
-  const VisibleSelection& startingSelection() const {
-    return m_startingSelection;
-  }
-  const VisibleSelection& endingSelection() const { return m_endingSelection; }
 
   virtual bool isSimpleEditCommand() const { return false; }
   virtual bool isCompositeEditCommand() const { return false; }
@@ -67,11 +62,6 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
 
   Document& document() const { return *m_document.get(); }
   CompositeEditCommand* parent() const { return m_parent; }
-  void setStartingSelection(const VisibleSelection&);
-  void setEndingSelection(const SelectionInDOMTree&);
-  // TODO(yosin): |setEndingVisibleSelection()| will take |SelectionInUndoStep|
-  // You should not use this function other than copying existing selection.
-  void setEndingVisibleSelection(const VisibleSelection&);
 
   // TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
   // |VisiblePosition::characterAfter()| and
@@ -80,8 +70,6 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
 
  private:
   Member<Document> m_document;
-  VisibleSelection m_startingSelection;
-  VisibleSelection m_endingSelection;
   Member<CompositeEditCommand> m_parent;
 };
 

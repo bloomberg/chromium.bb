@@ -80,7 +80,10 @@ namespace blink {
 using namespace HTMLNames;
 
 CompositeEditCommand::CompositeEditCommand(Document& document)
-    : EditCommand(document) {}
+    : EditCommand(document) {
+  setStartingSelection(document.frame()->selection().selection());
+  setEndingVisibleSelection(m_startingSelection);
+}
 
 CompositeEditCommand::~CompositeEditCommand() {
   DCHECK(isTopLevelCommand() || !m_undoStep);
@@ -1935,6 +1938,8 @@ Node* CompositeEditCommand::splitTreeToNode(Node* start,
 
 DEFINE_TRACE(CompositeEditCommand) {
   visitor->trace(m_commands);
+  visitor->trace(m_startingSelection);
+  visitor->trace(m_endingSelection);
   visitor->trace(m_undoStep);
   EditCommand::trace(visitor);
 }
