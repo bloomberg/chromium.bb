@@ -622,7 +622,7 @@ void BaseRenderingContext2D::drawPathInternal(
   if (!drawingCanvas())
     return;
 
-  if (draw([&skPath, this](SkCanvas* c, const SkPaint* paint)  // draw lambda
+  if (draw([&skPath](SkCanvas* c, const SkPaint* paint)  // draw lambda
            { c->drawPath(skPath, *paint); },
            [](const SkIRect& rect)  // overdraw test lambda
            { return false; },
@@ -682,7 +682,7 @@ void BaseRenderingContext2D::fillRect(double x,
     return;
 
   SkRect rect = SkRect::MakeXYWH(x, y, width, height);
-  draw([&rect, this](SkCanvas* c, const SkPaint* paint)  // draw lambda
+  draw([&rect](SkCanvas* c, const SkPaint* paint)  // draw lambda
        { c->drawRect(rect, *paint); },
        [&rect, this](const SkIRect& clipBounds)  // overdraw test lambda
        { return rectContainsTransformedRect(rect, clipBounds); },
@@ -719,7 +719,7 @@ void BaseRenderingContext2D::strokeRect(double x,
   SkRect rect = SkRect::MakeXYWH(x, y, width, height);
   FloatRect bounds = rect;
   inflateStrokeRect(bounds);
-  draw([&rect, this](SkCanvas* c, const SkPaint* paint)  // draw lambda
+  draw([&rect](SkCanvas* c, const SkPaint* paint)  // draw lambda
        { strokeRectOnCanvas(rect, c, paint); },
        [](const SkIRect& clipBounds)  // overdraw test lambda
        { return false; },

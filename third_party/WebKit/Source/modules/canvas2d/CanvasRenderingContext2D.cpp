@@ -903,7 +903,7 @@ void CanvasRenderingContext2D::drawTextInternal(
   }
 
   draw(
-      [&font, this, &textRunPaintInfo, &location](
+      [&font, &textRunPaintInfo, &location](
           SkCanvas* c, const SkPaint* paint)  // draw lambda
       {
         font.drawBidiText(c, textRunPaintInfo, location,
