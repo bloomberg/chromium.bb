@@ -2971,32 +2971,21 @@ static int drmParseSubsystemType(int maj, int min)
 static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
 {
 #ifdef __linux__
-    char path[PATH_MAX + 1];
-    char data[512 + 1];
-    char *str;
-    int domain, bus, dev, func;
-    int fd, ret;
+    unsigned int domain, bus, dev, func;
+    char path[PATH_MAX + 1], *value;
+    int num;
 
-    snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/uevent", maj, min);
-    fd = open(path, O_RDONLY);
-    if (fd < 0)
-        return -errno;
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
 
-    ret = read(fd, data, sizeof(data)-1);
-    close(fd);
-    if (ret < 0)
-        return -errno;
-    data[ret] = '\0';
+    value = sysfs_uevent_get(path, "PCI_SLOT_NAME");
+    if (!value)
+        return -ENOENT;
 
-#define TAG "PCI_SLOT_NAME="
-    str = strstr(data, TAG);
-    if (str == NULL)
+    num = sscanf(value, "%04x:%02x:%02x.%1u", &domain, &bus, &dev, &func);
+    free(value);
+
+    if (num != 4)
         return -EINVAL;
-
-    if (sscanf(str, TAG "%04x:%02x:%02x.%1u",
-               &domain, &bus, &dev, &func) != 4)
-        return -EINVAL;
-#undef TAG
 
     info->domain = domain;
     info->bus = bus;
@@ -4084,13 +4073,8 @@ char *drmGetDeviceNameFromFd2(int fd)
 {
 #ifdef __linux__
     struct stat sbuf;
-    char *device_name = NULL;
+    char path[PATH_MAX + 1], *value;
     unsigned int maj, min;
-    FILE *f;
-    char buf[512];
-    static const char match[9] = "\nDEVNAME=";
-    size_t expected = 1;
-
 
     if (fstat(fd, &sbuf))
         return NULL;
@@ -4101,30 +4085,16 @@ char *drmGetDeviceNameFromFd2(int fd)
     if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
         return NULL;
 
-    snprintf(buf, sizeof(buf), "/sys/dev/char/%d:%d/uevent", maj, min);
-    if (!(f = fopen(buf, "r")))
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d", maj, min);
+
+    value = sysfs_uevent_get(path, "DEVNAME");
+    if (!value)
         return NULL;
 
-    while (expected < sizeof(match)) {
-        int c = getc(f);
+    snprintf(path, sizeof(path), "/dev/%s", value);
+    free(value);
 
-        if (c == EOF) {
-            fclose(f);
-            return NULL;
-        } else if (c == match[expected] )
-            expected++;
-        else
-            expected = 0;
-    }
-
-    strcpy(buf, "/dev/");
-    if (fgets(buf + 5, sizeof(buf) - 5, f)) {
-        buf[strcspn(buf, "\n")] = '\0';
-        device_name = strdup(buf);
-    }
-
-    fclose(f);
-    return device_name;
+    return strdup(path);
 #else
     struct stat      sbuf;
     char             node[PATH_MAX + 1];
