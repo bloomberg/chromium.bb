@@ -198,7 +198,6 @@
 #include "ui/native_theme/native_theme_switches.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/screen_orientation/screen_orientation_listener_android.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "ipc/ipc_sync_channel.h"
@@ -1940,16 +1939,10 @@ bool RenderProcessHostImpl::Shutdown(int exit_code, bool wait) {
   if (run_renderer_in_process())
     return false;  // Single process mode never shuts down the renderer.
 
-#if defined(OS_ANDROID)
-  // Android requires a different approach for killing.
-  StopChildProcess(GetHandle());
-  return true;
-#else
-  if (!child_process_launcher_.get() || child_process_launcher_->IsStarting())
+  if (!child_process_launcher_.get())
     return false;
 
-  return child_process_launcher_->GetProcess().Terminate(exit_code, wait);
-#endif
+  return child_process_launcher_->Terminate(exit_code, wait);
 }
 
 bool RenderProcessHostImpl::FastShutdownIfPossible() {

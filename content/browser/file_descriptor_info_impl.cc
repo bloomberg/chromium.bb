@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 
 namespace content {
@@ -93,12 +94,13 @@ const base::FileHandleMappingVector& FileDescriptorInfoImpl::GetMapping()
   return mapping_;
 }
 
-base::FileHandleMappingVector
+std::unique_ptr<base::FileHandleMappingVector>
 FileDescriptorInfoImpl::GetMappingWithIDAdjustment(int delta) const {
-  base::FileHandleMappingVector result = mapping_;
+  std::unique_ptr<base::FileHandleMappingVector> result =
+      base::MakeUnique<base::FileHandleMappingVector>(mapping_);
   // Adding delta to each ID.
   for (unsigned i = 0; i < mapping_.size(); ++i)
-    result[i].second += delta;
+    (*result)[i].second += delta;
   return result;
 }
 

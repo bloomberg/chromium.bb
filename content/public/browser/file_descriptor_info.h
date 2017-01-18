@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/process/launch.h"
@@ -41,8 +43,8 @@ class FileDescriptorInfo {
 
   // A GetMapping() variant that adjusts the ID value by |delta|.
   // Some environments need this trick.
-  virtual base::FileHandleMappingVector GetMappingWithIDAdjustment(
-      int delta) const = 0;
+  virtual std::unique_ptr<base::FileHandleMappingVector>
+  GetMappingWithIDAdjustment(int delta) const = 0;
 
   // API for iterating over the registered ID-FD pairs.
   virtual base::PlatformFile GetFDAt(size_t i) const = 0;

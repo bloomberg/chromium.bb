@@ -77,10 +77,10 @@ TEST_F(FileDescriptorInfoTest, GetMappingWithIDAdjustment) {
   target->Transfer(testingId1, base::ScopedFD(GetSafeFd()));
   target->Transfer(testingId2, base::ScopedFD(GetSafeFd()));
 
-  base::FileHandleMappingVector mapping =
+  std::unique_ptr<base::FileHandleMappingVector> mapping =
       target->GetMappingWithIDAdjustment(100);
-  ASSERT_EQ(mapping[0].second, 142);
-  ASSERT_EQ(mapping[1].second, 143);
+  ASSERT_EQ((*mapping)[0].second, 142);
+  ASSERT_EQ((*mapping)[1].second, 143);
 }
 
 }  // namespace content

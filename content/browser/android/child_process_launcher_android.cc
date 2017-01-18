@@ -21,7 +21,6 @@
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "jni/ChildProcessLauncher_jni.h"
@@ -104,15 +103,17 @@ static void OnChildProcessStarted(JNIEnv*,
                                   jint handle) {
   StartChildProcessCallback* callback =
       reinterpret_cast<StartChildProcessCallback*>(client_context);
-  if (handle)
-    callback->Run(static_cast<base::ProcessHandle>(handle));
+  int launch_result = (handle == base::kNullProcessHandle)
+                      ? LAUNCH_RESULT_FAILURE
+                      : LAUNCH_RESULT_SUCCESS;
+  callback->Run(static_cast<base::ProcessHandle>(handle), launch_result);
   delete callback;
 }
 
 void StartChildProcess(
     const base::CommandLine::StringVector& argv,
     int child_process_id,
-    std::unique_ptr<content::FileDescriptorInfo> files_to_register,
+    content::FileDescriptorInfo* files_to_register,
     const StartChildProcessCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
@@ -133,14 +134,11 @@ void StartChildProcess(
     int fd = files_to_register->GetFDAt(i);
     PCHECK(0 <= fd);
     int id = files_to_register->GetIDAt(i);
+    const auto& region = files_to_register->GetRegionAt(i);
     bool auto_close = files_to_register->OwnsFD(fd);
-    const base::MemoryMappedFile::Region& region =
-        files_to_register->GetRegionAt(i);
-    int64_t offset = region.offset;
-    int64_t size = region.size;
     ScopedJavaLocalRef<jobject> j_file_info =
-        Java_ChildProcessLauncher_makeFdInfo(env, id, fd, auto_close, offset,
-                                             size);
+        Java_ChildProcessLauncher_makeFdInfo(env, id, fd, auto_close,
+            region.offset, region.size);
     PCHECK(j_file_info.obj());
     env->SetObjectArrayElement(j_file_infos.obj(), i, j_file_info.obj());
     if (auto_close) {
