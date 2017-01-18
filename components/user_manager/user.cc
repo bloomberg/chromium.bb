@@ -59,6 +59,7 @@ class ActiveDirectoryUser : public RegularUser {
   ~ActiveDirectoryUser() override;
   // Overridden from User:
   UserType GetType() const override;
+  bool CanSyncImage() const override;
 };
 
 class GuestUser : public User {
@@ -287,6 +288,10 @@ void User::SetStubImage(std::unique_ptr<UserImage> stub_user_image,
 
 UserType ActiveDirectoryUser::GetType() const {
   return user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+}
+
+bool ActiveDirectoryUser::CanSyncImage() const {
+  return false;
 }
 
 RegularUser::RegularUser(const AccountId& account_id) : User(account_id) {
