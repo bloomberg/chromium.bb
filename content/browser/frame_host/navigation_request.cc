@@ -381,13 +381,24 @@ void NavigationRequest::BeginNavigation() {
 }
 
 void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
+  DCHECK_EQ(frame_tree_node_->navigation_request(), this);
   // TODO(nasko): Update the NavigationHandle creation to ensure that the
   // proper values are specified for is_same_page.
-  navigation_handle_ = NavigationHandleImpl::Create(
-      common_params_.url, frame_tree_node_, !browser_initiated_,
-      false,  // is_same_page
-      common_params_.navigation_start, pending_nav_entry_id,
-      false);  // started_in_context_menu
+  FrameTreeNode* frame_tree_node = frame_tree_node_;
+  std::unique_ptr<NavigationHandleImpl> navigation_handle =
+      NavigationHandleImpl::Create(
+        common_params_.url, frame_tree_node_, !browser_initiated_,
+        false,  // is_same_page
+        common_params_.navigation_start, pending_nav_entry_id,
+        false);  // started_in_context_menu
+
+  if (!frame_tree_node->navigation_request()) {
+    // A callback could have cancelled this request synchronously in which case
+    // |this| is deleted.
+    return;
+  }
+
+  navigation_handle_ = std::move(navigation_handle);
 
   if (!begin_params_.searchable_form_url.is_empty()) {
     navigation_handle_->set_searchable_form_url(

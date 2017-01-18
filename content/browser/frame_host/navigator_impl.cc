@@ -1139,7 +1139,6 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
           navigation_type, previews_state, is_same_document_history_load,
           is_history_navigation_in_new_child, navigation_start, controller_);
-  NavigationRequest* navigation_request = scoped_request.get();
 
   // Navigation to a javascript URL is not a "real" navigation so there is no
   // need to create a NavigationHandle. The navigation commits immediately and
@@ -1149,17 +1148,23 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
   if (dest_url.SchemeIs(url::kJavaScriptScheme)) {
     RenderFrameHostImpl* render_frame_host =
         frame_tree_node->render_manager()->GetFrameHostForNavigation(
-            *navigation_request);
+            *scoped_request.get());
     render_frame_host->CommitNavigation(nullptr,  // response
                                         nullptr,  // body
-                                        navigation_request->common_params(),
-                                        navigation_request->request_params(),
-                                        navigation_request->is_view_source());
+                                        scoped_request->common_params(),
+                                        scoped_request->request_params(),
+                                        scoped_request->is_view_source());
     return;
   }
 
   frame_tree_node->CreatedNavigationRequest(std::move(scoped_request));
-  navigation_request->CreateNavigationHandle(entry.GetUniqueID());
+
+  frame_tree_node->navigation_request()->CreateNavigationHandle(
+      entry.GetUniqueID());
+
+  NavigationRequest* navigation_request = frame_tree_node->navigation_request();
+  if (!navigation_request)
+    return;  // Navigation was synchronously stopped.
 
   // Have the current renderer execute its beforeunload event if needed. If it
   // is not needed then NavigationRequest::BeginNavigation should be directly
