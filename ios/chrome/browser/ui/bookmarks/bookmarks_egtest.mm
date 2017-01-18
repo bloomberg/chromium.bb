@@ -28,6 +28,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -82,6 +83,12 @@ id<GREYMatcher> bookmarksDoneButton() {
   return grey_allOf(
       buttonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_DONE_BUTTON),
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)), nil);
+}
+
+// Matcher for the More Menu.
+id<GREYMatcher> moreMenuButton() {
+  return buttonWithAccessibilityLabelId(
+      IDS_IOS_BOOKMARK_NEW_MORE_BUTTON_ACCESSIBILITY_LABEL);
 }
 
 // Types of actions possible in the contextual action sheet.
@@ -212,23 +219,23 @@ id<GREYMatcher> actionSheet(Action action) {
 - (void)testTapBookmark {
   const GURL bookmarkURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/destination.html");
-  NSString* kBookmarkTitle = @"smokeTapBookmark";
+  NSString* bookmarkTitle = @"smokeTapBookmark";
 
   // Load a bookmark into the bookmark model.
-  [[self class] addBookmark:bookmarkURL withTitle:kBookmarkTitle];
+  [[self class] addBookmark:bookmarkURL withTitle:bookmarkTitle];
 
   // Open the UI for Bookmarks.
   [[self class] openMobileBookmarks];
 
-  // Wait for the bookmark to appear.
+  // Verify bookmark is visible.
   [[EarlGrey
-      selectElementWithMatcher:buttonWithAccessibilityLabel(kBookmarkTitle)]
+      selectElementWithMatcher:buttonWithAccessibilityLabel(bookmarkTitle)]
       assertWithMatcher:grey_sufficientlyVisible()
                   error:nil];
 
   // Tap on the bookmark and verify the URL that appears in the omnibox.
   [[EarlGrey
-      selectElementWithMatcher:buttonWithAccessibilityLabel(kBookmarkTitle)]
+      selectElementWithMatcher:buttonWithAccessibilityLabel(bookmarkTitle)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::omniboxText(
                                           bookmarkURL.GetContent())]
@@ -1141,6 +1148,122 @@ id<GREYMatcher> actionSheet(Action action) {
   [[self class] verifyPromoAlreadySeen:NO];
 }
 
+// Tests that all elements on the bookmarks landing page are accessible.
+- (void)testAccessibilityOnBookmarksLandingPage {
+  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  if (IsCompact()) {
+    // Exit from bookmarks modal. IPad shows bookmarks in tab.
+    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+        performAction:grey_tap()];
+  }
+}
+
+// Tests that all elements on the bookmarks Edit page are accessible.
+- (void)testAccessibilityOnBookmarksEditPage {
+  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+
+  // Load the menu for a bookmark.
+  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+      performAction:grey_tap()];
+
+  // Tap the edit action.
+  [[EarlGrey selectElementWithMatcher:actionSheet(ActionEdit)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  if (IsCompact()) {
+    // Exit from bookmarks modal. IPad shows bookmarks in tab.
+    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+        performAction:grey_tap()];
+  }
+}
+
+// Tests that all elements on the bookmarks Move page are accessible.
+- (void)testAccessibilityOnBookmarksMovePage {
+  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+
+  // Load the menu for a bookmark.
+  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+      performAction:grey_tap()];
+
+  // Tap the Move action.
+  [[EarlGrey selectElementWithMatcher:actionSheet(ActionMove)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  if (IsCompact()) {
+    // Exit from bookmarks modal. IPad shows bookmarks in tab.
+    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+        performAction:grey_tap()];
+  }
+}
+
+// Tests that all elements on the bookmarks Move to New Folder page are
+// accessible.
+- (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
+  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+
+  // Load the menu for a bookmark.
+  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+      performAction:grey_tap()];
+
+  // Tap the Move action.
+  [[EarlGrey selectElementWithMatcher:actionSheet(ActionMove)]
+      performAction:grey_tap()];
+  // Tap on "Create New Folder."
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  if (IsCompact()) {
+    // Exit from bookmarks modal. IPad shows bookmarks in tab.
+    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+        performAction:grey_tap()];
+  }
+}
+
+// Tests that all elements on bookmarks Delete and Undo are accessible.
+- (void)testAccessibilityOnBookmarksDeleteUndo {
+  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+
+  // Load the menu for a bookmark.
+  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+      performAction:grey_tap()];
+
+  // Tap the Delete action.
+  [[EarlGrey selectElementWithMatcher:actionSheet(ActionDelete)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  if (IsCompact()) {
+    // Exit from bookmarks modal. IPad shows bookmarks in tab.
+    [[EarlGrey selectElementWithMatcher:bookmarksDoneButton()]
+        performAction:grey_tap()];
+  }
+}
+
+// Tests that all elements on the bookmarks Select page are accessible.
+- (void)testAccessibilityOnBookmarksSelect {
+  [[self class] openMobileBookmarksPrepopulatedWithOneBookmark];
+
+  // Load the menu for a bookmark.
+  [[EarlGrey selectElementWithMatcher:moreMenuButton()]
+      performAction:grey_tap()];
+
+  // Tap the Select action.
+  [[EarlGrey selectElementWithMatcher:actionSheet(ActionSelect)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  // Dismiss selector with Cancel button.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Exit Edit Mode")]
+      performAction:grey_tap()];
+}
+
 #pragma mark Helper Methods
 
 // Navigates to the bookmark manager UI.
@@ -1188,6 +1311,25 @@ id<GREYMatcher> actionSheet(Action action) {
 // Navigates to the bookmark manager UI, and selects MobileBookmarks.
 + (void)openMobileBookmarks {
   [BookmarksTestCase openBookmarkFolder:@"Mobile Bookmarks"];
+}
+
+// Adds a bookmark, then navigates to the bookmark manager UI, and
+// selects MobileBookmarks.
++ (void)openMobileBookmarksPrepopulatedWithOneBookmark {
+  const GURL bookmarkURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/destination.html");
+  NSString* bookmarkTitle = @"smokeTapBookmark";
+  // Load a bookmark into the bookmark model.
+  [[self class] addBookmark:bookmarkURL withTitle:bookmarkTitle];
+
+  // Open the UI for Bookmarks.
+  [[self class] openMobileBookmarks];
+
+  // Verify bookmark is visible.
+  [[EarlGrey
+      selectElementWithMatcher:buttonWithAccessibilityLabel(bookmarkTitle)]
+      assertWithMatcher:grey_sufficientlyVisible()
+                  error:nil];
 }
 
 // Navigates to the edit folder UI for |folderTitle|.
@@ -1358,7 +1500,7 @@ id<GREYMatcher> actionSheet(Action action) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Tap on Create new folder.
+  // Tap on "Create New Folder."
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
       performAction:grey_tap()];
