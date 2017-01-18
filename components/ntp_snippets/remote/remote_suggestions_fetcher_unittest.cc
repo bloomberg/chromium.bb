@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 
 #include <deque>
 #include <map>
@@ -83,13 +83,15 @@ MATCHER(IsSuccess, "") {
 }
 
 MATCHER(IsEmptyArticleList, "is an empty list of articles") {
-  NTPSnippetsFetcher::OptionalFetchedCategories& fetched_categories = *arg;
+  RemoteSuggestionsFetcher::OptionalFetchedCategories& fetched_categories =
+      *arg;
   return fetched_categories && fetched_categories->size() == 1 &&
          fetched_categories->begin()->snippets.empty();
 }
 
 MATCHER_P(IsSingleArticle, url, "is a list with the single article %(url)s") {
-  NTPSnippetsFetcher::OptionalFetchedCategories& fetched_categories = *arg;
+  RemoteSuggestionsFetcher::OptionalFetchedCategories& fetched_categories =
+      *arg;
   if (!fetched_categories) {
     *result_listener << "got empty categories.";
     return false;
@@ -136,8 +138,8 @@ MATCHER_P(FirstCategoryHasInfo, info_matcher, "") {
   if (!arg->has_value() || arg->value().size() == 0) {
     *result_listener << "No category found.";
   }
-  return testing::ExplainMatchResult(
-      info_matcher, arg->value().front().info, result_listener);
+  return testing::ExplainMatchResult(info_matcher, arg->value().front().info,
+                                     result_listener);
 }
 
 class MockSnippetsAvailableCallback {
@@ -145,14 +147,14 @@ class MockSnippetsAvailableCallback {
   // Workaround for gMock's lack of support for movable arguments.
   void WrappedRun(
       Status status,
-      NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
+      RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories) {
     Run(status, &fetched_categories);
   }
 
-  MOCK_METHOD2(
-      Run,
-      void(Status status,
-           NTPSnippetsFetcher::OptionalFetchedCategories* fetched_categories));
+  MOCK_METHOD2(Run,
+               void(Status status,
+                    RemoteSuggestionsFetcher::OptionalFetchedCategories*
+                        fetched_categories));
 };
 
 // TODO(fhorschig): Transfer this class' functionality to call delegates
@@ -236,7 +238,9 @@ class DelegateCallingTestURLFetcherFactory
 class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
  public:
   std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      int id, const GURL& url, net::URLFetcher::RequestType request_type,
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) override {
     return base::MakeUnique<net::FakeURLFetcher>(
         url, d, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
@@ -267,9 +271,9 @@ void ParseJsonDelayed(const std::string& json,
 
 }  // namespace
 
-class NTPSnippetsFetcherTestBase : public testing::Test {
+class RemoteSuggestionsFetcherTestBase : public testing::Test {
  public:
-  explicit NTPSnippetsFetcherTestBase(const GURL& gurl)
+  explicit RemoteSuggestionsFetcherTestBase(const GURL& gurl)
       : default_variation_params_(
             {{"send_top_languages", "true"}, {"send_user_class", "true"}}),
         params_manager_(ntp_snippets::kStudyName,
@@ -294,7 +298,7 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
   }
 
   void ResetSnippetsFetcher() {
-    snippets_fetcher_ = base::MakeUnique<NTPSnippetsFetcher>(
+    snippets_fetcher_ = base::MakeUnique<RemoteSuggestionsFetcher>(
         fake_signin_manager_.get(), fake_token_service_.get(),
         scoped_refptr<net::TestURLRequestContextGetter>(
             new net::TestURLRequestContextGetter(mock_task_runner_.get())),
@@ -305,13 +309,13 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
         mock_task_runner_->GetMockTickClock());
   }
 
-  NTPSnippetsFetcher::SnippetsAvailableCallback ToSnippetsAvailableCallback(
-      MockSnippetsAvailableCallback* callback) {
+  RemoteSuggestionsFetcher::SnippetsAvailableCallback
+  ToSnippetsAvailableCallback(MockSnippetsAvailableCallback* callback) {
     return base::BindOnce(&MockSnippetsAvailableCallback::WrappedRun,
                           base::Unretained(callback));
   }
 
-  NTPSnippetsFetcher& snippets_fetcher() { return *snippets_fetcher_; }
+  RemoteSuggestionsFetcher& snippets_fetcher() { return *snippets_fetcher_; }
   MockSnippetsAvailableCallback& mock_callback() { return mock_callback_; }
   void FastForwardUntilNoTasksRemain() {
     mock_task_runner_->FastForwardUntilNoTasksRemain();
@@ -369,20 +373,21 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
   std::unique_ptr<AccountTrackerService> account_tracker_;
   std::unique_ptr<SigninManagerBase> fake_signin_manager_;
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
-  std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
+  std::unique_ptr<RemoteSuggestionsFetcher> snippets_fetcher_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<UserClassifier> user_classifier_;
   MockSnippetsAvailableCallback mock_callback_;
   const GURL test_url_;
   base::HistogramTester histogram_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcherTestBase);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcherTestBase);
 };
 
-class ChromeReaderSnippetsFetcherTest : public NTPSnippetsFetcherTestBase {
+class ChromeReaderSnippetsFetcherTest
+    : public RemoteSuggestionsFetcherTestBase {
  public:
   ChromeReaderSnippetsFetcherTest()
-      : NTPSnippetsFetcherTestBase(GURL(kTestChromeReaderUrl)) {
+      : RemoteSuggestionsFetcherTestBase(GURL(kTestChromeReaderUrl)) {
     default_variation_params_["content_suggestions_backend"] =
         kChromeReaderServer;
     SetVariationParam("content_suggestions_backend", kChromeReaderServer);
@@ -391,10 +396,11 @@ class ChromeReaderSnippetsFetcherTest : public NTPSnippetsFetcherTestBase {
 };
 
 class NTPSnippetsContentSuggestionsFetcherTest
-    : public NTPSnippetsFetcherTestBase {
+    : public RemoteSuggestionsFetcherTestBase {
  public:
   NTPSnippetsContentSuggestionsFetcherTest()
-      : NTPSnippetsFetcherTestBase(GURL(kTestChromeContentSuggestionsUrl)) {}
+      : RemoteSuggestionsFetcherTestBase(
+            GURL(kTestChromeContentSuggestionsUrl)) {}
 };
 
 TEST_F(ChromeReaderSnippetsFetcherTest, ShouldNotFetchOnCreation) {
@@ -534,7 +540,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
       "}]}";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories;
+  RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(), Run(IsSuccess(), _))
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
   snippets_fetcher().FetchSnippets(
@@ -596,7 +602,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest,
       "}]}";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories;
+  RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(), Run(IsSuccess(), _))
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
   snippets_fetcher().FetchSnippets(
@@ -660,7 +666,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
       "}]}";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories;
+  RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories;
   EXPECT_CALL(mock_callback(), Run(IsSuccess(), _))
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
 
@@ -911,7 +917,8 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldProcessConcurrentFetches) {
 
 ::std::ostream& operator<<(
     ::std::ostream& os,
-    const NTPSnippetsFetcher::OptionalFetchedCategories& fetched_categories) {
+    const RemoteSuggestionsFetcher::OptionalFetchedCategories&
+        fetched_categories) {
   if (fetched_categories) {
     // Matchers above aren't any more precise than this, so this is sufficient
     // for test-failure diagnostics.

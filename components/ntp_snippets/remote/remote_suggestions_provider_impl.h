@@ -25,8 +25,8 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
-#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
+#include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
@@ -117,7 +117,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       PrefService* pref_service,
       const std::string& application_language_code,
       CategoryRanker* category_ranker,
-      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
+      std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher,
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
       std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
       std::unique_ptr<RemoteSuggestionsDatabase> database,
@@ -144,7 +144,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // TODO(fhorschig): Remove this getter when there is an interface for the
   // fetcher that allows better mocks.
-  const NTPSnippetsFetcher* snippets_fetcher_for_testing_and_debugging()
+  const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
       const override;
 
   // ContentSuggestionsProvider implementation.
@@ -303,18 +303,18 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
   void OnDatabaseError();
 
-  // Callback for fetch-more requests with the NTPSnippetsFetcher.
+  // Callback for fetch-more requests with the RemoteSuggestionsFetcher.
   void OnFetchMoreFinished(
       const FetchDoneCallback& fetching_callback,
       Status status,
-      NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
+      RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories);
 
-  // Callback for regular fetch requests with the NTPSnippetsFetcher.
+  // Callback for regular fetch requests with the RemoteSuggestionsFetcher.
   void OnFetchFinished(
       std::unique_ptr<FetchStatusCallback> callback,
       bool interactive_request,
       Status status,
-      NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
+      RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Moves all snippets from |to_archive| into the archive of the |content|.
   // Clears |to_archive|. As the archive is a FIFO buffer of limited size, this
@@ -415,10 +415,10 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // Ranker that orders the categories. Not owned.
   CategoryRanker* category_ranker_;
 
-  // The snippets fetcher.
-  std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
+  // The suggestions fetcher.
+  std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher_;
 
-  // The database for persisting snippets.
+  // The database for persisting suggestions.
   std::unique_ptr<RemoteSuggestionsDatabase> database_;
   base::TimeTicks database_load_start_;
 

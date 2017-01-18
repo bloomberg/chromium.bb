@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_FETCHER_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_FETCHER_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_FETCHER_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_FETCHER_H_
 
 #include <memory>
 #include <queue>
@@ -37,7 +37,7 @@ namespace ntp_snippets {
 class UserClassifier;
 
 // TODO(tschumann): BuildArticleCategoryInfo() and BuildRemoteCategoryInfo()
-// don't really belong into this library. However, as the snippets fetcher is
+// don't really belong into this library. However, as the fetcher is
 // providing this data for server-defined remote sections it's a good starting
 // point. Candiates to add to such a library would be persisting categories
 // (have all category managment in one place) or turning parsed JSON into
@@ -52,11 +52,12 @@ CategoryInfo BuildArticleCategoryInfo(
 CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
                                      bool allow_fetching_more_results);
 
-// Fetches snippet data for the NTP from the server.
+// Fetches suggestion data for the NTP from the server.
 // TODO(fhorschig): Untangle cyclic dependencies by introducing a
-// NTPSnippetsFetcherInterface. (Would be good for mock implementations, too)
-class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
-                           public OAuth2TokenService::Observer {
+// RemoteSuggestionsFetcherInterface. (Would be good for mock implementations,
+// too!)
+class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
+                                 public OAuth2TokenService::Observer {
  public:
   struct FetchedCategory {
     Category category;
@@ -78,7 +79,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       base::OnceCallback<void(Status status,
                               OptionalFetchedCategories fetched_categories)>;
 
-  NTPSnippetsFetcher(
+  RemoteSuggestionsFetcher(
       SigninManagerBase* signin_manager,
       OAuth2TokenService* token_service,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
@@ -87,7 +88,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       const ParseJSONCallback& parse_json_callback,
       const std::string& api_key,
       const UserClassifier* user_classifier);
-  ~NTPSnippetsFetcher() override;
+  ~RemoteSuggestionsFetcher() override;
 
   // Initiates a fetch from the server. When done (successfully or not), calls
   // the callback.
@@ -103,9 +104,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   const std::string& last_status() const { return last_status_; }
 
   // Returns the last JSON fetched from the server.
-  const std::string& last_json() const {
-    return last_fetch_json_;
-  }
+  const std::string& last_json() const { return last_fetch_json_; }
 
   // Returns the personalization setting of the fetcher as used in tests.
   // TODO(fhorschig): Reconsider these tests and remove this getter.
@@ -171,7 +170,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
                      const std::string& error_details);
 
   bool JsonToSnippets(const base::Value& parsed,
-                      NTPSnippetsFetcher::FetchedCategoriesVector* categories);
+                      FetchedCategoriesVector* categories);
 
   bool DemandQuotaForRequest(bool interactive_request);
 
@@ -226,10 +225,11 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   std::string last_status_;
   std::string last_fetch_json_;
 
-  base::WeakPtrFactory<NTPSnippetsFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<RemoteSuggestionsFetcher> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcher);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcher);
 };
+
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_FETCHER_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_FETCHER_H_

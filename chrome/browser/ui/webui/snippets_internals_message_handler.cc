@@ -29,7 +29,7 @@
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
-#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -306,9 +306,8 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   SendLastRemoteSuggestionsBackgroundFetchTime();
 
   if (remote_suggestions_provider_) {
-    const ntp_snippets::NTPSnippetsFetcher* fetcher =
-        remote_suggestions_provider_
-            ->snippets_fetcher_for_testing_and_debugging();
+    const ntp_snippets::RemoteSuggestionsFetcher* fetcher =
+        remote_suggestions_provider_->suggestions_fetcher_for_debugging();
     // TODO(fhorschig): Read this string from variations directly.
     SendString("switch-personalized", fetcher->PersonalizationModeString());
 
@@ -386,8 +385,7 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
 
   if (remote_suggestions_provider_) {
     const std::string& status =
-        remote_suggestions_provider_
-            ->snippets_fetcher_for_testing_and_debugging()
+        remote_suggestions_provider_->suggestions_fetcher_for_debugging()
             ->last_status();
     if (!status.empty())
       SendString("remote-status", "Finished: " + status);

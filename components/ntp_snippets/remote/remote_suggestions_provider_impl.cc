@@ -265,7 +265,7 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     PrefService* pref_service,
     const std::string& application_language_code,
     CategoryRanker* category_ranker,
-    std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
+    std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     std::unique_ptr<RemoteSuggestionsDatabase> database,
@@ -277,7 +277,7 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
           Category::FromKnownCategory(KnownCategories::ARTICLES)),
       application_language_code_(application_language_code),
       category_ranker_(category_ranker),
-      snippets_fetcher_(std::move(snippets_fetcher)),
+      suggestions_fetcher_(std::move(suggestions_fetcher)),
       database_(std::move(database)),
       image_fetcher_(std::move(image_fetcher),
                      std::move(image_decoder),
@@ -350,10 +350,9 @@ void RemoteSuggestionsProviderImpl::RefetchInTheBackground(
   FetchSnippets(/*interactive_request=*/false, std::move(callback));
 }
 
-const NTPSnippetsFetcher*
-RemoteSuggestionsProviderImpl::snippets_fetcher_for_testing_and_debugging()
-    const {
-  return snippets_fetcher_.get();
+const RemoteSuggestionsFetcher*
+RemoteSuggestionsProviderImpl::suggestions_fetcher_for_debugging() const {
+  return suggestions_fetcher_.get();
 }
 
 void RemoteSuggestionsProviderImpl::FetchSnippets(
@@ -370,7 +369,7 @@ void RemoteSuggestionsProviderImpl::FetchSnippets(
 
   NTPSnippetsRequestParams params = BuildFetchParams();
   params.interactive_request = interactive_request;
-  snippets_fetcher_->FetchSnippets(
+  suggestions_fetcher_->FetchSnippets(
       params, base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
                              base::Unretained(this), std::move(callback),
                              interactive_request));
@@ -392,7 +391,7 @@ void RemoteSuggestionsProviderImpl::Fetch(
   params.interactive_request = true;
   params.exclusive_category = category;
 
-  snippets_fetcher_->FetchSnippets(
+  suggestions_fetcher_->FetchSnippets(
       params,
       base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchMoreFinished,
                      base::Unretained(this), callback));
@@ -615,7 +614,7 @@ void RemoteSuggestionsProviderImpl::OnDatabaseError() {
 void RemoteSuggestionsProviderImpl::OnFetchMoreFinished(
     const FetchDoneCallback& fetching_callback,
     Status status,
-    NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
+    RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!fetched_categories) {
     DCHECK(!status.IsSuccess());
     CallWithEmptyResults(fetching_callback, status);
@@ -676,7 +675,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     std::unique_ptr<FetchStatusCallback> callback,
     bool interactive_request,
     Status status,
-    NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
+    RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!ready()) {
     // TODO(tschumann): What happens if this was a user-triggered, interactive
     // request? Is the UI waiting indefinitely now?
@@ -704,7 +703,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   if (fetched_categories) {
     // TODO(treib): Reorder |category_contents_| to match the order we received
     // from the server. crbug.com/653816
-    for (NTPSnippetsFetcher::FetchedCategory& fetched_category :
+    for (RemoteSuggestionsFetcher::FetchedCategory& fetched_category :
          *fetched_categories) {
       // TODO(tschumann): Remove this histogram once we only talk to the content
       // suggestions cloud backend.

@@ -249,9 +249,9 @@ void SchedulingRemoteSuggestionsProvider::RefetchInTheBackground(
           std::move(wrapper_callback)));
 }
 
-const NTPSnippetsFetcher* SchedulingRemoteSuggestionsProvider::
-    snippets_fetcher_for_testing_and_debugging() const {
-  return provider_->snippets_fetcher_for_testing_and_debugging();
+const RemoteSuggestionsFetcher*
+SchedulingRemoteSuggestionsProvider::suggestions_fetcher_for_debugging() const {
+  return provider_->suggestions_fetcher_for_debugging();
 }
 
 CategoryStatus SchedulingRemoteSuggestionsProvider::GetCategoryStatus(

@@ -13,7 +13,7 @@
 
 namespace ntp_snippets {
 
-class NTPSnippetsFetcher;
+class RemoteSuggestionsFetcher;
 
 // Retrieves fresh content data (articles) from the server, stores them and
 // provides them as content suggestions.
@@ -50,7 +50,7 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   virtual void RefetchInTheBackground(
       std::unique_ptr<FetchStatusCallback> callback) = 0;
 
-  virtual const NTPSnippetsFetcher* snippets_fetcher_for_testing_and_debugging()
+  virtual const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
       const = 0;
 
  protected:

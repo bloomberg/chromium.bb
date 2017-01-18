@@ -51,7 +51,7 @@ using testing::_;
 
 namespace ntp_snippets {
 
-class NTPSnippetsFetcher;
+class RemoteSuggestionsFetcher;
 
 namespace {
 
@@ -91,8 +91,8 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
   MOCK_METHOD1(RefetchInTheBackground,
                void(RemoteSuggestionsProvider::FetchStatusCallback));
 
-  MOCK_CONST_METHOD0(snippets_fetcher_for_testing_and_debugging,
-                     const NTPSnippetsFetcher*());
+  MOCK_CONST_METHOD0(suggestions_fetcher_for_debugging,
+                     const RemoteSuggestionsFetcher*());
 
   MOCK_METHOD1(GetCategoryStatus, CategoryStatus(Category));
   MOCK_METHOD1(GetCategoryInfo, CategoryInfo(Category));

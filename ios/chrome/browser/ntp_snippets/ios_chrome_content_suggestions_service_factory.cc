@@ -25,9 +25,9 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
-#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
+#include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/ntp_snippets/remote/scheduling_remote_suggestions_provider.h"
@@ -52,9 +52,9 @@ using history::HistoryService;
 using ios::BookmarkModelFactory;
 using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::ContentSuggestionsService;
-using ntp_snippets::NTPSnippetsFetcher;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
+using ntp_snippets::RemoteSuggestionsFetcher;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
 using ntp_snippets::SchedulingRemoteSuggestionsProvider;
@@ -163,7 +163,7 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
         service.get(), prefs, GetApplicationContext()->GetApplicationLocale(),
         service->category_ranker(),
-        base::MakeUnique<NTPSnippetsFetcher>(
+        base::MakeUnique<RemoteSuggestionsFetcher>(
             signin_manager, token_service, request_context, prefs, nullptr,
             base::Bind(&ParseJson),
             GetChannel() == version_info::Channel::STABLE

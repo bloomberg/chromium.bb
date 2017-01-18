@@ -35,9 +35,9 @@
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
-#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
+#include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/test_utils.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
@@ -374,6 +374,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         test_url_(kTestContentSuggestionsServerWithAPIKey),
         category_ranker_(base::MakeUnique<ConstantCategoryRanker>()),
         user_classifier_(/*pref_service=*/nullptr),
+        suggestions_fetcher_(nullptr),
         image_fetcher_(nullptr),
         image_decoder_(nullptr),
         database_(nullptr) {
@@ -408,11 +409,11 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         new net::TestURLRequestContextGetter(task_runner.get());
 
     utils_.ResetSigninManager();
-    std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher =
-        base::MakeUnique<NTPSnippetsFetcher>(
-            utils_.fake_signin_manager(), fake_token_service_.get(),
-            std::move(request_context_getter), utils_.pref_service(), nullptr,
-            base::Bind(&ParseJson), kAPIKey, &user_classifier_);
+    auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
+        utils_.fake_signin_manager(), fake_token_service_.get(),
+        std::move(request_context_getter), utils_.pref_service(), nullptr,
+        base::Bind(&ParseJson), kAPIKey, &user_classifier_);
+    suggestions_fetcher_ = suggestions_fetcher.get();
 
     utils_.fake_signin_manager()->SignIn("foo@bar.com");
 
@@ -429,7 +430,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     database_ = database.get();
     return base::MakeUnique<RemoteSuggestionsProviderImpl>(
         observer_.get(), utils_.pref_service(), "fr", category_ranker_.get(),
-        std::move(snippets_fetcher), std::move(image_fetcher),
+        std::move(suggestions_fetcher), std::move(image_fetcher),
         std::move(image_decoder), std::move(database),
         base::MakeUnique<RemoteSuggestionsStatusService>(
             utils_.fake_signin_manager(), utils_.pref_service()));
@@ -488,6 +489,9 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
  protected:
   const GURL& test_url() { return test_url_; }
   FakeContentSuggestionsProviderObserver& observer() { return *observer_; }
+  RemoteSuggestionsFetcher* suggestions_fetcher() {
+    return suggestions_fetcher_;
+  }
   // TODO(tschumann): Make this a strict-mock. We want to avoid unneccesary
   // network requests.
   NiceMock<MockImageFetcher>* image_fetcher() { return image_fetcher_; }
@@ -538,6 +542,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   std::unique_ptr<CategoryRanker> category_ranker_;
   UserClassifier user_classifier_;
   std::unique_ptr<FakeContentSuggestionsProviderObserver> observer_;
+  RemoteSuggestionsFetcher* suggestions_fetcher_;
   NiceMock<MockImageFetcher>* image_fetcher_;
   FakeImageDecoder* image_decoder_;
 
@@ -1080,10 +1085,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                   IdEq("http://id-10")));
 }
 
-// TODO(tschumann): We don't have test making sure the NTPSnippetsFetcher
+// TODO(tschumann): We don't have test making sure the RemoteSuggestionsFetcher
 // actually gets the proper parameters. Add tests with an injected
-// NTPSnippetsFetcher to verify the parameters, including proper handling of
-// dismissed and known_ids.
+// RemoteSuggestionsFetcher to verify the parameters, including proper handling
+// of dismissed and known_ids.
 
 namespace {
 
@@ -1115,9 +1120,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnTemporaryErrorForInvalidJson) {
                          "invalid json string}]}",
                          /*known_ids=*/std::set<std::string>(),
                          base::Bind(&SuggestionsLoaded, &loaded));
-  EXPECT_THAT(
-      service->snippets_fetcher_for_testing_and_debugging()->last_status(),
-      StartsWith("Received invalid JSON"));
+  EXPECT_THAT(suggestions_fetcher()->last_status(),
+              StartsWith("Received invalid JSON"));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -1130,9 +1134,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                          GetTestJson({GetIncompleteSnippet()}),
                          /*known_ids=*/std::set<std::string>(),
                          base::Bind(&SuggestionsLoaded, &loaded));
-  EXPECT_THAT(
-      service->snippets_fetcher_for_testing_and_debugging()->last_status(),
-      StartsWith("Invalid / empty list"));
+  EXPECT_THAT(suggestions_fetcher()->last_status(),
+              StartsWith("Invalid / empty list"));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -1164,9 +1167,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadInvalidJson) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
-  EXPECT_THAT(
-      service->snippets_fetcher_for_testing_and_debugging()->last_status(),
-      StartsWith("Received invalid JSON"));
+  EXPECT_THAT(suggestions_fetcher()->last_status(),
+              StartsWith("Received invalid JSON"));
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
@@ -1175,14 +1177,11 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadInvalidJsonWithExistingSnippets) {
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-  ASSERT_EQ(
-      "OK",
-      service->snippets_fetcher_for_testing_and_debugging()->last_status());
+  ASSERT_EQ("OK", suggestions_fetcher()->last_status());
 
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
-  EXPECT_THAT(
-      service->snippets_fetcher_for_testing_and_debugging()->last_status(),
-      StartsWith("Received invalid JSON"));
+  EXPECT_THAT(suggestions_fetcher()->last_status(),
+              StartsWith("Received invalid JSON"));
   // This should not have changed the existing snippets.
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
@@ -1191,9 +1190,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadIncompleteJson) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSnippet()}));
-  EXPECT_EQ(
-      "Invalid / empty list.",
-      service->snippets_fetcher_for_testing_and_debugging()->last_status());
+  EXPECT_EQ("Invalid / empty list.", suggestions_fetcher()->last_status());
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
@@ -1205,9 +1202,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
   LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSnippet()}));
-  EXPECT_EQ(
-      "Invalid / empty list.",
-      service->snippets_fetcher_for_testing_and_debugging()->last_status());
+  EXPECT_EQ("Invalid / empty list.", suggestions_fetcher()->last_status());
   // This should not have changed the existing snippets.
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }

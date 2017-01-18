@@ -79,7 +79,7 @@ class SchedulingRemoteSuggestionsProvider final
       std::unique_ptr<ProviderStatusCallback> callback) override;
   void RefetchInTheBackground(
       std::unique_ptr<FetchStatusCallback> callback) override;
-  const NTPSnippetsFetcher* snippets_fetcher_for_testing_and_debugging()
+  const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
       const override;
 
   // ContentSuggestionsProvider implementation.

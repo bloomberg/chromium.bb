@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 
 #include <cstdlib>
 #include <utility>
@@ -181,29 +181,28 @@ int GetMinuteOfTheDay(bool local_time, bool reduced_resolution) {
 // The response from the backend might include suggestions from multiple
 // categories. If only a single category was requested, this function filters
 // all other categories out.
-void FilterCategories(NTPSnippetsFetcher::FetchedCategoriesVector* categories,
-                      base::Optional<Category> exclusive_category) {
+void FilterCategories(
+    RemoteSuggestionsFetcher::FetchedCategoriesVector* categories,
+    base::Optional<Category> exclusive_category) {
   if (!exclusive_category.has_value()) {
     return;
   }
   Category exclusive = exclusive_category.value();
   auto category_it = std::find_if(
       categories->begin(), categories->end(),
-      [&exclusive](const NTPSnippetsFetcher::FetchedCategory& c) -> bool {
+      [&exclusive](const RemoteSuggestionsFetcher::FetchedCategory& c) -> bool {
         return c.category == exclusive;
       });
   if (category_it == categories->end()) {
     categories->clear();
     return;
   }
-  NTPSnippetsFetcher::FetchedCategory category = std::move(*category_it);
+  RemoteSuggestionsFetcher::FetchedCategory category = std::move(*category_it);
   categories->clear();
   categories->push_back(std::move(category));
 }
 
 }  // namespace
-
-
 
 CategoryInfo BuildArticleCategoryInfo(
     const base::Optional<base::string16>& title) {
@@ -238,19 +237,20 @@ CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
       l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
 }
 
-NTPSnippetsFetcher::FetchedCategory::FetchedCategory(Category c,
-                                                     CategoryInfo&& info)
+RemoteSuggestionsFetcher::FetchedCategory::FetchedCategory(Category c,
+                                                           CategoryInfo&& info)
     : category(c), info(info) {}
 
-NTPSnippetsFetcher::FetchedCategory::FetchedCategory(FetchedCategory&&) =
+RemoteSuggestionsFetcher::FetchedCategory::FetchedCategory(FetchedCategory&&) =
     default;
 
-NTPSnippetsFetcher::FetchedCategory::~FetchedCategory() = default;
+RemoteSuggestionsFetcher::FetchedCategory::~FetchedCategory() = default;
 
-NTPSnippetsFetcher::FetchedCategory& NTPSnippetsFetcher::FetchedCategory::
-operator=(FetchedCategory&&) = default;
+RemoteSuggestionsFetcher::FetchedCategory&
+RemoteSuggestionsFetcher::FetchedCategory::operator=(FetchedCategory&&) =
+    default;
 
-NTPSnippetsFetcher::NTPSnippetsFetcher(
+RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
@@ -300,14 +300,15 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
   }
 }
 
-NTPSnippetsFetcher::~NTPSnippetsFetcher() {
+RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() {
   if (waiting_for_refresh_token_) {
     token_service_->RemoveObserver(this);
   }
 }
 
-void NTPSnippetsFetcher::FetchSnippets(const NTPSnippetsRequestParams& params,
-                                       SnippetsAvailableCallback callback) {
+void RemoteSuggestionsFetcher::FetchSnippets(
+    const NTPSnippetsRequestParams& params,
+    SnippetsAvailableCallback callback) {
   if (!DemandQuotaForRequest(params.interactive_request)) {
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
                   params.interactive_request
@@ -357,7 +358,7 @@ void NTPSnippetsFetcher::FetchSnippets(const NTPSnippetsRequestParams& params,
   }
 }
 
-void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated(
+void RemoteSuggestionsFetcher::FetchSnippetsNonAuthenticated(
     NTPSnippetsJsonRequest::Builder builder,
     SnippetsAvailableCallback callback) {
   // When not providing OAuth token, we need to pass the Google API key.
@@ -367,7 +368,7 @@ void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated(
   StartRequest(std::move(builder), std::move(callback));
 }
 
-void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
+void RemoteSuggestionsFetcher::FetchSnippetsAuthenticated(
     NTPSnippetsJsonRequest::Builder builder,
     SnippetsAvailableCallback callback,
     const std::string& account_id,
@@ -380,16 +381,17 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
   StartRequest(std::move(builder), std::move(callback));
 }
 
-void NTPSnippetsFetcher::StartRequest(NTPSnippetsJsonRequest::Builder builder,
-                                      SnippetsAvailableCallback callback) {
+void RemoteSuggestionsFetcher::StartRequest(
+    NTPSnippetsJsonRequest::Builder builder,
+    SnippetsAvailableCallback callback) {
   std::unique_ptr<NTPSnippetsJsonRequest> request = builder.Build();
   NTPSnippetsJsonRequest* raw_request = request.get();
-  raw_request->Start(base::BindOnce(&NTPSnippetsFetcher::JsonRequestDone,
+  raw_request->Start(base::BindOnce(&RemoteSuggestionsFetcher::JsonRequestDone,
                                     base::Unretained(this), std::move(request),
                                     std::move(callback)));
 }
 
-void NTPSnippetsFetcher::StartTokenRequest() {
+void RemoteSuggestionsFetcher::StartTokenRequest() {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(fetch_api_ == FetchAPI::CHROME_CONTENT_SUGGESTIONS_API
                     ? kContentSuggestionsApiScope
@@ -400,7 +402,7 @@ void NTPSnippetsFetcher::StartTokenRequest() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // OAuth2TokenService::Consumer overrides
-void NTPSnippetsFetcher::OnGetTokenSuccess(
+void RemoteSuggestionsFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
@@ -420,7 +422,7 @@ void NTPSnippetsFetcher::OnGetTokenSuccess(
   }
 }
 
-void NTPSnippetsFetcher::OnGetTokenFailure(
+void RemoteSuggestionsFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   oauth_request_.reset();
@@ -450,7 +452,7 @@ void NTPSnippetsFetcher::OnGetTokenFailure(
 
 ////////////////////////////////////////////////////////////////////////////////
 // OAuth2TokenService::Observer overrides
-void NTPSnippetsFetcher::OnRefreshTokenAvailable(
+void RemoteSuggestionsFetcher::OnRefreshTokenAvailable(
     const std::string& account_id) {
   // Only react on tokens for the account the user has signed in with.
   if (account_id != signin_manager_->GetAuthenticatedAccountId()) {
@@ -463,7 +465,7 @@ void NTPSnippetsFetcher::OnRefreshTokenAvailable(
   StartTokenRequest();
 }
 
-void NTPSnippetsFetcher::JsonRequestDone(
+void RemoteSuggestionsFetcher::JsonRequestDone(
     std::unique_ptr<NTPSnippetsJsonRequest> request,
     SnippetsAvailableCallback callback,
     std::unique_ptr<base::Value> result,
@@ -496,10 +498,11 @@ void NTPSnippetsFetcher::JsonRequestDone(
                 FetchResult::SUCCESS, std::string());
 }
 
-void NTPSnippetsFetcher::FetchFinished(OptionalFetchedCategories categories,
-                                       SnippetsAvailableCallback callback,
-                                       FetchResult fetch_result,
-                                       const std::string& error_details) {
+void RemoteSuggestionsFetcher::FetchFinished(
+    OptionalFetchedCategories categories,
+    SnippetsAvailableCallback callback,
+    FetchResult fetch_result,
+    const std::string& error_details) {
   DCHECK(fetch_result == FetchResult::SUCCESS || !categories.has_value());
 
   last_status_ = FetchResultToString(fetch_result) + error_details;
@@ -514,8 +517,9 @@ void NTPSnippetsFetcher::FetchFinished(OptionalFetchedCategories categories,
                           std::move(categories));
 }
 
-bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
-                                        FetchedCategoriesVector* categories) {
+bool RemoteSuggestionsFetcher::JsonToSnippets(
+    const base::Value& parsed,
+    FetchedCategoriesVector* categories) {
   const base::DictionaryValue* top_dict = nullptr;
   if (!parsed.GetAsDictionary(&top_dict)) {
     return false;
@@ -587,7 +591,7 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
   return false;
 }
 
-bool NTPSnippetsFetcher::DemandQuotaForRequest(bool interactive_request) {
+bool RemoteSuggestionsFetcher::DemandQuotaForRequest(bool interactive_request) {
   switch (user_classifier_->GetUserClass()) {
     case UserClassifier::UserClass::RARE_NTP_USER:
       return request_throttler_rare_ntp_user_.DemandQuotaForRequest(
@@ -603,12 +607,12 @@ bool NTPSnippetsFetcher::DemandQuotaForRequest(bool interactive_request) {
   return false;
 }
 
-bool NTPSnippetsFetcher::NeedsAuthentication() const {
+bool RemoteSuggestionsFetcher::NeedsAuthentication() const {
   return (personalization_ == Personalization::kPersonal ||
           personalization_ == Personalization::kBoth);
 }
 
-std::string NTPSnippetsFetcher::PersonalizationModeString() const {
+std::string RemoteSuggestionsFetcher::PersonalizationModeString() const {
   switch (personalization_) {
     case Personalization::kPersonal:
       return "Only personalized";

@@ -30,11 +30,12 @@ extern const char kSnippetPersistentFetchingIntervalWifi[];
 // there is no WiFi connectivity.
 extern const char kSnippetPersistentFetchingIntervalFallback[];
 
-// The pref name for today's count of NTPSnippetsFetcher requests, so far.
+// The pref name for today's count of RemoteSuggestionsFetcher requests, so far.
 extern const char kSnippetFetcherRequestCount[];
-// The pref name for today's count of NTPSnippetsFetcher interactive requests.
+// The pref name for today's count of RemoteSuggestionsFetcher interactive
+// requests.
 extern const char kSnippetFetcherInteractiveRequestCount[];
-// The pref name for the current day for the counter of NTPSnippetsFetcher
+// The pref name for the current day for the counter of RemoteSuggestionsFetcher
 // requests.
 extern const char kSnippetFetcherRequestsDay[];
 
