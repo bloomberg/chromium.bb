@@ -215,6 +215,11 @@ public class DownloadUtils {
     public static boolean isAllowedToDownloadPage(Tab tab) {
         if (tab == null) return false;
 
+        // Offline pages isn't supported in Incognito. This should be checked before calling
+        // OfflinePageBridge.getForProfile because OfflinePageBridge instance will not be found
+        // for incognito profile.
+        if (tab.isIncognito()) return false;
+
         // Check if the page url is supported for saving. Only HTTP and HTTPS pages are allowed.
         if (!OfflinePageBridge.canSavePage(tab.getUrl())) return false;
 
@@ -228,9 +233,6 @@ public class DownloadUtils {
 
         // Don't allow re-downloading the currently displayed offline page.
         if (tab.isOfflinePage()) return false;
-
-        // Offline pages isn't supported in Incognito.
-        if (tab.isIncognito()) return false;
 
         return true;
     }
