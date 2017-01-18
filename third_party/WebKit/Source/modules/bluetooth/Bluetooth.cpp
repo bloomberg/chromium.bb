@@ -25,13 +25,14 @@
 namespace blink {
 
 namespace {
-// A device name can never be longer than 29 bytes. A adv packet is at most
-// 31 bytes long. The length and identifier of the length field take 2 bytes.
-// That least 29 bytes for the name.
-const size_t kMaxFilterNameLength = 29;
+// A name coming from an adv packet is max 29 bytes (adv packet max size
+// 31 bytes - 2 byte length field), but the name can also be acquired via
+// gap.device_name, so it is limited to the max EIR packet size of 240 bytes.
+// See Core Spec 5.0, vol 3, C, 8.1.2.
+const size_t kMaxFilterNameLength = 240;
 const char kFilterNameTooLong[] =
-    "A 'name' or 'namePrefix' longer than 29 bytes results in no devices being "
-    "found, because a device can't advertise a name longer than 29 bytes.";
+    "A 'name' or 'namePrefix' longer than 240 bytes results in no devices "
+    "being found, because a device can't acquire a name longer than 240 bytes.";
 // Per the Bluetooth Spec: The name is a user-friendly name associated with the
 // device and consists of a maximum of 248 bytes coded according to the UTF-8
 // standard.

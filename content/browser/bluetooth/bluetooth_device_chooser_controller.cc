@@ -79,8 +79,11 @@ namespace content {
 bool BluetoothDeviceChooserController::use_test_scan_duration_ = false;
 
 namespace {
-constexpr size_t kMaxLengthForDeviceName =
-    29;  // max length of device name in filter.
+// Max length of device name in filter. A name coming from an adv packet
+// is max 29 bytes (adv packet max size 31 bytes - 2 byte length field),
+// but the name can also be acquired via gap.device_name, so it is limited
+// to the max EIR packet size of 240 bytes. See Core Spec 5.0, vol 3, C, 8.1.2.
+constexpr size_t kMaxLengthForDeviceName = 240;
 
 // The duration of a Bluetooth Scan in seconds.
 constexpr int kScanDuration = 60;

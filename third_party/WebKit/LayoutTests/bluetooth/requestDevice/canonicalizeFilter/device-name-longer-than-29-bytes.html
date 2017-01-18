@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  const DEVICE_NAME = 'a_device_name_that_is_longer_than_29_bytes_but_shorter_than_240_bytes';
+
+  return setBluetoothFakeAdapter('DeviceNameLongerThan29BytesAdapter')
+    .then(() => requestDeviceWithKeyDown({ filters: [{name: DEVICE_NAME}]}))
+    .then(device => assert_equals(device.name, DEVICE_NAME));
+}, 'A device name between 29 and 240 bytes is valid.');
+</script>

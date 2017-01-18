@@ -195,6 +195,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetGlucoseHeartRateAdapter();
   if (fake_adapter_name == "UnicodeDeviceAdapter")
     return GetUnicodeDeviceAdapter();
+  if (fake_adapter_name == "DeviceNameLongerThan29BytesAdapter")
+    return GetDeviceNameLongerThan29BytesAdapter();
   if (fake_adapter_name == "MissingServiceHeartRateAdapter")
     return GetMissingServiceHeartRateAdapter();
   if (fake_adapter_name == "MissingCharacteristicHeartRateAdapter")
@@ -410,6 +412,17 @@ LayoutTestBluetoothAdapterProvider::GetUnicodeDeviceAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
 
   adapter->AddMockDevice(GetBaseDevice(adapter.get(), "❤❤❤❤❤❤❤❤❤"));
+
+  return adapter;
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetDeviceNameLongerThan29BytesAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+
+  adapter->AddMockDevice(GetBaseDevice(adapter.get(),
+                         "a_device_name_that_is_longer_than_29_bytes_but_shorter_than_240_bytes"));
 
   return adapter;
 }
