@@ -329,10 +329,7 @@ static void generateIndexKeysForValue(v8::Isolate* isolate,
   } else {
     DCHECK(indexMetadata.multiEntry);
     DCHECK_EQ(indexKey->getType(), IDBKey::ArrayType);
-    indexKey = IDBKey::createMultiEntryArray(indexKey->array());
-
-    for (size_t i = 0; i < indexKey->array().size(); ++i)
-      indexKeys->push_back(indexKey->array()[i]);
+    indexKeys->appendVector(indexKey->toMultiEntryArray());
   }
 }
 

@@ -55,29 +55,6 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
 
   static IDBKey* createDate(double date) { return new IDBKey(DateType, date); }
 
-  static IDBKey* createMultiEntryArray(const KeyArray& array) {
-    KeyArray result;
-
-    for (size_t i = 0; i < array.size(); i++) {
-      if (!array[i]->isValid())
-        continue;
-
-      bool skip = false;
-      for (size_t j = 0; j < result.size(); j++) {
-        if (array[i]->isEqual(result[j].get())) {
-          skip = true;
-          break;
-        }
-      }
-      if (!skip) {
-        result.push_back(array[i]);
-      }
-    }
-    IDBKey* idbKey = new IDBKey(result);
-    ASSERT(idbKey->isValid());
-    return idbKey;
-  }
-
   static IDBKey* createArray(const KeyArray& array) {
     return new IDBKey(array);
   }
@@ -127,6 +104,9 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
   int compare(const IDBKey* other) const;
   bool isLessThan(const IDBKey* other) const;
   bool isEqual(const IDBKey* other) const;
+
+  // Returns a new key array with invalid keys and duplicates removed.
+  KeyArray toMultiEntryArray() const;
 
  private:
   IDBKey() : m_type(InvalidType) {}

@@ -25,6 +25,8 @@
 
 #include "modules/indexeddb/IDBKey.h"
 
+#include <algorithm>
+
 namespace blink {
 
 IDBKey::~IDBKey() {}
@@ -100,6 +102,25 @@ bool IDBKey::isEqual(const IDBKey* other) const {
     return false;
 
   return !compare(other);
+}
+
+IDBKey::KeyArray IDBKey::toMultiEntryArray() const {
+  DCHECK_EQ(m_type, ArrayType);
+  KeyArray result;
+  result.reserveCapacity(m_array.size());
+  std::copy_if(m_array.begin(), m_array.end(), std::back_inserter(result),
+               [](const Member<IDBKey> key) { return key->isValid(); });
+
+  // Remove duplicates using std::sort/std::unique rather than a hashtable to
+  // avoid the complexity of implementing DefaultHash<IDBKey>.
+  std::sort(result.begin(), result.end(),
+            [](const Member<IDBKey> a, const Member<IDBKey> b) {
+              return a->isLessThan(b);
+            });
+  const auto end = std::unique(result.begin(), result.end());
+  DCHECK_LE(static_cast<size_t>(end - result.begin()), result.size());
+  result.resize(end - result.begin());
+  return result;
 }
 
 }  // namespace blink
