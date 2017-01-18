@@ -165,33 +165,35 @@
   if (!_selectedPaymentMethod->billing_address_id().empty()) {
     autofill::AutofillProfile* address = _personalDataManager->GetProfileByGUID(
         _selectedPaymentMethod->billing_address_id());
-    paymentResponse.details.billing_address.country =
-        address->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY);
-    paymentResponse.details.billing_address.address_line.push_back(
-        address->GetRawInfo(autofill::ADDRESS_HOME_LINE1));
-    paymentResponse.details.billing_address.address_line.push_back(
-        address->GetRawInfo(autofill::ADDRESS_HOME_LINE2));
-    paymentResponse.details.billing_address.address_line.push_back(
-        address->GetRawInfo(autofill::ADDRESS_HOME_LINE3));
-    paymentResponse.details.billing_address.region =
-        address->GetRawInfo(autofill::ADDRESS_HOME_STATE);
-    paymentResponse.details.billing_address.city =
-        address->GetRawInfo(autofill::ADDRESS_HOME_CITY);
-    paymentResponse.details.billing_address.dependent_locality =
-        address->GetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY);
-    paymentResponse.details.billing_address.postal_code =
-        address->GetRawInfo(autofill::ADDRESS_HOME_ZIP);
-    paymentResponse.details.billing_address.sorting_code =
-        address->GetRawInfo(autofill::ADDRESS_HOME_SORTING_CODE);
-    paymentResponse.details.billing_address.language_code =
-        base::UTF8ToUTF16(address->language_code());
-    paymentResponse.details.billing_address.organization =
-        address->GetRawInfo(autofill::COMPANY_NAME);
-    paymentResponse.details.billing_address.recipient =
-        address->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                         GetApplicationContext()->GetApplicationLocale());
-    paymentResponse.details.billing_address.phone =
-        address->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
+    if (address) {
+      paymentResponse.details.billing_address.country =
+          address->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY);
+      paymentResponse.details.billing_address.address_line.push_back(
+          address->GetRawInfo(autofill::ADDRESS_HOME_LINE1));
+      paymentResponse.details.billing_address.address_line.push_back(
+          address->GetRawInfo(autofill::ADDRESS_HOME_LINE2));
+      paymentResponse.details.billing_address.address_line.push_back(
+          address->GetRawInfo(autofill::ADDRESS_HOME_LINE3));
+      paymentResponse.details.billing_address.region =
+          address->GetRawInfo(autofill::ADDRESS_HOME_STATE);
+      paymentResponse.details.billing_address.city =
+          address->GetRawInfo(autofill::ADDRESS_HOME_CITY);
+      paymentResponse.details.billing_address.dependent_locality =
+          address->GetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY);
+      paymentResponse.details.billing_address.postal_code =
+          address->GetRawInfo(autofill::ADDRESS_HOME_ZIP);
+      paymentResponse.details.billing_address.sorting_code =
+          address->GetRawInfo(autofill::ADDRESS_HOME_SORTING_CODE);
+      paymentResponse.details.billing_address.language_code =
+          base::UTF8ToUTF16(address->language_code());
+      paymentResponse.details.billing_address.organization =
+          address->GetRawInfo(autofill::COMPANY_NAME);
+      paymentResponse.details.billing_address.recipient =
+          address->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                           GetApplicationContext()->GetApplicationLocale());
+      paymentResponse.details.billing_address.phone =
+          address->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER);
+    }
   }
 
   [_delegate paymentRequestCoordinatorDidConfirm:paymentResponse];
