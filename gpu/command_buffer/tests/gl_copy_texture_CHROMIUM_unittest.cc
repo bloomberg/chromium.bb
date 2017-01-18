@@ -314,22 +314,45 @@ class GLCopyTextureCHROMIUMTest
     glBindTexture(target, textures_[0]);
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#if defined(OS_MACOSX)
+    // TODO(qiankun.miao@intel.com): Remove this workaround for Mac OSX, once
+    // integer texture rendering bug is fixed on Mac OSX: crbug.com/679639.
+    glTexImage2D(target, 0, src_format_type.internal_format,
+                 width_ << source_level, height_ << source_level, 0,
+                 src_format_type.format, src_format_type.type, nullptr);
+#endif
     glTexImage2D(target, source_level, src_format_type.internal_format, width_,
                  height_, 0, src_format_type.format, src_format_type.type,
                  pixels.get());
     EXPECT_TRUE(glGetError() == GL_NO_ERROR);
     glBindTexture(target, textures_[1]);
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // This hack makes dest texture complete in ES2 and ES3 context
+    // respectively. With this, sampling from the dest texture is correct.
+    if (is_es3) {
+      glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, dest_level);
+#if defined(OS_MACOSX)
+      // TODO(qiankun.miao@intel.com): Remove this workaround for Mac OSX, once
+      // framebuffer complete bug is fixed on Mac OSX: crbug.com/678526.
+      glTexImage2D(target, 0, dest_format_type.internal_format,
+                   width_ << dest_level, height_ << dest_level, 0,
+                   dest_format_type.format, dest_format_type.type, nullptr);
+#endif
+    } else {
+      glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+      glTexImage2D(target, 0, dest_format_type.internal_format,
+                   width_ << dest_level, height_ << dest_level, 0,
+                   dest_format_type.format, dest_format_type.type, nullptr);
+      glGenerateMipmap(target);
+    }
     EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
-    // TODO(qiankun.miao@intel.com): Upgrade glCopyTextureCHROMIUM and
-    // glCopySubTextureCHROMIUM to support copying from level > 0 of source
-    // texture to level > 0 of dest texture.
     if (copy_type == TexImage) {
-      glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0,
-                            dest_format_type.internal_format,
+      glCopyTextureCHROMIUM(textures_[0], source_level, textures_[1],
+                            dest_level, dest_format_type.internal_format,
                             dest_format_type.type, false, false, false);
     } else {
       glBindTexture(target, textures_[1]);
@@ -337,8 +360,9 @@ class GLCopyTextureCHROMIUMTest
                    height_, 0, dest_format_type.format, dest_format_type.type,
                    nullptr);
 
-      glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0,
-                               width_, height_, false, false, false);
+      glCopySubTextureCHROMIUM(textures_[0], source_level, textures_[1],
+                               dest_level, 0, 0, 0, 0, width_, height_, false,
+                               false, false);
     }
     EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
@@ -353,8 +377,6 @@ class GLCopyTextureCHROMIUMTest
     glBindTexture(target, textures_[1]);
     std::string fragment_shader_source =
         GetFragmentShaderSource(dest_format_type.internal_format, is_es3);
-    // TODO(qiankun.miao@intel.com): Support drawing from level > 0 of a
-    // texture.
     GLTestHelper::DrawTextureQuad(
         is_es3 ? kSimpleVertexShaderES3 : kSimpleVertexShaderES2,
         fragment_shader_source.c_str(), "a_position", "u_texture");
@@ -432,7 +454,11 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
   // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
   bool ShouldSkipRGB5_A1() const {
     DCHECK(!ShouldSkipTest());
+#if defined(OS_MACOSX)
     return true;
+#else
+    return false;
+#endif
   }
 };
 
@@ -730,8 +756,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, CopyTextureLevel) {
   // Source level must be 0 in ES2 context.
   GLint source_level = 0;
 
-  // TODO(qiankun.miao@intel.com): Support level > 0.
-  for (GLint dest_level = 0; dest_level < 1; dest_level++) {
+  for (GLint dest_level = 0; dest_level < 3; dest_level++) {
     for (auto dest_format_type : dest_format_types) {
       RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, source_level,
                      dest_format_type, dest_level, false);
@@ -752,10 +777,16 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, CopyTextureLevel) {
       {GL_RGBA8UI, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE},
   };
 
-  // TODO(qiankun.miao@intel.com): Support level > 0.
-  for (GLint source_level = 0; source_level < 1; source_level++) {
-    for (GLint dest_level = 0; dest_level < 1; dest_level++) {
+  for (GLint source_level = 0; source_level < 3; source_level++) {
+    for (GLint dest_level = 0; dest_level < 3; dest_level++) {
       for (auto dest_format_type : dest_format_types) {
+#if defined(OS_WIN) || defined(OS_ANDROID)
+        // TODO(qiankun.miao@intel.com): source_level > 0 or dest_level > 0
+        // isn't available due to renderinig bug for non-zero base level in
+        // NVIDIA Windows: crbug.com/679639 and Android: crbug.com/680460.
+        if (dest_level > 0)
+          continue;
+#endif
         RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, source_level,
                        dest_format_type, dest_level, true);
       }

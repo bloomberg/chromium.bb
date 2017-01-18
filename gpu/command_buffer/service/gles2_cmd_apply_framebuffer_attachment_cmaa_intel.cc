@@ -257,8 +257,8 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
         ApplyCMAAEffectTexture(source_texture, rgba8_texture_, do_copy);
 
         copier->DoCopySubTexture(
-            decoder, GL_TEXTURE_2D, rgba8_texture_, GL_RGBA8, GL_TEXTURE_2D,
-            source_texture, internal_format, 0, 0, 0, 0, width_, height_,
+            decoder, GL_TEXTURE_2D, rgba8_texture_, 0, GL_RGBA8, GL_TEXTURE_2D,
+            source_texture, 0, internal_format, 0, 0, 0, 0, width_, height_,
             width_, height_, width_, height_, false, false, false, DIRECT_DRAW);
       } else {
         ApplyCMAAEffectTexture(source_texture, source_texture, do_copy);
