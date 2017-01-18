@@ -30,18 +30,17 @@ const char* CacheCounter::GetPrefName() const {
 }
 
 void CacheCounter::Count() {
-  bool is_upper_limit = !GetPeriodStart().is_null();
   base::WeakPtr<browsing_data::ConditionalCacheCountingHelper> counter =
       browsing_data::ConditionalCacheCountingHelper::CreateForRange(
           content::BrowserContext::GetDefaultStoragePartition(profile_),
-          base::Time(), base::Time::Max())
+          GetPeriodStart(), base::Time::Max())
           ->CountAndDestroySelfWhenFinished(
               base::Bind(&CacheCounter::OnCacheSizeCalculated,
-                         weak_ptr_factory_.GetWeakPtr(), is_upper_limit));
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CacheCounter::OnCacheSizeCalculated(bool is_upper_limit,
-                                         int64_t result_bytes) {
+void CacheCounter::OnCacheSizeCalculated(int64_t result_bytes,
+                                         bool is_upper_limit) {
   // A value less than 0 means a net error code.
   if (result_bytes < 0)
     return;

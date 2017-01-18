@@ -42,7 +42,7 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
 
  private:
   void Count() override;
-  void OnCacheSizeCalculated(bool is_upper_limit, int64_t bytes);
+  void OnCacheSizeCalculated(int64_t bytes, bool is_upper_limit);
   void FetchEstimate(
       base::WeakPtr<browsing_data::ConditionalCacheCountingHelper>);
 

@@ -237,8 +237,7 @@ void StorageHandler::UpdateBrowsingDataSize() {
       content::BrowserContext::GetDefaultStoragePartition(profile),
       base::Time(), base::Time::Max())
       ->CountAndDestroySelfWhenFinished(
-          base::Bind(&StorageHandler::OnGetBrowsingDataSize,
-                     base::Unretained(this), false));
+          base::Bind(&StorageHandler::OnGetCacheSize, base::Unretained(this)));
 
   // Fetch the size of site data in browsing data.
   if (!site_data_size_collector_.get()) {
@@ -264,6 +263,11 @@ void StorageHandler::UpdateBrowsingDataSize() {
   site_data_size_collector_->Fetch(
       base::Bind(&StorageHandler::OnGetBrowsingDataSize,
                  base::Unretained(this), true));
+}
+
+void StorageHandler::OnGetCacheSize(int64_t size, bool is_upper_limit) {
+  DCHECK(!is_upper_limit);
+  OnGetBrowsingDataSize(false, size);
 }
 
 void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {

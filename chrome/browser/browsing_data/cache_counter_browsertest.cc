@@ -243,10 +243,7 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, PrefChanged) {
   EXPECT_EQ(0u, GetResult());
 }
 
-// Tests that the counting is restarted when the time period changes. Currently,
-// the results should be the same for every period. This is because the counter
-// always counts the size of the entire cache, and it is up to the UI
-// to interpret it as exact value or upper bound.
+// Tests that the counting is restarted when the time period changes.
 IN_PROC_BROWSER_TEST_F(CacheCounterTest, PeriodChanged) {
   CreateCacheEntry();
 
@@ -259,22 +256,18 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, PeriodChanged) {
   SetDeletionPeriodPref(browsing_data::LAST_HOUR);
   WaitForIOThread();
   browsing_data::BrowsingDataCounter::ResultInt result = GetResult();
-  EXPECT_TRUE(IsUpperLimit());
 
   SetDeletionPeriodPref(browsing_data::LAST_DAY);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
-  EXPECT_TRUE(IsUpperLimit());
 
   SetDeletionPeriodPref(browsing_data::LAST_WEEK);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
-  EXPECT_TRUE(IsUpperLimit());
 
   SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
-  EXPECT_TRUE(IsUpperLimit());
 
   SetDeletionPeriodPref(browsing_data::ALL_TIME);
   WaitForIOThread();

@@ -69,6 +69,9 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   // Requests updating the size of browsing data.
   void UpdateBrowsingDataSize();
 
+  // Callback to receive the cache size.
+  void OnGetCacheSize(int64_t size, bool is_upper_limit);
+
   // Callback to update the UI about the size of browsing data.
   void OnGetBrowsingDataSize(bool is_site_data, int64_t size);
 

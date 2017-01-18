@@ -24,8 +24,9 @@ namespace browsing_data {
 // Helper to count the size of the http cache data from a StoragePartition.
 class ConditionalCacheCountingHelper {
  public:
-  // Returns the number bytes in the selected range.
-  typedef base::Callback<void(int64_t)> CacheCountCallback;
+  // Returns the number bytes in the selected range and if this value is an
+  // upper estimate.
+  typedef base::Callback<void(int64_t, bool)> CacheCountCallback;
 
   static ConditionalCacheCountingHelper* CreateForRange(
       content::StoragePartition* storage_partition,
@@ -70,6 +71,7 @@ class ConditionalCacheCountingHelper {
   // via a callback. This is either the sum of size of the the two cache
   // backends, or an error code if the calculation failed.
   int64_t calculation_result_;
+  bool is_upper_limit_;
 
   CacheCountCallback result_callback_;
   const base::Time begin_time_;

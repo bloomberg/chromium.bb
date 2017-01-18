@@ -21,7 +21,7 @@ using content::BrowserThread;
 
 class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
  public:
-  const int64_t kTimeoutMs = 10;
+  const int64_t kTimeoutMs = 1000;
 
   void SetUpOnMainThread() override {
     count_callback_ =
@@ -35,11 +35,12 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override { cache_util_.reset(); }
 
-  void CountCallback(int64_t size) {
+  void CountCallback(int64_t size, bool is_upper_limit) {
     // Negative values represent an unexpected error.
     DCHECK(size >= 0 || size == net::ERR_ABORTED);
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     last_size_ = size;
+    last_is_upper_limit_ = is_upper_limit;
 
     if (run_loop_)
       run_loop_->Quit();
@@ -64,6 +65,8 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
     return last_size_;
   }
 
+  int64_t IsUpperLimit() { return last_is_upper_limit_; }
+
   int64_t GetResultOrError() { return last_size_; }
 
   CacheTestUtil* GetCacheTestUtil() { return cache_util_.get(); }
@@ -74,6 +77,7 @@ class ConditionalCacheCountingHelperBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<CacheTestUtil> cache_util_;
 
   int64_t last_size_;
+  bool last_is_upper_limit_;
 };
 
 // Tests that ConditionalCacheCountingHelper only counts those cache entries
@@ -86,15 +90,14 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheCountingHelperBrowserTest, Count) {
   GetCacheTestUtil()->CreateCacheEntries(keys1);
 
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
-  // base::Time t2 = base::Time::Now();
+  base::Time t2 = base::Time::Now();
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
 
   std::set<std::string> keys2 = {"6", "7"};
   GetCacheTestUtil()->CreateCacheEntries(keys2);
 
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
   base::Time t3 = base::Time::Now();
-
-  // TODO(dullweber): Add test for time ranges when GetEntrySize() is done.
 
   // Count all entries.
   CountEntries(t1, t3);
@@ -105,4 +108,25 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheCountingHelperBrowserTest, Count) {
   CountEntries(base::Time(), base::Time::Max());
   WaitForTasksOnIOThread();
   EXPECT_EQ(size_1_3, GetResult());
+
+  // Count the size of the first set of entries.
+  CountEntries(t1, t2);
+  WaitForTasksOnIOThread();
+  int64_t size_1_2 = GetResult();
+
+  // Count the size of the second set of entries.
+  CountEntries(t2, t3);
+  WaitForTasksOnIOThread();
+  int64_t size_2_3 = GetResult();
+
+  if (IsUpperLimit()) {
+    EXPECT_EQ(size_1_2, size_1_3);
+    EXPECT_EQ(size_2_3, size_1_3);
+  } else {
+    EXPECT_GT(size_1_2, 0);
+    EXPECT_GT(size_2_3, 0);
+    EXPECT_LT(size_1_2, size_1_3);
+    EXPECT_LT(size_2_3, size_1_3);
+    EXPECT_EQ(size_1_2 + size_2_3, size_1_3);
+  }
 }

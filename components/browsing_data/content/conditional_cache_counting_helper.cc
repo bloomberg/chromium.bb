@@ -57,6 +57,7 @@ ConditionalCacheCountingHelper::CountAndDestroySelfWhenFinished(
   DCHECK(!result_callback.is_null());
   result_callback_ = result_callback;
   calculation_result_ = 0;
+  is_upper_limit_ = false;
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -73,7 +74,7 @@ void ConditionalCacheCountingHelper::Finished() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_finished_);
   is_finished_ = true;
-  result_callback_.Run(calculation_result_);
+  result_callback_.Run(calculation_result_, is_upper_limit_);
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -141,11 +142,16 @@ void ConditionalCacheCountingHelper::DoCountCache(int rv) {
                 base::Bind(&ConditionalCacheCountingHelper::DoCountCache,
                            base::Unretained(this)));
           } else {
-            // TODO(dullweber): Readd code for counting with timeout.
-            // TODO(dullweber): Implement faster counting for SimpleBackendImpl.
-            rv = cache_->CalculateSizeOfAllEntries(
+            rv = cache_->CalculateSizeOfEntriesBetween(
+                begin_time_, end_time_,
                 base::Bind(&ConditionalCacheCountingHelper::DoCountCache,
                            base::Unretained(this)));
+            if (rv == net::ERR_NOT_IMPLEMENTED) {
+              is_upper_limit_ = true;
+              rv = cache_->CalculateSizeOfAllEntries(
+                  base::Bind(&ConditionalCacheCountingHelper::DoCountCache,
+                             base::Unretained(this)));
+            }
           }
           cache_ = NULL;
         }
