@@ -8,9 +8,13 @@
 
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 
+#import "ios/clean/chrome/browser/ui/actions/navigation_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tools_menu_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
+#import "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_theme_resources.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,11 +33,41 @@
 - (void)viewDidLoad {
   self.view.backgroundColor = [UIColor lightGrayColor];
 
+  // Navigation buttons
+  UIButton* backButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  backButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [backButton setImage:NativeReversableImage(IDR_IOS_TOOLBAR_LIGHT_BACK, YES)
+              forState:UIControlStateNormal];
+  [backButton
+      setImage:NativeReversableImage(IDR_IOS_TOOLBAR_LIGHT_BACK_PRESSED, YES)
+      forState:UIControlStateHighlighted];
+  [backButton
+      setImage:NativeReversableImage(IDR_IOS_TOOLBAR_LIGHT_BACK_DISABLED, YES)
+      forState:UIControlStateDisabled];
+  [backButton addTarget:nil
+                 action:@selector(goBack:)
+       forControlEvents:UIControlEventTouchUpInside];
+
+  UIButton* forwardButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  forwardButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [forwardButton
+      setImage:NativeReversableImage(IDR_IOS_TOOLBAR_LIGHT_FORWARD, YES)
+      forState:UIControlStateNormal];
+  [forwardButton
+      setImage:NativeReversableImage(IDR_IOS_TOOLBAR_LIGHT_FORWARD_PRESSED, YES)
+      forState:UIControlStateHighlighted];
+  [forwardButton setImage:NativeReversableImage(
+                              IDR_IOS_TOOLBAR_LIGHT_FORWARD_DISABLED, YES)
+                 forState:UIControlStateDisabled];
+  [forwardButton addTarget:nil
+                    action:@selector(goForward:)
+          forControlEvents:UIControlEventTouchUpInside];
+
   // Tab switcher button.
   UIButton* tabSwitcher = [UIButton buttonWithType:UIButtonTypeSystem];
   tabSwitcher.translatesAutoresizingMaskIntoConstraints = NO;
-  [tabSwitcher setTitle:@"⊞" forState:UIControlStateNormal];
-  tabSwitcher.titleLabel.font = [UIFont systemFontOfSize:24.0];
+  [tabSwitcher setImage:[UIImage imageNamed:@"tabswitcher_tab_switcher_button"]
+               forState:UIControlStateNormal];
   [tabSwitcher addTarget:nil
                   action:@selector(toggleTabStrip:)
         forControlEvents:UIControlEventTouchUpInside];
@@ -48,16 +82,20 @@
   // Tools menu button.
   UIButton* toolsMenu = [UIButton buttonWithType:UIButtonTypeSystem];
   toolsMenu.translatesAutoresizingMaskIntoConstraints = NO;
-  [toolsMenu setTitle:@"⋮" forState:UIControlStateNormal];
-  toolsMenu.titleLabel.font = [UIFont systemFontOfSize:24.0];
+  [toolsMenu setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, -3, 0, 0)];
+  [toolsMenu
+      setImage:[[UIImage imageNamed:@"toolbar_tools"]
+                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+      forState:UIControlStateNormal];
   [toolsMenu addTarget:nil
                 action:@selector(showToolsMenu:)
       forControlEvents:UIControlEventTouchUpInside];
   self.toolsMenu = toolsMenu;
 
   // Stack view to contain toolbar items.
-  UIStackView* toolbarItems = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ tabSwitcher, omnibox, toolsMenu ]];
+  UIStackView* toolbarItems = [[UIStackView alloc] initWithArrangedSubviews:@[
+    backButton, forwardButton, omnibox, tabSwitcher, toolsMenu
+  ]];
   toolbarItems.translatesAutoresizingMaskIntoConstraints = NO;
   toolbarItems.spacing = 16.0;
   toolbarItems.distribution = UIStackViewDistributionFillProportionally;
