@@ -74,12 +74,6 @@ typedef base::Callback<void(bool auth_ok,
 // Called when a request is terminated, signalling that any outstanding
 // authentication requests should cancel.
 - (void)cancelAuthRequest;
-
-// If |underlyingClient| is not nil, the protocol is responsible for calling it.
-// If the protocol is only listening for network events, it should simply
-// forward all the calls to the underlying client.
-// Called from the IO thread.
-- (void)setUnderlyingClient:(id<CRNNetworkClientProtocol>)underlyingClient;
 @end
 
 #endif  // IOS_NET_CLIENTS_CRN_NETWORK_CLIENT_PROTOCOL_H_

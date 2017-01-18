@@ -219,11 +219,6 @@
   // no-op.
 }
 
-- (void)setUnderlyingClient:(id<CRNNetworkClientProtocol>)underlyingClient {
-  // This is the lowest level.
-  DCHECK(!underlyingClient);
-}
-
 #pragma mark Proxy methods called from the client thread.
 
 - (void)didFailWithErrorOnClientThread:(NSError*)error {
