@@ -1229,7 +1229,7 @@ void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild) {
 
   // The ancestor overflow layer is calculated during compositing inputs update
   // and should not be set yet.
-  DCHECK(!child->ancestorOverflowLayer());
+  CHECK(!child->ancestorOverflowLayer());
 
   setNeedsCompositingInputsUpdate();
 
