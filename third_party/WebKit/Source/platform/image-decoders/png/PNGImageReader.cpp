@@ -39,6 +39,7 @@
 #include "platform/image-decoders/png/PNGImageReader.h"
 
 #include "platform/image-decoders/SegmentReader.h"
+#include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "png.h"
 #include "wtf/PtrUtil.h"
 #include <memory>

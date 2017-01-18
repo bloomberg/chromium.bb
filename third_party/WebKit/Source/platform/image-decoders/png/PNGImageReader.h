@@ -26,8 +26,10 @@
 #ifndef PNGImageReader_h
 #define PNGImageReader_h
 
-#include "platform/image-decoders/png/PNGImageDecoder.h"
+#include "platform/PlatformExport.h"
 #include "png.h"
+#include "wtf/Allocator.h"
+#include "wtf/PtrUtil.h"
 
 #if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
 #error version error: compile against a versioned libpng.
@@ -42,6 +44,7 @@
 
 namespace blink {
 
+class PNGImageDecoder;
 class SegmentReader;
 
 class PLATFORM_EXPORT PNGImageReader final {
