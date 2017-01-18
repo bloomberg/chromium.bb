@@ -76,18 +76,6 @@
         return text;
     }
 
-    // If the test has a meta tag named flags and the content contains "dom",
-    // then it's a CSSWG test.
-    function isCSSWGTest() {
-        var flags = document.querySelector('meta[name=flags]'),
-            content = flags ? flags.getAttribute('content') : null;
-        return content && content.match(/\bdom\b/);
-    }
-
-    function isJSTest() {
-        return !!document.querySelector('script[src*="/resources/testharness"]');
-    }
-
     function isWPTManualTest() {
         var path = location.pathname;
         if (location.hostname == 'web-platform.test' && path.endsWith('-manual.html'))
@@ -219,12 +207,10 @@
                 // test.
                 testRunner.setDumpConsoleMessages(false);
 
-                if (isCSSWGTest() || isJSTest()) {
-                    // Anything isn't material to the testrunner output, so
-                    // should be hidden from the text dump.
-                    if (output_document.body && output_document.body.tagName == 'BODY')
-                        output_document.body.textContent = '';
-                }
+                // Anything isn't material to the testrunner output, so should
+                // be hidden from the text dump.
+                if (output_document.body && output_document.body.tagName == 'BODY')
+                    output_document.body.textContent = '';
             }
 
             // Add results element to output_document.

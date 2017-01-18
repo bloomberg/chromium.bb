@@ -1,5 +1,0 @@
-Filler Text
-This is a testharness.js-based test.
-PASS document.write 
-Harness: the test ran to completion.
-
