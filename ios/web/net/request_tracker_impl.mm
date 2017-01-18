@@ -19,8 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
-#import "ios/net/clients/crn_forwarding_network_client.h"
-#import "ios/net/clients/crn_forwarding_network_client_factory.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/net/crw_request_tracker_delegate.h"
 #include "ios/web/public/browser_state.h"
