@@ -116,7 +116,7 @@ void Surface::TakeCopyOutputRequests(
   }
 }
 
-const CompositorFrame& Surface::GetEligibleFrame() {
+const CompositorFrame& Surface::GetEligibleFrame() const {
   DCHECK(current_frame_);
   return current_frame_.value();
 }

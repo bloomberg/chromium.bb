@@ -61,7 +61,7 @@ class CC_SURFACES_EXPORT Surface {
 
   // Returns the most recent frame that is eligible to be rendered.
   // You must check whether HasFrame() returns true before calling this method.
-  const CompositorFrame& GetEligibleFrame();
+  const CompositorFrame& GetEligibleFrame() const;
 
   // Returns a number that increments by 1 every time a new frame is enqueued.
   int frame_index() const { return frame_index_; }

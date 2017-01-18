@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -25,6 +26,11 @@
 #include "cc/surfaces/surface_reference_manager.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
+
+#if DCHECK_IS_ON()
+#include <iosfwd>
+#include <string>
+#endif
 
 namespace cc {
 class BeginFrameSource;
@@ -42,6 +48,11 @@ class CC_SURFACES_EXPORT SurfaceManager
 
   explicit SurfaceManager(LifetimeType lifetime_type = LifetimeType::SEQUENCES);
   ~SurfaceManager() override;
+
+#if DCHECK_IS_ON()
+  // Returns a string representation of all reachable surface references.
+  std::string SurfaceReferencesToString();
+#endif
 
   void RegisterSurface(Surface* surface);
   void DeregisterSurface(const SurfaceId& surface_id);
@@ -126,6 +137,8 @@ class CC_SURFACES_EXPORT SurfaceManager
   }
 
  private:
+  using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
+
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
                                          BeginFrameSource* source);
   void RecursivelyDetachBeginFrameSource(const FrameSinkId& frame_sink_id,
@@ -144,6 +157,13 @@ class CC_SURFACES_EXPORT SurfaceManager
   // references without triggered GC.
   void RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
                                   const SurfaceId& child_id);
+
+#if DCHECK_IS_ON()
+  // Recursively prints surface references starting at |surface_id| to |str|.
+  void SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
+                                     std::string indent,
+                                     std::stringstream* str);
+#endif
 
   // Use reference or sequence based lifetime management.
   LifetimeType lifetime_type_;
@@ -184,7 +204,6 @@ class CC_SURFACES_EXPORT SurfaceManager
   std::unordered_map<FrameSinkId, FrameSinkSourceMapping, FrameSinkIdHash>
       frame_sink_source_map_;
 
-  using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
   // Tracks references from the child surface to parent surface. If there are
   // zero entries in the set for a SurfaceId then nothing is referencing the
   // surface and it can be garbage collected.

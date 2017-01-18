@@ -16,6 +16,10 @@
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
 
+#if DCHECK_IS_ON()
+#include <sstream>
+#endif
+
 namespace cc {
 
 SurfaceManager::FrameSinkSourceMapping::FrameSinkSourceMapping()
@@ -53,6 +57,14 @@ SurfaceManager::~SurfaceManager() {
   DCHECK_EQ(frame_sink_source_map_.size(), 0u);
   DCHECK_EQ(registered_sources_.size(), 0u);
 }
+
+#if DCHECK_IS_ON()
+std::string SurfaceManager::SurfaceReferencesToString() {
+  std::stringstream str;
+  SurfaceReferencesToStringImpl(root_surface_id_, "", &str);
+  return str.str();
+}
+#endif
 
 void SurfaceManager::RegisterSurface(Surface* surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -170,7 +182,7 @@ void SurfaceManager::GarbageCollectSurfacesFromRoot() {
   if (surfaces_to_destroy_.empty())
     return;
 
-  std::unordered_set<SurfaceId, SurfaceIdHash> reachable_surfaces;
+  SurfaceIdSet reachable_surfaces;
 
   // Walk down from the root and mark each SurfaceId we encounter as reachable.
   std::queue<SurfaceId> surface_queue;
@@ -507,5 +519,40 @@ void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
   for (auto& observer : observer_list_)
     observer.OnSurfaceCreated(surface_info);
 }
+
+#if DCHECK_IS_ON()
+void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
+                                                   std::string indent,
+                                                   std::stringstream* str) {
+  *str << indent;
+
+  // Print the current line for |surface_id|.
+  Surface* surface = GetSurfaceForId(surface_id);
+  if (surface) {
+    *str << surface->surface_id().ToString();
+    *str << (surface->destroyed() ? " destroyed " : " live ");
+
+    if (surface->HasFrame()) {
+      // This provides the surface size from the root render pass.
+      const CompositorFrame& frame = surface->GetEligibleFrame();
+      *str << frame.render_pass_list.back()->output_rect.size().ToString();
+    }
+  } else {
+    *str << surface_id;
+  }
+  *str << "\n";
+
+  // If the current surface has references to children, sort children and print
+  // references for each child.
+  auto iter = parent_to_child_refs_.find(surface_id);
+  if (iter != parent_to_child_refs_.end()) {
+    std::vector<SurfaceId> children(iter->second.begin(), iter->second.end());
+    std::sort(children.begin(), children.end());
+
+    for (const SurfaceId& child_id : children)
+      SurfaceReferencesToStringImpl(child_id, indent + "  ", str);
+  }
+}
+#endif  // DCHECK_IS_ON()
 
 }  // namespace cc
