@@ -2218,7 +2218,7 @@ def CqBuilders(site_config, ge_build_config):
       site_config.templates.paladin,
       site_config.templates.internal_paladin,
       boards=[],
-      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
+      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       master=True,
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
@@ -3282,7 +3282,7 @@ def SpecialtyBuilders(site_config, ge_build_config):
       ],
       build_type=constants.CHROOT_BUILDER_TYPE,
       active_waterfall=constants.WATERFALL_EXTERNAL,
-      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
       trybot_list=True,
@@ -3381,6 +3381,20 @@ def SpecialtyBuilders(site_config, ge_build_config):
       boards=['x86-mario'],
   )
 
+def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
+  """Make sure VMTests have a builder than can run them.
+
+  Args:
+    site_config: config_lib.SiteConfig containing builds to have their
+                 waterfall values updated.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+  """
+  for c in site_config.itervalues():
+    # We can only run vmtests on baremetal, so ensure we have it.
+    if c.vm_tests:
+      c['buildslave_type'] = constants.BAREMETAL_BUILD_SLAVE_TYPE
+
+
 @factory.CachedFunctionCall
 def GetConfig():
   """Create the Site configuration for all ChromeOS builds.
@@ -3432,6 +3446,8 @@ def GetConfig():
 
   # Assign waterfalls to builders that don't have them yet.
   InsertWaterfallDefaults(site_config, ge_build_config)
+
+  EnsureVmTestsOnBaremetal(site_config, ge_build_config)
 
   ApplyCustomOverrides(site_config, ge_build_config)
 

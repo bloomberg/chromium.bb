@@ -24,7 +24,7 @@
         "build_type": "pfq",
         "buildbot_waterfall_name": null,
         "builder_class_name": null,
-        "buildslave_type": "baremetal",
+        "buildslave_type": "gce_beefy",
         "child_configs": [],
         "chrome_binhost_only": false,
         "chrome_rev": null,
@@ -601,7 +601,6 @@
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
-            "buildslave_type": "gce_beefy",
             "chrome_sdk": true,
             "description": "Full release build with next minor GCC toolchain revision",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
@@ -665,7 +664,6 @@
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
-            "buildslave_type": "gce_beefy",
             "chrome_sdk": true,
             "description": "Full release build with LLVM (next) toolchain",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
@@ -713,7 +711,6 @@
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
-            "buildslave_type": "gce_beefy",
             "chrome_sdk": true,
             "description": "Full release build with LLVM toolchain",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
@@ -1100,7 +1097,6 @@
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
-            "buildslave_type": "gce_beefy",
             "chrome_sdk": true,
             "description": "Toolchain Builds (internal)",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
@@ -1211,6 +1207,7 @@
             "amd64-generic"
         ],
         "build_type": "binary",
+        "buildslave_type": "baremetal",
         "chroot_replace": false,
         "description": "Build with Address Sanitizer (Clang)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
@@ -1222,6 +1219,7 @@
         "boards": [
             "amd64-generic"
         ],
+        "buildslave_type": "baremetal",
         "description": "Paladin build with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
@@ -1240,6 +1238,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml",
         "vm_tests": [
@@ -1251,6 +1250,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -1264,6 +1264,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -1280,6 +1281,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -1293,6 +1295,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -1309,6 +1312,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "important": false,
         "internal": true,
@@ -1332,6 +1336,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -1346,6 +1351,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
@@ -1356,6 +1362,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -1392,6 +1399,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
@@ -1402,6 +1410,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
@@ -1412,6 +1421,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -1422,6 +1432,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -1432,6 +1443,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ],
@@ -1444,6 +1456,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -1457,6 +1470,7 @@
         "boards": [
             "amd64-generic-cheets"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -1474,6 +1488,7 @@
         "boards": [
             "amd64-generic"
         ],
+        "buildslave_type": "baremetal",
         "disk_layout": "2gb-rootfs"
     },
     "amd64-generic-compile-only-pre-cq": {
@@ -1488,6 +1503,7 @@
         "boards": [
             "amd64-generic"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -1498,6 +1514,7 @@
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -1506,6 +1523,7 @@
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -1529,6 +1547,7 @@
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -1575,6 +1594,7 @@
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -1588,13 +1608,15 @@
         "active_waterfall": "chromeos",
         "boards": [
             "amd64-generic-goofy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-goofy-release-afdo": {
         "_template": "release_afdo_generate",
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -1618,19 +1640,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "amd64-generic-goofy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-goofy-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "amd64-generic-goofy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-goofy-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "amd64-generic-goofy-tot-chrome-pfq-informational-gn": {
@@ -1638,6 +1663,7 @@
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "amd64-generic-goofy-tot-chromium-pfq-informational": {
@@ -1645,6 +1671,7 @@
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -1654,6 +1681,7 @@
         "boards": [
             "amd64-generic-goofy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -1709,19 +1737,22 @@
         "active_waterfall": "chromiumos",
         "boards": [
             "amd64-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-pre-cq": {
         "_template": "pre_cq",
         "boards": [
             "amd64-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-telem-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "amd64-generic"
         ],
+        "buildslave_type": "baremetal",
         "description": "Telemetry Builds",
         "vm_tests": [
             "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 7200\n}"
@@ -1731,19 +1762,22 @@
         "_template": "telemetry",
         "boards": [
             "amd64-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-tot-asan-informational": {
         "_template": "tot_asan_informational",
         "boards": [
             "amd64-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "amd64-generic-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "amd64-generic"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -1753,6 +1787,7 @@
         "boards": [
             "amd64-generic"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -1905,7 +1940,6 @@
         "boards": [
             "arkham"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "dev_installer_prebuilts": false,
@@ -2285,6 +2319,7 @@
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -2293,6 +2328,7 @@
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -2323,6 +2359,7 @@
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -2369,6 +2406,7 @@
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -2383,7 +2421,6 @@
         "boards": [
             "asuka"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -2393,6 +2430,7 @@
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -2416,19 +2454,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "asuka"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "asuka-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "asuka"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "asuka-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "asuka-tot-chrome-pfq-informational-gn": {
@@ -2436,6 +2477,7 @@
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "asuka-tot-chromium-pfq-informational": {
@@ -2443,6 +2485,7 @@
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -2452,6 +2495,7 @@
         "boards": [
             "asuka"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -2475,6 +2519,7 @@
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -2483,6 +2528,7 @@
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -2532,6 +2578,7 @@
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -2579,6 +2626,7 @@
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -2591,13 +2639,15 @@
         "_template": "release",
         "boards": [
             "auron"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "auron-release-afdo": {
         "_template": "release_afdo_generate",
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -2621,19 +2671,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "auron"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "auron-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "auron"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "auron-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "auron-tot-chrome-pfq-informational-gn": {
@@ -2641,6 +2694,7 @@
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "auron-tot-chromium-pfq-informational": {
@@ -2648,6 +2702,7 @@
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -2657,6 +2712,7 @@
         "boards": [
             "auron"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -2977,7 +3033,6 @@
         "boards": [
             "auron_yuna"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -3084,6 +3139,7 @@
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -3092,6 +3148,7 @@
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -3141,6 +3198,7 @@
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -3187,6 +3245,7 @@
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -3201,7 +3260,6 @@
         "boards": [
             "banjo"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -3211,6 +3269,7 @@
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -3234,19 +3293,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "banjo"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "banjo-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "banjo"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "banjo-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "banjo-tot-chrome-pfq-informational-gn": {
@@ -3254,6 +3316,7 @@
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "banjo-tot-chromium-pfq-informational": {
@@ -3261,6 +3324,7 @@
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -3270,6 +3334,7 @@
         "boards": [
             "banjo"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -3396,7 +3461,6 @@
         "boards": [
             "banon"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -3632,7 +3696,6 @@
         "boards": [
             "beaglebone"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "image_test": false,
@@ -3831,7 +3894,6 @@
         "boards": [
             "beaglebone_servo"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "image_test": false,
@@ -4025,7 +4087,6 @@
         "boards": [
             "bob"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -4259,7 +4320,6 @@
         "boards": [
             "buddy"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -4366,6 +4426,7 @@
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -4374,6 +4435,7 @@
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -4404,6 +4466,7 @@
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -4451,6 +4514,7 @@
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -4465,7 +4529,6 @@
         "boards": [
             "butterfly"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -4475,6 +4538,7 @@
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -4498,19 +4562,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "butterfly"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "butterfly-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "butterfly"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "butterfly-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "butterfly-tot-chrome-pfq-informational-gn": {
@@ -4518,6 +4585,7 @@
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "butterfly-tot-chromium-pfq-informational": {
@@ -4525,6 +4593,7 @@
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -4534,6 +4603,7 @@
         "boards": [
             "butterfly"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -4557,6 +4627,7 @@
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -4565,6 +4636,7 @@
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -4614,6 +4686,7 @@
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -4660,6 +4733,7 @@
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -4674,7 +4748,6 @@
         "boards": [
             "candy"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -4684,6 +4757,7 @@
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -4707,19 +4781,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "candy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "candy-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "candy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "candy-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "candy-tot-chrome-pfq-informational-gn": {
@@ -4727,6 +4804,7 @@
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "candy-tot-chromium-pfq-informational": {
@@ -4734,6 +4812,7 @@
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -4743,6 +4822,7 @@
         "boards": [
             "candy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -4766,6 +4846,7 @@
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -4774,6 +4855,7 @@
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -4804,6 +4886,7 @@
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -4850,6 +4933,7 @@
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -4864,7 +4948,6 @@
         "boards": [
             "caroline"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -4874,6 +4957,7 @@
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -4897,19 +4981,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "caroline"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "caroline-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "caroline"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "caroline-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "caroline-tot-chrome-pfq-informational-gn": {
@@ -4917,6 +5004,7 @@
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "caroline-tot-chromium-pfq-informational": {
@@ -4924,6 +5012,7 @@
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -4933,6 +5022,7 @@
         "boards": [
             "caroline"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -5059,7 +5149,6 @@
         "boards": [
             "cave"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -5458,7 +5547,6 @@
         "boards": [
             "celes"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -6004,6 +6092,7 @@
         ],
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
+        "buildslave_type": "baremetal",
         "chrome_sdk": true,
         "description": "Build the SDK and all the cross-compilers",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
@@ -6026,6 +6115,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -6034,6 +6124,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -6083,6 +6174,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -6129,6 +6221,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6143,6 +6236,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "important": true
     },
     "clapper-release-afdo": {
@@ -6150,6 +6244,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -6173,19 +6268,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "clapper"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "clapper-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "clapper"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "clapper-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "clapper-tot-chrome-pfq-informational-gn": {
@@ -6193,6 +6291,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "clapper-tot-chromium-pfq-informational": {
@@ -6200,6 +6299,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -6209,6 +6309,7 @@
         "boards": [
             "clapper"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -6244,6 +6345,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
@@ -6264,6 +6366,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
@@ -6278,6 +6381,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -6291,6 +6395,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6333,6 +6438,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -6346,6 +6452,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6363,6 +6470,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
@@ -6388,6 +6496,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6402,6 +6511,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "important": true,
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -6413,6 +6523,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -6449,6 +6560,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
@@ -6459,6 +6571,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],
@@ -6469,6 +6582,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -6479,6 +6593,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml",
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -6489,6 +6604,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ],
@@ -6501,6 +6617,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -6514,6 +6631,7 @@
         "boards": [
             "cyan"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6902,7 +7020,6 @@
         "boards": [
             "daisy_skate"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -7113,7 +7230,6 @@
         "boards": [
             "daisy_spring"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -7323,7 +7439,6 @@
         "boards": [
             "edgar"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -7529,7 +7644,6 @@
         "boards": [
             "elm"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -7636,6 +7750,7 @@
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -7644,6 +7759,7 @@
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -7693,6 +7809,7 @@
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -7739,6 +7856,7 @@
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -7753,7 +7871,6 @@
         "boards": [
             "enguarde"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -7763,6 +7880,7 @@
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -7786,19 +7904,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "enguarde"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "enguarde-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "enguarde"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "enguarde-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "enguarde-tot-chrome-pfq-informational-gn": {
@@ -7806,6 +7927,7 @@
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "enguarde-tot-chromium-pfq-informational": {
@@ -7813,6 +7935,7 @@
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -7822,6 +7945,7 @@
         "boards": [
             "enguarde"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -7845,6 +7969,7 @@
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -7853,6 +7978,7 @@
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -7883,6 +8009,7 @@
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -7929,6 +8056,7 @@
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -7943,7 +8071,6 @@
         "boards": [
             "eve"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": []
     },
@@ -7952,6 +8079,7 @@
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -7975,19 +8103,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "eve"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "eve-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "eve"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "eve-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "eve-tot-chrome-pfq-informational-gn": {
@@ -7995,6 +8126,7 @@
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "eve-tot-chromium-pfq-informational": {
@@ -8002,6 +8134,7 @@
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -8011,6 +8144,7 @@
         "boards": [
             "eve"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -8034,6 +8168,7 @@
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -8042,6 +8177,7 @@
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -8091,6 +8227,7 @@
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -8137,6 +8274,7 @@
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8151,7 +8289,6 @@
         "boards": [
             "expresso"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -8161,6 +8298,7 @@
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -8184,19 +8322,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "expresso"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "expresso-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "expresso"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "expresso-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "expresso-tot-chrome-pfq-informational-gn": {
@@ -8204,6 +8345,7 @@
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "expresso-tot-chromium-pfq-informational": {
@@ -8211,6 +8353,7 @@
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -8220,6 +8363,7 @@
         "boards": [
             "expresso"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -8268,6 +8412,7 @@
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -8280,6 +8425,7 @@
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -8310,6 +8456,7 @@
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -8380,6 +8527,7 @@
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8394,7 +8542,6 @@
         "boards": [
             "falco"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -8404,6 +8551,7 @@
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -8427,19 +8575,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "falco"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "falco-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "falco"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "falco-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "falco-tot-chrome-pfq-informational-gn": {
@@ -8447,6 +8598,7 @@
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "falco-tot-chromium-pfq-informational": {
@@ -8454,6 +8606,7 @@
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -8463,6 +8616,7 @@
         "boards": [
             "falco"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -8486,6 +8640,7 @@
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -8494,6 +8649,7 @@
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -8517,6 +8673,7 @@
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -8563,6 +8720,7 @@
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8577,7 +8735,6 @@
         "boards": [
             "falco_li"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -8587,6 +8744,7 @@
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -8610,19 +8768,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "falco_li"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "falco_li-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "falco_li"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "falco_li-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "falco_li-tot-chrome-pfq-informational-gn": {
@@ -8630,6 +8791,7 @@
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "falco_li-tot-chromium-pfq-informational": {
@@ -8637,6 +8799,7 @@
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -8646,6 +8809,7 @@
         "boards": [
             "falco_li"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -8950,7 +9114,6 @@
         "boards": [
             "gandof"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -9581,7 +9744,6 @@
         "boards": [
             "glimmer-cheets"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "description": "Cheets release builders",
         "hw_tests": [
@@ -9684,6 +9846,7 @@
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -9692,6 +9855,7 @@
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -9741,6 +9905,7 @@
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -9787,6 +9952,7 @@
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -9801,7 +9967,6 @@
         "boards": [
             "glimmer"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -9811,6 +9976,7 @@
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -9834,19 +10000,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "glimmer"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "glimmer-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "glimmer"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "glimmer-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "glimmer-tot-chrome-pfq-informational-gn": {
@@ -9854,6 +10023,7 @@
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "glimmer-tot-chromium-pfq-informational": {
@@ -9861,6 +10031,7 @@
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -9870,6 +10041,7 @@
         "boards": [
             "glimmer"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -9893,6 +10065,7 @@
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -9901,6 +10074,7 @@
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -9950,6 +10124,7 @@
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -9996,6 +10171,7 @@
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10010,7 +10186,6 @@
         "boards": [
             "gnawty"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -10020,6 +10195,7 @@
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -10043,19 +10219,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "gnawty"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "gnawty-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "gnawty"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "gnawty-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "gnawty-tot-chrome-pfq-informational-gn": {
@@ -10063,6 +10242,7 @@
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "gnawty-tot-chromium-pfq-informational": {
@@ -10070,6 +10250,7 @@
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -10079,6 +10260,7 @@
         "boards": [
             "gnawty"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -10310,6 +10492,7 @@
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -10318,6 +10501,7 @@
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -10341,6 +10525,7 @@
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -10387,6 +10572,7 @@
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10401,7 +10587,6 @@
         "boards": [
             "guado"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -10411,6 +10596,7 @@
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -10434,19 +10620,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "guado"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "guado-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "guado"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "guado-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "guado-tot-chrome-pfq-informational-gn": {
@@ -10454,6 +10643,7 @@
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "guado-tot-chromium-pfq-informational": {
@@ -10461,6 +10651,7 @@
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -10470,6 +10661,7 @@
         "boards": [
             "guado"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -10493,6 +10685,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -10501,6 +10694,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -10524,6 +10718,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -10570,6 +10765,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10584,6 +10780,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": true\n}"
         ],
@@ -10600,6 +10797,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -10623,19 +10821,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "guado_labstation"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "guado_labstation-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "guado_labstation"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "guado_labstation-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "guado_labstation-tot-chrome-pfq-informational-gn": {
@@ -10643,6 +10844,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "guado_labstation-tot-chromium-pfq-informational": {
@@ -10650,6 +10852,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -10659,6 +10862,7 @@
         "boards": [
             "guado_labstation"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -11007,7 +11211,6 @@
         "boards": [
             "hana"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -11113,6 +11316,7 @@
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -11121,6 +11325,7 @@
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -11163,6 +11368,7 @@
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -11209,6 +11415,7 @@
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11223,7 +11430,6 @@
         "boards": [
             "heli"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -11233,6 +11439,7 @@
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -11256,19 +11463,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "heli"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "heli-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "heli"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "heli-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "heli-tot-chrome-pfq-informational-gn": {
@@ -11276,6 +11486,7 @@
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "heli-tot-chromium-pfq-informational": {
@@ -11283,6 +11494,7 @@
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -11292,6 +11504,7 @@
         "boards": [
             "heli"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -11315,6 +11528,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -11323,6 +11537,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -11372,6 +11587,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -11418,6 +11634,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11432,6 +11649,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "important": true
     },
     "jecht-release-afdo": {
@@ -11439,6 +11657,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -11462,19 +11681,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "jecht"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "jecht-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "jecht"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "jecht-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "jecht-tot-chrome-pfq-informational-gn": {
@@ -11482,6 +11704,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "jecht-tot-chromium-pfq-informational": {
@@ -11489,6 +11712,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -11498,6 +11722,7 @@
         "boards": [
             "jecht"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -11521,6 +11746,7 @@
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -11529,6 +11755,7 @@
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -11559,6 +11786,7 @@
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -11605,6 +11833,7 @@
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11619,7 +11848,6 @@
         "boards": [
             "kefka"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -11629,6 +11857,7 @@
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -11652,19 +11881,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "kefka"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "kefka-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "kefka"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "kefka-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "kefka-tot-chrome-pfq-informational-gn": {
@@ -11672,6 +11904,7 @@
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "kefka-tot-chromium-pfq-informational": {
@@ -11679,6 +11912,7 @@
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -11688,6 +11922,7 @@
         "boards": [
             "kefka"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -11900,7 +12135,6 @@
         "boards": [
             "kevin"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -12007,6 +12241,7 @@
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -12015,6 +12250,7 @@
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -12064,6 +12300,7 @@
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -12113,6 +12350,7 @@
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12127,7 +12365,6 @@
         "boards": [
             "kip"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -12137,6 +12374,7 @@
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -12160,19 +12398,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "kip"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "kip-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "kip"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "kip-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "kip-tot-chrome-pfq-informational-gn": {
@@ -12180,6 +12421,7 @@
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "kip-tot-chromium-pfq-informational": {
@@ -12187,6 +12429,7 @@
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -12196,6 +12439,7 @@
         "boards": [
             "kip"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -12512,6 +12756,7 @@
         "boards": [
             "lakitu"
         ],
+        "buildslave_type": "baremetal",
         "description": "Incremental Builds (internal)",
         "disk_layout": "base",
         "factory": false,
@@ -12556,6 +12801,7 @@
         "boards": [
             "lakitu"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "description": "Commit Queue (internal)",
         "disk_layout": "base",
@@ -12801,6 +13047,7 @@
         "boards": [
             "lakitu_next"
         ],
+        "buildslave_type": "baremetal",
         "description": "Incremental Builds (internal)",
         "disk_layout": "base",
         "factory": false,
@@ -12845,6 +13092,7 @@
         "boards": [
             "lakitu_next"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "description": "Commit Queue (internal)",
         "disk_layout": "base",
@@ -13221,6 +13469,7 @@
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -13229,6 +13478,7 @@
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -13278,6 +13528,7 @@
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -13324,6 +13575,7 @@
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13338,7 +13590,6 @@
         "boards": [
             "leon"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -13348,6 +13599,7 @@
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -13371,19 +13623,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "leon"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "leon-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "leon"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "leon-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "leon-tot-chrome-pfq-informational-gn": {
@@ -13391,6 +13646,7 @@
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "leon-tot-chromium-pfq-informational": {
@@ -13398,6 +13654,7 @@
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -13407,6 +13664,7 @@
         "boards": [
             "leon"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -13430,6 +13688,7 @@
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -13438,6 +13697,7 @@
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -13488,6 +13748,7 @@
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -13556,6 +13817,7 @@
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13570,7 +13832,6 @@
         "boards": [
             "link"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -13580,6 +13841,7 @@
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -13603,19 +13865,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "link"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "link-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "link"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "link-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "link-tot-chrome-pfq-informational-gn": {
@@ -13623,6 +13888,7 @@
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "link-tot-chromium-pfq-informational": {
@@ -13630,6 +13896,7 @@
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -13639,6 +13906,7 @@
         "boards": [
             "link"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -13972,7 +14240,6 @@
         "boards": [
             "lulu"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -14089,6 +14356,7 @@
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}",
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -14106,6 +14374,7 @@
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -14136,6 +14405,7 @@
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -14205,6 +14475,7 @@
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14219,7 +14490,6 @@
         "boards": [
             "lumpy"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "critical_for_chrome": true,
         "important": true,
@@ -14230,6 +14500,7 @@
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -14253,19 +14524,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "lumpy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "lumpy-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "lumpy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "lumpy-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "lumpy-tot-chrome-pfq-informational-gn": {
@@ -14273,6 +14547,7 @@
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "lumpy-tot-chromium-pfq-informational": {
@@ -14280,6 +14555,7 @@
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -14289,6 +14565,7 @@
         "boards": [
             "lumpy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -14313,6 +14590,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "description": "Incremental Builds (internal)",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14322,7 +14600,7 @@
         "_template": "android_pfq",
         "active_waterfall": "chromeos",
         "boards": [],
-        "buildslave_type": "gce_wimpy",
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "master": true,
@@ -14334,6 +14612,7 @@
         "afdo_update_ebuild": true,
         "binhost_test": true,
         "boards": [],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com",
@@ -14349,6 +14628,7 @@
         "auto_reboot": false,
         "binhost_test": true,
         "boards": [],
+        "buildslave_type": "gce_wimpy",
         "description": "Commit Queue master (all others are slaves)",
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com",
@@ -14377,7 +14657,7 @@
         "afdo_use": false,
         "boards": [],
         "branch_util_test": true,
-        "buildslave_type": "gce_wimpy",
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "health_alert_recipients": [
             "tree"
@@ -14405,6 +14685,7 @@
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -14413,6 +14694,7 @@
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -14436,6 +14718,7 @@
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -14482,6 +14765,7 @@
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14496,7 +14780,6 @@
         "boards": [
             "mccloud"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -14506,6 +14789,7 @@
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -14529,19 +14813,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "mccloud"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "mccloud-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "mccloud"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "mccloud-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "mccloud-tot-chrome-pfq-informational-gn": {
@@ -14549,6 +14836,7 @@
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "mccloud-tot-chromium-pfq-informational": {
@@ -14556,6 +14844,7 @@
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -14565,6 +14854,7 @@
         "boards": [
             "mccloud"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -14695,6 +14985,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "wificell_pre_cq",
@@ -14773,6 +15064,7 @@
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -14781,6 +15073,7 @@
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -14811,6 +15104,7 @@
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -14857,6 +15151,7 @@
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14871,7 +15166,6 @@
         "boards": [
             "monroe"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -14881,6 +15175,7 @@
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -14904,19 +15199,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "monroe"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "monroe-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "monroe"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "monroe-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "monroe-tot-chrome-pfq-informational-gn": {
@@ -14924,6 +15222,7 @@
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "monroe-tot-chromium-pfq-informational": {
@@ -14931,6 +15230,7 @@
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -14940,6 +15240,7 @@
         "boards": [
             "monroe"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -14963,6 +15264,7 @@
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -14971,6 +15273,7 @@
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -15020,6 +15323,7 @@
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -15066,6 +15370,7 @@
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15080,7 +15385,6 @@
         "boards": [
             "ninja"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -15090,6 +15394,7 @@
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -15113,19 +15418,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "ninja"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "ninja-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "ninja"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "ninja-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "ninja-tot-chrome-pfq-informational-gn": {
@@ -15133,6 +15441,7 @@
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "ninja-tot-chromium-pfq-informational": {
@@ -15140,6 +15449,7 @@
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -15149,6 +15459,7 @@
         "boards": [
             "ninja"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -15714,7 +16025,6 @@
         "boards": [
             "nyan_blaze"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -15920,7 +16230,6 @@
         "boards": [
             "nyan_kitty"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -16229,6 +16538,7 @@
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -16237,6 +16547,7 @@
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -16286,6 +16597,7 @@
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -16332,6 +16644,7 @@
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -16346,7 +16659,6 @@
         "boards": [
             "orco"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -16356,6 +16668,7 @@
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -16379,19 +16692,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "orco"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "orco-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "orco"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "orco-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "orco-tot-chrome-pfq-informational-gn": {
@@ -16399,6 +16715,7 @@
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "orco-tot-chromium-pfq-informational": {
@@ -16406,6 +16723,7 @@
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -16415,6 +16733,7 @@
         "boards": [
             "orco"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -16438,6 +16757,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -16446,6 +16766,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -16476,6 +16797,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -16522,6 +16844,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -16536,7 +16859,6 @@
         "boards": [
             "panther"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -16546,6 +16868,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -16569,13 +16892,15 @@
         "_template": "release_afdo_generate",
         "boards": [
             "panther"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "panther-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "panther"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "panther-test-ap": {
         "_template": "test_ap",
@@ -16588,6 +16913,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "panther-tot-chrome-pfq-informational-gn": {
@@ -16595,6 +16921,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "panther-tot-chromium-pfq-informational": {
@@ -16602,6 +16929,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -16611,6 +16939,7 @@
         "boards": [
             "panther"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -16642,6 +16971,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -16650,6 +16980,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -16680,6 +17011,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -16704,6 +17036,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "internal": true,
         "manifest": "official.xml",
@@ -16734,6 +17067,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -16748,6 +17082,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "critical_for_chrome": true,
         "important": true
     },
@@ -16756,6 +17091,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -16779,19 +17115,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "parrot"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "parrot-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "parrot"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "parrot-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "parrot-tot-chrome-pfq-informational-gn": {
@@ -16799,6 +17138,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "parrot-tot-chromium-pfq-informational": {
@@ -16806,6 +17146,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -16815,6 +17156,7 @@
         "boards": [
             "parrot"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -16838,6 +17180,7 @@
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -16846,6 +17189,7 @@
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -16869,6 +17213,7 @@
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -16915,6 +17260,7 @@
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -16929,7 +17275,6 @@
         "boards": [
             "parrot_ivb"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -16939,6 +17284,7 @@
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -16962,19 +17308,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "parrot_ivb"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "parrot_ivb-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "parrot_ivb"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "parrot_ivb-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "parrot_ivb-tot-chrome-pfq-informational-gn": {
@@ -16982,6 +17331,7 @@
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "parrot_ivb-tot-chromium-pfq-informational": {
@@ -16989,6 +17339,7 @@
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -16998,6 +17349,7 @@
         "boards": [
             "parrot_ivb"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -17021,6 +17373,7 @@
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -17029,6 +17382,7 @@
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -17059,6 +17413,7 @@
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -17105,6 +17460,7 @@
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17119,7 +17475,6 @@
         "boards": [
             "pbody"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": []
     },
@@ -17128,6 +17483,7 @@
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -17151,19 +17507,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "pbody"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "pbody-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "pbody"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "pbody-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "pbody-tot-chrome-pfq-informational-gn": {
@@ -17171,6 +17530,7 @@
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "pbody-tot-chromium-pfq-informational": {
@@ -17178,6 +17538,7 @@
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -17187,6 +17548,7 @@
         "boards": [
             "pbody"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -17313,7 +17675,6 @@
         "boards": [
             "peach_pi"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -17659,6 +18020,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "peppy-chromium-pfq": {
@@ -17666,6 +18028,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -17696,6 +18059,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -17763,6 +18127,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17777,6 +18142,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "important": true
     },
     "peppy-release-afdo": {
@@ -17784,6 +18150,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -17807,19 +18174,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "peppy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "peppy-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "peppy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "peppy-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "peppy-tot-chrome-pfq-informational-gn": {
@@ -17827,6 +18197,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "peppy-tot-chromium-pfq-informational": {
@@ -17834,6 +18205,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -17843,6 +18215,7 @@
         "boards": [
             "peppy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -18196,7 +18569,6 @@
         "boards": [
             "pyro"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -18302,6 +18674,7 @@
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -18310,6 +18683,7 @@
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -18359,6 +18733,7 @@
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -18405,6 +18780,7 @@
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18419,7 +18795,6 @@
         "boards": [
             "quawks"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -18429,6 +18804,7 @@
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -18452,19 +18828,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "quawks"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "quawks-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "quawks"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "quawks-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "quawks-tot-chrome-pfq-informational-gn": {
@@ -18472,6 +18851,7 @@
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "quawks-tot-chromium-pfq-informational": {
@@ -18479,6 +18859,7 @@
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -18488,6 +18869,7 @@
         "boards": [
             "quawks"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -18511,6 +18893,7 @@
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -18519,6 +18902,7 @@
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -18568,6 +18952,7 @@
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -18591,6 +18976,7 @@
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "important": false,
         "internal": true,
@@ -18616,6 +19002,7 @@
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18628,13 +19015,15 @@
         "_template": "release",
         "boards": [
             "rambi"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "rambi-release-afdo": {
         "_template": "release_afdo_generate",
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -18658,19 +19047,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "rambi"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "rambi-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "rambi"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "rambi-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "rambi-tot-chrome-pfq-informational-gn": {
@@ -18678,6 +19070,7 @@
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "rambi-tot-chromium-pfq-informational": {
@@ -18685,6 +19078,7 @@
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -18694,6 +19088,7 @@
         "boards": [
             "rambi"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -19020,7 +19415,6 @@
         "boards": [
             "reks"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -19127,6 +19521,7 @@
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -19135,6 +19530,7 @@
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -19165,6 +19561,7 @@
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -19211,6 +19608,7 @@
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19225,7 +19623,6 @@
         "boards": [
             "relm"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -19235,6 +19632,7 @@
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -19258,19 +19656,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "relm"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "relm-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "relm"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "relm-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "relm-tot-chrome-pfq-informational-gn": {
@@ -19278,6 +19679,7 @@
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "relm-tot-chromium-pfq-informational": {
@@ -19285,6 +19687,7 @@
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -19294,6 +19697,7 @@
         "boards": [
             "relm"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -19317,6 +19721,7 @@
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -19325,6 +19730,7 @@
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -19374,6 +19780,7 @@
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -19420,6 +19827,7 @@
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19434,7 +19842,6 @@
         "boards": [
             "rikku"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -19444,6 +19851,7 @@
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -19467,19 +19875,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "rikku"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "rikku-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "rikku"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "rikku-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "rikku-tot-chrome-pfq-informational-gn": {
@@ -19487,6 +19898,7 @@
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "rikku-tot-chromium-pfq-informational": {
@@ -19494,6 +19906,7 @@
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -19503,6 +19916,7 @@
         "boards": [
             "rikku"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -19744,6 +20158,7 @@
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -19752,6 +20167,7 @@
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -19775,6 +20191,7 @@
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -19821,6 +20238,7 @@
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19835,7 +20253,6 @@
         "boards": [
             "samus-cheets"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": []
     },
@@ -19844,6 +20261,7 @@
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -19867,19 +20285,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "samus-cheets"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "samus-cheets-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "samus-cheets"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "samus-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "samus-cheets-tot-chrome-pfq-informational-gn": {
@@ -19887,6 +20308,7 @@
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "samus-cheets-tot-chromium-pfq-informational": {
@@ -19894,6 +20316,7 @@
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -19903,6 +20326,7 @@
         "boards": [
             "samus-cheets"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -20502,7 +20926,6 @@
         "boards": [
             "sentry"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -20712,7 +21135,6 @@
         "boards": [
             "setzer"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -20830,6 +21252,7 @@
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -20838,6 +21261,7 @@
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -20868,6 +21292,7 @@
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -20914,6 +21339,7 @@
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -20926,13 +21352,15 @@
         "_template": "release",
         "boards": [
             "slippy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "slippy-release-afdo": {
         "_template": "release_afdo_generate",
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -20956,19 +21384,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "slippy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "slippy-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "slippy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "slippy-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "slippy-tot-chrome-pfq-informational-gn": {
@@ -20976,6 +21407,7 @@
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "slippy-tot-chromium-pfq-informational": {
@@ -20983,6 +21415,7 @@
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -20992,6 +21425,7 @@
         "boards": [
             "slippy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -21610,7 +22044,6 @@
         "boards": [
             "snappy"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -21716,6 +22149,7 @@
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -21724,6 +22158,7 @@
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -21773,6 +22208,7 @@
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -21837,6 +22273,7 @@
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -21851,7 +22288,6 @@
         "boards": [
             "squawks"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -21861,6 +22297,7 @@
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -21884,19 +22321,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "squawks"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "squawks-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "squawks"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "squawks-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "squawks-tot-chrome-pfq-informational-gn": {
@@ -21904,6 +22344,7 @@
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "squawks-tot-chromium-pfq-informational": {
@@ -21911,6 +22352,7 @@
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -21920,6 +22362,7 @@
         "boards": [
             "squawks"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -22126,6 +22569,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -22134,6 +22578,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -22164,6 +22609,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -22188,6 +22634,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "internal": true,
         "manifest": "official.xml",
@@ -22212,6 +22659,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -22226,6 +22674,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "important": true
     },
     "stout-release-afdo": {
@@ -22233,6 +22682,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -22256,19 +22706,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "stout"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "stout-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "stout"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "stout-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "stout-tot-chrome-pfq-informational-gn": {
@@ -22276,6 +22729,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "stout-tot-chromium-pfq-informational": {
@@ -22283,6 +22737,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -22292,6 +22747,7 @@
         "boards": [
             "stout"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -22540,6 +22996,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -22548,6 +23005,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -22578,6 +23036,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -22627,6 +23086,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -22641,7 +23101,6 @@
         "boards": [
             "stumpy"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -22651,6 +23110,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -22674,13 +23134,15 @@
         "_template": "release_afdo_generate",
         "boards": [
             "stumpy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "stumpy-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "stumpy"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "stumpy-test-ap": {
         "_template": "test_ap",
@@ -22693,6 +23155,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "stumpy-tot-chrome-pfq-informational-gn": {
@@ -22700,6 +23163,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "stumpy-tot-chromium-pfq-informational": {
@@ -22707,6 +23171,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -22716,6 +23181,7 @@
         "boards": [
             "stumpy"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -22739,6 +23205,7 @@
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -22747,6 +23214,7 @@
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -22796,6 +23264,7 @@
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -22842,6 +23311,7 @@
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -22856,7 +23326,6 @@
         "boards": [
             "sumo"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -22866,6 +23335,7 @@
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -22889,19 +23359,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "sumo"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "sumo-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "sumo"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "sumo-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "sumo-tot-chrome-pfq-informational-gn": {
@@ -22909,6 +23382,7 @@
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "sumo-tot-chromium-pfq-informational": {
@@ -22916,6 +23390,7 @@
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -22925,6 +23400,7 @@
         "boards": [
             "sumo"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -22948,6 +23424,7 @@
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -22956,6 +23433,7 @@
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -23005,6 +23483,7 @@
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -23051,6 +23530,7 @@
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23065,7 +23545,6 @@
         "boards": [
             "swanky"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -23075,6 +23554,7 @@
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -23098,19 +23578,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "swanky"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "swanky-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "swanky"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "swanky-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "swanky-tot-chrome-pfq-informational-gn": {
@@ -23118,6 +23601,7 @@
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "swanky-tot-chromium-pfq-informational": {
@@ -23125,6 +23609,7 @@
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -23134,6 +23619,7 @@
         "boards": [
             "swanky"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -23157,6 +23643,7 @@
         "boards": [],
         "build_type": "binary",
         "builder_class_name": "test_builders.ManifestVersionedSyncBuilder",
+        "buildslave_type": "baremetal",
         "description": "Sync tryjob to help with cbuildbot development",
         "hw_tests_override": []
     },
@@ -23286,7 +23773,6 @@
         "boards": [
             "terra"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -23426,6 +23912,7 @@
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -23434,6 +23921,7 @@
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -23457,6 +23945,7 @@
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -23503,6 +23992,7 @@
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23517,7 +24007,6 @@
         "boards": [
             "tidus"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -23527,6 +24016,7 @@
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -23550,19 +24040,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "tidus"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "tidus-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "tidus"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "tidus-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "tidus-tot-chrome-pfq-informational-gn": {
@@ -23570,6 +24063,7 @@
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "tidus-tot-chromium-pfq-informational": {
@@ -23577,6 +24071,7 @@
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -23586,6 +24081,7 @@
         "boards": [
             "tidus"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -23610,6 +24106,7 @@
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -23622,6 +24119,7 @@
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -23645,6 +24143,7 @@
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -23691,6 +24190,7 @@
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23705,7 +24205,6 @@
         "boards": [
             "tricky"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -23715,6 +24214,7 @@
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -23738,19 +24238,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "tricky"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "tricky-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "tricky"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "tricky-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"continuous\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"continuous\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
@@ -23762,6 +24265,7 @@
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "tricky-tot-chromium-pfq-informational": {
@@ -23769,6 +24273,7 @@
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -23778,6 +24283,7 @@
         "boards": [
             "tricky"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -23897,7 +24403,6 @@
         "boards": [
             "ultima"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -24100,7 +24605,6 @@
         "boards": [
             "umaro"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -24303,7 +24807,6 @@
         "boards": [
             "veyron_fievel"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -24505,7 +25008,6 @@
         "boards": [
             "veyron_jaq"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -24708,7 +25210,6 @@
         "boards": [
             "veyron_jerry"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -24925,7 +25426,6 @@
         "boards": [
             "veyron_mickey"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -25130,7 +25630,6 @@
         "boards": [
             "veyron_mighty"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -25351,7 +25850,6 @@
         "boards": [
             "veyron_minnie-cheets"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -25960,7 +26458,6 @@
         "boards": [
             "veyron_rialto"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -26166,7 +26663,6 @@
         "boards": [
             "veyron_speedy"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -26383,7 +26879,6 @@
         "boards": [
             "veyron_tiger"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
@@ -26600,7 +27095,6 @@
         "boards": [
             "whirlwind"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "important": true,
@@ -26674,6 +27168,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -26682,6 +27177,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -26731,6 +27227,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -26780,6 +27277,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -26794,7 +27292,6 @@
         "boards": [
             "winky"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -26804,6 +27301,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -26827,19 +27325,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "winky"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "winky-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "winky"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "winky-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "winky-tot-chrome-pfq-informational-gn": {
@@ -26847,6 +27348,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "winky-tot-chromium-pfq-informational": {
@@ -26854,6 +27356,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -26863,6 +27366,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -26886,6 +27390,7 @@
         "boards": [
             "winky"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -26995,7 +27500,6 @@
         "boards": [
             "wizpig"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": [],
@@ -27102,6 +27606,7 @@
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -27110,6 +27615,7 @@
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -27140,6 +27646,7 @@
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -27189,6 +27696,7 @@
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27203,7 +27711,6 @@
         "boards": [
             "wolf"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -27213,6 +27720,7 @@
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -27236,19 +27744,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "wolf"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "wolf-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "wolf"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "wolf-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "wolf-tot-chrome-pfq-informational-gn": {
@@ -27256,6 +27767,7 @@
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "wolf-tot-chromium-pfq-informational": {
@@ -27263,6 +27775,7 @@
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -27272,6 +27785,7 @@
         "boards": [
             "wolf"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -27318,6 +27832,7 @@
         "boards": [
             "x32-generic"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -27336,6 +27851,7 @@
         "boards": [
             "x32-generic"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -27362,6 +27878,7 @@
         "boards": [
             "x32-generic"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "usepkg_toolchain": false
     },
@@ -27370,6 +27887,7 @@
         "boards": [
             "x32-generic"
         ],
+        "buildslave_type": "baremetal",
         "usepkg_toolchain": false
     },
     "x32-generic-tot-chromium-pfq-informational": {
@@ -27377,6 +27895,7 @@
         "boards": [
             "x32-generic"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ],
@@ -27387,6 +27906,7 @@
         "boards": [
             "x32-generic"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -27406,6 +27926,7 @@
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-alex-chromium-pfq": {
@@ -27413,6 +27934,7 @@
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -27436,6 +27958,7 @@
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -27485,6 +28008,7 @@
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27499,7 +28023,6 @@
         "boards": [
             "x86-alex"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -27509,6 +28032,7 @@
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -27532,19 +28056,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "x86-alex"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-alex-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "x86-alex"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-alex-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-alex-tot-chrome-pfq-informational-gn": {
@@ -27552,6 +28079,7 @@
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-alex-tot-chromium-pfq-informational": {
@@ -27559,6 +28087,7 @@
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -27568,6 +28097,7 @@
         "boards": [
             "x86-alex"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -27591,6 +28121,7 @@
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -27599,6 +28130,7 @@
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -27622,6 +28154,7 @@
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -27668,6 +28201,7 @@
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27682,7 +28216,6 @@
         "boards": [
             "x86-alex_he"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -27692,6 +28225,7 @@
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -27715,19 +28249,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "x86-alex_he"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-alex_he-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "x86-alex_he"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-alex_he-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-alex_he-tot-chrome-pfq-informational-gn": {
@@ -27735,6 +28272,7 @@
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-alex_he-tot-chromium-pfq-informational": {
@@ -27742,6 +28280,7 @@
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -27751,6 +28290,7 @@
         "boards": [
             "x86-alex_he"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -27792,6 +28332,7 @@
             "x86-generic"
         ],
         "build_type": "binary",
+        "buildslave_type": "baremetal",
         "description": "Build with Address Sanitizer (Clang)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "hw_tests": [
@@ -27810,6 +28351,7 @@
         "boards": [
             "x86-generic"
         ],
+        "buildslave_type": "baremetal",
         "description": "Paladin build with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
@@ -27829,6 +28371,7 @@
         "boards": [
             "x86-generic"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -27845,6 +28388,7 @@
         "boards": [
             "x86-generic"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -27855,7 +28399,8 @@
         "active_waterfall": "chromiumos",
         "boards": [
             "x86-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-generic-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -27886,19 +28431,22 @@
         "active_waterfall": "chromiumos",
         "boards": [
             "x86-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-generic-pre-cq": {
         "_template": "pre_cq",
         "boards": [
             "x86-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-generic-telem-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "x86-generic"
         ],
+        "buildslave_type": "baremetal",
         "description": "Telemetry Builds",
         "vm_tests": [
             "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 7200\n}"
@@ -27908,19 +28456,22 @@
         "_template": "telemetry",
         "boards": [
             "x86-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-generic-tot-asan-informational": {
         "_template": "tot_asan_informational",
         "boards": [
             "x86-generic"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-generic-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "x86-generic"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -27930,6 +28481,7 @@
         "boards": [
             "x86-generic"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -27978,6 +28530,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -27986,6 +28539,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -28022,6 +28576,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -28064,6 +28619,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "description": "Commit Queue (internal)",
         "internal": true,
         "manifest": "official.xml",
@@ -28088,6 +28644,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28100,13 +28657,15 @@
         "_template": "release",
         "boards": [
             "x86-mario"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-mario-release-afdo": {
         "_template": "release_afdo_generate",
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -28130,19 +28689,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "x86-mario"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-mario-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "x86-mario"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-mario-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-mario-tot-chrome-pfq-informational-gn": {
@@ -28150,6 +28712,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-mario-tot-chromium-pfq-informational": {
@@ -28157,6 +28720,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28166,6 +28730,7 @@
         "boards": [
             "x86-mario"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -28189,6 +28754,7 @@
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -28197,6 +28763,7 @@
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -28220,6 +28787,7 @@
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -28269,6 +28837,7 @@
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28283,7 +28852,6 @@
         "boards": [
             "x86-zgb"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -28293,6 +28861,7 @@
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -28316,19 +28885,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "x86-zgb"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-zgb-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "x86-zgb"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-zgb-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-zgb-tot-chrome-pfq-informational-gn": {
@@ -28336,6 +28908,7 @@
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-zgb-tot-chromium-pfq-informational": {
@@ -28343,6 +28916,7 @@
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28352,6 +28926,7 @@
         "boards": [
             "x86-zgb"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -28375,6 +28950,7 @@
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -28383,6 +28959,7 @@
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -28406,6 +28983,7 @@
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -28452,6 +29030,7 @@
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28466,7 +29045,6 @@
         "boards": [
             "x86-zgb_he"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -28476,6 +29054,7 @@
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -28499,19 +29078,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "x86-zgb_he"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-zgb_he-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "x86-zgb_he"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "x86-zgb_he-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-zgb_he-tot-chrome-pfq-informational-gn": {
@@ -28519,6 +29101,7 @@
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "x86-zgb_he-tot-chromium-pfq-informational": {
@@ -28526,6 +29109,7 @@
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28535,6 +29119,7 @@
         "boards": [
             "x86-zgb_he"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -28558,6 +29143,7 @@
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "manifest": "official.xml"
     },
@@ -28566,6 +29152,7 @@
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
@@ -28615,6 +29202,7 @@
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -28661,6 +29249,7 @@
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28675,7 +29264,6 @@
         "boards": [
             "zako"
         ],
-        "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
         "vm_tests": []
@@ -28685,6 +29273,7 @@
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "release_afdo_generate",
@@ -28708,19 +29297,22 @@
         "_template": "release_afdo_generate",
         "boards": [
             "zako"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "zako-release-afdo-use": {
         "_template": "release_afdo_use",
         "boards": [
             "zako"
-        ]
+        ],
+        "buildslave_type": "baremetal"
     },
     "zako-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "zako-tot-chrome-pfq-informational-gn": {
@@ -28728,6 +29320,7 @@
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
     "zako-tot-chromium-pfq-informational": {
@@ -28735,6 +29328,7 @@
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
         ]
@@ -28744,6 +29338,7 @@
         "boards": [
             "zako"
         ],
+        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal",
             "gn"
