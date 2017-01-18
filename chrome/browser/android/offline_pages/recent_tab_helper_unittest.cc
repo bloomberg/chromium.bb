@@ -189,8 +189,7 @@ void RecentTabHelperTest::SetUp() {
   RunUntilIdle();
 
   RecentTabHelper::CreateForWebContents(web_contents());
-  recent_tab_helper_ =
-      RecentTabHelper::FromWebContents(web_contents());
+  recent_tab_helper_ = RecentTabHelper::FromWebContents(web_contents());
 
   recent_tab_helper_->SetDelegate(base::MakeUnique<TestDelegate>(
       this, task_runner(), kTabId, true));

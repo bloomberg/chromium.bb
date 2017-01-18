@@ -54,11 +54,13 @@ class DefaultDelegate: public offline_pages::RecentTabHelper::Delegate {
 
 namespace offline_pages {
 
+bool RecentTabHelper::SnapshotProgressInfo::IsForLastN() {
+  // A last_n snapshot always has an invalid request id.
+  return request_id == OfflinePageModel::kInvalidOfflineId;
+}
+
 RecentTabHelper::RecentTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      page_model_(nullptr),
-      snapshots_enabled_(false),
-      is_page_ready_for_snapshot_(false),
       delegate_(new DefaultDelegate()),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -76,13 +78,15 @@ void RecentTabHelper::SetDelegate(
 void RecentTabHelper::ObserveAndDownloadCurrentPage(
     const ClientId& client_id, int64_t request_id) {
   EnsureInitialized();
-  download_info_ = base::MakeUnique<DownloadPageInfo>(client_id, request_id);
+  snapshot_info_ =
+      base::MakeUnique<SnapshotProgressInfo>(client_id, request_id);
 
   // If this tab helper is not enabled, immediately give the job back to
   // RequestCoordinator.
   if (!snapshots_enabled_ || !page_model_) {
     ReportDownloadStatusToRequestCoordinator();
-    download_info_.reset();
+    weak_ptr_factory_.InvalidateWeakPtrs();
+    snapshot_info_.reset();
     return;
   }
 
@@ -133,29 +137,29 @@ void RecentTabHelper::EnsureInitialized() {
 
 void RecentTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage() ||
       !navigation_handle->HasCommitted()) {
     return;
   }
-
-  // Cancel tasks in flight that relate to the previous page.
-  weak_ptr_factory_.InvalidateWeakPtrs();
 
   EnsureInitialized();
   if (!snapshots_enabled_)
     return;
 
+  // Cancel tasks in flight that relate to the previous page.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   // We navigated to a different page, lets report progress to Background
   // Offliner.
-  if (download_info_ && !navigation_handle->IsSamePage()) {
-    ReportDownloadStatusToRequestCoordinator();
-  }
+  ReportDownloadStatusToRequestCoordinator();
 
   if (offline_pages::IsOffliningRecentPagesEnabled()) {
-    download_info_ = base::MakeUnique<DownloadPageInfo>(
-        GetRecentPagesClientId(), OfflinePageModel::kInvalidOfflineId);
+    // Note: at any point in time |snapshot_info_| might be replaced with one
+    // created by ObserveAndDownloadCurrentPage for a download snapshot request.
+    snapshot_info_ =
+        base::MakeUnique<SnapshotProgressInfo>(GetRecentPagesClientId());
   } else {
-    download_info_.reset();
+    snapshot_info_.reset();
   }
 
   is_page_ready_for_snapshot_ = false;
@@ -190,8 +194,6 @@ void RecentTabHelper::DocumentOnLoadCompletedInMainFrame() {
 
 void RecentTabHelper::WebContentsDestroyed() {
   // WebContents (and maybe Tab) is destroyed, report status to Offliner.
-  if (!download_info_)
-    return;
   ReportDownloadStatusToRequestCoordinator();
 }
 
@@ -205,9 +207,7 @@ void RecentTabHelper::WebContentsDestroyed() {
 void RecentTabHelper::StartSnapshot() {
   is_page_ready_for_snapshot_ = true;
 
-  if (!snapshots_enabled_ ||
-      !page_model_ ||
-      !download_info_) {
+  if (!snapshots_enabled_ || !page_model_ || !snapshot_info_) {
     ReportSnapshotCompleted();
     return;
   }
@@ -221,12 +221,11 @@ void RecentTabHelper::StartSnapshot() {
 
 void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
     const std::vector<int64_t>& page_ids) {
-  if (!download_info_)
-    return;
+  DCHECK(snapshot_info_);
 
   // Also remove the download page if this is not a first snapshot.
   std::vector<int64_t> ids(page_ids);
-  ids.push_back(download_info_->request_id_);
+  ids.push_back(snapshot_info_->request_id);
 
   page_model_->DeletePagesByOfflineId(
       ids, base::Bind(&RecentTabHelper::ContinueSnapshotAfterPurge,
@@ -235,17 +234,17 @@ void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
 
 void RecentTabHelper::ContinueSnapshotAfterPurge(
     OfflinePageModel::DeletePageResult result) {
-  if (!download_info_ ||
-      result != OfflinePageModel::DeletePageResult::SUCCESS ||
-      !IsSamePage()) {
+  DCHECK(snapshot_info_);
+  DCHECK_EQ(snapshot_url_, web_contents()->GetLastCommittedURL());
+  if (result != OfflinePageModel::DeletePageResult::SUCCESS) {
     ReportSnapshotCompleted();
     return;
   }
 
   OfflinePageModel::SavePageParams save_page_params;
   save_page_params.url = snapshot_url_;
-  save_page_params.client_id = download_info_->client_id_;
-  save_page_params.proposed_offline_id = download_info_->request_id_;
+  save_page_params.client_id = snapshot_info_->client_id;
+  save_page_params.proposed_offline_id = snapshot_info_->request_id;
   page_model_->SavePage(save_page_params,
                         delegate_->CreatePageArchiver(web_contents()),
                         base::Bind(&RecentTabHelper::SavePageCallback,
@@ -254,10 +253,8 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
 
 void RecentTabHelper::SavePageCallback(OfflinePageModel::SavePageResult result,
                                        int64_t offline_id) {
-  if (!download_info_)
-    return;
-  download_info_->page_snapshot_completed_ =
-      (result == SavePageResult::SUCCESS);
+  DCHECK(snapshot_info_);
+  snapshot_info_->page_snapshot_completed = (result == SavePageResult::SUCCESS);
   ReportSnapshotCompleted();
 }
 
@@ -268,10 +265,7 @@ void RecentTabHelper::ReportSnapshotCompleted() {
 }
 
 void RecentTabHelper::ReportDownloadStatusToRequestCoordinator() {
-  if (!download_info_)
-    return;
-
-  if (download_info_->request_id_ == OfflinePageModel::kInvalidOfflineId)
+  if (!snapshot_info_ || snapshot_info_->IsForLastN())
     return;
 
   RequestCoordinator* request_coordinator =
@@ -283,16 +277,11 @@ void RecentTabHelper::ReportDownloadStatusToRequestCoordinator() {
   // It is OK to call these methods more then once, depending on
   // number of snapshots attempted in this tab helper. If the request_id is not
   // in the list of RequestCoordinator, these calls have no effect.
-  if (download_info_->page_snapshot_completed_)
-    request_coordinator->MarkRequestCompleted(download_info_->request_id_);
+  if (snapshot_info_->page_snapshot_completed)
+    request_coordinator->MarkRequestCompleted(snapshot_info_->request_id);
   else
-    request_coordinator->EnableForOffliner(download_info_->request_id_,
-                                           download_info_->client_id_);
-}
-
-bool RecentTabHelper::IsSamePage() const {
-  return web_contents() &&
-         (web_contents()->GetLastCommittedURL() == snapshot_url_);
+    request_coordinator->EnableForOffliner(snapshot_info_->request_id,
+                                           snapshot_info_->client_id);
 }
 
 ClientId RecentTabHelper::GetRecentPagesClientId() const {
