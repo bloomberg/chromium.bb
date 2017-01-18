@@ -80,8 +80,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
-    // TODO(estevenson): Replace with Build.VERSION_CODES.N when available.
-    @TargetApi(24)
+    @TargetApi(Build.VERSION_CODES.N)
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
 
