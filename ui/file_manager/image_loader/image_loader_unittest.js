@@ -16,7 +16,7 @@ function testNormalImage() {
     maxHeight: 100,
     orientation: ImageOrientation.fromDriveOrientation(0)
   };
-  var result = ImageLoader.calculateCopyParameters(source, options);
+  var result = ImageLoaderUtil.calculateCopyParameters(source, options);
   assertEquals(0, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(200, result.source.width);
@@ -43,7 +43,7 @@ function testRotatedImage() {
     maxHeight: 100,
     orientation: ImageOrientation.fromDriveOrientation(1)
   };
-  var result = ImageLoader.calculateCopyParameters(source, options);
+  var result = ImageLoaderUtil.calculateCopyParameters(source, options);
   assertEquals(0, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(50, result.source.width);
@@ -71,7 +71,7 @@ function testCroppedImage() {
     crop: true,
     orientation: ImageOrientation.fromDriveOrientation(0)
   };
-  var result = ImageLoader.calculateCopyParameters(source, options);
+  var result = ImageLoaderUtil.calculateCopyParameters(source, options);
   assertEquals(350, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(100, result.source.width);
@@ -99,7 +99,7 @@ function testCroppedImageWithResize() {
     crop: true,
     orientation: ImageOrientation.fromDriveOrientation(0)
   };
-  var result = ImageLoader.calculateCopyParameters(source, options);
+  var result = ImageLoaderUtil.calculateCopyParameters(source, options);
   assertEquals(87, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(25, result.source.width);
@@ -127,7 +127,7 @@ function testCroppedTinyImage() {
     crop: true,
     orientation: ImageOrientation.fromDriveOrientation(0)
   };
-  var result = ImageLoader.calculateCopyParameters(source, options);
+  var result = ImageLoaderUtil.calculateCopyParameters(source, options);
   assertEquals(5, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(10, result.source.width);
@@ -155,7 +155,7 @@ function testCroppedRotatedImage() {
     crop: true,
     orientation: ImageOrientation.fromDriveOrientation(1)
   };
-  var result = ImageLoader.calculateCopyParameters(source, options);
+  var result = ImageLoaderUtil.calculateCopyParameters(source, options);
   assertEquals(0, result.source.x);
   assertEquals(150, result.source.y);
   assertEquals(100, result.source.width);
