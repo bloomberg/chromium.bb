@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# pylint: disable=relative-import
+
 """Functions for type handling and type conversion (Blink/C++ <-> V8/JS).
 
 Extends IdlType and IdlUnionType with V8-specific properties, methods, and
@@ -42,6 +44,7 @@ import posixpath
 from idl_types import IdlTypeBase, IdlType, IdlUnionType, IdlArrayOrSequenceType, IdlNullableType
 import v8_attributes  # for IdlType.constructor_type_name
 from v8_globals import includes
+from v8_utilities import extended_attribute_value_contains
 
 
 ################################################################################
@@ -810,6 +813,21 @@ V8_SET_RETURN_VALUE = {
     'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, {cpp_value})',
     'DOMWrapperFast': 'v8SetReturnValueFast(info, {cpp_value}, {script_wrappable})',
     'DOMWrapperDefault': 'v8SetReturnValue(info, {cpp_value})',
+    # If [CheckSecurity=ReturnValue] is specified, the returned object must be
+    # wrapped in its own realm, which can be different from the realm of the
+    # receiver object.
+    #
+    # [CheckSecurity=ReturnValue] is used only for contentDocument and
+    # getSVGDocument attributes of HTML{IFrame,Frame,Object,Embed}Element,
+    # and Window.frameElement.  Except for Window.frameElement, all interfaces
+    # support contentWindow(), so we create a new wrapper in the realm of
+    # contentWindow().  Note that DOMWindow* has its own realm and there is no
+    # need to pass |creationContext| in for ToV8(DOMWindow*).
+    # Window.frameElement is implemented with [Custom].
+    'DOMWrapperAcrossContext': (
+        'v8SetReturnValue(info, ToV8({cpp_value}, ' +
+        'ToV8(impl->contentWindow(), v8::Local<v8::Object>(), ' +
+        'info.GetIsolate()).As<v8::Object>(), info.GetIsolate()))'),
     # Note that static attributes and operations do not check whether |this| is
     # an instance of the interface nor |this|'s creation context is the same as
     # the current context.  So we must always use the current context as the
@@ -832,6 +850,10 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
 
     """
     def dom_wrapper_conversion_type():
+        if ('CheckSecurity' in extended_attributes and
+                extended_attribute_value_contains(
+                    extended_attributes['CheckSecurity'], 'ReturnValue')):
+            return 'DOMWrapperAcrossContext'
         if is_static:
             return 'DOMWrapperStatic'
         if not script_wrappable:

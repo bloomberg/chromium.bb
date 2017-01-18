@@ -38,7 +38,7 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world) {
   ScriptState::Scope scope(scriptState);
 
   v8::Local<v8::Object> wrapper = ensureHolderWrapper(scriptState);
-  ASSERT(wrapper->CreationContext() == context);
+  DCHECK(wrapper->CreationContext() == context);
 
   v8::Local<v8::Value> cachedPromise =
       V8HiddenValue::getHiddenValue(scriptState, wrapper, promiseName());
@@ -93,6 +93,7 @@ void ScriptPromisePropertyBase::resolveOrReject(State targetState) {
     v8::Local<v8::Promise::Resolver> resolver =
         V8HiddenValue::getHiddenValue(scriptState, wrapper, resolverName())
             .As<v8::Promise::Resolver>();
+    DCHECK(!resolver.IsEmpty());
 
     V8HiddenValue::deleteHiddenValue(scriptState, wrapper, resolverName());
     resolveOrRejectInternal(resolver);
@@ -148,6 +149,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(
   weakPersistent->set(m_isolate, wrapper);
   weakPersistent->setPhantom();
   m_wrappers.push_back(std::move(weakPersistent));
+  DCHECK(wrapper->CreationContext() == context);
   return wrapper;
 }
 
