@@ -244,7 +244,8 @@ void DeviceCloudPolicyInitializer::EnrollmentCompleted(
       enrollment_handler_->ReleaseClient();
   enrollment_handler_.reset();
 
-  if (status.status() == EnrollmentStatus::SUCCESS) {
+  if (status.status() == EnrollmentStatus::SUCCESS &&
+      !install_attributes_->IsActiveDirectoryManaged()) {
     StartConnection(std::move(client));
   } else {
     // Some attempts to create a client may be blocked because the enrollment
@@ -271,7 +272,8 @@ void DeviceCloudPolicyInitializer::TryToCreateClient() {
   if (!device_store_->is_initialized() ||
       !device_store_->has_policy() ||
       state_keys_broker_->pending() ||
-      enrollment_handler_) {
+      enrollment_handler_ ||
+      install_attributes_->IsActiveDirectoryManaged()) {
     return;
   }
   StartConnection(CreateClient(enterprise_service_));
