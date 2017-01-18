@@ -97,14 +97,14 @@ class ContentLoFiDeciderTest : public testing::Test {
 
   void AllocateRequestInfoForTesting(net::URLRequest* request,
                                      content::ResourceType resource_type,
-                                     bool is_using_lofi) {
+                                     content::PreviewsState previews_state) {
     content::ResourceRequestInfo::AllocateForTesting(
         request, resource_type, NULL, -1, -1, -1,
         resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
         false,  // parent_is_main_frame
         false,  // allow_download
         false,  // is_async
-        is_using_lofi ? content::SERVER_LOFI_ON : content::PREVIEWS_OFF);
+        previews_state);
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(bool is_main_frame,
@@ -114,7 +114,7 @@ class ContentLoFiDeciderTest : public testing::Test {
     AllocateRequestInfoForTesting(
         request.get(), (is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
                                       : content::RESOURCE_TYPE_SUB_FRAME),
-        is_using_lofi);
+        is_using_lofi ? content::SERVER_LOFI_ON : content::PREVIEWS_OFF);
     return request;
   }
 
@@ -126,7 +126,20 @@ class ContentLoFiDeciderTest : public testing::Test {
         context_.CreateRequest(GURL(scheme_is_https ? "https://www.google.com/"
                                                     : "http://www.google.com/"),
                                net::IDLE, &delegate_);
-    AllocateRequestInfoForTesting(request.get(), resource_type, is_using_lofi);
+    AllocateRequestInfoForTesting(
+        request.get(), resource_type,
+        is_using_lofi ? content::SERVER_LOFI_ON : content::PREVIEWS_OFF);
+    return request;
+  }
+
+  std::unique_ptr<net::URLRequest> CreateNoTransformRequest(
+      bool is_main_frame) {
+    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+        GURL("http://www.google.com/"), net::IDLE, &delegate_);
+    AllocateRequestInfoForTesting(
+        request.get(), (is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
+                                      : content::RESOURCE_TYPE_SUB_FRAME),
+        content::PREVIEWS_NO_TRANSFORM);
     return request;
   }
 
@@ -278,9 +291,10 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
 
     // The Lo-Fi flag is "always-on" and Lo-Fi is being used. Lo-Fi header
     // should be added.
-    AllocateRequestInfoForTesting(request.get(),
-                                  content::RESOURCE_TYPE_SUB_FRAME,
-                                  tests[i].is_using_lofi);
+    AllocateRequestInfoForTesting(
+        request.get(), content::RESOURCE_TYPE_SUB_FRAME,
+        tests[i].is_using_lofi ? content::SERVER_LOFI_ON
+                               : content::PREVIEWS_OFF);
     headers.Clear();
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(!tests[i].is_using_lite_page, !tests[i].is_using_lofi,
@@ -682,6 +696,16 @@ TEST_F(ContentLoFiDeciderTest, MaybeIgnoreBlacklist) {
   EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
   headers.GetHeader(chrome_proxy_header(), &header_value);
   EXPECT_EQ("Foo, exp=ignore_preview_blacklist", header_value);
+}
+
+TEST_F(ContentLoFiDeciderTest, NoTransformDoesNotAddHeader) {
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled");
+  std::unique_ptr<net::URLRequest> request = CreateNoTransformRequest(false);
+  net::HttpRequestHeaders headers;
+  NotifyBeforeSendHeaders(&headers, request.get(), true);
+  EXPECT_FALSE(headers.HasHeader(chrome_proxy_accept_transform_header()));
 }
 
 }  // namespace data_reduction_proxy

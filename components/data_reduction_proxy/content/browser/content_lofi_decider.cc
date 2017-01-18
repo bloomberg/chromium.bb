@@ -86,6 +86,11 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
   if (is_previews_disabled)
     return;
 
+  // Do not add the Chrome-Proxy-Accept-Transform header when the page load
+  // explicitly forbids previews transformations.
+  if (request_info->GetPreviewsState() & content::PREVIEWS_NO_TRANSFORM)
+    return;
+
   // LoFi is not allowed on the main frame, stylesheet, script, font resource,
   // media, service worker, or CSP report.
   bool resource_type_supports_empty_image =

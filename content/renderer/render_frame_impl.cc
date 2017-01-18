@@ -2256,7 +2256,7 @@ void RenderFrameImpl::OnReload(bool bypass_cache) {
 }
 
 void RenderFrameImpl::OnReloadLoFiImages() {
-  previews_state_ = PREVIEWS_OFF;
+  previews_state_ = PREVIEWS_NO_TRANSFORM;
   GetWebFrame()->reloadLoFiImages();
 }
 

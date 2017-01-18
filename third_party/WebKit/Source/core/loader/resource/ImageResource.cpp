@@ -426,7 +426,8 @@ void ImageResource::reloadIfLoFiOrPlaceholderImage(
 
   if (policy != kReloadAlwaysWithExistingCachePolicy)
     setCachePolicyBypassingCache();
-  setLoFiStateOff();
+
+  setPreviewsStateNoTransform();
 
   if (m_isPlaceholder) {
     m_isPlaceholder = false;

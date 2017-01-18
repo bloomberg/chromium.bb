@@ -341,7 +341,7 @@ bool NavigatorImpl::NavigateToEntry(
                      ->last_navigation_previews_state();
   } else if (reload_type == ReloadType::DISABLE_LOFI_MODE) {
     // Disable LoFi when asked for it explicitly.
-    previews_state = PREVIEWS_OFF;
+    previews_state = PREVIEWS_NO_TRANSFORM;
   }
 
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.

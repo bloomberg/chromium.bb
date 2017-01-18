@@ -400,7 +400,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
 
   void setCachePolicyBypassingCache();
-  void setLoFiStateOff();
+  void setPreviewsStateNoTransform();
   void clearRangeRequestHeader();
 
   SharedBuffer* data() const { return m_data.get(); }

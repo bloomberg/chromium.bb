@@ -800,7 +800,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
   CheckResourcesRequested(true);
 
   // Reload with Lo-Fi disabled.
-  Reset(PREVIEWS_OFF);
+  Reset(PREVIEWS_NO_TRANSFORM);
   TestNavigationObserver tab_observer(shell()->web_contents(), 1);
   shell()->web_contents()->GetController().Reload(ReloadType::DISABLE_LOFI_MODE,
                                                   true);

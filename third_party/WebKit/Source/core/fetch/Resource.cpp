@@ -933,8 +933,8 @@ void Resource::setCachePolicyBypassingCache() {
   m_resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
 }
 
-void Resource::setLoFiStateOff() {
-  m_resourceRequest.setPreviewsState(WebURLRequest::PreviewsOff);
+void Resource::setPreviewsStateNoTransform() {
+  m_resourceRequest.setPreviewsState(WebURLRequest::PreviewsNoTransform);
 }
 
 void Resource::clearRangeRequestHeader() {
