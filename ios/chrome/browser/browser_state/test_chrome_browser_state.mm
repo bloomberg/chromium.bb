@@ -178,8 +178,6 @@ void TestChromeBrowserState::Init() {
   // Normally this would happen during browser startup, but for tests we need to
   // trigger creation of BrowserState-related services.
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
-  if (ios::GetChromeBrowserProvider())
-    ios::GetChromeBrowserProvider()->AssertBrowserContextKeyedFactoriesBuilt();
 
   if (prefs_) {
     // If user passed a custom PrefServiceSyncable, then leave |testing_prefs_|

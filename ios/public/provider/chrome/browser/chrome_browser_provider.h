@@ -67,8 +67,6 @@ class ChromeBrowserProvider {
   // This is called after web startup.
   virtual void Initialize() const;
 
-  // Asserts all iOS-specific |BrowserContextKeyedServiceFactory| are built.
-  virtual void AssertBrowserContextKeyedFactoriesBuilt();
   // Returns an instance of a signing error provider.
   virtual SigninErrorProvider* GetSigninErrorProvider();
   // Returns an instance of a signin resources provider.

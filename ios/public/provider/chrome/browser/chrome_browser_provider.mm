@@ -31,8 +31,6 @@ ChromeBrowserProvider::~ChromeBrowserProvider() {}
 
 void ChromeBrowserProvider::Initialize() const {}
 
-void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {}
-
 SigninErrorProvider* ChromeBrowserProvider::GetSigninErrorProvider() {
   return nullptr;
 }

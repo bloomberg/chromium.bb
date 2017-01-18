@@ -156,7 +156,6 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
 
   // Ensure that the browser state is initialized.
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
-  ios::GetChromeBrowserProvider()->AssertBrowserContextKeyedFactoriesBuilt();
   ios::ChromeBrowserStateManager* browser_state_manager =
       application_context_->GetChromeBrowserStateManager();
   ios::ChromeBrowserState* last_used_browser_state =
