@@ -45,21 +45,19 @@
             disabled="[[disabled]]"
             i18n-values="button-text:offlineLoginNextBtn">
           <gaia-input id="machineNameInput" required
-              hidden="[[!showMachineInput]]"
+              hidden="[[!showMachineInput]]" error="[[machineNameError]]"
               i18n-values="label:oauthEnrollAdMachineNameInput">
           </gaia-input>
           <gaia-input id="userInput" type="email" required
               domain="[[userRealm]]"
-              i18n-values="error:offlineLoginInvalidEmail;
-                           label:adLoginUser">
+              i18n-values="error:adLoginInvalidUsername;
+                           label:adLoginUsername">
           </gaia-input>
           <gaia-input id="passwordInput" type="password" required
-              i18n-values="error:offlineLoginInvalidPassword;
+              i18n-values="error:adLoginInvalidPassword;
                            label:adLoginPassword">
           </gaia-input>
         </gaia-input-form>
-            <img src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90"
-                class="self-center" alt="">
       </div>
     </gaia-card>
   </template>

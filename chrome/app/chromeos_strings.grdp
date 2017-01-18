@@ -6237,10 +6237,10 @@ All users must sign out to continue.
     Chromebook machine name
   </message>
   <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Welcome message on the AD domain join screen.">
-    Join AD domain
+    Join device to domain
   </message>
   <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the AD Authentication user screen. Include the domain (realm) the machine joined to">
-    Login to <ph name="REALM">$1<ex>example.com</ex></ph>
+    Sign in to <ph name="REALM">$1<ex>example.com</ex></ph>
   </message>
   <message name="IDS_AD_LOGIN_USER" desc="Label for userPrincipalName input field on both AD domain join and AD Authentication user screens. Looks like user@example.com where example.com is realm">
     Username (e.g. user@example.com)
@@ -6265,6 +6265,27 @@ All users must sign out to continue.
   </message>
   <message name="IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH" desc="Error message in case new password fields does not match on the Active Directory password change dialog.">
     Passwords do not match.
+  </message>
+  <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Default error text on the Active Directory join screen">
+    Oops! Something went wrong when trying to join the domain. Please try again.
+  </message>
+  <message name="IDS_AD_INVALID_USERNAME" desc="Alert message about invalid username on the Active Directory domain join screen.">
+    Please enter a valid username
+  </message>
+  <message name="IDS_AD_INVALID_PASSWORD" desc="Alert message about mismatching username and password in the Active Directory">
+    The username and password you entered do not match
+  </message>
+  <message name="IDS_AD_MACHINENAME_INVALID" desc="Alert message about invalid machine name">
+    Invalid machine name
+  </message>
+  <message name="IDS_AD_MACHINENAME_TOO_LONG" desc="Alert message about too long machine name">
+    Machine name too long
+  </message>
+  <message name="IDS_AD_USER_DENIED_TO_JOIN_MACHINE" desc="Alert message user was denied to join machine to the domain">
+    Failed to join the machine to the domain. This might be due to insufficient privileges for your account on the server.
+  </message>
+  <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Alert message that user can't add more machines to the domain">
+    Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
     Optional — enter new or update existing information to be associated with this device.

@@ -325,6 +325,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       } else if (step == STEP_AD_JOIN) {
         this.offlineAdUi_.disabled = false;
         this.offlineAdUi_.setUser();
+        this.offlineAdUi_.setInvalid(ACTIVE_DIRECTORY_ERROR_STATE.NONE);
       }
 
       this.currentStep_ = step;
@@ -356,9 +357,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.updateControlsState();
     },
 
-    invalidateAd: function(machineName, user) {
+    invalidateAd: function(machineName, user, errorState) {
       this.offlineAdUi_.disabled = false;
       this.offlineAdUi_.setUser(user, machineName);
+      this.offlineAdUi_.setInvalid(errorState);
     },
 
     /**

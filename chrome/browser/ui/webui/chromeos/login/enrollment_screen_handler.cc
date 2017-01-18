@@ -108,6 +108,14 @@ std::string GetEnterpriseDomain() {
   return connector->GetEnterpriseDomain();
 }
 
+enum ActiveDirectoryErrorState {
+  ERROR_STATE_NONE = 0,
+  ERROR_STATE_MACHINE_NAME_INVALID = 1,
+  ERROR_STATE_MACHINE_NAME_TOO_LONG = 2,
+  ERROR_STATE_BAD_USERNAME = 3,
+  ERROR_STATE_BAD_PASSWORD = 4,
+};
+
 }  // namespace
 
 // EnrollmentScreenHandler, public ------------------------------
@@ -400,8 +408,12 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_AD_MACHINE_NAME_INPUT_LABEL);
   builder->Add("oauthEnrollAdDomainJoinWelcomeMessage",
                IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE);
-  builder->Add("adLoginUser", IDS_AD_LOGIN_USER);
+  builder->Add("adLoginUsername", IDS_AD_LOGIN_USER);
+  builder->Add("adLoginInvalidUsername", IDS_AD_INVALID_USERNAME);
   builder->Add("adLoginPassword", IDS_AD_LOGIN_PASSWORD);
+  builder->Add("adLoginInvalidPassword", IDS_AD_INVALID_PASSWORD);
+  builder->Add("adJoinErrorMachineNameInvalid", IDS_AD_MACHINENAME_INVALID);
+  builder->Add("adJoinErrorMachineNameTooLong", IDS_AD_MACHINENAME_TOO_LONG);
 }
 
 bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
@@ -549,7 +561,7 @@ void EnrollmentScreenHandler::OnPasswordPipeReady(
     base::ScopedFD password_fd) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!password_fd.is_valid()) {
-    LOG(ERROR) << "Got invalid password_fd";
+    DLOG(ERROR) << "Got invalid password_fd";
     return;
   }
   chromeos::AuthPolicyClient* client =
@@ -574,28 +586,50 @@ void EnrollmentScreenHandler::HandleAdDomainJoin(
       return;
     case authpolicy::ERROR_UNKNOWN:
     case authpolicy::ERROR_DBUS_FAILURE:
-    case authpolicy::ERROR_PARSE_UPN_FAILED:
-    case authpolicy::ERROR_BAD_USER_NAME:
-    case authpolicy::ERROR_BAD_PASSWORD:
-    case authpolicy::ERROR_PASSWORD_EXPIRED:
-    case authpolicy::ERROR_CANNOT_RESOLVE_KDC:
-    case authpolicy::ERROR_KINIT_FAILED:
     case authpolicy::ERROR_NET_FAILED:
     case authpolicy::ERROR_SMBCLIENT_FAILED:
     case authpolicy::ERROR_PARSE_FAILED:
     case authpolicy::ERROR_PARSE_PREG_FAILED:
     case authpolicy::ERROR_BAD_GPOS:
     case authpolicy::ERROR_LOCAL_IO:
+    case authpolicy::ERROR_STORE_POLICY_FAILED:
+      ShowError(IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR, true);
+      return;
+    case authpolicy::ERROR_NETWORK_PROBLEM:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_AUTH_NETWORK_ERROR, true);
+      return;
+    case authpolicy::ERROR_PARSE_UPN_FAILED:
+    case authpolicy::ERROR_BAD_USER_NAME:
+      CallJS("invalidateAd", machine_name, user_name,
+             static_cast<int>(ERROR_STATE_BAD_USERNAME));
+      return;
+    case authpolicy::ERROR_BAD_PASSWORD:
+      CallJS("invalidateAd", machine_name, user_name,
+             static_cast<int>(ERROR_STATE_BAD_PASSWORD));
+      return;
+    case authpolicy::ERROR_MACHINE_NAME_TOO_LONG:
+      CallJS("invalidateAd", machine_name, user_name,
+             static_cast<int>(ERROR_STATE_MACHINE_NAME_TOO_LONG));
+      return;
+    case authpolicy::ERROR_BAD_MACHINE_NAME:
+      CallJS("invalidateAd", machine_name, user_name,
+             static_cast<int>(ERROR_STATE_MACHINE_NAME_INVALID));
+      return;
+    case authpolicy::ERROR_JOIN_ACCESS_DENIED:
+      ShowError(IDS_AD_USER_DENIED_TO_JOIN_MACHINE, true);
+      return;
+    case authpolicy::ERROR_USER_HIT_JOIN_QUOTA:
+      ShowError(IDS_AD_USER_HIT_JOIN_QUOTA, true);
+      return;
+    case authpolicy::ERROR_PASSWORD_EXPIRED:
+    case authpolicy::ERROR_CANNOT_RESOLVE_KDC:
+    case authpolicy::ERROR_KINIT_FAILED:
     case authpolicy::ERROR_NOT_JOINED:
     case authpolicy::ERROR_NOT_LOGGED_IN:
-    case authpolicy::ERROR_STORE_POLICY_FAILED:
-      // TODO(rsorokin): Add passing/displaying error codes. (see
-      // crbug.com/659984)
-      CallJS("invalidateAd", machine_name, user_name);
-      return;
     default:
       LOG(WARNING) << "Unhandled error code: " << code;
-      CallJS("invalidateAd", machine_name, user_name);
+      CallJS("invalidateAd", machine_name, user_name,
+             static_cast<int>(ERROR_STATE_NONE));
       return;
   }
 }

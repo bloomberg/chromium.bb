@@ -6,6 +6,15 @@
  * @fileoverview Polymer element for displaying AD domain joining and AD
  * Authenticate user screens.
  */
+// Possible error states of the screen. Must be in the same order as
+// ActiveDirectoryErrorState enum values.
+/** @enum {number} */ var ACTIVE_DIRECTORY_ERROR_STATE = {
+  NONE: 0,
+  MACHINE_NAME_INVALID: 1,
+  MACHINE_NAME_TOO_LONG: 2,
+  BAD_USERNAME: 3,
+  BAD_PASSWORD: 4,
+};
 
 Polymer({
   is: 'offline-ad-login',
@@ -40,7 +49,11 @@ Polymer({
     /**
      * Welcome message on top of the UI.
      */
-    adWelcomeMessage: String
+    adWelcomeMessage: String,
+    /**
+     * Error message for the machine name input.
+     */
+    machineNameError: String,
   },
 
   /** @private */
@@ -73,8 +86,36 @@ Polymer({
     this.$.userInput.value = user || '';
     this.$.machineNameInput.value = machineName || '';
     this.$.passwordInput.value = '';
-    this.$.passwordInput.isInvalid = !!user;
     this.focus();
+  },
+
+  /**
+   * @param {ACTIVE_DIRECTORY_ERROR_STATE} error_state
+   */
+  setInvalid: function(error_state) {
+    this.$.machineNameInput.isInvalid = false;
+    this.$.userInput.isInvalid = false;
+    this.$.passwordInput.isInvalid = false;
+    switch (error_state) {
+      case ACTIVE_DIRECTORY_ERROR_STATE.NONE:
+        break;
+      case ACTIVE_DIRECTORY_ERROR_STATE.MACHINE_NAME_INVALID:
+        this.machineNameError =
+            loadTimeData.getString('adJoinErrorMachineNameInvalid');
+        this.$.machineNameInput.isInvalid = true;
+        break;
+      case ACTIVE_DIRECTORY_ERROR_STATE.MACHINE_NAME_TOO_LONG:
+        this.machineNameError =
+            loadTimeData.getString('adJoinErrorMachineNameTooLong');
+        this.$.machineNameInput.isInvalid = true;
+        break;
+      case ACTIVE_DIRECTORY_ERROR_STATE.BAD_USERNAME:
+        this.$.userInput.isInvalid = true;
+        break;
+      case ACTIVE_DIRECTORY_ERROR_STATE.BAD_PASSWORD:
+        this.$.passwordInput.isInvalid = true;
+        break;
+    }
   },
 
   /** @private */
