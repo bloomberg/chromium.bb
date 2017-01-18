@@ -37,6 +37,8 @@ WindowMirrorView::WindowMirrorView(WmWindow* window) : target_(window) {
 }
 
 WindowMirrorView::~WindowMirrorView() {
+  // Make sure |target_| has outlived |this|. See crbug.com/681207
+  DCHECK(target_->aura_window()->layer());
   if (layer_owner_)
     target_->aura_window()->ClearProperty(aura::client::kMirroringEnabledKey);
 }

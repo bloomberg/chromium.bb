@@ -289,6 +289,11 @@ class WindowCycleView : public views::WidgetDelegateView {
     SetTargetWindow(new_target);
   }
 
+  void DestroyContents() {
+    window_view_map_.clear();
+    RemoveAllChildViews(true);
+  }
+
   // views::WidgetDelegateView overrides:
   gfx::Size GetPreferredSize() const override {
     return mirror_container_->GetPreferredSize();
@@ -418,6 +423,14 @@ WindowCycleList::~WindowCycleList() {
 
   if (cycle_ui_widget_)
     cycle_ui_widget_->Close();
+
+  // |this| is responsible for notifying |cycle_view_| when windows are
+  // destroyed. Since |this| is going away, clobber |cycle_view_|. Otherwise
+  // there will be a race where a window closes after now but before the
+  // Widget::Close() call above actually destroys |cycle_view_|. See
+  // crbug.com/681207
+  if (cycle_view_)
+    cycle_view_->DestroyContents();
 }
 
 void WindowCycleList::Step(WindowCycleController::Direction direction) {
