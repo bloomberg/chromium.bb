@@ -10,7 +10,7 @@ from webkitpy.common.system.executive import ScriptError
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 
 WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
-WPT_TMP_DIR = '/tmp/wpt'
+WPT_TEMP_DIR = '/tmp/wpt'
 WPT_SSH_URL = 'git@github.com:w3c/web-platform-tests.git'
 REMOTE_NAME = 'github'
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
@@ -20,22 +20,19 @@ _log = logging.getLogger(__name__)
 
 class LocalWPT(object):
 
-    def __init__(self, host, path=WPT_TMP_DIR, no_fetch=False):
+    def __init__(self, host, path=WPT_TEMP_DIR):
         """
         Args:
             host: A Host object.
-            path: Optional, the directory where LocalWPT will check out web-platform-tests.
-            no_fetch: Optional, passing true will skip updating the local WPT.
-                Intended for use only in development after fetching once.
+            path: Optional, the path to the web-platform-tests repo.
+                If this directory already exists, it is assumed that the
+                web-platform-tests repo is already checked out at this path.
         """
         self.host = host
         self.path = path
         self.branch_name = 'chromium-export-try'
 
-        if no_fetch:
-            _log.info('Skipping remote WPT fetch')
-            return
-
+    def fetch(self):
         if self.host.filesystem.exists(self.path):
             _log.info('WPT checkout exists at %s, fetching latest', self.path)
             self.run(['git', 'fetch', '--all'])
@@ -122,7 +119,7 @@ class LocalWPT(object):
             self.run(['git', 'apply', '-'], input=patch)
             self.run(['git', 'add', '.'])
             output = self.run(['git', 'diff', 'origin/master'])
-        except ScriptError as error:
+        except ScriptError:
             _log.warning('Patch did not apply cleanly, skipping...')
             output = ''
 

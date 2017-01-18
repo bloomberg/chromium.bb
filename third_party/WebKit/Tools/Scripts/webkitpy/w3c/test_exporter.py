@@ -19,6 +19,7 @@ class TestExporter(object):
         self.wpt_github = wpt_github
         self.dry_run = dry_run
         self.local_wpt = LocalWPT(self.host)
+        self.local_wpt.fetch()
 
     def run(self):
         """Query in-flight pull requests, then merge PR or create one.
