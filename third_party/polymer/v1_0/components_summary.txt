@@ -132,9 +132,9 @@ Tree link: https://github.com/PolymerElements/iron-meta/tree/v1.1.2
 
 Name: iron-overlay-behavior
 Repository: https://github.com/PolymerElements/iron-overlay-behavior.git
-Tree: v1.8.6
-Revision: 4b579d7e47a19b3c1e5a65ee631bd432230b3610
-Tree link: https://github.com/PolymerElements/iron-overlay-behavior/tree/v1.8.6
+Tree: v1.10.2
+Revision: 27558b9ceeba7c670999818fc50eebe7e044ed5c
+Tree link: https://github.com/PolymerElements/iron-overlay-behavior/tree/v1.10.2
 
 Name: iron-pages
 Repository: https://github.com/PolymerElements/iron-pages.git
