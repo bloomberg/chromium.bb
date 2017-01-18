@@ -12,6 +12,14 @@
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'array_data_model',
+      'dependencies': [
+        '../../compiled_resources2.gyp:cr',
+        '../compiled_resources2.gyp:event_target',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'command',
       'dependencies': [
         '../../compiled_resources2.gyp:cr',

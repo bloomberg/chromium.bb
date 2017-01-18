@@ -120,6 +120,14 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'volume_info_list',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
+      'target_name': 'volume_manager',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'webview_tag',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
