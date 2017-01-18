@@ -7,6 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "m2ts/webm2pes.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <cstring>
