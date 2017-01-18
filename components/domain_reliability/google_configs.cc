@@ -521,6 +521,7 @@ const GoogleConfigParams kGoogleConfigs[] = {
 };
 
 const char* kGoogleStandardCollectors[] = {
+  "https://beacons.gcp.gvt2.com/domainreliability/upload",
   "https://beacons.gvt2.com/domainreliability/upload",
   "https://beacons2.gvt2.com/domainreliability/upload",
   "https://beacons3.gvt2.com/domainreliability/upload",

@@ -3,6 +3,7 @@
   "has_same_origin_collector": false,
   "success_sample_rate": 0.05,
   "collectors": [
+    "https://beacons.gcp.gvt2.com/domainreliability/upload",
     "https://beacons.gvt2.com/domainreliability/upload",
     "https://beacons2.gvt2.com/domainreliability/upload",
     "https://beacons3.gvt2.com/domainreliability/upload",

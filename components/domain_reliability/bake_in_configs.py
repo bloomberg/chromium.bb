@@ -311,6 +311,7 @@ DOMAIN_WHITELIST = (
   'gstatic.com',
   'gvt1.com',
   'gvt2.com',
+  'gvt6.com',
   'withgoogle.com',
   'youtu.be',
   'youtube-3rd-party.com',

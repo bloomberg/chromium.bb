@@ -18,10 +18,13 @@ action("bake_in_configs") {
     "baked_in_configs/c_youtube_com.json",
     "baked_in_configs/clients2_google_com.json",
     "baked_in_configs/docs_google_com.json",
+    "baked_in_configs/gcp_gvt2_com.json",
+    "baked_in_configs/gcp_gvt6_com.json",
     "baked_in_configs/google-analytics_com.json",
     "baked_in_configs/googlevideo_com.json",
     "baked_in_configs/gvt1_com.json",
     "baked_in_configs/gvt2_com.json",
+    "baked_in_configs/gvt6_com.json",
     "baked_in_configs/ssl_gstatic_com.json",
     "baked_in_configs/www_google_com.json",
   ]

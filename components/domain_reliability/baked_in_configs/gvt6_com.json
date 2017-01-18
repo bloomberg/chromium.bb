@@ -1,5 +1,5 @@
 {
-  "origin": "https://c.bigcache.googleapis.com/",
+  "origin": "https://gvt6.com/",
   "has_same_origin_collector": false,
   "success_sample_rate": 0.05,
   "collectors": [
@@ -15,21 +15,7 @@
   "failure_sample_rate": 1.0,
   "include_subdomains": true,
   "path_prefixes": [
-    "/videoplayback",
-    "/videochunk",
-    "/chunk_present",
-    "/cm2_state",
-    "/videolookup",
-    "/videogoodput",
-    "/MotifFiles",
-    "/StudioFiles",
-    "/packdata",
-    "/edgedl",
-    "/market",
-    "/packages",
-    "/crx",
-    "/initplayback",
-    "/initsegment",
+    "/domainreliability/*",
     ""
   ]
 }
