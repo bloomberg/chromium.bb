@@ -30,6 +30,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
@@ -43,13 +44,15 @@ public class OfflinePageTabObserverTest {
     private static final int TAB_ID = 77;
 
     @Mock private Context mContext;
+    @Mock
+    private TabModel mTabModel;
     @Mock private SnackbarManager mSnackbarManager;
     @Mock private SnackbarController mSnackbarController;
     @Mock private Tab mTab;
 
     private OfflinePageTabObserver createObserver() {
-        OfflinePageTabObserver observer =
-                spy(new OfflinePageTabObserver(mContext, mSnackbarManager, mSnackbarController));
+        OfflinePageTabObserver observer = spy(new OfflinePageTabObserver(
+                mContext, mTabModel, mSnackbarManager, mSnackbarController));
         // Mocking out all of the calls that touch on NetworkChangeNotifier, which we cannot
         // directly mock out.
         doNothing().when(observer).startObservingNetworkChanges();
@@ -60,6 +63,8 @@ public class OfflinePageTabObserverTest {
         doReturn(false).when(observer).isShowingOfflinePreview(any(Tab.class));
         // TODO(fgorski): This call has to be mocked out until we update OfflinePageUtils.
         doNothing().when(observer).showReloadSnackbar(any(Tab.class));
+        // Assert tab model observer was created.
+        assertTrue(observer.getTabModelObserver() != null);
         return observer;
     }
 
@@ -89,6 +94,12 @@ public class OfflinePageTabObserverTest {
         doReturn(true).when(mTab).isHidden();
         if (observer != null) {
             observer.onHidden(mTab);
+        }
+    }
+
+    private void removeTab(OfflinePageTabObserver observer) {
+        if (observer != null && observer.getTabModelObserver() != null) {
+            observer.getTabModelObserver().tabRemoved(mTab);
         }
     }
 
@@ -580,5 +591,56 @@ public class OfflinePageTabObserverTest {
         // Event triggers snackbar again.
         observer.onConnectionTypeChanged(0);
         verify(observer, times(2)).showReloadSnackbar(any(Tab.class));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testTabRemoved_whenNotShowingSnackbar() {
+        OfflinePageTabObserver observer = createObserver();
+
+        disconnect(observer, false);
+        showTab(null);
+        observer.startObservingTab(mTab);
+
+        // Snackbar is not showing over here.
+        verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
+        assertTrue(observer.isObservingTab(mTab));
+        assertTrue(observer.isLoadedTab(mTab));
+        assertFalse(observer.wasSnackbarSeen(mTab));
+
+        removeTab(observer);
+
+        verify(mSnackbarManager, times(1)).dismissSnackbars(eq(mSnackbarController));
+        // Cannot verify using observer, because of implementation using nested class.
+        verify(mTab, times(1)).removeObserver(any(OfflinePageTabObserver.class));
+        assertFalse(observer.isObservingTab(mTab));
+        assertFalse(observer.isLoadedTab(mTab));
+        assertFalse(observer.wasSnackbarSeen(mTab));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testTabRemoved_whenShowingSnackbar() {
+        OfflinePageTabObserver observer = createObserver();
+
+        connect(observer, false);
+        showTab(null);
+        observer.startObservingTab(mTab);
+        observer.onPageLoadFinished(mTab);
+
+        // Snackbar is showing over here.
+        verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
+        assertTrue(observer.isObservingTab(mTab));
+        assertTrue(observer.isLoadedTab(mTab));
+        assertTrue(observer.wasSnackbarSeen(mTab));
+
+        removeTab(observer);
+
+        verify(mSnackbarManager, times(1)).dismissSnackbars(eq(mSnackbarController));
+        // Cannot verify using observer, because of implementation using nested class.
+        verify(mTab, times(1)).removeObserver(any(OfflinePageTabObserver.class));
+        assertFalse(observer.isObservingTab(mTab));
+        assertFalse(observer.isLoadedTab(mTab));
+        assertFalse(observer.wasSnackbarSeen(mTab));
     }
 }

@@ -169,6 +169,7 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
             @Override
             public void run() {
                 OfflinePageTabObserver.init(getActivity().getBaseContext(),
+                        getActivity().getTabModelSelector().getModel(false),
                         getActivity().getSnackbarManager(), mockSnackbarController);
                 OfflinePageUtils.showOfflineSnackbarIfNecessary(getActivity().getActivityTab());
 

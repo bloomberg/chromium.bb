@@ -168,8 +168,9 @@ public class OfflinePageUtils {
                            activity.getBaseContext())) {
             SnackbarController snackbarController =
                     createReloadSnackbarController(activity.getTabModelSelector());
-            OfflinePageTabObserver.init(
-                    activity.getBaseContext(), activity.getSnackbarManager(), snackbarController);
+            OfflinePageTabObserver.init(activity.getBaseContext(),
+                    activity.getTabModelSelector().getModel(false), activity.getSnackbarManager(),
+                    snackbarController);
         }
 
         showOfflineSnackbarIfNecessary(tab);
