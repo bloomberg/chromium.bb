@@ -264,7 +264,10 @@ FFMPEG_TEST_CASE(MP4_16,
                  "security/looping2.mov",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
-FFMPEG_TEST_CASE(MP4_17, "security/assert2.mov", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(MP4_17,
+                 "security/assert2.mov",
+                 DEMUXER_ERROR_COULD_NOT_OPEN,
+                 PIPELINE_OK);
 
 // General OGV test cases.
 FFMPEG_TEST_CASE(OGV_1,

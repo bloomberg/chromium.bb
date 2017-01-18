@@ -35,6 +35,7 @@ using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
 using ::testing::SaveArg;
 
 namespace media {
@@ -151,7 +152,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
       .WillRepeatedly(
           Invoke(this, &PipelineIntegrationTestBase::CheckDuration));
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
-  EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
+  EXPECT_CALL(*this, OnVideoOpacityChange(_)).WillRepeatedly(Return());
   CreateDemuxer(std::move(data_source));
 
   if (cdm_context) {
