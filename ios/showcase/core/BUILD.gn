@@ -14,6 +14,8 @@ source_set("core") {
   deps = [
     "//base",
     "//ios/showcase/common",
+    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_roboto_font_loader_ios",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]

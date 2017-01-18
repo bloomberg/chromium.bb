@@ -6,6 +6,9 @@
 
 #import "ios/showcase/core/showcase_model.h"
 #import "ios/showcase/core/showcase_view_controller.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "ios/third_party/material_roboto_font_loader_ios/src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.h"
+#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,7 +19,7 @@
 
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-  // Override point for customization after application launch.
+  [MDCTypography setFontLoader:[MDFRobotoFontLoader sharedInstance]];
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   ShowcaseViewController* viewController =
       [[ShowcaseViewController alloc] initWithRows:[self rowsToDisplay]];
