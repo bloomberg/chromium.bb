@@ -262,7 +262,7 @@ void NTPSnippetsBridge::DismissSuggestion(
     const JavaParamRef<jstring>& jurl,
     jint global_position,
     jint j_category_id,
-    jint category_position,
+    jint position_in_category,
     const JavaParamRef<jstring>& id_within_category) {
   Category category = Category::FromIDValue(j_category_id);
 
@@ -272,14 +272,14 @@ void NTPSnippetsBridge::DismissSuggestion(
   history_service_->QueryURL(
       GURL(ConvertJavaStringToUTF8(env, jurl)), /*want_visits=*/false,
       base::Bind(
-          [](int global_position, Category category, int category_position,
+          [](int global_position, Category category, int position_in_category,
              bool success, const history::URLRow& row,
              const history::VisitVector& visit_vector) {
             bool visited = success && row.visit_count() != 0;
             ntp_snippets::metrics::OnSuggestionDismissed(
-                global_position, category, category_position, visited);
+                global_position, category, position_in_category, visited);
           },
-          global_position, category, category_position),
+          global_position, category, position_in_category),
       &tracker_);
 }
 
@@ -325,7 +325,7 @@ void NTPSnippetsBridge::OnSuggestionShown(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj,
                                           jint global_position,
                                           jint j_category_id,
-                                          jint category_position,
+                                          jint position_in_category,
                                           jlong publish_timestamp_ms,
                                           jfloat score) {
   PrefService* pref_service = ProfileManager::GetLastUsedProfile()->GetPrefs();
@@ -334,8 +334,8 @@ void NTPSnippetsBridge::OnSuggestionShown(JNIEnv* env,
           ntp_snippets::prefs::kLastSuccessfulBackgroundFetchTime));
 
   ntp_snippets::metrics::OnSuggestionShown(
-      global_position, Category::FromIDValue(j_category_id), category_position,
-      base::Time::FromJavaTime(publish_timestamp_ms),
+      global_position, Category::FromIDValue(j_category_id),
+      position_in_category, base::Time::FromJavaTime(publish_timestamp_ms),
       last_background_fetch_time, score);
   if (global_position == 0) {
     content_suggestions_service_->user_classifier()->OnEvent(
@@ -348,19 +348,19 @@ void NTPSnippetsBridge::OnSuggestionOpened(JNIEnv* env,
                                            jint global_position,
                                            jint j_category_id,
                                            jint category_index,
-                                           jint category_position,
+                                           jint position_in_category,
                                            jlong publish_timestamp_ms,
                                            jfloat score,
                                            int windowOpenDisposition) {
+  const Category category = Category::FromIDValue(j_category_id);
   ntp_snippets::metrics::OnSuggestionOpened(
-      global_position, Category::FromIDValue(j_category_id), category_position,
+      global_position, category, category_index, position_in_category,
       base::Time::FromJavaTime(publish_timestamp_ms), score,
       static_cast<WindowOpenDisposition>(windowOpenDisposition));
   // TODO(vitaliii): Add ContentSuggestionsService::OnSuggestionOpened and
   // notify the ranker and the classifier there instead. Do not expose both of
   // them at all. See crbug.com/674080.
-  content_suggestions_service_->category_ranker()->OnSuggestionOpened(
-      Category::FromIDValue(j_category_id));
+  content_suggestions_service_->category_ranker()->OnSuggestionOpened(category);
   content_suggestions_service_->user_classifier()->OnEvent(
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
 }
@@ -369,12 +369,13 @@ void NTPSnippetsBridge::OnSuggestionMenuOpened(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                jint global_position,
                                                jint j_category_id,
-                                               jint category_position,
+                                               jint position_in_category,
                                                jlong publish_timestamp_ms,
                                                jfloat score) {
   ntp_snippets::metrics::OnSuggestionMenuOpened(
-      global_position, Category::FromIDValue(j_category_id), category_position,
-      base::Time::FromJavaTime(publish_timestamp_ms), score);
+      global_position, Category::FromIDValue(j_category_id),
+      position_in_category, base::Time::FromJavaTime(publish_timestamp_ms),
+      score);
 }
 
 void NTPSnippetsBridge::OnMoreButtonShown(JNIEnv* env,

@@ -21,27 +21,30 @@ void OnPageShown(
 // Should only be called once per NTP for each suggestion.
 void OnSuggestionShown(int global_position,
                        Category category,
-                       int category_position,
+                       int position_in_category,
                        base::Time publish_date,
                        base::Time last_background_fetch_time,
                        float score);
 
+// TODO(crbug.com/682160): Take struct, so that one could not mix up the
+// order of arguments.
 void OnSuggestionOpened(int global_position,
                         Category category,
-                        int category_position,
+                        int category_index,
+                        int position_in_category,
                         base::Time publish_date,
                         float score,
                         WindowOpenDisposition disposition);
 
 void OnSuggestionMenuOpened(int global_position,
                             Category category,
-                            int category_position,
+                            int position_in_category,
                             base::Time publish_date,
                             float score);
 
 void OnSuggestionDismissed(int global_position,
                            Category category,
-                           int category_position,
+                           int position_in_category,
                            bool visited);
 
 void OnSuggestionTargetVisited(Category category, base::TimeDelta visit_time);

@@ -22,6 +22,7 @@ namespace {
 
 const int kMaxSuggestionsPerCategory = 10;
 const int kMaxSuggestionsTotal = 50;
+const int kMaxCategories = 10;
 
 const char kHistogramCountOnNtpOpened[] =
     "NewTabPage.ContentSuggestions.CountOnNtpOpened";
@@ -31,6 +32,8 @@ const char kHistogramShownScore[] =
     "NewTabPage.ContentSuggestions.ShownScoreNormalized";
 const char kHistogramOpened[] = "NewTabPage.ContentSuggestions.Opened";
 const char kHistogramOpenedAge[] = "NewTabPage.ContentSuggestions.OpenedAge";
+const char kHistogramOpenedCategoryIndex[] =
+    "NewTabPage.ContentSuggestions.OpenedCategoryIndex";
 const char kHistogramOpenedScore[] =
     "NewTabPage.ContentSuggestions.OpenedScoreNormalized";
 const char kHistogramOpenDisposition[] =
@@ -216,13 +219,13 @@ void OnPageShown(
 
 void OnSuggestionShown(int global_position,
                        Category category,
-                       int category_position,
+                       int position_in_category,
                        base::Time publish_date,
                        base::Time last_background_fetch_time,
                        float score) {
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramShown, global_position,
                              kMaxSuggestionsTotal);
-  LogCategoryHistogramPosition(kHistogramShown, category, category_position,
+  LogCategoryHistogramPosition(kHistogramShown, category, position_in_category,
                                kMaxSuggestionsPerCategory);
 
   base::TimeDelta age = base::Time::Now() - publish_date;
@@ -235,7 +238,7 @@ void OnSuggestionShown(int global_position,
   // When the first of the articles suggestions is shown, then we count this as
   // a single usage of content suggestions.
   if (category.IsKnownCategory(KnownCategories::ARTICLES) &&
-      category_position == 0) {
+      position_in_category == 0) {
     RecordContentSuggestionsUsage();
 
     // Records the time since the last background fetch of the remote content
@@ -250,13 +253,19 @@ void OnSuggestionShown(int global_position,
 
 void OnSuggestionOpened(int global_position,
                         Category category,
-                        int category_position,
+                        int category_index,
+                        int position_in_category,
                         base::Time publish_date,
                         float score,
                         WindowOpenDisposition disposition) {
+  UMA_HISTOGRAM_EXACT_LINEAR(kHistogramOpenedCategoryIndex, category_index,
+                             kMaxCategories);
+  LogCategoryHistogramPosition(kHistogramOpenedCategoryIndex, category,
+                               category_index, kMaxCategories);
+
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramOpened, global_position,
                              kMaxSuggestionsTotal);
-  LogCategoryHistogramPosition(kHistogramOpened, category, category_position,
+  LogCategoryHistogramPosition(kHistogramOpened, category, position_in_category,
                                kMaxSuggestionsPerCategory);
 
   base::TimeDelta age = base::Time::Now() - publish_date;
@@ -281,13 +290,14 @@ void OnSuggestionOpened(int global_position,
 
 void OnSuggestionMenuOpened(int global_position,
                             Category category,
-                            int category_position,
+                            int position_in_category,
                             base::Time publish_date,
                             float score) {
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramMenuOpened, global_position,
                              kMaxSuggestionsTotal);
   LogCategoryHistogramPosition(kHistogramMenuOpened, category,
-                               category_position, kMaxSuggestionsPerCategory);
+                               position_in_category,
+                               kMaxSuggestionsPerCategory);
 
   base::TimeDelta age = base::Time::Now() - publish_date;
   LogCategoryHistogramAge(kHistogramMenuOpenedAge, category, age);
@@ -297,18 +307,20 @@ void OnSuggestionMenuOpened(int global_position,
 
 void OnSuggestionDismissed(int global_position,
                            Category category,
-                           int category_position,
+                           int position_in_category,
                            bool visited) {
   if (visited) {
     UMA_HISTOGRAM_EXACT_LINEAR(kHistogramDismissedVisited, global_position,
                                kMaxSuggestionsTotal);
     LogCategoryHistogramPosition(kHistogramDismissedVisited, category,
-                                 category_position, kMaxSuggestionsPerCategory);
+                                 position_in_category,
+                                 kMaxSuggestionsPerCategory);
   } else {
     UMA_HISTOGRAM_EXACT_LINEAR(kHistogramDismissedUnvisited, global_position,
                                kMaxSuggestionsTotal);
     LogCategoryHistogramPosition(kHistogramDismissedUnvisited, category,
-                                 category_position, kMaxSuggestionsPerCategory);
+                                 position_in_category,
+                                 kMaxSuggestionsPerCategory);
   }
 }
 

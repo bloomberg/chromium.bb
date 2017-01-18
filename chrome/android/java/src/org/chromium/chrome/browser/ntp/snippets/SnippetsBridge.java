@@ -306,18 +306,18 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeFetch(
             long nativeNTPSnippetsBridge, int category, String[] knownSuggestions);
     private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String url,
-            int globalPosition, int category, int categoryPosition, String idWithinCategory);
+            int globalPosition, int category, int positionInCategory, String idWithinCategory);
     private native void nativeDismissCategory(long nativeNTPSnippetsBridge, int category);
     private native void nativeRestoreDismissedCategories(long nativeNTPSnippetsBridge);
     private native void nativeOnPageShown(
             long nativeNTPSnippetsBridge, int[] categories, int[] suggestionsPerCategory);
     private native void nativeOnSuggestionShown(long nativeNTPSnippetsBridge, int globalPosition,
-            int category, int categoryPosition, long publishTimestampMs, float score);
+            int category, int positionInCategory, long publishTimestampMs, float score);
     private native void nativeOnSuggestionOpened(long nativeNTPSnippetsBridge, int globalPosition,
-            int category, int categoryIndex, int categoryPosition, long publishTimestampMs,
+            int category, int categoryIndex, int positionInCategory, long publishTimestampMs,
             float score, int windowOpenDisposition);
     private native void nativeOnSuggestionMenuOpened(long nativeNTPSnippetsBridge,
-            int globalPosition, int category, int categoryPosition, long publishTimestampMs,
+            int globalPosition, int category, int positionInCategory, long publishTimestampMs,
             float score);
     private native void nativeOnMoreButtonShown(
             long nativeNTPSnippetsBridge, int category, int position);
