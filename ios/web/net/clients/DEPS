@@ -1,3 +1,0 @@
-include_rules = [
-  "+ios/third_party/blink",
-]
