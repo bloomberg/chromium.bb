@@ -20,11 +20,11 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
+#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider_impl.h"
 #include "chrome/browser/chromeos/policy/bluetooth_policy_handler.h"
-#include "chrome/browser/chromeos/policy/device_active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -116,8 +116,9 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
           ->StartAuthPolicyService();
 
       device_active_directory_policy_manager_ =
-          new DeviceActiveDirectoryPolicyManager(
-              std::move(device_cloud_policy_store));
+          ActiveDirectoryPolicyManager::CreateForDevicePolicy(
+              std::move(device_cloud_policy_store))
+              .release();
       AddPolicyProvider(base::WrapUnique<ConfigurationPolicyProvider>(
           device_active_directory_policy_manager_));
     } else {

@@ -26,14 +26,13 @@ class BrowserContext;
 namespace policy {
 
 class ConfigurationPolicyProvider;
-class UserActiveDirectoryPolicyManager;
+class ActiveDirectoryPolicyManager;
 class UserCloudPolicyManagerChromeOS;
 
 // Shared BrowserContextKeyedBaseFactory implementation for
-// UserCloudPolicyManagerChromeOS and
-// UserActiveDirectoryPolicyManager.
+// UserCloudPolicyManagerChromeOS and ActiveDirectoryPolicyManager.
 //
-// UserCloudPolicyManagerChromeOS/UserActiveDirectoryPolicyManager is handled
+// UserCloudPolicyManagerChromeOS/ActiveDirectoryPolicyManager is handled
 // differently than other KeyedServices because it is a dependency of
 // PrefService.  Therefore, lifetime of instances is managed by Profile, Profile
 // startup code invokes CreateForProfile() explicitly, takes ownership, and the
@@ -50,7 +49,7 @@ class UserPolicyManagerFactoryChromeOS : public BrowserContextKeyedBaseFactory {
 
   // Get the ConfigurationPolicyProvider instance associated with |profile|.
   // Depending on the type of management, either a
-  // UserCloudPolicyManagerChromeOS or a UserActiveDirectoryPolicyManager or
+  // UserCloudPolicyManagerChromeOS or an ActiveDirectoryPolicyManager or
   // nullptr is returned.
   static ConfigurationPolicyProvider* GetForProfile(Profile* profile);
 
@@ -59,9 +58,9 @@ class UserPolicyManagerFactoryChromeOS : public BrowserContextKeyedBaseFactory {
   static UserCloudPolicyManagerChromeOS* GetCloudPolicyManagerForProfile(
       Profile* profile);
 
-  // Returns the UserActiveDirectoryPolicyManager instance associated with
-  // |profile| or nullptr in case there is none.
-  static UserActiveDirectoryPolicyManager*
+  // Returns the ActiveDirectoryPolicyManager instance associated with |profile|
+  // or nullptr in case there is none.
+  static ActiveDirectoryPolicyManager*
   GetActiveDirectoryPolicyManagerForProfile(Profile* profile);
 
   // Creates an instance for |profile|. Note that the caller is responsible for
@@ -83,7 +82,7 @@ class UserPolicyManagerFactoryChromeOS : public BrowserContextKeyedBaseFactory {
 
   // See comments for the static versions above.
   UserCloudPolicyManagerChromeOS* GetCloudPolicyManager(Profile* profile);
-  UserActiveDirectoryPolicyManager* GetActiveDirectoryPolicyManager(
+  ActiveDirectoryPolicyManager* GetActiveDirectoryPolicyManager(
       Profile* profile);
   std::unique_ptr<ConfigurationPolicyProvider> CreateManagerForProfile(
       Profile* profile,
@@ -98,8 +97,7 @@ class UserPolicyManagerFactoryChromeOS : public BrowserContextKeyedBaseFactory {
   void CreateServiceNow(content::BrowserContext* context) override;
 
   std::map<Profile*, UserCloudPolicyManagerChromeOS*> cloud_managers_;
-  std::map<Profile*, UserActiveDirectoryPolicyManager*>
-      active_directory_managers_;
+  std::map<Profile*, ActiveDirectoryPolicyManager*> active_directory_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyManagerFactoryChromeOS);
 };

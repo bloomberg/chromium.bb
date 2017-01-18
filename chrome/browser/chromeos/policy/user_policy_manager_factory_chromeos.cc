@@ -18,8 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_store_chromeos.h"
@@ -92,7 +92,7 @@ UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
 }
 
 // static
-UserActiveDirectoryPolicyManager*
+ActiveDirectoryPolicyManager*
 UserPolicyManagerFactoryChromeOS::GetActiveDirectoryPolicyManagerForProfile(
     Profile* profile) {
   return GetInstance()->GetActiveDirectoryPolicyManager(profile);
@@ -125,7 +125,7 @@ UserPolicyManagerFactoryChromeOS::GetCloudPolicyManager(Profile* profile) {
   return it != cloud_managers_.end() ? it->second : nullptr;
 }
 
-UserActiveDirectoryPolicyManager*
+ActiveDirectoryPolicyManager*
 UserPolicyManagerFactoryChromeOS::GetActiveDirectoryPolicyManager(
     Profile* profile) {
   // Get the manager for the original profile, since the PolicyService is
@@ -160,7 +160,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   // User policy exists for enterprise accounts only:
   // - For regular cloud-managed users (those who have a GAIA account), a
   //   |UserCloudPolicyManagerChromeOS| is created here.
-  // - For Active Directory managed users, a |UserActiveDirectoryPolicyManager|
+  // - For Active Directory managed users, an |ActiveDirectoryPolicyManager|
   //   is created.
   // - For device-local accounts, policy is provided by
   //   |DeviceLocalAccountPolicyService|.
@@ -260,9 +260,9 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
           content::BrowserThread::FILE);
 
   if (is_active_directory) {
-    std::unique_ptr<UserActiveDirectoryPolicyManager> manager =
-        base::MakeUnique<UserActiveDirectoryPolicyManager>(account_id,
-                                                           std::move(store));
+    std::unique_ptr<ActiveDirectoryPolicyManager> manager =
+        ActiveDirectoryPolicyManager::CreateForUserPolicy(account_id,
+                                                          std::move(store));
     manager->Init(
         SchemaRegistryServiceFactory::GetForContext(profile)->registry());
 
@@ -306,7 +306,7 @@ void UserPolicyManagerFactoryChromeOS::BrowserContextShutdown(
       GetCloudPolicyManager(profile);
   if (cloud_manager)
     cloud_manager->Shutdown();
-  UserActiveDirectoryPolicyManager* active_directory_manager =
+  ActiveDirectoryPolicyManager* active_directory_manager =
       GetActiveDirectoryPolicyManager(profile);
   if (active_directory_manager)
     active_directory_manager->Shutdown();

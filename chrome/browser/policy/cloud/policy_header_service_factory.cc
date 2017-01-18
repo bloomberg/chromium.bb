@@ -19,8 +19,8 @@
 #include "components/policy/core/common/cloud/policy_header_service.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #else
@@ -99,7 +99,7 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
   if (cloud_manager) {
     user_store = cloud_manager->core()->store();
   } else {
-    UserActiveDirectoryPolicyManager* active_directory_manager =
+    ActiveDirectoryPolicyManager* active_directory_manager =
         UserPolicyManagerFactoryChromeOS::
             GetActiveDirectoryPolicyManagerForProfile(profile);
     if (!active_directory_manager)

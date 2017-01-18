@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/user_active_directory_policy_manager.h"
+#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 
 #include <string>
 #include <utility>
@@ -16,16 +16,26 @@
 
 namespace policy {
 
-UserActiveDirectoryPolicyManager::UserActiveDirectoryPolicyManager(
+ActiveDirectoryPolicyManager::~ActiveDirectoryPolicyManager() {}
+
+// static
+std::unique_ptr<ActiveDirectoryPolicyManager>
+ActiveDirectoryPolicyManager::CreateForDevicePolicy(
+    std::unique_ptr<CloudPolicyStore> store) {
+  return base::WrapUnique(
+      new ActiveDirectoryPolicyManager(EmptyAccountId(), std::move(store)));
+}
+
+// static
+std::unique_ptr<ActiveDirectoryPolicyManager>
+ActiveDirectoryPolicyManager::CreateForUserPolicy(
     const AccountId& account_id,
-    std::unique_ptr<CloudPolicyStore> store)
-    : account_id_(account_id),
-      store_(std::move(store)),
-      weak_ptr_factory_(this) {}
+    std::unique_ptr<CloudPolicyStore> store) {
+  return base::WrapUnique(
+      new ActiveDirectoryPolicyManager(account_id, std::move(store)));
+}
 
-UserActiveDirectoryPolicyManager::~UserActiveDirectoryPolicyManager() {}
-
-void UserActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
+void ActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
   ConfigurationPolicyProvider::Init(registry);
 
   store_->AddObserver(this);
@@ -39,38 +49,44 @@ void UserActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
   RefreshPolicies();
 }
 
-void UserActiveDirectoryPolicyManager::Shutdown() {
+void ActiveDirectoryPolicyManager::Shutdown() {
   store_->RemoveObserver(this);
   ConfigurationPolicyProvider::Shutdown();
 }
 
-bool UserActiveDirectoryPolicyManager::IsInitializationComplete(
+bool ActiveDirectoryPolicyManager::IsInitializationComplete(
     PolicyDomain domain) const {
   if (domain == POLICY_DOMAIN_CHROME)
     return store_->is_initialized();
   return true;
 }
 
-void UserActiveDirectoryPolicyManager::RefreshPolicies() {
+void ActiveDirectoryPolicyManager::RefreshPolicies() {
   chromeos::DBusThreadManager* thread_manager =
       chromeos::DBusThreadManager::Get();
   DCHECK(thread_manager);
   chromeos::AuthPolicyClient* auth_policy_client =
       thread_manager->GetAuthPolicyClient();
   DCHECK(auth_policy_client);
-  auth_policy_client->RefreshUserPolicy(
-      account_id_,
-      base::Bind(&UserActiveDirectoryPolicyManager::OnPolicyRefreshed,
-                 weak_ptr_factory_.GetWeakPtr()));
+  if (account_id_ == EmptyAccountId()) {
+    auth_policy_client->RefreshDevicePolicy(
+        base::Bind(&ActiveDirectoryPolicyManager::OnPolicyRefreshed,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    auth_policy_client->RefreshUserPolicy(
+        account_id_,
+        base::Bind(&ActiveDirectoryPolicyManager::OnPolicyRefreshed,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
-void UserActiveDirectoryPolicyManager::OnStoreLoaded(
+void ActiveDirectoryPolicyManager::OnStoreLoaded(
     CloudPolicyStore* cloud_policy_store) {
   DCHECK_EQ(store_.get(), cloud_policy_store);
   PublishPolicy();
 }
 
-void UserActiveDirectoryPolicyManager::OnStoreError(
+void ActiveDirectoryPolicyManager::OnStoreError(
     CloudPolicyStore* cloud_policy_store) {
   DCHECK_EQ(store_.get(), cloud_policy_store);
   // Publish policy (even though it hasn't changed) in order to signal load
@@ -79,7 +95,14 @@ void UserActiveDirectoryPolicyManager::OnStoreError(
   PublishPolicy();
 }
 
-void UserActiveDirectoryPolicyManager::PublishPolicy() {
+ActiveDirectoryPolicyManager::ActiveDirectoryPolicyManager(
+    const AccountId& account_id,
+    std::unique_ptr<CloudPolicyStore> store)
+    : account_id_(account_id),
+      store_(std::move(store)),
+      weak_ptr_factory_(this) {}
+
+void ActiveDirectoryPolicyManager::PublishPolicy() {
   if (!store_->is_initialized()) {
     return;
   }
@@ -95,7 +118,7 @@ void UserActiveDirectoryPolicyManager::PublishPolicy() {
   UpdatePolicy(std::move(bundle));
 }
 
-void UserActiveDirectoryPolicyManager::OnPolicyRefreshed(bool success) {
+void ActiveDirectoryPolicyManager::OnPolicyRefreshed(bool success) {
   if (!success) {
     LOG(ERROR) << "Active Directory policy refresh failed.";
   }

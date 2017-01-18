@@ -20,9 +20,9 @@
 #include "components/policy/core/common/policy_service_impl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -128,7 +128,7 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
   CloudPolicyManager* user_cloud_policy_manager =
       UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
           profile);
-  UserActiveDirectoryPolicyManager* active_directory_manager =
+  ActiveDirectoryPolicyManager* active_directory_manager =
       UserPolicyManagerFactoryChromeOS::
           GetActiveDirectoryPolicyManagerForProfile(profile);
   if (user_cloud_policy_manager) {
