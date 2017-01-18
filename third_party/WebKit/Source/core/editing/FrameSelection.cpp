@@ -1400,10 +1400,6 @@ bool FrameSelection::isPreviousCaretDirtyForTesting() const {
   return m_frameCaret->isPreviousCaretDirtyForTesting();
 }
 
-bool FrameSelection::isCaretBoundsDirty() const {
-  return m_frameCaret->isCaretBoundsDirty();
-}
-
 void FrameSelection::setCaretRectNeedsUpdate() {
   m_frameCaret->setCaretRectNeedsUpdate();
 }

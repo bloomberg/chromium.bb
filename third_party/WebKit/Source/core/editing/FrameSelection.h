@@ -222,7 +222,6 @@ class CORE_EXPORT FrameSelection final
   bool isAppearanceDirty() const;
   void commitAppearanceIfNeeded(LayoutView&);
   void setCaretVisible(bool caretIsVisible);
-  bool isCaretBoundsDirty() const;
   void setCaretRectNeedsUpdate();
   void scheduleVisualUpdate() const;
   void invalidateCaretRect(bool forceInvalidation = false);

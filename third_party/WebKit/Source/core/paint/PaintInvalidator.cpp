@@ -373,8 +373,7 @@ void PaintInvalidator::invalidatePaintIfNeeded(
     frameView.invalidatePaintOfScrollControlsIfNeeded(context);
   }
 
-  if (frameView.frame().selection().isCaretBoundsDirty())
-    frameView.frame().selection().invalidateCaretRect();
+  frameView.frame().selection().invalidateCaretRect();
 }
 
 void PaintInvalidator::invalidatePaintIfNeeded(

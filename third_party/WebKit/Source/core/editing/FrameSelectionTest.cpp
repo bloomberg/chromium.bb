@@ -41,6 +41,10 @@ class FrameSelectionTest : public EditingTestBase {
     return dummyPageHolder().frameView().layoutCount();
   }
 
+  bool isCaretBoundsDirty() const {
+    return selection().m_frameCaret->m_caretRectDirty;
+  }
+
   bool shouldPaintCaretForTesting() const {
     return selection().shouldPaintCaretForTesting();
   }
@@ -79,16 +83,16 @@ TEST_F(FrameSelectionTest, InvalidateCaretRect) {
   selection().setSelection(
       SelectionInDOMTree::Builder().collapse(Position(text, 0)).build());
   selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(selection().isCaretBoundsDirty());
+  EXPECT_TRUE(isCaretBoundsDirty());
   selection().invalidateCaretRect();
-  EXPECT_FALSE(selection().isCaretBoundsDirty());
+  EXPECT_FALSE(isCaretBoundsDirty());
 
   document().body()->removeChild(text);
   document().updateStyleAndLayoutIgnorePendingStylesheets();
   selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(selection().isCaretBoundsDirty());
+  EXPECT_TRUE(isCaretBoundsDirty());
   selection().invalidateCaretRect();
-  EXPECT_FALSE(selection().isCaretBoundsDirty());
+  EXPECT_FALSE(isCaretBoundsDirty());
 }
 
 TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
@@ -141,10 +145,10 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter) {
   selection().setSelection(
       SelectionInDOMTree::Builder().collapse(selection().end()).build());
   selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(selection().isCaretBoundsDirty());
+  EXPECT_TRUE(isCaretBoundsDirty());
   EXPECT_FALSE(isPreviousCaretDirtyForTesting());
   selection().invalidateCaretRect();
-  EXPECT_FALSE(selection().isCaretBoundsDirty());
+  EXPECT_FALSE(isCaretBoundsDirty());
   EXPECT_TRUE(isPreviousCaretDirtyForTesting());
 
   // Simulate to remove all except for "H".
@@ -153,11 +157,11 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter) {
   selection().setSelection(
       SelectionInDOMTree::Builder().collapse(selection().end()).build());
   selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(selection().isCaretBoundsDirty());
+  EXPECT_TRUE(isCaretBoundsDirty());
   // "H" remains so early previousCaret invalidation isn't needed.
   EXPECT_TRUE(isPreviousCaretDirtyForTesting());
   selection().invalidateCaretRect();
-  EXPECT_FALSE(selection().isCaretBoundsDirty());
+  EXPECT_FALSE(isCaretBoundsDirty());
   EXPECT_TRUE(isPreviousCaretDirtyForTesting());
 
   // Simulate to remove the last character.
@@ -168,10 +172,10 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter) {
   EXPECT_FALSE(isPreviousCaretDirtyForTesting());
   document().updateStyleAndLayoutIgnorePendingStylesheets();
   selection().setCaretRectNeedsUpdate();
-  EXPECT_TRUE(selection().isCaretBoundsDirty());
+  EXPECT_TRUE(isCaretBoundsDirty());
   EXPECT_FALSE(isPreviousCaretDirtyForTesting());
   selection().invalidateCaretRect();
-  EXPECT_FALSE(selection().isCaretBoundsDirty());
+  EXPECT_FALSE(isCaretBoundsDirty());
   EXPECT_TRUE(isPreviousCaretDirtyForTesting());
 }
 

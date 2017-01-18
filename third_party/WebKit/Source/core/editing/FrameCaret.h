@@ -67,7 +67,6 @@ class CORE_EXPORT FrameCaret final
   void startBlinkCaret();
 
   void setCaretVisibility(CaretVisibility);
-  bool isCaretBoundsDirty() const { return m_caretRectDirty; }
   void setCaretRectNeedsUpdate();
   // If |forceInvalidation| is true the caret's previous and new rectangles
   // are forcibly invalidated regardless of the state of the blink timer.

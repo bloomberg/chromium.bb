@@ -1319,8 +1319,7 @@ void FrameView::invalidatePaintIfNeeded(
   if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
 
-  if (m_frame->selection().isCaretBoundsDirty())
-    m_frame->selection().invalidateCaretRect();
+  m_frame->selection().invalidateCaretRect();
 }
 
 void FrameView::setNeedsPaintPropertyUpdate() {
