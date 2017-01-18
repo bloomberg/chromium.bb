@@ -1968,6 +1968,13 @@ crbug.com/676295 external/csswg-test/css-ui-3/caret-color-021.html [ Failure ]
 crbug.com/669473 external/csswg-test/css-ui-3/text-overflow-002.html [ Failure ]
 crbug.com/669473 external/csswg-test/css-ui-3/text-overflow-004.html [ Failure ]
 
+crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
+crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
+crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
+crbug.com/665820 external/wpt/webmessaging/with-ports/010.html [ Failure ]
+crbug.com/665820 external/wpt/webmessaging/without-ports/010.html [ Failure ]
+crbug.com/673526 external/wpt/webmessaging/message-channels/close.html [ Failure ]
+
 # Suppress wptserve-related failures temporarily.
 Bug(dpranke) external/wpt/FileAPI/url/url_xmlhttprequest.html [ Failure ]
 Bug(dpranke) external/wpt/dom/nodes/Document-createElement-namespace.html [ Failure ]

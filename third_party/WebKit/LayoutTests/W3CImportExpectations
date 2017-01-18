@@ -346,7 +346,8 @@ external/wpt/webaudio [ Skip ]
 external/wpt/webauthn [ Skip ]
 external/wpt/webdriver [ Skip ]
 external/wpt/webgl [ Skip ]
-external/wpt/webmessaging [ Skip ]
+## Owners: mek@chromium.org
+# external/wpt/webmessaging [ Pass ]
 ## Owners: hta@chromium.org
 # external/wpt/webrtc [ Pass ]
 external/wpt/websockets [ Skip ]
