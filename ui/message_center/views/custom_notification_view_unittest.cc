@@ -26,6 +26,21 @@ namespace {
 
 const SkColor kBackgroundColor = SK_ColorGREEN;
 
+std::unique_ptr<ui::GestureEvent> GenerateGestureEvent(ui::EventType type) {
+  ui::GestureEventDetails detail(type);
+  std::unique_ptr<ui::GestureEvent> event(
+      new ui::GestureEvent(0, 0, 0, base::TimeTicks(), detail));
+  return event;
+}
+
+std::unique_ptr<ui::GestureEvent> GenerateGestureHorizontalScrollUpdateEvent(
+    int dx) {
+  ui::GestureEventDetails detail(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0);
+  std::unique_ptr<ui::GestureEvent> event(
+      new ui::GestureEvent(0, 0, 0, base::TimeTicks(), detail));
+  return event;
+}
+
 class TestCustomView : public views::View {
  public:
   TestCustomView() {
@@ -196,12 +211,23 @@ class CustomNotificationViewTest : public views::ViewsTestBase {
     widget()->OnKeyEvent(&event);
   }
 
+  void UpdateNotificationViews() {
+    notification_view()->UpdateWithNotification(*notification());
+  }
+
+  float GetNotificationScrollAmount() const {
+    return notification_view_->GetTransform().To2dTranslation().x();
+  }
+
   TestMessageCenterController* controller() { return &controller_; }
   Notification* notification() { return notification_.get(); }
   TestCustomView* custom_view() {
     return static_cast<TestCustomView*>(notification_view_->contents_view_);
   }
   views::Widget* widget() { return notification_view_->GetWidget(); }
+  CustomNotificationView* notification_view() {
+    return notification_view_.get();
+  }
 
  private:
   TestMessageCenterController controller_;
@@ -235,5 +261,52 @@ TEST_F(CustomNotificationViewTest, Events) {
   KeyPress(ui::VKEY_A);
   EXPECT_EQ(1, custom_view()->keyboard_event_count());
 }
+
+TEST_F(CustomNotificationViewTest, SlideOut) {
+  UpdateNotificationViews();
+  std::string notification_id = notification()->id();
+
+  auto event_begin = GenerateGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN);
+  auto event_scroll10 = GenerateGestureHorizontalScrollUpdateEvent(-10);
+  auto event_scroll500 = GenerateGestureHorizontalScrollUpdateEvent(-500);
+  auto event_end = GenerateGestureEvent(ui::ET_GESTURE_SCROLL_END);
+
+  notification_view()->OnGestureEvent(event_begin.get());
+  notification_view()->OnGestureEvent(event_scroll10.get());
+  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_EQ(-10.f, GetNotificationScrollAmount());
+  notification_view()->OnGestureEvent(event_end.get());
+  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_EQ(0.f, GetNotificationScrollAmount());
+
+  notification_view()->OnGestureEvent(event_begin.get());
+  notification_view()->OnGestureEvent(event_scroll500.get());
+  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_EQ(-500.f, GetNotificationScrollAmount());
+  notification_view()->OnGestureEvent(event_end.get());
+  EXPECT_TRUE(controller()->IsRemoved(notification_id));
+}
+
+// Pinning notification is ChromeOS only feature.
+#if defined(OS_CHROMEOS)
+
+TEST_F(CustomNotificationViewTest, SlideOutPinned) {
+  notification()->set_pinned(true);
+  UpdateNotificationViews();
+  std::string notification_id = notification()->id();
+
+  auto event_begin = GenerateGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN);
+  auto event_scroll500 = GenerateGestureHorizontalScrollUpdateEvent(-500);
+  auto event_end = GenerateGestureEvent(ui::ET_GESTURE_SCROLL_END);
+
+  notification_view()->OnGestureEvent(event_begin.get());
+  notification_view()->OnGestureEvent(event_scroll500.get());
+  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+  EXPECT_LT(-500.f, GetNotificationScrollAmount());
+  notification_view()->OnGestureEvent(event_end.get());
+  EXPECT_FALSE(controller()->IsRemoved(notification_id));
+}
+
+#endif // defined(OS_CHROMEOS)
 
 }  // namespace message_center

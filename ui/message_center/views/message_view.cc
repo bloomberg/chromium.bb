@@ -64,8 +64,7 @@ MessageView::MessageView(MessageCenterController* controller,
                          const Notification& notification)
     : controller_(controller),
       notification_id_(notification.id()),
-      notifier_id_(notification.notifier_id()),
-      display_source_(notification.display_source()) {
+      notifier_id_(notification.notifier_id()) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   // Create the opaque background that's above the view's shadow.
@@ -75,7 +74,6 @@ MessageView::MessageView(MessageCenterController* controller,
   AddChildView(background_view_);
 
   views::ImageView* small_image_view = new views::ImageView();
-  small_image_view->SetImage(notification.small_image().AsImageSkia());
   small_image_view->SetImageSize(gfx::Size(kSmallImageSize, kSmallImageSize));
   // The small image view should be added to view hierarchy by the derived
   // class. This ensures that it is on top of other views.
@@ -85,7 +83,7 @@ MessageView::MessageView(MessageCenterController* controller,
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 
-  accessible_name_ = CreateAccessibleName(notification);
+  UpdateWithNotification(notification);
 }
 
 MessageView::~MessageView() {
@@ -95,6 +93,7 @@ void MessageView::UpdateWithNotification(const Notification& notification) {
   small_image_view_->SetImage(notification.small_image().AsImageSkia());
   display_source_ = notification.display_source();
   accessible_name_ = CreateAccessibleName(notification);
+  set_slide_out_enabled(!notification.pinned());
 }
 
 // static

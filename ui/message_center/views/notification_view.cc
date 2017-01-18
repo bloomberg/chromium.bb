@@ -666,8 +666,6 @@ void NotificationView::CreateOrUpdateActionButtonViews(
 
 void NotificationView::CreateOrUpdateCloseButtonView(
     const Notification& notification) {
-  set_slide_out_enabled(!notification.pinned());
-
   if (!notification.pinned() && !close_button_) {
     PaddedButton* close = new PaddedButton(this);
     close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
