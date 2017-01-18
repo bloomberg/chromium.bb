@@ -178,6 +178,8 @@ source_set("web_arc") {
     "web_state/blocked_popup_info.h",
     "web_state/blocked_popup_info.mm",
     "web_state/context_menu_params.mm",
+    "web_state/context_menu_params_utils.h",
+    "web_state/context_menu_params_utils.mm",
     "web_state/credential.cc",
     "web_state/crw_pass_kit_downloader.h",
     "web_state/crw_pass_kit_downloader.mm",
@@ -202,6 +204,8 @@ source_set("web_arc") {
     "web_state/js/page_script_util.mm",
     "web_state/page_viewport_state.h",
     "web_state/page_viewport_state.mm",
+    "web_state/ui/crw_context_menu_controller.h",
+    "web_state/ui/crw_context_menu_controller.mm",
     "web_state/ui/crw_generic_content_view.mm",
     "web_state/ui/crw_swipe_recognizer_provider.h",
     "web_state/ui/crw_touch_tracking_recognizer.h",
@@ -270,8 +274,6 @@ source_set("web") {
   ]
 
   sources = [
-    "web_state/ui/crw_context_menu_controller.h",
-    "web_state/ui/crw_context_menu_controller.mm",
     "web_state/ui/crw_web_controller.h",
     "web_state/ui/crw_web_controller.mm",
     "web_state/ui/crw_web_controller_container_view.h",
@@ -498,6 +500,7 @@ test("ios_web_unittests") {
     ":web",
     "//base",
     "//base/test:test_support",
+    "//components/url_formatter",
     "//ios/net",
     "//ios/testing:ocmock_support",
     "//ios/web/public/image_fetcher:unit_tests",
@@ -533,6 +536,7 @@ test("ios_web_unittests") {
     "public/web_state/page_viewport_state_unittest.mm",
     "url_scheme_util_unittest.mm",
     "url_util_unittest.cc",
+    "web_state/context_menu_params_utils_unittest.mm",
     "web_state/crw_pass_kit_downloader_unittest.mm",
     "web_state/crw_web_view_scroll_view_proxy_unittest.mm",
     "web_state/error_translation_util_unittest.mm",

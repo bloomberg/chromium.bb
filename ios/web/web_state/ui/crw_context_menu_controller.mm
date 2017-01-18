@@ -7,16 +7,18 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/url_formatter/url_formatter.h"
-#include "ios/web/public/referrer_util.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
+#import "ios/web/web_state/context_menu_params_utils.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The long press detection duration must be shorter than the WKWebView's
@@ -41,26 +43,19 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 
 @interface CRWContextMenuController ()<UIGestureRecognizerDelegate>
 
-// Sets the specified recognizer to take priority over any recognizers in the
-// view that have a description containing the specified text fragment.
-+ (void)requireGestureRecognizerToFail:(UIGestureRecognizer*)recognizer
-                                inView:(UIView*)view
-                 containingDescription:(NSString*)fragment;
-
 // The |webView|.
-@property(nonatomic, readonly) WKWebView* webView;
+@property(nonatomic, readonly, weak) WKWebView* webView;
 // The delegate that allow execute javascript.
-@property(nonatomic, readonly) id<CRWJSInjectionEvaluator> injectionEvaluator;
+@property(nonatomic, readonly, weak) id<CRWJSInjectionEvaluator>
+    injectionEvaluator;
 // The scroll view of |webView|.
-@property(nonatomic, readonly) id<CRWContextMenuDelegate> delegate;
+@property(nonatomic, readonly, weak) id<CRWContextMenuDelegate> delegate;
 // Returns the x, y offset the content has been scrolled.
 @property(nonatomic, readonly) CGPoint scrollPosition;
 
 // Called when the window has determined there was a long-press and context menu
 // must be shown.
 - (void)showContextMenu:(UIGestureRecognizer*)gestureRecognizer;
-// Extracts context menu information from the given DOM element.
-- (web::ContextMenuParams)contextMenuParamsForElement:(NSDictionary*)element;
 // Cancels all touch events in the web view (long presses, tapping, scrolling).
 - (void)cancelAllTouches;
 // Asynchronously fetches full width of the rendered web page.
@@ -79,19 +74,19 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 @end
 
 @implementation CRWContextMenuController {
-  base::WeakNSProtocol<id<CRWContextMenuDelegate>> _delegate;
-  base::WeakNSProtocol<id<CRWJSInjectionEvaluator>> _injectionEvaluator;
-  base::WeakNSObject<WKWebView> _webView;
-
   // Long press recognizer that allows showing context menus.
-  base::scoped_nsobject<UILongPressGestureRecognizer> _contextMenuRecognizer;
+  UILongPressGestureRecognizer* _contextMenuRecognizer;
   // DOM element information for the point where the user made the last touch.
   // Can be nil if has not been calculated yet. Precalculation is necessary
   // because retreiving DOM element relies on async API so element info can not
   // be built on demand. May contain the following keys: @"href", @"src",
   // @"title", @"referrerPolicy". All values are strings.
-  base::scoped_nsobject<NSDictionary> _DOMElementForLastTouch;
+  NSDictionary* _DOMElementForLastTouch;
 }
+
+@synthesize delegate = _delegate;
+@synthesize injectionEvaluator = _injectionEvaluator;
+@synthesize webView = _webView;
 
 - (instancetype)initWithWebView:(WKWebView*)webView
              injectionEvaluator:(id<CRWJSInjectionEvaluator>)injectionEvaluator
@@ -99,54 +94,22 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   DCHECK(webView);
   self = [super init];
   if (self) {
-    _webView.reset(webView);
-    _delegate.reset(delegate);
-    _injectionEvaluator.reset(injectionEvaluator);
+    _webView = webView;
+    _delegate = delegate;
+    _injectionEvaluator = injectionEvaluator;
 
     // The system context menu triggers after 0.55 second. Add a gesture
     // recognizer with a shorter delay to be able to cancel the system menu if
     // needed.
-    _contextMenuRecognizer.reset([[UILongPressGestureRecognizer alloc]
+    _contextMenuRecognizer = [[UILongPressGestureRecognizer alloc]
         initWithTarget:self
-                action:@selector(showContextMenu:)]);
+                action:@selector(showContextMenu:)];
     [_contextMenuRecognizer setMinimumPressDuration:kLongPressDurationSeconds];
     [_contextMenuRecognizer setAllowableMovement:kLongPressMoveDeltaPixels];
     [_contextMenuRecognizer setDelegate:self];
     [_webView addGestureRecognizer:_contextMenuRecognizer];
-    // Certain system gesture handlers are known to conflict with our context
-    // menu handler, causing extra events to fire when the context menu is
-    // active.
-
-    // A number of solutions have been investigated. The lowest-risk solution
-    // appears to be to recurse through the web controller's recognizers,
-    // looking
-    // for fingerprints of the recognizers known to cause problems, which are
-    // then
-    // de-prioritized (below our own long click handler).
-    // Hunting for description fragments of system recognizers is undeniably
-    // brittle for future versions of iOS. If it does break the context menu
-    // events may leak (regressing b/5310177), but the app will otherwise work.
-    // TODO(crbug.com/680930): This code is not needed anymore in iOS9+ and has
-    // to be removed.
-    [CRWContextMenuController
-        requireGestureRecognizerToFail:_contextMenuRecognizer
-                                inView:_webView
-                 containingDescription:
-                     @"action=_highlightLongPressRecognized:"];
   }
   return self;
-}
-
-- (WKWebView*)webView {
-  return _webView.get();
-}
-
-- (id<CRWContextMenuDelegate>)delegate {
-  return _delegate.get();
-}
-
-- (id<CRWJSInjectionEvaluator>)injectionEvaluator {
-  return _injectionEvaluator.get();
 }
 
 - (UIScrollView*)webScrollView {
@@ -177,74 +140,14 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
     return;
 
   web::ContextMenuParams params =
-      [self contextMenuParamsForElement:_DOMElementForLastTouch.get()];
-  params.view.reset([_webView retain]);
+      web::ContextMenuParamsFromElementDictionary(_DOMElementForLastTouch);
+  params.view.reset(_webView);
   params.location = [gestureRecognizer locationInView:_webView];
   if ([_delegate webView:_webView handleContextMenu:params]) {
     // Cancelling all touches has the intended side effect of suppressing the
     // system's context menu.
     [self cancelAllTouches];
   }
-}
-
-+ (void)requireGestureRecognizerToFail:(UIGestureRecognizer*)recognizer
-                                inView:(UIView*)view
-                 containingDescription:(NSString*)fragment {
-  for (UIGestureRecognizer* iRecognizer in [view gestureRecognizers]) {
-    if (iRecognizer != recognizer) {
-      NSString* description = [iRecognizer description];
-      if ([description rangeOfString:fragment].length) {
-        [iRecognizer requireGestureRecognizerToFail:recognizer];
-        // requireGestureRecognizerToFail: doesn't retain the recognizer, so it
-        // is possible for |iRecognizer| to outlive |recognizer| and end up with
-        // a dangling pointer. Add a retaining associative reference to ensure
-        // that the lifetimes work out.
-        // Note that normally using the value as the key wouldn't make any
-        // sense, but here it's fine since nothing needs to look up the value.
-        objc_setAssociatedObject(view, recognizer, recognizer,
-                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-      }
-    }
-  }
-}
-
-- (web::ContextMenuParams)contextMenuParamsForElement:(NSDictionary*)element {
-  web::ContextMenuParams params;
-  NSString* title = nil;
-  NSString* href = element[@"href"];
-  if (href) {
-    params.link_url = GURL(base::SysNSStringToUTF8(href));
-    if (params.link_url.SchemeIs(url::kJavaScriptScheme)) {
-      title = @"JavaScript";
-    } else {
-      base::string16 URLText = url_formatter::FormatUrl(params.link_url);
-      title = base::SysUTF16ToNSString(URLText);
-    }
-  }
-  NSString* src = element[@"src"];
-  if (src) {
-    params.src_url = GURL(base::SysNSStringToUTF8(src));
-    if (!title)
-      title = [[src copy] autorelease];
-    if ([title hasPrefix:base::SysUTF8ToNSString(url::kDataScheme)])
-      title = nil;
-  }
-  NSString* titleAttribute = element[@"title"];
-  if (titleAttribute)
-    title = titleAttribute;
-  if (title) {
-    params.menu_title.reset([title copy]);
-  }
-  NSString* referrerPolicy = element[@"referrerPolicy"];
-  if (referrerPolicy) {
-    params.referrer_policy =
-        web::ReferrerPolicyFromString(base::SysNSStringToUTF8(referrerPolicy));
-  }
-  NSString* innerText = element[@"innerText"];
-  if ([innerText length] > 0) {
-    params.link_text.reset([innerText copy]);
-  }
-  return params;
 }
 
 - (void)cancelAllTouches {
@@ -267,7 +170,7 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 }
 
 - (void)setDOMElementForLastTouch:(NSDictionary*)element {
-  _DOMElementForLastTouch.reset([element copy]);
+  _DOMElementForLastTouch = [element copy];
 }
 
 #pragma mark -
@@ -292,7 +195,7 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   // menu and show another one. If for some reason context menu info is not
   // fetched - system context menu will be shown.
   [self setDOMElementForLastTouch:nil];
-  base::WeakNSObject<CRWContextMenuController> weakSelf(self);
+  __weak CRWContextMenuController* weakSelf = self;
   [self fetchDOMElementAtPoint:[touch locationInView:_webView]
              completionHandler:^(NSDictionary* element) {
                [weakSelf setDOMElementForLastTouch:element];
@@ -336,7 +239,7 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   // scrolled).
   CGPoint scrollOffset = self.scrollPosition;
   CGFloat webViewContentWidth = self.webScrollView.contentSize.width;
-  base::WeakNSObject<CRWContextMenuController> weakSelf(self);
+  CRWContextMenuController* weakSelf = self;
   [self fetchWebPageWidthWithCompletionHandler:^(CGFloat pageWidth) {
     CGFloat scale = pageWidth / webViewContentWidth;
     CGPoint localPoint = CGPointMake((point.x + scrollOffset.x) * scale,
@@ -344,10 +247,10 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
     NSString* const kGetElementScript =
         [NSString stringWithFormat:@"__gCrWeb.getElementFromPoint(%g, %g);",
                                    localPoint.x, localPoint.y];
-    [self executeJavaScript:kGetElementScript
-          completionHandler:^(id element, NSError*) {
-            handler(base::mac::ObjCCastStrict<NSDictionary>(element));
-          }];
+    [weakSelf executeJavaScript:kGetElementScript
+              completionHandler:^(id element, NSError*) {
+                handler(base::mac::ObjCCastStrict<NSDictionary>(element));
+              }];
   }];
 }
 
