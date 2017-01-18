@@ -24,6 +24,13 @@ class IncrementLoadEventDelayCount {
   static std::unique_ptr<IncrementLoadEventDelayCount> create(Document&);
   ~IncrementLoadEventDelayCount();
 
+  // Decrements the loadEventDelayCount and checks load event synchronously,
+  // and thus can cause synchronous Document load event/JavaScript execution.
+  // Call this only when it is safe, e.g. at the top of an async task.
+  // After calling this, |this| no longer blocks document's load event and
+  // will not decrement loadEventDelayCount at destruction.
+  void clearAndCheckLoadEvent();
+
   // Increments the new document's count and decrements the old count.
   void documentChanged(Document& newDocument);
 

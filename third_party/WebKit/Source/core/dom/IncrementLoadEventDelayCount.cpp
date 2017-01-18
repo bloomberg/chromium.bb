@@ -21,12 +21,19 @@ IncrementLoadEventDelayCount::IncrementLoadEventDelayCount(Document& document)
 }
 
 IncrementLoadEventDelayCount::~IncrementLoadEventDelayCount() {
-  m_document->decrementLoadEventDelayCount();
+  if (m_document)
+    m_document->decrementLoadEventDelayCount();
+}
+
+void IncrementLoadEventDelayCount::clearAndCheckLoadEvent() {
+  m_document->decrementLoadEventDelayCountAndCheckLoadEvent();
+  m_document = nullptr;
 }
 
 void IncrementLoadEventDelayCount::documentChanged(Document& newDocument) {
   newDocument.incrementLoadEventDelayCount();
-  m_document->decrementLoadEventDelayCount();
+  if (m_document)
+    m_document->decrementLoadEventDelayCount();
   m_document = &newDocument;
 }
 }  // namespace blink

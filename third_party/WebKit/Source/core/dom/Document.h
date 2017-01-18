@@ -1098,6 +1098,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void checkLoadEventSoon();
   bool isDelayingLoadEvent();
   void loadPluginsSoon();
+  // This calls checkCompleted() sync and thus can cause JavaScript execution.
+  void decrementLoadEventDelayCountAndCheckLoadEvent();
 
   Touch* createTouch(DOMWindow*,
                      EventTarget*,

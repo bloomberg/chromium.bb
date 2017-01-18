@@ -5819,6 +5819,14 @@ void Document::decrementLoadEventDelayCount() {
     checkLoadEventSoon();
 }
 
+void Document::decrementLoadEventDelayCountAndCheckLoadEvent() {
+  DCHECK(m_loadEventDelayCount);
+  --m_loadEventDelayCount;
+
+  if (!m_loadEventDelayCount && frame())
+    frame()->loader().checkCompleted();
+}
+
 void Document::checkLoadEventSoon() {
   if (frame() && !m_loadEventDelayTimer.isActive())
     m_loadEventDelayTimer.startOneShot(0, BLINK_FROM_HERE);
