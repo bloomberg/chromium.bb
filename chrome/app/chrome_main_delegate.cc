@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/child/child_profiling.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
@@ -528,6 +529,9 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+  ChildProfiling::ProcessStarted();
+#endif
   Profiling::ProcessStarted();
 
   base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
@@ -1017,6 +1021,7 @@ void ChromeMainDelegate::ZygoteStarting(
 }
 
 void ChromeMainDelegate::ZygoteForked() {
+  ChildProfiling::ProcessStarted();
   Profiling::ProcessStarted();
   if (Profiling::BeingProfiled()) {
     base::debug::RestartProfilingAfterFork();
