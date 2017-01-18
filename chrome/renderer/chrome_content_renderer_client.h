@@ -30,6 +30,11 @@
 #include "chrome/renderer/leak_detector/leak_detector_remote_client.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/common/conflicts/module_event_sink_win.mojom.h"
+#include "chrome/common/conflicts/module_watcher_win.h"
+#endif
+
 class ChromeRenderThreadObserver;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 class ChromePDFPrintClient;
@@ -256,6 +261,13 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<LeakDetectorRemoteClient> leak_detector_remote_client_;
+#endif
+
+#if defined(OS_WIN)
+  // Observes module load and unload events and notifies the ModuleDatabase in
+  // the browser process.
+  std::unique_ptr<ModuleWatcher> module_watcher_;
+  mojom::ModuleEventSinkPtr module_event_sink_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClient);

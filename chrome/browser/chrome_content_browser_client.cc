@@ -101,6 +101,7 @@
 #include "chrome/browser/webshare/share_service_impl.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -214,6 +215,8 @@
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/chrome_browser_main_win.h"
+#include "chrome/browser/conflicts/module_database_win.h"
+#include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
@@ -2925,6 +2928,28 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
     registry->AddInterface(
         base::Bind(&NetBenchmarking::Create, profile, context));
   }
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
+    // Add the ModuleDatabase interface. This is the interface used by renderer
+    // processes to notify the browser of modules in their address space. It
+    // ultimately drives the chrome://conflicts UI. The process handle is not
+    // yet available at this point so pass in a callback to allow it to be
+    // retrieved at the time the interface is actually created. It is safe to
+    // pass a raw pointer to |render_process_host|: the callback will be invoked
+    // in the context of ModuleDatabase::GetInstance, which is invoked by Mojo
+    // initialization, which occurs while the |render_process_host| is alive.
+    auto get_process = base::Bind(&content::RenderProcessHost::GetHandle,
+                                  base::Unretained(render_process_host));
+    // The ModuleDatabase is a global singleton so passing an unretained pointer
+    // is safe.
+    registry->AddInterface(
+        base::Bind(&ModuleEventSinkImpl::Create, std::move(get_process),
+                   content::PROCESS_TYPE_RENDERER,
+                   base::Unretained(ModuleDatabase::GetInstance())),
+        ui_task_runner);
+  }
+#endif
+
 #if defined(OS_CHROMEOS)
   registry->AddInterface<metrics::mojom::LeakDetector>(
       base::Bind(&metrics::LeakDetectorRemoteController::Create),

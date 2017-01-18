@@ -11,6 +11,7 @@
           "chrome::mojom::FieldTrialRecorder",
           "extensions::StashService",
           "metrics::mojom::LeakDetector",
+          "mojom::ModuleEventSink",
           "rappor::mojom::RapporRecorder",
           "startup_metric_utils::mojom::StartupMetricHost",
           "translate::mojom::ContentTranslateDriver"

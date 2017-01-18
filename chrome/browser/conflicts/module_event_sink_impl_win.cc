@@ -22,22 +22,6 @@
 
 namespace {
 
-// Gets the process creation time associated with the given process.
-bool GetProcessCreationTime(base::ProcessHandle process,
-                            uint64_t* creation_time) {
-  FILETIME creation_ft = {};
-  FILETIME exit_ft = {};
-  FILETIME kernel_ft = {};
-  FILETIME user_ft = {};
-  if (!::GetProcessTimes(process, &creation_ft, &exit_ft, &kernel_ft,
-                         &user_ft)) {
-    return false;
-  }
-  *creation_time = (static_cast<uint64_t>(creation_ft.dwHighDateTime) << 32) |
-                   static_cast<uint64_t>(creation_ft.dwLowDateTime);
-  return true;
-}
-
 // Gets the path of the module in the provided remote process. Returns true on
 // success, false otherwise.
 bool GetModulePath(base::ProcessHandle process,
@@ -132,11 +116,12 @@ ModuleEventSinkImpl::ModuleEventSinkImpl(base::ProcessHandle process,
 ModuleEventSinkImpl::~ModuleEventSinkImpl() = default;
 
 // static
-void ModuleEventSinkImpl::Create(base::ProcessHandle process,
+void ModuleEventSinkImpl::Create(GetProcessHandleCallback get_process_handle,
                                  content::ProcessType process_type,
                                  ModuleDatabase* module_database,
                                  mojom::ModuleEventSinkRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::ProcessHandle process = get_process_handle.Run();
   auto module_event_sink_impl = base::MakeUnique<ModuleEventSinkImpl>(
       process, process_type, module_database);
   base::Closure error_handler = base::Bind(
@@ -167,6 +152,22 @@ void ModuleEventSinkImpl::OnModuleEvent(mojom::ModuleEventType event_type,
     case mojom::ModuleEventType::MODULE_UNLOADED:
       return OnModuleUnload(load_address);
   }
+}
+
+// static
+bool ModuleEventSinkImpl::GetProcessCreationTime(base::ProcessHandle process,
+                                                 uint64_t* creation_time) {
+  FILETIME creation_ft = {};
+  FILETIME exit_ft = {};
+  FILETIME kernel_ft = {};
+  FILETIME user_ft = {};
+  if (!::GetProcessTimes(process, &creation_ft, &exit_ft, &kernel_ft,
+                         &user_ft)) {
+    return false;
+  }
+  *creation_time = (static_cast<uint64_t>(creation_ft.dwHighDateTime) << 32) |
+                   static_cast<uint64_t>(creation_ft.dwLowDateTime);
+  return true;
 }
 
 void ModuleEventSinkImpl::OnModuleLoad(uint64_t load_address) {

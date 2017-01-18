@@ -297,6 +297,37 @@ class MediaLoadDeferrer : public content::RenderFrameObserver {
   DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
 };
 
+#if defined(OS_WIN)
+// Dispatches a module |event| to the provided |module_event_sink| interface.
+// It is expected that this only be called from the IO thread. This is only
+// safe because the underlying |module_event_sink| object is never deleted,
+// being owned by the leaked ChromeContentRendererClient object. If this ever
+// changes then a WeakPtr mechanism would have to be used.
+void HandleModuleEventOnIOThread(mojom::ModuleEventSinkPtr* module_event_sink,
+                                 const ModuleWatcher::ModuleEvent& event) {
+  // Simply send the module load address. The browser can validate this and look
+  // up the module details on its own.
+  (*module_event_sink)
+      ->OnModuleEvent(event.event_type,
+                      reinterpret_cast<uintptr_t>(event.module_load_address));
+}
+
+// Receives notifications from the ModuleWatcher on any thread. Bounces these
+// over to the provided |io_task_runner| where they are subsequently dispatched
+// to the |module_event_sink| interface.
+void OnModuleEvent(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+                   mojom::ModuleEventSinkPtr* module_event_sink,
+                   const ModuleWatcher::ModuleEvent& event) {
+  // The Mojo interface can only be used from a single thread. Bounce tasks
+  // over to it. It is safe to pass an unretained pointer to
+  // |module_event_sink|: it is owned by a ChromeContentRendererClient, which is
+  // a leaked singleton in the process.
+  io_task_runner->PostTask(
+      FROM_HERE, base::Bind(&HandleModuleEventOnIOThread,
+                            base::Unretained(module_event_sink), event));
+}
+#endif
+
 }  // namespace
 
 ChromeContentRendererClient::ChromeContentRendererClient()
@@ -330,6 +361,19 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->GetRemoteInterfaces()->GetInterface(&startup_metric_host);
     startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
   }
+
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
+    thread->GetRemoteInterfaces()->GetInterface(&module_event_sink_);
+
+    // It is safe to pass an unretained pointer to |module_event_sink_|, as it
+    // is owned by the process singleton ChromeContentRendererClient, which is
+    // leaked.
+    module_watcher_ = ModuleWatcher::Create(
+        base::Bind(&OnModuleEvent, thread->GetIOTaskRunner(),
+                   base::Unretained(&module_event_sink_)));
+  }
+#endif
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
   web_cache_impl_.reset(new web_cache::WebCacheImpl());

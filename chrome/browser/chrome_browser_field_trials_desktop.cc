@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/features.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_watcher/features.h"
@@ -165,6 +166,7 @@ void SetupDesktopFieldTrials() {
   SetupStunProbeTrial();
 #if defined(OS_WIN)
   SetupStabilityDebugging();
+  base::FeatureList::IsEnabled(features::kModuleDatabase);
 #endif  // defined(OS_WIN)
   // Activate the experiment as early as possible to increase its visibility
   // (e.g. the likelihood of its presence in the serialized system profile).

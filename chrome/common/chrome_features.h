@@ -87,6 +87,10 @@ extern const base::Feature kMediaRemotingEncrypted;
 
 extern const base::Feature kModalPermissionPrompts;
 
+#if defined(OS_WIN)
+extern const base::Feature kModuleDatabase;
+#endif
+
 #if defined(OS_MACOSX)
 extern const base::Feature kNativeNotifications;
 #endif  // defined(OS_MACOSX)

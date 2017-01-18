@@ -16,6 +16,10 @@
 
 // A class that keeps track of all modules loaded across Chrome processes.
 // Drives the chrome://conflicts UI.
+//
+// This is effectively a singleton, but doesn't use base::Singleton. The intent
+// is for the object to be created when Chrome is single-threaded, and for it
+// be set as the process-wide singleton via SetInstance.
 class ModuleDatabase {
  public:
   // A ModuleDatabase is by default bound to a provided sequenced task runner.
@@ -24,6 +28,14 @@ class ModuleDatabase {
   // bounce the call when appropriate.
   explicit ModuleDatabase(scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~ModuleDatabase();
+
+  // Retrieves the singleton global instance of the ModuleDatabase.
+  static ModuleDatabase* GetInstance();
+
+  // Sets the global instance of the ModuleDatabase. Ownership is passed to the
+  // global instance and deliberately leaked, unless manually cleaned up. This
+  // has no locking and should be called when Chrome is single threaded.
+  static void SetInstance(std::unique_ptr<ModuleDatabase> module_database);
 
   // Indicates that process with the given type has started. This must be called
   // before any calls to OnModuleEvent or OnModuleUnload. Must be called in the

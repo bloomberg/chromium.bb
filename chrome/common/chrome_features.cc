@@ -145,6 +145,12 @@ const base::Feature kMediaRemotingEncrypted{"MediaRemotingEncrypted",
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_WIN)
+// Enables or disables the ModuleDatabase backend for the conflicts UI.
+const base::Feature kModuleDatabase{"ModuleDatabase",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables the use of native notification centers instead of using the Message
 // Center for displaying the toasts.
 #if defined(OS_MACOSX)

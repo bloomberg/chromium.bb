@@ -19,13 +19,32 @@ static_assert(content::PROCESS_TYPE_BROWSER == 2,
               "assumes browser process type has value 2");
 constexpr uint32_t kFirstValidProcessType = content::PROCESS_TYPE_BROWSER;
 
+ModuleDatabase* g_instance = nullptr;
+
 }  // namespace
 
 ModuleDatabase::ModuleDatabase(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)), weak_ptr_factory_(this) {}
 
-ModuleDatabase::~ModuleDatabase() = default;
+ModuleDatabase::~ModuleDatabase() {
+  if (this == g_instance)
+    g_instance = nullptr;
+}
+
+// static
+ModuleDatabase* ModuleDatabase::GetInstance() {
+  return g_instance;
+}
+
+// static
+void ModuleDatabase::SetInstance(
+    std::unique_ptr<ModuleDatabase> module_database) {
+  DCHECK_EQ(nullptr, g_instance);
+  // This is deliberately leaked. It can be cleaned up by manually deleting the
+  // ModuleDatabase
+  g_instance = module_database.release();
+}
 
 void ModuleDatabase::OnProcessStarted(uint32_t process_id,
                                       uint64_t creation_time,

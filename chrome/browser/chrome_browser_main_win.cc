@@ -6,6 +6,7 @@
 
 #include <shellapi.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <windows.h>
 
 #include <algorithm>
@@ -25,10 +26,13 @@
 #include "base/scoped_native_library.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
+#include "chrome/browser/conflicts/module_database_win.h"
+#include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -39,10 +43,12 @@
 #include "chrome/browser/win/chrome_elf_init.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/conflicts/module_watcher_win.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/grit/chromium_strings.h"
@@ -202,6 +208,60 @@ void DetectFaultTolerantHeap() {
   UMA_HISTOGRAM_ENUMERATION("FaultTolerantHeap", detected, FTH_FLAGS_COUNT);
 }
 
+// Helper function for getting the time date stamp associated with a module in
+// this process.
+uint32_t GetModuleTimeDateStamp(const void* module_load_address) {
+  base::win::PEImage pe_image(module_load_address);
+  return pe_image.GetNTHeaders()->FileHeader.TimeDateStamp;
+}
+
+// Used as the callback for ModuleWatcher events in this process. Dispatches
+// them to the ModuleDatabase.
+void OnModuleEvent(uint32_t process_id,
+                   uint64_t creation_time,
+                   const ModuleWatcher::ModuleEvent& event) {
+  auto* module_database = ModuleDatabase::GetInstance();
+  uintptr_t load_address =
+      reinterpret_cast<uintptr_t>(event.module_load_address);
+
+  switch (event.event_type) {
+    case mojom::ModuleEventType::MODULE_ALREADY_LOADED:
+    case mojom::ModuleEventType::MODULE_LOADED: {
+      module_database->OnModuleLoad(
+          process_id, creation_time, event.module_path, event.module_size,
+          GetModuleTimeDateStamp(event.module_load_address), load_address);
+      return;
+    }
+
+    case mojom::ModuleEventType::MODULE_UNLOADED: {
+      module_database->OnModuleUnload(process_id, creation_time, load_address);
+      return;
+    }
+  }
+}
+
+// Helper function for initializing the module database subsystem. Populates
+// the provided |module_watcher|.
+void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
+  uint64_t creation_time = 0;
+  ModuleEventSinkImpl::GetProcessCreationTime(::GetCurrentProcess(),
+                                              &creation_time);
+  ModuleDatabase::SetInstance(base::MakeUnique<ModuleDatabase>(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI)));
+  auto* module_database = ModuleDatabase::GetInstance();
+  uint32_t process_id = ::GetCurrentProcessId();
+
+  // The ModuleWatcher will immediately start emitting module events, but the
+  // ModuleDatabase expects an OnProcessStarted event prior to that. For child
+  // processes this is handled via the ModuleEventSinkImpl. For the browser
+  // process a manual notification is sent before wiring up the ModuleWatcher.
+  module_database->OnProcessStarted(process_id, creation_time,
+                                    content::PROCESS_TYPE_BROWSER);
+  *module_watcher = ModuleWatcher::Create(
+      base::Bind(&OnModuleEvent, process_id, creation_time));
+}
+
 }  // namespace
 
 void ShowCloseBrowserFirstMessageBox() {
@@ -326,6 +386,12 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
       FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
                      content::BrowserThread::FILE),
       base::Bind(base::IgnoreResult(&base::DeleteFile), path, false));
+
+  // Create the module database and hook up the in-process module watcher. This
+  // needs to be done before any child processes are initialized as the
+  // ModuleDatabase is an endpoint for IPC from child processes.
+  if (base::FeatureList::IsEnabled(features::kModuleDatabase))
+    SetupModuleDatabase(&module_watcher_);
 }
 
 void ChromeBrowserMainPartsWin::PostBrowserStart() {
