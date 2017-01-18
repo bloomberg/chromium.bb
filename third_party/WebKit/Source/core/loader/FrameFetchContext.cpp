@@ -184,7 +184,7 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
   const bool is2G =
       networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
   WebEffectiveConnectionType effectiveConnection =
-      document.frame()->loader().client()->getEffectiveConnectionType();
+      document.frame()->client()->getEffectiveConnectionType();
   const bool is2GOrLike2G =
       is2G || isConnectionEffectively2G(effectiveConnection);
 
@@ -226,6 +226,10 @@ LocalFrame* FrameFetchContext::frame() const {
   LocalFrame* frame = m_documentLoader->frame();
   DCHECK(frame);
   return frame;
+}
+
+FrameLoaderClient* FrameFetchContext::frameLoaderClient() const {
+  return frame()->client();
 }
 
 void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
@@ -391,7 +395,7 @@ void FrameFetchContext::dispatchDidChangeResourcePriority(
 
 void FrameFetchContext::prepareRequest(ResourceRequest& request) {
   frame()->loader().applyUserAgent(request);
-  frame()->loader().client()->dispatchWillSendRequest(request);
+  frameLoaderClient()->dispatchWillSendRequest(request);
 }
 
 void FrameFetchContext::dispatchWillSendRequest(
@@ -495,7 +499,7 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
   ResourceRequest request(resource->url());
   request.setFrameType(frameType);
   request.setRequestContext(requestContext);
-  frame()->loader().client()->dispatchDidLoadResourceFromMemoryCache(
+  frameLoaderClient()->dispatchDidLoadResourceFromMemoryCache(
       request, resource->response());
   dispatchWillSendRequest(identifier, request, ResourceResponse(),
                           resource->options().initiatorInfo);
@@ -591,7 +595,7 @@ void FrameFetchContext::addResourceTiming(const ResourceTimingInfo& info) {
 }
 
 bool FrameFetchContext::allowImage(bool imagesEnabled, const KURL& url) const {
-  return frame()->loader().client()->allowImage(imagesEnabled, url);
+  return frameLoaderClient()->allowImage(imagesEnabled, url);
 }
 
 void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const {
@@ -732,17 +736,17 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
 
   if (type == Resource::Script || type == Resource::ImportResource) {
     DCHECK(frame());
-    if (!frame()->loader().client()->allowScriptFromSource(
+    if (!frameLoaderClient()->allowScriptFromSource(
             !frame()->settings() || frame()->settings()->getScriptEnabled(),
             url)) {
-      frame()->loader().client()->didNotAllowScript();
+      frameLoaderClient()->didNotAllowScript();
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
       // this check has nothing to do with CSP. https://crbug.com/600795
       return ResourceRequestBlockedReason::CSP;
     }
   } else if (type == Resource::Media || type == Resource::TextTrack) {
     DCHECK(frame());
-    if (!frame()->loader().client()->allowMedia(url))
+    if (!frameLoaderClient()->allowMedia(url))
       return ResourceRequestBlockedReason::Other;
   }
 
@@ -819,20 +823,20 @@ bool FrameFetchContext::isControlledByServiceWorker() const {
   // m_documentLoader is null while loading resources from an HTML import. In
   // such cases whether the request is controlled by ServiceWorker or not is
   // determined by the document loader of the frame.
-  return frame()->loader().client()->isControlledByServiceWorker(
+  return frameLoaderClient()->isControlledByServiceWorker(
       *frame()->loader().documentLoader());
 }
 
 int64_t FrameFetchContext::serviceWorkerID() const {
   DCHECK(m_documentLoader || frame()->loader().documentLoader());
   if (m_documentLoader) {
-    return m_documentLoader->frame()->loader().client()->serviceWorkerID(
+    return m_documentLoader->frame()->client()->serviceWorkerID(
         *m_documentLoader);
   }
   // m_documentLoader is null while loading resources from an HTML import.
   // In such cases a service worker ID could be retrieved from the document
   // loader of the frame.
-  return frame()->loader().client()->serviceWorkerID(
+  return frameLoaderClient()->serviceWorkerID(
       *frame()->loader().documentLoader());
 }
 
@@ -1046,7 +1050,7 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(
   }
 
   frame()->loader().progress().incrementProgress(identifier, response);
-  frame()->loader().client()->dispatchDidReceiveResponse(response);
+  frameLoaderClient()->dispatchDidReceiveResponse(response);
   DocumentLoader* documentLoader = masterDocumentLoader();
   InspectorInstrumentation::didReceiveResourceResponse(
       frame(), identifier, documentLoader, response, resource);

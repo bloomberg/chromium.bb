@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class FrameLoaderClient;
 class LocalFrame;
 class ResourceResponse;
 struct ProgressItem;
@@ -70,8 +71,8 @@ class CORE_EXPORT ProgressTracker final
  private:
   explicit ProgressTracker(LocalFrame*);
 
-  void incrementProgressForMainResourceOnly(unsigned long identifier,
-                                            int length);
+  FrameLoaderClient* frameLoaderClient() const;
+
   void maybeSendProgress();
   void sendFinalProgress();
   void reset();

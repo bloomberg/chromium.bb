@@ -46,6 +46,7 @@ namespace blink {
 class ClientHintsPreferences;
 class Document;
 class DocumentLoader;
+class FrameLoaderClient;
 class LocalFrame;
 class ResourceError;
 class ResourceResponse;
@@ -175,6 +176,9 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
 
   LocalFrame* frameOfImportsController() const;
   LocalFrame* frame() const;
+
+  FrameLoaderClient* frameLoaderClient() const;
+
   void printAccessDeniedMessage(const KURL&) const;
   ResourceRequestBlockedReason canRequestInternal(
       Resource::Type,
