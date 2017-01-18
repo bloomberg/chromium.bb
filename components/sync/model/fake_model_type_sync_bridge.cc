@@ -216,6 +216,7 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
   }
   // Store any new remote entities.
   for (const auto& kv : data_map) {
+    EXPECT_FALSE(kv.second->is_deleted());
     db_->PutData(kv.first, kv.second.value());
   }
   ApplyMetadataChangeList(std::move(metadata_changes));

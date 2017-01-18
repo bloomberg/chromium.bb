@@ -81,6 +81,10 @@ class UssMigratorTest : public ::testing::Test {
     return entry_factory_->CreateSyncedItem(key, kModelType, false, specifics);
   }
 
+  int64_t DeleteEntity(const std::string& key) {
+    return entry_factory_->CreateTombstone(key, kModelType);
+  }
+
   base::Time GetCtimeForEntity(int64_t metahandle) {
     ReadTransaction trans(FROM_HERE, user_share());
     ReadNode read_node(&trans);
@@ -173,6 +177,18 @@ TEST_F(UssMigratorTest, MigrateMultipleBatches) {
   EXPECT_EQ(kTag1, updates.at(0).entity.value().specifics.preference().name());
   EXPECT_EQ(kTag2, updates.at(1).entity.value().specifics.preference().name());
   EXPECT_EQ(kTag3, updates.at(2).entity.value().specifics.preference().name());
+}
+
+TEST_F(UssMigratorTest, MigrateIgnoresTombstone) {
+  CreateTypeRoot();
+  SetProgressMarkerToken(kToken1);
+  DeleteEntity(kTag1);
+
+  ASSERT_TRUE(MigrateDirectoryData(kModelType, user_share(), worker()));
+
+  EXPECT_EQ(0, nudge_handler()->GetNumInitialDownloadNudges());
+  EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
+  EXPECT_EQ(0U, processor()->GetNthUpdateResponse(0).size());
 }
 
 TEST_F(UssMigratorTest, MigrateZero) {

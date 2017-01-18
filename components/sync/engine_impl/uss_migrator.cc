@@ -103,8 +103,11 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
         worker->AbortMigration();
         return false;
       }
-      entity_ptrs.push_back(entity.get());
-      entities.push_back(std::move(entity));
+      // Ignore tombstones; they are not included for initial GetUpdates.
+      if (!entity->deleted()) {
+        entity_ptrs.push_back(entity.get());
+        entities.push_back(std::move(entity));
+      }
     }
 
     worker->ProcessGetUpdatesResponse(progress, context, entity_ptrs, nullptr);

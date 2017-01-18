@@ -545,6 +545,11 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   metadata_changes->UpdateModelTypeState(model_type_state_);
 
   for (const UpdateResponseData& update : updates) {
+    if (update.entity->is_deleted()) {
+      DLOG(WARNING) << "Ignoring tombstone found during initial update: "
+                    << "client_tag_hash = " << update.entity->client_tag_hash;
+      continue;
+    }
     ProcessorEntityTracker* entity = CreateEntity(update.entity.value());
     const std::string& storage_key = entity->storage_key();
     entity->RecordAcceptedUpdate(update);

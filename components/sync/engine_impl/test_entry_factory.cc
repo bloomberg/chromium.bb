@@ -158,9 +158,6 @@ int64_t TestEntryFactory::CreateSyncedItem(
   // Use the type root if it exists or the real root otherwise.
   syncable::Entry root(&trans, syncable::GET_TYPE_ROOT, model_type);
   syncable::Id parent_id = root.good() ? root.GetId() : TestIdFactory::root();
-  syncable::Id item_id(TestIdFactory::MakeServer(name));
-  int64_t version = GetNextRevision();
-  base::Time now = base::Time::Now();
 
   MutableEntry entry(&trans, syncable::CREATE, model_type, parent_id, name);
   if (!entry.good()) {
@@ -168,25 +165,9 @@ int64_t TestEntryFactory::CreateSyncedItem(
     return syncable::kInvalidMetaHandle;
   }
 
-  entry.PutId(item_id);
-  entry.PutCtime(now);
-  entry.PutMtime(now);
-  entry.PutUniqueClientTag(GenerateSyncableHash(model_type, name));
-  entry.PutBaseVersion(version);
-  entry.PutIsUnsynced(false);
-  entry.PutNonUniqueName(name);
+  PopulateEntry(parent_id, name, model_type, &entry);
   entry.PutIsDir(is_folder);
-  entry.PutIsDel(false);
-  entry.PutParentId(parent_id);
-
-  entry.PutServerCtime(now);
-  entry.PutServerMtime(now);
-  entry.PutServerVersion(version);
-  entry.PutIsUnappliedUpdate(false);
-  entry.PutServerNonUniqueName(name);
-  entry.PutServerParentId(parent_id);
   entry.PutServerIsDir(is_folder);
-  entry.PutServerIsDel(false);
 
   // Only rewrite the default specifics inside the entry (which have the model
   // type marker already) if |specifics| actually contains data.
@@ -197,6 +178,26 @@ int64_t TestEntryFactory::CreateSyncedItem(
     entry.PutServerSpecifics(entry.GetSpecifics());
   }
 
+  return entry.GetMetahandle();
+}
+
+int64_t TestEntryFactory::CreateTombstone(const std::string& name,
+                                          ModelType model_type) {
+  WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
+
+  // Use the type root if it exists or the real root otherwise.
+  syncable::Entry root(&trans, syncable::GET_TYPE_ROOT, model_type);
+  syncable::Id parent_id = root.good() ? root.GetId() : TestIdFactory::root();
+
+  MutableEntry entry(&trans, syncable::CREATE, model_type, parent_id, name);
+  if (!entry.good()) {
+    NOTREACHED();
+    return syncable::kInvalidMetaHandle;
+  }
+
+  PopulateEntry(parent_id, name, model_type, &entry);
+  entry.PutIsDel(true);
+  entry.PutServerIsDel(true);
   return entry.GetMetahandle();
 }
 
@@ -341,6 +342,35 @@ bool TestEntryFactory::GetIsUnappliedForItem(int64_t meta_handle) const {
 
 int64_t TestEntryFactory::GetNextRevision() {
   return next_revision_++;
+}
+
+void TestEntryFactory::PopulateEntry(const syncable::Id& parent_id,
+                                     const std::string& name,
+                                     ModelType model_type,
+                                     MutableEntry* entry) {
+  syncable::Id item_id(TestIdFactory::MakeServer(name));
+  int64_t version = GetNextRevision();
+  base::Time now = base::Time::Now();
+
+  entry->PutId(item_id);
+  entry->PutCtime(now);
+  entry->PutMtime(now);
+  entry->PutUniqueClientTag(GenerateSyncableHash(model_type, name));
+  entry->PutBaseVersion(version);
+  entry->PutIsUnsynced(false);
+  entry->PutNonUniqueName(name);
+  entry->PutIsDir(false);
+  entry->PutIsDel(false);
+  entry->PutParentId(parent_id);
+
+  entry->PutServerCtime(now);
+  entry->PutServerMtime(now);
+  entry->PutServerVersion(version);
+  entry->PutIsUnappliedUpdate(false);
+  entry->PutServerNonUniqueName(name);
+  entry->PutServerParentId(parent_id);
+  entry->PutServerIsDir(false);
+  entry->PutServerIsDel(false);
 }
 
 }  // namespace syncer

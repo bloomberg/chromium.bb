@@ -18,6 +18,7 @@ namespace syncer {
 namespace syncable {
 class Directory;
 class Id;
+class MutableEntry;
 }
 
 class TestEntryFactory {
@@ -57,7 +58,7 @@ class TestEntryFactory {
   // the metahandle of the created item.
   int64_t CreateUnappliedAndUnsyncedBookmarkItem(const std::string& name);
 
-  // Creates a unique_client_tag item that has neither IS_UNSYNED or
+  // Creates a unique_client_tag item that has neither IS_UNSYNCED or
   // IS_UNAPPLIED_UPDATE. The item is known to both the server and client.
   // Returns the metahandle of the created item. |specifics| is optional.
   int64_t CreateSyncedItem(const std::string& name,
@@ -67,6 +68,9 @@ class TestEntryFactory {
                            ModelType model_type,
                            bool is_folder,
                            const sync_pb::EntitySpecifics& specifics);
+
+  // Create a tombstone for |name|; returns the metahandle of the entry.
+  int64_t CreateTombstone(const std::string& name, ModelType model_type);
 
   // Creates a root node for |model_type|.
   int64_t CreateTypeRootNode(ModelType model_type);
@@ -132,6 +136,12 @@ class TestEntryFactory {
   int64_t GetNextRevision();
 
  private:
+  // Populate an entry with a bunch of default values.
+  void PopulateEntry(const syncable::Id& parent_id,
+                     const std::string& name,
+                     ModelType model_type,
+                     syncable::MutableEntry* entry);
+
   syncable::Directory* directory_;
   int64_t next_revision_;
 

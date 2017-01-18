@@ -305,6 +305,24 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
   worker()->ExpectPendingCommits({kHash1});
 }
 
+// Test that an initial sync filters out tombstones in the processor.
+TEST_F(SharedModelTypeProcessorTest, InitialSyncWithTombstone) {
+  OnMetadataLoaded();
+  OnSyncStarting();
+
+  EXPECT_EQ(0, bridge()->merge_call_count());
+  // Initial sync with a tombstone. The fake bridge checks that it doesn't get
+  // any tombstones in its MergeSyncData function.
+  worker()->TombstoneFromServer(kHash1);
+  EXPECT_EQ(1, bridge()->merge_call_count());
+
+  // Should still have no data, metadata, or commit requests.
+  EXPECT_EQ(0U, db().data_count());
+  EXPECT_EQ(0U, db().metadata_count());
+  EXPECT_EQ(0U, ProcessorEntityCount());
+  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+}
+
 // Test that subsequent starts don't call MergeSyncData.
 TEST_F(SharedModelTypeProcessorTest, NonInitialSync) {
   // This sets initial_sync_done to true.
