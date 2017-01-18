@@ -88,7 +88,7 @@ void VrWebContentsObserver::MainFrameWasResized(bool width_changed) {
 void VrWebContentsObserver::RenderViewHostChanged(
     content::RenderViewHost* old_host,
     content::RenderViewHost* new_host) {
-  new_host->GetWidget()->GetView()->SetShowingOverscrollGlow(false);
+  new_host->GetWidget()->GetView()->SetIsInVR(true);
 }
 
 }  // namespace vr_shell

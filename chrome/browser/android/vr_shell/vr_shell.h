@@ -138,7 +138,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
  private:
   ~VrShell() override;
-  void SetShowingOverscrollGlow(bool showing_glow);
+  void SetIsInVR(bool is_in_vr);
   void PostToGlThreadWhenReady(const base::Closure& task);
 
   // content::WebContentsObserver implementation. All called on UI thread.

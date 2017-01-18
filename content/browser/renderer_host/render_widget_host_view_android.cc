@@ -443,7 +443,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_showing_(!widget_host->is_hidden()),
       is_window_visible_(true),
       is_window_activity_started_(true),
-      is_showing_overscroll_glow_(true),
+      is_in_vr_(false),
       content_view_core_(nullptr),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
@@ -776,7 +776,7 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
           ? *GetTextInputManager()->GetTextInputState()
           : TextInputState();
 
-  if (!content_view_core_)
+  if (!content_view_core_ || is_in_vr_)
     return;
 
   content_view_core_->UpdateImeAdapter(
@@ -960,6 +960,11 @@ void RenderWidgetHostViewAndroid::SetTooltipText(
 void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
                                                    size_t offset,
                                                    const gfx::Range& range) {
+  // TODO(asimjour): remove the flag and fix text selection popup for
+  // virtual reality mode.
+  if (is_in_vr_)
+    return;
+
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
 
   if (!content_view_core_)
@@ -1544,7 +1549,7 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(cc::BeginFrameArgs args) {
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   bool needs_animate = false;
-  if (overscroll_controller_ && is_showing_overscroll_glow_) {
+  if (overscroll_controller_ && !is_in_vr_) {
     needs_animate |= overscroll_controller_->Animate(
         frame_time, content_view_core_->GetViewAndroid()->GetLayer());
   }
@@ -1755,8 +1760,8 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
   return cached_background_color_;
 }
 
-void RenderWidgetHostViewAndroid::SetShowingOverscrollGlow(bool showing_glow) {
-  is_showing_overscroll_glow_ = showing_glow;
+void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
+  is_in_vr_ = is_in_vr;
 }
 
 void RenderWidgetHostViewAndroid::DidOverscroll(
@@ -2075,7 +2080,6 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
   overscroll_controller_ = base::MakeUnique<OverscrollControllerAndroid>(
       overscroll_refresh_handler, compositor,
       ui::GetScaleFactorForNativeView(GetNativeView()));
-  is_showing_overscroll_glow_ = true;
 }
 
 }  // namespace content

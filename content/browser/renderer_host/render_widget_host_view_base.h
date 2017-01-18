@@ -97,7 +97,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void WasOccluded() override {}
   bool IsShowingContextMenu() const override;
   void SetShowingContextMenu(bool showing_menu) override;
-  void SetShowingOverscrollGlow(bool showing_glow) override;
+  void SetIsInVR(bool is_in_vr) override;
   base::string16 GetSelectedText() override;
   bool IsMouseLocked() override;
   gfx::Size GetVisibleViewportSize() const override;

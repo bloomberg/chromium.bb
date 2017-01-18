@@ -161,7 +161,7 @@ ui::TextInputClient* RenderWidgetHostViewBase::GetTextInputClient() {
   return NULL;
 }
 
-void RenderWidgetHostViewBase::SetShowingOverscrollGlow(bool showing) {
+void RenderWidgetHostViewBase::SetIsInVR(bool is_in_vr) {
   NOTIMPLEMENTED();
 }
 

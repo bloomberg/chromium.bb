@@ -140,7 +140,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override;
-  void SetShowingOverscrollGlow(bool showing_glow) override;
+  void SetIsInVR(bool is_in_vr) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
   cc::FrameSinkId GetFrameSinkId() override;
@@ -330,8 +330,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool is_window_visible_;
   bool is_window_activity_started_;
 
-  // Used to control the appearance of overscroll glow.
-  bool is_showing_overscroll_glow_;
+  // Used to customize behavior for virtual reality mode, such as the
+  // appearance of overscroll glow and the keyboard.
+  bool is_in_vr_;
 
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;

@@ -149,7 +149,7 @@ VrShell::VrShell(JNIEnv* env,
   vr_web_contents_observer_.reset(new VrWebContentsObserver(
       main_contents, html_interface_.get(), this));
 
-  SetShowingOverscrollGlow(false);
+  SetIsInVR(true);
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -209,7 +209,7 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   // exit vr session
   metrics_helper_->SetVRActive(false);
-  SetShowingOverscrollGlow(true);
+  SetIsInVR(false);
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -217,9 +217,8 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   thread->task_runner()->PostTask(
       FROM_HERE, base::Bind(&VrShellGl::OnResume, thread->GetVrShellGl()));
 
-  // exit vr session
   metrics_helper_->SetVRActive(true);
-  SetShowingOverscrollGlow(false);
+  SetIsInVR(true);
 }
 
 void VrShell::SetSurface(JNIEnv* env,
@@ -234,9 +233,8 @@ void VrShell::SetSurface(JNIEnv* env,
                                      base::Unretained(window)));
 }
 
-void VrShell::SetShowingOverscrollGlow(bool showing_glow) {
-  main_contents_->GetRenderWidgetHostView()->SetShowingOverscrollGlow(
-      showing_glow);
+void VrShell::SetIsInVR(bool is_in_vr) {
+  main_contents_->GetRenderWidgetHostView()->SetIsInVR(is_in_vr);
 }
 
 base::WeakPtr<VrShell> VrShell::GetWeakPtr(
