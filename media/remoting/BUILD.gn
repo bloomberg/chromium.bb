@@ -34,6 +34,8 @@ source_set("rpc") {
 
 source_set("remoting") {
   sources = [
+    "metrics.cc",
+    "metrics.h",
     "remote_demuxer_stream_adapter.cc",
     "remote_demuxer_stream_adapter.h",
     "remote_renderer_impl.cc",
@@ -56,6 +58,7 @@ source_set("remoting") {
     "remoting_sink_observer.h",
     "remoting_source_impl.cc",
     "remoting_source_impl.h",
+    "triggers.h",
   ]
   deps = [
     ":rpc",

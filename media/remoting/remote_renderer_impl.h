@@ -15,11 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
+#include "base/timer/timer.h"
 #include "media/base/buffering_state.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/remoting/metrics.h"
 #include "media/remoting/remoting_interstitial_ui.h"
 #include "media/remoting/rpc/rpc_broker.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -144,14 +146,17 @@ class RemoteRendererImpl : public Renderer {
   void UpdateVideoStatsQueue(int video_frames_decoded,
                              int video_frames_dropped);
 
-  // Called to clear |media_time_queue_| and |video_stats_queue_|.
-  void ResetQueues();
+  // Called to clear all recent measurements history and schedule resuming after
+  // a stabilization period elapses.
+  void ResetMeasurements();
 
-  // Called when irregular playback is detected.
-  void OnIrregularPlaybackDetected();
+  // Called when a fatal runtime error occurs. |stop_trigger| is the error code
+  // handed to the RemotingRendererController.
+  void OnFatalError(remoting::StopTrigger stop_trigger);
 
-  // Shut down remoting session.
-  void OnFatalError(PipelineStatus status);
+  // Called periodically to measure the data flows from the
+  // DemuxerStreamAdapters and record this information in the metrics.
+  void MeasureAndRecordDataRates();
 
   State state_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -215,6 +220,13 @@ class RemoteRendererImpl : public Renderer {
   // The total number of frames decoded/dropped in the time window.
   int sum_video_frames_decoded_ = 0;
   int sum_video_frames_dropped_ = 0;
+
+  // Records events and measurements of interest.
+  remoting::RendererMetricsRecorder metrics_recorder_;
+
+  // A timer that polls the RemoteDemuxerStreamAdapters periodically to measure
+  // the data flow rates for metrics.
+  base::RepeatingTimer data_flow_poll_timer_;
 
   base::WeakPtrFactory<RemoteRendererImpl> weak_factory_;
 

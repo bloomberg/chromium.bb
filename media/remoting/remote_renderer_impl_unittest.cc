@@ -288,11 +288,11 @@ class RemoteRendererImplTest : public testing::Test {
     ASSERT_EQ(remote_renderer_impl_->current_max_time_, current_max);
   }
 
+  base::MessageLoop message_loop_;
   std::unique_ptr<RemotingRendererController> remoting_renderer_controller_;
   std::unique_ptr<RendererClientImpl> render_client_;
   std::unique_ptr<FakeRemotingDemuxerStreamProvider> demuxer_stream_provider_;
   std::unique_ptr<RemoteRendererImpl> remote_renderer_impl_;
-  base::MessageLoop message_loop_;
 
   // RPC handles.
   const int receiver_renderer_handle_;
@@ -365,8 +365,13 @@ TEST_F(RemoteRendererImplTest, StartPlayingFrom) {
   ASSERT_EQ(rpc->integer64_value(), 100);
 }
 
-// SetVolume can be called anytime without conditions.
 TEST_F(RemoteRendererImplTest, SetVolume) {
+  // Initialize Renderer because, as of this writing, the pipeline guarantees it
+  // will not call SetVolume() until after the media::Renderer is initialized.
+  InitializeRenderer();
+  RunPendingTasks();
+  ASSERT_EQ(0, ReceivedRpcMessageCount());
+
   // SetVolume() will send remoting::pb::RpcMessage::RPC_R_SETVOLUME RPC.
   remote_renderer_impl_->SetVolume(3.0);
   RunPendingTasks();
@@ -379,16 +384,13 @@ TEST_F(RemoteRendererImplTest, SetVolume) {
   ASSERT_TRUE(rpc->double_value() == 3.0);
 }
 
-// SetVolume can be called only when the state is playing.
 TEST_F(RemoteRendererImplTest, SetPlaybackRate) {
-  // Without initializing renderer, SetPlaybackRate() will be no-op.
-  remote_renderer_impl_->SetPlaybackRate(-1.5);
-  RunPendingTasks();
-  ASSERT_EQ(0, ReceivedRpcMessageCount());
-
-  // Initialize Renderer
+  // Initialize Renderer because, as of this writing, the pipeline guarantees it
+  // will not call SetPlaybackRate() until after the media::Renderer is
+  // initialized.
   InitializeRenderer();
   RunPendingTasks();
+  ASSERT_EQ(0, ReceivedRpcMessageCount());
 
   remoting_renderer_controller_->GetRpcBroker()->SetMessageCallbackForTesting(
       base::Bind(&RemoteRendererImplTest::OnSendMessageToSink,
@@ -559,4 +561,7 @@ TEST_F(RemoteRendererImplTest, OnDurationChangeWithInvalidValue) {
   OnReceivedRpc(std::move(rpc));
   RunPendingTasks();
 }
+
+// TODO(xjz): Tests for detecting PACING_TOO_SLOWLY and FRAME_DROP_RATE_HIGH.
+
 }  // namespace media

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "media/base/media_observer.h"
+#include "media/remoting/metrics.h"
 #include "media/remoting/remoting_interstitial_ui.h"
 #include "media/remoting/remoting_source_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -87,11 +88,10 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   base::WeakPtr<remoting::RpcBroker> GetRpcBroker() const;
 
-  // Called by RemoteRendererImpl when irregular playback is detected, which
-  // indicates either insufficient network bandwidth or the receiver cannot
-  // handle the data volume of the content (e.g., too high resolution and/or
-  // frame rate).
-  void OnIrregularPlaybackDetected();
+  // Called by RemoteRendererImpl when it encountered a fatal error. This will
+  // cause remoting to shut down and never start back up for the lifetime of
+  // this controller.
+  void OnRendererFatalError(remoting::StopTrigger stop_trigger);
 
  private:
   bool has_audio() const {
@@ -104,6 +104,12 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
            pipeline_metadata_.video_decoder_config.IsValidConfig();
   }
 
+  // Called when the session availability state may have changed. Each call to
+  // this method could cause a remoting session to be started or stopped; and if
+  // that happens, the |start_trigger| or |stop_trigger| must be the reason.
+  void UpdateFromSessionState(remoting::StartTrigger start_trigger,
+                              remoting::StopTrigger stop_trigger);
+
   bool IsVideoCodecSupported();
   bool IsAudioCodecSupported();
   bool IsRemoteSinkAvailable();
@@ -112,8 +118,11 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   bool ShouldBeRemoting();
 
   // Determines whether to enter or leave Remoting mode and switches if
-  // necessary.
-  void UpdateAndMaybeSwitch();
+  // necessary. Each call to this method could cause a remoting session to be
+  // started or stopped; and if that happens, the |start_trigger| or
+  // |stop_trigger| must be the reason.
+  void UpdateAndMaybeSwitch(remoting::StartTrigger start_trigger,
+                            remoting::StopTrigger stop_trigger);
 
   // Called to download the poster image. Called when:
   // 1. Poster URL changes.
@@ -122,7 +131,9 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   void DownloadPosterImage();
 
   // Called when poster image is downloaded.
-  void OnPosterImageDownloaded(const GURL& download_url, const SkBitmap& image);
+  void OnPosterImageDownloaded(const GURL& download_url,
+                               base::TimeTicks download_start_time,
+                               const SkBitmap& image);
 
   // Update remoting interstitial with |image|. When |image| is not set,
   // interstitial will be drawn on previously downloaded poster image (in
@@ -160,8 +171,14 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // Indicates whether video is paused.
   bool is_paused_ = true;
 
-  // Indicates whether OnIrregularPlaybackDetected() has been called.
-  bool irregular_playback_detected_ = false;
+  // Indicates whether OnRendererFatalError() has been called. This indicates
+  // one of several possible problems: 1) An environmental problem such as
+  // out-of-memory, insufficient network bandwidth, etc. 2) The receiver may
+  // have been unable to play-out the content correctly (e.g., not capable of a
+  // high frame rate at a high resolution). 3) An implementation bug. In any
+  // case, once a renderer encounters a fatal error, remoting will be shut down
+  // and never start again for the lifetime of this controller.
+  bool encountered_renderer_fatal_error_ = false;
 
   // The callback to switch the media renderer.
   base::Closure switch_renderer_cb_;
@@ -192,6 +209,9 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // changes during a remoting session or the show interstial callback is set.
   // OnPosterImageDownloaded() will be called when download completes.
   DownloadPosterCallback download_poster_cb_;
+
+  // Records session events of interest.
+  remoting::SessionMetricsRecorder metrics_recorder_;
 
   base::WeakPtrFactory<RemotingRendererController> weak_factory_;
 

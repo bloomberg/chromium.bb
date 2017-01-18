@@ -5,6 +5,7 @@
 #include "media/remoting/remote_demuxer_stream_adapter.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
@@ -40,15 +41,30 @@ class MockRemoteDemuxerStreamAdapter {
         std::move(main_task_runner), std::move(media_task_runner), name,
         demuxer_stream, rpc_broker_->GetWeakPtr(),
         rpc_broker_->GetUniqueHandle(), std::move(stream_sender_info),
-        std::move(producer_handle)));
+        std::move(producer_handle),
+        base::Bind(&MockRemoteDemuxerStreamAdapter::OnError,
+                   weak_factory_.GetWeakPtr())));
 
     // Faking initialization with random callback handle to start mojo watcher.
     demuxer_stream_adapter_->Initialize(3);
   }
 
+  ~MockRemoteDemuxerStreamAdapter() {
+    // Make sure unit tests that did not expect errors did not cause any errors.
+    EXPECT_TRUE(errors_.empty());
+  }
+
   int rpc_handle() const { return demuxer_stream_adapter_->rpc_handle(); }
+
   base::WeakPtr<MockRemoteDemuxerStreamAdapter> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
+  }
+
+  void DoDuplicateInitialize() { demuxer_stream_adapter_->Initialize(999); }
+
+  void TakeErrors(std::vector<StopTrigger>* errors) {
+    errors->swap(errors_);
+    errors_.clear();
   }
 
   // Fake to signal that it's in reading state.
@@ -77,9 +93,14 @@ class MockRemoteDemuxerStreamAdapter {
     CHECK(last_received_rpc_->ParseFromArray(message->data(), message->size()));
   }
 
+  void OnError(StopTrigger stop_trigger) { errors_.push_back(stop_trigger); }
+
   std::unique_ptr<RpcBroker> rpc_broker_;
   std::unique_ptr<RemoteDemuxerStreamAdapter> demuxer_stream_adapter_;
   std::unique_ptr<remoting::pb::RpcMessage> last_received_rpc_;
+
+  std::vector<StopTrigger> errors_;
+
   base::WeakPtrFactory<MockRemoteDemuxerStreamAdapter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRemoteDemuxerStreamAdapter);
@@ -122,10 +143,11 @@ class RemoteDemuxerStreamAdapterTest : public ::testing::Test {
  protected:
   void SetUp() override { SetUpDataPipe(); }
 
+  // TODO(miu): Add separate media thread, to test threading also.
+  base::MessageLoop message_loop_;
   std::unique_ptr<DummyDemuxerStream> demuxer_stream_;
   std::unique_ptr<FakeRemotingDataStreamSender> data_stream_sender_;
   std::unique_ptr<MockRemoteDemuxerStreamAdapter> demuxer_stream_adapter_;
-  base::MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteDemuxerStreamAdapterTest);
@@ -245,6 +267,31 @@ TEST_F(RemoteDemuxerStreamAdapterTest, SendFrameAndSignalFlushMix) {
   ASSERT_EQ(last_rpc->proc(), pb::RpcMessage::RPC_DS_READUNTIL_CALLBACK);
   ASSERT_EQ(last_rpc->handle(), 103);
   data_stream_sender_->ResetHistory();
+}
+
+TEST_F(RemoteDemuxerStreamAdapterTest, DuplicateInitializeCausesFatalError) {
+  std::vector<StopTrigger> errors;
+  demuxer_stream_adapter_->TakeErrors(&errors);
+  ASSERT_TRUE(errors.empty());
+
+  demuxer_stream_adapter_->DoDuplicateInitialize();
+  demuxer_stream_adapter_->TakeErrors(&errors);
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ(PEERS_OUT_OF_SYNC, errors[0]);
+}
+
+TEST_F(RemoteDemuxerStreamAdapterTest, ClosingPipeCausesFatalError) {
+  std::vector<StopTrigger> errors;
+  demuxer_stream_adapter_->TakeErrors(&errors);
+  ASSERT_TRUE(errors.empty());
+
+  // Closes one end of mojo message and data pipes.
+  data_stream_sender_.reset();
+  RunPendingTasks();  // Allow notification from mojo to propagate.
+
+  demuxer_stream_adapter_->TakeErrors(&errors);
+  ASSERT_EQ(1u, errors.size());
+  EXPECT_EQ(MOJO_PIPE_ERROR, errors[0]);
 }
 
 }  // namesapce remoting

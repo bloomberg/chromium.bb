@@ -160,7 +160,6 @@ void RemotingSourceImpl::AddClient(Client* client) {
   DCHECK(std::find(clients_.begin(), clients_.end(), client) == clients_.end());
 
   clients_.push_back(client);
-  client->OnSessionStateChanged();
 }
 
 void RemotingSourceImpl::RemoveClient(Client* client) {

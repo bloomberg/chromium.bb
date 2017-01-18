@@ -5,6 +5,7 @@
 #include "media/remoting/remote_renderer_impl.h"
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_math.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
@@ -40,7 +42,13 @@ constexpr int kMaxNumVideoFramesDroppedPercentage = 3;
 // Flush().
 constexpr base::TimeDelta kStabilizationPeriod =
     base::TimeDelta::FromSeconds(2);
-}
+
+// The amount of time between polling the DemuxerStreamAdapters to measure their
+// data flow rates for metrics.
+constexpr base::TimeDelta kDataFlowPollPeriod =
+    base::TimeDelta::FromSeconds(10);
+
+}  // namespace
 
 namespace media {
 
@@ -102,8 +110,13 @@ void RemoteRendererImpl::Initialize(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
   DCHECK(client);
-  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK_EQ(state_, STATE_UNINITIALIZED);
+
+  if (state_ != STATE_UNINITIALIZED) {
+    media_task_runner_->PostTask(
+        FROM_HERE, base::Bind(init_cb, PIPELINE_ERROR_INVALID_STATE));
+    return;
+  }
+
   demuxer_stream_provider_ = demuxer_stream_provider;
   client_ = client;
   init_workflow_done_callback_ = init_cb;
@@ -155,6 +168,10 @@ void RemoteRendererImpl::Flush(const base::Closure& flush_cb) {
 
   if (state_ != STATE_PLAYING) {
     DCHECK_EQ(state_, STATE_ERROR);
+    // In the error state, this renderer will be shut down shortly. To prevent
+    // breaking the pipeline impl, just run the done callback (interface
+    // requirement).
+    media_task_runner_->PostTask(FROM_HERE, flush_cb);
     return;
   }
 
@@ -217,15 +234,17 @@ void RemoteRendererImpl::StartPlayingFrom(base::TimeDelta time) {
     base::AutoLock auto_lock(time_lock_);
     current_media_time_ = time;
   }
-  ResetQueues();
+  ResetMeasurements();
 }
 
 void RemoteRendererImpl::SetPlaybackRate(double playback_rate) {
   VLOG(2) << __func__ << ": " << playback_rate;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  if (state_ != STATE_PLAYING)
+  if (state_ != STATE_FLUSHING && state_ != STATE_PLAYING) {
+    DCHECK_EQ(state_, STATE_ERROR);
     return;
+  }
 
   // Issues RPC_R_SETPLAYBACKRATE RPC message.
   std::unique_ptr<remoting::pb::RpcMessage> rpc(new remoting::pb::RpcMessage());
@@ -236,12 +255,17 @@ void RemoteRendererImpl::SetPlaybackRate(double playback_rate) {
           << " with rate=" << rpc->double_value();
   SendRpcToRemote(std::move(rpc));
   playback_rate_ = playback_rate;
-  ResetQueues();
+  ResetMeasurements();
 }
 
 void RemoteRendererImpl::SetVolume(float volume) {
   VLOG(2) << __func__ << ": " << volume;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  if (state_ != STATE_FLUSHING && state_ != STATE_PLAYING) {
+    DCHECK_EQ(state_, STATE_ERROR);
+    return;
+  }
 
   // Issues RPC_R_SETVOLUME RPC message.
   std::unique_ptr<remoting::pb::RpcMessage> rpc(new remoting::pb::RpcMessage());
@@ -294,6 +318,9 @@ void RemoteRendererImpl::OnDataPipeCreated(
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_workflow_done_callback_.is_null());
+
+  if (state_ == STATE_ERROR)
+    return;  // Abort because something went wrong in the meantime.
   DCHECK_EQ(state_, STATE_CREATE_PIPE);
 
   // Create audio demuxer stream adapter if audio is available.
@@ -306,7 +333,9 @@ void RemoteRendererImpl::OnDataPipeCreated(
         new remoting::RemoteDemuxerStreamAdapter(
             main_task_runner_, media_task_runner_, "audio",
             audio_demuxer_stream, rpc_broker_, audio_rpc_handle,
-            std::move(audio), std::move(audio_handle)));
+            std::move(audio), std::move(audio_handle),
+            base::Bind(&RemoteRendererImpl::OnFatalError,
+                       base::Unretained(this))));
   }
 
   // Create video demuxer stream adapter if video is available.
@@ -319,12 +348,14 @@ void RemoteRendererImpl::OnDataPipeCreated(
         new remoting::RemoteDemuxerStreamAdapter(
             main_task_runner_, media_task_runner_, "video",
             video_demuxer_stream, rpc_broker_, video_rpc_handle,
-            std::move(video), std::move(video_handle)));
+            std::move(video), std::move(video_handle),
+            base::Bind(&RemoteRendererImpl::OnFatalError,
+                       base::Unretained(this))));
   }
 
   // Checks if data pipe is created successfully.
   if (!audio_demuxer_stream_adapter_ && !video_demuxer_stream_adapter_) {
-    OnFatalError(PIPELINE_ERROR_ABORT);
+    OnFatalError(remoting::DATA_PIPE_CREATE_ERROR);
     return;
   }
 
@@ -378,7 +409,7 @@ void RemoteRendererImpl::OnReceivedRpc(
       break;
     case remoting::pb::RpcMessage::RPC_RC_ONERROR:
       VLOG(2) << __func__ << ": Received RPC_RC_ONERROR.";
-      OnFatalError(PIPELINE_ERROR_DECODE);
+      OnFatalError(remoting::RECEIVER_PIPELINE_ERROR);
       break;
     case remoting::pb::RpcMessage::RPC_RC_ONVIDEONATURALSIZECHANGE:
       OnVideoNaturalSizeChange(std::move(message));
@@ -415,16 +446,17 @@ void RemoteRendererImpl::AcquireRendererDone(
     std::unique_ptr<remoting::pb::RpcMessage> message) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(message);
-  DCHECK(!init_workflow_done_callback_.is_null());
-  if (state_ != STATE_ACQUIRING || init_workflow_done_callback_.is_null()) {
-    VLOG(1) << "Unexpected acquire renderer done RPC. Shutting down.";
-    OnFatalError(PIPELINE_ERROR_ABORT);
-    return;
-  }
+
   remote_renderer_handle_ = message->integer_value();
   VLOG(2) << __func__
           << ": Received RPC_ACQUIRE_RENDERER_DONE with remote_renderer_handle="
           << remote_renderer_handle_;
+
+  if (state_ != STATE_ACQUIRING || init_workflow_done_callback_.is_null()) {
+    LOG(WARNING) << "Unexpected acquire renderer done RPC.";
+    OnFatalError(remoting::PEERS_OUT_OF_SYNC);
+    return;
+  }
   state_ = STATE_INITIALIZING;
 
   // Issues RPC_R_INITIALIZE RPC message to initialize renderer.
@@ -455,20 +487,23 @@ void RemoteRendererImpl::InitializeCallback(
     std::unique_ptr<remoting::pb::RpcMessage> message) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(message);
-  DCHECK(!init_workflow_done_callback_.is_null());
-  if (state_ != STATE_INITIALIZING || init_workflow_done_callback_.is_null()) {
-    VLOG(1) << "Unexpected initialize callback RPC. Shutting down.";
-    OnFatalError(PIPELINE_ERROR_ABORT);
-    return;
-  }
 
   const bool success = message->boolean_value();
   VLOG(2) << __func__
           << ": Received RPC_R_INITIALIZE_CALLBACK with success=" << success;
-  if (!success) {
-    OnFatalError(PIPELINE_ERROR_ABORT);
+
+  if (state_ != STATE_INITIALIZING || init_workflow_done_callback_.is_null()) {
+    LOG(WARNING) << "Unexpected initialize callback RPC.";
+    OnFatalError(remoting::PEERS_OUT_OF_SYNC);
     return;
   }
+
+  if (!success) {
+    OnFatalError(remoting::RECEIVER_INITIALIZE_FAILED);
+    return;
+  }
+
+  metrics_recorder_.OnRendererInitialized();
 
   state_ = STATE_PLAYING;
   base::ResetAndReturn(&init_workflow_done_callback_).Run(::media::PIPELINE_OK);
@@ -476,19 +511,21 @@ void RemoteRendererImpl::InitializeCallback(
 
 void RemoteRendererImpl::FlushUntilCallback() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+  VLOG(2) << __func__ << ": Received RPC_R_FLUSHUNTIL_CALLBACK";
+
   if (state_ != STATE_FLUSHING || flush_cb_.is_null()) {
-    VLOG(1) << "Unexpected flushuntil callback RPC. Shutting down.";
-    OnFatalError(PIPELINE_ERROR_ABORT);
+    LOG(WARNING) << "Unexpected flushuntil callback RPC.";
+    OnFatalError(remoting::PEERS_OUT_OF_SYNC);
     return;
   }
-  VLOG(2) << __func__ << ": Received RPC_R_FLUSHUNTIL_CALLBACK";
+
   state_ = STATE_PLAYING;
   if (audio_demuxer_stream_adapter_)
     audio_demuxer_stream_adapter_->SignalFlush(false);
   if (video_demuxer_stream_adapter_)
     video_demuxer_stream_adapter_->SignalFlush(false);
   base::ResetAndReturn(&flush_cb_).Run();
-  ResetQueues();
+  ResetMeasurements();
 }
 
 void RemoteRendererImpl::SetCdmCallback(
@@ -509,7 +546,7 @@ void RemoteRendererImpl::OnTimeUpdate(
   // Shutdown remoting session if receiving malformed RPC message.
   if (!message->has_rendererclient_ontimeupdate_rpc()) {
     VLOG(1) << __func__ << " missing required RPC message";
-    OnFatalError(PIPELINE_ERROR_ABORT);
+    OnFatalError(remoting::RPC_INVALID);
     return;
   }
   const int64_t time_usec =
@@ -531,6 +568,7 @@ void RemoteRendererImpl::OnTimeUpdate(
     current_max_time_ = base::TimeDelta::FromMicroseconds(max_time_usec);
   }
 
+  metrics_recorder_.OnEvidenceOfPlayoutAtReceiver();
   OnMediaTimeUpdated();
 }
 
@@ -540,7 +578,7 @@ void RemoteRendererImpl::OnBufferingStateChange(
   DCHECK(message);
   if (!message->has_rendererclient_onbufferingstatechange_rpc()) {
     VLOG(1) << __func__ << " missing required RPC message";
-    OnFatalError(PIPELINE_ERROR_ABORT);
+    OnFatalError(remoting::RPC_INVALID);
     return;
   }
   VLOG(2) << __func__ << ": Received RPC_RC_ONBUFFERINGSTATECHANGE with state="
@@ -560,7 +598,7 @@ void RemoteRendererImpl::OnVideoNaturalSizeChange(
   // Shutdown remoting session if receiving malformed RPC message.
   if (!message->has_rendererclient_onvideonatualsizechange_rpc()) {
     VLOG(1) << __func__ << " missing required RPC message";
-    OnFatalError(PIPELINE_ERROR_ABORT);
+    OnFatalError(remoting::RPC_INVALID);
     return;
   }
   const auto& size_change =
@@ -590,7 +628,7 @@ void RemoteRendererImpl::OnStatisticsUpdate(
   // Shutdown remoting session if receiving malformed RPC message.
   if (!message->has_rendererclient_onstatisticsupdate_rpc()) {
     VLOG(1) << __func__ << " missing required RPC message";
-    OnFatalError(PIPELINE_ERROR_ABORT);
+    OnFatalError(remoting::RPC_INVALID);
     return;
   }
   const auto& rpc_message = message->rendererclient_onstatisticsupdate_rpc();
@@ -611,6 +649,10 @@ void RemoteRendererImpl::OnStatisticsUpdate(
           << ", audio_memory_usage=" << stats.audio_memory_usage
           << ", video_memory_usage=" << stats.video_memory_usage;
 
+  if (stats.audio_bytes_decoded > 0 || stats.video_frames_decoded > 0 ||
+      stats.video_frames_dropped > 0) {
+    metrics_recorder_.OnEvidenceOfPlayoutAtReceiver();
+  }
   UpdateVideoStatsQueue(stats.video_frames_decoded, stats.video_frames_dropped);
   client_->OnStatisticsUpdate(stats);
 }
@@ -627,31 +669,31 @@ void RemoteRendererImpl::OnDurationChange(
       base::TimeDelta::FromMicroseconds(message->integer64_value()));
 }
 
-void RemoteRendererImpl::OnFatalError(PipelineStatus error) {
+void RemoteRendererImpl::OnFatalError(remoting::StopTrigger stop_trigger) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
+  DCHECK_NE(remoting::UNKNOWN_STOP_TRIGGER, stop_trigger);
 
-  // An error has already been delivered.
-  if (state_ == STATE_ERROR)
-    return;
+  VLOG(2) << __func__ << " with StopTrigger " << stop_trigger;
 
-  VLOG(2) << __func__ << " with PipelineStatus error=" << error;
+  // If this is the first error, notify the controller. It is expected the
+  // controller will shut down this renderer shortly.
+  if (state_ != STATE_ERROR) {
+    state_ = STATE_ERROR;
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&RemotingRendererController::OnRendererFatalError,
+                              remoting_renderer_controller_, stop_trigger));
+  }
 
-  const State old_state = state_;
-  state_ = STATE_ERROR;
+  data_flow_poll_timer_.Stop();
 
   if (!init_workflow_done_callback_.is_null()) {
-    DCHECK(old_state == STATE_CREATE_PIPE || old_state == STATE_ACQUIRING ||
-           old_state == STATE_INITIALIZING);
-    base::ResetAndReturn(&init_workflow_done_callback_).Run(error);
+    base::ResetAndReturn(&init_workflow_done_callback_)
+        .Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
 
   if (!flush_cb_.is_null())
     base::ResetAndReturn(&flush_cb_).Run();
-
-  // After OnError() returns, the pipeline may destroy |this|.
-  client_->OnError(error);
 }
 
 // static
@@ -705,7 +747,7 @@ void RemoteRendererImpl::OnMediaTimeUpdated() {
     VLOG(1) << "Irregular playback detected: Media playback delayed."
             << " media_duration = " << media_duration
             << " update_duration = " << update_duration;
-    OnIrregularPlaybackDetected();
+    OnFatalError(remoting::PACING_TOO_SLOWLY);
   }
   // Prune |media_time_queue_|.
   while (media_time_queue_.back().first - media_time_queue_.front().first >=
@@ -746,7 +788,7 @@ void RemoteRendererImpl::UpdateVideoStatsQueue(int video_frames_decoded,
     VLOG(1) << "Irregular playback detected: Too many video frames dropped."
             << " video_frames_decoded= " << sum_video_frames_decoded_
             << " video_frames_dropped= " << sum_video_frames_dropped_;
-    OnIrregularPlaybackDetected();
+    OnFatalError(remoting::FRAME_DROP_RATE_HIGH);
   }
   // Prune |video_stats_queue_|.
   while (std::get<0>(video_stats_queue_.back()) -
@@ -758,7 +800,7 @@ void RemoteRendererImpl::UpdateVideoStatsQueue(int video_frames_decoded,
   }
 }
 
-void RemoteRendererImpl::ResetQueues() {
+void RemoteRendererImpl::ResetMeasurements() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   media_time_queue_.clear();
   video_stats_queue_.clear();
@@ -766,14 +808,52 @@ void RemoteRendererImpl::ResetQueues() {
   sum_video_frames_decoded_ = 0;
   stats_updated_ = false;
   ignore_updates_until_time_ = base::TimeTicks::Now() + kStabilizationPeriod;
+
+  if (state_ != STATE_ERROR &&
+      (audio_demuxer_stream_adapter_ || video_demuxer_stream_adapter_)) {
+    data_flow_poll_timer_.Start(FROM_HERE, kDataFlowPollPeriod, this,
+                                &RemoteRendererImpl::MeasureAndRecordDataRates);
+  }
 }
 
-void RemoteRendererImpl::OnIrregularPlaybackDetected() {
+void RemoteRendererImpl::MeasureAndRecordDataRates() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RemotingRendererController::OnIrregularPlaybackDetected,
-                 remoting_renderer_controller_));
+
+  // Whenever media is first started or flushed/seeked, there is a "burst
+  // bufferring" period as the remote device rapidly fills its buffer before
+  // resuming playback. Since the goal here is to measure the sustained content
+  // bitrates, ignore the byte counts the first time since the last
+  // ResetMeasurements() call.
+  const base::TimeTicks current_time = base::TimeTicks::Now();
+  if (current_time < ignore_updates_until_time_ + kDataFlowPollPeriod) {
+    if (audio_demuxer_stream_adapter_)
+      audio_demuxer_stream_adapter_->GetBytesWrittenAndReset();
+    if (video_demuxer_stream_adapter_)
+      video_demuxer_stream_adapter_->GetBytesWrittenAndReset();
+    return;
+  }
+
+  const int kBytesPerKilobit = 1024 / 8;
+  if (audio_demuxer_stream_adapter_) {
+    const double kilobits_per_second =
+        (audio_demuxer_stream_adapter_->GetBytesWrittenAndReset() /
+         kDataFlowPollPeriod.InSecondsF()) /
+        kBytesPerKilobit;
+    DCHECK_GE(kilobits_per_second, 0);
+    const base::CheckedNumeric<int> checked_kbps = kilobits_per_second;
+    metrics_recorder_.OnAudioRateEstimate(
+        checked_kbps.ValueOrDefault(std::numeric_limits<int>::max()));
+  }
+  if (video_demuxer_stream_adapter_) {
+    const double kilobits_per_second =
+        (video_demuxer_stream_adapter_->GetBytesWrittenAndReset() /
+         kDataFlowPollPeriod.InSecondsF()) /
+        kBytesPerKilobit;
+    DCHECK_GE(kilobits_per_second, 0);
+    const base::CheckedNumeric<int> checked_kbps = kilobits_per_second;
+    metrics_recorder_.OnVideoRateEstimate(
+        checked_kbps.ValueOrDefault(std::numeric_limits<int>::max()));
+  }
 }
 
 }  // namespace media

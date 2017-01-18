@@ -32,7 +32,8 @@ message Size {
 }
 
 message EncryptionScheme {
-  // Align with EncryptionScheme::CipherMode
+  // Proto version of EncryptionScheme::CipherMode.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum CipherMode {
     CIPHER_MODE_UNENCRYPTED = 0;
     CIPHER_MODE_AES_CTR = 1;
@@ -45,7 +46,8 @@ message EncryptionScheme {
 }
 
 message AudioDecoderConfig {
-  // Should align with ::media::Codec
+  // Proto version of media::Codec.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum Codec {
     kUnknownAudioCodec = 0;
     kCodecAAC = 1;
@@ -66,7 +68,8 @@ message AudioDecoderConfig {
     kCodecAC3 = 16;
   }
 
-  // Should align with ::media::SampleFormat
+  // Proto version of media::SampleFormat.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum SampleFormat {
     kUnknownSampleFormat = 0;
     kSampleFormatU8 = 1;
@@ -81,7 +84,8 @@ message AudioDecoderConfig {
     kSampleFormatEac3 = 10;
   };
 
-  // Should align with ::media::ChannelLayout
+  // Proto version of media::ChannelLayout.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum ChannelLayout {
     CHANNEL_LAYOUT_NONE = 0;
     CHANNEL_LAYOUT_UNSUPPORTED = 1;
@@ -135,7 +139,8 @@ message Rect {
 }
 
 message VideoDecoderConfig {
-  // Should align with ::media::VideoCodec
+  // Proto version of media::VideoCodec.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum Codec {
     kUnknownVideoCodec = 0;
     kCodecH264 = 1;
@@ -148,7 +153,8 @@ message VideoDecoderConfig {
     kCodecHEVC = 8;
   }
 
-  // Should align with ::media::VideoCodecProfile
+  // Proto version of media::VideoCodecProfile.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum Profile {
     VIDEO_CODEC_PROFILE_UNKNOWN = -1;
     H264PROFILE_BASELINE = 0;
@@ -172,7 +178,8 @@ message VideoDecoderConfig {
     HEVCPROFILE_MAIN_STILL_PICTURE = 18;
   };
 
-  // Should align with ::media::VideoPixelFormat
+  // Proto version of media::VideoPixelFormat.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum Format {
     PIXEL_FORMAT_UNKNOWN = 0;
     PIXEL_FORMAT_I420 = 1;
@@ -204,7 +211,8 @@ message VideoDecoderConfig {
     PIXEL_FORMAT_I422 = 27;
   };
 
-  // Should align with ::media::ColorSpace
+  // Proto version of media::ColorSpace.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum ColorSpace {
     COLOR_SPACE_UNSPECIFIED = 0;
     COLOR_SPACE_JPEG = 1;
@@ -244,7 +252,8 @@ message PipelineStatistics {
 };
 
 message CdmKeyInformation {
-  // Align with ::media::CdmKeyInformation::KeyStatus
+  // Proto version of media::CdmKeyInformation::KeyStatus.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum KeyStatus {
     USABLE = 0;
     INTERNAL_ERROR = 1;
@@ -260,7 +269,8 @@ message CdmKeyInformation {
   optional uint32 system_code = 3;
 }
 
-// Should align with ::media::CdmPromise::Exception
+// Proto version of media::CdmPromise::Exception.
+// NEVER change these numbers or re-use old ones; only add new ones.
 enum CdmException {
   NOT_SUPPORTED_ERROR = 0;
   INVALID_STATE_ERROR = 1;
@@ -271,14 +281,16 @@ enum CdmException {
   OUTPUT_ERROR = 6;
 }
 
-// Should align with ::media::ContentDecryptionModule::MessageType
+// Proto version of media::ContentDecryptionModule::MessageType.
+// NEVER change these numbers or re-use old ones; only add new ones.
 enum CdmMessageType {
   LICENSE_REQUEST = 0;
   LICENSE_RENEWAL = 1;
   LICENSE_RELEASE = 2;
 }
 
-// Should align with ::media::CdmSessionType
+// Proto version of media::CdmSessionType.
+// NEVER change these numbers or re-use old ones; only add new ones.
 enum CdmSessionType {
   TEMPORARY_SESSION = 0;
   PERSISTENT_LICENSE_SESSION = 1;
@@ -309,7 +321,8 @@ message RendererClientOnTimeUpdate {
 }
 
 message RendererClientOnBufferingStateChange {
-  // Should align with ::media::BufferingState
+  // Proto version of media::BufferingState.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum State {
     BUFFERING_HAVE_NOTHING = 0;
     BUFFERING_HAVE_ENOUGH = 1;
@@ -330,7 +343,8 @@ message DemuxerStreamInitializeCallback {
 }
 
 message DemuxerStreamReadUntilCallback {
-  // Should align with ::media::DemuxerStream::Status
+  // Proto version of media::DemuxerStream::Status.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum Status {
     kOk = 0;
     kAborted = 1;
@@ -358,6 +372,8 @@ message CdmSetServerCertificate {
 }
 
 message CdmCreateSessionAndGenerateRequest {
+  // Proto version of media::EmeInitDataType.
+  // NEVER change these numbers or re-use old ones; only add new ones.
   enum EmeInitDataType {
     UNKNOWN = 0;
     WEBM = 1;
