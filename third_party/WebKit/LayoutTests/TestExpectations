@@ -127,8 +127,6 @@ crbug.com/663838 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
 
 crbug.com/664846 paint/invalidation/background-resize-height.html [ Pass Failure ]
 
-crbug.com/664849 svg/dom/transform-parser.html [ Pass Failure ]
-
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
