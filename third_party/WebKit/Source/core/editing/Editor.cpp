@@ -836,7 +836,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
   // Request spell checking before any further DOM change.
   spellChecker().markMisspellingsAfterApplyingCommand(*cmd);
 
-  EditCommandComposition* composition = cmd->composition();
+  UndoStep* composition = cmd->composition();
   DCHECK(composition);
   dispatchEditableContentChangedEvents(
       composition->startingRootEditableElement(),
@@ -894,7 +894,7 @@ static VisibleSelection correctedVisibleSelection(
   return correctedSelection;
 }
 
-void Editor::unappliedEditing(EditCommandComposition* cmd) {
+void Editor::unappliedEditing(UndoStep* cmd) {
   EventQueueScope scope;
 
   dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(),
@@ -924,7 +924,7 @@ void Editor::unappliedEditing(EditCommandComposition* cmd) {
   respondToChangedContents(newSelection);
 }
 
-void Editor::reappliedEditing(EditCommandComposition* cmd) {
+void Editor::reappliedEditing(UndoStep* cmd) {
   EventQueueScope scope;
 
   dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(),

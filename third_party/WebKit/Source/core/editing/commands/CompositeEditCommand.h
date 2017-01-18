@@ -44,6 +44,7 @@ class Text;
 
 enum class EditCommandSource { kMenuOrKeyBinding, kDOM };
 
+// TODO(xiaochengh): Cleanup the names with term "composition".
 class CORE_EXPORT CompositeEditCommand : public EditCommand {
  public:
   enum ShouldPreserveSelection { PreserveSelection, DoNotPreserveSelection };
@@ -56,8 +57,8 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   bool isFirstCommand(EditCommand* command) {
     return !m_commands.isEmpty() && m_commands.front() == command;
   }
-  EditCommandComposition* composition() { return m_composition.get(); }
-  EditCommandComposition* ensureComposition();
+  UndoStep* composition() { return m_composition.get(); }
+  UndoStep* ensureComposition();
   // Append composition from an already applied command.
   void appendCommandToComposite(CompositeEditCommand*);
 
@@ -223,7 +224,7 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
  private:
   bool isCompositeEditCommand() const final { return true; }
 
-  Member<EditCommandComposition> m_composition;
+  Member<UndoStep> m_composition;
 };
 
 DEFINE_TYPE_CASTS(CompositeEditCommand,

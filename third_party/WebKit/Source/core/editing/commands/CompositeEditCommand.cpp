@@ -138,13 +138,14 @@ bool CompositeEditCommand::apply() {
   return !editingState.isAborted();
 }
 
-EditCommandComposition* CompositeEditCommand::ensureComposition() {
+UndoStep* CompositeEditCommand::ensureComposition() {
   CompositeEditCommand* command = this;
   while (command && command->parent())
     command = command->parent();
-  if (!command->m_composition)
-    command->m_composition = EditCommandComposition::create(
-        &document(), startingSelection(), endingSelection(), inputType());
+  if (!command->m_composition) {
+    command->m_composition = UndoStep::create(&document(), startingSelection(),
+                                              endingSelection(), inputType());
+  }
   return command->m_composition.get();
 }
 

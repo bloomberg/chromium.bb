@@ -39,20 +39,18 @@ namespace blink {
 
 class SimpleEditCommand;
 
-// TODO(xiaochengh): Rename this class to |UndoStep|.
-class EditCommandComposition
-    : public GarbageCollectedFinalized<EditCommandComposition> {
+class UndoStep : public GarbageCollectedFinalized<UndoStep> {
  public:
-  static EditCommandComposition* create(Document*,
-                                        const VisibleSelection&,
-                                        const VisibleSelection&,
-                                        InputEvent::InputType);
+  static UndoStep* create(Document*,
+                          const VisibleSelection&,
+                          const VisibleSelection&,
+                          InputEvent::InputType);
 
   void unapply();
   void reapply();
   InputEvent::InputType inputType() const;
   void append(SimpleEditCommand*);
-  void append(EditCommandComposition*);
+  void append(UndoStep*);
 
   const VisibleSelection& startingSelection() const {
     return m_startingSelection;
@@ -70,10 +68,10 @@ class EditCommandComposition
   DECLARE_TRACE();
 
  private:
-  EditCommandComposition(Document*,
-                         const VisibleSelection& startingSelection,
-                         const VisibleSelection& endingSelection,
-                         InputEvent::InputType);
+  UndoStep(Document*,
+           const VisibleSelection& startingSelection,
+           const VisibleSelection& endingSelection,
+           InputEvent::InputType);
 
   Member<Document> m_document;
   VisibleSelection m_startingSelection;

@@ -52,8 +52,7 @@ String EditCommand::textDataForInputEvent() const {
   return nullAtom;
 }
 
-static inline EditCommandComposition* compositionIfPossible(
-    EditCommand* command) {
+static inline UndoStep* compositionIfPossible(EditCommand* command) {
   if (!command->isCompositeEditCommand())
     return 0;
   return toCompositeEditCommand(command)->composition();
@@ -61,7 +60,7 @@ static inline EditCommandComposition* compositionIfPossible(
 
 void EditCommand::setStartingSelection(const VisibleSelection& selection) {
   for (EditCommand* command = this;; command = command->m_parent) {
-    if (EditCommandComposition* composition = compositionIfPossible(command)) {
+    if (UndoStep* composition = compositionIfPossible(command)) {
       DCHECK(command->isTopLevelCommand());
       composition->setStartingSelection(selection);
     }
@@ -86,7 +85,7 @@ void EditCommand::setEndingSelection(const SelectionInDOMTree& selection) {
 // |setEndingSelection()| as primary function instead of wrapper.
 void EditCommand::setEndingVisibleSelection(const VisibleSelection& selection) {
   for (EditCommand* command = this; command; command = command->m_parent) {
-    if (EditCommandComposition* composition = compositionIfPossible(command)) {
+    if (UndoStep* composition = compositionIfPossible(command)) {
       DCHECK(command->isTopLevelCommand());
       composition->setEndingSelection(selection);
     }

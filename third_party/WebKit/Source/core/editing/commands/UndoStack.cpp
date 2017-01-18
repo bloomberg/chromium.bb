@@ -44,7 +44,7 @@ UndoStack* UndoStack::create() {
   return new UndoStack();
 }
 
-void UndoStack::registerUndoStep(EditCommandComposition* step) {
+void UndoStack::registerUndoStep(UndoStep* step) {
   if (m_undoStack.size() == maximumUndoStackDepth)
     m_undoStack.removeFirst();  // drop oldest item off the far end
   if (!m_inRedo)
@@ -52,7 +52,7 @@ void UndoStack::registerUndoStep(EditCommandComposition* step) {
   m_undoStack.append(step);
 }
 
-void UndoStack::registerRedoStep(EditCommandComposition* step) {
+void UndoStack::registerRedoStep(UndoStep* step) {
   m_redoStack.append(step);
 }
 
@@ -67,7 +67,7 @@ bool UndoStack::canRedo() const {
 void UndoStack::undo() {
   if (canUndo()) {
     UndoStepStack::iterator back = --m_undoStack.end();
-    EditCommandComposition* step(back->get());
+    UndoStep* step(back->get());
     m_undoStack.remove(back);
     step->unapply();
     // unapply will call us back to push this command onto the redo stack.
@@ -77,7 +77,7 @@ void UndoStack::undo() {
 void UndoStack::redo() {
   if (canRedo()) {
     UndoStepStack::iterator back = --m_redoStack.end();
-    EditCommandComposition* step(back->get());
+    UndoStep* step(back->get());
     m_redoStack.remove(back);
 
     DCHECK(!m_inRedo);

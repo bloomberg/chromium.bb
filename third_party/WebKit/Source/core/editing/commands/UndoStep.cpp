@@ -9,20 +9,17 @@
 
 namespace blink {
 
-EditCommandComposition* EditCommandComposition::create(
-    Document* document,
-    const VisibleSelection& startingSelection,
-    const VisibleSelection& endingSelection,
-    InputEvent::InputType inputType) {
-  return new EditCommandComposition(document, startingSelection,
-                                    endingSelection, inputType);
+UndoStep* UndoStep::create(Document* document,
+                           const VisibleSelection& startingSelection,
+                           const VisibleSelection& endingSelection,
+                           InputEvent::InputType inputType) {
+  return new UndoStep(document, startingSelection, endingSelection, inputType);
 }
 
-EditCommandComposition::EditCommandComposition(
-    Document* document,
-    const VisibleSelection& startingSelection,
-    const VisibleSelection& endingSelection,
-    InputEvent::InputType inputType)
+UndoStep::UndoStep(Document* document,
+                   const VisibleSelection& startingSelection,
+                   const VisibleSelection& endingSelection,
+                   InputEvent::InputType inputType)
     : m_document(document),
       m_startingSelection(startingSelection),
       m_endingSelection(endingSelection),
@@ -30,7 +27,7 @@ EditCommandComposition::EditCommandComposition(
       m_endingRootEditableElement(endingSelection.rootEditableElement()),
       m_inputType(inputType) {}
 
-void EditCommandComposition::unapply() {
+void UndoStep::unapply() {
   DCHECK(m_document);
   LocalFrame* frame = m_document->frame();
   DCHECK(frame);
@@ -51,7 +48,7 @@ void EditCommandComposition::unapply() {
   frame->editor().unappliedEditing(this);
 }
 
-void EditCommandComposition::reapply() {
+void UndoStep::reapply() {
   DCHECK(m_document);
   LocalFrame* frame = m_document->frame();
   DCHECK(frame);
@@ -71,31 +68,29 @@ void EditCommandComposition::reapply() {
   frame->editor().reappliedEditing(this);
 }
 
-InputEvent::InputType EditCommandComposition::inputType() const {
+InputEvent::InputType UndoStep::inputType() const {
   return m_inputType;
 }
 
-void EditCommandComposition::append(SimpleEditCommand* command) {
+void UndoStep::append(SimpleEditCommand* command) {
   m_commands.push_back(command);
 }
 
-void EditCommandComposition::append(EditCommandComposition* composition) {
+void UndoStep::append(UndoStep* composition) {
   m_commands.appendVector(composition->m_commands);
 }
 
-void EditCommandComposition::setStartingSelection(
-    const VisibleSelection& selection) {
+void UndoStep::setStartingSelection(const VisibleSelection& selection) {
   m_startingSelection = selection;
   m_startingRootEditableElement = selection.rootEditableElement();
 }
 
-void EditCommandComposition::setEndingSelection(
-    const VisibleSelection& selection) {
+void UndoStep::setEndingSelection(const VisibleSelection& selection) {
   m_endingSelection = selection;
   m_endingRootEditableElement = selection.rootEditableElement();
 }
 
-DEFINE_TRACE(EditCommandComposition) {
+DEFINE_TRACE(UndoStep) {
   visitor->trace(m_document);
   visitor->trace(m_startingSelection);
   visitor->trace(m_endingSelection);
