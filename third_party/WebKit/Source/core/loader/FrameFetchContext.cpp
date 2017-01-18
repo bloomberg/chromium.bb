@@ -185,8 +185,6 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
       networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
   WebEffectiveConnectionType effectiveConnection =
       document.frame()->client()->getEffectiveConnectionType();
-  const bool is2GOrLike2G =
-      is2G || isConnectionEffectively2G(effectiveConnection);
 
   return document.settings()
              ->getDisallowFetchForDocWrittenScriptsInMainFrame() ||
@@ -195,7 +193,7 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
           is2G) ||
          (document.settings()
               ->getDisallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G() &&
-          is2GOrLike2G);
+          isConnectionEffectively2G(effectiveConnection));
 }
 
 }  // namespace
