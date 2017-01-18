@@ -51,20 +51,9 @@ IPC_STRUCT_BEGIN(EmbeddedWorkerHostMsg_ReportConsoleMessage_Params)
   IPC_STRUCT_MEMBER(GURL, source_url)
 IPC_STRUCT_END()
 
-// Browser -> Renderer message to resume a worker that has been started
-// with the pause_after_download option.
-IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_ResumeAfterDownload,
-                     int /* embedded_worker_id */)
-
 // Browser -> Renderer message to stop (terminate) the embedded worker.
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_StopWorker,
                      int /* embedded_worker_id */)
-
-// Browser -> Renderer message to add message to the devtools console.
-IPC_MESSAGE_CONTROL3(EmbeddedWorkerMsg_AddMessageToConsole,
-                     int /* embedded_worker_id */,
-                     content::ConsoleMessageLevel /* level */,
-                     std::string /* message */)
 
 // Renderer -> Browser message to indicate that the worker is ready for
 // inspection.

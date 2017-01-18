@@ -521,10 +521,32 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   worker->Stop();
 }
 
+class DontReceiveResumeAfterDownloadInstanceClient
+    : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
+ public:
+  explicit DontReceiveResumeAfterDownloadInstanceClient(
+      base::WeakPtr<EmbeddedWorkerTestHelper> helper,
+      bool* was_resume_after_download_called)
+      : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper),
+        was_resume_after_download_called_(was_resume_after_download_called) {}
+
+ private:
+  void ResumeAfterDownload() override {
+    *was_resume_after_download_called_ = true;
+  }
+
+  bool* const was_resume_after_download_called_;
+};
+
 TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   const int64_t version_id = 55L;
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
+
+  bool was_resume_after_download_called = false;
+  helper_->RegisterMockInstanceClient(
+      base::MakeUnique<DontReceiveResumeAfterDownloadInstanceClient>(
+          helper_->AsWeakPtr(), &was_resume_after_download_called));
 
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
@@ -549,8 +571,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
 
   // The resume after download message should not have been sent.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-  EXPECT_FALSE(ipc_sink()->GetFirstMessageMatching(
-      EmbeddedWorkerMsg_ResumeAfterDownload::ID));
+  EXPECT_FALSE(was_resume_after_download_called);
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {

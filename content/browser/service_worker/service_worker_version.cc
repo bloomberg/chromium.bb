@@ -52,6 +52,7 @@
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 
 namespace content {
 
@@ -1720,7 +1721,7 @@ void ServiceWorkerVersion::OnPingTimeout() {
   DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
          running_status() == EmbeddedWorkerStatus::RUNNING);
   // TODO(falken): Change the error code to SERVICE_WORKER_ERROR_TIMEOUT.
-  embedded_worker_->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_DEBUG,
+  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::LevelDebug,
                                         kNotRespondingErrorMesage);
   StopWorkerIfIdle();
 }

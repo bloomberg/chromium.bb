@@ -42,6 +42,9 @@ class EmbeddedWorkerInstanceClientImpl
       const EmbeddedWorkerStartParams& params,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) override;
   void StopWorker(const StopWorkerCallback& callback) override;
+  void ResumeAfterDownload() override;
+  void AddMessageToConsole(blink::WebConsoleMessage::Level level,
+                           const std::string& message) override;
 
   // Handler of connection error bound to |binding_|
   void OnError();

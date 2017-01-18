@@ -96,6 +96,18 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker(
   helper_->OnStopWorkerStub(callback);
 }
 
+void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
+    ResumeAfterDownload() {
+  helper_->OnResumeAfterDownloadStub(embedded_worker_id_.value());
+}
+
+void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
+    AddMessageToConsole(blink::WebConsoleMessage::Level level,
+                        const std::string& message) {
+  // TODO(shimazu): Pass these arguments to the test helper when a test is
+  // necessary to check them individually.
+}
+
 // static
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
     const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
@@ -229,8 +241,6 @@ bool EmbeddedWorkerTestHelper::Send(IPC::Message* message) {
 bool EmbeddedWorkerTestHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_ResumeAfterDownload,
-                        OnResumeAfterDownloadStub)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerContextMsg_MessageToWorker,
                         OnMessageToWorkerStub)
     IPC_MESSAGE_UNHANDLED(handled = false)

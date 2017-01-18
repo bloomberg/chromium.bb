@@ -84,6 +84,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
         const EmbeddedWorkerStartParams& params,
         mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) override;
     void StopWorker(const StopWorkerCallback& callback) override;
+    void ResumeAfterDownload() override;
+    void AddMessageToConsole(blink::WebConsoleMessage::Level level,
+                             const std::string& message) override;
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
     mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;

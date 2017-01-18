@@ -667,6 +667,7 @@ mojom("mojo_bindings") {
     "platform/modules/websockets/websocket.mojom",
     "platform/referrer.mojom",
     "platform/site_engagement.mojom",
+    "web/console_message.mojom",
     "web/window_features.mojom",
   ]
   public_deps = [
@@ -749,6 +750,7 @@ group("generate_mojo_bindings") {
 source_set("shared_typemap_traits") {
   visibility = [ ":*" ]
   sources = [
+    "web/ConsoleMessageStructTraits.cpp",
     "web/WindowFeaturesStructTraits.cpp",
   ]
   deps = [

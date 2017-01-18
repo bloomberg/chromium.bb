@@ -79,6 +79,21 @@ void EmbeddedWorkerInstanceClientImpl::StopWorker(
   wrapper_->worker()->terminateWorkerContext();
 }
 
+void EmbeddedWorkerInstanceClientImpl::ResumeAfterDownload() {
+  DCHECK(wrapper_);
+  DCHECK(wrapper_->worker());
+  wrapper_->worker()->resumeAfterDownload();
+}
+
+void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
+    blink::WebConsoleMessage::Level level,
+    const std::string& message) {
+  DCHECK(wrapper_);
+  DCHECK(wrapper_->worker());
+  wrapper_->worker()->addMessageToConsole(
+      blink::WebConsoleMessage(level, blink::WebString::fromUTF8(message)));
+}
+
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
     EmbeddedWorkerDispatcher* dispatcher,
     mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request)

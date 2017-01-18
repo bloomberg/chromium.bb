@@ -26,6 +26,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 
 namespace content {
 
@@ -438,7 +439,7 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
     // occurred because the worker stops soon after receiving the error
     // response.
     version_->embedded_worker()->AddMessageToConsole(
-        CONSOLE_MESSAGE_LEVEL_ERROR,
+        blink::WebConsoleMessage::LevelError,
         status_message.empty() ? kFetchScriptError : status_message);
   } else {
     size = cache_writer_->bytes_written();

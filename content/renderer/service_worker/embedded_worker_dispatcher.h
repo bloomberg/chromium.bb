@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/child/scoped_child_process_reference.h"
-#include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 
 namespace blink {
@@ -62,10 +61,6 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
   };
 
   void OnStopWorker(int embedded_worker_id);
-  void OnResumeAfterDownload(int embedded_worker_id);
-  void OnAddMessageToConsole(int embedded_worker_id,
-                             ConsoleMessageLevel level,
-                             const std::string& message);
 
   std::unique_ptr<WorkerWrapper> StartWorkerContext(
       const EmbeddedWorkerStartParams& params,

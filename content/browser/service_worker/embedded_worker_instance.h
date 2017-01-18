@@ -26,7 +26,6 @@
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "content/public/common/console_message_level.h"
 #include "url/gurl.h"
 
 // Windows headers will redefine SendMessage.
@@ -180,7 +179,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void OnURLJobCreatedForMainScript();
 
   // Add message to the devtools console.
-  void AddMessageToConsole(ConsoleMessageLevel level,
+  void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                            const std::string& message);
 
   static std::string StatusToString(EmbeddedWorkerStatus status);

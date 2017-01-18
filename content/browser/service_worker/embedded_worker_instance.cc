@@ -28,6 +28,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -514,7 +515,7 @@ void EmbeddedWorkerInstance::StopIfIdle() {
       // Check ShouldNotifyWorkerStopIgnored not to show the same message
       // multiple times in DevTools.
       if (devtools_proxy_->ShouldNotifyWorkerStopIgnored()) {
-        AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_DEBUG,
+        AddMessageToConsole(blink::WebConsoleMessage::LevelDebug,
                             kServiceWorkerTerminationCanceledMesage);
         devtools_proxy_->WorkerStopIgnoredNotified();
       }
@@ -541,8 +542,8 @@ void EmbeddedWorkerInstance::ResumeAfterDownload() {
       status_ != EmbeddedWorkerStatus::STARTING) {
     return;
   }
-  registry_->Send(process_id(), new EmbeddedWorkerMsg_ResumeAfterDownload(
-                                    embedded_worker_id_));
+  DCHECK(client_.is_bound());
+  client_->ResumeAfterDownload();
 }
 
 EmbeddedWorkerInstance::EmbeddedWorkerInstance(
@@ -867,14 +868,15 @@ base::TimeDelta EmbeddedWorkerInstance::UpdateStepTime() {
   return duration;
 }
 
-void EmbeddedWorkerInstance::AddMessageToConsole(ConsoleMessageLevel level,
-                                                 const std::string& message) {
+void EmbeddedWorkerInstance::AddMessageToConsole(
+    blink::WebConsoleMessage::Level level,
+    const std::string& message) {
   if (status_ != EmbeddedWorkerStatus::RUNNING &&
       status_ != EmbeddedWorkerStatus::STARTING) {
     return;
   }
-  registry_->Send(process_id(), new EmbeddedWorkerMsg_AddMessageToConsole(
-                                    embedded_worker_id_, level, message));
+  DCHECK(client_.is_bound());
+  client_->AddMessageToConsole(level, message);
 }
 
 // static
