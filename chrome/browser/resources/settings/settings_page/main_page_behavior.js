@@ -42,8 +42,11 @@ var MainPageBehaviorImpl = {
         !!oldRoute && !!oldRoute.parent && !!oldRoute.section &&
         oldRoute.parent.section != oldRoute.section;
 
-    // Always scroll to the top if navigating from a section to the root route.
-    if (oldRouteWasSection && newRoute == settings.Route.BASIC) {
+    // Always scroll to the top if navigating from a section to the root route
+    // or when navigating to the About page.
+    if (this.scroller &&
+        ((oldRouteWasSection && newRoute == settings.Route.BASIC) ||
+         newRoute == settings.Route.ABOUT)) {
       this.scroller.scrollTop = 0;
       return;
     }

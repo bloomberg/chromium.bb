@@ -164,6 +164,18 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
         });
       });
     });
+
+    test('scroll to top before navigating to about', function() {
+      var page = self.getPage('basic');
+      // Set the viewport small to force the scrollbar to appear on ABOUT.
+      Polymer.dom().querySelector('settings-ui').style.height = '200px';
+
+      settings.navigateTo(settings.Route.ON_STARTUP);
+      assertNotEquals(0, page.scroller.scrollTop);
+
+      settings.navigateTo(settings.Route.ABOUT);
+      assertEquals(0, page.scroller.scrollTop);
+    });
   });
 
   // Run all registered tests.
