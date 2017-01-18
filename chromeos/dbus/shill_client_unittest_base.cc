@@ -74,39 +74,11 @@ void ValueMatcher::DescribeNegationTo(::std::ostream* os) const {
 }
 
 
-ShillClientUnittestBase::MockClosure::MockClosure() {}
-
-ShillClientUnittestBase::MockClosure::~MockClosure() {}
-
-base::Closure ShillClientUnittestBase::MockClosure::GetCallback() {
-  return base::Bind(&MockClosure::Run, base::Unretained(this));
-}
-
-
-ShillClientUnittestBase::MockListValueCallback::MockListValueCallback() {}
-
-ShillClientUnittestBase::MockListValueCallback::~MockListValueCallback() {}
-
-ShillClientHelper::ListValueCallback
-ShillClientUnittestBase::MockListValueCallback::GetCallback() {
-  return base::Bind(&MockListValueCallback::Run, base::Unretained(this));
-}
-
-
-ShillClientUnittestBase::MockErrorCallback::MockErrorCallback() {}
-
-ShillClientUnittestBase::MockErrorCallback::~MockErrorCallback() {}
-
 ShillClientUnittestBase::MockPropertyChangeObserver::
   MockPropertyChangeObserver() {}
 
 ShillClientUnittestBase::MockPropertyChangeObserver::
   ~MockPropertyChangeObserver() {}
-
-ShillClientHelper::ErrorCallback
-ShillClientUnittestBase::MockErrorCallback::GetCallback() {
-  return base::Bind(&MockErrorCallback::Run, base::Unretained(this));
-}
 
 
 ShillClientUnittestBase::ShillClientUnittestBase(
