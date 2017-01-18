@@ -208,8 +208,8 @@ background-repeat-y custom_all
 background-size interpolable, custom_all
 baseline-shift interpolable, svg, custom_inherit, custom_value
 border-bottom-color interpolable, custom_all
-border-bottom-left-radius interpolable, initial=initialBorderRadius, converter=convertRadius
-border-bottom-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius
+border-bottom-left-radius interpolable, initial=initialBorderRadius, converter=convertRadius, api_class=CSSPropertyAPIBorderRadius
+border-bottom-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius, api_class=CSSPropertyAPIBorderRadius
 border-bottom-style type_name=EBorderStyle, initial=initialBorderStyle
 border-bottom-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
 border-collapse inherited, independent, keyword_only, keywords=[separate|collapse], initial_keyword=separate
@@ -225,8 +225,8 @@ border-right-color interpolable, custom_all
 border-right-style type_name=EBorderStyle, initial=initialBorderStyle
 border-right-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
 border-top-color interpolable, custom_all
-border-top-left-radius interpolable, initial=initialBorderRadius, converter=convertRadius
-border-top-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius
+border-top-left-radius interpolable, initial=initialBorderRadius, converter=convertRadius, api_class=CSSPropertyAPIBorderRadius
+border-top-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius, api_class=CSSPropertyAPIBorderRadius
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
 border-top-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>, typedom_types=[Length], keywords=[thin|medium|thick], supports_percentage
 bottom typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto

@@ -344,6 +344,7 @@ blink_core_sources("css") {
     "parser/SizesAttributeParser.cpp",
     "parser/SizesCalcParser.cpp",
     "properties/CSSPropertyAPI.h",
+    "properties/CSSPropertyAPIBorderRadius.cpp",
     "properties/CSSPropertyAPICaretColor.cpp",
     "properties/CSSPropertyAPIClip.cpp",
     "properties/CSSPropertyAPIColumnGap.cpp",

@@ -1801,20 +1801,6 @@ static CSSValue* consumeScrollSnapPoints(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSValue* consumeBorderRadiusCorner(CSSParserTokenRange& range,
-                                           CSSParserMode cssParserMode) {
-  CSSValue* parsedValue1 =
-      consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
-  if (!parsedValue1)
-    return nullptr;
-  CSSValue* parsedValue2 =
-      consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
-  if (!parsedValue2)
-    parsedValue2 = parsedValue1;
-  return CSSValuePair::create(parsedValue1, parsedValue2,
-                              CSSValuePair::DropIdenticalValues);
-}
-
 static CSSValue* consumeVerticalAlign(CSSParserTokenRange& range,
                                       CSSParserMode cssParserMode) {
   CSSValue* parsedValue =
@@ -3244,11 +3230,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyScrollSnapPointsX:
     case CSSPropertyScrollSnapPointsY:
       return consumeScrollSnapPoints(m_range, m_context->mode());
-    case CSSPropertyBorderTopRightRadius:
-    case CSSPropertyBorderTopLeftRadius:
-    case CSSPropertyBorderBottomLeftRadius:
-    case CSSPropertyBorderBottomRightRadius:
-      return consumeBorderRadiusCorner(m_range, m_context->mode());
     case CSSPropertyOrder:
       return consumeInteger(m_range);
     case CSSPropertyVerticalAlign:
