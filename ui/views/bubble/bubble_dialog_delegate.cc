@@ -104,12 +104,7 @@ ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
 
 NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
     Widget* widget) {
-  ViewsDelegate* views_delegate = ViewsDelegate::GetInstance();
-  BubbleFrameView* frame = new BubbleFrameView(
-      views_delegate ? views_delegate->GetDialogFrameViewInsets()
-                     : gfx::Insets(kPanelVertMargin, kPanelHorizMargin, 0,
-                                   kPanelHorizMargin),
-      margins());
+  BubbleFrameView* frame = new BubbleFrameView(title_margins_, margins_);
   // Note: In CreateBubble, the call to SizeToContents() will cause
   // the relayout that this call requires.
   frame->SetTitleFontList(GetTitleFontList());
@@ -220,10 +215,13 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       accept_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(NULL) {
-  margins_ = ViewsDelegate::GetInstance()
-                 ? ViewsDelegate::GetInstance()->GetBubbleDialogMargins()
-                 : gfx::Insets(kPanelVertMargin, kPanelHorizMargin,
-                               kPanelVertMargin, kPanelHorizMargin);
+  ViewsDelegate* views_delegate = ViewsDelegate::GetInstance();
+  margins_ = views_delegate ? views_delegate->GetBubbleDialogMargins()
+                            : gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
+  title_margins_ = views_delegate
+                       ? views_delegate->GetDialogFrameViewInsets()
+                       : gfx::Insets(kPanelVertMargin, kPanelHorizMargin, 0,
+                                     kPanelHorizMargin);
   if (anchor_view)
     SetAnchorView(anchor_view);
   UpdateColorsFromTheme(GetNativeTheme());

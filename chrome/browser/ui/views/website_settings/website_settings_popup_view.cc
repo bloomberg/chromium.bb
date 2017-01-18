@@ -78,12 +78,6 @@ WebsiteSettingsPopupView::PopupType g_shown_popup_type =
 const int kMinPopupWidth = 320;
 const int kMaxPopupWidth = 1000;
 
-// Margin and padding values shared by all sections.
-const int kSectionPaddingHorizontal = views::kPanelHorizMargin;
-
-// Padding for the bottom of the bubble.
-const int kPopupMarginBottom = views::kPanelVertMargin;
-
 // Security Section (PopupHeaderView) ------------------------------------------
 
 // Margin and padding values for the |PopupHeaderView|.
@@ -196,10 +190,8 @@ PopupHeaderView::PopupHeaderView(
   const int label_column_status = 1;
   views::ColumnSet* column_set_status =
       layout->AddColumnSet(label_column_status);
-  column_set_status->AddPaddingColumn(0, kSectionPaddingHorizontal);
   column_set_status->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                                1, views::GridLayout::USE_PREF, 0, 0);
-  column_set_status->AddPaddingColumn(0, kSectionPaddingHorizontal);
 
   layout->AddPaddingRow(0, kHeaderLabelSpacing);
 
@@ -435,8 +427,16 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   site_settings_view_ = CreateSiteSettingsView();
   layout->AddView(site_settings_view_);
 
-  // Each section handles its own padding.
-  set_margins(gfx::Insets(0, 0, kPopupMarginBottom, 0));
+  // Remove the top margin from the client area so there is less space below the
+  // dialog title.
+  set_margins(
+      gfx::Insets(0, margins().left(), margins().bottom(), margins().right()));
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // In non-material, titles are inset from the dialog margin. Ensure the
+    // horizontal insets match.
+    set_title_margins(gfx::Insets(views::kPanelVertMargin, margins().left(), 0,
+                                  margins().right()));
+  }
   views::BubbleDialogDelegateView::CreateBubble(this);
 
   presenter_.reset(new WebsiteSettings(
@@ -688,8 +688,6 @@ views::View* WebsiteSettingsPopupView::CreateSiteSettingsView() {
   site_settings_view->SetLayoutManager(box_layout);
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  box_layout->set_inside_border_insets(
-      gfx::Insets(0, kSectionPaddingHorizontal));
 
   // Add cookies view.
   cookies_view_ = new views::View();

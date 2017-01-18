@@ -79,6 +79,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   const gfx::Insets& margins() const { return margins_; }
   void set_margins(const gfx::Insets& margins) { margins_ = margins; }
+  void set_title_margins(const gfx::Insets& title_margins) {
+    title_margins_ = title_margins;
+  }
 
   const gfx::Insets& anchor_view_insets() const { return anchor_view_insets_; }
   void set_anchor_view_insets(const gfx::Insets& i) { anchor_view_insets_ = i; }
@@ -187,6 +190,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // The margins between the content and the inside of the border.
   gfx::Insets margins_;
+
+  // The margins around the title.
+  // TODO(tapted): Investigate deleting this when MD is default.
+  gfx::Insets title_margins_;
 
   // Insets applied to the |anchor_view_| bounds.
   gfx::Insets anchor_view_insets_;
