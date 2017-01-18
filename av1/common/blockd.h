@@ -202,6 +202,10 @@ static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
           mode == NEAR_NEWMV || mode == NEW_NEARMV);
 }
 
+static INLINE int use_masked_motion_search(COMPOUND_TYPE type) {
+  return (type == COMPOUND_WEDGE);
+}
+
 static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
 #if CONFIG_COMPOUND_SEGMENT
   return (type == COMPOUND_WEDGE || type == COMPOUND_SEG);
