@@ -22,7 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_runner.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chromeos/settings/timezone_settings_helper.h"
 
 namespace chromeos {
@@ -390,8 +390,13 @@ void TimezoneSettingsImpl::SetTimezone(const icu::TimeZone& timezone) {
   VLOG(1) << "Setting timezone to " << id;
   // It's safe to change the timezone config files in the background as the
   // following operations don't depend on the completion of the config change.
-  base::WorkerPool::GetTaskRunner(true /* task is slow */)->
-      PostTask(FROM_HERE, base::Bind(&SetTimezoneIDFromString, id));
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .MayBlock(),
+      base::Bind(&SetTimezoneIDFromString, id));
   icu::TimeZone::setDefault(*known_timezone);
   for (auto& observer : observers_)
     observer.TimezoneChanged(*known_timezone);
