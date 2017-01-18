@@ -29,7 +29,7 @@ const CGFloat kDesiredHeight = 48;
   if (self) {
     UIImageView* icon = [[UIImageView alloc] initWithImage:nil];
     [icon setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [icon setImage:[UIImage imageNamed:@"ntp_opentabs"]];
+    [icon setImage:[UIImage imageNamed:@"ntp_opentabs_clock"]];
 
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     [label setTranslatesAutoresizingMaskIntoConstraints:NO];
