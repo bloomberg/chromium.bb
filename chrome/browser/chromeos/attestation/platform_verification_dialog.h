@@ -67,9 +67,8 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
                               int event_flags) override;
 
   // content::WebContentsObserver:
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   base::string16 domain_;
   ConsentCallback callback_;
