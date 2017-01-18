@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
@@ -22,7 +21,7 @@ import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 
-import org.chromium.base.ContentUriUtils;
+import org.chromium.base.ApiCompatibilityUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -164,7 +163,7 @@ public class UiUtils {
                     imManager.getEnabledInputMethodSubtypeList(enabledMethods.get(i), true);
             if (subtypes == null) continue;
             for (int j = 0; j < subtypes.size(); j++) {
-                String locale = subtypes.get(j).getLocale();
+                String locale = ApiCompatibilityUtils.getLocale(subtypes.get(j));
                 if (!TextUtils.isEmpty(locale)) locales.add(locale);
             }
         }
@@ -318,20 +317,6 @@ public class UiUtils {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-    }
-
-    /**
-     * Get a URI for |file| which has the image capture. This function assumes that path of |file|
-     * is based on the result of UiUtils.getDirectoryForImageCapture().
-     *
-     * @param context The application context.
-     * @param file image capture file.
-     * @return URI for |file|.
-     */
-    public static Uri getUriForImageCaptureFile(Context context, File file) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                ? ContentUriUtils.getContentUriFromFile(context, file)
-                : Uri.fromFile(file);
     }
 
     /**

@@ -397,8 +397,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // The dataset has already been created, we need to initialize our state.
             mTabModelSelectorImpl.notifyChanged();
 
-            getWindow().setFeatureInt(Window.FEATURE_INDETERMINATE_PROGRESS,
-                    Window.PROGRESS_VISIBILITY_OFF);
+            ApiCompatibilityUtils.setWindowIndeterminateProgress(getWindow());
 
             // Check for incognito tabs to handle the case where Chrome was swiped away in the
             // background.

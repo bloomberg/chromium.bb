@@ -11,6 +11,7 @@ import android.os.Bundle;
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastStatusCodes;
+import com.google.android.gms.cast.LaunchOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -233,10 +234,10 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     }
 
     private GoogleApiClient createApiClient(Cast.Listener listener, Context context) {
-        Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions
-                .builder(mSink.getDevice(), listener)
-                // TODO(avayvod): hide this behind the flag or remove
-                .setVerboseLoggingEnabled(true);
+        Cast.CastOptions.Builder apiOptionsBuilder =
+                new Cast.CastOptions.Builder(mSink.getDevice(), listener)
+                         // TODO(avayvod): hide this behind the flag or remove
+                         .setVerboseLoggingEnabled(true);
 
         return new GoogleApiClient.Builder(context)
                 .addApi(Cast.API, apiOptionsBuilder.build())
@@ -249,7 +250,10 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             GoogleApiClient apiClient,
             String appId,
             boolean relaunchIfRunning) {
-        return Cast.CastApi.launchApplication(apiClient, appId, relaunchIfRunning);
+        LaunchOptions.Builder builder = new LaunchOptions.Builder();
+        return Cast.CastApi.launchApplication(apiClient, appId,
+                builder.setRelaunchIfRunning(relaunchIfRunning)
+                        .build());
     }
 
     // TODO(crbug.com/635567): Fix this properly.

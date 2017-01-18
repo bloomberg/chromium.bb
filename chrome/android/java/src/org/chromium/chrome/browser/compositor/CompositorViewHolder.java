@@ -976,7 +976,8 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public void invalidateAccessibilityProvider() {
         if (mNodeProvider != null) {
-            mNodeProvider.sendEventForVirtualView(mNodeProvider.getFocusedVirtualView(),
+            mNodeProvider.sendEventForVirtualView(
+                    mNodeProvider.getAccessibilityFocusedVirtualViewId(),
                     AccessibilityEventCompat.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
             mNodeProvider.invalidateRoot();
         }

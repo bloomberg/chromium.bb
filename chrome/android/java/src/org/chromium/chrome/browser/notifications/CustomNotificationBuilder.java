@@ -147,7 +147,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         builder.setVibrate(mVibratePattern);
         builder.setWhen(mTimestamp);
         builder.setOnlyAlertOnce(!mRenotify);
-        builder.setContent(compactView);
+        ApiCompatibilityUtils.setContentViewForNotificationBuilder(builder, compactView);
 
         // Some things are duplicated in the builder to ensure the notification shows correctly on
         // Wear devices and custom lock screens.
@@ -168,9 +168,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             builder.setPublicVersion(createPublicNotification(mContext));
         }
 
-        Notification notification = builder.build();
-        notification.bigContentView = bigView;
-        return notification;
+        return ApiCompatibilityUtils.notificationWithBigContentView(builder, bigView);
     }
 
     /**

@@ -1039,7 +1039,9 @@ public class CustomTabActivity extends ChromeActivity {
         // use Chrome strings here as EmbedContentViewActivity does.
         CustomTabsIntent customTabIntent = new CustomTabsIntent.Builder()
                 .setShowTitle(true)
-                .setToolbarColor(context.getResources().getColor(R.color.dark_action_bar_color))
+                .setToolbarColor(ApiCompatibilityUtils.getColor(
+                        context.getResources(),
+                        R.color.dark_action_bar_color))
                 .build();
         customTabIntent.intent.setData(Uri.parse(url));
 
