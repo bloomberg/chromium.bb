@@ -47,7 +47,7 @@ Editor::Command command(Document* document, const String& commandName) {
     return Editor::Command();
 
   document->updateStyleAndLayoutTree();
-  return frame->editor().createCommandFromDOM(commandName);
+  return frame->editor().createCommand(commandName, CommandFromDOM);
 }
 
 }  // namespace

@@ -42,8 +42,6 @@ class HTMLElement;
 class HTMLSpanElement;
 class Text;
 
-enum class EditCommandSource { kMenuOrKeyBinding, kDOM };
-
 class CORE_EXPORT CompositeEditCommand : public EditCommand {
  public:
   enum ShouldPreserveSelection { PreserveSelection, DoNotPreserveSelection };
