@@ -1575,7 +1575,7 @@ error:
 	if (fin)
 		fclose(fin);
 	free(buffer);
-	errno = errsv || EINVAL;
+	errno = errsv ? errsv : EINVAL;
 
 	return NULL;
 }
