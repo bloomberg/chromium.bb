@@ -873,6 +873,37 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 
 }
 
+/** Control Xwayland wl_surface.commit behaviour
+ *
+ * This function sets the "_XWAYLAND_ALLOW_COMMITS" property of the frame window
+ * (not the content window!) to \p allow.
+ *
+ * If the property is set to \c true, Xwayland will commit whenever it likes.
+ * If the property is set to \c false, Xwayland will not commit.
+ * If the property is not set at all, Xwayland assumes it is \c true.
+ *
+ * \param window The XWM window to control.
+ * \param allow Whether Xwayland is allowed to wl_surface.commit for the window.
+ */
+static void
+weston_wm_window_set_allow_commits(struct weston_wm_window *window, bool allow)
+{
+	struct weston_wm *wm = window->wm;
+	uint32_t property[1];
+
+	assert(window->frame_id != XCB_WINDOW_NONE);
+
+	property[0] = allow ? 1 : 0;
+
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    window->frame_id,
+			    wm->atom.allow_commits,
+			    XCB_ATOM_CARDINAL,
+			    32, /* format */
+			    1, property);
+}
+
 #define ICCCM_WITHDRAWN_STATE	0
 #define ICCCM_NORMAL_STATE	1
 #define ICCCM_ICONIC_STATE	3
@@ -1048,6 +1079,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	       window->width, window->height,
 	       window->map_request_x, window->map_request_y);
 
+	weston_wm_window_set_allow_commits(window, false);
 	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
 	weston_wm_window_set_net_wm_state(window);
 	weston_wm_window_set_virtual_desktop(window, 0);
@@ -2220,6 +2252,7 @@ weston_wm_get_resources(struct weston_wm *wm)
 		{ "XdndFinished",	F(atom.xdnd_finished) },
 		{ "XdndTypeList",	F(atom.xdnd_type_list) },
 		{ "XdndActionCopy",	F(atom.xdnd_action_copy) },
+		{ "_XWAYLAND_ALLOW_COMMITS",	F(atom.allow_commits) },
 		{ "WL_SURFACE_ID",	F(atom.wl_surface_id) }
 	};
 #undef F
@@ -2741,10 +2774,13 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 		}
 	}
 
-	if (window->frame_id == XCB_WINDOW_NONE)
+	if (window->frame_id == XCB_WINDOW_NONE) {
 		weston_wm_window_set_pending_state_OR(window);
-	else
+	} else {
 		weston_wm_window_set_pending_state(window);
+		weston_wm_window_set_allow_commits(window, true);
+		xcb_flush(wm->conn);
+	}
 }
 
 const struct weston_xwayland_surface_api surface_api = {
