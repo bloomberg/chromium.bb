@@ -44,6 +44,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableAutoplayMutedVideos(true);
   // Android does not yet support SystemMonitor.
   WebRuntimeFeatures::enableOnDeviceChange(false);
+  WebRuntimeFeatures::enableMediaSession(true);
 #else  // defined(OS_ANDROID)
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
   if (base::FeatureList::IsEnabled(
