@@ -890,6 +890,18 @@
       ]
     },
     {
+      "name": "rowan",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "rowan",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "samus",
       "configs": [
         {

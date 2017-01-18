@@ -19618,6 +19618,7 @@
     },
     "rowan-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "rowan"
         ],
