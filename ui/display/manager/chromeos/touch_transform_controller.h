@@ -38,6 +38,10 @@ class DISPLAY_MANAGER_EXPORT TouchTransformController {
   // into device manager.
   void UpdateTouchTransforms() const;
 
+  // During touch calibration we remove the previous transform and update touch
+  // transformer until calibration is complete.
+  void SetForCalibration(bool is_calibrating);
+
  private:
   friend class test::TouchTransformControllerTest;
 
@@ -81,6 +85,8 @@ class DISPLAY_MANAGER_EXPORT TouchTransformController {
   // outlive TouchTransformController.
   DisplayConfigurator* display_configurator_;
   DisplayManager* display_manager_;
+
+  bool is_calibrating_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TouchTransformController);
 };

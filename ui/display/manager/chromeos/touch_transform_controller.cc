@@ -210,6 +210,11 @@ gfx::Transform TouchTransformController::GetTouchTransform(
   }
 #endif
 
+  // If the device is currently under calibration, then do not return any
+  // transform as we want to use the raw native touch input data for calibration
+  if (is_calibrating_)
+    return ctm;
+
   // If touch calibration data is unavailable, use naive approach.
   if (!touch_display.has_touch_calibration_data()) {
     return GetUncalibratedTransform(ctm, display, touch_display, touch_area,
@@ -362,6 +367,11 @@ void TouchTransformController::UpdateTouchTransforms() const {
 
   // Single display mode. The WindowTreeHost has one associated display id.
   UpdateTouchTransform(single_display_id, single_display, single_display);
+}
+
+void TouchTransformController::SetForCalibration(bool is_calibrating) {
+  is_calibrating_ = is_calibrating;
+  UpdateTouchTransforms();
 }
 
 }  // namespace display

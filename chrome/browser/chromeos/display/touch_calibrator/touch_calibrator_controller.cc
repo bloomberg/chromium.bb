@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_controller.h"
 
 #include "ash/shell.h"
+#include "ash/touch/ash_touch_transform_controller.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_view.h"
 #include "ui/display/screen.h"
@@ -52,7 +53,8 @@ void TouchCalibratorController::StartCalibration(
         base::MakeUnique<TouchCalibratorView>(display, is_primary_view);
   }
 
-  // TODO(malaykeshav): Call TouchTransformController::SetForCalibration()
+  ash::Shell::GetInstance()->touch_transformer_controller()->SetForCalibration(
+      true);
 
   // Add self as an event handler target.
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
@@ -64,7 +66,8 @@ void TouchCalibratorController::StopCalibration() {
   is_calibrating_ = false;
   ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 
-  // TODO(malaykeshav): Call TouchTransformController::SetForCalibration()
+  ash::Shell::GetInstance()->touch_transformer_controller()->SetForCalibration(
+      false);
 
   // Remove self as the event handler.
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
@@ -92,11 +95,21 @@ void TouchCalibratorController::OnTouchEvent(ui::TouchEvent* touch) {
     return;
   if (base::Time::Now() - last_touch_timestamp_ < kTouchIntervalThreshold)
     return;
-
   last_touch_timestamp_ = base::Time::Now();
 
   TouchCalibratorView* target_screen_calibration_view =
       touch_calibrator_views_[target_display_.id()].get();
+
+  // If this is the final state, then store all calibration data and stop
+  // calibration.
+  if (target_screen_calibration_view->state() ==
+      TouchCalibratorView::CALIBRATION_COMPLETE) {
+    StopCalibration();
+    ash::Shell::GetInstance()->display_manager()->SetTouchCalibrationData(
+        target_display_.id(), touch_point_quad_,
+        target_screen_calibration_view->size());
+    return;
+  }
 
   int state_index;
   // Maps the state to an integer value. Assigns a non negative integral value
@@ -129,17 +142,6 @@ void TouchCalibratorController::OnTouchEvent(ui::TouchEvent* touch) {
     // TODO(malaykeshav): Display some kind of error for the user.
     NOTREACHED() << "Touch calibration failed. Could not retrieve location for"
                     " display point. Retry calibration.";
-  }
-
-  // If this is the final state, then store all calibration data and stop
-  // calibration.
-  if (target_screen_calibration_view->state() ==
-      TouchCalibratorView::CALIBRATION_COMPLETE) {
-    ash::Shell::GetInstance()->display_manager()->SetTouchCalibrationData(
-        target_display_.id(), touch_point_quad_,
-        target_screen_calibration_view->size());
-    StopCalibration();
-    return;
   }
 
   target_screen_calibration_view->AdvanceToNextState();

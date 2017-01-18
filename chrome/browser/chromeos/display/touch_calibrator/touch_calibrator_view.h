@@ -54,8 +54,10 @@ class TouchCalibratorView : public views::View,
     DISPLAY_POINT_3,  // Static state where the touch point is at its third
                       // location.
     ANIMATING_3_TO_4,
-    DISPLAY_POINT_4,       // Static state where the touch point is at its final
-                           // location.
+    DISPLAY_POINT_4,  // Static state where the touch point is at its final
+                      // location.
+    ANIMATING_FINAL_MESSAGE,  // Transition state when the calibration complete
+                              // message is being transitioned into view.
     CALIBRATION_COMPLETE,  // Static state when the calibration complete message
                            // is displayed to the user.
     BACKGROUND_FADING_OUT  // Transition state where the background is fading
@@ -136,6 +138,9 @@ class TouchCalibratorView : public views::View,
   // A hint box displayed next to the first touch point to assist user with
   // information about the next step.
   views::View* hint_box_view_;
+
+  // Final view containing the calibration complete message along with an icon.
+  views::View* completion_message_view_;
 
   // View that contains the animated throbber circle and a text label informing
   // the user to tap the circle to continue calibration.

@@ -6,6 +6,7 @@
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -13,6 +14,7 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -26,8 +28,8 @@ constexpr char kWidgetName[] = "TouchCalibratorOverlay";
 
 constexpr int kAnimationFrameRate = 100;
 constexpr int kFadeDurationInMs = 150;
-constexpr int kPointMoveDurationInMs = 600;
-constexpr int kPointMoveDurationLongInMs = 700;
+constexpr int kPointMoveDurationInMs = 400;
+constexpr int kPointMoveDurationLongInMs = 500;
 
 const SkColor kExitLabelColor = SkColorSetARGBInline(255, 96, 96, 96);
 const SkColor kExitLabelShadowColor = SkColorSetARGBInline(255, 11, 11, 11);
@@ -44,6 +46,11 @@ constexpr int kHintBoxSublabelTextSize = 3;
 constexpr int kThrobberCircleViewWidth = 64;
 constexpr float kThrobberCircleRadiusFactor = 3.f / 8.f;
 
+constexpr int kFinalMessageTransitionDurationMs = 200;
+constexpr int kCompleteMessageViewWidth = 427;
+constexpr int kCompleteMessageViewHeight = kThrobberCircleViewWidth;
+constexpr int kCompleteMessageTextSize = 16;
+
 constexpr int kTouchPointViewOffset = 100;
 
 constexpr int kTapLabelHeight = 48;
@@ -53,7 +60,7 @@ const SkColor kHintLabelTextColor = SK_ColorBLACK;
 const SkColor kHintSublabelTextColor = SkColorSetARGBInline(255, 161, 161, 161);
 
 const SkColor kInnerCircleColor = SK_ColorWHITE;
-const SkColor kOuterCircleColor = SkColorSetA(kInnerCircleColor, 128);
+const SkColor kOuterCircleColor = SkColorSetA(kInnerCircleColor, 255 * 0.2);
 
 constexpr int kCircleAnimationDurationMs = 900;
 
@@ -87,13 +94,15 @@ gfx::Size GetSizeForString(const base::string16& text,
 
 void AnimateLayerToPosition(views::View* view,
                             int duration,
-                            gfx::Point end_position) {
+                            gfx::Point end_position,
+                            float opacity = 1.f) {
   ui::ScopedLayerAnimationSettings slide_settings(view->layer()->GetAnimator());
   slide_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   slide_settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(duration));
   view->SetBoundsRect(gfx::Rect(end_position, view->size()));
+  view->layer()->SetOpacity(opacity);
 }
 
 }  // namespace
@@ -304,6 +313,60 @@ void HintBox::OnPaint(gfx::Canvas* canvas) {
                                   gfx::Canvas::NO_ELLIPSIS);
 }
 
+class CompletionMessageView : public views::View {
+ public:
+  CompletionMessageView(const gfx::Rect& bounds, const base::string16& message);
+  ~CompletionMessageView() override;
+
+  // views::View overrides:
+  void OnPaint(gfx::Canvas* canvas) override;
+
+ private:
+  const base::string16 message_;
+  gfx::FontList font_list_;
+
+  gfx::Rect text_bounds_;
+
+  gfx::ImageSkia check_icon_;
+
+  SkPaint paint_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompletionMessageView);
+};
+
+CompletionMessageView::CompletionMessageView(const gfx::Rect& bounds,
+                                             const base::string16& message)
+    : message_(message) {
+  SetBoundsRect(bounds);
+
+  int x_offset = height() * 5.f / 4.f;
+  text_bounds_.SetRect(x_offset, 0, width() - x_offset, height());
+
+  font_list_ = ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+      kCompleteMessageTextSize, gfx::Font::FontStyle::NORMAL,
+      gfx::Font::Weight::NORMAL);
+
+  // crbug/676513 moves this file to src/ash which will require an ash icon
+  // file.
+  check_icon_ = gfx::CreateVectorIcon(ash::kTouchCalibrationCompleteCheckIcon,
+                                      SK_ColorWHITE);
+
+  paint_.setColor(SK_ColorWHITE);
+  paint_.setStyle(SkPaint::kFill_Style);
+  paint_.setFlags(SkPaint::kAntiAlias_Flag);
+}
+
+CompletionMessageView::~CompletionMessageView() {}
+
+void CompletionMessageView::OnPaint(gfx::Canvas* canvas) {
+  canvas->DrawImageInt(check_icon_, 0, 0);
+
+  // TODO(malaykeshav): Work with elizabethchiu@ to get better UX for RTL.
+  canvas->DrawStringRectWithFlags(
+      message_, font_list_, paint_.getColor(), text_bounds_,
+      gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::NO_SUBPIXEL_RENDERING);
+}
+
 TouchCalibratorView::TouchCalibratorView(const display::Display& target_display,
                                          bool is_primary_view)
     : display_(target_display),
@@ -428,6 +491,26 @@ void TouchCalibratorView::InitViewContents() {
   hint_box_view_ = hint_box;
 
   AddChildView(hint_box_view_);
+
+  // Initialize the view that contains the calibration complete message which
+  // will be displayed at the end.
+  base::string16 finish_msg_text =
+      rb.GetLocalizedString(IDS_DISPLAY_TOUCH_CALIBRATION_FINISH_LABEL);
+
+  gfx::Rect msg_view_bounds(
+      (display_.bounds().width() - kCompleteMessageViewWidth) / 2,
+      display_.bounds().height() / 3, kCompleteMessageViewWidth,
+      kCompleteMessageViewHeight);
+  completion_message_view_ =
+      new CompletionMessageView(msg_view_bounds, finish_msg_text);
+  completion_message_view_->SetVisible(false);
+  completion_message_view_->SetPaintToLayer(true);
+  completion_message_view_->layer()->SetFillsBoundsOpaquely(false);
+  completion_message_view_->layer()->GetAnimator()->AddObserver(this);
+  completion_message_view_->set_background(
+      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
+
+  AddChildView(completion_message_view_);
 }
 
 void TouchCalibratorView::OnPaint(gfx::Canvas* canvas) {
@@ -473,6 +556,12 @@ void TouchCalibratorView::AnimationEnded(const gfx::Animation* animation) {
         hint_box_view_->SetVisible(true);
       }
       break;
+    case BACKGROUND_FADING_OUT:
+      exit_label_->SetVisible(false);
+      if (is_primary_view_)
+        completion_message_view_->SetVisible(false);
+      widget_->Hide();
+      break;
     default:
       break;
   }
@@ -493,6 +582,9 @@ void TouchCalibratorView::OnLayerAnimationEnded(
       break;
     case ANIMATING_3_TO_4:
       state_ = DISPLAY_POINT_4;
+      break;
+    case ANIMATING_FINAL_MESSAGE:
+      state_ = CALIBRATION_COMPLETE;
       break;
     default:
       break;
@@ -556,6 +648,38 @@ void TouchCalibratorView::AdvanceToNextState() {
                          touch_point_view_->width(),
                      touch_point_view_->y()));
       return;
+    case DISPLAY_POINT_4:
+      state_ = ANIMATING_FINAL_MESSAGE;
+      completion_message_view_->layer()->SetOpacity(0.f);
+      completion_message_view_->SetVisible(true);
+
+      touch_point_view_->SetVisible(false);
+
+      AnimateLayerToPosition(completion_message_view_,
+                             kFinalMessageTransitionDurationMs,
+                             gfx::Point(completion_message_view_->x(),
+                                        display_.bounds().height() / 2));
+      return;
+    case CALIBRATION_COMPLETE:
+      state_ = BACKGROUND_FADING_OUT;
+      if (is_primary_view_) {
+        // In case of primary view, we also need to fade out the calibration
+        // complete message view.
+        AnimateLayerToPosition(
+            completion_message_view_, kFadeDurationInMs,
+            gfx::Point(completion_message_view_->x(),
+                       completion_message_view_->y() +
+                           2 * completion_message_view_->height()),
+            0.f);
+      }
+
+      start_opacity_value_ = kBackgroundFinalOpacity;
+      end_opacity_value_ = 0.f;
+
+      paint_.setStyle(SkPaint::kFill_Style);
+      animator_->SetDuration(kFadeDurationInMs);
+      animator_->Start();
+      return;
     default:
       return;
   }
@@ -579,7 +703,18 @@ bool TouchCalibratorView::GetDisplayPointLocation(gfx::Point* location) {
   return true;
 }
 
-void TouchCalibratorView::SkipToFinalState() {}
+void TouchCalibratorView::SkipToFinalState() {
+  state_ = CALIBRATION_COMPLETE;
+
+  exit_label_->SetVisible(false);
+
+  if (is_primary_view_) {
+    touch_point_view_->SetVisible(false);
+    hint_box_view_->SetVisible(false);
+  }
+
+  AdvanceToNextState();
+}
 
 void TouchCalibratorView::SkipCurrentAnimation() {
   if (animator_->is_animating())
