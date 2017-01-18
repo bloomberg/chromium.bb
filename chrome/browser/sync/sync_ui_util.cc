@@ -33,6 +33,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_prefs.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
 #include "components/sync/protocol/sync_protocol_error.h"
@@ -66,7 +67,8 @@ bool IsChromeDashboardEnabled() {
 // empty string is returned.
 base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                          const SigninManagerBase& signin,
-                                         StatusLabelStyle style) {
+                                         StatusLabelStyle style,
+                                         bool sync_everything) {
   if (!service || service->IsManaged()) {
     // User is signed in, but sync is disabled.
     return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
@@ -81,7 +83,9 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
   // Message may also carry additional advice with an HTML link, if acceptable.
   switch (style) {
     case PLAIN_TEXT:
-      return l10n_util::GetStringUTF16(IDS_SYNC_ACCOUNT_SYNCING);
+      return l10n_util::GetStringUTF16(
+          sync_everything ? IDS_SYNC_ACCOUNT_SYNCING
+                          : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
     case WITH_HTML:
       if (IsChromeDashboardEnabled()) {
         return l10n_util::GetStringFUTF16(
@@ -228,6 +232,10 @@ MessageType GetStatusInfo(Profile* profile,
       return PRE_SYNCED;
     }
 
+    PrefService* pref_service = profile->GetPrefs();
+    syncer::SyncPrefs sync_prefs(pref_service);
+    bool sync_everything = sync_prefs.HasKeepEverythingSynced();
+
     // Check for sync errors if the sync service is enabled.
     if (service) {
       // Since there is no auth in progress, check for an auth error first.
@@ -270,17 +278,18 @@ MessageType GetStatusInfo(Profile* profile,
       if (!service->IsSyncRequested() &&
           status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
         if (status_label) {
-          status_label->assign(GetSyncedStateStatusLabel(service,
-                                                         signin,
-                                                         style));
+          status_label->assign(GetSyncedStateStatusLabel(service, signin, style,
+                                                         sync_everything));
         }
         return PRE_SYNCED;
       }
     }
 
     // There is no error. Display "Last synced..." message.
-    if (status_label)
-      status_label->assign(GetSyncedStateStatusLabel(service, signin, style));
+    if (status_label) {
+      status_label->assign(
+          GetSyncedStateStatusLabel(service, signin, style, sync_everything));
+    }
     return SYNCED;
   } else {
     // Either show auth error information with a link to re-login, auth in prog,

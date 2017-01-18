@@ -11480,8 +11480,11 @@ Tell us what happened exactly before you got the profile error message:
       <message name="IDS_SYNC_ACCOUNT_INFO" desc="The message that appears in the options dialog indicating that the user is signed in with the given email address.">
         Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>.
       </message>
-      <message name="IDS_SYNC_ACCOUNT_SYNCING" desc="The message that appears in the settings page indicating that account is syncing.">
+      <message name="IDS_SYNC_ACCOUNT_SYNCING" desc="The message that appears in the settings page indicating that account is syncing all data types.">
         On - sync everything
+      </message>
+      <message name="IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES" desc="The message that appears in the settings page indicating that account is syncing with a custom set of data types.">
+        On - custom settings
       </message>
 
       <!-- Sync/sign-in error messages -->
