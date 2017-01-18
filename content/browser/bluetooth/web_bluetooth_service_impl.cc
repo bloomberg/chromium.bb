@@ -491,7 +491,7 @@ void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
     blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr characteristic_ptr =
         blink::mojom::WebBluetoothRemoteGATTCharacteristic::New();
     characteristic_ptr->instance_id = characteristic_instance_id;
-    characteristic_ptr->uuid = characteristic->GetUUID().canonical_value();
+    characteristic_ptr->uuid = characteristic->GetUUID();
     characteristic_ptr->properties =
         static_cast<uint32_t>(characteristic->GetProperties());
     response_characteristics.push_back(std::move(characteristic_ptr));
@@ -565,7 +565,7 @@ void WebBluetoothServiceImpl::RemoteCharacteristicGetDescriptors(
 
     auto descriptor_ptr(blink::mojom::WebBluetoothRemoteGATTDescriptor::New());
     descriptor_ptr->instance_id = descriptor_instance_id;
-    descriptor_ptr->uuid = descriptor->GetUUID().canonical_value();
+    descriptor_ptr->uuid = descriptor->GetUUID();
     response_descriptors.push_back(std::move(descriptor_ptr));
 
     if (quantity == blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
@@ -789,7 +789,7 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
     blink::mojom::WebBluetoothRemoteGATTServicePtr service_ptr =
         blink::mojom::WebBluetoothRemoteGATTService::New();
     service_ptr->instance_id = service_instance_id;
-    service_ptr->uuid = service->GetUUID().canonical_value();
+    service_ptr->uuid = service->GetUUID();
     response_services.push_back(std::move(service_ptr));
 
     if (quantity == blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
