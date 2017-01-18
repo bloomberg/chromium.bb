@@ -17,6 +17,9 @@
 #include "helpers.h"
 #include "util.h"
 
+#define I915_CACHELINE_SIZE 64
+#define I915_CACHELINE_MASK (I915_CACHELINE_SIZE - 1)
+
 static const uint32_t tileable_formats[] = { DRM_FORMAT_ARGB1555, DRM_FORMAT_ABGR8888,
 					     DRM_FORMAT_ARGB8888, DRM_FORMAT_RGB565,
 					     DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB1555,
@@ -27,10 +30,11 @@ static const uint32_t linear_only_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8, 
 						DRM_FORMAT_YVU420_ANDROID };
 
 struct i915_device {
-	int gen;
+	uint32_t gen;
+	int32_t has_llc;
 };
 
-static int get_gen(int device_id)
+static uint32_t i915_get_gen(int device_id)
 {
 	const uint16_t gen3_ids[] = { 0x2582, 0x2592, 0x2772, 0x27A2, 0x27AE,
 				      0x29C2, 0x29B2, 0x29D2, 0xA001, 0xA011 };
@@ -175,6 +179,18 @@ static int i915_align_dimensions(struct bo *bo, uint32_t tiling, uint32_t *strid
 	return 0;
 }
 
+static void i915_clflush(void *start, size_t size)
+{
+	void *p = (void *)(((uintptr_t)start) & ~I915_CACHELINE_MASK);
+	void *end = (void *)((uintptr_t)start + size);
+
+	__builtin_ia32_mfence();
+	while (p < end) {
+		__builtin_ia32_clflush(p);
+		p = (void *)((uintptr_t)p + I915_CACHELINE_SIZE);
+	}
+}
+
 static int i915_init(struct driver *drv)
 {
 	int ret;
@@ -191,12 +207,23 @@ static int i915_init(struct driver *drv)
 	get_param.value = &device_id;
 	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GETPARAM, &get_param);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_I915_GETPARAM failed\n");
+		fprintf(stderr, "drv: Failed to get I915_PARAM_CHIPSET_ID\n");
 		free(i915);
 		return -EINVAL;
 	}
 
-	i915->gen = get_gen(device_id);
+	i915->gen = i915_get_gen(device_id);
+
+	memset(&get_param, 0, sizeof(get_param));
+	get_param.param = I915_PARAM_HAS_LLC;
+	get_param.value = &i915->has_llc;
+	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GETPARAM, &get_param);
+	if (ret) {
+		fprintf(stderr, "drv: Failed to get I915_PARAM_HAS_LLC\n");
+		free(i915);
+		return -EINVAL;
+	}
+
 	drv->priv = i915;
 
 	return i915_add_combinations(drv);
@@ -357,18 +384,9 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 
 static int i915_bo_unmap(struct bo *bo, struct map_info *data)
 {
-	if (bo->tiling == I915_TILING_NONE) {
-		int ret;
-		struct drm_i915_gem_sw_finish sw_finish;
-		memset(&sw_finish, 0, sizeof(sw_finish));
-
-		sw_finish.handle = bo->handles[0].u32;
-		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_SW_FINISH, &sw_finish);
-		if (ret) {
-			fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_SW_FINISH failed\n");
-			return ret;
-		}
-	}
+	struct i915_device *i915 = bo->drv->priv;
+	if (!i915->has_llc && bo->tiling == I915_TILING_NONE)
+		i915_clflush(data->addr, data->length);
 
 	return munmap(data->addr, data->length);
 }
