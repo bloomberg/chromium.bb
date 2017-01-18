@@ -125,15 +125,13 @@ void BookmarkTabHelper::BookmarkNodeChanged(BookmarkModel* model,
   UpdateStarredStateForCurrentURL();
 }
 
-void BookmarkTabHelper::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& /*details*/,
-    const content::FrameNavigateParams& /*params*/) {
+void BookmarkTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
   UpdateStarredStateForCurrentURL();
 }
 
-void BookmarkTabHelper::DidStartNavigationToPendingEntry(
-    const GURL& /*url*/,
-    content::ReloadType /*reload_type*/) {
+void BookmarkTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
   UpdateStarredStateForCurrentURL();
 }
 
