@@ -89,7 +89,12 @@ IAccessible* BrowserAccessibilityManagerWin::GetParentIAccessible() {
 }
 
 void BrowserAccessibilityManagerWin::OnIAccessible2Used() {
-  BrowserAccessibilityStateImpl::GetInstance()->OnScreenReaderDetected();
+  // When IAccessible2 APIs have been used elsewhere in the codebase,
+  // enable basic web accessibility support. (Full screen reader support is
+  // detected later when specific more advanced APIs are accessed.)
+  BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
+      ACCESSIBILITY_MODE_FLAG_NATIVE_APIS |
+      ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS);
 }
 
 void BrowserAccessibilityManagerWin::UserIsReloading() {
