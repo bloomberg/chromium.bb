@@ -857,7 +857,15 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
     // "forever".  SetValueCurve also has an explicit SetValue at the end of
     // the curve, so we don't need to worry that SetValueCurve time is a
     // start time, not an end time.
-    if (lastEventTime < currentTime && lastEventType != ParamEvent::SetTarget) {
+    //
+    // Allow at least one render quantum to go by before handling this
+    // to allow k-rate parameters to finish processing the event. See
+    // crbug.com/672857. Due to possible roundoff, arbirtrarily wait
+    // for 1.5 render quanta instead of 1.
+    if (lastEventTime +
+                1.5 * AudioUtilities::kRenderQuantumFrames / sampleRate <
+            currentTime &&
+        lastEventType != ParamEvent::SetTarget) {
       // The event has finished, so just copy the default value out.
       // Since all events are now also in the past, we can just remove all
       // timeline events too because |defaultValue| has the expected
