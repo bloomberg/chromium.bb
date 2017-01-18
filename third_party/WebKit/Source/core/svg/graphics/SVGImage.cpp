@@ -288,6 +288,16 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
   spacedTile.expand(FloatSize(repeatSpacing));
 
   SkPictureBuilder patternPicture(spacedTile, nullptr, &context);
+  // SVG images paint into their own property tree set that is distinct
+  // from the embedding frame tree.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    PaintChunk::Id id(patternPicture, DisplayItem::kSVGImage);
+    PropertyTreeState state(
+        TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+        EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+    m_paintController->updateCurrentPaintChunkProperties(&id, state);
+  }
+
   {
     DrawingRecorder patternPictureRecorder(
         patternPicture.context(), patternPicture, DisplayItem::Type::kSVGImage,
@@ -379,6 +389,16 @@ void SVGImage::drawInternal(SkCanvas* canvas,
   flushPendingTimelineRewind();
   SkPictureBuilder imagePicture(dstRect, nullptr, nullptr,
                                 m_paintController.get());
+  // SVG images paint into their own property tree set that is distinct
+  // from the embedding frame tree.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    PaintChunk::Id id(imagePicture, DisplayItem::kSVGImage);
+    PropertyTreeState state(
+        TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+        EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+    m_paintController->updateCurrentPaintChunkProperties(&id, state);
+  }
+
   {
     ClipRecorder clipRecorder(imagePicture.context(), imagePicture,
                               DisplayItem::kClipNodeImage,

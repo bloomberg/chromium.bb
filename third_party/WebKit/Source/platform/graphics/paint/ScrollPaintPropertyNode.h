@@ -30,6 +30,7 @@ using MainThreadScrollingReasons = uint32_t;
 class PLATFORM_EXPORT ScrollPaintPropertyNode
     : public RefCounted<ScrollPaintPropertyNode> {
  public:
+  // This node is really a sentinel, and does not represent a real scroll.
   static ScrollPaintPropertyNode* root();
 
   static PassRefPtr<ScrollPaintPropertyNode> create(

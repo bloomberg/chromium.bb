@@ -26,6 +26,8 @@ namespace blink {
 class PLATFORM_EXPORT ClipPaintPropertyNode
     : public RefCounted<ClipPaintPropertyNode> {
  public:
+  // This node is really a sentinel, and does not represent a real clip
+  // space.
   static ClipPaintPropertyNode* root();
 
   static PassRefPtr<ClipPaintPropertyNode> create(

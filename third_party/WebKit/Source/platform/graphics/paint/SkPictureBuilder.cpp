@@ -25,6 +25,16 @@ SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
   } else {
     m_paintControllerPtr = PaintController::create();
     m_paintController = m_paintControllerPtr.get();
+
+    // Content painted with a new paint controller in SPv2 will have an
+    // independent property tree set.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      PaintChunk::Id id(*this, DisplayItem::kSVGImage);
+      PropertyTreeState state(
+          TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+          EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+      m_paintController->updateCurrentPaintChunkProperties(&id, state);
+    }
   }
 #if DCHECK_IS_ON()
   m_paintController->setUsage(PaintController::ForSkPictureBuilder);

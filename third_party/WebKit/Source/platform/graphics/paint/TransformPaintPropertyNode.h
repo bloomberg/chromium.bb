@@ -27,6 +27,8 @@ namespace blink {
 class PLATFORM_EXPORT TransformPaintPropertyNode
     : public RefCounted<TransformPaintPropertyNode> {
  public:
+  // This node is really a sentinel, and does not represent a real transform
+  // space.
   static TransformPaintPropertyNode* root();
 
   static PassRefPtr<TransformPaintPropertyNode> create(
