@@ -1148,6 +1148,7 @@ interface DOMQuad
     getter p3
     getter p4
     method constructor
+    method toJSON
 interface DOMRect : DOMRectReadOnly
     attribute @@toStringTag
     getter height

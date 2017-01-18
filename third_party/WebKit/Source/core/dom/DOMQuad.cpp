@@ -4,6 +4,7 @@
 
 #include "core/dom/DOMQuad.h"
 
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/DOMPoint.h"
 
 namespace blink {
@@ -23,5 +24,14 @@ DOMQuad::DOMQuad(const DOMPointInit& p1,
       m_p2(DOMPoint::fromPoint(p2)),
       m_p3(DOMPoint::fromPoint(p3)),
       m_p4(DOMPoint::fromPoint(p4)) {}
+
+ScriptValue DOMQuad::toJSONForBinding(ScriptState* scriptState) const {
+  V8ObjectBuilder result(scriptState);
+  result.add("p1", p1());
+  result.add("p2", p2());
+  result.add("p3", p3());
+  result.add("p4", p4());
+  return result.scriptValue();
+}
 
 }  // namespace blink

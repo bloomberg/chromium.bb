@@ -5,6 +5,7 @@
 #ifndef DOMQuad_h
 #define DOMQuad_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 
@@ -27,6 +28,8 @@ class CORE_EXPORT DOMQuad : public GarbageCollected<DOMQuad>,
   DOMPoint* p2() const { return m_p2; }
   DOMPoint* p3() const { return m_p3; }
   DOMPoint* p4() const { return m_p4; }
+
+  ScriptValue toJSONForBinding(ScriptState*) const;
 
   DEFINE_INLINE_TRACE() {
     visitor->trace(m_p1);

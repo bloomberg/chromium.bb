@@ -20,5 +20,5 @@ interface DOMQuad {
     [SameObject] readonly attribute DOMPoint p4;
     // TODO(hs1217.lee): [NewObject] DOMRect getBounds();
 
-    // TODO(hs1217.lee): serializer = { attribute };
+    serializer = { attribute };
 };
