@@ -142,6 +142,7 @@ public class GSAAccountChangeListener {
     }
 
     private void notifyGsaBroadcastsAccountChanges() {
+        if (mClient == null) return;
         mClient.disconnect();
         mClient = null;
     }
