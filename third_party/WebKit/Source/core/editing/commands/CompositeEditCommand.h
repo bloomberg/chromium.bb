@@ -44,49 +44,6 @@ class Text;
 
 enum class EditCommandSource { kMenuOrKeyBinding, kDOM };
 
-class EditCommandComposition final : public UndoStep {
- public:
-  static EditCommandComposition* create(Document*,
-                                        const VisibleSelection&,
-                                        const VisibleSelection&,
-                                        InputEvent::InputType);
-
-  void unapply() override;
-  void reapply() override;
-  InputEvent::InputType inputType() const override;
-  void append(SimpleEditCommand*);
-  void append(EditCommandComposition*);
-
-  const VisibleSelection& startingSelection() const {
-    return m_startingSelection;
-  }
-  const VisibleSelection& endingSelection() const { return m_endingSelection; }
-  void setStartingSelection(const VisibleSelection&);
-  void setEndingSelection(const VisibleSelection&);
-  Element* startingRootEditableElement() const {
-    return m_startingRootEditableElement.get();
-  }
-  Element* endingRootEditableElement() const {
-    return m_endingRootEditableElement.get();
-  }
-
-  DECLARE_VIRTUAL_TRACE();
-
- private:
-  EditCommandComposition(Document*,
-                         const VisibleSelection& startingSelection,
-                         const VisibleSelection& endingSelection,
-                         InputEvent::InputType);
-
-  Member<Document> m_document;
-  VisibleSelection m_startingSelection;
-  VisibleSelection m_endingSelection;
-  HeapVector<Member<SimpleEditCommand>> m_commands;
-  Member<Element> m_startingRootEditableElement;
-  Member<Element> m_endingRootEditableElement;
-  InputEvent::InputType m_inputType;
-};
-
 class CORE_EXPORT CompositeEditCommand : public EditCommand {
  public:
   enum ShouldPreserveSelection { PreserveSelection, DoNotPreserveSelection };

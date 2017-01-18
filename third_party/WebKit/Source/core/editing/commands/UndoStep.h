@@ -31,11 +31,16 @@
 #ifndef UndoStep_h
 #define UndoStep_h
 
+#include "core/editing/VisibleSelection.h"
 #include "core/events/InputEvent.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+class SimpleEditCommand;
+
+// TODO(xiaochengh): Get rid of this interface, and then rename
+// |EditCommandComposition| to |UndoStep|.
 class UndoStep : public GarbageCollectedFinalized<UndoStep> {
  public:
   virtual ~UndoStep() {}
@@ -44,6 +49,49 @@ class UndoStep : public GarbageCollectedFinalized<UndoStep> {
   virtual void unapply() = 0;
   virtual void reapply() = 0;
   virtual InputEvent::InputType inputType() const = 0;
+};
+
+class EditCommandComposition final : public UndoStep {
+ public:
+  static EditCommandComposition* create(Document*,
+                                        const VisibleSelection&,
+                                        const VisibleSelection&,
+                                        InputEvent::InputType);
+
+  void unapply() override;
+  void reapply() override;
+  InputEvent::InputType inputType() const override;
+  void append(SimpleEditCommand*);
+  void append(EditCommandComposition*);
+
+  const VisibleSelection& startingSelection() const {
+    return m_startingSelection;
+  }
+  const VisibleSelection& endingSelection() const { return m_endingSelection; }
+  void setStartingSelection(const VisibleSelection&);
+  void setEndingSelection(const VisibleSelection&);
+  Element* startingRootEditableElement() const {
+    return m_startingRootEditableElement.get();
+  }
+  Element* endingRootEditableElement() const {
+    return m_endingRootEditableElement.get();
+  }
+
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  EditCommandComposition(Document*,
+                         const VisibleSelection& startingSelection,
+                         const VisibleSelection& endingSelection,
+                         InputEvent::InputType);
+
+  Member<Document> m_document;
+  VisibleSelection m_startingSelection;
+  VisibleSelection m_endingSelection;
+  HeapVector<Member<SimpleEditCommand>> m_commands;
+  Member<Element> m_startingRootEditableElement;
+  Member<Element> m_endingRootEditableElement;
+  InputEvent::InputType m_inputType;
 };
 
 }  // namespace blink

@@ -136,6 +136,7 @@ blink_core_sources("editing") {
     "commands/TypingCommand.h",
     "commands/UndoStack.cpp",
     "commands/UndoStack.h",
+    "commands/UndoStep.cpp",
     "commands/UndoStep.h",
     "commands/UnlinkCommand.cpp",
     "commands/UnlinkCommand.h",
