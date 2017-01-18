@@ -183,7 +183,7 @@ bool IceTransportChannel::is_connected() const {
 }
 
 void IceTransportChannel::OnCandidateGathered(
-    cricket::IceTransportInternal2* ice_transport,
+    cricket::IceTransportInternal* ice_transport,
     const cricket::Candidate& candidate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   delegate_->OnChannelCandidate(this, candidate);
