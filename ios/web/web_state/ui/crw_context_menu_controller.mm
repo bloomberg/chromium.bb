@@ -303,6 +303,14 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
   // Expect only _contextMenuRecognizer.
   DCHECK([gestureRecognizer isEqual:_contextMenuRecognizer]);
+
+  // Context menu should not be triggered while scrolling, as some users tend to
+  // stop scrolling by resting the finger on the screen instead of touching the
+  // screen. For more info, please refer to crbug.com/642375.
+  if ([self webScrollView].dragging) {
+    return NO;
+  }
+
   // Fetching is considered as successful even if |_DOMElementForLastTouch| is
   // empty. However if |_DOMElementForLastTouch| is empty then custom context
   // menu should not be shown.
