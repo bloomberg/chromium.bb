@@ -869,6 +869,7 @@ paper-icon-button.subpage-arrow {
         color: inherit;
         padding: 0;
         top: 0;
+        width: 512px;
 }
 
 :host::backdrop {
@@ -904,7 +905,6 @@ paper-icon-button.subpage-arrow {
         flex-direction: column;
         
         overflow: auto;
-        width: 512px;
 }
 
 :host ::content .body {
@@ -953,125 +953,78 @@ paper-icon-button.subpage-arrow {
     <content select=".footer"></content>
   </template>
   </dom-module>
-
-
-<dom-module id="app-drawer" assetpath="chrome://resources/polymer/v1_0/app-layout/app-drawer/" css-build="shadow">
+<dom-module name="cr-drawer">
   <template>
-    <style scope="app-drawer">:host {
-  position: fixed;
-        top: -120px;
-        right: 0;
-        bottom: -120px;
-        left: 0;
-
-        visibility: hidden;
-
-        transition: visibility 0.2s ease;
-}
-
-:host([opened]) {
-  visibility: visible;
-}
-
-:host([persistent]) {
-  width: var(--app-drawer-width, 256px);
-}
-
-:host([persistent][position=left]) {
-  right: auto;
-}
-
-:host([persistent][position=right]) {
-  left: auto;
-}
-
-#contentContainer {
-  position: absolute;
-        top: 0;
+    <style>
+      :host {
+        --drawer-width: 256px;
+        --transition-timing: 200ms ease;
+        background-color: #fff;
+        border: none;
         bottom: 0;
+        left: calc(-1 * var(--drawer-width));
+        margin: 0;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        top: 0;
+        transition: left var(--transition-timing);
+        width: var(--drawer-width);
+      }
+
+      :host,
+      #container {
+        height: 100%;
+      }
+
+      :host(.opening) {
         left: 0;
+      }
 
-        width: var(--app-drawer-width, 256px);
-        padding: 120px 0;
-
-        transition: 0.2s ease;
-        transition-property: -webkit-transform;
-        transition-property: transform;
-        -webkit-transform: translate3d(-100%, 0, 0);
-        transform: translate3d(-100%, 0, 0);
-
-        background-color: #FFF;
-
-        ;
-}
-
-:host([position=right]) > #contentContainer {
-  right: 0;
+      :host([align=right]) {
         left: auto;
+        right: calc(-1 * var(--drawer-width));
+        transition: right var(--transition-timing);
+      }
 
-        -webkit-transform: translate3d(100%, 0, 0);
-        transform: translate3d(100%, 0, 0);
-}
-
-:host([swipe-open]) > #contentContainer::after {
-  position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 100%;
-
-        visibility: visible;
-
-        width: 20px;
-
-        content: '';
-}
-
-:host([swipe-open][position=right]) > #contentContainer::after {
-  right: 100%;
-        left: auto;
-}
-
-:host([opened]) > #contentContainer {
-  -webkit-transform: translate3d(0, 0, 0);
-        transform: translate3d(0, 0, 0);
-}
-
-#scrim {
-  position: absolute;
-        top: 0;
+      :host(.opening[align=right]) {
         right: 0;
+      }
+
+      :host::backdrop {
+        background: rgba(0, 0, 0, 0.5);
         bottom: 0;
         left: 0;
-
-        transition: opacity 0.2s ease;
-        -webkit-transform: translateZ(0);
-        transform:  translateZ(0);
-
         opacity: 0;
-        background: var(--app-drawer-scrim-background, rgba(0, 0, 0, 0.5));
-}
+        position: absolute;
+        right: 0;
+        top: 0;
+        transition: opacity var(--transition-timing);
+      }
 
-:host([opened]) > #scrim {
-  opacity: 1;
-}
+      :host(.opening)::backdrop {
+        opacity: 1;
+      }
 
-:host([opened][persistent]) > #scrim {
-  visibility: hidden;
-        
+      :host ::content .drawer-header {
+        -webkit-padding-start: 24px;
+        align-items: center;
+        border-bottom: var(--cr-separator-line);
+        display: flex;
+        font-size: 123.08%; /* go to 16px from 13px */
+        min-height: 56px;
+      }
 
-        opacity: 0;
-}
-
-</style>
-
-    <div id="scrim" on-tap="close"></div>
-
-    <div id="contentContainer">
+      :host ::content .drawer-content {
+        height: calc(100% - 56px);
+        overflow: auto;
+      }
+    </style>
+    <div id="container" on-tap="onContainerTap_">
       <content></content>
     </div>
   </template>
-
-  </dom-module>
+</dom-module>
 <dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/" css-build="shadow">
 
   <template>

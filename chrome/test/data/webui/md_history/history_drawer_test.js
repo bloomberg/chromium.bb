@@ -13,17 +13,21 @@ suite('drawer-test', function() {
     app.selectedPage_ = 'syncedTabs';
     app.hasDrawer_ = true;
     return PolymerTest.flushTasks().then(function() {
-      var drawer = app.$$('#drawer');
+      var drawer = /** @type {CrLazyRenderElement} */ (app.$.drawer);
       var drawerSideBar = app.$$('#drawer-side-bar');
 
       assertTrue(!!drawer);
-      assertTrue(!!drawerSideBar);
+      // Drawer side bar doesn't exist until the first time the drawer is
+      // opened.
+      assertFalse(!!drawerSideBar);
 
       var menuButton = app.$.toolbar.$['main-toolbar'].$$('#menuButton');
       assertTrue(!!menuButton);
 
       MockInteractions.tap(menuButton);
-      assertTrue(drawer.opened);
+      assertTrue(drawer.getIfExists().open);
+      drawerSideBar = app.$$('#drawer-side-bar');
+      assertTrue(!!drawerSideBar);
 
       assertEquals('syncedTabs', drawerSideBar.$.menu.selected);
     });

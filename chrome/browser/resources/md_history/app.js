@@ -96,7 +96,10 @@ Polymer({
     },
 
     // True if the window is narrow enough for the page to have a drawer.
-    hasDrawer_: Boolean,
+    hasDrawer_: {
+      type: Boolean,
+      observer: 'hasDrawerChanged_',
+    },
 
     // Used to display notices for profile sign-in status.
     showSidebarFooter: Boolean,
@@ -181,9 +184,9 @@ Polymer({
 
   /** @private */
   onCrToolbarMenuTap_: function() {
-    var drawer = this.$$('#drawer');
-    if (drawer)
-      drawer.toggle();
+    var drawer = /** @type {!CrDrawerElement} */ (this.$.drawer.get());
+    drawer.align = document.documentElement.dir == 'ltr' ? 'left' : 'right';
+    drawer.toggle();
   },
 
   /**
@@ -357,6 +360,13 @@ Polymer({
     this.recordHistoryPageView_();
   },
 
+  /** @private */
+  hasDrawerChanged_: function() {
+    var drawer = /** @type {?CrDrawerElement} */ (this.$.drawer.getIfExists());
+    if (!this.hasDrawer_ && drawer && drawer.open)
+      drawer.closeDrawer();
+  },
+
   /**
    * This computed binding is needed to make the iron-pages selector update when
    * the synced-device-manager is instantiated for the first time. Otherwise the
@@ -373,9 +383,9 @@ Polymer({
 
   /** @private */
   closeDrawer_: function() {
-    var drawer = this.$$('#drawer');
-    if (drawer)
-      drawer.close();
+    var drawer = this.$.drawer.get();
+    if (drawer && drawer.open)
+      drawer.closeDrawer();
   },
 
   /** @private */

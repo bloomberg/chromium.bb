@@ -13,12 +13,6 @@ Polymer({
       notify: true,
     },
 
-    // If true, the sidebar is contained within an app-drawer.
-    drawer: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
-
     showFooter: Boolean,
   },
 

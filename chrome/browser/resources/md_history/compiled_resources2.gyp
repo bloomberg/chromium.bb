@@ -109,7 +109,7 @@
     {
       'target_name': 'app',
       'dependencies': [
-        # TODO(calamity): Add app-route elements after closure issues are fixed.
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_drawer/compiled_resources2.gyp:cr_drawer',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
         'constants',

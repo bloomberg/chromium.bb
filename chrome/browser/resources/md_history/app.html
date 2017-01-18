@@ -11,7 +11,7 @@
 <link rel="import" href="chrome://history/side_bar.html">
 <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
-<!-- Lazy loaded: history-synced-device-manager, app-drawer. -->
+<!-- Lazy loaded: history-synced-device-manager, cr-drawer. -->
 
 <dom-module id="history-app">
   <template>
@@ -52,29 +52,6 @@
       #content,
       #content > * {
         height: 100%;
-      }
-
-      #drawer:unresolved {
-        display: none;
-      }
-
-      #drawer {
-        z-index: 3;
-      }
-
-      #drawer-header {
-        align-items: center;
-        border-bottom: 1px solid var(--separator-color);
-        box-sizing: border-box;
-        display: flex;
-        height: var(--toolbar-height);
-      }
-
-      h1 {
-        -webkit-padding-start: 24px;
-        color: var(--primary-text-color);
-        font-size: 123%;
-        font-weight: 400;
       }
 
       #drop-shadow {
@@ -138,15 +115,14 @@
       <div id="drop-shadow"></div>
     </div>
 
-    <template is="dom-if" if="[[hasDrawer_]]">
-      <app-drawer id="drawer" swipe-open align="start" tabindex="0">
-        <div id="drawer-header">
-          <h1>$i18n{title}</h1>
-        </div>
-        <history-side-bar id="drawer-side-bar" selected-page="{{selectedPage_}}"
-            show-footer="[[showSidebarFooter]]" drawer>
+    <template is="cr-lazy-render" id="drawer">
+      <dialog is="cr-drawer" swipe-open>
+        <div class="drawer-header">$i18n{title}</div>
+        <history-side-bar id="drawer-side-bar" class="drawer-content"
+            selected-page="{{selectedPage_}}"
+            show-footer="[[showSidebarFooter]]">
         </history-side-bar>
-      </app-drawer>
+      </dialog>
     </template>
 
     <iron-media-query query="(max-width: 1023px)"
