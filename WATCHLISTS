@@ -1618,6 +1618,7 @@
     'blink_layout_ng': ['ojan+watch@chromium.org',
                         'cbiesinger@chromium.org',
                         'glebl+reviews@chromium.org',
+                        'dgrogan+ng@chromium.org',
                         'atotic+reviews@chromium.org'],
     'blink_loader': ['gavinp+loader@chromium.org',
                      'japhet@chromium.org',
