@@ -401,9 +401,8 @@ public class CustomTabsConnection {
         if (!warmupInternal(false)) return false; // Also does the foreground check.
 
         final int uid = Binder.getCallingUid();
-        // TODO(lizeb): Also throttle low-confidence mode.
-        if (!lowConfidence
-                && !mClientManager.updateStatsAndReturnWhetherAllowed(session, uid, urlString)) {
+        if (!mClientManager.updateStatsAndReturnWhetherAllowed(
+                    session, uid, urlString, otherLikelyBundles != null)) {
             return false;
         }
         ThreadUtils.postOnUiThread(new Runnable() {

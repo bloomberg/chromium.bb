@@ -36,6 +36,13 @@ import java.util.concurrent.TimeUnit;
 /** Manages the clients' state for Custom Tabs. This class is threadsafe. */
 @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 class ClientManager {
+    // Values for the "CustomTabs.MayLaunchUrlType" UMA histogram. Append-only.
+    @VisibleForTesting static final int NO_MAY_LAUNCH_URL = 0;
+    @VisibleForTesting static final int LOW_CONFIDENCE = 1;
+    @VisibleForTesting static final int HIGH_CONFIDENCE = 2;
+    @VisibleForTesting static final int BOTH = 3;  // LOW + HIGH.
+    private static final int MAY_LAUNCH_URL_TYPE_COUNT = 4;
+
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
     @VisibleForTesting static final int NO_PREDICTION = 0;
     @VisibleForTesting static final int GOOD_PREDICTION = 1;
@@ -59,6 +66,8 @@ class ClientManager {
         public final String packageName;
         public final PostMessageHandler postMessageHandler;
         public boolean mIgnoreFragments;
+        public boolean lowConfidencePrediction;
+        public boolean highConfidencePrediction;
         private boolean mShouldHideDomain;
         private boolean mShouldPrerenderOnCellular;
         private boolean mShouldSendNavigationInfo;
@@ -89,9 +98,23 @@ class ClientManager {
             mKeepAliveConnection = serviceConnection;
         }
 
-        public void setPredictionMetrics(String predictedUrl, long lastMayLaunchUrlTimestamp) {
+        public void setPredictionMetrics(
+                String predictedUrl, long lastMayLaunchUrlTimestamp, boolean lowConfidence) {
             mPredictedUrl = predictedUrl;
             mLastMayLaunchUrlTimestamp = lastMayLaunchUrlTimestamp;
+            highConfidencePrediction |= !TextUtils.isEmpty(predictedUrl);
+            lowConfidencePrediction |= lowConfidence;
+        }
+
+        /**
+         * Resets the prediction metrics. This clears the predicted URL, last prediction time,
+         * and whether a low and/or high confidence prediction has been done.
+         */
+        public void resetPredictionMetrics() {
+            mPredictedUrl = null;
+            mLastMayLaunchUrlTimestamp = 0;
+            highConfidencePrediction = false;
+            lowConfidencePrediction = false;
         }
 
         public String getPredictedUrl() {
@@ -155,16 +178,22 @@ class ClientManager {
 
     /** Updates the client behavior stats and returns whether speculation is allowed.
      *
+     * The first call to the "low priority" mode is not throttled. Subsequent ones are.
+     *
      * @param session Client session.
      * @param uid As returned by Binder.getCallingUid().
      * @param url Predicted URL.
+     * @param lowConfidence whether the request contains some "low confidence" URLs.
      * @return true if speculation is allowed.
      */
     public synchronized boolean updateStatsAndReturnWhetherAllowed(
-            CustomTabsSessionToken session, int uid, String url) {
+            CustomTabsSessionToken session, int uid, String url, boolean lowConfidence) {
         SessionParams params = mSessionParams.get(session);
         if (params == null || params.uid != uid) return false;
-        params.setPredictionMetrics(url, SystemClock.elapsedRealtime());
+        boolean firstLowConfidencePrediction =
+                TextUtils.isEmpty(url) && lowConfidence && !params.lowConfidencePrediction;
+        params.setPredictionMetrics(url, SystemClock.elapsedRealtime(), lowConfidence);
+        if (firstLowConfidencePrediction) return true;
         RequestThrottler throttler = RequestThrottler.getForUid(mContext, uid);
         return throttler.updateStatsAndReturnWhetherAllowed();
     }
@@ -186,6 +215,9 @@ class ClientManager {
         return result;
     }
 
+    /**
+     * @return the prediction outcome. NO_PREDICTION if mSessionParams.get(session) returns null.
+     */
     @VisibleForTesting
     synchronized int getPredictionOutcome(CustomTabsSessionToken session, String url) {
         SessionParams params = mSessionParams.get(session);
@@ -219,7 +251,14 @@ class ClientManager {
         }
         RecordHistogram.recordEnumeratedHistogram(
                 "CustomTabs.WarmupStateOnLaunch", getWarmupState(session), SESSION_WARMUP_COUNT);
-        if (params != null) params.setPredictionMetrics(null, 0);
+
+        if (params == null) return;
+
+        int value = (params.lowConfidencePrediction ? LOW_CONFIDENCE : 0)
+                + (params.highConfidencePrediction ? HIGH_CONFIDENCE : 0);
+        RecordHistogram.recordEnumeratedHistogram(
+                "CustomTabs.MayLaunchUrlType", value, MAY_LAUNCH_URL_TYPE_COUNT);
+        params.resetPredictionMetrics();
     }
 
     /**

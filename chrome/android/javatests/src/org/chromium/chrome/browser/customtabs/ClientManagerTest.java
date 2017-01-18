@@ -9,6 +9,8 @@ import android.os.Process;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.test.filters.SmallTest;
 
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -27,6 +29,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
         loadNativeLibraryNoBrowserProcess();
         RequestThrottler.purgeAllEntriesForTesting(context);
         mClientManager = new ClientManager(context);
+        RecordHistogram.initialize();
     }
 
     @SmallTest
@@ -88,7 +91,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
     @RetryOnFailure
     public void testPredictionOutcomeSuccess() {
         assertTrue(mClientManager.newSession(mSession, mUid, null, null));
-        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
         assertEquals(
                 ClientManager.GOOD_PREDICTION, mClientManager.getPredictionOutcome(mSession, URL));
     }
@@ -104,7 +107,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
     @SmallTest
     public void testPredictionOutcomeBadPrediction() {
         assertTrue(mClientManager.newSession(mSession, mUid, null, null));
-        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
         assertEquals(
                 ClientManager.BAD_PREDICTION,
                 mClientManager.getPredictionOutcome(mSession, URL + "#fragment"));
@@ -113,10 +116,80 @@ public class ClientManagerTest extends NativeLibraryTestBase {
     @SmallTest
     public void testPredictionOutcomeIgnoreFragment() {
         assertTrue(mClientManager.newSession(mSession, mUid, null, null));
-        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
         mClientManager.setIgnoreFragmentsForSession(mSession, true);
         assertEquals(
                 ClientManager.GOOD_PREDICTION,
                 mClientManager.getPredictionOutcome(mSession, URL + "#fragment"));
+    }
+
+    @SmallTest
+    public void testFirstLowConfidencePredictionIsNotThrottled() {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        assertTrue(mClientManager.newSession(mSession, mUid, null, null));
+
+        // Two low confidence in a row is OK.
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, null, true));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, null, true));
+        mClientManager.registerLaunch(mSession, URL);
+
+        // Low -> High as well.
+        RequestThrottler.purgeAllEntriesForTesting(context);
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, null, true));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
+        mClientManager.registerLaunch(mSession, URL);
+
+        // High -> Low as well.
+        RequestThrottler.purgeAllEntriesForTesting(context);
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, null, true));
+        mClientManager.registerLaunch(mSession, URL);
+    }
+
+    @SmallTest
+    public void testMayLaunchUrlAccounting() {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+
+        String name = "CustomTabs.MayLaunchUrlType";
+        MetricsUtils.HistogramDelta noMayLaunchUrlDelta =
+                new MetricsUtils.HistogramDelta(name, ClientManager.NO_MAY_LAUNCH_URL);
+        MetricsUtils.HistogramDelta lowConfidenceDelta =
+                new MetricsUtils.HistogramDelta(name, ClientManager.LOW_CONFIDENCE);
+        MetricsUtils.HistogramDelta highConfidenceDelta =
+                new MetricsUtils.HistogramDelta(name, ClientManager.HIGH_CONFIDENCE);
+        MetricsUtils.HistogramDelta bothDelta =
+                new MetricsUtils.HistogramDelta(name, ClientManager.BOTH);
+
+        assertTrue(mClientManager.newSession(mSession, mUid, null, null));
+
+        // No prediction;
+        mClientManager.registerLaunch(mSession, URL);
+        assertEquals(1, noMayLaunchUrlDelta.getDelta());
+
+        // Low confidence.
+        RequestThrottler.purgeAllEntriesForTesting(context);
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, null, true));
+        mClientManager.registerLaunch(mSession, URL);
+        assertEquals(1, lowConfidenceDelta.getDelta());
+
+        // High confidence.
+        RequestThrottler.purgeAllEntriesForTesting(context);
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
+        mClientManager.registerLaunch(mSession, URL);
+        assertEquals(1, highConfidenceDelta.getDelta());
+
+        // Low and High confidence.
+        RequestThrottler.purgeAllEntriesForTesting(context);
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, false));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, null, true));
+        mClientManager.registerLaunch(mSession, URL);
+        assertEquals(1, bothDelta.getDelta());
+
+        // Low and High confidence, same call.
+        RequestThrottler.purgeAllEntriesForTesting(context);
+        bothDelta = new MetricsUtils.HistogramDelta(name, ClientManager.BOTH);
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL, true));
+        mClientManager.registerLaunch(mSession, URL);
+        assertEquals(1, bothDelta.getDelta());
     }
 }
