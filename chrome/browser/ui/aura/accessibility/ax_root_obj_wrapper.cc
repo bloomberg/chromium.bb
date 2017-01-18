@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/aura/accessibility/ax_root_obj_wrapper.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/channel_info.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -53,8 +54,9 @@ void AXRootObjWrapper::GetChildren(
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->id = id_;
   out_node_data->role = ui::AX_ROLE_DESKTOP;
-  // TODO(dtseng): Apply a richer set of states.
   out_node_data->state = 0;
+  out_node_data->AddStringAttribute(ui::AX_ATTR_CHROME_CHANNEL,
+                                    chrome::GetChannelString());
 }
 
 int32_t AXRootObjWrapper::GetID() {

@@ -168,6 +168,11 @@ Background = function() {
    */
   this.focusRecoveryMap_ = new WeakMap();
 
+  chrome.automation.getDesktop(function(desktop) {
+    /** @type {string} */
+    this.chromeChannel_ = desktop.chromeChannel;
+  }.bind(this));
+
   // Record a metric with the mode we're in on startup.
   var useNext = localStorage['useNext'] !== 'false';
   chrome.metricsPrivate.recordValue(
@@ -213,6 +218,7 @@ Background.GESTURE_NEXT_COMMAND_MAP = {
 
 Background.prototype = {
   __proto__: ChromeVoxState.prototype,
+
   /**
    * Maps the last node with range in a given root.
    * @type {WeakMap<AutomationNode>}
@@ -247,7 +253,8 @@ Background.prototype = {
           ChromeVoxMode.CLASSIC_COMPAT;
 
     var nextSite = this.isWhitelistedForNext_(topLevelRoot.docUrl);
-    var nextCompat = this.nextCompatRegExp_.test(topLevelRoot.docUrl);
+    var nextCompat = this.nextCompatRegExp_.test(topLevelRoot.docUrl) &&
+        this.chromeChannel_ != 'dev';
     var classicCompat =
         this.isWhitelistedForClassicCompat_(topLevelRoot.docUrl);
     if (nextCompat && useNext)
@@ -567,7 +574,7 @@ Background.prototype = {
    * @private
    */
   shouldEnableClassicForUrl_: function(url) {
-    return this.nextCompatRegExp_.test(url) ||
+    return (this.nextCompatRegExp_.test(url) &&this.chromeChannel_ != 'dev') ||
         (this.mode != ChromeVoxMode.FORCE_NEXT &&
          !this.isBlacklistedForClassic_(url) &&
          !this.isWhitelistedForNext_(url));

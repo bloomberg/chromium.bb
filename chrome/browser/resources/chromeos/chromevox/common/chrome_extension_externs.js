@@ -19,3 +19,6 @@ chrome.automation.AutomationNode.prototype.stopDuckingMedia = function() {};
 chrome.automation.AutomationNode.prototype.suspendMedia = function() {};
 chrome.automation.EventType.mediaStartedPlaying;
 chrome.automation.EventType.mediaStoppedPlaying;
+
+/** @type {string|undefined} */
+chrome.automation.AutomationNode.prototype.chromeChannel;

@@ -624,6 +624,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_AUTO_COMPLETE:
         result += " autocomplete=" + value;
         break;
+      case AX_ATTR_CHROME_CHANNEL:
+        result += " chrome_channel=" + value;
+        break;
       case AX_ATTR_DESCRIPTION:
         result += " description=" + value;
         break;
