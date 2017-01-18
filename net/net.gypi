@@ -1620,6 +1620,7 @@
       'cert/internal/parse_certificate_unittest.cc',
       'cert/internal/parse_name_unittest.cc',
       'cert/internal/parse_ocsp_unittest.cc',
+      'cert/internal/parsed_certificate_unittest.cc',
       'cert/internal/path_builder_pkits_unittest.cc',
       'cert/internal/path_builder_unittest.cc',
       'cert/internal/path_builder_verify_certificate_chain_unittest.cc',
