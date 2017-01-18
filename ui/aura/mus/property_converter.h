@@ -70,8 +70,11 @@ class AURA_EXPORT PropertyConverter {
   template<typename T>
   void RegisterProperty(const WindowProperty<T>* property,
                         const char* transport_name) {
-    primitive_properties_[property] =
-        PropertyNames(property->name, transport_name);
+    PrimitiveProperty primitive_property;
+    primitive_property.property_name = property->name;
+    primitive_property.transport_name = transport_name;
+    primitive_property.default_value = property->default_value;
+    primitive_properties_[property] = primitive_property;
   }
 
   // Specializations for properties to pointer types supporting mojo conversion.
@@ -87,11 +90,19 @@ class AURA_EXPORT PropertyConverter {
                         const char* transport_name);
 
  private:
-  // A pair with the aura::WindowProperty::name and the mus property name.
-  using PropertyNames = std::pair<const char*, const char*>;
-  // A map of aura::WindowProperty<T> to its aura and mus property names.
+  // Contains data needed to store and convert primitive-type properties.
+  struct PrimitiveProperty {
+    // The aura::WindowProperty::name used for storage.
+    const char* property_name = nullptr;
+    // The mus property name used for transport.
+    const char* transport_name = nullptr;
+    // The aura::WindowProperty::default_value stored using PrimitiveType.
+    PrimitiveType default_value = 0;
+  };
+
+  // A map of aura::WindowProperty<T> to PrimitiveProperty structs.
   // This supports the internal codepaths for primitive types, eg. T=bool.
-  std::map<const void*, PropertyNames> primitive_properties_;
+  std::map<const void*, PrimitiveProperty> primitive_properties_;
 
   // Maps of aura::WindowProperty<T> to their mus property names.
   // This supports types that can be serialized for Mojo, eg. T=std::string*.

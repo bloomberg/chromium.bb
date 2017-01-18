@@ -33,14 +33,15 @@ namespace aura {
 namespace {
 
 DEFINE_WINDOW_PROPERTY_KEY(bool, kTestPropertyKey0, false);
-DEFINE_WINDOW_PROPERTY_KEY(uint8_t, kTestPropertyKey1, 0);
-DEFINE_WINDOW_PROPERTY_KEY(uint16_t, kTestPropertyKey2, 0);
-DEFINE_WINDOW_PROPERTY_KEY(uint32_t, kTestPropertyKey3, 0);
-DEFINE_WINDOW_PROPERTY_KEY(uint64_t, kTestPropertyKey4, 0);
-DEFINE_WINDOW_PROPERTY_KEY(int8_t, kTestPropertyKey5, 0);
-DEFINE_WINDOW_PROPERTY_KEY(int16_t, kTestPropertyKey6, 0);
-DEFINE_WINDOW_PROPERTY_KEY(int32_t, kTestPropertyKey7, 0);
-DEFINE_WINDOW_PROPERTY_KEY(int64_t, kTestPropertyKey8, 0);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kTestPropertyKey1, true);
+DEFINE_WINDOW_PROPERTY_KEY(uint8_t, kTestPropertyKey2, UINT8_MAX / 3);
+DEFINE_WINDOW_PROPERTY_KEY(uint16_t, kTestPropertyKey3, UINT16_MAX / 3);
+DEFINE_WINDOW_PROPERTY_KEY(uint32_t, kTestPropertyKey4, UINT32_MAX);
+DEFINE_WINDOW_PROPERTY_KEY(uint64_t, kTestPropertyKey5, UINT64_MAX);
+DEFINE_WINDOW_PROPERTY_KEY(int8_t, kTestPropertyKey6, 0);
+DEFINE_WINDOW_PROPERTY_KEY(int16_t, kTestPropertyKey7, 1);
+DEFINE_WINDOW_PROPERTY_KEY(int32_t, kTestPropertyKey8, -1);
+DEFINE_WINDOW_PROPERTY_KEY(int64_t, kTestPropertyKey9, 777);
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::ImageSkia, kTestImagePropertyKey,
                                  nullptr);
@@ -59,6 +60,7 @@ const char kTestPropertyServerKey5[] = "test-property-server5";
 const char kTestPropertyServerKey6[] = "test-property-server6";
 const char kTestPropertyServerKey7[] = "test-property-server7";
 const char kTestPropertyServerKey8[] = "test-property-server8";
+const char kTestPropertyServerKey9[] = "test-property-server9";
 
 const char kTestImagePropertyServerKey[] = "test-image-property-server";
 const char kTestRectPropertyServerKey[] = "test-rect-property-server";
@@ -121,37 +123,41 @@ TEST_F(PropertyConverterTest, PrimitiveProperties) {
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey0,
                         kTestPropertyServerKey0, value_0a, value_0b);
 
-  const uint8_t value_1a = UINT8_MAX / 2, value_1b = UINT8_MAX / 3;
+  const bool value_1a = true, value_1b = false;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey1,
                         kTestPropertyServerKey1, value_1a, value_1b);
 
-  const uint16_t value_2a = UINT16_MAX / 3, value_2b = UINT16_MAX / 4;
+  const uint8_t value_2a = UINT8_MAX / 2, value_2b = UINT8_MAX / 3;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey2,
                         kTestPropertyServerKey2, value_2a, value_2b);
 
-  const uint32_t value_3a = UINT32_MAX / 4, value_3b = UINT32_MAX / 5;
+  const uint16_t value_3a = UINT16_MAX / 3, value_3b = UINT16_MAX / 4;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey3,
                         kTestPropertyServerKey3, value_3a, value_3b);
 
-  const uint64_t value_4a = UINT64_MAX / 5, value_4b = UINT64_MAX / 6;
+  const uint32_t value_4a = UINT32_MAX / 4, value_4b = UINT32_MAX / 5;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey4,
                         kTestPropertyServerKey4, value_4a, value_4b);
 
-  const int8_t value_5a = INT8_MIN / 2, value_5b = INT8_MIN / 3;
+  const uint64_t value_5a = UINT64_MAX / 5, value_5b = UINT64_MAX / 6;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey5,
                         kTestPropertyServerKey5, value_5a, value_5b);
 
-  const int16_t value_6a = INT16_MIN / 3, value_6b = INT16_MIN / 4;
+  const int8_t value_6a = INT8_MIN / 2, value_6b = INT8_MIN / 3;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey6,
                         kTestPropertyServerKey6, value_6a, value_6b);
 
-  const int32_t value_7a = INT32_MIN / 4, value_7b = INT32_MIN / 5;
+  const int16_t value_7a = INT16_MIN / 3, value_7b = INT16_MIN / 4;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey7,
                         kTestPropertyServerKey7, value_7a, value_7b);
 
-  const int64_t value_8a = INT64_MIN / 5, value_8b = INT64_MIN / 6;
+  const int32_t value_8a = INT32_MIN / 4, value_8b = INT32_MIN / 5;
   TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey8,
                         kTestPropertyServerKey8, value_8a, value_8b);
+
+  const int64_t value_9a = INT64_MIN / 5, value_9b = INT64_MIN / 6;
+  TestPrimitiveProperty(&property_converter, window.get(), kTestPropertyKey9,
+                        kTestPropertyServerKey9, value_9a, value_9b);
 }
 
 // Verifies property setting behavior for a gfx::ImageSkia* property.

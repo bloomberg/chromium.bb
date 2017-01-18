@@ -103,8 +103,9 @@ bool PropertyConverter::ConvertPropertyForTransport(
 
   // Handle primitive property types generically.
   DCHECK_GT(primitive_properties_.count(key), 0u);
+  PrimitiveType default_value = primitive_properties_[key].default_value;
   // TODO(msw): Using the int64_t accessor is wasteful for smaller types.
-  const PrimitiveType value = window->GetPropertyInternal(key, 0);
+  const PrimitiveType value = window->GetPropertyInternal(key, default_value);
   *transport_value = base::MakeUnique<std::vector<uint8_t>>(
       mojo::ConvertTo<std::vector<uint8_t>>(value));
   return true;
@@ -112,7 +113,7 @@ bool PropertyConverter::ConvertPropertyForTransport(
 
 std::string PropertyConverter::GetTransportNameForPropertyKey(const void* key) {
   if (primitive_properties_.count(key) > 0)
-    return primitive_properties_[key].second;
+    return primitive_properties_[key].transport_name;
 
   auto image_key = static_cast<const WindowProperty<gfx::ImageSkia*>*>(key);
   if (image_properties_.count(image_key) > 0)
@@ -142,7 +143,7 @@ void PropertyConverter::SetPropertyFromTransportValue(
     const std::string& transport_name,
     const std::vector<uint8_t>* data) {
   for (const auto& primitive_property : primitive_properties_) {
-    if (primitive_property.second.second == transport_name) {
+    if (primitive_property.second.transport_name == transport_name) {
       // aura::Window only supports property types that fit in PrimitiveType.
       if (data->size() != 8u) {
         DVLOG(2) << "Property size mismatch (PrimitiveType): "
@@ -151,9 +152,9 @@ void PropertyConverter::SetPropertyFromTransportValue(
       }
       const PrimitiveType value = mojo::ConvertTo<PrimitiveType>(*data);
       // TODO(msw): Should aura::Window just store all properties by name?
-      window->SetPropertyInternal(primitive_property.first,
-                                  primitive_property.second.first, nullptr,
-                                  value, 0);
+      window->SetPropertyInternal(
+          primitive_property.first, primitive_property.second.property_name,
+          nullptr, value, primitive_property.second.default_value);
       return;
     }
   }
@@ -224,7 +225,7 @@ bool PropertyConverter::GetPropertyValueFromTransportValue(
     return false;
   }
   for (const auto& primitive_property : primitive_properties_) {
-    if (primitive_property.second.second == transport_name) {
+    if (primitive_property.second.transport_name == transport_name) {
       *value = mojo::ConvertTo<PrimitiveType>(transport_data);
       return true;
     }
