@@ -335,6 +335,17 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
     TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
     AppBannerSettingsHelper::RecordBannerInstallEvent(
         web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
+  } else if (is_webapk_) {
+    // This branch will be entered if we are a WebAPK that was triggered from
+    // the add to homescreen menu item. Manually record the app banner added to
+    // homescreen event in this case. Don't call
+    // AppBannerSettingsHelper::RecordBannerInstallEvent as that records
+    // banner-specific metrics in addition to this event.
+    AppBannerSettingsHelper::RecordBannerEvent(
+        web_contents, web_contents->GetLastCommittedURL(),
+        shortcut_info_->url.spec(),
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+        AppBannerManager::GetCurrentTime());
   }
 
   Java_AppBannerInfoBarDelegateAndroid_setWebApkInstallingState(
