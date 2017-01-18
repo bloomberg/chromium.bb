@@ -169,6 +169,12 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(const std::string& token) {
 }
 
 void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
+  // Don't update device attributes for Active Directory management.
+  if (!enrollment_config_.management_realm.empty()) {
+    OnDeviceAttributeUpdatePermission(false);
+    return;
+  }
+
   // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
   LOG(WARNING) << "Get device attribute update permission";
   policy::BrowserPolicyConnectorChromeOS* connector =
