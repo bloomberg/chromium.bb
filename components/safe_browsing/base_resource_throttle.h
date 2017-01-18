@@ -95,7 +95,12 @@ class BaseResourceThrottle
   virtual void StartDisplayingBlockingPageHelper(
       security_interstitials::UnsafeResource resource);
 
-  scoped_refptr<BaseUIManager> ui_manager_;
+  // Called by OnBlockingPageComplete when proceed == false. This removes the
+  // blocking page. This calls ResourceThrottle::Cancel() to show the previous
+  // page, but may be overridden in a subclass.
+  virtual void CancelResourceLoad();
+
+  scoped_refptr<BaseUIManager> ui_manager();
 
  private:
   // Describes what phase of the check a throttle is in.
@@ -116,6 +121,8 @@ class BaseResourceThrottle
     DEFERRED_UNCHECKED_REDIRECT,  // unchecked_redirect_url_ is populated.
     DEFERRED_PROCESSING,
   };
+
+  scoped_refptr<BaseUIManager> ui_manager_;
 
   // Called on the IO thread when the user has decided to proceed with the
   // current request, or go back.

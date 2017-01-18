@@ -85,7 +85,7 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPageHelper(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SafeBrowsingResourceThrottle::StartDisplayingBlockingPage,
-                 AsWeakPtr(), ui_manager_, resource));
+                 AsWeakPtr(), ui_manager(), resource));
 }
 
 // Static

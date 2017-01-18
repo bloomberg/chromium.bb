@@ -366,8 +366,16 @@ void BaseResourceThrottle::OnBlockingPageComplete(bool proceed) {
       ResumeRequest();
     }
   } else {
-    Cancel();
+    CancelResourceLoad();
   }
+}
+
+void BaseResourceThrottle::CancelResourceLoad() {
+  Cancel();
+}
+
+scoped_refptr<BaseUIManager> BaseResourceThrottle::ui_manager() {
+  return ui_manager_;
 }
 
 bool BaseResourceThrottle::CheckUrl(const GURL& url) {
