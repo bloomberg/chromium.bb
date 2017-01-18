@@ -167,6 +167,7 @@ void BadClockBlockingPage::OverrideRendererPrefs(
 }
 
 void BadClockBlockingPage::OnDontProceed() {
+  UpdateMetricsAfterSecurityInterstitial();
   cert_report_helper_->FinishCertCollection(
       certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED);
   NotifyDenyCertificate();

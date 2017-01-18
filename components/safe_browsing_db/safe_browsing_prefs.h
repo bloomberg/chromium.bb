@@ -125,6 +125,14 @@ void SetExtendedReportingPrefAndMetric(PrefService* prefs,
 // This variant is used to simplify test code by omitting the location.
 void SetExtendedReportingPref(PrefService* prefs, bool value);
 
+// Called when a security interstitial is closed by the user.
+// |on_show_pref_existed| indicates whether the pref existed when the
+// interstitial was shown. |on_show_pref_value| contains the pref value when the
+// interstitial was shown.
+void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
+                                            bool on_show_pref_existed,
+                                            bool on_show_pref_value);
+
 // Called to indicate that a security interstitial is about to be shown to the
 // user. This may trigger the user to begin seeing the Scout opt-in text
 // depending on their experiment state.

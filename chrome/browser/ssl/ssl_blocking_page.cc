@@ -267,6 +267,8 @@ void SSLBlockingPage::OverrideRendererPrefs(
 }
 
 void SSLBlockingPage::OnProceed() {
+  UpdateMetricsAfterSecurityInterstitial();
+
   // Finish collecting metrics, if the user opted into it.
   cert_report_helper_->FinishCertCollection(
       certificate_reporting::ErrorReport::USER_PROCEEDED);
@@ -280,6 +282,8 @@ void SSLBlockingPage::OnProceed() {
 }
 
 void SSLBlockingPage::OnDontProceed() {
+  UpdateMetricsAfterSecurityInterstitial();
+
   // Finish collecting metrics, if the user opted into it.
   cert_report_helper_->FinishCertCollection(
       certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED);

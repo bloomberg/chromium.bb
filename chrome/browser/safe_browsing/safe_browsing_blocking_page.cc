@@ -154,6 +154,8 @@ void SafeBrowsingBlockingPage::OverrideRendererPrefs(
 
 void SafeBrowsingBlockingPage::OnProceed() {
   set_proceeded(true);
+  UpdateMetricsAfterSecurityInterstitial();
+
   // Send the threat details, if we opted to.
   FinishThreatDetails(
       base::TimeDelta::FromMilliseconds(threat_details_proceed_delay_ms_),

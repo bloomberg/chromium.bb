@@ -68,6 +68,9 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
 
   MetricsHelper* metrics_helper();
 
+  // Update metrics when the interstitial is closed.
+  void UpdateMetricsAfterSecurityInterstitial();
+
  private:
   // The WebContents with which this interstitial page is
   // associated. Not available in ~SecurityInterstitialPage, since it
@@ -79,6 +82,11 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   content::InterstitialPage* interstitial_page_;
   // Whether the interstitial should create a view.
   bool create_view_;
+
+  // Store some data about the initial state of extended reporting opt-in.
+  bool on_show_extended_reporting_pref_exists_;
+  bool on_show_extended_reporting_pref_value_;
+
   // For subclasses that don't have their own ControllerClients yet.
   std::unique_ptr<SecurityInterstitialControllerClient> controller_;
 

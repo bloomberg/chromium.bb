@@ -129,6 +129,7 @@ void BaseBlockingPage::OnDontProceed() {
   if (proceeded_)
     return;
 
+  UpdateMetricsAfterSecurityInterstitial();
   if (!sb_error_ui_->is_proceed_anyway_disabled()) {
     controller()->metrics_helper()->RecordUserDecision(
         security_interstitials::MetricsHelper::DONT_PROCEED);

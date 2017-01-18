@@ -47,6 +47,16 @@ enum ScoutTransitionReason {
   MAX_REASONS
 };
 
+// The Extended Reporting pref that is currently active, used for UMA metrics.
+// These values are written to logs.  New enum values can be added, but
+// existing enums must never be renumbered or deleted and reused.
+enum ActiveExtendedReportingPref {
+  SBER1_PREF = 0,
+  SBER2_PREF = 1,
+  // New prefs must be added before MAX_SBER_PREF
+  MAX_SBER_PREF
+};
+
 // Update the correct UMA metric based on which pref was changed and which UI
 // the change was made on.
 void RecordExtendedReportingPrefChanged(
@@ -299,6 +309,69 @@ void SetExtendedReportingPrefAndMetric(
 
 void SetExtendedReportingPref(PrefService* prefs, bool value) {
   prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), value);
+}
+
+void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
+                                            bool on_show_pref_existed,
+                                            bool on_show_pref_value) {
+  const ActiveExtendedReportingPref active_pref =
+      IsScout(prefs) ? SBER2_PREF : SBER1_PREF;
+  const bool cur_pref_value = IsExtendedReportingEnabled(prefs);
+
+  if (!on_show_pref_existed) {
+    if (!ExtendedReportingPrefExists(prefs)) {
+      // User seeing pref for the first time, didn't touch the checkbox (left it
+      // unchecked).
+      UMA_HISTOGRAM_ENUMERATION(
+          "SafeBrowsing.Pref.Scout.Decision.First_LeftUnchecked", active_pref,
+          MAX_SBER_PREF);
+      return;
+    }
+
+    // Pref currently exists so user did something to the checkbox
+    if (cur_pref_value) {
+      // User turned the pref on.
+      UMA_HISTOGRAM_ENUMERATION(
+          "SafeBrowsing.Pref.Scout.Decision.First_Enabled", active_pref,
+          MAX_SBER_PREF);
+      return;
+    }
+
+    // Otherwise, user turned the pref off, but because it didn't exist when
+    // the interstitial was first shown, they must have turned it on and then
+    // off before the interstitial was closed.
+    UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.Pref.Scout.Decision.First_Disabled",
+                              active_pref, MAX_SBER_PREF);
+    return;
+  }
+
+  // At this point, the pref existed when the interstitial was shown so this is
+  // a repeat appearance of the opt-in. Existence can't be removed during an
+  // interstitial so no need to check whether the pref currently exists.
+  if (on_show_pref_value && cur_pref_value) {
+    // User left the pref on.
+    UMA_HISTOGRAM_ENUMERATION(
+        "SafeBrowsing.Pref.Scout.Decision.Repeat_LeftEnabled", active_pref,
+        MAX_SBER_PREF);
+    return;
+  } else if (on_show_pref_value && !cur_pref_value) {
+    // User turned the pref off.
+    UMA_HISTOGRAM_ENUMERATION(
+        "SafeBrowsing.Pref.Scout.Decision.Repeat_Disabled", active_pref,
+        MAX_SBER_PREF);
+    return;
+  } else if (!on_show_pref_value && cur_pref_value) {
+    // User turned the pref on.
+    UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.Pref.Scout.Decision.Repeat_Enabled",
+                              active_pref, MAX_SBER_PREF);
+    return;
+  } else {
+    // Both on_show and cur values are false - user left the pref off.
+    UMA_HISTOGRAM_ENUMERATION(
+        "SafeBrowsing.Pref.Scout.Decision.Repeat_LeftDisabled", active_pref,
+        MAX_SBER_PREF);
+    return;
+  }
 }
 
 void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs) {

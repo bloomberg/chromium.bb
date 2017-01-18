@@ -32,6 +32,8 @@ SecurityInterstitialPage::SecurityInterstitialPage(
       request_url_(request_url),
       interstitial_page_(NULL),
       create_view_(true),
+      on_show_extended_reporting_pref_exists_(false),
+      on_show_extended_reporting_pref_value_(false),
       controller_(std::move(controller)) {
   // Determine if any prefs need to be updated prior to showing the security
   // interstitial. Note that some content embedders (such as Android WebView)
@@ -73,6 +75,16 @@ void SecurityInterstitialPage::Show() {
 
   interstitial_page_->Show();
 
+  // Remember the initial state of the extended reporting pref, to be compared
+  // to the same data when the interstitial is closed.
+  PrefService* prefs = controller_->GetPrefService();
+  if (prefs) {
+    on_show_extended_reporting_pref_exists_ =
+        safe_browsing::ExtendedReportingPrefExists(*prefs);
+    on_show_extended_reporting_pref_value_ =
+        safe_browsing::IsExtendedReportingEnabled(*prefs);
+  }
+
   controller_->set_interstitial_page(interstitial_page_);
   AfterShow();
 }
@@ -84,6 +96,14 @@ SecurityInterstitialControllerClient* SecurityInterstitialPage::controller() {
 security_interstitials::MetricsHelper*
 SecurityInterstitialPage::metrics_helper() {
   return controller_->metrics_helper();
+}
+
+void SecurityInterstitialPage::UpdateMetricsAfterSecurityInterstitial() {
+  if (controller_->GetPrefService()) {
+    safe_browsing::UpdateMetricsAfterSecurityInterstitial(
+        *controller_->GetPrefService(), on_show_extended_reporting_pref_exists_,
+        on_show_extended_reporting_pref_value_);
+  }
 }
 
 base::string16 SecurityInterstitialPage::GetFormattedHostName() const {

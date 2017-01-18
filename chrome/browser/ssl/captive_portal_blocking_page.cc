@@ -17,6 +17,7 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/grit/generated_resources.h"
@@ -267,6 +268,7 @@ void CaptivePortalBlockingPage::OnProceed() {
 }
 
 void CaptivePortalBlockingPage::OnDontProceed() {
+  UpdateMetricsAfterSecurityInterstitial();
   if (cert_report_helper_) {
     // Finish collecting information about invalid certificates, if the
     // user opted in to.
