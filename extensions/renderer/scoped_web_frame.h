@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SCOPED_WEB_FRAME_H_
-#define SCOPED_WEB_FRAME_H_
+#ifndef EXTENSIONS_RENDERER_SCOPED_WEB_FRAME_H_
+#define EXTENSIONS_RENDERER_SCOPED_WEB_FRAME_H_
 
 #include "base/macros.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -35,4 +35,4 @@ private:
 
 }  // namespace extensions
 
-#endif  // SCOPED_WEB_FRAME_H_
+#endif  // EXTENSIONS_RENDERER_SCOPED_WEB_FRAME_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_DEVICE_PERMISSION_MANAGER_H_
-#define EXTENSIONS_DEVICE_PERMISSION_MANAGER_H_
+#ifndef EXTENSIONS_BROWSER_API_DEVICE_PERMISSIONS_MANAGER_H_
+#define EXTENSIONS_BROWSER_API_DEVICE_PERMISSIONS_MANAGER_H_
 
 #include <stdint.h>
 
@@ -227,4 +227,4 @@ class DevicePermissionsManagerFactory
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_DEVICE_PERMISSION_MANAGER_H_
+#endif  // EXTENSIONS_BROWSER_API_DEVICE_PERMISSIONS_MANAGER_H_

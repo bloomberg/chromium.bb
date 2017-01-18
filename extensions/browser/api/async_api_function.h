@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_ASYNC_API_FUCTION_H_
-#define EXTENSIONS_BROWSER_API_ASYNC_API_FUCTION_H_
+#ifndef EXTENSIONS_BROWSER_API_ASYNC_API_FUNCTION_H_
+#define EXTENSIONS_BROWSER_API_ASYNC_API_FUNCTION_H_
 
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_function.h"
@@ -58,4 +58,4 @@ class AsyncApiFunction : public AsyncExtensionFunction {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_ASYNC_API_FUCTION_H_
+#endif  // EXTENSIONS_BROWSER_API_ASYNC_API_FUNCTION_H_

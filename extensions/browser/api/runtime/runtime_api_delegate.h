@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_DELEGATE_H
-#define EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_DELEGATE_H
+#ifndef EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_DELEGATE_H_
+#define EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_DELEGATE_H_
 
 #include "base/callback.h"
 #include "base/version.h"
@@ -79,4 +79,4 @@ class RuntimeAPIDelegate {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_DELEGATE_H
+#endif  // EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_DELEGATE_H_

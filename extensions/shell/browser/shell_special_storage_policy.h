@@ -30,4 +30,4 @@ class ShellSpecialStoragePolicy : public storage::SpecialStoragePolicy {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_SPECIAL_STORAGE_POLICY_H
+#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_SPECIAL_STORAGE_POLICY_H_

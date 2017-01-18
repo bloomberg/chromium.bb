@@ -29,4 +29,4 @@ class DefaultShellBrowserMainDelegate : public ShellBrowserMainDelegate {
 
 }  // namespace extensions
 
-#endif  // DEFAULT_SHELL_BROWSER_MAIN_DELEGATE_H_
+#endif  // EXTENSIONS_SHELL_BROWSER_DEFAULT_SHELL_BROWSER_MAIN_DELEGATE_H_

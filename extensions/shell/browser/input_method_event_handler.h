@@ -39,4 +39,4 @@ class InputMethodEventHandler : public ui::EventHandler {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_SHELL_BROWSER_METHOD_EVENT_HANDLER_H_
+#endif  // EXTENSIONS_SHELL_BROWSER_INPUT_METHOD_EVENT_HANDLER_H_

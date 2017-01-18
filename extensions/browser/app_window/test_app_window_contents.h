@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_
-#define EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_H_
 
 #include <stdint.h>
 
@@ -42,4 +42,4 @@ class TestAppWindowContents : public AppWindowContents {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_H_

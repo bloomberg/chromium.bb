@@ -52,4 +52,4 @@ class ShellOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
 };
 
 }  // namespace extensions
-#endif
+#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_OAUTH2_TOKEN_SERVICE_DELEGATE_H_

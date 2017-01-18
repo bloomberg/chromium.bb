@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_UTILITY_UTILITY_HANDLER_
-#define EXTENSIONS_UTILITY_UTILITY_HANDLER_
+#ifndef EXTENSIONS_UTILITY_UTILITY_HANDLER_H_
+#define EXTENSIONS_UTILITY_UTILITY_HANDLER_H_
 
 #include <string>
 
@@ -44,4 +44,4 @@ class UtilityHandler {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_UTILITY_UTILITY_HANDLER_
+#endif  // EXTENSIONS_UTILITY_UTILITY_HANDLER_H_

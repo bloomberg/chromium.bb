@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_SERVICE_WORKER_DATA_H_
-#define EXTENSIONS_BROWSER_SERVICE_WORKER_DATA_H_
+#ifndef EXTENSIONS_RENDERER_SERVICE_WORKER_DATA_H_
+#define EXTENSIONS_RENDERER_SERVICE_WORKER_DATA_H_
 
 #include <memory>
 
@@ -40,4 +40,4 @@ class ServiceWorkerData {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_SERVICE_WORKER_DATA_H_
+#endif  // EXTENSIONS_RENDERER_SERVICE_WORKER_DATA_H_

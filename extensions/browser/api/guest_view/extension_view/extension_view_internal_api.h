@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_
-#define EXTENSIONS_BROWSER_API_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_
+#ifndef EXTENSIONS_BROWSER_API_GUEST_VIEW_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_
+#define EXTENSIONS_BROWSER_API_GUEST_VIEW_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_
 
 #include "base/macros.h"
 #include "extensions/browser/api/execute_code_function.h"
@@ -66,4 +66,4 @@ class ExtensionViewInternalParseSrcFunction : public AsyncExtensionFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_
+#endif  // EXTENSIONS_BROWSER_API_GUEST_VIEW_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_

@@ -29,4 +29,4 @@ bool ParseHslColorString(const std::string& color_string, SkColor* result);
 }  // namespace image_util
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_IMAGE_UTIL_H__
+#endif  // EXTENSIONS_COMMON_IMAGE_UTIL_H_
