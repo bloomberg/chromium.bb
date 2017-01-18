@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
+<translation id="1323735185997015385">Supprimer</translation>
 <translation id="132683371494960526">Appuyez deux fois pour modifier le dossier parent.</translation>
 <translation id="1340643665687018190">Fermer le menu</translation>
 <translation id="1375321115329958930">Mots de passe enregistrés</translation>
@@ -63,6 +64,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2068952045031577364">Semaine dernière</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="209018056901015185">Voir version ordinateur</translation>
+<translation id="2100215774115172756">Votre liste de lecture est disponible hors connexion.</translation>
 <translation id="2103075008456228677">Ouvrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments déplacés.</translation>
 <translation id="2149973817440762519">Modifier le favori</translation>
@@ -82,6 +84,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2572712655377361602">Les règles relatives aux appareils ont bloqué l'accès à vos photos.</translation>
 <translation id="2584132361465095047">Ajouter un compte…</translation>
 <translation id="2593774076813182497">Impression impossible.</translation>
+<translation id="2648803196158606475">Supprimer entrées lues</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2684815431982545828">Nouvel onglet</translation>
 <translation id="2690858294534178585">Caméra en cours d'utilisation</translation>
@@ -100,22 +103,25 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2898963176829412617">Nouveau dossier…</translation>
 <translation id="2903493209154104877">Adresses</translation>
 <translation id="2921219216347069551">Impossible de partager page</translation>
+<translation id="292639812446257861">Marquer comme non lues</translation>
 <translation id="2933759065870693102">Lampe torche</translation>
 <translation id="2969979262385602596">Échec de la connexion. Veuillez réessayer plus tard.</translation>
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3024255823539804759">Dernières 24 heures</translation>
 <translation id="3037605927509011580">Aie aie aie</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> n'est pas disponible. Pour accéder à votre historique de navigation, sélectionnez "<ph name="SHOW_HISTORY" />" dans le menu "Outils".</translation>
+<translation id="3112556859945124369">Marquer…</translation>
 <translation id="3151924044251363314">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Tout marquer…</translation>
 <translation id="3172213052701798825">Google Smart Lock pour les mots de passe</translation>
 <translation id="3175081911749765310">Services Web</translation>
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3210163015918861891">Synchronisation désactivée</translation>
+<translation id="3237561509210981547">Pour ajouter une page à votre liste de lecture, appuyez sur <ph name="BEGIN_BOLD_FONT" />Partager &gt; Lire plus tard<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Le lien a bien été copié.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> sur <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Onglets ouverts</translation>
-<translation id="3289005573061089144">Importer des données ?</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Impossible de se connecter au serveur.</translation>
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
@@ -124,6 +130,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="3414292259312108062">Chrome stocke ce mot de passe dans les <ph name="BEGIN_LINK" />mots de passe Google enregistrés<ph name="END_LINK" />. Il sera renseigné automatiquement afin que vous n'ayez pas à le retenir.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vue fractionnée</translation>
+<translation id="3474068797193663261">Pour ajouter une page à votre liste de lecture, appuyez sur <ph name="BEGIN_BOLD_FONT" />Menu &gt; Partager &gt; Lire plus tard<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formulaires remplis.</translation>
 <translation id="3478058380795961209">Mois d'expiration</translation>
 <translation id="3482959374254649722">Synchronisation de vos onglets en cours…</translation>
@@ -183,6 +190,7 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="481968316161811770">Cookies/données site</translation>
 <translation id="4875622588773761625">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> modifie votre mot de passe pour ce site ?</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
+<translation id="4904877109095351937">Marquer comme lues</translation>
 <translation id="4923459931733593730">Paiement</translation>
 <translation id="4930268273022498155">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Désolé, un problème est survenu lors du partage de l'élément.</translation>
@@ -360,6 +368,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433678324664858900">Aff. suggestions</translation>
 <translation id="8458397775385147834">1 élément supprimé.</translation>
+<translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="8517375800490286174">Licences Open Source</translation>
 <translation id="8524799873541103884">Onglets <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> à <ph name="LAST_VISIBLE_TAB" /> sur <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8605219856220328675">Fermer l'onglet</translation>
 <translation id="8620640915598389714">Modifier</translation>
 <translation id="8636825310635137004">Activez la synchronisation pour accéder à vos onglets sur vos autres appareils.</translation>
+<translation id="8654802032646794042">Annuler</translation>
 <translation id="8680787084697685621">Les informations de connexion au compte sont obsolètes.</translation>
 <translation id="8699098509676302392">Ajouter une adresse…</translation>
 <translation id="8721297211384281569">Menu "Outils"</translation>

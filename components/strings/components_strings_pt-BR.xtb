@@ -82,6 +82,7 @@
 <translation id="1753706481035618306">Numero da página</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Tente executar o Diagnóstico de Rede do Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Favor atualizar sua senha de sincronização.</translation>
+<translation id="1787142507584202372">Suas guias abertas são exibidas aqui</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Recentemente, a Navegação segura do Google <ph name="BEGIN_LINK" />detectou malware<ph name="END_LINK" /> em <ph name="SITE" />. Websites que costumam ser seguros às vezes são infectados por malware. O conteúdo malicioso vem de <ph name="SUBRESOURCE_HOST" />, um conhecido distribuidor de malware. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Solicitação ou parâmetros de solicitação inválidos</translation>
@@ -174,6 +175,7 @@
 <translation id="2712118517637785082">Você tentou acessar <ph name="DOMAIN" />, mas o certificado que o servidor apresentou foi revogado pelo emissor. Isso significa que as credenciais de segurança que o servidor apresentou não são nem um pouco seguras. Você pode estar se comunicando com um invasor. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">Pedir permissão</translation>
 <translation id="2713444072780614174">Branco</translation>
+<translation id="2720342946869265578">Por perto</translation>
 <translation id="2721148159707890343">Solicitação bem-sucedida</translation>
 <translation id="2728127805433021124">O certificado do servidor é assinado com um algoritmo de assinatura fraco.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Executar o Diagnóstico de Conectividade<ph name="END_LINK" /></translation>
@@ -370,6 +372,7 @@
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4744603770635761495">Caminho do executável</translation>
 <translation id="4756388243121344051">&amp;Histórico</translation>
+<translation id="4759118997339041434">Preenchimento automático de pagamento desativado</translation>
 <translation id="4764776831041365478">A página da web em <ph name="URL" /> pode estar temporariamente indisponível ou pode ter sido movida permanentemente para um novo endereço da web.</translation>
 <translation id="4771973620359291008">Ocorreu um erro desconhecido.</translation>
 <translation id="4800132727771399293">Verifique sua data de validade e seu CVC e tente novamente</translation>
@@ -528,7 +531,6 @@
 <translation id="6644283850729428850">Esta política foi encerrada.</translation>
 <translation id="6652240803263749613">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou por um invasor que interceptou sua conexão. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">Editar pasta</translation>
-<translation id="6660210980321319655">Denunciada automaticamente às <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Remover sugestão de formulário do Chromium?</translation>
 <translation id="6685834062052613830">Saia e conclua a configuração</translation>
 <translation id="6710213216561001401">Anterior</translation>
@@ -675,6 +677,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8150722005171944719">O arquivo em <ph name="URL" /> não está legível. Ele pode ter sido removido ou movido, ou as permissões do arquivo podem estar impedindo o acesso.</translation>
 <translation id="8194797478851900357">&amp;Desfazer mover</translation>
 <translation id="8201077131113104583">URL de atualização inválido para extensão com ID "<ph name="EXTENSION_ID" />".</translation>
+<translation id="8202097416529803614">Resumo do pedido</translation>
 <translation id="8218327578424803826">Local designado:</translation>
 <translation id="8225771182978767009">A pessoa que configurou este computador optou por bloquear esse site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -720,6 +723,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8740359287975076522">Não foi possível encontrar o &lt;abbr id="dnsDefinition"&gt;endereço DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. Diagnosticando o problema.</translation>
 <translation id="8790007591277257123">&amp;Refazer excluir</translation>
 <translation id="8798099450830957504">Padrão</translation>
+<translation id="8800988563907321413">As sugestões de itens nas proximidades são exibidas aqui</translation>
 <translation id="8804164990146287819">Política de Privacidade</translation>
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="8834246243508017242">Ativar preenchimento automático usando os Contatos.</translation>

@@ -82,6 +82,7 @@
 <translation id="1753706481035618306">Številka strani</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Poskušajte zagnati orodje Omrežna diagnostika Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Posodobite geslo za sinhronizacijo.</translation>
+<translation id="1787142507584202372">Tu so prikazani odprti zavihki</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Googlova funkcija varnega brskanja je na spletnem mestu <ph name="SITE" /> nedavno <ph name="BEGIN_LINK" />zaznala zlonamerno programsko opremo<ph name="END_LINK" />. Spletna mesta, ki so običajno varna, so včasih okužena z zlonamerno programsko opremo. Zlonamerno vsebino razširja znani distributer zlonamerne programske opreme, <ph name="SUBRESOURCE_HOST" />. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
@@ -174,6 +175,7 @@
 <translation id="2712118517637785082">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar je izdajatelj preklical potrdilo, ki ga je posredoval strežnik. To pomeni, da varnostnim poverilnicam, ki jih je posredoval strežnik, nikakor ne smete zaupati. Morda komunicirate z napadalcem. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2712173769900027643">Zahtevaj dovoljenje</translation>
 <translation id="2713444072780614174">Bela</translation>
+<translation id="2720342946869265578">Bližina</translation>
 <translation id="2721148159707890343">Zahteva je uspela</translation>
 <translation id="2728127805433021124">Strežnikovo potrdilo je podpisano s šibkim podpisnim algoritmom.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Izvajanje orodja Diagnostika povezljivosti<ph name="END_LINK" /></translation>
@@ -370,6 +372,7 @@
 <translation id="4728558894243024398">Okolje</translation>
 <translation id="4744603770635761495">Pot do izvedljive datoteke</translation>
 <translation id="4756388243121344051">&amp;Zgodovina</translation>
+<translation id="4759118997339041434">Samodejno izpolnjevanje podatkov za plačevanje je onemogočeno</translation>
 <translation id="4764776831041365478">Spletna stran na naslovu <ph name="URL" /> morda začasno ne deluje ali pa je trajno premaknjena na novi spletni naslov.</translation>
 <translation id="4771973620359291008">Prišlo je do neznane napake.</translation>
 <translation id="4800132727771399293">Preverite datum poteka in številko CVC ter poskusite znova</translation>
@@ -528,7 +531,6 @@
 <translation id="6644283850729428850">Ta pravilnik je zastarel.</translation>
 <translation id="6652240803263749613">Temu strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; operacijski sistem vašega računalnika ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">Urejanje mape</translation>
-<translation id="6660210980321319655">Samodejno sporočeno: <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Želite predlog obrazca odstraniti iz Chromiuma?</translation>
 <translation id="6685834062052613830">Odjavite se in dokončajte nastavitev</translation>
 <translation id="6710213216561001401">Nazaj</translation>
@@ -675,6 +677,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8150722005171944719">Datoteke na <ph name="URL" /> ni mogoče prebrati. Morda je odstranjena, premaknjena ali pa dostop preprečujejo dovoljenja za datoteke.</translation>
 <translation id="8194797478851900357">&amp;Razveljavi premik</translation>
 <translation id="8201077131113104583">Neveljaven posodobitveni URL za razširitev z ID-jem »<ph name="EXTENSION_ID" />«.</translation>
+<translation id="8202097416529803614">Povzetek naročila</translation>
 <translation id="8218327578424803826">Dodeljena lokacija:</translation>
 <translation id="8225771182978767009">Oseba, ki je nastavila ta računalnik, je blokirala to spletno mesto.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -720,6 +723,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Naslova DNS&lt;/abbr&gt; spletnega mesta <ph name="HOST_NAME" /> ni bilo mogoče najti. Poteka diagnosticiranje težave.</translation>
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
 <translation id="8798099450830957504">Privzeto</translation>
+<translation id="8800988563907321413">Tu so prikazani predlogi v bližini</translation>
 <translation id="8804164990146287819">Pravilnik o zasebnosti</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="8834246243508017242">Omogoči samodejno izpolnjevanje s stiki …</translation>

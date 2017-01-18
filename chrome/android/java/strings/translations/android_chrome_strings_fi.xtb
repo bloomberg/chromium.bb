@@ -269,6 +269,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3828029223314399057">Hae kirjanmerkeistä</translation>
 <translation id="3845539888601087042">Näytetään kirjautuneiden laitteiden historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Kelaa eteenpäin</translation>
+<translation id="3890664840433101773">Lisää sähköposti</translation>
 <translation id="3894427358181296146">Lisää kansio</translation>
 <translation id="3895926599014793903">Ota zoomaus käyttöön</translation>
 <translation id="3917783807003067648">Sijainnin käyttö on estetty.</translation>
@@ -326,7 +327,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4526249700380860531">Tarkastele ja hallinnoi tallennettuja salasanoja osoitteessa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Valitse kansio</translation>
 <translation id="4535858793016067060">Ota käyttöön ”Tuntemattomat lähteet” Androidin suojausasetuksissa, jos haluat kokeilla Parannettu aloitusnäyttöön lisääminen ‑ominaisuutta. Muista poistaa tämä asetus käytöstä, kun olet kokeillut sitä tarpeeksi.</translation>
-<translation id="4543661749405994812">Kopioi sähköpostiosoite</translation>
 <translation id="4558311620361989323">Verkkosivun pikanäppäimet</translation>
 <translation id="4572422548854449519">Kirjaudu hallinnoidulle tilille</translation>
 <translation id="457875822857220463">Toimitus</translation>
@@ -371,6 +371,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4988526792673242964">Sivut</translation>
 <translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
 <translation id="5000922062037820727">Estetty (suositus)</translation>
+<translation id="5004339818306944878">Vähennä datankäyttöä 60 % ja selaa verkkoa nopeammin. Googlen palvelimet optimoivat sivut, joilla käyt.</translation>
 <translation id="5005498671520578047">Kopioi salasana</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> haluaa muodostaa yhteyden</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="5171045022955879922">Kirjoita hakusanoja tai URL-osoite</translation>
 <translation id="5184329579814168207">Avaa Chromessa</translation>
 <translation id="5199929503336119739">Työprofiili</translation>
+<translation id="5205222826937269299">Nimi vaaditaan</translation>
 <translation id="5209320130288484488">Laitteita ei löytynyt</translation>
 <translation id="5210286577605176222">Siirry edelliselle välilehdelle</translation>
 <translation id="5210365745912300556">Sulje välilehti</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
+<translation id="5222812217790122047">Sähköposti vaaditaan</translation>
 <translation id="5233638681132016545">Uusi välilehti</translation>
 <translation id="5271967389191913893">Laite ei voi avata ladattavaa sisältöä.</translation>
 <translation id="528192093759286357">Poistu koko näytön tilasta vetämällä näytön yläreunasta ja koskettamalla Takaisin-painiketta.</translation>
@@ -523,7 +526,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6447842834002726250">Evästeet</translation>
 <translation id="6448273550210938826">Haku ja URL-ehdotukset</translation>
 <translation id="6463070039183944536">Lisätään…</translation>
-<translation id="6464825623202322042">Tässä laitteessa</translation>
 <translation id="6475951671322991020">Lataa video</translation>
 <translation id="6477460825583319731">Virheellinen sähköpostiosoite</translation>
 <translation id="6482749332252372425">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui, koska tallennustila ei riitä.</translation>
@@ -570,6 +572,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6868088497967843822">Kirjaudu ja käytä kirjanmerkkejä, historiaa, salasanoja ja muita asetuksiasi kaikissa laitteissasi.</translation>
 <translation id="688738109438487280">Lisää olemassa olevat tiedot tilille <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d avoin välilehti}other{%1$d avointa välilehteä}}</translation>
+<translation id="6896758677409633944">Kopioi</translation>
 <translation id="6937422995269576720">Kortin numero ei kelpaa</translation>
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6963766334940102469">Poista kirjanmerkkejä</translation>
@@ -594,6 +597,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7094922512924405309">Fyysisen webin sivuja ei löytynyt lähistöltä.</translation>
 <translation id="7138678301420049075">Muu</translation>
 <translation id="7180611975245234373">Päivitä</translation>
+<translation id="7189372733857464326">Odotetaan Google Play Palveluiden päivittymistä</translation>
 <translation id="7191430249889272776">Välilehti avattiin taustalla.</translation>
 <translation id="7243308994586599757">Asetukset löytyvät näytön alalaidasta.</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> käyttää sijaintiasi paikallisten hakutulosten näyttämiseen.</translation>
@@ -654,6 +658,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="7851858861565204677">Muut laitteet</translation>
 <translation id="7875915731392087153">Luo sähköposti</translation>
 <translation id="7876243839304621966">Poista kaikki</translation>
+<translation id="7882131421121961860">Historiaa ei löytynyt.</translation>
 <translation id="7929962904089429003">Avaa valikko</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> on vanhentunut.</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
@@ -701,6 +706,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="8321376388213838985">Muita artikkeleita ilmestyy pian. Nauti iltapäivästäsi.</translation>
 <translation id="8372893542064058268">Salli taustasynkronointi tietyllä sivustolla.</translation>
 <translation id="8374821112118309944">TalkBack täytyy päivittää uudempaan versioon.</translation>
+<translation id="8393700583063109961">Lähetä viesti</translation>
 <translation id="8396312449826231789">Vain hyväksytyt sivustot</translation>
 <translation id="8413126021676339697">Näytä koko selaushistoria</translation>
 <translation id="8428213095426709021">Asetukset</translation>
@@ -781,6 +787,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Kuvat</translation>
 <translation id="932327136139879170">Etusivu</translation>
+<translation id="932599481871055447">Käytä vähemmän dataa ja selaa nopeammin</translation>
 <translation id="938850635132480979">(Virhe: <ph name="ERROR_CODE" />)</translation>
 <translation id="945632385593298557">Mikrofonin käyttöoikeus</translation>
 <translation id="951339005376969845">Poistaa olemassa olevat tiedot. Voit palauttaa nykyiset tiedot kirjautumalla takaisin tilille <ph name="FROM_ACCOUNT" />.</translation>

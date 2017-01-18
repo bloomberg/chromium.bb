@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{বাঁ দ্বিতীয় বন্ধনী}one{#টি বাঁ দ্বিতীয় বন্ধনী}other{#টি বাঁ দ্বিতীয় বন্ধনী}}</translation>
 <translation id="2911433807131383493">ChromeVox টিউটোরিয়াল খুলুন</translation>
 <translation id="2932083475399492303">গঠনগত বা লেআউট রেখার প্রকারের মধ্যে টগল করুন</translation>
+<translation id="2944762337049891859">পৃষ্ঠা লোড হওয়ার পর সেটি স্বয়ংক্রিয়ভাবে পড়ুন</translation>
 <translation id="2964026537669811554">শিরোনাম গোষ্ঠী</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{ট্যাব}one{#টি ট্যাব}other{#টি ট্যাব}}</translation>
 <translation id="2972078295414139404">কোনো পূর্ববর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
@@ -307,6 +308,7 @@
 <translation id="3712520970944678024">বক্তব্য নিয়ন্ত্রণ</translation>
 <translation id="3716845769494773620">একাধিক লাইন</translation>
 <translation id="3731746171184829332">কোনো পূর্ববর্তী শিরোলেখ নেই৷</translation>
+<translation id="3735039640698208086">অডিও বাজানোর সময়...</translation>
 <translation id="3762198587642264450">বর্তমান সারির শেষে যান</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">কথোপকথন থেকে প্রস্থান করা হয়ছে৷</translation>
@@ -547,6 +549,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="5876817486144482042">স্পিচ ভলিউম কমান</translation>
 <translation id="5887397643266327462">ব্রেইল পরিচয়লিপিগুলি সক্ষম করা হয়েছে৷</translation>
 <translation id="5891934789323004067">সারণী</translation>
+<translation id="5899860758576822363">ChromeVox কথা বলতে থাকলে কম ভলিউমে বাজান</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{সমান}one{#টি সমান চিহ্ন}other{#টি সমান চিহ্ন}}</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="5948123859135882163">কাঠামোগত এবং শব্দার্থিক এর মধ্যে গাণিতিক এক্সপ্রেশনের ব্যাখ্যা টগল করে</translation>
@@ -579,6 +582,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6281876499889881039">পরবর্তী অনুরূপ উপাদান৷</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">কোনো পরবর্তী কম্বোবক্স ল্যান্ডমার্ক নেই৷</translation>
+<translation id="6305702903308659374">ChromeVox কথা বলতে থাকলেও সাধারণ ভলিউমে বাজান</translation>
 <translation id="6307969636681130414">টেপা হয়েছে</translation>
 <translation id="6322856989298155004">সাউন্ডগুলি</translation>
 <translation id="6324551002951139333">ব্যকরণগত ত্রুটি সনাক্ত হয়েছে</translation>
@@ -694,6 +698,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="7540083713905917247"><ph name="VALUE" /> , <ph name="NAME" /> , স্লাইডার</translation>
 <translation id="7552432549459840808">সহায়ক Chrome শর্টকাটগুলি</translation>
 <translation id="7579911500627256166">ডট <ph name="DOT" /></translation>
+<translation id="7591126877589047423">কোনো ফোকাস নেই। একটি নতুন উইন্ডো খুলতে কন্ট্রোল N টিপুন।</translation>
 <translation id="7596919493010894443">নির্বাচন সাফ করা হয়েছে</translation>
 <translation id="7604026522577407655">বর্তমান কলামের শুরুতে যান</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -769,6 +774,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="8455868257606149352">সর্বোচ্চ <ph name="X" /></translation>
 <translation id="84575901236241018">অ্যাক্সেস কী আছে, <ph name="KEY" /></translation>
 <translation id="847154984256717791">ব্যস্ত</translation>
+<translation id="8476408756881832830">ChromeVox কথা বলতে থাকলে প্লেব্যাক সাময়িকভাবে থামান</translation>
 <translation id="8476508772960940536">এক নজরে উইন্ডো</translation>
 <translation id="8503360654911991865">নেভিগেশন কণিকাভাবটি কমান</translation>
 <translation id="8520472399088452386">ঘূর্ণন বোতাম</translation>

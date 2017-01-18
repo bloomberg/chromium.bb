@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="129553762522093515">Ditutup baru-baru ini</translation>
+<translation id="1323735185997015385">Padam</translation>
 <translation id="132683371494960526">Ketik dua kali untuk menukar folder induk.</translation>
 <translation id="1340643665687018190">Tutup Menu</translation>
 <translation id="1375321115329958930">Kata Laluan Disimpan</translation>
@@ -63,6 +64,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2068952045031577364">Minggu Yang Lalu</translation>
 <translation id="2079545284768500474">Buat asal</translation>
 <translation id="209018056901015185">Minta Tapak Desktop</translation>
+<translation id="2100215774115172756">Senarai bacaan anda tersedia di luar talian.</translation>
 <translation id="2103075008456228677">Buka history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dialihkan</translation>
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
@@ -82,6 +84,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2572712655377361602">Dasar peranti menyekat akses ke foto anda</translation>
 <translation id="2584132361465095047">Tambahkan Akaun...</translation>
 <translation id="2593774076813182497">Halaman ini tidak boleh dicetak.</translation>
+<translation id="2648803196158606475">Padamkan Dibaca</translation>
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2684815431982545828">Tab Baharu</translation>
 <translation id="2690858294534178585">Kamera sedang digunakan</translation>
@@ -100,22 +103,25 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2898963176829412617">Folder Baharu…</translation>
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="2921219216347069551">Tidak Boleh Berkongsi Halaman</translation>
+<translation id="292639812446257861">Tandakan Belum Dibaca</translation>
 <translation id="2933759065870693102">Lampu suluh</translation>
 <translation id="2969979262385602596">Gagal melog masuk. Sila cuba sebentar lagi.</translation>
 <translation id="2989805286512600854">Buka dalam Tab Baharu</translation>
 <translation id="3024255823539804759">Sehari Yang Lalu</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> tidak tersedia. Untuk mengakses sejarah semakan imbas anda, pilih "<ph name="SHOW_HISTORY" />" daripada menu alatan.</translation>
+<translation id="3112556859945124369">Tandakan...</translation>
 <translation id="3151924044251363314">Hanya orang yang mempunyai ungkapan laluan anda boleh membaca data anda yang disulitkan. Ungkapan laluan tidak dihantar atau disimpan oleh Google. Jika anda terlupa ungkapan laluan atau ingin menukar tetapan ini, anda perlu menetapkan semula penyegerakan. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Tandakan Semua...</translation>
 <translation id="3172213052701798825">Google Smart Lock untuk Kata Laluan</translation>
 <translation id="3175081911749765310">Prkhdmtn Web</translation>
 <translation id="3207960819495026254">Ditandai halaman</translation>
 <translation id="3210163015918861891">Penyegerakan Dimatikan</translation>
+<translation id="3237561509210981547">Untuk menambahkan halaman pada senarai bacaan anda, ketik <ph name="BEGIN_BOLD_FONT" />Kongsi &gt; Baca Kemudian<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Pautan disalin</translation>
 <translation id="3244271242291266297">BB</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> daripada <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Tab Terbuka</translation>
-<translation id="3289005573061089144">Import Data?</translation>
 <translation id="3324193307694657476">Alamat 2</translation>
 <translation id="3329904751041170572">Tidak dapat menyambung ke pelayan.</translation>
 <translation id="3335947283844343239">Buka Semula Tab Yang Ditutup</translation>
@@ -124,6 +130,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="3414292259312108062">Chrome akan menyimpan ini dalam <ph name="BEGIN_LINK" />Kata laluan Google yang disimpan<ph name="END_LINK" /> anda dan auto isi untuk anda agar anda tidak perlu mengingati kata laluan itu sendiri.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Paparan Pisah</translation>
+<translation id="3474068797193663261">Untuk menambahkan halaman pada senarai bacaan anda, ketik <ph name="BEGIN_BOLD_FONT" />Menu &gt; Kongsi &gt; Baca Kemudian<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Borang diisi.</translation>
 <translation id="3478058380795961209">Bulan Tamat Tempoh</translation>
 <translation id="3482959374254649722">Menyegerakkan tab anda...</translation>
@@ -183,6 +190,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="481968316161811770">Kuki, Data Tapak</translation>
 <translation id="4875622588773761625">Adakah anda ingin <ph name="PASSWORD_MANAGER_BRAND" /> mengemaskinikan kata laluan anda untuk tapak ini?</translation>
 <translation id="4881695831933465202">Buka</translation>
+<translation id="4904877109095351937">Tandakan Dibaca</translation>
 <translation id="4923459931733593730">Pembayaran</translation>
 <translation id="4930268273022498155">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terdapat masalah mengongsi item anda.</translation>
@@ -360,6 +368,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8433678324664858900">Paparkan Cadangan</translation>
 <translation id="8458397775385147834">1 item dipadamkan</translation>
+<translation id="8487700953926739672">Tersedia di luar talian</translation>
 <translation id="8503813439785031346">Nama pengguna</translation>
 <translation id="8517375800490286174">Lesen Sumber Terbuka</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tab <ph name="FIRST_VISIBLE_TAB" /> melalui <ph name="LAST_VISIBLE_TAB" /> daripada <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8605219856220328675">Tutup tab.</translation>
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">Hidupkan penyegerakan untuk mendapatkan tab daripada peranti anda yang lain.</translation>
+<translation id="8654802032646794042">Batal</translation>
 <translation id="8680787084697685621">Butiran log masuk akaun sudah lapuk.</translation>
 <translation id="8699098509676302392">Tambahkan Alamat...</translation>
 <translation id="8721297211384281569">Menu Alat</translation>

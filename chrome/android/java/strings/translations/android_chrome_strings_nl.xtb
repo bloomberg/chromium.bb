@@ -269,6 +269,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3828029223314399057">Zoeken in bladwijzers</translation>
 <translation id="3845539888601087042">Geschiedenis van je ingelogde apparaten wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Vooruit zoeken</translation>
+<translation id="3890664840433101773">E-mailadres toevoegen</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
 <translation id="3895926599014793903">Zoom inschakelen forceren</translation>
 <translation id="3917783807003067648">Locatie is geblokkeerd</translation>
@@ -326,7 +327,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Map kiezen</translation>
 <translation id="4535858793016067060">Schakel de optie 'Onbekende bronnen' in de beveiligingsinstellingen van Android in om het experiment 'Verbeterde functie voor toevoegen aan startscherm' uit te voeren. Vergeet niet de instelling uit te schakelen wanneer je klaar bent met uitproberen.</translation>
-<translation id="4543661749405994812">E-mailadres kopiëren</translation>
 <translation id="4558311620361989323">Sneltoetsen voor webpagina's</translation>
 <translation id="4572422548854449519">Inloggen bij een beheerd account</translation>
 <translation id="457875822857220463">Bezorging</translation>
@@ -371,6 +371,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4988526792673242964">Pagina's</translation>
 <translation id="4996978546172906250">Delen via</translation>
 <translation id="5000922062037820727">Geblokkeerd (aanbevolen)</translation>
+<translation id="5004339818306944878">Gebruik tot 60% minder data en maak internet sneller. De servers van Google optimaliseren de pagina's die je bezoekt.</translation>
 <translation id="5005498671520578047">Wachtwoord kopiëren</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> wil verbinding maken</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="5171045022955879922">Zoek of typ een URL</translation>
 <translation id="5184329579814168207">Openen in Chrome</translation>
 <translation id="5199929503336119739">Werkprofiel</translation>
+<translation id="5205222826937269299">Naam vereist</translation>
 <translation id="5209320130288484488">Geen apparaten gevonden</translation>
 <translation id="5210286577605176222">Naar het vorige tabblad gaan</translation>
 <translation id="5210365745912300556">Tabblad sluiten</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
+<translation id="5222812217790122047">E-mailadres vereist</translation>
 <translation id="5233638681132016545">Nieuw tabblad</translation>
 <translation id="5271967389191913893">Het apparaat kan de content niet openen die moet worden gedownload.</translation>
 <translation id="528192093759286357">Sleep vanaf de bovenkant en tik op de knop Terug om het volledige scherm te sluiten.</translation>
@@ -523,7 +526,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Zoek- en URL-suggesties</translation>
 <translation id="6463070039183944536">Toevoegen…</translation>
-<translation id="6464825623202322042">Dit apparaat</translation>
 <translation id="6475951671322991020">Video downloaden</translation>
 <translation id="6477460825583319731">Ongeldig e-mailadres</translation>
 <translation id="6482749332252372425">Downloaden van <ph name="FILE_NAME" /> is mislukt door te weinig opslagruimte.</translation>
@@ -570,6 +572,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6868088497967843822">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken</translation>
 <translation id="688738109438487280">Bestaande gegevens toevoegen aan <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tabblad geopend}other{%1$d tabbladen geopend}}</translation>
+<translation id="6896758677409633944">Kopieer</translation>
 <translation id="6937422995269576720">Kaartnummer ongeldig</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6963766334940102469">Bladwijzers verwijderen</translation>
@@ -594,6 +597,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7094922512924405309">Geen Fysieke webpagina's in de buurt gevonden</translation>
 <translation id="7138678301420049075">Overige</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
+<translation id="7189372733857464326">Wachten tot Google Play-services is geüpdatet</translation>
 <translation id="7191430249889272776">Tabblad op de achtergrond geopend.</translation>
 <translation id="7243308994586599757">Opties beschikbaar onder aan het scherm</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> gebruikt je locatie om lokale zoekresultaten weer te geven</translation>
@@ -654,6 +658,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="7851858861565204677">Andere apparaten</translation>
 <translation id="7875915731392087153">E-mail maken</translation>
 <translation id="7876243839304621966">Alles verwijderen</translation>
+<translation id="7882131421121961860">Geen geschiedenis gevonden</translation>
 <translation id="7929962904089429003">Het menu openen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is verouderd.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
@@ -701,6 +706,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="8321376388213838985">Er worden binnenkort meer artikelen weergegeven. Geniet van je middag.</translation>
 <translation id="8372893542064058268">Synchronisatie op de achtergrond toestaan voor een specifieke site.</translation>
 <translation id="8374821112118309944">Je moet TalkBack bijwerken naar een nieuwere versie.</translation>
+<translation id="8393700583063109961">Bericht verzenden</translation>
 <translation id="8396312449826231789">Alleen goedgekeurde sites</translation>
 <translation id="8413126021676339697">Volledige geschiedenis weergeven</translation>
 <translation id="8428213095426709021">Instellingen</translation>
@@ -748,7 +754,7 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8920114477895755567">Wachten op gegevens van ouders.</translation>
 <translation id="8931159598799892500">Chrome + Fysieke web</translation>
-<translation id="8941729603749328384">www.voorbeeld.com</translation>
+<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Openen in een ander venster</translation>
 <translation id="8951232171465285730">Chrome bespaart je <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Navigatie is onbereikbaar: <ph name="URL" /></translation>
@@ -780,6 +786,7 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Afbeeldingen</translation>
 <translation id="932327136139879170">Homepage</translation>
+<translation id="932599481871055447">Data besparen en sneller browsen</translation>
 <translation id="938850635132480979">Fout: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Toegang tot je microfoon</translation>
 <translation id="951339005376969845">Bestaande gegevens verwijderen. Je kunt ze terugkrijgen door weer over te schakelen naar <ph name="FROM_ACCOUNT" />.</translation>

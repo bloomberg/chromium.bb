@@ -1808,6 +1808,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="6770454900105963262">Informuj o aktywnych sesjach kiosku</translation>
 <translation id="6774533686631353488">Zezwól na hosty Wiadomości natywnych na poziomie użytkownika (instalowane bez uprawnień administratora).</translation>
 <translation id="6786747875388722282">Rozszerzenia</translation>
+<translation id="6786967369487349613">Ustaw katalog profilu mobilnego</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
 <translation id="6828905844648501476">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie zezwalać na dodawanie osób w menedżerze użytkowników.
@@ -1960,6 +1961,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="7249828445670652637">Włącz korzystanie z certyfikatów CA <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
 <translation id="7258823566580374486">Włącz separację hostów zdalnego dostępu</translation>
 <translation id="7260277299188117560">Sieć P2P aktualizacji automatycznych włączona</translation>
+<translation id="7261252191178797385">Grafika tapety urządzenia</translation>
 <translation id="7267809745244694722">Klawisze multimediów domyślnie ustawione jako funkcyjne</translation>
 <translation id="7271085005502526897">Importuj stronę startową z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="7273823081800296768">Jeśli to ustawienie jest włączone lub nie jest skonfigurowane, użytkownicy mogą parować klienty i hosty w czasie połączenia, co wyklucza potrzebę wpisywania kodu PIN za każdym razem.
@@ -2045,6 +2047,15 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
       Uwaga: ta zasada zależy od tego, czy stos weryfikacji certyfikatów systemu operacyjnego zezwala na podpisy SHA-1. Jeśli w systemie operacyjnym wskutek aktualizacji zmieni się sposób obsługi certyfikatów SHA-1, może ona przestać działać. Oprócz tego zasada została pomyślana jako rozwiązanie tymczasowe, dzięki któremu firmy mają więcej czasu na rezygnację z podpisów SHA-1. Zostanie ona usunięta 1 stycznia 2019 r.
 
       Jeśli ta zasada nie jest ustawiona lub ma wartość fałsz, <ph name="PRODUCT_NAME" /> przestrzega opublikowanego harmonogramu wycofywania podpisów SHA-1.</translation>
+<translation id="7589150663293249656">Włącza tworzenie mobilnych kopii danych profilu <ph name="PRODUCT_NAME" />.
+
+      Jeśli włączysz tę zasadę, ustawienia zapisane w profilach <ph name="PRODUCT_NAME" />, takie jak zakładki, dane autouzupełniania, hasła itp., będą też zapisywane w folderze profilu mobilnego (Roaming) użytkownika lub w lokalizacji ustawionej przez administratora w zasadzie <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
+
+      Włączenie tej opcji powoduje automatyczne wyłączenie funkcji Google Sync.
+
+      Aby zapobiec wyciekowi danych, zalecamy jednoczesne wyłączenie zasady <ph name="SIGNINALLOWED_POLICY_NAME" />.
+
+      Jeśli ta zasada jest wyłączona lub nieustawiona, będą stosowane tylko zwykłe profile lokalne.</translation>
 <translation id="7593523670408385997">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME" /> będzie używać do zapisywania plików pamięci podręcznej na dysku.
 
       Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> będzie używać dostępnego rozmiaru pamięci podręcznej bez względu na to, czy określono flagę „--disk-cache-size”, czy nie. Wartość określona w tej zasadzie nie jest stała i stanowi raczej propozycję dla systemu pamięci podręcznej. Każda wartość niższa niż kilka megabajtów jest za mała i zostanie zaokrąglona do rozsądnego minimum.
@@ -2276,6 +2287,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Jeśli użytkownik włączył synchronizację, te wszystkie dane są zachowywane w jego profilu synchronizacji podobnie jak w zwykłych profilach. Dostępny jest też tryb incognito, o ile nie został wyłączony przez zasadę.
 
       Jeśli zasada jest wyłączona lub nie została ustawiona, logowanie prowadzi do zwykłych profili.</translation>
+<translation id="8158758865057576716">Włącz tworzenie mobilnych kopii danych profilu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Domyślne działanie w przypadku witryn, których nie ma w żadnym pakiecie treści.
 
           Ta zasada jest przeznaczona do użytku wewnętrznego w <ph name="PRODUCT_NAME" />.</translation>
@@ -2549,6 +2561,13 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8992176907758534924">Nie zezwalaj na pokazywanie grafik w żadnej witrynie</translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
+<translation id="908115901708809140">Ustawia katalog, w którym <ph name="PRODUCT_NAME" /> będzie zapisywać mobilne kopie profili.
+
+      Jeśli włączysz tę zasadę i włączona jest też zasada <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" />, <ph name="PRODUCT_NAME" /> będzie zapisywać w podanym katalogu mobilne kopie profili (Roaming). Jeśli zasada <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> jest wyłączona lub nieustawiona, wartość podana w tym miejscu nie jest wykorzystywana.
+
+      Listę dostępnych zmiennych znajdziesz na stronie https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
+
+      Jeśli nie ustawisz tej zasady, stosowana będzie domyślna ścieżka profili mobilnych.</translation>
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
 <translation id="9088433379343318874">Włącz dostawcę treści dla nadzorowanego użytkownika</translation>
 <translation id="9088444059179765143">Konfigurowanie metody automatycznego wykrywania strefy czasowej</translation>
@@ -2575,6 +2594,17 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 W przypadku włączenia tej zasady nie będzie można tworzyć zrzutów ekranu, używając skrótów klawiszowych lub interfejsów API rozszerzeń.
 
 W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ekranu będzie dozwolone.</translation>
+<translation id="9213347477683611358">Skonfiguruj grafikę tapety na poziomie urządzenia wyświetlaną na ekranie logowania, jeśli żaden użytkownik nie jest jeszcze zalogowany w urządzeniu. Aby ustawić tę zasadę, podaj adres URL, z którego urządzenie z Chrome OS może pobrać tapetę, a także skrót kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 16 MB. URL musi być dostępny bez żadnego uwierzytelniania. Po pobraniu tapeta jest zapisywana w pamięci podręcznej. Gdy URL lub skrót się zmieni, pobieranie jest powtarzane.
+
+      Zasadę należy zdefiniować jako ciąg tekstowy w formacie JSON zawierający URL i skrót, zgodnie z tym schematem:
+      {
+        "url": "https://example.com/device_wallpaper.jpg",
+        "hash": "przykladowyskrottapety"
+      }
+
+      Jeśli zasada tapety urządzenia jest ustawiona, urządzenie z Chrome OS pobiera tapetę i wyświetla ją na ekranie logowania, gdy żaden użytkownik nie jest jeszcze zalogowany na urządzeniu. Gdy użytkownik zaloguje się, zaczyna działać zasada tapety tego użytkownika.
+
+      Jeśli zasada tapety urządzenia nie jest ustawiona, o wyświetlaniu tapety decyduje zasada tapety użytkownika (jeśli jest ustawiona).</translation>
 <translation id="9217154963008402249">Częstotliwość pakietów sieciowych monitorowania</translation>
 <translation id="922540222991413931">Konfiguruj źródła instalacji rozszerzeń, aplikacji i skryptów użytkownika</translation>
 <translation id="924557436754151212">Importuj zapisane hasła z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>

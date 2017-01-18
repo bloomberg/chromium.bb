@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Izbira mape</translation>
 <translation id="1272079795634619415">Ustavi</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
+<translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
 <translation id="1340643665687018190">Close Menu</translation>
 <translation id="1375321115329958930">Shranjena gesla</translation>
@@ -63,6 +64,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="2068952045031577364">Past Week</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="209018056901015185">Zahtevaj spletno mesto za nam. računalnik</translation>
+<translation id="2100215774115172756">Bralni seznam je na voljo brez povezave.</translation>
 <translation id="2103075008456228677">Odpri history.google.com</translation>
 <translation id="2116625576999540962">Št. premaknjenih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Uredi zaznamek</translation>
@@ -82,6 +84,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="2572712655377361602">Pravilnik o napravah je blokiral dostop do fotografij.</translation>
 <translation id="2584132361465095047">Dodajanje računa ...</translation>
 <translation id="2593774076813182497">Te strani ni mogoče natisniti</translation>
+<translation id="2648803196158606475">Izbriši prebrano</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2684815431982545828">New Tab</translation>
 <translation id="2690858294534178585">Kamera je v uporabi</translation>
@@ -100,22 +103,25 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="2898963176829412617">Nova mapa …</translation>
 <translation id="2903493209154104877">Naslovi</translation>
 <translation id="2921219216347069551">Deljenje te strani z drugimi ni mogoče</translation>
+<translation id="292639812446257861">Označi kot neprebrano</translation>
 <translation id="2933759065870693102">Svetilka</translation>
 <translation id="2969979262385602596">Failed to sign in. Please try again later.</translation>
 <translation id="2989805286512600854">Odpri v novem zavihku</translation>
 <translation id="3024255823539804759">Past Day</translation>
 <translation id="3037605927509011580">Ti šment!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> ni na voljo. Če želite dostopati do zgodovine brskanja, v meniju z orodji izberite »<ph name="SHOW_HISTORY" />«.</translation>
+<translation id="3112556859945124369">Označi …</translation>
 <translation id="3151924044251363314">Vaše šifrirane podatke lahko bere samo oseba z vašim geslom. Geslo ni poslano Googlu in ni shranjeno v Googlu. Če ga pozabite ali želite spremeniti to nastavitev, boste morali sinhronizacijo ponastaviti. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Označi vse …</translation>
 <translation id="3172213052701798825">Google Smart Lock za gesla</translation>
 <translation id="3175081911749765310">Spletne storitve</translation>
 <translation id="3207960819495026254">Zaznamovano</translation>
 <translation id="3210163015918861891">Sync is Off</translation>
+<translation id="3237561509210981547">Če želite dodati stran na bralni seznam, se dotaknite <ph name="BEGIN_BOLD_FONT" />Skupna raba &gt; Poznejše branje<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Povezava kopirana</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> od <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Odprti zavihki</translation>
-<translation id="3289005573061089144">Želite uvoziti podatke?</translation>
 <translation id="3324193307694657476">Naslov 2</translation>
 <translation id="3329904751041170572">Povezave s strežnikom ni mogoče vzpostaviti.</translation>
 <translation id="3335947283844343239">Znova odpri zaprt zavihek</translation>
@@ -124,6 +130,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="3414292259312108062">Chrome will store this in your <ph name="BEGIN_LINK" />Google saved passwords<ph name="END_LINK" /> and autofill it for you so you don't have to remember it yourself.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Razdeljeni pogled</translation>
+<translation id="3474068797193663261">Če želite dodati stran na bralni seznam, se dotaknite <ph name="BEGIN_BOLD_FONT" />Meni &gt; Skupna raba &gt; Poznejše branje<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Forms filled.</translation>
 <translation id="3478058380795961209">Expiration Month</translation>
 <translation id="3482959374254649722">Syncing your tabs...</translation>
@@ -183,6 +190,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="481968316161811770">Cookies, Site Data</translation>
 <translation id="4875622588773761625">Ali želite, da <ph name="PASSWORD_MANAGER_BRAND" /> posodobi geslo za to spletno mesto?</translation>
 <translation id="4881695831933465202">Odpri</translation>
+<translation id="4904877109095351937">Označi kot prebrano</translation>
 <translation id="4923459931733593730">Plačilo</translation>
 <translation id="4930268273022498155">Izbris obstoječih podatkov. Pridobite jih lahko tako, da preklopite nazaj na račun <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Težava pri deljenju elementa z drugimi.</translation>
@@ -360,6 +368,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433678324664858900">Prikaži predloge</translation>
 <translation id="8458397775385147834">1 element izbrisan</translation>
+<translation id="8487700953926739672">Na voljo brez povezave</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
 <translation id="8517375800490286174">Odprtokodne licence</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tabs <ph name="FIRST_VISIBLE_TAB" /> through <ph name="LAST_VISIBLE_TAB" /> of <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8605219856220328675">Close tab.</translation>
 <translation id="8620640915598389714">Uredi</translation>
 <translation id="8636825310635137004">Če želite dostopati do zavihkov iz drugih naprav, vklopite sinhronizacijo.</translation>
+<translation id="8654802032646794042">Prekliči</translation>
 <translation id="8680787084697685621">Podrobnosti prijave v račun so zastarele.</translation>
 <translation id="8699098509676302392">Dodaj naslov ...</translation>
 <translation id="8721297211384281569">Meni »Orodja«</translation>

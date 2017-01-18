@@ -269,6 +269,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3828029223314399057">Tìm kiếm dấu trang</translation>
 <translation id="3845539888601087042">Hiển thị lịch sử từ các thiết bị bạn đã đăng nhập. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Tìm kiếm tiến</translation>
+<translation id="3890664840433101773">Thêm email</translation>
 <translation id="3894427358181296146">Thêm thư mục</translation>
 <translation id="3895926599014793903">Buộc bật thu phóng</translation>
 <translation id="3917783807003067648">Vị trí bị chặn</translation>
@@ -326,7 +327,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Chọn thư mục</translation>
 <translation id="4535858793016067060">Bật “Nguồn không xác định” trong cài đặt bảo mật Android để dùng thử thử nghiệm "Thêm vào Màn hình chính được cải thiện". Hãy nhớ tắt cài đặt này khi bạn hoàn tất dùng thử.</translation>
-<translation id="4543661749405994812">Sao chép địa chỉ email</translation>
 <translation id="4558311620361989323">Phím tắt cho trang web</translation>
 <translation id="4572422548854449519">Đăng nhập vào tài khoản được quản lý</translation>
 <translation id="457875822857220463">Giao hàng</translation>
@@ -371,6 +371,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4988526792673242964">Trang</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
 <translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
+<translation id="5004339818306944878">Sử dụng ít dữ liệu hơn tối đa 60% và tăng tốc web. Máy chủ của Google sẽ tối ưu hóa các trang bạn truy cập.</translation>
 <translation id="5005498671520578047">Sao chép mật khẩu</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> muốn kết nối</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="5184329579814168207">Mở trong Chrome</translation>
 <translation id="5199929503336119739">Hồ sơ công việc</translation>
+<translation id="5205222826937269299">Cần có tên</translation>
 <translation id="5209320130288484488">Không tìm thấy thiết bị nào</translation>
 <translation id="5210286577605176222">Quay về tab trước</translation>
 <translation id="5210365745912300556">Đóng tab</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="5222812217790122047">Cần có email</translation>
 <translation id="5233638681132016545">Tab mới</translation>
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
 <translation id="528192093759286357">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
@@ -523,7 +526,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Đề xuất tìm kiếm và URL</translation>
 <translation id="6463070039183944536">Đang thêm...</translation>
-<translation id="6464825623202322042">Thiết bị này</translation>
 <translation id="6475951671322991020">Tải video xuống</translation>
 <translation id="6477460825583319731">Địa chỉ email không hợp lệ</translation>
 <translation id="6482749332252372425">Tải xuống <ph name="FILE_NAME" /> không thành công do thiếu dung lượng bộ nhớ.</translation>
@@ -570,6 +572,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6868088497967843822">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn</translation>
 <translation id="688738109438487280">Thêm dữ liệu hiện có vào <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab đang mở}other{%1$d tab đang mở}}</translation>
+<translation id="6896758677409633944">Sao chép</translation>
 <translation id="6937422995269576720">Số thẻ không hợp lệ</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6963766334940102469">Xóa dấu trang</translation>
@@ -594,6 +597,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7094922512924405309">Không tìm thấy trang Web trong cuộc sống lân cận nào</translation>
 <translation id="7138678301420049075">Khác</translation>
 <translation id="7180611975245234373">Làm mới</translation>
+<translation id="7189372733857464326">Đợi Dịch vụ của Google Play cập nhật xong</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
@@ -654,6 +658,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7851858861565204677">Thiết bị khác</translation>
 <translation id="7875915731392087153">Tạo email</translation>
 <translation id="7876243839304621966">Xóa tất cả</translation>
+<translation id="7882131421121961860">Không tìm thấy lịch sử nào</translation>
 <translation id="7929962904089429003">Mở menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> đã lỗi thời.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
@@ -701,6 +706,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8321376388213838985">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi chiều vui vẻ.</translation>
 <translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
+<translation id="8393700583063109961">Gửi tin nhắn</translation>
 <translation id="8396312449826231789">Chỉ các trang web đã được phê duyệt</translation>
 <translation id="8413126021676339697">Hiển thị toàn bộ lịch sử</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
@@ -781,6 +787,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
 <translation id="932327136139879170">Trang chủ</translation>
+<translation id="932599481871055447">Lưu dữ liệu và duyệt web nhanh hơn</translation>
 <translation id="938850635132480979">Lỗi: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Truy cập micrô của bạn</translation>
 <translation id="951339005376969845">Xóa dữ liệu hiện có. Bạn có thể truy xuất dữ liệu bằng cách chuyển về <ph name="FROM_ACCOUNT" />.</translation>

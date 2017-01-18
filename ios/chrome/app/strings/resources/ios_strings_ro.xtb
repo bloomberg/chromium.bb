@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Alegeți dosarul</translation>
 <translation id="1272079795634619415">Oprește</translation>
 <translation id="129553762522093515">Închise recent</translation>
+<translation id="1323735185997015385">Șterge</translation>
 <translation id="132683371494960526">Atinge de două ori pentru a modifica dosarul părinte.</translation>
 <translation id="1340643665687018190">Meniul Închide</translation>
 <translation id="1375321115329958930">Parole salvate</translation>
@@ -63,6 +64,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2068952045031577364">Din ultima săptămână</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="209018056901015185">Site desktop</translation>
+<translation id="2100215774115172756">Lista de lectură este disponibilă offline.</translation>
 <translation id="2103075008456228677">Deschide history.google.com</translation>
 <translation id="2116625576999540962">Elemente mutate: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Editați marcajul</translation>
@@ -82,6 +84,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2572712655377361602">O politică a dispozitivului a blocat accesul la fotografii</translation>
 <translation id="2584132361465095047">Adaugă un cont…</translation>
 <translation id="2593774076813182497">Pagina nu se poate printa.</translation>
+<translation id="2648803196158606475">Șterge-le pe cele citite</translation>
 <translation id="2653659639078652383">Trimite</translation>
 <translation id="2684815431982545828">Filă nouă</translation>
 <translation id="2690858294534178585">Camera foto este în uz</translation>
@@ -100,22 +103,25 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2898963176829412617">Dosar nou…</translation>
 <translation id="2903493209154104877">Adrese</translation>
 <translation id="2921219216347069551">Pagină netrimisă</translation>
+<translation id="292639812446257861">Marchează ca necitite</translation>
 <translation id="2933759065870693102">Lanterna</translation>
 <translation id="2969979262385602596">Nu te-ai conectat. Încearcă din nou mai târziu.</translation>
 <translation id="2989805286512600854">Deschideți într-o filă nouă</translation>
 <translation id="3024255823539804759">Din ultima zi</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3050311348724540835">Adresa <ph name="HISTORY_URL" /> nu este disponibilă. Pentru a accesa istoricul de navigare, selectează „<ph name="SHOW_HISTORY" />” din meniul de instrumente.</translation>
+<translation id="3112556859945124369">Marchează…</translation>
 <translation id="3151924044251363314">Numai un utilizator care are expresia de acces poate citi datele criptate. Expresia de acces nu este trimisă sau stocată la Google. Dacă uiți expresia de acces sau dorești să modifici această setare, va fi necesar să resetezi sincronizarea. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Marchează-le pe toate…</translation>
 <translation id="3172213052701798825">Google Smart Lock pentru parole</translation>
 <translation id="3175081911749765310">Servicii web</translation>
 <translation id="3207960819495026254">Marcată</translation>
 <translation id="3210163015918861891">Sincronizarea este dezactivată</translation>
+<translation id="3237561509210981547">Pentru a adăuga o pagină în lista de lectură, atinge <ph name="BEGIN_BOLD_FONT" />Trimite &gt; Citește mai târziu<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Linkul a fost copiat</translation>
 <translation id="3244271242291266297">LL</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> din <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">File deschise</translation>
-<translation id="3289005573061089144">Imporți datele?</translation>
 <translation id="3324193307694657476">Adresă 2</translation>
 <translation id="3329904751041170572">Nu s-a putut realiza conexiunea la server.</translation>
 <translation id="3335947283844343239">Redeschide fila închisă</translation>
@@ -124,6 +130,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="3414292259312108062">Chrome o va stoca în <ph name="BEGIN_LINK" />parolele Google salvate<ph name="END_LINK" /> și o va completa automat ca să nu mai fie nevoie să o ții minte.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Vizualizare împărțită</translation>
+<translation id="3474068797193663261">Pentru a adăuga o pagină în lista de lectură, atinge <ph name="BEGIN_BOLD_FONT" />Meniu &gt; Trimite &gt; Citește mai târziu<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formulare completate.</translation>
 <translation id="3478058380795961209">Lună expirare</translation>
 <translation id="3482959374254649722">Se sincronizează filele...</translation>
@@ -183,6 +190,7 @@ Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru 
 <translation id="481968316161811770">Cookie-urile, datele privind site-urile</translation>
 <translation id="4875622588773761625">Dorești ca <ph name="PASSWORD_MANAGER_BRAND" /> să îți actualizeze parola pentru acest site?</translation>
 <translation id="4881695831933465202">Deschide</translation>
+<translation id="4904877109095351937">Marchează ca citite</translation>
 <translation id="4923459931733593730">Plată</translation>
 <translation id="4930268273022498155">Șterge datele existente. Le poți recupera comutând înapoi la <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">A apărut o problemă la trimiterea articolului.</translation>
@@ -360,6 +368,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433678324664858900">Afișează sugestii</translation>
 <translation id="8458397775385147834">Un element șters</translation>
+<translation id="8487700953926739672">Disponibil offline</translation>
 <translation id="8503813439785031346">Nume utilizator</translation>
 <translation id="8517375800490286174">Licențe open source</translation>
 <translation id="8524799873541103884">Filele <ph name="INCOGNITO" /> de la <ph name="FIRST_VISIBLE_TAB" /> la <ph name="LAST_VISIBLE_TAB" /> din <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8605219856220328675">Închide fila.</translation>
 <translation id="8620640915598389714">Editează</translation>
 <translation id="8636825310635137004">Pentru a accesa filele de pe alte dispozitive, activează sincronizarea.</translation>
+<translation id="8654802032646794042">Anulează</translation>
 <translation id="8680787084697685621">Datele de conectare la cont au expirat.</translation>
 <translation id="8699098509676302392">Adaugă o adresă…</translation>
 <translation id="8721297211384281569">Meniul Instrumente</translation>

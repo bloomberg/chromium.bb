@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{kurung panah kiri}other{# kurung panah kiri}}</translation>
 <translation id="2911433807131383493">Buka tutorial ChromeVox</translation>
 <translation id="2932083475399492303">Togol jenis baris antara struktur atau reka letak</translation>
+<translation id="2944762337049891859">Baca halaman secara automatik selepas selesai dimuatkan.</translation>
 <translation id="2964026537669811554">Kumpulan tajuk</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tab}other{# tab}}</translation>
 <translation id="2972078295414139404">Tiada pautan yang dilawati sebelumnya.</translation>
@@ -307,6 +308,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3712520970944678024">Mengawal Pertuturan</translation>
 <translation id="3716845769494773620">Berbilang baris</translation>
 <translation id="3731746171184829332">Tiada tajuk terdahulu.</translation>
+<translation id="3735039640698208086">Apabila memainkan audio...</translation>
 <translation id="3762198587642264450">Pergi ke penghujung baris semasa</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Keluar dari dialog.</translation>
@@ -547,6 +549,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="5876817486144482042">Kurangkan kelantangan pertuturan</translation>
 <translation id="5887397643266327462">Kapsyen braille didayakan.</translation>
 <translation id="5891934789323004067">Jadual</translation>
+<translation id="5899860758576822363">Mainkan pada kelantangan rendah semasa ChromeVox bertutur</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{sama dengan}other{# tanda sama dengan}}</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="5948123859135882163">Togol tafsiran ungkapan matematik antara struktur dan semantik</translation>
@@ -579,6 +582,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="6281876499889881039">Elemen serupa seterusnya.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Tiada kotak kombo seterusnya.</translation>
+<translation id="6305702903308659374">Mainkan pada kelantangan biasa walaupun semasa ChromeVox bertutur</translation>
 <translation id="6307969636681130414">Ditekan</translation>
 <translation id="6322856989298155004">Bunyi</translation>
 <translation id="6324551002951139333">Kesilapan tatabahasa dikesan</translation>
@@ -694,6 +698,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="7540083713905917247">Peluncur, <ph name="VALUE" />, <ph name="NAME" /></translation>
 <translation id="7552432549459840808">Pintasan Berguna Chrome</translation>
 <translation id="7579911500627256166">titik <ph name="DOT" /></translation>
+<translation id="7591126877589047423">Tiada fokus. Tekan Control N untuk membuka tetingkap baharu.</translation>
 <translation id="7596919493010894443">pilihan dikosongkan</translation>
 <translation id="7604026522577407655">Pergi ke permulaan lajur semasa</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -769,6 +774,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8455868257606149352">Maks <ph name="X" /></translation>
 <translation id="84575901236241018">mempunyai kekunci akses, <ph name="KEY" /></translation>
 <translation id="847154984256717791">sibuk</translation>
+<translation id="8476408756881832830">Jedakan main balik semasa ChromeVox bertutur</translation>
 <translation id="8476508772960940536">ikhtisar tetingkap</translation>
 <translation id="8503360654911991865">Kurangkan kebutiran navigasi</translation>
 <translation id="8520472399088452386">Butang putar</translation>

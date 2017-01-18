@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{डावा महिरपी कंस}one{# डावे महिरपी कंस}other{# डावे महिरपी कंस}}</translation>
 <translation id="2911433807131383493">ChromeVox ट्यूटोरियल उघडा</translation>
 <translation id="2932083475399492303">संरचनात्मक किंवा लेआउट मधील रेखा प्रकार टॉगल करा</translation>
+<translation id="2944762337049891859">पृष्ठ लोड होणे समाप्त झाले की स्वयंचलितपणे ते वाचा.</translation>
 <translation id="2964026537669811554">मथळा गट</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{1 टॅब}one{# टॅब}other{# टॅब}}</translation>
 <translation id="2972078295414139404">मागील भेट दिलेला दुवा .</translation>
@@ -306,6 +307,7 @@
 <translation id="3712520970944678024">उच्चार नियंत्रण</translation>
 <translation id="3716845769494773620">एकाधिक रेखा</translation>
 <translation id="3731746171184829332">मागील मथळा नाही.</translation>
+<translation id="3735039640698208086">ऑडिओ प्ले करताना...</translation>
 <translation id="3762198587642264450">वर्तमान पंक्तीच्या शेवटी जा</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">संवादाच्या बाहेर पडले.</translation>
@@ -547,6 +549,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="5876817486144482042">आवाज कमी करा</translation>
 <translation id="5887397643266327462">ब्रेल मथळे सक्षम केले.</translation>
 <translation id="5891934789323004067">सारणी</translation>
+<translation id="5899860758576822363">ChromeVox बोलत असताना कमी व्हॉल्यूममध्ये प्ले करा</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{समान}one{# समान चिन्हे}other{# समान चिन्हे}}</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="5948123859135882163">संरचना आणि सिमेंटिक मधील गणितीय पदावलीचे प्रस्तुतीकरण टॉगल करा</translation>
@@ -579,6 +582,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6281876499889881039">पुढील समान घटक.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">पुढील कॉम्‍बो बॉक्‍स नाही.</translation>
+<translation id="6305702903308659374">ChromeVox बोलत असताना देखील सामान्य व्हॉल्यूममध्ये प्ले करा</translation>
 <translation id="6307969636681130414">दाबलेले</translation>
 <translation id="6322856989298155004">ध्वनी</translation>
 <translation id="6324551002951139333">व्‍याकरण चूक आढळली</translation>
@@ -694,6 +698,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, स्लायडर</translation>
 <translation id="7552432549459840808">उपयोगी Chrome शॉर्टकट</translation>
 <translation id="7579911500627256166">बिंदू <ph name="DOT" /></translation>
+<translation id="7591126877589047423">फोकस नाही. नवीन विंडो उघडण्यासाठी Control N दाबा.</translation>
 <translation id="7596919493010894443">निवड साफ केली</translation>
 <translation id="7604026522577407655">वर्तमान स्तंभाच्या सुरुवातीस जा</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -769,6 +774,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8455868257606149352">कमाल <ph name="X" /></translation>
 <translation id="84575901236241018">प्रवेश की आहे, <ph name="KEY" /></translation>
 <translation id="847154984256717791">व्यस्त</translation>
+<translation id="8476408756881832830">ChromeVox बोलत असताना प्लेबॅकला विराम द्या</translation>
 <translation id="8476508772960940536">विंडो विहंगावलोकन</translation>
 <translation id="8503360654911991865">नॅव्हिगेशन ग्रॅन्युलॅरिटी कमी करा</translation>
 <translation id="8520472399088452386">स्पिन बटण</translation>

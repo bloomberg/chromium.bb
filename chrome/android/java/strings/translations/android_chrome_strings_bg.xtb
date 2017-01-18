@@ -269,6 +269,7 @@
 <translation id="3828029223314399057">Търсене в отметките</translation>
 <translation id="3845539888601087042">Показва се историята от устройствата, на които сте влезли в профила си. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Придвижване напред</translation>
+<translation id="3890664840433101773">Добавяне на имейл адрес</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="3895926599014793903">Принудително активиране на промяната на мащаба</translation>
 <translation id="3917783807003067648">Местоположението е блокирано</translation>
@@ -326,7 +327,6 @@
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Избиране на папка</translation>
 <translation id="4535858793016067060">Включете „Неизвестни източници“ в настройките за сигурност на Android, за да изпробвате експеримента за подобрено добавяне към началния екран. Непременно деактивирайте тази настройка, когато приключите с тестването.</translation>
-<translation id="4543661749405994812">Копиране на имейл адреса</translation>
 <translation id="4558311620361989323">Комбинации за уеб страници</translation>
 <translation id="4572422548854449519">Вход в управляван профил</translation>
 <translation id="457875822857220463">Бърза доставка</translation>
@@ -371,6 +371,7 @@
 <translation id="4988526792673242964">Страници</translation>
 <translation id="4996978546172906250">Споделяне чрез</translation>
 <translation id="5000922062037820727">Блокирано (препоръчително)</translation>
+<translation id="5004339818306944878">Използвайте до 60% по-малко данни и сърфирайте по-бързо в мрежата. Сървърите на Google ще оптимизират посещаваните от вас страници.</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> иска да се свърже</translation>
 <translation id="5016205925109358554">Серифен</translation>
@@ -393,10 +394,12 @@
 <translation id="5171045022955879922">Търсете или въведете URL адрес</translation>
 <translation id="5184329579814168207">Отваряне в Chrome</translation>
 <translation id="5199929503336119739">Служебен потребителски профил</translation>
+<translation id="5205222826937269299">Името е задължително</translation>
 <translation id="5209320130288484488">Няма намерени устройства</translation>
 <translation id="5210286577605176222">Преминаване към предишния раздел</translation>
 <translation id="5210365745912300556">Затваряне на раздела</translation>
 <translation id="5222676887888702881">Изход</translation>
+<translation id="5222812217790122047">Имейл адресът е задължителен</translation>
 <translation id="5233638681132016545">Нов раздел</translation>
 <translation id="5271967389191913893">Устройството не може да отвори съдържанието за изтегляне.</translation>
 <translation id="528192093759286357">Плъзнете пръст от горната част на екрана и докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
@@ -523,7 +526,6 @@
 <translation id="6447842834002726250">„Бисквитки“</translation>
 <translation id="6448273550210938826">Предложения за търсене и за URL адреси</translation>
 <translation id="6463070039183944536">Добавя се…</translation>
-<translation id="6464825623202322042">Това устройство</translation>
 <translation id="6475951671322991020">Изтегляне на видеоклипа</translation>
 <translation id="6477460825583319731">Имейл адресът е невалиден</translation>
 <translation id="6482749332252372425">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради липса на място в хранилището.</translation>
@@ -570,6 +572,7 @@
 <translation id="6868088497967843822">Влезте в профила си, за да получите своите отметки, история, пароли и други настройки на всичките си устройства</translation>
 <translation id="688738109438487280">Добавяне на съществуващите данни към <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d отворен раздел}other{%1$d отворени раздела}}</translation>
+<translation id="6896758677409633944">Копиране</translation>
 <translation id="6937422995269576720">Номерът на картата е невалиден</translation>
 <translation id="6945221475159498467">Изберете</translation>
 <translation id="6963766334940102469">Изтриване на отметките</translation>
@@ -594,6 +597,7 @@
 <translation id="7094922512924405309">Няма намиращи се в близост страници във Физическата мрежа</translation>
 <translation id="7138678301420049075">Друго</translation>
 <translation id="7180611975245234373">Опресняване</translation>
+<translation id="7189372733857464326">Изчаква се актуализирането на услугите за Google Play да приключи</translation>
 <translation id="7191430249889272776">Разделът е отворен на заден план.</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> използва местоположението ви, за да показва резултати от местното търсене</translation>
@@ -654,6 +658,7 @@
 <translation id="7851858861565204677">Други устройства</translation>
 <translation id="7875915731392087153">Създайте имейл</translation>
 <translation id="7876243839304621966">Премахване на всички</translation>
+<translation id="7882131421121961860">Няма намерена история</translation>
 <translation id="7929962904089429003">Отваряне на менюто</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> не е актуален.</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
@@ -701,6 +706,7 @@
 <translation id="8321376388213838985">Скоро ще се покажат още статии. Приятен следобед.</translation>
 <translation id="8372893542064058268">Разрешаване на синхронизирането на заден план за конкретен сайт.</translation>
 <translation id="8374821112118309944">Трябва да актуализирате TalkBack до по-нова версия.</translation>
+<translation id="8393700583063109961">Изпратете съобщение</translation>
 <translation id="8396312449826231789">Само одобрени сайтове</translation>
 <translation id="8413126021676339697">Показване на пълната история</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -780,6 +786,7 @@
 <translation id="9206873250291191720">А</translation>
 <translation id="9219103736887031265">Изображения</translation>
 <translation id="932327136139879170">Начална страница</translation>
+<translation id="932599481871055447">Пестете данни и сърфирайте по-бързо</translation>
 <translation id="938850635132480979">Грешка: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Достъп до микрофона</translation>
 <translation id="951339005376969845">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="FROM_ACCOUNT" />.</translation>

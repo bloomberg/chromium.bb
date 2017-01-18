@@ -269,6 +269,7 @@
 <translation id="3828029223314399057">ዕልባቶች ፈልግ</translation>
 <translation id="3845539888601087042">ታሪክን ወደ መለያዎ ከገቡ መሣሪያዎችዎ በማሳየት ላይ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">ወደፊት ፈልግ</translation>
+<translation id="3890664840433101773">ኢሜይል ያክሉ</translation>
 <translation id="3894427358181296146">አቃፊ ያክሉ</translation>
 <translation id="3895926599014793903">ማጉላት አንቃን ያስገድዱ</translation>
 <translation id="3917783807003067648">መገኛ አካባቢ ታግዷል</translation>
@@ -326,7 +327,6 @@
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ላይ የተቀመጡ የይለፍ ቃሎችን ይመልከቱ እና ያስተዳድሩ</translation>
 <translation id="4532845899244822526">አቃፊ ይምረጡ</translation>
 <translation id="4535858793016067060">«የተሻሻለ የወደ መነሻ ገጽ አክል» ሙከራውን ለመሞከር በAndroid ቅንብሮች ውስጥ «ያልታወቁ ምንጮች»ን ያብሩት። ሞክረው ሲጨርሱ ይህን ቅንብር ማሰናከልዎን ያረጋግጡ።</translation>
-<translation id="4543661749405994812">የኢሜይል አድራሻ ቅዳ</translation>
 <translation id="4558311620361989323">የድረ-ገጽ አቋራጮች</translation>
 <translation id="4572422548854449519">ወደ የሚተዳደር መለያ ይግቡ</translation>
 <translation id="457875822857220463">መላኪያ</translation>
@@ -371,6 +371,7 @@
 <translation id="4988526792673242964">ገፆች</translation>
 <translation id="4996978546172906250">ያጋሩ በ</translation>
 <translation id="5000922062037820727">ታግዷል (የሚመከር)</translation>
+<translation id="5004339818306944878">እስከ 60% ያነሰ ውሂብ ይጠቀሙና ድሩን ያፍጥኑት። Google አገልጋዮች እርስዎ የሚጎበኟቸውን ገጾች ያተባሉ።</translation>
 <translation id="5005498671520578047">የይለፍ ቃል ቅዳ</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> መገናኘት ይፈልጋል</translation>
 <translation id="5016205925109358554">ሰሪፍ</translation>
@@ -393,10 +394,12 @@
 <translation id="5171045022955879922">ይፈልጉ ወይም ዩአርኤል ይጻፉ</translation>
 <translation id="5184329579814168207">በChrome ውስጥ ክፈት</translation>
 <translation id="5199929503336119739">የሥራ መገለጫ</translation>
+<translation id="5205222826937269299">ስም ያስፈልጋል</translation>
 <translation id="5209320130288484488">ምንም መሣሪያዎች አልተገኙም</translation>
 <translation id="5210286577605176222">ወደ ቀዳሚው ትር ዝለል</translation>
 <translation id="5210365745912300556">ትር ዝጋ</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
+<translation id="5222812217790122047">ኢሜይል ያስፈልጋል</translation>
 <translation id="5233638681132016545">አዲስ ትር</translation>
 <translation id="5271967389191913893">መሣሪያ የሚወርደውን ይዘት መክፈት አይችልም።</translation>
 <translation id="528192093759286357">ከሙሉ ማያ ገጽ ለመውጣት ከላይ ይጎትቱ እና የተመለስ አዝራሩን ይንኩ።</translation>
@@ -523,7 +526,6 @@
 <translation id="6447842834002726250">ኩኪዎች</translation>
 <translation id="6448273550210938826">የፍለጋ እና ዩአርኤል ጥቆማዎች</translation>
 <translation id="6463070039183944536">በማከል ላይ…</translation>
-<translation id="6464825623202322042">ይህ መሣሪያ</translation>
 <translation id="6475951671322991020">ቪድዮ አውርድ</translation>
 <translation id="6477460825583319731">ልክ ያልሆነ የኢሜይል አድራሻ</translation>
 <translation id="6482749332252372425">በማከማቻ ቦታ ጥበት ምክንያት <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
@@ -570,6 +572,7 @@
 <translation id="6868088497967843822">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ መለያ ይግቡ</translation>
 <translation id="688738109438487280">ነባሩን ውሂብ ወደ <ph name="TO_ACCOUNT" /> ያክሉ።</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ክፍት ትር}one{%1$d ክፍት ትሮች}other{%1$d ክፍት ትሮች}}</translation>
+<translation id="6896758677409633944">ቅዳ</translation>
 <translation id="6937422995269576720">የካርድ ቁጥሩ ልክ ያልሆነ ነው</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6963766334940102469">ዕልባቶችን ሰርዝ</translation>
@@ -594,6 +597,7 @@
 <translation id="7094922512924405309">በአቅራቢያ የተገኙ ምንም አካላዊ ድረ-ገጾች የሉም</translation>
 <translation id="7138678301420049075">ሌላ</translation>
 <translation id="7180611975245234373">አድስ</translation>
+<translation id="7189372733857464326">የGoogle Play አገልግሎቶች አዘምኖ እስኪጨርስ በመጠበቅ ላይ</translation>
 <translation id="7191430249889272776">ትር ጀርባ ላይ ተከፍቷል።</translation>
 <translation id="7243308994586599757">አማራጮች ከማያ ገጹ ግርጌ አጠገብ ይገኛሉ</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> አካባቢያዊ የፍለጋ ውጤቶችን ለማሳየት የእርስዎን አካባቢ ይጠቀማል</translation>
@@ -654,6 +658,7 @@
 <translation id="7851858861565204677">ሌሎች መሣሪያዎች</translation>
 <translation id="7875915731392087153">ኢሜይል ይፍጠሩ</translation>
 <translation id="7876243839304621966">ሁሉንም አስወግድ</translation>
+<translation id="7882131421121961860">ምንም ታሪክ አልተገኘም</translation>
 <translation id="7929962904089429003">ምናሌውን ክፈት</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ጊዜው ያለፈበት ነው።</translation>
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
@@ -701,6 +706,7 @@
 <translation id="8321376388213838985">ተጨማሪ ጽሑፎች በቅርቡ ይታያሉ። የእርስዎን ከሰዓት ይዝናኑበት።</translation>
 <translation id="8372893542064058268">ለአንድ የተወሰነ ጣቢያ የጀርባ ስምረትን ይፍቀዱ።</translation>
 <translation id="8374821112118309944">TalkBackን ወደ አዲስ ስሪት ማዘመን አለብዎት።</translation>
+<translation id="8393700583063109961">መልዕክት ይላኩ</translation>
 <translation id="8396312449826231789">የተፈቀደላቸው ጣቢያዎች ብቻ</translation>
 <translation id="8413126021676339697">ሙሉ ታሪክ አሳይ</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
@@ -781,6 +787,7 @@
 <translation id="9206873250291191720">አ</translation>
 <translation id="9219103736887031265">ምስሎች</translation>
 <translation id="932327136139879170">መነሻ</translation>
+<translation id="932599481871055447">ውሂብ ይቆጥቡና በበለጠ ፍጥነት ያስሱ</translation>
 <translation id="938850635132480979">ስህተት፦ <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">የእርስዎን ማይክሮፎን ይድረሱ</translation>
 <translation id="951339005376969845">ነባሩን ውሂብ ይሰርዙ። ወደ <ph name="FROM_ACCOUNT" /> መልሰው በመቀየር ሰርስረው ሊያወጡት ይችላሉ።</translation>

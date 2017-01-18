@@ -82,6 +82,7 @@
 <translation id="1753706481035618306">页码</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />尝试运行 Windows 网络诊断<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">请更新您的同步密码。</translation>
+<translation id="1787142507584202372">您打开的标签页会显示在此处</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google 安全浏览功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />检测到恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。这些恶意内容来自已知的恶意软件散布网站 <ph name="SUBRESOURCE_HOST" />。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
@@ -174,6 +175,7 @@
 <translation id="2712118517637785082">您尝试连接到 <ph name="DOMAIN" />，但服务器提供的证书已被其颁发者撤消。在这种情况下，请勿信任服务器提供的安全凭据。您可能正在与攻击者进行通信。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="2712173769900027643">请求批准</translation>
 <translation id="2713444072780614174">白色</translation>
+<translation id="2720342946869265578">附近</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />运行网络连接诊断<ph name="END_LINK" /></translation>
@@ -367,6 +369,7 @@
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可执行文件路径</translation>
 <translation id="4756388243121344051">历史记录(&amp;H)</translation>
+<translation id="4759118997339041434">付款信息自动填充功能已停用</translation>
 <translation id="4764776831041365478">网址为 <ph name="URL" /> 的网页可能暂时无法连接，或者它已永久性地移动到了新网址。</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="4800132727771399293">请检查您的到期日期和银行卡验证码 (CVC)，然后重试</translation>
@@ -524,7 +527,6 @@
 <translation id="6644283850729428850">此政策已弃用。</translation>
 <translation id="6652240803263749613">此服务器无法证明其所在网域是 <ph name="DOMAIN" />；您计算机的操作系统不信任服务器的安全证书。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="6656103420185847513">修改文件夹</translation>
-<translation id="6660210980321319655">自动报告时间：<ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">要从 Chromium 中移除表单填写建议吗？</translation>
 <translation id="6685834062052613830">请退出并完成设置</translation>
 <translation id="6710213216561001401">上一个</translation>
@@ -671,6 +673,7 @@
 <translation id="8150722005171944719">无法读取 <ph name="URL" /> 上的文件。该文件可能已遭到删除、移动，或者文件权限不允许进行访问。</translation>
 <translation id="8194797478851900357">撤消移动(&amp;U)</translation>
 <translation id="8201077131113104583">ID 为“<ph name="EXTENSION_ID" />”的扩展程序的更新网址无效。</translation>
+<translation id="8202097416529803614">订单摘要</translation>
 <translation id="8218327578424803826">分配的位置：</translation>
 <translation id="8225771182978767009">设置此计算机的用户已选择屏蔽此网站。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
@@ -716,6 +719,7 @@
 <translation id="8740359287975076522">无法找到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 地址&lt;/abbr&gt;。正在诊断该问题。</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
 <translation id="8798099450830957504">默认</translation>
+<translation id="8800988563907321413">您的附近建议会显示在此处</translation>
 <translation id="8804164990146287819">隐私权政策</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="8834246243508017242">允许利用通讯录中的信息自动填充…</translation>

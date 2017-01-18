@@ -269,6 +269,7 @@
 <translation id="3828029223314399057">Пошук закладок</translation>
 <translation id="3845539888601087042">Показано історію з пристроїв, на яких ви ввійшли в обліковий запис. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Далі</translation>
+<translation id="3890664840433101773">Додати електронну адресу</translation>
 <translation id="3894427358181296146">Додати папку</translation>
 <translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
 <translation id="3917783807003067648">Доступ до геоданих заблоковано</translation>
@@ -326,7 +327,6 @@
 <translation id="4526249700380860531">Переглядайте збережені паролі та керуйте ними на сторінці <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Вибрати папку</translation>
 <translation id="4535858793016067060">Увімкніть у налаштуваннях безпеки Android параметр "Невідомі джерела", щоб провести експеримент "Покращене додавання на головний екран". Переконайтеся, що ви вимкнули цей параметр після завершення експерименту.</translation>
-<translation id="4543661749405994812">Копіювати електронну адресу</translation>
 <translation id="4558311620361989323">Комбінації клавіш для роботи з веб-сторінками</translation>
 <translation id="4572422548854449519">Увійдіть у керований обліковий запис</translation>
 <translation id="457875822857220463">Доставка</translation>
@@ -371,6 +371,7 @@
 <translation id="4988526792673242964">Сторінки</translation>
 <translation id="4996978546172906250">Надіслати через</translation>
 <translation id="5000922062037820727">Заблоковано (рекомендується)</translation>
+<translation id="5004339818306944878">Заощаджуйте до 60% трафіку та пришвидшіть завантаження веб-сторінок. Сервери Google оптимізують сторінки, які ви відвідуєте.</translation>
 <translation id="5005498671520578047">Копіювати пароль</translation>
 <translation id="5011311129201317034">Сайт <ph name="SITE" /> хоче підключитися</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@
 <translation id="5171045022955879922">Знайдіть або введіть URL-адресу</translation>
 <translation id="5184329579814168207">Відкрити в Chrome</translation>
 <translation id="5199929503336119739">Робочий профіль</translation>
+<translation id="5205222826937269299">Укажіть ім’я</translation>
 <translation id="5209320130288484488">Пристрої не знайдено.</translation>
 <translation id="5210286577605176222">Перейти до попередньої вкладки</translation>
 <translation id="5210365745912300556">Закрити вкладку</translation>
 <translation id="5222676887888702881">Вийти</translation>
+<translation id="5222812217790122047">Укажіть електронну адресу</translation>
 <translation id="5233638681132016545">Нова вкладка</translation>
 <translation id="5271967389191913893">Вміст, який ви хочете завантажити, не можна відкрити на цьому пристрої.</translation>
 <translation id="528192093759286357">Щоб вийти з повноекранного режиму, проведіть пальцем по екрану згори вниз і торкніться кнопки "Назад".</translation>
@@ -523,7 +526,6 @@
 <translation id="6447842834002726250">Cookie-файли</translation>
 <translation id="6448273550210938826">Пропозиції пошуку та URL-адрес</translation>
 <translation id="6463070039183944536">Додавання…</translation>
-<translation id="6464825623202322042">Цей пристрій</translation>
 <translation id="6475951671322991020">Завантажити відео</translation>
 <translation id="6477460825583319731">Недійсна електронна адреса</translation>
 <translation id="6482749332252372425">Не вдалося завантажити файл <ph name="FILE_NAME" />. Замало місця.</translation>
@@ -570,6 +572,7 @@
 <translation id="6868088497967843822">Увійдіть в обліковий запис, щоб мати доступ до своїх закладок, історії, паролів та інших налаштувань на всіх своїх пристроях</translation>
 <translation id="688738109438487280">Додати наявні дані в обліковий запис <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d відкрита вкладка}one{%1$d відкрита вкладка}few{%1$d відкриті вкладки}many{%1$d відкритих вкладок}other{%1$d відкритої вкладки}}</translation>
+<translation id="6896758677409633944">Копіювати</translation>
 <translation id="6937422995269576720">Номер картки недійсний</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
@@ -594,6 +597,7 @@
 <translation id="7094922512924405309">Немає сторінок із сервісу "Інтернет навколо нас"</translation>
 <translation id="7138678301420049075">Інше</translation>
 <translation id="7180611975245234373">Оновити</translation>
+<translation id="7189372733857464326">Сервіси Google Play оновлюються</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> використовує ваші геодані, щоб показувати результати місцевого пошуку</translation>
@@ -654,6 +658,7 @@
 <translation id="7851858861565204677">Інші пристрої</translation>
 <translation id="7875915731392087153">Створити електронну адресу</translation>
 <translation id="7876243839304621966">Видалити все</translation>
+<translation id="7882131421121961860">Історії не знайдено</translation>
 <translation id="7929962904089429003">Відкрити меню</translation>
 <translation id="7942131818088350342">Застаріла версія <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
@@ -701,6 +706,7 @@
 <translation id="8321376388213838985">Згодом тут з’являться інші статті. Гарного дня.</translation>
 <translation id="8372893542064058268">сайті.</translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
+<translation id="8393700583063109961">Надіслати повідомлення</translation>
 <translation id="8396312449826231789">Лише схвалені сайти</translation>
 <translation id="8413126021676339697">Показати повну історію</translation>
 <translation id="8428213095426709021">Налаштування</translation>
@@ -781,6 +787,7 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Зображення</translation>
 <translation id="932327136139879170">Домашня сторінка</translation>
+<translation id="932599481871055447">Заощаджуйте трафік і відкривайте веб-сторінки швидше</translation>
 <translation id="938850635132480979">Помилка: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Доступ до мікрофона</translation>
 <translation id="951339005376969845">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="FROM_ACCOUNT" />.</translation>

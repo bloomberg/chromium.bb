@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">ఫోల్డర్‌ను ఎంచుకోండి</translation>
 <translation id="1272079795634619415">ఆపు</translation>
 <translation id="129553762522093515">ఇటీవల మూసివెయ్యబడినవి</translation>
+<translation id="1323735185997015385">తొలగించు</translation>
 <translation id="132683371494960526">మూలాధారిత ఫోల్డర్‌ను మార్చడానికి రెండుసార్లు నొక్కండి.</translation>
 <translation id="1340643665687018190">మెనుని మూసివేయి</translation>
 <translation id="1375321115329958930">సేవ్ చెయ్యబడిన పాస్‌వర్డ్‌లు</translation>
@@ -63,6 +64,7 @@
 <translation id="2068952045031577364">గత వారం</translation>
 <translation id="2079545284768500474">అన్డు</translation>
 <translation id="209018056901015185">డెస్క్‌టాప్ సైట్‌ను అభ్యర్థించు</translation>
+<translation id="2100215774115172756">మీ పఠన జాబితా ఆఫ్‌లైన్‌లో అందుబాటులో ఉంటుంది.</translation>
 <translation id="2103075008456228677">history.google.com తెరువు</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> అంశాలు తరలించబడ్డాయి</translation>
 <translation id="2149973817440762519">బుక్‌మార్క్‌ను సవరించు</translation>
@@ -82,6 +84,7 @@
 <translation id="2572712655377361602">ఒక పరికర విధానం మీ ఫోటోలకు ప్రాప్యతను బ్లాక్ చేసింది</translation>
 <translation id="2584132361465095047">ఖాతాను జోడించు...</translation>
 <translation id="2593774076813182497">ఈ పేజీని ముద్రించడం సాధ్యపడదు.</translation>
+<translation id="2648803196158606475">చదివిన వాటిని తొలగించు</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2684815431982545828">కొత్త ట్యాబ్</translation>
 <translation id="2690858294534178585">కెమెరా వినియోగంలో ఉంది</translation>
@@ -100,22 +103,25 @@
 <translation id="2898963176829412617">కొత్త ఫోల్డర్…</translation>
 <translation id="2903493209154104877">చిరునామాలు</translation>
 <translation id="2921219216347069551">పేజీ భాగస్వామ్యం సాధ్యపడలేదు</translation>
+<translation id="292639812446257861">చదవనట్లు గుర్తు పెట్టు</translation>
 <translation id="2933759065870693102">టార్చ్</translation>
 <translation id="2969979262385602596">సైన్ ఇన్ చేయడం విఫలమైంది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="2989805286512600854">క్రొత్త టాబ్‌లో తెరువు</translation>
 <translation id="3024255823539804759">గత రోజు</translation>
 <translation id="3037605927509011580">ఆవ్, స్నాప్!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> అందుబాటులో లేదు. మీ బ్రౌజింగ్ చరిత్రను ప్రాప్యత చేయడానికి, సాధనాల మెనులో "<ph name="SHOW_HISTORY" />" ఎంచుకోండి.</translation>
+<translation id="3112556859945124369">గుర్తు పెట్టు…</translation>
 <translation id="3151924044251363314">మీ రహస్య పదబంధాన్ని కలిగి ఉన్నవారు మాత్రమే మీ గుప్తీకరించిన డేటాను చదవగలరు. రహస్య పదబంధం ఎవరికీ పంపబడదు లేదా Googleలో నిల్వ చేయబడదు. మీరు మీ రహస్య పదబంధాన్ని మర్చిపోతే లేదా ఈ సెట్టింగ్‌ను మార్చాలనుకుంటే, సమకాలీకరణను రీసెట్ చేయాల్సి ఉంటుంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">అన్నీ గుర్తు పెట్టు…</translation>
 <translation id="3172213052701798825">పాస్‌వర్డ్‌ల కోసం Google Smart Lock</translation>
 <translation id="3175081911749765310">వెబ్ సేవలు</translation>
 <translation id="3207960819495026254">బుక్‌మార్క్ చేయబడింది</translation>
 <translation id="3210163015918861891">సమకాలీకరణ ఆఫ్‌లో ఉంది</translation>
+<translation id="3237561509210981547">మీ పఠన జాబితాకు పేజీని జోడించేందుకు, <ph name="BEGIN_BOLD_FONT" />భాగస్వామ్యం &gt; తర్వాత చదవండి<ph name="END_BOLD_FONT" /> ఎంపికను నొక్కండి.</translation>
 <translation id="3240426699337459095">లింక్ కాపీ చేయబడింది</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" />లో <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ఓపెన్ టాబ్‌లు</translation>
-<translation id="3289005573061089144">డేటాను దిగుమతి చేయాలా?</translation>
 <translation id="3324193307694657476">చిరునామా 2</translation>
 <translation id="3329904751041170572">సర్వర్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="3335947283844343239">మూసిన ట్యాబ్‌ను మళ్ళీ తెరువు</translation>
@@ -124,6 +130,7 @@
 <translation id="3414292259312108062">Chrome దీన్ని మీ <ph name="BEGIN_LINK" />Google సేవ్ చేసిన పాస్‌వర్డ్‌లు<ph name="END_LINK" />లో నిల్వ చేస్తుంది మరియు మీ కోసం దీన్ని స్వీయపూర్తి చేస్తుంది, కావున మీ అంతట మీరే దీన్ని గుర్తుంచుకోవాల్సిన అవసరం లేదు.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> నిమి</translation>
 <translation id="3448016392200048164">విభజన వీక్షణ</translation>
+<translation id="3474068797193663261">మీ పఠన జాబితాకు పేజీని జోడించేందుకు, <ph name="BEGIN_BOLD_FONT" />మెను &gt; భాగస్వామ్యం &gt; తర్వాత చదవండి<ph name="END_BOLD_FONT" /> ఎంపికను నొక్కండి.</translation>
 <translation id="3474649192738347024">ఫారమ్‌లు పూరించబడ్డాయి.</translation>
 <translation id="3478058380795961209">గడువు ముగింపు నెల</translation>
 <translation id="3482959374254649722">మీ ట్యాబ్‌లను సమకాలీకరిస్తోంది...</translation>
@@ -183,6 +190,7 @@
 <translation id="481968316161811770">కుక్కీలు, సైట్ డేటా</translation>
 <translation id="4875622588773761625">మీరు ఈ సైట్ కోసం <ph name="PASSWORD_MANAGER_BRAND" /> మీ పాస్‌వర్డ్‌ను నవీకరించాలని కోరుకుంటున్నారా?</translation>
 <translation id="4881695831933465202">తెరువు</translation>
+<translation id="4904877109095351937">చదివినట్లు గుర్తు పెట్టు</translation>
 <translation id="4923459931733593730">చెల్లింపు</translation>
 <translation id="4930268273022498155">ఇప్పటికే ఉన్న డేటాను తొలగించండి. మీరు <ph name="USER_EMAIL1" />కి తిరిగి వెళ్లడం ద్వారా దాన్ని తిరిగి పొందవచ్చు.</translation>
 <translation id="4941089862236492464">క్షమించండి, మీ అంశాన్ని భాగస్వామ్యం చేయడంలో సమస్య ఉంది.</translation>
@@ -360,6 +368,7 @@
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8433678324664858900">సూచనలను చూపు</translation>
 <translation id="8458397775385147834">1 అంశం తొలగించబడింది</translation>
+<translation id="8487700953926739672">ఆఫ్‌లైన్‌లో అందుబాటు</translation>
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
 <translation id="8517375800490286174">ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" />లో <ph name="FIRST_VISIBLE_TAB" /> నుండి <ph name="LAST_VISIBLE_TAB" /> వరకు <ph name="INCOGNITO" /> ట్యాబ్‌లు</translation>
@@ -369,6 +378,7 @@
 <translation id="8605219856220328675">ట్యాబ్‌ని మూసివేయండి.</translation>
 <translation id="8620640915598389714">సవరించు</translation>
 <translation id="8636825310635137004">మీ ఇతర పరికరాల నుండి మీ ట్యాబ్‌లను పొందడానికి, సమకాలీకరణను ఆన్ చేయండి</translation>
+<translation id="8654802032646794042">రద్దు చేయి</translation>
 <translation id="8680787084697685621">ఖాతా సైన్-ఇన్ వివరాల గడువు తేదీ ముగిసింది.</translation>
 <translation id="8699098509676302392">చిరునామాను జోడించు...</translation>
 <translation id="8721297211384281569">సాధనాల మెను</translation>

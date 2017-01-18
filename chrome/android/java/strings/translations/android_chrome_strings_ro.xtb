@@ -269,6 +269,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3828029223314399057">Căutați în marcaje</translation>
 <translation id="3845539888601087042">Se afișează istoricul de pe dispozitivele pe care te-ai conectat. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Derulează înainte</translation>
+<translation id="3890664840433101773">Adaugă o adresă de e-mail</translation>
 <translation id="3894427358181296146">Adaugă un dosar</translation>
 <translation id="3895926599014793903">Forțează activarea zoomului</translation>
 <translation id="3917783807003067648">Accesul la locație este blocat</translation>
@@ -326,7 +327,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4526249700380860531">Vezi și gestionează parolele salvate la <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Alege dosarul</translation>
 <translation id="4535858793016067060">Activează opțiunea „Surse necunoscute” din setările de securitate Android ca să încerci experimentul „Funcția îmbunătățită Adaugă pe ecranul de pornire”. Asigură-te că dezactivezi această setare după ce ai încercat-o.</translation>
-<translation id="4543661749405994812">Copiază adresa de e-mail</translation>
 <translation id="4558311620361989323">Comenzi rapide pentru pagini web</translation>
 <translation id="4572422548854449519">Conectează-te la contul gestionat</translation>
 <translation id="457875822857220463">Livrare</translation>
@@ -371,6 +371,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4988526792673242964">Pagini</translation>
 <translation id="4996978546172906250">Trimiteți prin</translation>
 <translation id="5000922062037820727">Blocată (recomandat)</translation>
+<translation id="5004339818306944878">Folosește cu până la 60% mai puține date și navighează mai rapid pe web. Serverele Google vor optimiza paginile pe care le accesezi.</translation>
 <translation id="5005498671520578047">Copiază parola</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> dorește să se conecteze</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5171045022955879922">Caută sau introdu adresa URL</translation>
 <translation id="5184329579814168207">Deschide în Chrome</translation>
 <translation id="5199929503336119739">Profilul de serviciu</translation>
+<translation id="5205222826937269299">Numele este obligatoriu</translation>
 <translation id="5209320130288484488">Nu s-a găsit niciun dispozitiv</translation>
 <translation id="5210286577605176222">Accesează fila anterioară</translation>
 <translation id="5210365745912300556">Închide fila</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
+<translation id="5222812217790122047">Adresa de e-mail este obligatorie</translation>
 <translation id="5233638681132016545">Filă nouă</translation>
 <translation id="5271967389191913893">Dispozitivul nu poate deschide conținutul de descărcat.</translation>
 <translation id="528192093759286357">Trage din partea de sus și atinge butonul Înapoi pentru a ieși din ecranul complet.</translation>
@@ -523,7 +526,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="6448273550210938826">Sugestii de căutare și pentru adrese URL</translation>
 <translation id="6463070039183944536">Se adaugă…</translation>
-<translation id="6464825623202322042">Acest dispozitiv</translation>
 <translation id="6475951671322991020">Descarcă videoclipul</translation>
 <translation id="6477460825583319731">Adresă de e-mail nevalidă</translation>
 <translation id="6482749332252372425">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza spațiului de stocare insuficient.</translation>
@@ -570,6 +572,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6868088497967843822">Conectează-te pentru a avea marcajele, istoricul, parolele și alte setări pe toate dispozitivele</translation>
 <translation id="688738109438487280">Adaugă datele existente în <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d filă deschisă}few{%1$d file deschise}other{%1$d de file deschise}}</translation>
+<translation id="6896758677409633944">Copiază</translation>
 <translation id="6937422995269576720">Numărul cardului nu este valid</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6963766334940102469">Șterge marcaje</translation>
@@ -594,6 +597,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7094922512924405309">Nu au fost găsite pagini din Webul material în apropiere</translation>
 <translation id="7138678301420049075">Altele</translation>
 <translation id="7180611975245234373">Actualizați</translation>
+<translation id="7189372733857464326">Se așteaptă finalizarea actualizării pentru serviciile Google Play</translation>
 <translation id="7191430249889272776">A fost deschisă o filă în fundal.</translation>
 <translation id="7243308994586599757">Opțiuni disponibile în partea de jos a ecranului</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> folosește locația ta pentru a afișa rezultate locale ale căutării</translation>
@@ -654,6 +658,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="7851858861565204677">Alte dispozitive</translation>
 <translation id="7875915731392087153">Creează un e-mail</translation>
 <translation id="7876243839304621966">Elimină tot</translation>
+<translation id="7882131421121961860">Nu s-a găsit niciun istoric</translation>
 <translation id="7929962904089429003">Deschide meniul</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> este învechit.</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
@@ -701,6 +706,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8321376388213838985">În curând vor apărea mai multe articole. O după-amiază plăcută!</translation>
 <translation id="8372893542064058268">Permite sincronizarea în fundal pentru un anumit site.</translation>
 <translation id="8374821112118309944">Trebuie să actualizați TalkBack la o versiune mai nouă.</translation>
+<translation id="8393700583063109961">Trimite un mesaj</translation>
 <translation id="8396312449826231789">Numai site-uri aprobate</translation>
 <translation id="8413126021676339697">Afișați întregul istoric</translation>
 <translation id="8428213095426709021">Setări</translation>
@@ -781,6 +787,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagini</translation>
 <translation id="932327136139879170">Pagina de pornire</translation>
+<translation id="932599481871055447">Economisește date și navighează mai rapid</translation>
 <translation id="938850635132480979">Eroare: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Accesează microfonul</translation>
 <translation id="951339005376969845">Șterge datele existente. Le poți recupera comutând înapoi la <ph name="FROM_ACCOUNT" />.</translation>

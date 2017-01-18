@@ -269,6 +269,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3828029223314399057">Przeszukaj zakładki</translation>
 <translation id="3845539888601087042">Wyświetlam historię z urządzeń, na których jesteś zalogowany. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Przewiń do przodu</translation>
+<translation id="3890664840433101773">Dodaj adres e-mail</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Wymuś powiększenie</translation>
 <translation id="3917783807003067648">Lokalizacja jest zablokowana</translation>
@@ -326,7 +327,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4526249700380860531">Wyświetlaj zapisane hasła i zarządzaj nimi na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Wybierz folder</translation>
 <translation id="4535858793016067060">Włącz „Nieznane źródła” w ustawieniach zabezpieczeń Androida, by wypróbować eksperyment „Ulepszone dodawanie do ekranu głównego”. Koniecznie wyłącz to ustawienie, gdy przestaniesz używać tego eksperymentu.</translation>
-<translation id="4543661749405994812">Kopiuj adres e-mail</translation>
 <translation id="4558311620361989323">Skróty stron internetowych</translation>
 <translation id="4572422548854449519">Zaloguj się na konto zarządzane</translation>
 <translation id="457875822857220463">Dostawa</translation>
@@ -371,6 +371,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4988526792673242964">Strony</translation>
 <translation id="4996978546172906250">Udostępnij przez</translation>
 <translation id="5000922062037820727">Zablokowane (zalecane)</translation>
+<translation id="5004339818306944878">Przesyłaj nawet o 60% mniej danych i przyspiesz działanie sieci: serwery Google optymalizują strony, które odwiedzasz.</translation>
 <translation id="5005498671520578047">Skopiuj hasło</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> chce się połączyć</translation>
 <translation id="5016205925109358554">Szeryfowa</translation>
@@ -393,10 +394,12 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5171045022955879922">Wyszukaj lub wpisz URL</translation>
 <translation id="5184329579814168207">Otwórz w Chrome</translation>
 <translation id="5199929503336119739">Profil do pracy</translation>
+<translation id="5205222826937269299">Nazwa jest wymagana</translation>
 <translation id="5209320130288484488">Nie znaleziono urządzeń</translation>
 <translation id="5210286577605176222">Przejdź do poprzedniej karty</translation>
 <translation id="5210365745912300556">Zamknij kartę</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
+<translation id="5222812217790122047">E-mail jest wymagany</translation>
 <translation id="5233638681132016545">Nowa karta</translation>
 <translation id="5271967389191913893">Na tym urządzeniu nie można otworzyć treści, które chcesz pobrać.</translation>
 <translation id="528192093759286357">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
@@ -523,7 +526,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6447842834002726250">Pliki cookie</translation>
 <translation id="6448273550210938826">Podpowiedzi wyszukiwania i adresów URL</translation>
 <translation id="6463070039183944536">Dodaję…</translation>
-<translation id="6464825623202322042">To urządzenie</translation>
 <translation id="6475951671322991020">Pobierz film</translation>
 <translation id="6477460825583319731">Nieprawidłowy adres e-mail</translation>
 <translation id="6482749332252372425">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu braku miejsca.</translation>
@@ -570,6 +572,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6868088497967843822">Zaloguj się, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach</translation>
 <translation id="688738109438487280">Dodaj istniejące dane do konta <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otwarta karta}few{%1$d otwarte karty}many{%1$d otwartych kart}other{%1$d otwartej karty}}</translation>
+<translation id="6896758677409633944">Kopiuj</translation>
 <translation id="6937422995269576720">Nieprawidłowy numer karty</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6963766334940102469">Usuń zakładki</translation>
@@ -594,6 +597,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7094922512924405309">Nie znaleziono stron internetu rzeczy w pobliżu</translation>
 <translation id="7138678301420049075">Inne</translation>
 <translation id="7180611975245234373">Odśwież</translation>
+<translation id="7189372733857464326">Czekam na zakończenie aktualizacji Usług Google Play</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
 <translation id="7243308994586599757">Opcje dostępne u dołu ekranu</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> korzysta z danych o Twojej lokalizacji, by pokazywać lokalne wyniki wyszukiwania</translation>
@@ -654,6 +658,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="7851858861565204677">Inne urządzenia</translation>
 <translation id="7875915731392087153">Utwórz e-maila</translation>
 <translation id="7876243839304621966">Usuń wszystkie</translation>
+<translation id="7882131421121961860">Brak historii</translation>
 <translation id="7929962904089429003">Otwórz menu</translation>
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
@@ -701,6 +706,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="8321376388213838985">Wkrótce pojawi się więcej artykułów. Życzymy miłego popołudnia.</translation>
 <translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>
+<translation id="8393700583063109961">Wyślij wiadomość</translation>
 <translation id="8396312449826231789">Tylko zatwierdzone witryny</translation>
 <translation id="8413126021676339697">Wyświetl całą historię</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
@@ -780,6 +786,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Grafika</translation>
 <translation id="932327136139879170">Strona główna</translation>
+<translation id="932599481871055447">Zapisuj dane i szybciej przeglądaj strony</translation>
 <translation id="938850635132480979">Błąd: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Dostęp do mikrofonu</translation>
 <translation id="951339005376969845">Usuń istniejące dane. Aby je pobrać, przełącz się z powrotem na konto <ph name="FROM_ACCOUNT" />.</translation>

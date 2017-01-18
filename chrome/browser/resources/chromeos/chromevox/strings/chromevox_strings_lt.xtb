@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{atidaromasis riestinis skliaustas}one{# atidaromasis riestinis skliaustas}few{# atidaromieji riestiniai skliaustai}many{# left braces}other{# atidaromųjų riestinių skliaustų}}</translation>
 <translation id="2911433807131383493">Atidaryti „ChromeVox“ mokymo programą</translation>
 <translation id="2932083475399492303">Perjungti linijos tipą iš struktūrinio į išdėstymo</translation>
+<translation id="2944762337049891859">Automatiškai nuskaityti puslapį po to, kai baigiamas jo įkėlimas.</translation>
 <translation id="2964026537669811554">Antraščių grupė</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabuliavimo ženklas}one{# tabuliavimo ženklas}few{# tabuliavimo ženklai}many{# tabs}other{# tabuliavimo ženklų}}</translation>
 <translation id="2972078295414139404">Nėra ankstesnės aplankytos nuorodos.</translation>
@@ -307,6 +308,7 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="3712520970944678024">Kalbos valdymas</translation>
 <translation id="3716845769494773620">Kelios eilutės</translation>
 <translation id="3731746171184829332">Nėra ankstesnės antraštės.</translation>
+<translation id="3735039640698208086">Kai leidžiamas garso įrašas...</translation>
 <translation id="3762198587642264450">Eiti į dabartinės eilutės pabaigą</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Išeita iš dialogo lango.</translation>
@@ -547,6 +549,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="5876817486144482042">Mažinti kalbos garsumą</translation>
 <translation id="5887397643266327462">Brailio rašmenų antraštės įgalintos.</translation>
 <translation id="5891934789323004067">Lentelė</translation>
+<translation id="5899860758576822363">Leisti mažesniu garsumu, kai „ChromeVox“ kalba</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{lygybės ženklas}one{# lygybės ženklas}few{# lygybės ženklai}many{# equal signs}other{# lygybės ženklų}}</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
 <translation id="5948123859135882163">Kaitalioti struktūrinį ir semantinį matematinių reiškinių interpretavimą</translation>
@@ -579,6 +582,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="6281876499889881039">Kitas panašus elementas.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Nėra kito išskleidžiamojo laukelio.</translation>
+<translation id="6305702903308659374">Leisti įprastiniu garsumu net tada, kai „ChromeVox“ kalba</translation>
 <translation id="6307969636681130414">Paspausta</translation>
 <translation id="6322856989298155004">Garsai</translation>
 <translation id="6324551002951139333">Aptikta gramatikos klaida</translation>
@@ -694,6 +698,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, šliaužiklis</translation>
 <translation id="7552432549459840808">Naudingi „Chrome“ spartieji klavišai</translation>
 <translation id="7579911500627256166">Taškas: <ph name="DOT" /></translation>
+<translation id="7591126877589047423">Nepasirinktas joks elementas. Paspauskite „Control“ – N, kad atidarytumėte naują langą.</translation>
 <translation id="7596919493010894443">išvalytas pasirinkimas</translation>
 <translation id="7604026522577407655">Eiti į dabartinio stulpelio pradžią</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -769,6 +774,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="8455868257606149352">Maks. <ph name="X" /></translation>
 <translation id="84575901236241018">turi prieigos klavišą, <ph name="KEY" /></translation>
 <translation id="847154984256717791">užimtas</translation>
+<translation id="8476408756881832830">Pristabdyti atkūrimą, kai „ChromeVox“ kalba</translation>
 <translation id="8476508772960940536">lango apžvalga</translation>
 <translation id="8503360654911991865">Sumažinti naršymo detalumą</translation>
 <translation id="8520472399088452386">Sukimo mygtukas</translation>

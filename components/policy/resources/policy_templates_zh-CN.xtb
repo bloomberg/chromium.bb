@@ -1742,6 +1742,7 @@
 <translation id="6770454900105963262">报告自助服务终端的相关信息</translation>
 <translation id="6774533686631353488">允许使用用户级本地消息传递主机（安装时没有管理员权限）。</translation>
 <translation id="6786747875388722282">扩展程序</translation>
+<translation id="6786967369487349613">设置漫游个人资料目录</translation>
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
 <translation id="6828905844648501476">如果此政策设为 true 或未配置，<ph name="PRODUCT_NAME" /> 将允许通过用户管理器添加用户。
@@ -1898,6 +1899,7 @@
 <translation id="7249828445670652637">允许 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> CA 证书</translation>
 <translation id="7258823566580374486">启用远程访问主机的屏蔽设置</translation>
 <translation id="7260277299188117560">自动更新 p2p 已启用</translation>
+<translation id="7261252191178797385">设备壁纸图片</translation>
 <translation id="7267809745244694722">媒体键默认为功能键</translation>
 <translation id="7271085005502526897">首次运行时，从默认浏览器导入主页</translation>
 <translation id="7273823081800296768">无论这项政策处于启用还是未配置状态，用户都可以选择让客户端和主机在连接时自动配对，无需每次都输入 PIN。
@@ -1983,6 +1985,15 @@
       请注意，此政策取决于操作系统证书验证堆栈是否允许 SHA-1 签名。如果操作系统更新更改了操作系统处理 SHA-1 证书的方式，则此政策可能不再有效。此外，此政策仅用作临时解决方法，旨在为企业提供更多时间来弃用 SHA-1。系统将于 2019 年 1 月 1 日（或左右）取消此政策。
 
       如果此政策未设置或设置为 false，则 <ph name="PRODUCT_NAME" /> 会遵循公开发布的 SHA-1 停用时间表。</translation>
+<translation id="7589150663293249656">允许创建 <ph name="PRODUCT_NAME" /> 个人资料数据的漫游副本。
+
+      如果您启用此设置，则存储在 <ph name="PRODUCT_NAME" /> 个人资料中的设置（例如书签、自动填充数据、密码等）也将一并写入存储在漫游用户个人资料文件夹中的文件或管理员通过 <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" /> 政策指定的位置。
+
+      启用此政策后，Google Sync 会自动遭到停用。
+
+      为了避免数据意外泄漏，建议您同时将 <ph name="SIGNINALLOWED_POLICY_NAME" /> 政策设为 False。
+
+      如果此政策已停用或未设置，系统只会使用常规本地个人资料。</translation>
 <translation id="7593523670408385997">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存文件的缓存大小。
 
       如果您设置了此政策，那么无论用户是否已指定“--disk-cache-size”标记，<ph name="PRODUCT_NAME" />都会使用此政策中设定的缓存大小。此政策中所指定的值并非硬性限值，而是针对缓存系统提出的建议值。任何低于几兆字节的值都会因为太小而被向上舍入到一个合理的最小值。
@@ -2213,6 +2224,7 @@
       如果用户已启用同步功能，所有这些数据都会保留在其同步个人资料中，就像常规个人资料一样。如果此政策并未明确停用隐身模式，那么用户还可以使用隐身模式。
 
       如果此政策设为停用或未设置，用户登录时系统会使用常规个人资料。</translation>
+<translation id="8158758865057576716">允许创建 <ph name="PRODUCT_NAME" /> 个人资料数据的漫游副本。</translation>
 <translation id="8164246350636985940">不在任何内容包中的网站的默认行为。
 
           此政策仅供 <ph name="PRODUCT_NAME" /> 在内部使用。</translation>
@@ -2435,6 +2447,13 @@
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
 <translation id="9042911395677044526">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
+<translation id="908115901708809140">配置 <ph name="PRODUCT_NAME" /> 将用于存储个人资料漫游副本的目录。
+
+      设置此政策后，如果 <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 政策已启用，<ph name="PRODUCT_NAME" /> 将会使用所提供的目录来存储个人资料的漫游副本；如果 <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 政策已停用或未设置，系统将不会使用存储在此政策中的值。
+
+      要查看可使用的变量列表，请参阅 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
+
+      如果此政策未设置，系统会使用默认的漫游个人资料路径。</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
 <translation id="9088433379343318874">启用受监管用户内容提供方</translation>
 <translation id="9088444059179765143">配置自动检测时区方法</translation>
@@ -2461,6 +2480,17 @@
       如果已启用，那么用户就无法使用键盘快捷键或扩展 API 截取屏幕截图。
 
       如果已停用或未指定，那么用户可以截取屏幕截图。</translation>
+<translation id="9213347477683611358">配置在无任何用户登录设备的情况下显示在登录屏幕上的设备级壁纸图片。要设置此政策，请指定可供 Chrome 操作系统设备下载相应壁纸图片的网址，并指定用于验证下载内容是否完整的加密哈希值。图片必须是 JPEG 格式，且大小不得超过 16MB。网址必须可供直接访问，而无需进行任何身份验证。系统会下载并缓存相应的壁纸图片。网址或哈希值只要有任何变化，系统即会重新下载壁纸图片。
+
+      指定此政策时，请使用 JSON 格式的字符串来表示网址和哈希值，例如：
+      {
+        "url": "https://example.com/device_wallpaper.jpg",
+        "hash": "examplewallpaperhash"
+      }
+
+      设置该设备壁纸政策后，如果还没有任何用户登录设备，Chrome 操作系统设备将下载并使用显示在登录屏幕上的壁纸图片。一旦用户登录设备，用户的壁纸政策就会生效。
+
+      如果该设备壁纸政策未设置，则由用户的壁纸政策（如果已设置用户的壁纸政策）来决定要显示的图片。</translation>
 <translation id="9217154963008402249">发送监控网络数据包的频率</translation>
 <translation id="922540222991413931">配置扩展程序、应用和用户脚本安装源</translation>
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>

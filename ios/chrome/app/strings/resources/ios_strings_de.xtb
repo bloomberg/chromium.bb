@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Ordner wählen</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
+<translation id="1323735185997015385">Löschen</translation>
 <translation id="132683371494960526">Doppeltippen Sie hier, um den übergeordneten Ordner zu ändern.</translation>
 <translation id="1340643665687018190">Menü schließen</translation>
 <translation id="1375321115329958930">Gespeicherte Passwörter</translation>
@@ -63,6 +64,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2068952045031577364">Für die letzte Woche</translation>
 <translation id="2079545284768500474">Rückgängig</translation>
 <translation id="209018056901015185">Desktop-Version</translation>
+<translation id="2100215774115172756">Ihre Leseliste ist offline verfügbar.</translation>
 <translation id="2103075008456228677">history.google.com öffnen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen verschoben</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
@@ -82,6 +84,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2572712655377361602">Eine Geräterichtlinie hat den Zugriff auf Ihre Fotos blockiert</translation>
 <translation id="2584132361465095047">Konto hinzufügen...</translation>
 <translation id="2593774076813182497">Drucken der Seite nicht möglich</translation>
+<translation id="2648803196158606475">Gelesene löschen</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2684815431982545828">Neuer Tab</translation>
 <translation id="2690858294534178585">Kamera wird verwendet</translation>
@@ -100,22 +103,25 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2898963176829412617">Neuer Ordner…</translation>
 <translation id="2903493209154104877">Adressen</translation>
 <translation id="2921219216347069551">Seite kann nicht geteilt werden</translation>
+<translation id="292639812446257861">Als ungelesen markieren</translation>
 <translation id="2933759065870693102">Taschenlampe</translation>
 <translation id="2969979262385602596">Anmeldefehler, bitte später erneut versuchen</translation>
 <translation id="2989805286512600854">In neuem Tab öffnen</translation>
 <translation id="3024255823539804759">Für den letzten Tag</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> ist nicht verfügbar. Wenn Sie sich Ihren Browserverlauf ansehen möchten, wählen Sie "<ph name="SHOW_HISTORY" />" aus dem Menü "Tools" aus.</translation>
+<translation id="3112556859945124369">Markieren…</translation>
 <translation id="3151924044251363314">Nur Personen mit Ihrer Passphrase können Ihre verschlüsselten Daten lesen. Die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Falls Sie sie vergessen oder diese Einstellung ändern möchten, müssen Sie die Synchronisierung zurücksetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3172213052701798825">Google Smart Lock für Passwörter</translation>
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3210163015918861891">Synchronisierung ist deaktiviert.</translation>
+<translation id="3237561509210981547">Sie können Ihrer Leseliste eine Seite hinzufügen, indem Sie auf <ph name="BEGIN_BOLD_FONT" />Teilen &gt; Später lesen<ph name="END_BOLD_FONT" /> tippen.</translation>
 <translation id="3240426699337459095">Link wurde kopiert.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> von <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Geöffnete Tabs</translation>
-<translation id="3289005573061089144">Daten importieren?</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Verbindung zum Server konnte nicht hergestellt werden.</translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
@@ -124,6 +130,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="3414292259312108062">Chrome speichert dieses Passwort in Ihren <ph name="BEGIN_LINK" />in Google gespeicherten Passwörtern<ph name="END_LINK" /> und fügt es automatisch für Sie ein. Sie müssen es sich also nicht merken.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> Min.</translation>
 <translation id="3448016392200048164">Geteilte Ansicht</translation>
+<translation id="3474068797193663261">Sie können Ihrer Leseliste eine Seite hinzufügen, indem Sie auf <ph name="BEGIN_BOLD_FONT" />Menü &gt; Teilen &gt; Später lesen<ph name="END_BOLD_FONT" /> tippen.</translation>
 <translation id="3474649192738347024">Formulare ausgefüllt</translation>
 <translation id="3478058380795961209">Ablaufmonat</translation>
 <translation id="3482959374254649722">Tabs werden synchronisiert...</translation>
@@ -183,6 +190,7 @@ Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie 
 <translation id="481968316161811770">Cookies, Websitedaten</translation>
 <translation id="4875622588773761625">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website aktualisieren?</translation>
 <translation id="4881695831933465202">Öffnen</translation>
+<translation id="4904877109095351937">Als gelesen markieren</translation>
 <translation id="4923459931733593730">Zahlung</translation>
 <translation id="4930268273022498155">Vorhandene Daten werden gelöscht. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Beim Teilen ist ein Fehler aufgetreten.</translation>
@@ -360,6 +368,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433678324664858900">Vorschläge anz.</translation>
 <translation id="8458397775385147834">1 Lesezeichen gelöscht</translation>
+<translation id="8487700953926739672">Offline verfügbar</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="8517375800490286174">Open-Source-Lizenzen</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-Tabs <ph name="FIRST_VISIBLE_TAB" /> bis <ph name="LAST_VISIBLE_TAB" /> von <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8605219856220328675">Tab schließen.</translation>
 <translation id="8620640915598389714">Bearbeiten</translation>
 <translation id="8636825310635137004">Aktivieren Sie die Synchronisierung, um Tabs von Ihren anderen Geräten abzurufen.</translation>
+<translation id="8654802032646794042">Abbrechen</translation>
 <translation id="8680787084697685621">Die Anmeldeinformationen für dieses Konto sind veraltet.</translation>
 <translation id="8699098509676302392">Adresse hinzufügen...</translation>
 <translation id="8721297211384281569">Menü "Tools"</translation>

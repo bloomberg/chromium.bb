@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{dấu mở ngoặc nhọn}other{# dấu mở ngoặc nhọn}}</translation>
 <translation id="2911433807131383493">Mở hướng dẫn ChromeVox</translation>
 <translation id="2932083475399492303">Chuyển đổi loại dòng giữa cấu trúc hoặc bố cục</translation>
+<translation id="2944762337049891859">Tự động đọc trang sau khi tải xong.</translation>
 <translation id="2964026537669811554">Nhóm tiêu đề</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{dấu tab}other{# dấu tab}}</translation>
 <translation id="2972078295414139404">Không có liên kết đã truy cập trước nào.</translation>
@@ -307,6 +308,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3712520970944678024">Điều chỉnh giọng nói</translation>
 <translation id="3716845769494773620">Nhiều dòng</translation>
 <translation id="3731746171184829332">Không có tiêu đề trước nào.</translation>
+<translation id="3735039640698208086">Khi phát âm thanh...</translation>
 <translation id="3762198587642264450">Đi tới cuối hàng hiện tại</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Đã thoát khỏi hộp thoại.</translation>
@@ -547,6 +549,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5876817486144482042">Giảm âm lượng giọng nói</translation>
 <translation id="5887397643266327462">Phụ đề chữ nổi đã được bật.</translation>
 <translation id="5891934789323004067">Bảng</translation>
+<translation id="5899860758576822363">Phát ở âm lượng thấp hơn khi ChromeVox đang nói</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{dấu bằng}other{# dấu bằng}}</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5948123859135882163">Chuyển đổi diễn giải biểu thức toán học giữa cấu trúc và ngữ nghĩa</translation>
@@ -579,6 +582,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6281876499889881039">Phần tử tương tự tiếp theo.</translation>
 <translation id="6282062888058716985">điều hướng</translation>
 <translation id="6290434000785343030">Không có hộp kết hợp tiếp theo nào.</translation>
+<translation id="6305702903308659374">Phát ở âm lượng bình thường ngay cả khi ChromeVox đang nói</translation>
 <translation id="6307969636681130414">Đã nhấn</translation>
 <translation id="6322856989298155004">Âm thanh</translation>
 <translation id="6324551002951139333">Đã phát hiện lỗi ngữ pháp</translation>
@@ -694,6 +698,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, thanh trượt</translation>
 <translation id="7552432549459840808">Phím tắt hữu ích của Chrome</translation>
 <translation id="7579911500627256166">chấm <ph name="DOT" /></translation>
+<translation id="7591126877589047423">Không có tiêu điểm. Nhấn Control N để mở cửa sổ mới.</translation>
 <translation id="7596919493010894443">đã xóa lựa chọn</translation>
 <translation id="7604026522577407655">Đi tới đầu cột hiện tại</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -769,6 +774,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8455868257606149352">Tối đa <ph name="X" /></translation>
 <translation id="84575901236241018">có khóa truy cập, <ph name="KEY" /></translation>
 <translation id="847154984256717791">bận rộn</translation>
+<translation id="8476408756881832830">Tạm dừng phát lại khi ChromeVox đang nói</translation>
 <translation id="8476508772960940536">tổng quan về cửa sổ</translation>
 <translation id="8503360654911991865">Giảm mức độ chi tiết của điều hướng</translation>
 <translation id="8520472399088452386">Nút quay tròn</translation>

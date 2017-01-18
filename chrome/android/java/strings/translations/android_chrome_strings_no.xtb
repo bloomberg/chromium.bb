@@ -158,7 +158,7 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="2526148617758225454">Datasparing er på. Du kan administrere denne funksjonen i Innstillinger.</translation>
 <translation id="2532336938189706096">Nettvisning</translation>
 <translation id="2536728043171574184">Ser på en lokalt lagret versjon av denne siden</translation>
-<translation id="2546283357679194313">Informasjonskapsler og nettstedsdata</translation>
+<translation id="2546283357679194313">Informasjonskapsler og data fra nettsteder</translation>
 <translation id="257931822824936280">Utvidet – klikk for å minimere.</translation>
 <translation id="2581165646603367611">Dette sletter informasjonskapsler, buffere og annen data fra nettsteder Chrome ikke tror er viktige.</translation>
 <translation id="2587052924345400782">En nyere versjon er tilgjengelig</translation>
@@ -269,6 +269,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3828029223314399057">Søk i bokmerker</translation>
 <translation id="3845539888601087042">Viser loggen fra enhetene du er logget på. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Spol fremover</translation>
+<translation id="3890664840433101773">Legg til e-post</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
 <translation id="3895926599014793903">Tving zoom på</translation>
 <translation id="3917783807003067648">Posisjonen er blokkert</translation>
@@ -326,7 +327,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4526249700380860531">Se på og administrer lagrede passord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Velg en mappe</translation>
 <translation id="4535858793016067060">Slå på «Ukjente kilder» i sikkerhetsinnstillingene for Android for å prøve «Forbedret Legg til på startsiden»-eksperimentet. Husk å slå av denne innstillingen når du er ferdig med å prøve det.</translation>
-<translation id="4543661749405994812">Kopiér e-postadressen</translation>
 <translation id="4558311620361989323">Hurtigtaster for nettsider</translation>
 <translation id="4572422548854449519">Logg på en administrert konto</translation>
 <translation id="457875822857220463">Levering</translation>
@@ -371,6 +371,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4988526792673242964">Sider</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="5000922062037820727">Blokkert (anbefales)</translation>
+<translation id="5004339818306944878">Bruk opptil 60 % mindre data, og surf raskere – Google-tjenerne optimaliserer sidene du besøker.</translation>
 <translation id="5005498671520578047">Kopiér passordet</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> vil koble til</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5171045022955879922">Søk, eller skriv inn en nettadresse</translation>
 <translation id="5184329579814168207">Åpne i Chrome</translation>
 <translation id="5199929503336119739">Jobbprofil</translation>
+<translation id="5205222826937269299">Navn er obligatorisk</translation>
 <translation id="5209320130288484488">Finner ingen enheter</translation>
 <translation id="5210286577605176222">Gå til den forrige fanen</translation>
 <translation id="5210365745912300556">Lukk fanen</translation>
 <translation id="5222676887888702881">Logg av</translation>
+<translation id="5222812217790122047">E-post er obligatorisk</translation>
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="5271967389191913893">Enheten kan ikke åpne innholdet som skal lastes ned.</translation>
 <translation id="528192093759286357">Dra ned fra toppen og trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
@@ -523,7 +526,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="6448273550210938826">Nettadresse- og søkeforslag</translation>
 <translation id="6463070039183944536">Legger til …</translation>
-<translation id="6464825623202322042">Denne enheten</translation>
 <translation id="6475951671322991020">Last ned videoen</translation>
 <translation id="6477460825583319731">Ugyldig e-postadresse</translation>
 <translation id="6482749332252372425">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av mangel på lagringsplass.</translation>
@@ -570,6 +572,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6868088497967843822">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="688738109438487280">Legg til eksisterende data i <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d åpen fane}other{%1$d åpne faner}}</translation>
+<translation id="6896758677409633944">Kopiér</translation>
 <translation id="6937422995269576720">Kortnummeret er ugyldig</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6963766334940102469">Slett bokmerker</translation>
@@ -594,6 +597,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7094922512924405309">Fant ingen Fysisk nett-sider i nærheten</translation>
 <translation id="7138678301420049075">Annet</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
+<translation id="7189372733857464326">Venter på at Google Play Tjenester fullfører oppdateringen</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
 <translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> bruker posisjonen din for å vise lokale søkeresultater</translation>
@@ -654,6 +658,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7851858861565204677">Andre enheter</translation>
 <translation id="7875915731392087153">Opprett e-post</translation>
 <translation id="7876243839304621966">Fjern alle</translation>
+<translation id="7882131421121961860">Fant ingen logg</translation>
 <translation id="7929962904089429003">Åpne menyen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er utdatert.</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
@@ -701,6 +706,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8321376388213838985">Flere artikler kommer snart. Ha en fin ettermiddag.</translation>
 <translation id="8372893542064058268">Tillat bakgrunnssynkronisering for et bestemt nettsted.</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
+<translation id="8393700583063109961">Send melding</translation>
 <translation id="8396312449826231789">Bare godkjente nettsteder</translation>
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
@@ -780,6 +786,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Start</translation>
+<translation id="932599481871055447">Spar data og surf raskere</translation>
 <translation id="938850635132480979">Feil: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Tilgang til mikrofonen din</translation>
 <translation id="951339005376969845">Slett de eksisterende dataene. Du kan hente dem ut ved å bytte tilbake til <ph name="FROM_ACCOUNT" />.</translation>

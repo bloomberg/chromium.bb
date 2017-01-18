@@ -269,6 +269,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3828029223314399057">Cerca adreces d'interès</translation>
 <translation id="3845539888601087042">Es mostra l'historial dels dispositius en què heu iniciat la sessió. <ph name="BEGIN_LINK" />Obteniu més informació<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Avança</translation>
+<translation id="3890664840433101773">Afegeix un correu electrònic</translation>
 <translation id="3894427358181296146">Afegiu una carpeta</translation>
 <translation id="3895926599014793903">Força l'activació del zoom</translation>
 <translation id="3917783807003067648">La ubicació està bloquejada</translation>
@@ -326,7 +327,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4526249700380860531">Consulta i gestiona les contrasenyes desades a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Trieu la carpeta</translation>
 <translation id="4535858793016067060">Per provar l'experiment millorat Afegeix a la pantalla d'inici, activa Orígens desconeguts a la configuració de seguretat d'Android. Quan acabis de provar-lo, no oblidis desactivar aquesta opció de configuració.</translation>
-<translation id="4543661749405994812">Copia l'adreça electrònica</translation>
 <translation id="4558311620361989323">Dreceres per a pàgines web</translation>
 <translation id="4572422548854449519">Inicia la sessió al compte gestionat</translation>
 <translation id="457875822857220463">Entrega</translation>
@@ -371,6 +371,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4988526792673242964">Pàgines</translation>
 <translation id="4996978546172906250">Compartir mitjançant</translation>
 <translation id="5000922062037820727">Bloquejat (recomanat)</translation>
+<translation id="5004339818306944878">Utilitza fins a un 60% menys de dades i navega més de pressa. Els servidors de Google optimitzaran les pàgines que visitis.</translation>
 <translation id="5005498671520578047">Copia la contrasenya</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> es vol connectar</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5171045022955879922">Cerqueu o escriviu l'URL</translation>
 <translation id="5184329579814168207">Obre a Chrome</translation>
 <translation id="5199929503336119739">Perfil professional</translation>
+<translation id="5205222826937269299">El nom és obligatori</translation>
 <translation id="5209320130288484488">No s'ha trobat cap dispositiu</translation>
 <translation id="5210286577605176222">Vés a la pestanya anterior</translation>
 <translation id="5210365745912300556">Tanca la pestanya</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
+<translation id="5222812217790122047">El correu electrònic és obligatori</translation>
 <translation id="5233638681132016545">Pestanya nova</translation>
 <translation id="5271967389191913893">El dispositiu no pot obrir el contingut que s'ha de baixar.</translation>
 <translation id="528192093759286357">Arrossegueu la pantalla des de la part superior i toqueu el botó Enrere per sortir de la pantalla completa.</translation>
@@ -523,7 +526,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6447842834002726250">Galetes</translation>
 <translation id="6448273550210938826">Suggeriments de cerca i d'URL</translation>
 <translation id="6463070039183944536">S'està afegint…</translation>
-<translation id="6464825623202322042">Aquest dispositiu</translation>
 <translation id="6475951671322991020">Baixa el vídeo</translation>
 <translation id="6477460825583319731">L'adreça electrònica no és vàlida</translation>
 <translation id="6482749332252372425">No s'ha pogut baixar <ph name="FILE_NAME" /> perquè falta espai d'emmagatzematge.</translation>
@@ -570,6 +572,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6868088497967843822">Inicieu la sessió per tenir les adreces d'interès, l'historial, les contrasenyes i altres configuracions en tots els vostres dispositius</translation>
 <translation id="688738109438487280">Afegeix les dades existents a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d pestanya oberta}other{%1$d pestanyes obertes}}</translation>
+<translation id="6896758677409633944">Copia</translation>
 <translation id="6937422995269576720">Número de targeta no vàlid</translation>
 <translation id="6945221475159498467">Selecciona</translation>
 <translation id="6963766334940102469">Suprimeix les adreces d'interès</translation>
@@ -594,6 +597,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7094922512924405309">No s'ha trobat cap pàgina del Web físic a prop</translation>
 <translation id="7138678301420049075">Altres</translation>
 <translation id="7180611975245234373">Actualitza</translation>
+<translation id="7189372733857464326">S'està esperant que Serveis de Google Play s'acabi d'actualitzar</translation>
 <translation id="7191430249889272776">Pestanya oberta en segon pla</translation>
 <translation id="7243308994586599757">Opcions disponibles a la part inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilitza la vostra ubicació per mostrar resultats de cerca locals</translation>
@@ -654,6 +658,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7851858861565204677">Altres dispositius</translation>
 <translation id="7875915731392087153">Crea una adreça electrònica</translation>
 <translation id="7876243839304621966">Suprimeix-ho tot</translation>
+<translation id="7882131421121961860">No s'ha trobat cap historial</translation>
 <translation id="7929962904089429003">Obre el menú</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> no està actualitzat.</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
@@ -701,6 +706,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8321376388213838985">Aviat es mostraran més articles. Que tinguis una bona tarda.</translation>
 <translation id="8372893542064058268">Permet la sincronització en segon pla en un lloc concret.</translation>
 <translation id="8374821112118309944">Heu de fer l'actualització de TalkBack a una versió més recent</translation>
+<translation id="8393700583063109961">Envia el missatge</translation>
 <translation id="8396312449826231789">Només els llocs aprovats</translation>
 <translation id="8413126021676339697">Mostra l'historial complet</translation>
 <translation id="8428213095426709021">Configuració</translation>
@@ -780,6 +786,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imatges</translation>
 <translation id="932327136139879170">Pàgina d'inici</translation>
+<translation id="932599481871055447">Estalvia dades i navega més de pressa</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Accés al micròfon</translation>
 <translation id="951339005376969845">Suprimeix les dades existents. Per recuperar-les, torna a <ph name="FROM_ACCOUNT" />.</translation>

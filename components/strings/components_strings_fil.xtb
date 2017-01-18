@@ -82,6 +82,7 @@
 <translation id="1753706481035618306">Numero ng page</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Subukang patakbuhin ang Windows Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Mangyaring i-update ang iyong passphrase ng pag-sync.</translation>
+<translation id="1787142507584202372">Lalabas dito ang iyong mga bukas na tab</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Kamakailan lang, <ph name="BEGIN_LINK" />nakakita ng malware<ph name="END_LINK" /> ang Google Safe Browsing sa <ph name="SITE" />. Nagkakaroon ng malware paminsan-minsan ang mga website na karaniwang ligtas. Nanggagaling ang nakakahamak na content sa <ph name="SUBRESOURCE_HOST" />, isang kilalang distributor ng malware. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Di-wastong kahilingan o mga parameter ng kahilingan</translation>
@@ -174,6 +175,7 @@
 <translation id="2712118517637785082">Tinangka mong makakonekta sa <ph name="DOMAIN" />, ngunit ang ipinakitang certificate ng server ay binawi ng nagbigay. Nangangahulugan ito na malinaw na hindi dapat pagkatiwalaan ang mga kredensyal na panseguridad na ipinakita ng server. Maaaring nakikipag-ugnayan ka sa isang nang-aatake. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">Humingi ng pahintulot</translation>
 <translation id="2713444072780614174">Puti</translation>
+<translation id="2720342946869265578">Malapit</translation>
 <translation id="2721148159707890343">Matagumpay ang kahilingan</translation>
 <translation id="2728127805433021124">Nilagdaan ang certificate ng server gamit ang mahinang algorithm ng lagda.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Magpatakbo ng Connectivity Diagnostics<ph name="END_LINK" /></translation>
@@ -370,6 +372,7 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Naipapatupad na Path</translation>
 <translation id="4756388243121344051">&amp;History</translation>
+<translation id="4759118997339041434">Naka-disable ang pag-autofill sa pagbabayad</translation>
 <translation id="4764776831041365478">Ang webpage sa <ph name="URL" /> ay maaaring pansamantalang hindi gumagana o maaaring permanente itong inilipat sa isang bagong web address.</translation>
 <translation id="4771973620359291008">Isang hindi alam na error ang nangyari.</translation>
 <translation id="4800132727771399293">Tingnan ang iyong petsa ng pag-expire at CVC at subukang muli</translation>
@@ -528,7 +531,6 @@
 <translation id="6644283850729428850">Hindi na ginagamit ang patakarang ito.</translation>
 <translation id="6652240803263749613">Hindi mapatunayan ng server na ito na ito ang <ph name="DOMAIN" />; ang certificate na panseguridad nito ay hindi pinagkakatiwalaan ng operating system ng iyong computer. Maaaring sanhi ito ng maling pag-configure o ng isang nang-aatake na humahadlang sa iyong koneksyon. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">I-edit ang Folder</translation>
-<translation id="6660210980321319655">Awtomatikong naiulat noong <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Gusto mo bang alisin ang form para sa suhestyon sa Chromium?</translation>
 <translation id="6685834062052613830">Mag-sign out at kumpletuhin ang setup</translation>
 <translation id="6710213216561001401">Nakaraan</translation>
@@ -675,6 +677,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8150722005171944719">Hindi nababasa ang file sa <ph name="URL" />. Maaaring ito ay naalis, nalipat, o maaaring pinipigilan ng mga pagpapahintulot ng file ang access.</translation>
 <translation id="8194797478851900357">&amp;I-undo ang Paglilipat</translation>
 <translation id="8201077131113104583">Di-wastong URL ng update para sa extension na may ID na "<ph name="EXTENSION_ID" />."</translation>
+<translation id="8202097416529803614">Buod ng order</translation>
 <translation id="8218327578424803826">Itinakdang Lokasyon:</translation>
 <translation id="8225771182978767009">Pinili ng taong nag-set up ng computer na ito na i-block ang site na ito.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -720,6 +723,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8740359287975076522">Hindi makita ang &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; ng <ph name="HOST_NAME" />. Dina-diagnose ang problema.</translation>
 <translation id="8790007591277257123">&amp;Gawing muli ang pagtanggal</translation>
 <translation id="8798099450830957504">Default</translation>
+<translation id="8800988563907321413">Lalabas dito ang iyong mga suhestyon na malapit</translation>
 <translation id="8804164990146287819">Patakaran sa Privacy</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="8834246243508017242">I-enable ang Autofill gamit ang Mga Contact…</translation>

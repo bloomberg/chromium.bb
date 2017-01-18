@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{лява фигурна скоба}other{# леви фигурни скоби}}</translation>
 <translation id="2911433807131383493">Отваряне на урока за ChromeVox</translation>
 <translation id="2932083475399492303">Превключване между структурен или тип ред за оформление</translation>
+<translation id="2944762337049891859">Автоматично прочитане на страницата след приключване на зареждането й.</translation>
 <translation id="2964026537669811554">Група заглавия</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{табулатор}other{# табулатора}}</translation>
 <translation id="2972078295414139404">Няма предишна посетена връзка.</translation>
@@ -307,6 +308,7 @@
 <translation id="3712520970944678024">Контролиране на говора</translation>
 <translation id="3716845769494773620">Няколко реда</translation>
 <translation id="3731746171184829332">Няма предишно заглавие.</translation>
+<translation id="3735039640698208086">При възпроизвеждане на звук...</translation>
 <translation id="3762198587642264450">Към края на текущия ред</translation>
 <translation id="3777255250339039212">заглавие от първо ниво</translation>
 <translation id="3793710123303304873">Излязохте от диалоговия прозорец.</translation>
@@ -547,6 +549,7 @@
 <translation id="5876817486144482042">Намаляване на силата на звука на говора</translation>
 <translation id="5887397643266327462">Брайловите надписи са активирани.</translation>
 <translation id="5891934789323004067">Таблица</translation>
+<translation id="5899860758576822363">Възпроизвеждане с по-ниска сила на звука, когато ChromeVox говори</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак за равенство}other{# знака за равенство}}</translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5948123859135882163">Превключвайте между структурно и семантично интерпретиране на математическите изрази</translation>
@@ -579,6 +582,7 @@
 <translation id="6281876499889881039">Следващият подобен елемент.</translation>
 <translation id="6282062888058716985">навигация</translation>
 <translation id="6290434000785343030">Няма следващ разгъващ се списък.</translation>
+<translation id="6305702903308659374">Възпроизвеждане с нормална сила на звука дори ако ChromeVox говори</translation>
 <translation id="6307969636681130414">Натиснато</translation>
 <translation id="6322856989298155004">Звуци</translation>
 <translation id="6324551002951139333">Открита е граматична грешка</translation>
@@ -694,6 +698,7 @@
 <translation id="7540083713905917247"><ph name="VALUE" />, „<ph name="NAME" />“, плъзгач</translation>
 <translation id="7552432549459840808">Полезни клавишни комбинации в Chrome</translation>
 <translation id="7579911500627256166">точка <ph name="DOT" /></translation>
+<translation id="7591126877589047423">Няма откроен елемент. Натиснете Control + N, за да отворите нов прозорец.</translation>
 <translation id="7596919493010894443">открояването е изчистено</translation>
 <translation id="7604026522577407655">Към началото на текущата графа</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -769,6 +774,7 @@
 <translation id="8455868257606149352">Максимум <ph name="X" /></translation>
 <translation id="84575901236241018">има клавиш за достъп, „<ph name="KEY" />“</translation>
 <translation id="847154984256717791">заето</translation>
+<translation id="8476408756881832830">Поставяне на възпроизвеждането на пауза, когато ChromeVox говори</translation>
 <translation id="8476508772960940536">общ преглед на прозорците</translation>
 <translation id="8503360654911991865">По-малко подробна навигация</translation>
 <translation id="8520472399088452386">Брояч</translation>
