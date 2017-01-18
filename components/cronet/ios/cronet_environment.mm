@@ -22,6 +22,8 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/sys_info.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/worker_pool.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/ios/version.h"
@@ -116,6 +118,9 @@ void CronetEnvironment::Initialize() {
   // This method must be called once from the main thread.
   if (!g_at_exit_)
     g_at_exit_ = new base::AtExitManager;
+
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
+      base::SysInfo::NumberOfProcessors());
 
   url::Initialize();
   base::CommandLine::Init(0, nullptr);
@@ -246,6 +251,13 @@ void CronetEnvironment::Start() {
 
 CronetEnvironment::~CronetEnvironment() {
   // net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
+
+  // TODO(lilyhoughton) right now this is relying on there being
+  // only one CronetEnvironment (per process).  if (when?) that
+  // changes, so will this have to.
+  base::TaskScheduler* ts = base::TaskScheduler::GetInstance();
+  if (ts)
+    ts->Shutdown();
 }
 
 void CronetEnvironment::InitializeOnNetworkThread() {
