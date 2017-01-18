@@ -183,6 +183,26 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
   EXPECT_EQ(5u, plainTextRange.end());
 }
 
+TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
+  // "trophy" = U+1F3C6 = 0xF0 0x9F 0x8F 0x86 (UTF8).
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>&#x1f3c6</div>", "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
+  EXPECT_EQ(2, frame().selection().start().computeOffsetInContainerNode());
+  EXPECT_EQ(2, frame().selection().end().computeOffsetInContainerNode());
+
+  controller().setComposition(String("a"), underlines, 1, 1);
+  EXPECT_STREQ("\xF0\x9F\x8F\x86\x61", div->innerText().utf8().data());
+
+  controller().setComposition(String("ab"), underlines, 2, 2);
+  EXPECT_STREQ("\xF0\x9F\x8F\x86\x61\x62", div->innerText().utf8().data());
+}
+
 TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
   Element* div = insertHTMLElement(
       "<div id='sample' "

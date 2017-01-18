@@ -52,6 +52,7 @@ size_t computeDistanceToLeftGraphemeBoundary(const Position& position) {
 }
 
 size_t computeCommonGraphemeClusterPrefixLength(
+    const int selectionStart,
     const String& oldText,
     const String& newText,
     const Element* rootEditableElement) {
@@ -59,7 +60,8 @@ size_t computeCommonGraphemeClusterPrefixLength(
 
   // For grapheme cluster, we should adjust it for grapheme boundary.
   const EphemeralRange& range =
-      PlainTextRange(0, commonPrefixLength).createRange(*rootEditableElement);
+      PlainTextRange(0, selectionStart + commonPrefixLength)
+          .createRange(*rootEditableElement);
   if (range.isNull())
     return 0;
   const Position& position = range.endPosition();
@@ -82,6 +84,7 @@ size_t computeDistanceToRightGraphemeBoundary(const Position& position) {
 }
 
 size_t computeCommonGraphemeClusterSuffixLength(
+    const int selectionStart,
     const String& oldText,
     const String& newText,
     const Element* rootEditableElement) {
@@ -89,7 +92,7 @@ size_t computeCommonGraphemeClusterSuffixLength(
 
   // For grapheme cluster, we should adjust it for grapheme boundary.
   const EphemeralRange& range =
-      PlainTextRange(0, oldText.length() - commonSuffixLength)
+      PlainTextRange(0, selectionStart + oldText.length() - commonSuffixLength)
           .createRange(*rootEditableElement);
   if (range.isNull())
     return 0;
@@ -150,13 +153,15 @@ void InsertIncrementalTextCommand::doApply(EditingState* editingState) {
   const String oldText = plainText(selectionRange);
   const String& newText = m_text;
 
+  const int selectionStart =
+      endingSelection().start().computeOffsetInContainerNode();
   const size_t newTextLength = newText.length();
   const size_t oldTextLength = oldText.length();
-  const size_t commonPrefixLength =
-      computeCommonGraphemeClusterPrefixLength(oldText, newText, element);
+  const size_t commonPrefixLength = computeCommonGraphemeClusterPrefixLength(
+      selectionStart, oldText, newText, element);
   // We should ignore common prefix when finding common suffix.
   const size_t commonSuffixLength = computeCommonGraphemeClusterSuffixLength(
-      oldText.right(oldTextLength - commonPrefixLength),
+      selectionStart, oldText.right(oldTextLength - commonPrefixLength),
       newText.right(newTextLength - commonPrefixLength), element);
   DCHECK_GE(oldTextLength, commonPrefixLength + commonSuffixLength);
 
