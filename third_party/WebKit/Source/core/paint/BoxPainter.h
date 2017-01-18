@@ -118,6 +118,10 @@ class BoxPainter {
   LayoutRect boundsForDrawingRecorder(const PaintInfo&,
                                       const LayoutPoint& adjustedPaintOffset);
 
+  static bool isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+      const LayoutBoxModelObject*,
+      const PaintInfo&);
+
  private:
   void paintBackground(const PaintInfo&,
                        const LayoutRect&,

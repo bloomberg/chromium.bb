@@ -1820,7 +1820,7 @@ void PaintLayerScrollableArea::removeStyleRelatedMainThreadScrollingReasons() {
   if (!frameView)
     return;
 
-  // Decrese the number of layers that have any main thread
+  // Decrease the number of layers that have any main thread
   // scrolling reasons stored in FrameView
   for (uint32_t i = 0;
        i < MainThreadScrollingReason::kMainThreadScrollingReasonCount; ++i) {

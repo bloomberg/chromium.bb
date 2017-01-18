@@ -37,9 +37,7 @@
 
 namespace blink {
 
-namespace {
-
-bool isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+bool BoxPainter::isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
     const LayoutBoxModelObject* obj,
     const PaintInfo& paintInfo) {
   return paintInfo.paintFlags() & PaintLayerPaintingOverflowContents &&
@@ -47,8 +45,6 @@ bool isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
            PaintLayerPaintingCompositingBackgroundPhase) &&
          obj == paintInfo.paintContainer();
 }
-
-}  // namespace
 
 void BoxPainter::paint(const PaintInfo& paintInfo,
                        const LayoutPoint& paintOffset) {

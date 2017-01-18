@@ -2513,8 +2513,9 @@ LayoutRect PaintLayer::boundingBoxForCompositingInternal(
       !hasVisibleDescendant())
     return LayoutRect();
 
-  // Without composited scrolling, the root layer is the size of the document.
-  if (isRootLayer() && !needsCompositedScrolling()) {
+  // The root layer is the size of the document, plus any additional area due
+  // to layout viewport being different than initial containing block.
+  if (isRootLayer()) {
     IntRect documentRect = layoutObject()->view()->documentRect();
 
     if (FrameView* frameView = layoutObject()->document().view()) {

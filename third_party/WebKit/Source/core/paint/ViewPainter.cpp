@@ -58,10 +58,17 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
           context, m_layoutView, DisplayItem::kDocumentBackground))
     return;
 
-  // The background fill rect is the size of the LayoutView's main
-  // GraphicsLayer.
-  IntRect backgroundRect =
-      pixelSnappedIntRect(m_layoutView.layer()->boundingBoxForCompositing());
+  // The background rect always includes at least the visible content size.
+  IntRect backgroundRect(IntRect(m_layoutView.viewRect()));
+
+  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() ||
+      BoxPainter::
+          isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+              &m_layoutView, paintInfo)) {
+    // Layout overflow, combined with the visible content size.
+    backgroundRect.unite(m_layoutView.documentRect());
+  }
+
   const Document& document = m_layoutView.document();
   const FrameView& frameView = *m_layoutView.frameView();
   bool isMainFrame = document.isInMainFrame();
