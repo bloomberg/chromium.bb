@@ -89,7 +89,7 @@ int chromiumTruncate(sqlite3_file* sqliteFile, sqlite3_int64 size) {
   // The OSX and Linux sandboxes block ftruncate(), proxy to the browser
   // process.
   if (Platform::current()->databaseSetFileSize(
-          String(chromiumFile->wrappedFileName), size))
+          String::fromUTF8(chromiumFile->wrappedFileName), size))
     return SQLITE_OK;
   return SQLITE_IOERR_TRUNCATE;
 }
@@ -162,13 +162,14 @@ int chromiumOpenInternal(sqlite3_vfs* vfs,
                          sqlite3_file* id,
                          int desiredFlags,
                          int* usedFlags) {
-  int fd =
-      Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
+  int fd = Platform::current()->databaseOpenFile(String::fromUTF8(fileName),
+                                                 desiredFlags);
   if ((fd < 0) && (desiredFlags & SQLITE_OPEN_READWRITE)) {
     desiredFlags =
         (desiredFlags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) |
         SQLITE_OPEN_READONLY;
-    fd = Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
+    fd = Platform::current()->databaseOpenFile(String::fromUTF8(fileName),
+                                               desiredFlags);
   }
   if (fd < 0)
     return SQLITE_CANTOPEN;
@@ -247,7 +248,8 @@ int chromiumOpen(sqlite3_vfs* vfs,
 // syncDir - determines if the directory to which this file belongs
 //           should be synched after the file is deleted.
 int chromiumDelete(sqlite3_vfs*, const char* fileName, int syncDir) {
-  return Platform::current()->databaseDeleteFile(String(fileName), syncDir);
+  return Platform::current()->databaseDeleteFile(String::fromUTF8(fileName),
+                                                 syncDir);
 }
 
 // Check the existance and status of the given file.
@@ -257,8 +259,8 @@ int chromiumDelete(sqlite3_vfs*, const char* fileName, int syncDir) {
 // flag - the type of test to make on this file.
 // res - the result.
 int chromiumAccess(sqlite3_vfs*, const char* fileName, int flag, int* res) {
-  int attr = static_cast<int>(
-      Platform::current()->databaseGetFileAttributes(String(fileName)));
+  int attr = static_cast<int>(Platform::current()->databaseGetFileAttributes(
+      String::fromUTF8(fileName)));
   if (attr < 0) {
     *res = 0;
     return SQLITE_OK;

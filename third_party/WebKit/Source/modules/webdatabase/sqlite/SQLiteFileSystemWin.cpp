@@ -54,8 +54,8 @@ int chromiumOpen(sqlite3_vfs*,
                  sqlite3_file* id,
                  int desiredFlags,
                  int* usedFlags) {
-  HANDLE h =
-      Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
+  HANDLE h = Platform::current()->databaseOpenFile(String::fromUTF8(fileName),
+                                                   desiredFlags);
   if (h == INVALID_HANDLE_VALUE) {
     if (desiredFlags & SQLITE_OPEN_READWRITE) {
       int newFlags =
@@ -82,7 +82,8 @@ int chromiumOpen(sqlite3_vfs*,
 // syncDir - determines if the directory to which this file belongs
 //           should be synched after the file is deleted.
 int chromiumDelete(sqlite3_vfs*, const char* fileName, int) {
-  return Platform::current()->databaseDeleteFile(String(fileName), false);
+  return Platform::current()->databaseDeleteFile(String::fromUTF8(fileName),
+                                                 false);
 }
 
 // Check the existance and status of the given file.
@@ -92,7 +93,8 @@ int chromiumDelete(sqlite3_vfs*, const char* fileName, int) {
 // flag - the type of test to make on this file.
 // res - the result.
 int chromiumAccess(sqlite3_vfs*, const char* fileName, int flag, int* res) {
-  DWORD attr = Platform::current()->databaseGetFileAttributes(String(fileName));
+  DWORD attr = Platform::current()->databaseGetFileAttributes(
+      String::fromUTF8(fileName));
   switch (flag) {
     case SQLITE_ACCESS_READ:
     case SQLITE_ACCESS_EXISTS:
