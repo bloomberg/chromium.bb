@@ -304,6 +304,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
 
             mNotificationInfoBuilder.setOrigin(mOrigin);
             mNotificationInfoBuilder.setNotificationLargeIcon(mFavicon);
+            mNotificationInfoBuilder.setMediaSessionImage(mPageMediaImage);
             showNotification();
         }
 
@@ -476,6 +477,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
 
         if (isNotificationHiddingOrHidden()) return;
         mNotificationInfoBuilder.setNotificationLargeIcon(mCurrentMediaImage);
+        mNotificationInfoBuilder.setMediaSessionImage(mPageMediaImage);
         showNotification();
     }
 
