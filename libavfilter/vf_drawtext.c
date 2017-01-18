@@ -809,7 +809,7 @@ static int func_pts(AVFilterContext *ctx, AVBPrint *bp,
         pts += (double)delta / AV_TIME_BASE;
     }
     if (!strcmp(fmt, "flt")) {
-        av_bprintf(bp, "%.6f", s->var_values[VAR_T]);
+        av_bprintf(bp, "%.6f", pts);
     } else if (!strcmp(fmt, "hms")) {
         if (isnan(pts)) {
             av_bprintf(bp, " ??:??:??.???");
@@ -1184,7 +1184,7 @@ static int draw_text(AVFilterContext *ctx, AVFrame *frame,
 
     if (s->tc_opt_string) {
         char tcbuf[AV_TIMECODE_STR_SIZE];
-        av_timecode_make_string(&s->tc, tcbuf, inlink->frame_count);
+        av_timecode_make_string(&s->tc, tcbuf, inlink->frame_count_out);
         av_bprint_clear(bp);
         av_bprintf(bp, "%s%s", s->text, tcbuf);
     }
@@ -1345,7 +1345,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 #endif
     }
 
-    s->var_values[VAR_N] = inlink->frame_count+s->start_number;
+    s->var_values[VAR_N] = inlink->frame_count_out + s->start_number;
     s->var_values[VAR_T] = frame->pts == AV_NOPTS_VALUE ?
         NAN : frame->pts * av_q2d(inlink->time_base);
 

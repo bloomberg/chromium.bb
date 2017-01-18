@@ -37,6 +37,7 @@
 #include "imgutils.h"
 #include "pixdesc.h"
 #include "pixfmt.h"
+#include "compat/w32dlfcn.h"
 
 typedef IDirect3D9* WINAPI pDirect3DCreate9(UINT);
 typedef HRESULT WINAPI pCreateDeviceManager9(UINT *, IDirect3DDeviceManager9 **);
@@ -250,19 +251,11 @@ static int dxva2_transfer_data(AVHWFramesContext *ctx, AVFrame *dst,
     D3DLOCKED_RECT     LockedRect;
     HRESULT            hr;
 
-    int download = !!src->hw_frames_ctx;
-    int bytes_per_component;
+    uint8_t *surf_data[4]     = { NULL };
+    int      surf_linesize[4] = { 0 };
+    int i;
 
-    switch (ctx->sw_format) {
-        case AV_PIX_FMT_NV12:
-            bytes_per_component = 1;
-            break;
-        case AV_PIX_FMT_P010:
-            bytes_per_component = 2;
-            break;
-        default:
-            av_assert0(0);
-    }
+    int download = !!src->hw_frames_ctx;
 
     surface = (IDirect3DSurface9*)(download ? src->data[3] : dst->data[3]);
 
@@ -279,20 +272,18 @@ static int dxva2_transfer_data(AVHWFramesContext *ctx, AVFrame *dst,
         return AVERROR_UNKNOWN;
     }
 
+    for (i = 0; download ? dst->data[i] : src->data[i]; i++)
+        surf_linesize[i] = LockedRect.Pitch;
+
+    av_image_fill_pointers(surf_data, ctx->sw_format, surfaceDesc.Height,
+                           (uint8_t*)LockedRect.pBits, surf_linesize);
+
     if (download) {
-        av_image_copy_plane(dst->data[0], dst->linesize[0],
-                            (uint8_t*)LockedRect.pBits, LockedRect.Pitch,
-                            src->width * bytes_per_component, src->height);
-        av_image_copy_plane(dst->data[1], dst->linesize[1],
-                            (uint8_t*)LockedRect.pBits + LockedRect.Pitch * surfaceDesc.Height,
-                            LockedRect.Pitch, src->width * bytes_per_component, src->height / 2);
+        av_image_copy(dst->data, dst->linesize, surf_data, surf_linesize,
+                      ctx->sw_format, src->width, src->height);
     } else {
-        av_image_copy_plane((uint8_t*)LockedRect.pBits, LockedRect.Pitch,
-                            dst->data[0], dst->linesize[0],
-                            src->width * bytes_per_component, src->height);
-        av_image_copy_plane((uint8_t*)LockedRect.pBits + LockedRect.Pitch * surfaceDesc.Height,
-                            LockedRect.Pitch, dst->data[1], dst->linesize[1],
-                            src->width * bytes_per_component, src->height / 2);
+        av_image_copy(surf_data, surf_linesize, src->data, src->linesize,
+                      ctx->sw_format, src->width, src->height);
     }
 
     IDirect3DSurface9_UnlockRect(surface);
@@ -318,10 +309,10 @@ static void dxva2_device_free(AVHWDeviceContext *ctx)
         IDirect3D9_Release(priv->d3d9);
 
     if (priv->d3dlib)
-        FreeLibrary(priv->d3dlib);
+        dlclose(priv->d3dlib);
 
     if (priv->dxva2lib)
-        FreeLibrary(priv->dxva2lib);
+        dlclose(priv->dxva2lib);
 
     av_freep(&ctx->user_opaque);
 }
@@ -352,24 +343,24 @@ static int dxva2_device_create(AVHWDeviceContext *ctx, const char *device,
 
     priv->device_handle = INVALID_HANDLE_VALUE;
 
-    priv->d3dlib = LoadLibrary("d3d9.dll");
+    priv->d3dlib = dlopen("d3d9.dll", 0);
     if (!priv->d3dlib) {
         av_log(ctx, AV_LOG_ERROR, "Failed to load D3D9 library\n");
         return AVERROR_UNKNOWN;
     }
-    priv->dxva2lib = LoadLibrary("dxva2.dll");
+    priv->dxva2lib = dlopen("dxva2.dll", 0);
     if (!priv->dxva2lib) {
         av_log(ctx, AV_LOG_ERROR, "Failed to load DXVA2 library\n");
         return AVERROR_UNKNOWN;
     }
 
-    createD3D = (pDirect3DCreate9 *)GetProcAddress(priv->d3dlib, "Direct3DCreate9");
+    createD3D = (pDirect3DCreate9 *)dlsym(priv->d3dlib, "Direct3DCreate9");
     if (!createD3D) {
         av_log(ctx, AV_LOG_ERROR, "Failed to locate Direct3DCreate9\n");
         return AVERROR_UNKNOWN;
     }
-    createDeviceManager = (pCreateDeviceManager9 *)GetProcAddress(priv->dxva2lib,
-                                                                  "DXVA2CreateDirect3DDeviceManager9");
+    createDeviceManager = (pCreateDeviceManager9 *)dlsym(priv->dxva2lib,
+                                                         "DXVA2CreateDirect3DDeviceManager9");
     if (!createDeviceManager) {
         av_log(ctx, AV_LOG_ERROR, "Failed to locate DXVA2CreateDirect3DDeviceManager9\n");
         return AVERROR_UNKNOWN;

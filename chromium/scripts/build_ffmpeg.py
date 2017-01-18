@@ -344,6 +344,8 @@ def main(argv):
       '--disable-vdpau',
       '--disable-videotoolbox',
       '--disable-nvenc',
+      '--disable-cuda',
+      '--disable-cuvid',
 
       # Common codecs.
       '--enable-decoder=vorbis,libopus,flac',

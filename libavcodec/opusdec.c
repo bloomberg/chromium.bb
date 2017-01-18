@@ -47,6 +47,7 @@
 #include "internal.h"
 #include "mathops.h"
 #include "opus.h"
+#include "opustab.h"
 
 static const uint16_t silk_frame_duration_ms[16] = {
     10, 20, 40, 60,
@@ -71,32 +72,6 @@ static int get_silk_samplerate(int config)
     else if (config < 8)
         return 12000;
     return 16000;
-}
-
-/**
- * Range decoder
- */
-static int opus_rc_init(OpusRangeCoder *rc, const uint8_t *data, int size)
-{
-    int ret = init_get_bits8(&rc->gb, data, size);
-    if (ret < 0)
-        return ret;
-
-    rc->range = 128;
-    rc->value = 127 - get_bits(&rc->gb, 7);
-    rc->total_read_bits = 9;
-    opus_rc_normalize(rc);
-
-    return 0;
-}
-
-static void opus_raw_init(OpusRangeCoder *rc, const uint8_t *rightend,
-                          unsigned int bytes)
-{
-    rc->rb.position = rightend;
-    rc->rb.bytes    = bytes;
-    rc->rb.cachelen = 0;
-    rc->rb.cacheval = 0;
 }
 
 static void opus_fade(float *out,
@@ -185,10 +160,10 @@ static int opus_decode_redundancy(OpusStreamContext *s, const uint8_t *data, int
         bw == OPUS_BANDWIDTH_MEDIUMBAND)
         bw = OPUS_BANDWIDTH_WIDEBAND;
 
-    ret = opus_rc_init(&s->redundancy_rc, data, size);
+    ret = ff_opus_rc_dec_init(&s->redundancy_rc, data, size);
     if (ret < 0)
         goto fail;
-    opus_raw_init(&s->redundancy_rc, data + size, size);
+    ff_opus_rc_dec_raw_init(&s->redundancy_rc, data + size, size);
 
     ret = ff_celt_decode_frame(s->celt, &s->redundancy_rc,
                                s->redundancy_output,
@@ -211,7 +186,7 @@ static int opus_decode_frame(OpusStreamContext *s, const uint8_t *data, int size
     int ret, i, consumed;
     int delayed_samples = s->delayed_samples;
 
-    ret = opus_rc_init(&s->rc, data, size);
+    ret = ff_opus_rc_dec_init(&s->rc, data, size);
     if (ret < 0)
         return ret;
 
@@ -246,15 +221,15 @@ static int opus_decode_frame(OpusStreamContext *s, const uint8_t *data, int size
     // decode redundancy information
     consumed = opus_rc_tell(&s->rc);
     if (s->packet.mode == OPUS_MODE_HYBRID && consumed + 37 <= size * 8)
-        redundancy = opus_rc_p2model(&s->rc, 12);
+        redundancy = ff_opus_rc_dec_log(&s->rc, 12);
     else if (s->packet.mode == OPUS_MODE_SILK && consumed + 17 <= size * 8)
         redundancy = 1;
 
     if (redundancy) {
-        redundancy_pos = opus_rc_p2model(&s->rc, 1);
+        redundancy_pos = ff_opus_rc_dec_log(&s->rc, 1);
 
         if (s->packet.mode == OPUS_MODE_HYBRID)
-            redundancy_size = opus_rc_unimodel(&s->rc, 256) + 2;
+            redundancy_size = ff_opus_rc_dec_uint(&s->rc, 256) + 2;
         else
             redundancy_size = size - (consumed + 7) / 8;
         size -= redundancy_size;
@@ -298,7 +273,7 @@ static int opus_decode_frame(OpusStreamContext *s, const uint8_t *data, int size
             }
         }
 
-        opus_raw_init(&s->rc, data + size, size);
+        ff_opus_rc_dec_raw_init(&s->rc, data + size, size);
 
         ret = ff_celt_decode_frame(s->celt, &s->rc, dst,
                                    s->packet.stereo + 1,
@@ -672,7 +647,6 @@ static av_cold int opus_decode_init(AVCodecContext *avctx)
     /* find out the channel configuration */
     ret = ff_opus_parse_extradata(avctx, c);
     if (ret < 0) {
-        av_freep(&c->channel_maps);
         av_freep(&c->fdsp);
         return ret;
     }

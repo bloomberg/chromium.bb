@@ -2585,6 +2585,10 @@ Set file for dumping, suitable for gnuplot.
 @item dumpscale
 Set scale for dumpfile. Acceptable values are same with scale option.
 Default is linlog.
+
+@item fft2
+Enable 2-channel convolution using complex FFT. This improves speed significantly.
+Default is disabled.
 @end table
 
 @subsection Examples
@@ -2917,9 +2921,6 @@ EBU R128 loudness normalization. Includes both dynamic and linear normalization 
 Support for both single pass (livestreams, files) and double pass (files) modes.
 This algorithm can target IL, LRA, and maximum true peak.
 
-To enable compilation of this filter you need to configure FFmpeg with
-@code{--enable-libebur128}.
-
 The filter accepts the following options:
 
 @table @option
@@ -3025,7 +3026,7 @@ output channel layout or number of channels
 
 @item outdef
 output channel specification, of the form:
-"@var{out_name}=[@var{gain}*]@var{in_name}[+[@var{gain}*]@var{in_name}...]"
+"@var{out_name}=[@var{gain}*]@var{in_name}[(+-)[@var{gain}*]@var{in_name}...]"
 
 @item out_name
 output channel to define, either a channel name (FL, FR, etc.) or a channel
@@ -3510,10 +3511,10 @@ sofalizer=sofa=/path/to/ClubFritz12.sofa:type=freq:radius=2:rotation=5
 @end example
 
 @item
-Similar as above but with custom speaker positions for front left, front right, rear left and rear right
+Similar as above but with custom speaker positions for front left, front right, back left and back right
 and also with custom gain:
 @example
-"sofalizer=sofa=/path/to/ClubFritz6.sofa:type=freq:radius=2:speakers=FL 45|FR 315|RL 135|RR 225:gain=28"
+"sofalizer=sofa=/path/to/ClubFritz6.sofa:type=freq:radius=2:speakers=FL 45|FR 315|BL 135|BR 225:gain=28"
 @end example
 @end itemize
 
@@ -4538,6 +4539,10 @@ the position in the file if known or -1 and the timestamp in seconds.
 In order to display the output lines, you need to set the loglevel at
 least to the AV_LOG_INFO value.
 
+This filter exports frame metadata @code{lavfi.blackframe.pblack}.
+The value represents the percentage of pixels in the picture that
+are below the threshold value.
+
 It accepts the following parameters:
 
 @table @option
@@ -5273,6 +5278,7 @@ colormatrix=bt601:smpte240m
 @section colorspace
 
 Convert colorspace, transfer characteristics or color primaries.
+Input video needs to have an even size.
 
 The filter accepts the following options:
 
@@ -5330,6 +5336,9 @@ SMPTE-170M or BT.601-6 525
 @item smpte240m
 SMPTE-240M
 
+@item ycgco
+YCgCo
+
 @item bt2020ncl
 BT.2020 with non-constant luminance
 
@@ -5344,6 +5353,12 @@ The accepted values are:
 @item bt709
 BT.709
 
+@item bt470m
+BT.470M
+
+@item bt470bg
+BT.470BG
+
 @item gamma22
 Constant gamma of 2.2
 
@@ -5355,6 +5370,18 @@ SMPTE-170M, BT.601-6 625 or BT.601-6 525
 
 @item smpte240m
 SMPTE-240M
+
+@item srgb
+SRGB
+
+@item iec61966-2-1
+iec61966-2-1
+
+@item iec61966-2-4
+iec61966-2-4
+
+@item xvycc
+xvycc
 
 @item bt2020-10
 BT.2020 for 10-bits content
@@ -5385,6 +5412,15 @@ SMPTE-170M or BT.601-6 525
 @item smpte240m
 SMPTE-240M
 
+@item film
+film
+
+@item smpte431
+SMPTE-431
+
+@item smpte432
+SMPTE-432
+
 @item bt2020
 BT.2020
 
@@ -5396,8 +5432,14 @@ Specify output color range.
 
 The accepted values are:
 @table @samp
+@item tv
+TV (restricted) range
+
 @item mpeg
 MPEG (restricted) range
+
+@item pc
+PC (full) range
 
 @item jpeg
 JPEG (full) range
@@ -7091,6 +7133,14 @@ DE=10.0 # display end
 FID=1.5 # fade in duration
 FOD=5 # fade out duration
 ffplay -f lavfi "color,drawtext=text=TEST:fontsize=50:fontfile=FreeSerif.ttf:fontcolor_expr=ff0000%@{eif\\\\: clip(255*(1*between(t\\, $DS + $FID\\, $DE - $FOD) + ((t - $DS)/$FID)*between(t\\, $DS\\, $DS + $FID) + (-(t - $DE)/$FOD)*between(t\\, $DE - $FOD\\, $DE) )\\, 0\\, 255) \\\\: x\\\\: 2 @}"
+@end example
+
+@item
+Horizontally align multiple separate texts. Note that @option{max_glyph_a}
+and the @option{fontsize} value are included in the @option{y} offset.
+@example
+drawtext=fontfile=FreeSans.ttf:text=DOG:fontsize=24:x=10:y=20+24-max_glyph_a,
+drawtext=fontfile=FreeSans.ttf:text=cow:fontsize=24:x=80:y=20+24-max_glyph_a
 @end example
 
 @end itemize
@@ -9665,7 +9715,7 @@ Scene change detection method. Scene change leads motion vectors to be in random
 @item none
 Disable scene change detection.
 @item fdiff
-Frame difference. Corresponding pixel values are compared and if it statisfies @var{scd_threshold} scene change is detected.
+Frame difference. Corresponding pixel values are compared and if it satisfies @var{scd_threshold} scene change is detected.
 @end table
 Default method is @samp{fdiff}.
 
@@ -10940,6 +10990,12 @@ Set soft thresholding (better de-ringing effect, but likely blurrier).
 Set medium thresholding (good results, default).
 @end table
 @end table
+
+@section premultiply
+Apply alpha premultiply effect to input video stream using first plane
+of second stream as alpha.
+
+Both streams must have same dimensions and same pixel format.
 
 @section prewitt
 Apply prewitt operator to input video stream.
@@ -14619,6 +14675,9 @@ Possible values are:
 @item linear
 @item 2020_10
 @item 2020_12
+@item smpte2084
+@item iec61966-2-1
+@item arib-std-b67
 @end table
 
 Default is same as input.
@@ -14723,6 +14782,9 @@ Possible values are:
 @item bottomleft
 @item bottom
 @end table
+
+@item npl
+Set the nominal peak luminance.
 @end table
 
 The values of the @option{w} and @option{h} options are expressions
@@ -16834,6 +16896,10 @@ Acceptable range is @code{[1, 7]}.
 @item bar_g, gamma2
 Specify the bargraph gamma. Default value is @code{1}. Acceptable range is
 @code{[1, 7]}.
+
+@item bar_t
+Specify the bargraph transparency level. Lower value makes the bargraph sharper.
+Default value is @code{1}. Acceptable range is @code{[0, 1]}.
 
 @item timeclamp, tc
 Specify the transform timeclamp. At low frequency, there is trade-off between

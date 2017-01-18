@@ -107,6 +107,7 @@ typedef struct VPxEncoderContext {
     int drop_threshold;
     int noise_sensitivity;
     int vpx_cs;
+    float level;
 } VPxContext;
 
 /** String mappings for enum vp8e_enc_control_id */
@@ -133,6 +134,10 @@ static const char *const ctlidstr[] = {
 #endif
 #if VPX_ENCODER_ABI_VERSION >= 11
     [VP9E_SET_COLOR_RANGE]             = "VP9E_SET_COLOR_RANGE",
+#endif
+#if VPX_ENCODER_ABI_VERSION >= 12
+    [VP9E_SET_TARGET_LEVEL]            = "VP9E_SET_TARGET_LEVEL",
+    [VP9E_GET_LEVEL]                   = "VP9E_GET_LEVEL",
 #endif
 #endif
 };
@@ -260,9 +265,41 @@ static av_cold int codecctl_int(AVCodecContext *avctx,
     return res == VPX_CODEC_OK ? 0 : AVERROR(EINVAL);
 }
 
+#if VPX_ENCODER_ABI_VERSION >= 12
+static av_cold int codecctl_intp(AVCodecContext *avctx,
+                                 enum vp8e_enc_control_id id, int *val)
+{
+    VPxContext *ctx = avctx->priv_data;
+    char buf[80];
+    int width = -30;
+    int res;
+
+    snprintf(buf, sizeof(buf), "%s:", ctlidstr[id]);
+    av_log(avctx, AV_LOG_DEBUG, "  %*s%d\n", width, buf, *val);
+
+    res = vpx_codec_control(&ctx->encoder, id, val);
+    if (res != VPX_CODEC_OK) {
+        snprintf(buf, sizeof(buf), "Failed to set %s codec control",
+                 ctlidstr[id]);
+        log_encoder_error(avctx, buf);
+    }
+
+    return res == VPX_CODEC_OK ? 0 : AVERROR(EINVAL);
+}
+#endif
+
 static av_cold int vpx_free(AVCodecContext *avctx)
 {
     VPxContext *ctx = avctx->priv_data;
+
+#if VPX_ENCODER_ABI_VERSION >= 12
+    if (avctx->codec_id == AV_CODEC_ID_VP9 && ctx->level >= 0 &&
+        !(avctx->flags & AV_CODEC_FLAG_PASS1)) {
+        int level_out = 0;
+        if (!codecctl_intp(avctx, VP9E_GET_LEVEL, &level_out))
+            av_log(avctx, AV_LOG_INFO, "Encoded level %.1f\n", level_out * 0.1);
+    }
+#endif
 
     vpx_codec_destroy(&ctx->encoder);
     if (ctx->is_alpha)
@@ -680,6 +717,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
 #if VPX_ENCODER_ABI_VERSION >= 11
         set_color_range(avctx);
 #endif
+#if VPX_ENCODER_ABI_VERSION >= 12
+        codecctl_int(avctx, VP9E_SET_TARGET_LEVEL, ctx->level < 0 ? 255 : lrint(ctx->level * 10));
+#endif
     }
 #endif
 
@@ -1089,6 +1129,9 @@ static const AVOption vp9_options[] = {
     { "variance",        "Variance based Aq",   0, AV_OPT_TYPE_CONST, {.i64 = 1}, 0, 0, VE, "aq_mode" },
     { "complexity",      "Complexity based Aq", 0, AV_OPT_TYPE_CONST, {.i64 = 2}, 0, 0, VE, "aq_mode" },
     { "cyclic",          "Cyclic Refresh Aq",   0, AV_OPT_TYPE_CONST, {.i64 = 3}, 0, 0, VE, "aq_mode" },
+#if VPX_ENCODER_ABI_VERSION >= 12
+    {"level", "Specify level", OFFSET(level), AV_OPT_TYPE_FLOAT, {.dbl=-1}, -1, 6.2, VE},
+#endif
     LEGACY_OPTIONS
     { NULL }
 };

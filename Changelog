@@ -2,6 +2,15 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+- CrystalHD decoder moved to new decode API
+- add internal ebur128 library, remove external libebur128 dependency
+- Pro-MPEG CoP #3-R2 FEC protocol
+- premultiply video filter
+- Support for spherical videos
+- configure now fails if autodetect-libraries are requested but not found
+- PSD Decoder
+
+version 3.2:
 - libopenmpt demuxer
 - tee protocol
 - Changed metadata print option to accept general urls
@@ -38,6 +47,7 @@ version <next>:
 - Matroska muxer now writes CRC32 elements by default in all Level 1 elements
 - sidedata video and asidedata audio filter
 - Changed mapping of rtp MIME type G726 to codec g726le.
+- spec compliant VAAPI/DXVA2 VC-1 decoding of slices in frame-coded images
 
 
 version 3.1:

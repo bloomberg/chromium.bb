@@ -67,7 +67,6 @@ void avcodec_register_all(void)
     initialized = 1;
 
     /* hardware accelerators */
-    REGISTER_HWACCEL(H263_CUVID,        h263_cuvid);
     REGISTER_HWACCEL(H263_VAAPI,        h263_vaapi);
     REGISTER_HWACCEL(H263_VIDEOTOOLBOX, h263_videotoolbox);
     REGISTER_HWACCEL(H264_CUVID,        h264_cuvid);
@@ -261,10 +260,10 @@ void avcodec_register_all(void)
     REGISTER_DECODER(MPEG2_CRYSTALHD,   mpeg2_crystalhd);
     REGISTER_DECODER(MPEG2_QSV,         mpeg2_qsv);
     REGISTER_DECODER(MSA1,              msa1);
-    REGISTER_DECODER(MSMPEG4_CRYSTALHD, msmpeg4_crystalhd);
     REGISTER_DECODER(MSMPEG4V1,         msmpeg4v1);
     REGISTER_ENCDEC (MSMPEG4V2,         msmpeg4v2);
     REGISTER_ENCDEC (MSMPEG4V3,         msmpeg4v3);
+    REGISTER_DECODER(MSMPEG4_CRYSTALHD, msmpeg4_crystalhd);
     REGISTER_DECODER(MSRLE,             msrle);
     REGISTER_DECODER(MSS1,              mss1);
     REGISTER_DECODER(MSS2,              mss2);
@@ -288,6 +287,7 @@ void avcodec_register_all(void)
     REGISTER_ENCODER(PRORES_AW,         prores_aw);
     REGISTER_ENCODER(PRORES_KS,         prores_ks);
     REGISTER_DECODER(PRORES_LGPL,       prores_lgpl);
+    REGISTER_DECODER(PSD,               psd);
     REGISTER_DECODER(PTX,               ptx);
     REGISTER_DECODER(QDRAW,             qdraw);
     REGISTER_DECODER(QPEG,              qpeg);
@@ -634,7 +634,6 @@ void avcodec_register_all(void)
     /* external libraries, that shouldn't be used by default if one of the
      * above is available */
     REGISTER_ENCDEC (LIBOPENH264,       libopenh264);
-    REGISTER_DECODER(H263_CUVID,        h263_cuvid);
     REGISTER_DECODER(H264_CUVID,        h264_cuvid);
     REGISTER_ENCODER(H264_NVENC,        h264_nvenc);
     REGISTER_ENCODER(H264_OMX,          h264_omx);

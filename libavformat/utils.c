@@ -328,6 +328,7 @@ static int set_codec_from_probe_data(AVFormatContext *s, AVStream *st,
         { "hevc",      AV_CODEC_ID_HEVC,       AVMEDIA_TYPE_VIDEO },
         { "loas",      AV_CODEC_ID_AAC_LATM,   AVMEDIA_TYPE_AUDIO },
         { "m4v",       AV_CODEC_ID_MPEG4,      AVMEDIA_TYPE_VIDEO },
+        { "mjpeg_2000",AV_CODEC_ID_JPEG2000,   AVMEDIA_TYPE_VIDEO },
         { "mp3",       AV_CODEC_ID_MP3,        AVMEDIA_TYPE_AUDIO },
         { "mpegvideo", AV_CODEC_ID_MPEG2VIDEO, AVMEDIA_TYPE_VIDEO },
         { "truehd",    AV_CODEC_ID_TRUEHD,     AVMEDIA_TYPE_AUDIO },
@@ -479,6 +480,12 @@ static int update_stream_avctx(AVFormatContext *s)
 
         if (!st->internal->need_context_update)
             continue;
+
+        /* close parser, because it depends on the codec */
+        if (st->parser && st->internal->avctx->codec_id != st->codecpar->codec_id) {
+            av_parser_close(st->parser);
+            st->parser = NULL;
+        }
 
         /* update internal codec context, for the parser */
         ret = avcodec_parameters_to_context(st->internal->avctx, st->codecpar);
@@ -1513,6 +1520,12 @@ static int read_frame_internal(AVFormatContext *s, AVPacket *pkt)
                 av_log(s, AV_LOG_DEBUG, "Demuxer context update while decoder is open, closing and trying to re-open\n");
                 avcodec_close(st->internal->avctx);
                 st->info->found_decoder = 0;
+            }
+
+            /* close parser, because it depends on the codec */
+            if (st->parser && st->internal->avctx->codec_id != st->codecpar->codec_id) {
+                av_parser_close(st->parser);
+                st->parser = NULL;
             }
 
             ret = avcodec_parameters_to_context(st->internal->avctx, st->codecpar);
@@ -3352,6 +3365,7 @@ int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options)
     int64_t max_subtitle_analyze_duration;
     int64_t probesize = ic->probesize;
     int eof_reached = 0;
+    int *missing_streams = av_opt_ptr(ic->iformat->priv_class, ic->priv_data, "missing_streams");
 
     flush_codecs = probesize > 0;
 
@@ -3436,7 +3450,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             && codec && !avctx->codec) {
             if (avcodec_open2(avctx, codec, options ? &options[i] : &thread_opt) < 0)
                 av_log(ic, AV_LOG_WARNING,
-                       "Failed to open codec in av_find_stream_info\n");
+                       "Failed to open codec in %s\n",__FUNCTION__);
         }
 
         // Try to just open decoders, in case this is enough to get parameters.
@@ -3444,7 +3458,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             if (codec && !avctx->codec)
                 if (avcodec_open2(avctx, codec, options ? &options[i] : &thread_opt) < 0)
                     av_log(ic, AV_LOG_WARNING,
-                           "Failed to open codec in av_find_stream_info\n");
+                           "Failed to open codec in %s\n",__FUNCTION__);
         }
         if (!options)
             av_dict_free(&thread_opt);
@@ -3505,6 +3519,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
                 break;
         }
         analyzed_all_streams = 0;
+        if (!missing_streams || !*missing_streams)
         if (i == ic->nb_streams) {
             analyzed_all_streams = 1;
             /* NOTE: If the format has no header, then we need to read some
@@ -3684,9 +3699,13 @@ FF_ENABLE_DEPRECATION_WARNINGS
             if (!has_codec_parameters(st, NULL)) {
                 const AVCodec *codec = find_probe_decoder(ic, st, st->codecpar->codec_id);
                 if (codec && !avctx->codec) {
-                    if (avcodec_open2(avctx, codec, (options && stream_index < orig_nb_streams) ? &options[stream_index] : NULL) < 0)
+                    AVDictionary *opts = NULL;
+                    if (ic->codec_whitelist)
+                        av_dict_set(&opts, "codec_whitelist", ic->codec_whitelist, 0);
+                    if (avcodec_open2(avctx, codec, (options && stream_index < orig_nb_streams) ? &options[stream_index] : &opts) < 0)
                         av_log(ic, AV_LOG_WARNING,
-                            "Failed to open codec in av_find_stream_info\n");
+                               "Failed to open codec in %s\n",__FUNCTION__);
+                    av_dict_free(&opts);
                 }
             }
 
@@ -4199,8 +4218,11 @@ AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c)
     int i;
     AVStream **streams;
 
-    if (s->nb_streams >= INT_MAX/sizeof(*streams))
+    if (s->nb_streams >= FFMIN(s->max_streams, INT_MAX/sizeof(*streams))) {
+        if (s->max_streams < INT_MAX/sizeof(*streams))
+            av_log(s, AV_LOG_ERROR, "Number of streams exceeds max_streams parameter (%d), see the documentation if you wish to increase it\n", s->max_streams);
         return NULL;
+    }
     streams = av_realloc_array(s->streams, s->nb_streams + 1, sizeof(*streams));
     if (!streams)
         return NULL;
@@ -5093,15 +5115,11 @@ uint8_t *av_stream_get_side_data(const AVStream *st,
     return NULL;
 }
 
-uint8_t *av_stream_new_side_data(AVStream *st, enum AVPacketSideDataType type,
-                                 int size)
+int av_stream_add_side_data(AVStream *st, enum AVPacketSideDataType type,
+                            uint8_t *data, size_t size)
 {
     AVPacketSideData *sd, *tmp;
     int i;
-    uint8_t *data = av_malloc(size);
-
-    if (!data)
-        return NULL;
 
     for (i = 0; i < st->nb_side_data; i++) {
         sd = &st->side_data[i];
@@ -5110,14 +5128,16 @@ uint8_t *av_stream_new_side_data(AVStream *st, enum AVPacketSideDataType type,
             av_freep(&sd->data);
             sd->data = data;
             sd->size = size;
-            return sd->data;
+            return 0;
         }
     }
 
-    tmp = av_realloc_array(st->side_data, st->nb_side_data + 1, sizeof(*tmp));
+    if ((unsigned)st->nb_side_data + 1 >= INT_MAX / sizeof(*st->side_data))
+        return AVERROR(ERANGE);
+
+    tmp = av_realloc(st->side_data, (st->nb_side_data + 1) * sizeof(*tmp));
     if (!tmp) {
-        av_freep(&data);
-        return NULL;
+        return AVERROR(ENOMEM);
     }
 
     st->side_data = tmp;
@@ -5127,6 +5147,25 @@ uint8_t *av_stream_new_side_data(AVStream *st, enum AVPacketSideDataType type,
     sd->type = type;
     sd->data = data;
     sd->size = size;
+
+    return 0;
+}
+
+uint8_t *av_stream_new_side_data(AVStream *st, enum AVPacketSideDataType type,
+                                 int size)
+{
+    int ret;
+    uint8_t *data = av_malloc(size);
+
+    if (!data)
+        return NULL;
+
+    ret = av_stream_add_side_data(st, type, data, size);
+    if (ret < 0) {
+        av_freep(&data);
+        return NULL;
+    }
+
     return data;
 }
 
