@@ -35,6 +35,9 @@ class IOSSSLErrorHandler {
       web::WebState* web_state,
       const base::Callback<void(bool)>& callback,
       bool proceed);
+  // Records a metric to classify if SSL errors are due to a Captive Portal
+  // state.
+  static void RecordCaptivePortalState(web::WebState* web_state);
   DISALLOW_IMPLICIT_CONSTRUCTORS(IOSSSLErrorHandler);
 };
 

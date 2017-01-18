@@ -8,6 +8,7 @@ include_rules = [
   "+components/bookmarks",
   "+components/browser_sync",
   "+components/browsing_data/core",
+  "+components/captive_portal",
   "+components/component_updater",
   "+components/content_settings/core",
   "+components/cookie_config",
