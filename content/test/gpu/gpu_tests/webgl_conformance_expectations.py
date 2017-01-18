@@ -380,6 +380,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9)], bug=635081)
 
+    # Mac Intel
+
+    # ASAN only
+    self.Fail(
+      'conformance/more/functions/copyTexImage2D.html',
+      ['mac', 'intel', 'asan'], bug=681641)
+    self.Fail(
+      'conformance/more/functions/copyTexSubImage2D.html',
+      ['mac', 'intel', 'asan'], bug=681641)
+
     # Linux failures
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
