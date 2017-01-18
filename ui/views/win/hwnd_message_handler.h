@@ -423,6 +423,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
     CR_MSG_WM_SIZE(OnSize)
     CR_MSG_WM_SYSCOMMAND(OnSysCommand)
     CR_MSG_WM_THEMECHANGED(OnThemeChanged)
+    CR_MSG_WM_TIMECHANGE(OnTimeChange)
     CR_MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
     CR_MSG_WM_WINDOWPOSCHANGING(OnWindowPosChanging)
   CR_END_MSG_MAP()
@@ -480,6 +481,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void OnSize(UINT param, const gfx::Size& size);
   void OnSysCommand(UINT notification_code, const gfx::Point& point);
   void OnThemeChanged();
+  void OnTimeChange();
   LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnWindowPosChanging(WINDOWPOS* window_pos);
   void OnWindowPosChanged(WINDOWPOS* window_pos);

@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
@@ -2165,6 +2166,13 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
 
 void HWNDMessageHandler::OnThemeChanged() {
   ui::NativeThemeWin::CloseHandles();
+}
+
+void HWNDMessageHandler::OnTimeChange() {
+  // Call NowFromSystemTime() to force base::Time to re-initialize the clock
+  // from system time. Otherwise base::Time::Now() might continue to reflect the
+  // old system clock for some amount of time. See https://crbug.com/672906#c5
+  base::Time::NowFromSystemTime();
 }
 
 LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
