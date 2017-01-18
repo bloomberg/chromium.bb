@@ -4137,6 +4137,7 @@ grit("resources") {
     "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings__generator",
     "//device/bluetooth/public/interfaces:experimental_interfaces__generator",
+    "//device/bluetooth/public/interfaces:interfaces__generator",
     "//url/mojo:url_mojom_gurl__generator",
     "//url/mojo:url_mojom_origin__generator",
   ]
