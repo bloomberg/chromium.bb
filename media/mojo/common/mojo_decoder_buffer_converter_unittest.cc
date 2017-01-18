@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/mock_callback.h"
 #include "media/base/decoder_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,11 +26,6 @@ MATCHER_P(MatchesDecoderBuffer, buffer, "") {
   DCHECK(arg);
   return arg->MatchesForTesting(*buffer);
 }
-
-class MockReadCB {
- public:
-  MOCK_METHOD1(Run, void(scoped_refptr<DecoderBuffer>));
-};
 
 class MojoDecoderBufferConverter {
  public:
@@ -50,15 +46,13 @@ class MojoDecoderBufferConverter {
 
   void ConvertAndVerify(const scoped_refptr<DecoderBuffer>& media_buffer) {
     base::RunLoop run_loop;
-    MockReadCB mock_cb;
+    base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_cb;
     EXPECT_CALL(mock_cb, Run(MatchesDecoderBuffer(media_buffer)))
         .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
     mojom::DecoderBufferPtr mojo_buffer =
         writer->WriteDecoderBuffer(media_buffer);
-    reader->ReadDecoderBuffer(
-        std::move(mojo_buffer),
-        base::BindOnce(&MockReadCB::Run, base::Unretained(&mock_cb)));
+    reader->ReadDecoderBuffer(std::move(mojo_buffer), mock_cb.Get());
     run_loop.Run();
   }
 
@@ -192,7 +186,7 @@ TEST(MojoDecoderBufferConverterTest, WriterSidePipeError) {
 
   // Verify that ReadCB is called with a NULL decoder buffer.
   base::RunLoop run_loop;
-  MockReadCB mock_cb;
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_cb;
   EXPECT_CALL(mock_cb, Run(testing::IsNull()))
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
@@ -201,9 +195,7 @@ TEST(MojoDecoderBufferConverterTest, WriterSidePipeError) {
   MojoDecoderBufferConverter converter(kDataSize / 2);
   mojom::DecoderBufferPtr mojo_buffer =
       converter.writer->WriteDecoderBuffer(media_buffer);
-  converter.reader->ReadDecoderBuffer(
-      std::move(mojo_buffer),
-      base::BindOnce(&MockReadCB::Run, base::Unretained(&mock_cb)));
+  converter.reader->ReadDecoderBuffer(std::move(mojo_buffer), mock_cb.Get());
 
   // Before the entire data is transmitted, close the handle on writer side.
   // The reader side will get notified and report the error.
