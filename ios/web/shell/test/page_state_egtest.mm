@@ -47,6 +47,29 @@ id<GREYMatcher> contentOffset(CGPoint offset) {
       nil);
 }
 
+// Waits for the web view scroll view is scrolled to |y_offset|.
+void WaitForOffset(CGFloat y_offset) {
+  CGPoint content_offset = CGPointMake(0.0, y_offset);
+  NSString* content_offset_string = NSStringFromCGPoint(content_offset);
+  NSString* name =
+      [NSString stringWithFormat:@"Wait for scroll view to scroll to %@.",
+                                 content_offset_string];
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:name
+                  block:^BOOL {
+                    NSError* error = nil;
+                    [[EarlGrey
+                        selectElementWithMatcher:web::webViewScrollView()]
+                        assertWithMatcher:contentOffset(content_offset)
+                                    error:&error];
+                    return (error == nil);
+                  }];
+  NSString* error_text =
+      [NSString stringWithFormat:@"Scroll view did not scroll to %@",
+                                 content_offset_string];
+  GREYAssert([condition waitWithTimeout:10], error_text);
+}
+
 }  // namespace
 
 using web::test::HttpServer;
@@ -60,10 +83,6 @@ using web::test::HttpServer;
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
 - (void)testScrollPositionRestoring {
-  // TODO(crbug.com/670700): Re-enable this test.
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on pre-iOS 10");
-  }
   web::test::SetUpFileBasedHttpServer();
 
   // Load first URL which is a long page.
@@ -87,14 +106,12 @@ using web::test::HttpServer;
   // Go back and verify that the first page offset has been restored.
   [[EarlGrey selectElementWithMatcher:web::backButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:web::webViewScrollView()]
-      assertWithMatcher:contentOffset(CGPointMake(0, kScrollOffset1))];
+  WaitForOffset(kScrollOffset1);
 
   // Go forward and verify that the second page offset has been restored.
   [[EarlGrey selectElementWithMatcher:web::forwardButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:web::webViewScrollView()]
-      assertWithMatcher:contentOffset(CGPointMake(0, kScrollOffset2))];
+  WaitForOffset(kScrollOffset2);
 }
 
 @end
