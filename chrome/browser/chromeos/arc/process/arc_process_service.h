@@ -13,8 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_iterator.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/process.mojom.h"
@@ -98,8 +97,6 @@ class ArcProcessService
       const RequestProcessListCallback& callback,
       std::vector<mojom::RunningAppProcessInfoPtr> instance_processes);
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
-
   // InstanceHolder<mojom::ProcessInstance>::Observer overrides.
   void OnInstanceReady() override;
   void OnInstanceClosed() override;
@@ -108,14 +105,12 @@ class ArcProcessService
   bool instance_ready_ = false;
 
   // There are some expensive tasks such as traverse whole process tree that
-  // we can't do it on the UI thread. Thus we need an additional thread to
-  // handle
-  // such tasks.
-  base::Thread heavy_task_thread_;
+  // we can't do it on the UI thread.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Keep a cache pid mapping of all arc processes so to minimize the number of
   // nspid lookup from /proc/<PID>/status.
-  // To play safe, always modify |nspid_to_pid_| on the |heavy_task_thread_|.
+  // To play safe, always modify |nspid_to_pid_| on the blocking pool.
   scoped_refptr<NSPidToPidMap> nspid_to_pid_;
 
   // Always keep this the last member of this class to make sure it's the

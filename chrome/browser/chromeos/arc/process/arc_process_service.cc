@@ -30,7 +30,6 @@ namespace arc {
 using base::kNullProcessId;
 using base::Process;
 using base::ProcessId;
-using base::SequencedWorkerPool;
 using std::vector;
 
 namespace {
@@ -204,19 +203,20 @@ void Reset(scoped_refptr<ArcProcessService::NSPidToPidMap> pid_map) {
 
 ArcProcessService::ArcProcessService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
-      heavy_task_thread_("ArcProcessServiceThread"),
       nspid_to_pid_(new NSPidToPidMap()),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* blocking_pool = content::BrowserThread::GetBlockingPool();
+  task_runner_ = blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+      blocking_pool->GetSequenceToken(),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   arc_bridge_service()->process()->AddObserver(this);
   DCHECK(!g_arc_process_service);
   g_arc_process_service = this;
-  heavy_task_thread_.Start();
 }
 
 ArcProcessService::~ArcProcessService() {
   DCHECK(g_arc_process_service == this);
-  heavy_task_thread_.Stop();
   g_arc_process_service = nullptr;
   arc_bridge_service()->process()->RemoveObserver(this);
 }
@@ -231,7 +231,7 @@ void ArcProcessService::RequestSystemProcessList(
     RequestProcessListCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(GetTaskRunner().get(), FROM_HERE,
+  base::PostTaskAndReplyWithResult(task_runner_.get(), FROM_HERE,
                                    base::Bind(&GetArcSystemProcessList),
                                    callback);
 }
@@ -264,19 +264,15 @@ void ArcProcessService::OnReceiveProcessList(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(
-      GetTaskRunner().get(), FROM_HERE,
+      task_runner_.get(), FROM_HERE,
       base::Bind(&UpdateAndReturnProcessList, nspid_to_pid_,
                  base::Passed(&instance_processes)),
       callback);
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> ArcProcessService::GetTaskRunner() {
-  return heavy_task_thread_.task_runner();
-}
-
 void ArcProcessService::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(&Reset, nspid_to_pid_));
+  task_runner_->PostTask(FROM_HERE, base::Bind(&Reset, nspid_to_pid_));
   instance_ready_ = true;
 }
 
