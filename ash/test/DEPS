@@ -1,7 +1,6 @@
 include_rules = [
   # In general files in this directory should not depend upon content.
   "+mojo/edk",
-  "+win8/viewer",
 ]
 
 specific_include_rules = {
