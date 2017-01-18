@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
@@ -133,7 +132,7 @@ public class ItemChooserDialog {
     /**
      * The various states the dialog can represent.
      */
-    private enum State { STARTING, PROGRESS_UPDATE_AVAILABLE, DISCOVERY_IDLE }
+    private enum State { INITIALIZING_ADAPTER, STARTING, PROGRESS_UPDATE_AVAILABLE, DISCOVERY_IDLE }
 
     /**
      * An adapter for keeping track of which items to show in the dialog.
@@ -518,6 +517,13 @@ public class ItemChooserDialog {
     }
 
     /**
+     * Indicates the adapter is being initialized.
+     */
+    public void signalInitializingAdapter() {
+        setState(State.INITIALIZING_ADAPTER);
+    }
+
+    /**
      * Clear all items from the dialog.
      */
     public void clear() {
@@ -528,7 +534,7 @@ public class ItemChooserDialog {
     /**
      * Shows an error message in the dialog.
      */
-    public void setErrorState(SpannableString errorMessage, SpannableString errorStatus) {
+    public void setErrorState(CharSequence errorMessage, CharSequence errorStatus) {
         mListView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
         mEmptyMessage.setText(errorMessage);
@@ -538,6 +544,11 @@ public class ItemChooserDialog {
 
     private void setState(State state) {
         switch (state) {
+            case INITIALIZING_ADAPTER:
+                mListView.setVisibility(View.GONE);
+                mProgressBar.setVisibility(View.VISIBLE);
+                mEmptyMessage.setVisibility(View.GONE);
+                break;
             case STARTING:
                 mStatus.setText(mLabels.searching);
                 mListView.setVisibility(View.GONE);

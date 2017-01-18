@@ -378,6 +378,52 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
 
     // TODO(jyasskin): Test when the user denies Chrome the ability to ask for permission.
 
+    @LargeTest
+    public void testTurnOnAdapter() {
+        final ItemChooserDialog itemChooser = mChooserDialog.mItemChooserDialog;
+        Dialog dialog = itemChooser.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        final TextViewWithClickableSpans statusView =
+                (TextViewWithClickableSpans) dialog.findViewById(R.id.status);
+        final TextViewWithClickableSpans errorView =
+                (TextViewWithClickableSpans) dialog.findViewById(R.id.not_found_message);
+        final View items = dialog.findViewById(R.id.items);
+        final Button button = (Button) dialog.findViewById(R.id.positive);
+        final View progress = dialog.findViewById(R.id.progress);
+
+        // Turn off adapter.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mChooserDialog.notifyAdapterTurnedOff();
+            }
+        });
+
+        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_adapter_off)),
+                errorView.getText().toString());
+        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_adapter_off_help)),
+                statusView.getText().toString());
+        assertFalse(button.isEnabled());
+        assertEquals(View.VISIBLE, errorView.getVisibility());
+        assertEquals(View.GONE, items.getVisibility());
+        assertEquals(View.GONE, progress.getVisibility());
+
+        // Turn on adapter.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                itemChooser.signalInitializingAdapter();
+            }
+        });
+
+        assertEquals(View.GONE, errorView.getVisibility());
+        assertEquals(View.GONE, items.getVisibility());
+        assertEquals(View.VISIBLE, progress.getVisibility());
+
+        mChooserDialog.closeDialog();
+    }
+
     private static class TestAndroidPermissionDelegate implements AndroidPermissionDelegate {
         Dialog mDialog = null;
         PermissionCallback mCallback = null;
