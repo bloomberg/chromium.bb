@@ -39,28 +39,18 @@ namespace blink {
 
 class SimpleEditCommand;
 
-// TODO(xiaochengh): Get rid of this interface, and then rename
-// |EditCommandComposition| to |UndoStep|.
-class UndoStep : public GarbageCollectedFinalized<UndoStep> {
- public:
-  virtual ~UndoStep() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
-
-  virtual void unapply() = 0;
-  virtual void reapply() = 0;
-  virtual InputEvent::InputType inputType() const = 0;
-};
-
-class EditCommandComposition final : public UndoStep {
+// TODO(xiaochengh): Rename this class to |UndoStep|.
+class EditCommandComposition
+    : public GarbageCollectedFinalized<EditCommandComposition> {
  public:
   static EditCommandComposition* create(Document*,
                                         const VisibleSelection&,
                                         const VisibleSelection&,
                                         InputEvent::InputType);
 
-  void unapply() override;
-  void reapply() override;
-  InputEvent::InputType inputType() const override;
+  void unapply();
+  void reapply();
+  InputEvent::InputType inputType() const;
   void append(SimpleEditCommand*);
   void append(EditCommandComposition*);
 
@@ -77,7 +67,7 @@ class EditCommandComposition final : public UndoStep {
     return m_endingRootEditableElement.get();
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE();
 
  private:
   EditCommandComposition(Document*,

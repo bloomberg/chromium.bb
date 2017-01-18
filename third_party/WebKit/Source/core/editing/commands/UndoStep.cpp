@@ -102,7 +102,6 @@ DEFINE_TRACE(EditCommandComposition) {
   visitor->trace(m_commands);
   visitor->trace(m_startingRootEditableElement);
   visitor->trace(m_endingRootEditableElement);
-  UndoStep::trace(visitor);
 }
 
 }  // namespace blink
