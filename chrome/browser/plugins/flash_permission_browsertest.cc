@@ -6,11 +6,13 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/permissions/permissions_browsertest.h"
 #include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/variations/variations_switches.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -163,6 +165,24 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
   content::SimulateMouseClickAt(GetWebContents(), 0 /* modifiers */,
                                 blink::WebMouseEvent::Button::Left,
                                 gfx::Point(50, 50));
+  EXPECT_TRUE(reload_waiter.Wait());
+
+  EXPECT_TRUE(FeatureUsageSucceeds());
+  EXPECT_EQ(1, prompt_factory()->total_request_count());
+}
+
+IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
+                       TriggerPromptViaMainFrameNavigationWithoutUserGesture) {
+  EXPECT_EQ(0, prompt_factory()->total_request_count());
+  EXPECT_FALSE(FeatureUsageSucceeds());
+  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+
+  PageReloadWaiter reload_waiter(GetWebContents());
+
+  // Unlike the other tests, this JavaScript is called without a user gesture.
+  GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("triggerPromptWithMainFrameNavigation();"));
+
   EXPECT_TRUE(reload_waiter.Wait());
 
   EXPECT_TRUE(FeatureUsageSucceeds());

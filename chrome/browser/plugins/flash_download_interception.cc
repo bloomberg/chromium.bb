@@ -127,13 +127,17 @@ FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
   if (source_url.is_empty())
     return nullptr;
 
+  // Always treat main-frame navigations as having a user gesture. We have to do
+  // this because the user gesture system can be foiled by popular JavaScript
+  // analytics frameworks that capture the click event. crbug.com/678097
+  bool has_user_gesture = handle->HasUserGesture() || handle->IsInMainFrame();
+
   Profile* profile = Profile::FromBrowserContext(
       handle->GetWebContents()->GetBrowserContext());
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   if (!ShouldStopFlashDownloadAction(host_content_settings_map, source_url,
-                                     handle->GetURL(),
-                                     handle->HasUserGesture())) {
+                                     handle->GetURL(), has_user_gesture)) {
     return nullptr;
   }
 
