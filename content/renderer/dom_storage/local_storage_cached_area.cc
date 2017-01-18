@@ -114,7 +114,8 @@ bool LocalStorageCachedArea::SetItem(const base::string16& key,
                                      const std::string& storage_area_id) {
   // A quick check to reject obviously overbudget items to avoid priming the
   // cache.
-  if (key.length() + value.length() > kPerStorageAreaQuota)
+  if ((key.length() + value.length()) * sizeof(base::char16) >
+      kPerStorageAreaQuota)
     return false;
 
   EnsureLoaded();
