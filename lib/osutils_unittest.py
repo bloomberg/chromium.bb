@@ -183,6 +183,100 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertEqual(os.path.getsize(path), 0)
 
 
+class TestEmptyDir(cros_test_lib.TempDirTestCase):
+  """Test osutils.EmptyDir."""
+
+  def setUp(self):
+    self.subdir = os.path.join(self.tempdir, 'a')
+    self.nestedfile = os.path.join(self.subdir, 'b', 'c', 'd', 'e')
+    self.topfile = os.path.join(self.tempdir, 'file')
+
+  def testEmptyDir(self):
+    """Empty an empty directory."""
+    osutils.EmptyDir(self.tempdir)
+    osutils.EmptyDir(self.tempdir, ignore_missing=True, sudo=True)
+
+  def testNonExistentDir(self):
+    """Non-existent directory."""
+    # Ignore_missing=False
+    with self.assertRaises(osutils.EmptyDirNonExistentException):
+      osutils.EmptyDir(self.subdir)
+
+    # Ignore missing=True
+    osutils.EmptyDir(self.subdir, ignore_missing=True)
+
+  def testEmptyWithContentsMinFlags(self):
+    """Test ability to empty actual directory contents."""
+    osutils.Touch(self.nestedfile, makedirs=True)
+    osutils.Touch(self.topfile, makedirs=True)
+
+    osutils.EmptyDir(self.tempdir)
+
+    self.assertExists(self.tempdir)
+    self.assertNotExists(self.subdir)
+    self.assertNotExists(self.topfile)
+
+  def testEmptyWithContentsMaxFlags(self):
+    """Test ability to empty actual directory contents."""
+    osutils.Touch(self.nestedfile, makedirs=True)
+    osutils.Touch(self.topfile, makedirs=True)
+
+    osutils.EmptyDir(self.tempdir, ignore_missing=True, sudo=True)
+
+    self.assertExists(self.tempdir)
+    self.assertNotExists(self.subdir)
+    self.assertNotExists(self.topfile)
+
+  def testEmptyWithRootOwnedContents(self):
+    """Test handling of root owned sub directories."""
+    # Root owned contents.
+    osutils.SafeMakedirs(self.nestedfile, sudo=True)
+
+    # Fails without sudo=True
+    with self.assertRaises(OSError):
+      osutils.EmptyDir(self.tempdir)
+    self.assertExists(self.nestedfile)
+
+    # Works with sudo=True
+    osutils.EmptyDir(self.tempdir, sudo=True)
+    self.assertExists(self.tempdir)
+    self.assertNotExists(self.subdir)
+
+
+  def testExclude(self):
+    """Test ability to empty actual directory contents.
+
+    Also ensure that the excludes argument can really be just an iterable.
+    """
+    files = {
+        'keep': True,
+        'keepdir/foo': True,
+        'keepdir/bar': True,
+        'remove': False,
+        'removedir/foo': False,
+        'removedir/bar': False,
+    }
+
+    excludes = ['keep', 'keepdir', 'bogus']
+
+    # Perform exclusion of non-existent files.
+    osutils.EmptyDir(self.tempdir, exclude=iter(excludes))
+
+    # Create files.
+    for f in files.keys():
+      osutils.Touch(os.path.join(self.tempdir, f), makedirs=True)
+
+    # Empty with excludes.
+    osutils.EmptyDir(self.tempdir, exclude=iter(excludes))
+
+    # Verify that the results are what we expect.
+    for f, expected in files.iteritems():
+      f = os.path.join(self.tempdir, f)
+      self.assertEqual(os.path.exists(f), expected, 'Unexpected: %s' % f)
+    self.assertExists(os.path.join(self.tempdir, 'keepdir'))
+    self.assertNotExists(os.path.join(self.tempdir, 'removedir'))
+
+
 class TestProcess(cros_build_lib_unittest.RunCommandTestCase):
   """Tests for osutils.IsChildProcess."""
 

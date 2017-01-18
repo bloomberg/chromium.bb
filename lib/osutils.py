@@ -310,6 +310,45 @@ def RmDir(path, ignore_missing=False, sudo=False):
         raise
 
 
+class EmptyDirNonExistentException(Exception):
+  """EmptyDir was called on a non-existent directory without ignore_missing."""
+
+
+def EmptyDir(path, ignore_missing=False, sudo=False, exclude=()):
+  """Remove all files inside a directory, including subdirs.
+
+  Args:
+    path: Path of directory to empty.
+    ignore_missing: Do not error when path does not exist.
+    sudo: Remove directories as root.
+    exclude: Iterable of file names to exclude from the cleanup. They should
+             exactly match the file or directory name in path.
+             e.g. ['foo', 'bar']
+
+  Raises:
+    EmptyDirNonExistentException: if ignore_missing false, and dir is missing.
+    OSError: If the directory is not user writable.
+  """
+  path = ExpandPath(path)
+  exclude = set(exclude)
+
+  if not os.path.exists(path):
+    if ignore_missing:
+      return
+    raise EmptyDirNonExistentException(
+        'EmptyDir called non-existent: %s' % path)
+
+  # We don't catch OSError if path is not a directory.
+  for candidate in os.listdir(path):
+    if candidate not in exclude:
+      subpath = os.path.join(path, candidate)
+      # Both options can throw OSError if there is a permission problem.
+      if os.path.isdir(subpath):
+        RmDir(subpath, ignore_missing=ignore_missing, sudo=sudo)
+      else:
+        SafeUnlink(subpath, sudo)
+
+
 def Which(binary, path=None, mode=os.X_OK):
   """Return the absolute path to the specified binary.
 
