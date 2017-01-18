@@ -201,7 +201,15 @@
         results.textContent = resultStr;
 
         function done() {
-            if (self.testRunner) {
+            // A temporary workaround since |window.self| property lookup starts
+            // failing if the frame is detached. |output_document| may be an
+            // ancestor of |self| so clearing |textContent| may detach |self|.
+            // To get around this, cache window.self now and use the cached
+            // value.
+            // TODO(dcheng): Remove this hack after fixing window/self/frames
+            // lookup in https://crbug.com/618672
+            var cachedSelf = window.self;
+            if (cachedSelf.testRunner) {
                 // The following DOM operations may show console messages.  We
                 // suppress them because they are not related to the running
                 // test.
@@ -223,7 +231,7 @@
             }
             output_document.body.appendChild(results);
 
-            if (self.testRunner)
+            if (cachedSelf.testRunner)
                 testRunner.notifyDone();
         }
 

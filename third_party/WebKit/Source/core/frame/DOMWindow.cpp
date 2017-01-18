@@ -81,8 +81,11 @@ unsigned DOMWindow::length() const {
   return frame() ? frame()->tree().scopedChildCount() : 0;
 }
 
-v8::Local<v8::Object> DOMWindow::self(ScriptState* scriptState) const {
-  return scriptState->context()->Global();
+DOMWindow* DOMWindow::self() const {
+  if (!frame())
+    return nullptr;
+
+  return frame()->domWindow();
 }
 
 DOMWindow* DOMWindow::opener() const {
