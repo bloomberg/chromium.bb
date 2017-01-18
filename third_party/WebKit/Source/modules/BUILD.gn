@@ -185,6 +185,8 @@ source_set("modules_testing") {
     "fetch/testing/InternalsFetch.h",
     "fetch/testing/WorkerInternalsFetch.cpp",
     "fetch/testing/WorkerInternalsFetch.h",
+    "mediastream/testing/InternalsMediaStream.cpp",
+    "mediastream/testing/InternalsMediaStream.h",
     "navigatorcontentutils/testing/InternalsNavigatorContentUtils.cpp",
     "navigatorcontentutils/testing/InternalsNavigatorContentUtils.h",
     "navigatorcontentutils/testing/NavigatorContentUtilsClientMock.cpp",

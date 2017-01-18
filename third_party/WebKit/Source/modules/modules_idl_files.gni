@@ -638,6 +638,7 @@ modules_testing_dependency_idl_files =
           "accessibility/testing/InternalsAccessibility.idl",
           "fetch/testing/InternalsFetch.idl",
           "fetch/testing/WorkerInternalsFetch.idl",
+          "mediastream/testing/InternalsMediaStream.idl",
           "navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl",
           "peerconnection/testing/InternalsRTCCertificate.idl",
           "serviceworkers/testing/InternalsServiceWorker.idl",
