@@ -130,6 +130,11 @@ static struct av1_token switchable_restore_encodings[RESTORE_SWITCHABLE_TYPES];
 static void write_uncompressed_header(AV1_COMP *cpi,
                                       struct aom_write_bit_buffer *wb);
 static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data);
+static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
+                       const uint32_t data_size, const uint32_t max_tile_size,
+                       const uint32_t max_tile_col_size,
+                       int *const tile_size_bytes,
+                       int *const tile_col_size_bytes);
 
 void av1_encode_token_init(void) {
 #if CONFIG_EXT_TX || CONFIG_PALETTE
@@ -3736,10 +3741,14 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   const int num_tg_hdrs = cm->num_tg;
   const int tg_size = (tile_rows * tile_cols + num_tg_hdrs - 1) / num_tg_hdrs;
   int tile_count = 0;
+  int tg_count = 1;
+  int tile_size_bytes = 4;
+  int tile_col_size_bytes;
   int uncompressed_hdr_size = 0;
   uint8_t *dst = NULL;
   struct aom_write_bit_buffer comp_hdr_len_wb;
   struct aom_write_bit_buffer tg_params_wb;
+  struct aom_write_bit_buffer tile_size_bytes_wb;
   int saved_offset;
   int mtu_size = cpi->oxcf.mtu;
   int curr_tg_data_size = 0;
@@ -3835,13 +3844,17 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_TILE_GROUPS
   write_uncompressed_header(cpi, wb);
 
-  // Write the tile length code. Use full 32 bit length fields for the moment
+  // Write the tile length code
+  tile_size_bytes_wb = *wb;
   aom_wb_write_literal(wb, 3, 2);
 
   /* Write a placeholder for the number of tiles in each tile group */
   tg_params_wb = *wb;
   saved_offset = wb->bit_offset;
-  if (have_tiles) aom_wb_write_literal(wb, 0, n_log2_tiles * 2);
+  if (have_tiles) {
+    aom_wb_overwrite_literal(wb, 3, n_log2_tiles);
+    aom_wb_overwrite_literal(wb, (1 << n_log2_tiles) - 1, n_log2_tiles);
+  }
 
   /* Write a placeholder for the compressed header length */
   comp_hdr_len_wb = *wb;
@@ -3880,6 +3893,8 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 
       if ((!mtu_size && tile_count > tg_size) ||
           (mtu_size && tile_count && curr_tg_data_size >= mtu_size)) {
+        // New tile group
+        tg_count++;
         // We've exceeded the packet size
         if (tile_count > 1) {
           /* The last tile exceeded the packet size. The tile group size
@@ -3979,10 +3994,21 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_TILE_GROUPS
   // Write the final tile group size
   if (n_log2_tiles) {
-    aom_wb_write_literal(&tg_params_wb, (1 << n_log2_tiles) - tile_count,
-                         n_log2_tiles);
-    aom_wb_write_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
+    aom_wb_overwrite_literal(&tg_params_wb, (1 << n_log2_tiles) - tile_count,
+                             n_log2_tiles);
+    aom_wb_overwrite_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
   }
+  // Remux if possible. TODO (Thomas Davies): do this for more than one tile
+  // group
+  if (have_tiles && tg_count == 1) {
+    int data_size = total_size - (uncompressed_hdr_size + comp_hdr_size);
+    data_size = remux_tiles(cm, dst + uncompressed_hdr_size + comp_hdr_size,
+                            data_size, *max_tile_size, *max_tile_col_size,
+                            &tile_size_bytes, &tile_col_size_bytes);
+    total_size = data_size + uncompressed_hdr_size + comp_hdr_size;
+    aom_wb_overwrite_literal(&tile_size_bytes_wb, tile_size_bytes - 1, 2);
+  }
+
 #endif
 #endif  // CONFIG_EXT_TILE
   return (uint32_t)total_size;
@@ -4636,7 +4662,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_ANS
 }
 
-#if !CONFIG_TILE_GROUPS
 static int choose_size_bytes(uint32_t size, int spare_msbs) {
   // Choose the number of bytes required to represent size, without
   // using the 'spare_msbs' number of most significant bits.
@@ -4741,7 +4766,12 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
     for (n = 0; n < n_tiles; n++) {
       int tile_size;
 
-      if (n == n_tiles - 1) {
+#if CONFIG_TILE_GROUPS
+      if (0)
+#else
+      if (n == n_tiles - 1)
+#endif
+      {
         tile_size = data_size - rpos;
       } else {
         tile_size = mem_get_le32(dst + rpos);
@@ -4763,7 +4793,6 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
     return wpos;
   }
 }
-#endif  // CONFIG_TILE_GROUPS
 
 void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   uint8_t *data = dst;
