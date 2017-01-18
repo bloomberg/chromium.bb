@@ -26,10 +26,9 @@
 #include "chrome/app/main_dll_loader_win.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/win/chrome_process_finder.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/initialize_from_primary_module.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome_elf/chrome_elf_main.h"
 #include "components/crash/content/app/crash_switches.h"
@@ -230,8 +229,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 int main() {
   HINSTANCE instance = GetModuleHandle(nullptr);
 #endif
-  install_static::InstallDetails::InitializeFromPrimaryModule(
-      chrome::kChromeElfDllName);
+  install_static::InitializeFromPrimaryModule();
 
   // Initialize the CommandLine singleton from the environment.
   base::CommandLine::Init(0, nullptr);

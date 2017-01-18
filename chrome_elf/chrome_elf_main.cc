@@ -33,13 +33,6 @@ extern "C" void GetUserDataDirectoryThunk(wchar_t* user_data_dir,
             invalid_user_data_dir_str.c_str(), _TRUNCATE);
 }
 
-// Returns the payload for the ELF's InstallDetails instance. For use by
-// install_static::InstallDetails::InitializeFromPrimaryModule.
-extern "C" const install_static::InstallDetails::Payload*
-GetInstallDetailsPayload() {
-  return install_static::InstallDetails::Get().GetPayload();
-}
-
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
     install_static::InitializeProductDetailsForPrimaryModule();

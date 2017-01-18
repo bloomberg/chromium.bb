@@ -25,6 +25,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/install_static/initialize_from_primary_module.h"
 #include "chrome/install_static/install_details.h"
 
 #define DLLEXPORT __declspec(dllexport)
@@ -52,8 +53,7 @@ int ChromeMain(int argc, const char** argv) {
 #endif
 
 #if defined(OS_WIN)
-  install_static::InstallDetails::InitializeFromPrimaryModule(
-      chrome::kChromeElfDllName);
+  install_static::InitializeFromPrimaryModule();
 #endif
 
   ChromeMainDelegate chrome_main_delegate(

@@ -67,16 +67,11 @@ const InstallDetails::Payload* InstallDetails::GetPayload() {
 }
 
 // static
-void InstallDetails::InitializeFromPrimaryModule(
-    const wchar_t* primary_module_name) {
+void InstallDetails::InitializeFromPayload(
+    const InstallDetails::Payload* payload) {
   assert(!g_module_details);
-  using GetInstallDetailsPayloadFunction = const Payload*(__cdecl*)();
-  GetInstallDetailsPayloadFunction payload_getter =
-      reinterpret_cast<GetInstallDetailsPayloadFunction>(::GetProcAddress(
-          ::GetModuleHandle(primary_module_name), "GetInstallDetailsPayload"));
-  assert(payload_getter);
   // Intentionally leaked at shutdown.
-  g_module_details = new InstallDetails(payload_getter());
+  g_module_details = new InstallDetails(payload);
 }
 
 PrimaryInstallDetails::PrimaryInstallDetails() : InstallDetails(&payload_) {

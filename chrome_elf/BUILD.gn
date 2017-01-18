@@ -48,6 +48,7 @@ shared_library("chrome_elf") {
     ":security",
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
+    "//chrome/install_static:primary_module",
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]

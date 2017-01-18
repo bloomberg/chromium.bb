@@ -69,6 +69,8 @@ shared_library("chrome_watcher") {
     "//base:base_static",
     "//build/config/sanitizers:deps",
     "//chrome/common:metrics_constants_util_win",
+    "//chrome/install_static:secondary_module",
+    "//chrome_elf",
     "//components/browser_watcher",
   ]
   ldflags = [ "/DEF:" + rebase_path("chrome_watcher.def", root_build_dir) ]

@@ -122,12 +122,9 @@ class InstallDetails {
   // other modules in the process.
   static const Payload* GetPayload();
 
-  // Initializes this module's instance with the payload owned by the process's
-  // primary module (the one that used SetForProcess). Said primary module must
-  // export the function:
-  // extern "C" const install_static::InstallDetails::Payload*
-  // GetInstallDetailsPayload();
-  static void InitializeFromPrimaryModule(const wchar_t* primary_module_name);
+  // Initializes this module's instance with the payload from the process's
+  // primary module (the one that used SetForProcess).
+  static void InitializeFromPayload(const Payload* payload);
 
  protected:
   explicit InstallDetails(const Payload* payload) : payload_(payload) {}
