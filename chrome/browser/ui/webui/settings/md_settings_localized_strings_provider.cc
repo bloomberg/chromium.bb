@@ -90,7 +90,8 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddBoolean(
       "isGuest",
 #if defined(OS_CHROMEOS)
-      user_manager::UserManager::Get()->IsLoggedInAsGuest());
+      user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+      user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
 #else
       profile->IsOffTheRecord());
 #endif
