@@ -72,7 +72,7 @@ int Get5xxRetryCount(bool interactive_request) {
 bool IsSendingTopLanguagesEnabled() {
   return variations::GetVariationParamByFeatureAsBool(
       ntp_snippets::kArticleSuggestionsFeature, kSendTopLanguagesName,
-      /*default_value=*/false);
+      /*default_value=*/true);
 }
 
 bool IsSendingUserClassEnabled() {
