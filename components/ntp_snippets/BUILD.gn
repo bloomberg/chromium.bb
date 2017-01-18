@@ -133,6 +133,7 @@ source_set("unit_tests") {
     "category_rankers/click_based_category_ranker_unittest.cc",
     "category_rankers/constant_category_ranker_unittest.cc",
     "category_unittest.cc",
+    "content_suggestions_metrics_unittest.cc",
     "content_suggestions_service_unittest.cc",
     "offline_pages/recent_tab_suggestions_provider_unittest.cc",
     "physical_web_pages/physical_web_page_suggestions_provider_unittest.cc",
