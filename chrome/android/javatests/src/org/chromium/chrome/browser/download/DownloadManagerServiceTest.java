@@ -323,7 +323,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
 
     private DownloadInfo getDownloadInfo() {
         return new Builder()
-                .setContentLength(100)
+                .setBytesReceived(100)
                 .setDownloadGuid(UUID.randomUUID().toString())
                 .build();
     }

@@ -262,7 +262,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
             switch (notificationInfo.type) {
                 case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
                     mBoundService.notifyDownloadProgress(info.getDownloadGuid(),
-                            info.getFileName(), info.getPercentCompleted(),
+                            info.getFileName(), info.getPercentCompleted(), info.getBytesReceived(),
                             info.getTimeRemainingInMillis(), notificationInfo.startTime,
                             info.isOffTheRecord(),
                             notificationInfo.canDownloadWhileMetered,

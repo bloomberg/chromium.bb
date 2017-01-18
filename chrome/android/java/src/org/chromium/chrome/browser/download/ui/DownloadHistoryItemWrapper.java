@@ -252,7 +252,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public long getFileSize() {
             if (mItem.getDownloadInfo().state() == DownloadState.COMPLETE) {
-                return mItem.getDownloadInfo().getContentLength();
+                return mItem.getDownloadInfo().getBytesReceived();
             } else {
                 return 0;
             }

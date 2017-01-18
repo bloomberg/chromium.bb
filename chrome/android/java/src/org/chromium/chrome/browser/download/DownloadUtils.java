@@ -70,6 +70,10 @@ public class DownloadUtils {
     private static final String PREF_IS_DOWNLOAD_HOME_ENABLED =
             "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
 
+    private static final long BYTES_PER_KILOBYTE = 1024;
+    private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
+    private static final long BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
+
     /**
      * @return Whether or not the Download Home is enabled.
      */
@@ -583,5 +587,31 @@ public class DownloadUtils {
                 return item.getDownloadInfo().state() == DownloadState.INTERRUPTED;
             }
         }
+    }
+
+    /**
+     * Format the number of bytes into KB, or MB, or GB and return the corresponding string
+     * resource.
+     * @param context Context to use.
+     * @param stringSet The string resources for displaying bytes in KB, MB and GB.
+     * @param bytes Number of bytes.
+     * @return A formatted string to be displayed.
+     */
+    public static String getStringForBytes(Context context, int[] stringSet, long bytes) {
+        int resourceId;
+        float bytesInCorrectUnits;
+
+        if (bytes < BYTES_PER_MEGABYTE) {
+            resourceId = stringSet[0];
+            bytesInCorrectUnits = bytes / (float) BYTES_PER_KILOBYTE;
+        } else if (bytes < BYTES_PER_GIGABYTE) {
+            resourceId = stringSet[1];
+            bytesInCorrectUnits = bytes / (float) BYTES_PER_MEGABYTE;
+        } else {
+            resourceId = stringSet[2];
+            bytesInCorrectUnits = bytes / (float) BYTES_PER_GIGABYTE;
+        }
+
+        return context.getResources().getString(resourceId, bytesInCorrectUnits);
     }
 }

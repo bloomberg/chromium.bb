@@ -80,15 +80,15 @@ public class MockDownloadNotificationService extends DownloadNotificationService
 
     @Override
     public void notifyDownloadProgress(final String downloadGuid, final String fileName,
-            final int percentage, final long timeRemainingInMillis, final long startTime,
-            final boolean isOffTheRecord, final boolean canDownloadWhileMetered,
-            final boolean isOfflinePage) {
+            final int percentage, final long bytesReceived, final long timeRemainingInMillis,
+            final long startTime, final boolean isOffTheRecord,
+            final boolean canDownloadWhileMetered, final boolean isOfflinePage) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 MockDownloadNotificationService.super.notifyDownloadProgress(
-                        downloadGuid, fileName, percentage, timeRemainingInMillis, startTime,
-                        isOffTheRecord, canDownloadWhileMetered, isOfflinePage);
+                        downloadGuid, fileName, percentage, bytesReceived, timeRemainingInMillis,
+                        startTime, isOffTheRecord, canDownloadWhileMetered, isOfflinePage);
             }
         });
     }

@@ -20,7 +20,7 @@ public final class DownloadInfo {
     private final String mFilePath;
     private final String mReferrer;
     private final String mOriginalUrl;
-    private final long mContentLength;
+    private final long mBytesReceived;
     private final String mDownloadGuid;
     private final boolean mHasUserGesture;
     private final String mContentDisposition;
@@ -43,7 +43,7 @@ public final class DownloadInfo {
         mFilePath = builder.mFilePath;
         mReferrer = builder.mReferrer;
         mOriginalUrl = builder.mOriginalUrl;
-        mContentLength = builder.mContentLength;
+        mBytesReceived = builder.mBytesReceived;
         mDownloadGuid = builder.mDownloadGuid;
         mHasUserGesture = builder.mHasUserGesture;
         mIsGETRequest = builder.mIsGETRequest;
@@ -93,8 +93,8 @@ public final class DownloadInfo {
         return mOriginalUrl;
     }
 
-    public long getContentLength() {
-        return mContentLength;
+    public long getBytesReceived() {
+        return mBytesReceived;
     }
 
     public boolean isGETRequest() {
@@ -157,7 +157,7 @@ public final class DownloadInfo {
         private String mFilePath;
         private String mReferrer;
         private String mOriginalUrl;
-        private long mContentLength;
+        private long mBytesReceived;
         private boolean mIsGETRequest;
         private String mDownloadGuid;
         private boolean mHasUserGesture;
@@ -215,8 +215,8 @@ public final class DownloadInfo {
             return this;
         }
 
-        public Builder setContentLength(long contentLength) {
-            mContentLength = contentLength;
+        public Builder setBytesReceived(long bytesReceived) {
+            mBytesReceived = bytesReceived;
             return this;
         }
 
@@ -296,7 +296,7 @@ public final class DownloadInfo {
                     .setFilePath(downloadInfo.getFilePath())
                     .setReferrer(downloadInfo.getReferrer())
                     .setOriginalUrl(downloadInfo.getOriginalUrl())
-                    .setContentLength(downloadInfo.getContentLength())
+                    .setBytesReceived(downloadInfo.getBytesReceived())
                     .setDownloadGuid(downloadInfo.getDownloadGuid())
                     .setHasUserGesture(downloadInfo.hasUserGesture())
                     .setContentDisposition(downloadInfo.getContentDisposition())
@@ -315,13 +315,13 @@ public final class DownloadInfo {
     @CalledByNative
     private static DownloadInfo createDownloadInfo(
             String downloadGuid, String fileName, String filePath, String url, String mimeType,
-            long contentLength, boolean isIncognito, int state, int percentCompleted,
+            long bytesReceived, boolean isIncognito, int state, int percentCompleted,
             boolean isPaused, boolean hasUserGesture, boolean isResumable,
             String originalUrl, String referrerUrl, long timeRemainingInMs) {
         String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
                 mimeType, url, fileName);
         return new DownloadInfo.Builder()
-                .setContentLength(contentLength)
+                .setBytesReceived(bytesReceived)
                 .setDescription(fileName)
                 .setDownloadGuid(downloadGuid)
                 .setFileName(fileName)

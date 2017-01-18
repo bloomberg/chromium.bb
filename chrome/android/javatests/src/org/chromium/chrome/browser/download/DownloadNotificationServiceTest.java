@@ -264,7 +264,7 @@ public class DownloadNotificationServiceTest extends
 
         DownloadNotificationService service = bindNotificationService();
         String guid3 = UUID.randomUUID().toString();
-        service.notifyDownloadProgress(guid3, "test", 1, 1L, 1L, true, true, false);
+        service.notifyDownloadProgress(guid3, "test", 1, 100L, 1L, 1L, true, true, false);
         assertEquals(3, getService().getNotificationIds().size());
         int lastNotificationId = getService().getLastAddedNotificationId();
         Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
@@ -403,5 +403,22 @@ public class DownloadNotificationServiceTest extends
                 59 * DownloadNotificationService.SECONDS_PER_HOUR * MILLIS_PER_SECOND));
         assertEquals("3 days left", DownloadNotificationService.formatRemainingTime(context,
                 60 * DownloadNotificationService.SECONDS_PER_HOUR * MILLIS_PER_SECOND));
+    }
+
+    // Tests that the downloaded bytes on the notification is correct.
+    @SmallTest
+    @Feature({"Download"})
+    public void testFormatBytesReceived() {
+        Context context = getSystemContext().getApplicationContext();
+        assertEquals("Downloaded 0.0 KB", DownloadUtils.getStringForBytes(
+                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 0));
+        assertEquals("Downloaded 0.5 KB", DownloadUtils.getStringForBytes(
+                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 512));
+        assertEquals("Downloaded 1.0 KB", DownloadUtils.getStringForBytes(
+                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 1024));
+        assertEquals("Downloaded 1.0 MB", DownloadUtils.getStringForBytes(
+                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 1024 * 1024));
+        assertEquals("Downloaded 1.0 GB", DownloadUtils.getStringForBytes(
+                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 1024 * 1024 * 1024));
     }
 }

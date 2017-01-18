@@ -41,8 +41,10 @@ import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 
@@ -85,6 +87,12 @@ public class DownloadNotificationService extends Service {
     private static final String KEY_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
     private static final String KEY_NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
 
+    @VisibleForTesting
+    static final int[] BYTES_DOWNLOADED_STRINGS = {
+        R.string.file_size_downloaded_kb,
+        R.string.file_size_downloaded_mb,
+        R.string.file_size_downloaded_gb
+    };
     private final IBinder mBinder = new LocalBinder();
     private final List<String> mDownloadsInProgress = new ArrayList<String>();
 
@@ -230,6 +238,7 @@ public class DownloadNotificationService extends Service {
      * @param fileName File name of the download.
      * @param percentage Percentage completed. Value should be between 0 to 100 if
      *        the percentage can be determined, or -1 if it is unknown.
+     * @param bytesReceived Total number of bytes received.
      * @param timeRemainingInMillis Remaining download time in milliseconds.
      * @param startTime Time when download started.
      * @param isOffTheRecord Whether the download is off the record.
@@ -238,10 +247,11 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     public void notifyDownloadProgress(String downloadGuid, String fileName, int percentage,
-            long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
+            long bytesReceived, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isOfflinePage) {
-        updateActiveDownloadNotification(downloadGuid, fileName, percentage, timeRemainingInMillis,
-                startTime, isOffTheRecord, canDownloadWhileMetered, isOfflinePage, false);
+        updateActiveDownloadNotification(downloadGuid, fileName, percentage, bytesReceived,
+                timeRemainingInMillis, startTime, isOffTheRecord, canDownloadWhileMetered,
+                isOfflinePage, false);
     }
 
     /**
@@ -254,7 +264,7 @@ public class DownloadNotificationService extends Service {
      */
     private void notifyDownloadPending(String downloadGuid, String fileName, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isOfflinePage) {
-        updateActiveDownloadNotification(downloadGuid, fileName, INVALID_DOWNLOAD_PERCENTAGE,
+        updateActiveDownloadNotification(downloadGuid, fileName, INVALID_DOWNLOAD_PERCENTAGE, 0,
                 0, 0, isOffTheRecord, canDownloadWhileMetered, isOfflinePage, true);
     }
 
@@ -265,6 +275,7 @@ public class DownloadNotificationService extends Service {
      * @param fileName File name of the download.
      * @param percentage Percentage completed. Value should be between 0 to 100 if
      *        the percentage can be determined, or -1 if it is unknown.
+     * @param bytesReceived Total number of bytes received.
      * @param timeRemainingInMillis Remaining download time in milliseconds.
      * @param startTime Time when download started.
      * @param isOffTheRecord Whether the download is off the record.
@@ -273,12 +284,21 @@ public class DownloadNotificationService extends Service {
      * @param isDownloadPending Whether the download is pending.
      */
     private void updateActiveDownloadNotification(String downloadGuid, String fileName,
-            int percentage, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered, boolean isOfflinePage, boolean isDownloadPending) {
+            int percentage, long bytesReceived, long timeRemainingInMillis, long startTime,
+            boolean isOffTheRecord, boolean canDownloadWhileMetered, boolean isOfflinePage,
+            boolean isDownloadPending) {
         if (mStopPostingProgressNotifications) return;
 
-        String contentText = mContext.getResources().getString(isDownloadPending
-                ? R.string.download_notification_pending : R.string.download_started);
+        boolean indeterminate = (percentage == INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
+        String contentText = null;
+        if (isDownloadPending) {
+            contentText = mContext.getResources().getString(R.string.download_notification_pending);
+        } else if (indeterminate) {
+            contentText = DownloadUtils.getStringForBytes(
+                    mContext, BYTES_DOWNLOADED_STRINGS, bytesReceived);
+        } else {
+            contentText = formatRemainingTime(mContext, timeRemainingInMillis);
+        }
         int resId = isDownloadPending ? R.drawable.ic_download_pending
                 : android.R.drawable.stat_sys_download;
         NotificationCompat.Builder builder = buildNotification(resId, fileName, contentText);
@@ -286,18 +306,18 @@ public class DownloadNotificationService extends Service {
         builder.setPriority(Notification.PRIORITY_HIGH);
 
         // Avoid animations while the download isn't progressing.
-        boolean indeterminate = (percentage == INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
         if (!isDownloadPending) {
             builder.setProgress(100, percentage, indeterminate);
         }
 
         if (!indeterminate && !isOfflinePage) {
-            String duration = formatRemainingTime(mContext, timeRemainingInMillis);
+            NumberFormat formatter = NumberFormat.getPercentInstance(Locale.getDefault());
+            String percentText = formatter.format(percentage / 100.0);
             if (Build.VERSION.CODENAME.equals("N")
                     || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-                builder.setSubText(duration);
+                builder.setSubText(percentText);
             } else {
-                builder.setContentInfo(duration);
+                builder.setContentInfo(percentText);
             }
         }
         int notificationId = getNotificationId(downloadGuid);

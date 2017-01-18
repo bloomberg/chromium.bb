@@ -291,7 +291,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     public void onDownloadCompleted(final DownloadInfo downloadInfo) {
         int status = DOWNLOAD_STATUS_COMPLETE;
         String mimeType = downloadInfo.getMimeType();
-        if (downloadInfo.getContentLength() == 0) {
+        if (downloadInfo.getBytesReceived() == 0) {
             status = DOWNLOAD_STATUS_FAILED;
         } else {
             String origMimeType = mimeType;
@@ -400,7 +400,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                                     c.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION)))
                             .setMimeType(c.getString(
                                     c.getColumnIndex(DownloadManager.COLUMN_MEDIA_TYPE)))
-                            .setContentLength(Long.parseLong(c.getString(
+                            .setBytesReceived(Long.parseLong(c.getString(
                                     c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))))
                             .build();
                 }
@@ -605,7 +605,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             // documented on Android SDK page.
             long downloadId = mDownloadManagerDelegate.addCompletedDownload(
                     downloadInfo.getFileName(), description, downloadInfo.getMimeType(),
-                    downloadInfo.getFilePath(), downloadInfo.getContentLength(),
+                    downloadInfo.getFilePath(), downloadInfo.getBytesReceived(),
                     downloadInfo.getOriginalUrl(), downloadInfo.getReferrer(),
                     downloadInfo.getDownloadGuid());
             downloadItem.setSystemDownloadId(downloadId);
@@ -744,7 +744,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             case DOWNLOAD_STATUS_FAILED:
             case DOWNLOAD_STATUS_CANCELLED:
                 recordDownloadFinishedUMA(downloadStatus, downloadItem.getId(),
-                        downloadItem.getDownloadInfo().getContentLength());
+                        downloadItem.getDownloadInfo().getBytesReceived());
                 break;
             case DOWNLOAD_STATUS_INTERRUPTED:
                 entry = getUmaStatsEntry(downloadItem.getId());

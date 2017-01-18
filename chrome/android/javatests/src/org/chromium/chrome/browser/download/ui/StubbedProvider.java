@@ -211,7 +211,7 @@ public class StubbedProvider implements BackendProvider {
         if (which == 0) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://google.com")
-                    .setContentLength(1)
+                    .setBytesReceived(1)
                     .setFileName("first_file.jpg")
                     .setFilePath("/storage/fake_path/Downloads/first_file.jpg")
                     .setDownloadGuid("first_guid")
@@ -219,7 +219,7 @@ public class StubbedProvider implements BackendProvider {
         } else if (which == 1) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://one.com")
-                    .setContentLength(10)
+                    .setBytesReceived(10)
                     .setFileName("second_file.gif")
                     .setFilePath("/storage/fake_path/Downloads/second_file.gif")
                     .setDownloadGuid("second_guid")
@@ -227,7 +227,7 @@ public class StubbedProvider implements BackendProvider {
         } else if (which == 2) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://is.com")
-                    .setContentLength(100)
+                    .setBytesReceived(100)
                     .setFileName("third_file")
                     .setFilePath("/storage/fake_path/Downloads/third_file")
                     .setDownloadGuid("third_guid")
@@ -235,7 +235,7 @@ public class StubbedProvider implements BackendProvider {
         } else if (which == 3) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://the.com")
-                    .setContentLength(5)
+                    .setBytesReceived(5)
                     .setFileName("four.webm")
                     .setFilePath("/storage/fake_path/Downloads/four.webm")
                     .setDownloadGuid("fourth_guid")
@@ -243,7 +243,7 @@ public class StubbedProvider implements BackendProvider {
         } else if (which == 4) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://loneliest.com")
-                    .setContentLength(50)
+                    .setBytesReceived(50)
                     .setFileName("five.mp3")
                     .setFilePath("/storage/fake_path/Downloads/five.mp3")
                     .setDownloadGuid("fifth_guid")
@@ -251,7 +251,7 @@ public class StubbedProvider implements BackendProvider {
         } else if (which == 5) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://number.com")
-                    .setContentLength(500)
+                    .setBytesReceived(500)
                     .setFileName("six.mp3")
                     .setFilePath("/storage/fake_path/Downloads/six.mp3")
                     .setDownloadGuid("sixth_guid")
@@ -259,7 +259,7 @@ public class StubbedProvider implements BackendProvider {
         } else if (which == 6) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://sigh.com")
-                    .setContentLength(ONE_GIGABYTE)
+                    .setBytesReceived(ONE_GIGABYTE)
                     .setFileName("huge_image.png")
                     .setFilePath("/storage/fake_path/Downloads/huge_image.png")
                     .setDownloadGuid("seventh_guid")
@@ -267,7 +267,7 @@ public class StubbedProvider implements BackendProvider {
         } else if (which == 7) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://sleepy.com")
-                    .setContentLength(ONE_GIGABYTE / 2)
+                    .setBytesReceived(ONE_GIGABYTE / 2)
                     .setFileName("sleep.pdf")
                     .setFilePath("/storage/fake_path/Downloads/sleep.pdf")
                     .setDownloadGuid("eighth_guid")
@@ -276,7 +276,7 @@ public class StubbedProvider implements BackendProvider {
             // This is a duplicate of item 7 above with a different GUID.
             builder = new DownloadInfo.Builder()
                     .setUrl("https://sleepy.com")
-                    .setContentLength(ONE_GIGABYTE / 2)
+                    .setBytesReceived(ONE_GIGABYTE / 2)
                     .setFileName("sleep.pdf")
                     .setFilePath("/storage/fake_path/Downloads/sleep.pdf")
                     .setDownloadGuid("ninth_guid")
@@ -284,7 +284,7 @@ public class StubbedProvider implements BackendProvider {
         } else if (which == 9) {
             builder = new DownloadInfo.Builder()
                     .setUrl("https://totallynew.com")
-                    .setContentLength(ONE_GIGABYTE / 10)
+                    .setBytesReceived(ONE_GIGABYTE / 10)
                     .setFileName("forserious.jpg")
                     .setFilePath(null)
                     .setDownloadGuid("tenth_guid")
@@ -293,7 +293,7 @@ public class StubbedProvider implements BackendProvider {
             // Duplicate version of #9, but the file path has been set.
             builder = new DownloadInfo.Builder()
                     .setUrl("https://totallynew.com")
-                    .setContentLength(ONE_GIGABYTE / 10)
+                    .setBytesReceived(ONE_GIGABYTE / 10)
                     .setFileName("forserious.jpg")
                     .setFilePath("/storage/fake_path/Downloads/forserious.jpg")
                     .setDownloadGuid("tenth_guid")

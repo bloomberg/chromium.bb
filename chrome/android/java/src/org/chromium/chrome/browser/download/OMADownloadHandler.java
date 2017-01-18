@@ -602,7 +602,7 @@ public class OMADownloadHandler {
                 .setUrl(url)
                 .setMimeType(mimeType)
                 .setDescription(omaInfo.getValue(OMA_DESCRIPTION))
-                .setContentLength(getSize(omaInfo))
+                .setBytesReceived(getSize(omaInfo))
                 .build();
         // If installNotifyURI is not empty, the downloaded content cannot
         // be used until the PostStatusTask gets a 200-series response.
@@ -723,7 +723,7 @@ public class OMADownloadHandler {
                         manager.addCompletedDownload(
                                 fileName, mDownloadInfo.getDescription(), false,
                                 mDownloadInfo.getMimeType(), toFile.getPath(),
-                                mDownloadInfo.getContentLength(), true);
+                                mDownloadInfo.getBytesReceived(), true);
                     } else if (fromFile.delete()) {
                         Log.w(TAG, "Failed to rename the file.");
                         return;
