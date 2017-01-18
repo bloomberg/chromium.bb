@@ -69,6 +69,12 @@ class SafeBrowsingBlockingPageFactoryImpl
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
         prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
+
+    // Determine if any prefs need to be updated prior to showing the security
+    // interstitial. This must happen before querying IsScout to populate the
+    // Display Options below.
+    safe_browsing::UpdatePrefsBeforeSecurityInterstitial(prefs);
+
     SafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
         BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
         is_extended_reporting_opt_in_allowed,
