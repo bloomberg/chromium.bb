@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class CSSCustomPropertyDeclaration;
+
 class CSSInterpolationType : public InterpolationType {
  protected:
   CSSInterpolationType(PropertyHandle);
@@ -50,6 +52,29 @@ class CSSInterpolationType : public InterpolationType {
       const InterpolationEnvironment&,
       const InterpolationValue& underlying,
       ConversionCheckers&) const;
+
+  InterpolationValue maybeConvertCustomPropertyDeclaration(
+      const CSSCustomPropertyDeclaration&,
+      const StyleResolverState&,
+      ConversionCheckers&) const;
+  InterpolationValue maybeConvertCustomPropertyDeclarationInternal(
+      const CSSCustomPropertyDeclaration&,
+      const StyleResolverState&,
+      ConversionCheckers&) const;
+
+  virtual const CSSValue* createCSSValue(const InterpolableValue&,
+                                         const NonInterpolableValue*,
+                                         const StyleResolverState&) const {
+    // TODO(alancutter): Implement this for all subclasses and make this an
+    // abstract declaration so the return type can be changed to
+    // const CSSValue&.
+    NOTREACHED();
+    return nullptr;
+  }
+
+  void applyCustomPropertyValue(const InterpolableValue&,
+                                const NonInterpolableValue*,
+                                StyleResolverState&) const;
 };
 
 }  // namespace blink

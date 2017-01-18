@@ -21,7 +21,7 @@ class CSSValueNonInterpolableValue : public NonInterpolableValue {
     return adoptRef(new CSSValueNonInterpolableValue(cssValue));
   }
 
-  const CSSValue& cssValue() const { return *m_cssValue; }
+  const CSSValue* cssValue() const { return m_cssValue.get(); }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
@@ -65,7 +65,14 @@ void CSSValueInterpolationType::applyStandardPropertyValue(
     StyleResolverState& state) const {
   StyleBuilder::applyProperty(
       cssProperty(), state,
-      toCSSValueNonInterpolableValue(nonInterpolableValue)->cssValue());
+      *createCSSValue(interpolableValue, nonInterpolableValue, state));
+}
+
+const CSSValue* CSSValueInterpolationType::createCSSValue(
+    const InterpolableValue&,
+    const NonInterpolableValue* nonInterpolableValue,
+    const StyleResolverState&) const {
+  return toCSSValueNonInterpolableValue(nonInterpolableValue)->cssValue();
 }
 
 }  // namespace blink
