@@ -573,6 +573,46 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @Feature({"AppBanners"})
+    public void testBannerAppearsImmediatelyWithSufficientEngagement() throws Exception {
+        // Visit the site in a new tab with sufficient engagement and verify it appears.
+        resetEngagementForUrl(mWebAppUrl, 10);
+        loadUrlInNewTab("about:blank");
+
+        new TabLoadObserver(getActivity().getActivityTab())
+                .fullyLoadUrl(mWebAppUrl, PageTransition.TYPED);
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
+                return !manager.isActiveForTesting();
+            }
+        });
+        waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);
+    }
+
+    @SmallTest
+    @Feature({"AppBanners"})
+    public void testBannerDoesNotAppearInIncognito() throws Exception {
+        // Visit the site in an incognito tab and verify it doesn't appear.
+        resetEngagementForUrl(mWebAppUrl, 10);
+        loadUrlInNewTab("about:blank", true);
+
+        new TabLoadObserver(getActivity().getActivityTab())
+                .fullyLoadUrl(mWebAppUrl, PageTransition.TYPED);
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
+                return !manager.isActiveForTesting();
+            }
+        });
+        assertTrue(getInfoBars().isEmpty());
+    }
+
+    @SmallTest
+    @Feature({"AppBanners"})
     public void testWebAppSplashscreenIsDownloaded() throws Exception {
         // Sets the overriden factory to observer splash screen update.
         final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();

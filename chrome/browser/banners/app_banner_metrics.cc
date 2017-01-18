@@ -61,7 +61,10 @@ void TrackBeforeInstallEvent(int event) {
 void TrackInstallableStatusCode(InstallableStatusCode code) {
   DCHECK_LE(NO_ERROR_DETECTED, code);
   DCHECK_LT(code, MAX_ERROR_CODE);
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kInstallableStatusCodeHistogram, code);
+  if (code != IN_INCOGNITO) {
+    // Do not log that we are in incognito to UMA.
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kInstallableStatusCodeHistogram, code);
+  }
 }
 
 }  // namespace banners

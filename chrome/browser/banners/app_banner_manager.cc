@@ -79,9 +79,10 @@ bool AppBannerManager::URLsAreForTheSamePage(const GURL& first,
 
 void AppBannerManager::RequestAppBanner(const GURL& validated_url,
                                         bool is_debug_mode) {
+  content::WebContents* contents = web_contents();
+
   // Don't start a redundant banner request. Otherwise, if one is running,
   // invalidate our weak pointers so it terminates.
-  content::WebContents* contents = web_contents();
   if (is_active_) {
     if (URLsAreForTheSamePage(validated_url, contents->GetLastCommittedURL()))
       return;
@@ -97,16 +98,19 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   DCHECK(!need_to_log_status_);
   need_to_log_status_ = !IsDebugMode();
 
-  if (contents->GetMainFrame()->GetParent()) {
-    ReportStatus(contents, NOT_IN_MAIN_FRAME);
-    Stop();
-    return;
+  // Exit if this is an incognito window, non-main frame, or insecure context.
+  InstallableStatusCode code = NO_ERROR_DETECTED;
+  if (Profile::FromBrowserContext(contents->GetBrowserContext())
+          ->IsOffTheRecord()) {
+    code = IN_INCOGNITO;
+  } else if (contents->GetMainFrame()->GetParent()) {
+    code = NOT_IN_MAIN_FRAME;
+  } else if (!InstallableManager::IsContentSecure(contents)) {
+    code = NOT_FROM_SECURE_ORIGIN;
   }
 
-  // A secure origin is required to show banners, so exit early if we see the
-  // URL is invalid.
-  if (!InstallableManager::IsContentSecure(contents)) {
-    ReportStatus(contents, NOT_FROM_SECURE_ORIGIN);
+  if (code != NO_ERROR_DETECTED) {
+    ReportStatus(contents, code);
     Stop();
     return;
   }
