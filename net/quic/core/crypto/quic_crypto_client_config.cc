@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "net/quic/core/crypto/cert_compressor.h"
@@ -25,6 +24,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
 using base::ContainsKey;
@@ -398,7 +398,7 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
   }
 
   CachedState* cached = new CachedState;
-  cached_states_.insert(std::make_pair(server_id, base::WrapUnique(cached)));
+  cached_states_.insert(std::make_pair(server_id, QuicWrapUnique(cached)));
   bool cache_populated = PopulateFromCanonicalConfig(server_id, cached);
   UMA_HISTOGRAM_BOOLEAN(
       "Net.QuicCryptoClientConfig.PopulatedFromCanonicalConfig",

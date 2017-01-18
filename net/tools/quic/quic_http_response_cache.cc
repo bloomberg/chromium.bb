@@ -8,11 +8,11 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "net/http/http_util.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/spdy/spdy_http_utils.h"
 
@@ -320,7 +320,7 @@ void QuicHttpResponseCache::AddResponseImpl(StringPiece host,
     QUIC_BUG << "Response for '" << key << "' already exists!";
     return;
   }
-  std::unique_ptr<Response> new_response = base::MakeUnique<Response>();
+  std::unique_ptr<Response> new_response = QuicMakeUnique<Response>();
   new_response->set_response_type(response_type);
   new_response->set_headers(std::move(response_headers));
   new_response->set_body(response_body);

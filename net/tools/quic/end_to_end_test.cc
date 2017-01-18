@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -31,6 +30,7 @@
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_text_utils.h"
@@ -2425,8 +2425,8 @@ class ClientSessionThatDropsBody : public QuicClientSession {
   ~ClientSessionThatDropsBody() override {}
 
   std::unique_ptr<QuicSpdyClientStream> CreateClientStream() override {
-    return base::MakeUnique<ClientStreamThatDropsBody>(
-        GetNextOutgoingStreamId(), this);
+    return QuicMakeUnique<ClientStreamThatDropsBody>(GetNextOutgoingStreamId(),
+                                                     this);
   }
 };
 

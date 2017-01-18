@@ -4,8 +4,8 @@
 
 #include "net/quic/test_tools/simulator/simulator.h"
 
-#include "base/memory/ptr_util.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simulator/alarm_factory.h"
 #include "net/quic/test_tools/simulator/link.h"
@@ -118,7 +118,7 @@ class LinkSaturator : public Endpoint {
 
   void Act() override {
     if (tx_port_->TimeUntilAvailable().IsZero()) {
-      auto packet = base::MakeUnique<Packet>();
+      auto packet = QuicMakeUnique<Packet>();
       packet->source = name_;
       packet->destination = destination_;
       packet->tx_timestamp = clock_->Now();
@@ -250,7 +250,7 @@ TEST(SimulatorTest, Queue) {
   EXPECT_EQ(0u, queue.packets_queued());
   EXPECT_EQ(0u, acceptor.packets()->size());
 
-  auto first_packet = base::MakeUnique<Packet>();
+  auto first_packet = QuicMakeUnique<Packet>();
   first_packet->size = 600;
   queue.AcceptPacket(std::move(first_packet));
   EXPECT_EQ(600u, queue.bytes_queued());
@@ -258,14 +258,14 @@ TEST(SimulatorTest, Queue) {
   EXPECT_EQ(0u, acceptor.packets()->size());
 
   // The second packet does not fit and is dropped.
-  auto second_packet = base::MakeUnique<Packet>();
+  auto second_packet = QuicMakeUnique<Packet>();
   second_packet->size = 500;
   queue.AcceptPacket(std::move(second_packet));
   EXPECT_EQ(600u, queue.bytes_queued());
   EXPECT_EQ(1u, queue.packets_queued());
   EXPECT_EQ(0u, acceptor.packets()->size());
 
-  auto third_packet = base::MakeUnique<Packet>();
+  auto third_packet = QuicMakeUnique<Packet>();
   third_packet->size = 400;
   queue.AcceptPacket(std::move(third_packet));
   EXPECT_EQ(1000u, queue.bytes_queued());

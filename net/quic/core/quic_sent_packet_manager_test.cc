@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "net/quic/core/quic_flags.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -492,7 +492,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
 }
 
 TEST_F(QuicSentPacketManagerTest, AckOriginalTransmission) {
-  auto loss_algorithm = base::MakeUnique<MockLossAlgorithm>();
+  auto loss_algorithm = QuicMakeUnique<MockLossAlgorithm>();
   QuicSentPacketManagerPeer::SetLossAlgorithm(&manager_, loss_algorithm.get());
 
   SendDataPacket(1);
@@ -1320,7 +1320,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionDelay) {
 }
 
 TEST_F(QuicSentPacketManagerTest, GetLossDelay) {
-  auto loss_algorithm = base::MakeUnique<MockLossAlgorithm>();
+  auto loss_algorithm = QuicMakeUnique<MockLossAlgorithm>();
   QuicSentPacketManagerPeer::SetLossAlgorithm(&manager_, loss_algorithm.get());
 
   EXPECT_CALL(*loss_algorithm, GetLossTimeout())
@@ -1589,7 +1589,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateUndoFromOptionsAtServer) {
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
     SendDataPacket(i);
   }
-  auto loss_algorithm = base::MakeUnique<MockLossAlgorithm>();
+  auto loss_algorithm = QuicMakeUnique<MockLossAlgorithm>();
   QuicSentPacketManagerPeer::SetLossAlgorithm(&manager_, loss_algorithm.get());
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
   EXPECT_CALL(*network_change_visitor_, OnCongestionChange());

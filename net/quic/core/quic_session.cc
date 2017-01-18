@@ -4,7 +4,6 @@
 
 #include "net/quic/core/quic_session.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "net/quic/core/crypto/proof_verifier.h"
 #include "net/quic/core/quic_connection.h"

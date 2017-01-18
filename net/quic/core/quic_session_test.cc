@@ -7,7 +7,6 @@
 #include <set>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -18,6 +17,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -130,7 +130,7 @@ class TestSession : public QuicSpdySession {
   TestStream* CreateOutgoingDynamicStream(SpdyPriority priority) override {
     TestStream* stream = new TestStream(GetNextOutgoingStreamId(), this);
     stream->SetPriority(priority);
-    ActivateStream(base::WrapUnique(stream));
+    ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
 
@@ -143,7 +143,7 @@ class TestSession : public QuicSpdySession {
       return nullptr;
     } else {
       TestStream* stream = new TestStream(id, this);
-      ActivateStream(base::WrapUnique(stream));
+      ActivateStream(QuicWrapUnique(stream));
       return stream;
     }
   }
