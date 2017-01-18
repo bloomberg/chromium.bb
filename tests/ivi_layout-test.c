@@ -214,6 +214,7 @@ const char * const surface_property_commit_changes_test_names[] = {
 const char * const render_order_test_names[] = {
 	"layer_render_order",
 	"layer_bad_render_order",
+	"layer_add_surfaces",
 };
 
 TEST_P(ivi_layout_runner, basic_test_names)

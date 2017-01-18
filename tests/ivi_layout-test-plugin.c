@@ -835,6 +835,55 @@ RUNNER_TEST(layer_bad_render_order)
 	lyt->layer_destroy(ivilayer);
 }
 
+RUNNER_TEST(layer_add_surfaces)
+{
+	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_layer *ivilayer;
+	struct ivi_layout_surface *ivisurfs[IVI_TEST_SURFACE_COUNT] = {};
+	struct ivi_layout_surface **array;
+	int32_t length = 0;
+	uint32_t i;
+
+	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+
+	for (i = 0; i < IVI_TEST_SURFACE_COUNT; i++) {
+		ivisurfs[i] = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(i));
+		runner_assert(lyt->layer_add_surface(
+				      ivilayer, ivisurfs[i]) == IVI_SUCCEEDED);
+	}
+
+	lyt->commit_changes();
+
+	runner_assert(lyt->get_surfaces_on_layer(
+		      ivilayer, &length, &array) == IVI_SUCCEEDED);
+	runner_assert(IVI_TEST_SURFACE_COUNT == length);
+	for (i = 0; i < IVI_TEST_SURFACE_COUNT; i++)
+		runner_assert(array[i] == ivisurfs[i]);
+
+	if (length > 0)
+		free(array);
+
+	runner_assert(lyt->layer_set_render_order(
+		      ivilayer, NULL, 0) == IVI_SUCCEEDED);
+
+	for (i = IVI_TEST_SURFACE_COUNT; i-- > 0;)
+		runner_assert(lyt->layer_add_surface(
+				      ivilayer, ivisurfs[i]) == IVI_SUCCEEDED);
+
+	lyt->commit_changes();
+
+	runner_assert(lyt->get_surfaces_on_layer(
+		      ivilayer, &length, &array) == IVI_SUCCEEDED);
+	runner_assert(IVI_TEST_SURFACE_COUNT == length);
+	for (i = 0; i < IVI_TEST_SURFACE_COUNT; i++)
+		runner_assert(array[i] == ivisurfs[IVI_TEST_SURFACE_COUNT - (i + 1)]);
+
+	if (length > 0)
+		free(array);
+
+	lyt->layer_destroy(ivilayer);
+}
+
 RUNNER_TEST(commit_changes_after_render_order_set_surface_destroy)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
