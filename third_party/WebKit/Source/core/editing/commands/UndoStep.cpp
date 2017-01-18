@@ -76,8 +76,8 @@ void UndoStep::append(SimpleEditCommand* command) {
   m_commands.push_back(command);
 }
 
-void UndoStep::append(UndoStep* composition) {
-  m_commands.appendVector(composition->m_commands);
+void UndoStep::append(UndoStep* undoStep) {
+  m_commands.appendVector(undoStep->m_commands);
 }
 
 void UndoStep::setStartingSelection(const VisibleSelection& selection) {

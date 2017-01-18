@@ -83,7 +83,7 @@ CompositeEditCommand::CompositeEditCommand(Document& document)
     : EditCommand(document) {}
 
 CompositeEditCommand::~CompositeEditCommand() {
-  DCHECK(isTopLevelCommand() || !m_composition);
+  DCHECK(isTopLevelCommand() || !m_undoStep);
 }
 
 bool CompositeEditCommand::apply() {
@@ -113,7 +113,7 @@ bool CompositeEditCommand::apply() {
         return false;
     }
   }
-  ensureComposition();
+  ensureUndoStep();
 
   // Changes to the document may have been made since the last editing operation
   // that require a layout, as in <rdar://problem/5658603>. Low level
@@ -138,15 +138,15 @@ bool CompositeEditCommand::apply() {
   return !editingState.isAborted();
 }
 
-UndoStep* CompositeEditCommand::ensureComposition() {
+UndoStep* CompositeEditCommand::ensureUndoStep() {
   CompositeEditCommand* command = this;
   while (command && command->parent())
     command = command->parent();
-  if (!command->m_composition) {
-    command->m_composition = UndoStep::create(&document(), startingSelection(),
-                                              endingSelection(), inputType());
+  if (!command->m_undoStep) {
+    command->m_undoStep = UndoStep::create(&document(), startingSelection(),
+                                           endingSelection(), inputType());
   }
-  return command->m_composition.get();
+  return command->m_undoStep.get();
 }
 
 bool CompositeEditCommand::preservesTypingStyle() const {
@@ -185,7 +185,7 @@ void CompositeEditCommand::applyCommandToComposite(EditCommand* command,
   }
   if (command->isSimpleEditCommand()) {
     command->setParent(0);
-    ensureComposition()->append(toSimpleEditCommand(command));
+    ensureUndoStep()->append(toSimpleEditCommand(command));
   }
   m_commands.push_back(command);
 }
@@ -204,10 +204,10 @@ void CompositeEditCommand::applyCommandToComposite(
     m_commands.push_back(command);
 }
 
-void CompositeEditCommand::appendCommandToComposite(
+void CompositeEditCommand::appendCommandToUndoStep(
     CompositeEditCommand* command) {
-  ensureComposition()->append(command->ensureComposition());
-  command->m_composition = nullptr;
+  ensureUndoStep()->append(command->ensureUndoStep());
+  command->m_undoStep = nullptr;
   command->setParent(this);
   m_commands.push_back(command);
 }
@@ -1932,7 +1932,7 @@ Node* CompositeEditCommand::splitTreeToNode(Node* start,
 
 DEFINE_TRACE(CompositeEditCommand) {
   visitor->trace(m_commands);
-  visitor->trace(m_composition);
+  visitor->trace(m_undoStep);
   EditCommand::trace(visitor);
 }
 

@@ -52,17 +52,17 @@ String EditCommand::textDataForInputEvent() const {
   return nullAtom;
 }
 
-static inline UndoStep* compositionIfPossible(EditCommand* command) {
+static inline UndoStep* undoStepIfPossible(EditCommand* command) {
   if (!command->isCompositeEditCommand())
     return 0;
-  return toCompositeEditCommand(command)->composition();
+  return toCompositeEditCommand(command)->undoStep();
 }
 
 void EditCommand::setStartingSelection(const VisibleSelection& selection) {
   for (EditCommand* command = this;; command = command->m_parent) {
-    if (UndoStep* composition = compositionIfPossible(command)) {
+    if (UndoStep* undoStep = undoStepIfPossible(command)) {
       DCHECK(command->isTopLevelCommand());
-      composition->setStartingSelection(selection);
+      undoStep->setStartingSelection(selection);
     }
     command->m_startingSelection = selection;
     if (!command->m_parent || command->m_parent->isFirstCommand(command))
@@ -85,9 +85,9 @@ void EditCommand::setEndingSelection(const SelectionInDOMTree& selection) {
 // |setEndingSelection()| as primary function instead of wrapper.
 void EditCommand::setEndingVisibleSelection(const VisibleSelection& selection) {
   for (EditCommand* command = this; command; command = command->m_parent) {
-    if (UndoStep* composition = compositionIfPossible(command)) {
+    if (UndoStep* undoStep = undoStepIfPossible(command)) {
       DCHECK(command->isTopLevelCommand());
-      composition->setEndingSelection(selection);
+      undoStep->setEndingSelection(selection);
     }
     command->m_endingSelection = selection;
   }
@@ -111,7 +111,7 @@ bool EditCommand::isRenderedCharacter(const Position& position) {
 void EditCommand::setParent(CompositeEditCommand* parent) {
   DCHECK((parent && !m_parent) || (!parent && m_parent));
   DCHECK(!parent || !isCompositeEditCommand() ||
-         !toCompositeEditCommand(this)->composition());
+         !toCompositeEditCommand(this)->undoStep());
   m_parent = parent;
   if (parent) {
     m_startingSelection = parent->m_endingSelection;

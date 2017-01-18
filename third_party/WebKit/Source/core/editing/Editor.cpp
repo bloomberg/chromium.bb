@@ -836,15 +836,14 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
   // Request spell checking before any further DOM change.
   spellChecker().markMisspellingsAfterApplyingCommand(*cmd);
 
-  UndoStep* composition = cmd->composition();
-  DCHECK(composition);
-  dispatchEditableContentChangedEvents(
-      composition->startingRootEditableElement(),
-      composition->endingRootEditableElement());
+  UndoStep* undoStep = cmd->undoStep();
+  DCHECK(undoStep);
+  dispatchEditableContentChangedEvents(undoStep->startingRootEditableElement(),
+                                       undoStep->endingRootEditableElement());
   // TODO(chongz): Filter empty InputType after spec is finalized.
   dispatchInputEventEditableContentChanged(
-      composition->startingRootEditableElement(),
-      composition->endingRootEditableElement(), cmd->inputType(),
+      undoStep->startingRootEditableElement(),
+      undoStep->endingRootEditableElement(), cmd->inputType(),
       cmd->textDataForInputEvent(), isComposingFromCommand(cmd));
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
@@ -870,14 +869,14 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
              (cmd->inputType() == InputEvent::InputType::DeleteByDrag ||
               cmd->inputType() == InputEvent::InputType::InsertFromDrop)) {
     // Only register undo entry when combined with other commands.
-    if (!m_lastEditCommand->composition())
-      m_undoStack->registerUndoStep(m_lastEditCommand->ensureComposition());
-    m_lastEditCommand->appendCommandToComposite(cmd);
+    if (!m_lastEditCommand->undoStep())
+      m_undoStack->registerUndoStep(m_lastEditCommand->ensureUndoStep());
+    m_lastEditCommand->appendCommandToUndoStep(cmd);
   } else {
     // Only register a new undo command if the command passed in is
     // different from the last command
     m_lastEditCommand = cmd;
-    m_undoStack->registerUndoStep(m_lastEditCommand->ensureComposition());
+    m_undoStack->registerUndoStep(m_lastEditCommand->ensureUndoStep());
   }
 
   respondToChangedContents(newSelection);
