@@ -235,6 +235,33 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
             cr.isChromeOS || cr.isWindows ? 1 : 0, separator.offsetHeight);
       });
 
+      test('toggle translate', function(done) {
+        // Enable Translate so the menu always shows the Translate checkbox.
+        languageHelper.setPrefValue('translate.enabled', true);
+        languagesPage.set('languages.translateTarget', 'foo');
+        languagesPage.set('languages.enabled.1.supportsTranslate', true);
+
+        var languageOptionsDropdownTrigger =
+            languagesCollapse.querySelectorAll('paper-icon-button')[1];
+        assertTrue(!!languageOptionsDropdownTrigger);
+        MockInteractions.tap(languageOptionsDropdownTrigger);
+        assertTrue(actionMenu.open);
+
+        // Toggle the translate option.
+        var translateOption = actionMenu.querySelector('#offerTranslations');
+        assertTrue(!!translateOption);
+        assertFalse(translateOption.disabled);
+        MockInteractions.tap(translateOption);
+
+        // Menu should stay open briefly.
+        assertTrue(actionMenu.open);
+        // Guaranteed to run later than the menu close delay.
+        setTimeout(function() {
+          assertFalse(actionMenu.open);
+          done();
+        }, settings.kMenuCloseDelay + 1);
+      });
+
       test('remove language', function() {
         var numEnabled = languagesPage.languages.enabled.length;
 

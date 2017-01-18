@@ -6,6 +6,14 @@
  * @fileoverview 'settings-languages-page' is the settings page
  * for language and input method settings.
  */
+cr.exportPath('settings');
+
+/**
+ * @const {number} Millisecond delay that can be used when closing an action
+ *      menu to keep it briefly on-screen.
+ */
+settings.kMenuCloseDelay = 100;
+
 (function() {
 'use strict';
 
@@ -166,10 +174,10 @@ Polymer({
     this.languageHelper.setProspectiveUILanguage(
         this.detailLanguage_.language.code);
 
-    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
+    this.closeMenuSoon_();
   },
 
-   /**
+  /**
    * @param {!chrome.languageSettingsPrivate.Language} language
    * @param {string} targetLanguageCode The default translate target language.
    * @return {boolean} True if the translate checkbox should be disabled.
@@ -196,7 +204,7 @@ Polymer({
       this.languageHelper.disableTranslateLanguage(
           this.detailLanguage_.language.code);
     }
-    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
+    this.closeMenuSoon_();
   },
 
   /**
@@ -490,6 +498,19 @@ Polymer({
          uiAccountTweaks.UIAccountTweaks.loggedInAsPublicAccount())) {
       menu.querySelector('#uiLanguageItem').hidden = true;
     }
+  },
+
+  /**
+   * Closes the shared action menu after a short delay, so when a checkbox is
+   * tapped it can be seen to change state before disappearing.
+   * @private
+   */
+  closeMenuSoon_: function() {
+    var menu = /** @type {!CrActionMenuElement} */(this.$.menu.get());
+    setTimeout(function() {
+      if (menu.open)
+        menu.close();
+    }, settings.kMenuCloseDelay);
   },
 
   /**
