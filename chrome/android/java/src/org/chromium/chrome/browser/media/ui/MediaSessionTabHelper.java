@@ -82,7 +82,13 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                     MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
 
             if (mMediaSessionObserver.getMediaSession() != null) {
-                mMediaSessionObserver.getMediaSession().resume();
+                if (mMediaSessionActions != null
+                        && mMediaSessionActions.contains(MediaSessionAction.PLAY)) {
+                    mMediaSessionObserver.getMediaSession()
+                            .didReceiveAction(MediaSessionAction.PLAY);
+                } else {
+                    mMediaSessionObserver.getMediaSession().resume();
+                }
             }
         }
 
@@ -94,7 +100,13 @@ public class MediaSessionTabHelper implements MediaImageCallback {
                     MediaSessionTabHelper.convertMediaActionSourceToUMA(actionSource));
 
             if (mMediaSessionObserver.getMediaSession() != null) {
-                mMediaSessionObserver.getMediaSession().suspend();
+                if (mMediaSessionActions != null
+                        && mMediaSessionActions.contains(MediaSessionAction.PAUSE)) {
+                    mMediaSessionObserver.getMediaSession()
+                            .didReceiveAction(MediaSessionAction.PAUSE);
+                } else {
+                    mMediaSessionObserver.getMediaSession().suspend();
+                }
             }
         }
 
