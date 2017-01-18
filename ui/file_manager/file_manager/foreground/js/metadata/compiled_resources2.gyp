@@ -10,8 +10,8 @@
     {
       'target_name': 'content_metadata_provider',
       'dependencies': [
-        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:file_type',
-        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:util',
+        '../../../common/js/compiled_resources2.gyp:file_type',
+        '../../../common/js/compiled_resources2.gyp:util',
         '<(EXTERNS_GYP):chrome_extensions',
         'metadata_provider',
       ],
@@ -24,7 +24,7 @@
     {
       'target_name': 'exif_parser',
       'dependencies': [
-        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:exif_entry',
+        '../../../../externs/compiled_resources2.gyp:exif_entry',
         'exif_constants',
         'image_parsers',
         'metadata_parser',
@@ -92,8 +92,8 @@
     {
      'target_name': 'metadata_cache_set',
       'dependencies': [
-        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:lru_cache',
-        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:util',
+        '../../../common/js/compiled_resources2.gyp:lru_cache',
+        '../../../common/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
         'metadata_cache_item',
         'metadata_item',
@@ -104,8 +104,8 @@
     {
       'target_name': 'metadata_dispatcher',
       'dependencies': [
-        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:metadata_worker_window',
-        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:platform',
+        '../../../../externs/compiled_resources2.gyp:metadata_worker_window',
+        '../../../../externs/compiled_resources2.gyp:platform',
         'metadata_parser',
       ],
       'includes': ['../../../../compile_js2.gypi'],
@@ -117,7 +117,7 @@
     {
       'target_name': 'metadata_model',
       'dependencies': [
-        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:util',
+        '../../../common/js/compiled_resources2.gyp:util',
         'file_system_metadata_provider',
         'external_metadata_provider',
         'content_metadata_provider',
@@ -131,8 +131,8 @@
     {
       'target_name': 'metadata_parser',
       'dependencies': [
+        '../../../../externs/compiled_resources2.gyp:metadata_worker_window',
         'byte_reader',
-        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:metadata_worker_window',
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
