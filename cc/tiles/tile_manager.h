@@ -199,6 +199,8 @@ class CC_EXPORT TileManager {
     all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
   }
 
+  void ResetSignalsForTesting() { signals_.reset(); }
+
   bool HasScheduledTileTasksForTesting() const {
     return has_scheduled_tile_tasks_;
   }
@@ -280,7 +282,7 @@ class CC_EXPORT TileManager {
   bool AreRequiredTilesReadyToDraw(RasterTilePriorityQueue::Type type) const;
   void CheckIfMoreTilesNeedToBePrepared();
   void CheckAndIssueSignals();
-  bool MarkTilesOutOfMemory(
+  void MarkTilesOutOfMemory(
       std::unique_ptr<RasterTilePriorityQueue> queue) const;
 
   ResourceFormat DetermineResourceFormat(const Tile* tile) const;
