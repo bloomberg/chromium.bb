@@ -4,6 +4,11 @@
 
 /** @fileoverview Suite of tests for cr-profile-avatar-selector. */
 cr.define('cr_profile_avatar_selector', function() {
+  var TestNames = {
+    Basic: 'basic',
+    Focus: 'Ignores modified key events',
+  };
+
   function registerTests() {
     suite('cr-profile-avatar-selector', function() {
       /** @type {CrProfileAvatarSelectorElement} */
@@ -30,66 +35,73 @@ cr.define('cr_profile_avatar_selector', function() {
         avatarSelector.remove();
       });
 
-      test('Displays avatars', function() {
-        assertEquals(3, avatarSelector.$['avatar-grid'].items.length);
-      });
+      // Run in CrElementsProfileAvatarSelectorTest.All as a browser_test.
+      suite(TestNames.Basic, function() {
 
-      test('Can update avatars', function() {
-        avatarSelector.pop('avatars');
-        Polymer.dom.flush();
-        assertEquals(2, avatarSelector.$['avatar-grid'].items.length);
-      });
-
-      test('No avatar is initially selected', function() {
-        var selector = avatarSelector.$['avatar-grid'];
-
-        assertFalse(!!avatarSelector.selectedAvatarUrl);
-        assertFalse(selector.items[0].classList.contains('iron-selected'));
-        assertFalse(selector.items[1].classList.contains('iron-selected'));
-        assertFalse(selector.items[2].classList.contains('iron-selected'));
-      });
-
-      test('An avatar is initially selected if selectedAvatarUrl is set',
-           function() {
-        var anotherAvatarSelector = createElement();
-        anotherAvatarSelector.selectedAvatarUrl =
-            anotherAvatarSelector.avatars[0].url;
-        document.body.appendChild(anotherAvatarSelector);
-        Polymer.dom.flush();
-
-        var selector = anotherAvatarSelector.$['avatar-grid'];
-
-        assertEquals('chrome://avatar1.png',
-                     anotherAvatarSelector.selectedAvatarUrl);
-        assertTrue(selector.items[0].classList.contains('iron-selected'));
-        assertFalse(selector.items[1].classList.contains('iron-selected'));
-        assertFalse(selector.items[2].classList.contains('iron-selected'));
-      });
-
-      test('Can select avatar', function() {
-        var selector = avatarSelector.$['avatar-grid'];
-
-        // Simulate tapping the third avatar.
-        MockInteractions.tap(selector.items[2]);
-        assertEquals('chrome://avatar3.png', avatarSelector.selectedAvatarUrl);
-        assertFalse(selector.items[0].classList.contains('iron-selected'));
-        assertFalse(selector.items[1].classList.contains('iron-selected'));
-        assertTrue(selector.items[2].classList.contains('iron-selected'));
-      });
-
-      test('Fires iron-activate event when an avatar is activated',
-           function(done) {
-        avatarSelector.addEventListener('iron-activate',
-                                        function(event) {
-          assertEquals(event.detail.selected, 'chrome://avatar2.png');
-          done();
+        test('Displays avatars', function() {
+          assertEquals(3, avatarSelector.$['avatar-grid'].items.length);
         });
 
-        // Simulate tapping the second avatar.
-        MockInteractions.tap(avatarSelector.$['avatar-grid'].items[1]);
+        test('Can update avatars', function() {
+          avatarSelector.pop('avatars');
+          Polymer.dom.flush();
+          assertEquals(2, avatarSelector.$['avatar-grid'].items.length);
+        });
+
+        test('No avatar is initially selected', function() {
+          var selector = avatarSelector.$['avatar-grid'];
+
+          assertFalse(!!avatarSelector.selectedAvatarUrl);
+          assertFalse(selector.items[0].classList.contains('iron-selected'));
+          assertFalse(selector.items[1].classList.contains('iron-selected'));
+          assertFalse(selector.items[2].classList.contains('iron-selected'));
+        });
+
+        test('An avatar is initially selected if selectedAvatarUrl is set',
+             function() {
+          var anotherAvatarSelector = createElement();
+          anotherAvatarSelector.selectedAvatarUrl =
+              anotherAvatarSelector.avatars[0].url;
+          document.body.appendChild(anotherAvatarSelector);
+          Polymer.dom.flush();
+
+          var selector = anotherAvatarSelector.$['avatar-grid'];
+
+          assertEquals('chrome://avatar1.png',
+                       anotherAvatarSelector.selectedAvatarUrl);
+          assertTrue(selector.items[0].classList.contains('iron-selected'));
+          assertFalse(selector.items[1].classList.contains('iron-selected'));
+          assertFalse(selector.items[2].classList.contains('iron-selected'));
+        });
+
+        test('Can select avatar', function() {
+          var selector = avatarSelector.$['avatar-grid'];
+
+          // Simulate tapping the third avatar.
+          MockInteractions.tap(selector.items[2]);
+          assertEquals(
+              'chrome://avatar3.png', avatarSelector.selectedAvatarUrl);
+          assertFalse(selector.items[0].classList.contains('iron-selected'));
+          assertFalse(selector.items[1].classList.contains('iron-selected'));
+          assertTrue(selector.items[2].classList.contains('iron-selected'));
+        });
+
+        test('Fires iron-activate event when an avatar is activated',
+             function(done) {
+          avatarSelector.addEventListener('iron-activate',
+                                          function(event) {
+            assertEquals(event.detail.selected, 'chrome://avatar2.png');
+            done();
+          });
+
+          // Simulate tapping the second avatar.
+          MockInteractions.tap(avatarSelector.$['avatar-grid'].items[1]);
+        });
       });
 
-      test('Ignores modified key events', function() {
+      // Run in CrElementsProfileAvatarSelectorFocusTest.All as an
+      // interactive_ui_test.
+      test(TestNames.Focus, function() {
         var selector = avatarSelector.$['avatar-grid'];
         var items = selector.items;
 
@@ -121,5 +133,6 @@ cr.define('cr_profile_avatar_selector', function() {
 
   return {
     registerTests: registerTests,
+    TestNames: TestNames,
   };
 });

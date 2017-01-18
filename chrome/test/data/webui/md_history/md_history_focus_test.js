@@ -10,15 +10,12 @@
 var ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
-GEN('#include "chrome/browser/ui/browser.h"');
-GEN('#include "chrome/browser/ui/tabs/tab_strip_model.h"');
-GEN('#include "content/public/browser/web_contents.h"');
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
 
 function MaterialHistoryFocusTest() {}
 
 MaterialHistoryFocusTest.prototype = {
-  __proto__: PolymerTest.prototype,
+  __proto__: PolymerInteractiveUITest.prototype,
 
   browsePreload: 'chrome://history',
 

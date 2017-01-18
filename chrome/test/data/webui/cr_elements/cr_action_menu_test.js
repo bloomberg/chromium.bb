@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Tests for cr-action-menu element. */
+/**
+ * @fileoverview Tests for cr-action-menu element. Runs as an interactive UI
+ * test, since many of these tests check focus behavior.
+ */
 suite('CrActionMenu', function() {
   /** @type {?CrActionMenuElement} */
   var menu = null;

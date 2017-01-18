@@ -224,16 +224,6 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
       browser(), GURL(browse_to), ui::PAGE_TRANSITION_TYPED);
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
 
-  // This is needed to make the test
-  // MaterialHistoryBrowserTest.HistoryToolbarFocusTest pass on macOS. The test
-  // is fundamentally flawed, since it expects a particular widget to be
-  // focused. Chrome focus semantics are based on the Windows platform, where a
-  // widget cannot be focused without window activation. browser_tests can be
-  // sharded, so there is no way to enforce that a given window is activated.
-  // Focus tests should be interactive_ui_tests, and they should explicitly
-  // activate the window. https://crbug.com/642467.
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-
   chrome::Navigate(&params);
   navigation_observer.Wait();
 }

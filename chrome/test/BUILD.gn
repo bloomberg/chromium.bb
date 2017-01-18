@@ -929,7 +929,13 @@ if (!is_android) {
     test_type = "webui"
 
     sources = [
+      "data/webui/cr_elements/cr_elements_focus_test.js",
       "data/webui/md_history/md_history_focus_test.js",
+    ]
+
+    gen_include_files = [
+      "data/webui/polymer_browser_test_base.js",
+      "data/webui/polymer_interactive_ui_test.js",
     ]
 
     deps = [

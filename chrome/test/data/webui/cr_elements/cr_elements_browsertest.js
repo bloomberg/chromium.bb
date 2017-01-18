@@ -74,7 +74,7 @@ CrElementsProfileAvatarSelectorTest.prototype = {
 
 TEST_F('CrElementsProfileAvatarSelectorTest', 'All', function() {
   cr_profile_avatar_selector.registerTests();
-  mocha.run();
+  mocha.grep(cr_profile_avatar_selector.TestNames.Basic).run();
 });
 
 function CrElementsToolbarSearchFieldTest() {}
@@ -113,24 +113,6 @@ CrElementsSliderTest.prototype = {
 
 TEST_F('CrElementsSliderTest', 'All', function() {
   cr_slider.registerTests();
-  mocha.run();
-});
-
-function CrElementsActionMenuTest() {}
-
-CrElementsActionMenuTest.prototype = {
-  __proto__: CrElementsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html',
-
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'cr_action_menu_test.js',
-  ]),
-};
-
-TEST_F('CrElementsActionMenuTest', 'All', function() {
   mocha.run();
 });
 
