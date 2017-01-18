@@ -382,4 +382,38 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   ASSERT_FALSE(selection().isHandleVisible());
 }
 
+TEST_F(EventHandlerTest, dragEndInNewDrag) {
+  setHtmlInnerHTML(
+      "<style>.box { width: 100px; height: 100px; display: block; }</style>"
+      "<a class='box' href=''>Drag me</a>");
+
+  PlatformMouseEvent mouseDownEvent(
+      IntPoint(50, 50), IntPoint(50, 50), WebPointerProperties::Button::Left,
+      PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::LeftButtonDown,
+      TimeTicks::Now());
+  document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
+
+  PlatformMouseEvent mouseMoveEvent(
+      IntPoint(51, 50), IntPoint(51, 50), WebPointerProperties::Button::Left,
+      PlatformEvent::MouseMoved, 1, PlatformEvent::Modifiers::LeftButtonDown,
+      TimeTicks::Now());
+  document().frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveEvent, Vector<PlatformMouseEvent>());
+
+  // This reproduces what might be the conditions of http://crbug.com/677916
+  //
+  // TODO(crbug.com/682047): The call sequence below should not occur outside
+  // this contrived test. Given the current code, it is unclear how the
+  // dragSourceEndedAt() call could occur before a drag operation is started.
+
+  PlatformMouseEvent mouseUpEvent(
+      IntPoint(100, 50), IntPoint(200, 250), WebPointerProperties::Button::Left,
+      PlatformEvent::MouseReleased, 1, static_cast<PlatformEvent::Modifiers>(0),
+      TimeTicks::Now());
+  document().frame()->eventHandler().dragSourceEndedAt(mouseUpEvent,
+                                                       DragOperationNone);
+
+  // This test passes if it doesn't crash.
+}
+
 }  // namespace blink

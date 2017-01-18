@@ -788,8 +788,10 @@ bool MouseEventManager::handleDrag(const MouseEventWithHitTestResults& event,
   m_frame->view()->setCursor(pointerCursor());
 
   if (initiator == DragInitiator::Mouse &&
-      !dragThresholdExceeded(event.event().position()))
+      !dragThresholdExceeded(event.event().position())) {
+    dragState().m_dragSrc = nullptr;
     return true;
+  }
 
   // Once we're past the drag threshold, we don't want to treat this gesture as
   // a click.
