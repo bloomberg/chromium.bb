@@ -1784,17 +1784,15 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [parentTabModel_ notifyTabChanged:self];
 }
 
-// Called when the page URL has changed.
-- (void)webDidStartLoadingURL:(const GURL&)currentUrl
-          shouldUpdateHistory:(BOOL)updateHistory {
-  DCHECK(self.webController.loadPhase == web::PAGE_LOADING);
+- (void)webState:(web::WebState*)webState
+    didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
   DCHECK([self navigationManager]);
-  // |webWillStartLoading:| is not called for native page loads.
+  // |webWillAddPendingURL:transition:| is not called for native page loads.
   // TODO(crbug.com/381201): Move this call there once that bug is fixed so that
   // |disableFullScreen| is called only from one place.
   [fullScreenController_ disableFullScreen];
   [findInPageController_ disableFindInPageWithCompletionHandler:nil];
-  [autoReloadBridge_ loadStartedForURL:currentUrl];
+  [autoReloadBridge_ loadStartedForURL:webState->GetLastCommittedURL()];
 
   if (isUserNavigationEvent_) {
     [[NSNotificationCenter defaultCenter]
@@ -1805,26 +1803,26 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kTabModelTabWillStartLoadingNotification
                       object:parentTabModel_
-                    userInfo:[NSDictionary
-                                 dictionaryWithObject:self
-                                               forKey:kTabModelTabKey]];
+                    userInfo:@{kTabModelTabKey : self}];
   }
   favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(self.webState);
+      favicon::WebFaviconDriver::FromWebState(webState);
   if (faviconDriver) {
-    faviconDriver->FetchFavicon(currentUrl);
+    faviconDriver->FetchFavicon(webState->GetLastCommittedURL());
   }
   [parentTabModel_ notifyTabChanged:self];
   if (parentTabModel_) {
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kTabModelTabDidStartLoadingNotification
                       object:parentTabModel_
-                    userInfo:[NSDictionary
-                                 dictionaryWithObject:self
-                                               forKey:kTabModelTabKey]];
+                    userInfo:@{kTabModelTabKey : self}];
   }
-
   [parentTabModel_ navigationCommittedInTab:self];
+}
+
+// Called when the page URL has changed.
+- (void)webDidStartLoadingURL:(const GURL&)currentUrl
+          shouldUpdateHistory:(BOOL)updateHistory {
   if (updateHistory) {
     [self addCurrentEntryToHistoryDB];
     [self countMainFrameLoad];

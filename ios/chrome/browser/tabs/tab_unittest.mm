@@ -115,7 +115,6 @@ typedef BOOL (^openURLBlockType)(const GURL&, BOOL);
 
 namespace {
 
-const web::LoadPhase kLoadRequested = web::LOAD_REQUESTED;
 const web::LoadPhase kPageLoading = web::PAGE_LOADING;
 const web::LoadPhase kPageLoaded = web::PAGE_LOADED;
 
@@ -229,8 +228,6 @@ class TabTest : public BlockCleanupTest {
   }
 
   void BrowseTo(const GURL& userUrl, const GURL& redirectUrl, NSString* title) {
-    [[[(id)mock_web_controller_ expect]
-        andReturnValue:OCMOCK_VALUE(kLoadRequested)] loadPhase];
     web::Referrer empty_referrer;
     [tab_ webWillAddPendingURL:userUrl transition:ui::PAGE_TRANSITION_TYPED];
     [tab_ webStateImpl]->OnProvisionalNavigationStarted(userUrl);
@@ -242,8 +239,6 @@ class TabTest : public BlockCleanupTest {
                transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
         rendererInitiated:YES];
     [tab_ webStateImpl]->OnProvisionalNavigationStarted(redirectUrl);
-    [[[(id)mock_web_controller_ expect]
-        andReturnValue:OCMOCK_VALUE(kPageLoading)] loadPhase];
     [[tab_ navigationManager]->GetSessionController() commitPendingEntry];
     [[tab_ webController] webStateImpl]->OnNavigationCommitted(redirectUrl);
     [tab_ webDidStartLoadingURL:redirectUrl shouldUpdateHistory:YES];
