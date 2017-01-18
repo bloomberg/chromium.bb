@@ -53,9 +53,9 @@ class PLATFORM_EXPORT GeometryMapper {
   // If the clips and transforms of |sourceState| are equal to or descendants of
   // those of |destinationState|, returns the same value as
   // localToAncestorVisualRect. Otherwise, maps the input rect to the
-  // transform state which is the least common ancestor of
+  // transform state which is the lowest common ancestor of
   // |sourceState.transform| and |destinationState.transform|, then multiplies
-  // it by the the inverse transform mapping from the least common ancestor to
+  // it by the the inverse transform mapping from the lowest common ancestor to
   // |destinationState.transform|.
   //
   // DCHECK fails if the clip of |destinationState| is not an ancestor of the
@@ -127,6 +127,11 @@ class PLATFORM_EXPORT GeometryMapper {
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState);
 
+  // Returns the lowest common ancestor in the paint property tree.
+  template <typename NodeType>
+  static PLATFORM_EXPORT const NodeType* lowestCommonAncestor(const NodeType*,
+                                                              const NodeType*);
+
  private:
   // The internal methods do the same things as their public counterparts, but
   // take an extra |success| parameter which indicates if the function is
@@ -164,11 +169,6 @@ class PLATFORM_EXPORT GeometryMapper {
   // Returns the precomputed data if already set, or adds and memoizes a new
   // PrecomputedDataForAncestor otherwise.
   PrecomputedDataForAncestor& getPrecomputedDataForAncestor(
-      const TransformPaintPropertyNode*);
-
-  // Returns the least common ancestor in the transform tree.
-  static const TransformPaintPropertyNode* leastCommonAncestor(
-      const TransformPaintPropertyNode*,
       const TransformPaintPropertyNode*);
 
   friend class GeometryMapperTest;

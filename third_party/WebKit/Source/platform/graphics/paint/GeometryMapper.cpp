@@ -31,8 +31,8 @@ FloatRect GeometryMapper::sourceToDestinationVisualRectInternal(
   if (success)
     return result;
 
-  // Otherwise first map to the least common ancestor, then map to destination.
-  const TransformPaintPropertyNode* lcaTransform = leastCommonAncestor(
+  // Otherwise first map to the lowest common ancestor, then map to destination.
+  const TransformPaintPropertyNode* lcaTransform = lowestCommonAncestor(
       sourceState.transform(), destinationState.transform());
   DCHECK(lcaTransform);
 
@@ -63,7 +63,7 @@ FloatRect GeometryMapper::sourceToDestinationRect(
 
   // Otherwise first map to the least common ancestor, then map to destination.
   const TransformPaintPropertyNode* lcaTransform =
-      leastCommonAncestor(sourceTransformNode, destinationTransformNode);
+      lowestCommonAncestor(sourceTransformNode, destinationTransformNode);
   DCHECK(lcaTransform);
 
   FloatRect lcaRect =
@@ -285,8 +285,8 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
 
 namespace {
 
-unsigned transformPropertyTreeNodeDepth(
-    const TransformPaintPropertyNode* node) {
+template <typename NodeType>
+unsigned nodeDepth(const NodeType* node) {
   unsigned depth = 0;
   while (node) {
     depth++;
@@ -294,14 +294,15 @@ unsigned transformPropertyTreeNodeDepth(
   }
   return depth;
 }
-}
 
-const TransformPaintPropertyNode* GeometryMapper::leastCommonAncestor(
-    const TransformPaintPropertyNode* a,
-    const TransformPaintPropertyNode* b) {
+}  // namespace
+
+template <typename NodeType>
+const NodeType* GeometryMapper::lowestCommonAncestor(const NodeType* a,
+                                                     const NodeType* b) {
   // Measure both depths.
-  unsigned depthA = transformPropertyTreeNodeDepth(a);
-  unsigned depthB = transformPropertyTreeNodeDepth(b);
+  unsigned depthA = nodeDepth(a);
+  unsigned depthB = nodeDepth(b);
 
   // Make it so depthA >= depthB.
   if (depthA < depthB) {
@@ -322,5 +323,21 @@ const TransformPaintPropertyNode* GeometryMapper::leastCommonAncestor(
   }
   return a;
 }
+
+// Explicitly instantiate the template for all supported types. This allows
+// placing the template implementation in this .cpp file. See
+// http://stackoverflow.com/a/488989 for more.
+template const EffectPaintPropertyNode* GeometryMapper::lowestCommonAncestor(
+    const EffectPaintPropertyNode*,
+    const EffectPaintPropertyNode*);
+template const TransformPaintPropertyNode* GeometryMapper::lowestCommonAncestor(
+    const TransformPaintPropertyNode*,
+    const TransformPaintPropertyNode*);
+template const ClipPaintPropertyNode* GeometryMapper::lowestCommonAncestor(
+    const ClipPaintPropertyNode*,
+    const ClipPaintPropertyNode*);
+template const ScrollPaintPropertyNode* GeometryMapper::lowestCommonAncestor(
+    const ScrollPaintPropertyNode*,
+    const ScrollPaintPropertyNode*);
 
 }  // namespace blink

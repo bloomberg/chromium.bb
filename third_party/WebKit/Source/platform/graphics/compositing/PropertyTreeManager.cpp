@@ -12,6 +12,7 @@
 #include "cc/trees/transform_node.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
+#include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
@@ -293,47 +294,10 @@ void PropertyTreeManager::updateScrollOffset(int layerId, int scrollId) {
   scrollTree().set_needs_update(true);
 }
 
-namespace {
-
-unsigned depth(const EffectPaintPropertyNode* node) {
-  unsigned result = 0;
-  for (; node; node = node->parent())
-    result++;
-  return result;
-}
-
-// TODO(chrishtr): templatize this to avoid duplication of
-// GeometryMapper::leastCommonAncestor.
-const EffectPaintPropertyNode* lowestCommonAncestor(
-    const EffectPaintPropertyNode* nodeA,
-    const EffectPaintPropertyNode* nodeB) {
-  // Optimized common case.
-  if (nodeA == nodeB)
-    return nodeA;
-
-  unsigned depthA = depth(nodeA), depthB = depth(nodeB);
-  while (depthA > depthB) {
-    nodeA = nodeA->parent();
-    depthA--;
-  }
-  while (depthB > depthA) {
-    nodeB = nodeB->parent();
-    depthB--;
-  }
-  DCHECK_EQ(depthA, depthB);
-  while (nodeA != nodeB) {
-    nodeA = nodeA->parent();
-    nodeB = nodeB->parent();
-  }
-  return nodeA;
-}
-
-}  // namespace
-
 int PropertyTreeManager::switchToEffectNode(
     const EffectPaintPropertyNode& nextEffect) {
   const EffectPaintPropertyNode* ancestor =
-      lowestCommonAncestor(currentEffectNode(), &nextEffect);
+      GeometryMapper::lowestCommonAncestor(currentEffectNode(), &nextEffect);
   DCHECK(ancestor) << "Malformed effect tree. All nodes must be descendant of "
                       "EffectPaintPropertyNode::root().";
   while (currentEffectNode() != ancestor)
