@@ -32,10 +32,9 @@ import collections
 import errno
 import optparse
 import socket
-import unittest
 
 from webkitpy.common.system.executive_mock import MockExecutive
-from webkitpy.common.system.output_capture import OutputCapture
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.layout_tests.models import test_run_results
@@ -51,7 +50,7 @@ class FakePrinter(object):
         pass
 
 
-class PortTestCase(unittest.TestCase):
+class PortTestCase(LoggingTestCase):
     """Tests that all Port implementations must pass."""
     HTTP_PORTS = (8000, 8080, 8443)
     WEBSOCKET_PORTS = (8880,)
@@ -78,26 +77,30 @@ class PortTestCase(unittest.TestCase):
         port._options.build = True
         port._check_driver_build_up_to_date = lambda config: True
         port.check_httpd = lambda: True
-        oc = OutputCapture()
-        try:
-            oc.capture_output()
-            self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
-                             test_run_results.OK_EXIT_STATUS)
-        finally:
-            _, _, logs = oc.restore_output()
-            self.assertIn('pretty patches', logs)         # We should get a warning about PrettyPatch being missing,
-            self.assertNotIn('build requirements', logs)  # but not the driver itself.
+        self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
+                         test_run_results.OK_EXIT_STATUS)
+        # We should get a warning about PrettyPatch being missing,
+        # but not the driver itself.
+        logs = ''.join(self.logMessages())
+        self.assertIn('pretty patches', logs)
+        self.assertNotIn('build requirements', logs)
+
+        self.assertLog([
+            'ERROR: \n',
+            'WARNING: Unable to find /mock-checkout/third_party/WebKit/Tools/Scripts/webkitruby/'
+            'PrettyPatch/prettify.rb; can\'t generate pretty patches.\n',
+            'WARNING: \n'
+        ])
 
         port._check_file_exists = lambda path, desc: False
         port._check_driver_build_up_to_date = lambda config: False
-        try:
-            oc.capture_output()
-            self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
-                             test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
-        finally:
-            _, _, logs = oc.restore_output()
-            self.assertIn('pretty patches', logs)        # And, here we should get warnings about both.
-            self.assertIn('build requirements', logs)
+        self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
+                         test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+        # And, here we should get warnings about both.
+        logs = ''.join(self.logMessages())
+        self.assertIn('pretty patches', logs)
+        self.assertIn('build requirements', logs)
+
 
     def test_default_batch_size(self):
         port = self.make_port()
