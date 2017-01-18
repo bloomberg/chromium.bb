@@ -114,6 +114,10 @@ replace \xf327
 math \xf328 1456
 math \xf329 3456
 math \xf32d 34
+# Mixed Fractions
+math \xf404 456-1456
+math \xf405 456-3456
+math \xf406 34
 # Roots
 math \xf32a 345
 always \xf403\xf32a 345
