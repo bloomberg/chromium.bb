@@ -174,14 +174,9 @@ const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
 const char kPlayStorePackage[] = "com.android.vending";
 const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
 const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
-const char kAndroidWallpapersAppPackage[] = "com.google.android.apps.wallpaper";
-const char kAndroidWallpapersAppActivity[] =
-    "com.google.android.apps.wallpaper.picker.CategoryPickerActivity";
 
 bool ShouldShowInLauncher(const std::string& app_id) {
-  const std::string wallpapers_app_id = ArcAppListPrefs::GetAppId(
-      kAndroidWallpapersAppPackage, kAndroidWallpapersAppActivity);
-  return (app_id != kSettingsAppId) && (app_id != wallpapers_app_id);
+  return (app_id != kSettingsAppId);
 }
 
 bool LaunchAppWithRect(content::BrowserContext* context,

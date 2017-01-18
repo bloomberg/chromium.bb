@@ -28,6 +28,10 @@ namespace wallpaper_manager_util {
 
 namespace {
 
+const char kAndroidWallpapersAppPackage[] = "com.google.android.apps.wallpaper";
+const char kAndroidWallpapersAppActivity[] =
+    "com.google.android.apps.wallpaper.picker.CategoryPickerActivity";
+
 const char kAndroidWallpapersAppTrialName[] = "AndroidWallpapersAppOnChromeOS";
 const char kEnableAndroidWallpapersApp[] =
     "Enable-android-wallpapers-app_Dogfood";
@@ -50,8 +54,7 @@ bool ShouldUseAndroidWallpapersApp(Profile* profile) {
 
   // Check if Android Wallpapers App has been installed.
   const ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile);
-  if (!prefs ||
-      prefs->GetAppsForPackage(arc::kAndroidWallpapersAppPackage).empty())
+  if (!prefs || prefs->GetAppsForPackage(kAndroidWallpapersAppPackage).empty())
     return false;
 
   // Check if the finch experiment or the chrome flag is enabled.
@@ -71,7 +74,7 @@ void OpenWallpaperManager() {
 
   if (ShouldUseAndroidWallpapersApp(profile)) {
     const std::string app_id = ArcAppListPrefs::GetAppId(
-        arc::kAndroidWallpapersAppPackage, arc::kAndroidWallpapersAppActivity);
+        kAndroidWallpapersAppPackage, kAndroidWallpapersAppActivity);
     arc::LaunchApp(profile, app_id, ui::EF_NONE);
   } else {
     ExtensionService* service =

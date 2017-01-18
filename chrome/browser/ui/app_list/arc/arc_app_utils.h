@@ -23,8 +23,6 @@ extern const char kPlayStoreAppId[];
 extern const char kPlayStorePackage[];
 extern const char kPlayStoreActivity[];
 extern const char kSettingsAppId[];
-extern const char kAndroidWallpapersAppPackage[];
-extern const char kAndroidWallpapersAppActivity[];
 
 using CanHandleResolutionCallback = base::Callback<void(bool)>;
 
