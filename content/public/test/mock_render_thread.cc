@@ -249,6 +249,16 @@ int32_t MockRenderThread::GetClientId() {
   return 1;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+MockRenderThread::GetTimerTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+MockRenderThread::GetLoadingTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
+}
+
 #if defined(OS_WIN)
 void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 }

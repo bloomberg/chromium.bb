@@ -1470,6 +1470,16 @@ int32_t RenderThreadImpl::GetClientId() {
   return client_id_;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::GetTimerTaskRunner() {
+  return renderer_scheduler_->TimerTaskRunner();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::GetLoadingTaskRunner() {
+  return renderer_scheduler_->LoadingTaskRunner();
+}
+
 void RenderThreadImpl::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {

@@ -209,6 +209,8 @@ class CONTENT_EXPORT RenderThreadImpl
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
   int32_t GetClientId() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(
