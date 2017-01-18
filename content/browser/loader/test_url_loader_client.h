@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_LOADER_TEST_URL_LOADER_CLIENT_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -33,6 +34,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
+  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
@@ -41,9 +43,15 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   bool has_received_response() const { return has_received_response_; }
   bool has_received_redirect() const { return has_received_redirect_; }
   bool has_data_downloaded() const { return has_data_downloaded_; }
+  bool has_received_cached_metadata() const {
+    return has_received_cached_metadata_;
+  }
   bool has_received_completion() const { return has_received_completion_; }
   const ResourceResponseHead& response_head() const { return response_head_; }
   const net::RedirectInfo& redirect_info() const { return redirect_info_; }
+  const std::string& cached_metadata() const {
+    return cached_metadata_;
+  }
   mojo::DataPipeConsumerHandle response_body() { return response_body_.get(); }
   const ResourceRequestCompletionStatus& completion_status() const {
     return completion_status_;
@@ -66,6 +74,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void RunUntilResponseReceived();
   void RunUntilRedirectReceived();
   void RunUntilDataDownloaded();
+  void RunUntilCachedMetadataReceived();
   void RunUntilResponseBodyArrived();
   void RunUntilComplete();
 
@@ -73,15 +82,18 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
   ResourceResponseHead response_head_;
   net::RedirectInfo redirect_info_;
+  std::string cached_metadata_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
   ResourceRequestCompletionStatus completion_status_;
   bool has_received_response_ = false;
   bool has_received_redirect_ = false;
   bool has_data_downloaded_ = false;
+  bool has_received_cached_metadata_ = false;
   bool has_received_completion_ = false;
   base::Closure quit_closure_for_on_receive_response_;
   base::Closure quit_closure_for_on_receive_redirect_;
   base::Closure quit_closure_for_on_data_downloaded_;
+  base::Closure quit_closure_for_on_receive_cached_metadata_;
   base::Closure quit_closure_for_on_start_loading_response_body_;
   base::Closure quit_closure_for_on_complete_;
   mojom::URLLoaderFactoryPtr url_loader_factory_;

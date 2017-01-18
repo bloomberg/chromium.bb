@@ -48,6 +48,9 @@ interface URLLoaderClient {
   // instead.
   OnDataDownloaded(int64 data_length, int64 encoded_length);
 
+  // Called when cached metadata from a resource request is ready.
+  OnReceiveCachedMetadata(array<uint8> data);
+
   // Called when the transfer size is updated. This is only called if
   // |report_raw_headers| is set and |download_to_file| is unset in the request.
   // The transfer size is the length of the response (including both headers

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -174,10 +175,10 @@ class TestResourceDispatcherHostDelegate final
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHostDelegate);
 };
 
-class MojoAsyncResourceHandlerWithCustomDataPipeOperations
+class MojoAsyncResourceHandlerWithStubOperations
     : public MojoAsyncResourceHandler {
  public:
-  MojoAsyncResourceHandlerWithCustomDataPipeOperations(
+  MojoAsyncResourceHandlerWithStubOperations(
       net::URLRequest* request,
       ResourceDispatcherHostImpl* rdh,
       mojom::URLLoaderAssociatedRequest mojo_request,
@@ -186,7 +187,7 @@ class MojoAsyncResourceHandlerWithCustomDataPipeOperations
                                  rdh,
                                  std::move(mojo_request),
                                  std::move(url_loader_client)) {}
-  ~MojoAsyncResourceHandlerWithCustomDataPipeOperations() override {}
+  ~MojoAsyncResourceHandlerWithStubOperations() override {}
 
   void ResetBeginWriteExpectation() { is_begin_write_expectation_set_ = false; }
 
@@ -199,6 +200,9 @@ class MojoAsyncResourceHandlerWithCustomDataPipeOperations
     end_write_expectation_ = end_write_expectation;
   }
   bool has_received_bad_message() const { return has_received_bad_message_; }
+  void SetMetadata(scoped_refptr<net::IOBufferWithSize> metadata) {
+    metadata_ = std::move(metadata);
+  }
 
  private:
   MojoResult BeginWrite(void** data, uint32_t* available) override {
@@ -211,6 +215,11 @@ class MojoAsyncResourceHandlerWithCustomDataPipeOperations
       return end_write_expectation_;
     return MojoAsyncResourceHandler::EndWrite(written);
   }
+  net::IOBufferWithSize* GetResponseMetadata(
+      net::URLRequest* request) override {
+    return metadata_.get();
+  }
+
   void ReportBadMessage(const std::string& error) override {
     has_received_bad_message_ = true;
   }
@@ -220,9 +229,9 @@ class MojoAsyncResourceHandlerWithCustomDataPipeOperations
   bool has_received_bad_message_ = false;
   MojoResult begin_write_expectation_ = MOJO_RESULT_UNKNOWN;
   MojoResult end_write_expectation_ = MOJO_RESULT_UNKNOWN;
+  scoped_refptr<net::IOBufferWithSize> metadata_;
 
-  DISALLOW_COPY_AND_ASSIGN(
-      MojoAsyncResourceHandlerWithCustomDataPipeOperations);
+  DISALLOW_COPY_AND_ASSIGN(MojoAsyncResourceHandlerWithStubOperations);
 };
 
 class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
@@ -308,7 +317,7 @@ class MojoAsyncResourceHandlerTestBase {
 
     mojom::URLLoaderClientAssociatedPtr client_ptr;
     client_ptr.Bind(factory_impl->PassClientPtrInfo());
-    handler_.reset(new MojoAsyncResourceHandlerWithCustomDataPipeOperations(
+    handler_.reset(new MojoAsyncResourceHandlerWithStubOperations(
         request_.get(), &rdh_, factory_impl->PassLoaderRequest(),
         std::move(client_ptr)));
     mock_loader_.reset(new MockResourceLoader(handler_.get()));
@@ -352,8 +361,7 @@ class MojoAsyncResourceHandlerTestBase {
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::TestDelegate url_request_delegate_;
   std::unique_ptr<net::URLRequest> request_;
-  std::unique_ptr<MojoAsyncResourceHandlerWithCustomDataPipeOperations>
-      handler_;
+  std::unique_ptr<MojoAsyncResourceHandlerWithStubOperations> handler_;
   std::unique_ptr<MockResourceLoader> mock_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAsyncResourceHandlerTestBase);
@@ -386,6 +394,10 @@ TEST_F(MojoAsyncResourceHandlerTest, OnWillStart) {
 
 TEST_F(MojoAsyncResourceHandlerTest, OnResponseStarted) {
   rdh_delegate_.set_num_on_response_started_calls_expectation(1);
+  scoped_refptr<net::IOBufferWithSize> metadata = new net::IOBufferWithSize(5);
+  memcpy(metadata->data(), "hello", 5);
+  handler_->SetMetadata(metadata);
+
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnWillStart(request_->url()));
 
@@ -413,6 +425,9 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseStarted) {
   EXPECT_EQ(response->head.response_start,
             url_loader_client_.response_head().response_start);
   EXPECT_EQ(99, url_loader_client_.response_head().content_length);
+
+  url_loader_client_.RunUntilCachedMetadataReceived();
+  EXPECT_EQ("hello", url_loader_client_.cached_metadata());
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, OnWillReadAndInFlightRequests) {

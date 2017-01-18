@@ -72,6 +72,14 @@ void TestRequestPeer::OnTransferSizeUpdated(int transfer_size_diff) {
     dispatcher_->SetDefersLoading(context_->request_id, true);
 }
 
+void TestRequestPeer::OnReceivedCachedMetadata(const char* data, int len) {
+  EXPECT_TRUE(context_->received_response);
+  EXPECT_FALSE(context_->complete);
+  if (context_->cancelled)
+    return;
+  context_->cached_metadata = std::vector<char>(data, data + len);
+}
+
 void TestRequestPeer::OnCompletedRequest(int error_code,
                                          bool was_ignored_by_handler,
                                          bool stale_copy_in_cache,

@@ -4,6 +4,7 @@
 
 #include "content/child/url_loader_client_impl.h"
 
+#include <vector>
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -171,6 +172,22 @@ TEST_F(URLLoaderClientImplTest, OnDataDownloaded) {
   EXPECT_TRUE(request_peer_context_.received_response);
   EXPECT_EQ(10, request_peer_context_.total_downloaded_data_length);
   EXPECT_EQ(14, request_peer_context_.total_encoded_data_length);
+}
+
+TEST_F(URLLoaderClientImplTest, OnReceiveCachedMetadata) {
+  ResourceResponseHead response_head;
+  std::vector<uint8_t> metadata;
+  metadata.push_back('a');
+
+  url_loader_client_->OnReceiveResponse(response_head, nullptr);
+  url_loader_client_->OnReceiveCachedMetadata(metadata);
+
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_TRUE(request_peer_context_.cached_metadata.empty());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_peer_context_.received_response);
+  ASSERT_EQ(1u, request_peer_context_.cached_metadata.size());
+  EXPECT_EQ('a', request_peer_context_.cached_metadata[0]);
 }
 
 TEST_F(URLLoaderClientImplTest, OnTransferSizeUpdated) {

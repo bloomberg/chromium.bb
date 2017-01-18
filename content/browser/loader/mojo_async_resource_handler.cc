@@ -5,6 +5,7 @@
 #include "content/browser/loader/mojo_async_resource_handler.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
@@ -181,6 +182,14 @@ bool MojoAsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   url_loader_client_->OnReceiveResponse(response->head,
                                         std::move(downloaded_file_ptr));
+
+  net::IOBufferWithSize* metadata = GetResponseMetadata(request());
+  if (metadata) {
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(metadata->data());
+
+    url_loader_client_->OnReceiveCachedMetadata(
+        std::vector<uint8_t>(data, data + metadata->size()));
+  }
   return true;
 }
 
@@ -321,6 +330,11 @@ MojoResult MojoAsyncResourceHandler::BeginWrite(void** data,
 
 MojoResult MojoAsyncResourceHandler::EndWrite(uint32_t written) {
   return mojo::EndWriteDataRaw(shared_writer_->writer(), written);
+}
+
+net::IOBufferWithSize* MojoAsyncResourceHandler::GetResponseMetadata(
+    net::URLRequest* request) {
+  return request->response_info().metadata.get();
 }
 
 void MojoAsyncResourceHandler::OnResponseCompleted(

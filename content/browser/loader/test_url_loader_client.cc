@@ -45,6 +45,18 @@ void TestURLLoaderClient::OnDataDownloaded(int64_t data_length,
     quit_closure_for_on_data_downloaded_.Run();
 }
 
+void TestURLLoaderClient::OnReceiveCachedMetadata(
+    const std::vector<uint8_t>& data) {
+  EXPECT_FALSE(has_received_cached_metadata_);
+  EXPECT_TRUE(has_received_response_);
+  EXPECT_FALSE(has_received_completion_);
+  has_received_cached_metadata_ = true;
+  cached_metadata_ =
+      std::string(reinterpret_cast<const char*>(data.data()), data.size());
+  if (quit_closure_for_on_receive_cached_metadata_)
+    quit_closure_for_on_receive_cached_metadata_.Run();
+}
+
 void TestURLLoaderClient::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   EXPECT_GT(transfer_size_diff, 0);
   body_transfer_size_ += transfer_size_diff;
@@ -83,6 +95,8 @@ void TestURLLoaderClient::Unbind() {
 }
 
 void TestURLLoaderClient::RunUntilResponseReceived() {
+  if (has_received_response_)
+    return;
   base::RunLoop run_loop;
   quit_closure_for_on_receive_response_ = run_loop.QuitClosure();
   run_loop.Run();
@@ -90,6 +104,8 @@ void TestURLLoaderClient::RunUntilResponseReceived() {
 }
 
 void TestURLLoaderClient::RunUntilRedirectReceived() {
+  if (has_received_redirect_)
+    return;
   base::RunLoop run_loop;
   quit_closure_for_on_receive_redirect_ = run_loop.QuitClosure();
   run_loop.Run();
@@ -97,10 +113,21 @@ void TestURLLoaderClient::RunUntilRedirectReceived() {
 }
 
 void TestURLLoaderClient::RunUntilDataDownloaded() {
+  if (has_data_downloaded_)
+    return;
   base::RunLoop run_loop;
   quit_closure_for_on_data_downloaded_ = run_loop.QuitClosure();
   run_loop.Run();
   quit_closure_for_on_data_downloaded_.Reset();
+}
+
+void TestURLLoaderClient::RunUntilCachedMetadataReceived() {
+  if (has_received_cached_metadata_)
+    return;
+  base::RunLoop run_loop;
+  quit_closure_for_on_receive_cached_metadata_ = run_loop.QuitClosure();
+  run_loop.Run();
+  quit_closure_for_on_receive_cached_metadata_.Reset();
 }
 
 void TestURLLoaderClient::RunUntilResponseBodyArrived() {

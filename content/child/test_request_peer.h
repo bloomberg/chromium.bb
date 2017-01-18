@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <memory>
 #include <string>
+#include <vector>
 #include "base/time/time.h"
 #include "content/public/child/request_peer.h"
 
@@ -36,6 +37,7 @@ class TestRequestPeer : public RequestPeer {
   void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
+  void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
@@ -59,6 +61,7 @@ class TestRequestPeer : public RequestPeer {
     bool cancel_on_receive_data = false;
     bool received_response = false;
 
+    std::vector<char> cached_metadata;
     // Data received. If downloading to file, remains empty.
     std::string data;
 

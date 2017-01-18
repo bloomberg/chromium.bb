@@ -134,6 +134,13 @@ void URLLoaderClientImpl::OnDataDownloaded(int64_t data_len,
   Dispatch(ResourceMsg_DataDownloaded(request_id_, data_len, encoded_data_len));
 }
 
+void URLLoaderClientImpl::OnReceiveCachedMetadata(
+    const std::vector<uint8_t>& data) {
+  const char* data_ptr = reinterpret_cast<const char*>(data.data());
+  Dispatch(ResourceMsg_ReceivedCachedMetadata(
+      request_id_, std::vector<char>(data_ptr, data_ptr + data.size())));
+}
+
 void URLLoaderClientImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   if (is_deferred_) {
     accumulated_transfer_size_diff_during_deferred_ += transfer_size_diff;

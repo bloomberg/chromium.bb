@@ -23,6 +23,7 @@
 #include "url/gurl.h"
 
 namespace net {
+class IOBufferWithSize;
 class URLRequest;
 }
 
@@ -74,6 +75,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   // These functions can be overriden only for tests.
   virtual MojoResult BeginWrite(void** data, uint32_t* available);
   virtual MojoResult EndWrite(uint32_t written);
+  virtual net::IOBufferWithSize* GetResponseMetadata(net::URLRequest* request);
 
  private:
   class SharedWriter;
