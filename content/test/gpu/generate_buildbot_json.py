@@ -232,32 +232,6 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
-    'Win10 Release (New Intel)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:0412',
-          'os': 'Windows-10',
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
-    'Win10 Debug (New Intel)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:0412',
-          'os': 'Windows-10',
-        },
-      ],
-      'build_config': 'Debug',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
     'Win10 Release (Intel HD 530)': {
       'swarming_dimensions': [
         {
@@ -428,6 +402,19 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'mac',
     },
+    'Mac Experimental Retina Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:0fe9',
+          'hidpi': '1',
+          'os': 'Mac'
+        },
+      ],
+      'build_config': 'Release',
+      # This bot is a one-off for testing purposes.
+      'swarming': False,
+      'os_type': 'mac',
+    },
     'Mac GPU ASAN Release': {
       # This bot spawns jobs on multiple GPU types.
       'swarming_dimensions': [
@@ -505,32 +492,6 @@ FYI_WATERFALL = {
       ],
       'build_config': 'Debug',
       'swarming': True,
-      'os_type': 'linux',
-    },
-    'Linux Release (New Intel)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:0412',
-          'os': 'Linux'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'linux',
-    },
-    'Linux Debug (New Intel)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:0412',
-          'os': 'Linux'
-        },
-      ],
-      'build_config': 'Debug',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
       'os_type': 'linux',
     },
     'Linux Release (Intel HD 530)': {
