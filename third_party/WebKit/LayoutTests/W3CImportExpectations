@@ -718,9 +718,6 @@ external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_p
 external/wpt/html/semantics/forms/form-submission-0/url-encoded.html [ Skip ]
 external/wpt/svg/linking/scripted [ Skip ]
 
-# crbug.com/680419: We're experimenting with changing the behavior of the 'nonce' attribute
-external/wpt/html/dom/reflection-misc.html [ Skip ]
-
 # crbug.com/656171: w3c-test-importer fails to import file with non-valid utf8 (004.worker.js).
 crbug.com/656171 external/wpt/workers/semantics/encodings [ Skip ]
 
