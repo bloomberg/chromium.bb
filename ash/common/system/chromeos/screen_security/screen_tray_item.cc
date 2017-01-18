@@ -58,6 +58,12 @@ ScreenStatusView::ScreenStatusView(ScreenTrayItem* screen_tray_item,
   SetLayoutManager(new views::FillLayout);
   AddChildView(tri_view);
   tri_view->AddView(TriView::Container::START, icon_);
+  // TODO(bruthig): Multiline Labels don't lay out well with borders so we add
+  // the border to the Label's container instead. See https://crbug.com/678337 &
+  // https://crbug.com/682221.
+  tri_view->SetContainerBorder(
+      TriView::Container::CENTER,
+      views::CreateEmptyBorder(0, 0, 0, kTrayPopupLabelRightPadding));
   tri_view->AddView(TriView::Container::CENTER, label_);
   tri_view->AddView(TriView::Container::END, stop_button_);
   tri_view->SetContainerBorder(
@@ -92,6 +98,9 @@ void ScreenStatusView::CreateItems() {
   label_ = TrayPopupUtils::CreateDefaultLabel();
   label_->SetMultiLine(true);
   label_->SetText(label_text_);
+  // TODO(bruthig): Multiline Labels don't lay out well with borders.
+  // See https://crbug.com/678337 & https://crbug.com/682221.
+  label_->SetBorder(nullptr);
 
   stop_button_ = TrayPopupUtils::CreateTrayPopupButton(this, stop_button_text_);
 }
