@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.sync.SyncSessionsMetrics;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -327,56 +328,17 @@ public class NewTabPage
             return matchByHost ? UrlUtilities.sameHost(url1, url2) : url1.equals(url2);
         }
 
-        @Override
-        public void trackSnippetsPageImpression(int[] categories, int[] suggestionsPerCategory) {
-            mSnippetsBridge.onPageShown(categories, suggestionsPerCategory);
+        public SuggestionsMetricsReporter getSuggestionsMetricsReporter() {
+            return mSnippetsBridge;
+        }
+
+        public void trackSnippetOpened(int windowOpenDisposition, SnippetArticle article) {
+            mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
         }
 
         @Override
-        public void trackSnippetImpression(SnippetArticle article) {
-            mSnippetsBridge.onSuggestionShown(article);
-        }
-
-        @Override
-        public void trackSnippetMenuOpened(SnippetArticle article) {
-            mSnippetsBridge.onSuggestionMenuOpened(article);
-        }
-
-        @Override
-        public void trackSnippetCategoryActionImpression(int category, int position) {
-            mSnippetsBridge.onMoreButtonShown(category, position);
-        }
-
-        @Override
-        public void trackSnippetCategoryActionClick(int category, int position) {
-            mSnippetsBridge.onMoreButtonClicked(category, position);
-            switch (category) {
-                case KnownCategories.BOOKMARKS:
-                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
-                    break;
-                // MORE button in both categories leads to the recent tabs manager
-                case KnownCategories.FOREIGN_TABS:
-                case KnownCategories.RECENT_TABS:
-                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
-                    break;
-                case KnownCategories.DOWNLOADS:
-                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_DOWNLOADS_MANAGER);
-                    break;
-                default:
-                    // No action associated
-                    break;
-            }
-        }
-
-        public void trackSnippetOpened(
-                int windowOpenDisposition, SnippetArticle article, int categoryIndex) {
-            mSnippetsBridge.onSuggestionOpened(article, categoryIndex, windowOpenDisposition);
-        }
-
-        @Override
-        public void openSnippet(
-                int windowOpenDisposition, SnippetArticle article, int categoryIndex) {
-            trackSnippetOpened(windowOpenDisposition, article, categoryIndex);
+        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
+            trackSnippetOpened(windowOpenDisposition, article);
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
             if (article.mIsAssetDownload) {

@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -164,45 +165,11 @@ public class NewTabPageView extends FrameLayout
         void navigateToDownloadManager();
 
         /**
-         * Tracks per-page-load metrics for content suggestions.
-         * @param categories The categories of content suggestions.
-         * @param suggestionsPerCategory The number of content suggestions in each category.
-         */
-        void trackSnippetsPageImpression(int[] categories, int[] suggestionsPerCategory);
-
-        /**
-         * Tracks impression metrics for a content suggestion.
-         * @param article The content suggestion that was shown to the user.
-         */
-        void trackSnippetImpression(SnippetArticle article);
-
-        /**
-         * Tracks impression metrics for the long-press menu for a content suggestion.
-         * @param article The content suggestion for which the long-press menu was opened.
-         */
-        void trackSnippetMenuOpened(SnippetArticle article);
-
-        /**
-         * Tracks impression metrics for a category's action button ("More").
-         * @param category The category for which the action button was shown.
-         * @param position The position of the action button within the category.
-         */
-        void trackSnippetCategoryActionImpression(int category, int position);
-
-        /**
-         * Tracks click metrics for a category's action button ("More").
-         * @param category The category for which the action button was clicked.
-         * @param position The position of the action button within the category.
-         */
-        void trackSnippetCategoryActionClick(int category, int position);
-
-        /**
          * Opens a content suggestion and records related metrics.
          * @param windowOpenDisposition How to open (current tab, new tab, new window etc).
          * @param article The content suggestion to open.
-         * @param categoryIndex The index of the category |article| belongs to.
          */
-        void openSnippet(int windowOpenDisposition, SnippetArticle article, int categoryIndex);
+        void openSnippet(int windowOpenDisposition, SnippetArticle article);
 
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.
@@ -301,6 +268,13 @@ public class NewTabPageView extends FrameLayout
          */
         @Nullable
         ContextMenuManager getContextMenuManager();
+
+        /**
+         * @return The suggestion metrics reporter. Will be {@code null} if the
+         * {@link NewTabPageView} is not done initialising.
+         */
+        @Nullable
+        SuggestionsMetricsReporter getSuggestionsMetricsReporter();
     }
 
     /**

@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ public class SuggestionsSection extends InnerNode {
     private final Delegate mDelegate;
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final OfflinePageBridge mOfflinePageBridge;
+    private final SuggestionsRanker mSuggestionsRanker;
 
     // Children
     private final SectionHeader mHeader;
@@ -60,15 +62,17 @@ public class SuggestionsSection extends InnerNode {
     }
 
     public SuggestionsSection(Delegate delegate, NewTabPageManager manager,
-            OfflinePageBridge offlinePageBridge, SuggestionsCategoryInfo info) {
+            SuggestionsRanker ranker, OfflinePageBridge offlinePageBridge,
+            SuggestionsCategoryInfo info) {
         mDelegate = delegate;
         mCategoryInfo = info;
         mOfflinePageBridge = offlinePageBridge;
+        mSuggestionsRanker = ranker;
 
         mHeader = new SectionHeader(info.getTitle());
         mSuggestionsList = new SuggestionsList(manager, info);
         mStatus = StatusItem.createNoSuggestionsItem(info);
-        mMoreButton = new ActionItem(this);
+        mMoreButton = new ActionItem(this, ranker);
         mProgressIndicator = new ProgressItem();
         addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton, mProgressIndicator);
 
@@ -80,20 +84,11 @@ public class SuggestionsSection extends InnerNode {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
         private final NewTabPageManager mNewTabPageManager;
         private final SuggestionsCategoryInfo mCategoryInfo;
-        private int mCategoryIndex;
 
         public SuggestionsList(NewTabPageManager newTabPageManager,
                 SuggestionsCategoryInfo categoryInfo) {
             mNewTabPageManager = newTabPageManager;
             mCategoryInfo = categoryInfo;
-        }
-
-        public void setCategoryIndex(int categoryIndex) {
-            mCategoryIndex = categoryIndex;
-        }
-
-        public int getCategoryIndex() {
-            return mCategoryIndex;
         }
 
         @Override
@@ -114,8 +109,7 @@ public class SuggestionsSection extends InnerNode {
             checkIndex(position);
             assert holder instanceof SnippetArticleViewHolder;
             ((SnippetArticleViewHolder) holder)
-                    .onBindViewHolder(
-                            getSuggestionAt(position), mCategoryInfo, payloads, mCategoryIndex);
+                    .onBindViewHolder(getSuggestionAt(position), mCategoryInfo, payloads);
         }
 
         @Override
@@ -359,6 +353,7 @@ public class SuggestionsSection extends InnerNode {
         mSuggestionsList.addAll(suggestions);
 
         for (SnippetArticle article : suggestions) {
+            mSuggestionsRanker.rankSuggestion(article);
             if (!article.requiresExactOfflinePage()) {
                 updateSnippetOfflineAvailability(article);
             }
@@ -434,14 +429,6 @@ public class SuggestionsSection extends InnerNode {
 
     public SuggestionsCategoryInfo getCategoryInfo() {
         return mCategoryInfo;
-    }
-
-    public int getCategoryIndex() {
-        return mSuggestionsList.getCategoryIndex();
-    }
-
-    public void setCategoryIndex(int categoryIndex) {
-        mSuggestionsList.setCategoryIndex(categoryIndex);
     }
 
     public String getHeaderText() {

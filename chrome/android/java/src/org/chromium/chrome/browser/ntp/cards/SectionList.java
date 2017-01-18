@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,10 +33,13 @@ public class SectionList
     private final Map<Integer, SuggestionsSection> mSections = new LinkedHashMap<>();
     private final NewTabPageManager mNewTabPageManager;
     private final OfflinePageBridge mOfflinePageBridge;
+    private final SuggestionsRanker mSuggestionsRanker;
 
     public SectionList(NewTabPageManager newTabPageManager, OfflinePageBridge offlinePageBridge) {
+        mSuggestionsRanker = new SuggestionsRanker();
         mNewTabPageManager = newTabPageManager;
         mNewTabPageManager.getSuggestionsSource().setObserver(this);
+        mNewTabPageManager.getSuggestionsMetricsReporter().setRanker(mSuggestionsRanker);
         mOfflinePageBridge = offlinePageBridge;
         resetSections(/* alwaysAllowEmptySections = */ false);
     }
@@ -61,12 +65,11 @@ public class SectionList
 
             suggestionsPerCategory[categoryIndex] =
                     resetSection(category, categoryStatus, alwaysAllowEmptySections);
-            SuggestionsSection section = mSections.get(category);
-            if (section != null) section.setCategoryIndex(categoryIndex);
             ++categoryIndex;
         }
 
-        mNewTabPageManager.trackSnippetsPageImpression(categories, suggestionsPerCategory);
+        mNewTabPageManager.getSuggestionsMetricsReporter().onPageShown(
+                categories, suggestionsPerCategory);
     }
 
     /**
@@ -95,8 +98,10 @@ public class SectionList
 
         // Create the section if needed.
         if (section == null) {
-            section = new SuggestionsSection(this, mNewTabPageManager, mOfflinePageBridge, info);
+            section = new SuggestionsSection(
+                    this, mNewTabPageManager, mSuggestionsRanker, mOfflinePageBridge, info);
             mSections.put(category, section);
+            mSuggestionsRanker.registerCategory(category);
             addChild(section);
         }
 
@@ -186,17 +191,6 @@ public class SectionList
      */
     private void setSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions,
             @CategoryStatusEnum int status, boolean replaceExisting) {
-        // Count the number of suggestions before this category.
-        int globalPositionOffset = 0;
-        for (Map.Entry<Integer, SuggestionsSection> entry : mSections.entrySet()) {
-            if (entry.getKey() == category) break;
-            globalPositionOffset += entry.getValue().getSuggestionsCount();
-        }
-        // Assign global indices to the new suggestions.
-        for (SnippetArticle suggestion : suggestions) {
-            suggestion.mGlobalPosition = globalPositionOffset + suggestion.mPosition;
-        }
-
         mSections.get(category).setSuggestions(suggestions, status, replaceExisting);
     }
 

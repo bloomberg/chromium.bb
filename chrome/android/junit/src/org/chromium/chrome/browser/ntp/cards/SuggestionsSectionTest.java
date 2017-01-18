@@ -39,6 +39,8 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
@@ -462,7 +464,8 @@ public class SuggestionsSectionTest {
     }
 
     private SuggestionsSection createSection(SuggestionsCategoryInfo info) {
-        SuggestionsSection section = new SuggestionsSection(mDelegate, mManager, mBridge, info);
+        SuggestionsSection section = new SuggestionsSection(
+                mDelegate, mManager, mock(SuggestionsRanker.class), mBridge, info);
         section.setParent(mParent);
         return section;
     }
@@ -475,6 +478,8 @@ public class SuggestionsSectionTest {
         SuggestionsSource suggestionsSource = mock(SuggestionsSource.class);
         NewTabPageManager manager = mock(NewTabPageManager.class);
         when(manager.getSuggestionsSource()).thenReturn(suggestionsSource);
+        when(manager.getSuggestionsMetricsReporter())
+                .thenReturn(mock(SuggestionsMetricsReporter.class));
 
         if (action != ActionItem.ACTION_NONE) {
             section.getActionItem().performAction(manager);

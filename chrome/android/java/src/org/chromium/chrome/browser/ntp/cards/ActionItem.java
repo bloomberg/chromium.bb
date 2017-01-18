@@ -14,7 +14,9 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
+import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -24,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
  * Note: Use {@link #refreshVisibility()} to update the visibility of the button instead of calling
  * {@link #setVisible(boolean)} directly.
  */
-class ActionItem extends OptionalLeaf {
+public class ActionItem extends OptionalLeaf {
     @IntDef({ACTION_NONE, ACTION_VIEW_ALL, ACTION_FETCH_MORE, ACTION_RELOAD})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Action {}
@@ -35,14 +37,17 @@ class ActionItem extends OptionalLeaf {
 
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final SuggestionsSection mParentSection;
+    private final SuggestionsRanker mSuggestionsRanker;
 
     @Action
     private int mCurrentAction = ACTION_NONE;
     private boolean mImpressionTracked;
+    private int mPerSectionRank = -1;
 
-    public ActionItem(SuggestionsSection section) {
+    public ActionItem(SuggestionsSection section, SuggestionsRanker ranker) {
         mCategoryInfo = section.getCategoryInfo();
         mParentSection = section;
+        mSuggestionsRanker = ranker;
     }
 
     /** Call this instead of {@link #setVisible(boolean)} to update the visibility. */
@@ -59,17 +64,26 @@ class ActionItem extends OptionalLeaf {
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof ViewHolder;
+        mSuggestionsRanker.rankActionItem(this, mParentSection);
         ((ViewHolder) holder).onBindViewHolder(this);
     }
 
-    private int getPosition() {
-        // TODO(dgn): looks dodgy. Confirm that's what we want.
-        return mParentSection.getSuggestionsCount();
+    @CategoryInt
+    public int getCategory() {
+        return mCategoryInfo.getCategory();
+    }
+
+    public void setPerSectionRank(int perSectionRank) {
+        mPerSectionRank = perSectionRank;
+    }
+
+    public int getPerSectionRank() {
+        return mPerSectionRank;
     }
 
     @VisibleForTesting
     void performAction(NewTabPageManager manager) {
-        manager.trackSnippetCategoryActionClick(mCategoryInfo.getCategory(), getPosition());
+        manager.getSuggestionsMetricsReporter().onMoreButtonClicked(this);
 
         switch (mCurrentAction) {
             case ACTION_VIEW_ALL:
@@ -97,6 +111,7 @@ class ActionItem extends OptionalLeaf {
         return ACTION_NONE;
     }
 
+    /** ViewHolder associated to {@link ItemViewType#ACTION}. */
     public static class ViewHolder extends CardViewHolder implements ContextMenuManager.Delegate {
         private ActionItem mActionListItem;
 
@@ -117,9 +132,7 @@ class ActionItem extends OptionalLeaf {
                 public void onImpression() {
                     if (mActionListItem != null && !mActionListItem.mImpressionTracked) {
                         mActionListItem.mImpressionTracked = true;
-                        manager.trackSnippetCategoryActionImpression(
-                                mActionListItem.mCategoryInfo.getCategory(),
-                                mActionListItem.getPosition());
+                        manager.getSuggestionsMetricsReporter().onMoreButtonShown(mActionListItem);
                     }
                 }
             });

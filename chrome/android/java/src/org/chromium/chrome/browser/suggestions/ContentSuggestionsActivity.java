@@ -94,23 +94,7 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
         public void navigateToDownloadManager() {}
 
         @Override
-        public void trackSnippetsPageImpression(int[] categories, int[] suggestionsPerCategory) {}
-
-        @Override
-        public void trackSnippetImpression(SnippetArticle article) {}
-
-        @Override
-        public void trackSnippetMenuOpened(SnippetArticle article) {}
-
-        @Override
-        public void trackSnippetCategoryActionImpression(int category, int position) {}
-
-        @Override
-        public void trackSnippetCategoryActionClick(int category, int position) {}
-
-        @Override
-        public void openSnippet(
-                int windowOpenDisposition, SnippetArticle article, int categoryIndex) {}
+        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {}
 
         @Override
         public void focusSearchBox(boolean beginVoiceSearch, String pastedText) {}
@@ -163,6 +147,11 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
         public ContextMenuManager getContextMenuManager() {
             return mContextMenuManager;
         }
+
+        @Override
+        public SuggestionsMetricsReporter getSuggestionsMetricsReporter() {
+            return mSnippetsBridge;
+        }
     }
 
     @Override
@@ -198,6 +187,10 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
         for (DestructionObserver observer : mDestructionObservers) {
             observer.onDestroy();
         }
+
+        mSnippetsBridge.destroy();
+        mSnippetsBridge = null;
+
         super.onDestroy();
     }
 }

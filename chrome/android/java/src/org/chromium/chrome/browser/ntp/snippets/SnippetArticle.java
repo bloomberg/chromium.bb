@@ -36,11 +36,11 @@ public class SnippetArticle {
     /** The score expressing relative quality of the article for the user. */
     public final float mScore;
 
-    /** The position of this article within its section. */
-    public final int mPosition;
+    /** The rank of this article within its section. */
+    private int mPerSectionRank = -1;
 
-    /** The position of this article in the complete list. Populated by NewTabPageAdapter. */
-    public int mGlobalPosition = -1;
+    /** The global rank of this article in the complete list. */
+    private int mGlobalRank = -1;
 
     /** Bitmap of the thumbnail, fetched lazily, when the RecyclerView wants to show the snippet. */
     private Bitmap mThumbnailBitmap;
@@ -67,7 +67,7 @@ public class SnippetArticle {
      * Creates a SnippetArticleListItem object that will hold the data.
      */
     public SnippetArticle(int category, String idWithinCategory, String title, String publisher,
-            String previewText, String url, long timestamp, float score, int position) {
+            String previewText, String url, long timestamp, float score) {
         mCategory = category;
         mIdWithinCategory = idWithinCategory;
         mTitle = title;
@@ -76,7 +76,6 @@ public class SnippetArticle {
         mUrl = url;
         mPublishTimestampMilliseconds = timestamp;
         mScore = score;
-        mPosition = position;
     }
 
     @Override
@@ -207,5 +206,18 @@ public class SnippetArticle {
     public String toString() {
         // For debugging purposes. Displays the first 42 characters of the title.
         return String.format("{%s, %1.42s}", getClass().getSimpleName(), mTitle);
+    }
+
+    public void setRank(int perSectionRank, int globalRank) {
+        mPerSectionRank = perSectionRank;
+        mGlobalRank = globalRank;
+    }
+
+    public int getGlobalRank() {
+        return mGlobalRank;
+    }
+
+    public int getPerSectionRank() {
+        return mPerSectionRank;
     }
 }

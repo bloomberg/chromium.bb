@@ -70,7 +70,6 @@ public class SnippetArticleViewHolder
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
     private SuggestionsCategoryInfo mCategoryInfo;
-    private int mCategoryIndex;
     private int mPublisherFaviconSizePx;
 
     private final boolean mUseFaviconService;
@@ -111,19 +110,19 @@ public class SnippetArticleViewHolder
     @Override
     public void onImpression() {
         if (mArticle != null && mArticle.trackImpression()) {
-            mNewTabPageManager.trackSnippetImpression(mArticle);
+            mNewTabPageManager.getSuggestionsMetricsReporter().onSuggestionShown(mArticle);
             mRecyclerView.onSnippetImpression();
         }
     }
 
     @Override
     public void onCardTapped() {
-        mNewTabPageManager.openSnippet(WindowOpenDisposition.CURRENT_TAB, mArticle, mCategoryIndex);
+        mNewTabPageManager.openSnippet(WindowOpenDisposition.CURRENT_TAB, mArticle);
     }
 
     @Override
     public void openItem(int windowDisposition) {
-        mNewTabPageManager.openSnippet(windowDisposition, mArticle, mCategoryIndex);
+        mNewTabPageManager.openSnippet(windowDisposition, mArticle);
     }
 
     @Override
@@ -152,7 +151,7 @@ public class SnippetArticleViewHolder
 
     @Override
     public void onContextMenuCreated() {
-        mNewTabPageManager.trackSnippetMenuOpened(mArticle);
+        mNewTabPageManager.getSuggestionsMetricsReporter().onSuggestionMenuOpened(mArticle);
     }
 
     @Override
@@ -224,8 +223,8 @@ public class SnippetArticleViewHolder
                 BidiFormatter.getInstance().unicodeWrap(article.mPublisher), relativeTimeSpan);
     }
 
-    public void onBindViewHolder(SnippetArticle article, SuggestionsCategoryInfo categoryInfo,
-            List<Object> payloads, int categoryIndex) {
+    public void onBindViewHolder(
+            SnippetArticle article, SuggestionsCategoryInfo categoryInfo, List<Object> payloads) {
         if (!payloads.isEmpty() && article.equals(mArticle)) {
             performPartialBind(payloads);
             return;
@@ -235,7 +234,6 @@ public class SnippetArticleViewHolder
 
         mArticle = article;
         mCategoryInfo = categoryInfo;
-        mCategoryIndex = categoryIndex;
         updateLayout();
 
         mHeadlineTextView.setText(mArticle.mTitle);

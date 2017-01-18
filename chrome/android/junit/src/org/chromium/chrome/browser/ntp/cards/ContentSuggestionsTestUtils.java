@@ -19,27 +19,54 @@ import java.util.List;
 public final class ContentSuggestionsTestUtils {
     private ContentSuggestionsTestUtils() {}
 
-    public static List<SnippetArticle> createDummySuggestions(int count) {
+    public static List<SnippetArticle> createDummySuggestions(
+            int count, @CategoryInt int category) {
         List<SnippetArticle> suggestions = new ArrayList<>();
         for (int index = 0; index < count; index++) {
-            suggestions.add(new SnippetArticle(KnownCategories.BOOKMARKS,
-                    "https://site.com/url" + index, "title" + index, "pub" + index, "txt" + index,
-                    "https://site.com/url" + index, 0, 0, 0));
+            suggestions.add(
+                    new SnippetArticle(category, "https://site.com/url" + index, "title" + index,
+                            "pub" + index, "txt" + index, "https://site.com/url" + index, 0, 0));
         }
         return suggestions;
     }
 
-    /** Registers a category that has a reload action and is shown if empty. */
-    public static void registerCategory(FakeSuggestionsSource suggestionsSource,
+    /**
+     * @deprecated The hardcoded category is a common source of bugs. Prefer
+     * {@link #createDummySuggestions(int, int)}
+     */
+    @Deprecated
+    public static List<SnippetArticle> createDummySuggestions(int count) {
+        return createDummySuggestions(count, KnownCategories.BOOKMARKS);
+    }
+
+    /**
+     * Registers a category according to the provided category info.
+     * @return the suggestions added to the newly registered category.
+     */
+    public static List<SnippetArticle> registerCategory(FakeSuggestionsSource suggestionsSource,
             @CategoryInt int category, int suggestionCount) {
+        // Important: showIfEmpty flag to true.
+        SuggestionsCategoryInfo categoryInfo =
+                new CategoryInfoBuilder(category).withReloadAction().showIfEmpty().build();
+        return registerCategory(suggestionsSource, categoryInfo, suggestionCount);
+    }
+
+    /**
+     * Registers a category that has a reload action and is shown if empty.
+     * @return the suggestions added to the newly registered category.
+     */
+    public static List<SnippetArticle> registerCategory(FakeSuggestionsSource suggestionsSource,
+            SuggestionsCategoryInfo categoryInfo, int suggestionCount) {
         // FakeSuggestionSource does not provide suggestions if the category's status is not
         // AVAILABLE.
-        suggestionsSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
-        // Important: showIfEmpty flag to true.
-        suggestionsSource.setInfoForCategory(category,
-                new CategoryInfoBuilder(category).withReloadAction().showIfEmpty().build());
-        suggestionsSource.setSuggestionsForCategory(
-                category, createDummySuggestions(suggestionCount));
+        suggestionsSource.setStatusForCategory(
+                categoryInfo.getCategory(), CategoryStatus.AVAILABLE);
+        suggestionsSource.setInfoForCategory(categoryInfo.getCategory(), categoryInfo);
+
+        List<SnippetArticle> suggestions =
+                createDummySuggestions(suggestionCount, categoryInfo.getCategory());
+        suggestionsSource.setSuggestionsForCategory(categoryInfo.getCategory(), suggestions);
+        return suggestions;
     }
 
     public static String viewTypeToString(@ItemViewType int viewType) {

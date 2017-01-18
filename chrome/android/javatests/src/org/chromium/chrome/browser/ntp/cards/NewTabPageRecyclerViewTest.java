@@ -301,7 +301,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         for (int i = 0; i < suggestionsCount; i++) {
             String url = mTestServer.getURL(TEST_PAGE) + "#" + i;
             suggestions.add(new SnippetArticle(KnownCategories.ARTICLES, "id" + i, "title" + i,
-                    "publisher" + i, "previewText" + i, url, 1466614774 + i, 10f, 0));
+                    "publisher" + i, "previewText" + i, url, 1466614774 + i, 10f));
         }
         return suggestions;
     }

@@ -26,12 +26,15 @@ import org.chromium.chrome.browser.ntp.MostVisitedItem;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
+import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
 
@@ -128,51 +131,30 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         int fullCategory = 0;
         @CategoryInt
         int minimalCategory = 1;
-        SnippetArticle shortSnippet = new SnippetArticle(
-                fullCategory,
-                "id1",
-                "Snippet",
-                "Publisher",
-                "Preview Text",
-                "www.google.com",
-                1466614774,  // Timestamp
-                10f,  // Score
-                0);  // Position
+        SnippetArticle shortSnippet = new SnippetArticle(fullCategory, "id1", "Snippet",
+                "Publisher", "Preview Text", "www.google.com",
+                1466614774, // Timestamp
+                10f); // Score
         shortSnippet.setThumbnailBitmap(BitmapFactory.decodeResource(getActivity().getResources(),
                 R.drawable.signin_promo_illustration));
 
-        SnippetArticle longSnippet = new SnippetArticle(
-                fullCategory,
-                "id2",
+        SnippetArticle longSnippet = new SnippetArticle(fullCategory, "id2",
                 new String(new char[20]).replace("\0", "Snippet "),
                 new String(new char[20]).replace("\0", "Publisher "),
-                new String(new char[80]).replace("\0", "Preview Text "),
-                "www.google.com",
-                1466614074,  // Timestamp
-                20f,  // Score
-                1);  // Position
+                new String(new char[80]).replace("\0", "Preview Text "), "www.google.com",
+                1466614074, // Timestamp
+                20f); // Score
 
-        SnippetArticle minimalSnippet = new SnippetArticle(
-                minimalCategory,
-                "id3",
-                new String(new char[20]).replace("\0", "Bookmark "),
-                "Publisher",
-                "This should not be displayed",
-                "www.google.com",
-                1466614774,  // Timestamp
-                10f,  // Score
-                0);  // Position
+        SnippetArticle minimalSnippet = new SnippetArticle(minimalCategory, "id3",
+                new String(new char[20]).replace("\0", "Bookmark "), "Publisher",
+                "This should not be displayed", "www.google.com",
+                1466614774, // Timestamp
+                10f); // Score
 
-        SnippetArticle minimalSnippet2 = new SnippetArticle(
-                minimalCategory,
-                "id4",
-                "Bookmark",
-                "Publisher",
-                "This should not be displayed",
-                "www.google.com",
-                1466614774,  // Timestamp
-                10f,  // Score
-                0);  // Position
+        SnippetArticle minimalSnippet2 = new SnippetArticle(minimalCategory, "id4", "Bookmark",
+                "Publisher", "This should not be displayed", "www.google.com",
+                1466614774, // Timestamp
+                10f); // Score
 
         mSnippetsSource.setInfoForCategory(
                 fullCategory, new SuggestionsCategoryInfo(fullCategory, "Section Title",
@@ -212,6 +194,8 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         // TODO(dgn): provide a RecyclerView if we need to test the context menu.
         private ContextMenuManager mContextMenuManager =
                 new ContextMenuManager(getActivity(), this, null);
+        private SuggestionsMetricsReporter mSuggestionsMetricsReporter =
+                new DummySuggestionsMetricsReporter();
 
         @Override
         public void getLocalFaviconImageForURL(
@@ -265,23 +249,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void trackSnippetsPageImpression(int[] categories, int[] suggestionsPerCategory) {}
-
-        @Override
-        public void trackSnippetImpression(SnippetArticle article) {}
-
-        @Override
-        public void trackSnippetMenuOpened(SnippetArticle article) {}
-
-        @Override
-        public void trackSnippetCategoryActionImpression(int category, int position) {}
-
-        @Override
-        public void trackSnippetCategoryActionClick(int category, int position) {}
-
-        @Override
-        public void openSnippet(
-                int windowOpenDisposition, SnippetArticle article, int categoryIndex) {
+        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
             throw new UnsupportedOperationException();
         }
 
@@ -363,5 +331,32 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public ContextMenuManager getContextMenuManager() {
             return mContextMenuManager;
         }
+
+        public SuggestionsMetricsReporter getSuggestionsMetricsReporter() {
+            return mSuggestionsMetricsReporter;
+        }
+    }
+
+    private static class DummySuggestionsMetricsReporter implements SuggestionsMetricsReporter {
+        @Override
+        public void onPageShown(int[] categories, int[] suggestionsPerCategory) {}
+
+        @Override
+        public void onSuggestionShown(SnippetArticle suggestion) {}
+
+        @Override
+        public void onSuggestionOpened(SnippetArticle suggestion, int windowOpenDisposition) {}
+
+        @Override
+        public void onSuggestionMenuOpened(SnippetArticle suggestion) {}
+
+        @Override
+        public void onMoreButtonShown(@CategoryInt ActionItem category) {}
+
+        @Override
+        public void onMoreButtonClicked(@CategoryInt ActionItem category) {}
+
+        @Override
+        public void setRanker(SuggestionsRanker suggestionsRanker) {}
     }
 }
