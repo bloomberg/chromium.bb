@@ -411,14 +411,14 @@ public class DownloadNotificationServiceTest extends
     public void testFormatBytesReceived() {
         Context context = getSystemContext().getApplicationContext();
         assertEquals("Downloaded 0.0 KB", DownloadUtils.getStringForBytes(
-                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 0));
+                context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 0));
         assertEquals("Downloaded 0.5 KB", DownloadUtils.getStringForBytes(
-                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 512));
+                context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 512));
         assertEquals("Downloaded 1.0 KB", DownloadUtils.getStringForBytes(
-                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 1024));
+                context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 1024));
         assertEquals("Downloaded 1.0 MB", DownloadUtils.getStringForBytes(
-                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 1024 * 1024));
+                context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 1024 * 1024));
         assertEquals("Downloaded 1.0 GB", DownloadUtils.getStringForBytes(
-                context, DownloadNotificationService.BYTES_DOWNLOADED_STRINGS, 1024 * 1024 * 1024));
+                context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 1024 * 1024 * 1024));
     }
 }

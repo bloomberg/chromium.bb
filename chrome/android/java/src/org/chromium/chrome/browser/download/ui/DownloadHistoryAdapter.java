@@ -271,7 +271,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
                 filter(mFilter);
                 for (TestObserver observer : mObservers) observer.onDownloadItemUpdated(item);
             } else if (isUpdated) {
-                notifyItemChanged(existingWrapper.getPosition());
+                // Directly alert DownloadItemViews displaying information about the item that it
+                // has changed instead of notifying the RecyclerView that a particular item has
+                // changed.  This prevents the RecyclerView from detaching and immediately
+                // reattaching the same view, causing janky animations.
+                for (DownloadItemView view : mViews) {
+                    if (TextUtils.equals(item.getId(), view.getItem().getId())) {
+                        view.displayItem(mBackendProvider, existingWrapper);
+                    }
+                }
+
                 for (TestObserver observer : mObservers) observer.onDownloadItemUpdated(item);
             }
         }

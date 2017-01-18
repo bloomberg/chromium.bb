@@ -15,6 +15,8 @@ import org.chromium.base.annotations.CalledByNative;
  */
 public class DownloadItem {
     static final long INVALID_DOWNLOAD_ID = -1L;
+    static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
+
     private boolean mUseAndroidDownloadManager;
     private DownloadInfo mDownloadInfo;
     private long mDownloadId = INVALID_DOWNLOAD_ID;
@@ -120,5 +122,12 @@ public class DownloadItem {
         downloadItem.setStartTime(startTimestamp);
         downloadItem.setHasBeenExternallyRemoved(hasBeenExternallyRemoved);
         return downloadItem;
+    }
+
+    /**
+     * @return Whether or not the download has an indeterminate percentage.
+     */
+    public boolean isIndeterminate() {
+        return getDownloadInfo().getPercentCompleted() == INVALID_DOWNLOAD_PERCENTAGE;
     }
 }

@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.DownloadNotificationService;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.TintedImageView;
@@ -29,6 +29,7 @@ import org.chromium.ui.UiUtils;
  */
 public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrapper>
         implements ThumbnailProvider.ThumbnailRequest {
+    private final int mMargin;
     private final int mIconBackgroundColor;
     private final int mIconBackgroundColorSelected;
     private final ColorStateList mWhiteTint;
@@ -51,6 +52,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private View mLayoutInProgress;
     private TextView mFilenameInProgressView;
     private TextView mDownloadStatusView;
+    private TextView mDownloadPercentageView;
     private MaterialProgressBar mProgressView;
     private TintedImageButton mPauseResumeButton;
     private View mCancelButton;
@@ -60,6 +62,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
      */
     public DownloadItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mMargin = context.getResources().getDimensionPixelSize(R.dimen.downloads_item_margin);
         mIconBackgroundColor =
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.light_active_color);
         mIconBackgroundColorSelected =
@@ -84,6 +87,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
         mFilenameInProgressView = (TextView) findViewById(R.id.filename_progress_view);
         mDownloadStatusView = (TextView) findViewById(R.id.status_view);
+        mDownloadPercentageView = (TextView) findViewById(R.id.percentage_view);
 
         mPauseResumeButton = (TintedImageButton) findViewById(R.id.pause_button);
         mCancelButton = findViewById(R.id.cancel_button);
@@ -179,6 +183,8 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             showLayout(mLayoutInProgress);
             mDownloadStatusView.setText(item.getStatusString());
 
+            boolean isIndeterminate = item.isIndeterminate();
+
             if (item.isPaused()) {
                 mPauseResumeButton.setImageResource(R.drawable.ic_media_control_play);
                 mPauseResumeButton.setContentDescription(
@@ -188,10 +194,24 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                 mPauseResumeButton.setImageResource(R.drawable.ic_media_control_pause);
                 mPauseResumeButton.setContentDescription(
                         getContext().getString(R.string.download_notification_pause_button));
-                mProgressView.setIndeterminate(item.getDownloadProgress()
-                        == DownloadNotificationService.INVALID_DOWNLOAD_PERCENTAGE);
+                mProgressView.setIndeterminate(isIndeterminate);
             }
             mProgressView.setProgress(item.getDownloadProgress());
+
+            // Display the percentage downloaded in text form.
+            // To avoid problems with RelativeLayout not knowing how to place views relative to
+            // removed views in the hierarchy, this code instead makes the percentage View's width
+            // to 0 by removing its text and eliminating the margin.
+            if (isIndeterminate) {
+                mDownloadPercentageView.setText(null);
+                ApiCompatibilityUtils.setMarginEnd(
+                        (MarginLayoutParams) mDownloadPercentageView.getLayoutParams(), 0);
+            } else {
+                mDownloadPercentageView.setText(
+                        DownloadUtils.getPercentageString(item.getDownloadProgress()));
+                ApiCompatibilityUtils.setMarginEnd(
+                        (MarginLayoutParams) mDownloadPercentageView.getLayoutParams(), mMargin);
+            }
         }
     }
 

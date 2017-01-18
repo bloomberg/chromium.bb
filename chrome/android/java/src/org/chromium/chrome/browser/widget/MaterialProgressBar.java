@@ -209,7 +209,7 @@ public class MaterialProgressBar extends View implements AnimatorUpdateListener 
         final float secondPulseLength = 1.0f;
         if (value >= secondPulseStart) {
             float percentage = (value - secondPulseStart) / secondPulseLength;
-            left = width * (float) (Math.pow(percentage, 3.0f) - 0.1f);
+            left = width * (float) (Math.pow(percentage, 2.5f) - 0.1f);
             right = width * percentage;
             drawRect(canvas, mProgressPaint, left, right);
         }

@@ -89,6 +89,7 @@
                     android:id="@+id/filename_progress_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentStart="true"
                     android:layout_toStartOf="@+id/pause_button"
@@ -103,6 +104,7 @@
                     android:layout_height="2dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
+                    android:layout_marginEnd="16dp"
                     android:layout_below="@+id/filename_progress_view"
                     android:layout_alignParentStart="true"
                     android:layout_toStartOf="@+id/pause_button"
@@ -112,26 +114,26 @@
 
             <TextView
                     android:id="@+id/status_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    style="@style/DownloadHomeStatusText"
                     android:layout_marginEnd="16dp"
-                    android:layout_marginTop="0dp"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/percentage_view"
+                    android:layout_below="@+id/download_progress_view"
+                    android:textAlignment="viewStart" />
+
+            <TextView
+                    android:id="@+id/percentage_view"
+                    style="@style/DownloadHomeStatusText"
+                    android:layout_alignParentBottom="true"
                     android:layout_toStartOf="@+id/pause_button"
                     android:layout_below="@+id/download_progress_view"
-                    android:minHeight="18dp"
-                    android:textAlignment="viewStart"
-                    android:textColor="@color/google_grey_600"
-                    android:textSize="12sp"
-                    android:ellipsize="start"
-                    android:singleLine="true" />
+                    android:textAlignment="viewEnd" />
 
             <org.chromium.chrome.browser.widget.TintedImageButton
                     android:id="@+id/pause_button"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_marginStart="16dp"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentBottom="true"
                     android:layout_toStartOf="@+id/cancel_button"
