@@ -154,12 +154,16 @@ void ExcludeUsernameFromOtherUsernamesList(
 }
 
 // Helper to determine which password is the main (current) one, and which is
-// the new password (e.g., on a sign-up or change password form), if any.
+// the new password (e.g., on a sign-up or change password form), if any. If the
+// new password is found and there is another password field with the same user
+// input, the function also sets |confirmation_password| to this field.
 bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
                              WebInputElement* current_password,
-                             WebInputElement* new_password) {
+                             WebInputElement* new_password,
+                             WebInputElement* confirmation_password) {
   DCHECK(current_password && current_password->isNull());
   DCHECK(new_password && new_password->isNull());
+  DCHECK(confirmation_password && confirmation_password->isNull());
 
   // First, look for elements marked with either autocomplete='current-password'
   // or 'new-password' -- if we find any, take the hint, and treat the first of
@@ -171,6 +175,9 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
     } else if (HasAutocompleteAttributeValue(it, kAutocompleteNewPassword) &&
                new_password->isNull()) {
       *new_password = it;
+    } else if (!new_password->isNull() &&
+               (new_password->value() == it.value())) {
+      *confirmation_password = it;
     }
   }
 
@@ -197,6 +204,7 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
         // password with a confirmation. This can be either a sign-up form or a
         // password change form that does not ask for the old password.
         *new_password = passwords[0];
+        *confirmation_password = passwords[1];
       } else {
         // Assume first is old password, second is new (no choice but to guess).
         // This case also includes empty passwords in order to allow filling of
@@ -218,12 +226,14 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
         // with 3 password fields, in which case we will assume this layout.
         *current_password = passwords[0];
         *new_password = passwords[1];
+        *confirmation_password = passwords[2];
       } else if (passwords[0].value() == passwords[1].value()) {
         // It is strange that the new password comes first, but trust more which
         // fields are duplicated than the ordering of fields. Assume that
         // any password fields after the new password contain sensitive
         // information that isn't actually a password (security hint, SSN, etc.)
         *new_password = passwords[0];
+        *confirmation_password = passwords[1];
       } else {
         // Three different passwords, or first and last match with middle
         // different. No idea which is which, so no luck.
@@ -505,7 +515,9 @@ bool GetPasswordForm(
 
   WebInputElement password;
   WebInputElement new_password;
-  if (!LocateSpecificPasswords(passwords, &password, &new_password))
+  WebInputElement confirmation_password;
+  if (!LocateSpecificPasswords(passwords, &password, &new_password,
+                               &confirmation_password))
     return false;
 
   DCHECK_EQ(passwords.size(), last_text_input_before_password.size());
@@ -584,6 +596,10 @@ bool GetPasswordForm(
         new_password.getAttribute("value") == new_password.value();
     if (HasAutocompleteAttributeValue(new_password, kAutocompleteNewPassword))
       password_form->new_password_marked_by_site = true;
+    if (!confirmation_password.isNull()) {
+      password_form->confirmation_password_element =
+          FieldName(confirmation_password, "anonymous_confirmation_password");
+    }
   }
 
   if (username_element.isNull()) {

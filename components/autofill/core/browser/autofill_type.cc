@@ -126,6 +126,7 @@ FieldTypeGroup AutofillType::group() const {
     case PROBABLY_NEW_PASSWORD:
     case NOT_NEW_PASSWORD:
     case PROBABLY_ACCOUNT_CREATION_PASSWORD:
+    case CONFIRMATION_PASSWORD:
       return PASSWORD_FIELD;
 
     case NO_SERVER_DATA:
@@ -757,6 +758,8 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "NOT_NEW_PASSWORD";
     case PROBABLY_ACCOUNT_CREATION_PASSWORD:
       return "PROBABLY_ACCOUNT_CREATION_PASSWORD";
+    case CONFIRMATION_PASSWORD:
+      return "CONFIRMATION_PASSWORD";
 
     case MAX_VALID_FIELD_TYPE:
       return std::string();

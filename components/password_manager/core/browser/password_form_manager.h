@@ -33,6 +33,9 @@ class FormSaver;
 class PasswordManager;
 class PasswordManagerClient;
 
+// A map from field names to field types.
+using FieldTypeMap = std::map<base::string16, autofill::ServerFieldType>;
+
 // This class helps with filling the observed form (both HTML and from HTTP
 // auth) and with saving/updating the stored information about it.
 class PasswordFormManager : public FormFetcher::Consumer {
@@ -369,8 +372,7 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   // Tries to set all votes (e.g. autofill field types, generation vote) to
   // a |FormStructure| and upload it to the server. Returns true on success.
-  bool UploadPasswordVote(const base::string16& username_field,
-                          const autofill::ServerFieldType& password_type,
+  bool UploadPasswordVote(const autofill::ServerFieldType& password_type,
                           const std::string& login_form_signature);
 
   // Adds a vote on password generation usage to |form_structure|.
@@ -421,26 +423,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // used as the old primary key during the store update.
   base::Optional<autofill::PasswordForm> UpdatePendingAndGetOldKey(
       std::vector<autofill::PasswordForm>* credentials_to_update);
-
-  // Sets autofill types of username, password and new password fields in
-  // |form_structure|. |password_type| (the autofill type of new password field)
-  // should be equal to NEW_PASSWORD, PROBABLY_NEW_PASSWORD or NOT_NEW_PASSWORD.
-  // These values correspond to cases when the user confirmed password update,
-  // did nothing or declined to update password respectively. The function also
-  // add the types to |available_field_types|.
-  void SetAutofillTypesOnUpdate(
-      const autofill::ServerFieldType password_type,
-      FormStructure* form_structure,
-      autofill::ServerFieldTypeSet* available_field_types);
-
-  // Sets autofill types of username and password fields in |form_structure|.
-  // |username_field| determines the name of the username field. The function
-  // also add the types to |available_field_types|.
-  void SetAutofillTypesOnSave(
-      const base::string16& username_field,
-      const autofill::ServerFieldType password_type,
-      FormStructure* form_structure,
-      autofill::ServerFieldTypeSet* available_field_types);
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by |this|, indexed by username. They are owned by

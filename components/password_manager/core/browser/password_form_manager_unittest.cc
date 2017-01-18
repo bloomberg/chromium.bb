@@ -112,33 +112,28 @@ MATCHER_P2(CheckUploadedAutofillTypesAndSignature,
            expected_types,
            "Unexpected autofill types or form signature") {
   if (form_signature != arg.FormSignatureAsStr()) {
-    // An unexpected form is uploaded.
+    // Unexpected form's signature.
+    ADD_FAILURE() << "Expected form signature is " << form_signature
+                  << ", but found " << arg.FormSignatureAsStr();
     return false;
   }
   for (const auto& field : arg) {
-    if (expected_types.find(field->name) == expected_types.end()) {
-      if (!field->possible_types().empty()) {
-        // Unexpected types are uploaded.
-        return false;
-      }
-    } else {
-      if (field->possible_types().size() > 1) {
-        // Currently we expect not more than 1 type per field.
-        return false;
-      }
+    if (field->possible_types().size() > 1) {
+      ADD_FAILURE() << field->name << " field has several possible types";
+      return false;
+    }
 
-      if (field->possible_types().empty()) {
-        if (expected_types.find(field->name) != expected_types.end()) {
-          // A vote is expected but not found.
-          return false;
-        }
-      } else {
-        if (expected_types.find(field->name)->second !=
-            *field->possible_types().begin()) {
-          // An unexpected field type is found.
-          return false;
-        }
-      }
+    autofill::ServerFieldType expected_vote =
+        expected_types.find(field->name) == expected_types.end()
+            ? autofill::NO_SERVER_DATA
+            : expected_types.find(field->name)->second;
+    autofill::ServerFieldType actual_vote =
+        field->possible_types().empty() ? autofill::NO_SERVER_DATA
+                                        : *field->possible_types().begin();
+    if (expected_vote != actual_vote) {
+      ADD_FAILURE() << field->name << " field: expected vote " << expected_vote
+                    << ", but found " << actual_vote;
+      return false;
     }
   }
   return true;
@@ -395,13 +390,6 @@ class PasswordFormManagerTest : public testing::Test {
     form_to_save.username_value = match.username_value;
     form_to_save.password_value = match.password_value;
 
-    // When we're voting for an account creation form, we should also vote
-    // for its username field.
-    base::string16 username_vote =
-        (field_type && *field_type == autofill::ACCOUNT_CREATION_PASSWORD)
-            ? match.username_element
-            : base::string16();
-
     fetcher.SetNonFederated({&match}, 0u);
     std::string expected_login_signature;
     autofill::FormStructure observed_structure(observed_form_data);
@@ -412,11 +400,18 @@ class PasswordFormManagerTest : public testing::Test {
       expected_login_signature = observed_structure.FormSignatureAsStr();
     }
     autofill::ServerFieldTypeSet expected_available_field_types;
-    expected_available_field_types.insert(autofill::USERNAME);
-    std::map<base::string16, autofill::ServerFieldType> expected_types;
+    FieldTypeMap expected_types;
     expected_types[ASCIIToUTF16("full_name")] = autofill::UNKNOWN_TYPE;
-    expected_types[saved_match()->username_element] =
-        username_vote.empty() ? autofill::UNKNOWN_TYPE : autofill::USERNAME;
+
+    // When we're voting for an account creation form, we should also vote
+    // for its username field.
+    if (field_type && *field_type == autofill::ACCOUNT_CREATION_PASSWORD) {
+      expected_types[match.username_element] = autofill::USERNAME;
+      expected_available_field_types.insert(autofill::USERNAME);
+    } else {
+      expected_types[match.username_element] = autofill::UNKNOWN_TYPE;
+    }
+
     if (field_type) {
       expected_available_field_types.insert(*field_type);
       expected_types[saved_match()->password_element] = *field_type;
@@ -442,20 +437,34 @@ class PasswordFormManagerTest : public testing::Test {
     form_manager.ProvisionallySave(
         form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
     form_manager.Save();
+    Mock::VerifyAndClearExpectations(
+        client()->mock_driver()->mock_autofill_download_manager());
   }
 
   // Test upload votes on change password forms. |field_type| is a vote that we
   // expect to be uploaded.
-  void ChangePasswordUploadTest(autofill::ServerFieldType field_type) {
+  void ChangePasswordUploadTest(autofill::ServerFieldType field_type,
+                                bool has_confirmation_field) {
+    SCOPED_TRACE(testing::Message()
+                 << "field_type=" << field_type
+                 << " has_confirmation_field=" << has_confirmation_field);
+
     // |observed_form_| should have |form_data| in order to be uploaded.
     observed_form()->form_data = saved_match()->form_data;
     // Turn |observed_form_| and  into change password form.
     observed_form()->new_password_element = ASCIIToUTF16("NewPasswd");
+    observed_form()->confirmation_password_element = ASCIIToUTF16("ConfPwd");
     autofill::FormFieldData field;
     field.label = ASCIIToUTF16("NewPasswd");
     field.name = ASCIIToUTF16("NewPasswd");
     field.form_control_type = "password";
     observed_form()->form_data.fields.push_back(field);
+    if (has_confirmation_field) {
+      field.label = ASCIIToUTF16("ConfPwd");
+      field.name = ASCIIToUTF16("ConfPwd");
+      field.form_control_type = "password";
+      observed_form()->form_data.fields.push_back(field);
+    }
 
     FakeFormFetcher fetcher;
     fetcher.Fetch();
@@ -489,14 +498,18 @@ class PasswordFormManagerTest : public testing::Test {
 
     std::map<base::string16, autofill::ServerFieldType> expected_types;
     expected_types[ASCIIToUTF16("full_name")] = autofill::UNKNOWN_TYPE;
-    expected_types[observed_form_.username_element] = autofill::USERNAME;
+    expected_types[observed_form_.username_element] = autofill::UNKNOWN_TYPE;
     expected_types[observed_form_.password_element] = autofill::PASSWORD;
     expected_types[observed_form_.new_password_element] = field_type;
 
     autofill::ServerFieldTypeSet expected_available_field_types;
-    expected_available_field_types.insert(autofill::USERNAME);
     expected_available_field_types.insert(autofill::PASSWORD);
     expected_available_field_types.insert(field_type);
+    if (has_confirmation_field) {
+      expected_types[observed_form_.confirmation_password_element] =
+          autofill::CONFIRMATION_PASSWORD;
+      expected_available_field_types.insert(autofill::CONFIRMATION_PASSWORD);
+    }
 
     std::string observed_form_signature =
         autofill::FormStructure(observed_form()->form_data)
@@ -526,6 +539,8 @@ class PasswordFormManagerTest : public testing::Test {
       default:
         NOTREACHED();
     }
+    Mock::VerifyAndClearExpectations(
+        client()->mock_driver()->mock_autofill_download_manager());
   }
 
   autofill::AutofillUploadContents::Field::PasswordGenerationType
@@ -602,10 +617,8 @@ class PasswordFormManagerTest : public testing::Test {
 
     autofill::ServerFieldTypeSet expected_available_field_types;
     // Don't send autofill votes if the user didn't press "Save" button.
-    if (interaction == SAVE) {
-      expected_available_field_types.insert(autofill::USERNAME);
+    if (interaction == SAVE)
       expected_available_field_types.insert(autofill::PASSWORD);
-    }
 
     form_manager.set_is_manual_generation(is_manual_generation);
     base::string16 generation_element = is_change_password_form
@@ -647,6 +660,8 @@ class PasswordFormManagerTest : public testing::Test {
         form_manager.OnNoInteraction(false /* not an update prompt*/);
         break;
     }
+    Mock::VerifyAndClearExpectations(
+        client()->mock_driver()->mock_autofill_download_manager());
   }
 
   PasswordForm* observed_form() { return &observed_form_; }
@@ -1747,7 +1762,6 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   form_to_save.password_value = ASCIIToUTF16("1234");
 
   autofill::ServerFieldTypeSet expected_available_field_types;
-  expected_available_field_types.insert(autofill::USERNAME);
   expected_available_field_types.insert(autofill::PASSWORD);
   EXPECT_CALL(
       *client()->mock_driver()->mock_autofill_download_manager(),
@@ -1776,27 +1790,27 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword_Blacklist) {
 }
 
 TEST_F(PasswordFormManagerTest, UploadPasswordForm) {
-  autofill::FormData form_data;
+  autofill::FormData observed_form_data;
   autofill::FormFieldData field;
   field.label = ASCIIToUTF16("Email");
-  field.name = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("observed-username-field");
   field.form_control_type = "text";
-  form_data.fields.push_back(field);
+  observed_form_data.fields.push_back(field);
 
   field.label = ASCIIToUTF16("password");
   field.name = ASCIIToUTF16("password");
   field.form_control_type = "password";
-  form_data.fields.push_back(field);
+  observed_form_data.fields.push_back(field);
 
   // Form data is different than saved form data, account creation signal should
   // be sent.
   autofill::ServerFieldType field_type = autofill::ACCOUNT_CREATION_PASSWORD;
-  AccountCreationUploadTest(form_data, 0, PasswordForm::NO_SIGNAL_SENT,
+  AccountCreationUploadTest(observed_form_data, 0, PasswordForm::NO_SIGNAL_SENT,
                             &field_type);
 
   // Non-zero times used will not upload since we only upload a positive signal
   // at most once.
-  AccountCreationUploadTest(form_data, 1, PasswordForm::NO_SIGNAL_SENT,
+  AccountCreationUploadTest(observed_form_data, 1, PasswordForm::NO_SIGNAL_SENT,
                             nullptr);
 
   // Same form data as saved match and POSITIVE_SIGNAL_SENT means there should
@@ -2213,17 +2227,15 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_StoreUpdatesCausesAutofill) {
 // when PasswordFormManager::Save is called, then PasswordFormManager also
 // calls PasswordManager::UpdateFormManagers.
 
-TEST_F(PasswordFormManagerTest, UploadChangePasswordForm_NEW_PASSWORD) {
-  ChangePasswordUploadTest(autofill::NEW_PASSWORD);
-}
-
-TEST_F(PasswordFormManagerTest,
-       UploadChangePasswordForm_PROBABLY_NEW_PASSWORD) {
-  ChangePasswordUploadTest(autofill::PROBABLY_NEW_PASSWORD);
-}
-
-TEST_F(PasswordFormManagerTest, UploadChangePasswordForm_NOT_NEW_PASSWORD) {
-  ChangePasswordUploadTest(autofill::NOT_NEW_PASSWORD);
+TEST_F(PasswordFormManagerTest, UploadChangePasswordForm) {
+  autofill::ServerFieldType kChangePasswordVotes[] = {
+      autofill::NEW_PASSWORD, autofill::PROBABLY_NEW_PASSWORD,
+      autofill::NOT_NEW_PASSWORD};
+  bool kFalseTrue[] = {false, true};
+  for (autofill::ServerFieldType vote : kChangePasswordVotes) {
+    for (bool has_confirmation_field : kFalseTrue)
+      ChangePasswordUploadTest(vote, has_confirmation_field);
+  }
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatePSLMatchedCredentials) {
@@ -2755,8 +2767,7 @@ TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
   autofill::ServerFieldTypeSet expected_available_field_types;
   std::map<base::string16, autofill::ServerFieldType> expected_types;
   expected_types[ASCIIToUTF16("full_name")] = autofill::UNKNOWN_TYPE;
-  expected_available_field_types.insert(autofill::USERNAME);
-  expected_types[saved_match()->username_element] = autofill::USERNAME;
+  expected_types[saved_match()->username_element] = autofill::UNKNOWN_TYPE;
   expected_available_field_types.insert(
       autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD);
   expected_types[saved_match()->password_element] =

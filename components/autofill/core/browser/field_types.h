@@ -159,9 +159,13 @@ enum ServerFieldType {
   // for local heuristics.
   PROBABLY_ACCOUNT_CREATION_PASSWORD = 94,
 
+  // The confirmation password field in account creation or change password
+  // forms.
+  CONFIRMATION_PASSWORD = 95,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 95,
+  MAX_VALID_FIELD_TYPE = 96,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.

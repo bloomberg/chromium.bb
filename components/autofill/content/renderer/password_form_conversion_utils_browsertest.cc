@@ -383,19 +383,20 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
     const char* expected_password_value;
     const char* expected_new_password_element;
     const char* expected_new_password_value;
+    const char* expected_confirmation_element;
   } cases[] = {
       // Two non-empty fields with the same value should be treated as a new
       // password field plus a confirmation field for the new password.
-      {{"alpha", "alpha"}, "", "", "password1", "alpha"},
+      {{"alpha", "alpha"}, "", "", "password1", "alpha", "password2"},
       // The same goes if the fields are yet empty: we speculate that we will
       // identify them as new password fields once they are filled out, and we
       // want to keep our abstract interpretation of the form less flaky.
-      {{"", ""}, "password1", "", "password2", ""},
+      {{"", ""}, "password1", "", "password2", "", ""},
       // Two different values should be treated as a password change form, one
       // that also asks for the current password, but only once for the new.
-      {{"alpha", ""}, "password1", "alpha", "password2", ""},
-      {{"", "beta"}, "password1", "", "password2", "beta"},
-      {{"alpha", "beta"}, "password1", "alpha", "password2", "beta"}};
+      {{"alpha", ""}, "password1", "alpha", "password2", "", ""},
+      {{"", "beta"}, "password1", "", "password2", "beta", ""},
+      {{"alpha", "beta"}, "password1", "alpha", "password2", "beta", ""}};
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
@@ -420,6 +421,8 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
               password_form->new_password_element);
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_new_password_value),
               password_form->new_password_value);
+    EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_confirmation_element),
+              password_form->confirmation_password_element);
 
     // Do a basic sanity check that we are still selecting the right username.
     EXPECT_EQ(base::UTF8ToUTF16("username1"), password_form->username_element);
@@ -438,24 +441,30 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
     const char* expected_password_value;
     const char* expected_new_password_element;
     const char* expected_new_password_value;
+    const char* expected_confirmation_element;
   } cases[] = {
       // Two fields with the same value, and one different: we should treat this
       // as a password change form with confirmation for the new password. Note
       // that we only recognize (current + new + new) and (new + new + current)
       // without autocomplete attributes.
-      {{"alpha", "", ""}, "password1", "alpha", "password2", ""},
-      {{"", "beta", "beta"}, "password1", "", "password2", "beta"},
-      {{"alpha", "beta", "beta"}, "password1", "alpha", "password2", "beta"},
+      {{"alpha", "", ""}, "password1", "alpha", "password2", "", "password3"},
+      {{"", "beta", "beta"}, "password1", "", "password2", "beta", "password3"},
+      {{"alpha", "beta", "beta"},
+       "password1",
+       "alpha",
+       "password2",
+       "beta",
+       "password3"},
       // If confirmed password comes first, assume that the third password
       // field is related to security question, SSN, or credit card and ignore
       // it.
-      {{"beta", "beta", "alpha"}, "", "", "password1", "beta"},
+      {{"beta", "beta", "alpha"}, "", "", "password1", "beta", "password2"},
       // If the fields are yet empty, we speculate that we will identify them as
       // (current + new + new) once they are filled out, so we should classify
       // them the same for now to keep our abstract interpretation less flaky.
-      {{"", "", ""}, "password1", "", "password2", ""}};
-      // Note: In all other cases, we give up and consider the form invalid.
-      // This is tested in InvalidFormDueToConfusingPasswordFields.
+      {{"", "", ""}, "password1", "", "password2", "", "password3"}};
+  // Note: In all other cases, we give up and consider the form invalid.
+  // This is tested in InvalidFormDueToConfusingPasswordFields.
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
@@ -481,6 +490,8 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
               password_form->new_password_element);
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_new_password_value),
               password_form->new_password_value);
+    EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_confirmation_element),
+              password_form->confirmation_password_element);
 
     // Do a basic sanity check that we are still selecting the right username.
     EXPECT_EQ(base::UTF8ToUTF16("username1"), password_form->username_element);
