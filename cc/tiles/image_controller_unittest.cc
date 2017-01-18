@@ -21,17 +21,21 @@ class TestWorkerThread : public base::SimpleThread {
 
   void Run() override {
     for (;;) {
-      base::AutoLock hold(lock_);
-      if (shutdown_)
-        break;
+      base::Closure task;
+      {
+        base::AutoLock hold(lock_);
+        if (shutdown_)
+          break;
 
-      if (queue_.empty()) {
-        condition_.Wait();
-        continue;
+        if (queue_.empty()) {
+          condition_.Wait();
+          continue;
+        }
+
+        task = queue_.front();
+        queue_.erase(queue_.begin());
       }
-
-      queue_.front().Run();
-      queue_.erase(queue_.begin());
+      task.Run();
     }
   }
 
