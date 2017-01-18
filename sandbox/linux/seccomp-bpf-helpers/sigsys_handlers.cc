@@ -11,6 +11,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
@@ -93,6 +94,7 @@ void PrintSyscallError(uint32_t sysno) {
     rem /= 10;
     sysno_base10[i] = '0' + mod;
   }
+
 #if defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)
   static const char kSeccompErrorPrefix[] = __FILE__
       ":**CRASHING**:" SECCOMP_MESSAGE_COMMON_CONTENT " in syscall 4000 + ";
@@ -106,6 +108,87 @@ void PrintSyscallError(uint32_t sysno) {
   WriteToStdErr(kSeccompErrorPostfix, sizeof(kSeccompErrorPostfix) - 1);
 }
 
+// Helper to convert a number of type T to a hexadecimal string using
+// stack-allocated storage.
+template <typename T>
+class NumberToHex {
+ public:
+  explicit NumberToHex(T value) {
+    static const char kHexChars[] = "0123456789abcdef";
+
+    memset(str_, '0', sizeof(str_));
+    str_[1] = 'x';
+    str_[sizeof(str_) - 1] = '\0';
+
+    T rem = value;
+    T mod = 0;
+    for (size_t i = sizeof(str_) - 2; i >= 2; --i) {
+      mod = rem % 16;
+      rem /= 16;
+      str_[i] = kHexChars[mod];
+    }
+  }
+
+  const char* str() const { return str_; }
+
+  static size_t length() { return sizeof(str_) - 1; }
+
+ private:
+  // HEX uses two characters per byte, with a leading '0x', and a trailing NUL.
+  char str_[sizeof(T) * 2 + 3];
+};
+
+// Records the syscall number and first four arguments in a crash key, to help
+// debug the failure.
+void SetSeccompCrashKey(const struct sandbox::arch_seccomp_data& args) {
+#if !defined(OS_NACL_NONSFI)
+  NumberToHex<int> nr(args.nr);
+  NumberToHex<uint64_t> arg1(args.args[0]);
+  NumberToHex<uint64_t> arg2(args.args[1]);
+  NumberToHex<uint64_t> arg3(args.args[2]);
+  NumberToHex<uint64_t> arg4(args.args[3]);
+
+  // In order to avoid calling into libc sprintf functions from an unsafe signal
+  // context, manually construct the crash key string.
+  const char* const prefixes[] = {
+    "nr=",
+    " arg1=",
+    " arg2=",
+    " arg3=",
+    " arg4=",
+  };
+  const char* const values[] = {
+    nr.str(),
+    arg1.str(),
+    arg2.str(),
+    arg3.str(),
+    arg4.str(),
+  };
+
+  size_t crash_key_length = nr.length() + arg1.length() + arg2.length() +
+                            arg3.length() + arg4.length();
+  for (const auto& prefix : prefixes) {
+    crash_key_length += strlen(prefix);
+  }
+  ++crash_key_length;  // For the trailing NUL byte.
+
+  char crash_key[crash_key_length];
+  memset(crash_key, '\0', crash_key_length);
+
+  size_t offset = 0;
+  for (size_t i = 0; i < arraysize(values); ++i) {
+    const char* strings[2] = { prefixes[i], values[i] };
+    for (const auto& string : strings) {
+      size_t string_len = strlen(string);
+      memmove(&crash_key[offset], string, string_len);
+      offset += string_len;
+    }
+  }
+
+  base::debug::SetCrashKeyValue("seccomp-sigsys", crash_key);
+#endif
+}
+
 }  // namespace
 
 namespace sandbox {
@@ -114,6 +197,7 @@ intptr_t CrashSIGSYS_Handler(const struct arch_seccomp_data& args, void* aux) {
   uint32_t syscall = SyscallNumberToOffsetFromBase(args.nr);
 
   PrintSyscallError(syscall);
+  SetSeccompCrashKey(args);
 
   // Encode 8-bits of the 1st two arguments too, so we can discern which socket
   // type, which fcntl, ... etc., without being likely to hit a mapped
@@ -141,6 +225,7 @@ intptr_t SIGSYSCloneFailure(const struct arch_seccomp_data& args, void* aux) {
   static const char kSeccompCloneError[] =
       __FILE__":**CRASHING**:" SECCOMP_MESSAGE_CLONE_CONTENT "\n";
   WriteToStdErr(kSeccompCloneError, sizeof(kSeccompCloneError) - 1);
+  SetSeccompCrashKey(args);
   // "flags" is the first argument in the kernel's clone().
   // Mark as volatile to be able to find the value on the stack in a minidump.
   volatile uint64_t clone_flags = args.args[0];
@@ -161,6 +246,7 @@ intptr_t SIGSYSPrctlFailure(const struct arch_seccomp_data& args,
   static const char kSeccompPrctlError[] =
       __FILE__":**CRASHING**:" SECCOMP_MESSAGE_PRCTL_CONTENT "\n";
   WriteToStdErr(kSeccompPrctlError, sizeof(kSeccompPrctlError) - 1);
+  SetSeccompCrashKey(args);
   // Mark as volatile to be able to find the value on the stack in a minidump.
   volatile uint64_t option = args.args[0];
   volatile char* addr =
@@ -175,6 +261,7 @@ intptr_t SIGSYSIoctlFailure(const struct arch_seccomp_data& args,
   static const char kSeccompIoctlError[] =
       __FILE__":**CRASHING**:" SECCOMP_MESSAGE_IOCTL_CONTENT "\n";
   WriteToStdErr(kSeccompIoctlError, sizeof(kSeccompIoctlError) - 1);
+  SetSeccompCrashKey(args);
   // Make "request" volatile so that we can see it on the stack in a minidump.
   volatile uint64_t request = args.args[1];
   volatile char* addr = reinterpret_cast<volatile char*>(request & 0xFFFF);
@@ -191,6 +278,7 @@ intptr_t SIGSYSKillFailure(const struct arch_seccomp_data& args,
    static const char kSeccompKillError[] =
       __FILE__":**CRASHING**:" SECCOMP_MESSAGE_KILL_CONTENT "\n";
   WriteToStdErr(kSeccompKillError, sizeof(kSeccompKillError) - 1);
+  SetSeccompCrashKey(args);
   // Make "pid" volatile so that we can see it on the stack in a minidump.
   volatile uint64_t my_pid = sys_getpid();
   volatile char* addr = reinterpret_cast<volatile char*>(my_pid & 0xFFF);
@@ -204,6 +292,7 @@ intptr_t SIGSYSFutexFailure(const struct arch_seccomp_data& args,
   static const char kSeccompFutexError[] =
       __FILE__ ":**CRASHING**:" SECCOMP_MESSAGE_FUTEX_CONTENT "\n";
   WriteToStdErr(kSeccompFutexError, sizeof(kSeccompFutexError) - 1);
+  SetSeccompCrashKey(args);
   volatile int futex_op = args.args[1];
   volatile char* addr = reinterpret_cast<volatile char*>(futex_op & 0xFFF);
   *addr = '\0';

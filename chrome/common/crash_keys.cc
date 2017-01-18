@@ -191,6 +191,11 @@ size_t RegisterChromeCrashKeys() {
     // gin/:
     { "v8-ignition", kSmallSize },
 
+    // sandbox/:
+#if defined(OS_LINUX)
+    { "seccomp-sigsys", kMediumSize },
+#endif
+
     // Temporary for http://crbug.com/575245.
     { "swapout_frame_id", kSmallSize },
     { "swapout_proxy_id", kSmallSize },
