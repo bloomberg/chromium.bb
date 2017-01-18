@@ -20,7 +20,8 @@
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -94,15 +95,15 @@ void WindowManagerApplication::InitializeComponents() {
   chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
-  PowerStatus::Initialize();
 }
 
 void WindowManagerApplication::ShutdownComponents() {
-  PowerStatus::Shutdown();
+  // NOTE: PowerStatus is shutdown by Shell.
   chromeos::CrasAudioHandler::Shutdown();
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
   chromeos::NetworkHandler::Shutdown();
+  device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
   message_center::MessageCenter::Shutdown();

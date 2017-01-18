@@ -105,7 +105,6 @@ class ScreenshotController;
 class ScreenPinningController;
 class ScreenPositionController;
 class SessionStateDelegate;
-class ShellDelegate;
 struct ShellInitParams;
 class ShutdownObserver;
 class StickyKeysController;
@@ -121,7 +120,7 @@ class VideoDetector;
 class WebNotificationTray;
 class WindowPositioner;
 class WindowTreeHostManager;
-class WmShellAura;
+class WmShell;
 class WmWindow;
 
 namespace shell {
@@ -407,8 +406,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   friend class test::ShellTestApi;
   friend class shell::WindowWatcher;
 
-  // Takes ownership of |delegate|.
-  explicit Shell(ShellDelegate* delegate);
+  explicit Shell(std::unique_ptr<WmShell> wm_shell);
   ~Shell() override;
 
   void Init(const ShellInitParams& init_params);
@@ -418,6 +416,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Initializes the root window so that it can host browser windows.
   void InitRootWindow(aura::Window* root_window);
+
+  // Destroys all child windows including widgets across all roots.
+  void CloseAllRootWindowChildWindows();
 
   // SystemModalContainerEventFilterDelegate:
   bool CanWindowReceiveEvents(aura::Window* window) override;
@@ -440,7 +441,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<ScopedOverviewAnimationSettingsFactoryAura>
       scoped_overview_animation_settings_factory_;
-  std::unique_ptr<WmShellAura> wm_shell_;
+  std::unique_ptr<WmShell> wm_shell_;
 
   // The CompoundEventFilter owned by aura::Env object.
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;

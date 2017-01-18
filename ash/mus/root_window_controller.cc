@@ -76,13 +76,16 @@ RootWindowController::RootWindowController(
       window_tree_host_(window_tree_host.get()),
       window_count_(0),
       display_(display) {
-  ash::InitRootWindowSettings(window_tree_host->window());
+  RootWindowSettings* root_window_settings =
+      InitRootWindowSettings(window_tree_host->window());
+  root_window_settings->display_id = display.id();
   window_tree_host->window()->SetProperty(kRootWindowControllerKey, this);
-  WmShellMus::Get()->AddRootWindowController(this);
   ash_root_window_controller_ = base::WrapUnique(
       new ash::RootWindowController(nullptr, window_tree_host.release()));
   ash_root_window_controller_->Init(root_window_type);
 
+  // TODO: To avoid lots of IPC AddActivationParent() should take an array.
+  // http://crbug.com/682048.
   for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
     window_manager_->window_manager_client()->AddActivationParent(
         GetWindowByShellWindowId(kActivatableShellWindowIds[i])->aura_window());
@@ -92,7 +95,6 @@ RootWindowController::RootWindowController(
 RootWindowController::~RootWindowController() {
   Shutdown();
   ash_root_window_controller_.reset();
-  WmShellMus::Get()->RemoveRootWindowController(this);
 }
 
 // static

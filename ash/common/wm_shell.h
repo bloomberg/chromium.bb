@@ -19,6 +19,7 @@
 #include "components/ui_devtools/devtools_server.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/window_types.h"
 
 namespace app_list {
@@ -75,6 +76,7 @@ class ShelfDelegate;
 class ShelfModel;
 class ShelfWindowWatcher;
 class ShellDelegate;
+struct ShellInitParams;
 class ShellObserver;
 class ShutdownController;
 class SystemTrayDelegate;
@@ -102,15 +104,18 @@ class WindowState;
 }
 
 // Similar to ash::Shell. Eventually the two will be merged.
-class ASH_EXPORT WmShell : public SessionStateObserver {
+class ASH_EXPORT WmShell : public SessionStateObserver,
+                           public aura::client::ActivationChangeObserver {
  public:
+  ~WmShell() override;
+
   // This is necessary for a handful of places that is difficult to plumb
   // through context.
   static void Set(WmShell* instance);
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
 
-  void Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool);
+  virtual void Initialize(const scoped_refptr<base::SequencedWorkerPool>& pool);
   virtual void Shutdown();
 
   ShellDelegate* delegate() { return delegate_.get(); }
@@ -401,8 +406,8 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 
-  virtual void AddActivationObserver(WmActivationObserver* observer) = 0;
-  virtual void RemoveActivationObserver(WmActivationObserver* observer) = 0;
+  void AddActivationObserver(WmActivationObserver* observer);
+  void RemoveActivationObserver(WmActivationObserver* observer);
 
   virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
   virtual void RemoveDisplayObserver(WmDisplayObserver* observer) = 0;
@@ -444,9 +449,15 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   // Enable or disable the laser pointer.
   virtual void SetLaserPointerEnabled(bool enabled) = 0;
 
+  virtual void CreatePointerWatcherAdapter() = 0;
+
  protected:
   explicit WmShell(std::unique_ptr<ShellDelegate> shell_delegate);
-  ~WmShell() override;
+
+  // Called during startup to create the primary WindowTreeHost and
+  // the corresponding RootWindowController.
+  virtual void CreatePrimaryHost() = 0;
+  virtual void InitHosts(const ShellInitParams& init_params) = 0;
 
   base::ObserverList<ShellObserver>* shell_observers() {
     return &shell_observers_;
@@ -482,6 +493,13 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   friend class ScopedRootWindowForNewWindows;
   friend class Shell;
   friend class WmShellTestApi;
+
+  // aura::client::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
+  void OnAttemptToReactivateWindow(aura::Window* request_active,
+                                   aura::Window* actual_active) override;
 
   static WmShell* instance_;
 
@@ -530,6 +548,9 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   WmWindow* scoped_root_window_for_new_windows_ = nullptr;
 
   bool simulate_modal_window_open_for_testing_ = false;
+
+  bool added_activation_observer_ = false;
+  base::ObserverList<WmActivationObserver> activation_observers_;
 
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 };

@@ -23,6 +23,7 @@ namespace ash {
 class KeyboardUIMus : public KeyboardUI,
                       public keyboard::mojom::KeyboardObserver {
  public:
+  // |connector| may be null in tests.
   explicit KeyboardUIMus(service_manager::Connector* connector);
   ~KeyboardUIMus() override;
 
@@ -44,6 +45,7 @@ class KeyboardUIMus : public KeyboardUI,
  private:
   bool is_enabled_;
 
+  // May be null during tests.
   keyboard::mojom::KeyboardPtr keyboard_;
   mojo::Binding<keyboard::mojom::KeyboardObserver> observer_binding_;
 

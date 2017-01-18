@@ -12,8 +12,6 @@
 
 #include "ash/common/wm_shell.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class WindowTreeClient;
@@ -34,18 +32,15 @@ class WindowManager;
 class WmShellMusTestApi;
 
 // WmShell implementation for mus.
-class WmShellMus : public WmShell,
-                   public aura::client::ActivationChangeObserver {
+class WmShellMus : public WmShell {
  public:
-  WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
+  WmShellMus(WmWindow* primary_root_window,
+             std::unique_ptr<ShellDelegate> shell_delegate,
              WindowManager* window_manager,
              views::PointerWatcherEventRouter* pointer_watcher_event_router);
   ~WmShellMus() override;
 
   static WmShellMus* Get();
-
-  void AddRootWindowController(RootWindowController* controller);
-  void RemoveRootWindowController(RootWindowController* controller);
 
   RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
 
@@ -58,6 +53,9 @@ class WmShellMus : public WmShell,
   WindowManager* window_manager() { return window_manager_; }
 
   // WmShell:
+  void Initialize(
+      const scoped_refptr<base::SequencedWorkerPool>& pool) override;
+  void Shutdown() override;
   bool IsRunningInMash() const override;
   WmWindow* NewWindow(ui::wm::WindowType window_type,
                       ui::LayerType layer_type) override;
@@ -101,8 +99,6 @@ class WmShellMus : public WmShell,
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
   SessionStateDelegate* GetSessionStateDelegate() override;
-  void AddActivationObserver(WmActivationObserver* observer) override;
-  void RemoveActivationObserver(WmActivationObserver* observer) override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
@@ -112,20 +108,17 @@ class WmShellMus : public WmShell,
   bool IsTouchDown() override;
   void ToggleIgnoreExternalKeyboard() override;
   void SetLaserPointerEnabled(bool enabled) override;
+  void CreatePointerWatcherAdapter() override;
+  void CreatePrimaryHost() override;
+  void InitHosts(const ShellInitParams& init_params) override;
 
  private:
   friend class WmShellMusTestApi;
 
-  // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override;
-
   WindowManager* window_manager_;
 
+  WmWindow* primary_root_window_;
   views::PointerWatcherEventRouter* pointer_watcher_event_router_;
-
-  std::vector<RootWindowController*> root_window_controllers_;
 
   std::unique_ptr<AcceleratorControllerDelegateMus>
       accelerator_controller_delegate_;
@@ -133,8 +126,6 @@ class WmShellMus : public WmShell,
       accelerator_controller_registrar_;
   std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
-
-  base::ObserverList<WmActivationObserver> activation_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShellMus);
 };

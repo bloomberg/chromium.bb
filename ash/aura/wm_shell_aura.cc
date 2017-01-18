@@ -18,6 +18,7 @@
 #include "ash/common/wm_display_observer.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
@@ -36,7 +37,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/wm/public/activation_client.h"
 
 #if defined(USE_X11)
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
@@ -57,22 +57,15 @@ WmShellAura::~WmShellAura() {
   WmShell::Set(nullptr);
 }
 
-void WmShellAura::CreatePointerWatcherAdapter() {
-  // Must occur after Shell has installed its early pre-target handlers (for
-  // example, WindowModalityController).
-  pointer_watcher_adapter_.reset(new PointerWatcherAdapter);
-}
-
 void WmShellAura::Shutdown() {
-  if (added_activation_observer_)
-    Shell::GetInstance()->activation_client()->RemoveObserver(this);
-
   if (added_display_observer_)
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 
   pointer_watcher_adapter_.reset();
 
   WmShell::Shutdown();
+
+  Shell::GetInstance()->window_tree_host_manager()->Shutdown();
 }
 
 bool WmShellAura::IsRunningInMash() const {
@@ -105,7 +98,8 @@ WmWindow* WmShellAura::GetCaptureWindow() {
 }
 
 WmWindow* WmShellAura::GetPrimaryRootWindow() {
-  return WmWindow::Get(Shell::GetPrimaryRootWindow());
+  return WmWindow::Get(
+      Shell::GetInstance()->window_tree_host_manager()->GetPrimaryRootWindow());
 }
 
 WmWindow* WmShellAura::GetRootWindowForDisplayId(int64_t display_id) {
@@ -172,7 +166,8 @@ bool WmShellAura::IsMouseEventsEnabled() {
 }
 
 std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows =
+      Shell::GetInstance()->window_tree_host_manager()->GetAllRootWindows();
   std::vector<WmWindow*> wm_windows(root_windows.size());
   for (size_t i = 0; i < root_windows.size(); ++i)
     wm_windows[i] = WmWindow::Get(root_windows[i]);
@@ -247,18 +242,6 @@ SessionStateDelegate* WmShellAura::GetSessionStateDelegate() {
   return Shell::GetInstance()->session_state_delegate();
 }
 
-void WmShellAura::AddActivationObserver(WmActivationObserver* observer) {
-  if (!added_activation_observer_) {
-    added_activation_observer_ = true;
-    Shell::GetInstance()->activation_client()->AddObserver(this);
-  }
-  activation_observers_.AddObserver(observer);
-}
-
-void WmShellAura::RemoveActivationObserver(WmActivationObserver* observer) {
-  activation_observers_.RemoveObserver(observer);
-}
-
 void WmShellAura::AddDisplayObserver(WmDisplayObserver* observer) {
   if (!added_display_observer_) {
     added_display_observer_ = true;
@@ -298,24 +281,19 @@ void WmShellAura::SetLaserPointerEnabled(bool enabled) {
   Shell::GetInstance()->laser_pointer_controller()->SetEnabled(enabled);
 }
 
-void WmShellAura::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
-    aura::Window* gained_active,
-    aura::Window* lost_active) {
-  WmWindow* gained_active_wm = WmWindow::Get(gained_active);
-  WmWindow* lost_active_wm = WmWindow::Get(lost_active);
-  if (gained_active_wm)
-    set_root_window_for_new_windows(gained_active_wm->GetRootWindow());
-  for (auto& observer : activation_observers_)
-    observer.OnWindowActivated(gained_active_wm, lost_active_wm);
+void WmShellAura::CreatePointerWatcherAdapter() {
+  pointer_watcher_adapter_ = base::MakeUnique<PointerWatcherAdapter>();
 }
 
-void WmShellAura::OnAttemptToReactivateWindow(aura::Window* request_active,
-                                              aura::Window* actual_active) {
-  for (auto& observer : activation_observers_) {
-    observer.OnAttemptToReactivateWindow(WmWindow::Get(request_active),
-                                         WmWindow::Get(actual_active));
-  }
+void WmShellAura::CreatePrimaryHost() {
+  Shell::GetInstance()->window_tree_host_manager()->Start();
+  AshWindowTreeHostInitParams ash_init_params;
+  Shell::GetInstance()->window_tree_host_manager()->CreatePrimaryHost(
+      ash_init_params);
+}
+
+void WmShellAura::InitHosts(const ShellInitParams& init_params) {
+  Shell::GetInstance()->window_tree_host_manager()->InitHosts();
 }
 
 void WmShellAura::SessionStateChanged(session_manager::SessionState state) {

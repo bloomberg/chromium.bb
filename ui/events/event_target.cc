@@ -23,10 +23,12 @@ void EventTarget::ConvertEventToTarget(EventTarget* target,
 }
 
 void EventTarget::AddPreTargetHandler(EventHandler* handler) {
+  DCHECK(handler);
   pre_target_list_.push_back(handler);
 }
 
 void EventTarget::PrependPreTargetHandler(EventHandler* handler) {
+  DCHECK(handler);
   pre_target_list_.insert(pre_target_list_.begin(), handler);
 }
 
@@ -40,6 +42,7 @@ void EventTarget::RemovePreTargetHandler(EventHandler* handler) {
 }
 
 void EventTarget::AddPostTargetHandler(EventHandler* handler) {
+  DCHECK(handler);
   post_target_list_.push_back(handler);
 }
 

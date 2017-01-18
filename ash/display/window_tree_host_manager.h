@@ -116,9 +116,6 @@ class ASH_EXPORT WindowTreeHostManager
   // root window host to to new primary display.
   void SetPrimaryDisplayId(int64_t id);
 
-  // Closes all child windows in the all root windows.
-  void CloseChildWindows();
-
   // Returns all root windows. In non extended desktop mode, this
   // returns the primary root window only.
   aura::Window::Windows GetAllRootWindows();

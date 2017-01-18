@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
@@ -100,6 +101,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   // Returns the RootWindowController of the target root window.
   static RootWindowController* ForTargetRootWindow();
+
+  static std::vector<RootWindowController*> root_window_controllers() {
+    return root_window_controllers_ ? *root_window_controllers_
+                                    : std::vector<RootWindowController*>();
+  }
 
   // Configures |init_params| prior to initializing |widget|.
   // |shell_container_id| is the id of the container to parent |widget| to.
@@ -370,6 +376,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   std::unique_ptr<ui::EventHandler> panel_container_handler_;
 
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
+
+  static std::vector<RootWindowController*>* root_window_controllers_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

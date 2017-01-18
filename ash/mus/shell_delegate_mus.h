@@ -18,7 +18,9 @@ namespace ash {
 
 class ShellDelegateMus : public ShellDelegate {
  public:
-  explicit ShellDelegateMus(service_manager::Connector* connector);
+  ShellDelegateMus(
+      service_manager::Connector* connector,
+      std::unique_ptr<SystemTrayDelegate> system_tray_delegate_for_test);
   ~ShellDelegateMus() override;
 
   // ShellDelegate:
@@ -50,7 +52,9 @@ class ShellDelegateMus : public ShellDelegate {
   void UpdateTouchscreenStatusFromPrefs() override;
 
  private:
+  // |connector_| may be null in tests.
   service_manager::Connector* connector_;
+  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);
 };

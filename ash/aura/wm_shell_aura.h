@@ -13,14 +13,12 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
 
 class PointerWatcherAdapter;
 
 class ASH_EXPORT WmShellAura : public WmShell,
-                               public aura::client::ActivationChangeObserver,
                                public WindowTreeHostManager::Observer {
  public:
   explicit WmShellAura(std::unique_ptr<ShellDelegate> shell_delegate);
@@ -28,7 +26,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
 
   static WmShellAura* Get();
 
-  void CreatePointerWatcherAdapter();
 
   // WmShell:
   void Shutdown() override;
@@ -75,8 +72,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
   SessionStateDelegate* GetSessionStateDelegate() override;
-  void AddActivationObserver(WmActivationObserver* observer) override;
-  void RemoveActivationObserver(WmActivationObserver* observer) override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;
   void RemoveDisplayObserver(WmDisplayObserver* observer) override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
@@ -86,15 +81,11 @@ class ASH_EXPORT WmShellAura : public WmShell,
   bool IsTouchDown() override;
   void ToggleIgnoreExternalKeyboard() override;
   void SetLaserPointerEnabled(bool enabled) override;
+  void CreatePointerWatcherAdapter() override;
+  void CreatePrimaryHost() override;
+  void InitHosts(const ShellInitParams& init_params) override;
 
  private:
-  // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override;
-  void OnAttemptToReactivateWindow(aura::Window* request_active,
-                                   aura::Window* actual_active) override;
-
   // SessionStateObserver:
   void SessionStateChanged(session_manager::SessionState state) override;
 
@@ -104,9 +95,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
 
   WmLookupAura wm_lookup_;
   std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter_;
-
-  bool added_activation_observer_ = false;
-  base::ObserverList<WmActivationObserver> activation_observers_;
 
   bool added_display_observer_ = false;
   base::ObserverList<WmDisplayObserver> display_observers_;

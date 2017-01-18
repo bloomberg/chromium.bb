@@ -69,7 +69,6 @@ source_set("lib") {
     "window_manager.h",
     "window_manager_application.cc",
     "window_manager_application.h",
-    "window_manager_observer.h",
     "window_properties.cc",
     "window_properties.h",
   ]

@@ -18,7 +18,6 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_cycle_event_filter.h"
 #include "ash/common/wm/window_resizer.h"
-#include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_window.h"
 #include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
 #include "ash/mus/accelerators/accelerator_controller_registrar.h"
@@ -28,10 +27,15 @@
 #include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
+#include "ash/root_window_settings.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
+#include "ash/shell.h"
+#include "ash/shell_init_params.h"
+#include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -105,13 +109,16 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 }  // namespace
 
 WmShellMus::WmShellMus(
+    WmWindow* primary_root_window,
     std::unique_ptr<ShellDelegate> shell_delegate,
     WindowManager* window_manager,
     views::PointerWatcherEventRouter* pointer_watcher_event_router)
     : WmShell(std::move(shell_delegate)),
       window_manager_(window_manager),
+      primary_root_window_(primary_root_window),
       pointer_watcher_event_router_(pointer_watcher_event_router),
       session_state_delegate_(new SessionStateDelegateStub) {
+  DCHECK(primary_root_window_);
   WmShell::Set(this);
 
   uint16_t accelerator_namespace_id = 0u;
@@ -128,34 +135,10 @@ WmShellMus::WmShellMus(
       accelerator_controller_registrar_.get()));
   immersive_handler_factory_.reset(new ImmersiveHandlerFactoryMus);
 
-  CreateMaximizeModeController();
-
-  CreateMruWindowTracker();
-
-  SetSystemTrayDelegate(
-      base::WrapUnique(delegate()->CreateSystemTrayDelegate()));
-
   SetKeyboardUI(KeyboardUIMus::Create(window_manager_->connector()));
-
-  wallpaper_delegate()->InitializeWallpaper();
-
-  window_manager->activation_client()->AddObserver(this);
 }
 
 WmShellMus::~WmShellMus() {
-  window_manager_->activation_client()->RemoveObserver(this);
-
-  // This order mirrors that of Shell.
-
-  // Destroy maximize mode controller early on since it has some observers which
-  // need to be removed.
-  DeleteMaximizeModeController();
-  DeleteToastManager();
-  DeleteSystemTrayDelegate();
-  // Has to happen before ~MruWindowTracker.
-  DeleteWindowCycleController();
-  DeleteWindowSelectorController();
-  DeleteMruWindowTracker();
   WmShell::Set(nullptr);
 }
 
@@ -164,26 +147,17 @@ WmShellMus* WmShellMus::Get() {
   return static_cast<WmShellMus*>(WmShell::Get());
 }
 
-void WmShellMus::AddRootWindowController(RootWindowController* controller) {
-  root_window_controllers_.push_back(controller);
-  // The first root window will be the initial root for new windows.
-  if (!GetRootWindowForNewWindows())
-    set_root_window_for_new_windows(WmWindow::Get(controller->root()));
-}
-
-void WmShellMus::RemoveRootWindowController(RootWindowController* controller) {
-  auto iter = std::find(root_window_controllers_.begin(),
-                        root_window_controllers_.end(), controller);
-  DCHECK(iter != root_window_controllers_.end());
-  root_window_controllers_.erase(iter);
-}
-
 RootWindowController* WmShellMus::GetRootWindowControllerWithDisplayId(
     int64_t id) {
-  for (RootWindowController* root_window_controller :
-       root_window_controllers_) {
-    if (root_window_controller->display().id() == id)
-      return root_window_controller;
+  for (ash::RootWindowController* root_window_controller :
+       ash::RootWindowController::root_window_controllers()) {
+    RootWindowSettings* settings =
+        GetRootWindowSettings(root_window_controller->GetRootWindow());
+    DCHECK(settings);
+    if (settings->display_id == id) {
+      return RootWindowController::ForWindow(
+          root_window_controller->GetRootWindow());
+    }
   }
   NOTREACHED();
   return nullptr;
@@ -191,6 +165,17 @@ RootWindowController* WmShellMus::GetRootWindowControllerWithDisplayId(
 
 aura::WindowTreeClient* WmShellMus::window_tree_client() {
   return window_manager_->window_tree_client();
+}
+
+void WmShellMus::Initialize(
+    const scoped_refptr<base::SequencedWorkerPool>& pool) {
+  WmShell::Initialize(pool);
+}
+
+void WmShellMus::Shutdown() {
+  WmShell::Shutdown();
+
+  window_manager_->DeleteAllRootWindowControllers();
 }
 
 bool WmShellMus::IsRunningInMash() const {
@@ -207,16 +192,14 @@ WmWindow* WmShellMus::NewWindow(ui::wm::WindowType window_type,
 
 WmWindow* WmShellMus::GetFocusedWindow() {
   // TODO: remove as both WmShells use same implementation.
-  return WmWindow::Get(static_cast<aura::client::FocusClient*>(
-                           window_manager_->focus_controller())
-                           ->GetFocusedWindow());
+  return WmWindow::Get(
+      aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
+          ->GetFocusedWindow());
 }
 
 WmWindow* WmShellMus::GetActiveWindow() {
   // TODO: remove as both WmShells use same implementation.
-  return WmWindow::Get(static_cast<aura::client::ActivationClient*>(
-                           window_manager_->focus_controller())
-                           ->GetActiveWindow());
+  return WmWindow::Get(wm::GetActiveWindow());
 }
 
 WmWindow* WmShellMus::GetCaptureWindow() {
@@ -225,7 +208,9 @@ WmWindow* WmShellMus::GetCaptureWindow() {
 }
 
 WmWindow* WmShellMus::GetPrimaryRootWindow() {
-  return WmWindow::Get(root_window_controllers_[0]->root());
+  // NOTE: This is called before the RootWindowController has been created, so
+  // it can't call through to RootWindowController to get all windows.
+  return primary_root_window_;
 }
 
 WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
@@ -303,10 +288,12 @@ bool WmShellMus::IsMouseEventsEnabled() {
 }
 
 std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
-  std::vector<WmWindow*> wm_windows(root_window_controllers_.size());
-  for (size_t i = 0; i < root_window_controllers_.size(); ++i)
-    wm_windows[i] = WmWindow::Get(root_window_controllers_[i]->root());
-  return wm_windows;
+  std::vector<WmWindow*> root_windows;
+  for (ash::RootWindowController* root_window_controller :
+       ash::RootWindowController::root_window_controllers()) {
+    root_windows.push_back(root_window_controller->GetWindow());
+  }
+  return root_windows;
 }
 
 void WmShellMus::RecordGestureAction(GestureActionType action) {
@@ -383,14 +370,6 @@ SessionStateDelegate* WmShellMus::GetSessionStateDelegate() {
   return session_state_delegate_.get();
 }
 
-void WmShellMus::AddActivationObserver(WmActivationObserver* observer) {
-  activation_observers_.AddObserver(observer);
-}
-
-void WmShellMus::RemoveActivationObserver(WmActivationObserver* observer) {
-  activation_observers_.RemoveObserver(observer);
-}
-
 void WmShellMus::AddDisplayObserver(WmDisplayObserver* observer) {
   NOTIMPLEMENTED();
 }
@@ -429,18 +408,15 @@ void WmShellMus::SetLaserPointerEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
-// TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
-// TODO: Nuke and let client code use ActivationChangeObserver directly.
-void WmShellMus::OnWindowActivated(ActivationReason reason,
-                                   aura::Window* gained_active,
-                                   aura::Window* lost_active) {
-  WmWindow* gained_active_wm = WmWindow::Get(gained_active);
-  if (gained_active_wm)
-    set_root_window_for_new_windows(gained_active_wm->GetRootWindow());
-  WmWindow* lost_active_wm = WmWindow::Get(lost_active);
-  for (auto& observer : activation_observers_)
-    observer.OnWindowActivated(gained_active_wm, lost_active_wm);
+void WmShellMus::CreatePointerWatcherAdapter() {
+  // Only needed in WmShellAura, which has specific creation order.
 }
 
+void WmShellMus::CreatePrimaryHost() {}
+
+void WmShellMus::InitHosts(const ShellInitParams& init_params) {
+  window_manager_->CreatePrimaryRootWindowController(
+      base::WrapUnique(init_params.primary_window_tree_host));
+}
 }  // namespace mus
 }  // namespace ash

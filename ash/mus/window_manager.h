@@ -13,18 +13,11 @@
 #include "ash/root_window_controller.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
-
-namespace aura {
-namespace client {
-class ActivationClient;
-}
-}
 
 namespace base {
 class SequencedWorkerPool;
@@ -43,23 +36,19 @@ class PointerWatcherEventRouter;
 }
 
 namespace wm {
-class FocusController;
 class WMState;
 }
 
 namespace ash {
 
-class EventClientImpl;
-class ScreenPositionController;
 class ScreenMus;
+class SystemTrayDelegate;
 
 namespace mus {
 
 class AcceleratorHandler;
 class RootWindowController;
 class ShadowController;
-class WindowManagerObserver;
-class WmShellMus;
 class WmLookupMus;
 class WmTestHelper;
 
@@ -76,7 +65,8 @@ class WindowManager : public aura::WindowManagerDelegate,
   void Init(std::unique_ptr<aura::WindowTreeClient> window_tree_client,
             const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
 
-  WmShellMus* shell() { return shell_.get(); }
+  // Called during shutdown to delete all the RootWindowControllers.
+  void DeleteAllRootWindowControllers();
 
   ScreenMus* screen() { return screen_.get(); }
 
@@ -87,10 +77,6 @@ class WindowManager : public aura::WindowManagerDelegate,
   aura::WindowManagerClient* window_manager_client() {
     return window_manager_client_;
   }
-
-  ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
-
-  aura::client::ActivationClient* activation_client();
 
   service_manager::Connector* connector() { return connector_; }
 
@@ -112,27 +98,33 @@ class WindowManager : public aura::WindowManagerDelegate,
                              AcceleratorHandler* handler);
   void RemoveAcceleratorHandler(uint16_t id_namespace);
 
-  void AddObserver(WindowManagerObserver* observer);
-  void RemoveObserver(WindowManagerObserver* observer);
-
   // Returns the DisplayController interface if available. Will be null if no
   // service_manager::Connector was available, for example in some tests.
   display::mojom::DisplayController* GetDisplayController();
+
+  // Called during creation of the shell to create a RootWindowController.
+  // See comment in CreateRootWindowController() for details.
+  void CreatePrimaryRootWindowController(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
 
  private:
   friend class WmTestHelper;
 
   using RootWindowControllers = std::set<std::unique_ptr<RootWindowController>>;
 
-  RootWindowController* CreateRootWindowController(
+  // Called once the first Display has been obtained.
+  void CreateShell(
+      std::unique_ptr<aura::WindowTreeHostMus> primary_window_tree_host);
+
+  void CreateRootWindowController(
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
       const display::Display& display,
       ash::RootWindowController::RootWindowType root_window_type);
 
   // Deletes the specified RootWindowController. Called when a display is
-  // removed.
-  void DestroyRootWindowController(
-      RootWindowController* root_window_controller);
+  // removed. |in_shutdown| is true if called from Shutdown().
+  void DestroyRootWindowController(RootWindowController* root_window_controller,
+                                   bool in_shutdown);
 
   void Shutdown();
 
@@ -187,7 +179,6 @@ class WindowManager : public aura::WindowManagerDelegate,
   service_manager::Connector* connector_;
   display::mojom::DisplayControllerPtr display_controller_;
 
-  std::unique_ptr<::wm::FocusController> focus_controller_;
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
 
@@ -202,20 +193,23 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   RootWindowControllers root_window_controllers_;
 
-  base::ObserverList<WindowManagerObserver> observers_;
-
   std::unique_ptr<ScreenMus> screen_;
 
-  std::unique_ptr<WmShellMus> shell_;
+  bool created_shell_ = false;
 
   std::unique_ptr<WmLookupMus> lookup_;
 
   std::map<uint16_t, AcceleratorHandler*> accelerator_handlers_;
   uint16_t next_accelerator_namespace_id_ = 0u;
 
-  std::unique_ptr<EventClientImpl> event_client_;
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
-  std::unique_ptr<ScreenPositionController> screen_position_controller_;
+  // If non-null this is used as the return value from
+  // ShellDelegateMus::CreateSystemTrayDelegate(). This is only set in tests.
+  //
+  // TODO(jamescook): Pass a TestShellDelegate into WindowManager and use it to
+  // create the various test delegates rather than a member.
+  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

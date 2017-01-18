@@ -101,6 +101,8 @@ void WmTestHelper::Init() {
       kMaxNumberThreads, kThreadNamePrefix);
 
   window_manager_app_->window_manager_.reset(new WindowManager(nullptr));
+  window_manager_app_->window_manager()->system_tray_delegate_for_test_ =
+      base::MakeUnique<test::TestSystemTrayDelegate>();
 
   window_tree_client_setup_.InitForWindowManager(
       window_manager_app_->window_manager_.get(),
@@ -110,11 +112,6 @@ void WmTestHelper::Init() {
   window_manager_app_->InitWindowManager(
       window_tree_client_setup_.OwnWindowTreeClient(),
       blocking_pool_owner_->pool());
-
-  // TODO(jamescook): Pass a TestShellDelegate into WindowManager and use it to
-  // create the various test delegates.
-  WmShellTestApi().SetSystemTrayDelegate(
-      base::MakeUnique<test::TestSystemTrayDelegate>());
 
   aura::WindowTreeClient* window_tree_client =
       window_manager_app_->window_manager()->window_tree_client();
@@ -148,9 +145,10 @@ void WmTestHelper::UpdateDisplay(const std::string& display_spec) {
     root_window_controllers.push_back(
         CreateRootWindowController(parts[i], &next_x));
   }
+  const bool in_shutdown = false;
   while (root_window_controllers.size() > parts.size()) {
     window_manager_app_->window_manager()->DestroyRootWindowController(
-        root_window_controllers.back());
+        root_window_controllers.back(), in_shutdown);
     root_window_controllers.pop_back();
   }
 }

@@ -58,7 +58,6 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/first_run/first_run_helper_impl.h"
 #include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -121,7 +120,6 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
-#include "ui/message_center/message_center.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -184,7 +182,11 @@ bool Shell::initially_hide_cursor_ = false;
 // static
 Shell* Shell::CreateInstance(const ShellInitParams& init_params) {
   CHECK(!instance_);
-  instance_ = new Shell(init_params.delegate);
+  WmShell* wm_shell = init_params.wm_shell;
+  if (!wm_shell)
+    wm_shell =
+        new WmShellAura(base::WrapUnique<ShellDelegate>(init_params.delegate));
+  instance_ = new Shell(base::WrapUnique<WmShell>(wm_shell));
   instance_->Init(init_params);
   return instance_;
 }
@@ -214,15 +216,16 @@ RootWindowController* Shell::GetPrimaryRootWindowController() {
 // static
 Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
   CHECK(HasInstance());
-  return Shell::GetInstance()
-      ->window_tree_host_manager()
-      ->GetAllRootWindowControllers();
+  RootWindowControllerList root_window_controllers;
+  for (WmWindow* root_window : instance_->wm_shell_->GetAllRootWindows())
+    root_window_controllers.push_back(root_window->GetRootWindowController());
+  return root_window_controllers;
 }
 
 // static
 aura::Window* Shell::GetPrimaryRootWindow() {
   CHECK(HasInstance());
-  return GetInstance()->window_tree_host_manager()->GetPrimaryRootWindow();
+  return instance_->wm_shell_->GetPrimaryRootWindow()->aura_window();
 }
 
 // static
@@ -241,7 +244,10 @@ int64_t Shell::GetTargetDisplayId() {
 // static
 aura::Window::Windows Shell::GetAllRootWindows() {
   CHECK(HasInstance());
-  return Shell::GetInstance()->window_tree_host_manager()->GetAllRootWindows();
+  aura::Window::Windows windows;
+  for (WmWindow* window : instance_->wm_shell_->GetAllRootWindows())
+    windows.push_back(window->aura_window());
+  return windows;
 }
 
 // static
@@ -324,6 +330,7 @@ void Shell::DeactivateKeyboard() {
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
+  DCHECK(!wm_shell_->IsRunningInMash());
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||
       resolution_notification_controller_->DoesNotificationTimeout());
@@ -376,19 +383,23 @@ void Shell::DoInitialWorkspaceAnimation() {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
-Shell::Shell(ShellDelegate* delegate)
-    : wm_shell_(new WmShellAura(base::WrapUnique(delegate))),
+Shell::Shell(std::unique_ptr<WmShell> wm_shell)
+    : wm_shell_(std::move(wm_shell)),
       link_handler_model_factory_(nullptr),
       activation_client_(nullptr),
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
       simulate_modal_window_open_for_testing_(false),
       is_touch_hud_projection_enabled_(false) {
-  DCHECK(aura::Env::GetInstanceDontCreate());
-  gpu_support_.reset(wm_shell_->delegate()->CreateGPUSupport());
-  display_manager_.reset(ScreenAsh::CreateDisplayManager());
-  window_tree_host_manager_.reset(new WindowTreeHostManager);
-  user_metrics_recorder_.reset(new UserMetricsRecorder);
+  // TODO(sky): better refactor cash/mash dependencies. Perhaps put all cash
+  // state on WmShellAura. http://crbug.com/671246.
+
+  if (!wm_shell_->IsRunningInMash()) {
+    gpu_support_.reset(wm_shell_->delegate()->CreateGPUSupport());
+    display_manager_.reset(ScreenAsh::CreateDisplayManager());
+    window_tree_host_manager_.reset(new WindowTreeHostManager);
+    user_metrics_recorder_.reset(new UserMetricsRecorder);
+  }
 
   PowerStatus::Initialize();
 }
@@ -396,7 +407,10 @@ Shell::Shell(ShellDelegate* delegate)
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
-  user_metrics_recorder_->OnShellShuttingDown();
+  const bool is_mash = wm_shell_->IsRunningInMash();
+
+  if (!is_mash)
+    user_metrics_recorder_->OnShellShuttingDown();
 
   wm_shell_->delegate()->PreShutdown();
 
@@ -408,8 +422,10 @@ Shell::~Shell() {
   // Please keep in same order as in Init() because it's easy to miss one.
   if (window_modality_controller_)
     window_modality_controller_.reset();
-  RemovePreTargetHandler(
-      window_tree_host_manager_->input_method_event_handler());
+  if (!is_mash) {
+    RemovePreTargetHandler(
+        window_tree_host_manager_->input_method_event_handler());
+  }
 
   RemovePreTargetHandler(magnifier_key_scroll_handler_.get());
   magnifier_key_scroll_handler_.reset();
@@ -422,8 +438,10 @@ Shell::~Shell() {
   RemovePreTargetHandler(event_transformation_handler_.get());
   RemovePreTargetHandler(toplevel_window_event_handler_.get());
   RemovePostTargetHandler(toplevel_window_event_handler_.get());
-  RemovePreTargetHandler(system_gesture_filter_.get());
-  RemovePreTargetHandler(mouse_cursor_filter_.get());
+  if (!is_mash) {
+    RemovePreTargetHandler(system_gesture_filter_.get());
+    RemovePreTargetHandler(mouse_cursor_filter_.get());
+  }
   RemovePreTargetHandler(modality_filter_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
@@ -474,8 +492,8 @@ Shell::~Shell() {
   wm_shell_->DeleteWindowCycleController();
   wm_shell_->DeleteWindowSelectorController();
 
-  // Destroy all child windows including widgets.
-  window_tree_host_manager_->CloseChildWindows();
+  CloseAllRootWindowChildWindows();
+
   // MruWindowTracker must be destroyed after all windows have been deleted to
   // avoid a possible crash when Shell is destroyed from a non-normal shutdown
   // path. (crbug.com/485438).
@@ -514,7 +532,6 @@ Shell::~Shell() {
 
   wm_shell_->Shutdown();
   // Depends on |focus_client_|, so must be destroyed before.
-  window_tree_host_manager_->Shutdown();
   window_tree_host_manager_.reset();
   focus_client_.reset();
   screen_position_controller_.reset();
@@ -546,33 +563,42 @@ Shell::~Shell() {
 }
 
 void Shell::Init(const ShellInitParams& init_params) {
+  const bool is_mash = wm_shell_->IsRunningInMash();
+
   wm_shell_->Initialize(init_params.blocking_pool);
 
-  immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryAsh>();
+  // TODO(sky): move creation to WmShell.
+  if (!is_mash)
+    immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryAsh>();
 
   scoped_overview_animation_settings_factory_.reset(
       new ScopedOverviewAnimationSettingsFactoryAura);
   window_positioner_.reset(new WindowPositioner(wm_shell_.get()));
 
-  native_cursor_manager_ = new AshNativeCursorManager;
-  cursor_manager_.reset(
-      new CursorManager(base::WrapUnique(native_cursor_manager_)));
+  if (!is_mash) {
+    native_cursor_manager_ = new AshNativeCursorManager;
+    cursor_manager_.reset(
+        new CursorManager(base::WrapUnique(native_cursor_manager_)));
+  }
 
   wm_shell_->delegate()->PreInit();
-  bool display_initialized = display_manager_->InitFromCommandLine();
+  bool display_initialized = true;
+  if (!is_mash) {
+    display_initialized = display_manager_->InitFromCommandLine();
 
-  display_configuration_controller_.reset(new DisplayConfigurationController(
-      display_manager_.get(), window_tree_host_manager_.get()));
+    display_configuration_controller_.reset(new DisplayConfigurationController(
+        display_manager_.get(), window_tree_host_manager_.get()));
 
 #if defined(USE_OZONE)
-  display_configurator_->Init(
-      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
-      !gpu_support_->IsPanelFittingDisabled());
+    display_configurator_->Init(
+        ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
+        !gpu_support_->IsPanelFittingDisabled());
 #elif defined(USE_X11)
-  display_configurator_->Init(
-      base::MakeUnique<display::NativeDisplayDelegateX11>(),
-      !gpu_support_->IsPanelFittingDisabled());
+    display_configurator_->Init(
+        base::MakeUnique<display::NativeDisplayDelegateX11>(),
+        !gpu_support_->IsPanelFittingDisabled());
 #endif
+  }
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
   chromeos::DBusThreadManager* dbus_thread_manager =
@@ -609,11 +635,13 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
 
-  display_manager_->RefreshFontParams();
+  if (!is_mash) {
+    display_manager_->RefreshFontParams();
 
-  aura::Env::GetInstance()->set_context_factory(init_params.context_factory);
-  aura::Env::GetInstance()->set_context_factory_private(
-      init_params.context_factory_private);
+    aura::Env::GetInstance()->set_context_factory(init_params.context_factory);
+    aura::Env::GetInstance()->set_context_factory_private(
+        init_params.context_factory_private);
+  }
 
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal
@@ -632,25 +660,32 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   screen_position_controller_.reset(new ScreenPositionController);
 
-  window_tree_host_manager_->Start();
-  AshWindowTreeHostInitParams ash_init_params;
-  window_tree_host_manager_->CreatePrimaryHost(ash_init_params);
-  aura::Window* root_window = window_tree_host_manager_->GetPrimaryRootWindow();
-  wm_shell_->set_root_window_for_new_windows(WmWindow::Get(root_window));
+  wm_shell_->CreatePrimaryHost();
+  wm_shell_->set_root_window_for_new_windows(
+      WmWindow::Get(GetPrimaryRootWindow()));
 
-  resolution_notification_controller_.reset(
-      new ResolutionNotificationController);
+  if (!is_mash) {
+    resolution_notification_controller_.reset(
+        new ResolutionNotificationController);
+  }
 
   if (cursor_manager_)
     cursor_manager_->SetDisplay(
         display::Screen::GetScreen()->GetPrimaryDisplay());
 
-  accelerator_controller_delegate_.reset(new AcceleratorControllerDelegateAura);
-  wm_shell_->SetAcceleratorController(base::MakeUnique<AcceleratorController>(
-      accelerator_controller_delegate_.get(), nullptr));
+  if (!is_mash) {
+    // TODO(sky): move this to WmShell. http://crbug.com/671246.
+    accelerator_controller_delegate_.reset(
+        new AcceleratorControllerDelegateAura);
+    wm_shell_->SetAcceleratorController(base::MakeUnique<AcceleratorController>(
+        accelerator_controller_delegate_.get(), nullptr));
+  }
   wm_shell_->CreateMaximizeModeController();
 
-  AddPreTargetHandler(window_tree_host_manager_->input_method_event_handler());
+  if (!is_mash) {
+    AddPreTargetHandler(
+        window_tree_host_manager_->input_method_event_handler());
+  }
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());
@@ -678,12 +713,16 @@ void Shell::Init(const ShellInitParams& init_params) {
   toplevel_window_event_handler_.reset(
       new ToplevelWindowEventHandler(wm_shell_.get()));
 
-  system_gesture_filter_.reset(new SystemGestureEventFilter);
-  AddPreTargetHandler(system_gesture_filter_.get());
+  if (!is_mash) {
+    system_gesture_filter_.reset(new SystemGestureEventFilter);
+    AddPreTargetHandler(system_gesture_filter_.get());
+  }
 
   sticky_keys_controller_.reset(new StickyKeysController);
-  screen_pinning_controller_.reset(
-      new ScreenPinningController(window_tree_host_manager_.get()));
+  if (!is_mash) {
+    screen_pinning_controller_.reset(
+        new ScreenPinningController(window_tree_host_manager_.get()));
+  }
 
   lock_state_controller_ =
       base::MakeUnique<LockStateController>(wm_shell_->shutdown_controller());
@@ -701,8 +740,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   // process mouse events prior to screenshot session.
   // See http://crbug.com/459214
   screenshot_controller_.reset(new ScreenshotController());
-  mouse_cursor_filter_.reset(new MouseCursorEventFilter());
-  PrependPreTargetHandler(mouse_cursor_filter_.get());
+  if (!is_mash) {
+    mouse_cursor_filter_.reset(new MouseCursorEventFilter());
+    PrependPreTargetHandler(mouse_cursor_filter_.get());
+  }
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
@@ -731,6 +772,8 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   session_state_delegate_.reset(
       wm_shell_->delegate()->CreateSessionStateDelegate());
+  // Must occur after Shell has installed its early pre-target handlers (for
+  // example, WindowModalityController).
   wm_shell_->CreatePointerWatcherAdapter();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
@@ -743,16 +786,20 @@ void Shell::Init(const ShellInitParams& init_params) {
   // WindowTreeHostManager::InitDisplays()
   // since AshTouchTransformController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
-  touch_transformer_controller_.reset(new AshTouchTransformController(
-      display_configurator_.get(), display_manager_.get()));
+  if (!is_mash) {
+    touch_transformer_controller_.reset(new AshTouchTransformController(
+        display_configurator_.get(), display_manager_.get()));
+  }
 
-  wm_shell_->SetKeyboardUI(KeyboardUI::Create());
+  if (!is_mash)
+    wm_shell_->SetKeyboardUI(KeyboardUI::Create());
 
-  window_tree_host_manager_->InitHosts();
+  wm_shell_->InitHosts(init_params);
 
   // Needs to be created after InitDisplays() since it may cause the virtual
   // keyboard to be deployed.
-  virtual_keyboard_controller_.reset(new VirtualKeyboardController);
+  if (!is_mash)
+    virtual_keyboard_controller_.reset(new VirtualKeyboardController);
 
   audio_a11y_controller_.reset(new chromeos::AudioA11yController);
 
@@ -773,18 +820,22 @@ void Shell::Init(const ShellInitParams& init_params) {
   video_activity_notifier_.reset(
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
-  screen_orientation_controller_.reset(new ScreenOrientationController());
-  screen_layout_observer_.reset(new ScreenLayoutObserver());
+  if (!is_mash) {
+    screen_orientation_controller_.reset(new ScreenOrientationController());
+    screen_layout_observer_.reset(new ScreenLayoutObserver());
+  }
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
   // is started.
-  display_manager_->CreateMirrorWindowAsyncIfAny();
+  if (!is_mash)
+    display_manager_->CreateMirrorWindowAsyncIfAny();
 
   for (auto& observer : *wm_shell_->shell_observers())
     observer.OnShellInitialized();
 
-  user_metrics_recorder_->OnShellInitialized();
+  if (!is_mash)
+    user_metrics_recorder_->OnShellInitialized();
 }
 
 void Shell::InitKeyboard() {
@@ -826,6 +877,21 @@ void Shell::InitRootWindow(aura::Window* root_window) {
                                     toplevel_window_event_handler_.get());
   root_window->AddPreTargetHandler(toplevel_window_event_handler_.get());
   root_window->AddPostTargetHandler(toplevel_window_event_handler_.get());
+}
+
+void Shell::CloseAllRootWindowChildWindows() {
+  for (WmWindow* wm_root_window : wm_shell_->GetAllRootWindows()) {
+    aura::Window* root_window = wm_root_window->aura_window();
+    RootWindowController* controller = GetRootWindowController(root_window);
+    if (controller) {
+      controller->CloseChildWindows();
+    } else {
+      while (!root_window->children().empty()) {
+        aura::Window* child = root_window->children()[0];
+        delete child;
+      }
+    }
+  }
 }
 
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {
