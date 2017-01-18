@@ -75,7 +75,8 @@ ChromeSigninClient::ChromeSigninClient(
       signin_error_controller_(signin_error_controller),
       is_force_signin_enabled_(IsForceSigninEnabled()),
       request_context_pointer_(nullptr),
-      number_of_request_context_pointer_changes_(0) {
+      number_of_request_context_pointer_changes_(0),
+      weak_factory_(this) {
   signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -210,7 +211,7 @@ net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
       base::Bind(&net::URLRequestContextGetter::GetURLRequestContext,
                  scoped_getter),
       base::Bind(&ChromeSigninClient::RequestContextPointerReply,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
   return getter;
 }
 

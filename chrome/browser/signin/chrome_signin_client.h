@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -131,6 +132,8 @@ class ChromeSigninClient
   // These members are used to debug channel id binding problems in chrome.
   void* request_context_pointer_;
   int number_of_request_context_pointer_changes_;
+
+  base::WeakPtrFactory<ChromeSigninClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSigninClient);
 };
