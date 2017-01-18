@@ -24,6 +24,9 @@ const char kCommandLine[] = "command_line";
 const char kCommandLineName[] = "command_line_name";
 const char kCompany[] = "company";
 const char kCopyright[] = "copyright";
+#if defined(OS_CHROMEOS)
+const char kCustomizationId[] = "customization_id";
+#endif
 const char kExecutablePath[] = "executable_path";
 const char kExecutablePathName[] = "executable_path_name";
 const char kFlashPlugin[] = "flash_plugin";

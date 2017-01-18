@@ -40,7 +40,6 @@ function returnOsVersion(osVersion) {
   $('os_version').textContent = osVersion;
 }
 
-
 /**
  * Callback from the backend with the ARC version to display.
  * @param {string} arcVersion The ARC version to display.
@@ -50,10 +49,23 @@ function returnARCVersion(arcVersion) {
   $('arc_holder').hidden = !arcVersion;
 }
 
+/**
+ * Callback from chromeosInfoPrivate with the value of the customization ID.
+ * @param {!{customizationId: string}} response
+ */
+function returnCustomizationId(response) {
+  if (!response.customizationId)
+    return;
+  $('customization_id_holder').hidden = false;
+  $('customization_id').textContent = response.customizationId;
+}
+
 /* All the work we do onload. */
 function onLoadWork() {
   chrome.send('requestVersionInfo');
   $('arc_holder').hidden = true;
+  if (cr.isChromeOS)
+    chrome.chromeosInfoPrivate.get(['customizationId'], returnCustomizationId);
 }
 
 document.addEventListener('DOMContentLoaded', onLoadWork);

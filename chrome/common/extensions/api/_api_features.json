@@ -217,10 +217,17 @@
     "dependencies": ["permission:certificateProvider"],
     "contexts": ["blessed_extension"]
   },
-  "chromeosInfoPrivate": {
+  "chromeosInfoPrivate": [{
     "dependencies": ["permission:chromeosInfoPrivate"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://version/*"
+    ],
+    "platforms": ["chromeos"]
+  }],
   "chromeWebViewInternal": [{
     "internal": true,
     "dependencies": ["permission:webview"],

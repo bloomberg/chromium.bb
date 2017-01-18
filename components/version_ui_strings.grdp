@@ -31,6 +31,9 @@
   <message name="IDS_VERSION_UI_BUILD_DATE" desc="label for build date on the about:version page">
     Build Date
   </message>
+  <message name="IDS_VERSION_UI_CUSTOMIZATION_ID" desc="label for the device customization ID if present on the about:version page">
+    Customization ID
+  </message>
 </if>
   <message name="IDS_VERSION_UI_EXECUTABLE_PATH" desc="label for the executable path on the about:version page">
     Executable Path
