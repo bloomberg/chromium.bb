@@ -66,6 +66,9 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardType wallet_card_type);
 
+const char* ProtoEnumToString(
+    sync_pb::WalletMaskedCreditCard::WalletCardClass wallet_card_class);
+
 const char* ProtoEnumToString(sync_pb::SyncEnums::DeviceType device_type);
 
 const char* ProtoEnumToString(sync_pb::SessionTab::FaviconType favicon_type);

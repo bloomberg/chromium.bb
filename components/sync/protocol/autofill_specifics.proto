@@ -92,6 +92,13 @@ message WalletMaskedCreditCard {
     VISA = 8;
   }
 
+  enum WalletCardClass {
+    UNKNOWN_CARD_CLASS = 0;
+    CREDIT = 1;
+    DEBIT = 2;
+    PREPAID = 3;
+  }
+
   // Server-generated unique ID string. This is opaque to the client.
   optional string id = 1;
 
@@ -113,6 +120,9 @@ message WalletMaskedCreditCard {
 
   // The WalletPostalAddress.id of the billing address.
   optional string billing_address_id = 8;
+
+  // Card class: credit, debit, or prepaid.
+  optional WalletCardClass card_class = 9;
 }
 
 // Different than an AutofillProfile because this represents some known address
