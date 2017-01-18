@@ -40,29 +40,42 @@ void* UserDataKey() {
   return reinterpret_cast<void*>(&user_data_key);
 }
 
-// Returns syncable metadata for the |local| profile or credit card.
-syncer::SyncData BuildSyncData(sync_pb::WalletMetadataSpecifics::Type type,
-                               const std::string& server_id,
-                               const AutofillDataModel& local) {
-  sync_pb::EntitySpecifics entity;
-  sync_pb::WalletMetadataSpecifics* metadata = entity.mutable_wallet_metadata();
+// Sets the common syncable |metadata| for the |local_data_model|.
+void SetCommonMetadata(sync_pb::WalletMetadataSpecifics::Type type,
+                       const std::string& server_id,
+                       const AutofillDataModel& local_data_model,
+                       sync_pb::WalletMetadataSpecifics* metadata) {
   metadata->set_type(type);
   metadata->set_id(server_id);
-  metadata->set_use_count(local.use_count());
-  metadata->set_use_date(local.use_date().ToInternalValue());
+  metadata->set_use_count(local_data_model.use_count());
+  metadata->set_use_date(local_data_model.use_date().ToInternalValue());
+}
 
-  std::string sync_tag;
-  switch (type) {
-    case sync_pb::WalletMetadataSpecifics::ADDRESS:
-      sync_tag = "address-" + server_id;
-      break;
-    case sync_pb::WalletMetadataSpecifics::CARD:
-      sync_tag = "card-" + server_id;
-      break;
-    case sync_pb::WalletMetadataSpecifics::UNKNOWN:
-      NOTREACHED();
-      break;
-  }
+// Returns syncable metadata for the |local_profile|.
+syncer::SyncData BuildSyncData(sync_pb::WalletMetadataSpecifics::Type type,
+                               const std::string& server_id,
+                               const AutofillProfile& local_profile) {
+  sync_pb::EntitySpecifics entity;
+  sync_pb::WalletMetadataSpecifics* metadata = entity.mutable_wallet_metadata();
+  SetCommonMetadata(type, server_id, local_profile, metadata);
+  metadata->set_address_has_converted(local_profile.has_converted());
+  std::string sync_tag = "address-" + server_id;
+
+  return syncer::SyncData::CreateLocalData(sync_tag, sync_tag, entity);
+}
+
+// Returns syncable metadata for the |local_card|.
+syncer::SyncData BuildSyncData(sync_pb::WalletMetadataSpecifics::Type type,
+                               const std::string& server_id,
+                               const CreditCard& local_card) {
+  sync_pb::EntitySpecifics entity;
+  sync_pb::WalletMetadataSpecifics* metadata = entity.mutable_wallet_metadata();
+  SetCommonMetadata(type, server_id, local_card, metadata);
+  // The strings must be in valid UTF-8 to sync.
+  std::string billing_address_id;
+  base::Base64Encode(local_card.billing_address_id(), &billing_address_id);
+  metadata->set_card_billing_address_id(billing_address_id);
+  std::string sync_tag = "card-" + server_id;
 
   return syncer::SyncData::CreateLocalData(sync_tag, sync_tag, entity);
 }
@@ -142,6 +155,89 @@ void ApplyChangesToCache(const syncer::SyncChangeList& changes,
   }
 }
 
+// Merges the metadata of the remote and local versions of the data model.
+void MergeCommonMetadata(
+    const sync_pb::WalletMetadataSpecifics& remote_metadata,
+    AutofillDataModel* local_model,
+    bool* is_remote_outdated,
+    bool* is_local_modified) {
+  size_t remote_use_count =
+      base::checked_cast<size_t>(remote_metadata.use_count());
+  if (local_model->use_count() < remote_use_count) {
+    local_model->set_use_count(remote_use_count);
+    *is_local_modified = true;
+  } else if (local_model->use_count() > remote_use_count) {
+    *is_remote_outdated = true;
+  }
+
+  base::Time remote_use_date =
+      base::Time::FromInternalValue(remote_metadata.use_date());
+  if (local_model->use_date() < remote_use_date) {
+    local_model->set_use_date(remote_use_date);
+    *is_local_modified = true;
+  } else if (local_model->use_date() > remote_use_date) {
+    *is_remote_outdated = true;
+  }
+}
+
+// Merges the metadata of the remote and local versions of the profile.
+void MergeMetadata(const sync_pb::WalletMetadataSpecifics& remote_metadata,
+                   AutofillProfile* local_profile,
+                   bool* is_remote_outdated,
+                   bool* is_local_modified) {
+  // Merge the has_converted status.
+  if (local_profile->has_converted() !=
+      remote_metadata.address_has_converted()) {
+    if (!local_profile->has_converted()) {
+      local_profile->set_has_converted(true);
+      *is_local_modified = true;
+    } else {
+      *is_remote_outdated = true;
+    }
+  }
+
+  // Merge the use_count and use_date.
+  MergeCommonMetadata(remote_metadata, local_profile, is_remote_outdated,
+                      is_local_modified);
+}
+
+// Merges the metadata of the remote and local versions of the credit card.
+void MergeMetadata(const sync_pb::WalletMetadataSpecifics& remote_metadata,
+                   CreditCard* local_card,
+                   bool* is_remote_outdated,
+                   bool* is_local_modified) {
+  // Merge the billing_address_id. Do this before updating the use_count
+  // because it may be used to determine what id to keep.
+  std::string remote_billing_address_id;
+  base::Base64Decode(remote_metadata.card_billing_address_id(),
+                     &remote_billing_address_id);
+
+  if (local_card->billing_address_id() != remote_billing_address_id) {
+    // If one of the values is empty, update it with the non empty value.
+    if (local_card->billing_address_id().empty()) {
+      local_card->set_billing_address_id(remote_billing_address_id);
+      *is_local_modified = true;
+    } else if (remote_billing_address_id.empty()) {
+      *is_remote_outdated = true;
+    } else {
+      // The cards have a different non-empty billing address id. Keep the
+      // billing address id of the most recently used card.
+      base::Time remote_use_date =
+          base::Time::FromInternalValue(remote_metadata.use_date());
+      if (local_card->use_date() < remote_use_date) {
+        local_card->set_billing_address_id(remote_billing_address_id);
+        *is_local_modified = true;
+      } else {
+        *is_remote_outdated = true;
+      }
+    }
+  }
+
+  // Merge the use_count and use_date.
+  MergeCommonMetadata(remote_metadata, local_card, is_remote_outdated,
+                      is_local_modified);
+}
+
 // Merges |remote| metadata into a collection of metadata |locals|. Returns true
 // if the corresponding local metadata was found.
 //
@@ -165,25 +261,10 @@ bool MergeRemote(
   std::unique_ptr<DataType> local_metadata = std::move(it->second);
   locals->erase(it);
 
-  size_t remote_use_count =
-      base::checked_cast<size_t>(remote_metadata.use_count());
   bool is_local_modified = false;
   bool is_remote_outdated = false;
-  if (local_metadata->use_count() < remote_use_count) {
-    local_metadata->set_use_count(remote_use_count);
-    is_local_modified = true;
-  } else if (local_metadata->use_count() > remote_use_count) {
-    is_remote_outdated = true;
-  }
-
-  base::Time remote_use_date =
-      base::Time::FromInternalValue(remote_metadata.use_date());
-  if (local_metadata->use_date() < remote_use_date) {
-    local_metadata->set_use_date(remote_use_date);
-    is_local_modified = true;
-  } else if (local_metadata->use_date() > remote_use_date) {
-    is_remote_outdated = true;
-  }
+  MergeMetadata(remote_metadata, local_metadata.get(), &is_remote_outdated,
+                &is_local_modified);
 
   if (is_remote_outdated) {
     changes_to_sync->push_back(syncer::SyncChange(
@@ -514,16 +595,18 @@ syncer::SyncMergeResult AutofillWalletMetadataSyncableService::MergeData(
   return result;
 }
 
+template <class DataType>
 void AutofillWalletMetadataSyncableService::AutofillDataModelChanged(
     const std::string& server_id,
     const sync_pb::WalletMetadataSpecifics::Type& type,
-    const AutofillDataModel& local) {
+    const DataType& local) {
   auto it = FindServerIdAndTypeInCache(server_id, type, &cache_);
   if (it == cache_.end())
     return;
 
   const sync_pb::WalletMetadataSpecifics& remote =
       it->GetSpecifics().wallet_metadata();
+
   if (base::checked_cast<size_t>(remote.use_count()) < local.use_count() &&
       base::Time::FromInternalValue(remote.use_date()) < local.use_date()) {
     SendChangesToSyncServer(syncer::SyncChangeList(

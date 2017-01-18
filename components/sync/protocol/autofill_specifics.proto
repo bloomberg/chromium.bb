@@ -209,4 +209,11 @@ message WalletMetadataSpecifics {
   // The last use date of this Wallet card or address. Measured in microseconds
   // since the Windows epoch (1601).
   optional int64 use_date = 4;
+
+  // The id of the profile/address that represents the billing address of this
+  // Wallet card.
+  optional string card_billing_address_id = 5;
+
+  // Whether this Wallet address has been converted to a local autofill profile.
+  optional bool address_has_converted = 6;
 }

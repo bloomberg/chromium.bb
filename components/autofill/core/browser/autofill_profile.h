@@ -178,6 +178,10 @@ class AutofillProfile : public AutofillDataModel {
   // use.
   void RecordAndLogUse();
 
+  // Valid only when type() == SERVER_PROFILE.
+  bool has_converted() const { return has_converted_; }
+  void set_has_converted(bool has_converted) { has_converted_ = has_converted; }
+
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
 
@@ -221,6 +225,10 @@ class AutofillProfile : public AutofillDataModel {
   // ID used for identifying this profile. Only set for SERVER_PROFILEs. This is
   // a hash of the contents.
   std::string server_id_;
+
+  // Only useful for SERVER_PROFILEs. Whether this server profile has been
+  // converted to a local profile.
+  bool has_converted_;
 };
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

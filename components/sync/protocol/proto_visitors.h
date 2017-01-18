@@ -285,6 +285,8 @@ VISIT_PROTO_FIELDS(const sync_pb::WalletMetadataSpecifics& proto) {
   VISIT(id);
   VISIT(use_count);
   VISIT(use_date);
+  VISIT(card_billing_address_id);
+  VISIT(address_has_converted);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AutofillWalletSpecifics& proto) {
