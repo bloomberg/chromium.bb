@@ -32,6 +32,9 @@ class CC_EXPORT CompositorFrame {
 
   CompositorFrameMetadata metadata;
   TransferableResourceArray resource_list;
+  // This list is in the order that each RenderPass will be drawn. The last one
+  // is the "root" RenderPass that all others are directly or indirectly drawn
+  // into.
   RenderPassList render_pass_list;
 
  private:
