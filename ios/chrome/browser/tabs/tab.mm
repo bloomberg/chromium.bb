@@ -74,6 +74,7 @@
 #import "ios/chrome/browser/passwords/js_credential_manager.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
+#import "ios/chrome/browser/web/form_resubmission_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
@@ -98,7 +99,6 @@
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_controller.h"
-#import "ios/chrome/browser/ui/alert_coordinator/form_resubmission_coordinator.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -113,7 +113,6 @@
 #import "ios/chrome/browser/ui/reader_mode/reader_mode_controller.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
 #import "ios/chrome/browser/web/blocked_popup_handler.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
@@ -296,10 +295,6 @@ enum class RendererTerminationTabState {
   // web page.
   base::scoped_nsobject<WebControllerSnapshotHelper>
       webControllerSnapshotHelper_;
-
-  // Coordinates Form Resubmission dialog presentation.
-  base::scoped_nsobject<FormResubmissionCoordinator>
-      formResubmissionCoordinator_;
 
   // Handles support for window.print JavaScript calls.
   std::unique_ptr<PrintObserver> printObserver_;
@@ -570,6 +565,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     IOSChromeSyncedTabDelegate::CreateForWebState(self.webState);
     InfoBarManagerImpl::CreateForWebState(self.webState);
     IOSSecurityStateTabHelper::CreateForWebState(self.webState);
+    FormResubmissionTabHelper::CreateForWebState(self.webState);
 
     if (reading_list::switches::IsReadingListEnabled()) {
       ReadingListModel* model =
@@ -1241,8 +1237,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [readerModeController_ detachFromWebState];
   readerModeController_.reset();
 
-  formResubmissionCoordinator_.reset();
-
   // Invalidate any snapshot stored for this session.
   NSString* sessionID = [self currentSessionID];
   DCHECK(sessionID);
@@ -1700,28 +1694,20 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     onFormResubmissionForRequest:(NSURLRequest*)request
                    continueBlock:(ProceduralBlock)continueBlock
                      cancelBlock:(ProceduralBlock)cancelBlock {
-  UIViewController* topController =
-      top_view_controller::TopPresentedViewControllerFrom(
-          [UIApplication sharedApplication].keyWindow.rootViewController);
-
   // Display the action sheet with the arrow pointing at the top center of the
   // web contents.
   CGPoint dialogLocation =
       CGPointMake(CGRectGetMidX(webController.view.frame),
                   CGRectGetMinY(webController.view.frame) +
                       [self.tabHeadersDelegate headerHeightForTab:self]);
-
-  formResubmissionCoordinator_.reset([[FormResubmissionCoordinator alloc]
-      initWithBaseViewController:topController
-                  dialogLocation:dialogLocation
-                        webState:webController.webState
-               completionHandler:^(BOOL shouldContinue) {
-                 if (shouldContinue)
-                   continueBlock();
-                 else
-                   cancelBlock();
-               }]);
-  [formResubmissionCoordinator_ start];
+  auto helper = FormResubmissionTabHelper::FromWebState(webController.webState);
+  helper->PresentFormResubmissionDialog(dialogLocation,
+                                        base::BindBlock(^(bool shouldContinue) {
+                                          if (shouldContinue)
+                                            continueBlock();
+                                          else
+                                            cancelBlock();
+                                        }));
 }
 
 // The web page wants to close its own window.
@@ -1744,7 +1730,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                   transition:(ui::PageTransition)transition {
   DCHECK(self.webController.loadPhase == web::LOAD_REQUESTED);
   DCHECK([self navigationManager]);
-  formResubmissionCoordinator_.reset();
 
   // Move the toolbar to visible during page load.
   [fullScreenController_ disableFullScreen];

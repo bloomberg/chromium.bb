@@ -162,6 +162,11 @@ void TestWebState::OnPageLoaded(
     observer.PageLoaded(load_completion_status);
 }
 
+void TestWebState::OnProvisionalNavigationStarted(const GURL& url) {
+  for (auto& observer : observers_)
+    observer.ProvisionalNavigationStarted(url);
+}
+
 void TestWebState::SetCurrentURL(const GURL& url) {
   url_ = url;
 }

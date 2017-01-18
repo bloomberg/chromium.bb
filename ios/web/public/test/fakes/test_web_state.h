@@ -87,6 +87,7 @@ class TestWebState : public WebState {
 
   // Notifier for tests.
   void OnPageLoaded(PageLoadCompletionStatus load_completion_status);
+  void OnProvisionalNavigationStarted(const GURL& url);
 
  private:
   bool web_usage_enabled_;
