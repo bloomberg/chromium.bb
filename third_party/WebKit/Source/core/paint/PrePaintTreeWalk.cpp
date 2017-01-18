@@ -103,7 +103,6 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
   // Ensure the current context takes into account the box's position. This can
   // force a subtree update due to paint offset changes and must precede any
   // early out from the treewalk.
-  LayoutPoint oldPaintOffset = object.paintOffset();
   m_propertyTreeBuilder.updateContextForBoxPosition(object,
                                                     context.treeBuilderContext);
 
@@ -121,7 +120,7 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
 
   m_propertyTreeBuilder.updatePropertiesForSelf(object,
                                                 context.treeBuilderContext);
-  m_paintInvalidator.invalidatePaintIfNeeded(object, oldPaintOffset,
+  m_paintInvalidator.invalidatePaintIfNeeded(object,
                                              context.paintInvalidatorContext);
   m_propertyTreeBuilder.updatePropertiesForChildren(object,
                                                     context.treeBuilderContext);

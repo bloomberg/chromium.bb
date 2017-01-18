@@ -87,9 +87,7 @@ struct PaintInvalidatorContext {
 class PaintInvalidator {
  public:
   void invalidatePaintIfNeeded(FrameView&, PaintInvalidatorContext&);
-  void invalidatePaintIfNeeded(const LayoutObject&,
-                               const LayoutPoint& oldPaintOffset,
-                               PaintInvalidatorContext&);
+  void invalidatePaintIfNeeded(const LayoutObject&, PaintInvalidatorContext&);
 
   // Process objects needing paint invalidation on the next frame.
   // See the definition of PaintInvalidationDelayedFull for more details.

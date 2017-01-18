@@ -106,7 +106,8 @@ class PaintPropertyTreeBuilder {
                                    PaintPropertyTreeBuilderContext&);
 
   // Update the paint properties that affect this object (e.g., properties like
-  // paint offset translation) and ensure the context is up to date.
+  // paint offset translation) and ensure the context is up to date. Also
+  // handles updating the object's paintOffset.
   void updatePropertiesForSelf(const LayoutObject&,
                                PaintPropertyTreeBuilderContext&);
   // Update the paint properties that affect children of this object (e.g.,

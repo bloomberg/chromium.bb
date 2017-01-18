@@ -378,17 +378,13 @@ void PaintInvalidator::invalidatePaintIfNeeded(
 
 void PaintInvalidator::invalidatePaintIfNeeded(
     const LayoutObject& object,
-    const LayoutPoint& oldPaintOffset,
     PaintInvalidatorContext& context) {
   object.getMutableForPainting().ensureIsReadyForPaintInvalidation();
 
+  // The paint offset should already be updated through
+  // PaintPropertyTreeBuilder::updatePropertiesForSelf.
   DCHECK(context.treeBuilderContext.current.paintOffset ==
          object.paintOffset());
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      object.paintOffset() != oldPaintOffset) {
-    object.getMutableForPainting().setShouldDoFullPaintInvalidation(
-        PaintInvalidationLocationChange);
-  }
 
   if (!context.forcedSubtreeInvalidationFlags &&
       !object

@@ -968,8 +968,14 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
     updateScrollbarPaintOffset(object, context);
   }
 
-  if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate)
+  if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+        object.paintOffset() != context.current.paintOffset) {
+      object.getMutableForPainting().setShouldDoFullPaintInvalidation(
+          PaintInvalidationLocationChange);
+    }
     object.getMutableForPainting().setPaintOffset(context.current.paintOffset);
+  }
 }
 
 void PaintPropertyTreeBuilder::updatePropertiesForChildren(
