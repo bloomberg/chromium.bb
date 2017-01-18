@@ -2,17 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-declare_args() {
-  # Overrides os name in uma metrics log to "Blimp".
-  metrics_use_blimp = false
-}
-
-# These are only used by the blimp team, which has entirely migrated to gn,
-# so this logic is not replicated in the gyp file.
-if (metrics_use_blimp) {
-  defines = [ "OVERRIDE_OS_NAME_TO_BLIMP" ]
-}
-
 static_library("metrics") {
   sources = [
     "call_stack_profile_metrics_provider.cc",

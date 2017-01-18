@@ -390,12 +390,8 @@ std::string MetricsLog::RecordEnvironment(
 #endif
 
   SystemProfileProto::OS* os = system_profile->mutable_os();
-#if defined(OVERRIDE_OS_NAME_TO_BLIMP)
-  os->set_name("Blimp");
-#else
   std::string os_name = base::SysInfo::OperatingSystemName();
   os->set_name(os_name);
-#endif
 
   os->set_version(base::SysInfo::OperatingSystemVersion());
 #if defined(OS_ANDROID)

@@ -181,9 +181,6 @@
                   'content/test/data/battery_status/|'\
                   'device/battery/',
     },
-    'blimp': {
-      'filepath': '^blimp/',
-    },
     'bookmarks': {
       'filepath': 'chrome/browser/bookmarks/' \
                   '|chrome/browser/extensions/api/bookmark_manager_private/' \
@@ -1530,21 +1527,6 @@
                  'wfh+watch@chromium.org'],
     'base': ['vmpstr+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
-    'blimp' : ['anandc+watch-blimp@chromium.org',
-               'bgoldman+watch-blimp@chromium.org',
-               'dtrainor+watch-blimp@chromium.org',
-               'gcasto+watch-blimp@chromium.org',
-               'kmarshall+watch-blimp@chromium.org',
-               'khushalsagar+watch-blimp@chromium.org',
-               'lethalantidote+watch-blimp@chromium.org',
-               'maniscalco+watch-blimp@chromium.org',
-               'marcinjb+watch-blimp@chromium.org',
-               'nyquist+watch-blimp@chromium.org',
-               'perumaal+watch-blimp@chromium.org',
-               'scf+watch-blimp@chromium.org',
-               'shaktisahu+watch-blimp@chromium.org',
-               'sriramsr+watch-blimp@chromium.org',
-               'steimel+watch-blimp@chromium.org'],
     'blink': ['blink-reviews@chromium.org'],
     'blink_accessibility': ['aboxhall@chromium.org',
                             'dmazzoni@chromium.org',
