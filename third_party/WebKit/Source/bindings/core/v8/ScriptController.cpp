@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 
-#include "bindings/core/v8/CompiledScript.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -159,54 +158,6 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
                        InspectorUpdateCountersEvent::data());
 
   return result;
-}
-
-CompiledScript* ScriptController::compileScriptInMainWorld(
-    const ScriptSourceCode& source,
-    AccessControlStatus accessControlStatus) {
-  V8CacheOptions v8CacheOptions =
-      cacheOptions(source.resource(), frame()->settings());
-
-  v8::HandleScope handleScope(isolate());
-  v8::TryCatch tryCatch(isolate());
-  tryCatch.SetVerbose(true);
-
-  v8::Local<v8::Script> script;
-  if (!v8Call(V8ScriptRunner::compileScript(
-                  source, isolate(), accessControlStatus, v8CacheOptions),
-              script, tryCatch)) {
-    return nullptr;
-  }
-
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorUpdateCountersEvent::data());
-  return new CompiledScript(isolate(), script, source);
-}
-
-void ScriptController::executeScriptInMainWorld(
-    const CompiledScript& compiledScript) {
-  TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
-               InspectorEvaluateScriptEvent::data(
-                   frame(), compiledScript.url().getString(),
-                   compiledScript.startPosition()));
-  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
-      frame()->document(), "scriptFirstStatement", false);
-
-  v8::HandleScope handleScope(isolate());
-  v8::TryCatch tryCatch(isolate());
-  tryCatch.SetVerbose(true);
-
-  v8::Local<v8::Value> result;
-  if (!v8Call(
-          V8ScriptRunner::runCompiledScript(
-              isolate(), compiledScript.script(isolate()), frame()->document()),
-          result, tryCatch))
-    return;
-
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorUpdateCountersEvent::data());
 }
 
 LocalWindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world) {
