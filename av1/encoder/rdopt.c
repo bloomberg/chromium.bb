@@ -1489,7 +1489,6 @@ static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
 #endif  // CONFIG_RECT_TX
   int ext_tx_set;
 #endif  // CONFIG_EXT_TX
-  assert(bs >= BLOCK_8X8);
 
   if (tx_select) {
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
