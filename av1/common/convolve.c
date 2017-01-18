@@ -41,13 +41,20 @@ void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
       int k, sum = 0;
       for (k = 0; k < filter_size; ++k) sum += src_x[k] * x_filter[k];
 
-      if (conv_params->round == CONVOLVE_OPT_ROUND)
+      if (conv_params->round == CONVOLVE_OPT_ROUND) {
         sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
-
-      if (conv_params->ref)
-        dst[x] = ROUND_POWER_OF_TWO(dst[x] + sum, 1);
-      else
-        dst[x] = sum;
+        if (conv_params->ref)
+          dst[x] = ROUND_POWER_OF_TWO(dst[x] + sum, 1);
+        else
+          dst[x] = sum;
+      } else {
+        int tmp = conv_params->dst[y * conv_params->dst_stride + x];
+        if (conv_params->ref)
+          tmp = ROUND_POWER_OF_TWO(tmp + sum, 1);
+        else
+          tmp = sum;
+        conv_params->dst[y * conv_params->dst_stride + x] = tmp;
+      }
 
       x_q4 += x_step_q4;
     }
@@ -75,13 +82,21 @@ void av1_convolve_vert_c(const uint8_t *src, int src_stride, uint8_t *dst,
       for (k = 0; k < filter_size; ++k)
         sum += src_y[k * src_stride] * y_filter[k];
 
-      if (conv_params->round == CONVOLVE_OPT_ROUND)
+      if (conv_params->round == CONVOLVE_OPT_ROUND) {
         sum = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
-
-      if (conv_params->ref)
-        dst[y * dst_stride] = ROUND_POWER_OF_TWO(dst[y * dst_stride] + sum, 1);
-      else
-        dst[y * dst_stride] = sum;
+        if (conv_params->ref)
+          dst[y * dst_stride] =
+              ROUND_POWER_OF_TWO(dst[y * dst_stride] + sum, 1);
+        else
+          dst[y * dst_stride] = sum;
+      } else {
+        int tmp = conv_params->dst[y * conv_params->dst_stride + x];
+        if (conv_params->ref)
+          tmp = ROUND_POWER_OF_TWO(tmp + sum, 1);
+        else
+          tmp = sum;
+        conv_params->dst[y * conv_params->dst_stride + x] = tmp;
+      }
 
       y_q4 += y_step_q4;
     }
@@ -96,22 +111,29 @@ static void convolve_copy(const uint8_t *src, int src_stride, uint8_t *dst,
   if (conv_params->ref == 0) {
     int r, c;
     for (r = 0; r < h; ++r) {
-      memcpy(dst, src, w);
-      if (conv_params->round == CONVOLVE_OPT_NO_ROUND)
-        for (c = 0; c < w; ++c) dst[c] = dst[c] << FILTER_BITS;
+      if (conv_params->round == CONVOLVE_OPT_ROUND) {
+        memcpy(dst, src, w);
+      } else {
+        for (c = 0; c < w; ++c)
+          conv_params->dst[r * conv_params->dst_stride + c] = ((uint16_t)src[c])
+                                                              << FILTER_BITS;
+      }
       src += src_stride;
       dst += dst_stride;
     }
   } else {
     int r, c;
     for (r = 0; r < h; ++r) {
-      if (conv_params->round == CONVOLVE_OPT_ROUND)
-        for (c = 0; c < w; ++c)
+      for (c = 0; c < w; ++c) {
+        if (conv_params->round == CONVOLVE_OPT_ROUND) {
           dst[c] = clip_pixel(ROUND_POWER_OF_TWO(dst[c] + src[c], 1));
-      else
-        for (c = 0; c < w; ++c)
-          dst[c] = clip_pixel(
-              ROUND_POWER_OF_TWO(dst[c] + (src[c] << FILTER_BITS), 1));
+        } else {
+          int tmp = conv_params->dst[r * conv_params->dst_stride + c];
+          tmp =
+              ROUND_POWER_OF_TWO(tmp + (((uint16_t)src[c]) << FILTER_BITS), 1);
+          conv_params->dst[r * conv_params->dst_stride + c] = tmp;
+        }
+      }
       src += src_stride;
       dst += dst_stride;
     }

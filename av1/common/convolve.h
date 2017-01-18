@@ -26,6 +26,8 @@ typedef enum CONVOLVE_OPT {
 typedef struct ConvolveParams {
   int ref;
   CONVOLVE_OPT round;
+  uint16_t *dst;
+  int dst_stride;
 } ConvolveParams;
 
 static INLINE ConvolveParams get_conv_params(int ref) {
