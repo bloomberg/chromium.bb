@@ -7,6 +7,7 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserContext.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PtrUtil.h"
@@ -14,84 +15,7 @@
 
 namespace blink {
 
-static void recordSelectorStats(const CSSParserContext* context,
-                                const CSSSelectorList& selectorList) {
-  if (!context->isUseCounterRecordingEnabled())
-    return;
-
-  for (const CSSSelector* selector = selectorList.first(); selector;
-       selector = CSSSelectorList::next(*selector)) {
-    for (const CSSSelector* current = selector; current;
-         current = current->tagHistory()) {
-      UseCounter::Feature feature = UseCounter::NumberOfFeatures;
-      switch (current->getPseudoType()) {
-        case CSSSelector::PseudoAny:
-          feature = UseCounter::CSSSelectorPseudoAny;
-          break;
-        case CSSSelector::PseudoUnresolved:
-          feature = UseCounter::CSSSelectorPseudoUnresolved;
-          break;
-        case CSSSelector::PseudoDefined:
-          feature = UseCounter::CSSSelectorPseudoDefined;
-          break;
-        case CSSSelector::PseudoSlotted:
-          feature = UseCounter::CSSSelectorPseudoSlotted;
-          break;
-        case CSSSelector::PseudoContent:
-          feature = UseCounter::CSSSelectorPseudoContent;
-          break;
-        case CSSSelector::PseudoHost:
-          feature = UseCounter::CSSSelectorPseudoHost;
-          break;
-        case CSSSelector::PseudoHostContext:
-          feature = UseCounter::CSSSelectorPseudoHostContext;
-          break;
-        case CSSSelector::PseudoFullScreenAncestor:
-          feature = UseCounter::CSSSelectorPseudoFullScreenAncestor;
-          break;
-        case CSSSelector::PseudoFullScreen:
-          feature = UseCounter::CSSSelectorPseudoFullScreen;
-          break;
-        case CSSSelector::PseudoListBox:
-          if (context->mode() != UASheetMode)
-            feature = UseCounter::CSSSelectorInternalPseudoListBox;
-          break;
-        case CSSSelector::PseudoWebKitCustomElement:
-          if (context->mode() != UASheetMode) {
-            if (current->value() == "-internal-media-controls-cast-button")
-              feature = UseCounter::CSSSelectorInternalMediaControlsCastButton;
-            else if (current->value() ==
-                     "-internal-media-controls-overlay-cast-button")
-              feature =
-                  UseCounter::CSSSelectorInternalMediaControlsOverlayCastButton;
-          }
-          break;
-        case CSSSelector::PseudoSpatialNavigationFocus:
-          if (context->mode() != UASheetMode)
-            feature =
-                UseCounter::CSSSelectorInternalPseudoSpatialNavigationFocus;
-          break;
-        case CSSSelector::PseudoReadOnly:
-          if (context->mode() != UASheetMode)
-            feature = UseCounter::CSSSelectorPseudoReadOnly;
-          break;
-        case CSSSelector::PseudoReadWrite:
-          if (context->mode() != UASheetMode)
-            feature = UseCounter::CSSSelectorPseudoReadWrite;
-          break;
-        default:
-          break;
-      }
-      if (feature != UseCounter::NumberOfFeatures)
-        context->useCounter()->count(feature);
-      if (current->relation() == CSSSelector::IndirectAdjacent)
-        context->useCounter()->count(UseCounter::CSSSelectorIndirectAdjacent);
-      if (current->selectorList())
-        recordSelectorStats(context, *current->selectorList());
-    }
-  }
-}
-
+// static
 CSSSelectorList CSSSelectorParser::parseSelector(
     CSSParserTokenRange range,
     const CSSParserContext* context,
@@ -102,7 +26,7 @@ CSSSelectorList CSSSelectorParser::parseSelector(
   if (!range.atEnd())
     return CSSSelectorList();
 
-  recordSelectorStats(context, result);
+  parser.recordUsageAndDeprecations(result);
   return result;
 }
 
@@ -878,6 +802,115 @@ CSSSelectorParser::splitCompoundAtImplicitShadowCrossingCombinator(
           : CSSSelector::ShadowPseudo,
       std::move(compoundSelector));
   return secondCompound;
+}
+
+void CSSSelectorParser::recordUsageAndDeprecations(
+    const CSSSelectorList& selectorList) {
+  if (!m_context->useCounter())
+    return;
+
+  for (const CSSSelector* selector = selectorList.first(); selector;
+       selector = CSSSelectorList::next(*selector)) {
+    for (const CSSSelector* current = selector; current;
+         current = current->tagHistory()) {
+      UseCounter::Feature feature = UseCounter::NumberOfFeatures;
+      switch (current->getPseudoType()) {
+        case CSSSelector::PseudoAny:
+          feature = UseCounter::CSSSelectorPseudoAny;
+          break;
+        case CSSSelector::PseudoUnresolved:
+          feature = UseCounter::CSSSelectorPseudoUnresolved;
+          break;
+        case CSSSelector::PseudoDefined:
+          feature = UseCounter::CSSSelectorPseudoDefined;
+          break;
+        case CSSSelector::PseudoSlotted:
+          feature = UseCounter::CSSSelectorPseudoSlotted;
+          break;
+        case CSSSelector::PseudoContent:
+          feature = UseCounter::CSSSelectorPseudoContent;
+          break;
+        case CSSSelector::PseudoHost:
+          feature = UseCounter::CSSSelectorPseudoHost;
+          break;
+        case CSSSelector::PseudoHostContext:
+          feature = UseCounter::CSSSelectorPseudoHostContext;
+          break;
+        case CSSSelector::PseudoFullScreenAncestor:
+          feature = UseCounter::CSSSelectorPseudoFullScreenAncestor;
+          break;
+        case CSSSelector::PseudoFullScreen:
+          feature = UseCounter::CSSSelectorPseudoFullScreen;
+          break;
+        case CSSSelector::PseudoListBox:
+          if (m_context->mode() != UASheetMode)
+            feature = UseCounter::CSSSelectorInternalPseudoListBox;
+          break;
+        case CSSSelector::PseudoWebKitCustomElement:
+          if (m_context->mode() != UASheetMode) {
+            if (current->value() == "-internal-media-controls-cast-button") {
+              feature = UseCounter::CSSSelectorInternalMediaControlsCastButton;
+            } else if (current->value() ==
+                       "-internal-media-controls-overlay-cast-button") {
+              feature =
+                  UseCounter::CSSSelectorInternalMediaControlsOverlayCastButton;
+            } else if (current->value() ==
+                       "-internal-media-controls-text-track-list") {
+              feature =
+                  UseCounter::CSSSelectorInternalMediaControlsTextTrackList;
+            } else if (current->value() ==
+                       "-internal-media-controls-text-track-list-item") {
+              feature =
+                  UseCounter::CSSSelectorInternalMediaControlsTextTrackListItem;
+            } else if (current->value() ==
+                       "-internal-media-controls-text-track-list-item-input") {
+              feature = UseCounter::
+                  CSSSelectorInternalMediaControlsTextTrackListItemInput;
+            } else if (current->value() ==
+                       "-internal-media-controls-text-track-list-kind-"
+                       "captions") {
+              feature = UseCounter::
+                  CSSSelectorInternalMediaControlsTextTrackListKindCaptions;
+            } else if (current->value() ==
+                       "-internal-media-controls-text-track-list-kind-"
+                       "subtitles") {
+              feature = UseCounter::
+                  CSSSelectorInternalMediaControlsTextTrackListKindSubtitles;
+            }
+          }
+          break;
+        case CSSSelector::PseudoSpatialNavigationFocus:
+          if (m_context->mode() != UASheetMode) {
+            feature =
+                UseCounter::CSSSelectorInternalPseudoSpatialNavigationFocus;
+          }
+          break;
+        case CSSSelector::PseudoReadOnly:
+          if (m_context->mode() != UASheetMode)
+            feature = UseCounter::CSSSelectorPseudoReadOnly;
+          break;
+        case CSSSelector::PseudoReadWrite:
+          if (m_context->mode() != UASheetMode)
+            feature = UseCounter::CSSSelectorPseudoReadWrite;
+          break;
+        default:
+          break;
+      }
+      if (feature != UseCounter::NumberOfFeatures) {
+        if (!Deprecation::deprecationMessage(feature).isEmpty() &&
+            m_styleSheet->anyOwnerDocument()) {
+          Deprecation::countDeprecation(*m_styleSheet->anyOwnerDocument(),
+                                        feature);
+        } else {
+          m_context->useCounter()->count(feature);
+        }
+      }
+      if (current->relation() == CSSSelector::IndirectAdjacent)
+        m_context->useCounter()->count(UseCounter::CSSSelectorIndirectAdjacent);
+      if (current->selectorList())
+        recordUsageAndDeprecations(*current->selectorList());
+    }
+  }
 }
 
 }  // namespace blink

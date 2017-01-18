@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<title>Test that -internal-media-controls-* deprecated selectors throw a warning</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
+video::-internal-media-controls-cast-button,
+video::-internal-media-controls-overlay-cast-button,
+video::-internal-media-controls-text-track-list,
+video::-internal-media-controls-text-track-list-item,
+video::-internal-media-controls-text-track-list-item-input,
+video::-internal-media-controls-text-track-list-kind-captions,
+video::-internal-media-controls-text-track-list-kind-subtitles {
+  background-color: blue;
+}
+</style>
+<video controls></video>
+<script>
+test(() => {
+  // Doing nothing, we just want to check the warnings.
+});
+</script>

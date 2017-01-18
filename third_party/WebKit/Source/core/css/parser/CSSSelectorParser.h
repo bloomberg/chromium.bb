@@ -69,6 +69,7 @@ class CORE_EXPORT CSSSelectorParser {
   static std::unique_ptr<CSSParserSelector>
   splitCompoundAtImplicitShadowCrossingCombinator(
       std::unique_ptr<CSSParserSelector> compoundSelector);
+  void recordUsageAndDeprecations(const CSSSelectorList&);
 
   Member<const CSSParserContext> m_context;
   Member<StyleSheetContents> m_styleSheet;  // FIXME: Should be const
