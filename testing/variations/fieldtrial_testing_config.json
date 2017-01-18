@@ -385,9 +385,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Prefetch",
+                    "name": "Brotli",
                     "params": {
-                        "exp": "prefetch"
+                        "exp": "allow_brotli"
                     }
                 },
                 {
