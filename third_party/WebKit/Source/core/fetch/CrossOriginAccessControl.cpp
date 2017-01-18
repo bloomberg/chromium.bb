@@ -87,8 +87,7 @@ static AtomicString createAccessControlRequestHeadersHeader(
 }
 
 ResourceRequest createAccessControlPreflightRequest(
-    const ResourceRequest& request,
-    const SecurityOrigin* securityOrigin) {
+    const ResourceRequest& request) {
   const KURL& requestURL = request.url();
 
   DCHECK(requestURL.user().isEmpty());

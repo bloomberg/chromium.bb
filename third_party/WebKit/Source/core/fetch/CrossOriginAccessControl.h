@@ -142,8 +142,7 @@ class CrossOriginAccessControl {
 CORE_EXPORT bool isOnAccessControlResponseHeaderWhitelist(const String&);
 
 CORE_EXPORT ResourceRequest
-createAccessControlPreflightRequest(const ResourceRequest&,
-                                    const SecurityOrigin*);
+createAccessControlPreflightRequest(const ResourceRequest&);
 
 CORE_EXPORT void parseAccessControlExposeHeadersAllowList(
     const String& headerValue,

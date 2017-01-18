@@ -14,16 +14,7 @@ namespace blink {
 
 namespace {
 
-class CreateAccessControlPreflightRequestTest : public ::testing::Test {
- protected:
-  virtual void SetUp() {
-    m_securityOrigin = SecurityOrigin::createFromString("http://example.com");
-  }
-
-  RefPtr<SecurityOrigin> m_securityOrigin;
-};
-
-TEST_F(CreateAccessControlPreflightRequestTest, LexicographicalOrder) {
+TEST(CreateAccessControlPreflightRequestTest, LexicographicalOrder) {
   ResourceRequest request;
   request.addHTTPHeaderField("Orange", "Orange");
   request.addHTTPHeaderField("Apple", "Red");
@@ -31,22 +22,20 @@ TEST_F(CreateAccessControlPreflightRequestTest, LexicographicalOrder) {
   request.addHTTPHeaderField("Content-Type", "application/octet-stream");
   request.addHTTPHeaderField("Strawberry", "Red");
 
-  ResourceRequest preflight =
-      createAccessControlPreflightRequest(request, m_securityOrigin.get());
+  ResourceRequest preflight = createAccessControlPreflightRequest(request);
 
   EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry",
             preflight.httpHeaderField("Access-Control-Request-Headers"));
 }
 
-TEST_F(CreateAccessControlPreflightRequestTest, ExcludeSimpleHeaders) {
+TEST(CreateAccessControlPreflightRequestTest, ExcludeSimpleHeaders) {
   ResourceRequest request;
   request.addHTTPHeaderField("Accept", "everything");
   request.addHTTPHeaderField("Accept-Language", "everything");
   request.addHTTPHeaderField("Content-Language", "everything");
   request.addHTTPHeaderField("Save-Data", "on");
 
-  ResourceRequest preflight =
-      createAccessControlPreflightRequest(request, m_securityOrigin.get());
+  ResourceRequest preflight = createAccessControlPreflightRequest(request);
 
   // Do not emit empty-valued headers; an empty list of non-"CORS safelisted"
   // request headers should cause "Access-Control-Request-Headers:" to be
@@ -55,37 +44,33 @@ TEST_F(CreateAccessControlPreflightRequestTest, ExcludeSimpleHeaders) {
             preflight.httpHeaderField("Access-Control-Request-Headers"));
 }
 
-TEST_F(CreateAccessControlPreflightRequestTest,
-       ExcludeSimpleContentTypeHeader) {
+TEST(CreateAccessControlPreflightRequestTest, ExcludeSimpleContentTypeHeader) {
   ResourceRequest request;
   request.addHTTPHeaderField("Content-Type", "text/plain");
 
-  ResourceRequest preflight =
-      createAccessControlPreflightRequest(request, m_securityOrigin.get());
+  ResourceRequest preflight = createAccessControlPreflightRequest(request);
 
   // Empty list also; see comment in test above.
   EXPECT_EQ(nullAtom,
             preflight.httpHeaderField("Access-Control-Request-Headers"));
 }
 
-TEST_F(CreateAccessControlPreflightRequestTest, IncludeNonSimpleHeader) {
+TEST(CreateAccessControlPreflightRequestTest, IncludeNonSimpleHeader) {
   ResourceRequest request;
   request.addHTTPHeaderField("X-Custom-Header", "foobar");
 
-  ResourceRequest preflight =
-      createAccessControlPreflightRequest(request, m_securityOrigin.get());
+  ResourceRequest preflight = createAccessControlPreflightRequest(request);
 
   EXPECT_EQ("x-custom-header",
             preflight.httpHeaderField("Access-Control-Request-Headers"));
 }
 
-TEST_F(CreateAccessControlPreflightRequestTest,
-       IncludeNonSimpleContentTypeHeader) {
+TEST(CreateAccessControlPreflightRequestTest,
+     IncludeNonSimpleContentTypeHeader) {
   ResourceRequest request;
   request.addHTTPHeaderField("Content-Type", "application/octet-stream");
 
-  ResourceRequest preflight =
-      createAccessControlPreflightRequest(request, m_securityOrigin.get());
+  ResourceRequest preflight = createAccessControlPreflightRequest(request);
 
   EXPECT_EQ("content-type",
             preflight.httpHeaderField("Access-Control-Request-Headers"));
