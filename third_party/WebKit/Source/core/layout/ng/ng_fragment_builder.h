@@ -81,6 +81,12 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder& AddOutOfFlowDescendant(NGBlockNode*,
                                             const NGStaticPosition&);
 
+  void SetBreakToken(NGBreakToken* token) {
+    DCHECK(!break_token_);
+    break_token_ = token;
+  }
+  bool HasBreakToken() const { return break_token_; }
+
   // Sets MarginStrut for the resultant fragment.
   NGFragmentBuilder& SetMarginStrutBlockStart(const NGMarginStrut& from);
   NGFragmentBuilder& SetMarginStrutBlockEnd(const NGMarginStrut& from);
@@ -132,6 +138,8 @@ class CORE_EXPORT NGFragmentBuilder final
 
   WeakBoxList out_of_flow_descendants_;
   Vector<NGStaticPosition> out_of_flow_positions_;
+
+  Member<NGBreakToken> break_token_;
 };
 
 }  // namespace blink

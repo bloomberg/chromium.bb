@@ -4,12 +4,15 @@
 
 #include "core/layout/ng/ng_constraint_space_builder.h"
 
+#include "core/layout/ng/ng_length_utils.h"
+
 namespace blink {
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
     const NGConstraintSpace* parent_space)
     : available_size_(parent_space->AvailableSize()),
       percentage_resolution_size_(parent_space->PercentageResolutionSize()),
+      fragmentainer_space_available_(NGSizeIndefinite),
       writing_mode_(parent_space->WritingMode()),
       parent_writing_mode_(writing_mode_),
       is_fixed_size_inline_(false),
@@ -17,13 +20,14 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       is_shrink_to_fit_(false),
       is_inline_direction_triggers_scrollbar_(false),
       is_block_direction_triggers_scrollbar_(false),
-      fragmentation_type_(kFragmentNone),
+      fragmentation_type_(parent_space->BlockFragmentationType()),
       is_new_fc_(parent_space->IsNewFormattingContext()),
       text_direction_(static_cast<unsigned>(parent_space->Direction())),
       exclusions_(parent_space->Exclusions()) {}
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
-    : writing_mode_(writing_mode),
+    : fragmentainer_space_available_(NGSizeIndefinite),
+      writing_mode_(writing_mode),
       parent_writing_mode_(writing_mode_),
       is_fixed_size_inline_(false),
       is_fixed_size_block_(false),
@@ -122,7 +126,8 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
         {available_size_.inline_size, available_size_.block_size},
         {percentage_resolution_size_.inline_size,
          percentage_resolution_size_.block_size},
-        is_fixed_size_inline_, is_fixed_size_block_, is_shrink_to_fit_,
+        fragmentainer_space_available_, is_fixed_size_inline_,
+        is_fixed_size_block_, is_shrink_to_fit_,
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
@@ -135,7 +140,8 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
       {available_size_.block_size, available_size_.inline_size},
       {percentage_resolution_size_.block_size,
        percentage_resolution_size_.inline_size},
-      is_fixed_size_block_, is_fixed_size_inline_, is_shrink_to_fit_,
+      fragmentainer_space_available_, is_fixed_size_block_,
+      is_fixed_size_inline_, is_shrink_to_fit_,
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,

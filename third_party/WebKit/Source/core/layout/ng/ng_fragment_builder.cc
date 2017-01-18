@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
@@ -136,6 +137,9 @@ NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox);
   DCHECK_EQ(offsets_.size(), children_.size());
 
+  auto* break_token = break_token_.get();
+  break_token_ = nullptr;
+
   NGPhysicalSize physical_size = size_.ConvertToPhysical(writing_mode_);
   HeapVector<Member<const NGPhysicalFragment>> children;
   children.reserveCapacity(children_.size());
@@ -148,7 +152,8 @@ NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
   }
   return new NGPhysicalBoxFragment(
       physical_size, overflow_.ConvertToPhysical(writing_mode_), children,
-      out_of_flow_descendants_, out_of_flow_positions_, margin_strut_);
+      out_of_flow_descendants_, out_of_flow_positions_, margin_strut_,
+      break_token);
 }
 
 NGPhysicalTextFragment* NGFragmentBuilder::ToTextFragment(NGInlineNode* node,
@@ -167,6 +172,7 @@ DEFINE_TRACE(NGFragmentBuilder) {
   visitor->trace(children_);
   visitor->trace(out_of_flow_descendant_candidates_);
   visitor->trace(out_of_flow_descendants_);
+  visitor->trace(break_token_);
 }
 
 }  // namespace blink

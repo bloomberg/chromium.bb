@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_layout_input_node.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -14,11 +15,11 @@ namespace blink {
 class ComputedStyle;
 class LayoutBox;
 class LayoutObject;
+class NGBreakToken;
 class NGConstraintSpace;
 class NGFragment;
 class NGLayoutAlgorithm;
 class NGLayoutCoordinator;
-class NGPhysicalBoxFragment;
 struct MinAndMaxContentSizes;
 
 // Represents a node to be laid out.
@@ -55,6 +56,12 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void SetNextSibling(NGBlockNode*);
   void SetFirstChild(NGLayoutInputNode*);
 
+  void SetFragment(NGPhysicalBoxFragment* fragment) { fragment_ = fragment; }
+  NGBreakToken* CurrentBreakToken() const;
+  bool IsLayoutFinished() const {
+    return fragment_ && !fragment_->BreakToken();
+  }
+
   DECLARE_VIRTUAL_TRACE();
 
   // Runs layout on layout_box_ and creates a fragment for the resulting
@@ -89,6 +96,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   Member<NGLayoutInputNode> first_child_;
   Member<NGLayoutCoordinator> layout_coordinator_;
   Member<NGLayoutAlgorithm> minmax_algorithm_;
+  // TODO(mstensho): An input node may produce multiple fragments, so this
+  // should probably be renamed to last_fragment_ or something like that, since
+  // the last fragment is all we care about when resuming layout.
   Member<NGPhysicalBoxFragment> fragment_;
 };
 

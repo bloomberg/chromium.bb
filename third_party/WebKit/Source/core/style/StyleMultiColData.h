@@ -25,6 +25,7 @@
 #ifndef StyleMultiColData_h
 #define StyleMultiColData_h
 
+#include "core/CoreExport.h"
 #include "core/style/BorderValue.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "wtf/PassRefPtr.h"
@@ -34,7 +35,7 @@ namespace blink {
 
 // CSS3 Multi Column Layout
 
-class StyleMultiColData : public RefCounted<StyleMultiColData> {
+class CORE_EXPORT StyleMultiColData : public RefCounted<StyleMultiColData> {
  public:
   static PassRefPtr<StyleMultiColData> create() {
     return adoptRef(new StyleMultiColData);

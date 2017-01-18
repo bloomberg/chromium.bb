@@ -203,6 +203,10 @@ void NGBlockNode::SetFirstChild(NGLayoutInputNode* child) {
   first_child_ = child;
 }
 
+NGBreakToken* NGBlockNode::CurrentBreakToken() const {
+  return fragment_ ? fragment_->BreakToken() : nullptr;
+}
+
 DEFINE_TRACE(NGBlockNode) {
   visitor->trace(layout_coordinator_);
   visitor->trace(minmax_algorithm_);

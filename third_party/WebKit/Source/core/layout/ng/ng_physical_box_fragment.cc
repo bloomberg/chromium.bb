@@ -12,12 +12,14 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     HeapVector<Member<const NGPhysicalFragment>>& children,
     HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
     Vector<NGStaticPosition>& out_of_flow_positions,
-    NGMarginStrut margin_strut)
+    NGMarginStrut margin_strut,
+    NGBreakToken* break_token)
     : NGPhysicalFragment(size,
                          overflow,
                          kFragmentBox,
                          out_of_flow_descendants,
-                         out_of_flow_positions),
+                         out_of_flow_positions,
+                         break_token),
       margin_strut_(margin_strut) {
   children_.swap(children);
 }

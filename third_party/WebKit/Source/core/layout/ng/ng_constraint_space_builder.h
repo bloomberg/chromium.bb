@@ -22,6 +22,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
       NGLogicalSize percentage_resolution_size);
 
+  NGConstraintSpaceBuilder& SetFragmentainerSpaceAvailable(LayoutUnit space) {
+    fragmentainer_space_available_ = space;
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetTextDirection(TextDirection);
 
   NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool is_fixed_size_inline);
@@ -52,6 +57,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final
  private:
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
+  LayoutUnit fragmentainer_space_available_;
 
   unsigned writing_mode_ : 2;
   unsigned parent_writing_mode_ : 2;

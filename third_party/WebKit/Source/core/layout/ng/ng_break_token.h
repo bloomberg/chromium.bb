@@ -13,10 +13,20 @@ namespace blink {
 class CORE_EXPORT NGBreakToken
     : public GarbageCollectedFinalized<NGBreakToken> {
  public:
-  NGBreakToken() {}
+  virtual ~NGBreakToken() {}
 
-  DEFINE_INLINE_TRACE() {}
+  enum NGBreakTokenType { kBlockBreakToken, kTextBreakToken };
+  NGBreakTokenType Type() const { return static_cast<NGBreakTokenType>(type_); }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+ protected:
+  NGBreakToken(NGBreakTokenType type) : type_(type) {}
+
+ private:
+  unsigned type_ : 1;
 };
-}
 
-#endif
+}  // namespace blink
+
+#endif  // NGBreakToken_h

@@ -14,7 +14,9 @@
 namespace blink {
 
 class ComputedStyle;
+class NGBlockBreakToken;
 class NGBreakToken;
+class NGColumnMapper;
 class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
 class NGBoxFragment;
@@ -49,6 +51,49 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild() const;
   void FinishCurrentChildLayout(NGFragment* fragment);
   bool LayoutOutOfFlowChild();
+
+  // Proceed to the next sibling that still needs layout.
+  //
+  // @param child_fragment The newly created fragment for the current child.
+  // @return true if we can continue to lay out, or false if we need to abort
+  // due to a fragmentainer break.
+  bool ProceedToNextUnfinishedSibling(NGPhysicalFragment* child_fragment);
+
+  // Set a break token which contains enough information to be able to resume
+  // layout in the next fragmentainer.
+  void SetPendingBreakToken(NGBlockBreakToken*);
+
+  // Check if we have a pending break token set. Once we have set a pending
+  // break token, we cannot set another one. First we need to abort layout in
+  // the current fragmentainer and resume in the next one.
+  bool HasPendingBreakToken() const;
+
+  // Final adjusstments before fragment creation. We need to prevent the
+  // fragment from crossing fragmentainer boundaries, and rather create a break
+  // token if we're out of space.
+  void FinalizeForFragmentation();
+
+  // Return the break token, if any, at which we resumed layout after a
+  // previous break.
+  NGBlockBreakToken* CurrentBlockBreakToken() const;
+
+  // Return the block offset of the previous break, in the fragmented flow
+  // coordinate space, relatively to the start edge of this block.
+  LayoutUnit PreviousBreakOffset() const;
+
+  // Return the offset of the potential next break, in the fragmented flow
+  // coordinate space, relatively to the start edge of this block.
+  LayoutUnit NextBreakOffset() const;
+
+  // Get the amount of block space left in the current fragmentainer for the
+  // child that is about to be laid out.
+  LayoutUnit SpaceAvailableForCurrentChild() const;
+
+  LayoutUnit BorderEdgeForCurrentChild() const {
+    // TODO(mstensho): Need to take care of margin collapsing somehow. We
+    // should at least attempt to estimate what the top margin is going to be.
+    return content_size_;
+  }
 
   // Computes collapsed margins for 2 adjoining blocks and updates the resultant
   // fragment's MarginStrut if needed.
@@ -115,7 +160,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   Member<NGBlockNode> first_child_;
   Member<NGConstraintSpace> constraint_space_;
+
+  // The break token from which we are currently resuming layout.
   Member<NGBreakToken> break_token_;
+
   Member<NGFragmentBuilder> builder_;
   Member<NGConstraintSpaceBuilder> space_builder_;
   Member<NGConstraintSpace> space_for_current_child_;
@@ -127,6 +175,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_candidates_;
   Vector<NGStaticPosition> out_of_flow_candidate_positions_;
   size_t out_of_flow_candidate_positions_index_;
+
+  // Mapper from the fragmented flow coordinate space coordinates to visual
+  // coordinates. Only set on fragmentation context roots, such as multicol
+  // containers. Keeps track of the current fragmentainer.
+  Member<NGColumnMapper> fragmentainer_mapper_;
 
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;

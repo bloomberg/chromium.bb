@@ -61,6 +61,8 @@ class CORE_EXPORT NGPhysicalFragment
     has_been_placed_ = true;
   }
 
+  NGBreakToken* BreakToken() const { return break_token_; }
+
   const HeapLinkedHashSet<WeakMember<NGBlockNode>>& OutOfFlowDescendants()
       const {
     return out_of_flow_descendants_;

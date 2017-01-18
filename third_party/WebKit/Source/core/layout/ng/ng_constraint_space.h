@@ -70,6 +70,12 @@ class CORE_EXPORT NGConstraintSpace final
   // TODO(layout-ng): Set offset via NGConstraintSpacebuilder.
   void SetOffset(const NGLogicalOffset& offset) { offset_ = offset; }
 
+  // Return the block-direction space available in the current fragmentainer.
+  LayoutUnit FragmentainerSpaceAvailable() const {
+    DCHECK(HasBlockFragmentation());
+    return fragmentainer_space_available_;
+  }
+
   // Whether the current constraint space is for the newly established
   // Formatting Context.
   bool IsNewFormattingContext() const { return is_new_fc_; }
@@ -104,6 +110,12 @@ class CORE_EXPORT NGConstraintSpace final
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const;
 
+  // Return true if this contraint space participates in a fragmentation
+  // context.
+  bool HasBlockFragmentation() const {
+    return BlockFragmentationType() != kFragmentNone;
+  }
+
   // Modifies constraint space to account for a placed fragment. Depending on
   // the shape of the fragment this will either modify the inline or block
   // size, or add an exclusion.
@@ -124,6 +136,7 @@ class CORE_EXPORT NGConstraintSpace final
                     TextDirection,
                     NGLogicalSize available_size,
                     NGLogicalSize percentage_resolution_size,
+                    LayoutUnit fragmentainer_space_available,
                     bool is_fixed_size_inline,
                     bool is_fixed_size_block,
                     bool is_shrink_to_fit,
@@ -135,6 +148,8 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
+
+  LayoutUnit fragmentainer_space_available_;
 
   unsigned is_fixed_size_inline_ : 1;
   unsigned is_fixed_size_block_ : 1;

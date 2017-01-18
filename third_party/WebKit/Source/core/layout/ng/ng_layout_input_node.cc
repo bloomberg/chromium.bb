@@ -31,6 +31,9 @@ NGLayoutAlgorithm* NGLayoutInputNode::AlgorithmForInputNode(
     return new NGInlineLayoutAlgorithm(style, child, constraint_space);
   }
   NGBlockNode* child = toNGBlockNode(block->FirstChild());
-  return new NGBlockLayoutAlgorithm(style, child, constraint_space);
+  // TODO(layout-ng): The break token should be passed as an argument to this
+  // method instead of getting it from the NGBlockNode
+  NGBreakToken* token = block->CurrentBreakToken();
+  return new NGBlockLayoutAlgorithm(style, child, constraint_space, token);
 }
 }

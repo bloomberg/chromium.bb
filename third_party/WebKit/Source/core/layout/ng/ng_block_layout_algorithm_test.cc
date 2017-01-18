@@ -847,5 +847,723 @@ TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFit) {
   EXPECT_EQ(LayoutUnit(30), frag->Width());
 }
 
+class FragmentChildIterator
+    : public GarbageCollectedFinalized<FragmentChildIterator> {
+ public:
+  FragmentChildIterator() {}
+  FragmentChildIterator(const NGPhysicalBoxFragment* parent) {
+    SetParent(parent);
+  }
+  void SetParent(const NGPhysicalBoxFragment* parent) {
+    parent_ = parent;
+    index_ = 0;
+  }
+
+  const NGPhysicalBoxFragment* NextChild() {
+    if (!parent_)
+      return nullptr;
+    if (index_ >= parent_->Children().size())
+      return nullptr;
+    while (parent_->Children()[index_]->Type() !=
+           NGPhysicalFragment::kFragmentBox) {
+      ++index_;
+      if (index_ >= parent_->Children().size())
+        return nullptr;
+    }
+    return toNGPhysicalBoxFragment(parent_->Children()[index_++]);
+  }
+
+  DEFINE_INLINE_TRACE() { visitor->trace(parent_); }
+
+ private:
+  Member<const NGPhysicalBoxFragment> parent_;
+  unsigned index_;
+};
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
+//                          width:210px; height:100px;">
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, EmptyMulticol) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(2);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(210, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(210), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  // There should be nothing inside the multicol container.
+  EXPECT_FALSE(FragmentChildIterator(fragment).NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
+//                          width:210px; height:100px;">
+//    <div id="child"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, EmptyBlock) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(2);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(210, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child
+  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
+  NGBlockNode* child = new NGBlockNode(child_style.get());
+
+  parent->SetFirstChild(child);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  EXPECT_EQ(LayoutUnit(210), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  ASSERT_TRUE(fragment);
+  EXPECT_FALSE(iterator.NextChild());
+  iterator.SetParent(fragment);
+
+  // #child fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(100), fragment->Width());
+  EXPECT_EQ(LayoutUnit(), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
+//                          width:310px; height:100px;">
+//    <div id="child" style="width:60%; height:100px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, BlockInOneColumn) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(2);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(310, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child
+  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
+  child_style->setWidth(Length(60, Percent));
+  child_style->setHeight(Length(100, Fixed));
+  NGBlockNode* child = new NGBlockNode(child_style.get());
+
+  parent->SetFirstChild(child);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(310), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+  iterator.SetParent(fragment);
+
+  // #child fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(90), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
+//                          width:210px; height:100px;">
+//    <div id="child" style="width:75%; height:150px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, BlockInTwoColumns) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(2);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(210, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child
+  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
+  child_style->setWidth(Length(75, Percent));
+  child_style->setHeight(Length(150, Fixed));
+  NGBlockNode* child = new NGBlockNode(child_style.get());
+
+  parent->SetFirstChild(child);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(210), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
+  // #child fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+
+  // #child fragment in second column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(110), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(50), fragment->Height());
+  EXPECT_EQ(0U, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
+//                          width:320px; height:100px;">
+//    <div id="child" style="width:75%; height:250px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, BlockInThreeColumns) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(3);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(320, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child
+  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
+  child_style->setWidth(Length(75, Percent));
+  child_style->setHeight(Length(250, Fixed));
+  NGBlockNode* child = new NGBlockNode(child_style.get());
+
+  parent->SetFirstChild(child);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(320), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
+  // #child fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+
+  // #child fragment in second column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(110), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0U, fragment->Children().size());
+
+  // #child fragment in third column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(220), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(50), fragment->Height());
+  EXPECT_EQ(0U, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:2; column-fill:auto; column-gap:10px;
+//                          width:210px; height:100px;">
+//    <div id="child" style="width:1px; height:250px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, ActualColumnCountGreaterThanSpecified) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(2);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(210, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child
+  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
+  child_style->setWidth(Length(1, Fixed));
+  child_style->setHeight(Length(250, Fixed));
+  NGBlockNode* child = new NGBlockNode(child_style.get());
+
+  parent->SetFirstChild(child);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(210), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
+  // #child fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(1), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+
+  // #child fragment in second column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(110), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(1), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0U, fragment->Children().size());
+
+  // #child fragment in third column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(220), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(1), fragment->Width());
+  EXPECT_EQ(LayoutUnit(50), fragment->Height());
+  EXPECT_EQ(0U, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
+//                          width:320px; height:100px;">
+//    <div id="child1" style="width:75%; height:60px;"></div>
+//    <div id="child2" style="width:85%; height:60px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, TwoBlocksInTwoColumns) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(3);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(320, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child1
+  RefPtr<ComputedStyle> child1_style = ComputedStyle::create();
+  child1_style->setWidth(Length(75, Percent));
+  child1_style->setHeight(Length(60, Fixed));
+  NGBlockNode* child1 = new NGBlockNode(child1_style.get());
+
+  // child2
+  RefPtr<ComputedStyle> child2_style = ComputedStyle::create();
+  child2_style->setWidth(Length(85, Percent));
+  child2_style->setHeight(Length(60, Fixed));
+  NGBlockNode* child2 = new NGBlockNode(child2_style.get());
+
+  parent->SetFirstChild(child1);
+  child1->SetNextSibling(child2);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(320), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
+  // #child1 fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(60), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  // #child2 fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(60), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(85), fragment->Width());
+  EXPECT_EQ(LayoutUnit(40), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+
+  // #child2 fragment in second column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(110), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(85), fragment->Width());
+  EXPECT_EQ(LayoutUnit(20), fragment->Height());
+  EXPECT_EQ(0U, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
+//                          width:320px; height:100px;">
+//    <div id="child1" style="width:75%; height:60px;">
+//      <div id="grandchild1" style="width:50px; height:120px;"></div>
+//      <div id="grandchild2" style="width:40px; height:20px;"></div>
+//    </div>
+//    <div id="child2" style="width:85%; height:10px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, OverflowedBlock) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(3);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(320, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child1
+  RefPtr<ComputedStyle> child1_style = ComputedStyle::create();
+  child1_style->setWidth(Length(75, Percent));
+  child1_style->setHeight(Length(60, Fixed));
+  NGBlockNode* child1 = new NGBlockNode(child1_style.get());
+
+  // grandchild1
+  RefPtr<ComputedStyle> grandchild1_style = ComputedStyle::create();
+  grandchild1_style->setWidth(Length(50, Fixed));
+  grandchild1_style->setHeight(Length(120, Fixed));
+  NGBlockNode* grandchild1 = new NGBlockNode(grandchild1_style.get());
+
+  // grandchild2
+  RefPtr<ComputedStyle> grandchild2_style = ComputedStyle::create();
+  grandchild2_style->setWidth(Length(40, Fixed));
+  grandchild2_style->setHeight(Length(20, Fixed));
+  NGBlockNode* grandchild2 = new NGBlockNode(grandchild2_style.get());
+
+  // child2
+  RefPtr<ComputedStyle> child2_style = ComputedStyle::create();
+  child2_style->setWidth(Length(85, Percent));
+  child2_style->setHeight(Length(10, Fixed));
+  NGBlockNode* child2 = new NGBlockNode(child2_style.get());
+
+  parent->SetFirstChild(child1);
+  child1->SetNextSibling(child2);
+  child1->SetFirstChild(grandchild1);
+  grandchild1->SetNextSibling(grandchild2);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(320), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
+  // #child1 fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(60), fragment->Height());
+  FragmentChildIterator grandchild_iterator(fragment);
+  // #grandchild1 fragment in first column
+  fragment = grandchild_iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(50), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(grandchild_iterator.NextChild());
+  // #child2 fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(60), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(85), fragment->Width());
+  EXPECT_EQ(LayoutUnit(10), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+
+  // #child1 fragment in second column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(110), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(), fragment->Height());
+  grandchild_iterator.SetParent(fragment);
+  // #grandchild1 fragment in second column
+  fragment = grandchild_iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(50), fragment->Width());
+  EXPECT_EQ(LayoutUnit(20), fragment->Height());
+  // #grandchild2 fragment in second column
+  fragment = grandchild_iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(20), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(40), fragment->Width());
+  EXPECT_EQ(LayoutUnit(20), fragment->Height());
+  EXPECT_FALSE(grandchild_iterator.NextChild());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
+//                          width:320px; height:100px;">
+//    <div id="child" style="float:left; width:75%; height:100px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, FloatInOneColumn) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(3);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(320, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child
+  RefPtr<ComputedStyle> child_style = ComputedStyle::create();
+  child_style->setFloating(EFloat::kLeft);
+  child_style->setWidth(Length(75, Percent));
+  child_style->setHeight(Length(100, Fixed));
+  NGBlockNode* child = new NGBlockNode(child_style.get());
+
+  parent->SetFirstChild(child);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(320), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
+  // #child fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(75), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
+//                          width:320px; height:100px;">
+//    <div id="child1" style="float:left; width:15%; height:100px;"></div>
+//    <div id="child2" style="float:right; width:16%; height:100px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, TwoFloatsInOneColumn) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(3);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(320, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child1
+  RefPtr<ComputedStyle> child1_style = ComputedStyle::create();
+  child1_style->setFloating(EFloat::kLeft);
+  child1_style->setWidth(Length(15, Percent));
+  child1_style->setHeight(Length(100, Fixed));
+  NGBlockNode* child1 = new NGBlockNode(child1_style.get());
+
+  // child2
+  RefPtr<ComputedStyle> child2_style = ComputedStyle::create();
+  child2_style->setFloating(EFloat::kRight);
+  child2_style->setWidth(Length(16, Percent));
+  child2_style->setHeight(Length(100, Fixed));
+  NGBlockNode* child2 = new NGBlockNode(child2_style.get());
+
+  parent->SetFirstChild(child1);
+  child1->SetNextSibling(child2);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(320), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
+  // #child1 fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(15), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  // #child2 fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(84), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(16), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
+// Test case's HTML representation:
+//  <div id="parent" style="columns:3; column-fill:auto; column-gap:10px;
+//                          width:320px; height:100px;">
+//    <div id="child1" style="float:left; width:15%; height:150px;"></div>
+//    <div id="child2" style="float:right; width:16%; height:150px;"></div>
+//  </div>
+TEST_F(NGBlockLayoutAlgorithmTest, TwoFloatsInTwoColumns) {
+  // parent
+  RefPtr<ComputedStyle> parent_style = ComputedStyle::create();
+  parent_style->setColumnCount(3);
+  parent_style->setColumnFill(ColumnFillAuto);
+  parent_style->setColumnGap(10);
+  parent_style->setHeight(Length(100, Fixed));
+  parent_style->setWidth(Length(320, Fixed));
+  NGBlockNode* parent = new NGBlockNode(parent_style.get());
+
+  // child1
+  RefPtr<ComputedStyle> child1_style = ComputedStyle::create();
+  child1_style->setFloating(EFloat::kLeft);
+  child1_style->setWidth(Length(15, Percent));
+  child1_style->setHeight(Length(150, Fixed));
+  NGBlockNode* child1 = new NGBlockNode(child1_style.get());
+
+  // child2
+  RefPtr<ComputedStyle> child2_style = ComputedStyle::create();
+  child2_style->setFloating(EFloat::kRight);
+  child2_style->setWidth(Length(16, Percent));
+  child2_style->setHeight(Length(150, Fixed));
+  NGBlockNode* child2 = new NGBlockNode(child2_style.get());
+
+  parent->SetFirstChild(child1);
+  child1->SetNextSibling(child2);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  const auto* fragment = RunBlockLayoutAlgorithm(space, parent);
+
+  FragmentChildIterator iterator(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(320), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
+  // #child1 fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(15), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  // #child2 fragment in first column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(84), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(16), fragment->Width());
+  EXPECT_EQ(LayoutUnit(100), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+
+  // #child1 fragment in second column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(110), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(15), fragment->Width());
+  EXPECT_EQ(LayoutUnit(50), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  // #child2 fragment in second column
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(LayoutUnit(194), fragment->LeftOffset());
+  EXPECT_EQ(LayoutUnit(), fragment->TopOffset());
+  EXPECT_EQ(LayoutUnit(16), fragment->Width());
+  EXPECT_EQ(LayoutUnit(50), fragment->Height());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+}
+
 }  // namespace
 }  // namespace blink

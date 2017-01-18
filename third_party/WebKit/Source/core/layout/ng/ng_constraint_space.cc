@@ -16,6 +16,7 @@ NGConstraintSpace::NGConstraintSpace(
     TextDirection direction,
     NGLogicalSize available_size,
     NGLogicalSize percentage_resolution_size,
+    LayoutUnit fragmentainer_space_available,
     bool is_fixed_size_inline,
     bool is_fixed_size_block,
     bool is_shrink_to_fit,
@@ -26,6 +27,7 @@ NGConstraintSpace::NGConstraintSpace(
     const std::shared_ptr<NGExclusions>& exclusions_)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
+      fragmentainer_space_available_(fragmentainer_space_available),
       is_fixed_size_inline_(is_fixed_size_inline),
       is_fixed_size_block_(is_fixed_size_block),
       is_shrink_to_fit_(is_shrink_to_fit),

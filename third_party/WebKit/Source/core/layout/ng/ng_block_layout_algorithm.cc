@@ -4,8 +4,9 @@
 
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
+#include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_box_fragment.h"
-#include "core/layout/ng/ng_break_token.h"
+#include "core/layout/ng/ng_column_mapper.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment.h"
@@ -274,20 +275,30 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
         space_builder_->SetFragmentationType(kFragmentColumn);
         adjusted_inline_size =
             ResolveUsedColumnInlineSize(adjusted_inline_size, Style());
+        LayoutUnit inline_progression =
+            adjusted_inline_size + ResolveUsedColumnGap(Style());
+        fragmentainer_mapper_ =
+            new NGColumnMapper(inline_progression, adjusted_block_size);
       }
       space_builder_->SetAvailableSize(
           NGLogicalSize(adjusted_inline_size, adjusted_block_size));
       space_builder_->SetPercentageResolutionSize(
           NGLogicalSize(adjusted_inline_size, adjusted_block_size));
 
-      content_size_ = border_and_padding_.block_start;
-
       builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
       builder_->SetDirection(constraint_space_->Direction());
       builder_->SetWritingMode(constraint_space_->WritingMode());
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
 
-      current_child_ = first_child_;
+      if (NGBlockBreakToken* token = CurrentBlockBreakToken()) {
+        // Resume after a previous break.
+        content_size_ = token->BreakOffset();
+        current_child_ = token->InputNode();
+      } else {
+        content_size_ = border_and_padding_.block_start;
+        current_child_ = first_child_;
+      }
+
       layout_state_ = kStatePrepareForChildLayout;
       return kNotFinished;
     }
@@ -300,6 +311,8 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
           current_child_ = current_child_->NextSibling();
           return kNotFinished;
         }
+        DCHECK(!ConstraintSpace().HasBlockFragmentation() ||
+               SpaceAvailableForCurrentChild() > LayoutUnit());
         space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
         *algorithm_out = NGLayoutInputNode::AlgorithmForInputNode(
             current_child_, space_for_current_child_);
@@ -336,8 +349,11 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       FinishCurrentChildLayout(new NGBoxFragment(
           ConstraintSpace().WritingMode(), ConstraintSpace().Direction(),
           toNGPhysicalBoxFragment(child_fragment)));
-      current_child_ = current_child_->NextSibling();
-      layout_state_ = kStatePrepareForChildLayout;
+
+      if (ProceedToNextUnfinishedSibling(child_fragment))
+        layout_state_ = kStatePrepareForChildLayout;
+      else
+        layout_state_ = kStateFinalize;
       return kNotFinished;
     }
     case kStateOutOfFlowLayout:
@@ -347,6 +363,10 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
     case kStateFinalize: {
       builder_->SetInlineOverflow(max_inline_size_)
           .SetBlockOverflow(content_size_);
+
+      if (ConstraintSpace().HasBlockFragmentation())
+        FinalizeForFragmentation();
+
       *fragment_out = builder_->ToBoxFragment();
       layout_state_ = kStateInit;
       return kNewFragment;
@@ -370,6 +390,10 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(NGFragment* fragment) {
                      &child_margins);
     fragment_offset = PositionFragment(*fragment, child_margins);
   }
+  if (fragmentainer_mapper_)
+    fragmentainer_mapper_->ToVisualOffset(fragment_offset);
+  else
+    fragment_offset.block_offset -= PreviousBreakOffset();
   builder_->AddChild(fragment, fragment_offset);
 }
 
@@ -399,6 +423,146 @@ bool NGBlockLayoutAlgorithm::LayoutOutOfFlowChild() {
     current_child_ = nullptr;
   }
   return false;
+}
+
+bool NGBlockLayoutAlgorithm::ProceedToNextUnfinishedSibling(
+    NGPhysicalFragment* child_fragment) {
+  DCHECK(current_child_);
+  NGBlockNode* finished_child = current_child_;
+  current_child_ = current_child_->NextSibling();
+  if (!ConstraintSpace().HasBlockFragmentation() && !fragmentainer_mapper_)
+    return true;
+  // If we're resuming layout after a fragmentainer break, we need to skip
+  // siblings that we're done with. We may have been able to fully lay out some
+  // node(s) preceding a node that we had to break inside (and therefore were
+  // not able to fully lay out). This happens when we have parallel flows [1],
+  // which are caused by floats, overflow, etc.
+  //
+  // [1] https://drafts.csswg.org/css-break/#parallel-flows
+  if (CurrentBlockBreakToken()) {
+    // TODO(layout-ng): Figure out if we need a better way to determine if the
+    // node is finished. Maybe something to encode in a break token?
+    while (current_child_ && current_child_->IsLayoutFinished())
+      current_child_ = current_child_->NextSibling();
+  }
+  LayoutUnit break_offset = NextBreakOffset();
+  bool is_out_of_space = content_size_ - PreviousBreakOffset() >= break_offset;
+  if (!HasPendingBreakToken()) {
+    bool child_broke = child_fragment->BreakToken();
+    // This block needs to break if the child broke, or if we're out of space
+    // and there's more content waiting to be laid out. Otherwise, just bail
+    // now.
+    if (!child_broke && (!is_out_of_space || !current_child_))
+      return true;
+    // Prepare a break token for this block, so that we know where to resume
+    // when the time comes for that. We may not be able to abort layout of this
+    // block right away, due to the posibility of parallel flows. We can only
+    // abort when we're out of space, or when there are no siblings left to
+    // process.
+    NGBlockBreakToken* token;
+    if (child_broke) {
+      // The child we just laid out was the first one to break. So that is
+      // where we need to resume.
+      token = new NGBlockBreakToken(finished_child, break_offset);
+    } else {
+      // Resume layout at the next sibling that needs layout.
+      DCHECK(current_child_);
+      token = new NGBlockBreakToken(current_child_, break_offset);
+    }
+    SetPendingBreakToken(token);
+  }
+
+  if (!fragmentainer_mapper_) {
+    if (!is_out_of_space)
+      return true;
+    // We have run out of space in this flow, so there's no work left to do for
+    // this block in this fragmentainer. We should finalize the fragment and get
+    // back to the remaining content when laying out the next fragmentainer(s).
+    return false;
+  }
+
+  if (is_out_of_space || !current_child_) {
+    NGBlockBreakToken* token = fragmentainer_mapper_->Advance();
+    DCHECK(token || !is_out_of_space);
+    if (token) {
+      break_token_ = token;
+      content_size_ = token->BreakOffset();
+      current_child_ = token->InputNode();
+    }
+  }
+  return true;
+}
+
+void NGBlockLayoutAlgorithm::SetPendingBreakToken(NGBlockBreakToken* token) {
+  if (fragmentainer_mapper_)
+    fragmentainer_mapper_->SetBreakToken(token);
+  else
+    builder_->SetBreakToken(token);
+}
+
+bool NGBlockLayoutAlgorithm::HasPendingBreakToken() const {
+  if (fragmentainer_mapper_)
+    return fragmentainer_mapper_->HasBreakToken();
+  return builder_->HasBreakToken();
+}
+
+void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
+  LayoutUnit block_size =
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), content_size_);
+  LayoutUnit previous_break_offset = PreviousBreakOffset();
+  block_size -= previous_break_offset;
+  block_size = std::max(LayoutUnit(), block_size);
+  LayoutUnit space_left = ConstraintSpace().FragmentainerSpaceAvailable();
+  DCHECK_GE(space_left, LayoutUnit());
+  if (builder_->HasBreakToken()) {
+    // A break token is ready, which means that we're going to break
+    // before or inside a block-level child.
+    builder_->SetBlockSize(std::min(space_left, block_size));
+    builder_->SetBlockOverflow(space_left);
+    return;
+  }
+  if (block_size > space_left) {
+    // Need a break inside this block.
+    builder_->SetBreakToken(new NGBlockBreakToken(nullptr, NextBreakOffset()));
+    builder_->SetBlockSize(space_left);
+    builder_->SetBlockOverflow(space_left);
+    return;
+  }
+  // The end of the block fits in the current fragmentainer.
+  builder_->SetBlockSize(block_size);
+  builder_->SetBlockOverflow(content_size_ - previous_break_offset);
+}
+
+NGBlockBreakToken* NGBlockLayoutAlgorithm::CurrentBlockBreakToken() const {
+  NGBreakToken* token = break_token_;
+  if (!token || token->Type() != NGBreakToken::kBlockBreakToken)
+    return nullptr;
+  return toNGBlockBreakToken(token);
+}
+
+LayoutUnit NGBlockLayoutAlgorithm::PreviousBreakOffset() const {
+  const NGBlockBreakToken* token = CurrentBlockBreakToken();
+  return token ? token->BreakOffset() : LayoutUnit();
+}
+
+LayoutUnit NGBlockLayoutAlgorithm::NextBreakOffset() const {
+  if (fragmentainer_mapper_)
+    return fragmentainer_mapper_->NextBreakOffset();
+  DCHECK(ConstraintSpace().HasBlockFragmentation());
+  return PreviousBreakOffset() +
+         ConstraintSpace().FragmentainerSpaceAvailable();
+}
+
+LayoutUnit NGBlockLayoutAlgorithm::SpaceAvailableForCurrentChild() const {
+  LayoutUnit space_left;
+  if (fragmentainer_mapper_)
+    space_left = fragmentainer_mapper_->BlockSize();
+  else if (ConstraintSpace().HasBlockFragmentation())
+    space_left = ConstraintSpace().FragmentainerSpaceAvailable();
+  else
+    return NGSizeIndefinite;
+  space_left -= BorderEdgeForCurrentChild() - PreviousBreakOffset();
+  return space_left;
 }
 
 NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
@@ -544,6 +708,8 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
       .SetWritingMode(
           FromPlatformWritingMode(CurrentChildStyle().getWritingMode()))
       .SetTextDirection(CurrentChildStyle().direction());
+  LayoutUnit space_available = SpaceAvailableForCurrentChild();
+  space_builder_->SetFragmentainerSpaceAvailable(space_available);
   NGConstraintSpace* child_space = space_builder_->ToConstraintSpace();
 
   // TODO(layout-ng): Set offset through the space builder.
@@ -563,6 +729,7 @@ DEFINE_TRACE(NGBlockLayoutAlgorithm) {
   visitor->trace(current_minmax_child_);
   visitor->trace(out_of_flow_layout_);
   visitor->trace(out_of_flow_candidates_);
+  visitor->trace(fragmentainer_mapper_);
 }
 
 }  // namespace blink

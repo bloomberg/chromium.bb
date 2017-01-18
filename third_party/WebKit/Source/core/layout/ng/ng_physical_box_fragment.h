@@ -23,7 +23,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       HeapVector<Member<const NGPhysicalFragment>>& children,
       HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
       Vector<NGStaticPosition>& out_of_flow_positions,
-      NGMarginStrut margin_strut);
+      NGMarginStrut margin_strut,
+      NGBreakToken* break_token = nullptr);
 
   const HeapVector<Member<const NGPhysicalFragment>>& Children() const {
     return children_;
