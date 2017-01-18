@@ -7,9 +7,16 @@
 
 #import <WebKit/WebKit.h>
 
+#import "base/ios/block_types.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/test/web_test.h"
+#import "ios/web/public/web_state/web_state.h"
+
+class GURL;
 
 namespace web {
+
+class IntTestWebStateObserver;
 
 // A test fixture for integration tests that need to bring up the HttpServer.
 class WebIntTest : public WebTest {
@@ -21,12 +28,38 @@ class WebIntTest : public WebTest {
   void SetUp() override;
   void TearDown() override;
 
+  // The WebState and NavigationManager used by this test fixture.
+  WebState* web_state() { return web_state_.get(); }
+  NavigationManager* navigation_manager() {
+    return web_state()->GetNavigationManager();
+  }
+
+  // Synchronously executes |script| on |web_state|'s JS injection receiver and
+  // returns the result.
+  id ExecuteJavaScript(NSString* script);
+
+  // Executes |block| and waits until |url| is successfully loaded in
+  // |web_state_|.
+  void ExecuteBlockAndWaitForLoad(const GURL& url, ProceduralBlock block);
+
+  // Navigates |web_state_| to |url| and waits for the page to be loaded.
+  void LoadUrl(const GURL& url);
+
   // Synchronously removes data from |data_store|.
   // |websiteDataTypes| is from the constants defined in
   // "WebKit/WKWebsiteDataRecord".
   void RemoveWKWebViewCreatedData(WKWebsiteDataStore* data_store,
                                   NSSet* websiteDataTypes);
 
+  // Returns the index of |item| in the |navigation_manager|'s session history,
+  // or NSNotFound if it is not present.
+  NSInteger GetIndexOfNavigationItem(const web::NavigationItem* item);
+
+ private:
+  // WebState used to load pages.
+  std::unique_ptr<WebState> web_state_;
+  // WebStateObserver used to wait for page loads.
+  std::unique_ptr<IntTestWebStateObserver> observer_;
 };
 
 }  // namespace web

@@ -1,0 +1,121 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "base/mac/bind_objc_block.h"
+#include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
+#import "base/strings/sys_string_conversions.h"
+#include "base/test/ios/wait_util.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/test/http_server.h"
+#include "ios/web/public/test/http_server_util.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
+#import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/test/web_int_test.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
+
+namespace {
+
+// URL for the test window.location test file.  The page at this URL contains
+// several buttons that trigger window.location commands.  The page supports
+// several JavaScript functions:
+// - updateUrlToLoadText(), which takes a URL and updates a div on the page to
+//   contain that text.  This URL is used as the parameter for window.location
+//   function calls triggered by button taps.
+// - getUrl(), which returns the URL that was set via updateUrlToLoadText().
+// - isOnLoadTextVisible(), which returns whether a placeholder string is
+//   present on the page.  This string is added to the page in the onload event
+//   and is removed once a button is tapped.  Verifying that the onload text is
+//   visible after tapping a button is equivalent to checking that a load has
+//   occurred as the result of the button tap.
+const char kWindowLocationTestURL[] =
+    "http://ios/testing/data/http_server_files/window_location.html";
+
+// Button IDs used in the window.location test page.
+const char kWindowLocationAssignID[] = "location-assign";
+
+// JavaScript functions on the window.location test page.
+NSString* const kUpdateURLScriptFormat = @"updateUrlToLoadText('%s')";
+NSString* const kGetURLScript = @"getUrl()";
+NSString* const kOnLoadCheckScript = @"isOnLoadTextVisible()";
+
+// URL of a sample file-based page.
+const char kSampleFileBasedURL[] =
+    "http://ios/testing/data/http_server_files/chromium_logo_page.html";
+
+}  // namespace
+
+// Test fixture for window.location integration tests.
+class WindowLocationTest : public web::WebIntTest {
+ protected:
+  void SetUp() override {
+    web::WebIntTest::SetUp();
+
+    // window.location tests use file-based test pages.
+    web::test::SetUpFileBasedHttpServer();
+
+    // Load the window.location test page.
+    window_location_url_ =
+        web::test::HttpServer::MakeUrl(kWindowLocationTestURL);
+    LoadUrl(window_location_url());
+  }
+
+  // The URL of the window.location test page.
+  const GURL& window_location_url() { return window_location_url_; }
+
+  // Executes JavaScript on the window.location test page to use |url| as the
+  // parameter for the window.location calls executed by tapping the buttons on
+  // the page.
+  void SetWindowLocationUrl(const GURL& url) {
+    ASSERT_EQ(window_location_url(), web_state()->GetLastCommittedURL());
+    std::string url_spec = url.possibly_invalid_spec();
+    NSString* set_url_script =
+        [NSString stringWithFormat:kUpdateURLScriptFormat, url_spec.c_str()];
+    ExecuteJavaScript(set_url_script);
+    NSString* injected_url =
+        base::mac::ObjCCastStrict<NSString>(ExecuteJavaScript(kGetURLScript));
+    ASSERT_EQ(url_spec, base::SysNSStringToUTF8(injected_url));
+  }
+
+  // Executes JavaScript on the window.location test page and returns whether
+  // |kOnLoadText| is visible.
+  bool IsOnLoadTextVisible() {
+    NSNumber* text_visible = base::mac::ObjCCastStrict<NSNumber>(
+        ExecuteJavaScript(kOnLoadCheckScript));
+    return [text_visible boolValue];
+  }
+
+ private:
+  GURL window_location_url_;
+};
+
+// Tests that calling window.location.assign() creates a new NavigationItem.
+TEST_F(WindowLocationTest, Assign) {
+  // Navigate to about:blank so there is a forward entry to prune.
+  GURL about_blank("about:blank");
+  LoadUrl(about_blank);
+  web::NavigationItem* about_blank_item =
+      navigation_manager()->GetLastCommittedItem();
+
+  // Navigate back to the window.location test page.
+  ExecuteBlockAndWaitForLoad(window_location_url(), ^{
+    navigation_manager()->GoBack();
+  });
+
+  // Set the window.location test URL and tap the window.location.assign()
+  // button.
+  GURL sample_url = web::test::HttpServer::MakeUrl(kSampleFileBasedURL);
+  SetWindowLocationUrl(sample_url);
+  ExecuteBlockAndWaitForLoad(sample_url, ^{
+    ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(),
+                                                   kWindowLocationAssignID));
+  });
+
+  // Verify that |sample_url| was loaded and that |about_blank_item| was pruned.
+  EXPECT_EQ(sample_url, navigation_manager()->GetLastCommittedItem()->GetURL());
+  EXPECT_EQ(NSNotFound, GetIndexOfNavigationItem(about_blank_item));
+}

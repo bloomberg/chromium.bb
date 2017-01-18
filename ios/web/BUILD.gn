@@ -571,6 +571,7 @@ test("ios_web_inttests") {
     ":test_support",
     ":web",
     "//base/test:test_support",
+    "//ios/testing:http_server_bundle_data",
     "//ios/web/test:mojo_bindings",
     "//ios/web/test:packed_resources",
     "//ios/web/test:resources",
@@ -582,6 +583,7 @@ test("ios_web_inttests") {
   ]
   sources = [
     "browser_state_web_view_partition_inttest.mm",
+    "navigation/window_location_inttest.mm",
     "public/test/http_server_inttest.mm",
     "test/run_all_unittests.cc",
     "webui/web_ui_mojo_inttest.mm",
