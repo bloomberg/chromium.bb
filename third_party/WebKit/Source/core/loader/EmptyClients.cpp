@@ -196,4 +196,6 @@ EmptyFrameLoaderClient::createApplicationCacheHost(
   return nullptr;
 }
 
+EmptyRemoteFrameClient::EmptyRemoteFrameClient() = default;
+
 }  // namespace blink
