@@ -57,7 +57,7 @@ void IOSNTPTilesInternalsMessageHandlerBridge::RegisterMessages() {
 
 bool IOSNTPTilesInternalsMessageHandlerBridge::SupportsNTPTiles() {
   auto* state = ios::ChromeBrowserState::FromWebUIIOS(web_ui());
-  return !state->HasOffTheRecordChromeBrowserState();
+  return state == state->GetOriginalChromeBrowserState();
 }
 
 bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(
