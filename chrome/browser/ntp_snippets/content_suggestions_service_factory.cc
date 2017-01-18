@@ -58,6 +58,9 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
@@ -120,13 +123,14 @@ void RegisterRecentTabProvider(OfflinePageModel* offline_page_model,
 
 void RegisterDownloadsProvider(OfflinePageModel* offline_page_model,
                                DownloadManager* download_manager,
+                               DownloadHistory* download_history,
                                ContentSuggestionsService* service,
                                PrefService* pref_service) {
   bool download_manager_ui_enabled =
       base::FeatureList::IsEnabled(chrome::android::kDownloadsUiFeature);
   auto provider = base::MakeUnique<DownloadSuggestionsProvider>(
-      service, offline_page_model, download_manager, pref_service,
-      download_manager_ui_enabled);
+      service, offline_page_model, download_manager, download_history,
+      pref_service, download_manager_ui_enabled);
   service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
@@ -288,6 +292,9 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       OfflinePageModelFactory::GetForBrowserContext(profile);
   DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(profile);
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForBrowserContext(profile);
+  DownloadHistory* download_history = download_service->GetDownloadHistory();
   PhysicalWebDataSource* physical_web_data_source =
       g_browser_process->GetPhysicalWebDataSource();
 #endif  // OS_ANDROID
@@ -312,8 +319,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   if (show_asset_downloads || show_offline_page_downloads) {
     RegisterDownloadsProvider(
         show_offline_page_downloads ? offline_page_model : nullptr,
-        show_asset_downloads ? download_manager : nullptr, service,
-        pref_service);
+        show_asset_downloads ? download_manager : nullptr, download_history,
+        service, pref_service);
   }
 #endif  // OS_ANDROID
 

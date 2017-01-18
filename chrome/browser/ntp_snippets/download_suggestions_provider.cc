@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/ntp_snippets/features.h"
@@ -30,7 +29,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
-using base::ContainsValue;
 using content::DownloadItem;
 using content::DownloadManager;
 using ntp_snippets::Category;
@@ -50,9 +48,6 @@ const char kAssetDownloadsPrefix = 'D';
 const char kOfflinePageDownloadsPrefix = 'O';
 
 const char* kMaxSuggestionsCountParamName = "downloads_max_count";
-
-// Maximal number of dismissed asset download IDs stored at any time.
-const int kMaxDismissedIdCount = 100;
 
 bool CompareOfflinePagesMostRecentlyCreatedFirst(const OfflinePageItem& left,
                                                  const OfflinePageItem& right) {
@@ -131,6 +126,7 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
     offline_pages::OfflinePageModel* offline_page_model,
     content::DownloadManager* download_manager,
+    DownloadHistory* download_history,
     PrefService* pref_service,
     bool download_manager_ui_enabled)
     : ContentSuggestionsProvider(observer),
@@ -139,8 +135,10 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
           ntp_snippets::KnownCategories::DOWNLOADS)),
       offline_page_model_(offline_page_model),
       download_manager_(download_manager),
+      download_history_(download_history),
       pref_service_(pref_service),
       download_manager_ui_enabled_(download_manager_ui_enabled),
+      is_asset_downloads_initialization_complete_(false),
       weak_ptr_factory_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
 
@@ -150,22 +148,34 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
   }
 
   if (download_manager_) {
-    download_manager_->AddObserver(this);
+    // We will start listening to download manager once it is loaded.
+    // May be nullptr in tests.
+    if (download_history_) {
+      download_history_->AddObserver(this);
+    }
+  } else {
+    download_history_ = nullptr;
   }
 
-  // We explicitly fetch the asset downloads in case some of |OnDownloadCreated|
-  // happened earlier and, therefore, were missed.
-  AsynchronouslyFetchAllDownloadsAndSubmitSuggestions();
+  if (!download_manager_) {
+    // Usually, all downloads are fetched when the download manager is loaded,
+    // but now it is disabled, so offline pages are fetched here instead.
+    AsynchronouslyFetchOfflinePagesDownloads(/*notify=*/true);
+  }
 }
 
 DownloadSuggestionsProvider::~DownloadSuggestionsProvider() {
-  if (offline_page_model_) {
-    offline_page_model_->RemoveObserver(this);
+  if (download_history_) {
+    download_history_->RemoveObserver(this);
   }
 
   if (download_manager_) {
     download_manager_->RemoveObserver(this);
     UnregisterDownloadItemObservers();
+  }
+
+  if (offline_page_model_) {
+    offline_page_model_->RemoveObserver(this);
   }
 }
 
@@ -190,8 +200,12 @@ CategoryInfo DownloadSuggestionsProvider::GetCategoryInfo(Category category) {
 void DownloadSuggestionsProvider::DismissSuggestion(
     const ContentSuggestion::ID& suggestion_id) {
   DCHECK_EQ(provided_category_, suggestion_id.category());
+  std::set<std::string> dismissed_ids =
+      ReadDismissedIDsFromPrefs(CorrespondsToOfflinePage(suggestion_id));
+  dismissed_ids.insert(suggestion_id.id_within_category());
+  StoreDismissedIDsToPrefs(CorrespondsToOfflinePage(suggestion_id),
+                           dismissed_ids);
 
-  AddToDismissedStorageIfNeeded(suggestion_id);
   RemoveSuggestionFromCacheAndRetrieveMoreIfNeeded(suggestion_id);
 }
 
@@ -262,7 +276,7 @@ void DownloadSuggestionsProvider::GetDismissedSuggestionsForDebugging(
 void DownloadSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
     Category category) {
   DCHECK_EQ(provided_category_, category);
-  StoreAssetDismissedIDsToPrefs(std::vector<std::string>());
+  StoreAssetDismissedIDsToPrefs(std::set<std::string>());
   StoreOfflinePageDismissedIDsToPrefs(std::set<std::string>());
   AsynchronouslyFetchAllDownloadsAndSubmitSuggestions();
 }
@@ -274,10 +288,6 @@ void DownloadSuggestionsProvider::RegisterProfilePrefs(
   registry->RegisterListPref(kDismissedOfflinePageDownloadSuggestions);
 }
 
-int DownloadSuggestionsProvider::GetMaxDismissedCountForTesting() {
-  return kMaxDismissedIdCount;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
@@ -285,12 +295,10 @@ void DownloadSuggestionsProvider::
     GetPagesMatchingQueryCallbackForGetDismissedSuggestions(
         const ntp_snippets::DismissedSuggestionsCallback& callback,
         const std::vector<OfflinePageItem>& offline_pages) const {
-  std::set<std::string> dismissed_offline_ids =
-      ReadOfflinePageDismissedIDsFromPrefs();
+  std::set<std::string> dismissed_ids = ReadOfflinePageDismissedIDsFromPrefs();
   std::vector<ContentSuggestion> suggestions;
   for (const OfflinePageItem& item : offline_pages) {
-    if (dismissed_offline_ids.count(
-            GetOfflinePagePerCategoryID(item.offline_id))) {
+    if (dismissed_ids.count(GetOfflinePagePerCategoryID(item.offline_id))) {
       suggestions.push_back(ConvertOfflinePage(item));
     }
   }
@@ -299,12 +307,10 @@ void DownloadSuggestionsProvider::
     std::vector<DownloadItem*> all_downloads;
     download_manager_->GetAllDownloads(&all_downloads);
 
-    std::vector<std::string> dismissed_asset_ids =
-        ReadAssetDismissedIDsFromPrefs();
+    dismissed_ids = ReadAssetDismissedIDsFromPrefs();
 
     for (const DownloadItem* item : all_downloads) {
-      if (ContainsValue(dismissed_asset_ids,
-                        GetAssetDownloadPerCategoryID(item->GetId()))) {
+      if (dismissed_ids.count(GetAssetDownloadPerCategoryID(item->GetId()))) {
         suggestions.push_back(ConvertDownloadItem(*item));
       }
     }
@@ -361,9 +367,11 @@ void DownloadSuggestionsProvider::OfflinePageDeleted(
 
 void DownloadSuggestionsProvider::OnDownloadCreated(DownloadManager* manager,
                                                     DownloadItem* item) {
+  DCHECK(is_asset_downloads_initialization_complete_);
   DCHECK_EQ(download_manager_, manager);
-  // This is called when new downloads are started and on startup for existing
-  // ones. We listen to each item to know when it is destroyed.
+
+  // This is called when new downloads are started. We listen to each item to
+  // know when it is finished or destroyed.
   item->AddObserver(this);
   if (CacheAssetDownloadIfNeeded(item)) {
     SubmitContentSuggestions();
@@ -374,10 +382,15 @@ void DownloadSuggestionsProvider::ManagerGoingDown(DownloadManager* manager) {
   DCHECK_EQ(download_manager_, manager);
   UnregisterDownloadItemObservers();
   download_manager_ = nullptr;
+  if (download_history_) {
+    download_history_->RemoveObserver(this);
+    download_history_ = nullptr;
+  }
 }
 
 void DownloadSuggestionsProvider::OnDownloadUpdated(DownloadItem* item) {
-  if (ContainsValue(cached_asset_downloads_, item)) {
+  DCHECK(is_asset_downloads_initialization_complete_);
+  if (base::ContainsValue(cached_asset_downloads_, item)) {
     if (item->GetFileExternallyRemoved()) {
       InvalidateSuggestion(GetAssetDownloadPerCategoryID(item->GetId()));
     } else {
@@ -404,6 +417,8 @@ void DownloadSuggestionsProvider::OnDownloadRemoved(DownloadItem* item) {
 
 void DownloadSuggestionsProvider::OnDownloadDestroyed(
     content::DownloadItem* item) {
+  DCHECK(is_asset_downloads_initialization_complete_);
+
   item->RemoveObserver(this);
 
   if (!IsDownloadCompleted(*item)) {
@@ -412,6 +427,20 @@ void DownloadSuggestionsProvider::OnDownloadDestroyed(
   // TODO(vitaliii): Implement a better way to clean up dismissed IDs (in case
   // some calls are missed).
   InvalidateSuggestion(GetAssetDownloadPerCategoryID(item->GetId()));
+}
+
+void DownloadSuggestionsProvider::OnHistoryQueryComplete() {
+  is_asset_downloads_initialization_complete_ = true;
+  if (download_manager_) {
+    download_manager_->AddObserver(this);
+  }
+  AsynchronouslyFetchAllDownloadsAndSubmitSuggestions();
+}
+
+void DownloadSuggestionsProvider::OnDownloadHistoryDestroyed() {
+  DCHECK(download_history_);
+  download_history_->RemoveObserver(this);
+  download_history_ = nullptr;
 }
 
 void DownloadSuggestionsProvider::NotifyStatusChanged(
@@ -458,23 +487,27 @@ void DownloadSuggestionsProvider::FetchAssetsDownloads() {
 
   std::vector<DownloadItem*> all_downloads;
   download_manager_->GetAllDownloads(&all_downloads);
-  std::vector<std::string> old_dismissed_ids = ReadAssetDismissedIDsFromPrefs();
+  std::set<std::string> old_dismissed_ids = ReadAssetDismissedIDsFromPrefs();
+  std::set<std::string> retained_dismissed_ids;
   cached_asset_downloads_.clear();
-  for (const DownloadItem* item : all_downloads) {
+  for (DownloadItem* item : all_downloads) {
     std::string within_category_id =
         GetAssetDownloadPerCategoryID(item->GetId());
-    if (!ContainsValue(old_dismissed_ids, within_category_id)) {
-      if (IsDownloadCompleted(*item)) {
-        cached_asset_downloads_.push_back(item);
-      }
+    if (old_dismissed_ids.count(within_category_id)) {
+      retained_dismissed_ids.insert(within_category_id);
+    } else if (IsDownloadCompleted(*item)) {
+      cached_asset_downloads_.push_back(item);
+      // We may already observe this item and, therefore, we remove the
+      // observer first.
+      item->RemoveObserver(this);
+      item->AddObserver(this);
     }
   }
 
-  // We do not prune dismissed IDs, because it is not possible to ensure that
-  // the list of downloads is complete (i.e. DownloadManager has finished
-  // reading them).
-  // TODO(vitaliii): Prune dismissed IDs once the |OnLoaded| notification is
-  // provided. See crbug.com/672758.
+  if (old_dismissed_ids.size() != retained_dismissed_ids.size()) {
+    StoreAssetDismissedIDsToPrefs(retained_dismissed_ids);
+  }
+
   const int max_suggestions_count = GetMaxSuggestionsCount();
   if (static_cast<int>(cached_asset_downloads_.size()) >
       max_suggestions_count) {
@@ -572,13 +605,12 @@ bool DownloadSuggestionsProvider::CacheAssetDownloadIfNeeded(
     return false;
   }
 
-  if (ContainsValue(cached_asset_downloads_, item)) {
+  if (base::ContainsValue(cached_asset_downloads_, item)) {
     return false;
   }
 
-  std::vector<std::string> dismissed_ids = ReadAssetDismissedIDsFromPrefs();
-  if (ContainsValue(dismissed_ids,
-                    GetAssetDownloadPerCategoryID(item->GetId()))) {
+  std::set<std::string> dismissed_ids = ReadAssetDismissedIDsFromPrefs();
+  if (dismissed_ids.count(GetAssetDownloadPerCategoryID(item->GetId()))) {
     return false;
   }
 
@@ -716,38 +748,31 @@ void DownloadSuggestionsProvider::InvalidateSuggestion(
   ContentSuggestion::ID suggestion_id(provided_category_, id_within_category);
   observer()->OnSuggestionInvalidated(this, suggestion_id);
 
-  RemoveFromDismissedStorageIfNeeded(suggestion_id);
+  std::set<std::string> dismissed_ids =
+      ReadDismissedIDsFromPrefs(CorrespondsToOfflinePage(suggestion_id));
+  auto it = dismissed_ids.find(id_within_category);
+  if (it != dismissed_ids.end()) {
+    dismissed_ids.erase(it);
+    StoreDismissedIDsToPrefs(CorrespondsToOfflinePage(suggestion_id),
+                             dismissed_ids);
+  }
+
   RemoveSuggestionFromCacheAndRetrieveMoreIfNeeded(suggestion_id);
 }
 
-// TODO(vitaliii): Do not use std::vector, when we ensure that pruning happens
-// at the right time (crbug.com/672758).
-std::vector<std::string>
+std::set<std::string>
 DownloadSuggestionsProvider::ReadAssetDismissedIDsFromPrefs() const {
-  std::vector<std::string> dismissed_ids;
-  const base::ListValue* list =
-      pref_service_->GetList(kDismissedAssetDownloadSuggestions);
-  for (const std::unique_ptr<base::Value>& value : *list) {
-    std::string dismissed_id;
-    bool success = value->GetAsString(&dismissed_id);
-    DCHECK(success) << "Failed to parse dismissed id from prefs param "
-                    << kDismissedAssetDownloadSuggestions << " into string.";
-    dismissed_ids.push_back(dismissed_id);
-  }
-  return dismissed_ids;
+  return ntp_snippets::prefs::ReadDismissedIDsFromPrefs(
+      *pref_service_, kDismissedAssetDownloadSuggestions);
 }
 
 void DownloadSuggestionsProvider::StoreAssetDismissedIDsToPrefs(
-    const std::vector<std::string>& dismissed_ids) {
+    const std::set<std::string>& dismissed_ids) {
   DCHECK(std::all_of(
       dismissed_ids.begin(), dismissed_ids.end(),
       [](const std::string& id) { return id[0] == kAssetDownloadsPrefix; }));
-
-  base::ListValue list;
-  for (const std::string& dismissed_id : dismissed_ids) {
-    list.AppendString(dismissed_id);
-  }
-  pref_service_->Set(kDismissedAssetDownloadSuggestions, list);
+  ntp_snippets::prefs::StoreDismissedIDsToPrefs(
+      pref_service_, kDismissedAssetDownloadSuggestions, dismissed_ids);
 }
 
 std::set<std::string>
@@ -766,45 +791,21 @@ void DownloadSuggestionsProvider::StoreOfflinePageDismissedIDsToPrefs(
       pref_service_, kDismissedOfflinePageDownloadSuggestions, dismissed_ids);
 }
 
-void DownloadSuggestionsProvider::AddToDismissedStorageIfNeeded(
-    const ContentSuggestion::ID& suggestion_id) {
-  if (CorrespondsToOfflinePage(suggestion_id)) {
-    std::set<std::string> dismissed_ids =
-        ReadOfflinePageDismissedIDsFromPrefs();
-    dismissed_ids.insert(suggestion_id.id_within_category());
-    StoreOfflinePageDismissedIDsToPrefs(dismissed_ids);
-  } else {
-    std::vector<std::string> dismissed_ids = ReadAssetDismissedIDsFromPrefs();
-    // The suggestion may be double dismissed from previously opened NTPs.
-    if (!ContainsValue(dismissed_ids, suggestion_id.id_within_category())) {
-      dismissed_ids.push_back(suggestion_id.id_within_category());
-      // TODO(vitaliii): Remove this workaround once the dismissed ids are
-      // pruned. See crbug.com/672758.
-      while (dismissed_ids.size() > kMaxDismissedIdCount) {
-        dismissed_ids.erase(dismissed_ids.begin());
-      }
-      StoreAssetDismissedIDsToPrefs(dismissed_ids);
-    }
+std::set<std::string> DownloadSuggestionsProvider::ReadDismissedIDsFromPrefs(
+    bool for_offline_page_downloads) const {
+  if (for_offline_page_downloads) {
+    return ReadOfflinePageDismissedIDsFromPrefs();
   }
+  return ReadAssetDismissedIDsFromPrefs();
 }
 
-void DownloadSuggestionsProvider::RemoveFromDismissedStorageIfNeeded(
-    const ContentSuggestion::ID& suggestion_id) {
-  if (CorrespondsToOfflinePage(suggestion_id)) {
-    std::set<std::string> dismissed_ids =
-        ReadOfflinePageDismissedIDsFromPrefs();
-    if (dismissed_ids.count(suggestion_id.id_within_category())) {
-      dismissed_ids.erase(suggestion_id.id_within_category());
-      StoreOfflinePageDismissedIDsToPrefs(dismissed_ids);
-    }
+void DownloadSuggestionsProvider::StoreDismissedIDsToPrefs(
+    bool for_offline_page_downloads,
+    const std::set<std::string>& dismissed_ids) {
+  if (for_offline_page_downloads) {
+    StoreOfflinePageDismissedIDsToPrefs(dismissed_ids);
   } else {
-    std::vector<std::string> dismissed_ids = ReadAssetDismissedIDsFromPrefs();
-    auto it = std::find(dismissed_ids.begin(), dismissed_ids.end(),
-                        suggestion_id.id_within_category());
-    if (it != dismissed_ids.end()) {
-      dismissed_ids.erase(it);
-      StoreAssetDismissedIDsToPrefs(dismissed_ids);
-    }
+    StoreAssetDismissedIDsToPrefs(dismissed_ids);
   }
 }
 
