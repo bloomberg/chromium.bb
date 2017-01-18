@@ -15604,6 +15604,16 @@ read aloud to screenreader users to announce that a completion is available.">
       <message name="IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION" desc="Description of the flag that enables the native Android history UI." translateable="false">
         Show the native Android UI for browsing history.
       </message>
+
+    <!-- Play Services LSD permission prompt chrome://flags strings -->
+    <if expr="is_android">
+      <message name="IDS_FLAGS_LSD_PERMISSION_PROMPT_NAME" desc="Name for the flag to enable LSD permission prompts on Android" translateable="false">
+        Location Settings Dialog Permission Prompt
+      </message>
+      <message name="IDS_FLAGS_LSD_PERMISSION_PROMPT_DESCRIPTION" desc="Description for the flag to enable LSD permission prompts on Android." translateable="false">
+        Whether to use the Google Play Services Location Settings Dialog permission dialog.
+      </message>
+    </if>
     </if>
   </messages>
  </release>

@@ -2185,7 +2185,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
     {"enable-faster-location-reload", IDS_FLAGS_FASTER_LOCATION_RELOAD_NAME,
      IDS_FLAGS_FASTER_LOCATION_RELOAD_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(features::kFasterLocationReload)}
+     FEATURE_VALUE_TYPE(features::kFasterLocationReload)},
+#if defined(OS_ANDROID)
+    {"lsd-permission-prompt", IDS_FLAGS_LSD_PERMISSION_PROMPT_NAME,
+     IDS_FLAGS_LSD_PERMISSION_PROMPT_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kLsdPermissionPrompt)},
+#endif
+
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

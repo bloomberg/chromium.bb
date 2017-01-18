@@ -107,6 +107,11 @@ const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
     "LinuxObsoleteSystemIsEndOfTheLine", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enables or disables the Location Settings Dialog (LSD). The LSD is an Android
+// system-level geolocation permission prompt.
+const base::Feature kLsdPermissionPrompt{"LsdPermissionPrompt",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the Material Design version of chrome://bookmarks.
 const base::Feature kMaterialDesignBookmarks{"MaterialDesignBookmarks",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

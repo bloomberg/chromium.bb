@@ -68,6 +68,8 @@ extern const base::Feature kHappinessTrackingSystem;
 extern const base::Feature kLinuxObsoleteSystemIsEndOfTheLine;
 #endif
 
+extern const base::Feature kLsdPermissionPrompt;
+
 extern const base::Feature kMaterialDesignBookmarks;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
