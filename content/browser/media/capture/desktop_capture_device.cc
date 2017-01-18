@@ -201,6 +201,7 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
     webrtc::DesktopCapturer::Result result,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(client_);
   DCHECK(capture_in_progress_);
   capture_in_progress_ = false;
 
@@ -223,9 +224,6 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
     return;
   }
   DCHECK(frame);
-
-  if (!client_)
-    return;
 
   base::TimeDelta capture_time(
       base::TimeDelta::FromMilliseconds(frame->capture_time_ms()));
