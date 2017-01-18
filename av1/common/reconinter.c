@@ -723,6 +723,13 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                   h, conv_params, interp_filter, sf->x_step_q4, sf->y_step_q4);
 }
 
+typedef struct SubpelParams {
+  int xs;
+  int ys;
+  int subpel_x;
+  int subpel_y;
+} SubpelParams;
+
 void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #if CONFIG_MOTION_VAR
                             int mi_col_offset, int mi_row_offset,
@@ -853,85 +860,101 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
   }
 #endif
 
-  for (ref = 0; ref < 1 + is_compound; ++ref) {
-    const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
-    struct buf_2d *const pre_buf = &pd->pre[ref];
+  {
     struct buf_2d *const dst_buf = &pd->dst;
     uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
+    uint8_t *pre[2];
+    MV32 scaled_mv[2];
+    SubpelParams subpel_params[2];
+
+    for (ref = 0; ref < 1 + is_compound; ++ref) {
+      const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
+      struct buf_2d *const pre_buf = &pd->pre[ref];
 #if CONFIG_CB4X4
-    const MV mv = mi->mbmi.mv[ref].as_mv;
+      const MV mv = mi->mbmi.mv[ref].as_mv;
 #else
-    const MV mv = mi->mbmi.sb_type < BLOCK_8X8
+      const MV mv =
+          mi->mbmi.sb_type < BLOCK_8X8
 #if CONFIG_MOTION_VAR
-                      ? (build_for_obmc ? mi->bmi[block].as_mv[ref].as_mv
-                                        : average_split_mvs(pd, mi, ref, block))
+              ? (build_for_obmc ? mi->bmi[block].as_mv[ref].as_mv
+                                : average_split_mvs(pd, mi, ref, block))
 #else
-                      ? average_split_mvs(pd, mi, ref, block)
+              ? average_split_mvs(pd, mi, ref, block)
 #endif  // CONFIG_MOTION_VAR
-                      : mi->mbmi.mv[ref].as_mv;
+              : mi->mbmi.mv[ref].as_mv;
 #endif
 
-    // TODO(jkoleszar): This clamping is done in the incorrect place for the
-    // scaling case. It needs to be done on the scaled MV, not the pre-scaling
-    // MV. Note however that it performs the subsampling aware scaling so
-    // that the result is always q4.
-    // mv_precision precision is MV_PRECISION_Q4.
-    const MV mv_q4 = clamp_mv_to_umv_border_sb(
-        xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
+      // TODO(jkoleszar): This clamping is done in the incorrect place for the
+      // scaling case. It needs to be done on the scaled MV, not the pre-scaling
+      // MV. Note however that it performs the subsampling aware scaling so
+      // that the result is always q4.
+      // mv_precision precision is MV_PRECISION_Q4.
+      const MV mv_q4 = clamp_mv_to_umv_border_sb(
+          xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
 
-    uint8_t *pre;
-    MV32 scaled_mv;
-    int xs, ys, subpel_x, subpel_y;
-    const int is_scaled = av1_is_scaled(sf);
-    ConvolveParams conv_params = get_conv_params(ref);
+      const int is_scaled = av1_is_scaled(sf);
 
-    if (is_scaled) {
-      pre = pre_buf->buf + scaled_buffer_offset(x, y, pre_buf->stride, sf);
-      scaled_mv = av1_scale_mv(&mv_q4, mi_x + x, mi_y + y, sf);
-      xs = sf->x_step_q4;
-      ys = sf->y_step_q4;
-    } else {
-      pre = pre_buf->buf + (y * pre_buf->stride + x);
-      scaled_mv.row = mv_q4.row;
-      scaled_mv.col = mv_q4.col;
-      xs = ys = 16;
+      if (is_scaled) {
+        pre[ref] =
+            pre_buf->buf + scaled_buffer_offset(x, y, pre_buf->stride, sf);
+        scaled_mv[ref] = av1_scale_mv(&mv_q4, mi_x + x, mi_y + y, sf);
+        subpel_params[ref].xs = sf->x_step_q4;
+        subpel_params[ref].ys = sf->y_step_q4;
+      } else {
+        pre[ref] = pre_buf->buf + (y * pre_buf->stride + x);
+        scaled_mv[ref].row = mv_q4.row;
+        scaled_mv[ref].col = mv_q4.col;
+        subpel_params[ref].xs = 16;
+        subpel_params[ref].ys = 16;
+      }
+
+      subpel_params[ref].subpel_x = scaled_mv[ref].col & SUBPEL_MASK;
+      subpel_params[ref].subpel_y = scaled_mv[ref].row & SUBPEL_MASK;
+      pre[ref] += (scaled_mv[ref].row >> SUBPEL_BITS) * pre_buf->stride +
+                  (scaled_mv[ref].col >> SUBPEL_BITS);
     }
 
-    subpel_x = scaled_mv.col & SUBPEL_MASK;
-    subpel_y = scaled_mv.row & SUBPEL_MASK;
-    pre += (scaled_mv.row >> SUBPEL_BITS) * pre_buf->stride +
-           (scaled_mv.col >> SUBPEL_BITS);
-
+    for (ref = 0; ref < 1 + is_compound; ++ref) {
+      const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
+      ConvolveParams conv_params = get_conv_params(ref);
+      struct buf_2d *const pre_buf = &pd->pre[ref];
 #if CONFIG_EXT_INTER
-    if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_data.type))
-      av1_make_masked_inter_predictor(pre, pre_buf->stride, dst,
-                                      dst_buf->stride, subpel_x, subpel_y, sf,
-                                      w, h, mi->mbmi.interp_filter, xs, ys,
+      if (ref &&
+          is_masked_compound_type(mi->mbmi.interinter_compound_data.type))
+        av1_make_masked_inter_predictor(
+            pre[ref], pre_buf->stride, dst, dst_buf->stride,
+            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, w, h,
+            mi->mbmi.interp_filter, subpel_params[ref].xs,
+            subpel_params[ref].ys,
 #if CONFIG_SUPERTX
-                                      wedge_offset_x, wedge_offset_y,
+            wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_SUPERTX
 #if CONFIG_COMPOUND_SEGMENT
-                                      plane,
+            plane,
 #endif  // CONFIG_COMPOUND_SEGMENT
-                                      xd);
-    else
+            xd);
+      else
 #else  // CONFIG_EXT_INTER
 #if CONFIG_GLOBAL_MOTION
-    if (is_global[ref])
-      av1_warp_plane(gm[ref],
+      if (is_global[ref])
+        av1_warp_plane(gm[ref],
 #if CONFIG_AOM_HIGHBITDEPTH
-                     xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+                       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-                     pre_buf->buf0, pre_buf->width, pre_buf->height,
-                     pre_buf->stride, dst, (mi_x >> pd->subsampling_x) + x,
-                     (mi_y >> pd->subsampling_y) + y, w, h, dst_buf->stride,
-                     pd->subsampling_x, pd->subsampling_y, xs, ys, ref);
-    else
+                       pre_buf->buf0, pre_buf->width, pre_buf->height,
+                       pre_buf->stride, dst, (mi_x >> pd->subsampling_x) + x,
+                       (mi_y >> pd->subsampling_y) + y, w, h, dst_buf->stride,
+                       pd->subsampling_x, pd->subsampling_y,
+                       subpel_params[ref].xs, subpel_params[ref].ys, ref);
+      else
 #endif  // CONFIG_GLOBAL_MOTION
 #endif  // CONFIG_EXT_INTER
-      av1_make_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
-                               subpel_x, subpel_y, sf, w, h, &conv_params,
-                               mi->mbmi.interp_filter, xs, ys, xd);
+        av1_make_inter_predictor(
+            pre[ref], pre_buf->stride, dst, dst_buf->stride,
+            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, w, h,
+            &conv_params, mi->mbmi.interp_filter, subpel_params[ref].xs,
+            subpel_params[ref].ys, xd);
+    }
   }
 }
 
