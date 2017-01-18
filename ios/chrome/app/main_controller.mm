@@ -727,6 +727,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   if (switchFromIncognito)
     startInIncognito = NO;
 
+  [MDCTypography setFontLoader:[MDFRobotoFontLoader sharedInstance]];
+
   [self createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
                                           : ApplicationMode::NORMAL)];
 
@@ -737,8 +739,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self scheduleLowPriorityStartupTasks];
 
   [_browserViewWrangler updateDeviceSharingManager];
-
-  [MDCTypography setFontLoader:[MDFRobotoFontLoader sharedInstance]];
 
   [self openTabFromLaunchOptions:_launchOptions
               startupInformation:self
