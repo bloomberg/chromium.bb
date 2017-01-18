@@ -72,30 +72,24 @@ bool PrePaintTreeWalk::walk(FrameView& frameView,
 
 static void updateAuxiliaryObjectProperties(const LayoutObject& object,
                                             PrePaintTreeWalkContext& context) {
-  PaintLayer* paintLayer = nullptr;
+  if (!object.hasLayer())
+    return;
 
-  if (object.isBoxModelObject() && object.hasLayer())
-    paintLayer = object.enclosingLayer();
+  PaintLayer* paintLayer = object.enclosingLayer();
+  paintLayer->updateAncestorOverflowLayer(context.ancestorOverflowPaintLayer);
 
-  if (paintLayer) {
-    paintLayer->updateAncestorOverflowLayer(context.ancestorOverflowPaintLayer);
-  }
-
-  if (object.styleRef().position() == StickyPosition && paintLayer) {
+  if (object.styleRef().position() == StickyPosition) {
     paintLayer->layoutObject()->updateStickyPositionConstraints();
 
-    // Sticky position constraints and ancestor overflow scroller affect
-    // the sticky layer position, so we need to update it again here.
-    // TODO(flackr): This should be refactored in the future to be clearer
-    // (i.e. update layer position and ancestor inputs updates in the
-    // same walk)
+    // Sticky position constraints and ancestor overflow scroller affect the
+    // sticky layer position, so we need to update it again here.
+    // TODO(flackr): This should be refactored in the future to be clearer (i.e.
+    // update layer position and ancestor inputs updates in the same walk).
     paintLayer->updateLayerPosition();
   }
 
-  if (object.hasOverflowClip() || (paintLayer && paintLayer->isRootLayer())) {
-    DCHECK(paintLayer);
+  if (paintLayer->isRootLayer() || object.hasOverflowClip())
     context.ancestorOverflowPaintLayer = paintLayer;
-  }
 }
 
 bool PrePaintTreeWalk::walk(const LayoutObject& object,
