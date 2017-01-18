@@ -215,6 +215,7 @@ void MockResourceLoader::WaitUntilIdleOrCanceled() {
   EXPECT_FALSE(canceled_or_idle_run_loop_);
   canceled_or_idle_run_loop_.reset(new base::RunLoop());
   canceled_or_idle_run_loop_->Run();
+  canceled_or_idle_run_loop_.reset();
   EXPECT_TRUE(status_ == Status::IDLE || status_ == Status::CANCELED);
 }
 

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/loader/resource_handler.h"
 #include "net/base/io_buffer.h"
@@ -157,6 +158,9 @@ class TestResourceHandler : public ResourceHandler {
 
   void WaitUntilResponseComplete();
 
+  // Returns a weak pointer to |this|.  Allows testing object lifetime.
+  base::WeakPtr<TestResourceHandler> GetWeakPtr();
+
  private:
   // TODO(mmenke):  Remove these, in favor of final_status_ and body_.
   net::URLRequestStatus* request_status_ptr_;
@@ -207,6 +211,8 @@ class TestResourceHandler : public ResourceHandler {
   std::unique_ptr<base::RunLoop> deferred_run_loop_;
 
   base::RunLoop response_complete_run_loop_;
+
+  base::WeakPtrFactory<TestResourceHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourceHandler);
 };

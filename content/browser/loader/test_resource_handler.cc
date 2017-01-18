@@ -38,7 +38,8 @@ TestResourceHandler::TestResourceHandler(net::URLRequestStatus* request_status,
     : ResourceHandler(nullptr),
       request_status_ptr_(request_status),
       body_ptr_(body),
-      deferred_run_loop_(new base::RunLoop()) {
+      deferred_run_loop_(new base::RunLoop()),
+      weak_ptr_factory_(this) {
   SetBufferSize(2048);
 }
 
@@ -228,6 +229,10 @@ void TestResourceHandler::WaitUntilDeferred() {
 
 void TestResourceHandler::WaitUntilResponseComplete() {
   response_complete_run_loop_.Run();
+}
+
+base::WeakPtr<TestResourceHandler> TestResourceHandler::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace content

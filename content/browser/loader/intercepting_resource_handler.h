@@ -118,6 +118,9 @@ class CONTENT_EXPORT InterceptingResourceHandler
   bool SendFirstReadBufferToNewHandler(bool* defer);
   bool SendOnResponseStartedToNewHandler(bool* defer);
 
+  // Wraps calls to DoLoop. Resumes or Cancels underlying request, if needed.
+  void AdvanceState();
+
   State state_ = State::STARTING;
 
   std::unique_ptr<ResourceHandler> new_handler_;
@@ -135,6 +138,8 @@ class CONTENT_EXPORT InterceptingResourceHandler
   size_t first_read_buffer_bytes_written_ = 0;
 
   scoped_refptr<ResourceResponse> response_;
+
+  base::WeakPtrFactory<InterceptingResourceHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InterceptingResourceHandler);
 };

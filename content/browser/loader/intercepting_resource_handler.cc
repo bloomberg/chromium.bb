@@ -4,8 +4,10 @@
 
 #include "content/browser/loader/intercepting_resource_handler.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
@@ -15,7 +17,8 @@ namespace content {
 InterceptingResourceHandler::InterceptingResourceHandler(
     std::unique_ptr<ResourceHandler> next_handler,
     net::URLRequest* request)
-    : LayeredResourceHandler(request, std::move(next_handler)) {
+    : LayeredResourceHandler(request, std::move(next_handler)),
+      weak_ptr_factory_(this) {
   next_handler_->SetController(this);
 }
 
@@ -149,14 +152,12 @@ void InterceptingResourceHandler::Resume() {
     controller()->Resume();
     return;
   }
-  bool defer = false;
-  if (!DoLoop(&defer)) {
-    controller()->Cancel();
-    return;
-  }
 
-  if (!defer)
-    controller()->Resume();
+  // Can't call DoLoop synchronously, as it may call into |next_handler_|
+  // synchronously, which is what called Resume().
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&InterceptingResourceHandler::AdvanceState,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InterceptingResourceHandler::UseNewHandler(
@@ -277,6 +278,17 @@ bool InterceptingResourceHandler::SendFirstReadBufferToNewHandler(bool* defer) {
   first_read_buffer_double_ = nullptr;
   next_handler_->SetController(controller());
   return true;
+}
+
+void InterceptingResourceHandler::AdvanceState() {
+  bool defer = false;
+  if (!DoLoop(&defer)) {
+    controller()->Cancel();
+    return;
+  }
+
+  if (!defer)
+    controller()->Resume();
 }
 
 }  // namespace content
