@@ -48,6 +48,7 @@
 
 namespace blink {
 
+class Modulator;
 class V8DOMActivityLogger;
 class V8PerContextData;
 
@@ -93,6 +94,10 @@ class CORE_EXPORT V8PerContextData final {
     m_activityLogger = activityLogger;
   }
 
+  Modulator* modulator() const { return m_modulator.get(); }
+  void setModulator(Modulator*);
+  void clearModulator();
+
  private:
   V8PerContextData(v8::Local<v8::Context>);
 
@@ -122,6 +127,8 @@ class CORE_EXPORT V8PerContextData final {
 
   // This is owned by a static hash map in V8DOMActivityLogger.
   V8DOMActivityLogger* m_activityLogger;
+
+  Persistent<Modulator> m_modulator;
 };
 
 }  // namespace blink

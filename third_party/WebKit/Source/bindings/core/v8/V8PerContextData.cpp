@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "core/dom/Modulator.h"
 #include "platform/InstanceCounters.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"
@@ -48,7 +49,7 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
       m_constructorMap(m_isolate),
       m_contextHolder(WTF::makeUnique<gin::ContextHolder>(m_isolate)),
       m_context(m_isolate, context),
-      m_activityLogger(0) {
+      m_activityLogger(nullptr) {
   m_contextHolder->SetContext(context);
 
   v8::Context::Scope contextScope(context);
@@ -172,6 +173,16 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(
 void V8PerContextData::addCustomElementBinding(
     std::unique_ptr<V0CustomElementBinding> binding) {
   m_customElementBindings.push_back(std::move(binding));
+}
+
+void V8PerContextData::setModulator(Modulator* modulator) {
+  DCHECK(!m_modulator);
+  DCHECK(modulator);
+  m_modulator = modulator;
+}
+
+void V8PerContextData::clearModulator() {
+  m_modulator = nullptr;
 }
 
 }  // namespace blink
