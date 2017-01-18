@@ -313,12 +313,10 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       base::Bind(&NetworkQualityEstimator::OnUpdatedRTTAvailable,
                  base::Unretained(this))));
 
-  // Record accuracy at 3 different intervals. The values used here must remain
-  // in sync with the suffixes specified in
+  // Record accuracy after a 15 second interval. The values used here must
+  // remain in sync with the suffixes specified in
   // tools/metrics/histograms/histograms.xml.
   accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(15));
-  accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(30));
-  accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(60));
 }
 
 void NetworkQualityEstimator::ObtainOperatingParams(
