@@ -38,7 +38,6 @@ class PaintLayer;
 class Element;
 class LayoutRect;
 class LocalFrame;
-class Node;
 class LayoutBlockFlow;
 class LayoutObject;
 class TextStream;
@@ -105,8 +104,6 @@ String quoteAndEscapeNonPrintables(const String&);
 CORE_EXPORT String counterValueForElement(Element*);
 
 CORE_EXPORT String markerTextForListItem(Element*);
-
-CORE_EXPORT String nodePositionAsStringForTesting(Node*);
 
 TextStream& operator<<(TextStream&, const Color&);
 
