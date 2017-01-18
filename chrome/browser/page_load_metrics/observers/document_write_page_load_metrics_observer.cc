@@ -67,13 +67,12 @@ const char kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocumentWrite[] =
 const char kBackgroundHistogramDocWriteBlockParseDuration[] =
     "PageLoad.Clients.DocWrite.Block.ParseTiming.ParseDuration.Background";
 
+const char kHistogramDocWriteBlockCount[] =
+    "PageLoad.Clients.DocWrite.Block.Count";
 const char kHistogramDocWriteBlockReloadCount[] =
     "PageLoad.Clients.DocWrite.Block.ReloadCount";
 
 }  // namespace internal
-
-DocumentWritePageLoadMetricsObserver::DocumentWritePageLoadMetricsObserver()
-    : doc_write_block_reload_observed_(false) {}
 
 void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
@@ -125,6 +124,12 @@ void DocumentWritePageLoadMetricsObserver::OnLoadingBehaviorObserved(
           blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock));
     UMA_HISTOGRAM_COUNTS(internal::kHistogramDocWriteBlockReloadCount, 1);
     doc_write_block_reload_observed_ = true;
+  }
+  if ((info.metadata.behavior_flags &
+       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock) &&
+      !doc_write_block_observed_) {
+    UMA_HISTOGRAM_BOOLEAN(internal::kHistogramDocWriteBlockCount, true);
+    doc_write_block_observed_ = true;
   }
 }
 

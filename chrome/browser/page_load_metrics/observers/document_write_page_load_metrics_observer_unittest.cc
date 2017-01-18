@@ -89,6 +89,8 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlock) {
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
+  histogram_tester().ExpectTotalCount(internal::kHistogramDocWriteBlockCount,
+                                      1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
   histogram_tester().ExpectBucketCount(
@@ -134,6 +136,9 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlockReload) {
   SimulateTimingAndMetadataUpdate(timing, metadata);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramDocWriteBlockReloadCount, 2);
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramDocWriteBlockCount,
+                                      0);
 }
 
 TEST_F(DocumentWritePageLoadMetricsObserverTest, NoPossibleBlock) {
