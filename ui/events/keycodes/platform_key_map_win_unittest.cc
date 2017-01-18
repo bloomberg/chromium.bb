@@ -326,4 +326,21 @@ TEST_F(PlatformKeyMapTest, JapaneseSpecificKeys) {
   }
 }
 
+TEST_F(PlatformKeyMapTest, AltGraph) {
+  PlatformKeyMap us_keymap(
+      GetPlatformKeyboardLayout(KEYBOARD_LAYOUT_ENGLISH_US));
+  EXPECT_EQ(DomKey::ALT,
+            DomKeyFromKeyboardCodeImpl(us_keymap, VKEY_MENU, EF_ALTGR_DOWN));
+  EXPECT_EQ(DomKey::ALT,
+            DomKeyFromKeyboardCodeImpl(us_keymap, VKEY_MENU,
+                                       EF_ALTGR_DOWN | EF_IS_EXTENDED_KEY));
+
+  PlatformKeyMap fr_keymap(GetPlatformKeyboardLayout(KEYBOARD_LAYOUT_FRENCH));
+  EXPECT_EQ(DomKey::ALT,
+            DomKeyFromKeyboardCodeImpl(fr_keymap, VKEY_MENU, EF_ALTGR_DOWN));
+  EXPECT_EQ(DomKey::ALT_GRAPH,
+            DomKeyFromKeyboardCodeImpl(fr_keymap, VKEY_MENU,
+                                       EF_ALTGR_DOWN | EF_IS_EXTENDED_KEY));
+}
+
 }  // namespace ui

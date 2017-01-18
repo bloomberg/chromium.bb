@@ -44,6 +44,9 @@ class EVENTS_EXPORT PlatformKeyMap {
 
   HKL keyboard_layout_ = 0;
 
+  // True if |keyboard_layout_| makes use of the AltGraph modifier.
+  bool has_alt_graph_ = false;
+
   typedef std::pair<int /*KeyboardCode*/, int /*EventFlags*/>
       KeyboardCodeEventFlagsPair;
   typedef std::unordered_map<KeyboardCodeEventFlagsPair,
