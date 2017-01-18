@@ -759,9 +759,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setBoxShadow(PassRefPtr<ShadowList>);
 
   // box-sizing (aka -webkit-box-sizing)
-  static EBoxSizing initialBoxSizing() { return BoxSizingContentBox; }
+  static EBoxSizing initialBoxSizing() { return EBoxSizing::kContentBox; }
   EBoxSizing boxSizing() const { return m_box->boxSizing(); }
-  void setBoxSizing(EBoxSizing s) { SET_VAR(m_box, m_boxSizing, s); }
+  void setBoxSizing(EBoxSizing s) {
+    SET_VAR(m_box, m_boxSizing, static_cast<unsigned>(s));
+  }
 
   // clear
   static EClear initialClear() { return ClearNone; }

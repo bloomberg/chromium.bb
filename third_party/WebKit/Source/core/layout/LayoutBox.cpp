@@ -1342,7 +1342,7 @@ LayoutUnit LayoutBox::adjustBorderBoxLogicalWidthForBoxSizing(
     float width) const {
   LayoutUnit bordersPlusPadding = collapsedBorderAndCSSPaddingLogicalWidth();
   LayoutUnit result(width);
-  if (style()->boxSizing() == BoxSizingContentBox)
+  if (style()->boxSizing() == EBoxSizing::kContentBox)
     return result + bordersPlusPadding;
   return std::max(result, bordersPlusPadding);
 }
@@ -1351,7 +1351,7 @@ LayoutUnit LayoutBox::adjustBorderBoxLogicalHeightForBoxSizing(
     float height) const {
   LayoutUnit bordersPlusPadding = collapsedBorderAndCSSPaddingLogicalHeight();
   LayoutUnit result(height);
-  if (style()->boxSizing() == BoxSizingContentBox)
+  if (style()->boxSizing() == EBoxSizing::kContentBox)
     return result + bordersPlusPadding;
   return std::max(result, bordersPlusPadding);
 }
@@ -1359,7 +1359,7 @@ LayoutUnit LayoutBox::adjustBorderBoxLogicalHeightForBoxSizing(
 LayoutUnit LayoutBox::adjustContentBoxLogicalWidthForBoxSizing(
     float width) const {
   LayoutUnit result(width);
-  if (style()->boxSizing() == BoxSizingBorderBox)
+  if (style()->boxSizing() == EBoxSizing::kBorderBox)
     result -= collapsedBorderAndCSSPaddingLogicalWidth();
   return std::max(LayoutUnit(), result);
 }
@@ -1367,7 +1367,7 @@ LayoutUnit LayoutBox::adjustContentBoxLogicalWidthForBoxSizing(
 LayoutUnit LayoutBox::adjustContentBoxLogicalHeightForBoxSizing(
     float height) const {
   LayoutUnit result(height);
-  if (style()->boxSizing() == BoxSizingBorderBox)
+  if (style()->boxSizing() == EBoxSizing::kBorderBox)
     result -= collapsedBorderAndCSSPaddingLogicalHeight();
   return std::max(LayoutUnit(), result);
 }
@@ -3248,7 +3248,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(
   bool subtractBorderAndPadding =
       isTable() || (cb->isTableCell() && !skippedAutoHeightContainingBlock &&
                     cb->hasOverrideLogicalContentHeight() &&
-                    style()->boxSizing() == BoxSizingContentBox);
+                    style()->boxSizing() == EBoxSizing::kContentBox);
   if (subtractBorderAndPadding) {
     result -= borderAndPaddingLogicalHeight();
     return std::max(LayoutUnit(), result);

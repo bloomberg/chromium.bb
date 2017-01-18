@@ -140,7 +140,7 @@ enum EBoxDecorationBreak { BoxDecorationBreakSlice, BoxDecorationBreakClone };
 
 // Box attributes. Not inherited.
 
-enum EBoxSizing { BoxSizingContentBox, BoxSizingBorderBox };
+enum class EBoxSizing : unsigned { kContentBox, kBorderBox };
 
 // Random visual rendering model attributes. Not inherited.
 

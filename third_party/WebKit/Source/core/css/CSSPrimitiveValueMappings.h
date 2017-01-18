@@ -812,10 +812,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBoxSizing e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case BoxSizingBorderBox:
+    case EBoxSizing::kBorderBox:
       m_valueID = CSSValueBorderBox;
       break;
-    case BoxSizingContentBox:
+    case EBoxSizing::kContentBox:
       m_valueID = CSSValueContentBox;
       break;
   }
@@ -825,15 +825,15 @@ template <>
 inline EBoxSizing CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueBorderBox:
-      return BoxSizingBorderBox;
+      return EBoxSizing::kBorderBox;
     case CSSValueContentBox:
-      return BoxSizingContentBox;
+      return EBoxSizing::kContentBox;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return BoxSizingBorderBox;
+  return EBoxSizing::kBorderBox;
 }
 
 template <>

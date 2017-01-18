@@ -74,7 +74,7 @@ LayoutUnit ResolveInlineLength(
       LayoutUnit percentage_resolution_size =
           constraint_space.PercentageResolutionSize().inline_size;
       LayoutUnit value = valueForLength(length, percentage_resolution_size);
-      if (style.boxSizing() == BoxSizingContentBox) {
+      if (style.boxSizing() == EBoxSizing::kContentBox) {
         value += border_and_padding.InlineSum();
       } else {
         value = std::max(border_and_padding.InlineSum(), value);
@@ -155,7 +155,7 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
       LayoutUnit percentage_resolution_size =
           constraint_space.PercentageResolutionSize().block_size;
       LayoutUnit value = valueForLength(length, percentage_resolution_size);
-      if (style.boxSizing() == BoxSizingContentBox) {
+      if (style.boxSizing() == EBoxSizing::kContentBox) {
         value += border_and_padding.BlockSum();
       } else {
         value = std::max(border_and_padding.BlockSum(), value);

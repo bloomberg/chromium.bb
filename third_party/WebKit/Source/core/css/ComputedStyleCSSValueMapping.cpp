@@ -1082,7 +1082,7 @@ static LayoutRect sizingBox(const LayoutObject* layoutObject) {
     return LayoutRect();
 
   const LayoutBox* box = toLayoutBox(layoutObject);
-  return box->style()->boxSizing() == BoxSizingBorderBox
+  return box->style()->boxSizing() == EBoxSizing::kBorderBox
              ? box->borderBoxRect()
              : box->computedCSSContentBoxRect();
 }
@@ -2862,7 +2862,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return CSSPrimitiveValue::create(style.zoom(),
                                        CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyBoxSizing:
-      if (style.boxSizing() == BoxSizingContentBox)
+      if (style.boxSizing() == EBoxSizing::kContentBox)
         return CSSIdentifierValue::create(CSSValueContentBox);
       return CSSIdentifierValue::create(CSSValueBorderBox);
     case CSSPropertyWebkitAppRegion:

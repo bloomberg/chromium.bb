@@ -117,7 +117,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
 
   if ((style.backgroundLayers().thisOrNextLayersUseContentBox() ||
        style.maskLayers().thisOrNextLayersUseContentBox() ||
-       style.boxSizing() == BoxSizingBorderBox) &&
+       style.boxSizing() == EBoxSizing::kBorderBox) &&
       previousContentBoxRect() != m_box.contentBoxRect())
     return PaintInvalidationContentBoxChange;
 
@@ -322,7 +322,7 @@ bool BoxPaintInvalidator::needsToSavePreviousBoxGeometries() {
 
   // If we use border-box sizing we need to track changes in the size of the
   // content box.
-  if (style.boxSizing() == BoxSizingBorderBox)
+  if (style.boxSizing() == EBoxSizing::kBorderBox)
     return true;
 
   // No need to save old border box size if we can use size of the old paint

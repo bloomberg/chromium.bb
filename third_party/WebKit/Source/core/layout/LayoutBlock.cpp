@@ -428,7 +428,7 @@ bool LayoutBlock::widthAvailableToChildrenHasChanged() {
   // changed width then the width available to our children has changed even
   // though our own width has remained the same.
   widthAvailableToChildrenHasChanged |=
-      style()->boxSizing() == BoxSizingBorderBox &&
+      style()->boxSizing() == EBoxSizing::kBorderBox &&
       needsPreferredWidthsRecalculation() &&
       view()->layoutState()->containingBlockLogicalWidthChanged();
 
@@ -541,7 +541,7 @@ bool LayoutBlock::createsNewFormattingContext() const {
 static inline bool changeInAvailableLogicalHeightAffectsChild(
     LayoutBlock* parent,
     LayoutBox& child) {
-  if (parent->style()->boxSizing() != BoxSizingBorderBox)
+  if (parent->style()->boxSizing() != EBoxSizing::kBorderBox)
     return false;
   return parent->style()->isHorizontalWritingMode() &&
          !child.style()->isHorizontalWritingMode();

@@ -23,7 +23,7 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
     style_->setBorderRightStyle(EBorderStyle::BorderStyleSolid);
     style_->setBorderTopStyle(EBorderStyle::BorderStyleSolid);
     style_->setBorderBottomStyle(EBorderStyle::BorderStyleSolid);
-    style_->setBoxSizing(EBoxSizing::BoxSizingBorderBox);
+    style_->setBoxSizing(EBoxSizing::kBorderBox);
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
     NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
     builder.SetAvailableSize(container_size_);
@@ -247,8 +247,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
       *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(left + margin_left, p.inset.left);
 
-  // Rule 4: left is auto, EBoxSizing::BoxSizingContentBox
-  style_->setBoxSizing(EBoxSizing::BoxSizingContentBox);
+  // Rule 4: left is auto, EBoxSizing::kContentBox
+  style_->setBoxSizing(EBoxSizing::kContentBox);
   SetHorizontalStyle(NGAuto, margin_left, width - border_left - border_right -
                                               padding_left - padding_right,
                      margin_right, right);
@@ -257,7 +257,7 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(left + margin_left, p.inset.left);
-  style_->setBoxSizing(EBoxSizing::BoxSizingBorderBox);
+  style_->setBoxSizing(EBoxSizing::kBorderBox);
 
   // Rule 5: right is auto.
   SetHorizontalStyle(left, margin_left, width, margin_right, NGAuto);

@@ -373,7 +373,7 @@ LayoutUnit LayoutTable::convertStyleLogicalWidthToComputedWidth(
   bool isCSSTable = !isHTMLTableElement(node());
   if (isCSSTable && styleLogicalWidth.isSpecified() &&
       styleLogicalWidth.isPositive() &&
-      style()->boxSizing() == BoxSizingContentBox)
+      style()->boxSizing() == EBoxSizing::kContentBox)
     borders =
         borderStart() + borderEnd() +
         (collapseBorders() ? LayoutUnit() : paddingStart() + paddingEnd());
@@ -396,7 +396,7 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(
     // FIXME: We cannot apply box-sizing: content-box on <table> which other
     // browsers allow.
     if (isHTMLTableElement(node()) ||
-        style()->boxSizing() == BoxSizingBorderBox) {
+        style()->boxSizing() == EBoxSizing::kBorderBox) {
       borders = borderAndPadding;
     }
     computedLogicalHeight = LayoutUnit(styleLogicalHeight.value() - borders);

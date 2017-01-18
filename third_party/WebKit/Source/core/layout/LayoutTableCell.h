@@ -157,7 +157,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     // add in the border and padding.
     // Call computedCSSPadding* directly to avoid including implicitPadding.
     if (!document().inQuirksMode() &&
-        style()->boxSizing() != BoxSizingBorderBox)
+        style()->boxSizing() != EBoxSizing::kBorderBox)
       styleLogicalHeight +=
           (computedCSSPaddingBefore() + computedCSSPaddingAfter()).floor() +
           borderBefore() + borderAfter();

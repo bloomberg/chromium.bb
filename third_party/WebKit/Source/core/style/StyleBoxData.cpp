@@ -41,7 +41,7 @@ StyleBoxData::StyleBoxData()
       m_maxHeight(ComputedStyle::initialMaxSize()),
       m_zIndex(0),
       m_hasAutoZIndex(true),
-      m_boxSizing(BoxSizingContentBox),
+      m_boxSizing(static_cast<unsigned>(ComputedStyle::initialBoxSizing())),
       m_boxDecorationBreak(BoxDecorationBreakSlice) {}
 
 StyleBoxData::StyleBoxData(const StyleBoxData& o)

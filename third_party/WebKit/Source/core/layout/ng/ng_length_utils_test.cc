@@ -169,7 +169,7 @@ TEST_F(NGLengthUtilsTest, testComputeContentContribution) {
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
   expected = MinAndMaxContentSizes{LayoutUnit(100), LayoutUnit(100)};
-  style_->setBoxSizing(BoxSizingBorderBox);
+  style_->setBoxSizing(EBoxSizing::kBorderBox);
   EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
 
   // Content size should never be below zero, even with box-sizing: border-box
@@ -235,7 +235,7 @@ TEST_F(NGLengthUtilsTest, testComputeInlineSizeForFragment) {
   style_->setPaddingLeft(Length(50, Fixed));
   EXPECT_EQ(LayoutUnit(150), ComputeInlineSizeForFragment());
 
-  style_->setBoxSizing(BoxSizingBorderBox);
+  style_->setBoxSizing(EBoxSizing::kBorderBox);
   EXPECT_EQ(LayoutUnit(100), ComputeInlineSizeForFragment());
 
   // Content size should never be below zero, even with box-sizing: border-box
@@ -306,7 +306,7 @@ TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
   style_->setPaddingBottom(Length(50, Fixed));
   EXPECT_EQ(LayoutUnit(150), ComputeBlockSizeForFragment());
 
-  style_->setBoxSizing(BoxSizingBorderBox);
+  style_->setBoxSizing(EBoxSizing::kBorderBox);
   EXPECT_EQ(LayoutUnit(100), ComputeBlockSizeForFragment());
 
   // Content size should never be below zero, even with box-sizing: border-box
