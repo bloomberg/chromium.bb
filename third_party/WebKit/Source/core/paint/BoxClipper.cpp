@@ -24,13 +24,12 @@ namespace blink {
 // An exception is control clip, which is currently never applied by
 // PaintLayerClipper.
 static bool boxNeedsClip(const LayoutBox& box) {
-  if (box.hasControlClip())
-    return true;
   if (box.hasLayer() && box.layer()->isSelfPaintingLayer())
     return false;
   if (box.isSVGRoot() && toLayoutSVGRoot(box).shouldApplyViewportClip())
     return true;
-  return box.hasOverflowClip() || box.styleRef().containsPaint();
+  return box.hasOverflowClip() || box.styleRef().containsPaint() ||
+         box.hasControlClip();
 }
 
 DISABLE_CFI_PERF

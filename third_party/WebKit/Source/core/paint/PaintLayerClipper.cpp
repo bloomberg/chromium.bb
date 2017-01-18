@@ -74,39 +74,39 @@ static void applyClipRects(const ClipRectsContext& context,
                            const LayoutBoxModelObject& layoutObject,
                            LayoutPoint offset,
                            ClipRects& clipRects) {
-  DCHECK(layoutObject.hasClipRelatedProperty() ||
-         (layoutObject.isSVGRoot() &&
-          toLayoutSVGRoot(&layoutObject)->shouldApplyViewportClip()));
-  LayoutView* view = layoutObject.view();
+  DCHECK(layoutObject.isBox());
+  const LayoutBox& box = *toLayoutBox(&layoutObject);
+
+  DCHECK(box.hasClipRelatedProperty() || box.hasControlClip() ||
+         (box.isSVGRoot() && toLayoutSVGRoot(&box)->shouldApplyViewportClip()));
+  LayoutView* view = box.view();
   DCHECK(view);
   if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
     offset -= LayoutSize(view->frameView()->getScrollOffset());
-  if (layoutObject.hasOverflowClip() ||
-      (layoutObject.isSVGRoot() &&
-       toLayoutSVGRoot(&layoutObject)->shouldApplyViewportClip()) ||
-      (layoutObject.styleRef().containsPaint() && layoutObject.isBox())) {
+
+  if (box.hasOverflowClip() ||
+      (box.isSVGRoot() && toLayoutSVGRoot(&box)->shouldApplyViewportClip()) ||
+      box.styleRef().containsPaint() || box.hasControlClip()) {
     ClipRect newOverflowClip =
-        toLayoutBox(layoutObject)
-            .overflowClipRect(offset, context.overlayScrollbarClipBehavior);
-    newOverflowClip.setHasRadius(layoutObject.styleRef().hasBorderRadius());
+        box.overflowClipRect(offset, context.overlayScrollbarClipBehavior);
+    newOverflowClip.setHasRadius(box.styleRef().hasBorderRadius());
     clipRects.setOverflowClipRect(
         intersection(newOverflowClip, clipRects.overflowClipRect()));
-    if (layoutObject.isPositioned())
+    if (box.isPositioned())
       clipRects.setPosClipRect(
           intersection(newOverflowClip, clipRects.posClipRect()));
-    if (layoutObject.isLayoutView() ||
-        layoutObject.hasTransformRelatedProperty())
+    if (box.isLayoutView() || box.hasTransformRelatedProperty())
       clipRects.setFixedClipRect(
           intersection(newOverflowClip, clipRects.fixedClipRect()));
-    if (layoutObject.styleRef().containsPaint()) {
+    if (box.styleRef().containsPaint()) {
       clipRects.setPosClipRect(
           intersection(newOverflowClip, clipRects.posClipRect()));
       clipRects.setFixedClipRect(
           intersection(newOverflowClip, clipRects.fixedClipRect()));
     }
   }
-  if (layoutObject.hasClip()) {
-    LayoutRect newClip = toLayoutBox(layoutObject).clipRect(offset);
+  if (box.hasClip()) {
+    LayoutRect newClip = box.clipRect(offset);
     clipRects.setPosClipRect(
         intersection(newClip, clipRects.posClipRect()).setIsClippedByClipCss());
     clipRects.setOverflowClipRect(
@@ -544,12 +544,16 @@ void PaintLayerClipper::getOrCalculateClipRects(const ClipRectsContext& context,
 
 bool PaintLayerClipper::shouldClipOverflow(
     const ClipRectsContext& context) const {
-  LayoutObject* layoutObject = m_layer.layoutObject();
-  return (layoutObject->hasOverflowClip() ||
-          layoutObject->styleRef().containsPaint() ||
-          (layoutObject->isSVGRoot() &&
-           toLayoutSVGRoot(layoutObject)->shouldApplyViewportClip())) &&
-         shouldRespectOverflowClip(context);
+  if (!m_layer.layoutObject()->isBox())
+    return false;
+  const LayoutBox& box = *toLayoutBox(m_layer.layoutObject());
+
+  if (!shouldRespectOverflowClip(context))
+    return false;
+
+  return box.hasOverflowClip() || box.styleRef().containsPaint() ||
+         box.hasControlClip() ||
+         (box.isSVGRoot() && toLayoutSVGRoot(&box)->shouldApplyViewportClip());
 }
 
 bool PaintLayerClipper::shouldRespectOverflowClip(

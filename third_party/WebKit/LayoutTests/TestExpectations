@@ -670,6 +670,9 @@ crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.
 crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ Pass Crash Failure ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
+crbug.com/671864 fast/forms/button-positioned.html [ NeedsRebaseline ]
+crbug.com/671864 fast/forms/text/input-appearance-preventDefault.html [ NeedsRebaseline ]
+
 crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
@@ -708,6 +711,11 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html
 crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.html [ Failure Pass ]
 
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
+
+crbug.com/671864 fast/forms/number/number-appearance-spinbutton-layer.html [ NeedsRebaseline ]
+crbug.com/671864 fast/forms/placeholder-position.html [ NeedsRebaseline ]
+crbug.com/671864 fast/forms/select-popup/popup-menu-appearance-transform.html [ NeedsRebaseline ]
+crbug.com/671864 fast/multicol/multicol-with-child-renderLayer-for-input.html [ NeedsRebaseline ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
