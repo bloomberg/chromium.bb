@@ -2189,10 +2189,8 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
   }
   switch (state) {
     case base::MemoryState::NORMAL:
-      ResumeRenderer();
       break;
     case base::MemoryState::THROTTLED:
-      ResumeRenderer();
       // TODO(bashi): Figure out what kind of strategy is suitable on
       // THROTTLED state. crbug.com/674815
 #if defined(OS_ANDROID)
@@ -2204,31 +2202,14 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
       ReleaseFreeMemory();
       break;
     case base::MemoryState::SUSPENDED:
-      SuspendRenderer();
+      OnTrimMemoryImmediately();
+      ReleaseFreeMemory();
+      ClearMemory();
       break;
     case base::MemoryState::UNKNOWN:
       NOTREACHED();
       break;
   }
-}
-
-void RenderThreadImpl::SuspendRenderer() {
-  DCHECK(IsMainThread());
-  OnTrimMemoryImmediately();
-  ReleaseFreeMemory();
-  ClearMemory();
-  // TODO(bashi): Enable the tab suspension when MemoryCoordinator is enabled.
-  if (!base::FeatureList::IsEnabled(features::kMemoryCoordinator) &&
-      base::FeatureList::IsEnabled(features::kPurgeAndSuspend))
-    renderer_scheduler_->SuspendRenderer();
-}
-
-void RenderThreadImpl::ResumeRenderer() {
-  DCHECK(IsMainThread());
-  // TODO(bashi): Enable the tab suspension when MemoryCoordinator is enabled.
-  if (!base::FeatureList::IsEnabled(features::kMemoryCoordinator) &&
-      base::FeatureList::IsEnabled(features::kPurgeAndSuspend))
-    renderer_scheduler_->ResumeRenderer();
 }
 
 void RenderThreadImpl::ClearMemory() {

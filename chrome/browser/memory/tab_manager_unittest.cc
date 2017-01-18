@@ -704,7 +704,7 @@ TEST_F(TabManagerTest, NextPurgeAndSuspendState) {
   tab_manager.GetWebContentsData(test_contents)
       ->SetLastPurgeAndSuspendModifiedTimeForTesting(test_clock.NowTicks());
 
-  test_clock.Advance(base::TimeDelta::FromSeconds(120));
+  test_clock.Advance(base::TimeDelta::FromSeconds(1200));
   EXPECT_EQ(TabManager::SUSPENDED,
             tab_manager.GetNextPurgeAndSuspendState(
                 test_contents, test_clock.NowTicks(), threshold));

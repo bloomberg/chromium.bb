@@ -86,7 +86,7 @@ const int kSuspendThresholdSeconds = kAdjustmentIntervalSeconds * 4;
 
 // A suspended renderer is suspended for this duration.
 constexpr base::TimeDelta kDurationOfRendererSuspension =
-    base::TimeDelta::FromSeconds(120);
+    base::TimeDelta::FromSeconds(1200);
 
 // A resumed renderer is resumed for this duration.
 constexpr base::TimeDelta kDurationOfRendererResumption =
