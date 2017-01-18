@@ -1,0 +1,12 @@
+Tests provisional blackboxing.
+
+Set timer for test function.
+Call stack:
+    0) testFunction (frameworks-blackbox-by-source-code.html:8)
+
+Executing StepInto...
+Executing StepInto...
+Call stack:
+    0) testFunction (frameworks-blackbox-by-source-code.html:10)
+
+
