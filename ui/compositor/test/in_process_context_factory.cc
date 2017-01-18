@@ -70,7 +70,8 @@ class DirectOutputSurface : public cc::OutputSurface {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha) override {
+               bool has_alpha,
+               bool use_stencil) override {
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor, has_alpha);
   }

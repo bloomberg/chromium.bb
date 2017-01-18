@@ -21,6 +21,7 @@ RendererSettings::RendererSettings()
       disable_display_vsync(false),
       release_overlay_resources_after_gpu_query(false),
       gl_composited_texture_quad_border(false),
+      show_overdraw_feedback(false),
       refresh_rate(60.0),
       highp_threshold_min(0),
       texture_id_allocation_chunk_size(64),
@@ -42,6 +43,9 @@ bool RendererSettings::operator==(const RendererSettings& other) const {
          disable_display_vsync == other.disable_display_vsync &&
          release_overlay_resources_after_gpu_query ==
              other.release_overlay_resources_after_gpu_query &&
+         gl_composited_texture_quad_border ==
+             other.gl_composited_texture_quad_border &&
+         show_overdraw_feedback == other.show_overdraw_feedback &&
          refresh_rate == other.refresh_rate &&
          highp_threshold_min == other.highp_threshold_min &&
          texture_id_allocation_chunk_size ==

@@ -33,7 +33,8 @@ class DisplayOutputSurface : public cc::OutputSurface {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha) override;
+               bool has_alpha,
+               bool use_stencil) override;
   void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;

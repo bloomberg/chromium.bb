@@ -90,7 +90,8 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha) override {}
+               bool has_alpha,
+               bool use_stencil) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
     return nullptr;

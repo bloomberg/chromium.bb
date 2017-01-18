@@ -98,6 +98,18 @@ const char kUIShowScreenSpaceRects[] = "ui-show-screenspace-rects";
 const char kEnableLayerLists[] = "enable-layer-lists";
 const char kUIEnableLayerLists[] = "ui-enable-layer-lists";
 
+// Visualize overdraw by color-coding elements based on if they have other
+// elements drawn underneath. This is good for showing where the UI might be
+// doing more rendering work than necessary. The colors are hinting at the
+// amount of overdraw on your screen for each pixel, as follows:
+//
+// True color: No overdraw.
+// Blue: Overdrawn once.
+// Green: Overdrawn twice.
+// Pink: Overdrawn three times.
+// Red: Overdrawn four or more times.
+const char kShowOverdrawFeedback[] = "show-overdraw-feedback";
+
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 

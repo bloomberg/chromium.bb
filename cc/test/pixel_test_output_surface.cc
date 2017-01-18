@@ -21,11 +21,14 @@ PixelTestOutputSurface::PixelTestOutputSurface(
     bool flipped_output_surface)
     : OutputSurface(std::move(context_provider)), weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface = flipped_output_surface;
+  capabilities_.supports_stencil = true;
 }
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {}
+    : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {
+  capabilities_.supports_stencil = true;
+}
 
 PixelTestOutputSurface::~PixelTestOutputSurface() = default;
 
@@ -44,7 +47,10 @@ void PixelTestOutputSurface::BindFramebuffer() {
 void PixelTestOutputSurface::Reshape(const gfx::Size& size,
                                      float device_scale_factor,
                                      const gfx::ColorSpace& color_space,
-                                     bool has_alpha) {
+                                     bool has_alpha,
+                                     bool use_stencil) {
+  // External stencil test cannot be tested at the same time as |use_stencil|.
+  DCHECK(!use_stencil || !external_stencil_test_);
   if (context_provider()) {
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor, has_alpha);

@@ -30,7 +30,8 @@ FakeOutputSurface::~FakeOutputSurface() = default;
 void FakeOutputSurface::Reshape(const gfx::Size& size,
                                 float device_scale_factor,
                                 const gfx::ColorSpace& color_space,
-                                bool has_alpha) {
+                                bool has_alpha,
+                                bool use_stencil) {
   if (context_provider()) {
     context_provider()->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), device_scale_factor, has_alpha);

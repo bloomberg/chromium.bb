@@ -270,6 +270,17 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay,
                                   DrawingFrame* external_frame);
 
+  // Setup/flush all pending overdraw feedback to framebuffer.
+  void SetupOverdrawFeedback();
+  void FlushOverdrawFeedback(const DrawingFrame* frame,
+                             const gfx::Rect& output_rect);
+  // Process overdraw feedback from query.
+  using OverdrawFeedbackCallback = base::Callback<void(unsigned, int)>;
+  void ProcessOverdrawFeedback(std::vector<int>* overdraw,
+                               size_t num_expected_results,
+                               unsigned query,
+                               int multiplier);
+
   using OverlayResourceLock =
       std::unique_ptr<ResourceProvider::ScopedReadLockGL>;
   using OverlayResourceLockList = std::vector<OverlayResourceLock>;
@@ -352,6 +363,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   BoundGeometry bound_geometry_;
   ColorLUTCache color_lut_cache_;
+
+  unsigned offscreen_stencil_renderbuffer_id_ = 0;
+  gfx::Size offscreen_stencil_renderbuffer_size_;
 
   base::WeakPtrFactory<GLRenderer> weak_ptr_factory_;
 

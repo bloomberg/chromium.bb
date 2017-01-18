@@ -41,7 +41,8 @@ class OffscreenBrowserCompositorOutputSurface
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
-               bool alpha) override;
+               bool alpha,
+               bool stencil) override;
   void BindFramebuffer() override;
   void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   bool IsDisplayedAsOverlayPlane() const override;

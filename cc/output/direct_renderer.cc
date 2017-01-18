@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -225,6 +226,23 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   RenderPass* root_render_pass = render_passes_in_draw_order->back().get();
   DCHECK(root_render_pass);
 
+  bool overdraw_tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.overdraw"),
+      &overdraw_tracing_enabled);
+  bool overdraw_feedback =
+      settings_->show_overdraw_feedback || overdraw_tracing_enabled;
+  if (overdraw_feedback && !output_surface_->capabilities().supports_stencil) {
+#if DCHECK_IS_ON()
+    DLOG_IF(WARNING, !overdraw_feedback_support_missing_logged_once_)
+        << "Overdraw feedback enabled on platform without support.";
+    overdraw_feedback_support_missing_logged_once_ = true;
+#endif
+    overdraw_feedback = false;
+  }
+  base::AutoReset<bool> auto_reset_overdraw_feedback(&overdraw_feedback_,
+                                                     overdraw_feedback);
+
   DrawingFrame frame;
   frame.render_passes_in_draw_order = render_passes_in_draw_order;
   frame.root_render_pass = root_render_pass;
@@ -238,17 +256,20 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // can leave the window at the wrong size if we never draw and the proper
   // viewport size is never set.
   bool frame_has_alpha = frame.root_render_pass->has_transparent_background;
+  bool use_stencil = overdraw_feedback_;
   if (device_viewport_size != reshape_surface_size_ ||
       device_scale_factor != reshape_device_scale_factor_ ||
       device_color_space != reshape_device_color_space_ ||
-      frame_has_alpha != reshape_has_alpha_) {
+      frame_has_alpha != reshape_has_alpha_ ||
+      use_stencil != reshape_use_stencil_) {
     reshape_surface_size_ = device_viewport_size;
     reshape_device_scale_factor_ = device_scale_factor;
     reshape_device_color_space_ = device_color_space;
     reshape_has_alpha_ = frame.root_render_pass->has_transparent_background;
-    output_surface_->Reshape(reshape_surface_size_,
-                             reshape_device_scale_factor_,
-                             reshape_device_color_space_, reshape_has_alpha_);
+    reshape_use_stencil_ = overdraw_feedback_;
+    output_surface_->Reshape(
+        reshape_surface_size_, reshape_device_scale_factor_,
+        reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
   }
 
   BeginDrawingFrame(&frame);

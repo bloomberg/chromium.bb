@@ -188,6 +188,8 @@ class CC_EXPORT DirectRenderer {
   bool allow_empty_swap_;
   // Whether partial swap can be used.
   bool use_partial_swap_;
+  // Whether overdraw feedback is enabled and can be used.
+  bool overdraw_feedback_ = false;
 
   // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
   std::unordered_map<int, std::unique_ptr<ScopedResource>>
@@ -211,6 +213,9 @@ class CC_EXPORT DirectRenderer {
 
  private:
   bool initialized_ = false;
+#if DCHECK_IS_ON()
+  bool overdraw_feedback_support_missing_logged_once_ = false;
+#endif
   gfx::Size enlarge_pass_texture_amount_;
 
   // Cached values given to Reshape().
@@ -218,6 +223,7 @@ class CC_EXPORT DirectRenderer {
   float reshape_device_scale_factor_ = 0.f;
   gfx::ColorSpace reshape_device_color_space_;
   bool reshape_has_alpha_ = false;
+  bool reshape_use_stencil_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);
 };

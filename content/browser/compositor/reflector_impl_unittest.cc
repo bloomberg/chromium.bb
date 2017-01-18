@@ -90,7 +90,8 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha) override {}
+               bool has_alpha,
+               bool use_stencil) override {}
   void SwapBuffers(cc::OutputSurfaceFrame frame) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return GL_RGB; }
   bool IsDisplayedAsOverlayPlane() const override { return false; }
@@ -151,7 +152,8 @@ class ReflectorImplTest : public testing::Test {
     compositor_->SetRootLayer(root_layer_.get());
     mirroring_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->root_layer()->Add(mirroring_layer_.get());
-    output_surface_->Reshape(kSurfaceSize, 1.f, gfx::ColorSpace(), false);
+    output_surface_->Reshape(kSurfaceSize, 1.f, gfx::ColorSpace(), false,
+                             false);
     mirroring_layer_->SetBounds(gfx::Rect(kSurfaceSize));
   }
 

@@ -40,6 +40,7 @@ DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
 
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
+  capabilities_.supports_stencil = true;
   // Set |max_frames_pending| to 2 for surfaceless, which aligns scheduling
   // more closely with the previous surfaced behavior.
   // With a surface, swap buffer ack used to return early, before actually
@@ -89,11 +90,12 @@ void DisplayOutputSurfaceOzone::BindFramebuffer() {
 void DisplayOutputSurfaceOzone::Reshape(const gfx::Size& size,
                                         float device_scale_factor,
                                         const gfx::ColorSpace& color_space,
-                                        bool has_alpha) {
+                                        bool has_alpha,
+                                        bool use_stencil) {
   reshape_size_ = size;
   context_provider()->ContextGL()->ResizeCHROMIUM(
       size.width(), size.height(), device_scale_factor, has_alpha);
-  buffer_queue_->Reshape(size, device_scale_factor, color_space);
+  buffer_queue_->Reshape(size, device_scale_factor, color_space, use_stencil);
 }
 
 void DisplayOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {

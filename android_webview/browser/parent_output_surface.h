@@ -25,7 +25,8 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha) override;
+               bool has_alpha,
+               bool use_stencil) override;
   void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;

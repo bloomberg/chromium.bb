@@ -733,6 +733,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_GL_COMPOSITED_TEXTURE_QUAD_BORDERS,
      IDS_FLAGS_GL_COMPOSITED_TEXTURE_QUAD_BORDERS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kGlCompositedTextureQuadBorder)},
+    {"show-overdraw-feedback", IDS_FLAGS_SHOW_OVERDRAW_FEEDBACK,
+     IDS_FLAGS_SHOW_OVERDRAW_FEEDBACK_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(cc::switches::kShowOverdrawFeedback)},
+    {"ui-disable-partial-swap",
+     IDS_FLAGS_UI_PARTIAL_SWAP_NAME,
+     IDS_FLAGS_UI_PARTIAL_SWAP_DESCRIPTION, kOsAll,
+     SINGLE_DISABLE_VALUE_TYPE(switches::kUIDisablePartialSwap)},
 #if BUILDFLAG(ENABLE_WEBRTC)
     {"disable-webrtc-hw-decoding", IDS_FLAGS_WEBRTC_HW_DECODING_NAME,
      IDS_FLAGS_WEBRTC_HW_DECODING_DESCRIPTION, kOsAndroid | kOsCrOS,

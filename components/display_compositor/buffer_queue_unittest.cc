@@ -284,7 +284,7 @@ TEST(BufferQueueStandaloneTest, FboInitialization) {
   ON_CALL(*context, framebufferTexture2D(_, _, _, _, _))
       .WillByDefault(Return());
 
-  output_surface->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace());
+  output_surface->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace(), false);
 }
 
 TEST(BufferQueueStandaloneTest, FboBinding) {
@@ -337,7 +337,7 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
       display::DisplaySnapshot::PrimaryFormat(), gl_helper.get(),
       gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
   output_surface->Initialize();
-  output_surface->Reshape(screen_size, 1.0f, gfx::ColorSpace());
+  output_surface->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   // Trigger a sub-buffer copy to exercise all paths.
   output_surface->BindFramebuffer();
   output_surface->SwapBuffers(screen_rect);
@@ -352,7 +352,7 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
 }
 
 TEST_F(BufferQueueTest, PartialSwapReuse) {
-  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace());
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
@@ -372,7 +372,7 @@ TEST_F(BufferQueueTest, PartialSwapReuse) {
 }
 
 TEST_F(BufferQueueTest, PartialSwapFullFrame) {
-  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace());
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
@@ -385,7 +385,7 @@ TEST_F(BufferQueueTest, PartialSwapFullFrame) {
 }
 
 TEST_F(BufferQueueTest, PartialSwapOverlapping) {
-  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace());
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(_, _, small_damage, screen_rect))
@@ -495,7 +495,7 @@ TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
     SwapBuffers();
   }
 
-  output_surface_->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace());
+  output_surface_->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace(), false);
   EXPECT_EQ(3u, in_flight_surfaces().size());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
@@ -516,7 +516,7 @@ TEST_F(BufferQueueTest, SwapAfterReshape) {
   }
   DCHECK_EQ(kSwapCount, gpu_memory_buffer_manager_->set_color_space_count());
 
-  output_surface_->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace());
+  output_surface_->Reshape(gfx::Size(10, 20), 1.0f, gfx::ColorSpace(), false);
   DCHECK_EQ(kSwapCount, gpu_memory_buffer_manager_->set_color_space_count());
 
   for (size_t i = 0; i < kSwapCount; ++i) {
@@ -628,7 +628,7 @@ TEST_F(BufferQueueMockedContextTest, RecreateBuffers) {
 }
 
 TEST_F(BufferQueueTest, AllocateFails) {
-  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace());
+  output_surface_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
 
   // Succeed in the two swaps.
   output_surface_->BindFramebuffer();

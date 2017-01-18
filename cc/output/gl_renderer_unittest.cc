@@ -1484,11 +1484,12 @@ class MockOutputSurface : public OutputSurface {
 
   MOCK_METHOD0(EnsureBackbuffer, void());
   MOCK_METHOD0(DiscardBackbuffer, void());
-  MOCK_METHOD4(Reshape,
+  MOCK_METHOD5(Reshape,
                void(const gfx::Size& size,
                     float scale_factor,
                     const gfx::ColorSpace& color_space,
-                    bool has_alpha));
+                    bool has_alpha,
+                    bool use_stencil));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
   MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
@@ -1544,7 +1545,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
     EXPECT_CALL(*output_surface_, EnsureBackbuffer()).WillRepeatedly(Return());
 
     EXPECT_CALL(*output_surface_,
-                Reshape(viewport_size, device_scale_factor, _, transparent))
+                Reshape(viewport_size, device_scale_factor, _, transparent, _))
         .Times(1);
 
     EXPECT_CALL(*output_surface_, BindFramebuffer()).Times(1);

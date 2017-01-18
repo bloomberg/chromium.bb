@@ -28,6 +28,7 @@ class CC_EXPORT RendererSettings {
   bool disable_display_vsync;
   bool release_overlay_resources_after_gpu_query;
   bool gl_composited_texture_quad_border;
+  bool show_overdraw_feedback;
 
   double refresh_rate;
   int highp_threshold_min;

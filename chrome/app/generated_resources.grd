@@ -5478,6 +5478,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_GL_COMPOSITED_TEXTURE_QUAD_BORDERS_DESCRIPTION" desc="Description of the 'Composited layer borders' lab.">
         Renders a border around GL composited texture quads to help debug and study overlay support.
       </message>
+      <message name="IDS_FLAGS_SHOW_OVERDRAW_FEEDBACK" desc="Name of the 'Overdraw feedback' lab.">
+        Show overdraw feedback
+      </message>
+      <message name="IDS_FLAGS_SHOW_OVERDRAW_FEEDBACK_DESCRIPTION" desc="Description of the 'Overdraw feedback' lab.">
+        Visualize overdraw by color-coding elements based on if they have other elements drawn underneath.
+      </message>
+      <message name="IDS_FLAGS_UI_PARTIAL_SWAP_NAME" desc="Name for the flag that sets partial swap behavior.">
+          Partial swap
+        </message>
+        <message name="IDS_FLAGS_UI_PARTIAL_SWAP_DESCRIPTION" desc="Description for the flag that sets partial swap behavior.">
+          Sets partial swap behavior.
+        </message>
       <message name="IDS_FLAGS_DEBUG_SHORTCUTS_NAME" desc="Name of the 'Debugging keyboard shortcuts' lab.">
         Debugging keyboard shortcuts
       </message>

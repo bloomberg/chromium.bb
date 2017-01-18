@@ -111,7 +111,8 @@ void OffscreenBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,
     float scale_factor,
     const gfx::ColorSpace& color_space,
-    bool alpha) {
+    bool alpha,
+    bool stencil) {
   reshape_size_ = size;
   DiscardBackbuffer();
   EnsureBackbuffer();

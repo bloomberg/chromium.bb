@@ -488,7 +488,9 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   else
     gl_->ClearColor(0, 0, 1, 1);
 
-  bool always_clear = false;
+  gl_->ClearStencil(0);
+
+  bool always_clear = overdraw_feedback_;
 #ifndef NDEBUG
   always_clear = true;
 #endif
@@ -605,7 +607,8 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
 
   static float gl_matrix[16];
   const Program* program = GetProgram(ProgramKey::DebugBorder());
-  DCHECK(program && (program->initialized() || IsContextLost()));
+  DCHECK(program);
+  DCHECK(program->initialized() || IsContextLost());
   SetUseProgram(program->program());
 
   // Use the full quad_rect for debug quads to not move the edges based on
@@ -2146,7 +2149,8 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
       use_nv12 ? UV_TEXTURE_MODE_UV : UV_TEXTURE_MODE_U_V,
       use_color_lut ? COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV
                     : COLOR_CONVERSION_MODE_NONE));
-  DCHECK(program && (program->initialized() || IsContextLost()));
+  DCHECK(program);
+  DCHECK(program->initialized() || IsContextLost());
   SetUseProgram(program->program());
   matrix_location = program->matrix_location();
   ya_tex_scale_location = program->ya_tex_scale_location();
@@ -2448,7 +2452,8 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
     DCHECK_EQ(1u, draw_cache_.matrix_data.size());
     SetBlendEnabled(false);
     const Program* program = GetProgram(ProgramKey::DebugBorder());
-    DCHECK(program && (program->initialized() || IsContextLost()));
+    DCHECK(program);
+    DCHECK(program->initialized() || IsContextLost());
     SetUseProgram(program->program());
 
     gl_->UniformMatrix4fv(
@@ -2588,8 +2593,11 @@ void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
     pending_sync_queries_.push_back(std::move(current_sync_query_));
   }
 
-  current_framebuffer_lock_ = nullptr;
   swap_buffer_rect_.Union(frame->root_damage_rect);
+  if (overdraw_feedback_)
+    FlushOverdrawFeedback(frame, swap_buffer_rect_);
+
+  current_framebuffer_lock_ = nullptr;
 
   gl_->Disable(GL_BLEND);
   blend_shadow_ = false;
@@ -2827,6 +2835,9 @@ void GLRenderer::GetFramebufferPixelsAsync(
   if (rect.IsEmpty())
     return;
 
+  if (overdraw_feedback_)
+    FlushOverdrawFeedback(frame, rect);
+
   gfx::Rect window_rect = MoveFromDrawToWindowSpace(frame, rect);
   DCHECK_GE(window_rect.x(), 0);
   DCHECK_GE(window_rect.y(), 0);
@@ -3018,7 +3029,13 @@ void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
   current_framebuffer_lock_ = nullptr;
   output_surface_->BindFramebuffer();
 
-  if (output_surface_->HasExternalStencilTest()) {
+  if (overdraw_feedback_) {
+    // Output surfaces that require an external stencil test should not allow
+    // overdraw feedback by setting |supports_stencil| to false.
+    DCHECK(!output_surface_->HasExternalStencilTest());
+    SetupOverdrawFeedback();
+    SetStencilEnabled(true);
+  } else if (output_surface_->HasExternalStencilTest()) {
     output_surface_->ApplyExternalStencil();
     SetStencilEnabled(true);
   } else {
@@ -3034,7 +3051,6 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   // same texture again.
   current_framebuffer_lock_ = nullptr;
 
-  SetStencilEnabled(false);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_);
   current_framebuffer_lock_ =
       base::MakeUnique<ResourceProvider::ScopedWriteLockGL>(
@@ -3043,10 +3059,33 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   unsigned texture_id = current_framebuffer_lock_->texture_id();
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                             texture_id, 0);
+  if (overdraw_feedback_) {
+    if (!offscreen_stencil_renderbuffer_id_)
+      gl_->GenRenderbuffers(1, &offscreen_stencil_renderbuffer_id_);
+    if (texture->size() != offscreen_stencil_renderbuffer_size_) {
+      gl_->BindRenderbuffer(GL_RENDERBUFFER,
+                            offscreen_stencil_renderbuffer_id_);
+      gl_->RenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8,
+                               texture->size().width(),
+                               texture->size().height());
+      gl_->BindRenderbuffer(GL_RENDERBUFFER, 0);
+      offscreen_stencil_renderbuffer_size_ = texture->size();
+    }
+    gl_->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                 GL_RENDERBUFFER,
+                                 offscreen_stencil_renderbuffer_id_);
+  }
 
   DCHECK(gl_->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
              GL_FRAMEBUFFER_COMPLETE ||
          IsContextLost());
+
+  if (overdraw_feedback_) {
+    SetupOverdrawFeedback();
+    SetStencilEnabled(true);
+  } else {
+    SetStencilEnabled(false);
+  }
   return true;
 }
 
@@ -3126,6 +3165,9 @@ void GLRenderer::CleanupSharedObjects() {
 
   if (offscreen_framebuffer_id_)
     gl_->DeleteFramebuffers(1, &offscreen_framebuffer_id_);
+
+  if (offscreen_stencil_renderbuffer_id_)
+    gl_->DeleteRenderbuffers(1, &offscreen_stencil_renderbuffer_id_);
 
   ReleaseRenderPassTextures();
 }
@@ -3457,6 +3499,114 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
   gl_->ScheduleCALayerCHROMIUM(
       texture_id, contents_rect, ca_layer_overlay->background_color,
       ca_layer_overlay->edge_aa_mask, bounds_rect, filter);
+}
+
+void GLRenderer::SetupOverdrawFeedback() {
+  gl_->StencilFunc(GL_ALWAYS, 1, 0xffffffff);
+  // First two values are ignored as test always passes.
+  gl_->StencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+  gl_->StencilMask(0xffffffff);
+}
+
+void GLRenderer::FlushOverdrawFeedback(const DrawingFrame* frame,
+                                       const gfx::Rect& output_rect) {
+  DCHECK(stencil_shadow_);
+
+  // Test only, keep everything.
+  gl_->StencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+  EnsureScissorTestDisabled();
+  SetBlendEnabled(true);
+
+  PrepareGeometry(SHARED_BINDING);
+
+  const Program* program = GetProgram(ProgramKey::DebugBorder());
+  DCHECK(program);
+  DCHECK(program->initialized() || IsContextLost());
+  SetUseProgram(program->program());
+
+  gfx::Transform render_matrix;
+  render_matrix.Translate(0.5 * output_rect.width() + output_rect.x(),
+                          0.5 * output_rect.height() + output_rect.y());
+  render_matrix.Scale(output_rect.width(), output_rect.height());
+  static float gl_matrix[16];
+  GLRenderer::ToGLMatrix(&gl_matrix[0],
+                         frame->projection_matrix * render_matrix);
+  gl_->UniformMatrix4fv(program->matrix_location(), 1, false, &gl_matrix[0]);
+
+  // Produce hinting for the amount of overdraw on screen for each pixel by
+  // drawing hint colors to the framebuffer based on the current stencil value.
+  struct {
+    int multiplier;
+    GLenum func;
+    GLint ref;
+    SkColor color;
+  } stencil_tests[] = {
+      {1, GL_EQUAL, 2, 0x2f0000ff},  // Blue: Overdrawn once.
+      {2, GL_EQUAL, 3, 0x2f00ff00},  // Green: Overdrawn twice.
+      {3, GL_EQUAL, 4, 0x3fff0000},  // Pink: Overdrawn three times.
+      {4, GL_LESS, 4, 0x7fff0000},   // Red: Overdrawn four or more times.
+  };
+
+  // Occlusion queries can be expensive, so only collect trace data if we select
+  // cc.debug.overdraw.
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.overdraw"), &tracing_enabled);
+
+  // Trace only the root render pass.
+  if (frame->current_render_pass != frame->root_render_pass)
+    tracing_enabled = false;
+
+  OverdrawFeedbackCallback overdraw_feedback_callback = base::Bind(
+      &GLRenderer::ProcessOverdrawFeedback, weak_ptr_factory_.GetWeakPtr(),
+      base::Owned(new std::vector<int>), arraysize(stencil_tests));
+
+  for (const auto& test : stencil_tests) {
+    GLuint query = 0;
+    if (tracing_enabled) {
+      gl_->GenQueriesEXT(1, &query);
+      // TODO(reveman): Use SAMPLES_PASSED_ARB for exact amount of overdraw.
+      gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, query);
+    }
+
+    gl_->StencilFunc(test.func, test.ref, 0xffffffff);
+    // Transparent color unless color-coding of overdraw is enabled.
+    Float4 color =
+        PremultipliedColor(settings_->show_overdraw_feedback ? test.color : 0);
+    gl_->Uniform4fv(program->color_location(), 1, color.data);
+    gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+
+    if (query) {
+      gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
+      context_support_->SignalQuery(
+          query,
+          base::Bind(overdraw_feedback_callback, query, test.multiplier));
+    }
+  }
+}
+
+void GLRenderer::ProcessOverdrawFeedback(std::vector<int>* overdraw,
+                                         size_t num_expected_results,
+                                         unsigned query,
+                                         int multiplier) {
+  unsigned result = 0;
+  if (query) {
+    gl_->GetQueryObjectuivEXT(query, GL_QUERY_RESULT_EXT, &result);
+    DCHECK_LE(result, 1u);
+    gl_->DeleteQueriesEXT(1, &query);
+  }
+
+  // Apply multiplier to get the amount of overdraw.
+  overdraw->push_back(result * multiplier);
+
+  // Return early if we are expecting more results.
+  if (overdraw->size() < num_expected_results)
+    return;
+
+  // Report the maximum amount of overdraw.
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.overdraw"), "GPU Overdraw",
+                 *std::max_element(overdraw->begin(), overdraw->end()));
 }
 
 }  // namespace cc

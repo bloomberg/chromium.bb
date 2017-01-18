@@ -2195,7 +2195,8 @@ class ExternalStencilPixelTest : public GLRendererPixelTest {
   void ClearBackgroundToGreen() {
     GLES2Interface* gl = output_surface_->context_provider()->ContextGL();
     output_surface_->EnsureBackbuffer();
-    output_surface_->Reshape(device_viewport_size_, 1, gfx::ColorSpace(), true);
+    output_surface_->Reshape(device_viewport_size_, 1, gfx::ColorSpace(), true,
+                             false);
     gl->ClearColor(0.f, 1.f, 0.f, 1.f);
     gl->Clear(GL_COLOR_BUFFER_BIT);
   }
@@ -2204,7 +2205,8 @@ class ExternalStencilPixelTest : public GLRendererPixelTest {
     // Set two quadrants of the stencil buffer to 1.
     GLES2Interface* gl = output_surface_->context_provider()->ContextGL();
     output_surface_->EnsureBackbuffer();
-    output_surface_->Reshape(device_viewport_size_, 1, gfx::ColorSpace(), true);
+    output_surface_->Reshape(device_viewport_size_, 1, gfx::ColorSpace(), true,
+                             false);
     gl->ClearStencil(0);
     gl->Clear(GL_STENCIL_BUFFER_BIT);
     gl->Enable(GL_SCISSOR_TEST);
@@ -3265,6 +3267,59 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("spiral.png")),
       FuzzyPixelOffByOneComparator(true)));
+}
+
+class GLRendererPixelTestWithOverdrawFeedback : public GLRendererPixelTest {
+ protected:
+  void SetUp() override {
+    settings_.renderer_settings.show_overdraw_feedback = true;
+    GLRendererPixelTest::SetUp();
+  }
+};
+
+TEST_F(GLRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  gfx::Transform transform_to_root;
+  std::unique_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, rect, transform_to_root);
+
+  gfx::Transform dark_gray_quad_to_target_transform;
+  dark_gray_quad_to_target_transform.Translate(50, 50);
+  dark_gray_quad_to_target_transform.Scale(
+      0.5f + 1.0f / (rect.width() * 2.0f),
+      0.5f + 1.0f / (rect.height() * 2.0f));
+  SharedQuadState* dark_gray_shared_state = CreateTestSharedQuadState(
+      dark_gray_quad_to_target_transform, rect, pass.get());
+
+  SolidColorDrawQuad* dark_gray =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  dark_gray->SetNew(dark_gray_shared_state, rect, rect, 0x10444444, false);
+
+  gfx::Transform light_gray_quad_to_target_transform;
+  light_gray_quad_to_target_transform.Translate(25.5f, 25.5f);
+  light_gray_quad_to_target_transform.Scale(0.5f, 0.5f);
+  SharedQuadState* light_gray_shared_state = CreateTestSharedQuadState(
+      light_gray_quad_to_target_transform, rect, pass.get());
+
+  SolidColorDrawQuad* light_gray =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  light_gray->SetNew(light_gray_shared_state, rect, rect, 0x10CCCCCC, false);
+
+  gfx::Transform bg_quad_to_target_transform;
+  SharedQuadState* bg_shared_state =
+      CreateTestSharedQuadState(bg_quad_to_target_transform, rect, pass.get());
+
+  SolidColorDrawQuad* bg = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  bg->SetNew(bg_shared_state, rect, rect, SK_ColorBLACK, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(&pass_list, base::FilePath(FILE_PATH_LITERAL(
+                                                 "translucent_rectangles.png")),
+                                 ExactPixelComparator(true)));
 }
 
 #endif  // !defined(OS_ANDROID)

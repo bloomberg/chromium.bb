@@ -44,6 +44,10 @@ class CC_EXPORT OutputSurface {
     bool uses_default_gl_framebuffer = true;
     // Whether this OutputSurface is flipped or not.
     bool flipped_output_surface = false;
+    // Whether this OutputSurface supports stencil operations or not.
+    // Note: HasExternalStencilTest() must return false when an output surface
+    // has been configured for stencil usage.
+    bool supports_stencil = false;
   };
 
   // Constructor for GL-based compositing.
@@ -94,7 +98,8 @@ class CC_EXPORT OutputSurface {
   virtual void Reshape(const gfx::Size& size,
                        float device_scale_factor,
                        const gfx::ColorSpace& color_space,
-                       bool has_alpha) = 0;
+                       bool has_alpha,
+                       bool use_stencil) = 0;
 
   virtual bool HasExternalStencilTest() const = 0;
   virtual void ApplyExternalStencil() = 0;

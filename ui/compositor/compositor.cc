@@ -132,6 +132,8 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 #endif
   settings.renderer_settings.gl_composited_texture_quad_border =
       command_line->HasSwitch(cc::switches::kGlCompositedTextureQuadBorder);
+  settings.renderer_settings.show_overdraw_feedback =
+      command_line->HasSwitch(cc::switches::kShowOverdrawFeedback);
 
   // These flags should be mirrored by renderer versions in content/renderer/.
   settings.initial_debug_state.show_debug_borders =

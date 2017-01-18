@@ -35,7 +35,8 @@ void ParentOutputSurface::BindFramebuffer() {
 void ParentOutputSurface::Reshape(const gfx::Size& size,
                                   float scale_factor,
                                   const gfx::ColorSpace& color_space,
-                                  bool has_alpha) {}
+                                  bool has_alpha,
+                                  bool use_stencil) {}
 
 void ParentOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
