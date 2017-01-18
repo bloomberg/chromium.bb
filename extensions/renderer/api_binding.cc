@@ -264,6 +264,7 @@ void APIBinding::HandleCall(const std::string& name,
   }
 
   bool invalid_invocation = false;
+  v8::Local<v8::Function> custom_callback;
   {
     v8::TryCatch try_catch(isolate);
     APIBindingHooks::RequestResult hooks_result =
@@ -286,6 +287,7 @@ void APIBinding::HandleCall(const std::string& name,
       case APIBindingHooks::RequestResult::NOT_HANDLED:
         break;  // Handle in the default manner.
     }
+    custom_callback = hooks_result.custom_callback;
   }
 
   if (invalid_invocation) {
@@ -313,8 +315,24 @@ void APIBinding::HandleCall(const std::string& name,
 
   auto request = base::MakeUnique<Request>();
   if (!callback.IsEmpty()) {
-    request->request_id =
-        request_handler_->AddPendingRequest(isolate, callback, context);
+    // In the JS bindings, custom callbacks are called with the arguments of
+    // name, the full request object (see below), the original callback, and
+    // the responses from the API. The responses from the API are handled by the
+    // APIRequestHandler, but we need to curry in the other values.
+    std::vector<v8::Local<v8::Value>> callback_args;
+    if (!custom_callback.IsEmpty()) {
+      // TODO(devlin): The |request| object in the JS bindings includes
+      // properties for callback, callbackSchema, args, stack, id, and
+      // customCallback. Of those, it appears that we only use stack, args, and
+      // id (since callback is curried in separately). We may be able to update
+      // bindings to get away from some of those. For now, just pass in an empty
+      // object (most APIs don't rely on it).
+      v8::Local<v8::Object> request = v8::Object::New(isolate);
+      callback_args = { gin::StringToSymbol(isolate, name), request, callback };
+      callback = custom_callback;
+    }
+    request->request_id = request_handler_->AddPendingRequest(
+        isolate, callback, context, callback_args);
     request->has_callback = true;
   }
   // TODO(devlin): Query and curry user gestures around.

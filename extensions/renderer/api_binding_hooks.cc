@@ -35,7 +35,8 @@ class JSHookInterface final : public gin::Wrappable<JSHookInterface> {
         .SetMethod("setUpdateArgumentsPreValidate",
                    &JSHookInterface::SetUpdateArgumentsPreValidate)
         .SetMethod("setUpdateArgumentsPostValidate",
-                   &JSHookInterface::SetUpdateArgumentsPostValidate);
+                   &JSHookInterface::SetUpdateArgumentsPostValidate)
+        .SetMethod("setCustomCallback", &JSHookInterface::SetCustomCallback);
   }
 
   void ClearHooks() {
@@ -57,6 +58,11 @@ class JSHookInterface final : public gin::Wrappable<JSHookInterface> {
   v8::Local<v8::Function> GetPostValidationHook(const std::string& method_name,
                                                 v8::Isolate* isolate) const {
     return GetHookFromMap(post_validation_hooks_, method_name, isolate);
+  }
+
+  v8::Local<v8::Function> GetCustomCallback(const std::string& method_name,
+                                            v8::Isolate* isolate) const {
+    return GetHookFromMap(custom_callback_hooks_, method_name, isolate);
   }
 
  private:
@@ -106,11 +112,18 @@ class JSHookInterface final : public gin::Wrappable<JSHookInterface> {
     AddHookToMap(&post_validation_hooks_, isolate, method_name, hook);
   }
 
+  void SetCustomCallback(v8::Isolate* isolate,
+                         const std::string& method_name,
+                         v8::Local<v8::Function> hook) {
+    AddHookToMap(&custom_callback_hooks_, isolate, method_name, hook);
+  }
+
   std::string api_name_;
 
   JSHooks handle_request_hooks_;
   JSHooks pre_validation_hooks_;
   JSHooks post_validation_hooks_;
+  JSHooks custom_callback_hooks_;
 
   DISALLOW_COPY_AND_ASSIGN(JSHookInterface);
 };
@@ -180,6 +193,10 @@ v8::Local<v8::Object> GetJSHookInterfaceObject(
 }  // namespace
 
 APIBindingHooks::RequestResult::RequestResult(ResultCode code) : code(code) {}
+APIBindingHooks::RequestResult::RequestResult(
+    ResultCode code,
+    v8::Local<v8::Function> custom_callback)
+    : code(code), custom_callback(custom_callback) {}
 APIBindingHooks::RequestResult::~RequestResult() {}
 APIBindingHooks::RequestResult::RequestResult(const RequestResult& other) =
     default;
@@ -251,10 +268,13 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
       hook_interface->GetPostValidationHook(method_name, isolate);
   v8::Local<v8::Function> handle_request =
       hook_interface->GetHandleRequestHook(method_name, isolate);
+  v8::Local<v8::Function> custom_callback =
+      hook_interface->GetCustomCallback(method_name, isolate);
+
   // If both the post validation hook and the handle request hook are empty,
   // we're done...
   if (post_validate_hook.IsEmpty() && handle_request.IsEmpty())
-    return RequestResult(RequestResult::NOT_HANDLED);
+    return RequestResult(RequestResult::NOT_HANDLED, custom_callback);
 
   {
     // ... otherwise, we have to validate the arguments.
@@ -280,7 +300,7 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
   }
 
   if (handle_request.IsEmpty())
-    return RequestResult(RequestResult::NOT_HANDLED);
+    return RequestResult(RequestResult::NOT_HANDLED, custom_callback);
 
   v8::Global<v8::Value> global_result =
       run_js_.Run(handle_request, context, arguments->size(),
@@ -289,7 +309,7 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     try_catch.ReThrow();
     return RequestResult(RequestResult::THROWN);
   }
-  RequestResult result(RequestResult::HANDLED);
+  RequestResult result(RequestResult::HANDLED, custom_callback);
   if (!global_result.IsEmpty())
     result.return_value = global_result.Get(isolate);
   return result;

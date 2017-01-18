@@ -351,6 +351,60 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
   }
 }
 
+// Tests the setCustomCallback hook.
+TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  const char kHook[] =
+      "(function(hooks) {\n"
+      "  hooks.setCustomCallback(\n"
+      "      'functionWithCallback', (name, request, originalCallback,\n"
+      "                               firstResult, secondResult) => {\n"
+      "    this.methodName = name;\n"
+      // TODO(devlin): Currently, we don't actually pass anything useful in for
+      // the |request| object. If/when we do, we should test it.
+      "    this.results = [firstResult, secondResult];\n"
+      "    originalCallback(secondResult);\n"
+      "  });\n"
+      "})";
+
+  APIBindingHooks* hooks = bindings_system()->GetHooksForAPI(kAlphaAPIName);
+  ASSERT_TRUE(hooks);
+  v8::Local<v8::String> source_string = gin::StringToV8(isolate(), kHook);
+  v8::Local<v8::String> source_name = gin::StringToV8(isolate(), "custom_hook");
+  hooks->RegisterJsSource(v8::Global<v8::String>(isolate(), source_string),
+                          v8::Global<v8::String>(isolate(), source_name));
+
+  v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
+      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
+  ASSERT_FALSE(alpha_api.IsEmpty());
+
+  {
+    const char kTestCall[] =
+        "obj.functionWithCallback('foo', function() {\n"
+        "  this.callbackArguments = Array.from(arguments);\n"
+        "});";
+    CallFunctionOnObject(context, alpha_api, kTestCall);
+
+    ValidateLastRequest("alpha.functionWithCallback", "['foo']");
+
+    std::unique_ptr<base::ListValue> response =
+        ListValueFromString("['alpha','beta']");
+    bindings_system()->CompleteRequest(last_request()->request_id, *response);
+
+    EXPECT_EQ(
+        "\"alpha.functionWithCallback\"",
+        GetStringPropertyFromObject(context->Global(), context, "methodName"));
+    EXPECT_EQ(
+        "[\"alpha\",\"beta\"]",
+        GetStringPropertyFromObject(context->Global(), context, "results"));
+    EXPECT_EQ("[\"beta\"]",
+              GetStringPropertyFromObject(context->Global(), context,
+                                          "callbackArguments"));
+  }
+}
+
 // An implementation using real API schemas.
 class APIBindingsSystemTestWithRealAPI : public APIBindingsSystemTestBase {
  protected:

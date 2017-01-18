@@ -36,7 +36,8 @@ class APIRequestHandler {
   // request.
   int AddPendingRequest(v8::Isolate* isolate,
                         v8::Local<v8::Function> callback,
-                        v8::Local<v8::Context> context);
+                        v8::Local<v8::Context> context,
+                        const std::vector<v8::Local<v8::Value>>& callback_args);
 
   // Responds to the request with the given |request_id|, calling the callback
   // with the given |response| arguments.
@@ -52,14 +53,16 @@ class APIRequestHandler {
   struct PendingRequest {
     PendingRequest(v8::Isolate* isolate,
                    v8::Local<v8::Function> callback,
-                   v8::Local<v8::Context> context);
+                   v8::Local<v8::Context> context,
+                   const std::vector<v8::Local<v8::Value>>& callback_args);
     ~PendingRequest();
     PendingRequest(PendingRequest&&);
     PendingRequest& operator=(PendingRequest&&);
 
     v8::Isolate* isolate;
-    v8::Global<v8::Function> callback;
     v8::Global<v8::Context> context;
+    v8::Global<v8::Function> callback;
+    std::vector<v8::Global<v8::Value>> callback_arguments;
   };
 
   // The next available request identifier.

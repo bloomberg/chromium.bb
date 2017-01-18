@@ -15,10 +15,15 @@ namespace extensions {
 APIRequestHandler::PendingRequest::PendingRequest(
     v8::Isolate* isolate,
     v8::Local<v8::Function> callback,
-    v8::Local<v8::Context> context)
-    : isolate(isolate),
-      callback(isolate, callback),
-      context(isolate, context) {}
+    v8::Local<v8::Context> context,
+    const std::vector<v8::Local<v8::Value>>& local_callback_args)
+    : isolate(isolate), context(isolate, context), callback(isolate, callback) {
+  if (!local_callback_args.empty()) {
+    callback_arguments.reserve(local_callback_args.size());
+    for (const auto& arg : local_callback_args)
+      callback_arguments.push_back(v8::Global<v8::Value>(isolate, arg));
+  }
+}
 
 APIRequestHandler::PendingRequest::~PendingRequest() {}
 APIRequestHandler::PendingRequest::PendingRequest(PendingRequest&&) = default;
@@ -30,16 +35,18 @@ APIRequestHandler::APIRequestHandler(const CallJSFunction& call_js)
 
 APIRequestHandler::~APIRequestHandler() {}
 
-int APIRequestHandler::AddPendingRequest(v8::Isolate* isolate,
-                                         v8::Local<v8::Function> callback,
-                                         v8::Local<v8::Context> context) {
+int APIRequestHandler::AddPendingRequest(
+    v8::Isolate* isolate,
+    v8::Local<v8::Function> callback,
+    v8::Local<v8::Context> context,
+    const std::vector<v8::Local<v8::Value>>& callback_args) {
   // TODO(devlin): We could *probably* get away with just using an integer here,
   // but it's a little less foolproof. How slow is GenerateGUID? Should we use
   // that instead? It means updating the IPC (ExtensionHostMsg_Request).
   // base::UnguessableToken is another good option.
   int id = next_request_id_++;
-  pending_requests_.insert(
-      std::make_pair(id, PendingRequest(isolate, callback, context)));
+  pending_requests_.insert(std::make_pair(
+      id, PendingRequest(isolate, callback, context, callback_args)));
   return id;
 }
 
@@ -60,9 +67,12 @@ void APIRequestHandler::CompleteRequest(int request_id,
   std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   std::vector<v8::Local<v8::Value>> args;
-  args.reserve(response_args.GetSize());
-  for (const auto& response : response_args)
-    args.push_back(converter->ToV8Value(response.get(), context));
+  args.reserve(response_args.GetSize() +
+               pending_request.callback_arguments.size());
+  for (const auto& arg : pending_request.callback_arguments)
+    args.push_back(arg.Get(isolate));
+  for (const auto& arg : response_args)
+    args.push_back(converter->ToV8Value(arg.get(), context));
 
   // args.size() is converted to int, but args is controlled by chrome and is
   // never close to std::numeric_limits<int>::max.

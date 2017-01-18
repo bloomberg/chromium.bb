@@ -40,10 +40,12 @@ class APIBindingHooks {
     };
 
     explicit RequestResult(ResultCode code);
+    RequestResult(ResultCode code, v8::Local<v8::Function> custom_callback);
     RequestResult(const RequestResult& other);
     ~RequestResult();
 
     ResultCode code;
+    v8::Local<v8::Function> custom_callback;
     v8::Local<v8::Value> return_value;  // Only valid if code == HANDLED.
   };
 
