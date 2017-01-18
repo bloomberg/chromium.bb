@@ -100,11 +100,6 @@ EditCommandComposition::EditCommandComposition(
       m_endingRootEditableElement(endingSelection.rootEditableElement()),
       m_inputType(inputType) {}
 
-bool EditCommandComposition::belongsTo(const LocalFrame& frame) const {
-  DCHECK(m_document);
-  return m_document->frame() == &frame;
-}
-
 void EditCommandComposition::unapply() {
   DCHECK(m_document);
   LocalFrame* frame = m_document->frame();

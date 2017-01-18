@@ -51,7 +51,6 @@ class EditCommandComposition final : public UndoStep {
                                         const VisibleSelection&,
                                         InputEvent::InputType);
 
-  bool belongsTo(const LocalFrame&) const override;
   void unapply() override;
   void reapply() override;
   InputEvent::InputType inputType() const override;
