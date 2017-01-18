@@ -20,6 +20,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/test/combobox_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -225,12 +226,13 @@ class ComboboxTest : public ViewsTestBase {
   }
 
  protected:
-  void PressKey(ui::KeyboardCode key_code) {
-    event_generator_->PressKey(key_code, ui::EF_NONE);
+  void PressKey(ui::KeyboardCode key_code, ui::EventFlags flags = ui::EF_NONE) {
+    event_generator_->PressKey(key_code, flags);
   }
 
-  void ReleaseKey(ui::KeyboardCode key_code) {
-    event_generator_->ReleaseKey(key_code, ui::EF_NONE);
+  void ReleaseKey(ui::KeyboardCode key_code,
+                  ui::EventFlags flags = ui::EF_NONE) {
+    event_generator_->ReleaseKey(key_code, flags);
   }
 
   View* GetFocusedView() {
@@ -275,26 +277,52 @@ class ComboboxTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(ComboboxTest);
 };
 
-TEST_F(ComboboxTest, KeyTest) {
+#if defined(OS_MACOSX)
+// Tests whether the various Mac specific keyboard shortcuts invoke the dropdown
+// menu or not.
+TEST_F(ComboboxTest, KeyTestMac) {
   InitCombobox(nullptr, Combobox::STYLE_NORMAL);
   PressKey(ui::VKEY_END);
-  EXPECT_EQ(combobox_->selected_index() + 1, model_->GetItemCount());
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(1, menu_show_count_);
+
   PressKey(ui::VKEY_HOME);
-  EXPECT_EQ(combobox_->selected_index(), 0);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(2, menu_show_count_);
+
+  PressKey(ui::VKEY_UP, ui::EF_COMMAND_DOWN);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(3, menu_show_count_);
+
+  PressKey(ui::VKEY_DOWN, ui::EF_COMMAND_DOWN);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(4, menu_show_count_);
+
   PressKey(ui::VKEY_DOWN);
-  PressKey(ui::VKEY_DOWN);
-  EXPECT_EQ(combobox_->selected_index(), 2);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(5, menu_show_count_);
+
   PressKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(combobox_->selected_index(), 2);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(5, menu_show_count_);
+
   PressKey(ui::VKEY_LEFT);
-  EXPECT_EQ(combobox_->selected_index(), 2);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(5, menu_show_count_);
+
   PressKey(ui::VKEY_UP);
-  EXPECT_EQ(combobox_->selected_index(), 1);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(6, menu_show_count_);
+
   PressKey(ui::VKEY_PRIOR);
-  EXPECT_EQ(combobox_->selected_index(), 0);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(6, menu_show_count_);
+
   PressKey(ui::VKEY_NEXT);
-  EXPECT_EQ(combobox_->selected_index(), model_->GetItemCount() - 1);
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_EQ(6, menu_show_count_);
 }
+#endif
 
 // Check that if a combobox is disabled before it has a native wrapper, then the
 // native wrapper inherits the disabled state when it gets created.
@@ -314,6 +342,33 @@ TEST_F(ComboboxTest, DisabilityTest) {
   widget_->SetContentsView(container);
   container->AddChildView(combobox_);
   EXPECT_FALSE(combobox_->enabled());
+}
+
+// On Mac, key events can't change the currently selected index directly for a
+// combobox.
+#if !defined(OS_MACOSX)
+
+// Tests the behavior of various keyboard shortcuts on the currently selected
+// index.
+TEST_F(ComboboxTest, KeyTest) {
+  InitCombobox(nullptr, Combobox::STYLE_NORMAL);
+  PressKey(ui::VKEY_END);
+  EXPECT_EQ(model_->GetItemCount(), combobox_->selected_index() + 1);
+  PressKey(ui::VKEY_HOME);
+  EXPECT_EQ(0, combobox_->selected_index());
+  PressKey(ui::VKEY_DOWN);
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_EQ(2, combobox_->selected_index());
+  PressKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(2, combobox_->selected_index());
+  PressKey(ui::VKEY_LEFT);
+  EXPECT_EQ(2, combobox_->selected_index());
+  PressKey(ui::VKEY_UP);
+  EXPECT_EQ(1, combobox_->selected_index());
+  PressKey(ui::VKEY_PRIOR);
+  EXPECT_EQ(0, combobox_->selected_index());
+  PressKey(ui::VKEY_NEXT);
+  EXPECT_EQ(model_->GetItemCount() - 1, combobox_->selected_index());
 }
 
 // Verifies that we don't select a separator line in combobox when navigating
@@ -436,6 +491,7 @@ TEST_F(ComboboxTest, SkipMultipleSeparatorsAtEnd) {
   PressKey(ui::VKEY_END);
   EXPECT_EQ(6, combobox_->selected_index());
 }
+#endif  // !OS_MACOSX
 
 TEST_F(ComboboxTest, GetTextForRowTest) {
   std::set<int> separators;
@@ -546,7 +602,8 @@ TEST_F(ComboboxTest, NotifyOnClickWithReturnKey) {
 
   // With STYLE_NORMAL, the click event is ignored. Instead the menu is shown.
   PressKey(ui::VKEY_RETURN);
-  EXPECT_EQ(1, menu_show_count_);
+  EXPECT_EQ(PlatformStyle::kReturnClicksFocusedControl ? 1 : 0,
+            menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
 }
 
@@ -559,8 +616,14 @@ TEST_F(ComboboxTest, NotifyOnClickWithReturnKeyActionStyle) {
   // With STYLE_ACTION, the click event is notified and the menu is not shown.
   PressKey(ui::VKEY_RETURN);
   EXPECT_EQ(0, menu_show_count_);
-  EXPECT_TRUE(listener.on_perform_action_called());
-  EXPECT_EQ(0, listener.perform_action_index());
+
+  if (PlatformStyle::kReturnClicksFocusedControl) {
+    EXPECT_TRUE(listener.on_perform_action_called());
+    EXPECT_EQ(0, listener.perform_action_index());
+  } else {
+    EXPECT_FALSE(listener.on_perform_action_called());
+    EXPECT_EQ(-1, listener.perform_action_index());
+  }
 }
 
 TEST_F(ComboboxTest, NotifyOnClickWithSpaceKey) {
@@ -586,15 +649,26 @@ TEST_F(ComboboxTest, NotifyOnClickWithSpaceKeyActionStyle) {
   combobox_->set_listener(&listener);
 
   // With STYLE_ACTION, the click event is notified after releasing and the menu
-  // is not shown.
+  // is not shown. On Mac, the menu should be shown.
   PressKey(ui::VKEY_SPACE);
+#if defined(OS_MACOSX)
+  EXPECT_EQ(1, menu_show_count_);
+#else
   EXPECT_EQ(0, menu_show_count_);
+#endif
   EXPECT_FALSE(listener.on_perform_action_called());
+  EXPECT_EQ(-1, listener.perform_action_index());
 
   ReleaseKey(ui::VKEY_SPACE);
+#if defined(OS_MACOSX)
+  EXPECT_EQ(1, menu_show_count_);
+  EXPECT_FALSE(listener.on_perform_action_called());
+  EXPECT_EQ(-1, listener.perform_action_index());
+#else
   EXPECT_EQ(0, menu_show_count_);
   EXPECT_TRUE(listener.on_perform_action_called());
   EXPECT_EQ(0, listener.perform_action_index());
+#endif
 }
 
 TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
@@ -638,24 +712,37 @@ TEST_F(ComboboxTest, ConsumingPressKeyEvents) {
   InitCombobox(nullptr, Combobox::STYLE_NORMAL);
 
   EXPECT_TRUE(combobox_->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE)));
-  EXPECT_EQ(1, menu_show_count_);
-  EXPECT_TRUE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE)));
-  EXPECT_EQ(2, menu_show_count_);
+  EXPECT_EQ(1, menu_show_count_);
+
+  ui::KeyEvent return_press(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+  if (PlatformStyle::kReturnClicksFocusedControl) {
+    EXPECT_TRUE(combobox_->OnKeyPressed(return_press));
+    EXPECT_EQ(2, menu_show_count_);
+  } else {
+    EXPECT_FALSE(combobox_->OnKeyPressed(return_press));
+    EXPECT_EQ(1, menu_show_count_);
+  }
 }
 
 TEST_F(ComboboxTest, ConsumingKeyPressEventsActionStyle) {
   // When the combobox's style is STYLE_ACTION, pressing events of a space key
-  // or an enter key will be consumed and the menu is not shown.
+  // or an enter key will be consumed and the menu is not shown. However, on
+  // Mac, space will show the menu.
   InitCombobox(nullptr, Combobox::STYLE_ACTION);
 
-  EXPECT_TRUE(combobox_->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE)));
+  EXPECT_EQ(PlatformStyle::kReturnClicksFocusedControl,
+            combobox_->OnKeyPressed(ui::KeyEvent(
+                ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE)));
   EXPECT_EQ(0, menu_show_count_);
+
   EXPECT_TRUE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE)));
+#if defined(OS_MACOSX)
+  EXPECT_EQ(1, menu_show_count_);
+#else
   EXPECT_EQ(0, menu_show_count_);
+#endif
 }
 
 TEST_F(ComboboxTest, ContentWidth) {

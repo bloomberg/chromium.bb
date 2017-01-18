@@ -161,6 +161,7 @@ class TransparentButton : public CustomButton {
   DISALLOW_COPY_AND_ASSIGN(TransparentButton);
 };
 
+#if !defined(OS_MACOSX)
 // Returns the next or previous valid index (depending on |increment|'s value).
 // Skips separator or disabled indices. Returns -1 if there is no valid adjacent
 // index.
@@ -175,6 +176,7 @@ int GetAdjacentIndex(ui::ComboboxModel* model, int increment, int index) {
   }
   return kNoSelection;
 }
+#endif
 
 // Returns the image resource ids of an array for the body button.
 //
@@ -619,6 +621,16 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
   bool show_menu = false;
   int new_index = kNoSelection;
   switch (e.key_code()) {
+#if defined(OS_MACOSX)
+    case ui::VKEY_DOWN:
+    case ui::VKEY_UP:
+    case ui::VKEY_SPACE:
+    case ui::VKEY_HOME:
+    case ui::VKEY_END:
+      // On Mac, navigation keys should always just show the menu first.
+      show_menu = true;
+      break;
+#else
     // Show the menu on F4 without modifiers.
     case ui::VKEY_F4:
       if (e.IsAltDown() || e.IsAltGrDown() || e.IsControlDown())
@@ -667,7 +679,7 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
       else
         show_menu = true;
       break;
-
+#endif  // OS_MACOSX
     default:
       return false;
   }
@@ -688,7 +700,8 @@ bool Combobox::OnKeyReleased(const ui::KeyEvent& e) {
   if (style_ != STYLE_ACTION)
     return false;  // crbug.com/127520
 
-  if (e.key_code() == ui::VKEY_SPACE && style_ == STYLE_ACTION)
+  if (e.key_code() == ui::VKEY_SPACE && style_ == STYLE_ACTION &&
+      text_button_->state() == Button::STATE_PRESSED)
     OnPerformAction();
 
   return false;

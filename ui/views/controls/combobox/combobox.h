@@ -36,11 +36,13 @@ class PrefixSelector;
 // Combobox has two distinct parts, the drop down arrow and the text. Combobox
 // offers two distinct behaviors:
 // * STYLE_NORMAL: typical combobox, clicking on the text and/or button shows
-// the drop down, arrow keys change selection, selected index can be changed by
-// the user to something other than the first item.
+//   the drop down, arrow keys change selection or show the menu depending on
+//   the platform, selected index can be changed by the user to something other
+//   than the first item.
 // * STYLE_ACTION: clicking on the text notifies the listener. The menu can be
-// shown only by clicking on the arrow. The selected index is always reverted to
-// 0 after the listener is notified.
+//   shown only by clicking on the arrow, except on Mac where it can be shown
+//   through the keyboard. The selected index is always reverted to 0 after the
+//   listener is notified.
 class VIEWS_EXPORT Combobox : public View,
                               public PrefixDelegate,
                               public ButtonListener {
