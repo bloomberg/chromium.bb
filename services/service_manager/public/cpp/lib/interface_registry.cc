@@ -202,22 +202,26 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
     } else if (!default_binder_.is_null()) {
       default_binder_.Run(interface_name, std::move(handle));
     } else {
-      std::stringstream ss;
-      ss << "Failed to locate a binder for interface: " << interface_name
-         << " requested by: " << remote_identity_.name() << " exposed by: "
-         << local_identity_.name() << " via InterfaceProviderSpec \"" << name_
-         << "\".";
-      Serialize(&ss);
-      LOG(ERROR) << ss.str();
+      LOG(ERROR) << "Failed to locate a binder for interface: "
+         << interface_name << " requested by: " << remote_identity_.name()
+         << " exposed by: " << local_identity_.name()
+         << " via InterfaceProviderSpec \"" << name_ << "\".";
+
+      std::stringstream details;
+      Serialize(&details);
+      LOG(WARNING) << details.str();
     }
   } else {
-    std::stringstream ss;
-    ss << "InterfaceProviderSpec \"" << name_ << "\" prevented service: "
+    std::stringstream error;
+    error << "InterfaceProviderSpec \"" << name_ << "\" prevented service: "
        << remote_identity_.name() << " from binding interface: "
        << interface_name << " exposed by: " << local_identity_.name();
-    Serialize(&ss);
-    LOG(ERROR) << ss.str();
-    mojo::ReportBadMessage(ss.str());
+    mojo::ReportBadMessage(error.str());
+    LOG(ERROR) << error.str();
+
+    std::stringstream details;
+    Serialize(&details);
+    LOG(WARNING) << details.str();
   }
 }
 
