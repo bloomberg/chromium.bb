@@ -56,11 +56,6 @@ public class PlatformServiceBridge {
         return sInstance;
     }
 
-    // TODO(paulmiller): remove; replaced by canUseGms
-    public boolean tryEnableGms() {
-        return false;
-    }
-
     // Can WebView use Google Play Services (a.k.a. GMS)?
     public boolean canUseGms() {
         return false;
