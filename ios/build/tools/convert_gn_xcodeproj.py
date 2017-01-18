@@ -167,21 +167,25 @@ def ConvertGnXcodeProject(input_dir, output_dir, configurations):
   product_output = os.path.join(output_dir, products)
   UpdateProductsProject(product_input, product_output, configurations)
 
-  # Copy sources project and all workspace.
-  sources = os.path.join('sources.xcodeproj', 'project.pbxproj')
-  CopyFileIfChanged(os.path.join(input_dir, sources),
-                    os.path.join(output_dir, sources))
+  # Copy all workspace.
   xcwspace = os.path.join('all.xcworkspace', 'contents.xcworkspacedata')
   CopyFileIfChanged(os.path.join(input_dir, xcwspace),
                     os.path.join(output_dir, xcwspace))
-
+  # TODO(crbug.com/679110): gn has been modified to remove 'sources.xcodeproj'
+  # and keep 'all.xcworkspace' and 'products.xcodeproj'. The following code is
+  # here to support both old and new projects setup and will be removed once gn
+  # has rolled past it.
+  sources = os.path.join('sources.xcodeproj', 'project.pbxproj')
+  if os.path.isfile(os.path.join(input_dir, sources)):
+    CopyFileIfChanged(os.path.join(input_dir, sources),
+                      os.path.join(output_dir, sources))
 
 def Main(args):
   parser = argparse.ArgumentParser(
       description='Convert GN Xcode projects for iOS.')
   parser.add_argument(
       'input',
-      help='directory containing [product|sources|all] Xcode projects.')
+      help='directory containing [product|all] Xcode projects.')
   parser.add_argument(
       'output',
       help='directory where to generate the iOS configuration.')
@@ -194,7 +198,7 @@ def Main(args):
     sys.stderr.write('Input directory does not exists.\n')
     return 1
 
-  required = set(['products.xcodeproj', 'sources.xcodeproj', 'all.xcworkspace'])
+  required = set(['products.xcodeproj', 'all.xcworkspace'])
   if not required.issubset(os.listdir(args.input)):
     sys.stderr.write(
         'Input directory does not contain all necessary Xcode projects.\n')
