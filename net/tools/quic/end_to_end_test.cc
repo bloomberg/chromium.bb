@@ -365,8 +365,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 
-  const QuicSentPacketManagerInterface*
-  GetSentPacketManagerFromFirstServerSession() const {
+  const QuicSentPacketManager* GetSentPacketManagerFromFirstServerSession()
+      const {
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicSession* session = dispatcher->session_map().begin()->second.get();
@@ -1353,8 +1353,7 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
   server_thread_->Pause();
   EXPECT_EQ(expected_congestion_control_type,
             QuicSentPacketManagerPeer::GetSendAlgorithm(
-                *static_cast<const QuicSentPacketManager*>(
-                    GetSentPacketManagerFromFirstServerSession()))
+                *GetSentPacketManagerFromFirstServerSession())
                 ->GetCongestionControlType());
   server_thread_->Resume();
 }
@@ -1389,9 +1388,9 @@ TEST_P(EndToEndTest, ClientSuggestsRTT) {
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
-  const QuicSentPacketManagerInterface& client_sent_packet_manager =
+  const QuicSentPacketManager& client_sent_packet_manager =
       client_->client()->session()->connection()->sent_packet_manager();
-  const QuicSentPacketManagerInterface* server_sent_packet_manager =
+  const QuicSentPacketManager* server_sent_packet_manager =
       GetSentPacketManagerFromFirstServerSession();
 
   EXPECT_EQ(kInitialRTT,
@@ -1417,7 +1416,7 @@ TEST_P(EndToEndTest, MaxInitialRTT) {
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
   QuicSession* session = dispatcher->session_map().begin()->second.get();
-  const QuicSentPacketManagerInterface& client_sent_packet_manager =
+  const QuicSentPacketManager& client_sent_packet_manager =
       client_->client()->session()->connection()->sent_packet_manager();
 
   // Now that acks have been exchanged, the RTT estimate has decreased on the
@@ -1447,9 +1446,9 @@ TEST_P(EndToEndTest, MinInitialRTT) {
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
   QuicSession* session = dispatcher->session_map().begin()->second.get();
-  const QuicSentPacketManagerInterface& client_sent_packet_manager =
+  const QuicSentPacketManager& client_sent_packet_manager =
       client_->client()->session()->connection()->sent_packet_manager();
-  const QuicSentPacketManagerInterface& server_sent_packet_manager =
+  const QuicSentPacketManager& server_sent_packet_manager =
       session->connection()->sent_packet_manager();
 
   // Now that acks have been exchanged, the RTT estimate has decreased on the

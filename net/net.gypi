@@ -1170,7 +1170,6 @@
       'quic/core/quic_received_packet_manager.h',
       'quic/core/quic_sent_packet_manager.cc',
       'quic/core/quic_sent_packet_manager.h',
-      'quic/core/quic_sent_packet_manager_interface.h',
       'quic/core/quic_server_id.cc',
       'quic/core/quic_server_id.h',
       'quic/core/quic_server_session_base.cc',

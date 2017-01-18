@@ -30,7 +30,6 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packet_generator.h"
 #include "net/quic/core/quic_pending_retransmission.h"
-#include "net/quic/core/quic_sent_packet_manager.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
@@ -251,13 +250,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       last_send_for_timeout_(clock_->ApproximateNow()),
       packet_number_of_last_sent_packet_(0),
-      sent_packet_manager_(new QuicSentPacketManager(perspective,
-                                                     kDefaultPathId,
-                                                     clock_,
-                                                     &stats_,
-                                                     kCubicBytes,
-                                                     kNack,
-                                                     /*delegate=*/nullptr)),
+      sent_packet_manager_(perspective, clock_, &stats_, kCubicBytes, kNack),
       version_negotiation_state_(START_NEGOTIATION),
       perspective_(perspective),
       connected_(true),
@@ -280,7 +273,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   stats_.connection_creation_time = clock_->ApproximateNow();
   // TODO(ianswett): Supply the NetworkChangeVisitor as a constructor argument
   // and make it required non-null, because it's always used.
-  sent_packet_manager_->SetNetworkChangeVisitor(this);
+  sent_packet_manager_.SetNetworkChangeVisitor(this);
   // Allow the packet writer to potentially reduce the packet size to a value
   // even smaller than kDefaultMaxPacketSize.
   SetMaxPacketLength(perspective_ == Perspective::IS_SERVER
@@ -324,7 +317,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
                        config.max_idle_time_before_crypto_handshake());
   }
 
-  sent_packet_manager_->SetFromConfig(config);
+  sent_packet_manager_.SetFromConfig(config);
   if (config.HasReceivedBytesForConnectionId() &&
       can_truncate_connection_ids_) {
     packet_generator_.SetConnectionIdLength(
@@ -380,16 +373,16 @@ void QuicConnection::OnReceiveConnectionState(
 void QuicConnection::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params,
     bool max_bandwidth_resumption) {
-  sent_packet_manager_->ResumeConnectionState(cached_network_params,
-                                              max_bandwidth_resumption);
+  sent_packet_manager_.ResumeConnectionState(cached_network_params,
+                                             max_bandwidth_resumption);
 }
 
 void QuicConnection::SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
-  sent_packet_manager_->SetMaxPacingRate(max_pacing_rate);
+  sent_packet_manager_.SetMaxPacingRate(max_pacing_rate);
 }
 
 void QuicConnection::SetNumOpenStreams(size_t num_streams) {
-  sent_packet_manager_->SetNumOpenStreams(num_streams);
+  sent_packet_manager_.SetNumOpenStreams(num_streams);
 }
 
 bool QuicConnection::SelectMutualVersion(
@@ -611,7 +604,7 @@ void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
   // confirmed.
   if (level == ENCRYPTION_FORWARD_SECURE &&
       perspective_ == Perspective::IS_SERVER) {
-    sent_packet_manager_->SetHandshakeConfirmed();
+    sent_packet_manager_.SetHandshakeConfirmed();
   }
 }
 
@@ -636,7 +629,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   if (active_peer_migration_type_ == NO_CHANGE &&
       peer_migration_type != NO_CHANGE &&
       header.packet_number > received_packet_manager_.GetLargestObserved()) {
-    StartPeerMigration(header.path_id, peer_migration_type);
+    StartPeerMigration(peer_migration_type);
   }
 
   --stats_.packets_dropped;
@@ -718,7 +711,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   // acking packets which we never care about.
   // Send an ack to raise the high water mark.
   if (!incoming_ack.packets.Empty() &&
-      GetLeastUnacked(incoming_ack.path_id) > incoming_ack.packets.Min()) {
+      GetLeastUnacked() > incoming_ack.packets.Min()) {
     ++stop_waiting_count_;
   } else {
     stop_waiting_count_ = 0;
@@ -729,8 +722,8 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
 
 void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   largest_seen_packet_with_ack_ = last_header_.packet_number;
-  sent_packet_manager_->OnIncomingAck(incoming_ack,
-                                      time_of_last_received_packet_);
+  sent_packet_manager_.OnIncomingAck(incoming_ack,
+                                     time_of_last_received_packet_);
   // Always reset the retransmission alarm when an ack comes in, since we now
   // have a better estimate of the current rtt than when it was set.
   SetRetransmissionAlarm();
@@ -797,11 +790,10 @@ const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
   }
 
   if (incoming_ack.largest_observed <
-      sent_packet_manager_->GetLargestObserved(incoming_ack.path_id)) {
+      sent_packet_manager_.GetLargestObserved()) {
     QUIC_LOG(INFO) << ENDPOINT << "Peer's largest_observed packet decreased:"
                    << incoming_ack.largest_observed << " vs "
-                   << sent_packet_manager_->GetLargestObserved(
-                          incoming_ack.path_id)
+                   << sent_packet_manager_.GetLargestObserved()
                    << " packet_number:" << last_header_.packet_number
                    << " largest seen with ack:" << largest_seen_packet_with_ack_
                    << " connection_id: " << connection_id_;
@@ -1011,10 +1003,9 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
         ack_queued_ = true;
       } else if (!ack_alarm_->IsSet()) {
         // Wait the minimum of a quarter min_rtt and the delayed ack time.
-        QuicTime::Delta ack_delay =
-            std::min(DelayedAckTime(),
-                     sent_packet_manager_->GetRttStats()->min_rtt() *
-                         ack_decimation_delay_);
+        QuicTime::Delta ack_delay = std::min(
+            DelayedAckTime(), sent_packet_manager_.GetRttStats()->min_rtt() *
+                                  ack_decimation_delay_);
         ack_alarm_->Set(clock_->ApproximateNow() + ack_delay);
       }
     } else {
@@ -1033,7 +1024,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
         // Wait the minimum of an eighth min_rtt and the existing ack time.
         QuicTime ack_time =
             clock_->ApproximateNow() +
-            0.125 * sent_packet_manager_->GetRttStats()->min_rtt();
+            0.125 * sent_packet_manager_.GetRttStats()->min_rtt();
         if (!ack_alarm_->IsSet() || ack_alarm_->deadline() > ack_time) {
           ack_alarm_->Update(ack_time, QuicTime::Delta::Zero());
         }
@@ -1061,11 +1052,11 @@ const QuicFrame QuicConnection::GetUpdatedAckFrame() {
 
 void QuicConnection::PopulateStopWaitingFrame(
     QuicStopWaitingFrame* stop_waiting) {
-  stop_waiting->least_unacked = GetLeastUnacked(stop_waiting->path_id);
+  stop_waiting->least_unacked = GetLeastUnacked();
 }
 
-QuicPacketNumber QuicConnection::GetLeastUnacked(QuicPathId path_id) const {
-  return sent_packet_manager_->GetLeastUnacked(path_id);
+QuicPacketNumber QuicConnection::GetLeastUnacked() const {
+  return sent_packet_manager_.GetLeastUnacked();
 }
 
 void QuicConnection::MaybeSendInResponseToPacket() {
@@ -1156,7 +1147,7 @@ void QuicConnection::SendRstStream(QuicStreamId id,
     return;
   }
 
-  sent_packet_manager_->CancelRetransmissionsForStream(id);
+  sent_packet_manager_.CancelRetransmissionsForStream(id);
   // Remove all queued packets which only contain data for the reset stream.
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (packet_iterator != queued_packets_.end()) {
@@ -1200,7 +1191,7 @@ void QuicConnection::SendPathClose(QuicPathId path_id) {
 }
 
 const QuicConnectionStats& QuicConnection::GetStats() {
-  const RttStats* rtt_stats = sent_packet_manager_->GetRttStats();
+  const RttStats* rtt_stats = sent_packet_manager_.GetRttStats();
 
   // Update rtt and estimated bandwidth.
   QuicTime::Delta min_rtt = rtt_stats->min_rtt();
@@ -1217,7 +1208,7 @@ const QuicConnectionStats& QuicConnection::GetStats() {
   }
   stats_.srtt_us = srtt.ToMicroseconds();
 
-  stats_.estimated_bandwidth = sent_packet_manager_->BandwidthEstimate();
+  stats_.estimated_bandwidth = sent_packet_manager_.BandwidthEstimate();
   stats_.max_packet_size = packet_generator_.GetCurrentMaxPacketLength();
   stats_.max_received_packet_size = largest_received_packet_size_;
   return stats_;
@@ -1281,9 +1272,9 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
 
   ++stats_.packets_processed;
   if (active_peer_migration_type_ != NO_CHANGE &&
-      sent_packet_manager_->GetLargestObserved(last_header_.path_id) >
+      sent_packet_manager_.GetLargestObserved() >
           highest_packet_sent_before_peer_migration_) {
-    OnPeerMigrationValidated(last_header_.path_id);
+    OnPeerMigrationValidated();
   }
   MaybeProcessUndecryptablePackets();
   MaybeSendInResponseToPacket();
@@ -1437,9 +1428,9 @@ void QuicConnection::WriteQueuedPackets() {
 void QuicConnection::WritePendingRetransmissions() {
   // Keep writing as long as there's a pending retransmission which can be
   // written.
-  while (sent_packet_manager_->HasPendingRetransmissions()) {
+  while (sent_packet_manager_.HasPendingRetransmissions()) {
     const QuicPendingRetransmission pending =
-        sent_packet_manager_->NextPendingRetransmission();
+        sent_packet_manager_.NextPendingRetransmission();
     if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
       break;
     }
@@ -1458,13 +1449,13 @@ void QuicConnection::WritePendingRetransmissions() {
 
 void QuicConnection::RetransmitUnackedPackets(
     TransmissionType retransmission_type) {
-  sent_packet_manager_->RetransmitUnackedPackets(retransmission_type);
+  sent_packet_manager_.RetransmitUnackedPackets(retransmission_type);
 
   WriteIfNotBlocked();
 }
 
 void QuicConnection::NeuterUnencryptedPackets() {
-  sent_packet_manager_->NeuterUnencryptedPackets();
+  sent_packet_manager_.NeuterUnencryptedPackets();
   // This may have changed the retransmission timer, so re-arm it.
   SetRetransmissionAlarm();
 }
@@ -1500,18 +1491,13 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return false;
   }
 
-  // TODO(fayang): If delay is not infinite, the next packet will be created and
-  // sent on path_id.
-  QuicPathId path_id = kInvalidPathId;
   QuicTime now = clock_->Now();
-  QuicTime::Delta delay = sent_packet_manager_->TimeUntilSend(now, &path_id);
+  QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(now);
   if (delay.IsInfinite()) {
-    DCHECK_EQ(kInvalidPathId, path_id);
     send_alarm_->Cancel();
     return false;
   }
 
-  DCHECK_NE(kInvalidPathId, path_id);
   // If the scheduler requires a delay, then we can not send this packet now.
   if (!delay.IsZero()) {
     send_alarm_->Update(now + delay, QuicTime::Delta::FromMilliseconds(1));
@@ -1523,10 +1509,9 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
 }
 
 bool QuicConnection::WritePacket(SerializedPacket* packet) {
-  if (packet->packet_number <
-      sent_packet_manager_->GetLargestSentPacket(packet->path_id)) {
-    QUIC_BUG << "Attempt to write packet:" << packet->packet_number << " after:"
-             << sent_packet_manager_->GetLargestSentPacket(packet->path_id);
+  if (packet->packet_number < sent_packet_manager_.GetLargestSentPacket()) {
+    QUIC_BUG << "Attempt to write packet:" << packet->packet_number
+             << " after:" << sent_packet_manager_.GetLargestSentPacket();
     CloseConnection(QUIC_INTERNAL_ERROR, "Packet written out of order.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return true;
@@ -1647,9 +1632,9 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   QUIC_DVLOG(1) << ENDPOINT << "time we began writing last sent packet: "
                 << packet_send_time.ToDebuggingValue();
 
-  bool reset_retransmission_alarm = sent_packet_manager_->OnPacketSent(
-      packet, packet->original_path_id, packet->original_packet_number,
-      packet_send_time, packet->transmission_type, IsRetransmittable(*packet));
+  bool reset_retransmission_alarm = sent_packet_manager_.OnPacketSent(
+      packet, packet->original_packet_number, packet_send_time,
+      packet->transmission_type, IsRetransmittable(*packet));
 
   if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
     SetRetransmissionAlarm();
@@ -1658,8 +1643,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   // The packet number length must be updated after OnPacketSent, because it
   // may change the packet number length in packet.
   packet_generator_.UpdateSequenceNumberLength(
-      sent_packet_manager_->GetLeastUnacked(packet->path_id),
-      sent_packet_manager_->EstimateMaxPacketsInFlight(max_packet_length()));
+      sent_packet_manager_.GetLeastUnacked(),
+      sent_packet_manager_.EstimateMaxPacketsInFlight(max_packet_length()));
 
   stats_.bytes_sent += result.bytes_written;
   ++stats_.packets_sent;
@@ -1745,10 +1730,10 @@ void QuicConnection::OnCongestionChange() {
   visitor_->OnCongestionWindowChange(clock_->ApproximateNow());
 
   // Uses the connection's smoothed RTT. If zero, uses initial_rtt.
-  QuicTime::Delta rtt = sent_packet_manager_->GetRttStats()->smoothed_rtt();
+  QuicTime::Delta rtt = sent_packet_manager_.GetRttStats()->smoothed_rtt();
   if (rtt.IsZero()) {
     rtt = QuicTime::Delta::FromMicroseconds(
-        sent_packet_manager_->GetRttStats()->initial_rtt_us());
+        sent_packet_manager_.GetRttStats()->initial_rtt_us());
   }
 
   if (debug_visitor_)
@@ -1766,7 +1751,7 @@ void QuicConnection::OnPathMtuIncreased(QuicPacketLength packet_size) {
 }
 
 void QuicConnection::OnHandshakeComplete() {
-  sent_packet_manager_->SetHandshakeConfirmed();
+  sent_packet_manager_.SetHandshakeConfirmed();
   // The client should immediately ack the SHLO to confirm the handshake is
   // complete with the server.
   if (perspective_ == Perspective::IS_CLIENT && !ack_queued_ &&
@@ -1821,17 +1806,17 @@ void QuicConnection::SendAck() {
 }
 
 void QuicConnection::OnRetransmissionTimeout() {
-  DCHECK(sent_packet_manager_->HasUnackedPackets());
+  DCHECK(sent_packet_manager_.HasUnackedPackets());
 
   if (close_connection_after_five_rtos_ &&
-      sent_packet_manager_->GetConsecutiveRtoCount() >= 4) {
+      sent_packet_manager_.GetConsecutiveRtoCount() >= 4) {
     // Close on the 5th consecutive RTO, so after 4 previous RTOs have occurred.
     CloseConnection(QUIC_TOO_MANY_RTOS, "5 consecutive retransmission timeouts",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
 
-  sent_packet_manager_->OnRetransmissionTimeout();
+  sent_packet_manager_.OnRetransmissionTimeout();
   WriteIfNotBlocked();
 
   // A write failure can result in the connection being closed, don't attempt to
@@ -1842,7 +1827,7 @@ void QuicConnection::OnRetransmissionTimeout() {
 
   // In the TLP case, the SentPacketManager gives the connection the opportunity
   // to send new data before retransmitting.
-  if (sent_packet_manager_->MaybeRetransmitTailLossProbe()) {
+  if (sent_packet_manager_.MaybeRetransmitTailLossProbe()) {
     // Send the pending retransmission now that it's been queued.
     WriteIfNotBlocked();
   }
@@ -2158,7 +2143,7 @@ void QuicConnection::SetRetransmissionAlarm() {
     pending_retransmission_alarm_ = true;
     return;
   }
-  QuicTime retransmission_time = sent_packet_manager_->GetRetransmissionTime();
+  QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
   retransmission_alarm_->Update(retransmission_time,
                                 QuicTime::Delta::FromMilliseconds(1));
 }
@@ -2362,7 +2347,7 @@ void QuicConnection::DiscoverMtu() {
   DCHECK(!mtu_discovery_alarm_->IsSet());
 }
 
-void QuicConnection::OnPeerMigrationValidated(QuicPathId path_id) {
+void QuicConnection::OnPeerMigrationValidated() {
   if (active_peer_migration_type_ == NO_CHANGE) {
     QUIC_BUG << "No migration underway.";
     return;
@@ -2376,7 +2361,6 @@ void QuicConnection::OnPeerMigrationValidated(QuicPathId path_id) {
 // migration. This should happen even if a migration is underway, since the
 // most recent migration is the one that we should pay attention to.
 void QuicConnection::StartPeerMigration(
-    QuicPathId path_id,
     PeerAddressChangeType peer_migration_type) {
   // TODO(fayang): Currently, all peer address change type are allowed. Need to
   // add a method ShouldAllowPeerAddressChange(PeerAddressChangeType type) to
@@ -2399,7 +2383,7 @@ void QuicConnection::StartPeerMigration(
   // TODO(jri): Move these calls to OnPeerMigrationValidated. Rename
   // OnConnectionMigration methods to OnPeerMigration.
   visitor_->OnConnectionMigration(peer_migration_type);
-  sent_packet_manager_->OnConnectionMigration(path_id, peer_migration_type);
+  sent_packet_manager_.OnConnectionMigration(peer_migration_type);
 }
 
 void QuicConnection::OnPathClosed(QuicPathId path_id) {
@@ -2463,9 +2447,9 @@ const QuicTime::Delta QuicConnection::DelayedAckTime() {
 
 void QuicConnection::CheckIfApplicationLimited() {
   if (queued_packets_.empty() &&
-      !sent_packet_manager_->HasPendingRetransmissions() &&
+      !sent_packet_manager_.HasPendingRetransmissions() &&
       !visitor_->WillingAndAbleToWrite()) {
-    sent_packet_manager_->OnApplicationLimited();
+    sent_packet_manager_.OnApplicationLimited();
   }
 }
 

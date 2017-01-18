@@ -70,8 +70,7 @@ QuicPacketGenerator* QuicConnectionPeer::GetPacketGenerator(
 // static
 QuicSentPacketManager* QuicConnectionPeer::GetSentPacketManager(
     QuicConnection* connection) {
-  return static_cast<QuicSentPacketManager*>(
-      connection->sent_packet_manager_.get());
+  return &connection->sent_packet_manager_;
 }
 
 // static

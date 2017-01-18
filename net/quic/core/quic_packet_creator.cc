@@ -301,7 +301,6 @@ void QuicPacketCreator::ReserializeAllFrames(
                           << packet_.packet_number_length;
   }
   SerializePacket(buffer, buffer_len);
-  packet_.original_path_id = retransmission.path_id;
   packet_.original_packet_number = retransmission.packet_number;
   packet_.transmission_type = retransmission.transmission_type;
   OnSerializedPacket();

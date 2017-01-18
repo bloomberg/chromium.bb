@@ -41,7 +41,7 @@
 #include "net/quic/core/quic_packet_writer.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_received_packet_manager.h"
-#include "net/quic/core/quic_sent_packet_manager_interface.h"
+#include "net/quic/core/quic_sent_packet_manager.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
@@ -160,7 +160,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 // points.  Implementations must not mutate the state of the connection
 // as a result of these callbacks.
 class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
-    : public QuicSentPacketManagerInterface::DebugDelegate {
+    : public QuicSentPacketManager::DebugDelegate {
  public:
   ~QuicConnectionDebugVisitor() override {}
 
@@ -287,7 +287,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     : public QuicFramerVisitorInterface,
       public QuicBlockedWriterInterface,
       public QuicPacketGenerator::DelegateInterface,
-      public QuicSentPacketManagerInterface::NetworkChangeVisitor {
+      public QuicSentPacketManager::NetworkChangeVisitor {
  public:
   enum AckBundling {
     // Send an ack if it's already queued in the connection.
@@ -482,7 +482,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
   void set_debug_visitor(QuicConnectionDebugVisitor* debug_visitor) {
     debug_visitor_ = debug_visitor;
-    sent_packet_manager_->SetDebugDelegate(debug_visitor);
+    sent_packet_manager_.SetDebugDelegate(debug_visitor);
   }
   void set_ping_timeout(QuicTime::Delta ping_timeout) {
     ping_timeout_ = ping_timeout;
@@ -603,8 +603,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
 
   // Returns the underlying sent packet manager.
-  const QuicSentPacketManagerInterface& sent_packet_manager() const {
-    return *sent_packet_manager_;
+  const QuicSentPacketManager& sent_packet_manager() const {
+    return sent_packet_manager_;
   }
 
   bool CanWrite(HasRetransmittableData retransmittable);
@@ -702,13 +702,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // cannot be written immediately.
   virtual void SendOrQueuePacket(SerializedPacket* packet);
 
-  // Called after a packet is received from a new peer address on existing
-  // |path_id| and is decrypted. Starts validation of peer's address change.
-  virtual void StartPeerMigration(QuicPathId path_id,
-                                  PeerAddressChangeType peer_migration_type);
+  // Called after a packet is received from a new peer address and is decrypted.
+  // Starts validation of peer's address change.
+  virtual void StartPeerMigration(PeerAddressChangeType peer_migration_type);
 
-  // Called when a peer address migration is validated on |path_id|.
-  virtual void OnPeerMigrationValidated(QuicPathId path_id);
+  // Called when a peer address migration is validated.
+  virtual void OnPeerMigrationValidated();
 
   // Selects and updates the version of the protocol being used by selecting a
   // version from |available_versions| which is also supported. Returns true if
@@ -810,9 +809,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // the most recently received packet was formerly missing.
   void MaybeQueueAck(bool was_missing);
 
-  // Gets the least unacked packet number of |path_id|, which is the next packet
-  // number to be sent if there are no outstanding packets.
-  QuicPacketNumber GetLeastUnacked(QuicPathId path_id) const;
+  // Gets the least unacked packet number, which is the next packet number to be
+  // sent if there are no outstanding packets.
+  QuicPacketNumber GetLeastUnacked() const;
 
   // Sets the timeout alarm to the appropriate value, if any.
   void SetTimeoutAlarm();
@@ -1032,7 +1031,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Sent packet manager which tracks the status of packets sent by this
   // connection and contains the send and receive algorithms to determine when
   // to send packets.
-  std::unique_ptr<QuicSentPacketManagerInterface> sent_packet_manager_;
+  QuicSentPacketManager sent_packet_manager_;
 
   // The state of connection in version negotiation finite state machine.
   enum QuicVersionNegotiationState {

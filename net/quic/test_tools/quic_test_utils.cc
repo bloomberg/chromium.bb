@@ -359,9 +359,9 @@ void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {
       CopyBuffer(*packet), packet->encrypted_length, true));
   // Transfer ownership of the packet to the SentPacketManager and the
   // ack notifier to the AckNotifierManager.
-  sent_packet_manager_->OnPacketSent(packet, kInvalidPathId, 0,
-                                     QuicTime::Zero(), NOT_RETRANSMISSION,
-                                     HAS_RETRANSMITTABLE_DATA);
+  sent_packet_manager_.OnPacketSent(packet, 0, QuicTime::Zero(),
+                                    NOT_RETRANSMISSION,
+                                    HAS_RETRANSMITTABLE_DATA);
 }
 
 MockQuicSession::MockQuicSession(QuicConnection* connection)
@@ -829,10 +829,6 @@ MockReceivedPacketManager::MockReceivedPacketManager(QuicConnectionStats* stats)
     : QuicReceivedPacketManager(stats) {}
 
 MockReceivedPacketManager::~MockReceivedPacketManager() {}
-
-MockSentPacketManager::MockSentPacketManager() {}
-
-MockSentPacketManager::~MockSentPacketManager() {}
 
 MockConnectionCloseDelegate::MockConnectionCloseDelegate() {}
 
