@@ -1657,10 +1657,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                                referrer:(const web::Referrer&)referrer
                              windowName:(NSString*)windowName
                            inBackground:(BOOL)inBackground {
-  // Prerendered Tabs cannot open child windows.
-  // TODO(crbug.com/661673): Should we kill prerendering in this case?
-  if (!parentTabModel_)
-    return nil;
+  DCHECK(parentTabModel_);
   if (!inBackground)
     [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
   // Open a new tab or update an existing one. Tabs opened from a web page are
