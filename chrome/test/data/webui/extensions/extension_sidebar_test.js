@@ -100,7 +100,7 @@ cr.define('extension_sidebar_tests', function() {
             sidebar.$$('#sections-apps'), 'showType',
             [extensions.ShowingType.APPS]);
         mockDelegate.testClickingCalls(
-            sidebar.$$('#keyboard-shortcuts'), 'showKeyboardShortcuts', []);
+            sidebar.$$('#sections-shortcuts'), 'showKeyboardShortcuts', []);
       });
     });
   }

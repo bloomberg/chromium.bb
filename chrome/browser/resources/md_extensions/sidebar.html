@@ -77,6 +77,11 @@
         <iron-icon icon="apps"></iron-icon>
         <span>$i18n{sidebarApps}</span>
       </paper-item>
+      <paper-item class="section-menu-item" id="sections-shortcuts"
+          on-tap="onKeyboardShortcutsTap_">
+        <iron-icon icon="hardware:keyboard"></iron-icon>
+        <span>$i18n{keyboardShortcuts}</span>
+      </paper-item>
     </paper-menu>
     <a class="section-item" id="more-extensions" target="_blank"
         href="$i18n{getMoreExtensionsUrl}">
@@ -85,11 +90,6 @@
         <span>$i18n{getMoreExtensions}</span>
       </paper-item>
     </a>
-    <paper-item class="section-item" id="keyboard-shortcuts"
-        on-tap="onKeyboardShortcutsTap_">
-      <iron-icon icon="hardware:keyboard"></iron-icon>
-      <span>$i18n{keyboardShortcuts}</span>
-    </paper-item>
     <div id="devtools-controls">
       <paper-item class="section-item" id="developer-mode">
         <span>$i18n{developerMode}</span>

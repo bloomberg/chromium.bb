@@ -133,7 +133,7 @@ cr.define('extension_manager_tests', function() {
         expectEquals(Page.ITEM_LIST, pages.selected);
 
         // Switch: item list -> keyboard shortcuts.
-        MockInteractions.tap(manager.sidebar.$['keyboard-shortcuts']);
+        MockInteractions.tap(manager.sidebar.$['sections-shortcuts']);
         Polymer.dom.flush();
         expectEquals(Page.KEYBOARD_SHORTCUTS, pages.selected);
 
@@ -150,7 +150,7 @@ cr.define('extension_manager_tests', function() {
         expectEquals(Page.DETAIL_VIEW, pages.selected);
 
         // Switch: detail view -> keyboard shortcuts.
-        MockInteractions.tap(manager.sidebar.$['keyboard-shortcuts']);
+        MockInteractions.tap(manager.sidebar.$['sections-shortcuts']);
         Polymer.dom.flush();
         expectEquals(Page.KEYBOARD_SHORTCUTS, pages.selected);
       });
