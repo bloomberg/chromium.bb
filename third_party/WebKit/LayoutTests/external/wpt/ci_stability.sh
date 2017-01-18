@@ -20,6 +20,19 @@ hosts_fixup() {
     echo "travis_fold:end:hosts_fixup"
 }
 
+install_chrome() {
+    channel=$1
+    deb_archive=google-chrome-${channel}_current_amd64.deb
+    wget https://dl.google.com/linux/direct/$deb_archive
+
+    # Installation will fail in cases where the package has unmet dependencies.
+    # When this occurs, attempt to use the system package manager to fetch the
+    # required packages and retry.
+    if ! sudo dpkg --install $deb_archive; then
+      sudo apt-get install --fix-broken
+      sudo dpkg --install $deb_archive
+    fi
+}
 
 test_stability() {
     python check_stability.py $PRODUCT
@@ -27,6 +40,9 @@ test_stability() {
 
 main() {
     hosts_fixup
+    if [ $(echo $PRODUCT | grep '^chrome:') ]; then
+       install_chrome $(echo $PRODUCT | grep --only-matching '\w\+$')
+    fi
     test_stability
 }
 

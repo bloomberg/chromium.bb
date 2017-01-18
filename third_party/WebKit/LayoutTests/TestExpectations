@@ -1633,7 +1633,6 @@ crbug.com/637930 virtual/mojo-loading/http/tests/media/video-buffered.html [ Pas
 crbug.com/613659 external/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 external/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 external/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
-crbug.com/646133 external/wpt/quirks-mode/unitless-length.html [ Timeout ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
@@ -1660,6 +1659,13 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-email-add-manual.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-search-add-manual.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-url-add-manual.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-text-add-manual.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-textarea-add-manual.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-password-add-manual.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-tel-add-manual.html [ Timeout ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html [ Timeout ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/csswg-test/css-writing-modes-3/sizing-orthog-prct-htb-in-vrl-002.xht [ Failure ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/csswg-test/css-writing-modes-3/sizing-orthog-htb-in-vrl-020.xht [ Failure ]
@@ -2010,7 +2016,6 @@ Bug(dpranke) external/wpt/service-workers/cache-storage/worker/cache-add.https.h
 Bug(dpranke) external/wpt/service-workers/cache-storage/worker/cache-match.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/cache-storage/worker/cache-put.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/update.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/activate-event-after-install-state-change.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/activation-after-registration.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/activation.https.html [ Failure ]
@@ -2026,7 +2031,6 @@ Bug(dpranke) external/wpt/service-workers/service-worker/extendable-event-async-
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event-after-navigation-within-page.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event-network-error.https.html [ Failure ]
 # TIMOUT failures crbug/682065
-Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Failure Timeout ]
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-request-css-images.https.html [ Failure ]
@@ -2059,7 +2063,6 @@ Bug(dpranke) external/wpt/service-workers/service-worker/registration-service-wo
 Bug(dpranke) external/wpt/service-workers/service-worker/registration.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/service-worker-csp-connect.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/service-worker-csp-default.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/serviceworker-message-event-historical.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/serviceworkerobject-scripturl.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure ]
@@ -2076,7 +2079,6 @@ Bug(dpranke) external/wpt/service-workers/service-worker/update-after-navigation
 Bug(dpranke) external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/update-recovery.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/update.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/waiting.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/websocket.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/xhr.https.html [ Failure ]

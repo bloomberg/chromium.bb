@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS Face 
+FAIL Detector detect(HTMLVideoElement) assert_unreached: <video> error Reached unreachable code
+PASS Barcode 
+FAIL Detector detect(HTMLVideoElement) assert_unreached: <video> error Reached unreachable code
+PASS Text 
+FAIL Detector detect(HTMLVideoElement) assert_unreached: <video> error Reached unreachable code
+Harness: the test ran to completion.
+

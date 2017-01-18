@@ -1,0 +1,208 @@
+This is a testharness.js-based test.
+PASS html.title: 32 tests
+PASS html.lang: 32 tests
+PASS html.dir: 62 tests
+PASS html.className (<html class>): 32 tests
+PASS html.hidden: 33 tests
+PASS html.accessKey: 32 tests
+PASS html.tabIndex: 24 tests
+PASS html.version: 32 tests
+PASS script.title: 32 tests
+PASS script.lang: 32 tests
+PASS script.dir: 62 tests
+PASS script.className (<script class>): 32 tests
+PASS script.hidden: 33 tests
+PASS script.accessKey: 32 tests
+PASS script.tabIndex: 24 tests
+PASS script.src: 38 tests
+PASS script.type: 32 tests
+PASS script.charset: 32 tests
+PASS script.defer: 33 tests
+PASS script.crossOrigin: 52 tests
+PASS script.nonce: 2 tests
+FAIL script.nonce: setAttribute() to "" assert_equals: getAttribute() expected "" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "[Replaced]"
+FAIL script.nonce: setAttribute() to undefined assert_equals: getAttribute() expected "undefined" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to 7 assert_equals: getAttribute() expected "7" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to 1.5 assert_equals: getAttribute() expected "1.5" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to true assert_equals: getAttribute() expected "true" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to false assert_equals: getAttribute() expected "false" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to NaN assert_equals: getAttribute() expected "NaN" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to Infinity assert_equals: getAttribute() expected "Infinity" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to "\0" assert_equals: getAttribute() expected "\0" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to null assert_equals: getAttribute() expected "null" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "[Replaced]"
+FAIL script.nonce: setAttribute() to object "test-valueOf" assert_equals: getAttribute() expected "test-valueOf" but got "[Replaced]"
+FAIL script.nonce: IDL set to "" assert_equals: getAttribute() expected "" but got "[Replaced]"
+FAIL script.nonce: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "[Replaced]"
+FAIL script.nonce: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "[Replaced]"
+FAIL script.nonce: IDL set to 7 assert_equals: getAttribute() expected "7" but got "[Replaced]"
+FAIL script.nonce: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "[Replaced]"
+FAIL script.nonce: IDL set to true assert_equals: getAttribute() expected "true" but got "[Replaced]"
+FAIL script.nonce: IDL set to false assert_equals: getAttribute() expected "false" but got "[Replaced]"
+FAIL script.nonce: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "[Replaced]"
+FAIL script.nonce: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "[Replaced]"
+FAIL script.nonce: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "[Replaced]"
+FAIL script.nonce: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "[Replaced]"
+FAIL script.nonce: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "[Replaced]"
+FAIL script.nonce: IDL set to null assert_equals: getAttribute() expected "null" but got "[Replaced]"
+FAIL script.nonce: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "[Replaced]"
+FAIL script.nonce: IDL set to object "test-valueOf" assert_equals: getAttribute() expected "test-valueOf" but got "[Replaced]"
+PASS script.integrity: 32 tests
+PASS noscript.title: 32 tests
+PASS noscript.lang: 32 tests
+PASS noscript.dir: 62 tests
+PASS noscript.className (<noscript class>): 32 tests
+PASS noscript.hidden: 33 tests
+PASS noscript.accessKey: 32 tests
+PASS noscript.tabIndex: 24 tests
+PASS ins.title: 32 tests
+PASS ins.lang: 32 tests
+PASS ins.dir: 62 tests
+PASS ins.className (<ins class>): 32 tests
+PASS ins.hidden: 33 tests
+PASS ins.accessKey: 32 tests
+PASS ins.tabIndex: 24 tests
+PASS ins.cite: 38 tests
+PASS ins.dateTime: 32 tests
+PASS del.title: 32 tests
+PASS del.lang: 32 tests
+PASS del.dir: 62 tests
+PASS del.className (<del class>): 32 tests
+PASS del.hidden: 33 tests
+PASS del.accessKey: 32 tests
+PASS del.tabIndex: 24 tests
+PASS del.cite: 38 tests
+PASS del.dateTime: 32 tests
+PASS details.title: 32 tests
+PASS details.lang: 32 tests
+PASS details.dir: 62 tests
+PASS details.className (<details class>): 32 tests
+PASS details.hidden: 33 tests
+PASS details.accessKey: 32 tests
+PASS details.tabIndex: 24 tests
+PASS details.open: 33 tests
+PASS summary.title: 32 tests
+PASS summary.lang: 32 tests
+PASS summary.dir: 62 tests
+PASS summary.className (<summary class>): 32 tests
+PASS summary.hidden: 33 tests
+PASS summary.accessKey: 32 tests
+PASS summary.tabIndex: typeof IDL attribute 
+FAIL summary.tabIndex: setAttribute() to -36 assert_equals: IDL get expected -36 but got -1
+PASS summary.tabIndex: setAttribute() to -1 
+FAIL summary.tabIndex: setAttribute() to 0 assert_equals: IDL get expected 0 but got -1
+FAIL summary.tabIndex: setAttribute() to 1 assert_equals: IDL get expected 1 but got -1
+FAIL summary.tabIndex: setAttribute() to 2147483647 assert_equals: IDL get expected 2147483647 but got -1
+FAIL summary.tabIndex: setAttribute() to -2147483648 assert_equals: IDL get expected -2147483648 but got -1
+PASS summary.tabIndex: setAttribute() to "-1" 
+FAIL summary.tabIndex: setAttribute() to "-0" assert_equals: IDL get expected 0 but got -1
+FAIL summary.tabIndex: setAttribute() to "0" assert_equals: IDL get expected 0 but got -1
+FAIL summary.tabIndex: setAttribute() to "1" assert_equals: IDL get expected 1 but got -1
+FAIL summary.tabIndex: setAttribute() to "\t7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to "\f7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to " 7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to "\n7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to "\r7" assert_equals: IDL get expected 7 but got -1
+FAIL summary.tabIndex: setAttribute() to 1.5 assert_equals: IDL get expected 1 but got -1
+FAIL summary.tabIndex: setAttribute() to object "2" assert_equals: IDL get expected 2 but got -1
+FAIL summary.tabIndex: IDL set to -36 assert_equals: IDL get expected -36 but got -1
+PASS summary.tabIndex: IDL set to -1 
+FAIL summary.tabIndex: IDL set to 0 assert_equals: IDL get expected 0 but got -1
+FAIL summary.tabIndex: IDL set to 1 assert_equals: IDL get expected 1 but got -1
+FAIL summary.tabIndex: IDL set to 2147483647 assert_equals: IDL get expected 2147483647 but got -1
+FAIL summary.tabIndex: IDL set to -2147483648 assert_equals: IDL get expected -2147483648 but got -1
+PASS menu.title: 32 tests
+PASS menu.lang: 32 tests
+PASS menu.dir: 62 tests
+PASS menu.className (<menu class>): 32 tests
+PASS menu.hidden: 33 tests
+PASS menu.accessKey: 32 tests
+PASS menu.tabIndex: 24 tests
+PASS menu.type: typeof IDL attribute 
+FAIL menu.type: IDL get with DOM attribute unset assert_equals: expected "toolbar" but got ""
+FAIL menu.type: setAttribute() to "" assert_equals: IDL get expected "toolbar" but got ""
+FAIL menu.type: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "toolbar" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
+FAIL menu.type: setAttribute() to undefined assert_equals: IDL get expected "toolbar" but got "undefined"
+FAIL menu.type: setAttribute() to 7 assert_equals: IDL get expected "toolbar" but got "7"
+FAIL menu.type: setAttribute() to 1.5 assert_equals: IDL get expected "toolbar" but got "1.5"
+FAIL menu.type: setAttribute() to true assert_equals: IDL get expected "toolbar" but got "true"
+FAIL menu.type: setAttribute() to false assert_equals: IDL get expected "toolbar" but got "false"
+FAIL menu.type: setAttribute() to object "[object Object]" assert_equals: IDL get expected "toolbar" but got "[object Object]"
+FAIL menu.type: setAttribute() to NaN assert_equals: IDL get expected "toolbar" but got "NaN"
+FAIL menu.type: setAttribute() to Infinity assert_equals: IDL get expected "toolbar" but got "Infinity"
+FAIL menu.type: setAttribute() to -Infinity assert_equals: IDL get expected "toolbar" but got "-Infinity"
+FAIL menu.type: setAttribute() to "\0" assert_equals: IDL get expected "toolbar" but got "\0"
+FAIL menu.type: setAttribute() to null assert_equals: IDL get expected "toolbar" but got "null"
+FAIL menu.type: setAttribute() to object "test-toString" assert_equals: IDL get expected "toolbar" but got "test-toString"
+FAIL menu.type: setAttribute() to object "test-valueOf" assert_equals: IDL get expected "toolbar" but got "test-valueOf"
+PASS menu.type: setAttribute() to "popup" 
+FAIL menu.type: setAttribute() to "xpopup" assert_equals: IDL get expected "toolbar" but got "xpopup"
+FAIL menu.type: setAttribute() to "popup\0" assert_equals: IDL get expected "toolbar" but got "popup\0"
+FAIL menu.type: setAttribute() to "opup" assert_equals: IDL get expected "toolbar" but got "opup"
+FAIL menu.type: setAttribute() to "POPUP" assert_equals: IDL get expected "popup" but got "POPUP"
+PASS menu.type: setAttribute() to "toolbar" 
+FAIL menu.type: setAttribute() to "xtoolbar" assert_equals: IDL get expected "toolbar" but got "xtoolbar"
+FAIL menu.type: setAttribute() to "toolbar\0" assert_equals: IDL get expected "toolbar" but got "toolbar\0"
+FAIL menu.type: setAttribute() to "oolbar" assert_equals: IDL get expected "toolbar" but got "oolbar"
+FAIL menu.type: setAttribute() to "TOOLBAR" assert_equals: IDL get expected "toolbar" but got "TOOLBAR"
+FAIL menu.type: IDL set to "" assert_equals: IDL get expected "toolbar" but got ""
+FAIL menu.type: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "toolbar" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
+FAIL menu.type: IDL set to undefined assert_equals: IDL get expected "toolbar" but got "undefined"
+FAIL menu.type: IDL set to 7 assert_equals: IDL get expected "toolbar" but got "7"
+FAIL menu.type: IDL set to 1.5 assert_equals: IDL get expected "toolbar" but got "1.5"
+FAIL menu.type: IDL set to true assert_equals: IDL get expected "toolbar" but got "true"
+FAIL menu.type: IDL set to false assert_equals: IDL get expected "toolbar" but got "false"
+FAIL menu.type: IDL set to object "[object Object]" assert_equals: IDL get expected "toolbar" but got "[object Object]"
+FAIL menu.type: IDL set to NaN assert_equals: IDL get expected "toolbar" but got "NaN"
+FAIL menu.type: IDL set to Infinity assert_equals: IDL get expected "toolbar" but got "Infinity"
+FAIL menu.type: IDL set to -Infinity assert_equals: IDL get expected "toolbar" but got "-Infinity"
+FAIL menu.type: IDL set to "\0" assert_equals: IDL get expected "toolbar" but got "\0"
+FAIL menu.type: IDL set to null assert_equals: IDL get expected "toolbar" but got "null"
+FAIL menu.type: IDL set to object "test-toString" assert_equals: IDL get expected "toolbar" but got "test-toString"
+FAIL menu.type: IDL set to object "test-valueOf" assert_equals: IDL get expected "toolbar" but got "test-valueOf"
+PASS menu.type: IDL set to "popup" 
+FAIL menu.type: IDL set to "xpopup" assert_equals: IDL get expected "toolbar" but got "xpopup"
+FAIL menu.type: IDL set to "popup\0" assert_equals: IDL get expected "toolbar" but got "popup\0"
+FAIL menu.type: IDL set to "opup" assert_equals: IDL get expected "toolbar" but got "opup"
+FAIL menu.type: IDL set to "POPUP" assert_equals: IDL get expected "popup" but got "POPUP"
+PASS menu.type: IDL set to "toolbar" 
+FAIL menu.type: IDL set to "xtoolbar" assert_equals: IDL get expected "toolbar" but got "xtoolbar"
+FAIL menu.type: IDL set to "toolbar\0" assert_equals: IDL get expected "toolbar" but got "toolbar\0"
+FAIL menu.type: IDL set to "oolbar" assert_equals: IDL get expected "toolbar" but got "oolbar"
+FAIL menu.type: IDL set to "TOOLBAR" assert_equals: IDL get expected "toolbar" but got "TOOLBAR"
+PASS menu.label: 32 tests
+PASS menu.compact: 33 tests
+PASS menuitem.title: 32 tests
+PASS menuitem.lang: 32 tests
+PASS menuitem.dir: 62 tests
+PASS menuitem.className (<menuitem class>): 32 tests
+PASS menuitem.hidden: 33 tests
+PASS menuitem.accessKey: 32 tests
+PASS menuitem.tabIndex: 24 tests
+PASS menuitem.type: 62 tests
+PASS menuitem.label: 32 tests
+PASS menuitem.icon: 38 tests
+PASS menuitem.disabled: 33 tests
+PASS menuitem.checked: 33 tests
+PASS menuitem.radiogroup: 32 tests
+PASS menuitem.default: 33 tests
+PASS dialog.title: 32 tests
+PASS dialog.lang: 32 tests
+PASS dialog.dir: 62 tests
+PASS dialog.className (<dialog class>): 32 tests
+PASS dialog.hidden: 33 tests
+PASS dialog.accessKey: 32 tests
+PASS dialog.tabIndex: 24 tests
+PASS dialog.open: 33 tests
+PASS undefinedelement.title: 32 tests
+PASS undefinedelement.lang: 32 tests
+PASS undefinedelement.dir: 62 tests
+PASS undefinedelement.className (<undefinedelement class>): 32 tests
+PASS undefinedelement.hidden: 33 tests
+PASS undefinedelement.accessKey: 32 tests
+PASS undefinedelement.tabIndex: 24 tests
+Harness: the test ran to completion.
+

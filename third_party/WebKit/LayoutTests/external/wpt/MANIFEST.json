@@ -253,6 +253,48 @@
      {}
     ]
    ],
+   "html/semantics/forms/constraints/tooShort-input-email-add-manual.html": [
+    [
+     "/html/semantics/forms/constraints/tooShort-input-email-add-manual.html",
+     {}
+    ]
+   ],
+   "html/semantics/forms/constraints/tooShort-input-password-add-manual.html": [
+    [
+     "/html/semantics/forms/constraints/tooShort-input-password-add-manual.html",
+     {}
+    ]
+   ],
+   "html/semantics/forms/constraints/tooShort-input-search-add-manual.html": [
+    [
+     "/html/semantics/forms/constraints/tooShort-input-search-add-manual.html",
+     {}
+    ]
+   ],
+   "html/semantics/forms/constraints/tooShort-input-tel-add-manual.html": [
+    [
+     "/html/semantics/forms/constraints/tooShort-input-tel-add-manual.html",
+     {}
+    ]
+   ],
+   "html/semantics/forms/constraints/tooShort-input-text-add-manual.html": [
+    [
+     "/html/semantics/forms/constraints/tooShort-input-text-add-manual.html",
+     {}
+    ]
+   ],
+   "html/semantics/forms/constraints/tooShort-input-url-add-manual.html": [
+    [
+     "/html/semantics/forms/constraints/tooShort-input-url-add-manual.html",
+     {}
+    ]
+   ],
+   "html/semantics/forms/constraints/tooShort-textarea-add-manual.html": [
+    [
+     "/html/semantics/forms/constraints/tooShort-textarea-add-manual.html",
+     {}
+    ]
+   ],
    "html/webappapis/system-state-and-capabilities/the-navigator-object/get-navigatorlanguage-manual.html": [
     [
      "/html/webappapis/system-state-and-capabilities/the-navigator-object/get-navigatorlanguage-manual.html",
@@ -3721,11 +3763,6 @@
      {}
     ]
    ],
-   "./MANIFEST.json": [
-    [
-     {}
-    ]
-   ],
    "./README.md": [
     [
      {}
@@ -6767,16 +6804,6 @@
     ]
    ],
    "html/dom/dynamic-markup-insertion/document-write/013.js": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/dynamic-markup-insertion/document-write/047-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/dom/dynamic-markup-insertion/document-write/048-expected.txt": [
     [
      {}
     ]
@@ -24030,6 +24057,14 @@
      }
     ]
    ],
+   "html/dom/reflection-misc.html": [
+    [
+     "/html/dom/reflection-misc.html",
+     {
+      "timeout": "long"
+     }
+    ]
+   ],
    "html/dom/reflection-obsolete.html": [
     [
      "/html/dom/reflection-obsolete.html",
@@ -32225,16 +32260,12 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
-  "./MANIFEST.json": [
-   "d79db8fcd8e92d6e9f11497645f20ddf9c8c1454",
-   "support"
-  ],
   "./README.md": [
    "e9590560efb0d37ab870037edaafc1c47dc7a785",
    "support"
   ],
   "./check_stability.py": [
-   "123a9ec2d29e8ed4acc18a04e07c1514ca490e91",
+   "6fb30412507d36a512b2cf04fe978678699f5d44",
    "support"
   ],
   "./ci_built_diff.sh": [
@@ -32246,7 +32277,7 @@
    "support"
   ],
   "./ci_stability.sh": [
-   "e54dcedb8311ca70296a7ff034aa8ac7ab7df8d2",
+   "1c7177b11b9adc0e9798f40f0f0c5e7463312ae4",
    "support"
   ],
   "./diff-manifest.py": [
@@ -33750,7 +33781,7 @@
    "support"
   ],
   "common/vendor-prefix.js": [
-   "2807645fda3cb1decbb944627b038fc87ef019a0",
+   "b80ec842b65a3423dd789a2226f2ba3caf598049",
    "support"
   ],
   "css-values/unset-value-storage.html": [
@@ -39113,17 +39144,9 @@
    "7391e6e5e0528114d39ae3af5226f0b03730fb14",
    "testharness"
   ],
-  "html/dom/dynamic-markup-insertion/document-write/047-expected.txt": [
-   "c005d7cbd72a9ab80b087a412452c50f5a1e70cf",
-   "support"
-  ],
   "html/dom/dynamic-markup-insertion/document-write/047.html": [
    "b72d2ad21a9127b9fbfae9f9732c25f614646704",
    "testharness"
-  ],
-  "html/dom/dynamic-markup-insertion/document-write/048-expected.txt": [
-   "c005d7cbd72a9ab80b087a412452c50f5a1e70cf",
-   "support"
   ],
   "html/dom/dynamic-markup-insertion/document-write/048.html": [
    "b72d2ad21a9127b9fbfae9f9732c25f614646704",
@@ -40587,6 +40610,10 @@
   ],
   "html/dom/reflection-metadata.html": [
    "91c3a4fdf4585fec9ef901ac060656849e47accc",
+   "testharness"
+  ],
+  "html/dom/reflection-misc.html": [
+   "7f8de0ad7188dfc54234eb85b37fdc3248c0886e",
    "testharness"
   ],
   "html/dom/reflection-obsolete-expected.txt": [
@@ -45878,7 +45905,7 @@
    "support"
   ],
   "html/semantics/forms/constraints/form-validation-validity-valid.html": [
-   "3844f2ceccf4cca7dfc10667099aa1d23b7d6029",
+   "c6ddb5e16769a9bf2540b2a13c03d6a9cd24c688",
    "testharness"
   ],
   "html/semantics/forms/constraints/form-validation-validity-valueMissing-expected.txt": [
@@ -45894,7 +45921,7 @@
    "support"
   ],
   "html/semantics/forms/constraints/form-validation-willValidate.html": [
-   "fda957c08b1a84c691ce64b08a0b18592ff70a2d",
+   "cfdb71233ab64d4ce815f186fa334db67941451d",
    "testharness"
   ],
   "html/semantics/forms/constraints/inputwillvalidate.html": [
@@ -45904,6 +45931,34 @@
   "html/semantics/forms/constraints/support/validator.js": [
    "7a04320f8d7bc85510cd3c45227a45f78d1493ca",
    "support"
+  ],
+  "html/semantics/forms/constraints/tooShort-input-email-add-manual.html": [
+   "ca3a437ee83407ce291cd5054651c923c4908aba",
+   "manual"
+  ],
+  "html/semantics/forms/constraints/tooShort-input-password-add-manual.html": [
+   "7837631fa6659c685bd5886359dceff95111df12",
+   "manual"
+  ],
+  "html/semantics/forms/constraints/tooShort-input-search-add-manual.html": [
+   "3cea0d02e317b1c06c3c18e047428ca1ff098251",
+   "manual"
+  ],
+  "html/semantics/forms/constraints/tooShort-input-tel-add-manual.html": [
+   "2e02c31d31358a9d94c2e127defb28bcf3dcaf84",
+   "manual"
+  ],
+  "html/semantics/forms/constraints/tooShort-input-text-add-manual.html": [
+   "a99e5fafe04cc35741efd88bc4a62abb0ff15ecc",
+   "manual"
+  ],
+  "html/semantics/forms/constraints/tooShort-input-url-add-manual.html": [
+   "c5982c35ea31dad5f6276020d3a4f2c30c3d21eb",
+   "manual"
+  ],
+  "html/semantics/forms/constraints/tooShort-textarea-add-manual.html": [
+   "bd04127c8077b016bf5496216b9d7c39133ffe37",
+   "manual"
   ],
   "html/semantics/forms/form-control-infrastructure/contains.json": [
    "465d87952b71ff3ac6c3fe7b13c880028c53b3de",
