@@ -20,6 +20,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.InstallerDelegate;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.io.File;
@@ -62,8 +64,11 @@ public class WebApkInstaller {
     }
 
     @CalledByNative
-    private boolean hasGooglePlayWebApkInstallDelegate() {
-        return mGooglePlayWebApkInstallDelegate != null;
+    private boolean canUseGooglePlayInstallService() {
+        return mGooglePlayWebApkInstallDelegate != null
+                && ExternalAuthUtils.getInstance().canUseGooglePlayServices(
+                        ContextUtils.getApplicationContext(),
+                        new UserRecoverableErrorHandler.Silent());
     }
 
     @CalledByNative

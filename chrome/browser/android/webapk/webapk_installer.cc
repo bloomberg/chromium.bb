@@ -310,9 +310,9 @@ bool WebApkInstaller::StartUpdateUsingDownloadedWebApk(
       env, java_ref_, java_file_path);
 }
 
-bool WebApkInstaller::HasGooglePlayWebApkInstallDelegate() {
+bool WebApkInstaller::CanUseGooglePlayInstallService() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_WebApkInstaller_hasGooglePlayWebApkInstallDelegate(
+  return Java_WebApkInstaller_canUseGooglePlayInstallService(
       env, java_ref_);
 }
 
@@ -423,7 +423,7 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  if (HasGooglePlayWebApkInstallDelegate()) {
+  if (CanUseGooglePlayInstallService()) {
     int version = 1;
     base::StringToInt(response->version(), &version);
     if (!InstallOrUpdateWebApkFromGooglePlay(
