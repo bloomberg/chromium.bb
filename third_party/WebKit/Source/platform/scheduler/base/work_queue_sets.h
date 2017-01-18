@@ -56,6 +56,12 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   bool GetOldestQueueInSet(size_t set_index, WorkQueue** out_work_queue) const;
 
   // O(1)
+  bool GetOldestQueueAndEnqueueOrderInSet(
+      size_t set_index,
+      WorkQueue** out_work_queue,
+      EnqueueOrder* out_enqueue_order) const;
+
+  // O(1)
   bool IsSetEmpty(size_t set_index) const;
 
 #if DCHECK_IS_ON() || !defined(NDEBUG)
@@ -83,7 +89,7 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   // For each set |work_queue_heaps_| has a queue of WorkQueue ordered by the
   // oldest task in each WorkQueue.
   std::vector<IntrusiveHeap<OldestTaskEnqueueOrder>> work_queue_heaps_;
-  const char* name_;
+  const char* const name_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkQueueSets);
 };

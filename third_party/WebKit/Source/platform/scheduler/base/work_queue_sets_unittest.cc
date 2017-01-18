@@ -97,6 +97,20 @@ TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_SingleTaskInSet) {
   EXPECT_EQ(work_queue, selected_work_queue);
 }
 
+TEST_F(WorkQueueSetsTest, GetOldestQueueAndEnqueueOrderInSet) {
+  WorkQueue* work_queue = NewTaskQueue("queue");
+  work_queue->Push(FakeTaskWithEnqueueOrder(10));
+  size_t set = 1;
+  work_queue_sets_->ChangeSetIndex(work_queue, set);
+
+  WorkQueue* selected_work_queue;
+  EnqueueOrder enqueue_order;
+  EXPECT_TRUE(work_queue_sets_->GetOldestQueueAndEnqueueOrderInSet(
+      set, &selected_work_queue, &enqueue_order));
+  EXPECT_EQ(work_queue, selected_work_queue);
+  EXPECT_EQ(10u, enqueue_order);
+}
+
 TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_MultipleAgesInSet) {
   WorkQueue* queue1 = NewTaskQueue("queue1");
   WorkQueue* queue2 = NewTaskQueue("queue2");
