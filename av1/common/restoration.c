@@ -1191,7 +1191,7 @@ static void apply_domaintxfmrf_ver_highbd(int iter, int param, uint16_t *img,
                                           int32_t *dat, int dat_stride,
                                           int bd) {
   const int shift = (bd - 8);
-  int i, j, old_px;
+  int i, j, acc, old_px;
   for (j = 0; j < width; ++j) {
     // top to bottom
     acc = dat[j];

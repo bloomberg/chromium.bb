@@ -78,7 +78,8 @@ static int64_t sse_restoration_tile(const YV12_BUFFER_CONFIG *src,
   return filt_err;
 }
 
-static int64_t sse_restoration_frame(const YV12_BUFFER_CONFIG *src,
+static int64_t sse_restoration_frame(AV1_COMMON *const cm,
+                                     const YV12_BUFFER_CONFIG *src,
                                      const YV12_BUFFER_CONFIG *dst,
                                      int components_pattern) {
   int64_t filt_err = 0;
@@ -95,6 +96,8 @@ static int64_t sse_restoration_frame(const YV12_BUFFER_CONFIG *src,
     }
     return filt_err;
   }
+#else
+  (void)cm;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   if ((components_pattern >> AOM_PLANE_Y) & 1) {
     filt_err = aom_get_y_sse(src, dst);
@@ -154,7 +157,7 @@ static int64_t try_restoration_frame(const YV12_BUFFER_CONFIG *src,
   int64_t filt_err;
   av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, components_pattern,
                              partial_frame, dst_frame);
-  filt_err = sse_restoration_frame(src, dst_frame, components_pattern);
+  filt_err = sse_restoration_frame(cm, src, dst_frame, components_pattern);
   return filt_err;
 }
 
@@ -987,7 +990,7 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   aom_yv12_copy_v(cm->frame_to_show, &cpi->last_frame_db);
 
   rsi[plane].frame_restoration_type = RESTORE_NONE;
-  err = sse_restoration_frame(src, cm->frame_to_show, (1 << plane));
+  err = sse_restoration_frame(cm, src, cm->frame_to_show, (1 << plane));
   bits = 0;
   cost_norestore_frame = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
 
