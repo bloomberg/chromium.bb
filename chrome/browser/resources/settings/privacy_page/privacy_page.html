@@ -67,18 +67,17 @@
               label="$i18n{linkDoctorPref}">
           </settings-toggle-button>
         </div>
-        <div class="settings-box">
+        <div class="settings-box" hidden="[[!pageVisibility.searchPrediction]]">
           <settings-toggle-button class="start"
               pref="{{prefs.search.suggest_enabled}}"
-              label="$i18n{searchSuggestPref}"
-              hidden="[[!pageVisibility.searchPrediction]]">
+              label="$i18n{searchSuggestPref}">
           </settings-toggle-button>
         </div>
-        <div class="settings-box">
+        <div class="settings-box"
+            hidden="[[!pageVisibility.networkPrediction]]">
           <settings-toggle-button class="start"
               pref="{{prefs.net.network_prediction_options}}"
-              label="$i18n{networkPredictionEnabled}"
-              hidden="[[!pageVisibility.networkPrediction]]">
+              label="$i18n{networkPredictionEnabled}">
           </settings-toggle-button>
         </div>
         <div class="settings-box">
