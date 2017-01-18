@@ -1062,9 +1062,9 @@ static void apply_selfguided_restoration_highbd(
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
+  assert(width * height <= RESTORATION_TILEPELS_MAX);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
-      assert(i * width + j < RESTORATION_TILEPELS_MAX);
       flt1[i * width + j] = dat[i * stride + j];
       flt2[i * width + j] = dat[i * stride + j];
     }
@@ -1129,90 +1129,40 @@ static void loop_sgrproj_filter_highbd(uint8_t *data8, int width, int height,
   }
 }
 
-static void apply_domaintxfmrf_hor_highbd(int iter, int param, uint16_t *img,
-                                          int width, int height, int img_stride,
-                                          int32_t *dat, int dat_stride,
-                                          int bd) {
-  const int shift = (bd - 8);
-  int i, j, acc, old_px;
-  for (i = 0; i < height; ++i) {
-    // left to right
-    acc = dat[i * dat_stride] * DOMAINTXFMRF_VTABLE_PREC;
-    dat[i * dat_stride] = acc;
-    old_px = img[i * img_stride] >> shift;
-    for (j = 1; j < width; ++j) {
-      const int cur_px = img[i * img_stride + j] >> shift;
-      const int v = domaintxfmrf_vtable[iter][param][abs(cur_px - old_px)];
-      acc = dat[i * dat_stride + j] * (DOMAINTXFMRF_VTABLE_PREC - v) +
-            ((v * acc + DOMAINTXFMRF_VTABLE_PREC / 2) >>
-             DOMAINTXFMRF_VTABLE_PRECBITS);
-      dat[i * dat_stride + j] = acc;
-      old_px = cur_px;
-    }
-    // right to left
-    for (j = width - 2; j >= 0; --j) {
-      const int cur_px = img[i * img_stride + j] >> shift;
-      const int v = domaintxfmrf_vtable[iter][param][abs(cur_px - old_px)];
-      acc = (dat[i * dat_stride + j] * (DOMAINTXFMRF_VTABLE_PREC - v) +
-             v * acc + DOMAINTXFMRF_VTABLE_PREC / 2) >>
-            DOMAINTXFMRF_VTABLE_PRECBITS;
-      dat[i * dat_stride + j] = acc;
-      old_px = cur_px;
-    }
-  }
-}
-
-static void apply_domaintxfmrf_ver_highbd(int iter, int param, uint16_t *img,
-                                          int width, int height, int img_stride,
-                                          int32_t *dat, int dat_stride,
-                                          int bd) {
-  const int shift = (bd - 8);
-  int i, j, acc, old_px;
-  for (j = 0; j < width; ++j) {
-    // top to bottom
-    acc = dat[j];
-    old_px = img[j] >> shift;
-    for (i = 1; i < height; ++i) {
-      const int cur_px = img[i * img_stride + j] >> shift;
-      const int v = domaintxfmrf_vtable[iter][param][abs(cur_px - old_px)];
-      acc = (dat[i * dat_stride + j] * (DOMAINTXFMRF_VTABLE_PREC - v) +
-             (acc * v + DOMAINTXFMRF_VTABLE_PREC / 2)) >>
-            DOMAINTXFMRF_VTABLE_PRECBITS;
-      dat[i * dat_stride + j] = acc;
-      old_px = cur_px;
-    }
-    // bottom to top
-    dat[(height - 1) * dat_stride + j] =
-        ROUND_POWER_OF_TWO(acc, DOMAINTXFMRF_VTABLE_PRECBITS);
-    for (i = height - 2; i >= 0; --i) {
-      const int cur_px = img[i * img_stride + j] >> shift;
-      const int v = domaintxfmrf_vtable[iter][param][abs(old_px - cur_px)];
-      acc = (dat[i * dat_stride + j] * (DOMAINTXFMRF_VTABLE_PREC - v) +
-             acc * v + DOMAINTXFMRF_VTABLE_PREC / 2) >>
-            DOMAINTXFMRF_VTABLE_PRECBITS;
-      dat[i * dat_stride + j] =
-          ROUND_POWER_OF_TWO(acc, DOMAINTXFMRF_VTABLE_PRECBITS);
-      old_px = cur_px;
-    }
-  }
-}
-
 void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
                                          int stride, int param, int bit_depth,
                                          uint16_t *dst, int dst_stride,
                                          int32_t *tmpbuf) {
   int32_t *dat = tmpbuf;
+  uint8_t *diff_right = (uint8_t *)(tmpbuf + RESTORATION_TILEPELS_MAX);
+  uint8_t *diff_down = diff_right + RESTORATION_TILEPELS_MAX;
+  const int shift = (bit_depth - 8);
   int i, j, t;
+
+  for (i = 0; i < height; ++i) {
+    int cur_px = dgd[i * stride] >> shift;
+    for (j = 0; j < width - 1; ++j) {
+      const int next_px = dgd[i * stride + j + 1] >> shift;
+      diff_right[i * width + j] = abs(cur_px - next_px);
+      cur_px = next_px;
+    }
+  }
+  for (j = 0; j < width; ++j) {
+    int cur_px = dgd[j] >> shift;
+    for (i = 0; i < height - 1; ++i) {
+      const int next_px = dgd[(i + 1) * stride + j] >> shift;
+      diff_down[i * width + j] = abs(cur_px - next_px);
+      cur_px = next_px;
+    }
+  }
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       dat[i * width + j] = dgd[i * stride + j];
     }
   }
   for (t = 0; t < DOMAINTXFMRF_ITERS; ++t) {
-    apply_domaintxfmrf_hor_highbd(t, param, dgd, width, height, stride, dat,
-                                  width, bit_depth);
-    apply_domaintxfmrf_ver_highbd(t, param, dgd, width, height, stride, dat,
-                                  width, bit_depth);
+    apply_domaintxfmrf(t, param, diff_right, diff_down, width, height, dat,
+                       width);
   }
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
