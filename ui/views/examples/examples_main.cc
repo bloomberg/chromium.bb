@@ -112,8 +112,7 @@ int main(int argc, char** argv) {
     display::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 
-    views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE, nullptr,
-                                        nullptr);
+    views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE);
 
     base::RunLoop().Run();
 

@@ -79,30 +79,6 @@ const int kTextFilterIconSize = 20;
 // The radius used for the rounded corners on the text filtering textbox.
 const int kTextFilterCornerRadius = 2;
 
-// A comparator for locating a grid with a given root window.
-struct RootWindowGridComparator {
-  explicit RootWindowGridComparator(const WmWindow* root_window)
-      : root_window_(root_window) {}
-
-  bool operator()(const std::unique_ptr<WindowGrid>& grid) const {
-    return grid->root_window() == root_window_;
-  }
-
-  const WmWindow* root_window_;
-};
-
-// A comparator for locating a selectable window given a targeted window.
-struct WindowSelectorItemTargetComparator {
-  explicit WindowSelectorItemTargetComparator(const WmWindow* target_window)
-      : target(target_window) {}
-
-  bool operator()(WindowSelectorItem* window) const {
-    return window->Contains(target);
-  }
-
-  const WmWindow* target;
-};
-
 // A comparator for locating a selector item for a given root.
 struct WindowSelectorItemForRoot {
   explicit WindowSelectorItemForRoot(const WmWindow* root)
@@ -346,7 +322,7 @@ void WindowSelector::Shutdown() {
 
   size_t remaining_items = 0;
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
-    for (WindowSelectorItem* window_selector_item : window_grid->window_list())
+    for (const auto& window_selector_item : window_grid->window_list())
       window_selector_item->RestoreWindow();
     remaining_items += window_grid->size();
   }
@@ -557,15 +533,21 @@ void WindowSelector::OnWindowActivated(WmWindow* gained_active,
     return;
   }
 
+  WmWindow* root_window = gained_active->GetRootWindow();
   auto grid =
       std::find_if(grid_list_.begin(), grid_list_.end(),
-                   RootWindowGridComparator(gained_active->GetRootWindow()));
+                   [root_window](const std::unique_ptr<WindowGrid>& grid) {
+                     return grid->root_window() == root_window;
+                   });
   if (grid == grid_list_.end())
     return;
-  const std::vector<WindowSelectorItem*> windows = (*grid)->window_list();
+  const auto& windows = (*grid)->window_list();
 
-  auto iter = std::find_if(windows.begin(), windows.end(),
-                           WindowSelectorItemTargetComparator(gained_active));
+  auto iter = std::find_if(
+      windows.begin(), windows.end(),
+      [gained_active](const std::unique_ptr<WindowSelectorItem>& window) {
+        return window->Contains(gained_active);
+      });
 
   if (iter == windows.end() && showing_text_filter_ &&
       lost_active == GetTextFilterWidgetWindow()) {

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -182,7 +182,7 @@ class ASH_EXPORT MagnetismMatcher {
   // The edges to match against.
   const int32_t edges_;
 
-  ScopedVector<MagnetismEdgeMatcher> matchers_;
+  std::vector<std::unique_ptr<MagnetismEdgeMatcher>> matchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MagnetismMatcher);
 };

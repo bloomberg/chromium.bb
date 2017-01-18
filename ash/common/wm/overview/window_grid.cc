@@ -27,7 +27,7 @@
 #include "ash/root_window_controller.h"
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
@@ -57,7 +57,7 @@ struct WindowSelectorItemComparator {
   explicit WindowSelectorItemComparator(const WmWindow* target_window)
       : target(target_window) {}
 
-  bool operator()(WindowSelectorItem* window) const {
+  bool operator()(std::unique_ptr<WindowSelectorItem>& window) const {
     return window->GetWindow() == target;
   }
 
@@ -294,15 +294,16 @@ WindowGrid::WindowGrid(WmWindow* root_window,
   for (auto* window : windows_in_root) {
     window_observer_.Add(window);
     window_state_observer_.Add(window->GetWindowState());
-    window_list_.push_back(new WindowSelectorItem(window, window_selector_));
+    window_list_.push_back(
+        base::MakeUnique<WindowSelectorItem>(window, window_selector_));
   }
 }
 
 WindowGrid::~WindowGrid() {}
 
 void WindowGrid::Shutdown() {
-  for (auto iter = window_list_.begin(); iter != window_list_.end(); ++iter)
-    (*iter)->Shutdown();
+  for (const auto& window : window_list_)
+    window->Shutdown();
 
   if (shield_widget_) {
     // Fade out the shield widget. This animation continues past the lifetime
@@ -333,8 +334,8 @@ void WindowGrid::Shutdown() {
 
 void WindowGrid::PrepareForOverview() {
   InitShieldWidget();
-  for (auto iter = window_list_.begin(); iter != window_list_.end(); ++iter)
-    (*iter)->PrepareForOverview();
+  for (const auto& window : window_list_)
+    window->PrepareForOverview();
   prepared_for_overview_ = true;
 }
 
@@ -529,11 +530,11 @@ WindowSelectorItem* WindowGrid::SelectedWindow() const {
   if (!selection_widget_)
     return nullptr;
   CHECK(selected_index_ < window_list_.size());
-  return window_list_[selected_index_];
+  return window_list_[selected_index_].get();
 }
 
 bool WindowGrid::Contains(const WmWindow* window) const {
-  for (const WindowSelectorItem* window_item : window_list_) {
+  for (const auto& window_item : window_list_) {
     if (window_item->Contains(window))
       return true;
   }
@@ -542,12 +543,12 @@ bool WindowGrid::Contains(const WmWindow* window) const {
 
 void WindowGrid::FilterItems(const base::string16& pattern) {
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(pattern);
-  for (auto iter = window_list_.begin(); iter != window_list_.end(); iter++) {
-    if (finder.Search((*iter)->GetWindow()->GetTitle(), nullptr, nullptr)) {
-      (*iter)->SetDimmed(false);
+  for (const auto& window : window_list_) {
+    if (finder.Search(window->GetWindow()->GetTitle(), nullptr, nullptr)) {
+      window->SetDimmed(false);
     } else {
-      (*iter)->SetDimmed(true);
-      if (selection_widget_ && SelectedWindow() == *iter) {
+      window->SetDimmed(true);
+      if (selection_widget_ && SelectedWindow() == window.get()) {
         SelectedWindow()->SetSelected(false);
         selection_widget_.reset();
         selector_shadow_.reset();
@@ -572,9 +573,8 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
 void WindowGrid::OnWindowDestroying(WmWindow* window) {
   window_observer_.Remove(window);
   window_state_observer_.Remove(window->GetWindowState());
-  ScopedVector<WindowSelectorItem>::iterator iter =
-      std::find_if(window_list_.begin(), window_list_.end(),
-                   WindowSelectorItemComparator(window));
+  auto iter = std::find_if(window_list_.begin(), window_list_.end(),
+                           WindowSelectorItemComparator(window));
 
   DCHECK(iter != window_list_.end());
 
@@ -629,10 +629,11 @@ void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
   if (IsMinimizedStateType(old_type) == IsMinimizedStateType(new_type))
     return;
 
-  auto iter = std::find_if(window_list_.begin(), window_list_.end(),
-                           [window_state](WindowSelectorItem* item) {
-                             return item->Contains(window_state->window());
-                           });
+  auto iter =
+      std::find_if(window_list_.begin(), window_list_.end(),
+                   [window_state](std::unique_ptr<WindowSelectorItem>& item) {
+                     return item->Contains(window_state->window());
+                   });
   if (iter != window_list_.end()) {
     (*iter)->OnMinimizedStateChanged();
     PositionWindows(false);
@@ -803,7 +804,7 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   // determine each item's scale.
   const gfx::Size item_size(0, height);
   size_t i = 0;
-  for (auto* window : window_list_) {
+  for (const auto& window : window_list_) {
     const gfx::Rect target_bounds = window->GetTargetBoundsInScreen();
     const int width =
         std::max(1, gfx::ToFlooredInt(target_bounds.width() *

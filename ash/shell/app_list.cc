@@ -16,7 +16,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -120,9 +119,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
         break;
       }
       case EXAMPLES_WINDOW: {
-        views::examples::ShowExamplesWindow(
-            views::examples::QUIT_ON_CLOSE, NULL,
-            std::unique_ptr<ScopedVector<views::examples::ExampleBase>>());
+        views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE);
         break;
       }
       default:

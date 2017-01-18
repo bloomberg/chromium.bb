@@ -5,11 +5,12 @@
 #include "ui/views/examples/examples_window.h"
 
 #include <algorithm>
+#include <iterator>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -48,52 +49,50 @@
 namespace views {
 namespace examples {
 
-typedef std::unique_ptr<ScopedVector<ExampleBase>> ScopedExamples;
+using ExampleVector = std::vector<std::unique_ptr<ExampleBase>>;
 
 namespace {
 
-// Creates the default set of examples. Caller owns the result.
-ScopedExamples CreateExamples() {
-  ScopedExamples examples(new ScopedVector<ExampleBase>);
-  examples->push_back(new BubbleExample);
-  examples->push_back(new ButtonExample);
-  examples->push_back(new ButtonStickerSheet);
-  examples->push_back(new CheckboxExample);
-  examples->push_back(new ComboboxExample);
-  examples->push_back(new LabelExample);
-  examples->push_back(new LinkExample);
-  examples->push_back(new MenuExample);
-  examples->push_back(new MessageBoxExample);
-  examples->push_back(new MultilineExample);
-  examples->push_back(new ProgressBarExample);
-  examples->push_back(new RadioButtonExample);
-  examples->push_back(new ScrollViewExample);
-  examples->push_back(new SliderExample);
-  examples->push_back(new TabbedPaneExample);
-  examples->push_back(new TableExample);
-  examples->push_back(new TextExample);
-  examples->push_back(new TextfieldExample);
-  examples->push_back(new ToggleButtonExample);
-  examples->push_back(new ThrobberExample);
-  examples->push_back(new TreeViewExample);
-  examples->push_back(new VectorExample);
-  examples->push_back(new WidgetExample);
+// Creates the default set of examples.
+ExampleVector CreateExamples() {
+  ExampleVector examples;
+  examples.push_back(base::MakeUnique<BubbleExample>());
+  examples.push_back(base::MakeUnique<ButtonExample>());
+  examples.push_back(base::MakeUnique<ButtonStickerSheet>());
+  examples.push_back(base::MakeUnique<CheckboxExample>());
+  examples.push_back(base::MakeUnique<ComboboxExample>());
+  examples.push_back(base::MakeUnique<LabelExample>());
+  examples.push_back(base::MakeUnique<LinkExample>());
+  examples.push_back(base::MakeUnique<MenuExample>());
+  examples.push_back(base::MakeUnique<MessageBoxExample>());
+  examples.push_back(base::MakeUnique<MultilineExample>());
+  examples.push_back(base::MakeUnique<ProgressBarExample>());
+  examples.push_back(base::MakeUnique<RadioButtonExample>());
+  examples.push_back(base::MakeUnique<ScrollViewExample>());
+  examples.push_back(base::MakeUnique<SliderExample>());
+  examples.push_back(base::MakeUnique<TabbedPaneExample>());
+  examples.push_back(base::MakeUnique<TableExample>());
+  examples.push_back(base::MakeUnique<TextExample>());
+  examples.push_back(base::MakeUnique<TextfieldExample>());
+  examples.push_back(base::MakeUnique<ToggleButtonExample>());
+  examples.push_back(base::MakeUnique<ThrobberExample>());
+  examples.push_back(base::MakeUnique<TreeViewExample>());
+  examples.push_back(base::MakeUnique<VectorExample>());
+  examples.push_back(base::MakeUnique<WidgetExample>());
   return examples;
 }
 
 struct ExampleTitleCompare {
-  bool operator() (ExampleBase* a, ExampleBase* b) {
+  bool operator()(const std::unique_ptr<ExampleBase>& a,
+                  const std::unique_ptr<ExampleBase>& b) {
     return a->example_title() < b->example_title();
   }
 };
 
-ScopedExamples GetExamplesToShow(ScopedExamples extra) {
-  ScopedExamples examples(CreateExamples());
-  if (extra.get()) {
-    examples->insert(examples->end(), extra->begin(), extra->end());
-    extra->weak_clear();
-  }
-  std::sort(examples->begin(), examples->end(), ExampleTitleCompare());
+ExampleVector GetExamplesToShow(ExampleVector extra) {
+  ExampleVector examples = CreateExamples();
+  std::move(extra.begin(), extra.end(), std::back_inserter(examples));
+  std::sort(examples.begin(), examples.end(), ExampleTitleCompare());
   return examples;
 }
 
@@ -105,8 +104,8 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
   ComboboxModelExampleList() {}
   ~ComboboxModelExampleList() override {}
 
-  void SetExamples(ScopedExamples examples) {
-    example_list_.swap(*examples);
+  void SetExamples(ExampleVector examples) {
+    example_list_ = std::move(examples);
   }
 
   // ui::ComboboxModel:
@@ -120,7 +119,7 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
   }
 
  private:
-  ScopedVector<ExampleBase> example_list_;
+  ExampleVector example_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ComboboxModelExampleList);
 };
@@ -128,7 +127,7 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
-  ExamplesWindowContents(Operation operation, ScopedExamples examples)
+  ExamplesWindowContents(Operation operation, ExampleVector examples)
       : combobox_(new Combobox(&combobox_model_)),
         example_shown_(new View),
         status_label_(new Label),
@@ -217,11 +216,11 @@ ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
 
 void ShowExamplesWindow(Operation operation,
                         gfx::NativeWindow window_context,
-                        ScopedExamples extra_examples) {
+                        ExampleVector extra_examples) {
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();
   } else {
-    ScopedExamples examples(GetExamplesToShow(std::move(extra_examples)));
+    ExampleVector examples = GetExamplesToShow(std::move(extra_examples));
     Widget* widget = new Widget;
     Widget::InitParams params;
     params.delegate =

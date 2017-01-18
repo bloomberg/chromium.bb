@@ -14,6 +14,7 @@
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -118,7 +119,7 @@ class TrayDetailsViewTest : public AshTestBase {
   HoverHighlightView* CreateAndShowHoverHighlightView() {
     SystemTray* tray = GetPrimarySystemTray();
     TestItem* test_item = new TestItem;
-    tray->AddTrayItem(test_item);
+    tray->AddTrayItem(base::WrapUnique(test_item));
     tray->ShowDefaultView(BUBBLE_CREATE_NEW);
     RunAllPendingInMessageLoop();
     tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
@@ -131,7 +132,7 @@ class TrayDetailsViewTest : public AshTestBase {
   TrayPopupHeaderButton* CreateAndShowTrayPopupHeaderButton() {
     SystemTray* tray = GetPrimarySystemTray();
     TestItem* test_item = new TestItem;
-    tray->AddTrayItem(test_item);
+    tray->AddTrayItem(base::WrapUnique(test_item));
     tray->ShowDefaultView(BUBBLE_CREATE_NEW);
     RunAllPendingInMessageLoop();
     tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
@@ -163,8 +164,8 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
 
   TestItem* test_item_1 = new TestItem;
   TestItem* test_item_2 = new TestItem;
-  tray->AddTrayItem(test_item_1);
-  tray->AddTrayItem(test_item_2);
+  tray->AddTrayItem(base::WrapUnique(test_item_1));
+  tray->AddTrayItem(base::WrapUnique(test_item_2));
 
   // Ensure the tray views are created.
   ASSERT_TRUE(test_item_1->tray_view() != NULL);
@@ -318,7 +319,7 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonMouseHoverFeedback) {
 TEST_F(TrayDetailsViewTest, ScrollContentsTest) {
   SystemTray* tray = GetPrimarySystemTray();
   TestItem* test_item = new TestItem;
-  tray->AddTrayItem(test_item);
+  tray->AddTrayItem(base::WrapUnique(test_item));
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
   tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);

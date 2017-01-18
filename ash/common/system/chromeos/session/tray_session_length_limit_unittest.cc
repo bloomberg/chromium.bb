@@ -7,6 +7,7 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -24,7 +25,7 @@ class TraySessionLengthLimitTest : public AshTestBase {
     AshTestBase::SetUp();
     SystemTray* system_tray = GetPrimarySystemTray();
     tray_session_length_limit_ = new TraySessionLengthLimit(system_tray);
-    system_tray->AddTrayItem(tray_session_length_limit_);
+    system_tray->AddTrayItem(base::WrapUnique(tray_session_length_limit_));
   }
 
   void TearDown() override {

@@ -29,6 +29,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -1562,7 +1563,7 @@ TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
     } else {
       // In our second iteration we show a bubble.
       test::TestSystemTrayItem* item = new test::TestSystemTrayItem();
-      tray->AddTrayItem(item);
+      tray->AddTrayItem(base::WrapUnique(item));
       tray->ShowNotificationView(item);
       EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
     }

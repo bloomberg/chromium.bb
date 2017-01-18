@@ -11,6 +11,7 @@
 #include "ash/common/test/ash_test.h"
 #include "ash/common/wm_shell.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -75,7 +76,7 @@ class ScreenCaptureTest : public ScreenTrayItemTest {
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.
     ScreenTrayItem* item = new ScreenCaptureTrayItem(GetPrimarySystemTray());
-    GetPrimarySystemTray()->AddTrayItem(item);
+    GetPrimarySystemTray()->AddTrayItem(base::WrapUnique(item));
     set_tray_item(item);
   }
 
@@ -93,7 +94,7 @@ class ScreenShareTest : public ScreenTrayItemTest {
     // This tray item is owned by its parent system tray view and will
     // be deleted automatically when its parent is destroyed in AshTestBase.
     ScreenTrayItem* item = new ScreenShareTrayItem(GetPrimarySystemTray());
-    GetPrimarySystemTray()->AddTrayItem(item);
+    GetPrimarySystemTray()->AddTrayItem(base::WrapUnique(item));
     set_tray_item(item);
   }
 
@@ -189,7 +190,7 @@ void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
   ScreenTrayItem* tray_item = test->tray_item();
   EXPECT_FALSE(tray_item->tray_view()->visible());
 
-  const std::vector<SystemTrayItem*>& tray_items =
+  std::vector<SystemTrayItem*> tray_items =
       AshTest::GetPrimarySystemTray()->GetTrayItems();
   EXPECT_NE(std::find(tray_items.begin(), tray_items.end(), tray_item),
             tray_items.end());

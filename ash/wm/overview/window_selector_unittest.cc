@@ -41,7 +41,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -257,21 +257,23 @@ class WindowSelectorTest : public test::AshTestBase {
         ->GetFocusedWindow();
   }
 
-  const std::vector<WindowSelectorItem*>& GetWindowItemsForRoot(int index) {
-    return window_selector()->grid_list_[index]->window_list_.get();
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& GetWindowItemsForRoot(
+      int index) {
+    return window_selector()->grid_list_[index]->window_list();
   }
 
   WindowSelectorItem* GetWindowItemForWindow(int grid_index,
                                              aura::Window* window) {
-    const std::vector<WindowSelectorItem*>& windows =
+    const std::vector<std::unique_ptr<WindowSelectorItem>>& windows =
         GetWindowItemsForRoot(grid_index);
-    auto iter = std::find_if(windows.cbegin(), windows.cend(),
-                             [window](const WindowSelectorItem* item) {
-                               return item->Contains(WmWindow::Get(window));
-                             });
+    auto iter =
+        std::find_if(windows.cbegin(), windows.cend(),
+                     [window](const std::unique_ptr<WindowSelectorItem>& item) {
+                       return item->Contains(WmWindow::Get(window));
+                     });
     if (iter == windows.end())
       return nullptr;
-    return *iter;
+    return iter->get();
   }
 
   gfx::SlideAnimation* GetBackgroundViewAnimationForWindow(
@@ -524,7 +526,8 @@ TEST_F(WindowSelectorTest, WindowsOrder) {
   // The order of windows in overview mode is MRU.
   wm::GetWindowState(window1.get())->Activate();
   ToggleOverview();
-  const std::vector<WindowSelectorItem*>& overview1(GetWindowItemsForRoot(0));
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& overview1 =
+      GetWindowItemsForRoot(0);
   EXPECT_EQ(1, overview1[0]->GetWindow()->GetShellWindowId());
   EXPECT_EQ(3, overview1[1]->GetWindow()->GetShellWindowId());
   EXPECT_EQ(2, overview1[2]->GetWindow()->GetShellWindowId());
@@ -533,7 +536,8 @@ TEST_F(WindowSelectorTest, WindowsOrder) {
   // Activate the second window.
   wm::GetWindowState(window2.get())->Activate();
   ToggleOverview();
-  const std::vector<WindowSelectorItem*>& overview2(GetWindowItemsForRoot(0));
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& overview2 =
+      GetWindowItemsForRoot(0);
 
   // The order should be MRU.
   EXPECT_EQ(2, overview2[0]->GetWindow()->GetShellWindowId());
@@ -1568,7 +1572,7 @@ TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
   base::string16 window_title = base::UTF8ToUTF16("My window");
   window->SetTitle(window_title);
   ToggleOverview();
-  WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back();
+  WindowSelectorItem* window_item = GetWindowItemsForRoot(0).back().get();
   views::Label* label = GetLabelView(window_item);
   // Has the label view been created?
   ASSERT_TRUE(label);
@@ -1595,26 +1599,23 @@ TEST_F(WindowSelectorTest, DisplayOrientationChanged) {
   UpdateDisplay("600x200");
   EXPECT_EQ("0,0 600x200", root_window->bounds().ToString());
   gfx::Rect window_bounds(0, 0, 150, 150);
-  ScopedVector<aura::Window> windows;
-  for (int i = 0; i < 3; i++) {
-    windows.push_back(CreateWindow(window_bounds));
-  }
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  for (int i = 0; i < 3; i++)
+    windows.push_back(base::WrapUnique(CreateWindow(window_bounds)));
 
   ToggleOverview();
-  for (ScopedVector<aura::Window>::iterator iter = windows.begin();
-       iter != windows.end(); ++iter) {
-    EXPECT_TRUE(
-        root_window->bounds().Contains(GetTransformedTargetBounds(*iter)));
+  for (const auto& window : windows) {
+    EXPECT_TRUE(root_window->bounds().Contains(
+        GetTransformedTargetBounds(window.get())));
   }
 
   // Rotate the display, windows should be repositioned to be within the screen
   // bounds.
   UpdateDisplay("600x200/r");
   EXPECT_EQ("0,0 200x600", root_window->bounds().ToString());
-  for (ScopedVector<aura::Window>::iterator iter = windows.begin();
-       iter != windows.end(); ++iter) {
-    EXPECT_TRUE(
-        root_window->bounds().Contains(GetTransformedTargetBounds(*iter)));
+  for (const auto& window : windows) {
+    EXPECT_TRUE(root_window->bounds().Contains(
+        GetTransformedTargetBounds(window.get())));
   }
 }
 
@@ -1625,7 +1626,7 @@ TEST_F(WindowSelectorTest, BasicTabKeyNavigation) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   ToggleOverview();
 
-  const std::vector<WindowSelectorItem*>& overview_windows =
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& overview_windows =
       GetWindowItemsForRoot(0);
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(),
@@ -1658,9 +1659,11 @@ TEST_F(WindowSelectorTest, CloseWindowWithKey) {
 TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
   const size_t test_windows = 9;
   UpdateDisplay("800x600");
-  ScopedVector<aura::Window> windows;
-  for (size_t i = test_windows; i > 0; i--)
-    windows.push_back(CreateWindowWithId(gfx::Rect(0, 0, 100, 100), i));
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  for (size_t i = test_windows; i > 0; i--) {
+    windows.push_back(
+        base::WrapUnique(CreateWindowWithId(gfx::Rect(0, 0, 100, 100), i)));
+  }
 
   ui::KeyboardCode arrow_keys[] = {ui::VKEY_RIGHT, ui::VKEY_DOWN, ui::VKEY_LEFT,
                                    ui::VKEY_UP};
@@ -1675,7 +1678,7 @@ TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
 
   for (size_t key_index = 0; key_index < arraysize(arrow_keys); key_index++) {
     ToggleOverview();
-    const std::vector<WindowSelectorItem*>& overview_windows =
+    const std::vector<std::unique_ptr<WindowSelectorItem>>& overview_windows =
         GetWindowItemsForRoot(0);
     for (size_t i = 0; i < test_windows + 1; i++) {
       SendKey(arrow_keys[key_index]);
@@ -1704,9 +1707,9 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
 
   ToggleOverview();
 
-  const std::vector<WindowSelectorItem*>& overview_root1 =
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& overview_root1 =
       GetWindowItemsForRoot(0);
-  const std::vector<WindowSelectorItem*>& overview_root2 =
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& overview_root2 =
       GetWindowItemsForRoot(1);
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
@@ -1876,7 +1879,6 @@ TEST_F(WindowSelectorTest, BasicTextFiltering) {
 
   // Window 0 has no "test" on it so it should be the only dimmed item.
   const int grid_index = 0;
-  std::vector<WindowSelectorItem*> items = GetWindowItemsForRoot(0);
   EXPECT_TRUE(GetWindowItemForWindow(grid_index, window0.get())->dimmed());
   EXPECT_FALSE(GetWindowItemForWindow(grid_index, window1.get())->dimmed());
   EXPECT_FALSE(GetWindowItemForWindow(grid_index, window2.get())->dimmed());
@@ -1925,7 +1927,6 @@ TEST_F(WindowSelectorTest, TextFilteringSelection) {
   EXPECT_TRUE(selection_widget_active());
 
   // Dim the first item, the selection should jump to the next item.
-  std::vector<WindowSelectorItem*> items = GetWindowItemsForRoot(0);
   FilterItems("Rock and");
   EXPECT_NE(GetSelectedWindow(), window0.get());
 

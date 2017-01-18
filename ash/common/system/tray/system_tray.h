@@ -13,7 +13,6 @@
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/tray_background_view.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/view.h"
 
@@ -57,11 +56,11 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Resets internal pointers. This has to be called before deletion.
   void Shutdown();
 
-  // Adds a new item in the tray. Takes ownership.
-  void AddTrayItem(SystemTrayItem* item);
+  // Adds a new item in the tray.
+  void AddTrayItem(std::unique_ptr<SystemTrayItem> item);
 
   // Returns all tray items that has been added to system tray.
-  const std::vector<SystemTrayItem*>& GetTrayItems() const;
+  std::vector<SystemTrayItem*> GetTrayItems() const;
 
   // Shows the default view of all items.
   void ShowDefaultView(BubbleCreationType creation_type);
@@ -228,16 +227,14 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // and the percentage of the work area height covered by the system menu.
   void RecordSystemMenuMetrics();
 
-  const ScopedVector<SystemTrayItem>& items() const { return items_; }
-
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override;
 
   // The web notification tray view that appears adjacent to this view.
   WebNotificationTray* web_notification_tray_;
 
-  // Owned items.
-  ScopedVector<SystemTrayItem> items_;
+  // Items.
+  std::vector<std::unique_ptr<SystemTrayItem>> items_;
 
   // Pointers to members of |items_|.
   SystemTrayItem* detailed_item_;

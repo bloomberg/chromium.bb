@@ -5,6 +5,7 @@
 #include "ash/common/system/user/user_card_view.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "ash/common/ash_view_ids.h"
@@ -21,7 +22,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -180,7 +181,7 @@ class PublicAccountUserDetails : public views::View,
   base::string16 text_;
   views::Link* learn_more_;
   gfx::Size preferred_size_;
-  ScopedVector<gfx::RenderText> lines_;
+  std::vector<std::unique_ptr<gfx::RenderText>> lines_;
 
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUserDetails);
 };
@@ -237,9 +238,8 @@ void PublicAccountUserDetails::Layout() {
   // Loop through the lines, creating a renderer for each.
   gfx::Point position = contents_area.origin();
   gfx::Range display_name(gfx::Range::InvalidRange());
-  for (std::vector<base::string16>::const_iterator it = lines.begin();
-       it != lines.end(); ++it) {
-    gfx::RenderText* line = gfx::RenderText::CreateInstance();
+  for (auto it = lines.begin(); it != lines.end(); ++it) {
+    auto line = base::WrapUnique(gfx::RenderText::CreateInstance());
     line->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_UI);
     line->SetText(*it);
     const gfx::Size size(contents_area.width(), line->GetStringSize().height());
@@ -266,7 +266,7 @@ void PublicAccountUserDetails::Layout() {
         display_name = gfx::Range::InvalidRange();
     }
 
-    lines_.push_back(line);
+    lines_.push_back(std::move(line));
   }
 
   // Position the link after the label text, separated by a space. If it does
@@ -295,10 +295,9 @@ gfx::Size PublicAccountUserDetails::GetPreferredSize() const {
 }
 
 void PublicAccountUserDetails::OnPaint(gfx::Canvas* canvas) {
-  for (ScopedVector<gfx::RenderText>::const_iterator it = lines_.begin();
-       it != lines_.end(); ++it) {
-    (*it)->Draw(canvas);
-  }
+  for (const auto& line : lines_)
+    line->Draw(canvas);
+
   views::View::OnPaint(canvas);
 }
 

@@ -23,6 +23,7 @@
 #include "ash/system/chromeos/screen_layout_observer.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
@@ -301,7 +302,7 @@ TEST_P(WebNotificationTrayTest, PopupShownOnBothDisplays) {
 // openingsystem tray doesn't affect at all the work area of popups.
 TEST_P(WebNotificationTrayTest, PopupAndSystemTray) {
   TestItem* test_item = new TestItem;
-  GetSystemTray()->AddTrayItem(test_item);
+  GetSystemTray()->AddTrayItem(base::WrapUnique(test_item));
 
   AddNotification("test_id");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
@@ -358,7 +359,7 @@ TEST_P(WebNotificationTrayTest, PopupAndAutoHideShelf) {
   // Create the system tray during auto-hide.
   widget = CreateTestWidget();
   TestItem* test_item = new TestItem;
-  GetSystemTray()->AddTrayItem(test_item);
+  GetSystemTray()->AddTrayItem(base::WrapUnique(test_item));
   GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
   UpdateAutoHideStateNow();
 

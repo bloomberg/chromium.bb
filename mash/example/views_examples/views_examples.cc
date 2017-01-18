@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -46,8 +47,7 @@ class ViewsExamples
 
   // mash::mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override {
-    views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE,
-                                        nullptr, nullptr);
+    views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE);
   }
 
   // service_manager::InterfaceFactory<mash::mojom::Launchable>:

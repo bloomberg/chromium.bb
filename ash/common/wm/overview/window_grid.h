@@ -15,7 +15,6 @@
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
 
 namespace views {
@@ -112,8 +111,8 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver,
   // Returns the root window in which the grid displays the windows.
   const WmWindow* root_window() const { return root_window_; }
 
-  const std::vector<WindowSelectorItem*>& window_list() const {
-    return window_list_.get();
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& window_list() const {
+    return window_list_;
   }
 
   // WmWindowObserver:
@@ -168,7 +167,7 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver,
   WindowSelector* window_selector_;
 
   // Vector containing all the windows in this grid.
-  ScopedVector<WindowSelectorItem> window_list_;
+  std::vector<std::unique_ptr<WindowSelectorItem>> window_list_;
 
   ScopedObserver<WmWindow, WindowGrid> window_observer_;
   ScopedObserver<wm::WindowState, WindowGrid> window_state_observer_;
