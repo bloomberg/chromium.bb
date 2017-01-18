@@ -529,8 +529,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
 
   // Drive congestion control manually.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
-  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), kDefaultPathId,
-                                       send_algorithm);
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
 
   TestStream* stream2 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
@@ -574,8 +573,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteCongestionControlBlocks) {
 
   // Drive congestion control manually.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
-  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), kDefaultPathId,
-                                       send_algorithm);
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
 
   TestStream* stream2 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
@@ -628,8 +626,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteWriterBlocks) {
   // Drive congestion control manually in order to ensure that
   // application-limited signaling is handled correctly.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
-  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), kDefaultPathId,
-                                       send_algorithm);
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
       .WillRepeatedly(Return(QuicTime::Delta::Zero()));
 
@@ -734,8 +731,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
   // Drive congestion control manually in order to ensure that
   // application-limited signaling is handled correctly.
   MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
-  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), kDefaultPathId,
-                                       send_algorithm);
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _))
       .WillRepeatedly(Return(QuicTime::Delta::Zero()));
 

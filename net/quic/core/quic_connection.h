@@ -35,7 +35,6 @@
 #include "net/quic/core/quic_blocked_writer_interface.h"
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_framer.h"
-#include "net/quic/core/quic_multipath_sent_packet_manager.h"
 #include "net/quic/core/quic_one_block_arena.h"
 #include "net/quic/core/quic_packet_creator.h"
 #include "net/quic/core/quic_packet_generator.h"

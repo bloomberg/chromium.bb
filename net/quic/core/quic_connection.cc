@@ -278,10 +278,6 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
     last_stop_waiting_frame_.least_unacked = 0;
   }
   stats_.connection_creation_time = clock_->ApproximateNow();
-  if (FLAGS_quic_reloadable_flag_quic_enable_multipath) {
-    sent_packet_manager_.reset(new QuicMultipathSentPacketManager(
-        sent_packet_manager_.release(), this));
-  }
   // TODO(ianswett): Supply the NetworkChangeVisitor as a constructor argument
   // and make it required non-null, because it's always used.
   sent_packet_manager_->SetNetworkChangeVisitor(this);

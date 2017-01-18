@@ -163,7 +163,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesFastIncreasesFlowWindow) {
   connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicSentPacketManagerInterface* manager =
-      QuicConnectionPeer::GetSentPacketManager(&connection_, kDefaultPathId);
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
 
   RttStats* rtt_stats = const_cast<RttStats*>(manager->GetRttStats());
   rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
@@ -216,7 +216,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesFastNoAutoTune) {
   connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicSentPacketManagerInterface* manager =
-      QuicConnectionPeer::GetSentPacketManager(&connection_, kDefaultPathId);
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
 
   RttStats* rtt_stats = const_cast<RttStats*>(manager->GetRttStats());
   rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
@@ -269,7 +269,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesNormalStableFlowWindow) {
   connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicSentPacketManagerInterface* manager =
-      QuicConnectionPeer::GetSentPacketManager(&connection_, kDefaultPathId);
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
   RttStats* rtt_stats = const_cast<RttStats*>(manager->GetRttStats());
   rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
                        QuicTime::Delta::Zero(), QuicTime::Zero());
@@ -324,7 +324,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesNormalNoAutoTune) {
   connection_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
 
   QuicSentPacketManagerInterface* manager =
-      QuicConnectionPeer::GetSentPacketManager(&connection_, kDefaultPathId);
+      QuicConnectionPeer::GetSentPacketManager(&connection_);
   RttStats* rtt_stats = const_cast<RttStats*>(manager->GetRttStats());
   rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRtt),
                        QuicTime::Delta::Zero(), QuicTime::Zero());

@@ -98,8 +98,7 @@ TEST_F(QuicEndpointTest, WriteBlocked) {
   EXPECT_CALL(*sender, GetCongestionWindow())
       .WillRepeatedly(
           Return(kMaxPacketSize * kDefaultMaxCongestionWindowPackets));
-  test::QuicConnectionPeer::SetSendAlgorithm(endpoint_a.connection(),
-                                             kDefaultPathId, sender);
+  test::QuicConnectionPeer::SetSendAlgorithm(endpoint_a.connection(), sender);
 
   // First transmit a small, packet-size chunk of data.
   QuicByteCount bytes_to_transfer = 3 * 1024 * 1024;

@@ -431,8 +431,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
 
   // Set some initial bandwidth values.
   QuicSentPacketManager* sent_packet_manager =
-      QuicConnectionPeer::GetSentPacketManager(session_->connection(),
-                                               kDefaultPathId);
+      QuicConnectionPeer::GetSentPacketManager(session_->connection());
   QuicSustainedBandwidthRecorder& bandwidth_recorder =
       QuicSentPacketManagerPeer::GetBandwidthRecorder(sent_packet_manager);
   // Seed an rtt measurement equal to the initial default rtt.
