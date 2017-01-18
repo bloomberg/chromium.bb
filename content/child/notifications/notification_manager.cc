@@ -21,6 +21,8 @@
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationDelegate.h"
 #include "url/origin.h"
 
+using blink::WebString;
+
 namespace content {
 namespace {
 
@@ -96,7 +98,8 @@ void NotificationManager::show(
 
   active_page_notifications_[notification_id] = ActiveNotificationData(
       delegate, origin_gurl,
-      base::UTF16ToUTF8(base::StringPiece16(notification_data.tag)));
+      notification_data.tag.utf8(
+          WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD));
 
   // TODO(mkwst): This is potentially doing the wrong thing with unique
   // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
@@ -181,7 +184,8 @@ void NotificationManager::getNotifications(
 
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_GetNotifications(
       request_id, service_worker_registration_id, origin,
-      base::UTF16ToUTF8(base::StringPiece16(filter_tag))));
+      filter_tag.utf8(
+          WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD)));
 }
 
 void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
@@ -208,8 +212,10 @@ void NotificationManager::closePersistent(
       // TODO(mkwst): This is potentially doing the wrong thing with unique
       // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
       // https://crbug.com/490074 for detail.
-      url::Origin(origin).GetURL(), base::UTF16ToUTF8(base::StringPiece16(tag)),
-      base::UTF16ToUTF8(base::StringPiece16(notification_id))));
+      url::Origin(origin).GetURL(),
+      tag.utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD),
+      notification_id.utf8(
+          WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD)));
 }
 
 void NotificationManager::notifyDelegateDestroyed(
