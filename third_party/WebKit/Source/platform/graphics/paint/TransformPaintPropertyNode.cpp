@@ -4,8 +4,6 @@
 
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
-#include "platform/graphics/paint/PropertyTreeState.h"
-
 namespace blink {
 
 TransformPaintPropertyNode* TransformPaintPropertyNode::root() {
@@ -27,14 +25,5 @@ String TransformPaintPropertyNode::toString() const {
       compositingReasonsAsString(m_directCompositingReasons).ascii().data(),
       m_compositorElementId.primaryId, m_compositorElementId.secondaryId);
 }
-
-#if DCHECK_IS_ON()
-
-String TransformPaintPropertyNode::toTreeString() const {
-  return blink::PropertyTreeStatePrinter<blink::TransformPaintPropertyNode>()
-      .pathAsString(this);
-}
-
-#endif
 
 }  // namespace blink

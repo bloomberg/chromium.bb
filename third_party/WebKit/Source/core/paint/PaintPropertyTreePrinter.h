@@ -12,7 +12,12 @@
 
 namespace blink {
 
+class ClipPaintPropertyNode;
 class FrameView;
+class EffectPaintPropertyNode;
+class PropertyTreeState;
+class ScrollPaintPropertyNode;
+class TransformPaintPropertyNode;
 
 }  // namespace blink
 
@@ -29,6 +34,23 @@ CORE_EXPORT String
 effectPropertyTreeAsString(const blink::FrameView& rootFrame);
 CORE_EXPORT String
 scrollPropertyTreeAsString(const blink::FrameView& rootFrame);
+
+CORE_EXPORT void showPaintPropertyPath(
+    const blink::TransformPaintPropertyNode*);
+CORE_EXPORT void showPaintPropertyPath(const blink::ClipPaintPropertyNode*);
+CORE_EXPORT void showPaintPropertyPath(const blink::EffectPaintPropertyNode*);
+CORE_EXPORT void showPaintPropertyPath(const blink::ScrollPaintPropertyNode*);
+CORE_EXPORT String
+transformPaintPropertyPathAsString(const blink::TransformPaintPropertyNode*);
+CORE_EXPORT String
+clipPaintPropertyPathAsString(const blink::ClipPaintPropertyNode*);
+CORE_EXPORT String
+effectPaintPropertyPathAsString(const blink::EffectPaintPropertyNode*);
+CORE_EXPORT String
+scrollPaintPropertyPathAsString(const blink::ScrollPaintPropertyNode*);
+
+CORE_EXPORT void showPropertyTreeState(const blink::PropertyTreeState&);
+CORE_EXPORT String propertyTreeStateAsString(const blink::PropertyTreeState&);
 
 CORE_EXPORT String paintPropertyTreeGraph(const blink::FrameView&);
 

@@ -5,7 +5,6 @@
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
 
 namespace blink {
 
@@ -24,14 +23,5 @@ String ClipPaintPropertyNode::toString() const {
       m_clipRect.toString().ascii().data(),
       compositingReasonsAsString(m_directCompositingReasons).ascii().data());
 }
-
-#if DCHECK_IS_ON()
-
-String ClipPaintPropertyNode::toTreeString() const {
-  return blink::PropertyTreeStatePrinter<blink::ClipPaintPropertyNode>()
-      .pathAsString(this);
-}
-
-#endif
 
 }  // namespace blink
