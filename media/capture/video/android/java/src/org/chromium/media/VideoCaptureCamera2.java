@@ -260,6 +260,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CameraCaptureSession mPreviewSession;
     private CaptureRequest mPreviewRequest;
     private Handler mMainHandler;
+    private ImageReader mImageReader = null;
 
     private Range<Integer> mAeFpsRange;
     private CameraState mCameraState = CameraState.STOPPED;
@@ -301,13 +302,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         // Create an ImageReader and plug a thread looper into it to have
         // readback take place on its own thread.
-        final ImageReader imageReader = ImageReader.newInstance(mCaptureFormat.getWidth(),
+        mImageReader = ImageReader.newInstance(mCaptureFormat.getWidth(),
                 mCaptureFormat.getHeight(), mCaptureFormat.getPixelFormat(), 2 /* maxImages */);
         HandlerThread thread = new HandlerThread("CameraPreview");
         thread.start();
         final Handler backgroundHandler = new Handler(thread.getLooper());
         final CrImageReaderListener imageReaderListener = new CrImageReaderListener();
-        imageReader.setOnImageAvailableListener(imageReaderListener, backgroundHandler);
+        mImageReader.setOnImageAvailableListener(imageReaderListener, backgroundHandler);
 
         // The Preview template specifically means "high frame rate is given
         // priority over the highest-quality post-processing".
@@ -324,7 +325,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             return false;
         }
         // Construct an ImageReader Surface and plug it into our CaptureRequest.Builder.
-        previewRequestBuilder.addTarget(imageReader.getSurface());
+        previewRequestBuilder.addTarget(mImageReader.getSurface());
 
         // A series of configuration options in the PreviewBuilder
         previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
@@ -338,7 +339,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         List<Surface> surfaceList = new ArrayList<Surface>(1);
         // TODO(mcasas): release this Surface when not needed, https://crbug.com/643884.
-        surfaceList.add(imageReader.getSurface());
+        surfaceList.add(mImageReader.getSurface());
 
         mPreviewRequest = previewRequestBuilder.build();
         final CrPreviewSessionListener captureSessionListener =
