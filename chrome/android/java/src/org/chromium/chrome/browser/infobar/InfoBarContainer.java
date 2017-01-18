@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -96,10 +97,14 @@ public class InfoBarContainer extends SwipableOverlayView {
 
         @Override
         public void onContentChanged(Tab tab) {
-            if (mTabView == tab.getView()) return;
             mTabView.removeOnAttachStateChangeListener(mAttachedStateListener);
             mTabView = tab.getView();
             mTabView.addOnAttachStateChangeListener(mAttachedStateListener);
+        }
+
+        @Override
+        public void onReparentingFinished(Tab tab) {
+            setParentView((ViewGroup) tab.getActivity().findViewById(R.id.bottom_container));
         }
     };
 
@@ -234,7 +239,6 @@ public class InfoBarContainer extends SwipableOverlayView {
             assert false : "Trying to add an info bar that has already been added.";
             return;
         }
-        addToParentView();
 
         // We notify observers immediately (before the animation starts).
         for (InfoBarContainerObserver observer : mObservers) {
