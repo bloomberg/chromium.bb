@@ -274,9 +274,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Returns the infobars::InfoBarManager object for this tab.
 - (infobars::InfoBarManager*)infoBarManager;
 
-// Returns the URLs in the entries that are redirected to the current entry.
-- (std::vector<GURL>)currentRedirectedUrls;
-
 // Whether the content of the current tab is compatible with reader mode.
 - (BOOL)canSwitchToReaderMode;
 

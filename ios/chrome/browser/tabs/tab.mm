@@ -1575,12 +1575,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [storeKitLauncher_ openAppStore:appId];
 }
 
-- (std::vector<GURL>)currentRedirectedUrls {
-  DCHECK([self navigationManager]);
-  return
-      [[self navigationManager]->GetSessionController() currentRedirectedUrls];
-}
-
 - (BOOL)useDesktopUserAgent {
   web::NavigationItem* currentItem = self.currentSessionEntry.navigationItem;
   return currentItem && currentItem->IsOverridingUserAgent();

@@ -653,36 +653,6 @@ NSString* const kWindowNameKey = @"windowName";
   return entries;
 }
 
-- (std::vector<GURL>)currentRedirectedUrls {
-  std::vector<GURL> results;
-  if (_pendingEntry) {
-    web::NavigationItem* item = [_pendingEntry navigationItem];
-    results.push_back(item->GetURL());
-
-    if (!ui::PageTransitionIsRedirect(item->GetTransitionType()))
-      return results;
-  }
-
-  if (![_entries count])
-    return results;
-
-  NSInteger index = _currentNavigationIndex;
-  // Add urls in the redirected entries.
-  while (index >= 0) {
-    web::NavigationItem* item = [[_entries objectAtIndex:index] navigationItem];
-    if (!ui::PageTransitionIsRedirect(item->GetTransitionType()))
-      break;
-    results.push_back(item->GetURL());
-    --index;
-  }
-  // Add the last non-redirected entry.
-  if (index >= 0) {
-    web::NavigationItem* item = [[_entries objectAtIndex:index] navigationItem];
-    results.push_back(item->GetURL());
-  }
-  return results;
-}
-
 - (BOOL)isSameDocumentNavigationBetweenEntry:(CRWSessionEntry*)firstEntry
                                     andEntry:(CRWSessionEntry*)secondEntry {
   if (!firstEntry || !secondEntry || firstEntry == secondEntry)

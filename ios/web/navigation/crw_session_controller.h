@@ -125,9 +125,6 @@ struct Referrer;
 // whose index in |entries_| is greater than |currentNavigationIndex_|.
 - (NSArray*)forwardEntries;
 
-// Returns the URLs in the entries that are redirected to the current entry.
-- (std::vector<GURL>)currentRedirectedUrls;
-
 // Determines whether a navigation between |firstEntry| and |secondEntry| is a
 // same-document navigation.  Entries can be passed in any order.
 - (BOOL)isSameDocumentNavigationBetweenEntry:(CRWSessionEntry*)firstEntry
