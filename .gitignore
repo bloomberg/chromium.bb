@@ -482,6 +482,7 @@ vs-chromium-project.txt
 /third_party/widevine/cdm/linux
 /third_party/widevine/cdm/mac
 /third_party/widevine/cdm/win
+/third_party/widevine/scripts
 /third_party/widevine/test/license_server
 /third_party/win_toolchain/.timestamps
 /third_party/win_toolchain/files
