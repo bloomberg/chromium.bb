@@ -148,11 +148,10 @@ class DepsUpdater(object):
             self.copyfile(source, destination)
             self.run(['git', 'add', destination])
 
-    def _generate_manifest(self, original_repo_path, dest_path):
+    def _generate_manifest(self, dest_path):
         """Generates MANIFEST.json for imported tests.
 
         Args:
-            original_repo_path: Path to the temporary source WPT repo directory.
             dest_path: Path to the destination WPT directory.
 
         Runs the (newly-updated) manifest command if it's found, and then
@@ -214,7 +213,7 @@ class DepsUpdater(object):
             if self.fs.glob(full_path.replace('-expected.txt', '*')) == [full_path]:
                 self.fs.remove(full_path)
 
-        self._generate_manifest(temp_repo_path, dest_path)
+        self._generate_manifest(dest_path)
 
         if not keep_w3c_repos_around:
             _log.info('Deleting temp repo directory %s.', temp_repo_path)

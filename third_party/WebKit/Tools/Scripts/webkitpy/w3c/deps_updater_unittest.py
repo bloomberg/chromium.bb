@@ -96,7 +96,6 @@ class DepsUpdaterTest(unittest.TestCase):
         host.filesystem.files = {}
         updater = DepsUpdater(host)
         updater._generate_manifest(
-            '/mock-checkout/third_party/WebKit/css',
             '/mock-checkout/third_party/WebKit/LayoutTests/external/csswg-test')
         self.assertEqual(host.executive.calls, [])
 
@@ -106,7 +105,6 @@ class DepsUpdaterTest(unittest.TestCase):
         host = MockHost()
         updater = DepsUpdater(host)
         updater._generate_manifest(
-            '/mock-checkout/third_party/WebKit/wpt',
             '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt')
         self.assertEqual(
             host.executive.calls,
