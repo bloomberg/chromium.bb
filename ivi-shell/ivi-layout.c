@@ -1646,11 +1646,6 @@ ivi_layout_screen_add_layer(struct weston_output *output,
 
 	iviscrn = get_screen_from_output(output);
 
-	if (addlayer->on_screen == iviscrn) {
-		weston_log("ivi_layout_screen_add_layer: addlayer is already available\n");
-		return IVI_SUCCEEDED;
-	}
-
 	wl_list_remove(&addlayer->pending.link);
 	wl_list_insert(&iviscrn->pending.layer_list, &addlayer->pending.link);
 
