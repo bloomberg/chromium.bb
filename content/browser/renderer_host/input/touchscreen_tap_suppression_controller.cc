@@ -15,8 +15,9 @@ namespace content {
 TouchscreenTapSuppressionController::TouchscreenTapSuppressionController(
     GestureEventQueue* geq,
     const TapSuppressionController::Config& config)
-    : gesture_event_queue_(geq), controller_(this, config) {
-}
+    : gesture_event_queue_(geq),
+      forward_next_tap_cancel_(false),
+      controller_(this, config) {}
 
 TouchscreenTapSuppressionController::~TouchscreenTapSuppressionController() {}
 
