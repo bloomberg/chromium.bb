@@ -949,6 +949,12 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
       if (!m_sendFlag || m_loader)
         return;
     }
+    if (!getExecutionContext()) {
+      handleNetworkError();
+      throwForLoadFailureIfNeeded(exceptionState,
+                                  "Document is already detached.");
+      return;
+    }
   }
 
   m_sameOriginRequest = getSecurityOrigin()->canRequestNoSuborigin(m_url);
@@ -1035,6 +1041,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   m_exceptionCode = 0;
   m_error = false;
 
+  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
+  CHECK(getExecutionContext());
   if (m_async) {
     UseCounter::count(&executionContext,
                       UseCounter::XMLHttpRequestAsynchronous);
@@ -1811,6 +1819,9 @@ void XMLHttpRequest::contextDestroyed(ExecutionContext*) {
 }
 
 bool XMLHttpRequest::hasPendingActivity() const {
+  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
+  CHECK(getExecutionContext() || !m_loader);
+
   // Neither this object nor the JavaScript wrapper should be deleted while
   // a request is in progress because we need to keep the listeners alive,
   // and they are referenced by the JavaScript wrapper.
