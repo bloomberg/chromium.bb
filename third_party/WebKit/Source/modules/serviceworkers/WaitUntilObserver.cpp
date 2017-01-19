@@ -12,6 +12,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/LayoutTestSupport.h"
+#include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "wtf/Assertions.h"
 #include <v8.h>
@@ -137,6 +138,7 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
       m_type(type),
       m_eventID(eventID),
       m_consumeWindowInteractionTimer(
+          Platform::current()->currentThread()->getWebTaskRunner(),
           this,
           &WaitUntilObserver::consumeWindowInteraction) {}
 

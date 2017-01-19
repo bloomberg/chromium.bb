@@ -71,7 +71,7 @@ class MODULES_EXPORT WaitUntilObserver final
   bool m_hasError = false;
   bool m_eventDispatched = false;
   double m_eventDispatchTime = 0;
-  Timer<WaitUntilObserver> m_consumeWindowInteractionTimer;
+  TaskRunnerTimer<WaitUntilObserver> m_consumeWindowInteractionTimer;
 };
 
 }  // namespace blink
