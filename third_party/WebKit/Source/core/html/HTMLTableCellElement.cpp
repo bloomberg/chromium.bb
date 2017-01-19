@@ -51,6 +51,15 @@ unsigned HTMLTableCellElement::colSpan() const {
   if (colSpanValue.isEmpty() ||
       !parseHTMLNonNegativeInteger(colSpanValue, value))
     return 1;
+  // Counting for https://github.com/whatwg/html/issues/1198
+  UseCounter::count(document(), UseCounter::HTMLTableCellElementColspan);
+  if (value > 8190) {
+    UseCounter::count(document(),
+                      UseCounter::HTMLTableCellElementColspanGreaterThan8190);
+  } else if (value > 1000) {
+    UseCounter::count(document(),
+                      UseCounter::HTMLTableCellElementColspanGreaterThan1000);
+  }
   return max(1u, min(value, maxColSpan()));
 }
 
