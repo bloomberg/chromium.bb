@@ -110,11 +110,12 @@ bool MHTMLFrameSerializerDelegate::shouldIgnoreElement(const Element& element) {
   // be excluded:
   // 1) All elements that are head or part of head, including head, meta, style,
   //    link and etc.
-  // 2) Some specific elements in body: meta, datalist, option and etc.
+  // 2) Some specific elements in body: meta, style, datalist, option and etc.
   if (element.layoutObject())
     return false;
   if (isHTMLHeadElement(element) || isHTMLMetaElement(element) ||
-      isHTMLDataListElement(element) || isHTMLOptionElement(element)) {
+      isHTMLStyleElement(element) || isHTMLDataListElement(element) ||
+      isHTMLOptionElement(element)) {
     return false;
   }
   Element* parent = element.parentElement();
