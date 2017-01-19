@@ -1,0 +1,64 @@
+[
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_PACKAGE_REPO[depot_tools]/gerrit_client.py",
+      "branch",
+      "--host",
+      "https://chromium-review.googlesource.com/a",
+      "--project",
+      "v8/v8",
+      "--branch",
+      "test",
+      "--commit",
+      "67ebf73496383c6777035e374d2d664009e2aa5c",
+      "--json_file",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
+    },
+    "name": "gerrit create_gerrit_branch",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"can_delete\": true, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/heads/test\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"revision\": \"76016386a0d8ecc7b6be212424978bb45959d668\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_PACKAGE_REPO[depot_tools]/gerrit_client.py",
+      "branchinfo",
+      "--host",
+      "https://chromium-review.googlesource.com/a",
+      "--project",
+      "v8/v8",
+      "--branch",
+      "master",
+      "--json_file",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
+    },
+    "name": "gerrit get_gerrit_branch",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/heads/master\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"revision\": \"67ebf73496383c6777035e374d2d664009e2aa5c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "name": "$result",
+    "recipe_result": null,
+    "status_code": 0
+  }
+]

@@ -772,6 +772,39 @@ def ResetReviewLabels(host, change, label, value='0', message=None,
                    'a new patchset was uploaded.' % change)
 
 
+def CreateGerritBranch(host, project, branch, commit):
+  """
+  Create a new branch from given project and commit
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#create-branch
+
+  Returns:
+    A JSON with 'ref' key
+  """
+  path = 'projects/%s/branches/%s' % (project, branch)
+  body = {'revision': commit}
+  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
+  response = ReadHttpJsonResponse(conn)
+  if response:
+    return response
+  raise GerritError(200, 'Unable to create gerrit branch')
+
+
+def GetGerritBranch(host, project, branch):
+  """
+  Get a branch from given project and commit
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#get-branch
+
+  Returns:
+    A JSON object with 'revision' key
+  """
+  path = 'projects/%s/branches/%s' % (project, branch)
+  conn = CreateHttpConn(host, path, reqtype='GET')
+  response = ReadHttpJsonResponse(conn)
+  if response:
+    return response
+  raise GerritError(200, 'Unable to get gerrit branch')
+
+
 @contextlib.contextmanager
 def tempdir():
   tdir = None
