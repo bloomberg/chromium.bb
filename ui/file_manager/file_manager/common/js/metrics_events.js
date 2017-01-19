@@ -57,7 +57,9 @@ metrics.FileSystemProviders = {
   pmnllmkmjilbojkpgplbdmckghmaocjh: 'Scan (FB)',
   mfhnnfciefdpolbelmfkpmhhmlkehbdf: 'File System for SMB/CIFS (YT)',
   plmanjiaoflhcilcfdnjeffklbgejmje: 'Add MY Documents (KA)',
-  mljpablpddhocfbnokacjggdbmafjnon: 'Wicked Good Unarchiver (MF)'
+  mljpablpddhocfbnokacjggdbmafjnon: 'Wicked Good Unarchiver (MF)',
+  ndjpildffkeodjdaeebdhnncfhopkajk: 'Network File Share for Chrome OS',
+  gmhmnhjihabohahcllfgjooaoecglhpi: 'LanFolder'
 };
 
 /**
