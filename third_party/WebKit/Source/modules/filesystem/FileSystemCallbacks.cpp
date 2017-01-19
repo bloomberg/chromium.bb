@@ -88,12 +88,13 @@ void FileSystemCallbacksBase::invokeOrScheduleCallback(CB* callback,
                                                        CBArg arg) {
   DCHECK(callback);
   if (callback) {
-    if (shouldScheduleCallback())
+    if (shouldScheduleCallback()) {
       DOMFileSystem::scheduleCallback(
           m_executionContext.get(),
-          createSameThreadTask(&CB::invoke, wrapPersistent(callback), arg));
-    else
+          WTF::bind(&CB::invoke, wrapPersistent(callback), arg));
+    } else {
       callback->invoke(arg);
+    }
   }
   m_executionContext.clear();
 }
@@ -103,13 +104,14 @@ void FileSystemCallbacksBase::handleEventOrScheduleCallback(CB* callback,
                                                             CBArg* arg) {
   DCHECK(callback);
   if (callback) {
-    if (shouldScheduleCallback())
+    if (shouldScheduleCallback()) {
       DOMFileSystem::scheduleCallback(
           m_executionContext.get(),
-          createSameThreadTask(&CB::handleEvent, wrapPersistent(callback),
-                               wrapPersistent(arg)));
-    else
+          WTF::bind(&CB::handleEvent, wrapPersistent(callback),
+                    wrapPersistent(arg)));
+    } else {
       callback->handleEvent(arg);
+    }
   }
   m_executionContext.clear();
 }
@@ -118,12 +120,13 @@ template <typename CB>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(CB* callback) {
   DCHECK(callback);
   if (callback) {
-    if (shouldScheduleCallback())
+    if (shouldScheduleCallback()) {
       DOMFileSystem::scheduleCallback(
           m_executionContext.get(),
-          createSameThreadTask(&CB::handleEvent, wrapPersistent(callback)));
-    else
+          WTF::bind(&CB::handleEvent, wrapPersistent(callback)));
+    } else {
       callback->handleEvent();
+    }
   }
   m_executionContext.clear();
 }

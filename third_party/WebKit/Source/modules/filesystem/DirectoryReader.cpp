@@ -102,12 +102,13 @@ void DirectoryReader::readEntries(EntriesCallback* entriesCallback,
   }
 
   if (!m_hasMoreEntries || !m_entries.isEmpty()) {
-    if (entriesCallback)
+    if (entriesCallback) {
       DOMFileSystem::scheduleCallback(
           filesystem()->getExecutionContext(),
-          createSameThreadTask(&EntriesCallback::handleEvent,
-                               wrapPersistent(entriesCallback),
-                               PersistentHeapVector<Member<Entry>>(m_entries)));
+          WTF::bind(&EntriesCallback::handleEvent,
+                    wrapPersistent(entriesCallback),
+                    PersistentHeapVector<Member<Entry>>(m_entries)));
+    }
     m_entries.clear();
     return;
   }

@@ -31,6 +31,7 @@
 #include "modules/filesystem/DOMFileSystem.h"
 
 #include "core/fileapi/BlobCallback.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
@@ -40,6 +41,7 @@
 #include "modules/filesystem/FileWriterCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/FileMetadata.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
@@ -50,6 +52,20 @@
 #include <memory>
 
 namespace blink {
+
+namespace {
+
+void runCallback(ExecutionContext* executionContext,
+                 std::unique_ptr<WTF::Closure> task) {
+  if (!executionContext)
+    return;
+  DCHECK(executionContext->isContextThread());
+  InspectorInstrumentation::AsyncTask asyncTask(executionContext, task.get(),
+                                                true /* isInstrumented */);
+  (*task)();
+}
+
+}  // namespace
 
 // static
 DOMFileSystem* DOMFileSystem::create(ExecutionContext* context,
@@ -122,10 +138,10 @@ void DOMFileSystem::reportError(ErrorCallbackBase* errorCallback,
 void DOMFileSystem::reportError(ExecutionContext* executionContext,
                                 ErrorCallbackBase* errorCallback,
                                 FileError::ErrorCode fileError) {
-  if (errorCallback)
-    scheduleCallback(
-        executionContext,
-        createSameThreadTask(&ErrorCallbackBase::invoke,
+  if (!errorCallback)
+    return;
+  scheduleCallback(executionContext,
+                   WTF::bind(&ErrorCallbackBase::invoke,
                              wrapPersistent(errorCallback), fileError));
 }
 
@@ -187,6 +203,17 @@ void DOMFileSystem::createFile(const FileEntry* fileEntry,
       fileSystemURL,
       SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL,
                                    successCallback, errorCallback, m_context));
+}
+
+void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext,
+                                     std::unique_ptr<WTF::Closure> task) {
+  DCHECK(executionContext->isContextThread());
+  InspectorInstrumentation::asyncTaskScheduled(
+      executionContext, taskNameForInstrumentation(), task.get());
+  TaskRunnerHelper::get(TaskType::FileReading, executionContext)
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&runCallback, wrapWeakPersistent(executionContext),
+                           WTF::passed(std::move(task))));
 }
 
 DEFINE_TRACE(DOMFileSystem) {
