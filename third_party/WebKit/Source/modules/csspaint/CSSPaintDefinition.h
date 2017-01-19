@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSSyntaxDescriptor.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include <v8.h>
@@ -18,7 +19,8 @@ class LayoutObject;
 class ScriptState;
 
 // Represents a javascript class registered on the PaintWorkletGlobalScope by
-// the author.
+// the author. It will store the properties for invalidation and input argument
+// types as well.
 class CSSPaintDefinition final
     : public GarbageCollectedFinalized<CSSPaintDefinition> {
  public:
@@ -28,6 +30,7 @@ class CSSPaintDefinition final
       v8::Local<v8::Function> paint,
       Vector<CSSPropertyID>&,
       Vector<AtomicString>& customInvalidationProperties,
+      Vector<CSSSyntaxDescriptor>& inputArgumentTypes,
       bool hasAlpha);
   virtual ~CSSPaintDefinition();
 
@@ -43,6 +46,9 @@ class CSSPaintDefinition final
   }
   const Vector<AtomicString>& customInvalidationProperties() const {
     return m_customInvalidationProperties;
+  }
+  const Vector<CSSSyntaxDescriptor>& inputArgumentTypes() const {
+    return m_inputArgumentTypes;
   }
   bool hasAlpha() const { return m_hasAlpha; }
 
@@ -60,6 +66,7 @@ class CSSPaintDefinition final
                      v8::Local<v8::Function> paint,
                      Vector<CSSPropertyID>& nativeInvalidationProperties,
                      Vector<AtomicString>& customInvalidationProperties,
+                     Vector<CSSSyntaxDescriptor>& inputArgumentTypes,
                      bool hasAlpha);
 
   void maybeCreatePaintInstance();
@@ -79,6 +86,8 @@ class CSSPaintDefinition final
 
   Vector<CSSPropertyID> m_nativeInvalidationProperties;
   Vector<AtomicString> m_customInvalidationProperties;
+  // Input argument types, if applicable.
+  Vector<CSSSyntaxDescriptor> m_inputArgumentTypes;
   bool m_hasAlpha;
 };
 

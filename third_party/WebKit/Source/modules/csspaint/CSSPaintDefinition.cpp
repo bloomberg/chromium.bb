@@ -39,10 +39,11 @@ CSSPaintDefinition* CSSPaintDefinition::create(
     v8::Local<v8::Function> paint,
     Vector<CSSPropertyID>& nativeInvalidationProperties,
     Vector<AtomicString>& customInvalidationProperties,
+    Vector<CSSSyntaxDescriptor>& inputArgumentTypes,
     bool hasAlpha) {
-  return new CSSPaintDefinition(scriptState, constructor, paint,
-                                nativeInvalidationProperties,
-                                customInvalidationProperties, hasAlpha);
+  return new CSSPaintDefinition(
+      scriptState, constructor, paint, nativeInvalidationProperties,
+      customInvalidationProperties, inputArgumentTypes, hasAlpha);
 }
 
 CSSPaintDefinition::CSSPaintDefinition(
@@ -51,6 +52,7 @@ CSSPaintDefinition::CSSPaintDefinition(
     v8::Local<v8::Function> paint,
     Vector<CSSPropertyID>& nativeInvalidationProperties,
     Vector<AtomicString>& customInvalidationProperties,
+    Vector<CSSSyntaxDescriptor>& inputArgumentTypes,
     bool hasAlpha)
     : m_scriptState(scriptState),
       m_constructor(scriptState->isolate(), constructor),
@@ -59,6 +61,7 @@ CSSPaintDefinition::CSSPaintDefinition(
       m_hasAlpha(hasAlpha) {
   m_nativeInvalidationProperties.swap(nativeInvalidationProperties);
   m_customInvalidationProperties.swap(customInvalidationProperties);
+  m_inputArgumentTypes.swap(inputArgumentTypes);
 }
 
 CSSPaintDefinition::~CSSPaintDefinition() {}

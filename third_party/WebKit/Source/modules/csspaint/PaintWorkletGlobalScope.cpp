@@ -7,6 +7,7 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSSyntaxDescriptor.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
@@ -103,6 +104,33 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
     }
   }
 
+  // Get input argument types. Parse the argument type values only when
+  // cssPaintAPIArguments is enabled.
+  Vector<CSSSyntaxDescriptor> inputArgumentTypes;
+  if (RuntimeEnabledFeatures::cssPaintAPIArgumentsEnabled()) {
+    v8::Local<v8::Value> inputArgumentTypeValues;
+    if (!v8Call(constructor->Get(context, v8String(isolate, "inputArguments")),
+                inputArgumentTypeValues))
+      return;
+
+    if (!isUndefinedOrNull(inputArgumentTypeValues)) {
+      Vector<String> argumentTypes = toImplArray<Vector<String>>(
+          inputArgumentTypeValues, 0, isolate, exceptionState);
+
+      if (exceptionState.hadException())
+        return;
+
+      for (const auto& type : argumentTypes) {
+        CSSSyntaxDescriptor syntaxDescriptor(type);
+        if (!syntaxDescriptor.isValid()) {
+          exceptionState.throwTypeError("Invalid argument types.");
+          return;
+        }
+        inputArgumentTypes.append(syntaxDescriptor);
+      }
+    }
+  }
+
   // Parse 'alpha' AKA hasAlpha property.
   v8::Local<v8::Value> alphaValue;
   if (!v8Call(constructor->Get(context, v8String(isolate, "alpha")),
@@ -156,7 +184,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
 
   CSSPaintDefinition* definition = CSSPaintDefinition::create(
       scriptController()->getScriptState(), constructor, paint,
-      nativeInvalidationProperties, customInvalidationProperties, hasAlpha);
+      nativeInvalidationProperties, customInvalidationProperties,
+      inputArgumentTypes, hasAlpha);
   m_paintDefinitions.set(name, definition);
 
   // Set the definition on any pending generators.

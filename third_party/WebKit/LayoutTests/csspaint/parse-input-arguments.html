@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/test-runner-paint-helper.js"></script>
+<script>
+function runTest() {
+    runner([{
+      expectedError: "failed!",
+      script: "registerPaint('foo', class { static get inputArguments() { throw Error('failed!'); } });",
+    }, {
+      expectedError: " Failed to execute 'registerPaint' on 'PaintWorkletGlobalScope': The value provided is neither an array, nor does it have indexed properties.",
+      script: "registerPaint('foo1', class { static get inputArguments() { return 'non sense stuff'; } });",
+    }, {
+      expectedError: "Failed to execute 'registerPaint' on 'PaintWorkletGlobalScope': Invalid argument types.",
+      script: "registerPaint('foo2', class { static get inputArguments() { return ['<non-sense-type>'] } });",
+    }, {
+      script: "registerPaint('foo3', class { static get inputArguments(){return ['<length>'];} paint() { } }); console.log('Success for \\'foo\\'.');",
+    }]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>This tests a series of PaintWorkletGlobalScope#registerPaint Parse Input Arguments calls.</p>
+<p>See the devtools console for test output.</p>
+</body>
+</html>

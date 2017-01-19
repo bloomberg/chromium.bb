@@ -39,7 +39,7 @@ struct CSSSyntaxComponent {
   bool m_repeatable;
 };
 
-class CSSSyntaxDescriptor {
+class CORE_EXPORT CSSSyntaxDescriptor {
  public:
   CSSSyntaxDescriptor(String syntax);
 

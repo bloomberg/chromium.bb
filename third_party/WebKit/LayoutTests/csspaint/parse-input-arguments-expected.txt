@@ -1,0 +1,11 @@
+CONSOLE MESSAGE: line 15: The worklet should throw an error with: "failed!"
+CONSOLE ERROR: line 1: Uncaught Error: failed!
+CONSOLE MESSAGE: line 15: The worklet should throw an error with: " Failed to execute 'registerPaint' on 'PaintWorkletGlobalScope': The value provided is neither an array, nor does it have indexed properties."
+CONSOLE ERROR: line 1: Uncaught TypeError: Failed to execute 'registerPaint' on 'PaintWorkletGlobalScope': The value provided is neither an array, nor does it have indexed properties.
+CONSOLE MESSAGE: line 15: The worklet should throw an error with: "Failed to execute 'registerPaint' on 'PaintWorkletGlobalScope': Invalid argument types."
+CONSOLE ERROR: line 1: Uncaught TypeError: Failed to execute 'registerPaint' on 'PaintWorkletGlobalScope': Invalid argument types.
+CONSOLE MESSAGE: line 19: The worklet should not throw an error.
+CONSOLE MESSAGE: line 1: Success for 'foo'.
+This tests a series of PaintWorkletGlobalScope#registerPaint Parse Input Arguments calls.
+
+See the devtools console for test output.

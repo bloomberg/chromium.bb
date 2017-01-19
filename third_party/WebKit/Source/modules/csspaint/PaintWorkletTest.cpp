@@ -67,4 +67,4 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
   ASSERT(handle.isEmpty());
 }
 
-}  // naespace blink
+}  // namespace blink
