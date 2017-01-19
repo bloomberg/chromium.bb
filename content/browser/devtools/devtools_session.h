@@ -26,7 +26,6 @@ class DevToolsSession : public protocol::FrontendChannel {
 
   protocol::Response::Status Dispatch(
       const std::string& message,
-      bool offer_to_delegate,
       int* call_id,
       std::string* method);
 

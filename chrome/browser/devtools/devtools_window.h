@@ -106,6 +106,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       bool is_worker,
       bool is_v8_only);
 
+  // Node frontend is always undocked.
+  static void OpenNodeFrontendWindow(Profile* profile);
+
   // Worker frontend is always undocked.
   static void OpenDevToolsWindowForWorker(
       Profile* profile,
@@ -253,6 +256,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                                 content::WebContents* inspected_web_contents,
                                 bool shared_worker_frontend,
                                 bool v8_only_frontend,
+                                bool node_frontend,
                                 const std::string& remote_frontend,
                                 bool can_dock,
                                 const std::string& settings,
@@ -261,6 +265,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                              const GURL& base_url,
                              bool shared_worker_frontend,
                              bool v8_only_frontend,
+                             bool node_frontend,
                              const std::string& remote_frontend,
                              bool can_dock,
                              const std::string& panel);
@@ -320,6 +325,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void SetIsDocked(bool is_docked) override;
   void OpenInNewTab(const std::string& url) override;
   void SetWhitelistedShortcuts(const std::string& message) override;
+  void OpenNodeFrontend() override;
   void InspectedContentsClosing() override;
   void OnLoadCompleted() override;
   void ReadyForTest() override;

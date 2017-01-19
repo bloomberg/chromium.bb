@@ -56,6 +56,7 @@ const char kPortForwardingConfigCommand[] = "set-port-forwarding-config";
 const char kDiscoverTCPTargetsEnabledCommand[] =
     "set-discover-tcp-targets-enabled";
 const char kTCPDiscoveryConfigCommand[] = "set-tcp-discovery-config";
+const char kOpenNodeFrontendCommand[] = "open-node-frontend";
 
 const char kPortForwardingDefaultPort[] = "8080";
 const char kPortForwardingDefaultLocation[] = "localhost:8080";
@@ -99,6 +100,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
                                 const base::ListValue* args);
   void HandlePortForwardingConfigCommand(const base::ListValue* args);
   void HandleTCPDiscoveryConfigCommand(const base::ListValue* args);
+  void HandleOpenNodeFrontendCommand(const base::ListValue* args);
 
   InspectUI* inspect_ui_;
 
@@ -139,6 +141,9 @@ void InspectMessageHandler::RegisterMessages() {
                  &prefs::kDevToolsDiscoverTCPTargetsEnabled[0]));
   web_ui()->RegisterMessageCallback(kTCPDiscoveryConfigCommand,
       base::Bind(&InspectMessageHandler::HandleTCPDiscoveryConfigCommand,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kOpenNodeFrontendCommand,
+      base::Bind(&InspectMessageHandler::HandleOpenNodeFrontendCommand,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kReloadCommand,
       base::Bind(&InspectMessageHandler::HandleReloadCommand,
@@ -257,6 +262,14 @@ void InspectMessageHandler::HandleTCPDiscoveryConfigCommand(
   const base::ListValue* list_src;
   if (args->GetSize() == 1 && args->GetList(0, &list_src))
     profile->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig, *list_src);
+}
+
+void InspectMessageHandler::HandleOpenNodeFrontendCommand(
+    const base::ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!profile)
+    return;
+  DevToolsWindow::OpenNodeFrontendWindow(profile);
 }
 
 // DevToolsUIBindingsEnabler ----------------------------------------

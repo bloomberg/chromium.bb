@@ -94,6 +94,10 @@ class CONTENT_EXPORT DevToolsAgentHost
       scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner,
       const CreateServerSocketCallback& socket_callback);
 
+  // Creates DevToolsAgentHost for discovery, which supports part of the
+  // protocol to discover other agent hosts.
+  static scoped_refptr<DevToolsAgentHost> CreateForDiscovery();
+
   static bool IsDebuggerAttached(WebContents* web_contents);
 
   using List = std::vector<scoped_refptr<DevToolsAgentHost>>;

@@ -298,7 +298,11 @@ img {
 
 .settings-bar label {
   display: inline-block;
-  width: 30ex;
+  width: 35ex;
+}
+
+.node-frontend-action {
+  margin: 6px 4px;
 }
 
 dialog.config::backdrop {

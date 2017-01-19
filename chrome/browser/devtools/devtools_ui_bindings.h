@@ -57,6 +57,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual void SetIsDocked(bool is_docked) = 0;
     virtual void OpenInNewTab(const std::string& url) = 0;
     virtual void SetWhitelistedShortcuts(const std::string& message) = 0;
+    virtual void OpenNodeFrontend() = 0;
 
     virtual void InspectedContentsClosing() = 0;
     virtual void OnLoadCompleted() = 0;
@@ -135,6 +136,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                                  const std::string& action) override;
   void OpenRemotePage(const std::string& browser_id,
                       const std::string& url) override;
+  void OpenNodeFrontend() override;
   void DispatchProtocolMessageFromDevToolsFrontend(
       const std::string& message) override;
   void RecordEnumeratedHistogram(const std::string& name,

@@ -543,7 +543,7 @@ bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   int call_id = 0;
   std::string method;
-  if (session->Dispatch(message, true, &call_id, &method) !=
+  if (session->Dispatch(message, &call_id, &method) !=
       protocol::Response::kFallThrough) {
     return true;
   }
@@ -928,10 +928,13 @@ void RenderFrameDevToolsAgentHost::
 void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
     RenderFrameHostImpl* host) {
 #if DCHECK_IS_ON()
-  // Check that we don't have stale host object here by accessing some random
-  // properties inside.
-  if (handlers_frame_host_ && handlers_frame_host_->GetRenderWidgetHost())
-    handlers_frame_host_->GetRenderWidgetHost()->GetRoutingID();
+  // TODO(dgozman): fix this for browser side navigation.
+  if (!IsBrowserSideNavigationEnabled()) {
+    // Check that we don't have stale host object here by accessing some random
+    // properties inside.
+    if (handlers_frame_host_ && handlers_frame_host_->GetRenderWidgetHost())
+      handlers_frame_host_->GetRenderWidgetHost()->GetRoutingID();
+  }
 #endif
   handlers_frame_host_ = host;
   if (session())

@@ -244,10 +244,9 @@ ChromeDevToolsManagerDelegate::SetRemoteLocations(
     content::DevToolsAgentHost* agent_host,
     int command_id,
     base::DictionaryValue* params) {
-  if (host_data_.find(agent_host) == host_data_.end()) {
-      return DevToolsProtocol::CreateInvalidParamsResponse(
-          command_id, "Cannot find agent host");
-  }
+  // Could have been created late.
+  if (host_data_.find(agent_host) == host_data_.end())
+    DevToolsAgentHostAttached(agent_host);
 
   std::set<net::HostPortPair> tcp_locations;
   base::ListValue* locations;

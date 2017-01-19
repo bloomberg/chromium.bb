@@ -639,6 +639,8 @@ function initSettings() {
   $('config-dialog-close').addEventListener('click', function() {
     $('config-dialog').commit(true);
   });
+  $('node-frontend').addEventListener(
+      'click', sendCommand.bind(null, 'open-node-frontend'));
 }
 
 function checkboxHandler(command, event) {

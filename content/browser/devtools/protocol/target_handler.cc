@@ -412,7 +412,8 @@ bool TargetHandler::ShouldForceDevToolsAgentHostCreation() {
 }
 
 void TargetHandler::DevToolsAgentHostCreated(DevToolsAgentHost* agent_host) {
-  DCHECK(attached_hosts_.find(agent_host->GetId()) == attached_hosts_.end());
+  // If we start discovering late, all existing agent hosts will be reported,
+  // but we could have already attached to some.
   TargetCreatedInternal(agent_host);
 }
 

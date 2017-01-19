@@ -57,7 +57,7 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
 
   int call_id = 0;
   std::string method;
-  if (session->Dispatch(message, true, &call_id, &method) !=
+  if (session->Dispatch(message, &call_id, &method) !=
       protocol::Response::kFallThrough) {
     return true;
   }

@@ -209,6 +209,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   void SetIsDocked(bool is_docked) override {}
   void OpenInNewTab(const std::string& url) override;
   void SetWhitelistedShortcuts(const std::string& message) override {}
+  void OpenNodeFrontend() override {}
   using DispatchCallback =
       DevToolsEmbedderMessageDispatcher::Delegate::DispatchCallback;
 
@@ -380,7 +381,8 @@ std::string SanitizeFrontendQueryParam(
     const std::string& value) {
   // Convert boolean flags to true.
   if (key == "can_dock" || key == "debugFrontend" || key == "experiments" ||
-      key == "isSharedWorker" || key == "v8only" || key == "remoteFrontend")
+      key == "isSharedWorker" || key == "v8only" || key == "remoteFrontend" ||
+      key == "nodeFrontend")
     return "true";
 
   // Pass connection endpoints as is.
@@ -973,6 +975,10 @@ void DevToolsUIBindings::OpenRemotePage(const std::string& browser_id,
   if (!remote_targets_handler_)
     return;
   remote_targets_handler_->Open(browser_id, url);
+}
+
+void DevToolsUIBindings::OpenNodeFrontend() {
+  delegate_->OpenNodeFrontend();
 }
 
 void DevToolsUIBindings::GetPreferences(const DispatchCallback& callback) {

@@ -50,13 +50,12 @@ void DevToolsSession::SetFallThroughForNotFound(bool value) {
 
 protocol::Response::Status DevToolsSession::Dispatch(
     const std::string& message,
-    bool offer_to_delegate,
     int* call_id,
     std::string* method) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
 
-  DevToolsManagerDelegate* delegate = offer_to_delegate ?
-      DevToolsManager::GetInstance()->delegate() : nullptr;
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
   if (value && value->IsType(base::Value::Type::DICTIONARY) && delegate) {
     std::unique_ptr<base::DictionaryValue> response(delegate->HandleCommand(
         agent_host_,

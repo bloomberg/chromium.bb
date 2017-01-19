@@ -9,20 +9,13 @@
 
 namespace content {
 
-namespace protocol {
-class IOHandler;
-class MemoryHandler;
-class SystemInfoHandler;
-class TetheringHandler;
-class TracingHandler;
-}  // namespace protocol
-
 class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
  private:
   friend class DevToolsAgentHost;
   BrowserDevToolsAgentHost(
       scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner,
-      const CreateServerSocketCallback& socket_callback);
+      const CreateServerSocketCallback& socket_callback,
+      bool only_discovery);
   ~BrowserDevToolsAgentHost() override;
 
   // DevToolsAgentHostImpl implementation.
@@ -42,12 +35,7 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
 
   scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner_;
   CreateServerSocketCallback socket_callback_;
-
-  std::unique_ptr<protocol::IOHandler> io_handler_;
-  std::unique_ptr<protocol::MemoryHandler> memory_handler_;
-  std::unique_ptr<protocol::SystemInfoHandler> system_info_handler_;
-  std::unique_ptr<protocol::TetheringHandler> tethering_handler_;
-  std::unique_ptr<protocol::TracingHandler> tracing_handler_;
+  bool only_discovery_;
 };
 
 }  // namespace content
