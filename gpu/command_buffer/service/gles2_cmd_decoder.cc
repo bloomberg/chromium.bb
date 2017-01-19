@@ -3128,6 +3128,9 @@ bool GLES2DecoderImpl::Initialize(
         case GL_TEXTURE_RECTANGLE_ARB:
           supported = feature_info_->feature_flags().arb_texture_rectangle;
           break;
+        case GL_TEXTURE_EXTERNAL_OES:
+          supported = feature_info_->feature_flags().oes_egl_image_external;
+          break;
         case GL_TEXTURE_2D:
           supported = true;
           break;

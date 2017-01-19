@@ -116,7 +116,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
 #endif
 
   bool has_alpha_;
-  bool use_image_chromium_;
+  const bool use_image_chromium_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
   base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;

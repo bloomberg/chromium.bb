@@ -32,9 +32,9 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(surface_handle, size, format, usage);
   if (!pixmap.get()) {
-    DLOG(ERROR) << "Failed to create pixmap " << size.width() << "x"
-                << size.height() << " format " << static_cast<int>(format)
-                << ", usage " << static_cast<int>(usage);
+    DLOG(ERROR) << "Failed to create pixmap " << size.ToString() << " format "
+                << static_cast<int>(format) << ", usage "
+                << static_cast<int>(usage);
     return gfx::GpuMemoryBufferHandle();
   }
 
@@ -109,10 +109,40 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
   scoped_refptr<ui::GLImageOzoneNativePixmap> image(
       new ui::GLImageOzoneNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
-    LOG(ERROR) << "Failed to create GLImage";
+    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << " format "
+               << static_cast<int>(format);
     return nullptr;
   }
   return image;
+}
+
+scoped_refptr<gl::GLImage>
+GpuMemoryBufferFactoryOzoneNativePixmap::CreateAnonymousImage(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    unsigned internalformat) {
+  scoped_refptr<ui::NativePixmap> pixmap =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->CreateNativePixmap(gpu::kNullSurfaceHandle, size, format,
+                               gfx::BufferUsage::SCANOUT);
+  if (!pixmap.get()) {
+    LOG(ERROR) << "Failed to create pixmap " << size.ToString() << " format "
+               << static_cast<int>(format);
+    return nullptr;
+  }
+  scoped_refptr<ui::GLImageOzoneNativePixmap> image(
+      new ui::GLImageOzoneNativePixmap(size, internalformat));
+  if (!image->Initialize(pixmap.get(), format)) {
+    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << " format "
+               << static_cast<int>(format);
+    return nullptr;
+  }
+  return image;
+}
+
+unsigned GpuMemoryBufferFactoryOzoneNativePixmap::RequiredTextureType() {
+  return GL_TEXTURE_EXTERNAL_OES;
 }
 
 }  // namespace gpu

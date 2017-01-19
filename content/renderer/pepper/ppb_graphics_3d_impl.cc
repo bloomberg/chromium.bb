@@ -48,20 +48,11 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
       bound_to_instance_(false),
       commit_pending_(false),
       has_alpha_(false),
-      use_image_chromium_(false),
-      weak_ptr_factory_(this) {
-#if defined(OS_MACOSX)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool use_image_chromium =
-      !command_line->HasSwitch(switches::kDisablePepper3DImageChromium);
-
-  if (use_image_chromium) {
-    use_image_chromium =
-        base::FeatureList::IsEnabled(features::kPepper3DImageChromium);
-  }
-  use_image_chromium_ = use_image_chromium;
-#endif
-}
+      use_image_chromium_(
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisablePepper3DImageChromium) &&
+          base::FeatureList::IsEnabled(features::kPepper3DImageChromium)),
+      weak_ptr_factory_(this) {}
 
 PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
   // Unset the client before the command_buffer_ is destroyed, similar to how
@@ -190,10 +181,15 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token,
     // Don't need to check for NULL from GetPluginInstance since when we're
     // bound, we know our instance is valid.
     bool is_overlay_candidate = use_image_chromium_;
-    GLenum target =
-        is_overlay_candidate ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D;
-    cc::TextureMailbox texture_mailbox(taken_front_buffer_, sync_token, target,
-                                       size, is_overlay_candidate, false);
+    cc::TextureMailbox texture_mailbox(
+        taken_front_buffer_, sync_token,
+// TODO(reveman): Get texture target from browser process.
+#if defined(OS_MACOSX)
+        use_image_chromium_ ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D,
+#else
+        use_image_chromium_ ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D,
+#endif
+        size, is_overlay_candidate, false);
     taken_front_buffer_.SetZero();
     HostGlobals::Get()
         ->GetInstance(pp_instance())
