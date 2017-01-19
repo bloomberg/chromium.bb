@@ -63,8 +63,8 @@
 #     ]
 #
 #     build_list_paths = "$root_out_dir/path/to/test/build_list.txt"
-#
 #     run_list_path = "$root_out_dir/path/to/list/run_list.txt"
+#     runtime_deps_path = "$root_out_dir/path/to/list/runtime_deps.json"
 #   }
 
 import("//testing/test.gni")
@@ -201,6 +201,21 @@ template("cast_test_group") {
     _test_names += [ get_label_info(_test, "name") ]
   }
 
+  # Create a dummy target so that we can get the runtime deps for each test
+  # and output them into a file. The runtime deps include all of the data files,
+  # data directories, and shared libraries that a test needs in order to run.
+  foreach(_test, invoker.tests) {
+    _test_name = get_label_info(_test, "name")
+    group(_test_name + "_cast_runtime_deps") {
+      testonly = true
+      data_deps = [
+        _test,
+      ]
+      write_runtime_deps =
+          "${_shared_dir}/runtime_deps/${_test_name}_runtime_deps.txt"
+    }
+  }
+
   # This action generates a list of target names to build and run. It will be
   # depended upon by the "pack_build" action of the cast_test_group_list
   # instance which depends on this cast_test_group.
@@ -284,6 +299,10 @@ template("cast_test_group") {
 #       The absolute filepath of the output file which will hold the list of
 #       tests to be run, each with filters assigned by cast_groups.
 #
+#   runtime_deps_path (required)
+#       The absolute filepath of the output file which will hold the json dict
+#       of runtime dependencies for each test to be run.
+#
 #   additional_options (optional)
 #       Options which are passed to the python script, and applied to every test
 #
@@ -300,6 +319,8 @@ template("cast_test_group_list") {
   assert(defined(invoker.run_list_path), "$target_name needs 'run_list_path'")
   assert(defined(invoker.build_list_path),
          "$target_name needs 'build_list_path'")
+  assert(defined(invoker.runtime_deps_path),
+         "$target_name needs 'runtime_deps_path'")
 
   _pack_build_action = target_name + "_pack_build"
 
@@ -318,6 +339,7 @@ template("cast_test_group_list") {
   # Add the run list to runtime data dependencies
   data = [
     invoker.run_list_path,
+    invoker.runtime_deps_path,
   ]
 
   # Generate a list of the "create_list" actions for each group. These will be
@@ -378,11 +400,14 @@ template("cast_test_group_list") {
 
     outputs = [
       invoker.run_list_path,
+      invoker.runtime_deps_path,
     ]
 
     args = [
       "-o",
       rebase_path(invoker.run_list_path),
+      "-d",
+      rebase_path(invoker.runtime_deps_path),
       "-t",
       rebase_path(_shared_dir),
       "pack_run",

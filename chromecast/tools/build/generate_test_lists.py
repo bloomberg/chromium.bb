@@ -2,12 +2,13 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Helper script to generate unit test lists for the Chromecast build scripts.
 """
 
 import glob
+import json
 import optparse
+import os
 import sys
 
 
@@ -26,6 +27,9 @@ def CombineList(test_files_dir, list_output_file, include_filters,
         the test list.
     additional_runtime_options: Arguments to be applied to all tests.  These are
         applied before filters (so test-specific filters take precedence).
+
+  Raises:
+    Exception: if filter is found for an unknown target.
   """
 
   # GYP targets may provide a numbered priority for the filename. Sort to
@@ -51,19 +55,56 @@ def CombineList(test_files_dir, list_output_file, include_filters,
 
           if test_binary_name not in test_bin_set:
             raise Exception("Filter found for unknown target: " +
-                test_binary_name)
+                            test_binary_name)
 
           # Note: This may overwrite a previous rule. This is okay, since higher
           # priority files are evaluated after lower priority files.
           test_filters[test_binary_name] = filter
 
   test_binaries = [
-      binary + " " + (additional_runtime_options or "")
-             + (" " + test_filters[binary] if binary in test_filters else "")
-      for binary in test_bin_set]
+      binary + " " + (additional_runtime_options or "") +
+      (" " + test_filters[binary] if binary in test_filters else "")
+      for binary in test_bin_set
+  ]
 
   with open(list_output_file, "w") as f:
     f.write("\n".join(sorted(test_binaries)))
+
+
+def CombineRuntimeDeps(test_files_dir, deps_output_file):
+  """Writes a JSON file that lists the runtime dependecies for each test.
+
+  The output will consist of a JSON dictionary where the keys are names of the
+  unittests and the values are arrays of files and directories needed at runtime
+  by the unittest. Of note, the unittest itself is always listed as a runtime
+  dependency of itself.
+
+  The paths are all relative to the root output directory (where the unittest
+  binaries live).
+
+  {
+    "base_unittests": ["./base_unittests", "../../base/test/data/"],
+    "cast_media_unittests": [...],
+    ...
+  }
+
+  Args:
+    test_files_dir: path to the intermediate directory containing the invidual
+        runtime deps files.
+    deps_output_file: Path to write the JSON file out to.
+  """
+  runtime_deps = {}
+  runtime_deps_dir = os.path.join(test_files_dir, "runtime_deps")
+  for runtime_deps_file in glob.glob(runtime_deps_dir + "/*_runtime_deps.txt"):
+    test_name = os.path.basename(runtime_deps_file).replace("_runtime_deps.txt",
+                                                            "")
+    with open(runtime_deps_file, "r") as f:
+      runtime_deps[test_name] = [dep.strip() for dep in f]
+      assert runtime_deps[test_name][0] == os.path.join(".", test_name)
+
+  with open(deps_output_file, "w") as outfile:
+    json.dump(
+        runtime_deps, outfile, sort_keys=True, indent=2, separators=(",", ": "))
 
 
 def CreateList(inputs, list_output_file):
@@ -84,15 +125,30 @@ def DoMain(argv):
           pack_run          packs all test and filter files from the given
                             output directory into a single test list file
       """)
-  parser.add_option("-o", action="store", dest="list_output_file",
-                    help="Output path in which to write the test list.")
-  parser.add_option("-t", action="store", dest="test_files_dir",
-                    help="Intermediate test list directory.")
-  parser.add_option("-a", action="store", dest="additional_runtime_options",
-                    help="Additional options applied to all tests.")
+  parser.add_option(
+      "-o",
+      action="store",
+      dest="list_output_file",
+      help="Output path in which to write the test list.")
+  parser.add_option(
+      "-d",
+      action="store",
+      dest="deps_output_file",
+      help="Output path in which to write the runtime deps.")
+  parser.add_option(
+      "-t",
+      action="store",
+      dest="test_files_dir",
+      help="Intermediate test list directory.")
+  parser.add_option(
+      "-a",
+      action="store",
+      dest="additional_runtime_options",
+      help="Additional options applied to all tests.")
   options, inputs = parser.parse_args(argv)
 
   list_output_file = options.list_output_file
+  deps_output_file = options.deps_output_file
   test_files_dir = options.test_files_dir
   additional_runtime_options = options.additional_runtime_options
 
@@ -115,6 +171,8 @@ def DoMain(argv):
   if command == "pack_run":
     if not test_files_dir:
       parser.error("pack_run require a test files directory (-t).\n")
+    if deps_output_file:
+      CombineRuntimeDeps(test_files_dir, deps_output_file)
     return CombineList(test_files_dir, list_output_file, True,
                        additional_runtime_options)
 

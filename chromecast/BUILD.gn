@@ -252,7 +252,7 @@ cast_test_group("cast_tests") {
 # Creates the build and run lists for all test targets.
 cast_test_group_list("cast_test_lists") {
   build_list_path = "$root_out_dir/tests/build_test_list.txt"
-
+  runtime_deps_path = "$root_out_dir/tests/runtime_deps.json"
   run_list_path = "$root_out_dir/tests/run_test_list.txt"
 
   additional_options = [ "--ozone-platform=headless --test-launcher-bot-mode" ]
@@ -281,6 +281,7 @@ if (is_android) {
   cast_test_group_list("cast_junit_test_lists") {
     test_type = "junit"
     build_list_path = "$root_out_dir/junit/build_junit_test_list.txt"
+    runtime_deps_path = "$root_out_dir/junit/runtime_deps.json"
     run_list_path = "$root_out_dir/junit/run_junit_test_list.txt"
     build_tests = true
     test_groups = [ ":cast_junit_tests" ]
