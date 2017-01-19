@@ -412,6 +412,19 @@ def get_waterfall_config():
           ]
       }
     ])
+  waterfall = add_tester(
+    waterfall, 'Mac Mini 8GB 10.12 Perf',
+    'chromium-rel-mac12-mini-8gb', 'mac',
+    swarming=[
+      {
+       'gpu': '8086:0a26',
+       'os': 'Mac-10.12',
+       'device_ids': [
+           'build24-b1', 'build25-b1',
+           'build26-b1', 'build27-b1', 'build28-b1'
+          ]
+      }
+    ])
 
   waterfall = add_tester(
     waterfall, 'Linux Perf', 'linux-release', 'linux',
