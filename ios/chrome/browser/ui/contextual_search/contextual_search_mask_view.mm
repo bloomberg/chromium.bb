@@ -11,6 +11,10 @@
 // Linearly map |delta| in the range [0, 1] to a value in [min, max].
 #define LERP(min, max, delta) (min * (1 - delta) + max * delta)
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const CGFloat kPhoneMaskLimit = 1.0;
 const CGFloat kPadMaskLimit = 0.8;

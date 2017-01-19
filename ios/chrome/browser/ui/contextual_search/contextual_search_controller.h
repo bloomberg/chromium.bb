@@ -89,7 +89,7 @@ enum StateChangeReason {
 // the old panel and its views.
 // This property can only be assigned a non-nil value, and can only be assigned
 // a value when its current value is nil.
-@property(nonatomic, assign) ContextualSearchPanelView* panel;
+@property(nonatomic, weak) ContextualSearchPanelView* panel;
 
 // Designated initializer.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState

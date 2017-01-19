@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_promo_view.h"
 
-#include "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_view.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -17,6 +15,10 @@
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const int kMargin = 16;
@@ -38,12 +40,12 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
 }
 
 @interface ContextualSearchPromoView ()
-@property(nonatomic, assign) id<ContextualSearchPromoViewDelegate> delegate;
+@property(nonatomic, weak) id<ContextualSearchPromoViewDelegate> delegate;
 @end
 
 @implementation ContextualSearchPromoView {
-  base::scoped_nsobject<LabelLinkController> _linkController;
-  base::scoped_nsobject<NSMutableArray> _constraints;
+  LabelLinkController* _linkController;
+  NSMutableArray* _constraints;
 }
 
 @synthesize disabled = _disabled;
@@ -65,13 +67,13 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
   NSMutableArray* constraints = [NSMutableArray array];
 
   // Initialize text label and its link controller.
-  UILabel* text = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
-  base::WeakNSObject<ContextualSearchPromoView> weakSelf(self);
-  _linkController.reset([[LabelLinkController alloc]
+  UILabel* text = [[UILabel alloc] initWithFrame:CGRectZero];
+  __weak ContextualSearchPromoView* weakSelf = self;
+  _linkController = [[LabelLinkController alloc]
       initWithLabel:text
              action:^(const GURL& gurl) {
                [[weakSelf delegate] promoViewSettingsTapped];
-             }]);
+             }];
   [_linkController setLinkColor:UIColorFromRGB(kLinkColorRGB)];
 
   // Label is as wide as the content area of the view.
@@ -87,7 +89,7 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
 
   // Build style attributes for the label.
   NSMutableParagraphStyle* paragraphStyle =
-      [[[NSMutableParagraphStyle alloc] init] autorelease];
+      [[NSMutableParagraphStyle alloc] init];
   [paragraphStyle setLineBreakMode:NSLineBreakByWordWrapping];
   [paragraphStyle setLineHeightMultiple:kLineSpace];
   NSDictionary* attributes = @{
@@ -99,8 +101,8 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
   };
 
   // Create and assign attributed text to label.
-  base::scoped_nsobject<NSMutableAttributedString> attributedText(
-      [[NSMutableAttributedString alloc] initWithString:textString]);
+  NSMutableAttributedString* attributedText =
+      [[NSMutableAttributedString alloc] initWithString:textString];
   [attributedText setAttributes:attributes
                           range:NSMakeRange(0, textString.length)];
   text.attributedText = attributedText;
@@ -113,7 +115,7 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
 
   // Create accept and decline buttons with dimensions defined by the
   // minimum height and width constants.
-  MDCFlatButton* acceptButton = [[[MDCFlatButton alloc] init] autorelease];
+  MDCFlatButton* acceptButton = [[MDCFlatButton alloc] init];
   acceptButton.hasOpaqueBackground = YES;
   acceptButton.inkColor =
       [[[MDCPalette cr_bluePalette] tint300] colorWithAlphaComponent:0.5f];
@@ -136,7 +138,7 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
   [acceptButton.titleLabel setFont:buttonFont];
 
   UIColor* customTitleColor = [[MDCPalette cr_bluePalette] tint500];
-  MDCButton* declineButton = [[[MDCFlatButton alloc] init] autorelease];
+  MDCButton* declineButton = [[MDCFlatButton alloc] init];
   [constraints addObjectsFromArray:@[
     [declineButton.widthAnchor
         constraintGreaterThanOrEqualToConstant:kButtonMinWidth],
@@ -153,7 +155,7 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
 
   // Create the divider (a simple colored view) with height defined by
   // |kDividerHeight| and width spanning this view's width.
-  UIView* divider = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+  UIView* divider = [[UIView alloc] initWithFrame:CGRectZero];
   divider.backgroundColor = [UIColor colorWithWhite:0.745 alpha:1.0];
   [constraints addObjectsFromArray:@[
     [divider.widthAnchor constraintEqualToAnchor:self.widthAnchor],
@@ -200,7 +202,7 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
   ]];
 
   [NSLayoutConstraint activateConstraints:constraints];
-  _constraints.reset([constraints retain]);
+  _constraints = constraints;
 
   return self;
 }
@@ -212,7 +214,6 @@ const CGFloat kCloseDuration = ios::material::kDuration1;
   // constraints are disabled and will not be applied even if some subviews
   // are lingering.
   [NSLayoutConstraint deactivateConstraints:_constraints];
-  [super dealloc];
 }
 
 - (void)setHidden:(BOOL)hidden {

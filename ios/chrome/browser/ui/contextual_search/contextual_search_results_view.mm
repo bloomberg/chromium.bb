@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_metrics.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_view.h"
@@ -18,6 +16,10 @@
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
@@ -31,15 +33,13 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
 @end
 
 @implementation ContextualSearchResultsView {
-  base::WeakNSProtocol<id<ContextualSearchTabPromoter>> _promoter;
-  base::WeakNSProtocol<id<ContextualSearchPreloadChecker>> _preloadChecker;
   std::unique_ptr<ContextualSearchWebStateObserver> _webStateObserver;
 
   // Tab that loads the search results.
-  base::scoped_nsobject<Tab> _tab;
+  Tab* _tab;
 
   // Access to the search tab's web view proxy.
-  base::scoped_nsprotocol<id<CRWWebViewProxy>> _webViewProxy;
+  id<CRWWebViewProxy> _webViewProxy;
 
   BOOL _loaded;
   BOOL _displayed;
@@ -58,6 +58,8 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
 
 @synthesize active = _active;
 @synthesize opener = _opener;
+@synthesize promoter = _promoter;
+@synthesize preloadChecker = _preloadChecker;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if ((self = [super initWithFrame:frame])) {
@@ -89,7 +91,7 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
 }
 
 - (void)setPromoter:(id<ContextualSearchTabPromoter>)promoter {
-  _promoter.reset(promoter);
+  _promoter = promoter;
 }
 
 - (id<ContextualSearchPreloadChecker>)preloadChecker {
@@ -97,7 +99,7 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
 }
 
 - (void)setPreloadChecker:(id<ContextualSearchPreloadChecker>)preloadChecker {
-  _preloadChecker.reset(preloadChecker);
+  _preloadChecker = preloadChecker;
 }
 
 - (BOOL)contentVisible {
@@ -109,12 +111,12 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
     // Start watching the embedded Tab's web activity.
     _webStateObserver->ObserveWebState([_tab webState]);
     [[_tab webController] setShouldSuppressDialogs:NO];
-    _webViewProxy.reset([[[_tab webController] webViewProxy] retain]);
+    _webViewProxy = [[_tab webController] webViewProxy];
     [[_webViewProxy scrollViewProxy] setBounces:NO];
   } else {
     // Stop watching the embedded Tab's web activity.
     _webStateObserver->ObserveWebState(nullptr);
-    _webViewProxy.reset(nil);
+    _webViewProxy = nil;
   }
 
   _active = active;
@@ -148,7 +150,7 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
                                             opener:self.opener
                                   desktopUserAgent:false
                                      configuration:searchTabConfiguration];
-  _tab.reset([tab retain]);
+  _tab = tab;
   // Don't actually start the page load yet -- that happens in -loadTab
 
   _preloadEnabled = preloadEnabled;
@@ -159,7 +161,9 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
   [self disconnectTab];
   // Allow the search tab to be sized by autoresizing mask again.
   [[_tab view] setTranslatesAutoresizingMaskIntoConstraints:YES];
-  return [_tab.release() autorelease];
+  Tab* tab = _tab;
+  _tab = nil;
+  return tab;
 }
 
 - (void)recordFinishedSearchChained:(BOOL)chained {
@@ -173,7 +177,7 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
   [[_tab view] removeFromSuperview];
   [[_tab webController] setNativeProvider:nil];
   self.active = NO;
-  _webViewProxy.reset();
+  _webViewProxy = nil;
 }
 
 - (void)cancelLoad {
@@ -181,12 +185,12 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
   _loadInProgress = NO;
   _loaded = NO;
   [_tab close];
-  _tab.reset();
+  _tab = nil;
 }
 
 - (void)loadPendingSearchIfPossible {
   // If the search tab hasn't been created, or if it's already loaded, no-op.
-  if (!_tab.get() || _loadInProgress || self.active || _visibility == OFFSCREEN)
+  if (!_tab || _loadInProgress || self.active || _visibility == OFFSCREEN)
     return;
 
   // If this view is in a position where loading would be "preloading", check
@@ -199,7 +203,7 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
 }
 
 - (void)loadTab {
-  DCHECK(_tab.get());
+  DCHECK(_tab);
   // Start observing the search tab.
   self.active = YES;
   // TODO(crbug.com/546223): See if |_waitingForInitialSearchTabLoad| and

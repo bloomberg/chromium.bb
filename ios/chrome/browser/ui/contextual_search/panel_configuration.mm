@@ -5,7 +5,10 @@
 #include "ios/chrome/browser/ui/contextual_search/panel_configuration.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Amount of tab that a previewing pane leaves visible, expressed as a fraction.
@@ -43,7 +46,7 @@ typedef struct { CGFloat byState[ContextualSearch::COVERING + 1]; } Positions;
 + (instancetype)configurationForContainerSize:(CGSize)containerSize
                           horizontalSizeClass:
                               (UIUserInterfaceSizeClass)horizontalSizeClass {
-  PanelConfiguration* config = [[[self alloc] init] autorelease];
+  PanelConfiguration* config = [[self alloc] init];
   config.containerSize = containerSize;
   config.horizontalSizeClass = horizontalSizeClass;
   return config;

@@ -4,6 +4,10 @@
 
 #include "ios/chrome/browser/ui/contextual_search/contextual_search_web_state_observer.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 ContextualSearchWebStateObserver::ContextualSearchWebStateObserver(
     id<ContextualSearchWebStateDelegate> delegate)
     : web::WebStateObserver(), delegate_(delegate), loaded_(false) {}
