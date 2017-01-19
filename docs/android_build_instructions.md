@@ -7,7 +7,6 @@ There are instructions for other platforms linked from the
 
 Are you a Google employee? See
 [go/building-chrome](https://goto.google.com/building-chrome) instead.
-Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
 
 [TOC]
 

@@ -4,21 +4,23 @@
 
 ## Usage
 
+Make sure you have followed [android build instructions](android_build_instructions.md) already.
+
 ```shell
-build/android/gradle/generate_gradle.py --output-directory out-gn/Debug
+build/android/gradle/generate_gradle.py
 ```
 
-This creates a project at `out-gn/Debug/gradle`. To create elsewhere:
+This creates a project at `out/Debug/gradle`. To create elsewhere:
 
 ```shell
-build/android/gradle/generate_gradle.py --output-directory out-gn/Debug --project-dir my-project
+build/android/gradle/generate_gradle.py --output-directory out/My-Out-Dir --project-dir my-project
 ```
 
 By default, only common targets are generated. To customize the list of targets
 to generate projects for:
 
 ```shell
-build/android/gradle/generate_gradle.py --output-directory out-gn/Debug --target //some:target_apk --target //some/other:target_apk
+build/android/gradle/generate_gradle.py --target //some:target_apk --target //some/other:target_apk
 ```
 
 For first-time Android Studio users:
@@ -107,18 +109,18 @@ resources, native libraries, etc.
 * Use a [gradle daemon](https://docs.gradle.org/2.14.1/userguide/gradle_daemon.html) to speed up builds:
     * Add the line `org.gradle.daemon=true` to `~/.gradle/gradle.properties`, creating it if necessary.
 
-## Status (as of Sept 21, 2016)
+## Status (as of Jan 19, 2017)
 
 ### What works
 
 * Tested with Android Studio v2.2.
-* Basic Java editing and compiling works.
+* Java editing and gradle compile works.
+* Instrumentation tests included as androidTest.
+* Symlinks to existing .so files in jniLibs (doesn't generate them).
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
-* Better support for instrumentation tests (they are treated as non-test .apks right now)
 * Make gradle aware of resources and assets
-* Make gradle aware of native code via pointing it at the location of our .so
 * Add a mode in which gradle is responsible for generating `R.java`
 * Add support for native code editing
 * Make the "Make Project" button work correctly
