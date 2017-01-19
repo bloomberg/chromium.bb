@@ -123,6 +123,8 @@ public class ContentSuggestionsNotificationHelper {
                         .setContentTitle(title)
                         .setContentText(text)
                         .setGroup(NOTIFICATION_TAG)
+                        .setDefaults(NotificationCompat.DEFAULT_LIGHTS)
+                        .setPriority(-1)
                         .setLargeIcon(image)
                         .setSmallIcon(R.drawable.ic_chrome);
         manager.notify(NOTIFICATION_TAG, nextId, builder.build());
