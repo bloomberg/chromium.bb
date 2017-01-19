@@ -470,7 +470,7 @@ bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
   // from gen/, which is problematic, but DevTools folks don't want to rename
   // it or split this up. So don't rename it at all.
   if (name.equals("disable") &&
-      IsMethodOverrideOf(decl, "blink::InspectorAgent"))
+      IsMethodOverrideOf(decl, "blink::InspectorBaseAgent"))
     return true;
 
   return false;
