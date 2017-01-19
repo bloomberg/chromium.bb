@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/ParentFrameTaskRunners.h"
@@ -75,7 +76,16 @@ void InProcessWorkerObjectProxy::postMessageToWorkerObject(
                      WTF::passed(std::move(channels))));
 }
 
-void InProcessWorkerObjectProxy::confirmMessageFromWorkerObject() {
+void InProcessWorkerObjectProxy::processMessageFromWorkerObject(
+    PassRefPtr<SerializedScriptValue> message,
+    std::unique_ptr<MessagePortChannelArray> channels,
+    WorkerThread* workerThread) {
+  WorkerGlobalScope* globalScope =
+      toWorkerGlobalScope(workerThread->globalScope());
+  MessagePortArray* ports =
+      MessagePort::entanglePorts(*globalScope, std::move(channels));
+  globalScope->dispatchEvent(MessageEvent::create(ports, std::move(message)));
+
   getParentFrameTaskRunners()
       ->get(TaskType::UnspecedTimer)
       ->postTask(
@@ -83,18 +93,16 @@ void InProcessWorkerObjectProxy::confirmMessageFromWorkerObject() {
           crossThreadBind(
               &InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject,
               m_messagingProxyWeakPtr));
+
+  startPendingActivityTimer();
 }
 
-void InProcessWorkerObjectProxy::startPendingActivityTimer() {
-  if (m_timer->isActive()) {
-    // Reset the next interval duration to check new activity state timely.
-    // For example, a long-running activity can be cancelled by a message
-    // event.
-    m_nextIntervalInSec = kDefaultIntervalInSec;
-    return;
-  }
-  m_timer->startOneShot(m_nextIntervalInSec, BLINK_FROM_HERE);
-  m_nextIntervalInSec = std::min(m_nextIntervalInSec * 1.5, m_maxIntervalInSec);
+void InProcessWorkerObjectProxy::processUnhandledException(
+    int exceptionId,
+    WorkerThread* workerThread) {
+  WorkerGlobalScope* globalScope =
+      toWorkerGlobalScope(workerThread->globalScope());
+  globalScope->exceptionUnhandled(exceptionId);
 }
 
 void InProcessWorkerObjectProxy::reportException(
@@ -136,6 +144,18 @@ InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(
       m_defaultIntervalInSec(kDefaultIntervalInSec),
       m_nextIntervalInSec(kDefaultIntervalInSec),
       m_maxIntervalInSec(kMaxIntervalInSec) {}
+
+void InProcessWorkerObjectProxy::startPendingActivityTimer() {
+  if (m_timer->isActive()) {
+    // Reset the next interval duration to check new activity state timely.
+    // For example, a long-running activity can be cancelled by a message
+    // event.
+    m_nextIntervalInSec = kDefaultIntervalInSec;
+    return;
+  }
+  m_timer->startOneShot(m_nextIntervalInSec, BLINK_FROM_HERE);
+  m_nextIntervalInSec = std::min(m_nextIntervalInSec * 1.5, m_maxIntervalInSec);
+}
 
 void InProcessWorkerObjectProxy::checkPendingActivity(TimerBase*) {
   bool hasPendingActivity = V8GCController::hasPendingActivity(

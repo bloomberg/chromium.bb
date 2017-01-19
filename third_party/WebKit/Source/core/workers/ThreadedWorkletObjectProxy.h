@@ -14,6 +14,7 @@
 namespace blink {
 
 class ThreadedWorkletMessagingProxy;
+class WorkerThread;
 
 // A proxy to talk to the parent worker object. See class comments on
 // ThreadedObjectProxyBase.h for lifetime of this class etc.
@@ -27,7 +28,9 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
       ParentFrameTaskRunners*);
   ~ThreadedWorkletObjectProxy() override;
 
-  void reportPendingActivity(bool hasPendingActivity);
+  void evaluateScript(const String& source,
+                      const KURL& scriptURL,
+                      WorkerThread*);
 
   // ThreadedObjectProxyBase overrides.
   void reportException(const String& errorMessage,

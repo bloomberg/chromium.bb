@@ -49,30 +49,6 @@
 
 namespace blink {
 
-namespace {
-
-void processUnhandledExceptionOnWorkerGlobalScope(
-    int exceptionId,
-    ExecutionContext* scriptContext) {
-  WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
-  globalScope->exceptionUnhandled(exceptionId);
-}
-
-void processMessageOnWorkerGlobalScope(
-    PassRefPtr<SerializedScriptValue> message,
-    std::unique_ptr<MessagePortChannelArray> channels,
-    InProcessWorkerObjectProxy* workerObjectProxy,
-    ExecutionContext* scriptContext) {
-  WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
-  MessagePortArray* ports =
-      MessagePort::entanglePorts(*scriptContext, std::move(channels));
-  globalScope->dispatchEvent(MessageEvent::create(ports, std::move(message)));
-  workerObjectProxy->confirmMessageFromWorkerObject();
-  workerObjectProxy->startPendingActivityTimer();
-}
-
-}  // namespace
-
 InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(
     InProcessWorkerBase* workerObject,
     WorkerClients* workerClients)
@@ -161,17 +137,19 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(
   if (askedToTerminate())
     return;
 
-  std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(
-      &processMessageOnWorkerGlobalScope, std::move(message),
-      WTF::passed(std::move(channels)),
-      crossThreadUnretained(&workerObjectProxy()));
   if (workerThread()) {
     // A message event is an activity and may initiate another activity.
     m_workerGlobalScopeHasPendingActivity = true;
     ++m_unconfirmedMessageCount;
+    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(
+        &InProcessWorkerObjectProxy::processMessageFromWorkerObject,
+        crossThreadUnretained(&workerObjectProxy()), std::move(message),
+        WTF::passed(std::move(channels)),
+        crossThreadUnretained(workerThread()));
     workerThread()->postTask(BLINK_FROM_HERE, std::move(task));
   } else {
-    m_queuedEarlyTasks.push_back(std::move(task));
+    m_queuedEarlyTasks.push_back(
+        WTF::makeUnique<QueuedTask>(std::move(message), std::move(channels)));
   }
 }
 
@@ -191,11 +169,15 @@ void InProcessWorkerMessagingProxy::dispatchErrorEvent(
 
   ErrorEvent* event =
       ErrorEvent::create(errorMessage, location->clone(), nullptr);
-  if (m_workerObject->dispatchEvent(event) == DispatchEventResult::NotCanceled)
-    postTaskToWorkerGlobalScope(
-        BLINK_FROM_HERE,
-        createCrossThreadTask(&processUnhandledExceptionOnWorkerGlobalScope,
-                              exceptionId));
+  if (m_workerObject->dispatchEvent(event) != DispatchEventResult::NotCanceled)
+    return;
+
+  postTaskToWorkerGlobalScope(
+      BLINK_FROM_HERE,
+      createCrossThreadTask(
+          &InProcessWorkerObjectProxy::processUnhandledException,
+          crossThreadUnretained(m_workerObjectProxy.get()), exceptionId,
+          crossThreadUnretained(workerThread())));
 }
 
 void InProcessWorkerMessagingProxy::workerThreadCreated() {
@@ -207,8 +189,15 @@ void InProcessWorkerMessagingProxy::workerThreadCreated() {
 
   DCHECK_EQ(0u, m_unconfirmedMessageCount);
   m_unconfirmedMessageCount = m_queuedEarlyTasks.size();
-  for (auto& earlyTask : m_queuedEarlyTasks)
-    workerThread()->postTask(BLINK_FROM_HERE, std::move(earlyTask));
+  for (auto& queuedTask : m_queuedEarlyTasks) {
+    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(
+        &InProcessWorkerObjectProxy::processMessageFromWorkerObject,
+        crossThreadUnretained(&workerObjectProxy()),
+        queuedTask->message.release(),
+        WTF::passed(std::move(queuedTask->channels)),
+        crossThreadUnretained(workerThread()));
+    workerThread()->postTask(BLINK_FROM_HERE, std::move(task));
+  }
   m_queuedEarlyTasks.clear();
 }
 
@@ -249,5 +238,12 @@ bool InProcessWorkerMessagingProxy::hasPendingActivity() const {
     return false;
   return m_workerGlobalScopeHasPendingActivity;
 }
+
+InProcessWorkerMessagingProxy::QueuedTask::QueuedTask(
+    RefPtr<SerializedScriptValue> message,
+    std::unique_ptr<MessagePortChannelArray> channels)
+    : message(std::move(message)), channels(std::move(channels)) {}
+
+InProcessWorkerMessagingProxy::QueuedTask::~QueuedTask() = default;
 
 }  // namespace blink

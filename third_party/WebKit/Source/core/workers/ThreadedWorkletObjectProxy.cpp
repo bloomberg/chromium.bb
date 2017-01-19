@@ -4,7 +4,11 @@
 
 #include "core/workers/ThreadedWorkletObjectProxy.h"
 
+#include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
+#include "core/workers/WorkerThread.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -19,6 +23,15 @@ std::unique_ptr<ThreadedWorkletObjectProxy> ThreadedWorkletObjectProxy::create(
 }
 
 ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() {}
+
+void ThreadedWorkletObjectProxy::evaluateScript(const String& source,
+                                                const KURL& scriptURL,
+                                                WorkerThread* workerThread) {
+  ThreadedWorkletGlobalScope* globalScope =
+      toThreadedWorkletGlobalScope(workerThread->globalScope());
+  globalScope->scriptController()->evaluate(
+      ScriptSourceCode(source, scriptURL));
+}
 
 ThreadedWorkletObjectProxy::ThreadedWorkletObjectProxy(
     const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr,

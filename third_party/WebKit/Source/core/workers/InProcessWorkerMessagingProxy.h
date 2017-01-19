@@ -98,8 +98,17 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   WeakPersistent<InProcessWorkerBase> m_workerObject;
   Persistent<WorkerClients> m_workerClients;
 
+  struct QueuedTask {
+    RefPtr<SerializedScriptValue> message;
+    std::unique_ptr<MessagePortChannelArray> channels;
+
+    QueuedTask(RefPtr<SerializedScriptValue> message,
+               std::unique_ptr<MessagePortChannelArray> channels);
+    ~QueuedTask();
+  };
+
   // Tasks are queued here until there's a thread object created.
-  Vector<std::unique_ptr<ExecutionContextTask>> m_queuedEarlyTasks;
+  Vector<std::unique_ptr<QueuedTask>> m_queuedEarlyTasks;
 
   // Unconfirmed messages from the parent context thread to the worker thread.
   // When this is greater than 0, |m_workerGlobalScopeHasPendingActivity| should
