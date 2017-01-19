@@ -36,17 +36,17 @@ const uint8_t kControlRequestHeader = 0x80;
 const uint8_t kControlResponseHeader = 0x81;
 }  // namespace
 
-class ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest
+class CryptAuthBluetoothLowEnergyWeavePacketReceiverTest
     : public testing::Test {
  protected:
-  ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest() {}
+  CryptAuthBluetoothLowEnergyWeavePacketReceiverTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
-      ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest);
+      CryptAuthBluetoothLowEnergyWeavePacketReceiverTest);
 };
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        WellBehavingServerPacketsNoControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -107,7 +107,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::APPLICATION_ERROR, receiver->GetReasonForClose());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        WellBehavingServerPacketsWithFullControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -173,7 +173,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::CLOSE_WITHOUT_ERROR, receiver->GetReasonForClose());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        WellBehavingServerPacketsWithSomeControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -223,7 +223,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::CLOSE_WITHOUT_ERROR, receiver->GetReasonForClose());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        WellBehavingClientPacketsNoControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -262,7 +262,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::APPLICATION_ERROR, receiver->GetReasonForClose());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        WellBehavingClientPacketsWithFullControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -315,7 +315,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::CLOSE_WITHOUT_ERROR, receiver->GetReasonForClose());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        WellBehavingClientPacketsWithSomeControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -356,7 +356,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::CLOSE_WITHOUT_ERROR, receiver->GetReasonForClose());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        LegacyCloseWithoutReasonTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -380,7 +380,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::UNKNOWN_ERROR, receiver->GetReasonForClose());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        OneBytePacketTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -405,7 +405,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ("", receiver->GetDataMessage());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        EmptyPacketTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -418,7 +418,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReceiverError::EMPTY_PACKET, receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ServerReceivingConnectionResponseTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -433,7 +433,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ClientReceivingConnectionRequestTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -449,7 +449,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ReceiveConnectionCloseInConnecting) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -468,7 +468,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ReceiveDataInConnecting) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -489,7 +489,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ConnectionRequestTooSmallTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -504,7 +504,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ConnectionRequestTooLargeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -521,7 +521,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ConnectionResponseTooSmallTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -536,7 +536,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ConnectionResponseTooLargeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -553,7 +553,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ConnectionCloseTooLargeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -578,7 +578,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        DataPacketTooLargeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -607,7 +607,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        FirstPacketNoFirstNorLastBitTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -636,7 +636,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        FirstPacketNoFirstYesLastBitTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -665,7 +665,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        NonFirstPacketYesFirstBitTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -705,7 +705,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        OutOfOrderPacketTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -734,7 +734,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        InvalidVersionInConnectionRequestTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -753,7 +753,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        InvalidMaxPacketSizeInConnectionRequestTest) {
   const uint8_t kSmallMaxPacketSize = 19;
 
@@ -772,7 +772,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        InvalidSelectedVersionInConnectionResponseTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -789,7 +789,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        InvalidSelectedMaxPacketSizeInConnectionResponseTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -806,7 +806,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        UnrecognizedReasonForCloseInConnectionCloseTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -832,7 +832,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        UnrecognizedControlCommandBitTwoTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -857,7 +857,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        InvalidControlCommandBitThreeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -877,7 +877,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        InvalidBitOneInDataPacketHeaderTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -904,7 +904,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        InvalidBitZeroInDataPacketHeaderTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -931,7 +931,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ReceivedPacketInErrorState) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -951,7 +951,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReceiverError::EMPTY_PACKET, receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        ReceivedPacketInConnectionClosedStateTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
@@ -989,7 +989,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
+TEST_F(CryptAuthBluetoothLowEnergyWeavePacketReceiverTest,
        MultipleControlPacketTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(

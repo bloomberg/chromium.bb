@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H
-#define COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H_
+#define COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H_
 
 #include <string>
 
@@ -99,4 +99,4 @@ class SecureMessageDelegate {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H_

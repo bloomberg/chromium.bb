@@ -40,7 +40,7 @@ const char kBluetoothAddress2[] = "BB:BB:BB:BB:BB:BB";
 const int kDeviceOsVersionCode = 100;
 const int kDeviceSoftwareVersionCode = 200;
 const char kDeviceSoftwarePackage[] = "cryptauth_client_unittest";
-const cryptauth::DeviceType kDeviceType = cryptauth::CHROME;
+const DeviceType kDeviceType = CHROME;
 
 // CryptAuthAccessTokenFetcher implementation simply returning a predetermined
 // access token.
@@ -105,7 +105,7 @@ class CryptAuthClientTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kCryptAuthHTTPHost, kTestGoogleApisUrl);
 
-    cryptauth::DeviceClassifier device_classifier;
+    DeviceClassifier device_classifier;
     device_classifier.set_device_os_version_code(kDeviceOsVersionCode);
     device_classifier.set_device_software_version_code(
         kDeviceSoftwareVersionCode);
@@ -160,21 +160,21 @@ TEST_F(CryptAuthClientTest, GetMyDevicesSuccess) {
       "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
       "getmydevices?alt=proto");
 
-  cryptauth::GetMyDevicesResponse result_proto;
-  cryptauth::GetMyDevicesRequest request_proto;
+  GetMyDevicesResponse result_proto;
+  GetMyDevicesRequest request_proto;
   request_proto.set_allow_stale_read(true);
   client_->GetMyDevices(
       request_proto,
-      base::Bind(&SaveResult<cryptauth::GetMyDevicesResponse>, &result_proto),
+      base::Bind(&SaveResult<GetMyDevicesResponse>, &result_proto),
       base::Bind(&NotCalled<std::string>));
 
-  cryptauth::GetMyDevicesRequest expected_request;
+  GetMyDevicesRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
   EXPECT_TRUE(expected_request.allow_stale_read());
 
   // Return two devices, one unlock key and one unlockable device.
   {
-    cryptauth::GetMyDevicesResponse response_proto;
+    GetMyDevicesResponse response_proto;
     response_proto.add_devices();
     response_proto.mutable_devices(0)->set_public_key(kPublicKey1);
     response_proto.mutable_devices(0)->set_unlock_key(true);
@@ -201,8 +201,8 @@ TEST_F(CryptAuthClientTest, GetMyDevicesFailure) {
       "getmydevices?alt=proto");
 
   std::string error_message;
-  client_->GetMyDevices(cryptauth::GetMyDevicesRequest(),
-                        base::Bind(&NotCalled<cryptauth::GetMyDevicesResponse>),
+  client_->GetMyDevices(GetMyDevicesRequest(),
+                        base::Bind(&NotCalled<GetMyDevicesResponse>),
                         base::Bind(&SaveResult<std::string>, &error_message));
 
   std::string kStatus500Error("HTTP status: 500");
@@ -215,21 +215,21 @@ TEST_F(CryptAuthClientTest, FindEligibleUnlockDevicesSuccess) {
       "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
       "findeligibleunlockdevices?alt=proto");
 
-  cryptauth::FindEligibleUnlockDevicesResponse result_proto;
-  cryptauth::FindEligibleUnlockDevicesRequest request_proto;
+  FindEligibleUnlockDevicesResponse result_proto;
+  FindEligibleUnlockDevicesRequest request_proto;
   request_proto.set_callback_bluetooth_address(kBluetoothAddress2);
   client_->FindEligibleUnlockDevices(
       request_proto,
-      base::Bind(&SaveResult<cryptauth::FindEligibleUnlockDevicesResponse>,
+      base::Bind(&SaveResult<FindEligibleUnlockDevicesResponse>,
                  &result_proto),
       base::Bind(&NotCalled<std::string>));
 
-  cryptauth::FindEligibleUnlockDevicesRequest expected_request;
+  FindEligibleUnlockDevicesRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
   EXPECT_EQ(kBluetoothAddress2, expected_request.callback_bluetooth_address());
 
   // Return a response proto with one eligible and one ineligible device.
-  cryptauth::FindEligibleUnlockDevicesResponse response_proto;
+  FindEligibleUnlockDevicesResponse response_proto;
   response_proto.add_eligible_devices();
   response_proto.mutable_eligible_devices(0)->set_public_key(kPublicKey1);
 
@@ -259,11 +259,11 @@ TEST_F(CryptAuthClientTest, FindEligibleUnlockDevicesFailure) {
       "findeligibleunlockdevices?alt=proto");
 
   std::string error_message;
-  cryptauth::FindEligibleUnlockDevicesRequest request_proto;
+  FindEligibleUnlockDevicesRequest request_proto;
   request_proto.set_callback_bluetooth_address(kBluetoothAddress1);
   client_->FindEligibleUnlockDevices(
       request_proto,
-      base::Bind(&NotCalled<cryptauth::FindEligibleUnlockDevicesResponse>),
+      base::Bind(&NotCalled<FindEligibleUnlockDevicesResponse>),
       base::Bind(&SaveResult<std::string>, &error_message));
 
   std::string kStatus403Error("HTTP status: 403");
@@ -276,17 +276,17 @@ TEST_F(CryptAuthClientTest, SendDeviceSyncTickleSuccess) {
       "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
       "senddevicesynctickle?alt=proto");
 
-  cryptauth::SendDeviceSyncTickleResponse result_proto;
+  SendDeviceSyncTickleResponse result_proto;
   client_->SendDeviceSyncTickle(
-      cryptauth::SendDeviceSyncTickleRequest(),
-      base::Bind(&SaveResult<cryptauth::SendDeviceSyncTickleResponse>,
+      SendDeviceSyncTickleRequest(),
+      base::Bind(&SaveResult<SendDeviceSyncTickleResponse>,
                  &result_proto),
       base::Bind(&NotCalled<std::string>));
 
-  cryptauth::SendDeviceSyncTickleRequest expected_request;
+  SendDeviceSyncTickleRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
 
-  cryptauth::SendDeviceSyncTickleResponse response_proto;
+  SendDeviceSyncTickleResponse response_proto;
   FinishApiCallFlow(&response_proto);
 }
 
@@ -295,24 +295,24 @@ TEST_F(CryptAuthClientTest, ToggleEasyUnlockSuccess) {
       "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
       "toggleeasyunlock?alt=proto");
 
-  cryptauth::ToggleEasyUnlockResponse result_proto;
-  cryptauth::ToggleEasyUnlockRequest request_proto;
+  ToggleEasyUnlockResponse result_proto;
+  ToggleEasyUnlockRequest request_proto;
   request_proto.set_enable(true);
   request_proto.set_apply_to_all(false);
   request_proto.set_public_key(kPublicKey1);
   client_->ToggleEasyUnlock(
       request_proto,
-      base::Bind(&SaveResult<cryptauth::ToggleEasyUnlockResponse>,
+      base::Bind(&SaveResult<ToggleEasyUnlockResponse>,
                  &result_proto),
       base::Bind(&NotCalled<std::string>));
 
-  cryptauth::ToggleEasyUnlockRequest expected_request;
+  ToggleEasyUnlockRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
   EXPECT_TRUE(expected_request.enable());
   EXPECT_EQ(kPublicKey1, expected_request.public_key());
   EXPECT_FALSE(expected_request.apply_to_all());
 
-  cryptauth::ToggleEasyUnlockResponse response_proto;
+  ToggleEasyUnlockResponse response_proto;
   FinishApiCallFlow(&response_proto);
 }
 
@@ -326,17 +326,17 @@ TEST_F(CryptAuthClientTest, SetupEnrollmentSuccess) {
   supported_protocols.push_back("gcmV1");
   supported_protocols.push_back("testProtocol");
 
-  cryptauth::SetupEnrollmentResponse result_proto;
-  cryptauth::SetupEnrollmentRequest request_proto;
+  SetupEnrollmentResponse result_proto;
+  SetupEnrollmentRequest request_proto;
   request_proto.set_application_id(kApplicationId);
   request_proto.add_types("gcmV1");
   request_proto.add_types("testProtocol");
   client_->SetupEnrollment(
-      request_proto, base::Bind(&SaveResult<cryptauth::SetupEnrollmentResponse>,
+      request_proto, base::Bind(&SaveResult<SetupEnrollmentResponse>,
                                 &result_proto),
       base::Bind(&NotCalled<std::string>));
 
-  cryptauth::SetupEnrollmentRequest expected_request;
+  SetupEnrollmentRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
   EXPECT_EQ(kApplicationId, expected_request.application_id());
   ASSERT_EQ(2, expected_request.types_size());
@@ -345,7 +345,7 @@ TEST_F(CryptAuthClientTest, SetupEnrollmentSuccess) {
 
   // Return a fake enrollment session.
   {
-    cryptauth::SetupEnrollmentResponse response_proto;
+    SetupEnrollmentResponse response_proto;
     response_proto.set_status("OK");
     response_proto.add_infos();
     response_proto.mutable_infos(0)->set_type("gcmV1");
@@ -370,25 +370,25 @@ TEST_F(CryptAuthClientTest, FinishEnrollmentSuccess) {
   const char kEnrollmentSessionId[] = "enrollment_session_id";
   const char kEnrollmentMessage[] = "enrollment_message";
   const char kDeviceEphemeralKey[] = "device_ephermal_key";
-  cryptauth::FinishEnrollmentResponse result_proto;
-  cryptauth::FinishEnrollmentRequest request_proto;
+  FinishEnrollmentResponse result_proto;
+  FinishEnrollmentRequest request_proto;
   request_proto.set_enrollment_session_id(kEnrollmentSessionId);
   request_proto.set_enrollment_message(kEnrollmentMessage);
   request_proto.set_device_ephemeral_key(kDeviceEphemeralKey);
   client_->FinishEnrollment(
       request_proto,
-      base::Bind(&SaveResult<cryptauth::FinishEnrollmentResponse>,
+      base::Bind(&SaveResult<FinishEnrollmentResponse>,
                  &result_proto),
       base::Bind(&NotCalled<const std::string&>));
 
-  cryptauth::FinishEnrollmentRequest expected_request;
+  FinishEnrollmentRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
   EXPECT_EQ(kEnrollmentSessionId, expected_request.enrollment_session_id());
   EXPECT_EQ(kEnrollmentMessage, expected_request.enrollment_message());
   EXPECT_EQ(kDeviceEphemeralKey, expected_request.device_ephemeral_key());
 
   {
-    cryptauth::FinishEnrollmentResponse response_proto;
+    FinishEnrollmentResponse response_proto;
     response_proto.set_status("OK");
     FinishApiCallFlow(&response_proto);
   }
@@ -399,8 +399,8 @@ TEST_F(CryptAuthClientTest, FetchAccessTokenFailure) {
   access_token_fetcher_->set_access_token("");
 
   std::string error_message;
-  client_->GetMyDevices(cryptauth::GetMyDevicesRequest(),
-                        base::Bind(&NotCalled<cryptauth::GetMyDevicesResponse>),
+  client_->GetMyDevices(GetMyDevicesRequest(),
+                        base::Bind(&NotCalled<GetMyDevicesResponse>),
                         base::Bind(&SaveResult<std::string>, &error_message));
 
   EXPECT_EQ("Failed to get a valid access token.", error_message);
@@ -412,8 +412,8 @@ TEST_F(CryptAuthClientTest, ParseResponseProtoFailure) {
       "getmydevices?alt=proto");
 
   std::string error_message;
-  client_->GetMyDevices(cryptauth::GetMyDevicesRequest(),
-                        base::Bind(&NotCalled<cryptauth::GetMyDevicesResponse>),
+  client_->GetMyDevices(GetMyDevicesRequest(),
+                        base::Bind(&NotCalled<GetMyDevicesResponse>),
                         base::Bind(&SaveResult<std::string>, &error_message));
 
   flow_result_callback_.Run("Not a valid serialized response message.");
@@ -427,18 +427,18 @@ TEST_F(CryptAuthClientTest,
       "getmydevices?alt=proto");
 
   // Make first request.
-  cryptauth::GetMyDevicesResponse result_proto;
+  GetMyDevicesResponse result_proto;
   client_->GetMyDevices(
-      cryptauth::GetMyDevicesRequest(),
-      base::Bind(&SaveResult<cryptauth::GetMyDevicesResponse>, &result_proto),
+      GetMyDevicesRequest(),
+      base::Bind(&SaveResult<GetMyDevicesResponse>, &result_proto),
       base::Bind(&NotCalled<std::string>));
 
   // With request pending, make second request.
   {
     std::string error_message;
     client_->FindEligibleUnlockDevices(
-        cryptauth::FindEligibleUnlockDevicesRequest(),
-        base::Bind(&NotCalled<cryptauth::FindEligibleUnlockDevicesResponse>),
+        FindEligibleUnlockDevicesRequest(),
+        base::Bind(&NotCalled<FindEligibleUnlockDevicesResponse>),
         base::Bind(&SaveResult<std::string>, &error_message));
     EXPECT_EQ("Client has been used for another request. Do not reuse.",
               error_message);
@@ -446,7 +446,7 @@ TEST_F(CryptAuthClientTest,
 
   // Complete first request.
   {
-    cryptauth::GetMyDevicesResponse response_proto;
+    GetMyDevicesResponse response_proto;
     response_proto.add_devices();
     response_proto.mutable_devices(0)->set_public_key(kPublicKey1);
     FinishApiCallFlow(&response_proto);
@@ -464,16 +464,16 @@ TEST_F(CryptAuthClientTest,
 
   // Make first request.
   std::string error_message;
-  client_->GetMyDevices(cryptauth::GetMyDevicesRequest(),
-                        base::Bind(&NotCalled<cryptauth::GetMyDevicesResponse>),
+  client_->GetMyDevices(GetMyDevicesRequest(),
+                        base::Bind(&NotCalled<GetMyDevicesResponse>),
                         base::Bind(&SaveResult<std::string>, &error_message));
 
   // With request pending, make second request.
   {
     std::string error_message;
     client_->FindEligibleUnlockDevices(
-        cryptauth::FindEligibleUnlockDevicesRequest(),
-        base::Bind(&NotCalled<cryptauth::FindEligibleUnlockDevicesResponse>),
+        FindEligibleUnlockDevicesRequest(),
+        base::Bind(&NotCalled<FindEligibleUnlockDevicesResponse>),
         base::Bind(&SaveResult<std::string>, &error_message));
     EXPECT_EQ("Client has been used for another request. Do not reuse.",
               error_message);
@@ -492,13 +492,13 @@ TEST_F(CryptAuthClientTest,
     ExpectRequest(
         "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
         "getmydevices?alt=proto");
-    cryptauth::GetMyDevicesResponse result_proto;
+    GetMyDevicesResponse result_proto;
     client_->GetMyDevices(
-        cryptauth::GetMyDevicesRequest(),
-        base::Bind(&SaveResult<cryptauth::GetMyDevicesResponse>, &result_proto),
+        GetMyDevicesRequest(),
+        base::Bind(&SaveResult<GetMyDevicesResponse>, &result_proto),
         base::Bind(&NotCalled<std::string>));
 
-    cryptauth::GetMyDevicesResponse response_proto;
+    GetMyDevicesResponse response_proto;
     response_proto.add_devices();
     response_proto.mutable_devices(0)->set_public_key(kPublicKey1);
     FinishApiCallFlow(&response_proto);
@@ -510,8 +510,8 @@ TEST_F(CryptAuthClientTest,
   {
     std::string error_message;
     client_->FindEligibleUnlockDevices(
-        cryptauth::FindEligibleUnlockDevicesRequest(),
-        base::Bind(&NotCalled<cryptauth::FindEligibleUnlockDevicesResponse>),
+        FindEligibleUnlockDevicesRequest(),
+        base::Bind(&NotCalled<FindEligibleUnlockDevicesResponse>),
         base::Bind(&SaveResult<std::string>, &error_message));
     EXPECT_EQ("Client has been used for another request. Do not reuse.",
               error_message);
@@ -523,17 +523,17 @@ TEST_F(CryptAuthClientTest, DeviceClassifierIsSet) {
       "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
       "getmydevices?alt=proto");
 
-  cryptauth::GetMyDevicesResponse result_proto;
-  cryptauth::GetMyDevicesRequest request_proto;
+  GetMyDevicesResponse result_proto;
+  GetMyDevicesRequest request_proto;
   request_proto.set_allow_stale_read(true);
   client_->GetMyDevices(
       request_proto,
-      base::Bind(&SaveResult<cryptauth::GetMyDevicesResponse>, &result_proto),
+      base::Bind(&SaveResult<GetMyDevicesResponse>, &result_proto),
       base::Bind(&NotCalled<std::string>));
-  cryptauth::GetMyDevicesRequest expected_request;
+  GetMyDevicesRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
 
-  const cryptauth::DeviceClassifier& device_classifier =
+  const DeviceClassifier& device_classifier =
       expected_request.device_classifier();
   EXPECT_EQ(kDeviceOsVersionCode, device_classifier.device_os_version_code());
   EXPECT_EQ(kDeviceSoftwareVersionCode,
@@ -549,12 +549,12 @@ TEST_F(CryptAuthClientTest, GetAccessTokenUsed) {
       "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
       "getmydevices?alt=proto");
 
-  cryptauth::GetMyDevicesResponse result_proto;
-  cryptauth::GetMyDevicesRequest request_proto;
+  GetMyDevicesResponse result_proto;
+  GetMyDevicesRequest request_proto;
   request_proto.set_allow_stale_read(true);
   client_->GetMyDevices(
       request_proto,
-      base::Bind(&SaveResult<cryptauth::GetMyDevicesResponse>, &result_proto),
+      base::Bind(&SaveResult<GetMyDevicesResponse>, &result_proto),
       base::Bind(&NotCalled<std::string>));
   EXPECT_EQ(kAccessToken, client_->GetAccessTokenUsed());
 }

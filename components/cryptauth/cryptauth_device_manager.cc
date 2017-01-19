@@ -51,11 +51,11 @@ const char kExternalDeviceKeyBeaconSeedEndMs[] = "beacon_seed_end_ms";
 
 // Converts BeaconSeed protos to a list value that can be stored in user prefs.
 std::unique_ptr<base::ListValue> BeaconSeedsToListValue(
-    const google::protobuf::RepeatedPtrField<cryptauth::BeaconSeed>& seeds) {
+    const google::protobuf::RepeatedPtrField<BeaconSeed>& seeds) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
 
   for (int i = 0; i < seeds.size(); i++) {
-    cryptauth::BeaconSeed seed = seeds.Get(i);
+    BeaconSeed seed = seeds.Get(i);
 
     if (!seed.has_data()
         || !seed.has_start_time_millis()
@@ -95,7 +95,7 @@ std::unique_ptr<base::ListValue> BeaconSeedsToListValue(
 // Converts an unlock key proto to a dictionary that can be stored in user
 // prefs.
 std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
-    const cryptauth::ExternalDeviceInfo& device) {
+    const ExternalDeviceInfo& device) {
   // The device public key is a required value.
   if (!device.has_public_key()) {
     return nullptr;
@@ -164,7 +164,7 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
 
 void AddBeaconSeedsToExternalDevice(
     const base::ListValue& beacon_seeds,
-    cryptauth::ExternalDeviceInfo& external_device) {
+    ExternalDeviceInfo& external_device) {
   for (size_t i = 0; i < beacon_seeds.GetSize(); i++) {
     const base::DictionaryValue* seed_dictionary = nullptr;
     if (!beacon_seeds.GetDictionary(i, &seed_dictionary)) {
@@ -202,7 +202,7 @@ void AddBeaconSeedsToExternalDevice(
       continue;
     }
 
-    cryptauth::BeaconSeed* seed = external_device.add_beacon_seeds();
+    BeaconSeed* seed = external_device.add_beacon_seeds();
     seed->set_data(seed_data);
     seed->set_start_time_millis(start_time_millis);
     seed->set_end_time_millis(end_time_millis);
@@ -213,7 +213,7 @@ void AddBeaconSeedsToExternalDevice(
 // ExternalDeviceInfo proto. Returns true if the dictionary is valid, and the
 // parsed proto is written to |external_device|.
 bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
-                           cryptauth::ExternalDeviceInfo* external_device) {
+                           ExternalDeviceInfo* external_device) {
   std::string public_key_b64;
   if (!dictionary.GetString(kExternalDeviceKeyPublicKey, &public_key_b64)) {
     // The public key is a required field, so if it is absent, there is no
@@ -333,7 +333,7 @@ void CryptAuthDeviceManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure, false);
   registry->RegisterIntegerPref(prefs::kCryptAuthDeviceSyncReason,
-                                cryptauth::INVOCATION_REASON_UNKNOWN);
+                                INVOCATION_REASON_UNKNOWN);
   registry->RegisterListPref(prefs::kCryptAuthDeviceSyncUnlockKeys);
 }
 
@@ -365,7 +365,7 @@ void CryptAuthDeviceManager::RemoveObserver(Observer* observer) {
 }
 
 void CryptAuthDeviceManager::ForceSyncNow(
-    cryptauth::InvocationReason invocation_reason) {
+    InvocationReason invocation_reason) {
   pref_service_->SetInteger(prefs::kCryptAuthDeviceSyncReason,
                             invocation_reason);
   scheduler_->ForceSync();
@@ -416,7 +416,7 @@ std::vector<ExternalDeviceInfo> CryptAuthDeviceManager::GetTetherHosts() const {
 }
 
 void CryptAuthDeviceManager::OnGetMyDevicesSuccess(
-    const cryptauth::GetMyDevicesResponse& response) {
+    const GetMyDevicesResponse& response) {
   // Update the synced devices stored in the user's prefs.
   std::unique_ptr<base::ListValue> devices_as_list(new base::ListValue());
   for (const auto& device : response.devices()) {
@@ -438,7 +438,7 @@ void CryptAuthDeviceManager::OnGetMyDevicesSuccess(
   pref_service_->SetDouble(prefs::kCryptAuthDeviceSyncLastSyncTimeSeconds,
                            clock_->Now().ToDoubleT());
   pref_service_->SetInteger(prefs::kCryptAuthDeviceSyncReason,
-                            cryptauth::INVOCATION_REASON_UNKNOWN);
+                            INVOCATION_REASON_UNKNOWN);
 
   sync_request_->OnDidComplete(true);
   cryptauth_client_.reset();
@@ -470,7 +470,7 @@ std::unique_ptr<SyncScheduler> CryptAuthDeviceManager::CreateSyncScheduler() {
 }
 
 void CryptAuthDeviceManager::OnResyncMessage() {
-  ForceSyncNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+  ForceSyncNow(INVOCATION_REASON_SERVER_INITIATED);
 }
 
 void CryptAuthDeviceManager::UpdateUnlockKeysFromPrefs() {
@@ -480,7 +480,7 @@ void CryptAuthDeviceManager::UpdateUnlockKeysFromPrefs() {
   for (size_t i = 0; i < unlock_key_list->GetSize(); ++i) {
     const base::DictionaryValue* unlock_key_dictionary;
     if (unlock_key_list->GetDictionary(i, &unlock_key_dictionary)) {
-      cryptauth::ExternalDeviceInfo unlock_key;
+      ExternalDeviceInfo unlock_key;
       if (DictionaryToUnlockKey(*unlock_key_dictionary, &unlock_key)) {
         synced_devices_.push_back(unlock_key);
       } else {
@@ -502,8 +502,8 @@ void CryptAuthDeviceManager::OnSyncRequested(
   sync_request_ = std::move(sync_request);
   cryptauth_client_ = client_factory_->CreateInstance();
 
-  cryptauth::InvocationReason invocation_reason =
-      cryptauth::INVOCATION_REASON_UNKNOWN;
+  InvocationReason invocation_reason =
+      INVOCATION_REASON_UNKNOWN;
 
   int reason_stored_in_prefs =
       pref_service_->GetInteger(prefs::kCryptAuthDeviceSyncReason);
@@ -512,21 +512,21 @@ void CryptAuthDeviceManager::OnSyncRequested(
   // a cached copy of the user's devices, rather taking a database hit for the
   // freshest data.
   bool is_sync_speculative =
-      reason_stored_in_prefs != cryptauth::INVOCATION_REASON_UNKNOWN;
+      reason_stored_in_prefs != INVOCATION_REASON_UNKNOWN;
 
-  if (cryptauth::InvocationReason_IsValid(reason_stored_in_prefs) &&
-      reason_stored_in_prefs != cryptauth::INVOCATION_REASON_UNKNOWN) {
+  if (InvocationReason_IsValid(reason_stored_in_prefs) &&
+      reason_stored_in_prefs != INVOCATION_REASON_UNKNOWN) {
     invocation_reason =
-        static_cast<cryptauth::InvocationReason>(reason_stored_in_prefs);
+        static_cast<InvocationReason>(reason_stored_in_prefs);
   } else if (GetLastSyncTime().is_null()) {
-    invocation_reason = cryptauth::INVOCATION_REASON_INITIALIZATION;
+    invocation_reason = INVOCATION_REASON_INITIALIZATION;
   } else if (IsRecoveringFromFailure()) {
-    invocation_reason = cryptauth::INVOCATION_REASON_FAILURE_RECOVERY;
+    invocation_reason = INVOCATION_REASON_FAILURE_RECOVERY;
   } else {
-    invocation_reason = cryptauth::INVOCATION_REASON_PERIODIC;
+    invocation_reason = INVOCATION_REASON_PERIODIC;
   }
 
-  cryptauth::GetMyDevicesRequest request;
+  GetMyDevicesRequest request;
   request.set_invocation_reason(invocation_reason);
   request.set_allow_stale_read(is_sync_speculative);
   cryptauth_client_->GetMyDevices(

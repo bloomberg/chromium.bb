@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_ENROLLMENT_UTILS_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_ENROLLMENT_UTILS_H
+#ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_UTILS_H
+#define COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_UTILS_H
 
 #include <stdint.h>
 #include <string>
@@ -20,4 +20,4 @@ int64_t HashStringToInt64(const std::string& string);
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_ENROLLMENT_UTILS_H
+#endif  // COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_UTILS_H

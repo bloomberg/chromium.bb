@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_IMPL_H
-#define COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_IMPL_H
+#ifndef COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_IMPL_H_
+#define COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_IMPL_H_
 
 #include <memory>
 #include <set>
@@ -66,4 +66,4 @@ class BluetoothThrottlerImpl : public BluetoothThrottler,
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_IMPL_H
+#endif  // COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_IMPL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_PREF_NAMES_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_PREF_NAMES_H
+#ifndef COMPONENTS_CRYPTAUTH_PREF_NAMES_H_
+#define COMPONENTS_CRYPTAUTH_PREF_NAMES_H_
 
 namespace cryptauth {
 namespace prefs {
@@ -22,4 +22,4 @@ extern const char kCryptAuthGCMRegistrationId[];
 }  // namespace prefs
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_CRYPTAUTH_PREF_NAMES_H
+#endif  // COMPONENTS_CRYPTAUTH_PREF_NAMES_H_

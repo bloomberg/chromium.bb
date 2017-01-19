@@ -28,7 +28,7 @@ const char kSupportedEnrollmentTypeGcmV1[] = "gcmV1";
 const int kGCMMetadataVersion = 1;
 
 // Returns true if |device_info| contains the required fields for enrollment.
-bool ValidateDeviceInfo(const cryptauth::GcmDeviceInfo& device_info) {
+bool ValidateDeviceInfo(const GcmDeviceInfo& device_info) {
   if (!device_info.has_long_device_id()) {
     PA_LOG(ERROR) << "Expected long_device_id field in GcmDeviceInfo.";
     return false;
@@ -45,9 +45,9 @@ bool ValidateDeviceInfo(const cryptauth::GcmDeviceInfo& device_info) {
 // Creates the public metadata to put in the SecureMessage that is sent to the
 // server with the FinishEnrollment request.
 std::string CreateEnrollmentPublicMetadata() {
-  cryptauth::GcmMetadata metadata;
+  GcmMetadata metadata;
   metadata.set_version(kGCMMetadataVersion);
-  metadata.set_type(cryptauth::MessageType::ENROLLMENT);
+  metadata.set_type(MessageType::ENROLLMENT);
   return metadata.SerializeAsString();
 }
 
@@ -66,8 +66,8 @@ CryptAuthEnrollerImpl::~CryptAuthEnrollerImpl() {
 void CryptAuthEnrollerImpl::Enroll(
     const std::string& user_public_key,
     const std::string& user_private_key,
-    const cryptauth::GcmDeviceInfo& device_info,
-    cryptauth::InvocationReason invocation_reason,
+    const GcmDeviceInfo& device_info,
+    InvocationReason invocation_reason,
     const EnrollmentFinishedCallback& callback) {
   if (!callback_.is_null()) {
     PA_LOG(ERROR) << "Enroll() already called. Do not reuse.";
@@ -98,7 +98,7 @@ void CryptAuthEnrollerImpl::OnKeyPairGenerated(const std::string& public_key,
   session_private_key_ = private_key;
 
   cryptauth_client_ = client_factory_->CreateInstance();
-  cryptauth::SetupEnrollmentRequest request;
+  SetupEnrollmentRequest request;
   request.add_types(kSupportedEnrollmentTypeGcmV1);
   request.set_invocation_reason(invocation_reason_);
   cryptauth_client_->SetupEnrollment(
@@ -109,7 +109,7 @@ void CryptAuthEnrollerImpl::OnKeyPairGenerated(const std::string& public_key,
 }
 
 void CryptAuthEnrollerImpl::OnSetupEnrollmentSuccess(
-    const cryptauth::SetupEnrollmentResponse& response) {
+    const SetupEnrollmentResponse& response) {
   if (response.status() != kResponseStatusOk) {
     PA_LOG(WARNING) << "Unexpected status for SetupEnrollment: "
                     << response.status();
@@ -195,7 +195,7 @@ void CryptAuthEnrollerImpl::OnOuterSecureMessageCreated(
     const std::string& outer_message) {
   PA_LOG(INFO) << "SecureMessage created, calling FinishEnrollment API.";
 
-  cryptauth::FinishEnrollmentRequest request;
+  FinishEnrollmentRequest request;
   request.set_enrollment_session_id(setup_info_.enrollment_session_id());
   request.set_enrollment_message(outer_message);
   request.set_device_ephemeral_key(session_public_key_);
@@ -210,7 +210,7 @@ void CryptAuthEnrollerImpl::OnOuterSecureMessageCreated(
 }
 
 void CryptAuthEnrollerImpl::OnFinishEnrollmentSuccess(
-    const cryptauth::FinishEnrollmentResponse& response) {
+    const FinishEnrollmentResponse& response) {
   if (response.status() != kResponseStatusOk) {
     PA_LOG(WARNING) << "Unexpected status for FinishEnrollment: "
                     << response.status();

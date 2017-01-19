@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_GCM_MANAGER_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_GCM_MANAGER_H
+#ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_GCM_MANAGER_H_
+#define COMPONENTS_CRYPTAUTH_CRYPTAUTH_GCM_MANAGER_H_
 
 #include <string>
 
@@ -61,4 +61,4 @@ class CryptAuthGCMManager {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_CRYPTAUTH_CRYPTAUTH_GCM_MANAGER_H
+#endif  // COMPONENTS_CRYPTAUTH_CRYPTAUTH_GCM_MANAGER_H_

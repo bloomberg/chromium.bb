@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_MOCK_CRYPTAUTH_CLIENT_H
-#define COMPONENTS_PROXIMITY_AUTH_MOCK_CRYPTAUTH_CLIENT_H
+#ifndef COMPONENTS_CRYPTAUTH_MOCK_CRYPTAUTH_CLIENT_H_
+#define COMPONENTS_CRYPTAUTH_MOCK_CRYPTAUTH_CLIENT_H_
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -20,27 +20,27 @@ class MockCryptAuthClient : public CryptAuthClient {
 
   // CryptAuthClient:
   MOCK_METHOD3(GetMyDevices,
-               void(const cryptauth::GetMyDevicesRequest& request,
+               void(const GetMyDevicesRequest& request,
                     const GetMyDevicesCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD3(FindEligibleUnlockDevices,
-               void(const cryptauth::FindEligibleUnlockDevicesRequest& request,
+               void(const FindEligibleUnlockDevicesRequest& request,
                     const FindEligibleUnlockDevicesCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD3(SendDeviceSyncTickle,
-               void(const cryptauth::SendDeviceSyncTickleRequest& request,
+               void(const SendDeviceSyncTickleRequest& request,
                     const SendDeviceSyncTickleCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD3(ToggleEasyUnlock,
-               void(const cryptauth::ToggleEasyUnlockRequest& request,
+               void(const ToggleEasyUnlockRequest& request,
                     const ToggleEasyUnlockCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD3(SetupEnrollment,
-               void(const cryptauth::SetupEnrollmentRequest& request,
+               void(const SetupEnrollmentRequest& request,
                     const SetupEnrollmentCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD3(FinishEnrollment,
-               void(const cryptauth::FinishEnrollmentRequest& request,
+               void(const FinishEnrollmentRequest& request,
                     const FinishEnrollmentCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD0(GetAccessTokenUsed, std::string());
@@ -85,4 +85,4 @@ class MockCryptAuthClientFactory : public CryptAuthClientFactory {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_MOCK_CRYPTAUTH_CLIENT_H
+#endif  // COMPONENTS_CRYPTAUTH_MOCK_CRYPTAUTH_CLIENT_H_

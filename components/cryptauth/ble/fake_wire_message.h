@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_FAKE_WIRE_MESSAGE_H
-#define COMPONENTS_CRYPTAUTH_FAKE_WIRE_MESSAGE_H
+#ifndef COMPONENTS_CRYPTAUTH_FAKE_WIRE_MESSAGE_H_
+#define COMPONENTS_CRYPTAUTH_FAKE_WIRE_MESSAGE_H_
 
 #include <memory>
 #include <string>
@@ -26,4 +26,4 @@ class FakeWireMessage : public WireMessage {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_WIRE_MESSAGE_H
+#endif  // COMPONENTS_CRYPTAUTH_FAKE_WIRE_MESSAGE_H_

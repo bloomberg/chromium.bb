@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_SYNC_SCHEDULER_IMPL_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_SYNC_SCHEDULER_IMPL_H
+#ifndef COMPONENTS_CRYPTAUTH_SYNC_SCHEDULER_IMPL_H_
+#define COMPONENTS_CRYPTAUTH_SYNC_SCHEDULER_IMPL_H_
 
 #include <stddef.h>
 
@@ -101,4 +101,4 @@ class SyncSchedulerImpl : public SyncScheduler {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_CRYPTAUTH_CRYPTAUTH_SYNC_SCHEDULER_IMPL_H
+#endif  // COMPONENTS_CRYPTAUTH_SYNC_SCHEDULER_IMPL_H_

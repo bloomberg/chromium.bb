@@ -24,7 +24,7 @@ namespace {
 
 class MockConnection : public Connection {
  public:
-  MockConnection() : Connection(cryptauth::RemoteDevice()) {}
+  MockConnection() : Connection(RemoteDevice()) {}
   ~MockConnection() {}
 
   MOCK_METHOD1(SetPaused, void(bool paused));
@@ -87,7 +87,16 @@ class TestWireMessage : public WireMessage {
 
 }  // namespace
 
-TEST(ProximityAuthConnectionTest, IsConnected) {
+class CryptAuthConnectionTest : public testing::Test {
+ protected:
+  CryptAuthConnectionTest() {}
+  ~CryptAuthConnectionTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CryptAuthConnectionTest);
+};
+
+TEST(CryptAuthConnectionTest, IsConnected) {
   StrictMock<MockConnection> connection;
   EXPECT_FALSE(connection.IsConnected());
 
@@ -101,7 +110,7 @@ TEST(ProximityAuthConnectionTest, IsConnected) {
   EXPECT_FALSE(connection.IsConnected());
 }
 
-TEST(ProximityAuthConnectionTest, SendMessage_FailsWhenNotConnected) {
+TEST(CryptAuthConnectionTest, SendMessage_FailsWhenNotConnected) {
   StrictMock<MockConnection> connection;
   connection.SetStatus(Connection::IN_PROGRESS);
 
@@ -109,7 +118,7 @@ TEST(ProximityAuthConnectionTest, SendMessage_FailsWhenNotConnected) {
   connection.SendMessage(std::unique_ptr<WireMessage>());
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      SendMessage_FailsWhenAnotherMessageSendIsInProgress) {
   NiceMock<MockConnection> connection;
   connection.SetStatus(Connection::CONNECTED);
@@ -119,7 +128,7 @@ TEST(ProximityAuthConnectionTest,
   connection.SendMessage(std::unique_ptr<WireMessage>());
 }
 
-TEST(ProximityAuthConnectionTest, SendMessage_SucceedsWhenConnected) {
+TEST(CryptAuthConnectionTest, SendMessage_SucceedsWhenConnected) {
   StrictMock<MockConnection> connection;
   connection.SetStatus(Connection::CONNECTED);
 
@@ -127,7 +136,7 @@ TEST(ProximityAuthConnectionTest, SendMessage_SucceedsWhenConnected) {
   connection.SendMessage(std::unique_ptr<WireMessage>());
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      SendMessage_SucceedsAfterPreviousMessageSendCompletes) {
   NiceMock<MockConnection> connection;
   connection.SetStatus(Connection::CONNECTED);
@@ -138,7 +147,7 @@ TEST(ProximityAuthConnectionTest,
   connection.SendMessage(std::unique_ptr<WireMessage>());
 }
 
-TEST(ProximityAuthConnectionTest, SetStatus_NotifiesObserversOfStatusChange) {
+TEST(CryptAuthConnectionTest, SetStatus_NotifiesObserversOfStatusChange) {
   StrictMock<MockConnection> connection;
   EXPECT_EQ(Connection::DISCONNECTED, connection.status());
 
@@ -151,7 +160,7 @@ TEST(ProximityAuthConnectionTest, SetStatus_NotifiesObserversOfStatusChange) {
   connection.SetStatus(Connection::CONNECTED);
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      SetStatus_DoesntNotifyObserversIfStatusUnchanged) {
   StrictMock<MockConnection> connection;
   EXPECT_EQ(Connection::DISCONNECTED, connection.status());
@@ -163,7 +172,7 @@ TEST(ProximityAuthConnectionTest,
   connection.SetStatus(Connection::DISCONNECTED);
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      OnDidSendMessage_NotifiesObserversIfMessageSendInProgress) {
   NiceMock<MockConnection> connection;
   connection.SetStatus(Connection::CONNECTED);
@@ -176,7 +185,7 @@ TEST(ProximityAuthConnectionTest,
   connection.OnDidSendMessage(TestWireMessage(), true /* success */);
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      OnDidSendMessage_DoesntNotifyObserversIfNoMessageSendInProgress) {
   NiceMock<MockConnection> connection;
   connection.SetStatus(Connection::CONNECTED);
@@ -188,7 +197,7 @@ TEST(ProximityAuthConnectionTest,
   connection.OnDidSendMessage(TestWireMessage(), true /* success */);
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      OnBytesReceived_NotifiesObserversOnValidMessage) {
   NiceMock<MockConnection> connection;
   connection.SetStatus(Connection::CONNECTED);
@@ -203,7 +212,7 @@ TEST(ProximityAuthConnectionTest,
   connection.OnBytesReceived(std::string());
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      OnBytesReceived_DoesntNotifyObserversIfNotConnected) {
   StrictMock<MockConnection> connection;
   connection.SetStatus(Connection::IN_PROGRESS);
@@ -215,7 +224,7 @@ TEST(ProximityAuthConnectionTest,
   connection.OnBytesReceived(std::string());
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      OnBytesReceived_DoesntNotifyObserversIfMessageIsIncomplete) {
   NiceMock<MockConnection> connection;
   connection.SetStatus(Connection::CONNECTED);
@@ -229,7 +238,7 @@ TEST(ProximityAuthConnectionTest,
   connection.OnBytesReceived(std::string());
 }
 
-TEST(ProximityAuthConnectionTest,
+TEST(CryptAuthConnectionTest,
      OnBytesReceived_DoesntNotifyObserversIfMessageIsInvalid) {
   NiceMock<MockConnection> connection;
   connection.SetStatus(Connection::CONNECTED);

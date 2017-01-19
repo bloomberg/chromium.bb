@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_IMPL_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_IMPL_H
+#ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_CLIENT_IMPL_H_
+#define COMPONENTS_CRYPTAUTH_CRYPTAUTH_CLIENT_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -33,28 +33,28 @@ class CryptAuthClientImpl : public CryptAuthClient {
       std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
       std::unique_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
       scoped_refptr<net::URLRequestContextGetter> url_request_context,
-      const cryptauth::DeviceClassifier& device_classifier);
+      const DeviceClassifier& device_classifier);
   ~CryptAuthClientImpl() override;
 
   // CryptAuthClient:
-  void GetMyDevices(const cryptauth::GetMyDevicesRequest& request,
+  void GetMyDevices(const GetMyDevicesRequest& request,
                     const GetMyDevicesCallback& callback,
                     const ErrorCallback& error_callback) override;
   void FindEligibleUnlockDevices(
-      const cryptauth::FindEligibleUnlockDevicesRequest& request,
+      const FindEligibleUnlockDevicesRequest& request,
       const FindEligibleUnlockDevicesCallback& callback,
       const ErrorCallback& error_callback) override;
   void SendDeviceSyncTickle(
-      const cryptauth::SendDeviceSyncTickleRequest& request,
+      const SendDeviceSyncTickleRequest& request,
       const SendDeviceSyncTickleCallback& callback,
       const ErrorCallback& error_callback) override;
-  void ToggleEasyUnlock(const cryptauth::ToggleEasyUnlockRequest& request,
+  void ToggleEasyUnlock(const ToggleEasyUnlockRequest& request,
                         const ToggleEasyUnlockCallback& callback,
                         const ErrorCallback& error_callback) override;
-  void SetupEnrollment(const cryptauth::SetupEnrollmentRequest& request,
+  void SetupEnrollment(const SetupEnrollmentRequest& request,
                        const SetupEnrollmentCallback& callback,
                        const ErrorCallback& error_callback) override;
-  void FinishEnrollment(const cryptauth::FinishEnrollmentRequest& request,
+  void FinishEnrollment(const FinishEnrollmentRequest& request,
                         const FinishEnrollmentCallback& callback,
                         const ErrorCallback& error_callback) override;
   std::string GetAccessTokenUsed() override;
@@ -98,7 +98,7 @@ class CryptAuthClientImpl : public CryptAuthClient {
 
   // Contains basic device info of the client making the request that is sent to
   // CryptAuth with each API call.
-  const cryptauth::DeviceClassifier device_classifier_;
+  const DeviceClassifier device_classifier_;
 
   // True if an API call has been started. Remains true even after the API call
   // completes.
@@ -130,7 +130,7 @@ class CryptAuthClientFactoryImpl : public CryptAuthClientFactory {
       OAuth2TokenService* token_service,
       const std::string& account_id,
       scoped_refptr<net::URLRequestContextGetter> url_request_context,
-      const cryptauth::DeviceClassifier& device_classifier);
+      const DeviceClassifier& device_classifier);
   ~CryptAuthClientFactoryImpl() override;
 
   // CryptAuthClientFactory:
@@ -140,11 +140,11 @@ class CryptAuthClientFactoryImpl : public CryptAuthClientFactory {
   OAuth2TokenService* token_service_;
   const std::string account_id_;
   const scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-  const cryptauth::DeviceClassifier device_classifier_;
+  const DeviceClassifier device_classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthClientFactoryImpl);
 };
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_IMPL_H
+#endif  // COMPONENTS_CRYPTAUTH_CRYPTAUTH_CLIENT_IMPL_H_

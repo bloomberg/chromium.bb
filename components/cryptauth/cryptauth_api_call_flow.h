@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_API_CALL_FLOW_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_API_CALL_FLOW_H
+#ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_API_CALL_FLOW_H_
+#define COMPONENTS_CRYPTAUTH_CRYPTAUTH_API_CALL_FLOW_H_
 
 #include <string>
 
@@ -73,4 +73,4 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_API_CALL_FLOW_H
+#endif  // COMPONENTS_CRYPTAUTH_CRYPTAUTH_API_CALL_FLOW_H_

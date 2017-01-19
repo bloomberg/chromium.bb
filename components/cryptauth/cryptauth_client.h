@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
+#ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_CLIENT_H_
+#define COMPONENTS_CRYPTAUTH_CRYPTAUTH_CLIENT_H_
 
 #include <memory>
 #include <string>
@@ -41,49 +41,49 @@ class CryptAuthClient {
   virtual ~CryptAuthClient() {}
 
   // GetMyDevices
-  typedef base::Callback<void(const cryptauth::GetMyDevicesResponse&)>
+  typedef base::Callback<void(const GetMyDevicesResponse&)>
       GetMyDevicesCallback;
-  virtual void GetMyDevices(const cryptauth::GetMyDevicesRequest& request,
+  virtual void GetMyDevices(const GetMyDevicesRequest& request,
                             const GetMyDevicesCallback& callback,
                             const ErrorCallback& error_callback) = 0;
 
   // FindEligibleUnlockDevices
   typedef base::Callback<void(
-      const cryptauth::FindEligibleUnlockDevicesResponse&)>
+      const FindEligibleUnlockDevicesResponse&)>
       FindEligibleUnlockDevicesCallback;
   virtual void FindEligibleUnlockDevices(
-      const cryptauth::FindEligibleUnlockDevicesRequest& request,
+      const FindEligibleUnlockDevicesRequest& request,
       const FindEligibleUnlockDevicesCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
   // SendDeviceSyncTickle
-  typedef base::Callback<void(const cryptauth::SendDeviceSyncTickleResponse&)>
+  typedef base::Callback<void(const SendDeviceSyncTickleResponse&)>
       SendDeviceSyncTickleCallback;
   virtual void SendDeviceSyncTickle(
-      const cryptauth::SendDeviceSyncTickleRequest& request,
+      const SendDeviceSyncTickleRequest& request,
       const SendDeviceSyncTickleCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
   // ToggleEasyUnlock
-  typedef base::Callback<void(const cryptauth::ToggleEasyUnlockResponse&)>
+  typedef base::Callback<void(const ToggleEasyUnlockResponse&)>
       ToggleEasyUnlockCallback;
   virtual void ToggleEasyUnlock(
-      const cryptauth::ToggleEasyUnlockRequest& request,
+      const ToggleEasyUnlockRequest& request,
       const ToggleEasyUnlockCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
   // SetupEnrollment
-  typedef base::Callback<void(const cryptauth::SetupEnrollmentResponse&)>
+  typedef base::Callback<void(const SetupEnrollmentResponse&)>
       SetupEnrollmentCallback;
-  virtual void SetupEnrollment(const cryptauth::SetupEnrollmentRequest& request,
+  virtual void SetupEnrollment(const SetupEnrollmentRequest& request,
                                const SetupEnrollmentCallback& callback,
                                const ErrorCallback& error_callback) = 0;
 
   // FinishEnrollment
-  typedef base::Callback<void(const cryptauth::FinishEnrollmentResponse&)>
+  typedef base::Callback<void(const FinishEnrollmentResponse&)>
       FinishEnrollmentCallback;
   virtual void FinishEnrollment(
-      const cryptauth::FinishEnrollmentRequest& request,
+      const FinishEnrollmentRequest& request,
       const FinishEnrollmentCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
@@ -104,4 +104,4 @@ class CryptAuthClientFactory {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
+#endif  // COMPONENTS_CRYPTAUTH_CRYPTAUTH_CLIENT_H_

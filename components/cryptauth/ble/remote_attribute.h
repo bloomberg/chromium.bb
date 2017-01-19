@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_BLE_REMOTE_ATTRIBUTE_H
-#define COMPONENTS_CRYPTAUTH_BLE_REMOTE_ATTRIBUTE_H
+#ifndef COMPONENTS_CRYPTAUTH_BLE_REMOTE_ATTRIBUTE_H_
+#define COMPONENTS_CRYPTAUTH_BLE_REMOTE_ATTRIBUTE_H_
 
 #include <string>
 
@@ -19,4 +19,4 @@ struct RemoteAttribute {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_REMOTE_ATTRIBUTE_H
+#endif  // COMPONENTS_CRYPTAUTH_BLE_REMOTE_ATTRIBUTE_H_

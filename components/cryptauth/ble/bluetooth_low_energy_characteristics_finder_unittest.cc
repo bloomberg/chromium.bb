@@ -50,17 +50,17 @@ const char kOtherCharUUID[] = "09731422-048A-11E5-8418-1697F925EC7B";
 const char kOtherCharID[] = "other id";
 }  //  namespace
 
-class ProximityAuthBluetoothLowEnergyCharacteristicFinderTest
+class CryptAuthBluetoothLowEnergyCharacteristicFinderTest
     : public testing::Test {
  protected:
-  ProximityAuthBluetoothLowEnergyCharacteristicFinderTest()
+  CryptAuthBluetoothLowEnergyCharacteristicFinderTest()
       : adapter_(new NiceMock<device::MockBluetoothAdapter>),
         success_callback_(base::Bind(
-            &ProximityAuthBluetoothLowEnergyCharacteristicFinderTest::
+            &CryptAuthBluetoothLowEnergyCharacteristicFinderTest::
                 OnCharacteristicsFound,
             base::Unretained(this))),
         error_callback_(base::Bind(
-            &ProximityAuthBluetoothLowEnergyCharacteristicFinderTest::
+            &CryptAuthBluetoothLowEnergyCharacteristicFinderTest::
                 OnCharacteristicsFinderError,
             base::Unretained(this))),
         device_(new NiceMock<device::MockBluetoothDevice>(adapter_.get(),
@@ -127,14 +127,14 @@ class ProximityAuthBluetoothLowEnergyCharacteristicFinderTest
   RemoteAttribute from_peripheral_char_;
 };
 
-TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
+TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
        ConstructAndDestroyDontCrash) {
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device_.get(), remote_service_, to_peripheral_char_,
       from_peripheral_char_, success_callback_, error_callback_);
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
+TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
        FindRightCharacteristics) {
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device_.get(), remote_service_, to_peripheral_char_,
@@ -169,7 +169,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
   observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
+TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
        DidntFindRightCharacteristics) {
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device_.get(), remote_service_, to_peripheral_char_,
@@ -190,7 +190,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
   observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
+TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
        FindOnlyOneRightCharacteristic) {
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device_.get(), remote_service_, to_peripheral_char_,
@@ -215,7 +215,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
   EXPECT_EQ(kFromPeripheralCharID, found_from_char.id);
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
+TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
        FindWrongCharacteristic_FindRightCharacteristics) {
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device_.get(), remote_service_, to_peripheral_char_,
@@ -252,7 +252,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
   observer->GattDiscoveryCompleteForService(adapter_.get(), service_.get());
 }
 
-TEST_F(ProximityAuthBluetoothLowEnergyCharacteristicFinderTest,
+TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
        RightCharacteristicsAlreadyPresent) {
   RemoteAttribute found_to_char, found_from_char;
   EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _))

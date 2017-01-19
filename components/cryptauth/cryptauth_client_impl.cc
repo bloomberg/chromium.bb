@@ -52,7 +52,7 @@ CryptAuthClientImpl::CryptAuthClientImpl(
     std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
     std::unique_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
     scoped_refptr<net::URLRequestContextGetter> url_request_context,
-    const cryptauth::DeviceClassifier& device_classifier)
+    const DeviceClassifier& device_classifier)
     : api_call_flow_(std::move(api_call_flow)),
       access_token_fetcher_(std::move(access_token_fetcher)),
       url_request_context_(url_request_context),
@@ -64,14 +64,14 @@ CryptAuthClientImpl::~CryptAuthClientImpl() {
 }
 
 void CryptAuthClientImpl::GetMyDevices(
-    const cryptauth::GetMyDevicesRequest& request,
+    const GetMyDevicesRequest& request,
     const GetMyDevicesCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kGetMyDevicesPath, request, callback, error_callback);
 }
 
 void CryptAuthClientImpl::FindEligibleUnlockDevices(
-    const cryptauth::FindEligibleUnlockDevicesRequest& request,
+    const FindEligibleUnlockDevicesRequest& request,
     const FindEligibleUnlockDevicesCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kFindEligibleUnlockDevicesPath, request, callback,
@@ -79,28 +79,28 @@ void CryptAuthClientImpl::FindEligibleUnlockDevices(
 }
 
 void CryptAuthClientImpl::SendDeviceSyncTickle(
-    const cryptauth::SendDeviceSyncTickleRequest& request,
+    const SendDeviceSyncTickleRequest& request,
     const SendDeviceSyncTickleCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kSendDeviceSyncTicklePath, request, callback, error_callback);
 }
 
 void CryptAuthClientImpl::ToggleEasyUnlock(
-    const cryptauth::ToggleEasyUnlockRequest& request,
+    const ToggleEasyUnlockRequest& request,
     const ToggleEasyUnlockCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kToggleEasyUnlockPath, request, callback, error_callback);
 }
 
 void CryptAuthClientImpl::SetupEnrollment(
-    const cryptauth::SetupEnrollmentRequest& request,
+    const SetupEnrollmentRequest& request,
     const SetupEnrollmentCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kSetupEnrollmentPath, request, callback, error_callback);
 }
 
 void CryptAuthClientImpl::FinishEnrollment(
-    const cryptauth::FinishEnrollmentRequest& request,
+    const FinishEnrollmentRequest& request,
     const FinishEnrollmentCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kFinishEnrollmentPath, request, callback, error_callback);
@@ -182,7 +182,7 @@ CryptAuthClientFactoryImpl::CryptAuthClientFactoryImpl(
     OAuth2TokenService* token_service,
     const std::string& account_id,
     scoped_refptr<net::URLRequestContextGetter> url_request_context,
-    const cryptauth::DeviceClassifier& device_classifier)
+    const DeviceClassifier& device_classifier)
     : token_service_(token_service),
       account_id_(account_id),
       url_request_context_(url_request_context),

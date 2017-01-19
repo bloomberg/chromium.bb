@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_FAKE_CONNECTION_H
-#define COMPONENTS_CRYPTAUTH_FAKE_CONNECTION_H
+#ifndef COMPONENTS_CRYPTAUTH_FAKE_CONNECTION_H_
+#define COMPONENTS_CRYPTAUTH_FAKE_CONNECTION_H_
 
 #include "base/macros.h"
 #include "components/cryptauth/connection.h"
@@ -13,7 +13,7 @@ namespace cryptauth {
 // A fake implementation of Connection to use in tests.
 class FakeConnection : public Connection {
  public:
-  FakeConnection(const cryptauth::RemoteDevice& remote_device);
+  FakeConnection(const RemoteDevice& remote_device);
   ~FakeConnection() override;
 
   // Connection:
@@ -51,4 +51,4 @@ class FakeConnection : public Connection {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_FAKE_CONNECTION_H
+#endif  // COMPONENTS_CRYPTAUTH_FAKE_CONNECTION_H_

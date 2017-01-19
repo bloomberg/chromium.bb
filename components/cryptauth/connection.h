@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_CONNECTION_H
-#define COMPONENTS_CRYPTAUTH_CONNECTION_H
+#ifndef COMPONENTS_CRYPTAUTH_CONNECTION_H_
+#define COMPONENTS_CRYPTAUTH_CONNECTION_H_
 
 #include <memory>
 
@@ -28,7 +28,7 @@ class Connection {
   };
 
   // Constructs a connection to the given |remote_device|.
-  explicit Connection(const cryptauth::RemoteDevice& remote_device);
+  explicit Connection(const RemoteDevice& remote_device);
   virtual ~Connection();
 
   // Returns true iff the connection's status is CONNECTED.
@@ -45,7 +45,7 @@ class Connection {
   void AddObserver(ConnectionObserver* observer);
   void RemoveObserver(ConnectionObserver* observer);
 
-  const cryptauth::RemoteDevice& remote_device() const {
+  const RemoteDevice& remote_device() const {
     return remote_device_;
   }
 
@@ -94,7 +94,7 @@ class Connection {
 
  private:
   // The remote device corresponding to this connection.
-  const cryptauth::RemoteDevice remote_device_;
+  const RemoteDevice remote_device_;
 
   // The current status of the connection.
   Status status_;
@@ -114,4 +114,4 @@ class Connection {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_CONNECTION_H
+#endif  // COMPONENTS_CRYPTAUTH_CONNECTION_H_

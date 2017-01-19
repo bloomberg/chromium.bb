@@ -24,8 +24,8 @@ const char kAccessTokenUsed[] = "access token used by CryptAuthClient";
 const char kClientSessionPublicKey[] = "throw away after one use";
 const char kServerSessionPublicKey[] = "disposables are not eco-friendly";
 
-cryptauth::InvocationReason kInvocationReason =
-    cryptauth::INVOCATION_REASON_MANUAL;
+InvocationReason kInvocationReason =
+    INVOCATION_REASON_MANUAL;
 const int kGCMMetadataVersion = 1;
 const char kSupportedEnrollmentTypeGcmV1[] = "gcmV1";
 const char kResponseStatusOk[] = "ok";
@@ -34,12 +34,12 @@ const char kEnrollmentSessionId[] = "0123456789876543210";
 const char kFinishEnrollmentError[] = "A hungry router ate all your packets.";
 
 const char kDeviceId[] = "2015 AD";
-const cryptauth::DeviceType kDeviceType = cryptauth::CHROME;
+const DeviceType kDeviceType = CHROME;
 const char kDeviceOsVersion[] = "41.0.0";
 
 // Creates and returns the GcmDeviceInfo message to be uploaded.
-cryptauth::GcmDeviceInfo GetDeviceInfo() {
-  cryptauth::GcmDeviceInfo device_info;
+GcmDeviceInfo GetDeviceInfo() {
+  GcmDeviceInfo device_info;
   device_info.set_long_device_id(kDeviceId);
   device_info.set_device_type(kDeviceType);
   device_info.set_device_os_version(kDeviceOsVersion);
@@ -49,15 +49,15 @@ cryptauth::GcmDeviceInfo GetDeviceInfo() {
 // Creates and returns the SetupEnrollmentResponse message to be returned to the
 // enroller with the session_. If |success| is false, then a bad response will
 // be returned.
-cryptauth::SetupEnrollmentResponse GetSetupEnrollmentResponse(bool success) {
-  cryptauth::SetupEnrollmentResponse response;
+SetupEnrollmentResponse GetSetupEnrollmentResponse(bool success) {
+  SetupEnrollmentResponse response;
   if (!success) {
     response.set_status(kResponseStatusNotOk);
     return response;
   }
 
   response.set_status(kResponseStatusOk);
-  cryptauth::SetupEnrollmentInfo* info = response.add_infos();
+  SetupEnrollmentInfo* info = response.add_infos();
   info->set_type(kSupportedEnrollmentTypeGcmV1);
   info->set_enrollment_session_id(kEnrollmentSessionId);
   info->set_server_ephemeral_key(kServerSessionPublicKey);
@@ -67,8 +67,8 @@ cryptauth::SetupEnrollmentResponse GetSetupEnrollmentResponse(bool success) {
 // Creates and returns the FinishEnrollmentResponse message to be returned to
 // the enroller with the session_. If |success| is false, then a bad response
 // will be returned.
-cryptauth::FinishEnrollmentResponse GetFinishEnrollmentResponse(bool success) {
-  cryptauth::FinishEnrollmentResponse response;
+FinishEnrollmentResponse GetFinishEnrollmentResponse(bool success) {
+  FinishEnrollmentResponse response;
   if (success) {
     response.set_status(kResponseStatusOk);
   } else {
@@ -117,7 +117,7 @@ class CryptAuthEnrollerTest
   }
 
   // Starts the enroller.
-  void StartEnroller(const cryptauth::GcmDeviceInfo& device_info) {
+  void StartEnroller(const GcmDeviceInfo& device_info) {
     secure_message_delegate_->set_next_public_key(kClientSessionPublicKey);
     enroller_result_.reset();
     enroller_.Enroll(
@@ -152,10 +152,10 @@ class CryptAuthEnrollerTest
           base::Bind(&SaveUnwrapResults, &verified, &inner_message, &header));
       EXPECT_TRUE(verified);
 
-      cryptauth::GcmMetadata metadata;
+      GcmMetadata metadata;
       ASSERT_TRUE(metadata.ParseFromString(header.public_metadata()));
       EXPECT_EQ(kGCMMetadataVersion, metadata.version());
-      EXPECT_EQ(cryptauth::MessageType::ENROLLMENT, metadata.type());
+      EXPECT_EQ(MessageType::ENROLLMENT, metadata.type());
     }
 
     {
@@ -173,7 +173,7 @@ class CryptAuthEnrollerTest
     }
 
     // Check that the decrypted GcmDeviceInfo is correct.
-    cryptauth::GcmDeviceInfo device_info;
+    GcmDeviceInfo device_info;
     ASSERT_TRUE(device_info.ParseFromString(inner_payload));
     EXPECT_EQ(kDeviceId, device_info.long_device_id());
     EXPECT_EQ(kDeviceType, device_info.device_type());
@@ -210,7 +210,7 @@ class CryptAuthEnrollerTest
   }
 
   void OnSetupEnrollment(
-      const cryptauth::SetupEnrollmentRequest& request,
+      const SetupEnrollmentRequest& request,
       const CryptAuthClient::SetupEnrollmentCallback& callback,
       const CryptAuthClient::ErrorCallback& error_callback) {
     // Check that SetupEnrollment is called before FinishEnrollment.
@@ -219,13 +219,13 @@ class CryptAuthEnrollerTest
     EXPECT_TRUE(setup_callback_.is_null());
     EXPECT_TRUE(error_callback_.is_null());
 
-    setup_request_.reset(new cryptauth::SetupEnrollmentRequest(request));
+    setup_request_.reset(new SetupEnrollmentRequest(request));
     setup_callback_ = callback;
     error_callback_ = error_callback;
   }
 
   void OnFinishEnrollment(
-      const cryptauth::FinishEnrollmentRequest& request,
+      const FinishEnrollmentRequest& request,
       const CryptAuthClient::FinishEnrollmentCallback& callback,
       const CryptAuthClient::ErrorCallback& error_callback) {
     // Check that FinishEnrollment is called after SetupEnrollment.
@@ -233,7 +233,7 @@ class CryptAuthEnrollerTest
     EXPECT_FALSE(finish_request_.get());
     EXPECT_TRUE(finish_callback_.is_null());
 
-    finish_request_.reset(new cryptauth::FinishEnrollmentRequest(request));
+    finish_request_.reset(new FinishEnrollmentRequest(request));
     finish_callback_ = callback;
     error_callback_ = error_callback;
   }
@@ -253,8 +253,8 @@ class CryptAuthEnrollerTest
   std::unique_ptr<bool> enroller_result_;
 
   // Stored callbacks and requests for SetupEnrollment and FinishEnrollment.
-  std::unique_ptr<cryptauth::SetupEnrollmentRequest> setup_request_;
-  std::unique_ptr<cryptauth::FinishEnrollmentRequest> finish_request_;
+  std::unique_ptr<SetupEnrollmentRequest> setup_request_;
+  std::unique_ptr<FinishEnrollmentRequest> finish_request_;
   CryptAuthClient::SetupEnrollmentCallback setup_callback_;
   CryptAuthClient::FinishEnrollmentCallback finish_callback_;
   CryptAuthClient::ErrorCallback error_callback_;
@@ -313,7 +313,7 @@ TEST_F(CryptAuthEnrollerTest, SetupEnrollmentBadStatus) {
 TEST_F(CryptAuthEnrollerTest, SetupEnrollmentNoInfosReturned) {
   StartEnroller(GetDeviceInfo());
   EXPECT_TRUE(setup_request_.get());
-  cryptauth::SetupEnrollmentResponse response;
+  SetupEnrollmentResponse response;
   response.set_status(kResponseStatusOk);
   setup_callback_.Run(response);
 
@@ -351,7 +351,7 @@ TEST_F(CryptAuthEnrollerTest, ReuseEnroller) {
 }
 
 TEST_F(CryptAuthEnrollerTest, IncompleteDeviceInfo) {
-  StartEnroller(cryptauth::GcmDeviceInfo());
+  StartEnroller(GcmDeviceInfo());
   ASSERT_TRUE(enroller_result_.get());
   EXPECT_FALSE(*enroller_result_);
 }

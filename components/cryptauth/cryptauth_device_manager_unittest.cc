@@ -79,8 +79,8 @@ const int64_t kBeaconSeed4EndTime = 234568;
 
 // Validates that |devices| is equal to |expected_devices|.
 void ExpectSyncedDevicesAreEqual(
-    const std::vector<cryptauth::ExternalDeviceInfo>& expected_devices,
-    const std::vector<cryptauth::ExternalDeviceInfo>& devices) {
+    const std::vector<ExternalDeviceInfo>& expected_devices,
+    const std::vector<ExternalDeviceInfo>& devices) {
   ASSERT_EQ(expected_devices.size(), devices.size());
   for (size_t i = 0; i < devices.size(); ++i) {
     SCOPED_TRACE(
@@ -130,9 +130,9 @@ void ExpectSyncedDevicesAreEqual(
     ASSERT_EQ(expected_device.beacon_seeds_size(),
               device.beacon_seeds_size());
     for (int i = 0; i < expected_device.beacon_seeds_size(); i++) {
-      const cryptauth::BeaconSeed expected_seed =
+      const BeaconSeed expected_seed =
           expected_device.beacon_seeds(i);
-      const cryptauth::BeaconSeed seed = device.beacon_seeds(i);
+      const BeaconSeed seed = device.beacon_seeds(i);
       EXPECT_TRUE(expected_seed.has_data());
       EXPECT_TRUE(seed.has_data());
       EXPECT_EQ(expected_seed.data(), seed.data());
@@ -151,8 +151,8 @@ void ExpectSyncedDevicesAreEqual(
 // Validates that |devices| and the corresponding preferences stored by
 // |pref_service| are equal to |expected_devices|.
 void ExpectSyncedDevicesAndPrefAreEqual(
-    const std::vector<cryptauth::ExternalDeviceInfo>& expected_devices,
-    const std::vector<cryptauth::ExternalDeviceInfo>& devices,
+    const std::vector<ExternalDeviceInfo>& expected_devices,
+    const std::vector<ExternalDeviceInfo>& devices,
     const PrefService& pref_service) {
   ExpectSyncedDevicesAreEqual(expected_devices, devices);
 
@@ -263,7 +263,7 @@ void ExpectSyncedDevicesAndPrefAreEqual(
         EXPECT_TRUE(seed->GetString("beacon_seed_start_ms", &start_ms));
         EXPECT_TRUE(seed->GetString("beacon_seed_end_ms", &end_ms));
 
-        const cryptauth::BeaconSeed& expected_seed =
+        const BeaconSeed& expected_seed =
             expected_device.beacon_seeds((int) i);
 
         std::string data;
@@ -338,34 +338,34 @@ class CryptAuthDeviceManagerTest
         gcm_manager_("existing gcm registration id") {
     client_factory_->AddObserver(this);
 
-    cryptauth::ExternalDeviceInfo unlock_key;
+    ExternalDeviceInfo unlock_key;
     unlock_key.set_public_key(kPublicKey1);
     unlock_key.set_friendly_device_name(kDeviceName1);
     unlock_key.set_bluetooth_address(kBluetoothAddress1);
     unlock_key.set_unlock_key(kUnlockKey1);
     unlock_key.set_unlockable(kUnlockable1);
     unlock_key.set_mobile_hotspot_supported(kMobileHotspotSupported1);
-    cryptauth::BeaconSeed* seed1 = unlock_key.add_beacon_seeds();
+    BeaconSeed* seed1 = unlock_key.add_beacon_seeds();
     seed1->set_data(kBeaconSeed1Data);
     seed1->set_start_time_millis(kBeaconSeed1StartTime);
     seed1->set_end_time_millis(kBeaconSeed1EndTime);
-    cryptauth::BeaconSeed* seed2 = unlock_key.add_beacon_seeds();
+    BeaconSeed* seed2 = unlock_key.add_beacon_seeds();
     seed2->set_data(kBeaconSeed2Data);
     seed2->set_start_time_millis(kBeaconSeed2StartTime);
     seed2->set_end_time_millis(kBeaconSeed2EndTime);
     devices_in_response_.push_back(unlock_key);
 
-    cryptauth::ExternalDeviceInfo unlockable_device;
+    ExternalDeviceInfo unlockable_device;
     unlockable_device.set_public_key(kPublicKey2);
     unlockable_device.set_friendly_device_name(kDeviceName2);
     unlockable_device.set_unlock_key(kUnlockKey2);
     unlockable_device.set_unlockable(kUnlockable2);
     unlockable_device.set_mobile_hotspot_supported(kMobileHotspotSupported2);
-    cryptauth::BeaconSeed* seed3 = unlockable_device.add_beacon_seeds();
+    BeaconSeed* seed3 = unlockable_device.add_beacon_seeds();
     seed3->set_data(kBeaconSeed3Data);
     seed3->set_start_time_millis(kBeaconSeed3StartTime);
     seed3->set_end_time_millis(kBeaconSeed3EndTime);
-    cryptauth::BeaconSeed* seed4 = unlockable_device.add_beacon_seeds();
+    BeaconSeed* seed4 = unlockable_device.add_beacon_seeds();
     seed4->set_data(kBeaconSeed4Data);
     seed4->set_start_time_millis(kBeaconSeed4StartTime);
     seed4->set_end_time_millis(kBeaconSeed4EndTime);
@@ -388,7 +388,7 @@ class CryptAuthDeviceManagerTest
                               new base::FundamentalValue(kLastSyncTimeSeconds));
     pref_service_.SetUserPref(
         prefs::kCryptAuthDeviceSyncReason,
-        new base::FundamentalValue(cryptauth::INVOCATION_REASON_UNKNOWN));
+        new base::FundamentalValue(INVOCATION_REASON_UNKNOWN));
 
     std::unique_ptr<base::DictionaryValue> device_dictionary(
         new base::DictionaryValue());
@@ -450,7 +450,7 @@ class CryptAuthDeviceManagerTest
 
   // Simulates firing the SyncScheduler to trigger a device sync attempt.
   void FireSchedulerForSync(
-      cryptauth::InvocationReason expected_invocation_reason) {
+      InvocationReason expected_invocation_reason) {
     SyncScheduler::Delegate* delegate =
         static_cast<SyncScheduler::Delegate*>(device_manager_.get());
 
@@ -466,7 +466,7 @@ class CryptAuthDeviceManagerTest
     // The allow_stale_read flag is set if the sync was not forced.
     bool allow_stale_read =
         pref_service_.GetInteger(prefs::kCryptAuthDeviceSyncReason) !=
-        cryptauth::INVOCATION_REASON_UNKNOWN;
+        INVOCATION_REASON_UNKNOWN;
     EXPECT_EQ(allow_stale_read, get_my_devices_request_.allow_stale_read());
   }
 
@@ -494,11 +494,11 @@ class CryptAuthDeviceManagerTest
 
   std::unique_ptr<TestCryptAuthDeviceManager> device_manager_;
 
-  std::vector<cryptauth::ExternalDeviceInfo> devices_in_response_;
+  std::vector<ExternalDeviceInfo> devices_in_response_;
 
-  cryptauth::GetMyDevicesResponse get_my_devices_response_;
+  GetMyDevicesResponse get_my_devices_response_;
 
-  cryptauth::GetMyDevicesRequest get_my_devices_request_;
+  GetMyDevicesRequest get_my_devices_request_;
 
   CryptAuthClient::GetMyDevicesCallback success_callback_;
 
@@ -589,7 +589,7 @@ TEST_F(CryptAuthDeviceManagerTest, SyncSucceedsForFirstTime) {
   pref_service_.ClearPref(prefs::kCryptAuthDeviceSyncLastSyncTimeSeconds);
   device_manager_->Start();
 
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_INITIALIZATION);
+  FireSchedulerForSync(INVOCATION_REASON_INITIALIZATION);
   ASSERT_FALSE(success_callback_.is_null());
 
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNowSeconds));
@@ -609,9 +609,9 @@ TEST_F(CryptAuthDeviceManagerTest, ForceSync) {
   device_manager_->Start();
 
   EXPECT_CALL(*sync_scheduler(), ForceSync());
-  device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
+  device_manager_->ForceSyncNow(INVOCATION_REASON_MANUAL);
 
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_MANUAL);
+  FireSchedulerForSync(INVOCATION_REASON_MANUAL);
 
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNowSeconds));
   EXPECT_CALL(*this, OnSyncFinishedProxy(
@@ -633,8 +633,8 @@ TEST_F(CryptAuthDeviceManagerTest, ForceSyncFailsThenSucceeds) {
 
   // The first force sync fails.
   EXPECT_CALL(*sync_scheduler(), ForceSync());
-  device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_MANUAL);
+  device_manager_->ForceSyncNow(INVOCATION_REASON_MANUAL);
+  FireSchedulerForSync(INVOCATION_REASON_MANUAL);
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNowSeconds));
   EXPECT_CALL(*this,
               OnSyncFinishedProxy(
@@ -644,13 +644,13 @@ TEST_F(CryptAuthDeviceManagerTest, ForceSyncFailsThenSucceeds) {
   EXPECT_EQ(old_sync_time, device_manager_->GetLastSyncTime());
   EXPECT_TRUE(pref_service_.GetBoolean(
       prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure));
-  EXPECT_EQ(static_cast<int>(cryptauth::INVOCATION_REASON_MANUAL),
+  EXPECT_EQ(static_cast<int>(INVOCATION_REASON_MANUAL),
             pref_service_.GetInteger(prefs::kCryptAuthDeviceSyncReason));
 
   // The second recovery sync succeeds.
   ON_CALL(*sync_scheduler(), GetStrategy())
       .WillByDefault(Return(SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_MANUAL);
+  FireSchedulerForSync(INVOCATION_REASON_MANUAL);
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNowSeconds + 30));
   EXPECT_CALL(*this, OnSyncFinishedProxy(
                          CryptAuthDeviceManager::SyncResult::SUCCESS,
@@ -665,7 +665,7 @@ TEST_F(CryptAuthDeviceManagerTest, ForceSyncFailsThenSucceeds) {
   EXPECT_FLOAT_EQ(
       clock_->Now().ToDoubleT(),
       pref_service_.GetDouble(prefs::kCryptAuthDeviceSyncLastSyncTimeSeconds));
-  EXPECT_EQ(static_cast<int>(cryptauth::INVOCATION_REASON_UNKNOWN),
+  EXPECT_EQ(static_cast<int>(INVOCATION_REASON_UNKNOWN),
             pref_service_.GetInteger(prefs::kCryptAuthDeviceSyncReason));
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure));
@@ -676,7 +676,7 @@ TEST_F(CryptAuthDeviceManagerTest, PeriodicSyncFailsThenSucceeds) {
   base::Time old_sync_time = device_manager_->GetLastSyncTime();
 
   // The first periodic sync fails.
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
+  FireSchedulerForSync(INVOCATION_REASON_PERIODIC);
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNowSeconds));
   EXPECT_CALL(*this,
               OnSyncFinishedProxy(
@@ -690,7 +690,7 @@ TEST_F(CryptAuthDeviceManagerTest, PeriodicSyncFailsThenSucceeds) {
   // The second recovery sync succeeds.
   ON_CALL(*sync_scheduler(), GetStrategy())
       .WillByDefault(Return(SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_FAILURE_RECOVERY);
+  FireSchedulerForSync(INVOCATION_REASON_FAILURE_RECOVERY);
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNowSeconds + 30));
   EXPECT_CALL(*this, OnSyncFinishedProxy(
                          CryptAuthDeviceManager::SyncResult::SUCCESS,
@@ -714,7 +714,7 @@ TEST_F(CryptAuthDeviceManagerTest, SyncSameDevice) {
   auto original_devices = device_manager_->GetSyncedDevices();
 
   // Sync new devices.
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
+  FireSchedulerForSync(INVOCATION_REASON_PERIODIC);
   ASSERT_FALSE(success_callback_.is_null());
   EXPECT_CALL(*this,
               OnSyncFinishedProxy(
@@ -722,14 +722,14 @@ TEST_F(CryptAuthDeviceManagerTest, SyncSameDevice) {
                   CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED));
 
   // Sync the same device.
-  cryptauth::ExternalDeviceInfo synced_device;
+  ExternalDeviceInfo synced_device;
   synced_device.set_public_key(kStoredPublicKey);
   synced_device.set_friendly_device_name(kStoredDeviceName);
   synced_device.set_bluetooth_address(kStoredBluetoothAddress);
   synced_device.set_unlock_key(kStoredUnlockKey);
   synced_device.set_unlockable(kStoredUnlockable);
   synced_device.set_mobile_hotspot_supported(kStoredMobileHotspotSupported);
-  cryptauth::GetMyDevicesResponse get_my_devices_response;
+  GetMyDevicesResponse get_my_devices_response;
   get_my_devices_response.add_devices()->CopyFrom(synced_device);
   success_callback_.Run(get_my_devices_response);
 
@@ -739,12 +739,12 @@ TEST_F(CryptAuthDeviceManagerTest, SyncSameDevice) {
 }
 
 TEST_F(CryptAuthDeviceManagerTest, SyncEmptyDeviceList) {
-  cryptauth::GetMyDevicesResponse empty_response;
+  GetMyDevicesResponse empty_response;
 
   device_manager_->Start();
   EXPECT_EQ(1u, device_manager_->GetSyncedDevices().size());
 
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
+  FireSchedulerForSync(INVOCATION_REASON_PERIODIC);
   ASSERT_FALSE(success_callback_.is_null());
   EXPECT_CALL(*this, OnSyncFinishedProxy(
                          CryptAuthDeviceManager::SyncResult::SUCCESS,
@@ -752,21 +752,21 @@ TEST_F(CryptAuthDeviceManagerTest, SyncEmptyDeviceList) {
   success_callback_.Run(empty_response);
 
   ExpectSyncedDevicesAndPrefAreEqual(
-      std::vector<cryptauth::ExternalDeviceInfo>(),
+      std::vector<ExternalDeviceInfo>(),
       device_manager_->GetSyncedDevices(),
       pref_service_);
 }
 
 TEST_F(CryptAuthDeviceManagerTest, SyncThreeDevices) {
-  cryptauth::GetMyDevicesResponse response(get_my_devices_response_);
-  cryptauth::ExternalDeviceInfo synced_device2;
+  GetMyDevicesResponse response(get_my_devices_response_);
+  ExternalDeviceInfo synced_device2;
   synced_device2.set_public_key("new public key");
   synced_device2.set_friendly_device_name("new device name");
   synced_device2.set_bluetooth_address("aa:bb:cc:dd:ee:ff");
   synced_device2.set_unlock_key(true);
   response.add_devices()->CopyFrom(synced_device2);
 
-  std::vector<cryptauth::ExternalDeviceInfo> expected_devices;
+  std::vector<ExternalDeviceInfo> expected_devices;
   expected_devices.push_back(devices_in_response_[0]);
   expected_devices.push_back(devices_in_response_[1]);
   expected_devices.push_back(synced_device2);
@@ -776,7 +776,7 @@ TEST_F(CryptAuthDeviceManagerTest, SyncThreeDevices) {
   EXPECT_EQ(1u, pref_service_.GetList(prefs::kCryptAuthDeviceSyncUnlockKeys)
                     ->GetSize());
 
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
+  FireSchedulerForSync(INVOCATION_REASON_PERIODIC);
   ASSERT_FALSE(success_callback_.is_null());
   EXPECT_CALL(*this, OnSyncFinishedProxy(
                          CryptAuthDeviceManager::SyncResult::SUCCESS,
@@ -793,7 +793,7 @@ TEST_F(CryptAuthDeviceManagerTest, SyncOnGCMPushMessage) {
   EXPECT_CALL(*sync_scheduler(), ForceSync());
   gcm_manager_.PushResyncMessage();
 
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+  FireSchedulerForSync(INVOCATION_REASON_SERVER_INITIATED);
 
   EXPECT_CALL(*this, OnSyncFinishedProxy(
                          CryptAuthDeviceManager::SyncResult::SUCCESS,
@@ -811,7 +811,7 @@ TEST_F(CryptAuthDeviceManagerTest, SyncDeviceWithNoContents) {
   EXPECT_CALL(*sync_scheduler(), ForceSync());
   gcm_manager_.PushResyncMessage();
 
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+  FireSchedulerForSync(INVOCATION_REASON_SERVER_INITIATED);
 
   EXPECT_CALL(*this, OnSyncFinishedProxy(
                          CryptAuthDeviceManager::SyncResult::SUCCESS,
@@ -824,12 +824,12 @@ TEST_F(CryptAuthDeviceManagerTest, SyncDeviceWithNoContents) {
 }
 
 TEST_F(CryptAuthDeviceManagerTest, SyncFullyDetailedExternalDeviceInfos) {
-  cryptauth::GetMyDevicesResponse response;
+  GetMyDevicesResponse response;
 
   // First, use a device with only a public key (a public key is the only
   // required field). This ensures devices work properly when they do not have
   // all fields filled out.
-  cryptauth::ExternalDeviceInfo device_with_only_public_key;
+  ExternalDeviceInfo device_with_only_public_key;
   device_with_only_public_key.set_public_key("publicKey1");
   // Currently, CryptAuthDeviceManager only stores devices which are unlock
   // keys, so set_unlock_key(true) must be called here for storage to work.
@@ -840,7 +840,7 @@ TEST_F(CryptAuthDeviceManagerTest, SyncFullyDetailedExternalDeviceInfos) {
 
   // Second, use a device with all fields filled out. This ensures that all
   // device details are properly saved.
-  cryptauth::ExternalDeviceInfo device_with_all_fields;
+  ExternalDeviceInfo device_with_all_fields;
   device_with_all_fields.set_public_key("publicKey2");
   device_with_all_fields.set_friendly_device_name("deviceName");
   device_with_all_fields.set_bluetooth_address("aa:bb:cc:dd:ee:ff");
@@ -849,24 +849,24 @@ TEST_F(CryptAuthDeviceManagerTest, SyncFullyDetailedExternalDeviceInfos) {
   device_with_all_fields.set_last_update_time_millis(123456789L);
   device_with_all_fields.set_mobile_hotspot_supported(true);
   device_with_all_fields.set_device_type(DeviceType::ANDROIDOS);
-  cryptauth::BeaconSeed seed1;
+  BeaconSeed seed1;
   seed1.set_data(kBeaconSeed1Data);
   seed1.set_start_time_millis(kBeaconSeed1StartTime);
   seed1.set_end_time_millis(kBeaconSeed1EndTime);
   device_with_all_fields.add_beacon_seeds()->CopyFrom(seed1);
-  cryptauth::BeaconSeed seed2;
+  BeaconSeed seed2;
   seed2.set_data(kBeaconSeed2Data);
   seed2.set_start_time_millis(kBeaconSeed2StartTime);
   seed2.set_end_time_millis(kBeaconSeed2EndTime);
   device_with_all_fields.add_beacon_seeds()->CopyFrom(seed2);
   response.add_devices()->CopyFrom(device_with_all_fields);
 
-  std::vector<cryptauth::ExternalDeviceInfo> expected_devices;
+  std::vector<ExternalDeviceInfo> expected_devices;
   expected_devices.push_back(device_with_only_public_key);
   expected_devices.push_back(device_with_all_fields);
 
   device_manager_->Start();
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
+  FireSchedulerForSync(INVOCATION_REASON_PERIODIC);
   ASSERT_FALSE(success_callback_.is_null());
   EXPECT_CALL(*this, OnSyncFinishedProxy(
                          CryptAuthDeviceManager::SyncResult::SUCCESS,
@@ -880,7 +880,7 @@ TEST_F(CryptAuthDeviceManagerTest, SyncFullyDetailedExternalDeviceInfos) {
 TEST_F(CryptAuthDeviceManagerTest, SubsetsOfSyncedDevices) {
   device_manager_->Start();
 
-  FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
+  FireSchedulerForSync(INVOCATION_REASON_PERIODIC);
   ASSERT_FALSE(success_callback_.is_null());
   EXPECT_CALL(*this,
               OnSyncFinishedProxy(
@@ -896,12 +896,12 @@ TEST_F(CryptAuthDeviceManagerTest, SubsetsOfSyncedDevices) {
 
   // Only unlock keys.
   ExpectSyncedDevicesAreEqual(
-      std::vector<cryptauth::ExternalDeviceInfo>(1, devices_in_response_[0]),
+      std::vector<ExternalDeviceInfo>(1, devices_in_response_[0]),
       device_manager_->GetUnlockKeys());
 
   // Only tether hosts.
   ExpectSyncedDevicesAreEqual(
-      std::vector<cryptauth::ExternalDeviceInfo>(1, devices_in_response_[0]),
+      std::vector<ExternalDeviceInfo>(1, devices_in_response_[0]),
       device_manager_->GetTetherHosts());
 }
 

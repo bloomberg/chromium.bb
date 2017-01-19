@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_H
-#define COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_H
+#ifndef COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_H_
+#define COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_H_
 
 namespace base {
 class TimeDelta;
@@ -35,4 +35,4 @@ class BluetoothThrottler {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_H
+#endif  // COMPONENTS_CRYPTAUTH_BLUETOOTH_THROTTLER_H_

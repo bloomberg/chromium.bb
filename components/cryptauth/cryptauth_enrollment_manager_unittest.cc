@@ -60,8 +60,8 @@ class MockCryptAuthEnroller : public CryptAuthEnroller {
   MOCK_METHOD5(Enroll,
                void(const std::string& user_public_key,
                     const std::string& user_private_key,
-                    const cryptauth::GcmDeviceInfo& device_info,
-                    cryptauth::InvocationReason invocation_reason,
+                    const GcmDeviceInfo& device_info,
+                    InvocationReason invocation_reason,
                     const EnrollmentFinishedCallback& callback));
 
  private:
@@ -102,7 +102,7 @@ class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
       std::unique_ptr<base::Clock> clock,
       std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
       std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
-      const cryptauth::GcmDeviceInfo& device_info,
+      const GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service)
       : CryptAuthEnrollmentManager(std::move(clock),
@@ -176,7 +176,7 @@ class CryptAuthEnrollmentManagerTest
         new base::FundamentalValue(kLastEnrollmentTimeSeconds));
     pref_service_.SetUserPref(
         prefs::kCryptAuthEnrollmentReason,
-        new base::FundamentalValue(cryptauth::INVOCATION_REASON_UNKNOWN));
+        new base::FundamentalValue(INVOCATION_REASON_UNKNOWN));
 
     std::string public_key_b64, private_key_b64;
     base::Base64UrlEncode(public_key_,
@@ -214,7 +214,7 @@ class CryptAuthEnrollmentManagerTest
 
   // Simulates firing the SyncScheduler to trigger an enrollment attempt.
   CryptAuthEnroller::EnrollmentFinishedCallback FireSchedulerForEnrollment(
-      cryptauth::InvocationReason expected_invocation_reason) {
+      InvocationReason expected_invocation_reason) {
     CryptAuthEnroller::EnrollmentFinishedCallback completion_callback;
     EXPECT_CALL(
         *next_cryptauth_enroller(),
@@ -253,7 +253,7 @@ class CryptAuthEnrollmentManagerTest
   // Ownered by |enrollment_manager_|.
   FakeSecureMessageDelegate* secure_message_delegate_;
 
-  cryptauth::GcmDeviceInfo device_info_;
+  GcmDeviceInfo device_info_;
 
   TestingPrefServiceSimple pref_service_;
 
@@ -354,10 +354,10 @@ TEST_F(CryptAuthEnrollmentManagerTest, ForceEnrollment) {
 
   EXPECT_CALL(*sync_scheduler(), ForceSync());
   enrollment_manager_.ForceEnrollmentNow(
-      cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+      INVOCATION_REASON_SERVER_INITIATED);
 
   auto completion_callback =
-      FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+      FireSchedulerForEnrollment(INVOCATION_REASON_SERVER_INITIATED);
 
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
@@ -374,7 +374,7 @@ TEST_F(CryptAuthEnrollmentManagerTest,
   ON_CALL(*sync_scheduler(), GetStrategy())
       .WillByDefault(Return(SyncScheduler::Strategy::PERIODIC_REFRESH));
   auto completion_callback =
-      FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_PERIODIC);
+      FireSchedulerForEnrollment(INVOCATION_REASON_PERIODIC);
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(false));
   completion_callback.Run(false);
@@ -386,7 +386,7 @@ TEST_F(CryptAuthEnrollmentManagerTest,
   ON_CALL(*sync_scheduler(), GetStrategy())
       .WillByDefault(Return(SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
   completion_callback =
-      FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_FAILURE_RECOVERY);
+      FireSchedulerForEnrollment(INVOCATION_REASON_FAILURE_RECOVERY);
   clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow + 30));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
   completion_callback.Run(true);
@@ -418,7 +418,7 @@ TEST_F(CryptAuthEnrollmentManagerTest,
   CryptAuthEnroller::EnrollmentFinishedCallback enrollment_callback;
   EXPECT_CALL(*next_cryptauth_enroller(),
               Enroll(public_key_, private_key_, _,
-                     cryptauth::INVOCATION_REASON_INITIALIZATION, _))
+                     INVOCATION_REASON_INITIALIZATION, _))
       .WillOnce(SaveArg<4>(&enrollment_callback));
   ASSERT_TRUE(gcm_manager_.registration_in_progress());
   gcm_manager_.CompleteRegistration(kGCMRegistrationId);
@@ -461,7 +461,7 @@ TEST_F(CryptAuthEnrollmentManagerTest, ReenrollOnGCMPushMessage) {
   // Simulate receiving a GCM push message, forcing the device to re-enroll.
   gcm_manager_.PushReenrollMessage();
   auto completion_callback =
-      FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+      FireSchedulerForEnrollment(INVOCATION_REASON_SERVER_INITIATED);
 
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
   completion_callback.Run(true);

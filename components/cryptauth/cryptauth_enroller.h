@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_H
+#ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLER_H_
+#define COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLER_H_
 
 #include <memory>
 #include <string>
@@ -29,8 +29,8 @@ class CryptAuthEnroller {
   typedef base::Callback<void(bool)> EnrollmentFinishedCallback;
   virtual void Enroll(const std::string& user_public_key,
                       const std::string& user_private_key,
-                      const cryptauth::GcmDeviceInfo& device_info,
-                      cryptauth::InvocationReason invocation_reason,
+                      const GcmDeviceInfo& device_info,
+                      InvocationReason invocation_reason,
                       const EnrollmentFinishedCallback& callback) = 0;
 };
 
@@ -44,4 +44,4 @@ class CryptAuthEnrollerFactory {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_H
+#endif  // COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLER_H_

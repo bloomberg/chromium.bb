@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_IMPL_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_IMPL_H
+#ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLER_IMPL_H_
+#define COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLER_IMPL_H_
 
 #include <memory>
 
@@ -39,19 +39,19 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   // CryptAuthEnroller:
   void Enroll(const std::string& user_public_key,
               const std::string& user_private_key,
-              const cryptauth::GcmDeviceInfo& device_info,
-              cryptauth::InvocationReason invocation_reason,
+              const GcmDeviceInfo& device_info,
+              InvocationReason invocation_reason,
               const EnrollmentFinishedCallback& callback) override;
 
  private:
   // Callbacks for SetupEnrollment.
   void OnSetupEnrollmentSuccess(
-      const cryptauth::SetupEnrollmentResponse& response);
+      const SetupEnrollmentResponse& response);
   void OnSetupEnrollmentFailure(const std::string& error);
 
   // Callbacks for FinishEnrollment.
   void OnFinishEnrollmentSuccess(
-      const cryptauth::FinishEnrollmentResponse& response);
+      const FinishEnrollmentResponse& response);
   void OnFinishEnrollmentFailure(const std::string& error);
 
   // Callbacks for SecureMessageDelegate operations.
@@ -79,13 +79,13 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   std::string user_private_key_;
 
   // Contains information of the device to enroll.
-  cryptauth::GcmDeviceInfo device_info_;
+  GcmDeviceInfo device_info_;
 
   // The reason telling the server why the enrollment happened.
-  cryptauth::InvocationReason invocation_reason_;
+  InvocationReason invocation_reason_;
 
   // The setup information returned from the SetupEnrollment API call.
-  cryptauth::SetupEnrollmentInfo setup_info_;
+  SetupEnrollmentInfo setup_info_;
 
   // Callback invoked when the enrollment is done.
   EnrollmentFinishedCallback callback_;
@@ -100,4 +100,4 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_IMPL_H
+#endif  // COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLER_IMPL_H_

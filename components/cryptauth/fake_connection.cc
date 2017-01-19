@@ -15,7 +15,7 @@ namespace {
 const char kFakeFeatureName[] = "fakeFeature";
 }  // namespace
 
-FakeConnection::FakeConnection(const cryptauth::RemoteDevice& remote_device)
+FakeConnection::FakeConnection(const RemoteDevice& remote_device)
     : Connection(remote_device) {
   Connect();
 }

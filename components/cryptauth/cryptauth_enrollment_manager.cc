@@ -48,7 +48,7 @@ CryptAuthEnrollmentManager::CryptAuthEnrollmentManager(
     std::unique_ptr<base::Clock> clock,
     std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
     std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
-    const cryptauth::GcmDeviceInfo& device_info,
+    const GcmDeviceInfo& device_info,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
     : clock_(std::move(clock)),
@@ -70,7 +70,7 @@ void CryptAuthEnrollmentManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDoublePref(
       prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds, 0.0);
   registry->RegisterIntegerPref(prefs::kCryptAuthEnrollmentReason,
-                                cryptauth::INVOCATION_REASON_UNKNOWN);
+                                INVOCATION_REASON_UNKNOWN);
   registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPublicKey,
                                std::string());
   registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPrivateKey,
@@ -105,7 +105,7 @@ void CryptAuthEnrollmentManager::RemoveObserver(Observer* observer) {
 }
 
 void CryptAuthEnrollmentManager::ForceEnrollmentNow(
-    cryptauth::InvocationReason invocation_reason) {
+    InvocationReason invocation_reason) {
   // We store the invocation reason in a preference so that it can persist
   // across browser restarts. If the sync fails, the next retry should still use
   // this original reason instead of INVOCATION_REASON_FAILURE_RECOVERY.
@@ -146,7 +146,7 @@ void CryptAuthEnrollmentManager::OnEnrollmentFinished(bool success) {
         prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds,
         clock_->Now().ToDoubleT());
     pref_service_->SetInteger(prefs::kCryptAuthEnrollmentReason,
-                              cryptauth::INVOCATION_REASON_UNKNOWN);
+                              INVOCATION_REASON_UNKNOWN);
   }
 
   pref_service_->SetBoolean(prefs::kCryptAuthEnrollmentIsRecoveringFromFailure,
@@ -226,7 +226,7 @@ void CryptAuthEnrollmentManager::OnKeyPairGenerated(
 }
 
 void CryptAuthEnrollmentManager::OnReenrollMessage() {
-  ForceEnrollmentNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
+  ForceEnrollmentNow(INVOCATION_REASON_SERVER_INITIATED);
 }
 
 void CryptAuthEnrollmentManager::OnSyncRequested(
@@ -237,7 +237,7 @@ void CryptAuthEnrollmentManager::OnSyncRequested(
   sync_request_ = std::move(sync_request);
   if (gcm_manager_->GetRegistrationId().empty() ||
       pref_service_->GetInteger(prefs::kCryptAuthEnrollmentReason) ==
-          cryptauth::INVOCATION_REASON_MANUAL) {
+          INVOCATION_REASON_MANUAL) {
     gcm_manager_->RegisterWithGCM();
   } else {
     DoCryptAuthEnrollment();
@@ -256,31 +256,31 @@ void CryptAuthEnrollmentManager::DoCryptAuthEnrollment() {
 
 void CryptAuthEnrollmentManager::DoCryptAuthEnrollmentWithKeys() {
   DCHECK(sync_request_);
-  cryptauth::InvocationReason invocation_reason =
-      cryptauth::INVOCATION_REASON_UNKNOWN;
+  InvocationReason invocation_reason =
+      INVOCATION_REASON_UNKNOWN;
 
   int reason_stored_in_prefs =
       pref_service_->GetInteger(prefs::kCryptAuthEnrollmentReason);
 
-  if (cryptauth::InvocationReason_IsValid(reason_stored_in_prefs) &&
-      reason_stored_in_prefs != cryptauth::INVOCATION_REASON_UNKNOWN) {
+  if (InvocationReason_IsValid(reason_stored_in_prefs) &&
+      reason_stored_in_prefs != INVOCATION_REASON_UNKNOWN) {
     invocation_reason =
-        static_cast<cryptauth::InvocationReason>(reason_stored_in_prefs);
+        static_cast<InvocationReason>(reason_stored_in_prefs);
   } else if (GetLastEnrollmentTime().is_null()) {
-    invocation_reason = cryptauth::INVOCATION_REASON_INITIALIZATION;
+    invocation_reason = INVOCATION_REASON_INITIALIZATION;
   } else if (!IsEnrollmentValid()) {
-    invocation_reason = cryptauth::INVOCATION_REASON_EXPIRATION;
+    invocation_reason = INVOCATION_REASON_EXPIRATION;
   } else if (scheduler_->GetStrategy() ==
              SyncScheduler::Strategy::PERIODIC_REFRESH) {
-    invocation_reason = cryptauth::INVOCATION_REASON_PERIODIC;
+    invocation_reason = INVOCATION_REASON_PERIODIC;
   } else if (scheduler_->GetStrategy() ==
              SyncScheduler::Strategy::AGGRESSIVE_RECOVERY) {
-    invocation_reason = cryptauth::INVOCATION_REASON_FAILURE_RECOVERY;
+    invocation_reason = INVOCATION_REASON_FAILURE_RECOVERY;
   }
 
   // Fill in the current GCM registration id before enrolling, and explicitly
   // make sure that the software package is the same as the GCM app id.
-  cryptauth::GcmDeviceInfo device_info(device_info_);
+  GcmDeviceInfo device_info(device_info_);
   device_info.set_gcm_registration_id(gcm_manager_->GetRegistrationId());
   device_info.set_device_software_package(kDeviceSoftwarePackage);
 

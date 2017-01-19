@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_CONNECTION_OBSERVER_H
-#define COMPONENTS_CRYPTAUTH_CONNECTION_OBSERVER_H
+#ifndef COMPONENTS_CRYPTAUTH_CONNECTION_OBSERVER_H_
+#define COMPONENTS_CRYPTAUTH_CONNECTION_OBSERVER_H_
 
 #include "components/cryptauth/connection.h"
 
@@ -36,4 +36,4 @@ class ConnectionObserver {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_CONNECTION_OBSERVER_H
+#endif  // COMPONENTS_CRYPTAUTH_CONNECTION_OBSERVER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H
+#ifndef COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H_
+#define COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H_
 
 #include <memory>
 
@@ -65,7 +65,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
       std::unique_ptr<base::Clock> clock,
       std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
       std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
-      const cryptauth::GcmDeviceInfo& device_info,
+      const GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service);
 
@@ -87,7 +87,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   // enrollment is already in progress, this function does nothing.
   // |invocation_reason| specifies the reason that the enrollment was triggered,
   // which is upload to the server.
-  void ForceEnrollmentNow(cryptauth::InvocationReason invocation_reason);
+  void ForceEnrollmentNow(InvocationReason invocation_reason);
 
   // Returns true if a successful enrollment has been recorded and this
   // enrollment has not expired.
@@ -154,7 +154,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
 
   // The local device information to upload to CryptAuth.
-  const cryptauth::GcmDeviceInfo device_info_;
+  const GcmDeviceInfo device_info_;
 
   //  Used to perform GCM registrations and also notifies when GCM push messages
   //  trigger re-enrollments. Not owned and must outlive this instance.
@@ -186,4 +186,4 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H
+#endif  // COMPONENTS_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H_

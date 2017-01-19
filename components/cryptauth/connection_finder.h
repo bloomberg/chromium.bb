@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_CONNECTION_FINDER_H
-#define COMPONENTS_CRYPTAUTH_CONNECTION_FINDER_H
+#ifndef COMPONENTS_CRYPTAUTH_CONNECTION_FINDER_H_
+#define COMPONENTS_CRYPTAUTH_CONNECTION_FINDER_H_
 
 #include <memory>
 
@@ -30,4 +30,4 @@ class ConnectionFinder {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_CONNECTION_FINDER_H
+#endif  // COMPONENTS_CRYPTAUTH_CONNECTION_FINDER_H_

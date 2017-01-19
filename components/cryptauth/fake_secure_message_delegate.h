@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_FAKE_SECURE_MESSAGE_DELEGATE_H
-#define COMPONENTS_PROXIMITY_AUTH_FAKE_SECURE_MESSAGE_DELEGATE_H
+#ifndef COMPONENTS_CRYPTAUTH_FAKE_SECURE_MESSAGE_DELEGATE_H_
+#define COMPONENTS_CRYPTAUTH_FAKE_SECURE_MESSAGE_DELEGATE_H_
 
 #include "base/macros.h"
 #include "components/cryptauth/secure_message_delegate.h"
@@ -51,4 +51,4 @@ class FakeSecureMessageDelegate : public SecureMessageDelegate {
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_FAKE_SECURE_MESSAGE_DELEGATE_H
+#endif  // COMPONENTS_CRYPTAUTH_FAKE_SECURE_MESSAGE_DELEGATE_H_

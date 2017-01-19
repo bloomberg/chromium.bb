@@ -32,9 +32,9 @@ class TestBluetoothThrottler : public BluetoothThrottlerImpl {
 
 }  // namespace
 
-class ProximityAuthBluetoothThrottlerImplTest : public testing::Test {
+class CryptAuthBluetoothThrottlerImplTest : public testing::Test {
  public:
-  ProximityAuthBluetoothThrottlerImplTest()
+  CryptAuthBluetoothThrottlerImplTest()
       : clock_(new base::SimpleTestTickClock),
         throttler_(base::WrapUnique(clock_)) {
     // The throttler treats null times as special, so start with a non-null
@@ -44,7 +44,7 @@ class ProximityAuthBluetoothThrottlerImplTest : public testing::Test {
 
   void PerformConnectionStateTransition(Connection::Status old_status,
                                         Connection::Status new_status) {
-    FakeConnection connection((cryptauth::RemoteDevice()));
+    FakeConnection connection((RemoteDevice()));
     throttler_.OnConnection(&connection);
     static_cast<ConnectionObserver*>(&throttler_)
         ->OnConnectionStatusChanged(&connection, old_status, new_status);
@@ -56,12 +56,12 @@ class ProximityAuthBluetoothThrottlerImplTest : public testing::Test {
   TestBluetoothThrottler throttler_;
 };
 
-TEST_F(ProximityAuthBluetoothThrottlerImplTest,
+TEST_F(CryptAuthBluetoothThrottlerImplTest,
        GetDelay_FirstConnectionIsNotThrottled) {
   EXPECT_EQ(base::TimeDelta(), throttler_.GetDelay());
 }
 
-TEST_F(ProximityAuthBluetoothThrottlerImplTest,
+TEST_F(CryptAuthBluetoothThrottlerImplTest,
        GetDelay_ConnectionAfterDisconnectIsThrottled) {
   // Simulate a connection followed by a disconnection.
   PerformConnectionStateTransition(Connection::CONNECTED,
@@ -69,7 +69,7 @@ TEST_F(ProximityAuthBluetoothThrottlerImplTest,
   EXPECT_GT(throttler_.GetDelay(), base::TimeDelta());
 }
 
-TEST_F(ProximityAuthBluetoothThrottlerImplTest,
+TEST_F(CryptAuthBluetoothThrottlerImplTest,
        GetDelay_ConnectionAfterIsProgressDisconnectIsThrottled) {
   // Simulate an attempt to connect (in progress connection) followed by a
   // disconnection.
@@ -78,7 +78,7 @@ TEST_F(ProximityAuthBluetoothThrottlerImplTest,
   EXPECT_GT(throttler_.GetDelay(), base::TimeDelta());
 }
 
-TEST_F(ProximityAuthBluetoothThrottlerImplTest,
+TEST_F(CryptAuthBluetoothThrottlerImplTest,
        GetDelay_DelayedConnectionAfterDisconnectIsNotThrottled) {
   // Simulate a connection followed by a disconnection, then allow the cooldown
   // period to elapse.
@@ -88,7 +88,7 @@ TEST_F(ProximityAuthBluetoothThrottlerImplTest,
   EXPECT_EQ(base::TimeDelta(), throttler_.GetDelay());
 }
 
-TEST_F(ProximityAuthBluetoothThrottlerImplTest,
+TEST_F(CryptAuthBluetoothThrottlerImplTest,
        GetDelay_DelayedConnectionAfterInProgressDisconnectIsNotThrottled) {
   // Simulate an attempt to connect (in progress connection) followed by a
   // disconnection, then allow the cooldown period to elapse.

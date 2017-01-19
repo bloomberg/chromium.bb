@@ -40,10 +40,10 @@ const char kRXCharacteristicUUID[] = "00000100-0004-1000-8000-001A11000102";
 
 BluetoothLowEnergyWeaveClientConnection::
     BluetoothLowEnergyWeaveClientConnection(
-        const cryptauth::RemoteDevice& device,
+        const RemoteDevice& device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const BluetoothUUID remote_service_uuid,
-        cryptauth::BluetoothThrottler* bluetooth_throttler,
+        BluetoothThrottler* bluetooth_throttler,
         int max_number_of_write_attempts)
     : Connection(device),
       adapter_(adapter),
@@ -162,7 +162,7 @@ void BluetoothLowEnergyWeaveClientConnection::SetSubStatus(
     SubStatus new_sub_status) {
   sub_status_ = new_sub_status;
 
-  // Sets the status of parent class cryptauth::Connection accordingly.
+  // Sets the status of parent class Connection accordingly.
   if (new_sub_status == SubStatus::CONNECTED) {
     SetStatus(Status::CONNECTED);
   } else if (new_sub_status == SubStatus::DISCONNECTED) {

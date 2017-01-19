@@ -69,8 +69,8 @@ class BluetoothLowEnergyWeaveClientConnection
     static Factory* factory_instance_;
   };
 
-  // The sub-state of a cryptauth::BluetoothLowEnergyWeaveClientConnection
-  // extends the IN_PROGRESS state of cryptauth::Connection::Status.
+  // The sub-state of a BluetoothLowEnergyWeaveClientConnection
+  // extends the IN_PROGRESS state of Connection::Status.
   enum SubStatus {
     DISCONNECTED,
     WAITING_GATT_CONNECTION,
@@ -88,7 +88,7 @@ class BluetoothLowEnergyWeaveClientConnection
   // pass through |gatt_connection|. A subsequent call to Connect() must be
   // made.
   BluetoothLowEnergyWeaveClientConnection(
-      const cryptauth::RemoteDevice& remote_device,
+      const RemoteDevice& remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
       BluetoothThrottler* bluetooth_throttler,
@@ -96,7 +96,7 @@ class BluetoothLowEnergyWeaveClientConnection
 
   ~BluetoothLowEnergyWeaveClientConnection() override;
 
-  // namespace cryptauth::Connection:
+  // namespace Connection:
   void Connect() override;
   void Disconnect() override;
   std::string GetDeviceAddress() override;
@@ -118,7 +118,7 @@ class BluetoothLowEnergyWeaveClientConnection
       const BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
           error_callback);
 
-  // namespace cryptauth::Connection:
+  // namespace Connection:
   void SendMessageImpl(std::unique_ptr<WireMessage> message) override;
 
   // device::BluetoothAdapter::Observer:
