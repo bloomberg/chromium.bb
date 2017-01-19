@@ -82,6 +82,7 @@ class FontFace : public GarbageCollectedFinalized<FontFace>,
   String unicodeRange() const;
   String variant() const;
   String featureSettings() const;
+  String display() const;
 
   // FIXME: Changing these attributes should affect font matching.
   void setFamily(ExecutionContext*, const AtomicString& s, ExceptionState&) {
@@ -93,6 +94,7 @@ class FontFace : public GarbageCollectedFinalized<FontFace>,
   void setUnicodeRange(ExecutionContext*, const String&, ExceptionState&);
   void setVariant(ExecutionContext*, const String&, ExceptionState&);
   void setFeatureSettings(ExecutionContext*, const String&, ExceptionState&);
+  void setDisplay(ExecutionContext*, const String&, ExceptionState&);
 
   String status() const;
   ScriptPromise loaded(ScriptState* scriptState) {

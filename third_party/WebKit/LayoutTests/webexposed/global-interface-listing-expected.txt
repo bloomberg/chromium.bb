@@ -1870,6 +1870,7 @@ interface FocusEvent : UIEvent
     method constructor
 interface FontFace
     attribute @@toStringTag
+    getter display
     getter family
     getter featureSettings
     getter loaded
@@ -1881,6 +1882,7 @@ interface FontFace
     getter weight
     method constructor
     method load
+    setter display
     setter family
     setter featureSettings
     setter stretch

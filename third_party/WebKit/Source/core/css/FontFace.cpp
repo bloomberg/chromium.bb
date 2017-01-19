@@ -60,6 +60,7 @@
 #include "core/frame/UseCounter.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/WebTaskRunner.h"
 
@@ -174,6 +175,10 @@ FontFace::FontFace(ExecutionContext* context,
                         CSSPropertyFontVariant);
   setPropertyFromString(document, descriptors.featureSettings(),
                         CSSPropertyFontFeatureSettings);
+  if (RuntimeEnabledFeatures::cssFontDisplayEnabled()) {
+    setPropertyFromString(document, descriptors.display(),
+                          CSSPropertyFontDisplay);
+  }
 }
 
 FontFace::~FontFace() {}
@@ -200,6 +205,10 @@ String FontFace::variant() const {
 
 String FontFace::featureSettings() const {
   return m_featureSettings ? m_featureSettings->cssText() : "normal";
+}
+
+String FontFace::display() const {
+  return m_display ? m_display->cssText() : "auto";
 }
 
 void FontFace::setStyle(ExecutionContext* context,
@@ -241,6 +250,13 @@ void FontFace::setFeatureSettings(ExecutionContext* context,
                                   const String& s,
                                   ExceptionState& exceptionState) {
   setPropertyFromString(toDocument(context), s, CSSPropertyFontFeatureSettings,
+                        &exceptionState);
+}
+
+void FontFace::setDisplay(ExecutionContext* context,
+                          const String& s,
+                          ExceptionState& exceptionState) {
+  setPropertyFromString(toDocument(context), s, CSSPropertyFontDisplay,
                         &exceptionState);
 }
 
