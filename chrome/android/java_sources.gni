@@ -1089,6 +1089,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webshare/ShareServiceImplementationFactory.java",
   "java/src/org/chromium/chrome/browser/widget/AlertDialogEditText.java",
   "java/src/org/chromium/chrome/browser/widget/AlwaysDismissedDialog.java",
+  "java/src/org/chromium/chrome/browser/widget/BottomSheet.java",
   "java/src/org/chromium/chrome/browser/widget/BoundedLinearLayout.java",
   "java/src/org/chromium/chrome/browser/widget/ClipDrawableProgressBar.java",
   "java/src/org/chromium/chrome/browser/widget/CompatibilityTextInputLayout.java",

@@ -22,11 +22,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.support.design.widget.CoordinatorLayout.LayoutParams;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -127,6 +125,7 @@ import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
+import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.ContentVideoView;
@@ -380,19 +379,19 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
                     toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
                     View container = toolbarContainerStub.inflate();
-
-                    // If the control container is at the bottom apply Gravity.BOTTOM here since
-                    // it is not respected in the XML while the ViewStub in between the
-                    // CompositorViewHolder and ControlContainer.
-                    if (controlContainerLayoutId == R.layout.bottom_control_container) {
-                        ((LayoutParams) container.getLayoutParams()).gravity = Gravity.BOTTOM;
-                    }
                 }
 
                 // It cannot be assumed that the result of toolbarContainerStub.inflate() will be
                 // the control container since it may be wrapped in another view.
                 ControlContainer controlContainer =
                         (ControlContainer) findViewById(R.id.control_container);
+
+                // Get a handle to the bottom sheet if using the bottom control container.
+                if (controlContainerLayoutId == R.layout.bottom_control_container) {
+                    View coordinator = findViewById(R.id.coordinator);
+                    BottomSheet bottomSheet = (BottomSheet) findViewById(R.id.bottom_sheet);
+                    bottomSheet.init(coordinator, controlContainer.getView());
+                }
 
                 // Inflate the correct toolbar layout for the device.
                 int toolbarLayoutId = getToolbarLayoutId();
