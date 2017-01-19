@@ -24,6 +24,8 @@ blink_modules_sources("bluetooth") {
     "BluetoothRemoteGATTServer.h",
     "BluetoothRemoteGATTService.cpp",
     "BluetoothRemoteGATTService.h",
+    "BluetoothRemoteGATTUtils.cpp",
+    "BluetoothRemoteGATTUtils.h",
     "BluetoothUUID.cpp",
     "BluetoothUUID.h",
     "NavigatorBluetooth.cpp",
