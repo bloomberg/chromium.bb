@@ -32,7 +32,6 @@ constexpr int kPointMoveDurationInMs = 400;
 constexpr int kPointMoveDurationLongInMs = 500;
 
 const SkColor kExitLabelColor = SkColorSetARGBInline(255, 96, 96, 96);
-const SkColor kExitLabelShadowColor = SkColorSetARGBInline(255, 11, 11, 11);
 constexpr int kExitLabelWidth = 300;
 constexpr int kExitLabelHeight = 20;
 
@@ -414,10 +413,9 @@ void TouchCalibratorView::InitViewContents() {
   exit_label_->SetBounds((display_.bounds().width() - kExitLabelWidth) / 2,
                          display_.bounds().height() * 3.f / 4, kExitLabelWidth,
                          kExitLabelHeight);
+  exit_label_->SetAutoColorReadabilityEnabled(false);
   exit_label_->SetEnabledColor(kExitLabelColor);
   exit_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  exit_label_->SetShadows(gfx::ShadowValues(
-      1, gfx::ShadowValue(gfx::Vector2d(1, 1), 1, kExitLabelShadowColor)));
   exit_label_->SetSubpixelRenderingEnabled(false);
   exit_label_->SetVisible(false);
 
