@@ -531,29 +531,6 @@ static CSSValue* consumeLineHeight(CSSParserTokenRange& range,
   return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
 }
 
-static CSSValue* consumeScale(CSSParserTokenRange& range) {
-  ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
-
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueNone)
-    return consumeIdent(range);
-
-  CSSValue* scale = consumeNumber(range, ValueRangeAll);
-  if (!scale)
-    return nullptr;
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*scale);
-  scale = consumeNumber(range, ValueRangeAll);
-  if (scale) {
-    list->append(*scale);
-    scale = consumeNumber(range, ValueRangeAll);
-    if (scale)
-      list->append(*scale);
-  }
-
-  return list;
-}
-
 static CSSValue* consumeCounter(CSSParserTokenRange& range, int defaultValue) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
@@ -2655,8 +2632,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeFontSize(m_range, m_context->mode(), UnitlessQuirk::Allow);
     case CSSPropertyLineHeight:
       return consumeLineHeight(m_range, m_context->mode());
-    case CSSPropertyScale:
-      return consumeScale(m_range);
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
       return consumeLength(m_range, m_context->mode(), ValueRangeNonNegative);

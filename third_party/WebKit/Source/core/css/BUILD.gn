@@ -365,6 +365,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIPaintStroke.cpp",
     "properties/CSSPropertyAPIQuotes.cpp",
     "properties/CSSPropertyAPIRotate.cpp",
+    "properties/CSSPropertyAPIScale.cpp",
     "properties/CSSPropertyAPIScrollSnapCoordinate.cpp",
     "properties/CSSPropertyAPIShapeMargin.cpp",
     "properties/CSSPropertyAPISize.cpp",
