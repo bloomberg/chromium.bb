@@ -62,7 +62,11 @@ public class WebappLauncherActivity extends Activity {
 
         // {@link WebApkInfo#create()} and {@link WebappInfo#create()} return null if the intent
         // does not specify required values such as the uri.
-        if (webappInfo == null) return;
+        if (webappInfo == null) {
+            String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
+            launchInTab(url, ShortcutSource.UNKNOWN);
+            return;
+        }
 
         String webappUrl = webappInfo.uri().toString();
         int webappSource = webappInfo.source();
@@ -84,6 +88,12 @@ public class WebappLauncherActivity extends Activity {
 
         // The shortcut data doesn't match the current encoding. Change the intent action to
         // launch the URL with a VIEW Intent in the regular browser.
+        launchInTab(webappUrl, webappSource);
+    }
+
+    private void launchInTab(String webappUrl, int webappSource) {
+        if (TextUtils.isEmpty(webappUrl)) return;
+
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(webappUrl));
         launchIntent.setClassName(getPackageName(), ChromeLauncherActivity.class.getName());
         launchIntent.putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
