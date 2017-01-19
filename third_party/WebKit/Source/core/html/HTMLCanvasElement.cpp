@@ -832,26 +832,26 @@ bool HTMLCanvasElement::shouldAccelerate(AccelerationCriteria criteria) const {
   }
 
   // Do not use acceleration for small canvas.
-  if (criteria != IgnoreCanvasSizeAccelerationCriteria) {
+  if (criteria != IgnoreResourceLimitCriteria) {
     Settings* settings = document().settings();
     if (!settings ||
         canvasPixelCount < settings->getMinimumAccelerated2dCanvasSize())
       return false;
+
+    // When GPU allocated memory runs low (due to having created too many
+    // accelerated canvases), the compositor starves and browser becomes laggy.
+    // Thus, we should stop allocating more GPU memory to new canvases created
+    // when the current memory usage exceeds the threshold.
+    if (ImageBuffer::getGlobalGPUMemoryUsage() >= MaxGlobalGPUMemoryUsage)
+      return false;
+
+    // Allocating too many GPU resources can makes us run into the driver's
+    // resource limits. So we need to keep the number of texture resources
+    // under tight control
+    if (ImageBuffer::getGlobalAcceleratedImageBufferCount() >=
+        MaxGlobalAcceleratedImageBufferCount)
+      return false;
   }
-
-  // When GPU allocated memory runs low (due to having created too many
-  // accelerated canvases), the compositor starves and browser becomes laggy.
-  // Thus, we should stop allocating more GPU memory to new canvases created
-  // when the current memory usage exceeds the threshold.
-  if (ImageBuffer::getGlobalGPUMemoryUsage() >= MaxGlobalGPUMemoryUsage)
-    return false;
-
-  // Allocating too many GPU resources can makes us run into the driver's
-  // resource limits. So we need to keep the number of texture resources
-  // under tight control
-  if (ImageBuffer::getGlobalAcceleratedImageBufferCount() >=
-      MaxGlobalAcceleratedImageBufferCount)
-    return false;
 
   return true;
 }
@@ -1213,7 +1213,7 @@ void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument) {
 void HTMLCanvasElement::willDrawImageTo2DContext(CanvasImageSource* source) {
   if (ExpensiveCanvasHeuristicParameters::EnableAccelerationToAvoidReadbacks &&
       source->isAccelerated() && !buffer()->isAccelerated() &&
-      shouldAccelerate(IgnoreCanvasSizeAccelerationCriteria)) {
+      shouldAccelerate(IgnoreResourceLimitCriteria)) {
     OpacityMode opacityMode =
         m_context->creationAttributes().alpha() ? NonOpaque : Opaque;
     int msaaSampleCount = 0;

@@ -254,7 +254,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   enum AccelerationCriteria {
     NormalAccelerationCriteria,
-    IgnoreCanvasSizeAccelerationCriteria,
+    IgnoreResourceLimitCriteria,
   };
   bool shouldAccelerate(AccelerationCriteria) const;
 
