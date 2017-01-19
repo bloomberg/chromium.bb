@@ -23,7 +23,8 @@ public final class CardsVariationParameters {
     private static final String TAG = "CardsVariationParams";
 
     // Also defined in ntp_snippets_constants.cc
-    private static final String FIELD_TRIAL_NAME = "NTPSnippets";
+    private static final String FIELD_TRIAL_NAME_MAIN = "NTPSnippets";
+    private static final String FIELD_TRIAL_NAME_VISIBILITY = "NTPSnippetsVisibility";
 
     private static final String PARAM_FAVICON_SERVICE_NAME = "favicons_fetch_from_service";
     private static final String PARAM_FIRST_CARD_OFFSET = "first_card_offset";
@@ -54,37 +55,41 @@ public final class CardsVariationParameters {
      * with a command line flag). It will return 0 if there is no such field trial.
      */
     public static int getFirstCardOffsetDp() {
-        return getIntValue(PARAM_FIRST_CARD_OFFSET, 0);
+        return getIntValue(FIELD_TRIAL_NAME_VISIBILITY, PARAM_FIRST_CARD_OFFSET, 0);
     }
 
     /**
      * Gets the number of times the first card peeking animation should run.
      */
     public static int getFirstCardAnimationMaxRuns() {
-        return getIntValue(PARAM_FIRST_CARD_ANIMATION_MAX_RUNS, FIRST_CARD_ANIMATION_DEFAULT_VALUE);
+        return getIntValue(FIELD_TRIAL_NAME_VISIBILITY, PARAM_FIRST_CARD_ANIMATION_MAX_RUNS,
+                FIRST_CARD_ANIMATION_DEFAULT_VALUE);
     }
 
     /**
      * @return Whether the NTP should initially be scrolled below the fold.
      */
     public static boolean isScrollBelowTheFoldEnabled() {
-        return Boolean.parseBoolean(getParamValue(PARAM_SCROLL_BELOW_THE_FOLD));
+        return Boolean.parseBoolean(getParamValue(FIELD_TRIAL_NAME_VISIBILITY,
+                PARAM_SCROLL_BELOW_THE_FOLD));
     }
 
     /**
      * @return Whether the NTP should ignore updates for suggestions that have not been seen yet.
      */
     public static boolean ignoreUpdatesForExistingSuggestions() {
-        return Boolean.parseBoolean(getParamValue(PARAM_IGNORE_UPDATES_FOR_EXISTING_SUGGESTIONS));
+        return Boolean.parseBoolean(getParamValue(FIELD_TRIAL_NAME_MAIN,
+                PARAM_IGNORE_UPDATES_FOR_EXISTING_SUGGESTIONS));
     }
 
     public static boolean isFaviconServiceEnabled() {
-        return !PARAM_DISABLED_VALUE.equals(getParamValue(PARAM_FAVICON_SERVICE_NAME));
+        return !PARAM_DISABLED_VALUE.equals(getParamValue(FIELD_TRIAL_NAME_MAIN,
+                PARAM_FAVICON_SERVICE_NAME));
     }
 
-    private static int getIntValue(String paramName, int defaultValue) {
+    private static int getIntValue(String fieldTrialName, String paramName, int defaultValue) {
         // TODO(jkrcal): Get parameter by feature name, not field trial name.
-        String value = getParamValue(paramName);
+        String value = getParamValue(fieldTrialName, paramName);
 
         if (!TextUtils.isEmpty(value)) {
             try {
@@ -97,13 +102,13 @@ public final class CardsVariationParameters {
         return defaultValue;
     }
 
-    private static String getParamValue(String paramName) {
+    private static String getParamValue(String fieldTrialName, String paramName) {
         if (sTestVariationParams != null) {
             String value = sTestVariationParams.get(paramName);
             if (value == null) return "";
             return value;
         }
 
-        return VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName);
+        return VariationsAssociatedData.getVariationParamValue(fieldTrialName, paramName);
     }
 }
