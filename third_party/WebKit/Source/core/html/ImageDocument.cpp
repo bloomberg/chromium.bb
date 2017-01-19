@@ -48,6 +48,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/resource/ImageResource.h"
+#include "core/page/Page.h"
 #include "platform/HostWindow.h"
 #include "wtf/text/StringBuilder.h"
 #include <limits>
@@ -594,7 +595,12 @@ ImageResource* ImageDocument::cachedImageResourceDeprecated() {
 }
 
 bool ImageDocument::shouldShrinkToFit() const {
-  return frame()->isMainFrame();
+  // WebView automatically resizes to match the contents, causing an infinite
+  // loop as the contents then resize to match the window. To prevent this,
+  // disallow images from shrinking to fit for WebViews.
+  bool isWrapContentWebView =
+      page() ? page()->settings().getForceZeroLayoutHeight() : false;
+  return frame()->isMainFrame() && !isWrapContentWebView;
 }
 
 DEFINE_TRACE(ImageDocument) {

@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
+#include "core/frame/Settings.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -180,6 +181,28 @@ TEST_F(ImageDocumentTest, ImageScalesDownWithDsf) {
   loadImage();
   EXPECT_EQ(10, imageWidth());
   EXPECT_EQ(10, imageHeight());
+}
+
+TEST_F(ImageDocumentTest, ImageNotCenteredWithForceZeroLayoutHeight) {
+  createDocumentWithoutLoadingImage(80, 70);
+  document().page()->settings().setForceZeroLayoutHeight(true);
+  loadImage();
+  EXPECT_FALSE(document().shouldShrinkToFit());
+  EXPECT_EQ(0, document().imageElement()->offsetLeft());
+  EXPECT_EQ(0, document().imageElement()->offsetTop());
+  EXPECT_EQ(50, imageWidth());
+  EXPECT_EQ(50, imageHeight());
+}
+
+TEST_F(ImageDocumentTest, ImageCenteredWithoutForceZeroLayoutHeight) {
+  createDocumentWithoutLoadingImage(80, 70);
+  document().page()->settings().setForceZeroLayoutHeight(false);
+  loadImage();
+  EXPECT_TRUE(document().shouldShrinkToFit());
+  EXPECT_EQ(15, document().imageElement()->offsetLeft());
+  EXPECT_EQ(10, document().imageElement()->offsetTop());
+  EXPECT_EQ(50, imageWidth());
+  EXPECT_EQ(50, imageHeight());
 }
 
 }  // namespace blink
