@@ -1,0 +1,10 @@
+CONSOLE ERROR: line 8: Unsafe JavaScript attempt to initiate navigation for frame with URL 'http://127.0.0.1:8000/security/frameNavigation/sandbox-DENIED-top-navigation-without-user-gesture.html' from frame with URL 'http://localhost:8000/security/frameNavigation/resources/iframe-that-performs-top-navigation-without-user-gesture-failed.html'. The frame attempting navigation of the top-level window is sandboxed with the 'allow-top-navigation-with-user-activation' flag, but has no user activation (aka gesture). See https://www.chromestatus.com/feature/5629582019395584.
+
+This tests that an iframe in sandbox with 'allow-top-navigation-with-user-activation' cannot navigate its top level page, if it is not trigged by a user gesture.
+
+
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+The top navigation from this iframe should be blocked. This text should appear.

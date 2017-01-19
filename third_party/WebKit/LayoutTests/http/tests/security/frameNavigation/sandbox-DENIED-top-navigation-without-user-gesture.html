@@ -1,0 +1,24 @@
+<html>
+<head>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.dumpChildFramesAsText();
+    testRunner.setDumpConsoleMessages(true);
+    testRunner.waitUntilDone();
+}
+
+window.addEventListener("message", e => {
+  if (e.data == "PASS")
+    testRunner.notifyDone();
+  else
+    testRunner.testFailed("'top.location' didn't throw.");
+});
+</script>
+</head>
+<body>
+    <p>This tests that an iframe in sandbox with 'allow-top-navigation-with-user-activation'
+    cannot navigate its top level page, if it is not trigged by a user gesture.</p>
+    <iframe sandbox='allow-top-navigation-with-user-activation allow-scripts' src="http://localhost:8000/security/frameNavigation/resources/iframe-that-performs-top-navigation-without-user-gesture-failed.html"></iframe>
+</body>
+</html>

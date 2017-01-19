@@ -48,6 +48,7 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/network/ResourceError.h"
 
@@ -284,13 +285,30 @@ bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame,
       return false;
     }
 
-    // Top navigation is forbidden unless opted-in. allow-top-navigation
-    // will also skips origin checks.
+    // Top navigation is forbidden unless opted-in. allow-top-navigation or
+    // allow-top-navigation-with-user-activation will also skips origin checks.
     if (targetFrame == tree().top()) {
-      if (securityContext()->isSandboxed(SandboxTopNavigation)) {
+      if (securityContext()->isSandboxed(SandboxTopNavigation) &&
+          securityContext()->isSandboxed(
+              SandboxTopNavigationWithUserActivation)) {
+        // TODO(binlu): To add "or 'allow-top-navigation-with-user-activation'"
+        // to the reason below, once the new flag is shipped.
         reason =
             "The frame attempting navigation of the top-level window is "
             "sandboxed, but the 'allow-top-navigation' flag is not set.";
+        return false;
+      }
+      if (securityContext()->isSandboxed(SandboxTopNavigation) &&
+          !securityContext()->isSandboxed(
+              SandboxTopNavigationWithUserActivation) &&
+          !UserGestureIndicator::processingUserGesture()) {
+        // With only 'allow-top-navigation-with-user-activation' (but not
+        // 'allow-top-navigation'), top navigation requires a user gesture.
+        reason =
+            "The frame attempting navigation of the top-level window is "
+            "sandboxed with the 'allow-top-navigation-with-user-activation' "
+            "flag, but has no user activation (aka gesture). See "
+            "https://www.chromestatus.com/feature/5629582019395584.";
         return false;
       }
       return true;

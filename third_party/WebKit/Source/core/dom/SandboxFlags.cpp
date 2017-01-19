@@ -27,6 +27,7 @@
 #include "core/dom/SandboxFlags.h"
 
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -65,6 +66,11 @@ SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy,
       flags &= ~SandboxModals;
     } else if (equalIgnoringCase(sandboxToken, "allow-presentation")) {
       flags &= ~SandboxPresentation;
+    } else if (equalIgnoringCase(sandboxToken,
+                                 "allow-top-navigation-with-user-activation") &&
+               RuntimeEnabledFeatures::
+                   topNavWithUserActivationInSandboxEnabled()) {
+      flags &= ~SandboxTopNavigationWithUserActivation;
     } else {
       if (numberOfTokenErrors)
         tokenErrors.append(", '");
