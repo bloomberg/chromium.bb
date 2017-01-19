@@ -302,8 +302,7 @@ class InternalClass {
 
 }  // namespace internal
 
-// Tests for --idl-methods.  See also
-// MethodsNamedAfterIdlMatcherState::SetupBlacklistForTesting method.
+// Tests for --method-blocklist cmdline parameter.
 class IdlTestClass {
  public:
   static int IdlTestMethodNoParams(char x) { return 123; }

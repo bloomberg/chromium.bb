@@ -14,3 +14,6 @@ IdlTestClass:::idlOptionalArgsPass:::0
 IdlTestClass:::idlOptionalArgsStillTooMany:::0
 IdlTestClass:::idlOptionalArgsTooLittle:::2
 IdlTemplateClass:::idlTestMethod:::1
+
+# Test for free functions:
+IdlFunctions:::foo:::0

@@ -130,19 +130,21 @@ class MethodBlocklist {
       ParseInputFile(filepath);
   }
 
-  bool Contains(const clang::CXXMethodDecl& method) const {
+  bool Contains(const clang::FunctionDecl& method) const {
     auto it = method_to_class_to_args_.find(method.getName());
     if (it == method_to_class_to_args_.end())
       return false;
 
-    const clang::CXXRecordDecl* actual_class = method.getParent();
-    assert(actual_class &&
-           "Hopefully |getParent()| can find the class even for non-inlined "
-           "method definitions (where CXXRecordDecl is not a parent AST node "
-           "of CXXMethodDecl.");
+    // |method_context| is either
+    // 1) a CXXRecordDecl (i.e. blink::Document) or
+    // 2) a NamespaceDecl (i.e. blink::DOMWindowTimers).
+    const clang::NamedDecl* method_context =
+        clang::dyn_cast<clang::NamedDecl>(method.getDeclContext());
+    if (!method_context)
+      return false;
 
     const llvm::StringMap<std::set<unsigned>>& class_to_args = it->second;
-    auto it2 = class_to_args.find(actual_class->getName());
+    auto it2 = class_to_args.find(method_context->getName());
     if (it2 == class_to_args.end())
       return false;
 
@@ -225,7 +227,7 @@ class MethodBlocklist {
   llvm::StringMap<llvm::StringMap<std::set<unsigned>>> method_to_class_to_args_;
 };
 
-AST_MATCHER_P(clang::CXXMethodDecl,
+AST_MATCHER_P(clang::FunctionDecl,
               isBlocklistedMethod,
               MethodBlocklist,
               Blocklist) {
@@ -1392,6 +1394,7 @@ int main(int argc, const char* argv[]) {
       kMethodBlocklistParamName, llvm::cl::value_desc("filepath"),
       llvm::cl::desc("file listing methods to be blocked (not renamed)"));
   CommonOptionsParser options(argc, argv, category);
+  MethodBlocklist method_blocklist(blocklisted_methods_file);
   clang::tooling::ClangTool tool(options.getCompilations(),
                                  options.getSourcePathList());
 
@@ -1519,7 +1522,9 @@ int main(int argc, const char* argv[]) {
               isOverloadedOperator(),
               // Must be checked after filtering out overloaded operators to
               // prevent asserts about the identifier not being a simple name.
-              isBlacklistedFunction())),
+              isBlacklistedFunction(),
+              // Functions that look like blocked static methods.
+              isBlocklistedMethod(method_blocklist))),
           in_blink_namespace));
   FunctionDeclRewriter function_decl_rewriter(&replacements);
   match_finder.addMatcher(function_decl_matcher, &function_decl_rewriter);
@@ -1547,10 +1552,10 @@ int main(int argc, const char* argv[]) {
   // but that override something we are rewriting should also be rewritten. So
   // we use includeAllOverriddenMethods() to check these rules not just for the
   // method being matched but for the methods it overrides also.
-  MethodBlocklist method_blocklist(blocklisted_methods_file);
   auto is_blink_method = includeAllOverriddenMethods(
-      allOf(in_blink_namespace, unless(isBlacklistedMethod()),
-            unless(isBlocklistedMethod(method_blocklist))));
+      allOf(in_blink_namespace,
+            unless(anyOf(isBlacklistedMethod(),
+                         isBlocklistedMethod(method_blocklist)))));
   auto method_decl_matcher = id(
       "decl",
       cxxMethodDecl(
