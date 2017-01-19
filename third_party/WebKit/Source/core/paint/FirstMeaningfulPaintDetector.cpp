@@ -5,6 +5,7 @@
 #include "core/paint/FirstMeaningfulPaintDetector.h"
 
 #include "core/css/FontFaceSet.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/paint/PaintTiming.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -29,9 +30,11 @@ FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::from(
 }
 
 FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
-    PaintTiming* paintTiming)
+    PaintTiming* paintTiming,
+    Document& document)
     : m_paintTiming(paintTiming),
       m_networkStableTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
           this,
           &FirstMeaningfulPaintDetector::networkStableTimerFired) {}
 

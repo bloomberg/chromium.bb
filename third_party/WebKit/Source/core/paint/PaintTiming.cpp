@@ -120,7 +120,7 @@ DEFINE_TRACE(PaintTiming) {
 
 PaintTiming::PaintTiming(Document& document)
     : Supplement<Document>(document),
-      m_fmpDetector(new FirstMeaningfulPaintDetector(this)) {}
+      m_fmpDetector(new FirstMeaningfulPaintDetector(this, document)) {}
 
 LocalFrame* PaintTiming::frame() const {
   return supplementable()->frame();
