@@ -34,7 +34,8 @@ class TooltipControllerTestHelper {
   // These are mostly cover methods for TooltipController private methods.
   base::string16 GetTooltipText();
   aura::Window* GetTooltipWindow();
-  void UpdateIfRequired();
+  void FireTooltipTimer();
+  bool IsTooltipTimerRunning();
   void FireTooltipShownTimer();
   bool IsTooltipShownTimerRunning();
   bool IsTooltipVisible();

@@ -187,15 +187,17 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
-
   generator_->MoveMouseToCenterOf(GetWindow());
 
   EXPECT_EQ(GetWindow(), GetRootWindow()->GetEventHandlerForPoint(
       generator_->current_location()));
   base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
   EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(GetWindow()));
-  EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
+  EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
 
   EXPECT_TRUE(helper_->IsTooltipVisible());
   generator_->MoveMouseBy(1, 0);
@@ -219,8 +221,10 @@ TEST_F(TooltipControllerTest, MaxWidth) {
       "width");
   view_->set_tooltip_text(text);
   gfx::Point center = GetWindow()->bounds().CenterPoint();
-
   generator_->MoveMouseTo(center);
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
 
   EXPECT_TRUE(helper_->IsTooltipVisible());
   gfx::RenderText* render_text =
@@ -245,7 +249,9 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
   aura::Window* window = GetWindow();
   aura::Window* root_window = GetRootWindow();
 
+  // Fire tooltip timer so tooltip becomes visible.
   generator_->MoveMouseRelativeTo(window, view_->bounds().CenterPoint());
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   for (int i = 0; i < 49; ++i) {
     generator_->MoveMouseBy(1, 0);
@@ -280,18 +286,22 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
 
   generator_->MoveMouseRelativeTo(GetWindow(), view_->bounds().CenterPoint());
+  base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 
   // Disable tooltips and check again.
   helper_->controller()->SetTooltipsEnabled(false);
   EXPECT_FALSE(helper_->IsTooltipVisible());
-  helper_->UpdateIfRequired();
+  helper_->FireTooltipTimer();
   EXPECT_FALSE(helper_->IsTooltipVisible());
 
   // Enable tooltips back and check again.
   helper_->controller()->SetTooltipsEnabled(true);
   EXPECT_FALSE(helper_->IsTooltipVisible());
-  helper_->UpdateIfRequired();
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 }
 
@@ -307,6 +317,8 @@ TEST_F(TooltipControllerTest, DontShowEmptyTooltips) {
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
 
   generator_->MoveMouseRelativeTo(GetWindow(), view_->bounds().CenterPoint());
+
+  helper_->FireTooltipTimer();
   EXPECT_FALSE(helper_->IsTooltipVisible());
 }
 
@@ -325,12 +337,15 @@ TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
 
   aura::Window* window = GetWindow();
 
+  // Fire tooltip timer so tooltip becomes visible.
   generator_->MoveMouseRelativeTo(window, view_->bounds().CenterPoint());
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   EXPECT_TRUE(helper_->IsTooltipShownTimerRunning());
 
   generator_->PressKey(ui::VKEY_1, 0);
   EXPECT_FALSE(helper_->IsTooltipVisible());
+  EXPECT_FALSE(helper_->IsTooltipTimerRunning());
   EXPECT_FALSE(helper_->IsTooltipShownTimerRunning());
 
   // Moving the mouse inside |view1| should not change the state of the tooltip
@@ -338,6 +353,7 @@ TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
   for (int i = 0; i < 49; i++) {
     generator_->MoveMouseBy(1, 0);
     EXPECT_FALSE(helper_->IsTooltipVisible());
+    EXPECT_FALSE(helper_->IsTooltipTimerRunning());
     EXPECT_FALSE(helper_->IsTooltipShownTimerRunning());
     EXPECT_EQ(window,
               GetRootWindow()->GetEventHandlerForPoint(
@@ -348,9 +364,10 @@ TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
     EXPECT_EQ(window, helper_->GetTooltipWindow());
   }
 
-  // Now we move the mouse on to |view2|. It should update the tooltip.
+  // Now we move the mouse on to |view2|. It should re-start the tooltip timer.
   generator_->MoveMouseBy(1, 0);
-
+  EXPECT_TRUE(helper_->IsTooltipTimerRunning());
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   EXPECT_TRUE(helper_->IsTooltipShownTimerRunning());
   base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text for view 2");
@@ -374,13 +391,15 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
 
   aura::Window* window = GetWindow();
 
-  // Update tooltip so tooltip becomes visible.
+  // Fire tooltip timer so tooltip becomes visible.
   generator_->MoveMouseRelativeTo(window, view_->bounds().CenterPoint());
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   EXPECT_TRUE(helper_->IsTooltipShownTimerRunning());
 
   helper_->FireTooltipShownTimer();
   EXPECT_FALSE(helper_->IsTooltipVisible());
+  EXPECT_FALSE(helper_->IsTooltipTimerRunning());
   EXPECT_FALSE(helper_->IsTooltipShownTimerRunning());
 
   // Moving the mouse inside |view1| should not change the state of the tooltip
@@ -388,6 +407,7 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
   for (int i = 0; i < 49; ++i) {
     generator_->MoveMouseBy(1, 0);
     EXPECT_FALSE(helper_->IsTooltipVisible());
+    EXPECT_FALSE(helper_->IsTooltipTimerRunning());
     EXPECT_FALSE(helper_->IsTooltipShownTimerRunning());
     EXPECT_EQ(window, GetRootWindow()->GetEventHandlerForPoint(
                   generator_->current_location()));
@@ -397,9 +417,10 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
     EXPECT_EQ(window, helper_->GetTooltipWindow());
   }
 
-  // Now we move the mouse on to |view2|. It should update the tooltip.
+  // Now we move the mouse on to |view2|. It should re-start the tooltip timer.
   generator_->MoveMouseBy(1, 0);
-
+  EXPECT_TRUE(helper_->IsTooltipTimerRunning());
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   EXPECT_TRUE(helper_->IsTooltipShownTimerRunning());
   base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text for view 2");
@@ -419,8 +440,11 @@ TEST_F(TooltipControllerTest, HideOnExit) {
   generator_->MoveMouseToCenterOf(GetWindow());
   base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
   EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(GetWindow()));
-  EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
+  EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
 
   EXPECT_TRUE(helper_->IsTooltipVisible());
   generator_->SendMouseExit();
@@ -452,6 +476,8 @@ TEST_F(TooltipControllerTest, ReshowOnClickAfterEnterExit) {
   View::ConvertPointToWidget(v1, &v1_point);
   generator_->MoveMouseRelativeTo(GetWindow(), v1_point);
 
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   EXPECT_EQ(v1_tt, helper_->GetTooltipText());
 
@@ -463,6 +489,7 @@ TEST_F(TooltipControllerTest, ReshowOnClickAfterEnterExit) {
   generator_->MoveMouseRelativeTo(GetWindow(), v2_point);
   generator_->MoveMouseRelativeTo(GetWindow(), v1_point);
 
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   EXPECT_EQ(v1_tt, helper_->GetTooltipText());
 }
@@ -527,6 +554,9 @@ TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
 
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
+
   EXPECT_TRUE(helper_->IsTooltipVisible());
   view_->GetWidget()->ReleaseCapture();
   EXPECT_FALSE(helper_->IsTooltipVisible());
@@ -572,6 +602,8 @@ TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
   generator_->MoveMouseRelativeTo(widget_->GetNativeWindow(),
                                   view_->bounds().CenterPoint());
 
+  EXPECT_TRUE(helper_->IsTooltipTimerRunning());
+  helper_->FireTooltipTimer();
   // Even though the mouse is over a window with a tooltip it shouldn't be
   // picked up because the windows don't have the same value for
   // |TooltipManager::kGroupingPropertyKey|.
@@ -586,6 +618,8 @@ TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
   widget2->SetNativeWindowProperty(TooltipManager::kGroupingPropertyKey,
                                    reinterpret_cast<void*>(grouping_key));
   generator_->MoveMouseBy(1, 10);
+  EXPECT_TRUE(helper_->IsTooltipTimerRunning());
+  helper_->FireTooltipTimer();
   EXPECT_EQ(tooltip_text2, helper_->GetTooltipText());
 
   widget2.reset();
@@ -670,8 +704,8 @@ TEST_F(TooltipControllerTest2, VerifyLeadingTrailingWhitespaceStripped) {
   window->SetBounds(gfx::Rect(0, 0, 300, 300));
   base::string16 tooltip_text(ASCIIToUTF16(" \nx  "));
   aura::client::SetTooltipText(window.get(), &tooltip_text);
-  EXPECT_FALSE(helper_->IsTooltipVisible());
   generator_->MoveMouseToCenterOf(window.get());
+  helper_->FireTooltipTimer();
   EXPECT_EQ(ASCIIToUTF16("x"), test_tooltip_->tooltip_text());
 }
 
@@ -683,9 +717,10 @@ TEST_F(TooltipControllerTest2, CloseOnCancelMode) {
   window->SetBounds(gfx::Rect(0, 0, 300, 300));
   base::string16 tooltip_text(ASCIIToUTF16("Tooltip Text"));
   aura::client::SetTooltipText(window.get(), &tooltip_text);
-  EXPECT_FALSE(helper_->IsTooltipVisible());
   generator_->MoveMouseToCenterOf(window.get());
 
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 
   // Send OnCancelMode event and verify that tooltip becomes invisible and
@@ -814,6 +849,7 @@ TEST_F(TooltipControllerTest3, TooltipPositionChangesOnTwoViewsWithSameLabel) {
   // Test whether a toolbar appears on v1
   gfx::Point center = v1->bounds().CenterPoint();
   generator_->MoveMouseRelativeTo(GetWindow(), center);
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   EXPECT_EQ(reference_string, helper_->GetTooltipText());
   gfx::Point tooltip_bounds1 = test_tooltip_->location();
@@ -821,6 +857,7 @@ TEST_F(TooltipControllerTest3, TooltipPositionChangesOnTwoViewsWithSameLabel) {
   // Test whether the toolbar changes position on mouse over v2
   center = v2->bounds().CenterPoint();
   generator_->MoveMouseRelativeTo(GetWindow(), center);
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
   EXPECT_EQ(reference_string, helper_->GetTooltipText());
   gfx::Point tooltip_bounds2 = test_tooltip_->location();
@@ -834,6 +871,7 @@ TEST_F(TooltipControllerTest3, TooltipPositionChangesOnTwoViewsWithSameLabel) {
   center = v2_1->GetLocalBounds().CenterPoint();
   views::View::ConvertPointToTarget(v2_1, view_, &center);
   generator_->MoveMouseRelativeTo(GetWindow(), center);
+  helper_->FireTooltipTimer();
   gfx::Point tooltip_bounds2_1 = test_tooltip_->location();
 
   EXPECT_NE(tooltip_bounds2, tooltip_bounds2_1);
@@ -845,6 +883,7 @@ TEST_F(TooltipControllerTest3, TooltipPositionChangesOnTwoViewsWithSameLabel) {
   center = v2_2->GetLocalBounds().CenterPoint();
   views::View::ConvertPointToTarget(v2_2, view_, &center);
   generator_->MoveMouseRelativeTo(GetWindow(), center);
+  helper_->FireTooltipTimer();
   gfx::Point tooltip_bounds2_2 = test_tooltip_->location();
 
   EXPECT_NE(tooltip_bounds2_1, tooltip_bounds2_2);
@@ -856,6 +895,7 @@ TEST_F(TooltipControllerTest3, TooltipPositionChangesOnTwoViewsWithSameLabel) {
   center = v1_1->GetLocalBounds().CenterPoint();
   views::View::ConvertPointToTarget(v1_1, view_, &center);
   generator_->MoveMouseRelativeTo(GetWindow(), center);
+  helper_->FireTooltipTimer();
   gfx::Point tooltip_bounds1_1 = test_tooltip_->location();
 
   EXPECT_TRUE(helper_->IsTooltipVisible());
@@ -863,6 +903,7 @@ TEST_F(TooltipControllerTest3, TooltipPositionChangesOnTwoViewsWithSameLabel) {
 
   center = v1->bounds().CenterPoint();
   generator_->MoveMouseRelativeTo(GetWindow(), center);
+  helper_->FireTooltipTimer();
   tooltip_bounds1 = test_tooltip_->location();
 
   EXPECT_NE(tooltip_bounds1_1, tooltip_bounds1);

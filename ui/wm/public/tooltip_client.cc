@@ -4,17 +4,19 @@
 
 #include "ui/wm/public/tooltip_client.h"
 
+#include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, aura::client::TooltipClient*)
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, void**)
+DECLARE_WINDOW_PROPERTY_TYPE(aura::client::TooltipClient*)
+DECLARE_WINDOW_PROPERTY_TYPE(void**)
 
 namespace aura {
 namespace client {
 
-DEFINE_WINDOW_PROPERTY_KEY(TooltipClient*, kRootWindowTooltipClientKey, NULL);
-DEFINE_WINDOW_PROPERTY_KEY(base::string16*, kTooltipTextKey, NULL);
-DEFINE_WINDOW_PROPERTY_KEY(void*, kTooltipIdKey, NULL);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+    TooltipClient*, kRootWindowTooltipClientKey, NULL);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(base::string16*, kTooltipTextKey, NULL);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(void*, kTooltipIdKey, NULL);
 
 void SetTooltipClient(Window* root_window, TooltipClient* client) {
   DCHECK_EQ(root_window->GetRootWindow(), root_window);

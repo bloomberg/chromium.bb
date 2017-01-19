@@ -109,21 +109,20 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
                                 view->bounds().CenterPoint());
   base::string16 expected_tooltip = base::ASCIIToUTF16("Tooltip Text");
 
-  // Mouse event triggers tooltip update so it becomes visible.
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 
-  // Disable mouse event which hides the cursor and check again.
+  // Hide the cursor and check again.
   ash::Shell::GetInstance()->cursor_manager()->DisableMouseEvents();
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
-  helper_->UpdateIfRequired();
+  helper_->FireTooltipTimer();
   EXPECT_FALSE(helper_->IsTooltipVisible());
 
-  // Enable mouse event which shows the cursor and re-check.
+  // Show the cursor and re-check.
+  RunAllPendingInMessageLoop();
   ash::Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
-  helper_->UpdateIfRequired();
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 }
 
@@ -151,6 +150,7 @@ TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
   ui::test::EventGenerator generator(root_windows[1]);
   generator.MoveMouseRelativeTo(widget2->GetNativeView(),
                                 view2->bounds().CenterPoint());
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 
   // Get rid of secondary display. This destroy's the tooltip's aura window. If
@@ -164,6 +164,7 @@ TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
   ui::test::EventGenerator generator1(root_windows[0]);
   generator1.MoveMouseRelativeTo(widget1->GetNativeView(),
                                  view1->bounds().CenterPoint());
+  helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 }
 
