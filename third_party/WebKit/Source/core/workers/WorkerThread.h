@@ -136,7 +136,12 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return m_workerReportingProxy;
   }
 
+  // DEPRECATED: Use postTask() for WTF::CrossThreadClosure instead.
+  // TODO(nhiroki): Remove this after https://crbug.com/625927 is completed.
   void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
+
+  void postTask(const WebTraceLocation&,
+                std::unique_ptr<WTF::CrossThreadClosure>);
   void appendDebuggerTask(std::unique_ptr<CrossThreadClosure>);
 
   // Runs only debugger tasks while paused in debugger.

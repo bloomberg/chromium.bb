@@ -62,7 +62,7 @@ void ThreadedMessagingProxyBase::initializeWorkerThread(
 
 void ThreadedMessagingProxyBase::postTaskToWorkerGlobalScope(
     const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
   if (m_askedToTerminate)
     return;
 

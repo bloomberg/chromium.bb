@@ -317,7 +317,7 @@ void WebSharedWorkerImpl::postTaskToLoader(
 
 void WebSharedWorkerImpl::postTaskToWorkerGlobalScope(
     const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
   m_workerThread->postTask(location, std::move(task));
 }
 

@@ -199,6 +199,13 @@ void WorkerThread::postTask(const WebTraceLocation& location,
                                 WTF::passed(std::move(task))));
 }
 
+void WorkerThread::postTask(const WebTraceLocation& location,
+                            std::unique_ptr<WTF::CrossThreadClosure> task) {
+  std::unique_ptr<ExecutionContextTask> wrappedTask = createCrossThreadTask(
+      &WTF::CrossThreadClosure::operator(), WTF::passed(std::move(task)));
+  postTask(location, std::move(wrappedTask));
+}
+
 void WorkerThread::appendDebuggerTask(
     std::unique_ptr<CrossThreadClosure> task) {
   DCHECK(isMainThread());

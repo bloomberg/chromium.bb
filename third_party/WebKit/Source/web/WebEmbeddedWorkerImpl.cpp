@@ -274,7 +274,7 @@ void WebEmbeddedWorkerImpl::postTaskToLoader(
 
 void WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(
     const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
   if (m_askedToTerminate || !m_workerThread)
     return;
   m_workerThread->postTask(location, std::move(task));

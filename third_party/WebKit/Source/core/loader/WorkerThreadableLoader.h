@@ -31,7 +31,6 @@
 #ifndef WorkerThreadableLoader_h
 #define WorkerThreadableLoader_h
 
-#include "core/dom/ExecutionContextTask.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/workers/WorkerThread.h"
@@ -110,15 +109,15 @@ class WorkerThreadableLoader final : public ThreadableLoader {
  private:
   enum BlockingBehavior { LoadSynchronously, LoadAsynchronously };
 
-  // A TaskForwarder forwards an ExecutionContextTask to the worker thread.
+  // A TaskForwarder forwards a task to the worker thread.
   class TaskForwarder : public GarbageCollectedFinalized<TaskForwarder> {
    public:
     virtual ~TaskForwarder() {}
     virtual void forwardTask(const WebTraceLocation&,
-                             std::unique_ptr<ExecutionContextTask>) = 0;
+                             std::unique_ptr<CrossThreadClosure>) = 0;
     virtual void forwardTaskWithDoneSignal(
         const WebTraceLocation&,
-        std::unique_ptr<ExecutionContextTask>) = 0;
+        std::unique_ptr<CrossThreadClosure>) = 0;
     virtual void abort() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}

@@ -174,10 +174,9 @@ void InProcessWorkerMessagingProxy::dispatchErrorEvent(
 
   postTaskToWorkerGlobalScope(
       BLINK_FROM_HERE,
-      createCrossThreadTask(
-          &InProcessWorkerObjectProxy::processUnhandledException,
-          crossThreadUnretained(m_workerObjectProxy.get()), exceptionId,
-          crossThreadUnretained(workerThread())));
+      crossThreadBind(&InProcessWorkerObjectProxy::processUnhandledException,
+                      crossThreadUnretained(m_workerObjectProxy.get()),
+                      exceptionId, crossThreadUnretained(workerThread())));
 }
 
 void InProcessWorkerMessagingProxy::workerThreadCreated() {

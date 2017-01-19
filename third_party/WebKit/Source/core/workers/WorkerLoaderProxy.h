@@ -69,7 +69,7 @@ class CORE_EXPORT WorkerLoaderProxyProvider {
   // Posts callbacks from loading code to the WorkerGlobalScope.
   virtual void postTaskToWorkerGlobalScope(
       const WebTraceLocation&,
-      std::unique_ptr<ExecutionContextTask>) = 0;
+      std::unique_ptr<WTF::CrossThreadClosure>) = 0;
 };
 
 class CORE_EXPORT WorkerLoaderProxy final
@@ -85,7 +85,7 @@ class CORE_EXPORT WorkerLoaderProxy final
   void postTaskToLoader(const WebTraceLocation&,
                         std::unique_ptr<ExecutionContextTask>);
   void postTaskToWorkerGlobalScope(const WebTraceLocation&,
-                                   std::unique_ptr<ExecutionContextTask>);
+                                   std::unique_ptr<WTF::CrossThreadClosure>);
 
   // Notification from the provider that it can no longer be accessed. An
   // implementation of WorkerLoaderProxyProvider is required to call

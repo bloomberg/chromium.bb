@@ -46,7 +46,7 @@ class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
 
   void postTaskToWorkerGlobalScope(
       const WebTraceLocation&,
-      std::unique_ptr<ExecutionContextTask>) override {
+      std::unique_ptr<WTF::CrossThreadClosure>) override {
     NOTIMPLEMENTED();
   }
 };

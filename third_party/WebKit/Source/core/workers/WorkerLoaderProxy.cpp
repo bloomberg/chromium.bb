@@ -34,7 +34,7 @@ void WorkerLoaderProxy::postTaskToLoader(
 
 void WorkerLoaderProxy::postTaskToWorkerGlobalScope(
     const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
   MutexLocker locker(m_lock);
   if (!m_loaderProxyProvider)
     return;

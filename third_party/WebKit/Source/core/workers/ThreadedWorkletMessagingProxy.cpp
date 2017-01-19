@@ -60,10 +60,10 @@ void ThreadedWorkletMessagingProxy::evaluateScript(
     const ScriptSourceCode& scriptSourceCode) {
   postTaskToWorkerGlobalScope(
       BLINK_FROM_HERE,
-      createCrossThreadTask(&ThreadedWorkletObjectProxy::evaluateScript,
-                            crossThreadUnretained(m_workletObjectProxy.get()),
-                            scriptSourceCode.source(), scriptSourceCode.url(),
-                            crossThreadUnretained(workerThread())));
+      crossThreadBind(&ThreadedWorkletObjectProxy::evaluateScript,
+                      crossThreadUnretained(m_workletObjectProxy.get()),
+                      scriptSourceCode.source(), scriptSourceCode.url(),
+                      crossThreadUnretained(workerThread())));
 }
 
 void ThreadedWorkletMessagingProxy::terminateWorkletGlobalScope() {

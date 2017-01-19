@@ -82,7 +82,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
                         std::unique_ptr<ExecutionContextTask>) override;
   void postTaskToWorkerGlobalScope(
       const WebTraceLocation&,
-      std::unique_ptr<ExecutionContextTask>) override;
+      std::unique_ptr<WTF::CrossThreadClosure>) override;
 
  private:
   friend class InProcessWorkerMessagingProxyForTest;

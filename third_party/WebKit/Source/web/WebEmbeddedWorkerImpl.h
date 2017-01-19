@@ -105,7 +105,7 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
                         std::unique_ptr<ExecutionContextTask>) override;
   void postTaskToWorkerGlobalScope(
       const WebTraceLocation&,
-      std::unique_ptr<ExecutionContextTask>) override;
+      std::unique_ptr<WTF::CrossThreadClosure>) override;
 
   WebEmbeddedWorkerStartData m_workerStartData;
 
