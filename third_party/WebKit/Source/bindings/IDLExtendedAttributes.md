@@ -788,20 +788,6 @@ When`[Custom]` is specified on a callback function, the code generator doesn't
 generate bindings for the callback function. The binding layer uses a
 `ScriptValue` instead.
 
-### [CreateEventEnabled] _(i, m, a, c)_
-
-Summary: Like `[RuntimeEnabled]`, it controls at runtime whether bindings are exposed, but only affects createEvent support. See crbug.com/392584#c22.
-
-Usage: `[CreateEventEnabled=FeatureName]`. FeatureName must be included in [RuntimeEnabledFeatures.in](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/platform/RuntimeEnabledFeatures.in) like RuntimeEnabled.
-
-```webidl
-[
-    CreateEventEnabled=TouchEventFeatureDetection
-] interface TouchEvent : UIEvent { ... };
-```
-
-The feature is enabled at runtime and the createEvent operation will throw exception on the web if disabled. It's worth noting the event constructor (modern way of creating events) still works, so this is used only for very special case legacy compat issues (probably nothing ever other than TouchEvent).
-
 #### [Custom=PropertyQuery|PropertyEnumerator] _(s)_
 
 Summary: `[Custom=PropertyEnumerator]` allows you to write custom bindings for the case where properties of a given interface are enumerated; a custom named enumerator. There is currently only one use, and in that case it is used with `[Custom=PropertyQuery]`, since the query is also custom.

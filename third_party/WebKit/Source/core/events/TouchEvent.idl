@@ -27,7 +27,6 @@
 
 [
     Constructor(DOMString type, optional TouchEventInit eventInitDict),
-    CreateEventEnabled=TouchEventFeatureDetection,
 ] interface TouchEvent : UIEvent {
     readonly attribute TouchList touches;
     readonly attribute TouchList targetTouches;

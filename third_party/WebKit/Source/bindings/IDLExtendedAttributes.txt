@@ -42,7 +42,6 @@ Constructor
 # FIXME: remove [ConstructorCallWith=Document], as can instead use
 # [ConstructorCallWith=ExecutionContext] + toDocument(executionContext)
 ConstructorCallWith=ExecutionContext|ScriptState|Document
-CreateEventEnabled=*
 CrossOrigin=|Getter|Setter
 Custom=|Getter|Setter|LegacyCallAsFunction|VisitDOMWrapper|PropertyGetter|PropertyEnumerator|PropertyQuery|CallPrologue|CallEpilogue
 CustomConstructor

@@ -104,7 +104,6 @@ def measure_name(name):
 
 class EventFactoryWriter(in_generator.Writer):
     defaults = {
-        'CreateEventEnabled': None,
         'ImplementedAs': None,
         'RuntimeEnabled': None,
     }
@@ -126,13 +125,24 @@ class EventFactoryWriter(in_generator.Writer):
         super(EventFactoryWriter, self).__init__(in_file_path)
         self.namespace = self.in_file.parameters['namespace'].strip('"')
         self.suffix = self.in_file.parameters['suffix'].strip('"')
-        # Set CreateEventEnabled if feature is RuntimeEnabled (see crbug.com/332588).
-        for entry in self.in_file.name_dictionaries:
-            if 'RuntimeEnabled' in entry and 'CreateEventEnabled' not in entry:
-                entry['CreateEventEnabled'] = entry['RuntimeEnabled']
+        self._validate_entries()
         self._outputs = {(self.namespace + self.suffix + "Headers.h"): self.generate_headers_header,
                          (self.namespace + self.suffix + ".cpp"): self.generate_implementation,
                         }
+
+    def _validate_entries(self):
+        # If there is more than one entry with the same script name, only the first one will ever
+        # be hit in practice, and so we'll silently ignore any properties requested for the second
+        # (like RuntimeEnabled - see crbug.com/332588).
+        entries_by_script_name = dict()
+        for entry in self.in_file.name_dictionaries:
+            script_name = name_utilities.script_name(entry)
+            if script_name in entries_by_script_name:
+                self._fatal('Multiple entries with script_name=%(script_name)s: %(name1)s %(name2)s' % {
+                    'script_name': script_name,
+                    'name1': entry['name'],
+                    'name2': entries_by_script_name[script_name]['name']})
+            entries_by_script_name[script_name] = entry
 
     def _fatal(self, message):
         print 'FATAL ERROR: ' + message
