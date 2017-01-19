@@ -831,6 +831,110 @@ class ValidationPool(object):
 
     return bool(self.applied)
 
+  def GetDependMapForChanges(self, changes, patches):
+    """Get a dependency map for changes.
+
+    Generate and return a dict mapping each change to a set of changes which
+    depend on this change.
+    For instance, say "A -> B" means "A depends on B"
+    Suppose we have changes:
+    A -> B -> C
+
+    D -> E -> F
+         ^
+         |
+         G
+
+    H -> I (mutual dependency)
+    |    |
+      <-
+
+    We return the map:
+    {B : {A},
+     C : {A, B},
+     E : {D, G},
+     F : {D, E, G}
+     H : {I},
+     I : {H}}
+
+    Args:
+      changes: A list of changes to parse to generate the dependency map.
+      patches: A patch_series.PatchesSeries instance to get patch dependency.
+
+    Returns:
+      A dict mapping a change (patch.GerritPatch instance) to a set of changes
+      (patch.GerritPatch instances) depending on this change.
+    """
+    dependency_map = {}
+
+    for change in changes:
+      gerrit_deps, cq_deps = patches.GetDepChangesForChange(change)
+
+      for dep in gerrit_deps + cq_deps:
+        # Maps each change to the changes directly depending on it.
+        dependency_map.setdefault(dep, set()).add(change)
+
+    visited = set()
+    visiting = set()
+    for change in changes:
+      # Update dependency_map to map each change to all changes directly or
+      # indirectly depending on it.
+      self._UpdateDependencyMap(dependency_map, change, visiting, visited)
+
+    return dependency_map
+
+  def _UpdateDependencyMap(self, dependency_map, change, visiting, visited):
+    """For a change, find all changes depending on it and update dependency map.
+
+    The value part of a change key in the dependency map is a set of changes
+    depending on it. Some other changes may indirectly depend on this change.
+    Given the change and the dependency map, search through the dependency map
+    to find all changes (directly and indirectly) depending on this change,
+    add all the changes to the value of this change key in the dependency map.
+
+    Args:
+      dependency_map: A dict mapping a change (patch.GerritPatch instance)
+        to a set of changes (patch.GerritPatch instances) depending on this
+        change.
+      change: The change (patch.GerritPatch instance) to update.
+      visiting: A set of changes (patch.GerritPatch instance) in visiting
+        status in this search.
+      visited: A set of changes (patch.GerritPatch instance) has been visited
+        and updated with all changes depending on them.
+
+    Returns:
+      A set of changes (patch.GerritPatch instance) depending on the change,
+         or None if no change depends on this change.
+    """
+    if change in visited:
+      return dependency_map.get(change)
+
+    if change in visiting:
+      return {change}
+
+    visiting.add(change)
+
+    if change in dependency_map:
+      updated_deps = set()
+      for dep in dependency_map[change]:
+        dep_deps = self._UpdateDependencyMap(
+            dependency_map, dep, visiting, visited)
+
+        if dep_deps:
+          updated_deps.update(dep_deps)
+
+      updated_deps.discard(change)
+      dependency_map[change].update(updated_deps)
+
+    visiting.remove(change)
+
+    depends = dependency_map.get(change)
+
+    if not depends or not visiting.intersection(depends):
+      visited.add(change)
+
+    return depends
+
   @staticmethod
   def Load(filename, builder_run=None):
     """Loads the validation pool from the file.

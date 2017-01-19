@@ -905,6 +905,168 @@ class TestCoreLogic(MoxBase):
     self.assertEqual(len(slave_pool.candidates), 1)
     self.mox.VerifyAll()
 
+  def _UpdatedDependencyMap(self, dependency_map):
+    pool = self.MakePool()
+
+    visited = set()
+    visiting = set()
+
+    keys = dependency_map.keys()
+    for change in keys:
+      pool._UpdateDependencyMap(dependency_map, change, visiting, visited)
+
+  def test_UpdateDependencyMapOnTransitiveDependency(self):
+    """Test _UpdateDependencyMap on transitive dependency."""
+    dep_map = {
+        'A': {'B'},
+        'B': {'C'},
+        'C': {'D'}
+    }
+
+    self._UpdatedDependencyMap(dep_map)
+
+    expect_map = {
+        'A': {'B', 'C', 'D'},
+        'B': {'C', 'D'},
+        'C': {'D'}
+    }
+    self.assertDictEqual(dep_map, expect_map)
+
+  def test_UpdateDependencyMapOnMutualDependency(self):
+    """Test _UpdateDependencyMap on mutual dependency."""
+    dep_map = {
+        'A': {'B', 'D', 'E'},
+        'B': {'A'}
+    }
+
+    self._UpdatedDependencyMap(dep_map)
+
+    expect_map = {
+        'A': {'B', 'D', 'E'},
+        'B': {'A', 'D', 'E'}
+    }
+    self.assertDictEqual(dep_map, expect_map)
+
+  def test_UpdateDependencyMapOnCircularDependency(self):
+    """Test _UpdateDependencyMap on circular dependency."""
+    dep_map = {
+        'A': {'B'},
+        'B': {'C'},
+        'C': {'D'},
+        'D': {'A'}
+    }
+
+    self._UpdatedDependencyMap(dep_map)
+
+    expect_map = {
+        'A': {'B', 'C', 'D'},
+        'B': {'A', 'C', 'D'},
+        'C': {'A', 'B', 'D'},
+        'D': {'A', 'B', 'C'}
+    }
+    self.assertDictEqual(dep_map, expect_map)
+
+  def test_UpdateDependencyMapMix(self):
+    """Test _UpdateDependencyMap on mixed dependencies."""
+    dep_map = {
+        'B': {'A'},
+        'C': {'B'},
+        'F': {'E'},
+        'E': {'D', 'G'},
+        'H': {'I'},
+        'I': {'H'}
+    }
+
+    self._UpdatedDependencyMap(dep_map)
+
+    expect_map = {
+        'B': {'A'},
+        'C': {'A', 'B'},
+        'E': {'D', 'G'},
+        'F': {'D', 'E', 'G'},
+        'H': {'I'},
+        'I': {'H'}
+    }
+    self.assertDictEqual(dep_map, expect_map)
+
+  def testGetDependMapForChangesOnNoDependency(self):
+    """Test GetDependMapForChanges on no dependency."""
+    pool = self.MakePool()
+    patches = patch_series.PatchSeries('path')
+    p = self.GetPatches(how_many=3)
+
+    for patch in p:
+      self.patch_mock.SetGerritDependencies(patch, [])
+      self.patch_mock.SetCQDependencies(patch, [])
+
+    dep_map = pool.GetDependMapForChanges(p, patches)
+    expected_map = {}
+
+    self.assertDictEqual(dep_map, expected_map)
+
+  def testGetDependMapForChangesOnMutualDependency(self):
+    """Test GetDependMapForChanges on mutual dependency."""
+    pool = self.MakePool()
+    patches = patch_series.PatchSeries('path')
+    p = self.GetPatches(how_many=2)
+
+    for patch in p:
+      self.patch_mock.SetGerritDependencies(patch, [])
+
+    # p1 -> p0, p0 -> p1
+    self.patch_mock.SetCQDependencies(p[0], [p[1]])
+    self.patch_mock.SetCQDependencies(p[1], [p[0]])
+
+    dep_map = pool.GetDependMapForChanges(p, patches)
+    expected_map = {
+        p[0]: {p[1]},
+        p[1]: {p[0]}
+    }
+    self.assertDictEqual(dep_map, expected_map)
+
+  def testGetDependMapForChangesOnCircularDependency(self):
+    """Test GetDependMapForChanges on circular dependency."""
+    pool = self.MakePool()
+    patches = patch_series.PatchSeries('path')
+    p = self.GetPatches(how_many=3)
+
+    for patch in p:
+      self.patch_mock.SetGerritDependencies(patch, [])
+
+    # p0 -> p2, p1 -> p2, p2 -> p0
+    self.patch_mock.SetCQDependencies(p[0], [p[1]])
+    self.patch_mock.SetCQDependencies(p[1], [p[2]])
+    self.patch_mock.SetCQDependencies(p[2], [p[0]])
+
+    dep_map = pool.GetDependMapForChanges(p, patches)
+    expected_map = {
+        p[0]: {p[1], p[2]},
+        p[1]: {p[0], p[2]},
+        p[2]: {p[0], p[1]}
+    }
+    self.assertDictEqual(dep_map, expected_map)
+
+  def testGetDependMapForChangesOnTransitiveDependency(self):
+    """Test GetDependMapForChanges on transitive dependency."""
+    pool = self.MakePool()
+    patches = patch_series.PatchSeries('path')
+    p = self.GetPatches(how_many=4)
+
+    for patch in p:
+      self.patch_mock.SetGerritDependencies(patch, [])
+
+    # p1 -> p0, p2 -> p1
+    self.patch_mock.SetCQDependencies(p[0], [])
+    self.patch_mock.SetCQDependencies(p[1], [p[0]])
+    self.patch_mock.SetCQDependencies(p[2], [p[1]])
+    self.patch_mock.SetCQDependencies(p[3], [])
+
+    dep_map = pool.GetDependMapForChanges(p, patches)
+    expected_map = {
+        p[0]: {p[1], p[2]},
+        p[1]: {p[2]}
+    }
+    self.assertDictEqual(dep_map, expected_map)
 
 class TestPickling(cros_test_lib.TempDirTestCase):
   """Tests to validate pickling of ValidationPool, covering CQ's needs"""
