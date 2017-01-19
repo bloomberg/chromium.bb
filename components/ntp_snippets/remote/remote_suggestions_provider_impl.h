@@ -25,10 +25,10 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
-#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
+#include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
 
 class PrefRegistrySimple;
@@ -397,7 +397,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   void RestoreCategoriesFromPrefs();
   void StoreCategoriesToPrefs();
 
-  NTPSnippetsRequestParams BuildFetchParams() const;
+  RequestParams BuildFetchParams() const;
 
   void MarkEmptyCategoriesAsLoading();
 

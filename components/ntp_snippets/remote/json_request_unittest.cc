@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_json_request.h"
+#include "components/ntp_snippets/remote/json_request.h"
 
 #include <set>
 #include <utility>
@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
-#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
+#include "components/ntp_snippets/remote/request_params.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/variations_params_manager.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -57,9 +57,9 @@ MATCHER_P(EqualsJSON, json, "equals JSON") {
 
 }  // namespace
 
-class NTPSnippetsJsonRequestTest : public testing::Test {
+class JsonRequestTest : public testing::Test {
  public:
-  NTPSnippetsJsonRequestTest()
+  JsonRequestTest()
       : params_manager_(
             ntp_snippets::kStudyName,
             {{"send_top_languages", "true"}, {"send_user_class", "true"}},
@@ -85,8 +85,8 @@ class NTPSnippetsJsonRequestTest : public testing::Test {
     return language_model;
   }
 
-  NTPSnippetsJsonRequest::Builder CreateMinimalBuilder() {
-    NTPSnippetsJsonRequest::Builder builder;
+  JsonRequest::Builder CreateMinimalBuilder() {
+    JsonRequest::Builder builder;
     builder.SetUrl(GURL("http://valid-url.test"))
         .SetTickClock(tick_clock_.get())
         .SetUrlRequestContextGetter(request_context_getter_.get());
@@ -101,12 +101,12 @@ class NTPSnippetsJsonRequestTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   net::TestURLFetcherFactory fetcher_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsJsonRequestTest);
+  DISALLOW_COPY_AND_ASSIGN(JsonRequestTest);
 };
 
-TEST_F(NTPSnippetsJsonRequestTest, BuildRequestAuthenticated) {
-  NTPSnippetsJsonRequest::Builder builder = CreateMinimalBuilder();
-  NTPSnippetsRequestParams params;
+TEST_F(JsonRequestTest, BuildRequestAuthenticated) {
+  JsonRequest::Builder builder = CreateMinimalBuilder();
+  RequestParams params;
   params.excluded_ids = {"1234567890"};
   params.count_to_fetch = 25;
   params.interactive_request = false;
@@ -166,9 +166,9 @@ TEST_F(NTPSnippetsJsonRequestTest, BuildRequestAuthenticated) {
                          "}"));
 }
 
-TEST_F(NTPSnippetsJsonRequestTest, BuildRequestUnauthenticated) {
-  NTPSnippetsJsonRequest::Builder builder;
-  NTPSnippetsRequestParams params;
+TEST_F(JsonRequestTest, BuildRequestUnauthenticated) {
+  JsonRequest::Builder builder;
+  RequestParams params;
   params.interactive_request = true;
   params.count_to_fetch = 10;
   builder.SetParams(params)
@@ -218,9 +218,9 @@ TEST_F(NTPSnippetsJsonRequestTest, BuildRequestUnauthenticated) {
                          "}"));
 }
 
-TEST_F(NTPSnippetsJsonRequestTest, BuildRequestExcludedIds) {
-  NTPSnippetsJsonRequest::Builder builder;
-  NTPSnippetsRequestParams params;
+TEST_F(JsonRequestTest, BuildRequestExcludedIds) {
+  JsonRequest::Builder builder;
+  RequestParams params;
   params.interactive_request = false;
   for (int i = 0; i < 200; ++i) {
     params.excluded_ids.insert(base::StringPrintf("%03d", i));
@@ -261,9 +261,9 @@ TEST_F(NTPSnippetsJsonRequestTest, BuildRequestExcludedIds) {
                          "}"));
 }
 
-TEST_F(NTPSnippetsJsonRequestTest, BuildRequestNoUserClass) {
-  NTPSnippetsJsonRequest::Builder builder;
-  NTPSnippetsRequestParams params;
+TEST_F(JsonRequestTest, BuildRequestNoUserClass) {
+  JsonRequest::Builder builder;
+  RequestParams params;
   params.interactive_request = false;
   builder.SetPersonalization(Personalization::kNonPersonal)
       .SetParams(params)
@@ -276,11 +276,11 @@ TEST_F(NTPSnippetsJsonRequestTest, BuildRequestNoUserClass) {
                          "}"));
 }
 
-TEST_F(NTPSnippetsJsonRequestTest, BuildRequestWithTwoLanguages) {
-  NTPSnippetsJsonRequest::Builder builder;
+TEST_F(JsonRequestTest, BuildRequestWithTwoLanguages) {
+  JsonRequest::Builder builder;
   std::unique_ptr<translate::LanguageModel> language_model =
       MakeLanguageModel({"de", "en"});
-  NTPSnippetsRequestParams params;
+  RequestParams params;
   params.interactive_request = true;
   params.language_code = "en";
   builder.SetParams(params)
@@ -306,11 +306,11 @@ TEST_F(NTPSnippetsJsonRequestTest, BuildRequestWithTwoLanguages) {
                          "}"));
 }
 
-TEST_F(NTPSnippetsJsonRequestTest, BuildRequestWithUILanguageOnly) {
-  NTPSnippetsJsonRequest::Builder builder;
+TEST_F(JsonRequestTest, BuildRequestWithUILanguageOnly) {
+  JsonRequest::Builder builder;
   std::unique_ptr<translate::LanguageModel> language_model =
       MakeLanguageModel({"en"});
-  NTPSnippetsRequestParams params;
+  RequestParams params;
   params.interactive_request = true;
   params.language_code = "en";
   builder.SetParams(params)

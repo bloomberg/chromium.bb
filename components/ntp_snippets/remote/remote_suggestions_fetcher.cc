@@ -22,7 +22,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
-#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
+#include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -39,7 +39,7 @@ using translate::LanguageModel;
 
 namespace ntp_snippets {
 
-using internal::NTPSnippetsJsonRequest;
+using internal::JsonRequest;
 using internal::FetchAPI;
 using internal::FetchResult;
 
@@ -307,7 +307,7 @@ RemoteSuggestionsFetcher::~RemoteSuggestionsFetcher() {
 }
 
 void RemoteSuggestionsFetcher::FetchSnippets(
-    const NTPSnippetsRequestParams& params,
+    const RequestParams& params,
     SnippetsAvailableCallback callback) {
   if (!DemandQuotaForRequest(params.interactive_request)) {
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
@@ -327,7 +327,7 @@ void RemoteSuggestionsFetcher::FetchSnippets(
                                                   /*reduced_resolution=*/true));
   }
 
-  NTPSnippetsJsonRequest::Builder builder;
+  JsonRequest::Builder builder;
   builder.SetFetchAPI(fetch_api_)
       .SetFetchAPI(fetch_api_)
       .SetLanguageModel(language_model_)
@@ -359,7 +359,7 @@ void RemoteSuggestionsFetcher::FetchSnippets(
 }
 
 void RemoteSuggestionsFetcher::FetchSnippetsNonAuthenticated(
-    NTPSnippetsJsonRequest::Builder builder,
+    JsonRequest::Builder builder,
     SnippetsAvailableCallback callback) {
   // When not providing OAuth token, we need to pass the Google API key.
   builder.SetUrl(
@@ -369,7 +369,7 @@ void RemoteSuggestionsFetcher::FetchSnippetsNonAuthenticated(
 }
 
 void RemoteSuggestionsFetcher::FetchSnippetsAuthenticated(
-    NTPSnippetsJsonRequest::Builder builder,
+    JsonRequest::Builder builder,
     SnippetsAvailableCallback callback,
     const std::string& account_id,
     const std::string& oauth_access_token) {
@@ -382,10 +382,10 @@ void RemoteSuggestionsFetcher::FetchSnippetsAuthenticated(
 }
 
 void RemoteSuggestionsFetcher::StartRequest(
-    NTPSnippetsJsonRequest::Builder builder,
+    JsonRequest::Builder builder,
     SnippetsAvailableCallback callback) {
-  std::unique_ptr<NTPSnippetsJsonRequest> request = builder.Build();
-  NTPSnippetsJsonRequest* raw_request = request.get();
+  std::unique_ptr<JsonRequest> request = builder.Build();
+  JsonRequest* raw_request = request.get();
   raw_request->Start(base::BindOnce(&RemoteSuggestionsFetcher::JsonRequestDone,
                                     base::Unretained(this), std::move(request),
                                     std::move(callback)));
@@ -413,7 +413,7 @@ void RemoteSuggestionsFetcher::OnGetTokenSuccess(
       << "Got tokens from some previous request";
 
   while (!pending_requests_.empty()) {
-    std::pair<NTPSnippetsJsonRequest::Builder, SnippetsAvailableCallback>
+    std::pair<JsonRequest::Builder, SnippetsAvailableCallback>
         builder_and_callback = std::move(pending_requests_.front());
     pending_requests_.pop();
     FetchSnippetsAuthenticated(std::move(builder_and_callback.first),
@@ -438,7 +438,7 @@ void RemoteSuggestionsFetcher::OnGetTokenFailure(
 
   DLOG(ERROR) << "Unable to get token: " << error.ToString();
   while (!pending_requests_.empty()) {
-    std::pair<NTPSnippetsJsonRequest::Builder, SnippetsAvailableCallback>
+    std::pair<JsonRequest::Builder, SnippetsAvailableCallback>
         builder_and_callback = std::move(pending_requests_.front());
 
     FetchFinished(OptionalFetchedCategories(),
@@ -466,7 +466,7 @@ void RemoteSuggestionsFetcher::OnRefreshTokenAvailable(
 }
 
 void RemoteSuggestionsFetcher::JsonRequestDone(
-    std::unique_ptr<NTPSnippetsJsonRequest> request,
+    std::unique_ptr<JsonRequest> request,
     SnippetsAvailableCallback callback,
     std::unique_ptr<base::Value> result,
     FetchResult status_code,

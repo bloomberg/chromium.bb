@@ -17,9 +17,9 @@
 #include "base/time/tick_clock.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
+#include "components/ntp_snippets/remote/json_request.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
-#include "components/ntp_snippets/remote/ntp_snippets_json_request.h"
-#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
+#include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
 #include "components/ntp_snippets/status.h"
 #include "components/translate/core/browser/language_model.h"
@@ -95,7 +95,7 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   //
   // If an ongoing fetch exists, both fetches won't influence each other (i.e.
   // every callback will be called exactly once).
-  void FetchSnippets(const NTPSnippetsRequestParams& params,
+  void FetchSnippets(const RequestParams& params,
                      SnippetsAvailableCallback callback);
 
   std::string PersonalizationModeString() const;
@@ -135,15 +135,13 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
                            BuildRequestWithOtherLanguageOnly);
   friend class ChromeReaderSnippetsFetcherTest;
 
-  void FetchSnippetsNonAuthenticated(
-      internal::NTPSnippetsJsonRequest::Builder builder,
-      SnippetsAvailableCallback callback);
-  void FetchSnippetsAuthenticated(
-      internal::NTPSnippetsJsonRequest::Builder builder,
-      SnippetsAvailableCallback callback,
-      const std::string& account_id,
-      const std::string& oauth_access_token);
-  void StartRequest(internal::NTPSnippetsJsonRequest::Builder builder,
+  void FetchSnippetsNonAuthenticated(internal::JsonRequest::Builder builder,
+                                     SnippetsAvailableCallback callback);
+  void FetchSnippetsAuthenticated(internal::JsonRequest::Builder builder,
+                                  SnippetsAvailableCallback callback,
+                                  const std::string& account_id,
+                                  const std::string& oauth_access_token);
+  void StartRequest(internal::JsonRequest::Builder builder,
                     SnippetsAvailableCallback callback);
 
   void StartTokenRequest();
@@ -158,12 +156,11 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   // OAuth2TokenService::Observer overrides:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
 
-  void JsonRequestDone(
-      std::unique_ptr<internal::NTPSnippetsJsonRequest> request,
-      SnippetsAvailableCallback callback,
-      std::unique_ptr<base::Value> result,
-      internal::FetchResult status_code,
-      const std::string& error_details);
+  void JsonRequestDone(std::unique_ptr<internal::JsonRequest> request,
+                       SnippetsAvailableCallback callback,
+                       std::unique_ptr<base::Value> result,
+                       internal::FetchResult status_code,
+                       const std::string& error_details);
   void FetchFinished(OptionalFetchedCategories categories,
                      SnippetsAvailableCallback callback,
                      internal::FetchResult status_code,
@@ -190,8 +187,8 @@ class RemoteSuggestionsFetcher : public OAuth2TokenService::Consumer,
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // Stores requests that wait for an access token.
-  std::queue<std::pair<internal::NTPSnippetsJsonRequest::Builder,
-                       SnippetsAvailableCallback>>
+  std::queue<
+      std::pair<internal::JsonRequest::Builder, SnippetsAvailableCallback>>
       pending_requests_;
 
   // Weak reference, not owned.

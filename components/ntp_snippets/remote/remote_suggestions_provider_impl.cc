@@ -367,7 +367,7 @@ void RemoteSuggestionsProviderImpl::FetchSnippets(
 
   MarkEmptyCategoriesAsLoading();
 
-  NTPSnippetsRequestParams params = BuildFetchParams();
+  RequestParams params = BuildFetchParams();
   params.interactive_request = interactive_request;
   suggestions_fetcher_->FetchSnippets(
       params, base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
@@ -385,7 +385,7 @@ void RemoteSuggestionsProviderImpl::Fetch(
                                 "RemoteSuggestionsProvider is not ready!"));
     return;
   }
-  NTPSnippetsRequestParams params = BuildFetchParams();
+  RequestParams params = BuildFetchParams();
   params.excluded_ids.insert(known_suggestion_ids.begin(),
                              known_suggestion_ids.end());
   params.interactive_request = true;
@@ -398,9 +398,8 @@ void RemoteSuggestionsProviderImpl::Fetch(
 }
 
 // Builds default fetcher params.
-NTPSnippetsRequestParams RemoteSuggestionsProviderImpl::BuildFetchParams()
-    const {
-  NTPSnippetsRequestParams result;
+RequestParams RemoteSuggestionsProviderImpl::BuildFetchParams() const {
+  RequestParams result;
   result.language_code = application_language_code_;
   result.count_to_fetch = kMaxSnippetCount;
   for (const auto& map_entry : category_contents_) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_json_request.h"
+#include "components/ntp_snippets/remote/json_request.h"
 
 #include <algorithm>
 #include <utility>
@@ -20,7 +20,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
-#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
+#include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -165,7 +165,7 @@ CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
       l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
 }
 
-NTPSnippetsJsonRequest::NTPSnippetsJsonRequest(
+JsonRequest::JsonRequest(
     base::Optional<Category> exclusive_category,
     base::TickClock* tick_clock,  // Needed until destruction of the request.
     const ParseJSONCallback& callback)
@@ -176,21 +176,21 @@ NTPSnippetsJsonRequest::NTPSnippetsJsonRequest(
   creation_time_ = tick_clock_->NowTicks();
 }
 
-NTPSnippetsJsonRequest::~NTPSnippetsJsonRequest() {
+JsonRequest::~JsonRequest() {
   LOG_IF(DFATAL, !request_completed_callback_.is_null())
       << "The CompletionCallback was never called!";
 }
 
-void NTPSnippetsJsonRequest::Start(CompletedCallback callback) {
+void JsonRequest::Start(CompletedCallback callback) {
   request_completed_callback_ = std::move(callback);
   url_fetcher_->Start();
 }
 
-base::TimeDelta NTPSnippetsJsonRequest::GetFetchDuration() const {
+base::TimeDelta JsonRequest::GetFetchDuration() const {
   return tick_clock_->NowTicks() - creation_time_;
 }
 
-std::string NTPSnippetsJsonRequest::GetResponseString() const {
+std::string JsonRequest::GetResponseString() const {
   std::string response;
   url_fetcher_->GetResponseAsString(&response);
   return response;
@@ -198,7 +198,7 @@ std::string NTPSnippetsJsonRequest::GetResponseString() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // URLFetcherDelegate overrides
-void NTPSnippetsJsonRequest::OnURLFetchComplete(const net::URLFetcher* source) {
+void JsonRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
   const URLRequestStatus& status = url_fetcher_->GetStatus();
   int response = url_fetcher_->GetResponseCode();
@@ -224,26 +224,25 @@ void NTPSnippetsJsonRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 }
 
-void NTPSnippetsJsonRequest::ParseJsonResponse() {
+void JsonRequest::ParseJsonResponse() {
   std::string json_string;
   bool stores_result_to_string =
       url_fetcher_->GetResponseAsString(&json_string);
   DCHECK(stores_result_to_string);
 
-  parse_json_callback_.Run(json_string,
-                           base::Bind(&NTPSnippetsJsonRequest::OnJsonParsed,
-                                      weak_ptr_factory_.GetWeakPtr()),
-                           base::Bind(&NTPSnippetsJsonRequest::OnJsonError,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  parse_json_callback_.Run(
+      json_string,
+      base::Bind(&JsonRequest::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&JsonRequest::OnJsonError, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NTPSnippetsJsonRequest::OnJsonParsed(std::unique_ptr<base::Value> result) {
+void JsonRequest::OnJsonParsed(std::unique_ptr<base::Value> result) {
   std::move(request_completed_callback_)
       .Run(std::move(result), FetchResult::SUCCESS,
            /*error_details=*/std::string());
 }
 
-void NTPSnippetsJsonRequest::OnJsonError(const std::string& error) {
+void JsonRequest::OnJsonError(const std::string& error) {
   std::string json_string;
   url_fetcher_->GetResponseAsString(&json_string);
   LOG(WARNING) << "Received invalid JSON (" << error << "): " << json_string;
@@ -252,20 +251,18 @@ void NTPSnippetsJsonRequest::OnJsonError(const std::string& error) {
            /*error_details=*/base::StringPrintf(" (error %s)", error.c_str()));
 }
 
-NTPSnippetsJsonRequest::Builder::Builder()
+JsonRequest::Builder::Builder()
     : fetch_api_(CHROME_READER_API),
       personalization_(Personalization::kBoth),
       language_model_(nullptr) {}
-NTPSnippetsJsonRequest::Builder::Builder(NTPSnippetsJsonRequest::Builder&&) =
-    default;
-NTPSnippetsJsonRequest::Builder::~Builder() = default;
+JsonRequest::Builder::Builder(JsonRequest::Builder&&) = default;
+JsonRequest::Builder::~Builder() = default;
 
-std::unique_ptr<NTPSnippetsJsonRequest> NTPSnippetsJsonRequest::Builder::Build()
-    const {
+std::unique_ptr<JsonRequest> JsonRequest::Builder::Build() const {
   DCHECK(!url_.is_empty());
   DCHECK(url_request_context_getter_);
   DCHECK(tick_clock_);
-  auto request = base::MakeUnique<NTPSnippetsJsonRequest>(
+  auto request = base::MakeUnique<JsonRequest>(
       params_.exclusive_category, tick_clock_, parse_json_callback_);
   std::string body = BuildBody();
   std::string headers = BuildHeaders();
@@ -279,8 +276,7 @@ std::unique_ptr<NTPSnippetsJsonRequest> NTPSnippetsJsonRequest::Builder::Build()
   return request;
 }
 
-NTPSnippetsJsonRequest::Builder&
-NTPSnippetsJsonRequest::Builder::SetAuthentication(
+JsonRequest::Builder& JsonRequest::Builder::SetAuthentication(
     const std::string& account_id,
     const std::string& auth_header) {
   obfuscated_gaia_id_ = account_id;
@@ -288,60 +284,53 @@ NTPSnippetsJsonRequest::Builder::SetAuthentication(
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder& NTPSnippetsJsonRequest::Builder::SetFetchAPI(
-    FetchAPI fetch_api) {
+JsonRequest::Builder& JsonRequest::Builder::SetFetchAPI(FetchAPI fetch_api) {
   fetch_api_ = fetch_api;
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder&
-NTPSnippetsJsonRequest::Builder::SetLanguageModel(
+JsonRequest::Builder& JsonRequest::Builder::SetLanguageModel(
     const translate::LanguageModel* language_model) {
   language_model_ = language_model;
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder& NTPSnippetsJsonRequest::Builder::SetParams(
-    const NTPSnippetsRequestParams& params) {
+JsonRequest::Builder& JsonRequest::Builder::SetParams(
+    const RequestParams& params) {
   params_ = params;
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder&
-NTPSnippetsJsonRequest::Builder::SetParseJsonCallback(
+JsonRequest::Builder& JsonRequest::Builder::SetParseJsonCallback(
     ParseJSONCallback callback) {
   parse_json_callback_ = callback;
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder&
-NTPSnippetsJsonRequest::Builder::SetPersonalization(
+JsonRequest::Builder& JsonRequest::Builder::SetPersonalization(
     Personalization personalization) {
   personalization_ = personalization;
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder& NTPSnippetsJsonRequest::Builder::SetTickClock(
+JsonRequest::Builder& JsonRequest::Builder::SetTickClock(
     base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder& NTPSnippetsJsonRequest::Builder::SetUrl(
-    const GURL& url) {
+JsonRequest::Builder& JsonRequest::Builder::SetUrl(const GURL& url) {
   url_ = url;
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder&
-NTPSnippetsJsonRequest::Builder::SetUrlRequestContextGetter(
+JsonRequest::Builder& JsonRequest::Builder::SetUrlRequestContextGetter(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter) {
   url_request_context_getter_ = context_getter;
   return *this;
 }
 
-NTPSnippetsJsonRequest::Builder&
-NTPSnippetsJsonRequest::Builder::SetUserClassifier(
+JsonRequest::Builder& JsonRequest::Builder::SetUserClassifier(
     const UserClassifier& user_classifier) {
   if (IsSendingUserClassEnabled()) {
     user_class_ = GetUserClassString(user_classifier.GetUserClass());
@@ -349,7 +338,7 @@ NTPSnippetsJsonRequest::Builder::SetUserClassifier(
   return *this;
 }
 
-std::string NTPSnippetsJsonRequest::Builder::BuildHeaders() const {
+std::string JsonRequest::Builder::BuildHeaders() const {
   net::HttpRequestHeaders headers;
   headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
   if (!auth_header_.empty()) {
@@ -366,7 +355,7 @@ std::string NTPSnippetsJsonRequest::Builder::BuildHeaders() const {
   return headers.ToString();
 }
 
-std::string NTPSnippetsJsonRequest::Builder::BuildBody() const {
+std::string JsonRequest::Builder::BuildBody() const {
   auto request = base::MakeUnique<base::DictionaryValue>();
   std::string user_locale = PosixLocaleFromBCP47Language(params_.language_code);
   switch (fetch_api_) {
@@ -460,8 +449,7 @@ std::string NTPSnippetsJsonRequest::Builder::BuildBody() const {
   return request_json;
 }
 
-std::unique_ptr<net::URLFetcher>
-NTPSnippetsJsonRequest::Builder::BuildURLFetcher(
+std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
     net::URLFetcherDelegate* delegate,
     const std::string& headers,
     const std::string& body) const {
@@ -483,7 +471,7 @@ NTPSnippetsJsonRequest::Builder::BuildURLFetcher(
   return url_fetcher;
 }
 
-void NTPSnippetsJsonRequest::Builder::PrepareLanguages(
+void JsonRequest::Builder::PrepareLanguages(
     translate::LanguageModel::LanguageInfo* ui_language,
     translate::LanguageModel::LanguageInfo* other_top_language) const {
   // TODO(jkrcal): Add language model factory for iOS and add fakes to tests so

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_REQUEST_PARAMS_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_REQUEST_PARAMS_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_REQUEST_PARAMS_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_REQUEST_PARAMS_H_
 
 #include <memory>
 #include <set>
@@ -19,11 +19,11 @@ namespace ntp_snippets {
 // Enumeration listing all possible variants of dealing with personalization.
 enum class Personalization { kPersonal, kNonPersonal, kBoth };
 
-// Contains all parameters for fetching NTPSnippets.
-struct NTPSnippetsRequestParams {
-  NTPSnippetsRequestParams();
-  NTPSnippetsRequestParams(const NTPSnippetsRequestParams&);
-  ~NTPSnippetsRequestParams();
+// Contains all parameters for fetching remote suggestions.
+struct RequestParams {
+  RequestParams();
+  RequestParams(const RequestParams&);
+  ~RequestParams();
 
   // BCP 47 language code specifying the user's UI language.
   std::string language_code;
@@ -54,4 +54,4 @@ using ParseJSONCallback =
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_REQUEST_PARAMS_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_REQUEST_PARAMS_H_

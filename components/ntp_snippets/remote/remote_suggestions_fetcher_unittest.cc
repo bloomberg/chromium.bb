@@ -22,7 +22,7 @@
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
-#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
+#include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -322,8 +322,8 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
   }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
-  NTPSnippetsRequestParams test_params() {
-    NTPSnippetsRequestParams result;
+  RequestParams test_params() {
+    RequestParams result;
     result.count_to_fetch = 1;
     result.interactive_request = true;
     return result;
@@ -670,7 +670,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   EXPECT_CALL(mock_callback(), Run(IsSuccess(), _))
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
 
-  NTPSnippetsRequestParams params = test_params();
+  RequestParams params = test_params();
   params.exclusive_category =
       base::Optional<Category>(Category::FromRemoteCategory(2));
 
@@ -726,7 +726,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
 
 TEST_F(ChromeReaderSnippetsFetcherTest, RetryOnInteractiveRequests) {
   DelegateCallingTestURLFetcherFactory fetcher_factory;
-  NTPSnippetsRequestParams params = test_params();
+  RequestParams params = test_params();
   params.interactive_request = true;
 
   snippets_fetcher().FetchSnippets(
@@ -750,7 +750,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest,
       {"-1", 0, "Do not retry on negative param values."},
       {"4", 4, "Retry as set in param value."}};
 
-  NTPSnippetsRequestParams params = test_params();
+  RequestParams params = test_params();
   params.interactive_request = false;
 
   for (const auto& retry_config : retry_config_expectation) {

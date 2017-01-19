@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_JSON_REQUEST_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_JSON_REQUEST_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_JSON_REQUEST_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_JSON_REQUEST_H_
 
 #include <memory>
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
+#include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
 #include "components/translate/core/browser/language_model.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -52,8 +52,9 @@ enum FetchAPI {
   CHROME_CONTENT_SUGGESTIONS_API,
 };
 
-// A single request to query snippets.
-class NTPSnippetsJsonRequest : public net::URLFetcherDelegate {
+// A single request to query remote suggestions. On success, the suggestions are
+// returned in parsed JSON form (base::Value).
+class JsonRequest : public net::URLFetcherDelegate {
  public:
   // A client can expect error_details only, if there was any error during the
   // fetching or parsing. In successful cases, it will be an empty string.
@@ -62,7 +63,7 @@ class NTPSnippetsJsonRequest : public net::URLFetcherDelegate {
                               FetchResult result_code,
                               const std::string& error_details)>;
 
-  // Builds authenticated and non-authenticated NTPSnippetsJsonRequests.
+  // Builds authenticated and non-authenticated JsonRequests.
   class Builder {
    public:
     Builder();
@@ -70,7 +71,7 @@ class NTPSnippetsJsonRequest : public net::URLFetcherDelegate {
     ~Builder();
 
     // Builds a Request object that contains all data to fetch new snippets.
-    std::unique_ptr<NTPSnippetsJsonRequest> Build() const;
+    std::unique_ptr<JsonRequest> Build() const;
 
     Builder& SetAuthentication(const std::string& account_id,
                                const std::string& auth_header);
@@ -79,7 +80,7 @@ class NTPSnippetsJsonRequest : public net::URLFetcherDelegate {
     // The language_model borrowed from the fetcher needs to stay alive until
     // the request body is built.
     Builder& SetLanguageModel(const translate::LanguageModel* language_model);
-    Builder& SetParams(const NTPSnippetsRequestParams& params);
+    Builder& SetParams(const RequestParams& params);
     Builder& SetParseJsonCallback(ParseJSONCallback callback);
     Builder& SetPersonalization(Personalization personalization);
     // The tick_clock borrowed from the fetcher will be injected into the
@@ -123,7 +124,7 @@ class NTPSnippetsJsonRequest : public net::URLFetcherDelegate {
     std::string auth_header_;
     base::TickClock* tick_clock_;
     FetchAPI fetch_api_;
-    NTPSnippetsRequestParams params_;
+    RequestParams params_;
     ParseJSONCallback parse_json_callback_;
     Personalization personalization_;
     GURL url_;
@@ -137,11 +138,11 @@ class NTPSnippetsJsonRequest : public net::URLFetcherDelegate {
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
 
-  NTPSnippetsJsonRequest(base::Optional<Category> exclusive_category,
-                         base::TickClock* tick_clock,
-                         const ParseJSONCallback& callback);
-  NTPSnippetsJsonRequest(NTPSnippetsJsonRequest&&);
-  ~NTPSnippetsJsonRequest() override;
+  JsonRequest(base::Optional<Category> exclusive_category,
+              base::TickClock* tick_clock,
+              const ParseJSONCallback& callback);
+  JsonRequest(JsonRequest&&);
+  ~JsonRequest() override;
 
   void Start(CompletedCallback callback);
 
@@ -180,13 +181,13 @@ class NTPSnippetsJsonRequest : public net::URLFetcherDelegate {
   // The callback to notify when URLFetcher finished and results are available.
   CompletedCallback request_completed_callback_;
 
-  base::WeakPtrFactory<NTPSnippetsJsonRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<JsonRequest> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsJsonRequest);
+  DISALLOW_COPY_AND_ASSIGN(JsonRequest);
 };
 
 }  // namespace internal
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_JSON_REQUEST_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_JSON_REQUEST_H_
