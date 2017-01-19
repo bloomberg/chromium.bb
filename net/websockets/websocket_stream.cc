@@ -154,7 +154,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
     connect_delegate_->OnSuccess(handshake_stream->Upgrade());
 
     // This is safe even if |this| has already been deleted.
-    url_request->CancelWithError(ERR_WEBSOCKET_HANDSHAKE_SUCCESS);
+    url_request->CancelWithError(ERR_WS_UPGRADE);
   }
 
   std::string FailureMessageFromNetError(int net_error) {
