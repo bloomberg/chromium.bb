@@ -26,9 +26,6 @@ crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failur
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/extensions-ignore-cache.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/extensions-network-redirect.html [ Timeout ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
-#  Encoded bytes received & encoded data length mismatch.
-crbug.com/551000 http/tests/inspector/network/network-datareceived.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Failure ]
 #  Console error messages are wrongly ordered.
 crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/console-resource-errors.html [ Failure ]

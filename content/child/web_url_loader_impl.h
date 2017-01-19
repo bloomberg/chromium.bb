@@ -34,6 +34,10 @@ struct CONTENT_EXPORT StreamOverrideParameters {
   ResourceResponseHead response;
   std::vector<GURL> redirects;
   std::vector<ResourceResponseInfo> redirect_responses;
+
+  // The delta between the actual transfer size and the one reported by the
+  // AsyncResourceLoader due to not having the ResourceResponse.
+  int total_transfer_size_delta;
 };
 
 class CONTENT_EXPORT WebURLLoaderImpl

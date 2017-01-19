@@ -100,6 +100,7 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
                            request()->url().GetOrigin());
 
   NetLogObserver::PopulateResponseInfo(request(), response);
+  response->head.encoded_data_length = request()->raw_header_size();
 
   std::unique_ptr<NavigationData> cloned_data;
   if (resource_dispatcher_host_delegate_) {
