@@ -5,7 +5,10 @@
 #ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_H_
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_H_
 
+#include <string>
+
 #include "base/macros.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace service_manager {
 
@@ -34,6 +37,15 @@ class Service {
   // The default implementation returns false.
   virtual bool OnConnect(const ServiceInfo& remote_info,
                          InterfaceRegistry* registry);
+
+  // Called when the service identified by |source_info| requests this service
+  // bind a request for |interface_name|. If this method has been called, the
+  // service manager has already determined that policy permits this interface
+  // to be bound, so the implementation of this method can trust that it should
+  // just blindly bind it under most conditions.
+  virtual void OnBindInterface(const ServiceInfo& source_info,
+                               const std::string& interface_name,
+                               mojo::ScopedMessagePipeHandle interface_pipe);
 
   // Called when the Service Manager has stopped tracking this instance. The
   // service should use this as a signal to shut down, and in fact its process

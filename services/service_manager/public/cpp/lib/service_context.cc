@@ -113,17 +113,8 @@ void ServiceContext::OnBindInterface(
   // Acknowledge the request regardless of whether it's accepted.
   callback.Run();
 
-  mojom::InterfaceProviderPtr interface_provider;
-  // TODO(beng): This should be replaced with a call to OnBindInterface() in a
-  //             subsequent change.
-  InterfaceProviderSpec source_spec, target_spec;
-  GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
-                           local_info_.interface_provider_specs, &target_spec);
-  GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
-                           source_info.interface_provider_specs, &source_spec);
-  CallOnConnect(source_info, source_spec, target_spec,
-                MakeRequest(&interface_provider));
-  interface_provider->GetInterface(interface_name, std::move(interface_pipe));
+  service_->OnBindInterface(source_info, interface_name,
+                            std::move(interface_pipe));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

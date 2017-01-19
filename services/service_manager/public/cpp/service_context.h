@@ -103,6 +103,8 @@ class ServiceContext : public mojom::Service {
   void DestroyService();
 
  private:
+  friend class service_manager::Service;
+
   using InterfaceRegistryMap =
       std::map<InterfaceRegistry*, std::unique_ptr<InterfaceRegistry>>;
 

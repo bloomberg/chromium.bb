@@ -153,7 +153,7 @@ class ServiceManager::Instance
     Stop();
   }
 
-  bool OnConnect(std::unique_ptr<ConnectParams>* in_params) {
+  bool CallOnConnect(std::unique_ptr<ConnectParams>* in_params) {
     if (!service_.is_bound()) {
       RunConnectCallback(in_params->get(), mojom::ConnectResult::ACCESS_DENIED,
                          identity_.user_id());
@@ -178,7 +178,7 @@ class ServiceManager::Instance
     return true;
   }
 
-  bool OnBindInterface(std::unique_ptr<ConnectParams>* in_params) {
+  bool CallOnBindInterface(std::unique_ptr<ConnectParams>* in_params) {
     if (!service_.is_bound()) {
       RunBindInterfaceCallback(in_params->get(),
                                mojom::ConnectResult::ACCESS_DENIED,
@@ -854,10 +854,10 @@ bool ServiceManager::ConnectToExistingInstance(
   Instance* instance = GetExistingInstance((*params)->target());
   if (instance) {
     if ((*params)->HasInterfaceRequestInfo()) {
-      instance->OnBindInterface(params);
+      instance->CallOnBindInterface(params);
       return true;
     }
-    return instance->OnConnect(params);
+    return instance->CallOnConnect(params);
   }
   return false;
 }
@@ -1061,9 +1061,9 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
 
   // Now that the instance has a Service, we can connect to it.
   if (params->HasInterfaceRequestInfo()) {
-    instance->OnBindInterface(&params);
+    instance->CallOnBindInterface(&params);
   } else {
-    bool connected = instance->OnConnect(&params);
+    bool connected = instance->CallOnConnect(&params);
     DCHECK(connected);
   }
 }
