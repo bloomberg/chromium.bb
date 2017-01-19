@@ -326,11 +326,10 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     // Dismiss |iterations| times. The final dismiss should change the decision
     // from dismiss to block, and hence change the persisted content setting.
     for (uint32_t i = 0; i < iterations; ++i) {
+      ContentSetting expected =
+          (i < 2) ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK;
       TestPermissionContext permission_context(
           profile(), permission_type, content_settings_type);
-      ContentSetting expected =
-          (i < (iterations - 1)) ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK;
-
       const PermissionRequestID id(
           web_contents()->GetRenderProcessHost()->GetID(),
           web_contents()->GetMainFrame()->GetRoutingID(), i);
@@ -352,19 +351,17 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           "Permissions.Prompt.Dismissed.PriorDismissCount." +
               PermissionUtil::GetPermissionString(permission_type),
           i, 1);
-
       ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(expected, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
-      EXPECT_EQ(expected,
-                permission_context.GetContentSettingFromMap(url, url));
+      EXPECT_EQ(expected, permission_context.GetPermissionStatus(url, url));
     }
 
-    // Ensure that we finish in the block state.
-    TestPermissionContext permission_context(
-        profile(), permission_type, content_settings_type);
+    TestPermissionContext permission_context(profile(), permission_type,
+                                             content_settings_type);
+
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
-              permission_context.GetContentSettingFromMap(url, url));
+              permission_context.GetPermissionStatus(url, url));
   }
 
   void TestBlockOnSeveralDismissals_TestContent() {
@@ -479,8 +476,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       EXPECT_EQ(1u, permission_context.decisions().size());
       ASSERT_EQ(expected, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
-      EXPECT_EQ(expected,
-                permission_context.GetContentSettingFromMap(url, url));
+      EXPECT_EQ(expected, permission_context.GetPermissionStatus(url, url));
 
       histograms.ExpectTotalCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i + 1);
@@ -492,8 +488,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     TestPermissionContext permission_context(
         profile(), content::PermissionType::MIDI_SYSEX,
         CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
-              permission_context.GetContentSettingFromMap(url, url));
+              permission_context.GetPermissionStatus(url, url));
     variations::testing::ClearAllVariationParams();
   }
 

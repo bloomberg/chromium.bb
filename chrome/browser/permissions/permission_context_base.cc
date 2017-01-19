@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_blacklist_client.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -31,6 +30,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/database_manager.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -113,28 +113,40 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kPermissionsBlacklist)) {
-    if (!db_manager_) {
-      safe_browsing::SafeBrowsingService* sb_service =
-          g_browser_process->safe_browsing_service();
-      if (sb_service)
-        db_manager_ = sb_service->database_manager();
-    }
-
-    // The client contacts Safe Browsing, and runs the callback with the result.
-    PermissionBlacklistClient::CheckSafeBrowsingBlacklist(
-        db_manager_, permission_type_, requesting_origin, web_contents,
-        safe_browsing_timeout_,
-        base::Bind(&PermissionContextBase::ContinueRequestPermission,
-                   weak_factory_.GetWeakPtr(), web_contents, id,
-                   requesting_origin, embedding_origin, user_gesture,
-                   callback));
-  } else {
-    // TODO(meredithl): Add UMA metrics here.
-    ContinueRequestPermission(web_contents, id, requesting_origin,
-                              embedding_origin, user_gesture, callback,
-                              false /* permission blocked */);
+  // Synchronously check the content setting to see if the user has already made
+  // a decision, or if the origin is under embargo. If so, respect that
+  // decision.
+  ContentSetting content_setting =
+      GetPermissionStatus(requesting_origin, embedding_origin);
+  if (content_setting == CONTENT_SETTING_ALLOW) {
+    HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
+        requesting_origin, embedding_origin, content_settings_type_);
   }
+
+  if (content_setting == CONTENT_SETTING_ALLOW ||
+      content_setting == CONTENT_SETTING_BLOCK) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, content_setting);
+    return;
+  }
+
+  if (!db_manager_) {
+    safe_browsing::SafeBrowsingService* sb_service =
+        g_browser_process->safe_browsing_service();
+    if (sb_service)
+      db_manager_ = sb_service->database_manager();
+  }
+
+  // Asynchronously check whether the origin should be blocked from making this
+  // permission request. It may be on the Safe Browsing API blacklist, or it may
+  // have been dismissed too many times in a row. If the origin is allowed to
+  // request, that request will be made to ContinueRequestPermission().
+  PermissionDecisionAutoBlocker::UpdateEmbargoedStatus(
+      db_manager_, permission_type_, requesting_origin, web_contents,
+      safe_browsing_timeout_, profile_, base::Time::Now(),
+      base::Bind(&PermissionContextBase::ContinueRequestPermission,
+                 weak_factory_.GetWeakPtr(), web_contents, id,
+                 requesting_origin, embedding_origin, user_gesture, callback));
 }
 
 void PermissionContextBase::ContinueRequestPermission(
@@ -159,21 +171,8 @@ void PermissionContextBase::ContinueRequestPermission(
     callback.Run(CONTENT_SETTING_BLOCK);
     return;
   }
+
   // Site is not blacklisted by Safe Browsing for the requested permission.
-  ContentSetting content_setting =
-      GetPermissionStatus(requesting_origin, embedding_origin);
-  if (content_setting == CONTENT_SETTING_ALLOW) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
-        requesting_origin, embedding_origin, content_settings_type_);
-  }
-
-  if (content_setting == CONTENT_SETTING_ALLOW ||
-      content_setting == CONTENT_SETTING_BLOCK) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, content_setting);
-    return;
-  }
-
   PermissionUmaUtil::PermissionRequested(permission_type_, requesting_origin,
                                          embedding_origin, profile_);
 
@@ -193,7 +192,14 @@ ContentSetting PermissionContextBase::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
   }
 
-  return GetPermissionStatusInternal(requesting_origin, embedding_origin);
+  ContentSetting content_setting =
+      GetPermissionStatusInternal(requesting_origin, embedding_origin);
+  if (content_setting == CONTENT_SETTING_ASK &&
+      PermissionDecisionAutoBlocker::IsUnderEmbargo(
+          permission_type_, profile_, requesting_origin, base::Time::Now())) {
+    return CONTENT_SETTING_BLOCK;
+  }
+  return content_setting;
 }
 
 void PermissionContextBase::ResetPermission(
@@ -320,12 +326,11 @@ void PermissionContextBase::PermissionDecided(
     }
   }
 
-  // Check if we should convert a dismiss decision into a block decision. This
-  // is gated on enabling the kBlockPromptsIfDismissedOften feature.
   if (content_setting == CONTENT_SETTING_DEFAULT &&
-      PermissionDecisionAutoBlocker::ShouldChangeDismissalToBlock(
-          requesting_origin, permission_type_, profile_)) {
-    persist = true;
+      PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
+          requesting_origin, permission_type_, profile_, base::Time::Now())) {
+    // The permission has been embargoed, so it is blocked for this permission
+    // request, but not persisted.
     content_setting = CONTENT_SETTING_BLOCK;
   }
 
