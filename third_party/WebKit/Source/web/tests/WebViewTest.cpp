@@ -4335,7 +4335,10 @@ TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
 
   WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
   FrameTestHelpers::loadHTMLString(webView->mainFrame(),
-                                   "<style>#vw { width: 100vw }</style>"
+                                   "<style>"
+                                   "  body { margin: 0px; }"
+                                   "  #vw { width: 100vw; height: 100vh; }"
+                                   "</style>"
                                    "<div id=vw></div>",
                                    baseURL);
 
@@ -4345,16 +4348,36 @@ TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
 
   EXPECT_EQ(800, vwElement->offsetWidth());
 
+  FloatSize pageSize(300, 360);
+
   WebPrintParams printParams;
-  printParams.printContentArea.width = 500;
-  printParams.printContentArea.height = 500;
+  printParams.printContentArea.width = pageSize.width();
+  printParams.printContentArea.height = pageSize.height();
+
+  // This needs to match printingMinimumShrinkFactor in PrintContext.cpp. The
+  // layout is scaled by this factor for printing.
+  constexpr float minimumShrinkFactor = 1.333f;
+
+  // The expected layout size comes from the calculation done in
+  // resizePageRectsKeepingRatio which is used from PrintContext::begin to
+  // scale the page size.
+  const float ratio = pageSize.height() / (float)pageSize.width();
+  const int expectedWidth = floor(pageSize.width() * minimumShrinkFactor);
+  const int expectedHeight = floor(expectedWidth * ratio);
 
   frame->printBegin(printParams, WebNode());
-  webView->resize(WebSize(500, 500));
-  EXPECT_EQ(500, vwElement->offsetWidth());
+
+  EXPECT_EQ(expectedWidth, vwElement->offsetWidth());
+  EXPECT_EQ(expectedHeight, vwElement->offsetHeight());
+
+  webView->resize(flooredIntSize(pageSize));
+
+  EXPECT_EQ(expectedWidth, vwElement->offsetWidth());
+  EXPECT_EQ(expectedHeight, vwElement->offsetHeight());
 
   webView->resize(WebSize(800, 600));
   frame->printEnd();
+
   EXPECT_EQ(800, vwElement->offsetWidth());
 }
 
