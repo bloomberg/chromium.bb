@@ -419,9 +419,9 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
   }
 
   const char* ignition_enabled_crash_key = "N";
-  if (base::FeatureList::IsEnabled(features::kV8Ignition)) {
+  if (base::FeatureList::IsEnabled(features::kV8Future)) {
     ignition_enabled_crash_key = "Y";
-    std::string flag("--ignition-staging");
+    std::string flag("--future");
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
   } else if (base::FeatureList::IsEnabled(features::kV8IgnitionLowEnd) &&
              base::SysInfo::IsLowEndDevice()) {

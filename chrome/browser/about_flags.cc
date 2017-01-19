@@ -869,9 +869,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"shared-array-buffer", IDS_FLAGS_ENABLE_SHARED_ARRAY_BUFFER_NAME,
      IDS_FLAGS_ENABLE_SHARED_ARRAY_BUFFER_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kSharedArrayBuffer)},
-    {"enable-ignition", IDS_FLAGS_V8_IGNITION_NAME,
-     IDS_FLAGS_V8_IGNITION_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(features::kV8Ignition)},
+    {"enable-v8-future", IDS_FLAGS_V8_FUTURE_NAME,
+     IDS_FLAGS_V8_FUTURE_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kV8Future)},
     {"disable-software-rasterizer", IDS_FLAGS_SOFTWARE_RASTERIZER_NAME,
      IDS_FLAGS_SOFTWARE_RASTERIZER_DESCRIPTION,
 #if BUILDFLAG(ENABLE_SWIFTSHADER)

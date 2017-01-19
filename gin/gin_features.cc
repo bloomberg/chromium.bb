@@ -6,9 +6,10 @@
 
 namespace features {
 
-// Enables or disables the V8 Ignition interpreter.
-const base::Feature kV8Ignition {
-  "V8Ignition", base::FEATURE_DISABLED_BY_DEFAULT
+// Enables or disables the future compiler pipeline of V8, with the Ignition
+// interpreter and TurboFan compiler.
+const base::Feature kV8Future {
+  "V8Future", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 // Enables or disables the V8 Ignition interpreter on low end
