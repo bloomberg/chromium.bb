@@ -8,6 +8,5 @@ Message added: error log
 console-message-wrapper console-error-level
 
 Handling promise
-1 handled promise rejection
-console-message-wrapper console-revokedError-level
+console-message-wrapper console-info-level
 

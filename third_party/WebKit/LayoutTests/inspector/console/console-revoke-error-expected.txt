@@ -15,8 +15,7 @@ console-message-wrapper console-error-level
 
 Handling promise
 1 error
-2 handled promise rejections
-console-message-wrapper console-revokedError-level
+console-message-wrapper console-info-level
 console-message-wrapper console-error-level
-console-message-wrapper console-revokedError-level
+console-message-wrapper console-info-level
 
