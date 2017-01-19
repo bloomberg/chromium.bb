@@ -235,7 +235,11 @@ class MEDIA_EXPORT AudioInputController
     CAPTURE_STARTUP_CREATE_STREAM_FAILED = 2,
     CAPTURE_STARTUP_OPEN_STREAM_FAILED = 3,
     CAPTURE_STARTUP_NEVER_GOT_DATA = 4,
-    CAPTURE_STARTUP_RESULT_MAX = CAPTURE_STARTUP_NEVER_GOT_DATA
+    CAPTURE_STARTUP_STOPPED_EARLY = 5,
+    CAPTURE_STARTUP_CREATE_LOW_LATENCY_STREAM_FAILED = 6,
+    CAPTURE_STARTUP_OPEN_LOW_LATENCY_STREAM_FAILED = 7,
+    CAPTURE_STARTUP_RESULT_MAX =
+        CAPTURE_STARTUP_CREATE_LOW_LATENCY_STREAM_FAILED
   };
 
 #if defined(AUDIO_POWER_MONITORING)
@@ -281,7 +285,7 @@ class MEDIA_EXPORT AudioInputController
   void DoCreateForLowLatency(AudioManager* audio_manager,
                              const AudioParameters& params,
                              const std::string& device_id);
-  void DoCreateForStream(AudioInputStream* stream_to_control);
+  void DoCreateForStream(AudioInputStream* stream_to_control, bool low_latency);
   void DoRecord();
   void DoClose();
   void DoReportError();

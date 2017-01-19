@@ -334,10 +334,8 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
       user_input_monitor, false));
 
   if (!controller->task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&AudioInputController::DoCreateForStream,
-                     controller,
-                     stream))) {
+          FROM_HERE, base::Bind(&AudioInputController::DoCreateForStream,
+                                controller, stream, false))) {
     controller = nullptr;
   }
 
@@ -382,8 +380,10 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
 
   // MakeAudioInputStream might fail and return nullptr. If so,
   // DoCreateForStream will handle and report it.
-  DoCreateForStream(audio_manager->MakeAudioInputStream(
-      params, device_id, base::Bind(&AudioInputController::LogMessage, this)));
+  auto* stream = audio_manager->MakeAudioInputStream(
+      params, device_id, base::Bind(&AudioInputController::LogMessage, this));
+  DoCreateForStream(stream,
+                    params.format() == AudioParameters::AUDIO_PCM_LOW_LATENCY);
 }
 
 void AudioInputController::DoCreateForLowLatency(AudioManager* audio_manager,
@@ -398,24 +398,30 @@ void AudioInputController::DoCreateForLowLatency(AudioManager* audio_manager,
     log_silence_state_ = true;
 #endif
 
+  // Set the low latency timer to non-null. It'll be reset when capture starts.
   low_latency_create_time_ = base::TimeTicks::Now();
   DoCreate(audio_manager, params, device_id);
 }
 
 void AudioInputController::DoCreateForStream(
-    AudioInputStream* stream_to_control) {
+    AudioInputStream* stream_to_control,
+    bool low_latency) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!stream_);
 
   if (!stream_to_control) {
-    LogCaptureStartupResult(CAPTURE_STARTUP_CREATE_STREAM_FAILED);
+    LogCaptureStartupResult(
+        low_latency ? CAPTURE_STARTUP_CREATE_LOW_LATENCY_STREAM_FAILED
+                    : CAPTURE_STARTUP_CREATE_STREAM_FAILED);
     handler_->OnError(this, STREAM_CREATE_ERROR);
     return;
   }
 
   if (!stream_to_control->Open()) {
     stream_to_control->Close();
-    LogCaptureStartupResult(CAPTURE_STARTUP_OPEN_STREAM_FAILED);
+    LogCaptureStartupResult(low_latency
+                                ? CAPTURE_STARTUP_OPEN_LOW_LATENCY_STREAM_FAILED
+                                : CAPTURE_STARTUP_OPEN_STREAM_FAILED);
     handler_->OnError(this, STREAM_OPEN_ERROR);
     return;
   }
@@ -453,6 +459,9 @@ void AudioInputController::DoRecord() {
     prev_key_down_count_ = user_input_monitor_->GetKeyPressCount();
   }
 
+  if (!low_latency_create_time_.is_null())
+    low_latency_create_time_ = base::TimeTicks::Now();
+
   audio_callback_.reset(new AudioCallback(this));
   stream_->Start(audio_callback_.get());
 }
@@ -469,15 +478,22 @@ void AudioInputController::DoClose() {
     stream_->Stop();
 
     if (!low_latency_create_time_.is_null()) {
+      // Since the usage pattern of getUserMedia commonly is that a stream
+      // (and accompanied audio track) is created and immediately closed or
+      // discarded, we collect stats separately for short lived audio streams
+      // (500ms or less) that we did not receive a callback for, as
+      // 'stopped early' and 'never got data'.
+      const base::TimeDelta duration =
+          base::TimeTicks::Now() - low_latency_create_time_;
       LogCaptureStartupResult(audio_callback_->received_callback()
                                   ? CAPTURE_STARTUP_OK
-                                  : CAPTURE_STARTUP_NEVER_GOT_DATA);
+                                  : (duration.InMilliseconds() < 500
+                                         ? CAPTURE_STARTUP_STOPPED_EARLY
+                                         : CAPTURE_STARTUP_NEVER_GOT_DATA));
       UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.CallbackError",
                             audio_callback_->error_during_callback());
       if (audio_callback_->received_callback()) {
         // Log the total duration (since DoCreate) and update the histogram.
-        const base::TimeDelta duration =
-            base::TimeTicks::Now() - low_latency_create_time_;
         UMA_HISTOGRAM_LONG_TIMES("Media.InputStreamDuration", duration);
         const std::string log_string = base::StringPrintf(
             "AIC::DoClose: stream duration=%" PRId64 " seconds",
@@ -508,7 +524,6 @@ void AudioInputController::DoClose() {
     debug_writer_->Stop();
 
   max_volume_ = 0.0;
-  low_latency_create_time_ = base::TimeTicks();  // Reset to null.
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
