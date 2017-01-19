@@ -283,12 +283,20 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
 }
 
 void av1_free_pc_tree(ThreadData *td) {
-#if CONFIG_EXT_PARTITION
-  const int leaf_nodes = 256;
-  const int tree_nodes = 256 + 64 + 16 + 4 + 1;
+#if CONFIG_CB4X4
+  const int tree_nodes_inc = 256;
+  const int leaf_factor = 4;
 #else
-  const int leaf_nodes = 64;
-  const int tree_nodes = 64 + 16 + 4 + 1;
+  const int tree_nodes_inc = 0;
+  const int leaf_factor = 1;
+#endif
+
+#if CONFIG_EXT_PARTITION
+  const int leaf_nodes = 256 * leaf_factor;
+  const int tree_nodes = tree_nodes_inc + 256 + 64 + 16 + 4 + 1;
+#else
+  const int leaf_nodes = 64 * leaf_factor;
+  const int tree_nodes = tree_nodes_inc + 64 + 16 + 4 + 1;
 #endif  // CONFIG_EXT_PARTITION
   int i;
 
