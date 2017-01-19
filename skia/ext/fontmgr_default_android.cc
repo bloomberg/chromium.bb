@@ -13,6 +13,7 @@ SkFontMgr* g_default_fontmgr;
 }  // namespace
 
 SK_API void SetDefaultSkiaFactory(sk_sp<SkFontMgr> fontmgr) {
+  SkASSERT(g_default_fontmgr == nullptr);
   g_default_fontmgr = fontmgr.release();
 }
 
