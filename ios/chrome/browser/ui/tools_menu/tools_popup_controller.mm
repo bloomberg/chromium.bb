@@ -222,7 +222,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
       // Do nothing when tapping the tools menu a second time.
       break;
     case IDC_SHOW_READING_LIST:
-      // TODO(crbug.com/582957): Add metric here.
+      base::RecordAction(UserMetricsAction("MobileMenuReadingList"));
       break;
     default:
       NOTREACHED();

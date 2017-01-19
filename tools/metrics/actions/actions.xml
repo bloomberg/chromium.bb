@@ -9717,6 +9717,11 @@ should be able to be added at any place in this file.
   <obsolete>This menu item was never added to the app menu.</obsolete>
 </action>
 
+<action name="MobileMenuReadingList">
+  <owner>gambard@chromium.org</owner>
+  <description>User pressed 'Reading List' in the app menu.</description>
+</action>
+
 <action name="MobileMenuRecentTabs">
   <owner>justincohen@chromium.org</owner>
   <description>User pressed 'Recent tabs' in the app menu.</description>
