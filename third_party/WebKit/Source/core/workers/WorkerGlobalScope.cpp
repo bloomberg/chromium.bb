@@ -262,14 +262,6 @@ void WorkerGlobalScope::disableEval(const String& errorMessage) {
   m_scriptController->disableEval(errorMessage);
 }
 
-void WorkerGlobalScope::postTask(TaskType,
-                                 const WebTraceLocation& location,
-                                 std::unique_ptr<ExecutionContextTask> task,
-                                 const String& taskNameForInstrumentation) {
-  thread()->postTask(location, std::move(task),
-                     !taskNameForInstrumentation.isEmpty());
-}
-
 void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage) {
   DCHECK(isContextThread());
   thread()->workerReportingProxy().reportConsoleMessage(

@@ -21,6 +21,10 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
 
   // ExecutionContext
   bool isWorkerOrWorkletGlobalScope() const final { return true; }
+  void postTask(TaskType,
+                const WebTraceLocation&,
+                std::unique_ptr<ExecutionContextTask>,
+                const String& taskNameForInstrumentation = emptyString()) final;
 
   virtual ScriptWrappable* getScriptWrappable() const = 0;
   virtual WorkerOrWorkletScriptController* scriptController() = 0;

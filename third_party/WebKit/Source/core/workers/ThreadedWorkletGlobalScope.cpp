@@ -53,15 +53,6 @@ bool ThreadedWorkletGlobalScope::isContextThread() const {
   return thread()->isCurrentThread();
 }
 
-void ThreadedWorkletGlobalScope::postTask(
-    TaskType,
-    const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task,
-    const String& taskNameForInstrumentation) {
-  thread()->postTask(location, std::move(task),
-                     !taskNameForInstrumentation.isEmpty());
-}
-
 void ThreadedWorkletGlobalScope::addConsoleMessage(
     ConsoleMessage* consoleMessage) {
   DCHECK(isContextThread());

@@ -32,4 +32,15 @@ void WorkerOrWorkletGlobalScope::addDeprecationMessage(
                              Deprecation::deprecationMessage(feature)));
 }
 
+void WorkerOrWorkletGlobalScope::postTask(
+    TaskType,
+    const WebTraceLocation& location,
+    std::unique_ptr<ExecutionContextTask> task,
+    const String& taskNameForInstrumentation) {
+  if (!thread())
+    return;
+  thread()->postTask(location, std::move(task),
+                     !taskNameForInstrumentation.isEmpty());
+}
+
 }  // namespace blink

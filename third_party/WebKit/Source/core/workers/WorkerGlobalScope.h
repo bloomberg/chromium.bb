@@ -126,11 +126,6 @@ class CORE_EXPORT WorkerGlobalScope
   void disableEval(const String& errorMessage) final;
   String userAgent() const final { return m_userAgent; }
 
-  void postTask(TaskType,
-                const WebTraceLocation&,
-                std::unique_ptr<ExecutionContextTask>,
-                const String& taskNameForInstrumentation = emptyString()) final;
-
   DOMTimerCoordinator* timers() final { return &m_timers; }
   SecurityContext& securityContext() final { return *this; }
   void addConsoleMessage(ConsoleMessage*) final;
