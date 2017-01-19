@@ -400,7 +400,7 @@ rotate runtime_flag=CSSIndependentTransformProperties, converter=convertRotate, 
 scale runtime_flag=CSSIndependentTransformProperties, converter=convertScale, interpolable
 unicode-bidi type_name=UnicodeBidi, keyword_only, keywords=[normal|embed|bidi-override|isolate|plaintext|isolate-override], initial_keyword=normal, field_storage_type=platform/text/UnicodeBidi
 vector-effect svg
-vertical-align interpolable, custom_inherit, custom_value
+vertical-align interpolable, custom_inherit, custom_value, api_class
 visibility interpolable, inherited, independent, keyword_only, keywords=[visible|hidden|collapse], initial_keyword=visible
 x interpolable, svg, converter=convertLength
 y interpolable, svg, converter=convertLength

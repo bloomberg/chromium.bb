@@ -370,6 +370,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPITextUnderlinePosition.cpp",
     "properties/CSSPropertyAPITransformOrigin.cpp",
     "properties/CSSPropertyAPITranslate.cpp",
+    "properties/CSSPropertyAPIVerticalAlign.cpp",
     "properties/CSSPropertyAPIWebkitBoxFlexGroup.cpp",
     "properties/CSSPropertyAPIWebkitHighlight.cpp",
     "properties/CSSPropertyAPIWebkitLineClamp.cpp",

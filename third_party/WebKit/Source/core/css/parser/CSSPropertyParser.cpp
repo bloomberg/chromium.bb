@@ -1767,16 +1767,6 @@ static CSSValue* consumeScrollSnapPoints(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSValue* consumeVerticalAlign(CSSParserTokenRange& range,
-                                      CSSParserMode cssParserMode) {
-  CSSValue* parsedValue =
-      consumeIdentRange(range, CSSValueBaseline, CSSValueWebkitBaselineMiddle);
-  if (!parsedValue)
-    parsedValue = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll,
-                                         UnitlessQuirk::Allow);
-  return parsedValue;
-}
-
 static CSSValue* consumeShapeRadius(CSSParserTokenRange& args,
                                     CSSParserMode cssParserMode) {
   if (identMatches<CSSValueClosestSide, CSSValueFarthestSide>(args.peek().id()))
@@ -3164,8 +3154,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeScrollSnapPoints(m_range, m_context->mode());
     case CSSPropertyOrder:
       return consumeInteger(m_range);
-    case CSSPropertyVerticalAlign:
-      return consumeVerticalAlign(m_range, m_context->mode());
     case CSSPropertyShapeOutside:
       return consumeShapeOutside(m_range, m_context);
     case CSSPropertyClipPath:
