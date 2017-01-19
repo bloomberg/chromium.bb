@@ -241,7 +241,8 @@ const base::Feature kShortRecordHeaderFeature{
 class SSLClientSocketImpl::SSLContext {
  public:
   static SSLContext* GetInstance() {
-    return base::Singleton<SSLContext>::get();
+    return base::Singleton<SSLContext,
+                           base::LeakySingletonTraits<SSLContext>>::get();
   }
   SSL_CTX* ssl_ctx() { return ssl_ctx_.get(); }
   SSLClientSessionCache* session_cache() { return &session_cache_; }
