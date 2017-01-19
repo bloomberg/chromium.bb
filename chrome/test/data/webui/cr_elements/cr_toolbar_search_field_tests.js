@@ -15,7 +15,7 @@ cr.define('cr_toolbar_search_field', function() {
       /** @param {string} term */
       function simulateSearch(term) {
         field.$.searchInput.value = term;
-        field.onSearchInput_();
+        field.onSearchTermInput();
         field.onSearchTermSearch();
       }
 
@@ -74,6 +74,7 @@ cr.define('cr_toolbar_search_field', function() {
         MockInteractions.tap(field);
         simulateSearch('query1');
         Polymer.dom.flush();
+        assertTrue(field.hasSearchText);
 
         var clearSearch = field.$$('#clearSearch');
         clearSearch.focus();
@@ -81,6 +82,7 @@ cr.define('cr_toolbar_search_field', function() {
         assertTrue(field.showingSearch);
         assertEquals('', field.getValue());
         assertEquals(field.$.searchInput, field.root.activeElement);
+        assertFalse(field.hasSearchText);
       });
 
       test('notifies on new searches', function() {
@@ -148,13 +150,33 @@ cr.define('cr_toolbar_search_field', function() {
         // Change search value without explicity opening the field first.
         // Similar to what happens when pasting or dragging into the input
         // field.
+        assertFalse(field.hasSearchText);
         simulateSearch('test');
+        assertTrue(field.hasSearchText);
         Polymer.dom.flush();
 
         var clearSearch = field.$$('#clearSearch');
         assertFalse(clearSearch.hidden);
         assertTrue(field.showingSearch);
       });
+
+      test('closes when value is cleared while unfocused', function() {
+        MockInteractions.focus(field.$.searchInput);
+        simulateSearch('test');
+        Polymer.dom.flush();
+
+        // Does not close the field if it is focused when cleared.
+        assertTrue(field.showingSearch);
+        field.setValue('');
+        assertTrue(field.showingSearch);
+
+        // Does close the field if it is blurred before being cleared.
+        simulateSearch('test');
+        MockInteractions.blur(field.$.searchInput);
+        field.setValue('');
+        assertFalse(field.showingSearch);
+      });
+
     });
   }
 

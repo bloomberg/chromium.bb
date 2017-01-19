@@ -19,6 +19,12 @@ var CrSearchFieldBehavior = {
       value: '',
     },
 
+    hasSearchText: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
+    },
+
     /** @private */
     lastValue_: {
       type: String,
@@ -49,11 +55,22 @@ var CrSearchFieldBehavior = {
   setValue: function(value, opt_noEvent) {
     var searchInput = this.getSearchInput();
     searchInput.value = value;
+
+    this.onSearchTermInput();
     this.onValueChanged_(value, !!opt_noEvent);
   },
 
   onSearchTermSearch: function() {
     this.onValueChanged_(this.getValue(), false);
+  },
+
+  /**
+   * Update the state of the search field whenever the underlying input value
+   * changes. Unlike onsearch or onkeypress, this is reliably called immediately
+   * after any change, whether the result of user input or JS modification.
+   */
+  onSearchTermInput: function() {
+    this.hasSearchText = this.$.searchInput.value != '';
   },
 
   /**

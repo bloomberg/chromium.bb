@@ -75,7 +75,7 @@
         white-space: nowrap;
       }
 
-      :host([has-search-text_]) label {
+      :host([has-search-text]) label {
         visibility: hidden;
       }
 
@@ -140,7 +140,7 @@
       <label id="prompt" for="searchInput">[[label]]</label>
       <input id="searchInput"
           type="search"
-          on-input="onSearchInput_"
+          on-input="onSearchTermInput"
           on-search="onSearchTermSearch"
           on-keydown="onSearchTermKeydown_"
           on-focus="onInputFocus_"
@@ -149,7 +149,7 @@
           autofocus>
       </input>
     </div>
-    <template is="dom-if" if="[[hasSearchText_]]">
+    <template is="dom-if" if="[[hasSearchText]]">
       <paper-icon-button icon="cr:cancel" id="clearSearch"
           title="[[clearLabel]]" on-tap="clearSearch_">
       </paper-icon-button>

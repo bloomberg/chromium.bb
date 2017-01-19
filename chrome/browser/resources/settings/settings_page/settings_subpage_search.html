@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 
 <dom-module id="settings-subpage-search">
   <template>
@@ -52,6 +51,10 @@
         color: var(--paper-grey-600);
       }
 
+      :host([has-search-text]) #prompt {
+        visibility: hidden;
+      }
+
       #searchInput {
         color: var(--paper-grey-800);
       }
@@ -62,13 +65,14 @@
       }
     </style>
     <paper-icon-button id="searchIcon" icon="cr:search"></paper-icon-button>
-    <paper-input-container no-label-float on-search="onSearchTermSearch">
+    <paper-input-container no-label-float>
       <label id="prompt">[[label]]</label>
-      <input is="iron-input" id="searchInput" type="search"
-          aria-labelledby="prompt" incremental>
+      <input id="searchInput" type="search" on-search="onSearchTermSearch"
+          on-input="onSearchTermInput" aria-labelledby="prompt" incremental>
       </input>
       <paper-icon-button suffix icon="cr:cancel" id="clearSearch"
-          on-tap="onTapClear_" title="[[clearLabel]]" hidden$="[[!lastValue_]]">
+          on-tap="onTapClear_" title="[[clearLabel]]"
+          hidden$="[[!hasSearchText]]">
       </paper-icon-button>
     </paper-input-container>
   </template>

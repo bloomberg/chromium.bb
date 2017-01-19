@@ -32,9 +32,6 @@ Polymer({
     spinnerActive: {type: Boolean, reflectToAttribute: true},
 
     /** @private */
-    hasSearchText_: {type: Boolean, reflectToAttribute: true},
-
-    /** @private */
     isSpinnerShown_: {
       type: Boolean,
       computed: 'computeIsSpinnerShown_(spinnerActive, showingSearch)'
@@ -54,17 +51,6 @@ Polymer({
     return this.$.searchInput;
   },
 
-  /**
-   * Sets the value of the search field. Overridden from CrSearchFieldBehavior.
-   * @param {string} value
-   * @param {boolean=} opt_noEvent Whether to prevent a 'search-changed' event
-   *     firing for this change.
-   */
-  setValue: function(value, opt_noEvent) {
-    CrSearchFieldBehavior.setValue.call(this, value, opt_noEvent);
-    this.onSearchInput_();
-  },
-
   /** @return {boolean} */
   isSearchFocused: function() {
     return this.searchFocused_;
@@ -73,6 +59,11 @@ Polymer({
   showAndFocus: function() {
     this.showingSearch = true;
     this.focus_();
+  },
+
+  onSearchTermInput: function() {
+    CrSearchFieldBehavior.onSearchTermInput.call(this);
+    this.showingSearch = this.hasSearchText || this.isSearchFocused();
   },
 
   /** @private */
@@ -105,21 +96,8 @@ Polymer({
   /** @private */
   onInputBlur_: function() {
     this.searchFocused_ = false;
-    if (!this.hasSearchText_)
+    if (!this.hasSearchText)
       this.showingSearch = false;
-  },
-
-  /**
-   * Update the state of the search field whenever the underlying input value
-   * changes. Unlike onsearch or onkeypress, this is reliably called immediately
-   * after any change, whether the result of user input or JS modification.
-   * @private
-   */
-  onSearchInput_: function() {
-    var newValue = this.$.searchInput.value;
-    this.hasSearchText_ = newValue != '';
-    if (newValue != '')
-      this.showingSearch = true;
   },
 
   /** @private */
