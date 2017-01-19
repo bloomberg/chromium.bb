@@ -165,6 +165,11 @@ void RenderWidgetHostViewBase::SetIsInVR(bool is_in_vr) {
   NOTIMPLEMENTED();
 }
 
+bool RenderWidgetHostViewBase::IsInVR() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool RenderWidgetHostViewBase::IsShowingContextMenu() const {
   return showing_context_menu_;
 }

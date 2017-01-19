@@ -253,6 +253,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   force_video_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
 
+  enable_fullscreen_video_overlays_ =
+      base::FeatureList::IsEnabled(media::kOverlayFullscreenVideo);
+
   if (delegate_) {
     delegate_id_ = delegate_->AddObserver(this);
     delegate_->SetIdle(delegate_id_, true);
@@ -312,10 +315,6 @@ void WebMediaPlayerImpl::load(LoadType load_type,
     return;
   }
   DoLoad(load_type, url, cors_mode);
-}
-
-void WebMediaPlayerImpl::SetEnableFullscreenOverlays(bool enable_overlays) {
-  enable_fullscreen_video_overlays_ = enable_overlays;
 }
 
 bool WebMediaPlayerImpl::supportsOverlayFullscreenVideo() {

@@ -2486,7 +2486,7 @@
             "experiments": [
                 {
                     "name": "Enabled",
-                    "disable_features": [
+                    "enable_features": [
                         "VrShell"
                     ]
                 }

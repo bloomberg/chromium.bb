@@ -141,6 +141,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override;
   void SetIsInVR(bool is_in_vr) override;
+  bool IsInVR() const override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
   cc::FrameSinkId GetFrameSinkId() override;

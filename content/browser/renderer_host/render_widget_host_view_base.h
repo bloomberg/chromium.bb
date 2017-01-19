@@ -287,6 +287,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // need to also be resolved.
   virtual bool IsRenderWidgetHostViewChildFrame();
 
+  // Returns true if the current view is in virtual reality mode.
+  virtual bool IsInVR() const;
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME

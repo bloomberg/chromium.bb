@@ -63,6 +63,16 @@ void BrowserSurfaceViewManager::DidExitFullscreen(bool release_media_player) {
 
 void BrowserSurfaceViewManager::OnCreateFullscreenSurface(
     const gfx::Size& video_natural_size) {
+  // If we are in virtual reality, no surface view is needed so just return.
+  // TODO(http://crbug.com/673886): Support overlay surfaces in VR using GVR
+  // reprojection video surface.
+  RenderWidgetHostViewBase * rwhvb =
+      static_cast<RenderWidgetHostViewBase*>(render_frame_host_->GetView());
+  if (rwhvb->IsInVR()) {
+    SendSurfaceID(media::SurfaceManager::kNoSurfaceID);
+    return;
+  }
+
   // It's valid to get this call if we already own the fullscreen view. We just
   // return the existing surface id.
   if (content_video_view_) {
@@ -84,8 +94,10 @@ void BrowserSurfaceViewManager::OnCreateFullscreenSurface(
 
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host_);
-  if (!web_contents->GetDelegate())
+  if (!web_contents->GetDelegate()) {
+    SendSurfaceID(media::SurfaceManager::kNoSurfaceID);
     return;
+  }
   ContentViewCore* cvc = ContentViewCore::FromWebContents(web_contents);
   content_video_view_.reset(
       new ContentVideoView(this, cvc,

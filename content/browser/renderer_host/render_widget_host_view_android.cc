@@ -1751,6 +1751,10 @@ void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
   is_in_vr_ = is_in_vr;
 }
 
+bool RenderWidgetHostViewAndroid::IsInVR() const {
+  return is_in_vr_;
+}
+
 void RenderWidgetHostViewAndroid::DidOverscroll(
     const ui::DidOverscrollParams& params) {
   if (sync_compositor_)

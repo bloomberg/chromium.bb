@@ -2896,13 +2896,6 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       GetWebMediaPlayerDelegate()->AsWeakPtr(),
       std::move(media_renderer_factory), url_index_, params);
 
-  // TODO(http://crbug.com/673886): Re-enable overlays with VR shell enabled
-  // when VR shell's video reprojection surface is enabled. Remove the setter
-  // and put the overlay feature check back in the constructor at that time.
-  media_player->SetEnableFullscreenOverlays(
-      base::FeatureList::IsEnabled(media::kOverlayFullscreenVideo) &&
-      !base::FeatureList::IsEnabled(features::kVrShell));
-
 #if defined(OS_ANDROID)  // WMPI_CAST
   media_player->SetMediaPlayerManager(GetMediaPlayerManager());
   media_player->SetDeviceScaleFactor(render_view_->GetDeviceScaleFactor());
