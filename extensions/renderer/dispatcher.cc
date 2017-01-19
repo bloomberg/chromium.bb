@@ -269,17 +269,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   // Register WebSecurityPolicy whitelists for the chrome-extension:// scheme.
   WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
 
-  // Treat as secure because communication with them is entirely in the browser,
-  // so there is no danger of manipulation or eavesdropping on communication
-  // with them by third parties.
-  WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
-
-  // As far as Blink is concerned, they should be allowed to receive CORS
-  // requests. At the Extensions layer, requests will actually be blocked unless
-  // overridden by the web_accessible_resources manifest key.
-  // TODO(kalman): See what happens with a service worker.
-  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
-
   // Resources should bypass Content Security Policy checks when included in
   // protected resources. TODO(kalman): What are "protected resources"?
   WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(

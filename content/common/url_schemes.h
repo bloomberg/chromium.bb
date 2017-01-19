@@ -28,13 +28,8 @@ CONTENT_EXPORT void RegisterContentSchemes(bool lock_schemes);
 // See comment in ContentClient::AddAdditionalSchemes for explanations. These
 // getters can be invoked on any thread.
 const std::vector<std::string>& GetSavableSchemes();
-const std::vector<std::string>& GetSecureSchemes();
 const std::vector<GURL>& GetSecureOrigins();
 const std::vector<std::string>& GetServiceWorkerSchemes();
-
-// Resets the internal secure schemes/origins and service worker whitelists.
-// Used only for testing.
-void CONTENT_EXPORT RefreshSecuritySchemesForTesting();
 
 }  // namespace content
 

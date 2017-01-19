@@ -440,26 +440,15 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // TODO(nyquist): Add test to ensure this happens when the flag is set.
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dom_distiller_scheme);
 
-#if defined(OS_CHROMEOS)
-  WebSecurityPolicy::registerURLSchemeAsLocal(
-      WebString::fromUTF8(content::kExternalFileScheme));
-#endif
-
 #if defined(OS_ANDROID)
   WebSecurityPolicy::registerURLSchemeAsAllowedForReferrer(
       WebString::fromUTF8(chrome::kAndroidAppScheme));
-  WebSecurityPolicy::registerURLSchemeAsLocal(
-      WebString::fromUTF8(url::kContentScheme));
 #endif
 
   // chrome-search: pages should not be accessible by bookmarklets
   // or javascript: URLs typed in the omnibox.
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       chrome_search_scheme);
-
-  // chrome-search: resources shouldn't trigger insecure content warnings. Note
-  // that the chrome-extension: scheme is registered by extensions::Dispatcher.
-  WebSecurityPolicy::registerURLSchemeAsSecure(chrome_search_scheme);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   pdf_print_client_.reset(new ChromePDFPrintClient());

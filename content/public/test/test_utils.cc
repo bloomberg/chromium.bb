@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/common/url_schemes.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -27,6 +28,7 @@
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_util.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/browser_jni_registrar.h"
@@ -190,6 +192,12 @@ bool AreAllSitesIsolatedForTesting() {
 
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
+}
+
+void ResetSchemesAndOriginsWhitelist() {
+  url::Shutdown();
+  RegisterContentSchemes(false);
+  url::Initialize();
 }
 
 #if defined(OS_ANDROID)

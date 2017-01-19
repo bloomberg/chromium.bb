@@ -6,6 +6,7 @@
 #include "base/test/scoped_command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -16,7 +17,7 @@ namespace chrome {
 class SecureOriginWhiteListTest : public testing::Test {
   void TearDown() override {
     // Ensure that we reset the whitelisted origins without any flags applied.
-    content::ResetSchemesAndOriginsWhitelistForTesting();
+    content::ResetSchemesAndOriginsWhitelist();
   };
 };
 
@@ -34,7 +35,7 @@ TEST_F(SecureOriginWhiteListTest, UnsafelyTreatInsecureOriginAsSecure) {
       switches::kUnsafelyTreatInsecureOriginAsSecure,
       "http://example.com,http://127.example.com");
   command_line->AppendSwitch(switches::kUserDataDir);
-  content::ResetSchemesAndOriginsWhitelistForTesting();
+  content::ResetSchemesAndOriginsWhitelist();
 
   // They should be now white-listed.
   EXPECT_TRUE(content::IsOriginSecure(GURL("http://example.com/a.html")));

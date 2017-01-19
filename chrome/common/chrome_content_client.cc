@@ -49,6 +49,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/url_constants.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_LINUX)
@@ -577,14 +578,35 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->savable_schemes.push_back(chrome::kChromeSearchScheme);
   schemes->savable_schemes.push_back(dom_distiller::kDomDistillerScheme);
 
+  // chrome-search: resources shouldn't trigger insecure content warnings.
   schemes->secure_schemes.push_back(chrome::kChromeSearchScheme);
-  schemes->secure_schemes.push_back(content::kChromeUIScheme);
+
+  // Treat as secure because communication with them is entirely in the browser,
+  // so there is no danger of manipulation or eavesdropping on communication
+  // with them by third parties.
   schemes->secure_schemes.push_back(extensions::kExtensionScheme);
+
   schemes->secure_origins = GetSecureOriginWhitelist();
+
+  schemes->no_access_schemes.push_back(chrome::kChromeNativeScheme);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (extensions::feature_util::ExtensionServiceWorkersEnabled())
     schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);
+
+  // As far as Blink is concerned, they should be allowed to receive CORS
+  // requests. At the Extensions layer, requests will actually be blocked unless
+  // overridden by the web_accessible_resources manifest key.
+  // TODO(kalman): See what happens with a service worker.
+  schemes->cors_enabled_schemes.push_back(extensions::kExtensionScheme);
+#endif
+
+#if defined(OS_CHROMEOS)
+  schemes->local_schemes.push_back(content::kExternalFileScheme);
+#endif
+
+#if defined(OS_ANDROID)
+  schemes->local_schemes.push_back(url::kContentScheme);
 #endif
 }
 

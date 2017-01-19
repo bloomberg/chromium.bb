@@ -76,13 +76,6 @@ void AwContentRendererClient::RenderThreadStarted() {
   thread->GetInterfaceRegistry()->AddInterface(
       visited_link_slave_->GetBindCallback());
 
-  blink::WebString content_scheme(base::ASCIIToUTF16(url::kContentScheme));
-  blink::WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);
-
-  blink::WebString aw_scheme(
-      base::ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
-  blink::WebSecurityPolicy::registerURLSchemeAsSecure(aw_scheme);
-
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   if (!spellcheck_) {
     spellcheck_ = base::MakeUnique<SpellCheck>();

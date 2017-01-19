@@ -40,26 +40,9 @@
 
 namespace blink {
 
-void WebSecurityPolicy::registerURLSchemeAsLocal(const WebString& scheme) {
-  SchemeRegistry::registerURLSchemeAsLocal(scheme);
-}
-
-void WebSecurityPolicy::registerURLSchemeAsNoAccess(const WebString& scheme) {
-  SchemeRegistry::registerURLSchemeAsNoAccess(scheme);
-}
-
 void WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(
     const WebString& scheme) {
   SchemeRegistry::registerURLSchemeAsDisplayIsolated(scheme);
-}
-
-void WebSecurityPolicy::registerURLSchemeAsSecure(const WebString& scheme) {
-  SchemeRegistry::registerURLSchemeAsSecure(scheme);
-}
-
-void WebSecurityPolicy::registerURLSchemeAsCORSEnabled(
-    const WebString& scheme) {
-  SchemeRegistry::registerURLSchemeAsCORSEnabled(scheme);
 }
 
 void WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(

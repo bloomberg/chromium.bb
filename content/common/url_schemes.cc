@@ -20,7 +20,6 @@ namespace {
 // prevent any destructors from being called that will slow us down or cause
 // problems.
 std::vector<std::string>* savable_schemes = nullptr;
-std::vector<std::string>* secure_schemes = nullptr;
 // Note we store GURLs here instead of strings to deal with canonicalization.
 std::vector<GURL>* secure_origins = nullptr;
 std::vector<std::string>* service_worker_schemes = nullptr;
@@ -52,6 +51,20 @@ void RegisterContentSchemes(bool lock_schemes) {
   for (auto& scheme : schemes.referrer_schemes)
     url::AddReferrerScheme(scheme.c_str(), url::SCHEME_WITHOUT_PORT);
 
+  schemes.secure_schemes.push_back(kChromeUIScheme);
+  for (auto& scheme : schemes.secure_schemes)
+    url::AddSecureScheme(scheme.c_str());
+
+  for (auto& scheme : schemes.local_schemes)
+    url::AddLocalScheme(scheme.c_str());
+
+  for (auto& scheme : schemes.no_access_schemes)
+    url::AddNoAccessScheme(scheme.c_str());
+
+  schemes.cors_enabled_schemes.push_back(kChromeUIScheme);
+  for (auto& scheme : schemes.cors_enabled_schemes)
+    url::AddCORSEnabledScheme(scheme.c_str());
+
   // Prevent future modification of the scheme lists. This is to prevent
   // accidental creation of data races in the program. Add*Scheme aren't
   // threadsafe so must be called when GURL isn't used on any other thread. This
@@ -61,6 +74,7 @@ void RegisterContentSchemes(bool lock_schemes) {
     url::LockSchemeRegistries();
 
   // Combine the default savable schemes with the additional ones given.
+  delete savable_schemes;
   savable_schemes = new std::vector<std::string>;
   for (auto& default_scheme : kDefaultSavableSchemes)
     savable_schemes->push_back(default_scheme);
@@ -68,12 +82,11 @@ void RegisterContentSchemes(bool lock_schemes) {
                           schemes.savable_schemes.begin(),
                           schemes.savable_schemes.end());
 
-  secure_schemes = new std::vector<std::string>;
-  *secure_schemes = std::move(schemes.secure_schemes);
-
+  delete service_worker_schemes;
   service_worker_schemes = new std::vector<std::string>;
   *service_worker_schemes = std::move(schemes.service_worker_schemes);
 
+  delete secure_origins;
   secure_origins = new std::vector<GURL>;
   *secure_origins = std::move(schemes.secure_origins);
 }
@@ -82,25 +95,12 @@ const std::vector<std::string>& GetSavableSchemes() {
   return *savable_schemes;
 }
 
-const std::vector<std::string>& GetSecureSchemes() {
-  return *secure_schemes;
-}
-
 const std::vector<GURL>& GetSecureOrigins() {
   return *secure_origins;
 }
 
 const std::vector<std::string>& GetServiceWorkerSchemes() {
   return *service_worker_schemes;
-}
-
-void RefreshSecuritySchemesForTesting() {
-  ContentClient::Schemes schemes;
-  GetContentClient()->AddAdditionalSchemes(&schemes);
-
-  *secure_schemes = std::move(schemes.secure_schemes);
-  *service_worker_schemes = std::move(schemes.service_worker_schemes);
-  *secure_origins = std::move(schemes.secure_origins);
 }
 
 }  // namespace content

@@ -22,9 +22,6 @@ bool CONTENT_EXPORT IsOriginSecure(const GURL& url);
 // http (localhost only), https, or a custom-set secure scheme.
 bool CONTENT_EXPORT OriginCanAccessServiceWorkers(const GURL& url);
 
-// Resets the internal schemes/origins whitelist. Used only for testing.
-void CONTENT_EXPORT ResetSchemesAndOriginsWhitelistForTesting();
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_ORIGIN_UTIL_H_

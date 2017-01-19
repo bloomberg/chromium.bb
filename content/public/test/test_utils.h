@@ -81,6 +81,9 @@ bool AreAllSitesIsolatedForTesting();
 // the test; the flag will be read on the first real navigation.
 void IsolateAllSitesForTesting(base::CommandLine* command_line);
 
+// Resets the internal secure schemes/origins whitelist.
+void ResetSchemesAndOriginsWhitelist();
+
 #if defined(OS_ANDROID)
 // Registers content/browser JNI bindings necessary for some types of tests.
 bool RegisterJniForTesting(JNIEnv* env);

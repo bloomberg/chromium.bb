@@ -94,19 +94,21 @@ class CONTENT_EXPORT ContentClient {
 
   // Gives the embedder a chance to register its own schemes early in the
   // startup sequence.
-  // For the secure schemes and origins that need to be considered trustworthy,
-  // see https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
-  // |service_workers_schemes| are additional schemes that should be allowed to
-  // register service workers. Only secure and trustworthy schemes should be
-  // added.
   struct Schemes {
     Schemes();
     ~Schemes();
     std::vector<std::string> standard_schemes;
     std::vector<std::string> referrer_schemes;
     std::vector<std::string> savable_schemes;
-    std::vector<std::string> secure_schemes;
+    // Additional schemes that should be allowed to register service workers.
+    // Only secure and trustworthy schemes should be added.
     std::vector<std::string> service_worker_schemes;
+    // For the following three, see the documentation in WebSecurityPolicy.
+    std::vector<std::string> local_schemes;
+    std::vector<std::string> no_access_schemes;
+    std::vector<std::string> cors_enabled_schemes;
+    // See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
+    std::vector<std::string> secure_schemes;
     std::vector<GURL> secure_origins;
   };
 

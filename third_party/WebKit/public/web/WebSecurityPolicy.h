@@ -42,29 +42,11 @@ class WebURL;
 
 class WebSecurityPolicy {
  public:
-  // Registers a URL scheme to be treated as a local scheme (i.e., with the
-  // same security rules as those applied to "file" URLs). This means that
-  // normal pages cannot link to or access URLs of this scheme.
-  BLINK_EXPORT static void registerURLSchemeAsLocal(const WebString&);
-
-  // Registers a URL scheme to be treated as a noAccess scheme. This means
-  // that pages loaded with this URL scheme cannot access pages loaded with
-  // any other URL scheme.
-  BLINK_EXPORT static void registerURLSchemeAsNoAccess(const WebString&);
-
   // Registers a URL scheme to be treated as display-isolated. This means
   // that pages cannot display these URLs unless they are from the same
   // scheme. For example, pages in other origin cannot create iframes or
   // hyperlinks to URLs with the scheme.
   BLINK_EXPORT static void registerURLSchemeAsDisplayIsolated(const WebString&);
-
-  // Subresources transported by secure schemes do not trigger mixed content
-  // warnings. For example, https and data are secure schemes because they
-  // cannot be corrupted by active network attackers.
-  BLINK_EXPORT static void registerURLSchemeAsSecure(const WebString&);
-
-  // Registers a non-HTTP URL scheme which can be sent CORS requests.
-  BLINK_EXPORT static void registerURLSchemeAsCORSEnabled(const WebString&);
 
   // Registers a URL scheme that can register a ServiceWorker.
   BLINK_EXPORT static void registerURLSchemeAsAllowingServiceWorkers(

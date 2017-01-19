@@ -26,6 +26,7 @@
 
 #include "platform/weborigin/SchemeRegistry.h"
 
+#include "url/url_util.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -38,17 +39,22 @@ namespace {
 class URLSchemesRegistry final {
  public:
   URLSchemesRegistry()
-      : localSchemes({"file"}),
-        secureSchemes({"https", "about", "data", "wss"}),
-        schemesWithUniqueOrigins({"about", "javascript", "data"}),
-        emptyDocumentSchemes({"about"}),
-        CORSEnabledSchemes({"http", "https", "data"}),
+      : emptyDocumentSchemes({"about"}),
         // For ServiceWorker schemes: HTTP is required because http://localhost
         // is considered secure. Additional checks are performed to ensure that
         // other http pages are filtered out.
         serviceWorkerSchemes({"http", "https"}),
         fetchAPISchemes({"http", "https"}),
-        allowedInReferrerSchemes({"http", "https"}) {}
+        allowedInReferrerSchemes({"http", "https"}) {
+    for (auto& scheme : url::GetLocalSchemes())
+      localSchemes.add(scheme.c_str());
+    for (auto& scheme : url::GetSecureSchemes())
+      secureSchemes.add(scheme.c_str());
+    for (auto& scheme : url::GetNoAccessSchemes())
+      schemesWithUniqueOrigins.add(scheme.c_str());
+    for (auto& scheme : url::GetCORSEnabledSchemes())
+      CORSEnabledSchemes.add(scheme.c_str());
+  }
   ~URLSchemesRegistry() = default;
 
   URLSchemesSet localSchemes;

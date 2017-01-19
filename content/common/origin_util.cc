@@ -10,6 +10,7 @@
 #include "content/common/url_schemes.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
+#include "url/url_util.h"
 
 namespace content {
 
@@ -26,7 +27,7 @@ bool IsOriginSecure(const GURL& url) {
   if (net::IsLocalhost(hostname))
     return true;
 
-  if (base::ContainsValue(GetSecureSchemes(), url.scheme()))
+  if (base::ContainsValue(url::GetSecureSchemes(), url.scheme()))
     return true;
 
   if (base::ContainsValue(GetSecureOrigins(), url.GetOrigin())) {
@@ -45,10 +46,6 @@ bool OriginCanAccessServiceWorkers(const GURL& url) {
   }
 
   return false;
-}
-
-void ResetSchemesAndOriginsWhitelistForTesting() {
-  RefreshSecuritySchemesForTesting();
 }
 
 }  // namespace content

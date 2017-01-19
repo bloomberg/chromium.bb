@@ -17,6 +17,7 @@
 #include "content/common/url_schemes.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +44,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   void SetUp() override {
     old_content_browser_client_ =
         SetBrowserClientForTesting(&test_content_browser_client_);
-    RefreshSecuritySchemesForTesting();
+    ResetSchemesAndOriginsWhitelist();
 
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
     context_ = helper_->context();
@@ -82,7 +83,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     helper_.reset();
     SetBrowserClientForTesting(old_content_browser_client_);
     // Reset cached security schemes so we don't affect other tests.
-    RefreshSecuritySchemesForTesting();
+    ResetSchemesAndOriginsWhitelist();
   }
 
   bool PatternHasProcessToRun(const GURL& pattern) const {

@@ -267,7 +267,6 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   WebString native_scheme(base::ASCIIToUTF16(chrome::kChromeNativeScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(native_scheme);
   WebSecurityPolicy::registerURLSchemeAsEmptyDocument(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNoAccess(native_scheme);
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       native_scheme);
 
