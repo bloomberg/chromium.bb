@@ -450,7 +450,6 @@ void MultibufferDataSource::StopLoader() {
 
 void MultibufferDataSource::SetBitrateTask(int bitrate) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  DCHECK(reader_.get());
 
   bitrate_ = bitrate;
   UpdateBufferSizes();
