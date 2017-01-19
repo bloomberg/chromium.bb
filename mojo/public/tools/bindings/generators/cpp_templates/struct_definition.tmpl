@@ -15,7 +15,7 @@ bool {{class_name}}::Validate(
   // the message comes from an older version.
   const {{class_name}}* object = static_cast<const {{class_name}}*>(data);
 
-  static const struct {
+  static constexpr struct {
     uint32_t version;
     uint32_t num_bytes;
   } kVersionSizes[] = {

@@ -35,6 +35,7 @@ namespace {{variant}} {
 
 #include <stdint.h>
 
+#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -96,13 +97,7 @@ using {{enum.name}} = {{enum.name}};  // Alias for definition in the parent name
 
 {#--- Constants #}
 {%- for constant in module.constants %}
-{#-   To be consistent with constants defined inside interfaces, only make
-      integral types compile-time constants. #}
-{%-   if constant.kind|is_integral_kind %}
-const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant|constant_value}};
-{%-   else %}
-extern const {{constant.kind|cpp_pod_type}} {{constant.name}};
-{%-   endif %}
+{{constant|format_constant_declaration}};
 {%- endfor %}
 
 {#--- Interface Forward Declarations -#}

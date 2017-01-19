@@ -216,9 +216,15 @@ def GetNativeTypeName(typemapped_kind):
   return _current_typemap[GetFullMojomNameForKind(typemapped_kind)]["typename"]
 
 def GetCppPodType(kind):
-  if mojom.IsStringKind(kind):
-    return "char*"
   return _kind_to_cpp_type[kind]
+
+def FormatConstantDeclaration(constant, nested=False):
+  if mojom.IsStringKind(constant.kind):
+    if nested:
+      return "const char %s[]" % constant.name
+    return "extern const char %s[]" % constant.name
+  return "constexpr %s %s = %s" % (GetCppPodType(constant.kind), constant.name,
+                                   ConstantValue(constant))
 
 def GetCppWrapperType(kind, add_same_module_namespaces=False):
   def _AddOptional(type_name):
@@ -417,13 +423,18 @@ def TranslateConstants(token, kind):
         flatten_nested_kind=True)
 
   if isinstance(token, mojom.BuiltinValue):
-    if token.value == "double.INFINITY" or token.value == "float.INFINITY":
-      return "INFINITY";
-    if token.value == "double.NEGATIVE_INFINITY" or \
-       token.value == "float.NEGATIVE_INFINITY":
-      return "-INFINITY";
-    if token.value == "double.NAN" or token.value == "float.NAN":
-      return "NAN";
+    if token.value == "double.INFINITY":
+      return "std::numeric_limits<double>::infinity()"
+    if token.value == "float.INFINITY":
+      return "std::numeric_limits<float>::infinity()"
+    if token.value == "double.NEGATIVE_INFINITY":
+      return "-std::numeric_limits<double>::infinity()"
+    if token.value == "float.NEGATIVE_INFINITY":
+      return "-std::numeric_limits<float>::infinity()"
+    if token.value == "double.NAN":
+      return "std::numeric_limits<double>::quiet_NaN()"
+    if token.value == "float.NAN":
+      return "std::numeric_limits<float>::quiet_NaN()"
 
   if (kind is not None and mojom.IsFloatKind(kind)):
       return token if token.isdigit() else token + "f";
@@ -535,6 +546,7 @@ class Generator(generator.Generator):
     "cpp_wrapper_type": GetCppWrapperType,
     "default_value": DefaultValue,
     "expression_to_text": ExpressionToText,
+    "format_constant_declaration": FormatConstantDeclaration,
     "get_container_validate_params_ctor_args":
         GetContainerValidateParamsCtorArgs,
     "get_name_for_kind": GetNameForKind,

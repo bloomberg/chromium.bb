@@ -45,7 +45,7 @@ inline bool IsKnownEnumValue({{enum_name}} value) {
 {%-   set enum_name = enum|get_name_for_kind(flatten_nested_kind=True) %}
 struct {{enum_name}}_Data {
  public:
-  static bool const kIsExtensible = {% if enum.extensible %}true{% else %}false{% endif %};
+  static bool constexpr kIsExtensible = {% if enum.extensible %}true{% else %}false{% endif %};
 
   static bool IsKnownValue(int32_t value) {
 {%- if enum.fields %}

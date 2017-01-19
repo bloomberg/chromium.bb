@@ -42,14 +42,11 @@ std::move(p_{{param.name}})
 
 {#--- Begin #}
 const char {{class_name}}::Name_[] = "{{namespace_as_string}}::{{class_name}}";
-const uint32_t {{class_name}}::Version_;
 
 {#--- Constants #}
 {%-  for constant in interface.constants %}
-{%-   if constant.kind|is_integral_kind %}
-const {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}};
-{%-   else %}
-const {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}} = {{constant|constant_value}};
+{%-   if constant.kind|is_string_kind %}
+const char {{interface.name}}::{{constant.name}}[] = {{constant|constant_value}};
 {%-   endif %}
 {%- endfor %}
 

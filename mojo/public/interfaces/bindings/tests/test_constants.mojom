@@ -42,12 +42,16 @@ const float kFloatInfinity = float.INFINITY;
 const float kFloatNegativeInfinity = float.NEGATIVE_INFINITY;
 const float kFloatNaN = float.NAN;
 
+const string kStringValue = "test string contents";
+
 struct StructWithConstants {
   const int8 kInt8Value = 5;
   const float kFloatValue = 765.432;
+  const string kStringValue = "struct test string contents";
 };
 
 interface InterfaceWithConstants {
   const uint32 kUint32Value = 20100722;
   const double kDoubleValue = 12.34567;
+  const string kStringValue = "interface test string contents";
 };

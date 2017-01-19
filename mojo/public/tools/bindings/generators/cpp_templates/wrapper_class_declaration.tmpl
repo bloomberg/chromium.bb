@@ -10,11 +10,7 @@ class {{export_attribute}} {{struct.name}} {
 
 {#--- Constants #}
 {%- for constant in struct.constants %}
-{%-   if constant.kind|is_integral_kind %}
-  static const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant|constant_value}};
-{%-   else %}
-  static const {{constant.kind|cpp_pod_type}} {{constant.name}};
-{%-   endif %}
+  static {{constant|format_constant_declaration(nested=True)}};
 {%- endfor %}
 
   static {{struct.name}}Ptr New();

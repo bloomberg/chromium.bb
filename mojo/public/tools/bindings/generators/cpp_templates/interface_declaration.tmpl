@@ -13,9 +13,9 @@ class {{export_attribute}} {{interface.name}}
     : public {{interface.name}}InterfaceBase {
  public:
   static const char Name_[];
-  static const uint32_t Version_ = {{interface.version}};
-  static const bool PassesAssociatedKinds_ = {% if interface|passes_associated_kinds %}true{% else %}false{% endif %};
-  static const bool HasSyncMethods_ = {% if interface|has_sync_methods %}true{% else %}false{% endif %};
+  static constexpr uint32_t Version_ = {{interface.version}};
+  static constexpr bool PassesAssociatedKinds_ = {% if interface|passes_associated_kinds %}true{% else %}false{% endif %};
+  static constexpr bool HasSyncMethods_ = {% if interface|has_sync_methods %}true{% else %}false{% endif %};
 
   using Proxy_ = {{interface.name}}Proxy;
 
@@ -43,11 +43,7 @@ class {{export_attribute}} {{interface.name}}
 
 {#--- Constants #}
 {%- for constant in interface.constants %}
-{%-   if constant.kind|is_integral_kind %}
-  static const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant|constant_value}};
-{%-   else %}
-  static const {{constant.kind|cpp_pod_type}} {{constant.name}};
-{%-   endif %}
+  static {{constant|format_constant_declaration(nested=True)}};
 {%- endfor %}
 
 {#--- Methods #}

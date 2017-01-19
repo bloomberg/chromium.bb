@@ -50,18 +50,16 @@ namespace {{variant}} {
 
 {#--- Constants #}
 {%- for constant in module.constants %}
-{%-   if not constant.kind|is_integral_kind %}
-const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant|constant_value}};
+{%-   if constant.kind|is_string_kind %}
+const char {{constant.name}}[] = {{constant|constant_value}};
 {%-   endif %}
 {%- endfor %}
 
 {#--- Struct Constants #}
 {%- for struct in structs %}
 {%-   for constant in struct.constants %}
-{%-     if constant.kind|is_integral_kind %}
-const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}};
-{%-     else %}
-const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{constant|constant_value}};
+{%-     if constant.kind|is_string_kind %}
+const char {{struct.name}}::{{constant.name}}[] = {{constant|constant_value}};
 {%-     endif %}
 {%-   endfor %}
 {%- endfor %}
