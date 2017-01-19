@@ -4,7 +4,9 @@
 
 #include "platform/graphics/ColorBehavior.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "platform/graphics/BitmapImageMetrics.h"
+#include "third_party/skia/include/core/SkICC.h"
 #include "wtf/SpinLock.h"
 
 namespace blink {
@@ -32,6 +34,18 @@ void ColorBehavior::setGlobalTargetColorProfile(
   if (!profile.isEmpty()) {
     gTargetColorSpace =
         SkColorSpace::MakeICC(profile.data(), profile.size()).release();
+    sk_sp<SkICC> skICC = SkICC::Make(profile.data(), profile.size());
+    if (skICC) {
+      SkMatrix44 toXYZD50;
+      bool toXYZD50Result = skICC->toXYZD50(&toXYZD50);
+      UMA_HISTOGRAM_BOOLEAN("Blink.ColorSpace.Destination.Matrix",
+                            toXYZD50Result);
+
+      SkColorSpaceTransferFn fn;
+      bool isNumericalTransferFnResult = skICC->isNumericalTransferFn(&fn);
+      UMA_HISTOGRAM_BOOLEAN("Blink.ColorSpace.Destination.Numerical",
+                            isNumericalTransferFnResult);
+    }
   }
 
   // If we do not succeed, assume sRGB.
