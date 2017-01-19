@@ -383,6 +383,9 @@ target(link_target_type, "ffmpeg_internal") {
 
 if (is_component_ffmpeg) {
   shared_library("ffmpeg") {
+    if (is_android) {
+      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    }
     public_configs = [ ":ffmpeg_dependent_config" ]
     deps = [
       ":ffmpeg_internal",
