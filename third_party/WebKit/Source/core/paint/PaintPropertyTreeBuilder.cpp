@@ -38,10 +38,11 @@ PaintPropertyTreeBuilder::setupInitialContext() {
 }
 
 // True if a new property was created, false if an existing one was updated.
-bool updatePreTranslation(FrameView& frameView,
-                          PassRefPtr<const TransformPaintPropertyNode> parent,
-                          const TransformationMatrix& matrix,
-                          const FloatPoint3D& origin) {
+static bool updatePreTranslation(
+    FrameView& frameView,
+    PassRefPtr<const TransformPaintPropertyNode> parent,
+    const TransformationMatrix& matrix,
+    const FloatPoint3D& origin) {
   DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
   if (auto* existingPreTranslation = frameView.preTranslation()) {
     existingPreTranslation->update(std::move(parent), matrix, origin);
@@ -53,7 +54,7 @@ bool updatePreTranslation(FrameView& frameView,
 }
 
 // True if a new property was created, false if an existing one was updated.
-bool updateContentClip(
+static bool updateContentClip(
     FrameView& frameView,
     PassRefPtr<const ClipPaintPropertyNode> parent,
     PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
@@ -70,7 +71,7 @@ bool updateContentClip(
 }
 
 // True if a new property was created, false if an existing one was updated.
-bool updateScrollTranslation(
+static bool updateScrollTranslation(
     FrameView& frameView,
     PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
@@ -87,14 +88,15 @@ bool updateScrollTranslation(
 
 // True if a new property was created or a main thread scrolling reason changed
 // (which can affect descendants), false if an existing one was updated.
-bool updateScroll(FrameView& frameView,
-                  PassRefPtr<const ScrollPaintPropertyNode> parent,
-                  PassRefPtr<const TransformPaintPropertyNode> scrollOffset,
-                  const IntSize& clip,
-                  const IntSize& bounds,
-                  bool userScrollableHorizontal,
-                  bool userScrollableVertical,
-                  MainThreadScrollingReasons mainThreadScrollingReasons) {
+static bool updateScroll(
+    FrameView& frameView,
+    PassRefPtr<const ScrollPaintPropertyNode> parent,
+    PassRefPtr<const TransformPaintPropertyNode> scrollOffset,
+    const IntSize& clip,
+    const IntSize& bounds,
+    bool userScrollableHorizontal,
+    bool userScrollableVertical,
+    MainThreadScrollingReasons mainThreadScrollingReasons) {
   DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
   if (auto* existingScroll = frameView.scroll()) {
     auto existingReasons = existingScroll->mainThreadScrollingReasons();
@@ -110,7 +112,7 @@ bool updateScroll(FrameView& frameView,
   return true;
 }
 
-MainThreadScrollingReasons mainThreadScrollingReasons(
+static MainThreadScrollingReasons mainThreadScrollingReasons(
     const FrameView& frameView,
     MainThreadScrollingReasons ancestorReasons) {
   auto reasons = ancestorReasons;
@@ -347,15 +349,11 @@ static FloatPoint3D transformOrigin(const LayoutBox& box) {
       style.transformOriginZ());
 }
 
-namespace {
-
-CompositorElementId createDomNodeBasedCompositorElementId(
+static CompositorElementId createDomNodeBasedCompositorElementId(
     const LayoutObject& object) {
   return createCompositorElementId(DOMNodeIds::idForNode(object.node()),
                                    CompositorSubElementId::Primary);
 }
-
-}  // namespace
 
 void PaintPropertyTreeBuilder::updateTransform(
     const LayoutObject& object,
@@ -744,7 +742,7 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(
   context.current.paintOffset = LayoutPoint();
 }
 
-MainThreadScrollingReasons mainThreadScrollingReasons(
+static MainThreadScrollingReasons mainThreadScrollingReasons(
     const LayoutObject& object,
     MainThreadScrollingReasons ancestorReasons) {
   // The current main thread scrolling reasons implementation only changes

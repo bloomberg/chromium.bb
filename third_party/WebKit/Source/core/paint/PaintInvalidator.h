@@ -94,12 +94,15 @@ class PaintInvalidator {
   void processPendingDelayedPaintInvalidations();
 
  private:
-  LayoutRect computeVisualRectInBacking(const LayoutObject&,
-                                        const PaintInvalidatorContext&);
-  LayoutPoint computeLocationInBacking(const LayoutObject&,
-                                       const PaintInvalidatorContext&);
-  void updatePaintingLayer(const LayoutObject&, PaintInvalidatorContext&);
-  void updateContext(const LayoutObject&, PaintInvalidatorContext&);
+  ALWAYS_INLINE LayoutRect
+  computeVisualRectInBacking(const LayoutObject&,
+                             const PaintInvalidatorContext&);
+  ALWAYS_INLINE LayoutPoint
+  computeLocationInBacking(const LayoutObject&, const PaintInvalidatorContext&);
+  ALWAYS_INLINE void updatePaintingLayer(const LayoutObject&,
+                                         PaintInvalidatorContext&);
+  ALWAYS_INLINE void updateContext(const LayoutObject&,
+                                   PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> m_pendingDelayedPaintInvalidations;
   GeometryMapper m_geometryMapper;

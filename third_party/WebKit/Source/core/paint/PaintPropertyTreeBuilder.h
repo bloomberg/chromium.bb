@@ -116,32 +116,38 @@ class PaintPropertyTreeBuilder {
                                    PaintPropertyTreeBuilderContext&);
 
  private:
-  static void updatePaintOffsetTranslation(const LayoutObject&,
-                                           PaintPropertyTreeBuilderContext&);
-  static void updateTransform(const LayoutObject&,
-                              PaintPropertyTreeBuilderContext&);
-  static void updateTransformForNonRootSVG(const LayoutObject&,
-                                           PaintPropertyTreeBuilderContext&);
-  static void updateEffect(const LayoutObject&,
-                           PaintPropertyTreeBuilderContext&);
-  static void updateCssClip(const LayoutObject&,
-                            PaintPropertyTreeBuilderContext&);
-  static void updateLocalBorderBoxContext(const LayoutObject&,
-                                          PaintPropertyTreeBuilderContext&);
-  static void updateScrollbarPaintOffset(const LayoutObject&,
+  ALWAYS_INLINE static void updatePaintOffsetTranslation(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateTransform(const LayoutObject&,
+                                            PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateTransformForNonRootSVG(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateEffect(const LayoutObject&,
                                          PaintPropertyTreeBuilderContext&);
-  static void updateOverflowClip(const LayoutObject&,
-                                 PaintPropertyTreeBuilderContext&);
-  static void updatePerspective(const LayoutObject&,
-                                PaintPropertyTreeBuilderContext&);
-  static void updateSvgLocalToBorderBoxTransform(
+  ALWAYS_INLINE static void updateCssClip(const LayoutObject&,
+                                          PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateLocalBorderBoxContext(
       const LayoutObject&,
       PaintPropertyTreeBuilderContext&);
-  static void updateScrollAndScrollTranslation(
+  ALWAYS_INLINE static void updateScrollbarPaintOffset(
       const LayoutObject&,
       PaintPropertyTreeBuilderContext&);
-  static void updateOutOfFlowContext(const LayoutObject&,
-                                     PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateOverflowClip(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updatePerspective(const LayoutObject&,
+                                              PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateSvgLocalToBorderBoxTransform(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateScrollAndScrollTranslation(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderContext&);
+  ALWAYS_INLINE static void updateOutOfFlowContext(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderContext&);
 };
 
 }  // namespace blink
