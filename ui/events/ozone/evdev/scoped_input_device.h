@@ -6,11 +6,12 @@
 #define UI_EVENTS_OZONE_EVDEV_SCOPED_INPUT_DEVICE_H_
 
 #include "base/scoped_generic.h"
+#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 namespace internal {
 
-struct ScopedInputDeviceCloseTraits {
+struct EVENTS_OZONE_EVDEV_EXPORT ScopedInputDeviceCloseTraits {
   static int InvalidValue() { return -1; }
   static void Free(int fd);
 };
