@@ -14,12 +14,10 @@
 #include "ash/display/null_mouse_warp_controller.h"
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/host/ash_window_tree_host.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
@@ -30,23 +28,30 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/resources/vector_icons/vector_icons.h"
+#include "base/sys_info.h"
+#include "ui/gfx/paint_vector_icon.h"
+#endif
+
 namespace ash {
 namespace {
 
 const char kDisplayErrorNotificationId[] = "chrome://settings/display/error";
 
+#if defined(OS_CHROMEOS)
 // TODO(glevin): These are for new MD vector icons, but are using pre-MD color
 // scheme. When we switch to all MD icons for notifications, these should be
 // updated to use MD color scheme.
 const SkColor kDisplayIconColor = SkColorSetRGB(0xBD, 0xBD, 0xBD);
 const SkColor kFeedbackIconColor = SkColorSetRGB(0x96, 0x96, 0x98);
+#endif
 
 // A notification delegate that will start the feedback app when the notication
 // is clicked.
@@ -167,6 +172,7 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
 }
 
 
+#if defined(OS_CHROMEOS)
 void ShowDisplayErrorNotification(const base::string16& message,
                                   bool allow_feedback) {
   // Always remove the notification to make sure the notification appears
@@ -197,6 +203,7 @@ void ShowDisplayErrorNotification(const base::string16& message,
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
+#endif
 
 base::string16 GetDisplayErrorNotificationMessageForTest() {
   message_center::NotificationList::Notifications notifications =

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/strings/string16.h"
 
 namespace aura {
@@ -35,8 +36,8 @@ std::unique_ptr<MouseWarpController> CreateMouseWarpController(
 
 // Creates edge bounds from |bounds_in_screen| that fits the edge
 // of the native window for |ash_host|.
-gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
-                              const gfx::Rect& bounds_in_screen);
+ASH_EXPORT gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
+                                         const gfx::Rect& bounds_in_screen);
 
 // Moves the cursor to the point inside the |ash_host| that is closest to
 // the point_in_screen, which may be outside of the root window.
@@ -46,12 +47,14 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
                   const gfx::Point& point_in_screen,
                   bool update_last_location_now);
 
+#if defined(OS_CHROMEOS)
 // Shows the notification message for display related issues, and optionally
 // adds a button to send a feedback report.
 void ShowDisplayErrorNotification(const base::string16& message,
                                   bool allow_feedback);
+#endif
 
-base::string16 GetDisplayErrorNotificationMessageForTest();
+ASH_EXPORT base::string16 GetDisplayErrorNotificationMessageForTest();
 
 }  // namespace ash
 

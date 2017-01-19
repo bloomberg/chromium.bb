@@ -200,6 +200,7 @@ void MirrorWindowController::UpdateWindow(
       }
 #endif
 
+#if defined(OS_CHROMEOS)
       if (display_manager->IsInUnifiedMode()) {
         host_info->ash_host->ConfineCursorToRootWindow();
         AshWindowTreeHost* unified_ash_host =
@@ -211,6 +212,7 @@ void MirrorWindowController::UpdateWindow(
         aura::client::SetScreenPositionClient(host->window(),
                                               screen_position_client_.get());
       }
+#endif
 
       aura::client::SetCaptureClient(host->window(), new NoneCaptureClient());
       host->Show();
