@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "components/bookmarks/browser/titled_url_index.h"
 #include "components/bookmarks/browser/titled_url_node_sorter.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -77,7 +76,7 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
   }
 
   if (input.from_omnibox_focus()) {
-    ConstructZeroSuggestMatches(data_source->GetMetadata());
+    ConstructZeroSuggestMatches(data_source->GetMetadataList());
 
     if (!matches_.empty()) {
       had_physical_web_suggestions_ = true;
@@ -98,7 +97,7 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
           client_, input, input.current_url(), history_url_provider_, -1));
     }
   } else {
-    ConstructQuerySuggestMatches(data_source->GetMetadata(), input);
+    ConstructQuerySuggestMatches(data_source->GetMetadataList(), input);
 
     if (!matches_.empty()) {
       had_physical_web_suggestions_ = true;
@@ -162,22 +161,14 @@ PhysicalWebProvider::~PhysicalWebProvider() {
 }
 
 void PhysicalWebProvider::ConstructZeroSuggestMatches(
-    std::unique_ptr<base::ListValue> metadata_list) {
-  nearby_url_count_ = metadata_list->GetSize();
+    std::unique_ptr<physical_web::MetadataList> metadata_list) {
+  nearby_url_count_ = metadata_list->size();
   size_t used_slots = 0;
 
   for (size_t i = 0; i < nearby_url_count_; ++i) {
-    base::DictionaryValue* metadata_item = NULL;
-    if (!metadata_list->GetDictionary(i, &metadata_item)) {
-      continue;
-    }
-
-    std::string url_string;
-    std::string title_string;
-    if (!metadata_item->GetString(physical_web::kResolvedUrlKey, &url_string) ||
-        !metadata_item->GetString(physical_web::kTitleKey, &title_string)) {
-      continue;
-    }
+    const auto& metadata_item = (*metadata_list)[i];
+    std::string url_string = metadata_item.resolved_url.spec();
+    std::string title_string = metadata_item.title;
     base::string16 title =
         AutocompleteMatch::SanitizeString(base::UTF8ToUTF16(title_string));
 
@@ -225,19 +216,15 @@ void PhysicalWebProvider::ConstructZeroSuggestMatches(
 }
 
 void PhysicalWebProvider::ConstructQuerySuggestMatches(
-    std::unique_ptr<base::ListValue> metadata_list,
+    std::unique_ptr<physical_web::MetadataList> metadata_list,
     const AutocompleteInput& input) {
   // Passing nullptr for the TitledUrlNodeSorter will cause the returned match
   // list to be unsorted.
   bookmarks::TitledUrlIndex index(nullptr);
   std::vector<std::unique_ptr<PhysicalWebNode>> nodes;
-  const size_t metadata_count = metadata_list->GetSize();
-  for (size_t i = 0; i < metadata_count; ++i) {
-    base::DictionaryValue* metadata_item = NULL;
-    if (metadata_list->GetDictionary(i, &metadata_item)) {
-      nodes.push_back(base::MakeUnique<PhysicalWebNode>(*metadata_item));
-      index.Add(nodes.back().get());
-    }
+  for (const auto& metadata_item : *metadata_list) {
+    nodes.push_back(base::MakeUnique<PhysicalWebNode>(metadata_item));
+    index.Add(nodes.back().get());
   }
 
   std::vector<bookmarks::TitledUrlMatch> titled_url_matches;

@@ -8,13 +8,13 @@
 #include "components/bookmarks/browser/titled_url_node.h"
 #include "url/gurl.h"
 
-namespace base {
-class DictionaryValue;
+namespace physical_web {
+struct Metadata;
 }
 
 class PhysicalWebNode : public bookmarks::TitledUrlNode {
  public:
-  explicit PhysicalWebNode(const base::DictionaryValue& metadata_item);
+  explicit PhysicalWebNode(const physical_web::Metadata& metadata_item);
   ~PhysicalWebNode() override;
 
   // TitledUrlNode

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_PHYSICAL_WEB_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_PHYSICAL_WEB_PROVIDER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -13,8 +15,9 @@
 class AutocompleteProviderClient;
 class HistoryURLProvider;
 
-namespace base {
-class ListValue;
+namespace physical_web {
+struct Metadata;
+using MetadataList = std::vector<Metadata>;
 }
 
 class PhysicalWebProvider : public AutocompleteProvider {
@@ -50,14 +53,14 @@ class PhysicalWebProvider : public AutocompleteProvider {
   // of matches allowed. If the total number of nearby URLs exceeds this limit,
   // one match is used for an overflow item.
   void ConstructZeroSuggestMatches(
-      std::unique_ptr<base::ListValue> metadata_list);
+      std::unique_ptr<physical_web::MetadataList> metadata_list);
 
   // When the user has entered text into the omnibox (i.e., the Query Suggest
   // case), calling this method adds a separate match item to |matches_| for
   // each nearby URL in |metadata_list| that matches all of the query terms in
   // |input|, up to the maximum number of matches allowed.
   void ConstructQuerySuggestMatches(
-      std::unique_ptr<base::ListValue> metadata_list,
+      std::unique_ptr<physical_web::MetadataList> metadata_list,
       const AutocompleteInput& input);
 
   // Adds an overflow match item to |matches_| with a relevance score equal to

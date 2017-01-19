@@ -5,18 +5,11 @@
 #include "components/omnibox/browser/physical_web_node.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 
-PhysicalWebNode::PhysicalWebNode(const base::DictionaryValue& metadata_item) {
-  std::string title;
-  std::string url;
-  if (metadata_item.GetString(physical_web::kTitleKey, &title)) {
-    node_title_ = base::UTF8ToUTF16(title);
-  }
-  if (metadata_item.GetString(physical_web::kResolvedUrlKey, &url)) {
-    node_url_ = GURL(url);
-  }
+PhysicalWebNode::PhysicalWebNode(const physical_web::Metadata& metadata_item)
+  : node_title_(base::UTF8ToUTF16(metadata_item.title)),
+    node_url_(metadata_item.resolved_url) {
 }
 
 PhysicalWebNode::~PhysicalWebNode() = default;
