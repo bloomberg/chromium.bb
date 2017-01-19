@@ -202,7 +202,11 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
 // TODO(jingning): The pc_tree allocation is redundant. We can take out all
 // the leaf nodes after cb4x4 mode is enabled.
 #if CONFIG_CB4X4
+#if CONFIG_EXT_PARTITION
+  const int tree_nodes_inc = 1024;
+#else
   const int tree_nodes_inc = 256;
+#endif  // CONFIG_EXT_PARTITION
   const int leaf_factor = 4;
 #else
   const int tree_nodes_inc = 0;
@@ -284,7 +288,11 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
 
 void av1_free_pc_tree(ThreadData *td) {
 #if CONFIG_CB4X4
+#if CONFIG_EXT_PARTITION
+  const int tree_nodes_inc = 1024;
+#else
   const int tree_nodes_inc = 256;
+#endif  // CONFIG_EXT_PARTITION
   const int leaf_factor = 4;
 #else
   const int tree_nodes_inc = 0;
