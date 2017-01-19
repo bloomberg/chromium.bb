@@ -35,6 +35,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
@@ -53,6 +54,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/Page.h"
+#include "platform/Timer.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -218,7 +220,7 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   void didFailLoading(LocalFrame*);
 
   std::unique_ptr<WebURLLoader> m_loader;
-  Timer<PingLoaderImpl> m_timeout;
+  TaskRunnerTimer<PingLoaderImpl> m_timeout;
   String m_url;
   unsigned long m_identifier;
   SelfKeepAlive<PingLoaderImpl> m_keepAlive;
@@ -236,7 +238,9 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
                                StoredCredentials credentialsAllowed,
                                bool isBeacon)
     : ContextClient(frame),
-      m_timeout(this, &PingLoaderImpl::timeout),
+      m_timeout(TaskRunnerHelper::get(TaskType::Networking, frame),
+                this,
+                &PingLoaderImpl::timeout),
       m_url(request.url()),
       m_identifier(createUniqueIdentifier()),
       m_keepAlive(this),
