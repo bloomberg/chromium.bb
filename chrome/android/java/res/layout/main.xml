@@ -21,6 +21,15 @@
                 android:layout_height="match_parent" />
 
             <ViewStub
+                android:id="@+id/bottombar_stub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-4dp"
+                android:layout_gravity="start|bottom"
+                android:inflatedId="@+id/bottombar"
+                android:layout="@layout/custom_tabs_bottombar" />
+
+            <ViewStub
                 android:id="@+id/omnibox_results_container_stub"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -65,12 +74,6 @@
             android:fillViewport="true"
             android:scrollbars="none"
             android:visibility="gone" />
-
-        <ViewStub
-            android:id="@+id/bottombar_stub"
-            android:layout_width="match_parent"
-            android:layout_marginTop="-4dp"
-            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <!-- This empty view is used as the anchor for custom menu -->

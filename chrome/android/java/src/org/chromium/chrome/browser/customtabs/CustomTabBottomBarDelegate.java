@@ -25,6 +25,7 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -33,7 +34,7 @@ import java.util.List;
 /**
  * Delegate that manages bottom bar area inside of {@link CustomTabActivity}.
  */
-class CustomTabBottomBarDelegate {
+class CustomTabBottomBarDelegate implements FullscreenListener {
     private static final String TAG = "CustomTab";
     private static final CachedMetrics.ActionEvent REMOTE_VIEWS_SHOWN =
             new CachedMetrics.ActionEvent("CustomTabsRemoteViewsShown");
@@ -138,12 +139,22 @@ class CustomTabBottomBarDelegate {
     }
 
     /**
+     * @return The height of the bottom bar, excluding its top shadow.
+     */
+    public int getBottomBarHeight() {
+        if (!mDataProvider.shouldShowBottomBar() || mBottomBarView == null
+                || mBottomBarView.getChildCount() < 2) {
+            return 0;
+        }
+        return mBottomBarView.getChildAt(1).getHeight();
+    }
+
+    /**
      * Gets the {@link ViewGroup} of the bottom bar. If it has not been inflated, inflate it first.
      */
     private ViewGroup getBottomBarView() {
         if (mBottomBarView == null) {
             ViewStub bottomBarStub = ((ViewStub) mActivity.findViewById(R.id.bottombar_stub));
-            bottomBarStub.setLayoutResource(R.layout.custom_tabs_bottombar);
             mBottomBarView = (ViewGroup) bottomBarStub.inflate();
         }
         return mBottomBarView;
@@ -199,4 +210,17 @@ class CustomTabBottomBarDelegate {
             Log.e(TAG, "CanceledException when sending pending intent.");
         }
     }
+
+    // FullscreenListener methods
+    @Override
+    public void onControlsOffsetChanged(float topOffset, float bottomOffset,
+            boolean needsAnimate) {
+        if (mBottomBarView != null) mBottomBarView.setTranslationY(bottomOffset);
+    }
+
+    @Override
+    public void onContentOffsetChanged(float offset) { }
+
+    @Override
+    public void onToggleOverlayVideoMode(boolean enabled) { }
 }

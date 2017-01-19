@@ -420,8 +420,9 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
         fullscreenManager.addListener(new FullscreenListener() {
             @Override
-            public void onVisibleContentOffsetChanged(float offset, boolean needsAnimate) {
-                if (offset != initialVisibleContentOffset) {
+            public void onControlsOffsetChanged(float topOffset, float bottomOffset,
+                    boolean needsAnimate) {
+                if (fullscreenManager.getTopVisibleContentOffset() != initialVisibleContentOffset) {
                     contentMovedCallback.notifyCalled();
                     fullscreenManager.removeListener(this);
                 }

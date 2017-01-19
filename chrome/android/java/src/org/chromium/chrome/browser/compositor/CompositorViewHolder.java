@@ -100,7 +100,6 @@ public class CompositorViewHolder extends FrameLayout
     private View mAccessibilityView;
     private CompositorAccessibilityProvider mNodeProvider;
     private float mLastContentOffset;
-    private float mLastVisibleContentOffset;
 
     /** The toolbar control container. **/
     private ControlContainer mControlContainer;
@@ -443,7 +442,6 @@ public class CompositorViewHolder extends FrameLayout
     public void onStart() {
         if (mFullscreenManager != null) {
             mLastContentOffset = mFullscreenManager.getContentOffset();
-            mLastVisibleContentOffset = mFullscreenManager.getTopVisibleContentOffset();
             mFullscreenManager.addListener(this);
         }
         requestRender();
@@ -463,8 +461,7 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onVisibleContentOffsetChanged(float offset, boolean needsAnimate) {
-        mLastVisibleContentOffset = offset;
+    public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
         onViewportChanged();
         if (needsAnimate) requestRender();
     }
@@ -662,7 +659,6 @@ public class CompositorViewHolder extends FrameLayout
         mFullscreenManager = fullscreen;
         if (mFullscreenManager != null) {
             mLastContentOffset = mFullscreenManager.getContentOffset();
-            mLastVisibleContentOffset = mFullscreenManager.getTopVisibleContentOffset();
             mFullscreenManager.addListener(this);
         }
         onViewportChanged();
@@ -704,7 +700,7 @@ public class CompositorViewHolder extends FrameLayout
     public float getOverlayTranslateY() {
         return areBrowserControlsPermanentlyHidden()
                 ? getTopControlsHeightPixels()
-                : mLastVisibleContentOffset;
+                : mFullscreenManager.getTopVisibleContentOffset();
     }
 
     /**

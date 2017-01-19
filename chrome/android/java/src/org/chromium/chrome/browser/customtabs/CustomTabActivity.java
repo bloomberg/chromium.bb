@@ -173,6 +173,8 @@ public class CustomTabActivity extends ChromeActivity {
         public void didAddTab(Tab tab, TabLaunchType type) {
             PageLoadMetrics.addObserver(mMetricsObserver);
             tab.addObserver(mTabObserver);
+            getFullscreenManager().setBottomControlsHeight(mBottomBarDelegate.getBottomBarHeight());
+            getFullscreenManager().addListener(mBottomBarDelegate);
         }
 
         @Override
@@ -433,6 +435,7 @@ public class CustomTabActivity extends ChromeActivity {
                         finishAndClose(false);
                     }
                 });
+        getFullscreenManager().setBottomControlsHeight(mBottomBarDelegate.getBottomBarHeight());
 
         mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override

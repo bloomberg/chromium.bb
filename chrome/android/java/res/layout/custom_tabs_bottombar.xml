@@ -4,7 +4,6 @@
      found in the LICENSE file. -->
 <org.chromium.chrome.browser.widget.BoundedLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/bottombar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -14,7 +13,6 @@
         android:id="@+id/bottombar_shadow"
         android:layout_width="match_parent"
         android:layout_height="4dp"
-        android:background="@drawable/toolbar_shadow_normal"
-        android:scaleY="-1" />
+        android:background="@drawable/infobar_shadow_top" />
 
 </org.chromium.chrome.browser.widget.BoundedLinearLayout>

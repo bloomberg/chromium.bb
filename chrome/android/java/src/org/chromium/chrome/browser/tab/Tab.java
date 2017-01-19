@@ -1691,11 +1691,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
-            final ViewGroup bottomContainer = (ViewGroup) getActivity()
-                    .findViewById(R.id.bottom_container);
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
             if (mInfoBarContainer == null) {
+                ViewGroup bottomContainer = (ViewGroup) getActivity()
+                        .findViewById(R.id.bottom_container);
                 // The InfoBarContainer needs to be created after the ContentView has been natively
                 // initialized.
                 mInfoBarContainer = new InfoBarContainer(mThemedApplicationContext, bottomContainer,
