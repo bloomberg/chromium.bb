@@ -290,7 +290,7 @@ justify-content initial=initialContentAlignment, converter=convertContentAlignme
 justify-items runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
 justify-self runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
 left typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
-letter-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
+letter-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing, api_class=CSSPropertyAPILetterAndWordSpacing
 lighting-color interpolable, svg, converter=convertColor
 line-height interpolable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
 list-style-image interpolable, inherited, custom_value, typedom_types=[Image]
@@ -475,7 +475,7 @@ widows interpolable, inherited, type_name=short
 width interpolable, initial=initialSize, converter=convertLengthSizing, typedom_types=[Length], keywords=[auto], supports_percentage
 will-change custom_all, api_class
 word-break inherited
-word-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
+word-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing, api_class=CSSPropertyAPILetterAndWordSpacing
 // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
 word-wrap inherited, name_for_methods=OverflowWrap
 z-index interpolable, type_name=int, custom_all, api_class

@@ -516,15 +516,6 @@ static CSSValueList* consumeFontFamily(CSSParserTokenRange& range) {
   return list;
 }
 
-static CSSValue* consumeSpacing(CSSParserTokenRange& range,
-                                CSSParserMode cssParserMode) {
-  if (range.peek().id() == CSSValueNormal)
-    return consumeIdent(range);
-  // TODO(timloh): allow <percentage>s in word-spacing.
-  return consumeLength(range, cssParserMode, ValueRangeAll,
-                       UnitlessQuirk::Allow);
-}
-
 static CSSValue* consumeFontSize(
     CSSParserTokenRange& range,
     CSSParserMode cssParserMode,
@@ -2752,9 +2743,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeFontFamily(m_range);
     case CSSPropertyFontWeight:
       return consumeFontWeight(m_range);
-    case CSSPropertyLetterSpacing:
-    case CSSPropertyWordSpacing:
-      return consumeSpacing(m_range, m_context->mode());
     case CSSPropertyFontSize:
       return consumeFontSize(m_range, m_context->mode(), UnitlessQuirk::Allow);
     case CSSPropertyLineHeight:
