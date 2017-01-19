@@ -61,7 +61,7 @@ class GeoNotifier : public GarbageCollectedFinalized<GeoNotifier> {
   Member<PositionCallback> m_successCallback;
   Member<PositionErrorCallback> m_errorCallback;
   const PositionOptions m_options;
-  TaskRunnerTimer<GeoNotifier> m_timer;
+  Timer<GeoNotifier> m_timer;
   Member<PositionError> m_fatalError;
   bool m_useCachedPosition;
 };
