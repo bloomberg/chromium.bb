@@ -2821,6 +2821,15 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * Sets the TabRedirectHandler for the tab.
+     *
+     * @param tabRedirectHandler the TabRedirectHandler
+     */
+    public void setTabRedirectHandler(TabRedirectHandler tabRedirectHandler) {
+        mTabRedirectHandler = tabRedirectHandler;
+    }
+
+    /**
      * @return the AppBannerManager.
      */
     public AppBannerManager getAppBannerManager() {

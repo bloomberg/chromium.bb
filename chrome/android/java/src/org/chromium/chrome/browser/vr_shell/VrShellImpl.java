@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -81,6 +82,8 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     private boolean mReprojectedRendering;
 
+    private TabRedirectHandler mNonVrTabRedirectHandler;
+
     public VrShellImpl(Activity activity) {
         super(activity);
         mActivity = activity;
@@ -122,6 +125,15 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mTab = currentTab;
         mContentCVC = mTab.getContentViewCore();
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
+
+        // Make sure we are not redirecting to another app, i.e. out of VR mode.
+        mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
+        mTab.setTabRedirectHandler(new TabRedirectHandler(mActivity) {
+            @Override
+            public boolean shouldStayInChrome(boolean hasExternalProtocol) {
+                return true;
+            }
+        });
 
         mUiVrWindowAndroid = new VrWindowAndroid(mActivity, mUiVirtualDisplay);
         mUiContents = WebContentsFactory.createWebContents(true, false);
@@ -251,6 +263,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             nativeDestroy(mNativeVrShell);
             mNativeVrShell = 0;
         }
+        mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
         mTab.updateWindowAndroid(mOriginalWindowAndroid);
         mContentCVC.onSizeChanged(mContentCVC.getContainerView().getWidth(),
                 mContentCVC.getContainerView().getHeight(), 0, 0);
