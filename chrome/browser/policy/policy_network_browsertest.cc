@@ -195,6 +195,8 @@ class QuicAllowedPolicyDynamicTest : public InProcessBrowserTest {
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);
 #endif
+    // Ensure that QUIC is enabled by default on browser startup.
+    command_line->AppendSwitch(switches::kEnableQuic);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
