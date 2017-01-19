@@ -8,7 +8,6 @@
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSContentDistributionValue.h"
-#include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -1469,89 +1468,6 @@ static CSSValue* consumeRxOrRy(CSSParserTokenRange& range) {
                                 UnitlessQuirk::Forbid);
 }
 
-static CSSValue* consumeAttr(CSSParserTokenRange args,
-                             const CSSParserContext* context) {
-  if (args.peek().type() != IdentToken)
-    return nullptr;
-
-  AtomicString attrName =
-      args.consumeIncludingWhitespace().value().toAtomicString();
-  if (!args.atEnd())
-    return nullptr;
-
-  // TODO(esprehn): This should be lowerASCII().
-  if (context->isHTMLDocument())
-    attrName = attrName.lower();
-
-  CSSFunctionValue* attrValue = CSSFunctionValue::create(CSSValueAttr);
-  attrValue->append(*CSSCustomIdentValue::create(attrName));
-  return attrValue;
-}
-
-static CSSValue* consumeCounterContent(CSSParserTokenRange args,
-                                       bool counters) {
-  CSSCustomIdentValue* identifier = consumeCustomIdent(args);
-  if (!identifier)
-    return nullptr;
-
-  CSSStringValue* separator = nullptr;
-  if (!counters) {
-    separator = CSSStringValue::create(String());
-  } else {
-    if (!consumeCommaIncludingWhitespace(args) ||
-        args.peek().type() != StringToken)
-      return nullptr;
-    separator = CSSStringValue::create(
-        args.consumeIncludingWhitespace().value().toString());
-  }
-
-  CSSIdentifierValue* listStyle = nullptr;
-  if (consumeCommaIncludingWhitespace(args)) {
-    CSSValueID id = args.peek().id();
-    if ((id != CSSValueNone &&
-         (id < CSSValueDisc || id > CSSValueKatakanaIroha)))
-      return nullptr;
-    listStyle = consumeIdent(args);
-  } else {
-    listStyle = CSSIdentifierValue::create(CSSValueDecimal);
-  }
-
-  if (!args.atEnd())
-    return nullptr;
-  return CSSCounterValue::create(identifier, listStyle, separator);
-}
-
-static CSSValue* consumeContent(CSSParserTokenRange& range,
-                                const CSSParserContext* context) {
-  if (identMatches<CSSValueNone, CSSValueNormal>(range.peek().id()))
-    return consumeIdent(range);
-
-  CSSValueList* values = CSSValueList::createSpaceSeparated();
-
-  do {
-    CSSValue* parsedValue = consumeImage(range, context);
-    if (!parsedValue)
-      parsedValue =
-          consumeIdent<CSSValueOpenQuote, CSSValueCloseQuote,
-                       CSSValueNoOpenQuote, CSSValueNoCloseQuote>(range);
-    if (!parsedValue)
-      parsedValue = consumeString(range);
-    if (!parsedValue) {
-      if (range.peek().functionId() == CSSValueAttr)
-        parsedValue = consumeAttr(consumeFunction(range), context);
-      else if (range.peek().functionId() == CSSValueCounter)
-        parsedValue = consumeCounterContent(consumeFunction(range), false);
-      else if (range.peek().functionId() == CSSValueCounters)
-        parsedValue = consumeCounterContent(consumeFunction(range), true);
-      if (!parsedValue)
-        return nullptr;
-    }
-    values->append(*parsedValue);
-  } while (!range.atEnd());
-
-  return values;
-}
-
 static CSSValue* consumePerspective(CSSParserTokenRange& range,
                                     const CSSParserContext* context,
                                     CSSPropertyID unresolvedProperty) {
@@ -2955,8 +2871,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyRx:
     case CSSPropertyRy:
       return consumeRxOrRy(m_range);
-    case CSSPropertyContent:
-      return consumeContent(m_range, m_context);
     case CSSPropertyListStyleImage:
     case CSSPropertyBorderImageSource:
     case CSSPropertyWebkitMaskBoxImageSource:
