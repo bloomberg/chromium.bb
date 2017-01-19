@@ -46,14 +46,14 @@ function test()
         if (paintEvents.length < 2)
              throw new Error("FAIL: Expect at least two paint events");
 
-        InspectorTest.addSniffer(panel, "_appendDetailsTabsForTraceEventAndShowDetails", onRecordDetailsReady, false);
-        panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[0]), Timeline.TimelinePanel.DetailsTab.PaintProfiler);
+        InspectorTest.addSniffer(panel._detailsView, "_appendDetailsTabsForTraceEventAndShowDetails", onRecordDetailsReady, false);
+        panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[0]), Timeline.TimelineDetailsView.Tab.PaintProfiler);
     }
 
     function onRecordDetailsReady()
     {
         var updateCount = 0;
-        var paintProfilerView = panel._lazyPaintProfilerView._paintProfilerView;
+        var paintProfilerView = panel._detailsView._lazyPaintProfilerView._paintProfilerView;
         InspectorTest.addSniffer(paintProfilerView, "_update", onPaintProfilerUpdate, true);
 
         function onPaintProfilerUpdate()
@@ -66,7 +66,7 @@ function test()
             if (updateCount++)
                 InspectorTest.completeTest();
             else
-                panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[1]), Timeline.TimelinePanel.DetailsTab.PaintProfiler);
+                panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[1]), Timeline.TimelineDetailsView.Tab.PaintProfiler);
         }
    }
 

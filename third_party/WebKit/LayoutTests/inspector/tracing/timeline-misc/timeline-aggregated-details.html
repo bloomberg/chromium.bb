@@ -600,11 +600,11 @@ function test()
     var groupByEnum = Timeline.AggregatedTimelineTreeView.GroupBy;
     for (var grouping in groupByEnum) {
         var groupingValue = groupByEnum[grouping];
-        testEventTree(Timeline.TimelinePanel.DetailsTab.CallTree, groupingValue);
-        testEventTree(Timeline.TimelinePanel.DetailsTab.BottomUp, groupingValue);
+        testEventTree(Timeline.TimelineDetailsView.Tab.CallTree, groupingValue);
+        testEventTree(Timeline.TimelineDetailsView.Tab.BottomUp, groupingValue);
     }
 
-    testEventTree(Timeline.TimelinePanel.DetailsTab.Events);
+    testEventTree(Timeline.TimelineDetailsView.Tab.Events);
     InspectorTest.completeTest();
 
     function testEventTree(type, grouping)
