@@ -1086,8 +1086,15 @@ bool LoginDatabase::GetLogins(
     std::string regexp = "^(" + scheme + ":\\/\\/)([\\w-]+\\.)*" +
                          registered_domain + "(:" + port + ")?\\/$";
     s.BindString(placeholder++, regexp);
-  }
-  if (should_federated_apply) {
+
+    if (should_federated_apply) {
+      // This regex matches any subdomain of |registered_domain|, in particular
+      // it matches the empty subdomain. Hence exact domain matches are also
+      // retrieved.
+      s.BindString(placeholder++,
+                   "^federation://([\\w-]+\\.)*" + registered_domain + "/.+$");
+    }
+  } else if (should_federated_apply) {
     std::string expression =
         base::StringPrintf("federation://%s/%%", form.origin.host().c_str());
     s.BindString(placeholder++, expression);
@@ -1221,6 +1228,11 @@ bool LoginDatabase::StatementToForms(
       } else if (!new_form->federation_origin.unique() &&
                  IsFederatedMatch(new_form->signon_realm,
                                   matched_form->origin)) {
+      } else if (!new_form->federation_origin.unique() &&
+                 IsFederatedPSLMatch(new_form->signon_realm,
+                                     matched_form->origin)) {
+        psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND_FEDERATED;
+        new_form->is_public_suffix_match = true;
       } else {
         continue;
       }
@@ -1277,13 +1289,15 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
   std::string psl_statement = "OR signon_realm REGEXP ? ";
   std::string federated_statement =
       "OR (signon_realm LIKE ? AND password_type == 2) ";
+  std::string psl_federated_statement =
+      "OR (signon_realm REGEXP ? AND password_type == 2) ";
   DCHECK(get_statement_psl_.empty());
   get_statement_psl_ = get_statement_ + psl_statement;
   DCHECK(get_statement_federated_.empty());
   get_statement_federated_ = get_statement_ + federated_statement;
   DCHECK(get_statement_psl_federated_.empty());
   get_statement_psl_federated_ =
-      get_statement_ + psl_statement + federated_statement;
+      get_statement_ + psl_statement + psl_federated_statement;
   DCHECK(created_statement_.empty());
   created_statement_ =
       "SELECT " + all_column_names +

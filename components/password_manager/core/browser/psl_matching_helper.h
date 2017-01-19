@@ -19,6 +19,7 @@ enum PSLDomainMatchMetric {
   PSL_DOMAIN_MATCH_NOT_USED = 0,
   PSL_DOMAIN_MATCH_NONE,
   PSL_DOMAIN_MATCH_FOUND,
+  PSL_DOMAIN_MATCH_FOUND_FEDERATED,
   PSL_DOMAIN_MATCH_COUNT
 };
 
@@ -48,6 +49,9 @@ std::string GetRegistryControlledDomain(const GURL& signon_realm);
 // |origin|.
 bool IsFederatedMatch(const std::string& signon_realm, const GURL& origin);
 
+// Returns true iff |signon_realm| designates a federated PSL matching
+// credential for the |origin|.
+bool IsFederatedPSLMatch(const std::string& signon_realm, const GURL& origin);
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PSL_MATCHING_HELPER_H_

@@ -413,13 +413,18 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   PasswordStore::FormDigest form_request = {
       PasswordForm::SCHEME_HTML, "https://foo.com/", GURL("https://foo.com/")};
   EXPECT_TRUE(db().GetLogins(form_request, &result));
-  EXPECT_THAT(result, testing::ElementsAre(Pointee(form)));
+  // Both forms are matched, only form2 is a PSL match.
+  form.is_public_suffix_match = false;
+  form2.is_public_suffix_match = true;
+  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form), Pointee(form2)));
 
   // Match against the mobile site.
   form_request.origin = GURL("https://mobile.foo.com/");
   form_request.signon_realm = "https://mobile.foo.com/";
   EXPECT_TRUE(db().GetLogins(form_request, &result));
+  // Both forms are matched, only form is a PSL match.
   form.is_public_suffix_match = true;
+  form2.is_public_suffix_match = false;
   EXPECT_THAT(result, UnorderedElementsAre(Pointee(form), Pointee(form2)));
 }
 
@@ -532,6 +537,28 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   EXPECT_TRUE(db().GetLogins(form_request, &result));
   form.is_public_suffix_match = true;
   EXPECT_THAT(result, testing::ElementsAre(Pointee(form2)));
+}
+
+TEST_F(LoginDatabaseTest, TestFederatedPSLMatching) {
+  // Save a federated credential for the PSL matched site.
+  PasswordForm form;
+  form.origin = GURL("https://psl.example.com/");
+  form.action = GURL("https://psl.example.com/login");
+  form.signon_realm = "federation://psl.example.com/accounts.google.com";
+  form.username_value = ASCIIToUTF16("test1@gmail.com");
+  form.type = PasswordForm::TYPE_API;
+  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form.scheme = PasswordForm::SCHEME_HTML;
+  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+
+  // Match against.
+  PasswordStore::FormDigest form_request = {PasswordForm::SCHEME_HTML,
+                                            "https://example.com/",
+                                            GURL("https://example.com/login")};
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  EXPECT_TRUE(db().GetLogins(form_request, &result));
+  form.is_public_suffix_match = true;
+  EXPECT_THAT(result, testing::ElementsAre(Pointee(form)));
 }
 
 // This test fails if the implementation of GetLogins uses GetCachedStatement

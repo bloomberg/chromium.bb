@@ -11,6 +11,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using autofill::PasswordForm;
 
@@ -57,4 +58,26 @@ bool IsFederatedMatch(const std::string& signon_realm, const GURL& origin) {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+bool IsFederatedPSLMatch(const std::string& signon_realm, const GURL& origin) {
+  // The format should be "federation://origin.host/federation.host;
+  // Check for presence of "federation://" prefix.
+  static constexpr char federation_prefix[] = "federation://";
+  if (!base::StartsWith(signon_realm, federation_prefix,
+                        base::CompareCase::INSENSITIVE_ASCII))
+    return false;
+
+  // Replace federation scheme with HTTPS. This results in correct parsing of
+  // host and path, and forces origin to have a HTTPS scheme in order to return
+  // true.
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(url::kHttpsScheme);
+  GURL https_signon_realm = GURL(signon_realm).ReplaceComponents(replacements);
+
+  // Check for non-empty federation.host.
+  if (!https_signon_realm.has_path() || https_signon_realm.path_piece() == "/")
+    return false;
+
+  return IsPublicSuffixDomainMatch(https_signon_realm.GetOrigin().spec(),
+                                   origin.GetOrigin().spec());
+}
 }  // namespace password_manager
