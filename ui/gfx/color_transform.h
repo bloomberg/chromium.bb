@@ -18,7 +18,7 @@ class ColorSpace;
 
 class GFX_EXPORT ColorTransform {
  public:
-  enum class Intent { INTENT_ABSOLUTE, INTENT_PERCEPTUAL };
+  enum class Intent { INTENT_ABSOLUTE, INTENT_PERCEPTUAL, TEST_NO_OPT };
 
   // TriStimulus is a color coordinate in any color space.
   // Channel order is XYZ, RGB or YUV.

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/transform.h"
@@ -466,32 +467,6 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
   }
 }
 
-namespace {
-// Assumes bt2020
-float Luma(const ColorTransform::TriStim& c) {
-  return c.x() * 0.2627f + c.y() * 0.6780f + c.z() * 0.0593f;
-}
-};
-
-GFX_EXPORT ColorTransform::TriStim ToLinear(ColorSpace::TransferID id,
-                                            ColorTransform::TriStim color) {
-  ColorTransform::TriStim ret(ToLinear(id, color.x()), ToLinear(id, color.y()),
-                              ToLinear(id, color.z()));
-
-  if (id == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
-    if (Luma(ret) > 0.0) {
-      ColorTransform::TriStim smpte2084(
-          ToLinear(ColorSpace::TransferID::SMPTEST2084, color.x()),
-          ToLinear(ColorSpace::TransferID::SMPTEST2084, color.y()),
-          ToLinear(ColorSpace::TransferID::SMPTEST2084, color.z()));
-      smpte2084.Scale(Luma(ret) / Luma(smpte2084));
-      ret = smpte2084;
-    }
-  }
-
-  return ret;
-}
-
 GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id) {
   // Default values for BT709;
   float Kr = 0.2126f;
@@ -529,12 +504,22 @@ GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id) {
                        0.5f, 0.0f, -0.5f, 0.0f,     // 3
                        0.0f, 0.0f, 0.0f, 1.0f);     // 4
 
-    // TODO(hubbe): Check if the CL equation is right.
     case ColorSpace::MatrixID::BT2020_NCL:
-    case ColorSpace::MatrixID::BT2020_CL:
       Kr = 0.2627f;
       Kb = 0.0593f;
       break;
+
+    // BT2020_CL is a special case.
+    // Basically we return a matrix that transforms RGB values
+    // to RYB values. (We replace the green component with the
+    // the luminance.) Later steps will compute the Cb & Cr values.
+    case ColorSpace::MatrixID::BT2020_CL:
+      Kr = 0.2627f;
+      Kb = 0.0593f;
+      return Transform(1.0f, 0.0f, 0.0f, 0.0f,        // R
+                       Kr, 1.0f - Kr - Kb, Kb, 0.0f,  // Y
+                       0.0f, 0.0f, 1.0f, 0.0f,        // B
+                       0.0f, 0.0f, 0.0f, 1.0f);
 
     case ColorSpace::MatrixID::YDZDX:
       return Transform(0.0f, 1.0f, 0.0f, 0.0f,               // 1
@@ -565,6 +550,7 @@ Transform GetRangeAdjustMatrix(ColorSpace::RangeID range,
   switch (matrix) {
     case ColorSpace::MatrixID::RGB:
     case ColorSpace::MatrixID::YCOCG:
+      // TODO(hubbe): Use Transform:Scale3d / Transform::Translate3d here.
       return Transform(255.0f / 219.0f, 0.0f, 0.0f, -16.0f / 219.0f,  // 1
                        0.0f, 255.0f / 219.0f, 0.0f, -16.0f / 219.0f,  // 2
                        0.0f, 0.0f, 255.0f / 219.0f, -16.0f / 219.0f,  // 3
@@ -581,6 +567,7 @@ Transform GetRangeAdjustMatrix(ColorSpace::RangeID range,
     case ColorSpace::MatrixID::BT2020_CL:
     case ColorSpace::MatrixID::YDZDX:
     case ColorSpace::MatrixID::UNKNOWN:
+      // TODO(hubbe): Use Transform:Scale3d / Transform::Translate3d here.
       return Transform(255.0f / 219.0f, 0.0f, 0.0f, -16.0f / 219.0f,  // 1
                        0.0f, 255.0f / 224.0f, 0.0f, -15.5f / 224.0f,  // 2
                        0.0f, 0.0f, 255.0f / 224.0f, -15.5f / 224.0f,  // 3
@@ -590,119 +577,260 @@ Transform GetRangeAdjustMatrix(ColorSpace::RangeID range,
   return Transform();
 }
 
-class ColorSpaceToColorSpaceTransform : public ColorTransform {
+class ColorTransformMatrix;
+class ColorTransformToLinear;
+class ColorTransformFromLinear;
+class ColorTransformToBT2020CL;
+class ColorTransformFromBT2020CL;
+class ColorTransformNull;
+
+class ColorTransformInternal : public ColorTransform {
  public:
-  ColorSpaceToColorSpaceTransform(const ColorSpace& from,
-                                  const ColorSpace& to,
-                                  Intent intent)
-      : from_(from), to_(to) {
-    if (intent == Intent::INTENT_PERCEPTUAL) {
-      switch (from_.transfer_) {
-        case ColorSpace::TransferID::UNSPECIFIED:
-        case ColorSpace::TransferID::BT709:
-        case ColorSpace::TransferID::SMPTE170M:
-          // SMPTE 1886 suggests that we should be using gamma 2.4 for BT709
-          // content. However, most displays actually use a gamma of 2.2, and
-          // user studies shows that users don't really care. Using the same
-          // gamma as the display will let us optimize a lot more, so lets stick
-          // with using the SRGB transfer function.
-          from_.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
-          break;
+  // Visitor pattern, Prepend() calls return prev->Join(this).
+  virtual bool Prepend(ColorTransformInternal* prev) = 0;
 
-        case ColorSpace::TransferID::SMPTEST2084:
-          // We don't have an HDR display, so replace SMPTE 2084 with something
-          // that returns ranges more or less suitable for a normal display.
-          from_.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
-          break;
+  // Join methods, returns true if the |next| transform was successfully
+  // assimilated into |this|.
+  // If Join() returns true, |next| is no longer needed and can be deleted.
+  virtual bool Join(const ColorTransformToLinear& next) { return false; }
+  virtual bool Join(const ColorTransformFromLinear& next) { return false; }
+  virtual bool Join(const ColorTransformToBT2020CL& next) { return false; }
+  virtual bool Join(const ColorTransformFromBT2020CL& next) { return false; }
+  virtual bool Join(const ColorTransformMatrix& next) { return false; }
+  virtual bool Join(const ColorTransformNull& next) { return true; }
 
-        case ColorSpace::TransferID::ARIB_STD_B67:
-          // Interpreting HLG using a gamma 2.4 works reasonably well for SDR
-          // displays. Once we have HDR output capabilies, we'll need to
-          // change this.
-          from_.transfer_ = ColorSpace::TransferID::GAMMA24;
-          break;
-
-        default:  // Do nothing
-          break;
-      }
-
-      // TODO(hubbe): shrink gamuts here (never stretch gamuts)
-    }
-
-    Transform* from_transfer_matrix =
-        from_.matrix_ == ColorSpace::MatrixID::BT2020_CL ? &b_ : &a_;
-    Transform* to_transfer_matrix =
-        to_.matrix_ == ColorSpace::MatrixID::BT2020_CL ? &b_ : &c_;
-
-    c_ *= Invert(GetRangeAdjustMatrix(to_.range_, to_.matrix_));
-    *to_transfer_matrix *= GetTransferMatrix(to_.matrix_);
-    b_ *= Invert(GetPrimaryTransform(to_));
-    b_ *= GetPrimaryTransform(from_);
-    *from_transfer_matrix *= Invert(GetTransferMatrix(from_.matrix_));
-    a_ *= GetRangeAdjustMatrix(from_.range_, from_.matrix_);
-  }
-
-  static Transform GetPrimaryTransform(const ColorSpace& c) {
-    if (c.primaries_ == ColorSpace::PrimaryID::CUSTOM) {
-      return Transform(c.custom_primary_matrix_[0], c.custom_primary_matrix_[1],
-                       c.custom_primary_matrix_[2], c.custom_primary_matrix_[3],
-                       c.custom_primary_matrix_[4], c.custom_primary_matrix_[5],
-                       c.custom_primary_matrix_[6], c.custom_primary_matrix_[7],
-                       c.custom_primary_matrix_[8], c.custom_primary_matrix_[9],
-                       c.custom_primary_matrix_[10],
-                       c.custom_primary_matrix_[11], 0.0f, 0.0f, 0.0f, 1.0f);
-    } else {
-      return GetPrimaryMatrix(c.primaries_);
-    }
-  }
-
-  void transform(TriStim* colors, size_t num) override {
-    for (size_t i = 0; i < num; i++) {
-      TriStim c = colors[i];
-      a_.TransformPoint(&c);
-      c = ToLinear(from_.transfer_, c);
-      b_.TransformPoint(&c);
-      c.set_x(FromLinear(to_.transfer_, c.x()));
-      c.set_y(FromLinear(to_.transfer_, c.y()));
-      c.set_z(FromLinear(to_.transfer_, c.z()));
-      c_.TransformPoint(&c);
-      colors[i] = c;
-    }
-  }
-
- private:
-  ColorSpace from_;
-  ColorSpace to_;
-
-  // a_ -> tolinear -> b_ -> fromlinear -> c_;
-  Transform a_;
-  Transform b_;
-  Transform c_;
+  // Return true if this is a null transform.
+  virtual bool IsNull() { return false; }
 };
 
-class QCMSColorTransform : public ColorTransform {
+class ColorTransformNull : public ColorTransformInternal {
  public:
-  // Takes ownership of the profiles
-  QCMSColorTransform(qcms_profile* from, qcms_profile* to)
-      : from_(from), to_(to) {}
-  ~QCMSColorTransform() override {
-    qcms_profile_release(from_);
-    qcms_profile_release(to_);
+  bool Prepend(ColorTransformInternal* prev) override {
+    return prev->Join(*this);
   }
-  void transform(TriStim* colors, size_t num) override {
-    CHECK(sizeof(TriStim) == sizeof(float[3]));
-    // QCMS doesn't like numbers outside 0..1
-    for (size_t i = 0; i < num; i++) {
-      colors[i].set_x(fmin(1.0f, fmax(0.0f, colors[i].x())));
-      colors[i].set_y(fmin(1.0f, fmax(0.0f, colors[i].y())));
-      colors[i].set_z(fmin(1.0f, fmax(0.0f, colors[i].z())));
+  bool IsNull() override { return true; }
+  void transform(ColorTransform::TriStim* color, size_t num) override {}
+};
+
+class ColorTransformMatrix : public ColorTransformInternal {
+ public:
+  explicit ColorTransformMatrix(const Transform& matrix) : matrix_(matrix) {}
+
+  bool Prepend(ColorTransformInternal* prev) override {
+    return prev->Join(*this);
+  }
+
+  bool Join(const ColorTransformMatrix& next) override {
+    Transform tmp = next.matrix_;
+    tmp *= matrix_;
+    matrix_ = tmp;
+    return true;
+  }
+
+  bool IsNull() override {
+    // Returns true if we're very close to an identity matrix.
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        float expected = i == j ? 1.0f : 0.0f;
+        if (fabs(matrix_.matrix().get(i, j) - expected) > 0.00001f) {
+          return false;
+        }
+      }
     }
-    qcms_chain_transform(from_, to_, reinterpret_cast<float*>(colors),
-                         reinterpret_cast<float*>(colors), num * 3);
+    return true;
+  }
+
+  void transform(ColorTransform::TriStim* colors, size_t num) override {
+    for (size_t i = 0; i < num; i++)
+      matrix_.TransformPoint(colors + i);
   }
 
  private:
-  qcms_profile *from_, *to_;
+  Transform matrix_;
+};
+
+class ColorTransformFromLinear : public ColorTransformInternal {
+ public:
+  explicit ColorTransformFromLinear(ColorSpace::TransferID transfer)
+      : transfer_(transfer) {}
+  bool Prepend(ColorTransformInternal* prev) override {
+    return prev->Join(*this);
+  }
+
+  bool IsNull() override { return transfer_ == ColorSpace::TransferID::LINEAR; }
+
+  void transform(ColorTransform::TriStim* colors, size_t num) override {
+    for (size_t i = 0; i < num; i++) {
+      colors[i].set_x(FromLinear(transfer_, colors[i].x()));
+      colors[i].set_y(FromLinear(transfer_, colors[i].y()));
+      colors[i].set_z(FromLinear(transfer_, colors[i].z()));
+    }
+  }
+
+ private:
+  friend class ColorTransformToLinear;
+  ColorSpace::TransferID transfer_;
+};
+
+class ColorTransformToLinear : public ColorTransformInternal {
+ public:
+  explicit ColorTransformToLinear(ColorSpace::TransferID transfer)
+      : transfer_(transfer) {}
+
+  bool Prepend(ColorTransformInternal* prev) override {
+    return prev->Join(*this);
+  }
+
+  static bool IsGamma22(ColorSpace::TransferID transfer) {
+    switch (transfer) {
+      // We don't need to check BT709 here because it's been translated into
+      // SRGB in ColorSpaceToColorSpaceTransform::ColorSpaceToLinear below.
+      case ColorSpace::TransferID::GAMMA22:
+      case ColorSpace::TransferID::IEC61966_2_1:  // SRGB
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  bool Join(const ColorTransformFromLinear& next) override {
+    if (transfer_ == next.transfer_ ||
+        (IsGamma22(transfer_) && IsGamma22(next.transfer_))) {
+      transfer_ = ColorSpace::TransferID::LINEAR;
+      return true;
+    }
+    return false;
+  }
+
+  bool IsNull() override { return transfer_ == ColorSpace::TransferID::LINEAR; }
+
+  // Assumes BT2020 primaries.
+  static float Luma(const ColorTransform::TriStim& c) {
+    return c.x() * 0.2627f + c.y() * 0.6780f + c.z() * 0.0593f;
+  }
+
+  void transform(ColorTransform::TriStim* colors, size_t num) override {
+    if (transfer_ == ColorSpace::TransferID::SMPTEST2084_NON_HDR) {
+      for (size_t i = 0; i < num; i++) {
+        ColorTransform::TriStim ret(ToLinear(transfer_, colors[i].x()),
+                                    ToLinear(transfer_, colors[i].y()),
+                                    ToLinear(transfer_, colors[i].z()));
+        if (Luma(ret) > 0.0) {
+          ColorTransform::TriStim smpte2084(
+              ToLinear(ColorSpace::TransferID::SMPTEST2084, colors[i].x()),
+              ToLinear(ColorSpace::TransferID::SMPTEST2084, colors[i].y()),
+              ToLinear(ColorSpace::TransferID::SMPTEST2084, colors[i].z()));
+          smpte2084.Scale(Luma(ret) / Luma(smpte2084));
+          ret = smpte2084;
+        }
+        colors[i] = ret;
+      }
+    } else {
+      for (size_t i = 0; i < num; i++) {
+        colors[i].set_x(ToLinear(transfer_, colors[i].x()));
+        colors[i].set_y(ToLinear(transfer_, colors[i].y()));
+        colors[i].set_z(ToLinear(transfer_, colors[i].z()));
+      }
+    }
+  }
+
+ private:
+  ColorSpace::TransferID transfer_;
+};
+
+// BT2020 Constant Luminance is different than most other
+// ways to encode RGB values as YUV. The basic idea is that
+// transfer functions are applied on the Y value instead of
+// on the RGB values. However, running the transfer function
+// on the U and V values doesn't make any sense since they
+// are centered at 0.5. To work around this, the transfer function
+// is applied to the Y, R and B values, and then the U and V
+// values are calculated from that.
+// In our implementation, the YUV->RGB matrix is used to
+// convert YUV to RYB (the G value is replaced with an Y value.)
+// Then we run the transfer function like normal, and finally
+// this class is inserted as an extra step which takes calculates
+// the U and V values.
+class ColorTransformToBT2020CL : public ColorTransformInternal {
+ public:
+  bool Prepend(ColorTransformInternal* prev) override {
+    return prev->Join(*this);
+  }
+
+  bool Join(const ColorTransformFromBT2020CL& next) override {
+    if (null_)
+      return false;
+    null_ = true;
+    return true;
+  }
+
+  bool IsNull() override { return null_; }
+
+  void transform(ColorTransform::TriStim* RYB, size_t num) override {
+    for (size_t i = 0; i < num; i++) {
+      float U, V;
+      float B_Y = RYB[i].z() - RYB[i].y();
+      if (B_Y <= 0) {
+        U = B_Y / (-2.0 * -0.9702);
+      } else {
+        U = B_Y / (2.0 * 0.7910);
+      }
+      float R_Y = RYB[i].x() - RYB[i].y();
+      if (R_Y <= 0) {
+        V = R_Y / (-2.0 * -0.8591);
+      } else {
+        V = R_Y / (2.0 * 0.4969);
+      }
+      RYB[i] = ColorTransform::TriStim(RYB[i].y(), U, V);
+    }
+  }
+
+ private:
+  bool null_ = false;
+};
+
+// Inverse of ColorTransformToBT2020CL, see comment above for more info.
+class ColorTransformFromBT2020CL : public ColorTransformInternal {
+ public:
+  bool Prepend(ColorTransformInternal* prev) override {
+    return prev->Join(*this);
+  }
+
+  bool Join(const ColorTransformToBT2020CL& next) override {
+    if (null_)
+      return false;
+    null_ = true;
+    return true;
+  }
+
+  bool IsNull() override { return null_; }
+
+  void transform(ColorTransform::TriStim* YUV, size_t num) override {
+    if (null_)
+      return;
+    for (size_t i = 0; i < num; i++) {
+      float Y = YUV[i].x();
+      float U = YUV[i].y();
+      float V = YUV[i].z();
+      float B_Y, R_Y;
+      if (U <= 0) {
+        B_Y = Y * (-2.0 * -0.9702);
+      } else {
+        B_Y = U * (2.0 * 0.7910);
+      }
+      if (V <= 0) {
+        R_Y = V * (-2.0 * -0.8591);
+      } else {
+        R_Y = V * (2.0 * 0.4969);
+      }
+      // Return an RYB value, later steps will fix it.
+      YUV[i] = ColorTransform::TriStim(R_Y + Y, YUV[i].x(), B_Y + Y);
+    }
+  }
+
+ private:
+  bool null_ = false;
 };
 
 class ChainColorTransform : public ColorTransform {
@@ -718,6 +846,156 @@ class ChainColorTransform : public ColorTransform {
   }
   std::unique_ptr<ColorTransform> a_;
   std::unique_ptr<ColorTransform> b_;
+};
+
+class TransformBuilder {
+ public:
+  void Append(std::unique_ptr<ColorTransformInternal> transform) {
+    if (!disable_optimizations_ && transform->IsNull())
+      return;  // Null transform
+    transforms_.push_back(std::move(transform));
+    if (disable_optimizations_)
+      return;
+    while (transforms_.size() >= 2 &&
+           transforms_.back()->Prepend(
+               transforms_[transforms_.size() - 2].get())) {
+      transforms_.pop_back();
+      if (transforms_.back()->IsNull()) {
+        transforms_.pop_back();
+        break;
+      }
+    }
+  }
+
+  std::unique_ptr<ColorTransform> GetTransform() {
+    if (transforms_.empty())
+      return base::MakeUnique<ColorTransformNull>();
+    std::unique_ptr<ColorTransform> ret(std::move(transforms_.back()));
+    transforms_.pop_back();
+
+    while (!transforms_.empty()) {
+      ret = std::unique_ptr<ColorTransform>(new ChainColorTransform(
+          std::move(transforms_.back()), std::move(ret)));
+      transforms_.pop_back();
+    }
+
+    return ret;
+  }
+
+  void disable_optimizations() { disable_optimizations_ = true; }
+
+ private:
+  bool disable_optimizations_ = false;
+  std::vector<std::unique_ptr<ColorTransformInternal>> transforms_;
+};
+
+class ColorSpaceToColorSpaceTransform {
+ public:
+  static Transform GetPrimaryTransform(const ColorSpace& c) {
+    if (c.primaries_ == ColorSpace::PrimaryID::CUSTOM) {
+      return Transform(c.custom_primary_matrix_[0], c.custom_primary_matrix_[1],
+                       c.custom_primary_matrix_[2], c.custom_primary_matrix_[3],
+                       c.custom_primary_matrix_[4], c.custom_primary_matrix_[5],
+                       c.custom_primary_matrix_[6], c.custom_primary_matrix_[7],
+                       c.custom_primary_matrix_[8], c.custom_primary_matrix_[9],
+                       c.custom_primary_matrix_[10],
+                       c.custom_primary_matrix_[11], 0.0f, 0.0f, 0.0f, 1.0f);
+    } else {
+      return GetPrimaryMatrix(c.primaries_);
+    }
+  }
+
+  static void ColorSpaceToColorSpace(ColorSpace from,
+                                     ColorSpace to,
+                                     ColorTransform::Intent intent,
+                                     TransformBuilder* builder) {
+    if (intent == ColorTransform::Intent::INTENT_PERCEPTUAL) {
+      switch (from.transfer_) {
+        case ColorSpace::TransferID::UNSPECIFIED:
+        case ColorSpace::TransferID::BT709:
+        case ColorSpace::TransferID::SMPTE170M:
+          // SMPTE 1886 suggests that we should be using gamma 2.4 for BT709
+          // content. However, most displays actually use a gamma of 2.2, and
+          // user studies shows that users don't really care. Using the same
+          // gamma as the display will let us optimize a lot more, so lets stick
+          // with using the SRGB transfer function.
+          from.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
+          break;
+
+        case ColorSpace::TransferID::SMPTEST2084:
+          // We don't have an HDR display, so replace SMPTE 2084 with something
+          // that returns ranges more or less suitable for a normal display.
+          from.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
+          break;
+
+        case ColorSpace::TransferID::ARIB_STD_B67:
+          // Interpreting HLG using a gamma 2.4 works reasonably well for SDR
+          // displays. Once we have HDR output capabilies, we'll need to
+          // change this.
+          from.transfer_ = ColorSpace::TransferID::GAMMA24;
+          break;
+
+        default:  // Do nothing
+          break;
+      }
+
+      // TODO(hubbe): shrink gamuts here (never stretch gamuts)
+    }
+    builder->Append(base::MakeUnique<ColorTransformMatrix>(
+        GetRangeAdjustMatrix(from.range_, from.matrix_)));
+    builder->Append(base::MakeUnique<ColorTransformMatrix>(
+        Invert(GetTransferMatrix(from.matrix_))));
+    builder->Append(base::MakeUnique<ColorTransformToLinear>(from.transfer_));
+    if (from.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
+      // BT2020 CL is a special case.
+      builder->Append(base::MakeUnique<ColorTransformFromBT2020CL>());
+    }
+    builder->Append(
+        base::MakeUnique<ColorTransformMatrix>(GetPrimaryTransform(from)));
+
+    builder->Append(base::MakeUnique<ColorTransformMatrix>(
+        Invert(GetPrimaryTransform(to))));
+    if (to.matrix_ == ColorSpace::MatrixID::BT2020_CL) {
+      // BT2020 CL is a special case.
+      builder->Append(base::MakeUnique<ColorTransformToBT2020CL>());
+    }
+
+    builder->Append(base::MakeUnique<ColorTransformFromLinear>(to.transfer_));
+    builder->Append(
+        base::MakeUnique<ColorTransformMatrix>(GetTransferMatrix(to.matrix_)));
+    builder->Append(base::MakeUnique<ColorTransformMatrix>(
+        Invert(GetRangeAdjustMatrix(to.range_, to.matrix_))));
+  }
+};
+
+class QCMSColorTransform : public ColorTransformInternal {
+ public:
+  // Takes ownership of the profiles
+  QCMSColorTransform(qcms_profile* from, qcms_profile* to)
+      : from_(from), to_(to) {}
+  ~QCMSColorTransform() override {
+    qcms_profile_release(from_);
+    qcms_profile_release(to_);
+  }
+  bool Prepend(ColorTransformInternal* prev) override {
+    // Not currently optimizable.
+    return false;
+  }
+  bool IsNull() override { return from_ == to_; }
+  void transform(TriStim* colors, size_t num) override {
+    CHECK(sizeof(TriStim) == sizeof(float[3]));
+    // QCMS doesn't like numbers outside 0..1
+    for (size_t i = 0; i < num; i++) {
+      colors[i].set_x(fmin(1.0f, fmax(0.0f, colors[i].x())));
+      colors[i].set_y(fmin(1.0f, fmax(0.0f, colors[i].y())));
+      colors[i].set_z(fmin(1.0f, fmax(0.0f, colors[i].z())));
+    }
+    qcms_chain_transform(from_, to_, reinterpret_cast<float*>(colors),
+                         reinterpret_cast<float*>(colors), num * 3);
+  }
+
+ private:
+  qcms_profile *from_, *to_;
 };
 
 qcms_profile* GetQCMSProfileIfAvailable(const ColorSpace& color_space) {
@@ -753,31 +1031,31 @@ std::unique_ptr<ColorTransform> ColorTransform::NewColorTransform(
     const ColorSpace& from,
     const ColorSpace& to,
     Intent intent) {
+  TransformBuilder builder;
+  if (intent == Intent::TEST_NO_OPT) {
+    builder.disable_optimizations();
+  }
+
   qcms_profile* from_profile = GetQCMSProfileIfAvailable(from);
   qcms_profile* to_profile = GetQCMSProfileIfAvailable(to);
-  if (from_profile) {
-    if (to_profile) {
-      return std::unique_ptr<ColorTransform>(
-          new QCMSColorTransform(from_profile, to_profile));
-    } else {
-      return std::unique_ptr<ColorTransform>(new ChainColorTransform(
-          std::unique_ptr<ColorTransform>(
-              new QCMSColorTransform(from_profile, GetXYZD50Profile())),
-          std::unique_ptr<ColorTransform>(new ColorSpaceToColorSpaceTransform(
-              ColorSpace::CreateXYZD50(), to, intent))));
-    }
-  } else {
-    if (to_profile) {
-      return std::unique_ptr<ColorTransform>(new ChainColorTransform(
-          std::unique_ptr<ColorTransform>(new ColorSpaceToColorSpaceTransform(
-              from, ColorSpace::CreateXYZD50(), intent)),
-          std::unique_ptr<ColorTransform>(
-              new QCMSColorTransform(GetXYZD50Profile(), to_profile))));
-    } else {
-      return std::unique_ptr<ColorTransform>(
-          new ColorSpaceToColorSpaceTransform(from, to, intent));
-    }
+
+  if (from_profile && to_profile) {
+    return std::unique_ptr<ColorTransform>(
+        new QCMSColorTransform(from_profile, to_profile));
   }
+  if (from_profile) {
+    builder.Append(std::unique_ptr<ColorTransformInternal>(
+        new QCMSColorTransform(from_profile, GetXYZD50Profile())));
+  }
+  ColorSpaceToColorSpaceTransform::ColorSpaceToColorSpace(
+      from_profile ? ColorSpace::CreateXYZD50() : from,
+      to_profile ? ColorSpace::CreateXYZD50() : to, intent, &builder);
+  if (to_profile) {
+    builder.Append(std::unique_ptr<ColorTransformInternal>(
+        new QCMSColorTransform(GetXYZD50Profile(), to_profile)));
+  }
+
+  return builder.GetTransform();
 }
 
 }  // namespace gfx

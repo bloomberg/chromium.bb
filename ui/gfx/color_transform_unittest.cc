@@ -59,6 +59,9 @@ ColorSpace::RangeID all_ranges[] = {ColorSpace::RangeID::UNSPECIFIED,
                                     ColorSpace::RangeID::LIMITED,
                                     ColorSpace::RangeID::DERIVED};
 
+ColorTransform::Intent intents[] = {ColorTransform::Intent::INTENT_ABSOLUTE,
+                                    ColorTransform::Intent::TEST_NO_OPT};
+
 TEST(SimpleColorSpace, BT709toSRGB) {
   ColorSpace bt709 = ColorSpace::CreateREC709();
   ColorSpace sRGB = ColorSpace::CreateSRGB();
@@ -212,7 +215,8 @@ INSTANTIATE_TEST_CASE_P(ColorSpace,
 typedef std::tr1::tuple<ColorSpace::PrimaryID,
                         ColorSpace::TransferID,
                         ColorSpace::MatrixID,
-                        ColorSpace::RangeID>
+                        ColorSpace::RangeID,
+                        ColorTransform::Intent>
     ColorSpaceTestData;
 
 class ColorSpaceTest : public testing::TestWithParam<ColorSpaceTestData> {
@@ -221,15 +225,17 @@ class ColorSpaceTest : public testing::TestWithParam<ColorSpaceTestData> {
       : color_space_(std::tr1::get<0>(GetParam()),
                      std::tr1::get<1>(GetParam()),
                      std::tr1::get<2>(GetParam()),
-                     std::tr1::get<3>(GetParam())) {}
+                     std::tr1::get<3>(GetParam())),
+        intent_(std::tr1::get<4>(GetParam())) {}
 
  protected:
   ColorSpace color_space_;
+  ColorTransform::Intent intent_;
 };
 
 TEST_P(ColorSpaceTest, testNullTransform) {
-  std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
-      color_space_, color_space_, ColorTransform::Intent::INTENT_ABSOLUTE));
+  std::unique_ptr<ColorTransform> t(
+      ColorTransform::NewColorTransform(color_space_, color_space_, intent_));
   ColorTransform::TriStim tristim(0.4f, 0.5f, 0.6f);
   t->transform(&tristim, 1);
   EXPECT_NEAR(tristim.x(), 0.4f, 0.001f);
@@ -239,11 +245,9 @@ TEST_P(ColorSpaceTest, testNullTransform) {
 
 TEST_P(ColorSpaceTest, toXYZandBack) {
   std::unique_ptr<ColorTransform> t1(ColorTransform::NewColorTransform(
-      color_space_, ColorSpace::CreateXYZD50(),
-      ColorTransform::Intent::INTENT_ABSOLUTE));
+      color_space_, ColorSpace::CreateXYZD50(), intent_));
   std::unique_ptr<ColorTransform> t2(ColorTransform::NewColorTransform(
-      ColorSpace::CreateXYZD50(), color_space_,
-      ColorTransform::Intent::INTENT_ABSOLUTE));
+      ColorSpace::CreateXYZD50(), color_space_, intent_));
   ColorTransform::TriStim tristim(0.4f, 0.5f, 0.6f);
   t1->transform(&tristim, 1);
   t2->transform(&tristim, 1);
@@ -258,7 +262,8 @@ INSTANTIATE_TEST_CASE_P(
     testing::Combine(testing::ValuesIn(all_primaries),
                      testing::ValuesIn(all_transfers),
                      testing::Values(ColorSpace::MatrixID::BT709),
-                     testing::Values(ColorSpace::RangeID::LIMITED)));
+                     testing::Values(ColorSpace::RangeID::LIMITED),
+                     testing::ValuesIn(intents)));
 
 INSTANTIATE_TEST_CASE_P(
     B,
@@ -266,7 +271,8 @@ INSTANTIATE_TEST_CASE_P(
     testing::Combine(testing::Values(ColorSpace::PrimaryID::BT709),
                      testing::ValuesIn(all_transfers),
                      testing::ValuesIn(all_matrices),
-                     testing::ValuesIn(all_ranges)));
+                     testing::ValuesIn(all_ranges),
+                     testing::ValuesIn(intents)));
 
 INSTANTIATE_TEST_CASE_P(
     C,
@@ -274,5 +280,6 @@ INSTANTIATE_TEST_CASE_P(
     testing::Combine(testing::ValuesIn(all_primaries),
                      testing::Values(ColorSpace::TransferID::BT709),
                      testing::ValuesIn(all_matrices),
-                     testing::ValuesIn(all_ranges)));
+                     testing::ValuesIn(all_ranges),
+                     testing::ValuesIn(intents)));
 }  // namespace
