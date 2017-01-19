@@ -35,20 +35,39 @@ function (add_cxx_flag_if_supported cxx_flag)
   endif ()
 endfunction ()
 
-if (MSVC)
-  add_cxx_flag_if_supported("/W4")
-  # Disable MSVC warnings that suggest making code non-portable.
-  add_cxx_flag_if_supported("/wd4996")
-  if (ENABLE_WERROR)
-    add_cxx_flag_if_supported("/WX")
+# Checks CXX compiler for support of $cxx_flag and terminates generation when
+# support is not present.
+function (require_cxx_flag cxx_flag)
+  unset(CXX_FLAG_FOUND CACHE)
+  string(FIND "${CMAKE_CXX_FLAGS}" "${cxx_flag}" CXX_FLAG_FOUND)
+
+  if (${CXX_FLAG_FOUND} EQUAL -1)
+    unset(LIBWEBM_HAVE_CXX_FLAG)
+    message("Checking CXX compiler flag support for: " ${cxx_flag})
+    check_cxx_compiler_flag("${cxx_flag}" LIBWEBM_HAVE_CXX_FLAG)
+    if (NOT LIBWEBM_HAVE_CXX_FLAG)
+      message(FATAL_ERROR
+              "${PROJECT_NAME} requires support for CXX flag: ${flag}.")
+    endif ()
+    set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
   endif ()
-else ()
-  add_cxx_flag_if_supported("-Wall")
-  add_cxx_flag_if_supported("-Wextra")
-  add_cxx_flag_if_supported("-Wnarrowing")
-  add_cxx_flag_if_supported("-Wno-deprecated")
-  add_cxx_flag_if_supported("-Wshorten-64-to-32")
-  if (ENABLE_WERROR)
-    add_cxx_flag_if_supported("-Werror")
+endfunction ()
+
+# Checks only non-MSVC targets for support of $cxx_flag.
+function (require_cxx_flag_nomsvc cxx_flag)
+  if (NOT MSVC)
+    require_cxx_flag(${cxx_flag})
   endif ()
-endif ()
+endfunction ()
+
+# Adds $preproc_def to CXX compiler command line (as -D$preproc_def) if not
+# already present.
+function (add_cxx_preproc_definition preproc_def)
+  unset(PREPROC_DEF_FOUND CACHE)
+  string(FIND "${CMAKE_CXX_FLAGS}" "${preproc_def}" PREPROC_DEF_FOUND)
+
+  if (${PREPROC_DEF_FOUND} EQUAL -1)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D${preproc_def}" CACHE STRING ""
+        FORCE)
+  endif ()
+endfunction ()
