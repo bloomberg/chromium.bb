@@ -93,6 +93,9 @@ class SVGResources {
   // Methods operating on all cached resources
   void removeClientFromCache(LayoutObject*,
                              bool markForInvalidation = true) const;
+  void removeClientFromCacheAffectingObjectBounds(
+      LayoutObject*,
+      bool markForInvalidation = true) const;
   void resourceDestroyed(LayoutSVGResourceContainer*);
 
 #ifndef NDEBUG

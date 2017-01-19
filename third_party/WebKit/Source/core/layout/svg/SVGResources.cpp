@@ -323,6 +323,19 @@ void SVGResources::layoutIfNeeded() {
     m_linkedResource->layoutIfNeeded();
 }
 
+void SVGResources::removeClientFromCacheAffectingObjectBounds(
+    LayoutObject* object,
+    bool markForInvalidation) const {
+  if (!m_clipperFilterMaskerData)
+    return;
+  if (LayoutSVGResourceClipper* clipper = m_clipperFilterMaskerData->clipper)
+    clipper->removeClientFromCache(object, markForInvalidation);
+  if (LayoutSVGResourceFilter* filter = m_clipperFilterMaskerData->filter)
+    filter->removeClientFromCache(object, markForInvalidation);
+  if (LayoutSVGResourceMasker* masker = m_clipperFilterMaskerData->masker)
+    masker->removeClientFromCache(object, markForInvalidation);
+}
+
 void SVGResources::removeClientFromCache(LayoutObject* object,
                                          bool markForInvalidation) const {
   if (!hasResourceData())
@@ -336,17 +349,7 @@ void SVGResources::removeClientFromCache(LayoutObject* object,
     return;
   }
 
-  if (m_clipperFilterMaskerData) {
-    if (m_clipperFilterMaskerData->clipper)
-      m_clipperFilterMaskerData->clipper->removeClientFromCache(
-          object, markForInvalidation);
-    if (m_clipperFilterMaskerData->filter)
-      m_clipperFilterMaskerData->filter->removeClientFromCache(
-          object, markForInvalidation);
-    if (m_clipperFilterMaskerData->masker)
-      m_clipperFilterMaskerData->masker->removeClientFromCache(
-          object, markForInvalidation);
-  }
+  removeClientFromCacheAffectingObjectBounds(object, markForInvalidation);
 
   if (m_markerData) {
     if (m_markerData->markerStart)

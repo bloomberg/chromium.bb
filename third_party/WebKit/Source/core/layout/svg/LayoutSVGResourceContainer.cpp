@@ -19,10 +19,6 @@
 
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 
-#include "core/SVGElementTypeHelpers.h"
-#include "core/layout/svg/LayoutSVGResourceClipper.h"
-#include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElementProxy.h"
@@ -249,14 +245,7 @@ static inline void removeFromCacheAndInvalidateDependencies(
   ASSERT(object);
   if (SVGResources* resources =
           SVGResourcesCache::cachedResourcesForLayoutObject(object)) {
-    if (LayoutSVGResourceFilter* filter = resources->filter())
-      filter->removeClientFromCache(object);
-
-    if (LayoutSVGResourceMasker* masker = resources->masker())
-      masker->removeClientFromCache(object);
-
-    if (LayoutSVGResourceClipper* clipper = resources->clipper())
-      clipper->removeClientFromCache(object);
+    resources->removeClientFromCacheAffectingObjectBounds(object);
   }
 
   if (!object->node() || !object->node()->isSVGElement())
