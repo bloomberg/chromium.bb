@@ -1510,8 +1510,7 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int mi_col_offset = i;
       const MB_MODE_INFO *const above_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const int mi_step =
-          AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[above_mbmi->sb_type]);
+      const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[above_mbmi->sb_type]);
 
       if (is_neighbor_overlappable(above_mbmi)) {
         for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
@@ -1552,8 +1551,7 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int mi_row_offset = i;
       const MB_MODE_INFO *const left_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const int mi_step =
-          AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[left_mbmi->sb_type]);
+      const int mi_step = AOMMIN(xd->n8_h, mi_size_high[left_mbmi->sb_type]);
 
       if (is_neighbor_overlappable(left_mbmi)) {
         for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
@@ -1620,7 +1618,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     MB_MODE_INFO backup_mbmi;
 #endif  // CONFIG_EXT_INTER
 
-    mi_step = AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[above_mbmi->sb_type]);
+    mi_step = AOMMIN(xd->n8_w, mi_size_wide[above_mbmi->sb_type]);
 
     if (!is_neighbor_overlappable(above_mbmi)) continue;
 
@@ -1655,11 +1653,11 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     for (j = 0; j < MAX_MB_PLANE; ++j) {
       const struct macroblockd_plane *pd = &xd->plane[j];
-      bw = (mi_step * 8) >> pd->subsampling_x;
+      bw = (mi_step * MI_SIZE) >> pd->subsampling_x;
       bh = AOMMAX((num_4x4_blocks_high_lookup[bsize] * 2) >> pd->subsampling_y,
                   4);
 
-      if (above_mbmi->sb_type < BLOCK_8X8) {
+      if (above_mbmi->sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
         const PARTITION_TYPE bp = BLOCK_8X8 - above_mbmi->sb_type;
         const int have_vsplit = bp != PARTITION_HORZ;
         const int have_hsplit = bp != PARTITION_VERT;
@@ -1741,7 +1739,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     MB_MODE_INFO backup_mbmi;
 #endif  // CONFIG_EXT_INTER
 
-    mi_step = AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[left_mbmi->sb_type]);
+    mi_step = AOMMIN(xd->n8_h, mi_size_high[left_mbmi->sb_type]);
 
     if (!is_neighbor_overlappable(left_mbmi)) continue;
 
@@ -1780,7 +1778,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                   4);
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
-      if (left_mbmi->sb_type < BLOCK_8X8) {
+      if (left_mbmi->sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
         const PARTITION_TYPE bp = BLOCK_8X8 - left_mbmi->sb_type;
         const int have_vsplit = bp != PARTITION_HORZ;
         const int have_hsplit = bp != PARTITION_VERT;
