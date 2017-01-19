@@ -73,6 +73,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -115,11 +116,12 @@ void RefreshPoliciesOnUIThread() {
     g_browser_process->policy_service()->RefreshPolicies(base::Closure());
 }
 
-// Copies any authentication details that were entered in the login profile in
-// the mail profile to make sure all subsystems of Chrome can access the network
+// Copies any authentication details that were entered in the login profile to
+// the main profile to make sure all subsystems of Chrome can access the network
 // with the provided authentication which are possibly for a proxy server.
 void TransferContextAuthenticationsOnIOThread(
     net::URLRequestContextGetter* default_profile_context_getter,
+    net::URLRequestContextGetter* webview_context_getter,
     net::URLRequestContextGetter* browser_process_context_getter) {
   net::HttpAuthCache* new_cache =
       browser_process_context_getter->GetURLRequestContext()->
@@ -128,6 +130,18 @@ void TransferContextAuthenticationsOnIOThread(
       default_profile_context_getter->GetURLRequestContext()->
       http_transaction_factory()->GetSession()->http_auth_cache();
   new_cache->UpdateAllFrom(*old_cache);
+
+  // Copy the auth cache from webview's context since the proxy authentication
+  // information is saved in webview's context.
+  if (webview_context_getter) {
+    net::HttpAuthCache* webview_cache =
+        webview_context_getter->GetURLRequestContext()
+            ->http_transaction_factory()
+            ->GetSession()
+            ->http_auth_cache();
+    new_cache->UpdateAllFrom(*webview_cache);
+  }
+
   VLOG(1) << "Main request context populated with authentication data.";
   // Last but not least tell the policy subsystem to refresh now as it might
   // have been stuck until now too.
@@ -312,10 +326,19 @@ void ExistingUserController::Observe(
         signin_profile->GetRequestContext();
     DCHECK(browser_process_context_getter.get());
     DCHECK(signin_profile_context_getter.get());
+
+    content::StoragePartition* signin_partition = login::GetSigninPartition();
+    scoped_refptr<net::URLRequestContextGetter> webview_context_getter;
+    if (signin_partition) {
+      webview_context_getter = signin_partition->GetURLRequestContext();
+      DCHECK(webview_context_getter.get());
+    }
+
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&TransferContextAuthenticationsOnIOThread,
                    base::RetainedRef(signin_profile_context_getter),
+                   base::RetainedRef(webview_context_getter),
                    base::RetainedRef(browser_process_context_getter)),
         base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
   }
