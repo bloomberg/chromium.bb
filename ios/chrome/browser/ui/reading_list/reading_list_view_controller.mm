@@ -374,10 +374,10 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   UIView* emptyCollectionBackground = [[UIView alloc] initWithFrame:CGRectZero];
 
   NSString* rawText = nil;
-  if (IsIPadIdiom())
-    rawText = l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPAD);
-  else
+  if (IsCompact())
     rawText = l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPHONE);
+  else
+    rawText = l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPAD);
 
   rawText = [[rawText stringByAppendingString:@"\n\n"]
       stringByAppendingString:l10n_util::GetNSString(
