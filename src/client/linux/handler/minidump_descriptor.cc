@@ -45,6 +45,10 @@ MinidumpDescriptor::MinidumpDescriptor(const MinidumpDescriptor& descriptor)
       directory_(descriptor.directory_),
       c_path_(NULL),
       size_limit_(descriptor.size_limit_),
+      address_within_principal_mapping_(
+          descriptor.address_within_principal_mapping_),
+      skip_dump_if_principal_mapping_not_referenced_(
+          descriptor.skip_dump_if_principal_mapping_not_referenced_),
       microdump_extra_info_(descriptor.microdump_extra_info_) {
   // The copy constructor is not allowed to be called on a MinidumpDescriptor
   // with a valid path_, as getting its c_path_ would require the heap which
@@ -66,6 +70,10 @@ MinidumpDescriptor& MinidumpDescriptor::operator=(
     UpdatePath();
   }
   size_limit_ = descriptor.size_limit_;
+  address_within_principal_mapping_ =
+      descriptor.address_within_principal_mapping_;
+  skip_dump_if_principal_mapping_not_referenced_ =
+      descriptor.skip_dump_if_principal_mapping_not_referenced_;
   microdump_extra_info_ = descriptor.microdump_extra_info_;
   return *this;
 }
