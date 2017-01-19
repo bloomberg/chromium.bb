@@ -59,7 +59,8 @@ extern "C" {
 // Otherwise returns true as soon as possible and processes the files
 // asynchronously. All files MUST be closed by the CDM after this one-time
 // processing is finished.
-CDM_API bool VerifyHost_0(const cdm::HostFile* host_files, uint32_t num_files);
+CDM_API bool VerifyCdmHost_0(const cdm::HostFile* host_files,
+                             uint32_t num_files);
 }
 
 #endif  // CDM_CONTENT_DECRYPTION_MODULE_EXT_H_
