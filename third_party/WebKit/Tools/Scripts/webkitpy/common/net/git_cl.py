@@ -10,7 +10,6 @@ and Buildbucket to manage changelists and try jobs associated with them.
 
 import json
 import logging
-import time
 
 _log = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class GitCL(object):
     def get_issue_number(self):
         return self.run(['issue']).split()[2]
 
-    def wait_for_try_jobs(self, poll_delay_seconds=600, timeout_seconds=7200):
+    def wait_for_try_jobs(self, poll_delay_seconds=10 * 60, timeout_seconds=120 * 60):
         """Waits until all try jobs are finished.
 
         Args:
@@ -46,15 +45,21 @@ class GitCL(object):
         Returns:
             A list of try job result dicts, or None if a timeout occurred.
         """
-        start = time.time()
-        while time.time() - start < timeout_seconds:
-            time.sleep(poll_delay_seconds)
+        start = self._host.time()
+        self._host.print_('Waiting for try jobs (timeout: %d s, poll interval %d s).' %
+                          (timeout_seconds, poll_delay_seconds))
+        while self._host.time() - start < timeout_seconds:
+            self._host.sleep(poll_delay_seconds)
             try_results = self.fetch_try_results()
             _log.debug('Fetched try results: %s', try_results)
             if self.all_jobs_finished(try_results):
+                self._host.print_()
+                self._host.print_('All jobs finished.')
                 return try_results
-            self._host.print_('Waiting for results.')
-            time.sleep(poll_delay_seconds)
+            self._host.print_('.', end='')
+            self._host.sleep(poll_delay_seconds)
+        self._host.print_()
+        self._host.print_('Timed out waiting for try results.')
         return None
 
     def fetch_try_results(self):

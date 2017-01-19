@@ -28,6 +28,9 @@ CSS_DEST_NAME = 'csswg-test'
 WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
 CSS_REPO_URL = 'https://chromium.googlesource.com/external/w3c/csswg-test.git'
 
+# Settings for how often to check try job results and how long to wait.
+POLL_DELAY_SECONDS = 2 * 60
+TIMEOUT_SECONDS = 180 * 60
 
 _log = logging.getLogger(__file__)
 
@@ -305,28 +308,34 @@ class DepsUpdater(object):
         self._upload_cl()
         _log.info('Issue: %s', self.git_cl.run(['issue']).strip())
 
-        # First try: if there are failures, update expectations.
+        # First, try on Blink try bots in order to get any new baselines.
         _log.info('Triggering try jobs.')
         for try_bot in self.host.builders.all_try_builder_names():
             self.git_cl.run(['try', '-b', try_bot])
-        try_results = self.git_cl.wait_for_try_jobs(timeout_seconds=180 * 60)
+        try_results = self.git_cl.wait_for_try_jobs(
+            poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
+
         if not try_results:
-            _log.error('Timed out waiting for try results.')
-            return
+            self.git_cl.run(['set-close'])
+            return False
+
         if try_results and self.git_cl.has_failing_try_results(try_results):
             self.fetch_new_expectations_and_baselines()
 
-        # Second try: if there are failures, then abort.
+        # Wait for CQ try jobs to finish. If there are failures, then abort.
         self.git_cl.run(['set-commit', '--rietveld'])
-        try_results = self.git_cl.wait_for_try_jobs(timeout_seconds=180 * 60)
+        try_results = self.git_cl.wait_for_try_jobs(
+            poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
+
         if not try_results:
-            _log.info('Timed out waiting for try results.')
             self.git_cl.run(['set-close'])
             return False
+
         if self.git_cl.has_failing_try_results(try_results):
             _log.info('CQ failed; aborting.')
             self.git_cl.run(['set-close'])
             return False
+
         _log.info('Update completed.')
         return True
 

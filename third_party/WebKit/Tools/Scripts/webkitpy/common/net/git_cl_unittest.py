@@ -50,6 +50,38 @@ class GitCLTest(unittest.TestCase):
     def test_all_jobs_finished_empty(self):
         self.assertTrue(GitCL.all_jobs_finished([]))
 
+    def test_wait_for_try_jobs_time_out(self):
+        host = MockHost()
+        git_cl = GitCL(host)
+        git_cl.fetch_try_results = lambda: [
+            {
+                'builder_name': 'some-builder',
+                'status': 'STARTED',
+                'result': None,
+            },
+        ]
+        git_cl.wait_for_try_jobs()
+        self.assertEqual(
+            host.stdout.getvalue(),
+            'Waiting for try jobs (timeout: 7200 s, poll interval 600 s).\n'
+            '......\nTimed out waiting for try results.\n')
+
+    def test_wait_for_try_jobs_done(self):
+        host = MockHost()
+        git_cl = GitCL(host)
+        git_cl.fetch_try_results = lambda: [
+            {
+                'builder_name': 'some-builder',
+                'status': 'COMPLETED',
+                'result': 'FAILURE',
+            },
+        ]
+        git_cl.wait_for_try_jobs()
+        self.assertEqual(
+            host.stdout.getvalue(),
+            'Waiting for try jobs (timeout: 7200 s, poll interval 600 s).\n\n'
+            'All jobs finished.\n')
+
     def test_all_jobs_finished_with_started_jobs(self):
         self.assertFalse(GitCL.all_jobs_finished([
             {
