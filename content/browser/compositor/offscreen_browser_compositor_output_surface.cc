@@ -14,6 +14,7 @@
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -157,7 +158,7 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
       sync_token,
       base::Bind(
           &OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete,
-          weak_ptr_factory_.GetWeakPtr()));
+          weak_ptr_factory_.GetWeakPtr(), frame.latency_info));
 }
 
 bool OffscreenBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane()
@@ -186,7 +187,9 @@ void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
   }
 }
 
-void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete() {
+void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
   client_->DidReceiveSwapBuffersAck();
 }
 
