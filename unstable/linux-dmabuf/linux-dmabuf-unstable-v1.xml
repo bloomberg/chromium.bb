@@ -32,7 +32,8 @@
 
       This interface offers ways to create generic dmabuf-based
       wl_buffers. Immediately after a client binds to this interface,
-      the set of supported formats is sent with 'format' events.
+      the set of supported formats and format modifiers is sent with
+      'format' and 'modifier' events.
 
       The following are required from clients:
 
@@ -112,13 +113,34 @@
         For the definition of the format codes, see the
         zwp_linux_buffer_params_v1::create request.
 
-        XXX: Can a compositor ever enumerate them?
+        Warning: the 'format' event is likely to be deprecated and replaced
+        with the 'modifier' event introduced in zwp_linux_dmabuf_v1
+        version 3, described below. Please refrain from using the information
+        received from this event.
       </description>
       <arg name="format" type="uint" summary="DRM_FORMAT code"/>
     </event>
+
+    <event name="modifier" since="3">
+      <description summary="supported buffer format modifier">
+        This event advertises the formats that the server supports, along with
+        the modifiers supported for each format. All the supported modifiers
+        for all the supported formats are advertised once when the client
+        binds to this interface. A roundtrip after binding guarantees that
+        the client has received all supported format-modifier pairs.
+
+        For the definition of the format and modifier codes, see the
+        zwp_linux_buffer_params_v1::create request.
+      </description>
+      <arg name="format" type="uint" summary="DRM_FORMAT code"/>
+      <arg name="modifier_hi" type="uint"
+           summary="high 32 bits of layout modifier"/>
+      <arg name="modifier_lo" type="uint"
+           summary="low 32 bits of layout modifier"/>
+    </event>
   </interface>
 
-  <interface name="zwp_linux_buffer_params_v1" version="2">
+  <interface name="zwp_linux_buffer_params_v1" version="3">
     <description summary="parameters for creating a dmabuf-based wl_buffer">
       This temporary object is a collection of dmabufs and other
       parameters that together form a single logical buffer. The temporary
