@@ -10,6 +10,17 @@
 // See crbug.com/650462 for details.
 #include "cronet_c_for_grpc.h"
 
+// Type of HTTP cache; public interface to private implementation defined in
+// URLRequestContextConfig class.
+enum HttpCacheType {
+  // Disabled HTTP cache.  Some data may still be temporarily stored in memory.
+  DISABLED,
+  // Enable on-disk HTTP cache, including HTTP data.
+  DISK,
+  // Enable in-memory cache, including HTTP data.
+  MEMORY,
+};
+
 // A block, that takes a request, and returns YES if the request should
 // be handled.
 typedef BOOL (^RequestFilterBlock)(NSURLRequest* request);
@@ -27,6 +38,11 @@ GRPC_SUPPORT_EXPORT
 // Sets whether QUIC should be supported by CronetEngine. This method only has
 // any effect before |start| is called.
 + (void)setQuicEnabled:(BOOL)quicEnabled;
+
+// Set HTTP Cache type to be used by CronetEngine.  This method only has any
+// effect before |start| is called.  See HttpCacheType enum for available
+// options.
++ (void)setHttpCacheType:(HttpCacheType)httpCacheType;
 
 // Adds hint that host supports QUIC on altPort. This method only has any effect
 // before |start| is called.

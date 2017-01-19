@@ -87,6 +87,10 @@ class CronetEnvironment {
     mock_cert_verifier_ = std::move(mock_cert_verifier);
   }
 
+  void set_http_cache(URLRequestContextConfig::HttpCacheType http_cache) {
+    http_cache_ = http_cache;
+  }
+
   void SetHostResolverRules(const std::string& host_resolver_rules);
 
   void set_ssl_key_log_file_name(const std::string& ssl_key_log_file_name) {
@@ -131,6 +135,7 @@ class CronetEnvironment {
   std::string quic_user_agent_id_;
   std::string accept_language_;
   std::string ssl_key_log_file_name_;
+  URLRequestContextConfig::HttpCacheType http_cache_;
 
   std::list<net::HostPortPair> quic_hints_;
 
