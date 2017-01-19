@@ -5,13 +5,16 @@
 #ifndef CONTENT_RENDERER_SHARED_WORKER_WEBSHAREDWORKER_PROXY_H_
 #define CONTENT_RENDERER_SHARED_WORKER_WEBSHAREDWORKER_PROXY_H_
 
-#include <string>
-#include <vector>
-
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ipc/ipc_listener.h"
-#include "third_party/WebKit/public/web/WebSharedWorkerConnector.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerConnectListener.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h"
+
+struct ViewHostMsg_CreateWorker_Params;
+
+namespace blink {
+class WebMessagePortChannel;
+}
 
 namespace IPC {
 class MessageRouter;
@@ -22,19 +25,21 @@ namespace content {
 // Implementation of the WebSharedWorker APIs. This object is intended to only
 // live long enough to allow the caller to send a "connect" event to the worker
 // thread. Once the connect event has been sent, all future communication will
-// happen via the WebMessagePortChannel, and the WebSharedWorker instance will
-// be freed.
-class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
-                             private IPC::Listener {
+// happen via the WebMessagePortChannel. This instance will self-destruct when a
+// connection is established.
+class WebSharedWorkerProxy : private IPC::Listener {
  public:
-  WebSharedWorkerProxy(IPC::MessageRouter* router, int route_id);
+  // |channel| should be passed with its ownership.
+  WebSharedWorkerProxy(
+      std::unique_ptr<blink::WebSharedWorkerConnectListener> listener,
+      ViewHostMsg_CreateWorker_Params params,
+      blink::WebMessagePortChannel* channel);
   ~WebSharedWorkerProxy() override;
 
-  // Implementations of WebSharedWorkerConnector APIs
-  void connect(blink::WebMessagePortChannel* channel,
-               ConnectListener* listener) override;
-
  private:
+  void connect(ViewHostMsg_CreateWorker_Params params,
+               blink::WebMessagePortChannel* channel);
+
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -46,12 +51,12 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
   // worker, and also to route messages to the worker (WorkerService contains
   // a map that maps between these renderer-side route IDs and worker-side
   // routing ids).
-  const int route_id_;
+  int route_id_;
 
   IPC::MessageRouter* const router_;
 
   int message_port_id_;
-  ConnectListener* connect_listener_;
+  std::unique_ptr<blink::WebSharedWorkerConnectListener> listener_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);
 };

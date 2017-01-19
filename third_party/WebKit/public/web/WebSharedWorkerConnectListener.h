@@ -28,33 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSharedWorkerConnector_h
-#define WebSharedWorkerConnector_h
+#ifndef WebSharedWorkerConnectListener_h
+#define WebSharedWorkerConnectListener_h
 
-#include "WebContentSecurityPolicy.h"
+#include "WebSharedWorkerCreationErrors.h"
 
 namespace blink {
 
-class WebMessagePortChannel;
-
-// This is the interface to conncect to SharedWorker.
-// Since SharedWorkers communicate entirely through MessagePorts this interface
-// only contains APIs for starting up a SharedWorker.
-class WebSharedWorkerConnector {
+// This is the callback interface passed from blink to the embedder.
+class WebSharedWorkerConnectListener {
  public:
-  virtual ~WebSharedWorkerConnector() {}
+  virtual ~WebSharedWorkerConnectListener() = default;
 
-  class ConnectListener {
-   public:
-    // Invoked once the connect event has been sent so the caller can free this
-    // object.
-    virtual void connected() = 0;
-    virtual void scriptLoadFailed() = 0;
-  };
+  // Called when a worker is created.
+  virtual void workerCreated(WebWorkerCreationError) = 0;
 
-  // Sends a connect event to the SharedWorker context. The listener is invoked
-  // when this async operation completes.
-  virtual void connect(WebMessagePortChannel*, ConnectListener*) = 0;
+  // Called when worker script load fails.
+  virtual void scriptLoadFailed() = 0;
+
+  // Called when a connection is established.
+  virtual void connected() = 0;
 };
 
 }  // namespace blink

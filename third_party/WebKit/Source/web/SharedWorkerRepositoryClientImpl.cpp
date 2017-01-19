@@ -44,6 +44,7 @@
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebKit.h"
 #include "public/web/WebSharedWorker.h"
+#include "public/web/WebSharedWorkerConnectListener.h"
 #include "public/web/WebSharedWorkerCreationErrors.h"
 #include "public/web/WebSharedWorkerRepositoryClient.h"
 #include "web/WebLocalFrameImpl.h"
@@ -53,53 +54,50 @@
 
 namespace blink {
 
-// Callback class that keeps the SharedWorker and WebSharedWorker objects alive
-// while connecting.
-class SharedWorkerConnector
-    : private WebSharedWorkerConnector::ConnectListener {
+// Implementation of the callback interface passed to the embedder. This will be
+// destructed when a connection to a shared worker is established.
+class SharedWorkerConnectListener final
+    : public WebSharedWorkerConnectListener {
  public:
-  SharedWorkerConnector(
-      SharedWorker* worker,
-      WebMessagePortChannelUniquePtr channel,
-      std::unique_ptr<WebSharedWorkerConnector> webWorkerConnector)
-      : m_worker(worker),
-        m_webWorkerConnector(std::move(webWorkerConnector)),
-        m_channel(std::move(channel)) {}
+  explicit SharedWorkerConnectListener(SharedWorker* worker)
+      : m_worker(worker) {}
 
-  virtual ~SharedWorkerConnector();
-  void connect();
+  ~SharedWorkerConnectListener() override {
+    DCHECK(!m_worker->isBeingConnected());
+  }
 
- private:
-  // WebSharedWorkerConnector::ConnectListener overrides.
-  void connected() override;
-  void scriptLoadFailed() override;
+  // WebSharedWorkerConnectListener overrides.
+
+  void workerCreated(WebWorkerCreationError creationError) override {
+    m_worker->setIsBeingConnected(true);
+
+    // No nested workers (for now) - connect() should only be called from
+    // document context.
+    DCHECK(m_worker->getExecutionContext()->isDocument());
+    Document* document = toDocument(m_worker->getExecutionContext());
+    bool isSecureContext = m_worker->getExecutionContext()->isSecureContext();
+    switch (creationError) {
+      case WebWorkerCreationErrorNone:
+        return;
+      case WebWorkerCreationErrorSecureContextMismatch:
+        UseCounter::Feature feature =
+            isSecureContext
+                ? UseCounter::NonSecureSharedWorkerAccessedFromSecureContext
+                : UseCounter::SecureSharedWorkerAccessedFromNonSecureContext;
+        UseCounter::count(document, feature);
+        return;
+    }
+  }
+
+  void scriptLoadFailed() override {
+    m_worker->dispatchEvent(Event::createCancelable(EventTypeNames::error));
+    m_worker->setIsBeingConnected(false);
+  }
+
+  void connected() override { m_worker->setIsBeingConnected(false); }
 
   Persistent<SharedWorker> m_worker;
-  std::unique_ptr<WebSharedWorkerConnector> m_webWorkerConnector;
-  WebMessagePortChannelUniquePtr m_channel;
 };
-
-SharedWorkerConnector::~SharedWorkerConnector() {
-  m_worker->setIsBeingConnected(false);
-}
-
-void SharedWorkerConnector::connect() {
-  m_worker->setIsBeingConnected(true);
-  m_webWorkerConnector->connect(m_channel.release(), this);
-}
-
-void SharedWorkerConnector::connected() {
-  // Free ourselves (this releases the SharedWorker so it can be freed as well
-  // if unreferenced).
-  delete this;
-}
-
-void SharedWorkerConnector::scriptLoadFailed() {
-  m_worker->dispatchEvent(Event::createCancelable(EventTypeNames::error));
-  // Free ourselves (this releases the SharedWorker so it can be freed as well
-  // if unreferenced).
-  delete this;
-}
 
 static WebSharedWorkerRepositoryClient::DocumentID getId(void* document) {
   DCHECK(document);
@@ -121,7 +119,7 @@ void SharedWorkerRepositoryClientImpl::connect(
 
   // TODO(estark): this is broken, as it only uses the first header
   // when multiple might have been sent. Fix by making the
-  // SharedWorkerConnector interface take a map that can contain
+  // SharedWorkerConnectListener interface take a map that can contain
   // multiple headers.
   std::unique_ptr<Vector<CSPHeaderAndType>> headers =
       worker->getExecutionContext()->contentSecurityPolicy()->headers();
@@ -134,33 +132,15 @@ void SharedWorkerRepositoryClientImpl::connect(
         static_cast<WebContentSecurityPolicyType>((*headers)[0].second);
   }
 
-  WebWorkerCreationError creationError;
   bool isSecureContext = worker->getExecutionContext()->isSecureContext();
-  std::unique_ptr<WebSharedWorkerConnector> webWorkerConnector =
-      m_client->createSharedWorkerConnector(
-          url, name, getId(document), header, headerType,
-          worker->getExecutionContext()->securityContext().addressSpace(),
-          isSecureContext ? WebSharedWorkerCreationContextTypeSecure
-                          : WebSharedWorkerCreationContextTypeNonsecure,
-          &creationError);
-
-  switch (creationError) {
-    case WebWorkerCreationErrorNone:
-      break;
-    case WebWorkerCreationErrorSecureContextMismatch:
-      UseCounter::Feature feature =
-          isSecureContext
-              ? UseCounter::NonSecureSharedWorkerAccessedFromSecureContext
-              : UseCounter::SecureSharedWorkerAccessedFromNonSecureContext;
-      UseCounter::count(document, feature);
-      break;
-  }
-
-  // The connector object manages its own lifecycle (and the lifecycles of the
-  // two worker objects).  It will free itself once connecting is completed.
-  SharedWorkerConnector* connector = new SharedWorkerConnector(
-      worker, std::move(port), std::move(webWorkerConnector));
-  connector->connect();
+  std::unique_ptr<WebSharedWorkerConnectListener> listener =
+      WTF::makeUnique<SharedWorkerConnectListener>(worker);
+  m_client->connect(
+      url, name, getId(document), header, headerType,
+      worker->getExecutionContext()->securityContext().addressSpace(),
+      isSecureContext ? WebSharedWorkerCreationContextTypeSecure
+                      : WebSharedWorkerCreationContextTypeNonsecure,
+      port.release(), std::move(listener));
 }
 
 void SharedWorkerRepositoryClientImpl::documentDetached(Document* document) {

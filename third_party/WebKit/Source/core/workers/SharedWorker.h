@@ -61,6 +61,7 @@ class CORE_EXPORT SharedWorker final
   const AtomicString& interfaceName() const override;
 
   void setIsBeingConnected(bool b) { m_isBeingConnected = b; }
+  bool isBeingConnected() { return m_isBeingConnected; }
 
   bool hasPendingActivity() const final;
 

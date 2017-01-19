@@ -545,7 +545,7 @@ source_set("blink_headers") {
     "web/WebSettings.h",
     "web/WebSharedWorker.h",
     "web/WebSharedWorkerClient.h",
-    "web/WebSharedWorkerConnector.h",
+    "web/WebSharedWorkerConnectListener.h",
     "web/WebSharedWorkerCreationErrors.h",
     "web/WebSharedWorkerRepositoryClient.h",
     "web/WebSpeechGrammar.h",

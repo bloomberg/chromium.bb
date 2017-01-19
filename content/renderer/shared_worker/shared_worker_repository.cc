@@ -4,10 +4,10 @@
 
 #include "content/renderer/shared_worker/shared_worker_repository.h"
 
-#include "content/child/child_thread_impl.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/shared_worker/websharedworker_proxy.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerConnectListener.h"
 
 namespace content {
 
@@ -16,8 +16,7 @@ SharedWorkerRepository::SharedWorkerRepository(RenderFrameImpl* render_frame)
 
 SharedWorkerRepository::~SharedWorkerRepository() = default;
 
-std::unique_ptr<blink::WebSharedWorkerConnector>
-SharedWorkerRepository::createSharedWorkerConnector(
+void SharedWorkerRepository::connect(
     const blink::WebURL& url,
     const blink::WebString& name,
     DocumentID document_id,
@@ -25,7 +24,10 @@ SharedWorkerRepository::createSharedWorkerConnector(
     blink::WebContentSecurityPolicyType security_policy_type,
     blink::WebAddressSpace creation_address_space,
     blink::WebSharedWorkerCreationContextType creation_context_type,
-    blink::WebWorkerCreationError* error) {
+    blink::WebMessagePortChannel* channel,
+    std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) {
+  documents_with_workers_.insert(document_id);
+
   ViewHostMsg_CreateWorker_Params params;
   params.url = url;
   params.name = name.utf16();
@@ -36,11 +38,9 @@ SharedWorkerRepository::createSharedWorkerConnector(
   params.creation_address_space = creation_address_space;
   params.creation_context_type = creation_context_type;
   ViewHostMsg_CreateWorker_Reply reply;
-  render_frame_->Send(new ViewHostMsg_CreateWorker(params, &reply));
-  *error = reply.error;
-  documents_with_workers_.insert(document_id);
-  return base::MakeUnique<WebSharedWorkerProxy>(
-      ChildThreadImpl::current()->GetRouter(), reply.route_id);
+
+  // This proxy will self-destruct when a connection is established.
+  new WebSharedWorkerProxy(std::move(listener), params, channel);
 }
 
 void SharedWorkerRepository::documentDetached(DocumentID document) {
