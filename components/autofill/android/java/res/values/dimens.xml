@@ -16,9 +16,12 @@
     <dimen name="keyboard_accessory_padding">8dp</dimen>
     <dimen name="keyboard_accessory_text_size">14sp</dimen>
 
-    <!-- 
-         Smaller label font size for http not secure warning messages of credit 
-         card and password forms, when users are on http sites. 
+    <!--
+         Larger label and icon sizes for Form-Not-Secure experiment
+         (warning messages on credit card and password forms when users
+         are on HTTP sites).
     -->
-    <dimen name="dropdown_item_smaller_label_font_size">14sp</dimen>
+    <dimen name="dropdown_item_larger_sublabel_font_size">18sp</dimen>
+    <dimen name="dropdown_large_icon_size">24dp</dimen>
+    <dimen name="dropdown_large_icon_margin">10dp</dimen>
 </resources>

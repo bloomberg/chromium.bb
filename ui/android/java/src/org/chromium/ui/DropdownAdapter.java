@@ -169,6 +169,8 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             sublabelView.setVisibility(View.GONE);
         } else {
             sublabelView.setText(sublabel);
+            sublabelView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    mContext.getResources().getDimension(item.getSublabelFontSizeResId()));
             sublabelView.setVisibility(View.VISIBLE);
         }
 
@@ -184,6 +186,19 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         if (item.getIconId() == DropdownItem.NO_ICON) {
             iconView.setVisibility(View.GONE);
         } else {
+            int iconSizeResId = item.getIconSizeResId();
+            int iconSize = iconSizeResId == 0
+                    ? LayoutParams.WRAP_CONTENT
+                    : mContext.getResources().getDimensionPixelSize(iconSizeResId);
+            ViewGroup.MarginLayoutParams layoutParams =
+                    (ViewGroup.MarginLayoutParams) iconView.getLayoutParams();
+            layoutParams.width = iconSize;
+            layoutParams.height = iconSize;
+            int iconMargin =
+                    mContext.getResources().getDimensionPixelSize(item.getIconMarginResId());
+            ApiCompatibilityUtils.setMarginStart(layoutParams, iconMargin);
+            ApiCompatibilityUtils.setMarginEnd(layoutParams, iconMargin);
+            iconView.setLayoutParams(layoutParams);
             iconView.setImageDrawable(AppCompatResources.getDrawable(mContext, item.getIconId()));
             iconView.setVisibility(View.VISIBLE);
         }

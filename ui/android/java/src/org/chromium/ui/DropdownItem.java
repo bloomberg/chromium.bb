@@ -48,6 +48,10 @@ public interface DropdownItem {
      */
     int getLabelFontSizeResId();
     /**
+     * Returns resource ID of sublabel's font size.
+     */
+    int getSublabelFontSizeResId();
+    /**
      * Returns whether label and sublabel should be on the same line.
      */
     boolean isLabelAndSublabelOnSameLine();
@@ -56,4 +60,12 @@ public interface DropdownItem {
      * and sublabel.
      */
     boolean isIconAtStart();
+    /**
+     * Returns the resource ID of the icon's size, or 0 to use WRAP_CONTENT.
+     */
+    int getIconSizeResId();
+    /**
+     * Returns the resource ID of the icon's margin size.
+     */
+    int getIconMarginResId();
 }

@@ -11,10 +11,11 @@ import org.chromium.ui.DropdownItemBase;
  */
 public class AutofillSuggestion extends DropdownItemBase {
     /**
-     * The constant used to specify a http warning message in a list of Autofill suggestions.
+     * The constant used to specify warning messages in a list of Autofill suggestions.
      * Has to be kept in sync with {@code POPUP_ITEM_ID_SEPARATOR} enum in
      * components/autofill/core/browser/popup_item_ids.h
      */
+    private static final int ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE = -1;
     private static final int ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE = -10;
 
     private final String mLabel;
@@ -80,16 +81,18 @@ public class AutofillSuggestion extends DropdownItemBase {
     public int getLabelFontColorResId() {
         if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
             return R.color.http_bad_warning_message_text;
+        } else if (mSuggestionId == ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE) {
+            return R.color.insecure_context_payment_disabled_message_text;
         }
         return super.getLabelFontColorResId();
     }
 
     @Override
-    public int getLabelFontSizeResId() {
+    public int getSublabelFontSizeResId() {
         if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
-            return R.dimen.dropdown_item_smaller_label_font_size;
+            return R.dimen.dropdown_item_larger_sublabel_font_size;
         }
-        return super.getLabelFontSizeResId();
+        return super.getSublabelFontSizeResId();
     }
 
     @Override
@@ -106,6 +109,22 @@ public class AutofillSuggestion extends DropdownItemBase {
             return true;
         }
         return super.isIconAtStart();
+    }
+
+    @Override
+    public int getIconSizeResId() {
+        if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+            return R.dimen.dropdown_large_icon_size;
+        }
+        return super.getIconSizeResId();
+    }
+
+    @Override
+    public int getIconMarginResId() {
+        if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+            return R.dimen.dropdown_large_icon_margin;
+        }
+        return super.getIconMarginResId();
     }
 
     public int getSuggestionId() {

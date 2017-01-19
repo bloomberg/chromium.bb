@@ -55,6 +55,11 @@ public class DropdownItemBase implements DropdownItem {
     }
 
     @Override
+    public int getSublabelFontSizeResId() {
+        return R.dimen.dropdown_item_sublabel_font_size;
+    }
+
+    @Override
     public boolean isLabelAndSublabelOnSameLine() {
         return false;
     }
@@ -62,5 +67,15 @@ public class DropdownItemBase implements DropdownItem {
     @Override
     public boolean isIconAtStart() {
         return false;
+    }
+
+    @Override
+    public int getIconSizeResId() {
+        return 0;
+    }
+
+    @Override
+    public int getIconMarginResId() {
+        return R.dimen.dropdown_icon_margin;
     }
 }
