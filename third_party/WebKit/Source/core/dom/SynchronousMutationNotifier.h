@@ -25,6 +25,7 @@ class CORE_EXPORT SynchronousMutationNotifier
   // |SynchronousMutationObserver|.
   void notifyChangeChildren(const ContainerNode&);
   void notifyMergeTextNodes(Text&, unsigned);
+  void notifyMoveTreeToNewDocument(const Node&);
   void notifySplitTextNode(const Text&);
   void notifyUpdateCharacterData(CharacterData*,
                                  unsigned offset,

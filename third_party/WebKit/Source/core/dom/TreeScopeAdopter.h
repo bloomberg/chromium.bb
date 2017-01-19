@@ -39,7 +39,7 @@ class TreeScopeAdopter {
  public:
   TreeScopeAdopter(Node& toAdopt, TreeScope& newScope);
 
-  void execute() const { moveTreeToNewScope(*m_toAdopt); }
+  void execute() const;
   bool needsScopeChange() const { return m_oldScope != m_newScope; }
 
 #if DCHECK_IS_ON()

@@ -4199,12 +4199,12 @@ void Document::moveNodeIteratorsToNewDocument(Node& node,
 
 void Document::didMoveTreeToNewDocument(const Node& root) {
   DCHECK_NE(root.document(), this);
-  if (m_ranges.isEmpty())
-    return;
-
-  AttachedRangeSet ranges = m_ranges;
-  for (Range* range : ranges)
-    range->updateOwnerDocumentIfNeeded();
+  if (!m_ranges.isEmpty()) {
+    AttachedRangeSet ranges = m_ranges;
+    for (Range* range : ranges)
+      range->updateOwnerDocumentIfNeeded();
+  }
+  notifyMoveTreeToNewDocument(root);
 }
 
 void Document::nodeChildrenWillBeRemoved(ContainerNode& container) {

@@ -47,6 +47,9 @@ class CORE_EXPORT SynchronousMutationObserver
   // |oldNdoe->previousSibling()|.
   virtual void didMergeTextNodes(Text& oldNode, unsigned offset);
 
+  // Called just after node tree |root| is moved to new document.
+  virtual void didMoveTreeToNewDocument(const Node& root);
+
   // Called when |Text| node is split, next sibling |oldNode| contains
   // characters after split point.
   virtual void didSplitTextNode(const Text& oldNode);

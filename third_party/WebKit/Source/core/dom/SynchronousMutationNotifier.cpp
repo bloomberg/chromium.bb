@@ -23,6 +23,12 @@ void SynchronousMutationNotifier::notifyMergeTextNodes(Text& node,
     observer->didMergeTextNodes(node, offset);
 }
 
+void SynchronousMutationNotifier::notifyMoveTreeToNewDocument(
+    const Node& root) {
+  for (SynchronousMutationObserver* observer : m_observers)
+    observer->didMoveTreeToNewDocument(root);
+}
+
 void SynchronousMutationNotifier::notifySplitTextNode(const Text& node) {
   for (SynchronousMutationObserver* observer : m_observers)
     observer->didSplitTextNode(node);

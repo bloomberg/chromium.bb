@@ -14,6 +14,7 @@ SynchronousMutationObserver::SynchronousMutationObserver()
 
 void SynchronousMutationObserver::didChangeChildren(const ContainerNode&) {}
 void SynchronousMutationObserver::didMergeTextNodes(Text&, unsigned) {}
+void SynchronousMutationObserver::didMoveTreeToNewDocument(const Node&) {}
 void SynchronousMutationObserver::didSplitTextNode(const Text&) {}
 void SynchronousMutationObserver::didUpdateCharacterData(CharacterData*,
                                                          unsigned,
