@@ -124,8 +124,17 @@ bool SampleAuxiliaryInformationOffset::Parse(BoxReader* reader) {
     RCHECK(reader->SkipBytes(8));
 
   uint32_t count;
-  RCHECK(reader->Read4(&count) &&
-         reader->HasBytes(count * (reader->version() == 1 ? 8 : 4)));
+  RCHECK(reader->Read4(&count));
+  int bytes_per_offset = reader->version() == 1 ? 8 : 4;
+
+  // Cast |count| to size_t before multiplying to support maximum platform size.
+  base::CheckedNumeric<size_t> bytes_needed =
+      base::CheckMul(bytes_per_offset, static_cast<size_t>(count));
+  RCHECK_MEDIA_LOGGED(bytes_needed.IsValid(), reader->media_log(),
+                      "Extreme SAIO count exceeds implementation limit.");
+  RCHECK(reader->HasBytes(bytes_needed.ValueOrDie()));
+
+  RCHECK(count <= offsets.max_size());
   offsets.resize(count);
 
   for (uint32_t i = 0; i < count; i++) {
@@ -1124,8 +1133,8 @@ bool TrackFragmentRun::Parse(BoxReader* reader) {
   int fields = sample_duration_present + sample_size_present +
       sample_flags_present + sample_composition_time_offsets_present;
 
-  // |bytes_needed| is potentially 64-bit. Cast |sample_count| from uint32_t to
-  // size_t to avoid multiplication overflow.
+  // Cast |sample_count| to size_t before multiplying to support maximum
+  // platform size.
   base::CheckedNumeric<size_t> bytes_needed =
       base::CheckMul(fields, static_cast<size_t>(sample_count));
   RCHECK_MEDIA_LOGGED(bytes_needed.IsValid(), reader->media_log(),

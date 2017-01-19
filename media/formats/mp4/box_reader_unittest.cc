@@ -367,5 +367,47 @@ TEST_F(BoxReaderTest, TrunSampleCount32bitOverflow) {
   EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
 }
 
+TEST_F(BoxReaderTest, SaioCount32bitOverflow) {
+  // This data is not a valid 'emsg' box. It is just used as a top-level box
+  // as ReadTopLevelBox() has a restricted set of boxes it allows.
+  // The nested 'saio' box specifies an unusually high number of offset counts,
+  // though only one offset is actually included in the box. The values for
+  // "count" and "version" are chosen such that the needed number of bytes will
+  // overflow to a very small number (4), leading to incorrect assumptions about
+  // bytes available and ultimately OOB reads. http://crbug.com/679641
+  static const uint8_t kData[] = {
+      0x00, 0x00, 0x00, 0x1c, 'e', 'm', 's', 'g',  // outer box
+      0x00, 0x00, 0x00, 0x14, 's', 'a', 'i', 'o',  // nested box
+      0x00, 0x00,              // version = 0 (4 bytes per offset entry)
+      0x00, 0x00,              // flags = 0
+      0x40, 0x00, 0x00, 0x01,  // offsets count = 1073741825
+      0x00, 0x00, 0x00, 0x00,  // single offset entry
+  };
+
+  bool err;
+  std::unique_ptr<BoxReader> reader(
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+
+  EXPECT_FALSE(err);
+  EXPECT_TRUE(reader);
+  EXPECT_EQ(FOURCC_EMSG, reader->type());
+
+// Overflow is only triggered/caught on 32-bit systems. 64-bit systems will
+// instead fail parsing because kData does not have enough bytes to describe
+// the large number of samples.
+#if defined(ARCH_CPU_32_BITS)
+  const int kOverflowLogCount = 1;
+#else
+  const int kOverflowLogCount = 0;
+#endif
+
+  EXPECT_MEDIA_LOG(
+      HasSubstr("Extreme SAIO count exceeds implementation limit."))
+      .Times(kOverflowLogCount);
+
+  std::vector<SampleAuxiliaryInformationOffset> children;
+  EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
+}
+
 }  // namespace mp4
 }  // namespace media
