@@ -191,6 +191,8 @@ class PLATFORM_EXPORT KURL {
 
   bool isSafeToSendToAnotherThread() const;
 
+  bool whitespaceRemoved() const { return m_parsed.whitespace_removed; }
+
  private:
   void init(const KURL& base,
             const String& relative,

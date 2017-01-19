@@ -199,8 +199,13 @@ bool DoCanonicalize(const CHAR* spec,
   // Remove any whitespace from the middle of the relative URL if necessary.
   // Possibly this will result in copying to the new buffer.
   RawCanonOutputT<CHAR> whitespace_buffer;
-  if (whitespace_policy == REMOVE_WHITESPACE)
-    spec = RemoveURLWhitespace(spec, spec_len, &whitespace_buffer, &spec_len);
+  if (whitespace_policy == REMOVE_WHITESPACE) {
+    int original_len = spec_len;
+    spec =
+        RemoveURLWhitespace(spec, original_len, &whitespace_buffer, &spec_len);
+    if (spec_len != original_len)
+      output_parsed->whitespace_removed = true;
+  }
 
   Parsed parsed_input;
 #ifdef WIN32
@@ -280,6 +285,9 @@ bool DoResolveRelative(const char* base_spec,
   const CHAR* relative = RemoveURLWhitespace(in_relative, in_relative_length,
                                              &whitespace_buffer,
                                              &relative_length);
+  if (in_relative_length != relative_length)
+    output_parsed->whitespace_removed = true;
+
   bool base_is_authority_based = false;
   bool base_is_hierarchical = false;
   if (base_spec &&

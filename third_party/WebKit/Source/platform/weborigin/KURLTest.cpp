@@ -302,6 +302,37 @@ TEST(KURLTest, EncodeWithURLEscapeSequences) {
   EXPECT_EQ(encodeWithURLEscapeSequences(precomposed), "%C4%99");
 }
 
+TEST(KURLTest, RemoveWhitespace) {
+  struct {
+    const char* input;
+    const char* expected;
+  } cases[] = {
+      {"ht\ntps://example.com/yay?boo#foo", "https://example.com/yay?boo#foo"},
+      {"ht\ttps://example.com/yay?boo#foo", "https://example.com/yay?boo#foo"},
+      {"ht\rtps://example.com/yay?boo#foo", "https://example.com/yay?boo#foo"},
+      {"https://exa\nmple.com/yay?boo#foo", "https://example.com/yay?boo#foo"},
+      {"https://exa\tmple.com/yay?boo#foo", "https://example.com/yay?boo#foo"},
+      {"https://exa\rmple.com/yay?boo#foo", "https://example.com/yay?boo#foo"},
+      {"https://example.com/y\nay?boo#foo", "https://example.com/yay?boo#foo"},
+      {"https://example.com/y\tay?boo#foo", "https://example.com/yay?boo#foo"},
+      {"https://example.com/y\ray?boo#foo", "https://example.com/yay?boo#foo"},
+      {"https://example.com/yay?b\noo#foo", "https://example.com/yay?boo#foo"},
+      {"https://example.com/yay?b\too#foo", "https://example.com/yay?boo#foo"},
+      {"https://example.com/yay?b\roo#foo", "https://example.com/yay?boo#foo"},
+      {"https://example.com/yay?boo#f\noo", "https://example.com/yay?boo#foo"},
+      {"https://example.com/yay?boo#f\too", "https://example.com/yay?boo#foo"},
+      {"https://example.com/yay?boo#f\roo", "https://example.com/yay?boo#foo"},
+  };
+
+  for (const auto& test : cases) {
+    const KURL input(ParsedURLString, test.input);
+    const KURL expected(ParsedURLString, test.expected);
+    EXPECT_EQ(input, expected);
+    EXPECT_TRUE(input.whitespaceRemoved());
+    EXPECT_FALSE(expected.whitespaceRemoved());
+  }
+}
+
 TEST(KURLTest, ResolveEmpty) {
   KURL emptyBase;
 

@@ -4945,34 +4945,27 @@ void Document::setEncodingData(const DocumentEncodingData& newData) {
 }
 
 KURL Document::completeURL(const String& url) const {
-  String trimmed = url.stripWhiteSpace();
   KURL completed = completeURLWithOverride(url, m_baseURL);
 
-  bool newline = trimmed.contains('\n') || trimmed.contains('\r');
-  bool lessThan = trimmed.contains('<');
-  if ((newline || lessThan) && completed.protocolIsInHTTPFamily()) {
-    if (newline) {
+  if (completed.whitespaceRemoved()) {
+    if (completed.protocolIsInHTTPFamily()) {
       UseCounter::count(*this,
                         UseCounter::DocumentCompleteURLHTTPContainingNewline);
-    }
-    if (lessThan) {
-      UseCounter::count(*this,
-                        UseCounter::DocumentCompleteURLHTTPContainingLessThan);
-    }
-    if (newline && lessThan) {
-      UseCounter::count(
-          *this,
-          UseCounter::DocumentCompleteURLHTTPContainingNewlineAndLessThan);
+      bool lessThan = url.contains('<');
+      if (lessThan) {
+        UseCounter::count(
+            *this,
+            UseCounter::DocumentCompleteURLHTTPContainingNewlineAndLessThan);
 
-      if (RuntimeEnabledFeatures::restrictCompleteURLCharacterSetEnabled())
-        return KURL();
+        if (RuntimeEnabledFeatures::restrictCompleteURLCharacterSetEnabled())
+          return KURL();
+      }
+    } else {
+      UseCounter::count(
+          *this, UseCounter::DocumentCompleteURLNonHTTPContainingNewline);
     }
-  } else if (newline || lessThan) {
-    UseCounter::count(
-        *this,
-        UseCounter::DocumentCompleteURLNonHTTPContainingNewlineOrLessThan);
   }
-  return completeURLWithOverride(url, m_baseURL);
+  return completed;
 }
 
 KURL Document::completeURLWithOverride(const String& url,
