@@ -4,9 +4,11 @@
 
 """Fetches a copy of the latest state of a W3C test repository and commits.
 
-If this script is given the argument --auto-update, it will also attempt to
-upload a CL, triggery try jobs, and make any changes that are required for
-new failing tests before committing.
+If this script is given the argument --auto-update, it will also:
+ 1. Upload a CL.
+ 2. Trigger try jobs and wait for them to complete.
+ 3. Make any changes that are required for new failing tests.
+ 4. Commit the CL.
 """
 
 import logging
@@ -16,6 +18,7 @@ import json
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
+from webkitpy.w3c.test_importer import TestImporter
 
 # Import destination directories (under LayoutTests/external/).
 WPT_DEST_NAME = 'wpt'
@@ -197,9 +200,8 @@ class DepsUpdater(object):
             self.remove('LayoutTests', 'external', subpath)
 
         _log.info('Importing the tests.')
-        src_repo = self.path_from_webkit_base(dest_dir_name)
-        import_path = self.path_from_webkit_base('Tools', 'Scripts', 'import-w3c-tests')
-        self.run([self.host.executable, import_path, '-d', 'external', src_repo])
+        test_importer = TestImporter(self.host, temp_repo_path)
+        test_importer.do_import()
 
         self.run(['git', 'add', '--all', 'LayoutTests/external/%s' % dest_dir_name])
 
