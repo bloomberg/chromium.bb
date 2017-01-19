@@ -7,6 +7,7 @@
 
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
@@ -46,6 +47,8 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
   void SendPowerSources();
 
   ash::PowerStatus* power_status_;
+
+  ScopedObserver<ash::PowerStatus, PowerHandler> power_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerHandler);
 };

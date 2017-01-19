@@ -43,7 +43,8 @@ base::string16 GetBatteryTimeText(base::TimeDelta time_left) {
 
 }  // namespace
 
-PowerHandler::PowerHandler() {
+PowerHandler::PowerHandler()
+    : power_observer_(this) {
   power_status_ = ash::PowerStatus::Get();
 }
 
@@ -59,11 +60,11 @@ void PowerHandler::RegisterMessages() {
 }
 
 void PowerHandler::OnJavascriptAllowed() {
-  power_status_->AddObserver(this);
+  power_observer_.Add(power_status_);
 }
 
 void PowerHandler::OnJavascriptDisallowed() {
-  power_status_->RemoveObserver(this);
+  power_observer_.RemoveAll();
 }
 
 void PowerHandler::OnPowerStatusChanged() {
