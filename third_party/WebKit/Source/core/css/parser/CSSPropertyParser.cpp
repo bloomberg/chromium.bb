@@ -2025,23 +2025,6 @@ static CSSValue* consumeBackgroundSize(CSSPropertyID unresolvedProperty,
                               CSSValuePair::KeepIdenticalValues);
 }
 
-static CSSValueList* consumeGridAutoFlow(CSSParserTokenRange& range) {
-  CSSIdentifierValue* rowOrColumnValue =
-      consumeIdent<CSSValueRow, CSSValueColumn>(range);
-  CSSIdentifierValue* denseAlgorithm = consumeIdent<CSSValueDense>(range);
-  if (!rowOrColumnValue) {
-    rowOrColumnValue = consumeIdent<CSSValueRow, CSSValueColumn>(range);
-    if (!rowOrColumnValue && !denseAlgorithm)
-      return nullptr;
-  }
-  CSSValueList* parsedValues = CSSValueList::createSpaceSeparated();
-  if (rowOrColumnValue)
-    parsedValues->append(*rowOrColumnValue);
-  if (denseAlgorithm)
-    parsedValues->append(*denseAlgorithm);
-  return parsedValues;
-}
-
 static CSSValue* consumeBackgroundComponent(CSSPropertyID unresolvedProperty,
                                             CSSParserTokenRange& range,
                                             const CSSParserContext* context) {
@@ -2935,9 +2918,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyGridTemplateAreas:
       ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
       return consumeGridTemplateAreas(m_range);
-    case CSSPropertyGridAutoFlow:
-      ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-      return consumeGridAutoFlow(m_range);
     default:
       return nullptr;
   }
