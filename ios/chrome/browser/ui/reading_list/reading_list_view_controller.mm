@@ -243,13 +243,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     [audience setCollectionHasItems:self.readingListModel->size() > 0];
 }
 
-#pragma mark UIAccessibilityAction
-
-- (BOOL)accessibilityPerformEscape {
-  [self dismiss];
-  return YES;
-}
-
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {

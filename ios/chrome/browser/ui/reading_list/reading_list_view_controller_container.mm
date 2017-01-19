@@ -88,6 +88,13 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   return NO;
 }
 
+#pragma mark UIAccessibilityAction
+
+- (BOOL)accessibilityPerformEscape {
+  [self dismiss];
+  return YES;
+}
+
 #pragma mark - ReadingListViewControllerAudience
 
 - (void)setCollectionHasItems:(BOOL)hasItems {
