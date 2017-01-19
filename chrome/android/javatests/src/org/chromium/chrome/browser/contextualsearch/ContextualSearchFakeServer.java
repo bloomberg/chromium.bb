@@ -550,6 +550,13 @@ class ContextualSearchFakeServer
     }
 
     @Override
+    public void stopPanelContentsNavigation() {
+        // Stub out stop() of the WebContents.
+        // Navigation of the content in the overlay may have been faked in tests,
+        // so stopping the WebContents navigation is unsafe.
+    }
+
+    @Override
     @Nullable
     public URL getBasePageUrl() {
         URL baseUrl = mBaseManager.getBasePageUrl();

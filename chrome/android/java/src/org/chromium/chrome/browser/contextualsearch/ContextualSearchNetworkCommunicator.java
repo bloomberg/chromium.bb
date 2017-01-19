@@ -52,6 +52,11 @@ public interface ContextualSearchNetworkCommunicator {
      */
     boolean isOnline();
 
+    /**
+     * Stops any navigation in the overlay panel's {@code WebContents}.
+     */
+    void stopPanelContentsNavigation();
+
     // --------------------------------------------------------------------------------------------
     // These are non-network actions that need to be stubbed out for testing.
     // --------------------------------------------------------------------------------------------

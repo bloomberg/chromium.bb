@@ -848,6 +848,11 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         mSearchPanel.onContextualSearchPrefChanged(isEnabled);
     }
 
+    @Override
+    public void stopPanelContentsNavigation() {
+        mSearchPanel.getContentViewCore().getWebContents().stop();
+    }
+
     // ============================================================================================
     // Observers
     // ============================================================================================
@@ -1097,7 +1102,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             // Stop loading the page that displays the error to the user.
             if (mSearchPanel.getContentViewCore() != null) {
                 // When running tests the Content View might not exist.
-                mSearchPanel.getContentViewCore().getWebContents().stop();
+                mNetworkCommunicator.stopPanelContentsNavigation();
             }
             mSearchRequest.setHasFailed();
             mSearchRequest.setNormalPriority();
