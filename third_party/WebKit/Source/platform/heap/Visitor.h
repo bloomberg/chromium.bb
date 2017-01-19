@@ -280,16 +280,18 @@ class VisitorHelper {
     Derived::fromHelper(this)->registerWeakMembers(object, object, callback);
   }
 
-  template <typename T>
-  void registerBackingStoreReference(T** slot) {
+  void registerBackingStoreReference(void* slot) {
+    if (getMarkingMode() != VisitorMarkingMode::GlobalMarkingWithCompaction)
+      return;
     Derived::fromHelper(this)->registerMovingObjectReference(
         reinterpret_cast<MovableReference*>(slot));
   }
 
-  template <typename T>
-  void registerBackingStoreCallback(T* backingStore,
+  void registerBackingStoreCallback(void* backingStore,
                                     MovingObjectCallback callback,
                                     void* callbackData) {
+    if (getMarkingMode() != VisitorMarkingMode::GlobalMarkingWithCompaction)
+      return;
     Derived::fromHelper(this)->registerMovingObjectCallback(
         reinterpret_cast<MovableReference>(backingStore), callback,
         callbackData);
