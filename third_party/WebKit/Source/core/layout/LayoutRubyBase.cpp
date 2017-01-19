@@ -129,7 +129,7 @@ void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase,
   if (!beforeChild)
     moveAllChildrenIncludingFloatsTo(toBase, toBase->hasLayer() || hasLayer());
   else
-    moveChildrenTo(toBase, firstChild(), beforeChild, toBase->children());
+    moveChildrenTo(toBase, firstChild(), beforeChild);
 }
 
 ETextAlign LayoutRubyBase::textAlignmentForLine(
