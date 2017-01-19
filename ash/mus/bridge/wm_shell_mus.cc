@@ -25,8 +25,9 @@
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
 #include "ash/mus/drag_window_resizer.h"
 #include "ash/mus/keyboard_ui_mus.h"
-#include "ash/mus/root_window_controller.h"
+#include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
+#include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
@@ -149,15 +150,13 @@ WmShellMus* WmShellMus::Get() {
 
 RootWindowController* WmShellMus::GetRootWindowControllerWithDisplayId(
     int64_t id) {
-  for (ash::RootWindowController* root_window_controller :
-       ash::RootWindowController::root_window_controllers()) {
+  for (RootWindowController* root_window_controller :
+       RootWindowController::root_window_controllers()) {
     RootWindowSettings* settings =
         GetRootWindowSettings(root_window_controller->GetRootWindow());
     DCHECK(settings);
-    if (settings->display_id == id) {
-      return RootWindowController::ForWindow(
-          root_window_controller->GetRootWindow());
-    }
+    if (settings->display_id == id)
+      return root_window_controller;
   }
   NOTREACHED();
   return nullptr;
@@ -214,8 +213,10 @@ WmWindow* WmShellMus::GetPrimaryRootWindow() {
 }
 
 WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
-  return WmWindow::Get(
-      GetRootWindowControllerWithDisplayId(display_id)->root());
+  RootWindowController* root_window_controller =
+      GetRootWindowControllerWithDisplayId(display_id);
+  DCHECK(root_window_controller);
+  return WmWindow::Get(root_window_controller->GetRootWindow());
 }
 
 const display::ManagedDisplayInfo& WmShellMus::GetDisplayInfo(
@@ -257,9 +258,7 @@ bool WmShellMus::IsForceMaximizeOnFirstRun() {
 
 void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
                                           const gfx::Insets& insets) {
-  RootWindowController* root_window_controller =
-      RootWindowController::ForWindow(window->aura_window());
-  root_window_controller->SetWorkAreaInests(insets);
+  window_manager_->screen()->SetWorkAreaInsets(window->aura_window(), insets);
 }
 
 bool WmShellMus::IsPinned() {
@@ -289,8 +288,8 @@ bool WmShellMus::IsMouseEventsEnabled() {
 
 std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
   std::vector<WmWindow*> root_windows;
-  for (ash::RootWindowController* root_window_controller :
-       ash::RootWindowController::root_window_controllers()) {
+  for (RootWindowController* root_window_controller :
+       RootWindowController::root_window_controllers()) {
     root_windows.push_back(root_window_controller->GetWindow());
   }
   return root_windows;

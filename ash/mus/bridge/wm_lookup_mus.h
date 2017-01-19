@@ -20,7 +20,7 @@ class WmLookupMus : public WmLookup {
   ~WmLookupMus() override;
 
   // WmLookup:
-  ash::RootWindowController* GetRootWindowControllerWithDisplayId(
+  RootWindowController* GetRootWindowControllerWithDisplayId(
       int64_t id) override;
   WmWindow* GetWindowForWidget(views::Widget* widget) override;
 

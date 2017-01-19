@@ -22,12 +22,14 @@ class PointerWatcherEventRouter;
 }
 
 namespace ash {
+
+class RootWindowController;
+
 namespace mus {
 
 class AcceleratorControllerDelegateMus;
 class AcceleratorControllerRegistrar;
 class ImmersiveHandlerFactoryMus;
-class RootWindowController;
 class WindowManager;
 class WmShellMusTestApi;
 
@@ -42,7 +44,7 @@ class WmShellMus : public WmShell {
 
   static WmShellMus* Get();
 
-  RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
+  ash::RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
 
   AcceleratorControllerDelegateMus* accelerator_controller_delegate() {
     return accelerator_controller_delegate_.get();

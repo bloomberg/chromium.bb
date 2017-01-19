@@ -9,7 +9,7 @@
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/test/wm_shell_test_api.h"
 #include "ash/common/wm_shell.h"
-#include "ash/mus/root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
@@ -34,9 +34,10 @@ namespace ash {
 namespace mus {
 namespace {
 
-bool CompareByDisplayId(const RootWindowController* root1,
-                        const RootWindowController* root2) {
-  return root1->display().id() < root2->display().id();
+bool CompareByDisplayId(RootWindowController* root1,
+                        RootWindowController* root2) {
+  return root1->GetWindow()->GetDisplayNearestWindow().id() <
+         root2->GetWindow()->GetDisplayNearestWindow().id();
 }
 
 // TODO(sky): at some point this needs to support everything in DisplayInfo,
@@ -175,19 +176,19 @@ void WmTestHelper::UpdateDisplay(RootWindowController* root_window_controller,
   gfx::Rect bounds = ParseDisplayBounds(display_spec);
   bounds.set_x(*next_x);
   *next_x += bounds.size().width();
-  gfx::Insets work_area_insets =
-      root_window_controller->display_.GetWorkAreaInsets();
-  root_window_controller->display_.set_bounds(bounds);
-  root_window_controller->display_.UpdateWorkAreaFromInsets(work_area_insets);
-  root_window_controller->root()->SetBounds(gfx::Rect(bounds.size()));
+  display::Display updated_display =
+      root_window_controller->GetWindow()->GetDisplayNearestWindow();
+  gfx::Insets work_area_insets = updated_display.GetWorkAreaInsets();
+  updated_display.set_bounds(bounds);
+  updated_display.UpdateWorkAreaFromInsets(work_area_insets);
+  root_window_controller->GetWindow()->SetBounds(gfx::Rect(bounds.size()));
   ScreenMus* screen = window_manager_app_->window_manager()->screen_.get();
-  const bool is_primary = screen->display_list().FindDisplayById(
-                              root_window_controller->display().id()) ==
-                          screen->display_list().GetPrimaryDisplayIterator();
+  const bool is_primary =
+      screen->display_list().FindDisplayById(updated_display.id()) ==
+      screen->display_list().GetPrimaryDisplayIterator();
   screen->display_list().UpdateDisplay(
-      root_window_controller->display(),
-      is_primary ? display::DisplayList::Type::PRIMARY
-                 : display::DisplayList::Type::NOT_PRIMARY);
+      updated_display, is_primary ? display::DisplayList::Type::PRIMARY
+                                  : display::DisplayList::Type::NOT_PRIMARY);
 }
 
 }  // namespace mus

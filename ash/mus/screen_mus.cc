@@ -4,15 +4,36 @@
 
 #include "ash/mus/screen_mus.h"
 
+#include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 
 namespace ash {
 
-ScreenMus::ScreenMus() = default;
+ScreenMus::ScreenMus(display::mojom::DisplayController* display_controller)
+    : display_controller_(display_controller) {}
 
 ScreenMus::~ScreenMus() = default;
+
+void ScreenMus::SetWorkAreaInsets(aura::Window* window,
+                                  const gfx::Insets& insets) {
+  // If we are not the active instance assume we're in shutdown, and ignore.
+  if (display::Screen::GetScreen() != this)
+    return;
+
+  display::Display old_display = GetDisplayNearestWindow(window);
+  display::Display new_display = old_display;
+  new_display.UpdateWorkAreaFromInsets(insets);
+  if (old_display.work_area() == new_display.work_area())
+    return;
+
+  display_list().UpdateDisplay(new_display);
+  if (display_controller_) {
+    display_controller_->SetDisplayWorkArea(
+        new_display.id(), new_display.bounds().size(), insets);
+  }
+}
 
 display::Display ScreenMus::GetDisplayNearestWindow(
     aura::Window* window) const {

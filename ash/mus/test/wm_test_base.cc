@@ -9,8 +9,8 @@
 
 #include "ash/common/session/session_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/mus/root_window_controller.h"
 #include "ash/mus/test/wm_test_helper.h"
+#include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/public/cpp/session_types.h"
@@ -80,26 +80,27 @@ aura::Window* WmTestBase::GetPrimaryRootWindow() {
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
   DCHECK(!roots.empty());
-  return roots[0]->root();
+  return roots[0]->GetRootWindow();
 }
 
 aura::Window* WmTestBase::GetSecondaryRootWindow() {
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
-  return roots.size() < 2 ? nullptr : roots[1]->root();
+  return roots.size() < 2 ? nullptr : roots[1]->GetRootWindow();
 }
 
 display::Display WmTestBase::GetPrimaryDisplay() {
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
   DCHECK(!roots.empty());
-  return roots[0]->display();
+  return roots[0]->GetWindow()->GetDisplayNearestWindow();
 }
 
 display::Display WmTestBase::GetSecondaryDisplay() {
   std::vector<RootWindowController*> roots =
       test_helper_->GetRootsOrderedByDisplayId();
-  return roots.size() < 2 ? display::Display() : roots[1]->display();
+  return roots.size() < 2 ? display::Display()
+                          : roots[1]->GetWindow()->GetDisplayNearestWindow();
 }
 
 aura::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds) {
@@ -123,9 +124,10 @@ aura::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
 
   const ui::mojom::WindowType mus_window_type =
       MusWindowTypeFromWmWindowType(window_type);
-  aura::Window* window = test_helper_->GetRootsOrderedByDisplayId()[0]
-                             ->window_manager()
-                             ->NewTopLevelWindow(mus_window_type, &properties);
+  WindowManager* window_manager =
+      test_helper_->window_manager_app()->window_manager();
+  aura::Window* window = CreateAndParentTopLevelWindow(
+      window_manager, mus_window_type, &properties);
   window->Show();
   return window;
 }
@@ -140,10 +142,10 @@ aura::Window* WmTestBase::CreateFullscreenTestWindow(int64_t display_id) {
     properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(display_id);
   }
-  aura::Window* window =
-      test_helper_->GetRootsOrderedByDisplayId()[0]
-          ->window_manager()
-          ->NewTopLevelWindow(ui::mojom::WindowType::WINDOW, &properties);
+  WindowManager* window_manager =
+      test_helper_->window_manager_app()->window_manager();
+  aura::Window* window = CreateAndParentTopLevelWindow(
+      window_manager, ui::mojom::WindowType::WINDOW, &properties);
   window->Show();
   return window;
 }

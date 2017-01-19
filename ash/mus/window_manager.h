@@ -41,13 +41,13 @@ class WMState;
 
 namespace ash {
 
+class RootWindowController;
 class ScreenMus;
 class SystemTrayDelegate;
 
 namespace mus {
 
 class AcceleratorHandler;
-class RootWindowController;
 class ShadowController;
 class WmLookupMus;
 class WmTestHelper;
@@ -84,11 +84,6 @@ class WindowManager : public aura::WindowManagerDelegate,
     return property_converter_.get();
   }
 
-  // Creates a new top level window.
-  aura::Window* NewTopLevelWindow(
-      ui::mojom::WindowType window_type,
-      std::map<std::string, std::vector<uint8_t>>* properties);
-
   std::set<RootWindowController*> GetRootWindowControllers();
 
   // Returns the next accelerator namespace id by value in |id|. Returns true
@@ -116,7 +111,7 @@ class WindowManager : public aura::WindowManagerDelegate,
   void CreateShell(
       std::unique_ptr<aura::WindowTreeHostMus> primary_window_tree_host);
 
-  void CreateRootWindowController(
+  void CreateAndRegisterRootWindowController(
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
       const display::Display& display,
       ash::RootWindowController::RootWindowType root_window_type);
@@ -129,11 +124,6 @@ class WindowManager : public aura::WindowManagerDelegate,
   void Shutdown();
 
   RootWindowController* GetPrimaryRootWindowController();
-
-  // Returns the RootWindowController where new top levels are created.
-  // |properties| is the properties supplied during window creation.
-  RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
-      std::map<std::string, std::vector<uint8_t>>* properties);
 
   // WindowTreeClientDelegate:
   void OnEmbed(

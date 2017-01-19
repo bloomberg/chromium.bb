@@ -67,7 +67,7 @@ class WmShelf;
 class WorkspaceController;
 
 namespace mus {
-class RootWindowController;
+class WindowManager;
 }
 
 namespace wm {
@@ -291,7 +291,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
  private:
   // TODO(sky): remove this. Temporary during ash-mus unification.
   // http://crbug.com/671246.
-  friend class mus::RootWindowController;
+  friend class mus::WindowManager;
 
   // Creates a new RootWindowController with the specified host. Only one of
   // |ash_host| or |window_tree_host| should be specified. This takes ownership

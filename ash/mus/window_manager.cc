@@ -20,13 +20,14 @@
 #include "ash/mus/move_event_handler.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
-#include "ash/mus/root_window_controller.h"
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/shadow_controller.h"
 #include "ash/mus/shell_delegate_mus.h"
+#include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_properties.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/wm/ash_focus_rules.h"
@@ -92,7 +93,7 @@ void WindowManager::Init(
   if (connector_)
     connector_->BindInterface(ui::mojom::kServiceName, &display_controller_);
 
-  screen_ = base::MakeUnique<ScreenMus>();
+  screen_ = base::MakeUnique<ScreenMus>(display_controller_.get());
   display::Screen::SetScreenInstance(screen_.get());
 
   pointer_watcher_event_router_ =
@@ -136,25 +137,6 @@ void WindowManager::DeleteAllRootWindowControllers() {
   DCHECK(root_window_controllers_.empty());
 }
 
-aura::Window* WindowManager::NewTopLevelWindow(
-    ui::mojom::WindowType window_type,
-    std::map<std::string, std::vector<uint8_t>>* properties) {
-  RootWindowController* root_window_controller =
-      GetRootWindowControllerForNewTopLevelWindow(properties);
-  aura::Window* window =
-      root_window_controller->NewTopLevelWindow(window_type, properties);
-  if (properties->count(
-          ui::mojom::WindowManager::kWindowIgnoredByShelf_Property)) {
-    wm::WindowState* window_state = WmWindow::Get(window)->GetWindowState();
-    window_state->set_ignored_by_shelf(mojo::ConvertTo<bool>(
-        (*properties)
-            [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property]));
-    // No need to persist this value.
-    properties->erase(ui::mojom::WindowManager::kWindowIgnoredByShelf_Property);
-  }
-  return window;
-}
-
 std::set<RootWindowController*> WindowManager::GetRootWindowControllers() {
   std::set<RootWindowController*> result;
   for (auto& root_window_controller : root_window_controllers_)
@@ -190,11 +172,9 @@ void WindowManager::CreatePrimaryRootWindowController(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
   // See comment in CreateRootWindowController().
   DCHECK(created_shell_);
-  std::unique_ptr<RootWindowController> root_window_controller_ptr(
-      new RootWindowController(
-          this, std::move(window_tree_host), screen_->GetAllDisplays()[0],
-          ash::RootWindowController::RootWindowType::PRIMARY));
-  root_window_controllers_.insert(std::move(root_window_controller_ptr));
+  CreateAndRegisterRootWindowController(
+      std::move(window_tree_host), screen_->GetAllDisplays()[0],
+      RootWindowController::RootWindowType::PRIMARY);
 }
 
 void WindowManager::CreateShell(
@@ -213,31 +193,25 @@ void WindowManager::CreateShell(
   Shell::CreateInstance(init_params);
 }
 
-void WindowManager::CreateRootWindowController(
+void WindowManager::CreateAndRegisterRootWindowController(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display,
-    ash::RootWindowController::RootWindowType root_window_type) {
-  // The ash startup sequence creates the Shell, which creates
-  // WindowTreeHostManager, which creates the WindowTreeHosts and
-  // RootWindowControllers. For mash we are supplied the WindowTreeHost when
-  // a display is added (and WindowTreeHostManager is not used in mash). Mash
-  // waits for the first WindowTreeHost, then creates the shell. As there are
-  // order dependencies we have to create the RootWindowController at a similar
-  // time as cash, to do that we inject the WindowTreeHost into ShellInitParams.
-  // Shell calls to WmShell::InitHosts(), which calls back to
-  // CreatePrimaryRootWindowController().
-  if (!created_shell_) {
-    CreateShell(std::move(window_tree_host));
-    return;
+    RootWindowController::RootWindowType root_window_type) {
+  RootWindowSettings* root_window_settings =
+      InitRootWindowSettings(window_tree_host->window());
+  root_window_settings->display_id = display.id();
+  std::unique_ptr<RootWindowController> root_window_controller(
+      new RootWindowController(nullptr, window_tree_host.release()));
+  root_window_controller->Init(root_window_type);
+  // TODO: To avoid lots of IPC AddActivationParent() should take an array.
+  // http://crbug.com/682048.
+  WmWindow* root_window = root_window_controller->GetWindow();
+  for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
+    window_manager_client_->AddActivationParent(
+        root_window->GetChildByShellWindowId(kActivatableShellWindowIds[i])
+            ->aura_window());
   }
-  std::unique_ptr<RootWindowController> root_window_controller_ptr(
-      new RootWindowController(
-          this, std::move(window_tree_host), display,
-          ash::RootWindowController::RootWindowType::SECONDARY));
-  root_window_controllers_.insert(std::move(root_window_controller_ptr));
-
-  for (auto& observer : *screen_->display_list().observers())
-    observer.OnDisplayAdded(display);
+  root_window_controllers_.insert(std::move(root_window_controller));
 }
 
 void WindowManager::DestroyRootWindowController(
@@ -245,8 +219,8 @@ void WindowManager::DestroyRootWindowController(
     bool in_shutdown) {
   if (!in_shutdown && root_window_controllers_.size() > 1) {
     DCHECK_NE(root_window_controller, GetPrimaryRootWindowController());
-    root_window_controller->ash_root_window_controller()->MoveWindowsTo(
-        GetPrimaryRootWindowController()->root());
+    root_window_controller->MoveWindowsTo(
+        GetPrimaryRootWindowController()->GetRootWindow());
   }
 
   root_window_controller->Shutdown();
@@ -280,20 +254,6 @@ RootWindowController* WindowManager::GetPrimaryRootWindowController() {
                                              ->GetPrimaryRootWindowController()
                                              ->GetWindow()
                                              ->aura_window());
-}
-
-RootWindowController*
-WindowManager::GetRootWindowControllerForNewTopLevelWindow(
-    std::map<std::string, std::vector<uint8_t>>* properties) {
-  // If a specific display was requested, use it.
-  const int64_t display_id = GetInitialDisplayId(*properties);
-  for (auto& root_window_controller_ptr : root_window_controllers_) {
-    if (root_window_controller_ptr->display().id() == display_id)
-      return root_window_controller_ptr.get();
-  }
-
-  return RootWindowController::ForWindow(
-      WmShellMus::Get()->GetRootWindowForNewWindows()->aura_window());
 }
 
 void WindowManager::OnEmbed(
@@ -369,7 +329,7 @@ aura::Window* WindowManager::OnWmCreateTopLevelWindow(
     return nullptr;
   }
 
-  return NewTopLevelWindow(window_type, properties);
+  return CreateAndParentTopLevelWindow(this, window_type, properties);
 }
 
 void WindowManager::OnWmClientJankinessChanged(
@@ -398,18 +358,34 @@ void WindowManager::OnWmWillCreateDisplay(const display::Display& display) {
 void WindowManager::OnWmNewDisplay(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
-  ash::RootWindowController::RootWindowType root_window_type =
+  RootWindowController::RootWindowType root_window_type =
       screen_->display_list().displays().size() == 1
-          ? ash::RootWindowController::RootWindowType::PRIMARY
-          : ash::RootWindowController::RootWindowType::SECONDARY;
-  CreateRootWindowController(std::move(window_tree_host), display,
-                             root_window_type);
+          ? RootWindowController::RootWindowType::PRIMARY
+          : RootWindowController::RootWindowType::SECONDARY;
+  // The ash startup sequence creates the Shell, which creates
+  // WindowTreeHostManager, which creates the WindowTreeHosts and
+  // RootWindowControllers. For mash we are supplied the WindowTreeHost when
+  // a display is added (and WindowTreeHostManager is not used in mash). Mash
+  // waits for the first WindowTreeHost, then creates the shell. As there are
+  // order dependencies we have to create the RootWindowController at a similar
+  // time as cash, to do that we inject the WindowTreeHost into ShellInitParams.
+  // Shell calls to WmShell::InitHosts(), which calls back to
+  // CreatePrimaryRootWindowController().
+  if (!created_shell_) {
+    CreateShell(std::move(window_tree_host));
+    return;
+  }
+  CreateAndRegisterRootWindowController(std::move(window_tree_host), display,
+                                        root_window_type);
+
+  for (auto& observer : *screen_->display_list().observers())
+    observer.OnDisplayAdded(display);
 }
 
 void WindowManager::OnWmDisplayRemoved(
     aura::WindowTreeHostMus* window_tree_host) {
   for (auto& root_window_controller_ptr : root_window_controllers_) {
-    if (root_window_controller_ptr->window_tree_host() == window_tree_host) {
+    if (root_window_controller_ptr->GetHost() == window_tree_host) {
       const bool in_shutdown = false;
       DestroyRootWindowController(root_window_controller_ptr.get(),
                                   in_shutdown);
@@ -419,15 +395,7 @@ void WindowManager::OnWmDisplayRemoved(
 }
 
 void WindowManager::OnWmDisplayModified(const display::Display& display) {
-  for (auto& controller : root_window_controllers_) {
-    if (controller->display().id() == display.id()) {
-      controller->SetDisplay(display);
-      // The root window will be resized by the window server.
-      return;
-    }
-  }
-
-  NOTREACHED();
+  screen_->display_list().UpdateDisplay(display);
 }
 
 void WindowManager::OnWmPerformMoveLoop(

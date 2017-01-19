@@ -8,6 +8,12 @@
 #include "base/macros.h"
 #include "ui/display/screen_base.h"
 
+namespace display {
+namespace mojom {
+class DisplayController;
+}
+}
+
 namespace ash {
 
 // Implementation of Screen for mus. The WindowManager/RootWindowController
@@ -18,13 +24,18 @@ namespace ash {
 // http://crbug.com/671408.
 class ScreenMus : public display::ScreenBase {
  public:
-  ScreenMus();
+  explicit ScreenMus(display::mojom::DisplayController* display_controller);
   ~ScreenMus() override;
+
+  // Sets the work area of the display containing |window|.
+  void SetWorkAreaInsets(aura::Window* window, const gfx::Insets& insets);
 
  private:
   // display::ScreenBase:
   display::Display GetDisplayNearestWindow(aura::Window* window) const override;
   gfx::Point GetCursorScreenPoint() override;
+
+  display::mojom::DisplayController* display_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMus);
 };

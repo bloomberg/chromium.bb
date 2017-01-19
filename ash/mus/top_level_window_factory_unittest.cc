@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/root_window_controller.h"
-
 #include "ash/common/test/ash_test.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -21,9 +19,9 @@ int64_t GetDisplayId(aura::Window* window) {
 
 }  // namespace
 
-using RootWindowControllerTest = AshTest;
+using TopLevelWindowFactoryTest = AshTest;
 
-TEST_F(RootWindowControllerTest, CreateFullscreenWindow) {
+TEST_F(TopLevelWindowFactoryTest, CreateFullscreenWindow) {
   std::unique_ptr<WindowOwner> window_owner = CreateToplevelTestWindow();
   WmWindow* window = window_owner->window();
   window->SetFullscreen();
@@ -31,9 +29,9 @@ TEST_F(RootWindowControllerTest, CreateFullscreenWindow) {
   EXPECT_EQ(root_window->GetBounds(), window->GetBounds());
 }
 
-using RootWindowControllerWmTest = mus::WmTestBase;
+using TopLevelWindowFactoryWmTest = mus::WmTestBase;
 
-TEST_F(RootWindowControllerWmTest, IsWindowShownInCorrectDisplay) {
+TEST_F(TopLevelWindowFactoryWmTest, IsWindowShownInCorrectDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 

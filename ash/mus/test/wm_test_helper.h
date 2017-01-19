@@ -29,9 +29,10 @@ class ViewsDelegate;
 }
 
 namespace ash {
-namespace mus {
 
 class RootWindowController;
+
+namespace mus {
 
 // WMTestHelper is responsible for configuring a WindowTreeClient that
 // does not talk to mus.

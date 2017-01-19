@@ -6,7 +6,6 @@
 
 #include "ash/common/wm_window.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
-#include "ash/mus/root_window_controller.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -21,11 +20,9 @@ WmLookupMus::~WmLookupMus() {
     WmLookup::Set(nullptr);
 }
 
-ash::RootWindowController* WmLookupMus::GetRootWindowControllerWithDisplayId(
+RootWindowController* WmLookupMus::GetRootWindowControllerWithDisplayId(
     int64_t id) {
-  return WmShellMus::Get()
-      ->GetRootWindowControllerWithDisplayId(id)
-      ->ash_root_window_controller();
+  return WmShellMus::Get()->GetRootWindowControllerWithDisplayId(id);
 }
 
 WmWindow* WmLookupMus::GetWindowForWidget(views::Widget* widget) {
