@@ -35,6 +35,8 @@
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 using content::BrowserContext;
 using content::WebContents;
@@ -195,6 +197,12 @@ void GetCredentialCallback(bool* called,
   *called = true;
   *out_error = error;
   *out_info = info;
+}
+
+GURL HttpURLFromHttps(const GURL& https_url) {
+  GURL::Replacements rep;
+  rep.SetSchemeStr(url::kHttpScheme);
+  return https_url.ReplaceComponents(rep);
 }
 
 }  // namespace
@@ -1393,15 +1401,23 @@ TEST_F(CredentialManagerImplTest,
   // in.
   store_->AddLogin(affiliated_form1_);
 
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      base::MakeUnique<MockAffiliatedMatchHelper>());
+
+  std::vector<std::string> affiliated_realms;
+  PasswordStore::FormDigest digest =
+      cm_service_impl_->GetSynthesizedFormForOrigin();
+  // First expect affiliations for the HTTPS domain.
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(digest, affiliated_realms);
+
+  digest.origin = HttpURLFromHttps(digest.origin);
+  digest.signon_realm = digest.origin.spec();
+  // The second call happens for HTTP as the migration is triggered.
+  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
+      ->ExpectCallToGetAffiliatedAndroidRealms(digest, affiliated_realms);
 
   std::vector<GURL> federations;
-  std::vector<std::string> affiliated_realms;
-  static_cast<MockAffiliatedMatchHelper*>(store_->affiliated_match_helper())
-      ->ExpectCallToGetAffiliatedAndroidRealms(
-          cm_service_impl_->GetSynthesizedFormForOrigin(), affiliated_realms);
-
   ExpectZeroClickSignInFailure(true, true, federations);
 }
 
@@ -1444,6 +1460,20 @@ TEST_F(CredentialManagerImplTest, ZeroClickWithPSLAndNormalCredentials) {
   std::vector<GURL> federations = {GURL("https://google.com/")};
   ExpectZeroClickSignInSuccess(true, true, federations,
                                CredentialType::CREDENTIAL_TYPE_FEDERATED);
+}
+
+TEST_F(CredentialManagerImplTest, ZeroClickAfterMigratingHttpCredential) {
+  // There is an http credential saved. It should be migrated and used for auto
+  // sign-in.
+  form_.origin = HttpURLFromHttps(form_.origin);
+  form_.signon_realm = form_.origin.GetOrigin().spec();
+  // That is the default value for old credentials.
+  form_.skip_zero_click = true;
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+  ExpectZeroClickSignInSuccess(true, true, federations,
+                               CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerImplTest, GetSynthesizedFormForOrigin) {

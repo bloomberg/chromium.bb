@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUEST_TASK_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_MANAGER_PENDING_REQUEST_TASK_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "components/password_manager/core/browser/http_password_migrator.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "url/gurl.h"
@@ -51,7 +53,9 @@ class CredentialManagerPendingRequestTaskDelegate {
 };
 
 // Retrieves credentials from the PasswordStore.
-class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
+class CredentialManagerPendingRequestTask
+    : public PasswordStoreConsumer,
+      public HttpPasswordMigrator::Consumer {
  public:
   CredentialManagerPendingRequestTask(
       CredentialManagerPendingRequestTaskDelegate* delegate,
@@ -64,17 +68,26 @@ class CredentialManagerPendingRequestTask : public PasswordStoreConsumer {
   SendCredentialCallback send_callback() const { return send_callback_; }
   const GURL& origin() const { return origin_; }
 
-  // PasswordStoreConsumer implementation.
+  // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
+  // HttpPasswordMigrator::Consumer:
+  void ProcessMigratedForms(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
+
+  void ProcessForms(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+
   CredentialManagerPendingRequestTaskDelegate* delegate_;  // Weak;
   SendCredentialCallback send_callback_;
   const bool zero_click_only_;
   const GURL origin_;
   const bool include_passwords_;
   std::set<std::string> federations_;
+
+  std::unique_ptr<HttpPasswordMigrator> http_migrator_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingRequestTask);
 };

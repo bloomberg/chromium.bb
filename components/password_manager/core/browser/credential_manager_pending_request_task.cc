@@ -122,6 +122,22 @@ CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
 
 void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  if (results.empty()) {
+    // Try to migrate the HTTP passwords and process them later.
+    http_migrator_ = base::MakeUnique<HttpPasswordMigrator>(
+        origin_, delegate_->client()->GetPasswordStore(), this);
+    return;
+  }
+  ProcessForms(std::move(results));
+}
+
+void CredentialManagerPendingRequestTask::ProcessMigratedForms(
+    std::vector<std::unique_ptr<autofill::PasswordForm>> forms) {
+  ProcessForms(std::move(forms));
+}
+
+void CredentialManagerPendingRequestTask::ProcessForms(
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   using metrics_util::LogCredentialManagerGetResult;
   metrics_util::CredentialManagerGetMediation mediation_status =
       zero_click_only_ ? metrics_util::CREDENTIAL_MANAGER_GET_UNMEDIATED
