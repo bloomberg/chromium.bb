@@ -17,7 +17,7 @@
 #include "helpers.h"
 #include "util.h"
 
-static struct supported_combination combos[18] = {
+static struct supported_combination combos[19] = {
 	{DRM_FORMAT_ARGB1555, DRM_FORMAT_MOD_NONE,
 		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
 	{DRM_FORMAT_ABGR8888, DRM_FORMAT_MOD_NONE,
@@ -54,6 +54,8 @@ static struct supported_combination combos[18] = {
 		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
 	{DRM_FORMAT_YVU420, DRM_FORMAT_MOD_NONE,
 		BO_USE_RENDERING | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
+	{DRM_FORMAT_YVU420, DRM_FORMAT_MOD_NONE,
+		BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
 };
 
 struct i915_device
