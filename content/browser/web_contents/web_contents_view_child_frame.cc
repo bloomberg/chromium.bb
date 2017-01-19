@@ -35,6 +35,13 @@ const WebContentsView* WebContentsViewChildFrame::GetOuterView() const {
   return web_contents_->GetOuterWebContents()->GetView();
 }
 
+RenderViewHostDelegateView* WebContentsViewChildFrame::GetOuterDelegateView() {
+  RenderViewHostImpl* outer_rvh = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetOuterWebContents()->GetRenderViewHost());
+  CHECK(outer_rvh);
+  return outer_rvh->GetDelegate()->GetDelegateView();
+}
+
 gfx::NativeView WebContentsViewChildFrame::GetNativeView() const {
   return GetOuterView()->GetNativeView();
 }
@@ -144,7 +151,8 @@ DropData* WebContentsViewChildFrame::GetDropData() const {
 }
 
 void WebContentsViewChildFrame::UpdateDragCursor(WebDragOperation operation) {
-  NOTREACHED();
+  if (auto view = GetOuterDelegateView())
+    view->UpdateDragCursor(operation);
 }
 
 void WebContentsViewChildFrame::GotFocus() {
@@ -169,7 +177,12 @@ void WebContentsViewChildFrame::StartDragging(
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info,
     RenderWidgetHostImpl* source_rwh) {
-  NOTREACHED();
+  if (auto view = GetOuterDelegateView()) {
+    view->StartDragging(
+        drop_data, ops, image, image_offset, event_info, source_rwh);
+  } else {
+    web_contents_->GetOuterWebContents()->SystemDragEnded(source_rwh);
+  }
 }
 
 }  // namespace content

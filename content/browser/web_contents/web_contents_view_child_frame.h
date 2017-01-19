@@ -70,6 +70,8 @@ class WebContentsViewChildFrame : public WebContentsView,
   WebContentsView* GetOuterView();
   const WebContentsView* GetOuterView() const;
 
+  RenderViewHostDelegateView* GetOuterDelegateView();
+
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
 
