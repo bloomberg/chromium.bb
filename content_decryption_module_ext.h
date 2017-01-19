@@ -49,12 +49,17 @@ struct HostFile {
 
 extern "C" {
 
-// Verifies CDM host files, which are opened in read-only mode and passed in
-// |host_files|. The CDM MUST return as soon as possible and process the files
+// Functions in this file are dynamically retrieved by their versioned function
+// names. Increment the version number for any backward incompatible API
+// changes.
+
+// Verifies CDM host. All files in |host_files| are opened in read-only mode.
+//
+// Returns false and closes all files if there is an immediate failure.
+// Otherwise returns true as soon as possible and processes the files
 // asynchronously. All files MUST be closed by the CDM after this one-time
 // processing is finished.
-CDM_API void VerifyHostFiles(const cdm::HostFile* host_files,
-                             uint32_t num_files);
+CDM_API bool VerifyHost_0(const cdm::HostFile* host_files, uint32_t num_files);
 }
 
 #endif  // CDM_CONTENT_DECRYPTION_MODULE_EXT_H_
