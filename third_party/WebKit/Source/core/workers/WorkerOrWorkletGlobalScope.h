@@ -55,6 +55,10 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   void addDeprecationMessage(UseCounter::Feature);
 
  private:
+  void runTask(std::unique_ptr<ExecutionContextTask>,
+               bool isInstrumented,
+               ExecutionContext*);
+
   BitVector m_deprecationWarningBits;
 };
 

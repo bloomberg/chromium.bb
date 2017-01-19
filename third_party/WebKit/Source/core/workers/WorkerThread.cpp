@@ -190,19 +190,13 @@ bool WorkerThread::isCurrentThread() {
 }
 
 void WorkerThread::postTask(const WebTraceLocation& location,
-                            std::unique_ptr<ExecutionContextTask> task,
-                            bool isInstrumented) {
+                            std::unique_ptr<ExecutionContextTask> task) {
   if (isInShutdown())
     return;
-  if (isInstrumented) {
-    DCHECK(isCurrentThread());
-    InspectorInstrumentation::asyncTaskScheduled(globalScope(), "Worker task",
-                                                 task.get());
-  }
   workerBackingThread().backingThread().postTask(
       location, crossThreadBind(&WorkerThread::performTaskOnWorkerThread,
                                 crossThreadUnretained(this),
-                                WTF::passed(std::move(task)), isInstrumented));
+                                WTF::passed(std::move(task))));
 }
 
 void WorkerThread::appendDebuggerTask(
@@ -564,14 +558,11 @@ void WorkerThread::performShutdownOnWorkerThread() {
 }
 
 void WorkerThread::performTaskOnWorkerThread(
-    std::unique_ptr<ExecutionContextTask> task,
-    bool isInstrumented) {
+    std::unique_ptr<ExecutionContextTask> task) {
   DCHECK(isCurrentThread());
   if (m_threadState != ThreadState::Running)
     return;
 
-  InspectorInstrumentation::AsyncTask asyncTask(globalScope(), task.get(),
-                                                isInstrumented);
   {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, scopedUsCounter,

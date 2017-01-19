@@ -6,6 +6,7 @@
 
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 
@@ -39,8 +40,27 @@ void WorkerOrWorkletGlobalScope::postTask(
     const String& taskNameForInstrumentation) {
   if (!thread())
     return;
-  thread()->postTask(location, std::move(task),
-                     !taskNameForInstrumentation.isEmpty());
+
+  bool isInstrumented = !taskNameForInstrumentation.isEmpty();
+  if (isInstrumented) {
+    InspectorInstrumentation::asyncTaskScheduled(this, "Worker task",
+                                                 task.get());
+  }
+
+  std::unique_ptr<ExecutionContextTask> wrappedTask = createCrossThreadTask(
+      &WorkerOrWorkletGlobalScope::runTask, wrapCrossThreadWeakPersistent(this),
+      WTF::passed(std::move(task)), isInstrumented);
+  thread()->postTask(location, std::move(wrappedTask));
+}
+
+void WorkerOrWorkletGlobalScope::runTask(
+    std::unique_ptr<ExecutionContextTask> task,
+    bool isInstrumented,
+    ExecutionContext*) {
+  DCHECK(thread()->isCurrentThread());
+  InspectorInstrumentation::AsyncTask asyncTask(this, task.get(),
+                                                isInstrumented);
+  task->performTask(this);
 }
 
 }  // namespace blink
