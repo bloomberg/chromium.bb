@@ -385,31 +385,18 @@ std::string VertexShader::GetShaderString() const {
 FragmentShader::FragmentShader() {}
 
 std::string FragmentShader::GetShaderString() const {
-  // TODO(ccameron): Merge YUV shaders into the main shader generator.
-  std::string source;
-  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV)
-    source = GetShaderStringYUVVideo();
-  else
-    source = GetShaderSource();
-
   TexCoordPrecision precision = tex_coord_precision_;
   // The AA shader values will use TexCoordPrecision.
   if (aa_mode_ == USE_AA && precision == TEX_COORD_PRECISION_NA)
     precision = TEX_COORD_PRECISION_MEDIUM;
   return SetFragmentTexCoordPrecision(
-      precision,
-      SetFragmentSamplerType(sampler_type_, SetBlendModeFunctions(source)));
+      precision, SetFragmentSamplerType(
+                     sampler_type_, SetBlendModeFunctions(GetShaderSource())));
 }
 
 void FragmentShader::Init(GLES2Interface* context,
                           unsigned program,
                           int* base_uniform_index) {
-  // TODO(ccameron): Merge YUV shaders into the main shader generator.
-  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV) {
-    InitYUVVideo(context, program, base_uniform_index);
-    return;
-  }
-
   std::vector<const char*> uniforms;
   std::vector<int> locations;
   if (has_blend_mode()) {
@@ -448,8 +435,15 @@ void FragmentShader::Init(GLES2Interface* context,
         uniforms.push_back("a_texture");
       uniforms.push_back("ya_clamp_rect");
       uniforms.push_back("uv_clamp_rect");
-      uniforms.push_back("yuv_matrix");
-      uniforms.push_back("yuv_adj");
+      if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT_FROM_YUV) {
+        uniforms.push_back("lut_texture");
+        uniforms.push_back("lut_size");
+        uniforms.push_back("resource_multiplier");
+        uniforms.push_back("resource_offset");
+      } else {
+        uniforms.push_back("yuv_matrix");
+        uniforms.push_back("yuv_adj");
+      }
       break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       uniforms.push_back("color");
@@ -498,8 +492,15 @@ void FragmentShader::Init(GLES2Interface* context,
         a_texture_location_ = locations[index++];
       ya_clamp_rect_location_ = locations[index++];
       uv_clamp_rect_location_ = locations[index++];
-      yuv_matrix_location_ = locations[index++];
-      yuv_adj_location_ = locations[index++];
+      if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT_FROM_YUV) {
+        lut_texture_location_ = locations[index++];
+        lut_size_location_ = locations[index++];
+        resource_multiplier_location_ = locations[index++];
+        resource_offset_location_ = locations[index++];
+      } else {
+        yuv_matrix_location_ = locations[index++];
+        yuv_adj_location_ = locations[index++];
+      }
       break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       color_location_ = locations[index++];
@@ -832,11 +833,14 @@ std::string FragmentShader::GetShaderSource() const {
       }
       break;
     case INPUT_COLOR_SOURCE_YUV_TEXTURES:
+      // Compute the clamped texture coordinates for the YA and UV textures.
       HDR("uniform SamplerType y_texture;");
+      SRC("// YUV texture lookup and conversion to RGB.");
       SRC("vec2 ya_clamped =");
       SRC("    max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));");
       SRC("vec2 uv_clamped =");
       SRC("    max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));");
+      // Read the Y and UV or U and V textures into |yuv|.
       SRC("vec3 yuv;");
       SRC("yuv.x = TextureLookup(y_texture, ya_clamped).x;");
       if (uv_texture_mode_ == UV_TEXTURE_MODE_UV) {
@@ -853,11 +857,38 @@ std::string FragmentShader::GetShaderSource() const {
         HDR("uniform SamplerType a_texture;");
       HDR("uniform vec4 ya_clamp_rect;");
       HDR("uniform vec4 uv_clamp_rect;");
-      HDR("uniform mat3 yuv_matrix;");
-      HDR("uniform vec3 yuv_adj;");
+      // Convert YUV to RGB.
+      if (color_conversion_mode_ == COLOR_CONVERSION_MODE_LUT_FROM_YUV) {
+        HDR("uniform sampler2D lut_texture;");
+        HDR("uniform float lut_size;");
+        HDR("uniform float resource_multiplier;");
+        HDR("uniform float resource_offset;");
+        HDR("vec4 LUT(sampler2D sampler, vec3 pos, float size) {");
+        HDR("  pos *= size - 1.0;");
+        HDR("  // Select layer");
+        HDR("  float layer = min(floor(pos.z), size - 2.0);");
+        HDR("  // Compress the xy coordinates so they stay within");
+        HDR("  // [0.5 .. 31.5] / N (assuming a LUT size of 17^3)");
+        HDR("  pos.xy = (pos.xy + vec2(0.5)) / size;");
+        HDR("  pos.y = (pos.y + layer) / size;");
+        HDR("  return mix(texture2D(sampler, pos.xy),");
+        HDR("             texture2D(sampler, pos.xy + vec2(0, 1.0 / size)),");
+        HDR("             pos.z - layer);");
+        HDR("}");
+        HDR("vec3 yuv2rgb(vec3 yuv) {");
+        HDR("  yuv = (yuv - vec3(resource_offset)) * resource_multiplier;");
+        HDR("  return LUT(lut_texture, yuv, lut_size).xyz;");
+        HDR("}");
+      } else {
+        HDR("uniform mat3 yuv_matrix;");
+        HDR("uniform vec3 yuv_adj;");
+        HDR("vec3 yuv2rgb(vec3 yuv) {");
+        HDR("  return yuv_matrix * (yuv + yuv_adj);");
+        HDR("}");
+      }
       HDR("varying TexCoordPrecision vec2 v_yaTexCoord;");
       HDR("varying TexCoordPrecision vec2 v_uvTexCoord;");
-      SRC("vec4 texColor = vec4(yuv_matrix * (yuv + yuv_adj), 1.0);");
+      SRC("vec4 texColor = vec4(yuv2rgb(yuv), 1.0);");
       break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       DCHECK(!ignore_sampler_type_);
@@ -967,149 +998,6 @@ std::string FragmentShader::GetShaderSource() const {
   source += "}\n";
 
   return header + source;
-}
-
-void FragmentShader::InitYUVVideo(GLES2Interface* context,
-                                  unsigned program,
-                                  int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "y_texture",
-      "u_texture",
-      "v_texture",
-      "uv_texture",
-      "a_texture",
-      "lut_texture",
-      "resource_multiplier",
-      "resource_offset",
-      "yuv_matrix",
-      "yuv_adj",
-      "alpha",
-      "ya_clamp_rect",
-      "uv_clamp_rect",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  y_texture_location_ = locations[0];
-  if (uv_texture_mode_ == UV_TEXTURE_MODE_U_V) {
-    u_texture_location_ = locations[1];
-    v_texture_location_ = locations[2];
-  }
-  if (uv_texture_mode_ == UV_TEXTURE_MODE_UV) {
-    uv_texture_location_ = locations[3];
-  }
-  if (yuv_alpha_texture_mode_ == YUV_HAS_ALPHA_TEXTURE) {
-    a_texture_location_ = locations[4];
-  }
-  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV) {
-    lut_texture_location_ = locations[5];
-    resource_multiplier_location_ = locations[6];
-    resource_offset_location_ = locations[7];
-  }
-  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_NONE) {
-    yuv_matrix_location_ = locations[8];
-    yuv_adj_location_ = locations[9];
-  }
-  alpha_location_ = locations[10];
-  ya_clamp_rect_location_ = locations[11];
-  uv_clamp_rect_location_ = locations[12];
-}
-
-std::string FragmentShader::GetShaderStringYUVVideo() const {
-  std::string head = SHADER0([]() {
-    precision mediump float;
-    precision mediump int;
-    varying TexCoordPrecision vec2 v_yaTexCoord;
-    varying TexCoordPrecision vec2 v_uvTexCoord;
-    uniform SamplerType y_texture;
-    uniform float alpha;
-    uniform vec4 ya_clamp_rect;
-    uniform vec4 uv_clamp_rect;
-  });
-
-  std::string functions = "";
-  if (uv_texture_mode_ == UV_TEXTURE_MODE_UV) {
-    head += "  uniform SamplerType uv_texture;\n";
-    functions += SHADER0([]() {
-      vec2 GetUV(vec2 uv_clamped) {
-        return TextureLookup(uv_texture, uv_clamped).xy;
-      }
-    });
-  }
-  if (uv_texture_mode_ == UV_TEXTURE_MODE_U_V) {
-    head += "  uniform SamplerType u_texture;\n";
-    head += "  uniform SamplerType v_texture;\n";
-    functions += SHADER0([]() {
-      vec2 GetUV(vec2 uv_clamped) {
-        return vec2(TextureLookup(u_texture, uv_clamped).x,
-                    TextureLookup(v_texture, uv_clamped).x);
-      }
-    });
-  }
-
-  if (yuv_alpha_texture_mode_ == YUV_HAS_ALPHA_TEXTURE) {
-    head += "  uniform SamplerType a_texture;\n";
-    functions += SHADER0([]() {
-      float GetAlpha(vec2 ya_clamped) {
-        return alpha * TextureLookup(a_texture, ya_clamped).x;
-      }
-    });
-  } else {
-    functions += SHADER0([]() {
-      float GetAlpha(vec2 ya_clamped) { return alpha; }
-    });
-  }
-
-  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV) {
-    head += "  uniform sampler2D lut_texture;\n";
-    head += "  uniform float resource_multiplier;\n";
-    head += "  uniform float resource_offset;\n";
-    functions += SHADER0([]() {
-      vec4 LUT(sampler2D sampler, vec3 pos, float size) {
-        pos *= size - 1.0;
-        // Select layer
-        float layer = min(floor(pos.z), size - 2.0);
-        // Compress the xy coordinates so they stay within
-        // [0.5 .. 31.5] / 17 (assuming a LUT size of 17^3)
-        pos.xy = (pos.xy + vec2(0.5)) / size;
-        pos.y = (pos.y + layer) / size;
-        return mix(texture2D(sampler, pos.xy),
-                   texture2D(sampler, pos.xy + vec2(0, 1.0 / size)),
-                   pos.z - layer);
-      }
-
-      vec3 yuv2rgb(vec3 yuv) {
-        yuv = (yuv - vec3(resource_offset)) * resource_multiplier;
-        return LUT(lut_texture, yuv, 17.0).xyz;
-      }
-    });
-  }
-  if (color_conversion_mode_ == COLOR_CONVERSION_MODE_NONE) {
-    head += "  uniform mat3 yuv_matrix;\n";
-    head += "  uniform vec3 yuv_adj;\n";
-    functions += SHADER0([]() {
-      vec3 yuv2rgb(vec3 yuv) { return yuv_matrix * (yuv + yuv_adj); }
-    });
-  }
-
-  functions += SHADER0([]() {
-    void main() {
-      vec2 ya_clamped =
-          max(ya_clamp_rect.xy, min(ya_clamp_rect.zw, v_yaTexCoord));
-      float y_raw = TextureLookup(y_texture, ya_clamped).x;
-      vec2 uv_clamped =
-          max(uv_clamp_rect.xy, min(uv_clamp_rect.zw, v_uvTexCoord));
-      vec3 yuv = vec3(y_raw, GetUV(uv_clamped));
-      gl_FragColor = vec4(yuv2rgb(yuv), 1.0) * GetAlpha(ya_clamped);
-    }
-  });
-
-  return head + functions;
 }
 
 }  // namespace cc

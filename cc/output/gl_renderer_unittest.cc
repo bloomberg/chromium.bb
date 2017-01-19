@@ -189,9 +189,8 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
     UVTextureMode uv_modes[2] = {UV_TEXTURE_MODE_UV, UV_TEXTURE_MODE_U_V};
     YUVAlphaTextureMode a_modes[2] = {YUV_NO_ALPHA_TEXTURE,
                                       YUV_HAS_ALPHA_TEXTURE};
-    ColorConversionMode c_modes[2] = {
-        COLOR_CONVERSION_MODE_NONE,
-        COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV};
+    ColorConversionMode c_modes[2] = {COLOR_CONVERSION_MODE_NONE,
+                                      COLOR_CONVERSION_MODE_LUT_FROM_YUV};
     for (int j = 0; j < 2; j++) {
       for (int k = 0; k < 2; k++) {
         for (int l = 0; l < 2; l++) {

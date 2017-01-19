@@ -134,7 +134,7 @@ enum ColorConversionMode {
   COLOR_CONVERSION_MODE_NONE,
   // Conversion is done directly from YUV to output RGB space, via a 3D texture
   // represented as a 2D texture.
-  COLOR_CONVERSION_MODE_2D_LUT_AS_3D_FROM_YUV,
+  COLOR_CONVERSION_MODE_LUT_FROM_YUV,
 };
 
 // TODO(ccameron): Merge this with BlendMode.
@@ -290,22 +290,21 @@ class FragmentShader {
   int v_texture_location_ = -1;
   int uv_texture_location_ = -1;
   int a_texture_location_ = -1;
-  int lut_texture_location_ = -1;
-  int yuv_matrix_location_ = -1;
-  int yuv_adj_location_ = -1;
   int ya_clamp_rect_location_ = -1;
   int uv_clamp_rect_location_ = -1;
+
+  // Analytic YUV to RGB convertion.
+  int yuv_matrix_location_ = -1;
+  int yuv_adj_location_ = -1;
+
+  // LUT YUV to color-converted RGB.
+  int lut_texture_location_ = -1;
+  int lut_size_location_ = -1;
   int resource_multiplier_location_ = -1;
   int resource_offset_location_ = -1;
 
  private:
   friend class Program;
-
-  // Functions specific to YUV video.
-  std::string GetShaderStringYUVVideo() const;
-  void InitYUVVideo(gpu::gles2::GLES2Interface* context,
-                    unsigned program,
-                    int* base_uniform_index);
 
   std::string GetHelperFunctions() const;
   std::string GetBlendFunction() const;

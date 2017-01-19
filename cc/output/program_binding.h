@@ -265,6 +265,7 @@ class Program : public ProgramBindingBase {
   int lut_texture_location() const {
     return fragment_shader_.lut_texture_location_;
   }
+  int lut_size_location() const { return fragment_shader_.lut_size_location_; }
   int yuv_matrix_location() const {
     return fragment_shader_.yuv_matrix_location_;
   }
