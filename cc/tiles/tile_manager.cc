@@ -1024,6 +1024,10 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       use_gpu_rasterization_));
 }
 
+void TileManager::ResetSignalsForTesting() {
+  signals_.reset();
+}
+
 void TileManager::OnRasterTaskCompleted(
     std::unique_ptr<RasterBuffer> raster_buffer,
     Tile::Id tile_id,

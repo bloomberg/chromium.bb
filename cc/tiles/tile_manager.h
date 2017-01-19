@@ -199,7 +199,7 @@ class CC_EXPORT TileManager {
     all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
   }
 
-  void ResetSignalsForTesting() { signals_.reset(); }
+  void ResetSignalsForTesting();
 
   bool HasScheduledTileTasksForTesting() const {
     return has_scheduled_tile_tasks_;
