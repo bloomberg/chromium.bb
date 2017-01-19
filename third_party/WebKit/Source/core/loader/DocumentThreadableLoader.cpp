@@ -32,6 +32,7 @@
 #include "core/loader/DocumentThreadableLoader.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/FetchUtils.h"
@@ -231,7 +232,9 @@ DocumentThreadableLoader::DocumentThreadableLoader(
       m_isUsingDataConsumerHandle(false),
       m_async(blockingBehavior == LoadAsynchronously),
       m_requestContext(WebURLRequest::RequestContextUnspecified),
-      m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout),
+      m_timeoutTimer(TaskRunnerHelper::get(TaskType::Networking, &document),
+                     this,
+                     &DocumentThreadableLoader::didTimeout),
       m_requestStartedSeconds(0.0),
       m_corsRedirectLimit(m_options.crossOriginRequestPolicy == UseAccessControl
                               ? kMaxCORSRedirects

@@ -224,7 +224,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // stores request headers in case of a cross-origin redirect.
   HTTPHeaderMap m_requestHeaders;
 
-  Timer<DocumentThreadableLoader> m_timeoutTimer;
+  TaskRunnerTimer<DocumentThreadableLoader> m_timeoutTimer;
   double
       m_requestStartedSeconds;  // Time an asynchronous fetch request is started
 
