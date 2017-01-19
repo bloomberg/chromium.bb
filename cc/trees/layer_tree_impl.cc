@@ -544,18 +544,25 @@ LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
 }
 
 void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
-  if (!layer->element_id())
+  ElementId element_id = layer->element_id();
+  if (!element_id)
     return;
 
   TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "LayerTreeImpl::AddToElementMap", "element",
-               layer->element_id().AsValue().release(), "layer_id",
-               layer->id());
+               element_id.AsValue().release(), "layer_id", layer->id());
 
-  element_layers_map_[layer->element_id()] = layer->id();
+#if DCHECK_IS_ON()
+  LayerImpl* existing_layer = LayerByElementId(element_id);
+  bool element_id_collision_detected =
+      existing_layer && existing_layer != layer;
+  DCHECK(!element_id_collision_detected);
+#endif
+
+  element_layers_map_[element_id] = layer->id();
 
   layer_tree_host_impl_->mutator_host()->RegisterElement(
-      layer->element_id(),
+      element_id,
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
 }
 
