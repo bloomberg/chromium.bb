@@ -480,7 +480,7 @@ void CoreOobeHandler::UpdateKeyboardState() {
 }
 
 void CoreOobeHandler::UpdateClientAreaSize() {
-  const gfx::Size& size =
+  const gfx::Size size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
   SetClientAreaSize(size.width(), size.height());
 }
