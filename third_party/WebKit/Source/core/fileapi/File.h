@@ -216,7 +216,7 @@ class CORE_EXPORT File final : public Blob {
   // If the modification time isn't known, the current time is returned.
   double lastModifiedMS() const;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Instances backed by a file must have an empty file system URL.
   bool hasValidFileSystemURL() const {
     return !hasBackingFile() || m_fileSystemURL.isEmpty();

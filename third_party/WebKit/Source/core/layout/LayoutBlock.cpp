@@ -2116,7 +2116,7 @@ bool LayoutBlock::tryLayoutDoingPositionedMovementOnly() {
   return true;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void LayoutBlock::checkPositionedObjectsNeedLayout() {
   if (!gPositionedDescendantsMap)
     return;

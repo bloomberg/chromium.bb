@@ -59,7 +59,7 @@ bool EventHandlerRegistry::eventTypeToClass(
     // the pointer events never block scrolling and the compositor
     // only needs to know about the touch listeners.
     *result = TouchStartOrMoveEventPassive;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   } else if (eventType == EventTypeNames::load ||
              eventType == EventTypeNames::mousemove ||
              eventType == EventTypeNames::touchstart) {
@@ -224,7 +224,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(
               hasEventHandlers(TouchEndOrCancelEventBlocking),
               hasEventHandlers(TouchEndOrCancelEventPassive)));
       break;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     case EventsForTesting:
       break;
 #endif
@@ -297,7 +297,7 @@ void EventHandlerRegistry::documentDetached(Document& document) {
 }
 
 void EventHandlerRegistry::checkConsistency() const {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   for (size_t i = 0; i < EventHandlerClassCount; ++i) {
     EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
     const EventTargetSet* targets = &m_targets[handlerClass];
@@ -316,7 +316,7 @@ void EventHandlerRegistry::checkConsistency() const {
       }
     }
   }
-#endif  // ENABLE(ASSERT)
+#endif  // DCHECK_IS_ON()
 }
 
 }  // namespace blink

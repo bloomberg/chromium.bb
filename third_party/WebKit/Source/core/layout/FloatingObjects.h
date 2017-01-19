@@ -108,7 +108,7 @@ class FloatingObject {
     return m_frameRect;
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isInPlacedTree() const { return m_isInPlacedTree; }
   void setIsInPlacedTree(bool value) { m_isInPlacedTree = value; }
 #endif
@@ -150,7 +150,7 @@ class FloatingObject {
   unsigned m_isDescendant : 1;
   unsigned m_isPlaced : 1;
   unsigned m_isLowestNonOverhangingFloatInChild : 1;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   unsigned m_isInPlacedTree : 1;
 #endif
 };

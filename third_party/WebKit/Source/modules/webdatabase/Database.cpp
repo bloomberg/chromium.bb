@@ -860,7 +860,7 @@ void Database::runTransaction(SQLTransactionCallback* callback,
 // sometimes firing it ourselves, this code should probably be pushed down
 // into Database so that we only create the SQLTransaction if we're
 // actually going to run it.
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   SQLTransactionErrorCallback* originalErrorCallback = errorCallback;
 #endif
   SQLTransaction* transaction = SQLTransaction::create(

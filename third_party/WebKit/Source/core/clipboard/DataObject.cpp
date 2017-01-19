@@ -43,7 +43,7 @@ namespace blink {
 
 DataObject* DataObject::createFromPasteboard(PasteMode pasteMode) {
   DataObject* dataObject = create();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   HashSet<String> typesSeen;
 #endif
   WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
@@ -133,7 +133,7 @@ void DataObject::clearData(const String& type) {
 
 Vector<String> DataObject::types() const {
   Vector<String> results;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   HashSet<String> typesSeen;
 #endif
   bool containsFiles = false;

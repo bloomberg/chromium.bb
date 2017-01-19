@@ -86,7 +86,7 @@ class HTMLToken {
       static constexpr int kInvalidOffset = -1;
 
       inline void clear() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         start = kInvalidOffset;
         end = kInvalidOffset;
 #endif

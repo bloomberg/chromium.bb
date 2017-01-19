@@ -166,7 +166,7 @@ static inline void updateFontAndMetrics(LayoutSVGText& textRoot) {
 static inline void checkDescendantTextNodeConsistency(
     LayoutSVGText& text,
     Vector<LayoutSVGInlineText*>& expectedDescendantTextNodes) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   Vector<LayoutSVGInlineText*> newDescendantTextNodes;
   collectDescendantTextNodes(text, newDescendantTextNodes);
   ASSERT(newDescendantTextNodes == expectedDescendantTextNodes);

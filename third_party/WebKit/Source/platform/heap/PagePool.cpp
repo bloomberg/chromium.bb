@@ -126,7 +126,7 @@ void OrphanedPagePool::clearMemory(PageMemory* memory) {
   asanDisabledMemset(memory->writableStart(), 0, blinkPagePayloadSize());
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool OrphanedPagePool::contains(void* object) {
   for (int index = 0; index < BlinkGC::NumberOfArenas; ++index) {
     for (PoolEntry* entry = m_pool[index]; entry; entry = entry->next) {

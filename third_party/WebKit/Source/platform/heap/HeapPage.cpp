@@ -89,7 +89,7 @@
 
 namespace blink {
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::zapMagic() {
   ASSERT(checkHeader());
@@ -158,7 +158,7 @@ void BaseArena::takeSnapshot(const String& dumpBaseName,
   allocatorDump->AddScalar("free_count", "objects", heapInfo.freeCount);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 BasePage* BaseArena::findPageFromAddress(Address address) {
   for (BasePage* page = m_firstPage; page; page = page->next()) {
     if (page->contains(address))
@@ -562,7 +562,7 @@ void NormalPageArena::sweepAndCompact() {
     freedPageCount++;
     BasePage* nextPage;
     availablePages->unlink(&nextPage);
-#if !(ENABLE(ASSERT) || defined(LEAK_SANITIZER) || \
+#if !(DCHECK_IS_ON() || defined(LEAK_SANITIZER) || \
       defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER))
     // Clear out the page before adding it to the free page pool, which
     // decommits it. Recommitting the page must find a zeroed page later.
@@ -583,7 +583,7 @@ void NormalPageArena::sweepAndCompact() {
   heap.compaction()->finishedArenaCompaction(this, freedPageCount, freedSize);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool NormalPageArena::isConsistentForGC() {
   // A thread heap is consistent for sweeping if none of the pages to be swept
   // contain a freelist block or the current allocation point.
@@ -662,7 +662,7 @@ void NormalPageArena::allocatePage() {
   page->link(&m_firstPage);
 
   getThreadState()->heap().heapStats().increaseAllocatedSpace(page->size());
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
   // Allow the following addToFreeList() to add the newly allocated memory
   // to the free list.
   ASAN_UNPOISON_MEMORY_REGION(page->payload(), page->payloadSize());
@@ -900,7 +900,7 @@ void NormalPageArena::updateRemainingAllocationSize() {
 }
 
 void NormalPageArena::setAllocationPoint(Address point, size_t size) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   if (point) {
     ASSERT(size);
     BasePage* page = pageFromObject(point);
@@ -1035,7 +1035,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize,
   Address largeObjectAddress = pageMemory->writableStart();
   Address headerAddress =
       largeObjectAddress + LargeObjectPage::pageHeaderSize();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Verify that the allocated PageMemory is expectedly zeroed.
   for (size_t i = 0; i < largeObjectSize; ++i)
     ASSERT(!largeObjectAddress[i]);
@@ -1148,7 +1148,7 @@ void FreeList::addToFreeList(Address address, size_t size) {
   }
   entry = new (NotNull, address) FreeListEntry(size);
 
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
   // The following logic delays reusing free lists for (at least) one GC
   // cycle or coalescing. This is helpful to detect use-after-free errors
   // that could be caused by lazy sweeping etc.
@@ -1198,7 +1198,7 @@ void FreeList::addToFreeList(Address address, size_t size) {
     m_biggestFreeListIndex = index;
 }
 
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
 NO_SANITIZE_ADDRESS
 NO_SANITIZE_MEMORY
@@ -1339,7 +1339,7 @@ void NormalPage::removeFromHeap() {
   arenaForNormalPage()->freePage(this);
 }
 
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+#if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
 static void discardPages(Address begin, Address end) {
   uintptr_t beginAddress =
       WTF::RoundUpToSystemPage(reinterpret_cast<uintptr_t>(begin));
@@ -1395,7 +1395,7 @@ void NormalPage::sweep() {
     }
     if (startOfGap != headerAddress) {
       pageArena->addToFreeList(startOfGap, headerAddress - startOfGap);
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+#if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
       // Discarding pages increases page faults and may regress performance.
       // So we enable this only on low-RAM devices.
       if (MemoryCoordinator::isLowEndDevice())
@@ -1409,7 +1409,7 @@ void NormalPage::sweep() {
   }
   if (startOfGap != payloadEnd()) {
     pageArena->addToFreeList(startOfGap, payloadEnd() - startOfGap);
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+#if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
     if (MemoryCoordinator::isLowEndDevice())
       discardPages(startOfGap + sizeof(FreeListEntry), payloadEnd());
 #endif
@@ -1459,7 +1459,7 @@ void NormalPage::sweepAndCompact(CompactionContext& context) {
 // As compaction is under way, leave the freed memory accessible
 // while compacting the rest of the page. We just zap the payload
 // to catch out other finalizers trying to access it.
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
       FreeList::zapFreedMemory(payload, payloadSize);
 #endif
@@ -1514,7 +1514,7 @@ void NormalPage::sweepAndCompact(CompactionContext& context) {
   if (markedObjectSize)
     pageArena->getThreadState()->increaseMarkedObjectSize(markedObjectSize);
 
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
   // Zap the unused portion, until it is either compacted into or freed.
   if (currentPage != this) {
@@ -1665,7 +1665,7 @@ HeapObjectHeader* NormalPage::findHeaderFromAddress(Address address) {
   return header;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool isUninitializedMemory(void* objectPointer, size_t objectSize) {
   // Scan through the object's fields and check that they are all zero.
   Address* objectFields = reinterpret_cast<Address*>(objectPointer);
@@ -1763,7 +1763,7 @@ void NormalPage::takeSnapshot(base::trace_event::MemoryAllocatorDump* pageDump,
   heapInfo.freeCount += freeCount;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool NormalPage::contains(Address addr) {
   Address blinkPageStart = roundToBlinkPageStart(getAddress());
   // Page is at aligned address plus guard page size.
@@ -1870,7 +1870,7 @@ void LargeObjectPage::takeSnapshot(
   pageDump->AddScalar("dead_size", "bytes", deadSize);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool LargeObjectPage::contains(Address object) {
   return roundToBlinkPageStart(getAddress()) <= object &&
          object < roundToBlinkPageEnd(getAddress() + size());

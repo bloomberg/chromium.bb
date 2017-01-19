@@ -48,7 +48,7 @@ static const int maximumValidPortNumber = 0xFFFE;
 static const int invalidPortNumber = 0xFFFF;
 
 static void assertProtocolIsGood(const char* protocol) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK_NE(protocol, "");
   const char* p = protocol;
   while (*p) {

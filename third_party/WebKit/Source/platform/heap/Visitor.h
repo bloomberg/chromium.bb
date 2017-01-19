@@ -379,7 +379,7 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
   virtual void registerWeakTable(const void*,
                                  EphemeronCallback,
                                  EphemeronCallback) = 0;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   virtual bool weakTableRegistered(const void*) = 0;
 #endif
 

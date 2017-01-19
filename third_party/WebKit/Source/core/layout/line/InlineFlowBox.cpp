@@ -51,14 +51,12 @@ struct SameSizeAsInlineFlowBox : public InlineBox {
 static_assert(sizeof(InlineFlowBox) == sizeof(SameSizeAsInlineFlowBox),
               "InlineFlowBox should stay small");
 
-#if ENABLE(ASSERT)
-
+#if DCHECK_IS_ON()
 InlineFlowBox::~InlineFlowBox() {
   if (!m_hasBadChildList)
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
       child->setHasBadParent();
 }
-
 #endif
 
 LayoutUnit InlineFlowBox::getFlowSpacingLogicalWidth() {
@@ -227,13 +225,13 @@ void InlineFlowBox::deleteLine() {
   while (child) {
     ASSERT(this == child->parent());
     next = child->nextOnLine();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     child->setParent(nullptr);
 #endif
     child->deleteLine();
     child = next;
   }
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_firstChild = nullptr;
   m_lastChild = nullptr;
 #endif
@@ -1637,7 +1635,7 @@ void InlineFlowBox::showLineTreeAndMark(const InlineBox* markedBox1,
 
 #endif
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void InlineFlowBox::checkConsistency() const {
 #ifdef CHECK_CONSISTENCY
   ASSERT(!m_hasBadChildList);

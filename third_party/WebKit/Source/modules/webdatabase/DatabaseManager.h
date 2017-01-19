@@ -55,7 +55,7 @@ class DatabaseManager {
   void registerDatabaseContext(DatabaseContext*);
   void unregisterDatabaseContext(DatabaseContext*);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void didConstructDatabaseContext();
   void didDestructDatabaseContext();
 #else
@@ -109,9 +109,9 @@ class DatabaseManager {
                                 Member<DatabaseContext>>
       ContextMap;
   ContextMap m_contextMap;
-#if ENABLE(ASSERT)
-  int m_databaseContextRegisteredCount;
-  int m_databaseContextInstanceCount;
+#if DCHECK_IS_ON()
+  int m_databaseContextRegisteredCount = 0;
+  int m_databaseContextInstanceCount = 0;
 #endif
 };
 

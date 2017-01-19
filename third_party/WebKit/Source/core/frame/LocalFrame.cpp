@@ -179,7 +179,7 @@ class DraggedNodeImageBuilder {
   DraggedNodeImageBuilder(const LocalFrame& localFrame, Node& node)
       : m_localFrame(&localFrame),
         m_node(&node)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         ,
         m_domTreeVersion(node.document().domTreeVersion())
 #endif
@@ -189,7 +189,7 @@ class DraggedNodeImageBuilder {
   }
 
   ~DraggedNodeImageBuilder() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     DCHECK_EQ(m_domTreeVersion, m_node->document().domTreeVersion());
 #endif
     for (Node& descendant : NodeTraversal::inclusiveDescendantsOf(*m_node))
@@ -197,7 +197,7 @@ class DraggedNodeImageBuilder {
   }
 
   std::unique_ptr<DragImage> createImage() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     DCHECK_EQ(m_domTreeVersion, m_node->document().domTreeVersion());
 #endif
     // Construct layout object for |m_node| with pseudo class "-webkit-drag"
@@ -236,7 +236,7 @@ class DraggedNodeImageBuilder {
  private:
   const Member<const LocalFrame> m_localFrame;
   const Member<Node> m_node;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   const uint64_t m_domTreeVersion;
 #endif
 };

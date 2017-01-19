@@ -74,9 +74,6 @@ AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& axObjectCache)
     : AXObject(axObjectCache),
       m_ariaRole(UnknownRole),
       m_childrenDirty(false),
-#if ENABLE(ASSERT)
-      m_initialized(false),
-#endif
       m_node(node) {
 }
 
@@ -124,7 +121,7 @@ AXObject* AXNodeObject::activeDescendant() {
 
 bool AXNodeObject::computeAccessibilityIsIgnored(
     IgnoredReasons* ignoredReasons) const {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Double-check that an AXObject is never accessed before
   // it's been initialized.
   ASSERT(m_initialized);
@@ -741,7 +738,7 @@ AccessibilityRole AXNodeObject::remapAriaRoleDueToParent(
 }
 
 void AXNodeObject::init() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(!m_initialized);
   m_initialized = true;
 #endif

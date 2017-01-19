@@ -132,7 +132,7 @@ class CORE_EXPORT PaintLayerStackingNode {
 
   PaintLayer* layer() const { return m_layer; }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
   void setLayerListMutationAllowed(bool flag) {
     m_layerListMutationAllowed = flag;
@@ -161,7 +161,7 @@ class CORE_EXPORT PaintLayerStackingNode {
       std::unique_ptr<Vector<PaintLayerStackingNode*>>& posZOrderList,
       std::unique_ptr<Vector<PaintLayerStackingNode*>>& negZOrderList);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isInStackingParentZOrderLists() const;
   void updateStackingParentForZOrderLists(
       PaintLayerStackingNode* stackingParent);
@@ -199,7 +199,7 @@ class CORE_EXPORT PaintLayerStackingNode {
   // to style change.
   bool m_isStacked : 1;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool m_layerListMutationAllowed : 1;
   PaintLayerStackingNode* m_stackingParent;
 #endif
@@ -208,7 +208,7 @@ class CORE_EXPORT PaintLayerStackingNode {
 inline void PaintLayerStackingNode::clearZOrderLists() {
   DCHECK(!isStackingContext());
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   updateStackingParentForZOrderLists(0);
 #endif
 
@@ -229,7 +229,7 @@ inline void PaintLayerStackingNode::updateZOrderLists() {
   rebuildZOrderLists();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 class LayerListMutationDetector {
  public:
   explicit LayerListMutationDetector(PaintLayerStackingNode* stackingNode)

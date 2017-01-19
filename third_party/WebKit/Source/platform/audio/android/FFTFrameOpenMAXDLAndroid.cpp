@@ -35,7 +35,7 @@
 
 namespace blink {
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 const unsigned kMaxFFTPow2Size = 15;
 #endif
 

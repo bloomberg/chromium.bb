@@ -62,9 +62,6 @@ SVGElement::SVGElement(const QualifiedName& tagName,
                        Document& document,
                        ConstructionType constructionType)
     : Element(tagName, &document, constructionType),
-#if ENABLE(ASSERT)
-      m_inRelativeLengthClientsInvalidation(false),
-#endif
       m_SVGRareData(nullptr),
       m_className(SVGAnimatedString::create(this, HTMLNames::classAttr)) {
   addToPropertyMap(m_className);
@@ -554,7 +551,7 @@ void SVGElement::invalidateRelativeLengthClients(
     return;
 
   ASSERT(!m_inRelativeLengthClientsInvalidation);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   AutoReset<bool> inRelativeLengthClientsInvalidationChange(
       &m_inRelativeLengthClientsInvalidation, true);
 #endif

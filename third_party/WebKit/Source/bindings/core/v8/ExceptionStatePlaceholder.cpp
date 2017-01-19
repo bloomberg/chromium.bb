@@ -32,7 +32,7 @@
 
 namespace blink {
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(
     const char* file,

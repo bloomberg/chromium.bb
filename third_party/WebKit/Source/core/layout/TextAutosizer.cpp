@@ -301,7 +301,7 @@ static LayoutObject* getParent(const LayoutObject* object) {
 TextAutosizer::TextAutosizer(const Document* document)
     : m_document(document),
       m_firstBlockToBeginLayout(nullptr),
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       m_blocksThatHaveBegunLayout(),
 #endif
       m_clusterStack(),
@@ -360,7 +360,7 @@ void TextAutosizer::destroy(LayoutBlock* block) {
 
 TextAutosizer::BeginLayoutBehavior TextAutosizer::prepareForLayout(
     LayoutBlock* block) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_blocksThatHaveBegunLayout.add(block);
 #endif
 
@@ -385,7 +385,7 @@ void TextAutosizer::prepareClusterStack(LayoutObject* layoutObject) {
 
   if (layoutObject->isLayoutBlock()) {
     LayoutBlock* block = toLayoutBlock(layoutObject);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_blocksThatHaveBegunLayout.add(block);
 #endif
     if (Cluster* cluster = maybeCreateCluster(block))
@@ -452,7 +452,7 @@ void TextAutosizer::endLayout(LayoutBlock* block) {
     m_firstBlockToBeginLayout = nullptr;
     m_clusterStack.clear();
     m_stylesRetainedDuringLayout.clear();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_blocksThatHaveBegunLayout.clear();
 #endif
     // Tables can create two layout scopes for the same block so the isEmpty
@@ -1240,7 +1240,7 @@ TextAutosizer::Cluster::Cluster(const LayoutBlock* root,
       m_hasTableAncestor(root->isTableCell() ||
                          (m_parent && m_parent->m_hasTableAncestor)) {}
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void TextAutosizer::FingerprintMapper::assertMapsAreConsistent() {
   // For each fingerprint -> block mapping in m_blocksForFingerprint we should
   // have an associated map from block -> fingerprint in m_fingerprints.
@@ -1264,7 +1264,7 @@ void TextAutosizer::FingerprintMapper::add(LayoutObject* layoutObject,
   remove(layoutObject);
 
   m_fingerprints.set(layoutObject, fingerprint);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   assertMapsAreConsistent();
 #endif
 }
@@ -1279,7 +1279,7 @@ void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(
   if (addResult.isNewEntry)
     addResult.storedValue->value = WTF::wrapUnique(new BlockSet);
   addResult.storedValue->value->add(block);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   assertMapsAreConsistent();
 #endif
 }
@@ -1308,7 +1308,7 @@ bool TextAutosizer::FingerprintMapper::remove(LayoutObject* layoutObject) {
       m_superclusters.remove(superclusterIter);
     }
   }
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   assertMapsAreConsistent();
 #endif
   return true;

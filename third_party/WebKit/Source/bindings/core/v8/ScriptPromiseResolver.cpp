@@ -17,10 +17,6 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
               this,
               &ScriptPromiseResolver::onTimerFired),
       m_resolver(scriptState)
-#if ENABLE(ASSERT)
-      ,
-      m_isPromiseCalled(false)
-#endif
 {
   if (getExecutionContext()->isContextDestroyed()) {
     m_state = Detached;

@@ -59,7 +59,7 @@ struct AlgorithmNameMapping {
   unsigned char algorithmNameLength;
   WebCryptoAlgorithmId algorithmId;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool operator<(const AlgorithmNameMapping&) const;
 #endif
 };
@@ -91,7 +91,7 @@ static_assert(WebCryptoAlgorithmIdLast + 1 ==
                   WTF_ARRAY_LENGTH(algorithmNameMappings),
               "algorithmNameMappings needs to be updated");
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 // Essentially std::is_sorted() (however that function is new to C++11).
 template <typename Iterator>

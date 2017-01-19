@@ -194,7 +194,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   bool inOverlayFullscreenVideo() const { return m_inOverlayFullscreenVideo; }
 
  private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void assertNoUnresolvedDirtyBits();
 #endif
 

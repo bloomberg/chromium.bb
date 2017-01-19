@@ -9,7 +9,7 @@
 namespace blink {
 
 v8::Local<v8::Function> ScriptFunction::bindToV8Function() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK(!m_bindToV8FunctionAlreadyCalled);
   m_bindToV8FunctionAlreadyCalled = true;
 #endif

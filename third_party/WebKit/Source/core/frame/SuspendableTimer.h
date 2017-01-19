@@ -51,8 +51,8 @@ class CORE_EXPORT SuspendableTimer : public TimerBase,
 
   double m_nextFireInterval;
   double m_repeatInterval;
-#if ENABLE(ASSERT)
-  bool m_suspended;
+#if DCHECK_IS_ON()
+  bool m_suspended = false;
 #endif
 };
 

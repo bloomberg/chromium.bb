@@ -33,7 +33,7 @@ class InlinedGlobalMarkingVisitor final
   using Impl::registerDelayedMarkNoTracing;
   using Impl::registerWeakTable;
   using Impl::registerWeakMembers;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   using Impl::weakTableRegistered;
 #endif
 

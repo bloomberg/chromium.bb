@@ -337,7 +337,7 @@ class CountingVisitor : public Visitor {
   void registerWeakTable(const void*,
                          EphemeronCallback,
                          EphemeronCallback) override {}
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool weakTableRegistered(const void*) override { return false; }
 #endif
   void registerWeakCellWithCallback(void**, WeakCallback) override {}
@@ -1832,7 +1832,7 @@ TEST(HeapTest, SimpleFinalization) {
   EXPECT_EQ(1, SimpleFinalizedObject::s_destructorCalls);
 }
 
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
 TEST(HeapTest, FreelistReuse) {
   clearOutOldGarbage();
 
@@ -5906,7 +5906,7 @@ TEST(HeapTest, TraceDeepEagerly) {
 // The allocation & GC overhead is considerable for this test,
 // straining debug builds and lower-end targets too much to be
 // worth running.
-#if !ENABLE(ASSERT) && !OS(ANDROID)
+#if !DCHECK_IS_ON() && !OS(ANDROID)
   DeepEagerly* obj = nullptr;
   for (int i = 0; i < 10000000; i++)
     obj = new DeepEagerly(obj);

@@ -40,7 +40,7 @@
 
 namespace blink {
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 LineBoxList::~LineBoxList() {
   ASSERT(!m_firstLineBox);
   ASSERT(!m_lastLineBox);
@@ -364,7 +364,7 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container,
   }
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void LineBoxList::checkConsistency() const {
 #ifdef CHECK_CONSISTENCY
   const InlineFlowBox* prev = nullptr;

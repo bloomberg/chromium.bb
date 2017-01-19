@@ -249,7 +249,7 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
   m_geometryMap.popMappingsToAncestor(layer->parent());
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(
     PaintLayer* layer) {

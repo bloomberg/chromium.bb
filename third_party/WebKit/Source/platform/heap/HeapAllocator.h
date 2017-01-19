@@ -180,7 +180,7 @@ class PLATFORM_EXPORT HeapAllocator {
                                iterationDoneCallback);
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   template <typename VisitorDispatcher>
   static bool weakTableRegistered(VisitorDispatcher visitor,
                                   const void* closure) {

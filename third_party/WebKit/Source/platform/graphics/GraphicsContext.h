@@ -91,7 +91,7 @@ class PLATFORM_EXPORT GraphicsContext {
   void save();
   void restore();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   unsigned saveCount() const;
 #endif
 

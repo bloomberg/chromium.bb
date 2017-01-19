@@ -135,9 +135,6 @@ Page::Page(PageClients& pageClients)
       m_deviceScaleFactor(1),
       m_visibilityState(PageVisibilityStateVisible),
       m_isCursorVisible(true),
-#if ENABLE(ASSERT)
-      m_isPainting(false),
-#endif
       m_frameHost(FrameHost::create(*this)) {
   ASSERT(m_editorClient);
 

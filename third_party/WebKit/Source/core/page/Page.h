@@ -213,7 +213,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   bool isCursorVisible() const;
   void setIsCursorVisible(bool isVisible) { m_isCursorVisible = isVisible; }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void setIsPainting(bool painting) { m_isPainting = painting; }
   bool isPainting() const { return m_isPainting; }
 #endif
@@ -295,8 +295,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   bool m_isCursorVisible;
 
-#if ENABLE(ASSERT)
-  bool m_isPainting;
+#if DCHECK_IS_ON()
+  bool m_isPainting = false;
 #endif
 
   // A pointer to all the interfaces provided to in-process Frames for this

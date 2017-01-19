@@ -105,7 +105,7 @@ class CORE_EXPORT LayoutGeometryMap {
   void dumpSteps() const;
 #endif
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isTopmostLayoutView(const LayoutObject*) const;
 #endif
 

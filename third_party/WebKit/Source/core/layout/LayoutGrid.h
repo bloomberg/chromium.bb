@@ -320,7 +320,7 @@ class LayoutGrid final : public LayoutBlock {
   int inlineBlockBaseline(LineDirectionMode) const override;
   bool isInlineBaselineAlignedChild(const LayoutBox* child) const;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection,
                                          GridSizingData&) const;
 #endif
@@ -398,7 +398,7 @@ class LayoutGrid final : public LayoutBlock {
     void setNeedsItemsPlacement(bool);
     bool needsItemsPlacement() const { return m_needsItemsPlacement; };
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool hasAnyGridItemPaintOrder() const;
 #endif
 

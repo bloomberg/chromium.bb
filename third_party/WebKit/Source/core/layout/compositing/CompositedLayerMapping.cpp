@@ -2471,7 +2471,7 @@ bool CompositedLayerMapping::hasVisibleNonCompositingDescendant(
   // FIXME: We shouldn't be called with a stale z-order lists. See bug 85512.
   parent->stackingNode()->updateLayerListsIfNeeded();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   LayerListMutationDetector mutationChecker(parent->stackingNode());
 #endif
 
@@ -3119,7 +3119,7 @@ void CompositedLayerMapping::paintContents(
   // ContentLayerDelegate::paintContents) try to paint throttled content.
   DocumentLifecycle::AllowThrottlingScope allowThrottling(
       m_owningLayer.layoutObject()->document().lifecycle());
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // FIXME: once the state machine is ready, this can be removed and we can
   // refer to that instead.
   if (Page* page = layoutObject()->frame()->page())
@@ -3197,7 +3197,7 @@ void CompositedLayerMapping::paintContents(
   InspectorInstrumentation::didPaint(m_owningLayer.layoutObject()->frame(),
                                      graphicsLayer, context,
                                      LayoutRect(interestRect));
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   if (Page* page = layoutObject()->frame()->page())
     page->setIsPainting(false);
 #endif
@@ -3258,7 +3258,7 @@ bool CompositedLayerMapping::isTrackingRasterInvalidations() const {
   return client ? client->isTrackingRasterInvalidations() : false;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void CompositedLayerMapping::verifyNotPainting() {
   ASSERT(!layoutObject()->frame()->page() ||
          !layoutObject()->frame()->page()->isPainting());
@@ -3365,7 +3365,7 @@ void CompositedLayerMapping::removeLayerFromSquashingGraphicsLayer(
   m_squashedLayers.remove(layerIndex);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool CompositedLayerMapping::verifyLayerInSquashingVector(
     const PaintLayer* layer) {
   for (size_t layerIndex = 0; layerIndex < m_squashedLayers.size();

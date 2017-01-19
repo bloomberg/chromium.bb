@@ -93,9 +93,6 @@ AXObjectCache* AXObjectCacheImpl::create(Document& document) {
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     : m_document(document),
       m_modificationCount(0),
-#if ENABLE(ASSERT)
-      m_hasBeenDisposed(false),
-#endif
       m_notificationPostTimer(this,
                               &AXObjectCacheImpl::notificationPostTimerFired) {
 }
@@ -113,7 +110,7 @@ void AXObjectCacheImpl::dispose() {
     removeAXID(obj);
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_hasBeenDisposed = true;
 #endif
 }
@@ -640,7 +637,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(TimerBase*) {
     if (obj->isDetached())
       continue;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // Make sure none of the layout views are in the process of being layed out.
     // Notifications should only be sent after the layoutObject has finished
     if (obj->isAXLayoutObject()) {

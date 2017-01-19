@@ -193,7 +193,7 @@ void DOMWrapperWorld::dispose() {
   m_domDataStore.reset();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool isIsolatedWorldId(int worldId) {
   return MainWorldId < worldId && worldId < IsolatedWorldIdLimit;
 }

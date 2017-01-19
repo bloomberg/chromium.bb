@@ -32,7 +32,7 @@ ScriptValue deserializeScriptValue(ScriptState*,
                                    SerializedScriptValue*,
                                    const Vector<WebBlobInfo>*);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void assertPrimaryKeyValidOrInjectable(ScriptState*, const IDBValue*);
 #endif
 

@@ -138,7 +138,7 @@ void DatabaseThread::recordDatabaseOpen(Database* database) {
 void DatabaseThread::recordDatabaseClosed(Database* database) {
   ASSERT(isDatabaseThread());
   ASSERT(database);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   {
     MutexLocker lock(m_terminationRequestedMutex);
     ASSERT(m_terminationRequested || m_openDatabaseSet.contains(database));
@@ -162,7 +162,7 @@ bool DatabaseThread::isDatabaseThread() const {
 
 void DatabaseThread::scheduleTask(std::unique_ptr<DatabaseTask> task) {
   ASSERT(m_thread);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   {
     MutexLocker lock(m_terminationRequestedMutex);
     ASSERT(!m_terminationRequested);

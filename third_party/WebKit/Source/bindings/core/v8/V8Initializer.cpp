@@ -365,7 +365,7 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 }  // namespace
 
 static void adjustAmountOfExternalAllocatedMemory(int64_t diff) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DEFINE_THREAD_SAFE_STATIC_LOCAL(int64_t, processTotal, new int64_t(0));
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
   {

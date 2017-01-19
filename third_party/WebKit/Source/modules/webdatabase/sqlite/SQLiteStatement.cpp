@@ -82,10 +82,6 @@ SQLiteStatement::SQLiteStatement(SQLiteDatabase& db, const String& sql)
     : m_database(db),
       m_query(sql),
       m_statement(0)
-#if ENABLE(ASSERT)
-      ,
-      m_isPrepared(false)
-#endif
 {
 }
 
@@ -127,7 +123,7 @@ int SQLiteStatement::prepare() {
   else if (*tail && **tail)
     error = SQLITE_ERROR;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_isPrepared = error == SQLITE_OK;
 #endif
   return restrictError(error);
@@ -156,7 +152,7 @@ int SQLiteStatement::step() {
 }
 
 int SQLiteStatement::finalize() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_isPrepared = false;
 #endif
   if (!m_statement)

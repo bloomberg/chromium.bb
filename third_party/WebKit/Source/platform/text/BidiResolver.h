@@ -223,7 +223,7 @@ class BidiResolver final {
         m_nestedIsolateCount(0),
         m_trailingSpaceRun(0) {}
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ~BidiResolver();
 #endif
 
@@ -375,7 +375,7 @@ class BidiResolver final {
   HashMap<Run*, MidpointState<Iterator>> m_midpointStateForIsolatedRun;
 };
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 template <class Iterator, class Run, class IsolatedRun>
 BidiResolver<Iterator, Run, IsolatedRun>::~BidiResolver() {
   // The owner of this resolver should have handled the isolated runs.

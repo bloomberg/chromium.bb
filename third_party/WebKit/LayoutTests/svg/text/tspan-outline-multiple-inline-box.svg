@@ -4,7 +4,7 @@
       testRunner.dumpAsText();
   </script>
   <text x="100" y="100">
-    Passes if no crash with ENABLE(ASSERT).
+    Passes if no crash with DCHECK_IS_ON().
     &#1500;<tspan style="outline: 1px solid black">&#1490;a</tspan>bc
   </text>
 </svg>

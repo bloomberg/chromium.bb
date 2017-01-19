@@ -225,7 +225,7 @@ class PersistentBase {
     ASSERT(state->checkThread());
     m_persistentNode = state->getPersistentRegion()->allocatePersistentNode(
         this, traceCallback);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_state = state;
 #endif
   }
@@ -314,10 +314,8 @@ class PersistentBase {
   // m_raw is accessed most, so put it at the first field.
   T* m_raw;
   PersistentNode* m_persistentNode = nullptr;
-#if ENABLE(ASSERT)
-  ThreadState* m_state = nullptr;
-#endif
 #if DCHECK_IS_ON()
+  ThreadState* m_state = nullptr;
   const ThreadState* m_creationThreadState;
 #endif
 };
@@ -617,7 +615,7 @@ class PersistentHeapCollectionBase : public Collection {
         TraceMethodDelegate<PersistentHeapCollectionBase<Collection>,
                             &PersistentHeapCollectionBase<
                                 Collection>::tracePersistent>::trampoline);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_state = state;
 #endif
   }
@@ -634,7 +632,7 @@ class PersistentHeapCollectionBase : public Collection {
   }
 
   PersistentNode* m_persistentNode;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ThreadState* m_state;
 #endif
 };

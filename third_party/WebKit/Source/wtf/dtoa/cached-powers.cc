@@ -138,7 +138,7 @@ namespace double_conversion {
     const int PowersOfTenCache::kMinDecimalExponent = -348; // kCachedPowers[0].decimal_exponent
     const int PowersOfTenCache::kMaxDecimalExponent = 340; // kCachedPowers[kCachedPowersLength - 1].decimal_exponent
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     static const int kCachedPowersLength = ARRAY_SIZE(kCachedPowers);
 
     // Check that the static constants match the values in kCachedPowers.
@@ -155,20 +155,20 @@ namespace double_conversion {
                                                                 int max_exponent,
                                                                 DiyFp* power,
                                                                 int* decimal_exponent) {
-#if ENABLE(ASSERT)
-        validateStaticConstants();
+#if DCHECK_IS_ON()
+      validateStaticConstants();
 #endif
-        const int kQ = DiyFp::kSignificandSize;
-        double k = ceil((min_exponent + kQ - 1) * kD_1_LOG2_10);
-        int foo = kCachedPowersOffset;
-        int index =
-        (foo + static_cast<int>(k) - 1) / kDecimalExponentDistance + 1;
-        ASSERT(0 <= index && index < kCachedPowersLength);
-        CachedPower cached_power = kCachedPowers[index];
-        ASSERT(min_exponent <= cached_power.binary_exponent);
-        ASSERT(cached_power.binary_exponent <= max_exponent);
-        *decimal_exponent = cached_power.decimal_exponent;
-        *power = DiyFp(cached_power.significand, cached_power.binary_exponent);
+      const int kQ = DiyFp::kSignificandSize;
+      double k = ceil((min_exponent + kQ - 1) * kD_1_LOG2_10);
+      int foo = kCachedPowersOffset;
+      int index =
+          (foo + static_cast<int>(k) - 1) / kDecimalExponentDistance + 1;
+      ASSERT(0 <= index && index < kCachedPowersLength);
+      CachedPower cached_power = kCachedPowers[index];
+      ASSERT(min_exponent <= cached_power.binary_exponent);
+      ASSERT(cached_power.binary_exponent <= max_exponent);
+      *decimal_exponent = cached_power.decimal_exponent;
+      *power = DiyFp(cached_power.significand, cached_power.binary_exponent);
     }
 
 
@@ -177,7 +177,7 @@ namespace double_conversion {
                                                             int* found_exponent) {
         ASSERT(kMinDecimalExponent <= requested_exponent);
         ASSERT(requested_exponent < kMaxDecimalExponent + kDecimalExponentDistance);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         validateStaticConstants();
 #endif
         int index =

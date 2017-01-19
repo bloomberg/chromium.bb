@@ -71,7 +71,7 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
     infoForChildren.enclosingCompositedLayer = &layer;
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   LayerListMutationDetector mutationChecker(layer.stackingNode());
 #endif
 

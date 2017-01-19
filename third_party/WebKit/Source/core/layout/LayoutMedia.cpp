@@ -60,12 +60,12 @@ void LayoutMedia::layout() {
 // out before the text track container. This is to ensure that the text
 // track rendering has an up-to-date position of the media controls for
 // overlap checking, see LayoutVTTCue.
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool seenTextTrackContainer = false;
 #endif
   for (LayoutObject* child = m_children.lastChild(); child;
        child = child->previousSibling()) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     if (child->node()->isMediaControls())
       ASSERT(!seenTextTrackContainer);
     else if (child->node()->isTextTrackContainer())

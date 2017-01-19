@@ -178,9 +178,6 @@ FrameView::FrameView(LocalFrame& frame)
       m_layoutSizeFixedToFrameSize(true),
       m_didScrollTimer(this, &FrameView::didScrollTimerFired),
       m_needsUpdateWidgetGeometries(false),
-#if ENABLE(ASSERT)
-      m_hasBeenDisposed(false),
-#endif
       m_horizontalScrollbarMode(ScrollbarAuto),
       m_verticalScrollbarMode(ScrollbarAuto),
       m_horizontalScrollbarLock(false),
@@ -369,7 +366,7 @@ void FrameView::dispose() {
   if (ownerElement && ownerElement->ownedWidget() == this)
     ownerElement->setWidget(nullptr);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_hasBeenDisposed = true;
 #endif
 }

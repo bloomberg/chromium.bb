@@ -3356,7 +3356,7 @@ void LayoutBlockFlow::makeChildrenNonInline(LayoutObject* insertionPoint) {
     moveChildrenTo(block, inlineRunStart, child);
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   for (LayoutObject* c = firstChild(); c; c = c->nextSibling())
     ASSERT(!c->isInline());
 #endif
@@ -3576,7 +3576,7 @@ void LayoutBlockFlow::removeFloatingObject(LayoutBox* floatBox) {
                     this));
             floatingObject.originatingLine()->markDirty();
           }
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
           floatingObject.setOriginatingLine(nullptr);
 #endif
         }

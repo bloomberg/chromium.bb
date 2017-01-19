@@ -103,7 +103,7 @@ DEFINE_TRACE(SVGUseElement) {
   DocumentResourceClient::trace(visitor);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static inline bool isWellFormedDocument(Document* document) {
   if (document->isXMLDocument())
     return static_cast<XMLDocumentParser*>(document->parser())->wellFormed();

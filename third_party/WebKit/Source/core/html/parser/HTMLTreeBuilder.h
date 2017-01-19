@@ -245,8 +245,8 @@ class HTMLTreeBuilder final
 
   // https://html.spec.whatwg.org/#frameset-ok-flag
   bool m_framesetOk;
-#if ENABLE(ASSERT)
-  bool m_isAttached;
+#if DCHECK_IS_ON()
+  bool m_isAttached = true;
 #endif
   FragmentParsingContext m_fragmentContext;
   HTMLConstructionSite m_tree;

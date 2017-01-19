@@ -65,7 +65,7 @@ void DeferredTaskHandler::offlineLock() {
   m_contextGraphMutex.lock();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool DeferredTaskHandler::isGraphOwner() {
   return m_contextGraphMutex.locked();
 }

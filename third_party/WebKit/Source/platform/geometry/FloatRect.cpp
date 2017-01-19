@@ -60,7 +60,7 @@ FloatRect FloatRect::narrowPrecision(double x,
                    clampTo<float>(height));
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool FloatRect::mayNotHaveExactIntRectRepresentation() const {
   static const float maxExactlyExpressible = 1 << FLT_MANT_DIG;
   return fabs(x()) > maxExactlyExpressible ||

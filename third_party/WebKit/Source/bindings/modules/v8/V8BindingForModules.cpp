@@ -594,7 +594,7 @@ IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(
   return V8IDBKeyRange::toImplWithTypeCheck(isolate, value);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 // This assertion is used when a value has been retrieved from an object store
 // with implicit keys (i.e. a key path). It verifies that either the value
 // contains an implicit key matching the primary key (so it was correctly

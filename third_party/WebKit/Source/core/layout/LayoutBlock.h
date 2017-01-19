@@ -313,7 +313,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual LayoutUnit logicalRightSelectionOffset(const LayoutBlock* rootBlock,
                                                  LayoutUnit position) const;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void checkPositionedObjectsNeedLayout();
 #endif
 

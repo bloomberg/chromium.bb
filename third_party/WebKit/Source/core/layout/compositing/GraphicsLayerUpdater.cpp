@@ -120,7 +120,7 @@ void GraphicsLayerUpdater::updateRecursive(
                     layersNeedingPaintInvalidation);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(
     PaintLayer& layer) {

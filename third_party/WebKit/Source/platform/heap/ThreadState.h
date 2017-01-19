@@ -191,7 +191,7 @@ class PLATFORM_EXPORT ThreadState {
   static ThreadState* fromObject(const void*);
 
   bool isMainThread() const { return this == mainThreadState(); }
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool checkThread() const { return m_thread == currentThread(); }
 #endif
 
@@ -354,7 +354,7 @@ class PLATFORM_EXPORT ThreadState {
     return m_arenas[arenaIndex];
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Infrastructure to determine if an address is within one of the
   // address ranges for the Blink heap. If the address is in the Blink
   // heap the containing heap page is returned.
@@ -528,7 +528,7 @@ class PLATFORM_EXPORT ThreadState {
       static_assert(sizeof(&T::invokePreFinalizer) > 0,
                     "USING_PRE_FINALIZER(T) must be defined.");
       ThreadState* state = ThreadState::current();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       DCHECK(state->checkThread());
 #endif
       DCHECK(!state->sweepForbidden());

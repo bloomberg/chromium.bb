@@ -157,7 +157,7 @@ class CompositingRequirementsUpdater::RecursionData {
 };
 
 static bool requiresCompositingOrSquashing(CompositingReasons reasons) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool fastAnswer = reasons != CompositingReasonNone;
   bool slowAnswer = requiresCompositing(reasons) || requiresSquashing(reasons);
   DCHECK_EQ(slowAnswer, fastAnswer);
@@ -379,7 +379,7 @@ void CompositingRequirementsUpdater::updateRecursive(
     childRecursionData.m_testingOverlap = true;
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   LayerListMutationDetector mutationChecker(layer->stackingNode());
 #endif
 

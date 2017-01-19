@@ -41,7 +41,7 @@ class CORE_EXPORT ScriptPromiseResolver
     return resolver;
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Eagerly finalized so as to ensure valid access to getExecutionContext()
   // from the destructor's assert.
   EAGERLY_FINALIZE();
@@ -78,7 +78,7 @@ class CORE_EXPORT ScriptPromiseResolver
   // Note that an empty ScriptPromise will be returned after resolve or
   // reject is called.
   ScriptPromise promise() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_isPromiseCalled = true;
 #endif
     return m_resolver.promise();
@@ -161,9 +161,9 @@ class CORE_EXPORT ScriptPromiseResolver
   // alive while in that state.
   SelfKeepAlive<ScriptPromiseResolver> m_keepAlive;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // True if promise() is called.
-  bool m_isPromiseCalled;
+  bool m_isPromiseCalled = false;
 #endif
 };
 

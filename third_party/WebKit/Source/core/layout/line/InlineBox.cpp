@@ -43,7 +43,7 @@ struct SameSizeAsInlineBox : DisplayItemClient {
   void* a[4];
   LayoutPoint b;
   LayoutUnit c;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool f;
 #endif
 };
@@ -51,13 +51,11 @@ struct SameSizeAsInlineBox : DisplayItemClient {
 static_assert(sizeof(InlineBox) == sizeof(SameSizeAsInlineBox),
               "InlineBox should stay small");
 
-#if ENABLE(ASSERT)
-
+#if DCHECK_IS_ON()
 InlineBox::~InlineBox() {
   if (!m_hasBadParent && m_parent)
     m_parent->setHasBadChildList();
 }
-
 #endif
 
 DISABLE_CFI_PERF

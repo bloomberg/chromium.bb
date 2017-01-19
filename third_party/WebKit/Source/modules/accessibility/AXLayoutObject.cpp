@@ -504,7 +504,7 @@ AXObjectInclusion AXLayoutObject::defaultObjectInclusion(
 
 bool AXLayoutObject::computeAccessibilityIsIgnored(
     IgnoredReasons* ignoredReasons) const {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(m_initialized);
 #endif
 

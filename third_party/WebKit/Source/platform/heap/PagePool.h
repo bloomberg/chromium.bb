@@ -64,7 +64,7 @@ class OrphanedPagePool : public PagePool<BasePage> {
   ~OrphanedPagePool();
   void addOrphanedPage(int, BasePage*);
   void decommitOrphanedPages();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool contains(void*);
 #endif
 

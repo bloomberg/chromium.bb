@@ -156,7 +156,7 @@ struct GCInfo {
 // object header keeps its index into this table.
 extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 PLATFORM_EXPORT void assertObjectHasGCInfo(const void*, size_t gcInfoIndex);
 #endif
 

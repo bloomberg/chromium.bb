@@ -106,7 +106,7 @@ IDBKeyPath::IDBKeyPath(const String& string)
 
 IDBKeyPath::IDBKeyPath(const Vector<String>& array)
     : m_type(ArrayType), m_array(array) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   for (size_t i = 0; i < m_array.size(); ++i)
     ASSERT(!m_array[i].isNull());
 #endif
@@ -123,7 +123,7 @@ IDBKeyPath::IDBKeyPath(const StringOrStringSequence& keyPath) {
     ASSERT(keyPath.isStringSequence());
     m_type = ArrayType;
     m_array = keyPath.getAsStringSequence();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     for (size_t i = 0; i < m_array.size(); ++i)
       ASSERT(!m_array[i].isNull());
 #endif

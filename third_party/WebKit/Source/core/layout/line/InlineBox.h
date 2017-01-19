@@ -51,10 +51,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
         m_parent(nullptr),
         m_lineLayoutItem(obj),
         m_logicalWidth()
-#if ENABLE(ASSERT)
-        ,
-        m_hasBadParent(false)
-#endif
   {
   }
 
@@ -76,10 +72,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
         m_lineLayoutItem(item),
         m_location(topLeft),
         m_logicalWidth(logicalWidth)
-#if ENABLE(ASSERT)
-        ,
-        m_hasBadParent(false)
-#endif
   {
   }
 
@@ -333,7 +325,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
                                       LayoutUnit& truncatedWidth,
                                       bool&);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void setHasBadParent();
 #endif
 
@@ -549,16 +541,16 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   LayoutUnit m_logicalWidth;
 
  private:
-#if ENABLE(ASSERT)
-  bool m_hasBadParent;
+#if DCHECK_IS_ON()
+  bool m_hasBadParent = false;
 #endif
 };
 
-#if !ENABLE(ASSERT)
+#if !DCHECK_IS_ON()
 inline InlineBox::~InlineBox() {}
 #endif
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 inline void InlineBox::setHasBadParent() {
   m_hasBadParent = true;
 }

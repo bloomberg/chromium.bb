@@ -33,10 +33,6 @@ namespace blink {
 
 SVGDocumentExtensions::SVGDocumentExtensions(Document* document)
     : m_document(document)
-#if ENABLE(ASSERT)
-      ,
-      m_inRelativeLengthSVGRootsInvalidation(false)
-#endif
 {
 }
 
@@ -259,7 +255,7 @@ bool SVGDocumentExtensions::isSVGRootWithRelativeLengthDescendents(
 void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(
     SubtreeLayoutScope* scope) {
   ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   AutoReset<bool> inRelativeLengthSVGRootsChange(
       &m_inRelativeLengthSVGRootsInvalidation, true);
 #endif

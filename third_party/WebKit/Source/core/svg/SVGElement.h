@@ -269,8 +269,8 @@ class CORE_EXPORT SVGElement : public Element {
       AttributeToPropertyMap;
   AttributeToPropertyMap m_attributeToPropertyMap;
 
-#if ENABLE(ASSERT)
-  bool m_inRelativeLengthClientsInvalidation;
+#if DCHECK_IS_ON()
+  bool m_inRelativeLengthClientsInvalidation = false;
 #endif
 
   Member<SVGElementRareData> m_SVGRareData;

@@ -191,7 +191,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool updateSquashingLayerAssignment(PaintLayer* squashedLayer,
                                       size_t nextSquashedLayerIndex);
   void removeLayerFromSquashingGraphicsLayer(const PaintLayer*);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool verifyLayerInSquashingVector(const PaintLayer*);
 #endif
 
@@ -216,7 +216,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   bool isTrackingRasterInvalidations() const override;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void verifyNotPainting() override;
 #endif
 
@@ -266,7 +266,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   GraphicsLayerUpdater::UpdateType updateTypeForChildren(
       GraphicsLayerUpdater::UpdateType) const;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void assertNeedsToUpdateGraphicsLayerBitsCleared() {
     ASSERT(m_pendingUpdateScope == GraphicsLayerUpdateNone);
   }

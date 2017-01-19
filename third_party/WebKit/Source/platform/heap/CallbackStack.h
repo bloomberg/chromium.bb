@@ -52,7 +52,7 @@ class CallbackStack final {
 
   void invokeEphemeronCallbacks(Visitor*);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool hasCallbackForObject(const void*);
 #endif
   bool hasJustOneBlock() const;
@@ -68,7 +68,7 @@ class CallbackStack final {
     explicit Block(Block* next);
     ~Block();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     void clear();
 #endif
     Block* next() const { return m_next; }
@@ -92,7 +92,7 @@ class CallbackStack final {
 
     void invokeEphemeronCallbacks(Visitor*);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool hasCallbackForObject(const void*);
 #endif
 

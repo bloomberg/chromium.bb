@@ -22,7 +22,7 @@ Visitor::Visitor(ThreadState* state, VisitorMarkingMode markingMode)
   // See ThreadState::runScheduledGC() why we need to already be in a
   // GCForbiddenScope before any safe point is entered.
   DCHECK(state->isGCForbidden());
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK(state->checkThread());
 #endif
 }

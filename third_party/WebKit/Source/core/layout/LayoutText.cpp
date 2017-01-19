@@ -174,7 +174,7 @@ LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
   view()->frameView()->incrementVisuallyNonEmptyCharacterCount(m_text.length());
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 LayoutText::~LayoutText() {
   ASSERT(!m_firstTextBox);
@@ -1949,7 +1949,7 @@ unsigned LayoutText::resolvedTextLength() const {
   return len;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 void LayoutText::checkConsistency() const {
 #ifdef CHECK_CONSISTENCY

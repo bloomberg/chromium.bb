@@ -273,7 +273,7 @@ class MODULES_EXPORT BaseAudioContext
   void lock() { deferredTaskHandler().lock(); }
   bool tryLock() { return deferredTaskHandler().tryLock(); }
   void unlock() { deferredTaskHandler().unlock(); }
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Returns true if this thread owns the context's lock.
   bool isGraphOwner() { return deferredTaskHandler().isGraphOwner(); }
 #endif

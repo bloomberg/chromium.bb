@@ -62,7 +62,7 @@ void LayoutGeometryMap::mapToAncestor(
   }
 
   bool inFixed = false;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool foundAncestor = !ancestor || (m_mapping.size() &&
                                      m_mapping[0].m_layoutObject == ancestor);
 #endif
@@ -73,7 +73,7 @@ void LayoutGeometryMap::mapToAncestor(
     // If container is the root LayoutView (step 0) we want to apply its fixed
     // position offset.
     if (i > 0 && currentStep.m_layoutObject == ancestor) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       foundAncestor = true;
 #endif
       break;
@@ -153,7 +153,7 @@ FloatQuad LayoutGeometryMap::mapToAncestor(
     result = transformState.lastPlanarQuad();
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   if (m_mapping.size() > 0) {
     const LayoutObject* lastLayoutObject = m_mapping.back().m_layoutObject;
 
@@ -364,7 +364,7 @@ void LayoutGeometryMap::stepRemoved(const LayoutGeometryMapStep& step) {
   }
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool LayoutGeometryMap::isTopmostLayoutView(
     const LayoutObject* layoutObject) const {
   if (!layoutObject->isLayoutView())

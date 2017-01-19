@@ -143,8 +143,8 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
 
   Member<SVGSVGElement> m_ownerSVGElement;
 
-#if ENABLE(ASSERT)
-  bool m_preventScheduledAnimationsChanges;
+#if DCHECK_IS_ON()
+  bool m_preventScheduledAnimationsChanges = false;
 #endif
 };
 }  // namespace blink

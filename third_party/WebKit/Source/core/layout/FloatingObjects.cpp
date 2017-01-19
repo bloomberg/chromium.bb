@@ -527,7 +527,7 @@ void FloatingObjects::addPlacedObject(FloatingObject& floatingObject) {
   if (m_placedFloatsTree.isInitialized())
     m_placedFloatsTree.add(intervalForFloatingObject(floatingObject));
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   floatingObject.setIsInPlacedTree(true);
 #endif
   markLowestFloatLogicalBottomCacheAsDirty();
@@ -543,7 +543,7 @@ void FloatingObjects::removePlacedObject(FloatingObject& floatingObject) {
   }
 
   floatingObject.setIsPlaced(false);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   floatingObject.setIsInPlacedTree(false);
 #endif
   markLowestFloatLogicalBottomCacheAsDirty();

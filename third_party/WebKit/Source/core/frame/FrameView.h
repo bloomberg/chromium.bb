@@ -1091,9 +1091,9 @@ class CORE_EXPORT FrameView final
 
   bool m_needsUpdateWidgetGeometries;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Verified when finalizing.
-  bool m_hasBeenDisposed;
+  bool m_hasBeenDisposed = false;
 #endif
 
   ScrollbarMode m_horizontalScrollbarMode;

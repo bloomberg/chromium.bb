@@ -67,7 +67,7 @@ void CallbackStackMemoryPool::free(CallbackStack::Item* memory) {
 
 CallbackStack::Block::Block(Block* next) {
   m_buffer = CallbackStackMemoryPool::instance().allocate();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   clear();
 #endif
 
@@ -84,7 +84,7 @@ CallbackStack::Block::~Block() {
   m_next = nullptr;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void CallbackStack::Block::clear() {
   for (size_t i = 0; i < CallbackStackMemoryPool::kBlockSize; i++)
     m_buffer[i] = Item(0, 0);
@@ -100,7 +100,7 @@ void CallbackStack::Block::invokeEphemeronCallbacks(Visitor* visitor) {
   }
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool CallbackStack::Block::hasCallbackForObject(const void* object) {
   for (unsigned i = 0; m_buffer + i < m_current; i++) {
     Item* item = &m_buffer[i];
@@ -159,7 +159,7 @@ CallbackStack::Item* CallbackStack::popSlow() {
   for (;;) {
     Block* next = m_first->next();
     if (!next) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       m_first->clear();
 #endif
       return nullptr;
@@ -204,7 +204,7 @@ bool CallbackStack::hasJustOneBlock() const {
   return !m_first->next();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool CallbackStack::hasCallbackForObject(const void* object) {
   for (Block* current = m_first; current; current = current->next()) {
     if (current->hasCallbackForObject(object))

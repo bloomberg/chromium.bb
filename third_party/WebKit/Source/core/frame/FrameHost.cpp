@@ -173,7 +173,7 @@ DEFINE_TRACE(FrameHost) {
   visitor->trace(m_globalRootScrollerController);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void checkFrameCountConsistency(int expectedFrameCount, Frame* frame) {
   ASSERT(expectedFrameCount >= 0);
 
@@ -186,7 +186,7 @@ void checkFrameCountConsistency(int expectedFrameCount, Frame* frame) {
 #endif
 
 int FrameHost::subframeCount() const {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   checkFrameCountConsistency(m_subframeCount + 1, m_page->mainFrame());
 #endif
   return m_subframeCount;

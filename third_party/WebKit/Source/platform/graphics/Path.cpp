@@ -549,7 +549,7 @@ bool Path::intersectPath(const Path& other) {
   return Op(m_path, other.m_path, kIntersect_SkPathOp, &m_path);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool ellipseIsRenderable(float startAngle, float endAngle) {
   return (std::abs(endAngle - startAngle) < twoPiFloat) ||
          WebCoreFloatNearlyEqual(std::abs(endAngle - startAngle), twoPiFloat);

@@ -202,7 +202,7 @@ class PLATFORM_EXPORT Path {
   SkPath m_path;
 };
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 PLATFORM_EXPORT bool ellipseIsRenderable(float startAngle, float endAngle);
 #endif
 

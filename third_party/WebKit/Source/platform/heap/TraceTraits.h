@@ -49,7 +49,7 @@ class AdjustAndMarkTrait<T, false> {
  public:
   template <typename VisitorDispatcher>
   static void mark(VisitorDispatcher visitor, const T* t) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     assertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::index());
 #endif
     // Default mark method of the trait just calls the two-argument mark

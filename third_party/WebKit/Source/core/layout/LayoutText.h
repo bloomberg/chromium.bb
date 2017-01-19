@@ -72,7 +72,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // not the content of the Text node, updating text-transform property
   // doesn't re-transform the string.
   LayoutText(Node*, PassRefPtr<StringImpl>);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ~LayoutText() override;
 #endif
 
@@ -343,7 +343,7 @@ inline float LayoutText::hyphenWidth(const Font& font,
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutText, isText());
 
-#if !ENABLE(ASSERT)
+#if !DCHECK_IS_ON()
 inline void LayoutText::checkConsistency() const {}
 #endif
 

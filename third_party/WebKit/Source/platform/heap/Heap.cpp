@@ -270,7 +270,7 @@ void ThreadHeap::resume() {
   m_safePointBarrier->resumeOthers();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 BasePage* ThreadHeap::findPageFromAddress(Address address) {
   MutexLocker locker(m_threadAttachMutex);
   for (ThreadState* state : m_threads) {
@@ -293,7 +293,7 @@ bool ThreadHeap::isAtSafePoint() {
 Address ThreadHeap::checkAndMarkPointer(Visitor* visitor, Address address) {
   ASSERT(ThreadState::current()->isInGC());
 
-#if !ENABLE(ASSERT)
+#if !DCHECK_IS_ON()
   if (m_heapDoesNotContainCache->lookup(address))
     return nullptr;
 #endif
@@ -307,7 +307,7 @@ Address ThreadHeap::checkAndMarkPointer(Visitor* visitor, Address address) {
     return address;
   }
 
-#if !ENABLE(ASSERT)
+#if !DCHECK_IS_ON()
   m_heapDoesNotContainCache->addEntry(address);
 #else
   if (!m_heapDoesNotContainCache->lookup(address))
@@ -393,7 +393,7 @@ void ThreadHeap::registerWeakTable(void* table,
   pushPostMarkingCallback(table, iterationDoneCallback);
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool ThreadHeap::weakTableRegistered(const void* table) {
   ASSERT(m_ephemeronStack);
   return m_ephemeronStack->hasCallbackForObject(table);

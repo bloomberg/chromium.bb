@@ -133,7 +133,7 @@ struct GridSpan {
   enum GridSpanType { UntranslatedDefinite, TranslatedDefinite, Indefinite };
 
   GridSpan(int startLine, int endLine, GridSpanType type) : m_type(type) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ASSERT(startLine < endLine);
     if (type == TranslatedDefinite) {
       ASSERT(startLine >= 0);

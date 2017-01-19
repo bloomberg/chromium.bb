@@ -278,7 +278,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return style()->borderEnd();
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isFirstOrLastCellInRow() const {
     return !table()->cellAfter(this) || !table()->cellBefore(this);
   }

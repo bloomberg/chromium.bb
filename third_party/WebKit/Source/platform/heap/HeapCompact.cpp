@@ -87,7 +87,7 @@ class HeapCompact::MovableObjectFixups final {
         blinkPageAddress(slotAddress) + blinkGuardPageSize);
     if (LIKELY(!m_relocatablePages.contains(slotPage)))
       return;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     DCHECK(slotPage->contains(slotAddress));
 #endif
     // Unlikely case, the slot resides on a compacting arena's page.

@@ -46,14 +46,8 @@
 #include <windows.h>
 #endif
 
-// Users must test "#if ENABLE(ASSERT)", which helps ensure that code
-// testing this macro has included this header.
-#ifndef ENABLE_ASSERT
-#define ENABLE_ASSERT DCHECK_IS_ON()
-#endif
-
 #ifndef LOG_DISABLED
-#define LOG_DISABLED !ENABLE(ASSERT)
+#define LOG_DISABLED !DCHECK_IS_ON()
 #endif
 
 // These helper functions are always declared, but not necessarily always
@@ -152,7 +146,7 @@ class WTF_EXPORT ScopedLogger {
   LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), \
               DCHECK_IS_ON() ? !(assertion) : false)
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 #define ASSERT(assertion) DCHECK(assertion)
 #define ASSERT_NOT_REACHED() NOTREACHED()
 #else
@@ -162,7 +156,7 @@ class WTF_EXPORT ScopedLogger {
 
 // Users must test "#if ENABLE(SECURITY_ASSERT)", which helps ensure
 // that code testing this macro has included this header.
-#if defined(ADDRESS_SANITIZER) || ENABLE(ASSERT)
+#if defined(ADDRESS_SANITIZER) || DCHECK_IS_ON()
 #define ENABLE_SECURITY_ASSERT 1
 #else
 #define ENABLE_SECURITY_ASSERT 0

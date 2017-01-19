@@ -74,7 +74,7 @@ PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
 }
 
 PaintLayerStackingNode::~PaintLayerStackingNode() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   if (!layoutObject()->documentBeingDestroyed()) {
     DCHECK(!isInStackingParentZOrderLists());
 
@@ -100,7 +100,7 @@ void PaintLayerStackingNode::dirtyZOrderLists() {
 #endif
   DCHECK(isStackingContext());
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   updateStackingParentForZOrderLists(0);
 #endif
 
@@ -167,7 +167,7 @@ void PaintLayerStackingNode::rebuildZOrderLists() {
     }
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   updateStackingParentForZOrderLists(this);
 #endif
 
@@ -195,7 +195,7 @@ void PaintLayerStackingNode::collectLayers(
   }
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool PaintLayerStackingNode::isInStackingParentZOrderLists() const {
   if (!m_stackingParent || m_stackingParent->zOrderListsDirty())
     return false;

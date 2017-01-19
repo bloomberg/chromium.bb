@@ -104,10 +104,6 @@ class SVGPaintContext {
         m_paintInfo(paintInfo),
         m_filter(nullptr),
         m_masker(nullptr)
-#if ENABLE(ASSERT)
-        ,
-        m_applyClipMaskAndFilterIfNecessaryCalled(false)
-#endif
   {
   }
 
@@ -157,8 +153,8 @@ class SVGPaintContext {
   Optional<ClipPathClipper> m_clipPathClipper;
   std::unique_ptr<SVGFilterRecordingContext> m_filterRecordingContext;
   Optional<ScopedPaintChunkProperties> m_scopedPaintChunkProperties;
-#if ENABLE(ASSERT)
-  bool m_applyClipMaskAndFilterIfNecessaryCalled;
+#if DCHECK_IS_ON()
+  bool m_applyClipMaskAndFilterIfNecessaryCalled = false;
 #endif
 };
 

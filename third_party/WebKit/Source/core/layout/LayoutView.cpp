@@ -192,12 +192,12 @@ void LayoutView::layoutContent() {
 
   LayoutBlockFlow::layout();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   checkLayoutState();
 #endif
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void LayoutView::checkLayoutState() {
   ASSERT(!m_layoutState->next());
 }
@@ -294,7 +294,7 @@ void LayoutView::layout() {
     }
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   checkLayoutState();
 #endif
   clearNeedsLayout();

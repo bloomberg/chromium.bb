@@ -69,7 +69,7 @@ class BackgroundHTMLInputStream {
     size_t numberOfSegmentsAlreadyAppended;
     size_t tokensExtractedSincePreviousCheckpoint;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool isNull() const {
       return input.isEmpty() && !numberOfSegmentsAlreadyAppended;
     }

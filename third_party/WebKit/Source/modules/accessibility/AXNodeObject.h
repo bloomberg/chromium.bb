@@ -55,8 +55,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Protected data.
   AccessibilityRole m_ariaRole;
   bool m_childrenDirty;
-#if ENABLE(ASSERT)
-  bool m_initialized;
+#if DCHECK_IS_ON()
+  bool m_initialized = false;
 #endif
 
   bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;

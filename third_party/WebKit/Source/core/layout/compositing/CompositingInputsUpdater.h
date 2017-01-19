@@ -21,7 +21,7 @@ class CompositingInputsUpdater {
 
   void update();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   static void assertNeedsCompositingInputsUpdateBitsCleared(PaintLayer*);
 #endif
 

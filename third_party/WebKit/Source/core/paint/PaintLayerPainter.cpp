@@ -813,7 +813,7 @@ PaintResult PaintLayerPainter::paintChildren(
   if (!m_paintLayer.hasSelfPaintingLayerDescendant())
     return result;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   LayerListMutationDetector mutationChecker(m_paintLayer.stackingNode());
 #endif
 

@@ -48,10 +48,6 @@ PaintInvalidationState::PaintInvalidationState(
       m_containerForAbsolutePosition(layoutView),
       m_pendingDelayedPaintInvalidations(pendingDelayedPaintInvalidations),
       m_paintingLayer(*layoutView.layer())
-#if ENABLE(ASSERT)
-      ,
-      m_didUpdateForChildren(false)
-#endif
 #ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
       ,
       m_canCheckFastPathSlowPathEquality(layoutView ==
@@ -99,10 +95,6 @@ PaintInvalidationState::PaintInvalidationState(
       m_pendingDelayedPaintInvalidations(
           parentState.m_pendingDelayedPaintInvalidations),
       m_paintingLayer(parentState.childPaintingLayer(currentObject))
-#if ENABLE(ASSERT)
-      ,
-      m_didUpdateForChildren(false)
-#endif
 #ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
       ,
       m_canCheckFastPathSlowPathEquality(
@@ -118,13 +110,13 @@ PaintInvalidationState::PaintInvalidationState(
 // LayoutBlock::invalidatePaintOfSubtreesIfNeeded()).
 // TODO(wangxianzhu): Avoid this for
 // RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled().
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_didUpdateForChildren = parentState.m_didUpdateForChildren;
 #endif
     return;
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK(parentState.m_didUpdateForChildren);
 #endif
 
@@ -313,7 +305,7 @@ void PaintInvalidationState::updateForCurrentObject(
 }
 
 void PaintInvalidationState::updateForChildren(PaintInvalidationReason reason) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK(!m_didUpdateForChildren);
   m_didUpdateForChildren = true;
 #endif
@@ -426,7 +418,7 @@ static FloatPoint slowLocalToAncestorPoint(const LayoutObject& object,
 
 LayoutPoint PaintInvalidationState::computeLocationInBacking(
     const LayoutPoint& visualRectLocation) const {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK(!m_didUpdateForChildren);
 #endif
 
@@ -459,7 +451,7 @@ LayoutPoint PaintInvalidationState::computeLocationInBacking(
 }
 
 LayoutRect PaintInvalidationState::computeVisualRectInBacking() const {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK(!m_didUpdateForChildren);
 #endif
 
@@ -519,7 +511,7 @@ static void slowMapToVisualRectInAncestorSpace(
 
 void PaintInvalidationState::mapLocalRectToPaintInvalidationContainer(
     LayoutRect& rect) const {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK(!m_didUpdateForChildren);
 #endif
 

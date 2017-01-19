@@ -83,7 +83,7 @@ class CORE_EXPORT ExceptionState {
                  ContextType contextType,
                  const char* interfaceName)
       : ExceptionState(isolate, contextType, interfaceName, nullptr) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     switch (m_context) {
       case ConstructionContext:
       case EnumerationContext:
@@ -94,7 +94,7 @@ class CORE_EXPORT ExceptionState {
       default:
         NOTREACHED();
     }
-#endif  // ENABLE(ASSERT)
+#endif  // DCHECK_IS_ON()
   }
 
   ~ExceptionState() {
@@ -176,7 +176,7 @@ class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
 // This can be used as a default value of an ExceptionState parameter like this:
 //
 //     Node* removeChild(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 #define ASSERT_NO_EXCEPTION \
   (::blink::NonThrowableExceptionState(__FILE__, __LINE__).returnThis())
 #else

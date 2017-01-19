@@ -2444,7 +2444,7 @@ void LayoutBox::updateLogicalWidth() {
 }
 
 static float getMaxWidthListMarker(const LayoutBox* layoutObject) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(layoutObject);
   Node* parentNode = layoutObject->generatingNode();
   ASSERT(parentNode);

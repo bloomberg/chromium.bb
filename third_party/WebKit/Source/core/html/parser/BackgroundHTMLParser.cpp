@@ -64,7 +64,7 @@ static const size_t defaultPendingTokenLimit = 1000;
 
 using namespace HTMLNames;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 static void checkThatTokensAreSafeToSendToAnotherThread(
     const CompactHTMLTokenStream* tokens) {
@@ -319,7 +319,7 @@ bool BackgroundHTMLParser::queueChunkForMainThread() {
   if (m_pendingTokens->isEmpty())
     return false;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   checkThatTokensAreSafeToSendToAnotherThread(m_pendingTokens.get());
   checkThatPreloadsAreSafeToSendToAnotherThread(m_pendingPreloads);
   checkThatXSSInfosAreSafeToSendToAnotherThread(m_pendingXSSInfos);

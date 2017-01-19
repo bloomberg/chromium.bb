@@ -40,10 +40,6 @@ SuspendableTimer::SuspendableTimer(ExecutionContext* context)
       SuspendableObject(context),
       m_nextFireInterval(kNextFireIntervalInvalid),
       m_repeatInterval(0)
-#if ENABLE(ASSERT)
-      ,
-      m_suspended(false)
-#endif
 {
   DCHECK(context);
 }
@@ -60,7 +56,7 @@ void SuspendableTimer::contextDestroyed(ExecutionContext*) {
 }
 
 void SuspendableTimer::suspend() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(!m_suspended);
   m_suspended = true;
 #endif
@@ -73,7 +69,7 @@ void SuspendableTimer::suspend() {
 }
 
 void SuspendableTimer::resume() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(m_suspended);
   m_suspended = false;
 #endif

@@ -257,7 +257,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
                                const LayoutPoint& layerOffset) const override;
 
   void layoutContent();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void checkLayoutState();
 #endif
 

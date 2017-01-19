@@ -59,10 +59,6 @@ class CORE_EXPORT ScriptFunction
  protected:
   explicit ScriptFunction(ScriptState* scriptState)
       : m_scriptState(scriptState)
-#if ENABLE(ASSERT)
-        ,
-        m_bindToV8FunctionAlreadyCalled(false)
-#endif
   {
   }
 
@@ -75,9 +71,9 @@ class CORE_EXPORT ScriptFunction
   static void callCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   RefPtr<ScriptState> m_scriptState;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // bindToV8Function must not be called twice.
-  bool m_bindToV8FunctionAlreadyCalled;
+  bool m_bindToV8FunctionAlreadyCalled = false;
 #endif
 };
 

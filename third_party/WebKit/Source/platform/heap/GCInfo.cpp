@@ -67,7 +67,7 @@ void GCInfoTable::shutdown() {
   s_gcInfoTable = nullptr;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void assertObjectHasGCInfo(const void* payload, size_t gcInfoIndex) {
   ASSERT(HeapObjectHeader::fromPayload(payload)->checkHeader());
 #if !defined(COMPONENT_BUILD)

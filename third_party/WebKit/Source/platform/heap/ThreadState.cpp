@@ -1242,7 +1242,7 @@ void ThreadState::prepareForThreadStateTermination() {
     m_arenas[i]->prepareHeapForTermination();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 BasePage* ThreadState::findPageFromAddress(Address address) {
   for (int i = 0; i < BlinkGC::NumberOfArenas; ++i) {
     if (BasePage* page = m_arenas[i]->findPageFromAddress(address))

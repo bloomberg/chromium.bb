@@ -112,7 +112,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       m_renderingContext3d(0),
       m_colorBehavior(ColorBehavior::transformToGlobalTarget()),
       m_hasPreferredRasterBounds(false) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   if (m_client)
     m_client->verifyNotPainting();
 #endif
@@ -134,7 +134,7 @@ GraphicsLayer::~GraphicsLayer() {
     m_linkHighlights[i]->clearCurrentGraphicsLayer();
   m_linkHighlights.clear();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   if (m_client)
     m_client->verifyNotPainting();
 #endif

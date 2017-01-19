@@ -234,7 +234,7 @@ class PLATFORM_EXPORT ThreadHeap {
   bool isMainThreadHeap() { return this == ThreadHeap::mainThreadHeap(); }
   static ThreadHeap* mainThreadHeap() { return s_mainThreadHeap; }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isAtSafePoint();
   BasePage* findPageFromAddress(Address);
 #endif
@@ -378,7 +378,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void registerWeakTable(void* containerObject,
                          EphemeronCallback,
                          EphemeronCallback);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool weakTableRegistered(const void*);
 #endif
 
@@ -590,7 +590,7 @@ inline bool ThreadHeap::isNormalArenaIndex(int index) {
 
 #define IS_EAGERLY_FINALIZED() \
   (pageFromObject(this)->arena()->arenaIndex() == BlinkGC::EagerSweepArenaIndex)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 class VerifyEagerFinalization {
   DISALLOW_NEW();
 

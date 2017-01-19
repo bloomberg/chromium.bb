@@ -263,7 +263,7 @@ void SerializedScriptValueWriter::writeArrayBuffer(
 void SerializedScriptValueWriter::writeArrayBufferView(
     const DOMArrayBufferView& arrayBufferView) {
   append(ArrayBufferViewTag);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(static_cast<const uint8_t*>(arrayBufferView.bufferBase()->data()) +
              arrayBufferView.byteOffset() ==
          static_cast<const uint8_t*>(arrayBufferView.baseAddress()));

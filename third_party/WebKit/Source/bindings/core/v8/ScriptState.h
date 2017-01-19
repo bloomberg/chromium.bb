@@ -155,7 +155,7 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
   }
   void detachGlobalObject();
   void clearContext() { return m_context.clear(); }
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isGlobalObjectDetached() const { return m_globalObjectDetached; }
 #endif
 
@@ -184,8 +184,8 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
   // Otherwise, the v8::Context will leak.
   std::unique_ptr<V8PerContextData> m_perContextData;
 
-#if ENABLE(ASSERT)
-  bool m_globalObjectDetached;
+#if DCHECK_IS_ON()
+  bool m_globalObjectDetached = false;
 #endif
 };
 

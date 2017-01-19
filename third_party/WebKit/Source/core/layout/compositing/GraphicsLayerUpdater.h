@@ -50,7 +50,7 @@ class GraphicsLayerUpdater {
 
   bool needsRebuildTree() const { return m_needsRebuildTree; }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   static void assertNeedsToUpdateGraphicsLayerBitsCleared(PaintLayer&);
 #endif
 

@@ -43,7 +43,7 @@ ImageDecodingStore::ImageDecodingStore()
       m_heapMemoryUsageInBytes(0) {}
 
 ImageDecodingStore::~ImageDecodingStore() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   setCacheLimitInBytes(0);
   ASSERT(!m_decoderCacheMap.size());
   ASSERT(!m_orderedCacheList.size());

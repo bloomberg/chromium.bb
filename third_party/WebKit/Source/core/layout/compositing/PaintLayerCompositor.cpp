@@ -234,7 +234,7 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
       scrollableArea->updateCompositorScrollAnimations();
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
   assertNoUnresolvedDirtyBits();
   for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild();
@@ -271,7 +271,7 @@ void PaintLayerCompositor::didLayout() {
   rootLayer()->setNeedsCompositingInputsUpdate();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 void PaintLayerCompositor::assertNoUnresolvedDirtyBits() {
   ASSERT(m_pendingUpdateType == CompositingUpdateNone);
@@ -325,7 +325,7 @@ void PaintLayerCompositor::updateWithoutAcceleratedCompositing(
   if (updateType >= CompositingUpdateAfterCompositingInputChange)
     CompositingInputsUpdater(rootLayer()).update();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(
       rootLayer());
 #endif
@@ -366,7 +366,7 @@ void PaintLayerCompositor::updateIfNeeded() {
   if (updateType >= CompositingUpdateAfterCompositingInputChange) {
     CompositingInputsUpdater(updateRoot).update();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // FIXME: Move this check to the end of the compositing update.
     CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(
         updateRoot);
@@ -423,7 +423,7 @@ void PaintLayerCompositor::updateIfNeeded() {
     if (updater.needsRebuildTree())
       updateType = std::max(updateType, CompositingUpdateRebuildTree);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // FIXME: Move this check to the end of the compositing update.
     GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(
         *updateRoot);
@@ -1003,7 +1003,7 @@ static void setTracksRasterInvalidationsRecursive(
 
 void PaintLayerCompositor::setTracksRasterInvalidations(
     bool tracksRasterInvalidations) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   FrameView* view = m_layoutView.frameView();
   ASSERT(lifecycle().state() == DocumentLifecycle::PaintClean ||
          (view && view->shouldThrottleRendering()));

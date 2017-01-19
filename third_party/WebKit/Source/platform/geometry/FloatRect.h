@@ -201,7 +201,7 @@ class PLATFORM_EXPORT FloatRect {
   }
   operator gfx::RectF() const;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool mayNotHaveExactIntRectRepresentation() const;
 #endif
 

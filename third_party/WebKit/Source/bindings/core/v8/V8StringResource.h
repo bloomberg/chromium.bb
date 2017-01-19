@@ -44,7 +44,7 @@ class WebCoreStringResourceBase {
  public:
   explicit WebCoreStringResourceBase(const String& string)
       : m_plainString(string) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_threadId = WTF::currentThread();
 #endif
     ASSERT(!string.isNull());
@@ -54,7 +54,7 @@ class WebCoreStringResourceBase {
 
   explicit WebCoreStringResourceBase(const AtomicString& string)
       : m_plainString(string.getString()), m_atomicString(string) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_threadId = WTF::currentThread();
 #endif
     ASSERT(!string.isNull());
@@ -63,7 +63,7 @@ class WebCoreStringResourceBase {
   }
 
   virtual ~WebCoreStringResourceBase() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ASSERT(m_threadId == WTF::currentThread());
 #endif
     int64_t reducedExternalMemory = m_plainString.charactersSizeInBytes();
@@ -77,7 +77,7 @@ class WebCoreStringResourceBase {
   const String& webcoreString() { return m_plainString; }
 
   const AtomicString& getAtomicString() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ASSERT(m_threadId == WTF::currentThread());
 #endif
     if (m_atomicString.isNull()) {
@@ -102,7 +102,7 @@ class WebCoreStringResourceBase {
   AtomicString m_atomicString;
 
  private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   WTF::ThreadIdentifier m_threadId;
 #endif
 };

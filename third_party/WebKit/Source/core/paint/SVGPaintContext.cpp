@@ -57,7 +57,7 @@ SVGPaintContext::~SVGPaintContext() {
 }
 
 bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   DCHECK(!m_applyClipMaskAndFilterIfNecessaryCalled);
   m_applyClipMaskAndFilterIfNecessaryCalled = true;
 #endif

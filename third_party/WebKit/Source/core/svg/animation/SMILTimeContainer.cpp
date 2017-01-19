@@ -52,10 +52,6 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
       m_animationPolicyOnceTimer(this,
                                  &SMILTimeContainer::animationPolicyTimerFired),
       m_ownerSVGElement(&owner)
-#if ENABLE(ASSERT)
-      ,
-      m_preventScheduledAnimationsChanges(false)
-#endif
 {
 }
 
@@ -63,7 +59,7 @@ SMILTimeContainer::~SMILTimeContainer() {
   cancelAnimationFrame();
   cancelAnimationPolicyTimer();
   ASSERT(!m_wakeupTimer.isActive());
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(!m_preventScheduledAnimationsChanges);
 #endif
 }
@@ -75,7 +71,7 @@ void SMILTimeContainer::schedule(SVGSMILElement* animation,
   DCHECK(target);
   DCHECK(animation->hasValidTarget());
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(!m_preventScheduledAnimationsChanges);
 #endif
 
@@ -97,7 +93,7 @@ void SMILTimeContainer::unschedule(SVGSMILElement* animation,
                                    const QualifiedName& attributeName) {
   ASSERT(animation->timeContainer() == this);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   ASSERT(!m_preventScheduledAnimationsChanges);
 #endif
 
@@ -233,7 +229,7 @@ void SMILTimeContainer::setElapsed(double elapsed) {
   if (!isPaused())
     synchronizeToDocumentTimeline();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_preventScheduledAnimationsChanges = true;
 #endif
   for (const auto& entry : m_scheduledAnimations) {
@@ -244,7 +240,7 @@ void SMILTimeContainer::setElapsed(double elapsed) {
     for (SVGSMILElement* element : *scheduled)
       element->reset();
   }
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_preventScheduledAnimationsChanges = false;
 #endif
 
@@ -423,7 +419,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
   ASSERT(document().isActive());
   SMILTime earliestFireTime = SMILTime::unresolved();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // This boolean will catch any attempts to schedule/unschedule
   // scheduledAnimations during this critical section.  Similarly, any elements
   // removed will unschedule themselves, so this will catch modification of
@@ -491,7 +487,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
   m_scheduledAnimations.removeAll(invalidKeys);
 
   if (animationsToApply.isEmpty()) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_preventScheduledAnimationsChanges = false;
 #endif
     return earliestFireTime;
@@ -506,7 +502,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
   for (const auto& timedElement : animationsToApply)
     timedElement->applyResultsToTarget();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   m_preventScheduledAnimationsChanges = false;
 #endif
 

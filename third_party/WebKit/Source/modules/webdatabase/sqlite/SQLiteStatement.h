@@ -77,8 +77,8 @@ class SQLiteStatement {
   SQLiteDatabase& m_database;
   String m_query;
   sqlite3_stmt* m_statement;
-#if ENABLE(ASSERT)
-  bool m_isPrepared;
+#if DCHECK_IS_ON()
+  bool m_isPrepared = false;
 #endif
 };
 

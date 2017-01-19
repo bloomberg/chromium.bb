@@ -103,7 +103,7 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
   ASAN_UNPOISON_MEMORY_REGION(address, size);        \
   FreeList::checkFreedMemoryIsZapped(address, size); \
   ASAN_POISON_MEMORY_REGION(address, size)
-#elif ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#elif DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define SET_MEMORY_INACCESSIBLE(address, size) \
   FreeList::zapFreedMemory(address, size);     \
   ASAN_POISON_MEMORY_REGION(address, size)
@@ -124,7 +124,7 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
   } while (false)
 #endif
 
-#if !ENABLE(ASSERT) && CPU(64BIT)
+#if !DCHECK_IS_ON() && CPU(64BIT)
 #define USE_4BYTE_HEADER_PADDING 1
 #else
 #define USE_4BYTE_HEADER_PADDING 0
@@ -183,7 +183,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // If gcInfoIndex is 0, this header is interpreted as a free list header.
   NO_SANITIZE_ADDRESS
   HeapObjectHeader(size_t size, size_t gcInfoIndex) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_magic = magic;
 #endif
     // sizeof(HeapObjectHeader) must be equal to or smaller than
@@ -239,7 +239,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   size_t payloadSize();
   Address payloadEnd();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool checkHeader() const;
   // Zap magic number with a new magic number that means there was once an
   // object allocated here, but it was freed because nobody marked it during
@@ -255,7 +255,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
  private:
   uint32_t m_encoded;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   uint16_t m_magic;
 #endif
 
@@ -284,7 +284,7 @@ class FreeListEntry final : public HeapObjectHeader {
   NO_SANITIZE_ADDRESS
   explicit FreeListEntry(size_t size)
       : HeapObjectHeader(size, gcInfoIndexForFreeListHeader), m_next(nullptr) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ASSERT(size >= sizeof(HeapObjectHeader));
     zapMagic();
 #endif
@@ -346,7 +346,7 @@ inline bool vTableInitialized(void* objectPointer) {
   return !!(*reinterpret_cast<Address*>(objectPointer));
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 // Sanity check for a page header address: the address of the page
 // header should be OS page size away from being Blink page size
 // aligned.
@@ -421,7 +421,7 @@ class BasePage {
   virtual void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
                             ThreadState::GCSnapshotInfo&,
                             HeapSnapshotInfo&) = 0;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   virtual bool contains(Address) = 0;
 #endif
   virtual size_t size() = 0;
@@ -494,7 +494,7 @@ class NormalPage final : public BasePage {
   void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
                     ThreadState::GCSnapshotInfo&,
                     HeapSnapshotInfo&) override;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Returns true for the whole blinkPageSize page that the page is on, even
   // for the header, and the unmapped guard page at the start. That ensures
   // the result can be used to populate the negative page cache.
@@ -572,7 +572,7 @@ class LargeObjectPage final : public BasePage {
   void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
                     ThreadState::GCSnapshotInfo&,
                     HeapSnapshotInfo&) override;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Returns true for any address that is on one of the pages that this
   // large object uses. That ensures that we can use a negative result to
   // populate the negative page cache.
@@ -673,7 +673,7 @@ class FreeList {
   // Returns true if the freelist snapshot is captured.
   bool takeSnapshot(const String& dumpBaseName);
 
-#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+#if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
   static void zapFreedMemory(Address, size_t);
   static void checkFreedMemoryIsZapped(Address, size_t);
@@ -707,14 +707,14 @@ class PLATFORM_EXPORT BaseArena {
   void cleanupPages();
 
   void takeSnapshot(const String& dumpBaseName, ThreadState::GCSnapshotInfo&);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   BasePage* findPageFromAddress(Address);
 #endif
   virtual void takeFreelistSnapshot(const String& dumpBaseName) {}
   virtual void clearFreeLists() {}
   void makeConsistentForGC();
   void makeConsistentForMutator();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   virtual bool isConsistentForGC() = 0;
 #endif
   size_t objectPayloadSizeForTesting();
@@ -760,7 +760,7 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
     m_freeList.addToFreeList(address, size);
   }
   void clearFreeLists() override;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isConsistentForGC() override;
   bool pagesToBeSweptContains(Address);
 #endif
@@ -822,7 +822,7 @@ class LargeObjectArena final : public BaseArena {
   LargeObjectArena(ThreadState*, int);
   Address allocateLargeObjectPage(size_t, size_t gcInfoIndex);
   void freeLargeObjectPage(LargeObjectPage*);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isConsistentForGC() override { return true; }
 #endif
  private:
@@ -852,7 +852,7 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
   return result;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::checkHeader() const {
   return !pageFromObject(this)->orphaned() && m_magic == magic;
 }

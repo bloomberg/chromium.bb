@@ -253,7 +253,7 @@ class CORE_EXPORT TextAutosizer final
     // Superclusters that need to be checked for consistency at the start of the
     // next layout.
     HashSet<Supercluster*> m_potentiallyInconsistentSuperclusters;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     void assertMapsAreConsistent();
 #endif
   };
@@ -347,7 +347,7 @@ class CORE_EXPORT TextAutosizer final
 
   Member<const Document> m_document;
   const LayoutBlock* m_firstBlockToBeginLayout;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Used to ensure we don't compute properties of a block before beginLayout()
   // is called on it.
   ConstBlockSet m_blocksThatHaveBegunLayout;

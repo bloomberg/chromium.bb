@@ -1267,7 +1267,7 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows,
   m_overflow.reset();
   m_overflowingCells.clear();
   m_forceSlowPaintPathWithOverflowingCell = false;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool hasOverflowingCell = false;
 #endif
   // Now that our height has been determined, add in overflow from cells.
@@ -1280,7 +1280,7 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows,
       if (r < totalRows - 1 && cell == primaryCellAt(r + 1, c))
         continue;
       addOverflowFromChild(cell);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       hasOverflowingCell |= cell->hasVisualOverflow();
 #endif
       if (cell->hasVisualOverflow() &&

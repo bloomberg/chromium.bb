@@ -89,7 +89,7 @@ class PLATFORM_EXPORT GraphicsLayerClient {
 
   virtual String debugName(const GraphicsLayer*) const = 0;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // CompositedLayerMapping overrides this to verify that it is not
   // currently painting contents. An ASSERT fails, if it is.
   // This is executed in GraphicsLayer construction and destruction

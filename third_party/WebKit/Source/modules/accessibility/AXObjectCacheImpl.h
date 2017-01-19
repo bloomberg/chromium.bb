@@ -208,9 +208,9 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
 
   HashSet<AXID> m_idsInUse;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Verified when finalizing.
-  bool m_hasBeenDisposed;
+  bool m_hasBeenDisposed = false;
 #endif
 
   //

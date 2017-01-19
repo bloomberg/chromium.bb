@@ -128,7 +128,7 @@ class MODULES_EXPORT DeferredTaskHandler final
   // MUST NOT be used in the real-time audio context.
   void offlineLock();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Returns true if this thread owns the context's lock.
   bool isGraphOwner();
 #endif

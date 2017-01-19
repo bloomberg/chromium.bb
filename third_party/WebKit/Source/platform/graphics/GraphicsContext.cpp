@@ -127,7 +127,7 @@ void GraphicsContext::restore() {
   m_canvas->restore();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 unsigned GraphicsContext::saveCount() const {
   // Each m_paintStateStack entry implies an additional save op
   // (on top of its own saveCount), except for the first frame.

@@ -139,7 +139,7 @@ static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(
   }
   if (!object)
     return nullptr;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Make sure that we didn't stumble into an inner multicol container.
   for (LayoutObject* walker = object->parent(); walker && walker != flowThread;
        walker = walker->parent())
@@ -188,7 +188,7 @@ static LayoutObject* previousInPreOrderSkippingOutOfFlow(
   }
   if (!object || object == flowThread)
     return nullptr;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Make sure that we didn't stumble into an inner multicol container.
   for (LayoutObject* walker = object->parent(); walker && walker != flowThread;
        walker = walker->parent())

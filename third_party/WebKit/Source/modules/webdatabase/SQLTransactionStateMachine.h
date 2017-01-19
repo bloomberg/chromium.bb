@@ -48,13 +48,13 @@ class SQLTransactionStateMachine {
   SQLTransactionState m_nextState;
   SQLTransactionState m_requestedState;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // The state audit trail (i.e. bread crumbs) keeps track of up to the last
   // s_sizeOfStateAuditTrail states that the state machine enters. The audit
   // trail is updated before entering each state. This is for debugging use
   // only.
   static const int s_sizeOfStateAuditTrail = 20;
-  int m_nextStateAuditEntry;
+  int m_nextStateAuditEntry = 0;
   SQLTransactionState m_stateAuditTrail[s_sizeOfStateAuditTrail];
 #endif
 };
@@ -67,12 +67,8 @@ template <typename T>
 SQLTransactionStateMachine<T>::SQLTransactionStateMachine()
     : m_nextState(SQLTransactionState::Idle),
       m_requestedState(SQLTransactionState::Idle)
-#if ENABLE(ASSERT)
-      ,
-      m_nextStateAuditEntry(0)
-#endif
 {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   for (int i = 0; i < s_sizeOfStateAuditTrail; i++)
     m_stateAuditTrail[i] = SQLTransactionState::NumberOfStates;
 #endif
@@ -94,7 +90,7 @@ void SQLTransactionStateMachine<T>::runStateMachine() {
     StateFunction stateFunction = stateFunctionFor(m_nextState);
     ASSERT(stateFunction);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     m_stateAuditTrail[m_nextStateAuditEntry] = m_nextState;
     m_nextStateAuditEntry =
         (m_nextStateAuditEntry + 1) % s_sizeOfStateAuditTrail;

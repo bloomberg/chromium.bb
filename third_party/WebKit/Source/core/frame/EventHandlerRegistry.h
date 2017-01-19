@@ -36,7 +36,7 @@ class CORE_EXPORT EventHandlerRegistry final
     TouchStartOrMoveEventPassive,
     TouchEndOrCancelEventBlocking,
     TouchEndOrCancelEventPassive,
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // Additional event categories for verifying handler tracking logic.
     EventsForTesting,
 #endif
