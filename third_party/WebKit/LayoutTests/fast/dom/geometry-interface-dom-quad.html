@@ -27,4 +27,16 @@ test(() => {
   assert_dom_point_equals(quad.toJSON().p4, p4, "p4");
 }, "DOMQuad() toJSON()");
 
+test(() => {
+  var expect_p1 = new DOMPoint(10, 20, 0, 1);
+  var expect_p2 = new DOMPoint(90, 20, 0, 1);
+  var expect_p3 = new DOMPoint(90, 70, 0, 1);
+  var expect_p4 = new DOMPoint(10, 70, 0, 1);
+  var quad =  DOMQuad.fromRect({x: 10, y: 20, width: 80, height: 50});
+  assert_dom_point_equals(quad.p1, expect_p1, "p1");
+  assert_dom_point_equals(quad.p2, expect_p2, "p2");
+  assert_dom_point_equals(quad.p3, expect_p3, "p3");
+  assert_dom_point_equals(quad.p4, expect_p4, "p4");
+}, "DOMQuad() fromRect");
+
 </script>
