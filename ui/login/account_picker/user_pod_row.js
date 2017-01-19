@@ -89,11 +89,13 @@ cr.define('login', function() {
    * @const
    */
   var UserPodTabOrder = {
-    POD_INPUT: 1,        // Password input field, Action box menu button, and
-                         // the pod itself.
-    POD_CUSTOM_ICON: 2,  // Pod custom icon next to password input field.
-    HEADER_BAR: 3,       // Buttons on the header bar (Shutdown, Add User).
-    POD_MENU_ITEM: 4     // User pad menu items (User info, Remove user).
+    POD_INPUT: 1,        // Password input field, Action box menu button, submit
+                         // button next to password input field and the pod
+                         // itself.
+    PIN_KEYBOARD: 2,     // Pin keyboard below the password input field.
+    POD_CUSTOM_ICON: 3,  // Pod custom icon next to password input field.
+    HEADER_BAR: 4,       // Buttons on the header bar (Shutdown, Add User).
+    POD_MENU_ITEM: 5     // User pad menu items (User info, Remove user).
   };
 
   /**
@@ -722,6 +724,7 @@ cr.define('login', function() {
         this.pinKeyboard.passwordElement = this.passwordElement;
         this.pinKeyboard.addEventListener('pin-change',
             this.handleInputChanged_.bind(this));
+        this.pinKeyboard.tabIndex = UserPodTabOrder.PIN_KEYBOARD;
       }
 
       this.actionBoxAreaElement.addEventListener('mousedown',
@@ -767,6 +770,7 @@ cr.define('login', function() {
       if (this.submitButton) {
         this.submitButton.addEventListener('click',
             this.handleSubmitButtonClick_.bind(this));
+        this.submitButton.tabIndex = UserPodTabOrder.POD_INPUT;
       }
 
       this.imageElement.addEventListener('load',
