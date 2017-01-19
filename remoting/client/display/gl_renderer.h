@@ -98,6 +98,8 @@ class GlRenderer {
   base::WeakPtr<GlRenderer> GetWeakPtr();
 
   // Convenience method to create a Renderer with standard desktop components.
+  // This function must be called on the display thread, or whatever thread that
+  // will be used after the renderer is created.
   static std::unique_ptr<GlRenderer> CreateGlRendererWithDesktop();
 
  private:

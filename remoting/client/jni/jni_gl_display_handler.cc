@@ -22,7 +22,8 @@
 
 namespace remoting {
 
-// The core that lives on the display thread.
+// The core that lives on the display thread. Must not be created on the display
+// thread.
 class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
                                   public GlRendererDelegate {
  public:
@@ -41,6 +42,9 @@ class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
   // thread but no more than once.
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
 
+  void OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
+                       const base::Closure& done);
+
   void SurfaceCreated(base::android::ScopedJavaGlobalRef<jobject> surface);
   void SurfaceChanged(int width, int height);
   void SurfaceDestroyed();
@@ -53,6 +57,9 @@ class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
   base::WeakPtr<Core> GetWeakPtr();
 
  private:
+  // Initializes the core on the display thread.
+  void Initialize();
+
   ChromotingJniRuntime* runtime_;
   base::WeakPtr<JniGlDisplayHandler> shell_;
 
@@ -75,11 +82,16 @@ class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
 JniGlDisplayHandler::Core::Core(ChromotingJniRuntime* runtime,
                                 base::WeakPtr<JniGlDisplayHandler> shell)
     : runtime_(runtime), shell_(shell), weak_factory_(this) {
-  renderer_ = GlRenderer::CreateGlRendererWithDesktop();
+  DCHECK(!runtime_->display_task_runner()->BelongsToCurrentThread());
+  runtime_->display_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&JniGlDisplayHandler::Core::Initialize,
+                            base::Unretained(this)));
+
   weak_ptr_ = weak_factory_.GetWeakPtr();
-  renderer_->SetDelegate(weak_ptr_);
+
+  // Do not bind GlRenderer::OnFrameReceived. |renderer_| is not ready yet.
   owned_frame_consumer_.reset(new DualBufferFrameConsumer(
-      base::Bind(&GlRenderer::OnFrameReceived, renderer_->GetWeakPtr()),
+      base::Bind(&JniGlDisplayHandler::Core::OnFrameReceived, weak_ptr_),
       runtime_->display_task_runner(),
       protocol::FrameConsumer::PixelFormat::FORMAT_RGBA));
   frame_consumer_ = owned_frame_consumer_->GetWeakPtr();
@@ -116,6 +128,13 @@ std::unique_ptr<protocol::FrameConsumer>
 JniGlDisplayHandler::Core::GrabFrameConsumer() {
   DCHECK(owned_frame_consumer_) << "The frame consumer is already grabbed.";
   return std::move(owned_frame_consumer_);
+}
+
+void JniGlDisplayHandler::Core::OnFrameReceived(
+    std::unique_ptr<webrtc::DesktopFrame> frame,
+    const base::Closure& done) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_->OnFrameReceived(std::move(frame), done);
 }
 
 void JniGlDisplayHandler::Core::SurfaceCreated(
@@ -178,6 +197,13 @@ void JniGlDisplayHandler::Core::StartInputFeedback(float x,
 base::WeakPtr<JniGlDisplayHandler::Core>
 JniGlDisplayHandler::Core::GetWeakPtr() {
   return weak_ptr_;
+}
+
+void JniGlDisplayHandler::Core::Initialize() {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+
+  renderer_ = GlRenderer::CreateGlRendererWithDesktop();
+  renderer_->SetDelegate(weak_ptr_);
 }
 
 // Shell implementations.
