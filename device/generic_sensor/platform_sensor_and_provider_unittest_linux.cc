@@ -221,14 +221,15 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   // calling udev methods.
   void InitializeMockUdevMethods(const base::FilePath& sensor_dir) {
     ON_CALL(*manager_, GetUdevDeviceGetSubsystem(IsNull()))
-        .WillByDefault(Invoke([](udev_device* dev) { return "iio"; }));
+        .WillByDefault(Invoke([this](udev_device* dev) { return "iio"; }));
 
     ON_CALL(*manager_, GetUdevDeviceGetSyspath(IsNull()))
         .WillByDefault(Invoke(
             [sensor_dir](udev_device* dev) { return sensor_dir.value(); }));
 
     ON_CALL(*manager_, GetUdevDeviceGetDevnode(IsNull()))
-        .WillByDefault(Invoke([](udev_device* dev) { return "/dev/test"; }));
+        .WillByDefault(
+            Invoke([this](udev_device* dev) { return "/dev/test"; }));
 
     ON_CALL(*manager_, GetUdevDeviceGetSysattrValue(IsNull(), _))
         .WillByDefault(Invoke(
