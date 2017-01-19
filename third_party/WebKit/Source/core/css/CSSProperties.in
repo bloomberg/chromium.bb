@@ -250,7 +250,7 @@ contain runtime_flag=CSSContainment, converter=convertFlags<Containment>, api_cl
 content custom_all, typedom_types=[Image], repeated
 counter-increment custom_all
 counter-reset custom_all
-cursor inherited, custom_all
+cursor inherited, custom_all, api_class
 cx interpolable, svg, converter=convertLength
 cy interpolable, svg, converter=convertLength
 d interpolable, svg, converter=convertPathOrNone

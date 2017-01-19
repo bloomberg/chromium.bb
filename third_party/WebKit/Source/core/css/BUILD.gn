@@ -349,6 +349,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIClip.cpp",
     "properties/CSSPropertyAPIColumnGap.cpp",
     "properties/CSSPropertyAPIContain.cpp",
+    "properties/CSSPropertyAPICursor.cpp",
     "properties/CSSPropertyAPIFlexBasis.cpp",
     "properties/CSSPropertyAPIFontSizeAdjust.cpp",
     "properties/CSSPropertyAPIFontVariantLigatures.cpp",

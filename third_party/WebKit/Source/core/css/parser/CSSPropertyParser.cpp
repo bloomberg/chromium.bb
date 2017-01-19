@@ -1484,58 +1484,6 @@ static CSSValue* consumeRxOrRy(CSSParserTokenRange& range) {
                                 UnitlessQuirk::Forbid);
 }
 
-static CSSValue* consumeCursor(CSSParserTokenRange& range,
-                               const CSSParserContext* context,
-                               bool inQuirksMode) {
-  CSSValueList* list = nullptr;
-  while (CSSValue* image = consumeImage(range, context,
-                                        ConsumeGeneratedImagePolicy::Forbid)) {
-    double num;
-    IntPoint hotSpot(-1, -1);
-    bool hotSpotSpecified = false;
-    if (consumeNumberRaw(range, num)) {
-      hotSpot.setX(int(num));
-      if (!consumeNumberRaw(range, num))
-        return nullptr;
-      hotSpot.setY(int(num));
-      hotSpotSpecified = true;
-    }
-
-    if (!list)
-      list = CSSValueList::createCommaSeparated();
-
-    list->append(
-        *CSSCursorImageValue::create(*image, hotSpotSpecified, hotSpot));
-    if (!consumeCommaIncludingWhitespace(range))
-      return nullptr;
-  }
-
-  CSSValueID id = range.peek().id();
-  if (!range.atEnd() && context->isUseCounterRecordingEnabled()) {
-    if (id == CSSValueWebkitZoomIn)
-      context->useCounter()->count(UseCounter::PrefixedCursorZoomIn);
-    else if (id == CSSValueWebkitZoomOut)
-      context->useCounter()->count(UseCounter::PrefixedCursorZoomOut);
-  }
-  CSSValue* cursorType = nullptr;
-  if (id == CSSValueHand) {
-    if (!inQuirksMode)  // Non-standard behavior
-      return nullptr;
-    cursorType = CSSIdentifierValue::create(CSSValuePointer);
-    range.consumeIncludingWhitespace();
-  } else if ((id >= CSSValueAuto && id <= CSSValueWebkitZoomOut) ||
-             id == CSSValueCopy || id == CSSValueNone) {
-    cursorType = consumeIdent(range);
-  } else {
-    return nullptr;
-  }
-
-  if (!list)
-    return cursorType;
-  list->append(*cursorType);
-  return list;
-}
-
 static CSSValue* consumeAttr(CSSParserTokenRange args,
                              const CSSParserContext* context) {
   if (args.peek().type() != IdentToken)
@@ -3027,8 +2975,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyRx:
     case CSSPropertyRy:
       return consumeRxOrRy(m_range);
-    case CSSPropertyCursor:
-      return consumeCursor(m_range, m_context, inQuirksMode());
     case CSSPropertyContent:
       return consumeContent(m_range, m_context);
     case CSSPropertyListStyleImage:
