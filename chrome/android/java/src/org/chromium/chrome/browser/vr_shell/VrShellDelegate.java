@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
@@ -47,13 +48,15 @@ public class VrShellDelegate {
     public static final int ENTER_VR_CANCELLED = 1;
     public static final int ENTER_VR_REQUESTED = 2;
     public static final int ENTER_VR_SUCCEEDED = 3;
+
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ENTER_VR_NOT_NECESSARY, ENTER_VR_CANCELLED, ENTER_VR_REQUESTED, ENTER_VR_SUCCEEDED })
+    @IntDef({ENTER_VR_NOT_NECESSARY, ENTER_VR_CANCELLED, ENTER_VR_REQUESTED, ENTER_VR_SUCCEEDED})
     public @interface EnterVRResult {}
 
     public static final int VR_NOT_AVAILABLE = 0;
     public static final int VR_CARDBOARD = 1;
     public static final int VR_DAYDREAM = 2; // Supports both Cardboard and Daydream viewer.
+
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({VR_NOT_AVAILABLE, VR_CARDBOARD, VR_DAYDREAM})
     public @interface VrSupportLevel {}
@@ -139,7 +142,7 @@ public class VrShellDelegate {
                 @Override
                 public void onLoadProgressChanged(Tab tab, int progress) {
                     if (!mInVr) return;
-                    mVrShell.onLoadProgressChanged((double) progress / 100.0);
+                    mVrShell.onLoadProgressChanged(progress / 100.0);
                 }
             };
         }
@@ -148,8 +151,8 @@ public class VrShellDelegate {
     }
 
     /**
-     * Should be called once the native library is loaded so that the native portion of this
-     * class can be initialized.
+     * Should be called once the native library is loaded so that the native portion of this class
+     * can be initialized.
      */
     public void onNativeLibraryReady() {
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
@@ -193,37 +196,48 @@ public class VrShellDelegate {
             mVrDaydreamApi.launchVrHomescreen();
             return;
         }
-        if (enterVR()) {
-            if (mRequestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, true);
-        } else {
-            if (mRequestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, false);
-            if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrClassesWrapper.setVrModeEnabled(false);
-            }
-        }
-
-        mRequestedWebVR = false;
+        enterVR();
     }
 
-    private boolean enterVR() {
-        if (mInVr) return true;
+    private void enterVR() {
+        if (mInVr) {
+            setEnterVRResult(true, mRequestedWebVR);
+            return;
+        }
 
-        Tab tab = mActivity.getActivityTab();
-        if (!canEnterVR(tab)) return false;
+        if (!canEnterVR(mActivity.getActivityTab())) {
+            setEnterVRResult(false, mRequestedWebVR);
+            return;
+        }
 
         mRestoreOrientation = mActivity.getRequestedOrientation();
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setupVrModeWindowFlags();
+        final boolean requestedWebVR = mRequestedWebVR;
+        mRequestedWebVR = false;
+        // We need to post this to the end of the message queue so that the display properties can
+        // update in response to our request to enter landscape and hide the system UI.
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                enterVRWithOrientationSet(requestedWebVR);
+            }
+        });
+    }
+
+    private void enterVRWithOrientationSet(boolean requestedWebVR) {
         if (!createVrShell()) {
             mActivity.setRequestedOrientation(mRestoreOrientation);
-            return false;
+            clearVrModeWindowFlags();
+            setEnterVRResult(false, requestedWebVR);
+            return;
         }
         mVrClassesWrapper.setVrModeEnabled(true);
         mInVr = true;
-        mTab = tab;
+        mTab = mActivity.getActivityTab();
         mTab.addObserver(mTabObserver);
         addVrViews();
-        setupVrModeWindowFlags();
-        mVrShell.initializeNative(mTab, this, mRequestedWebVR);
+        mVrShell.initializeNative(mTab, this, requestedWebVR);
         mVrShell.setCloseButtonListener(new Runnable() {
             @Override
             public void run() {
@@ -234,7 +248,15 @@ public class VrShellDelegate {
         // properly.
         mVrShell.resume();
         mTab.updateFullscreenEnabledState();
-        return true;
+        setEnterVRResult(true, requestedWebVR);
+    }
+
+    private void setEnterVRResult(boolean success, boolean requestedWebVR) {
+        if (requestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, success);
+        if (!success && !mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
+            mVrClassesWrapper.setVrModeEnabled(false);
+        }
+        mRequestedWebVR = false;
     }
 
     private boolean canEnterVR(Tab tab) {
@@ -302,7 +324,8 @@ public class VrShellDelegate {
         if (mVrSupportLevel == VR_CARDBOARD || !mVrDaydreamApi.isDaydreamCurrentViewer()) {
             // Avoid using launchInVr which would trigger DON flow regardless current viewer type
             // due to the lack of support for unexported activities.
-            return enterVR() ? ENTER_VR_SUCCEEDED : ENTER_VR_CANCELLED;
+            enterVR();
+            return ENTER_VR_REQUESTED;
         } else {
             if (!mVrDaydreamApi.launchInVr(getPendingEnterVRIntent())) return ENTER_VR_CANCELLED;
         }
@@ -579,9 +602,7 @@ public class VrShellDelegate {
     private boolean isVrShellEnabled() {
         // Only enable ChromeVR (VrShell) on Daydream devices as it currently needs a Daydream
         // controller.
-        if (mVrSupportLevel != VR_DAYDREAM) {
-            return false;
-        }
+        if (mVrSupportLevel != VR_DAYDREAM) return false;
         return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
     }
 
