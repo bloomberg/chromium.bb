@@ -568,6 +568,15 @@ if (!is_android) {
           "base/interactive_test_utils_views.cc",
         ]
       }
+      if (is_win || is_linux) {
+        # TODO(crbug.com/679127): Enable these tests on "mac_views_browser" once
+        # it is supported.
+        sources += [
+          "../browser/ui/views/payments/payment_request_interactive_uitest.cc",
+          "../browser/ui/views/payments/payment_request_interactive_uitest_base.cc",
+          "../browser/ui/views/payments/payment_request_interactive_uitest_base.h",
+        ]
+      }
       if (is_linux) {
         if (!is_chromeos) {
           # Desktop linux.
@@ -2001,10 +2010,8 @@ test("browser_tests") {
     # TODO(crbug.com/679127): Enable these tests on "mac_views_browser" once it
     # is supported.
     if (is_linux || is_win) {
-      sources += [
-        "../browser/payments/payment_request_web_contents_manager_browsertest.cc",
-        "../browser/payments/site_per_process_payments_browsertest.cc",
-      ]
+      sources +=
+          [ "../browser/payments/site_per_process_payments_browsertest.cc" ]
     }
 
     if (!enable_one_click_signin) {

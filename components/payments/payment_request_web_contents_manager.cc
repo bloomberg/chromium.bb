@@ -20,7 +20,7 @@ PaymentRequestWebContentsManager*
 PaymentRequestWebContentsManager::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
-  // CreateForWebContents does nothing if the delegate instance already exists.
+  // CreateForWebContents does nothing if the manager instance already exists.
   PaymentRequestWebContentsManager::CreateForWebContents(web_contents);
   return PaymentRequestWebContentsManager::FromWebContents(web_contents);
 }

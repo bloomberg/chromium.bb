@@ -46,7 +46,7 @@ class PaymentRequestWebContentsManager
  private:
   explicit PaymentRequestWebContentsManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PaymentRequestWebContentsManager>;
-  friend class PaymentRequestWebContentsManagerBrowserTest;
+  friend class PaymentRequestInteractiveTestBase;
 
   // Owns all the PaymentRequest for this WebContents. Since the
   // PaymentRequestWebContentsManager's lifetime is tied to the WebContents,
@@ -58,4 +58,4 @@ class PaymentRequestWebContentsManager
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_PAYMENT_REQUEST_IMPL_H_
+#endif  // COMPONENTS_PAYMENTS_PAYMENT_REQUEST_WEB_CONTENTS_MANAGER_H_

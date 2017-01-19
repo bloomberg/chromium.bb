@@ -3467,6 +3467,8 @@ static_library("test_support") {
   if (toolkit_views && (!is_mac || mac_views_browser)) {
     sources += [
       "views/find_bar_host_unittest_util_views.cc",
+      "views/payments/test_chrome_payment_request_delegate.cc",
+      "views/payments/test_chrome_payment_request_delegate.h",
       "views/toolbar/browser_action_test_util_views.cc",
     ]
     if (!is_mac) {

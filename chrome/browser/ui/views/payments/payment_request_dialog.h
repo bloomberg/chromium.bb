@@ -28,7 +28,16 @@ using ControllerMap =
 // the WebPayments flow and managing the transition between those states.
 class PaymentRequestDialog : public views::DialogDelegateView {
  public:
-  explicit PaymentRequestDialog(PaymentRequest* request);
+  class ObserverForTest {
+   public:
+    virtual void OnDialogOpened() = 0;
+  };
+
+  // Build a Dialog around the PaymentRequest object. |observer| is used to
+  // be notified of dialog events as they happen (but may be NULL) and should
+  // outlive this object.
+  PaymentRequestDialog(PaymentRequest* request,
+                       PaymentRequestDialog::ObserverForTest* observer);
   ~PaymentRequestDialog() override;
 
   // views::WidgetDelegate
@@ -44,6 +53,9 @@ class PaymentRequestDialog : public views::DialogDelegateView {
   void ShowPaymentMethodSheet();
   void CloseDialog();
 
+  static void ShowWebModalPaymentDialog(PaymentRequestDialog* dialog,
+                                        PaymentRequest* request);
+
  private:
   void ShowInitialPaymentSheet();
 
@@ -57,6 +69,8 @@ class PaymentRequestDialog : public views::DialogDelegateView {
   // always be valid even though there is no direct ownership relationship
   // between the two.
   PaymentRequest* request_;
+  // May be null.
+  ObserverForTest* observer_;
   ControllerMap controller_map_;
   ViewStack view_stack_;
 

@@ -21,8 +21,9 @@
 namespace chrome {
 
 void ShowPaymentRequestDialog(payments::PaymentRequest* request) {
-  constrained_window::ShowWebModalDialogViews(
-      new payments::PaymentRequestDialog(request), request->web_contents());
+  payments::PaymentRequestDialog::ShowWebModalPaymentDialog(
+      new payments::PaymentRequestDialog(request, /* no observer */ nullptr),
+      request);
 }
 
 }  // namespace chrome
@@ -48,8 +49,10 @@ std::unique_ptr<views::View> CreateViewAndInstallController(
 
 }  // namespace
 
-PaymentRequestDialog::PaymentRequestDialog(PaymentRequest* request)
-    : request_(request) {
+PaymentRequestDialog::PaymentRequestDialog(
+    PaymentRequest* request,
+    PaymentRequestDialog::ObserverForTest* observer)
+    : request_(request), observer_(observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SetLayoutManager(new views::FillLayout());
 
@@ -109,10 +112,19 @@ void PaymentRequestDialog::CloseDialog() {
   GetWidget()->Close();
 }
 
+// static
+void PaymentRequestDialog::ShowWebModalPaymentDialog(
+    PaymentRequestDialog* dialog,
+    PaymentRequest* request) {
+  constrained_window::ShowWebModalDialogViews(dialog, request->web_contents());
+}
+
 void PaymentRequestDialog::ShowInitialPaymentSheet() {
   view_stack_.Push(CreateViewAndInstallController<PaymentSheetViewController>(
                        &controller_map_, request_, this),
                    false);
+  if (observer_)
+    observer_->OnDialogOpened();
 }
 
 gfx::Size PaymentRequestDialog::GetPreferredSize() const {
