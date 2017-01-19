@@ -1,0 +1,5 @@
+include_rules = [
+  # Shared code between ios/chrome and ios/clean/chrome must not depend on them.
+  "-ios/clean/chrome",
+  "-ios/chrome",
+]

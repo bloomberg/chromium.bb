@@ -1,5 +1,6 @@
 include_rules = [
   "+crypto",
+  "+ios/shared/chrome/common",
   "+ios/third_party",
   "+net",
   "+sql",
