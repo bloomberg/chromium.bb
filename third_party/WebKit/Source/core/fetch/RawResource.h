@@ -40,7 +40,7 @@ class CORE_EXPORT RawResource final : public Resource {
  public:
   using ClientType = RawResourceClient;
 
-  static Resource* fetchSynchronously(FetchRequest&, ResourceFetcher*);
+  static RawResource* fetchSynchronously(FetchRequest&, ResourceFetcher*);
   static RawResource* fetch(FetchRequest&, ResourceFetcher*);
   static RawResource* fetchMainResource(FetchRequest&,
                                         ResourceFetcher*,
@@ -61,7 +61,10 @@ class CORE_EXPORT RawResource final : public Resource {
   // of DocumentThreadableLoader.
   void setDefersLoading(bool);
 
+  // Resource implementation
   bool canReuse(const ResourceRequest&) const override;
+  bool willFollowRedirect(const ResourceRequest&,
+                          const ResourceResponse&) override;
 
  private:
   class RawResourceFactory : public ResourceFactory {
@@ -77,15 +80,12 @@ class CORE_EXPORT RawResource final : public Resource {
 
   RawResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
+  // Resource implementation
   void didAddClient(ResourceClient*) override;
   void appendData(const char*, size_t) override;
-
   bool shouldIgnoreHTTPStatusCodeErrors() const override {
     return !isLinkPreload();
   }
-
-  bool willFollowRedirect(const ResourceRequest&,
-                          const ResourceResponse&) override;
   void willNotFollowRedirect() override;
   void responseReceived(const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;

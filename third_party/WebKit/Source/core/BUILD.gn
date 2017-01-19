@@ -1098,8 +1098,6 @@ source_set("unit_tests") {
     "fetch/CrossOriginAccessControlTest.cpp",
     "fetch/FetchUtilsTest.cpp",
     "fetch/MemoryCacheCorrectnessTest.cpp",
-    "fetch/MemoryCacheCorrectnessTestHelper.cpp",
-    "fetch/MemoryCacheCorrectnessTestHelper.h",
     "fetch/MemoryCacheTest.cpp",
     "fetch/MockFetchContext.h",
     "fetch/MockResource.cpp",

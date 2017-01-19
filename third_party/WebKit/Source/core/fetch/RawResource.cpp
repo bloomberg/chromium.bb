@@ -35,10 +35,11 @@
 
 namespace blink {
 
-Resource* RawResource::fetchSynchronously(FetchRequest& request,
-                                          ResourceFetcher* fetcher) {
+RawResource* RawResource::fetchSynchronously(FetchRequest& request,
+                                             ResourceFetcher* fetcher) {
   request.makeSynchronous();
-  return fetcher->requestResource(request, RawResourceFactory(Resource::Raw));
+  return toRawResource(
+      fetcher->requestResource(request, RawResourceFactory(Resource::Raw)));
 }
 
 RawResource* RawResource::fetchImport(FetchRequest& request,
@@ -159,9 +160,9 @@ void RawResource::didAddClient(ResourceClient* c) {
 bool RawResource::willFollowRedirect(const ResourceRequest& newRequest,
                                      const ResourceResponse& redirectResponse) {
   bool follow = Resource::willFollowRedirect(newRequest, redirectResponse);
-  // The base class method takes a non const reference of a ResourceRequest
-  // and returns bool just for allowing RawResource to reject redirect. It
-  // must always return true.
+  // The base class method takes a const reference of a ResourceRequest and
+  // returns bool just for allowing RawResource to reject redirect. It must
+  // always return true.
   DCHECK(follow);
 
   DCHECK(!redirectResponse.isNull());

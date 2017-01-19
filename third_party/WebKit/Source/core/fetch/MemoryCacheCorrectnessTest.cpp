@@ -30,41 +30,106 @@
 
 #include "core/fetch/MemoryCache.h"
 
+#include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/MemoryCacheCorrectnessTestHelper.h"
+#include "core/fetch/MockFetchContext.h"
 #include "core/fetch/MockResource.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "platform/network/ResourceRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class MemoryCacheCorrectnessTest : public MemoryCacheCorrectnessTestHelper {
+namespace {
+
+// An URL for the original request.
+constexpr char kResourceURL[] = "http://resource.com/";
+
+// The origin time of our first request.
+constexpr char kOriginalRequestDateAsString[] = "Thu, 25 May 1977 18:30:00 GMT";
+constexpr double kOriginalRequestDateAsDouble = 233433000.;
+
+constexpr char kOneDayBeforeOriginalRequest[] = "Wed, 24 May 1977 18:30:00 GMT";
+constexpr char kOneDayAfterOriginalRequest[] = "Fri, 26 May 1977 18:30:00 GMT";
+
+double timeElapsed = 0.0;
+
+void advanceClock(double seconds) {
+  timeElapsed += seconds;
+}
+
+double returnMockTime() {
+  return kOriginalRequestDateAsDouble + timeElapsed;
+}
+
+}  // namespace
+
+class MemoryCacheCorrectnessTest : public ::testing::Test {
  protected:
-  Resource* fetchMockResource() {
+  MockResource* resourceFromResourceResponse(ResourceResponse response) {
+    if (response.url().isNull())
+      response.setURL(KURL(ParsedURLString, kResourceURL));
+    MockResource* resource =
+        MockResource::create(ResourceRequest(response.url()));
+    resource->setResponse(response);
+    resource->finish();
+    memoryCache()->add(resource);
+
+    return resource;
+  }
+  MockResource* resourceFromResourceRequest(ResourceRequest request) {
+    if (request.url().isNull())
+      request.setURL(KURL(ParsedURLString, kResourceURL));
+    MockResource* resource = MockResource::create(request);
+    resource->setResponse(ResourceResponse(KURL(ParsedURLString, kResourceURL),
+                                           "text/html", 0, nullAtom, String()));
+    resource->finish();
+    memoryCache()->add(resource);
+
+    return resource;
+  }
+  // TODO(toyoshim): Consider to use MockResource for all tests instead of
+  // RawResource.
+  RawResource* fetchRawResource() {
+    ResourceRequest resourceRequest(KURL(ParsedURLString, kResourceURL));
+    resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
+    FetchRequest fetchRequest(resourceRequest, FetchInitiatorInfo());
+    return RawResource::fetch(fetchRequest, fetcher());
+  }
+  MockResource* fetchMockResource() {
     FetchRequest fetchRequest(
         ResourceRequest(KURL(ParsedURLString, kResourceURL)),
         FetchInitiatorInfo());
     return MockResource::fetch(fetchRequest, fetcher());
   }
+  ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 
  private:
-  Resource* createResource(const ResourceRequest& request,
-                           Resource::Type type) override {
-    // TODO(toyoshim): Consider to use MockResource for all tests instead of
-    // RawResource.
-    switch (type) {
-      case Resource::Raw:
-        return RawResource::create(request, type);
-      case Resource::Mock:
-        return MockResource::create(request);
-      default:
-        EXPECT_TRUE(false) << "'Unreachable' code was reached";
-        break;
-    }
-    return nullptr;
+  // Overrides ::testing::Test.
+  void SetUp() override {
+    // Save the global memory cache to restore it upon teardown.
+    m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
+
+    m_fetcher = ResourceFetcher::create(
+        MockFetchContext::create(MockFetchContext::kShouldNotLoadNewResource));
+
+    timeElapsed = 0.0;
+    m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
   }
+  void TearDown() override {
+    memoryCache()->evictResources();
+
+    // Yield the ownership of the global memory cache back.
+    replaceMemoryCacheForTesting(m_globalMemoryCache.release());
+
+    setTimeFunctionsForTesting(m_originalTimeFunction);
+  }
+
+  Persistent<MemoryCache> m_globalMemoryCache;
+  Persistent<ResourceFetcher> m_fetcher;
+  TimeFunction m_originalTimeFunction;
 };
 
 TEST_F(MemoryCacheCorrectnessTest, FreshFromLastModified) {
@@ -74,13 +139,13 @@ TEST_F(MemoryCacheCorrectnessTest, FreshFromLastModified) {
   fresh200Response.setHTTPHeaderField("Last-Modified",
                                       kOneDayBeforeOriginalRequest);
 
-  Resource* fresh200 = resourceFromResourceResponse(fresh200Response);
+  MockResource* fresh200 = resourceFromResourceResponse(fresh200Response);
 
   // Advance the clock within the implicit freshness period of this resource
   // before we make a request.
   advanceClock(600.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_EQ(fresh200, fetched);
 }
 
@@ -90,13 +155,13 @@ TEST_F(MemoryCacheCorrectnessTest, FreshFromExpires) {
   fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
   fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
 
-  Resource* fresh200 = resourceFromResourceResponse(fresh200Response);
+  MockResource* fresh200 = resourceFromResourceResponse(fresh200Response);
 
   // Advance the clock within the freshness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. - 15.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_EQ(fresh200, fetched);
 }
 
@@ -106,13 +171,13 @@ TEST_F(MemoryCacheCorrectnessTest, FreshFromMaxAge) {
   fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
   fresh200Response.setHTTPHeaderField("Cache-Control", "max-age=600");
 
-  Resource* fresh200 = resourceFromResourceResponse(fresh200Response);
+  MockResource* fresh200 = resourceFromResourceResponse(fresh200Response);
 
   // Advance the clock within the freshness period of this resource before we
   // make a request.
   advanceClock(500.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_EQ(fresh200, fetched);
 }
 
@@ -125,12 +190,12 @@ TEST_F(MemoryCacheCorrectnessTest, DISABLED_ExpiredFromLastModified) {
   expired200Response.setHTTPHeaderField("Last-Modified",
                                         kOneDayBeforeOriginalRequest);
 
-  Resource* expired200 = resourceFromResourceResponse(expired200Response);
+  MockResource* expired200 = resourceFromResourceResponse(expired200Response);
 
   // Advance the clock beyond the implicit freshness period.
   advanceClock(24. * 60. * 60. * 0.2);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(expired200, fetched);
 }
 
@@ -140,13 +205,13 @@ TEST_F(MemoryCacheCorrectnessTest, ExpiredFromExpires) {
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
   expired200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
 
-  Resource* expired200 = resourceFromResourceResponse(expired200Response);
+  MockResource* expired200 = resourceFromResourceResponse(expired200Response);
 
   // Advance the clock within the expiredness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. + 15.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(expired200, fetched);
 }
 
@@ -158,14 +223,13 @@ TEST_F(MemoryCacheCorrectnessTest, NewMockResourceExpiredFromExpires) {
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
   expired200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
 
-  Resource* expired200 =
-      resourceFromResourceResponse(expired200Response, Resource::Mock);
+  MockResource* expired200 = resourceFromResourceResponse(expired200Response);
 
   // Advance the clock within the expiredness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. + 15.);
 
-  Resource* fetched = fetchMockResource();
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(expired200, fetched);
 }
 
@@ -178,20 +242,19 @@ TEST_F(MemoryCacheCorrectnessTest, ReuseMockResourceExpiredFromExpires) {
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
   expired200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
 
-  Resource* expired200 =
-      resourceFromResourceResponse(expired200Response, Resource::Mock);
+  MockResource* expired200 = resourceFromResourceResponse(expired200Response);
 
   // Advance the clock within the freshness period, and make a request to add
   // this resource to the document resources.
   advanceClock(15.);
-  Resource* firstFetched = fetchMockResource();
+  MockResource* firstFetched = fetchMockResource();
   EXPECT_EQ(expired200, firstFetched);
 
   // Advance the clock within the expiredness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. + 15.);
 
-  Resource* fetched = fetchMockResource();
+  MockResource* fetched = fetchMockResource();
   EXPECT_EQ(expired200, fetched);
 }
 
@@ -201,13 +264,13 @@ TEST_F(MemoryCacheCorrectnessTest, ExpiredFromMaxAge) {
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
   expired200Response.setHTTPHeaderField("Cache-Control", "max-age=600");
 
-  Resource* expired200 = resourceFromResourceResponse(expired200Response);
+  MockResource* expired200 = resourceFromResourceResponse(expired200Response);
 
   // Advance the clock within the expiredness period of this resource before we
   // make a request.
   advanceClock(700.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(expired200, fetched);
 }
 
@@ -221,22 +284,22 @@ TEST_F(MemoryCacheCorrectnessTest, FreshButNoCache) {
   fresh200NocacheResponse.setHTTPHeaderField(HTTPNames::Cache_Control,
                                              "no-cache");
 
-  Resource* fresh200Nocache =
+  MockResource* fresh200Nocache =
       resourceFromResourceResponse(fresh200NocacheResponse);
 
   // Advance the clock within the freshness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. - 15.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(fresh200Nocache, fetched);
 }
 
 TEST_F(MemoryCacheCorrectnessTest, RequestWithNoCache) {
   ResourceRequest noCacheRequest;
   noCacheRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
-  Resource* noCacheResource = resourceFromResourceRequest(noCacheRequest);
-  Resource* fetched = fetch();
+  MockResource* noCacheResource = resourceFromResourceRequest(noCacheRequest);
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(noCacheResource, fetched);
 }
 
@@ -250,22 +313,22 @@ TEST_F(MemoryCacheCorrectnessTest, FreshButNoStore) {
   fresh200NostoreResponse.setHTTPHeaderField(HTTPNames::Cache_Control,
                                              "no-store");
 
-  Resource* fresh200Nostore =
+  MockResource* fresh200Nostore =
       resourceFromResourceResponse(fresh200NostoreResponse);
 
   // Advance the clock within the freshness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. - 15.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(fresh200Nostore, fetched);
 }
 
 TEST_F(MemoryCacheCorrectnessTest, RequestWithNoStore) {
   ResourceRequest noStoreRequest;
   noStoreRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "no-store");
-  Resource* noStoreResource = resourceFromResourceRequest(noStoreRequest);
-  Resource* fetched = fetch();
+  MockResource* noStoreResource = resourceFromResourceRequest(noStoreRequest);
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(noStoreResource, fetched);
 }
 
@@ -281,14 +344,14 @@ TEST_F(MemoryCacheCorrectnessTest, DISABLED_FreshButMustRevalidate) {
   fresh200MustRevalidateResponse.setHTTPHeaderField(HTTPNames::Cache_Control,
                                                     "must-revalidate");
 
-  Resource* fresh200MustRevalidate =
+  MockResource* fresh200MustRevalidate =
       resourceFromResourceResponse(fresh200MustRevalidateResponse);
 
   // Advance the clock within the freshness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. - 15.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(fresh200MustRevalidate, fetched);
 }
 
@@ -297,8 +360,8 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithFreshRedirect) {
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
-  Resource* firstResource =
-      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
+  MockResource* firstResource =
+      MockResource::create(ResourceRequest(redirectUrl));
 
   ResourceResponse fresh301Response;
   fresh301Response.setURL(redirectUrl);
@@ -328,7 +391,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithFreshRedirect) {
 
   advanceClock(500.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_EQ(firstResource, fetched);
 }
 
@@ -337,8 +400,8 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
-  Resource* firstResource =
-      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
+  MockResource* firstResource =
+      MockResource::create(ResourceRequest(redirectUrl));
 
   ResourceResponse stale301Response;
   stale301Response.setURL(redirectUrl);
@@ -367,14 +430,14 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
 
   advanceClock(500.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_NE(firstResource, fetched);
 }
 
 TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request1(KURL(ParsedURLString, kResourceURL));
   request1.setHTTPMethod(HTTPNames::POST);
-  Resource* resource1 =
+  RawResource* resource1 =
       RawResource::create(ResourceRequest(request1.url()), Resource::Raw);
   resource1->setStatus(Resource::Pending);
   memoryCache()->add(resource1);
@@ -382,7 +445,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request2(KURL(ParsedURLString, kResourceURL));
   request2.setHTTPMethod(HTTPNames::POST);
   FetchRequest fetch2(request2, FetchInitiatorInfo());
-  Resource* resource2 = RawResource::fetchSynchronously(fetch2, fetcher());
+  RawResource* resource2 = RawResource::fetchSynchronously(fetch2, fetcher());
 
   EXPECT_EQ(resource2, memoryCache()->resourceForURL(request2.url()));
   EXPECT_NE(resource1, resource2);
@@ -393,7 +456,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectNotImplicitlyFresh) {
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
-  Resource* firstResource =
+  RawResource* firstResource =
       RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
 
   ResourceResponse fresh302Response;
@@ -425,7 +488,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectNotImplicitlyFresh) {
 
   advanceClock(500.);
 
-  Resource* fetched = fetch();
+  RawResource* fetched = fetchRawResource();
   EXPECT_NE(firstResource, fetched);
 }
 
@@ -434,8 +497,8 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
-  Resource* firstResource =
-      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
+  MockResource* firstResource =
+      MockResource::create(ResourceRequest(redirectUrl));
 
   ResourceResponse fresh302Response;
   fresh302Response.setURL(redirectUrl);
@@ -465,7 +528,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
 
   advanceClock(500.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_EQ(firstResource, fetched);
 }
 
@@ -474,8 +537,8 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshExpires) {
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
 
-  Resource* firstResource =
-      RawResource::create(ResourceRequest(redirectUrl), Resource::Raw);
+  MockResource* firstResource =
+      MockResource::create(ResourceRequest(redirectUrl));
 
   ResourceResponse fresh302Response;
   fresh302Response.setURL(redirectUrl);
@@ -506,7 +569,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshExpires) {
 
   advanceClock(500.);
 
-  Resource* fetched = fetch();
+  MockResource* fetched = fetchMockResource();
   EXPECT_EQ(firstResource, fetched);
 }
 
