@@ -1768,7 +1768,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // |disableFullScreen| is called only from one place.
   [fullScreenController_ disableFullScreen];
   [findInPageController_ disableFindInPageWithCompletionHandler:nil];
-  [autoReloadBridge_ loadStartedForURL:webState->GetLastCommittedURL()];
+  GURL lastCommittedURL = webState->GetLastCommittedURL();
+  [autoReloadBridge_ loadStartedForURL:lastCommittedURL];
 
   if (isUserNavigationEvent_) {
     [[NSNotificationCenter defaultCenter]
@@ -1784,7 +1785,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   favicon::FaviconDriver* faviconDriver =
       favicon::WebFaviconDriver::FromWebState(webState);
   if (faviconDriver) {
-    faviconDriver->FetchFavicon(webState->GetLastCommittedURL());
+    faviconDriver->FetchFavicon(lastCommittedURL);
   }
   [parentTabModel_ notifyTabChanged:self];
   if (parentTabModel_) {
@@ -1794,6 +1795,17 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                     userInfo:@{kTabModelTabKey : self}];
   }
   [parentTabModel_ navigationCommittedInTab:self];
+
+  // Sending a notification about the url change for crash reporting.
+  // TODO(crbug.com/661675): Consider using the navigation entry committed
+  // notification now that it's in the right place.
+  NSString* URLSpec = base::SysUTF8ToNSString(lastCommittedURL.spec());
+  if (URLSpec.length) {
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:kTabUrlStartedLoadingNotificationForCrashReporting
+                      object:self
+                    userInfo:@{kTabUrlKey : URLSpec}];
+  }
 }
 
 // Called when the page URL has changed.
@@ -1802,18 +1814,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (updateHistory) {
     [self addCurrentEntryToHistoryDB];
     [self countMainFrameLoad];
-  }
-
-  // Sending a notification about the url change for crash reporting.
-  // TODO(crbug.com/661675): Consider using the navigation entry committed
-  // notification now that it's in the right place.
-  NSString* urlString = base::SysUTF8ToNSString(currentUrl.spec());
-  if ([urlString length]) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabUrlStartedLoadingNotificationForCrashReporting
-                      object:self
-                    userInfo:[NSDictionary dictionaryWithObject:urlString
-                                                         forKey:kTabUrlKey]];
   }
 }
 
