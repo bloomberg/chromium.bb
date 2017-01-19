@@ -360,4 +360,10 @@
   <message name="IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT" desc="The format specifier of the Total label in the Order Summary Sheet of the Payment Request dialog.">
     <ph name="CURRENCY_CODE">$1<ex>USD</ex></ph> <ph name="FORMATTED_TOTAL_AMOUNT">$2<ex>$ 12.34</ex></ph>
   </message>
+  <message name="IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME" desc="The name of the Shipping Address section in the Payment Sheet of the Payment Request dialog.">
+    Shipping address
+  </message>
+  <message name="IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME" desc="The name of the Contact Info section in the Payment Sheet of the Payment Request dialog.">
+    Contact info
+  </message>
 </grit-part>

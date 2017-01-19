@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog.h"
@@ -46,11 +48,15 @@
 namespace payments {
 namespace {
 
+constexpr int kFirstTagValue = static_cast<int>(
+    payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
+
 enum class PaymentSheetViewControllerTags {
   // The tag for the button that navigates to the Order Summary sheet.
-  SHOW_ORDER_SUMMARY_BUTTON = static_cast<int>(
-      payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX),
+  SHOW_ORDER_SUMMARY_BUTTON = kFirstTagValue,
+  SHOW_SHIPPING_BUTTON,
   SHOW_PAYMENT_METHOD_BUTTON,
+  SHOW_CONTACT_INFO_BUTTON,
 };
 
 // Creates a clickable row to be displayed in the Payment Sheet. It contains
@@ -129,6 +135,7 @@ class PaymentSheetRow : public views::CustomButton {
     layout->AddView(chevron);
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetRow);
 };
 
@@ -139,10 +146,10 @@ int ComputeWidestNameColumnViewWidth() {
   // correct size. To measure the required size, layout a label with each
   // section name, measure its width, then initialize |widest_column_width|
   // with the largest value.
-  std::vector<int> section_names {
-    IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME,
-    IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME,
-  };
+  std::vector<int> section_names{
+      IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_NAME,
+      IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME,
+      IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME};
 
   int widest_column_width = 0;
 
@@ -178,8 +185,12 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
 
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentSheetSummaryRow().release());
+  layout->StartRow(1, 0);
+  layout->AddView(CreateShippingRow().release());
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentMethodRow().release());
+  layout->StartRow(1, 0);
+  layout->AddView(CreateContactInfoRow().release());
 
   return CreatePaymentView(
       CreateSheetHeaderView(
@@ -195,14 +206,26 @@ void PaymentSheetViewController::ButtonPressed(
     case static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG):
       dialog()->CloseDialog();
       break;
+
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON):
       dialog()->ShowOrderSummary();
       break;
+
+    case static_cast<int>(PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON):
+      // TODO(tmartino): Transition to shipping page once it exists.
+      break;
+
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON):
       dialog()->ShowPaymentMethodSheet();
       break;
+
+    case static_cast<int>(
+        PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON):
+      // TODO(tmartino): Transition to contact info page once it exists.
+      break;
+
     default:
       NOTREACHED();
   }
@@ -238,6 +261,35 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(
       PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON));
+  return section;
+}
+
+std::unique_ptr<views::View>
+PaymentSheetViewController::CreateShippingSectionContent() {
+  auto profile = request()->GetCurrentlySelectedProfile();
+
+  // TODO(tmartino): Empty string param is app locale; this should be passed
+  // at construct-time and stored as a member in a future CL.
+  return profile ? payments::GetShippingAddressLabel(AddressStyleType::SUMMARY,
+                                                     std::string(), *profile)
+                 : base::MakeUnique<views::Label>(base::string16());
+}
+
+// Creates the Shipping row, which contains a "Shipping address" label, the
+// user's selected shipping address, and a chevron.
+// +----------------------------------------------+
+// | Shipping Address   Barack Obama              |
+// |                    1600 Pennsylvania Ave.  > |
+// |                    1800MYPOTUS               |
+// +----------------------------------------------+
+std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
+  std::unique_ptr<views::Button> section = base::MakeUnique<PaymentSheetRow>(
+      this,
+      l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_SHIPPING_SECTION_NAME),
+      CreateShippingSectionContent(), std::unique_ptr<views::View>(nullptr),
+      widest_name_column_view_width_);
+  section->set_tag(
+      static_cast<int>(PaymentSheetViewControllerTags::SHOW_SHIPPING_BUTTON));
   return section;
 }
 
@@ -294,6 +346,35 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(
       PaymentSheetViewControllerTags::SHOW_PAYMENT_METHOD_BUTTON));
+  return section;
+}
+
+std::unique_ptr<views::View>
+PaymentSheetViewController::CreateContactInfoSectionContent() {
+  auto profile = request()->GetCurrentlySelectedProfile();
+  // TODO(tmartino): Replace empty string with app locale.
+  return profile ? payments::GetContactInfoLabel(AddressStyleType::SUMMARY,
+                                                 std::string(), *profile, true,
+                                                 true, true)
+                 : base::MakeUnique<views::Label>(base::string16());
+}
+
+// Creates the Contact Info row, which contains a "Contact info" label; the
+// name, email address, and/or phone number; and a chevron.
+// +----------------------------------------------+
+// | Contact info       Barack Obama              |
+// |                    1800MYPOTUS             > |
+// |                    potus@whitehouse.gov      |
+// +----------------------------------------------+
+std::unique_ptr<views::Button>
+PaymentSheetViewController::CreateContactInfoRow() {
+  std::unique_ptr<views::Button> section = base::MakeUnique<PaymentSheetRow>(
+      this,
+      l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME),
+      CreateContactInfoSectionContent(), std::unique_ptr<views::View>(nullptr),
+      widest_name_column_view_width_);
+  section->set_tag(static_cast<int>(
+      PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON));
   return section;
 }
 

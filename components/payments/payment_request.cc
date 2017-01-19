@@ -4,6 +4,7 @@
 
 #include "components/payments/payment_request.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/payment_details_validation.h"
 #include "components/payments/payment_request_delegate.h"
@@ -72,6 +73,19 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
   }
 
   return currency_formatter_.get();
+}
+
+autofill::AutofillProfile* PaymentRequest::GetCurrentlySelectedProfile() {
+  // TODO(tmartino): Implement more sophisticated algorithm for populating
+  // this when it starts empty.
+  if (!profile_) {
+    autofill::PersonalDataManager* data_manager =
+        delegate_->GetPersonalDataManager();
+    auto profiles = data_manager->GetProfiles();
+    if (!profiles.empty())
+      profile_ = base::MakeUnique<autofill::AutofillProfile>(*profiles[0]);
+  }
+  return profile_ ? profile_.get() : nullptr;
 }
 
 autofill::CreditCard* PaymentRequest::GetCurrentlySelectedCreditCard() {

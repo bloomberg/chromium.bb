@@ -6,8 +6,13 @@
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_VIEWS_UTIL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/strings/string16.h"
+
+namespace autofill {
+class AutofillProfile;
+}
 
 namespace views {
 class VectorIconButtonDelegate;
@@ -53,6 +58,28 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
 std::unique_ptr<views::View> CreatePaymentView(
     std::unique_ptr<views::View> header_view,
     std::unique_ptr<views::View> content_view);
+
+// Represents formatting options for each of the different contexts in which an
+// Address label may be displayed.
+enum class AddressStyleType { SUMMARY, DETAILED };
+
+// Extracts and formats descriptive text from the given |profile| to represent
+// the address in the context specified by |type|.
+std::unique_ptr<views::View> GetShippingAddressLabel(
+    AddressStyleType type,
+    const std::string& locale,
+    const autofill::AutofillProfile& profile);
+
+// Extracts and formats descriptive text from the given |profile| to represent
+// the contact info in the context specified by |type|. Includes/excludes name,
+// email, and phone fields according to the respective boolean fields.
+std::unique_ptr<views::View> GetContactInfoLabel(
+    AddressStyleType type,
+    const std::string& locale,
+    const autofill::AutofillProfile& profile,
+    bool show_payer_name,
+    bool show_payer_email,
+    bool show_payer_phone);
 
 }  // namespace payments
 
