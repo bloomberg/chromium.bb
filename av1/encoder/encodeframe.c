@@ -1650,7 +1650,7 @@ static void set_mode_info_sb(const AV1_COMP *const cpi, ThreadData *td,
                              int mi_row, int mi_col, BLOCK_SIZE bsize,
                              PC_TREE *pc_tree) {
   const AV1_COMMON *const cm = &cpi->common;
-  const int bsl = b_width_log2_lookup[bsize], hbs = (1 << bsl) / 4;
+  const int hbs = mi_size_wide[bsize] / 2;
   const PARTITION_TYPE partition = pc_tree->partitioning;
   BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES

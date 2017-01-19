@@ -1894,8 +1894,8 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int i, j, mi_step, ref;
   int mb_to_right_edge_base = xd->mb_to_right_edge;
 
-  if (mi_row + xd->n8_h >= tile->mi_row_end || (mi_row + xd->n8_h) % 8 == 0 ||
-      (mi_row + xd->n8_h) >= cm->mi_rows)
+  if (mi_row + xd->n8_h >= tile->mi_row_end ||
+      (mi_row + xd->n8_h) % MI_SIZE == 0 || (mi_row + xd->n8_h) >= cm->mi_rows)
     return;
   assert(bsize >= BLOCK_8X8);
 
@@ -1910,7 +1910,7 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     MB_MODE_INFO backup_mbmi;
 #endif  // CONFIG_EXT_INTER
 
-    mi_step = AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[mbmi->sb_type]);
+    mi_step = AOMMIN(xd->n8_w, mi_size_wide[mbmi->sb_type]);
 
     if (!is_neighbor_overlappable(mbmi)) continue;
 
@@ -1948,7 +1948,7 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       bw = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_x;
       bh = (num_4x4_blocks_high_lookup[bsize] << 1) >> pd->subsampling_y;
 
-      if (mbmi->sb_type < BLOCK_8X8) {
+      if (mbmi->sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
         const PARTITION_TYPE bp = BLOCK_8X8 - mbmi->sb_type;
         const int have_vsplit = bp != PARTITION_HORZ;
         const int have_hsplit = bp != PARTITION_VERT;
@@ -2019,8 +2019,8 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int i, j, mi_step, ref;
   int mb_to_bottom_edge_base = xd->mb_to_bottom_edge;
 
-  if (mi_col + xd->n8_w >= tile->mi_col_end || (mi_col + xd->n8_w) % 8 == 0 ||
-      (mi_col + xd->n8_w) >= cm->mi_cols)
+  if (mi_col + xd->n8_w >= tile->mi_col_end ||
+      (mi_col + xd->n8_w) % MI_SIZE == 0 || (mi_col + xd->n8_w) >= cm->mi_cols)
     return;
 
   xd->mb_to_left_edge -= xd->n8_w * 32;
@@ -2034,7 +2034,7 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     MB_MODE_INFO backup_mbmi;
 #endif  // CONFIG_EXT_INTER
 
-    mi_step = AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[mbmi->sb_type]);
+    mi_step = AOMMIN(xd->n8_h, mi_size_high[mbmi->sb_type]);
 
     if (!is_neighbor_overlappable(mbmi)) continue;
 
@@ -2072,7 +2072,7 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       bw = (num_4x4_blocks_wide_lookup[bsize] << 1) >> pd->subsampling_x;
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
-      if (mbmi->sb_type < BLOCK_8X8) {
+      if (mbmi->sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
         const PARTITION_TYPE bp = BLOCK_8X8 - mbmi->sb_type;
         const int have_vsplit = bp != PARTITION_HORZ;
         const int have_hsplit = bp != PARTITION_VERT;
@@ -2145,7 +2145,7 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int plane, i, mi_step;
   const int bottom_available = mi_row + xd->n8_h < tile->mi_row_end &&
-                               (mi_row + xd->n8_h) % 8 != 0 &&
+                               (mi_row + xd->n8_h) % MI_SIZE != 0 &&
                                (mi_row + xd->n8_h) < cm->mi_rows;
 #if CONFIG_AOM_HIGHBITDEPTH
   int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
@@ -2160,7 +2160,7 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     MB_MODE_INFO *mbmi = &mi->mbmi;
     int overlap;
 
-    mi_step = AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[mbmi->sb_type]);
+    mi_step = AOMMIN(xd->n8_w, mi_size_wide[mbmi->sb_type]);
 
     if (!is_neighbor_overlappable(mbmi)) continue;
 
@@ -2171,13 +2171,14 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int bw = (mi_step * MI_SIZE) >> pd->subsampling_x;
       const int bh = overlap >> pd->subsampling_y;
       const int dst_stride = pd->dst.stride;
-      uint8_t *dst = &pd->dst.buf[((i * MI_SIZE) >> pd->subsampling_x) +
-                                  (((xd->n8_h * 8 - overlap) * dst_stride) >>
-                                   pd->subsampling_y)];
+      uint8_t *dst =
+          &pd->dst.buf[((i * MI_SIZE) >> pd->subsampling_x) +
+                       (((xd->n8_h * MI_SIZE - overlap) * dst_stride) >>
+                        pd->subsampling_y)];
       const int tmp_stride = bottom_stride[plane];
       const uint8_t *const tmp =
           &bottom[plane][((i * MI_SIZE) >> pd->subsampling_x) +
-                         (((xd->n8_h * 8 - overlap) * tmp_stride) >>
+                         (((xd->n8_h * MI_SIZE - overlap) * tmp_stride) >>
                           pd->subsampling_y)];
       const uint8_t *const mask = av1_get_obmc_mask_flipped(bh);
 
@@ -2193,8 +2194,8 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }  // each mi in the bottom row
 
   // handle right column
-  if (mi_col + xd->n8_w >= tile->mi_col_end || (mi_col + xd->n8_w) % 8 == 0 ||
-      (mi_col + xd->n8_w) >= cm->mi_cols)
+  if (mi_col + xd->n8_w >= tile->mi_col_end ||
+      (mi_col + xd->n8_w) % MI_SIZE == 0 || (mi_col + xd->n8_w) >= cm->mi_cols)
     return;
 
   for (i = 0; i < AOMMIN(xd->n8_h, cm->mi_rows - mi_row); i += mi_step) {
@@ -2204,7 +2205,7 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     MODE_INFO *mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *mbmi = &mi->mbmi;
 
-    mi_step = AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[mbmi->sb_type]);
+    mi_step = AOMMIN(xd->n8_h, mi_size_high[mbmi->sb_type]);
 
     if (!is_neighbor_overlappable(mbmi)) continue;
 
@@ -2217,11 +2218,11 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int dst_stride = pd->dst.stride;
       uint8_t *dst =
           &pd->dst.buf[((i * MI_SIZE * dst_stride) >> pd->subsampling_y) +
-                       ((xd->n8_w * 8 - overlap) >> pd->subsampling_x)];
+                       ((xd->n8_w * MI_SIZE - overlap) >> pd->subsampling_x)];
       const int tmp_stride = right_stride[plane];
       const uint8_t *const tmp =
           &right[plane][((i * MI_SIZE * tmp_stride) >> pd->subsampling_y) +
-                        ((xd->n8_w * 8 - overlap) >> pd->subsampling_x)];
+                        ((xd->n8_w * MI_SIZE - overlap) >> pd->subsampling_x)];
       const uint8_t *const mask = av1_get_obmc_mask_flipped(bw);
 
 #if CONFIG_AOM_HIGHBITDEPTH
