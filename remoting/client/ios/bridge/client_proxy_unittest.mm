@@ -198,7 +198,7 @@ class ClientProxyTest : public ::testing::Test {
     if (existingHost != nil) {
       existingHost.pairId = @"";
       existingHost.pairSecret = @"";
-      [existingHost saveToSSOKeychain];
+      [existingHost saveToKeychain];
     }
 
     clientProxy_->CommitPairingCredentials(hostName, pairingId, pairingSecret);
@@ -230,7 +230,7 @@ class ClientProxyTest : public ::testing::Test {
   ClientProxyDelegateWrapper* delegateWrapper_;
 };
 
-// TODO(nicholss): Removing these tests for now until we settle on a
+// TODO(nicholss): Commenting these tests out for now until we settle on
 // what the final strings will be.
 // TEST_F(ClientProxyTest, ReportConnectionStatusINITIALIZING) {
 //   TestConnnectionStatus(protocol::ConnectionToHost::State::INITIALIZING,
@@ -284,7 +284,8 @@ TEST_F(ClientProxyTest, CommitPairingCredentialsExtended) {
                base::SysNSStringToUTF8(kPairingSecret));
 }
 
-// TODO(nicholss): Re-enable these tests.
+// TODO(nicholss): Re-enable these tests. Activly changing how rendering
+// is done for the app at the moment.
 // TEST_F(ClientProxyTest, RedrawCanvasBasic) {
 //   webrtc::BasicDesktopFrame frame(webrtc::DesktopSize(1, 1));
 //   webrtc::DesktopRegion regions;

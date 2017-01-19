@@ -187,7 +187,7 @@ TEST_F(ClientInstanceTest, SecretPin) {
   HostPreferences* newHost = [HostPreferences hostForId:hostId];
   newHost.pairId = pairingId;
   newHost.pairSecret = pairingSecret;
-  [newHost saveToSSOKeychain];
+  [newHost saveToKeychain];
 
   // Suggesting that our pairing Id is known, but since it is not the correct
   // credentials expect the stored value to be discarded before requesting the

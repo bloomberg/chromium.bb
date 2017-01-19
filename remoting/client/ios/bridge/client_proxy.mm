@@ -122,7 +122,7 @@ void ClientProxy::CommitPairingCredentials(const std::string& host_id,
   host.pairId = nsPairId;
   host.pairSecret = nsPairSecret;
 
-  [host saveToSSOKeychain];
+  [host saveToKeychain];
 }
 
 void ClientProxy::RedrawCanvas(webrtc::DesktopFrame* buffer) {

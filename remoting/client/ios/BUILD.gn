@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//remoting/build/config/remoting_build.gni")
+
 group("all") {
   testonly = true
 
@@ -34,6 +36,7 @@ source_set("main") {
     "//base",
     "//remoting/base",
     "//remoting/client",
+    "//remoting/client/ios/bridge",
     "//remoting/protocol",
     "//third_party/google_toolbox_for_mac",
     "//ui/base",
@@ -46,14 +49,25 @@ source_set("main") {
 
 source_set("ios_core") {
   sources = [
+    "app_runtime.cc",
+    "app_runtime.h",
+    "client_gestures.h",
+    "client_gestures.mm",
     "host.h",
     "host.mm",
+    "host_preferences.h",
+    "host_preferences.mm",
+    "host_preferences_persistence.h",
     "key_input.h",
     "key_input.mm",
     "key_map_us.h",
     "utility.h",
     "utility.mm",
   ]
+
+  if (!is_chrome_branded) {
+    sources += [ "host_preferences_persistence_chromium.mm" ]
+  }
 
   public_deps = [
     "//third_party/webrtc/base:rtc_base",
@@ -62,6 +76,7 @@ source_set("ios_core") {
 
   deps = [
     "//base",
+    "//remoting/protocol",
   ]
 
   libs = [
