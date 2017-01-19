@@ -4,6 +4,9 @@
 
 #include "components/reading_list/ios/reading_list_store.h"
 
+#include <set>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -25,7 +28,7 @@ ReadingListStore::ReadingListStore(
       pending_transaction_count_(0) {}
 
 ReadingListStore::~ReadingListStore() {
-  DCHECK(pending_transaction_count_ == 0);
+  DCHECK_EQ(0, pending_transaction_count_);
 }
 
 void ReadingListStore::SetReadingListModel(ReadingListModel* model,
@@ -156,7 +159,7 @@ void ReadingListStore::OnReadAllMetadata(
   if (error) {
     change_processor()->ReportError(FROM_HERE, "Failed to read metadata.");
   } else {
-    change_processor()->OnMetadataLoaded(std::move(metadata_batch));
+    change_processor()->ModelReadyToSync(std::move(metadata_batch));
   }
 }
 
@@ -252,7 +255,6 @@ base::Optional<syncer::ModelError> ReadingListStore::MergeSyncData(
       // ping-pong.
       change_processor()->Put(entry_sync_pb->entry_id(), std::move(entity_data),
                               metadata_change_list.get());
-
     }
   }
 
@@ -341,7 +343,6 @@ base::Optional<syncer::ModelError> ReadingListStore::ApplySyncChanges(
         change_processor()->Put(entry_sync_pb->entry_id(),
                                 std::move(entity_data),
                                 metadata_change_list.get());
-
       }
     }
   }

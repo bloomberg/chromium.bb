@@ -190,7 +190,7 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
     delete_set_.insert(storage_key);
   }
 
-  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override {
+  void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override {
     std::swap(metadata_, batch);
   }
 

@@ -16,7 +16,7 @@
 
 namespace syncer {
 
-// A mock MTCP that lets verify DisableSync and OnMetadataLoaded were called in
+// A mock MTCP that lets verify DisableSync and ModelReadyToSync were called in
 // the ways that we expect.
 class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
  public:
@@ -26,13 +26,11 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
 
   void DisableSync() override { disabled_callback_.Run(); }
 
-  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override {
-    on_metadata_loaded_batch_ = std::move(batch);
+  void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override {
+    metadata_batch_ = std::move(batch);
   }
 
-  MetadataBatch* on_metadata_loaded_batch() {
-    return on_metadata_loaded_batch_.get();
-  }
+  MetadataBatch* metadata_batch() { return metadata_batch_.get(); }
 
  private:
   // This callback is invoked when DisableSync() is called, instead of
@@ -42,7 +40,7 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   // allows this information to reach somewhere safe instead.
   base::Closure disabled_callback_;
 
-  std::unique_ptr<MetadataBatch> on_metadata_loaded_batch_;
+  std::unique_ptr<MetadataBatch> metadata_batch_;
 };
 
 class MockModelTypeSyncBridge : public StubModelTypeSyncBridge {
@@ -120,8 +118,7 @@ TEST_F(ModelTypeSyncBridgeTest, DisableSync) {
   // processor about this.
   EXPECT_TRUE(bridge()->processor_disable_sync_called());
 
-  MetadataBatch* batch =
-      bridge()->change_processor()->on_metadata_loaded_batch();
+  MetadataBatch* batch = bridge()->change_processor()->metadata_batch();
   EXPECT_NE(nullptr, batch);
   EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),
             batch->GetModelTypeState().SerializeAsString());

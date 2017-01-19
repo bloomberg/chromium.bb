@@ -44,7 +44,7 @@ void SharedModelTypeProcessor::OnSyncStarting(
   ConnectIfReady();
 }
 
-void SharedModelTypeProcessor::OnMetadataLoaded(
+void SharedModelTypeProcessor::ModelReadyToSync(
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK(CalledOnValidThread());
   DCHECK(waiting_for_metadata_);

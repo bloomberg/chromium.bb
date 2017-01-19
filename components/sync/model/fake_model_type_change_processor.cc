@@ -35,7 +35,7 @@ void FakeModelTypeChangeProcessor::Delete(
     const std::string& client_tag,
     MetadataChangeList* metadata_change_list) {}
 
-void FakeModelTypeChangeProcessor::OnMetadataLoaded(
+void FakeModelTypeChangeProcessor::ModelReadyToSync(
     std::unique_ptr<MetadataBatch> batch) {}
 
 void FakeModelTypeChangeProcessor::OnSyncStarting(

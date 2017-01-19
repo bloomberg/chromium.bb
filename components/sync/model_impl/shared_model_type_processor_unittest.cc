@@ -163,7 +163,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
 
   void InitializeToMetadataLoaded() {
     bridge()->SetInitialSyncDone(true);
-    OnMetadataLoaded();
+    ModelReadyToSync();
   }
 
   // Initialize to a "ready-to-commit" state.
@@ -173,8 +173,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
     OnSyncStarting();
   }
 
-  void OnMetadataLoaded() {
-    type_processor()->OnMetadataLoaded(db().CreateMetadataBatch());
+  void ModelReadyToSync() {
+    type_processor()->ModelReadyToSync(db().CreateMetadataBatch());
   }
 
   void OnPendingCommitDataLoaded() { bridge()->OnPendingCommitDataLoaded(); }
@@ -291,7 +291,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
 
 // Test that an initial sync handles local and remote items properly.
 TEST_F(SharedModelTypeProcessorTest, InitialSync) {
-  OnMetadataLoaded();
+  ModelReadyToSync();
   OnSyncStarting();
 
   // Local write before initial sync.
@@ -320,7 +320,7 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
 
 // Test that an initial sync filters out tombstones in the processor.
 TEST_F(SharedModelTypeProcessorTest, InitialSyncWithTombstone) {
-  OnMetadataLoaded();
+  ModelReadyToSync();
   OnSyncStarting();
 
   EXPECT_EQ(0, bridge()->merge_call_count());
@@ -356,7 +356,7 @@ TEST_F(SharedModelTypeProcessorTest, NonInitialSync) {
 
 // Test that an error during the merge is propagated to the error handler.
 TEST_F(SharedModelTypeProcessorTest, MergeError) {
-  OnMetadataLoaded();
+  ModelReadyToSync();
   OnSyncStarting();
 
   bridge()->ErrorOnNextCall();
@@ -388,7 +388,7 @@ TEST_F(SharedModelTypeProcessorTest, StartErrors) {
   type_processor()->ReportError(FROM_HERE, "boom");
   ExpectError();
   OnSyncStarting();
-  OnMetadataLoaded();
+  ModelReadyToSync();
 
   // Test an error prior to pending data load.
   ResetStateWriteItem(kKey1, kValue1);

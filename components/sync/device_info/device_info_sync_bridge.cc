@@ -387,7 +387,7 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
     return;
   }
 
-  change_processor()->OnMetadataLoaded(std::move(metadata_batch));
+  change_processor()->ModelReadyToSync(std::move(metadata_batch));
   ReconcileLocalAndStored();
 }
 

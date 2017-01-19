@@ -21,8 +21,7 @@ class MetadataBatch;
 class MetadataChangeList;
 class ModelTypeSyncBridge;
 
-// Interface used by the ModelTypeSyncBridge to inform sync of local
-// changes.
+// Interface used by the ModelTypeSyncBridge to inform sync of local changes.
 class ModelTypeChangeProcessor {
  public:
   typedef base::Callback<void(std::unique_ptr<ActivationContext>)>
@@ -48,10 +47,13 @@ class ModelTypeChangeProcessor {
   virtual void Delete(const std::string& storage_key,
                       MetadataChangeList* metadata_change_list) = 0;
 
-  // Accept the initial sync metadata loaded by the bridge. This must be called
-  // by the bridge for syncing to begin for this model type. If an error occurs,
-  // call ReportError instead of this.
-  virtual void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) = 0;
+  // The bridge is expected to call this exactly once unless it encounters an
+  // error. Ideally ModelReadyToSync() is called as soon as possible during
+  // initialization, and must be called before invoking either Put() or
+  // Delete(). The bridge needs to be able to synchronously handle
+  // MergeSyncData() and ApplySyncChanges() after calling ModelReadyToSync(). If
+  // an error is encountered, calling ReportError() instead is sufficient.
+  virtual void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) = 0;
 
   // Indicates that sync wants to connect a sync worker to this processor. Once
   // the processor has metadata from the bridge, it will pass the info needed
@@ -68,7 +70,8 @@ class ModelTypeChangeProcessor {
 
   // Returns a boolean representing whether the processor's metadata is
   // currently up to date and accurately tracking the model type's data. If
-  // false, calls to Put and Delete will no-op and can be omitted by bridge.
+  // false, and ModelReadyToSync() has already been called, then Put and Delete
+  // will no-op and can be omitted by bridge.
   virtual bool IsTrackingMetadata() = 0;
 
   // Report an error in the model to sync. Should be called for any persistence

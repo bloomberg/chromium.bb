@@ -28,10 +28,10 @@ class MetadataChangeList;
 // ModelTypeChangeProcessor. Provides a way for sync to update the data and
 // metadata for entities, as well as the model type state. Sync bridge
 // implementations must provide their change_processor() with metadata through
-// OnMetadataLoaded() as soon as possible. Once this is called, sync will
+// ModelReadyToSync() as soon as possible. Once this is called, sync will
 // immediately begin locally tracking changes and can start syncing with the
 // server soon afterward. If an error occurs during startup, the processor's
-// ReportError() method should be called instead of OnMetadataLoaded().
+// ReportError() method should be called instead of ModelReadyToSync().
 class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
  public:
   typedef base::Callback<void(std::unique_ptr<DataBatch>)> DataCallback;
@@ -121,6 +121,9 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // metadata, and then destroys the change processor.
   virtual void DisableSync();
 
+  // Needs to be informed about any model change occurring via Delete() and
+  // Put(). The changing metadata should be stored to persistent storage before
+  // or atomically with the model changes.
   ModelTypeChangeProcessor* change_processor() const;
 
  private:
