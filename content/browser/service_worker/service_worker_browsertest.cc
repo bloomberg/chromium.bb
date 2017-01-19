@@ -1871,66 +1871,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, GetResponseText) {
   EXPECT_EQ(1, GetRequestCount(kPageUrl));
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
-                       AbortPreloadRequest) {
-  const char kPageUrl[] = "/service_worker/navigation_preload.html";
-  const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
-  const char kPage[] = "<title>ERROR</title>Hello world.";
-  // In this script, event.preloadResponse is not guarded by event.waitUntil.
-  // So the preload request should be canceled, when the fetch event handler
-  // has been executed.
-  const std::string kScript =
-      kEnableNavigationPreloadScript +
-      "var preload_resolve;\n"
-      "var preload_promise = new Promise(r => { preload_resolve = r; });\n"
-      "self.addEventListener('fetch', event => {\n"
-      "    event.preloadResponse.then(\n"
-      "        _ => { preload_resolve({result: 'RESOLVED',\n"
-      "                                info: 'Preload resolved.'}); },\n"
-      "        e => { preload_resolve({result: 'REJECTED',\n"
-      "                                info: e.toString()}); });\n"
-      "    event.respondWith(\n"
-      "        new Response(\n"
-      "            '<title>WAITING</title><script>\\n' +\n"
-      "            'navigator.serviceWorker.onmessage = e => {\\n' +\n"
-      "            '    var div = document.createElement(\\'div\\');\\n' +\n"
-      "            '    div.appendChild(' +\n"
-      "            '        document.createTextNode(e.data.info));\\n' +\n"
-      "            '    document.body.appendChild(div);\\n' +\n"
-      "            '    document.title = e.data.result;\\n' +\n"
-      "            '  };\\n' +\n"
-      "            'navigator.serviceWorker.controller.postMessage(\\n' +\n"
-      "            '    null);\\n' +\n"
-      "            '</script>',"
-      "            {headers: [['content-type', 'text/html']]}));\n"
-      "  });\n"
-      "self.addEventListener('message', event => {\n"
-      "    event.waitUntil(\n"
-      "        preload_promise.then(\n"
-      "            result => event.source.postMessage(result)));\n"
-      "  });";
-  const GURL page_url = embedded_test_server()->GetURL(kPageUrl);
-  const GURL worker_url = embedded_test_server()->GetURL(kWorkerUrl);
-  RegisterStaticFile(kPageUrl, kPage, "text/html");
-  RegisterStaticFile(kWorkerUrl, kScript, "text/javascript");
-
-  RegisterMonitorRequestHandler();
-  StartServerAndNavigateToSetup();
-  SetupForNavigationPreloadTest(page_url, worker_url);
-
-  const base::string16 title = base::ASCIIToUTF16("REJECTED");
-  TitleWatcher title_watcher(shell()->web_contents(), title);
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("RESOLVED"));
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("ERROR"));
-  NavigateToURL(shell(), page_url);
-  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-
-  EXPECT_EQ(
-      "AbortError: Service Worker navigation preload aborted. Need to guard "
-      "with respondWith or waitUntil.",
-      GetTextContent());
-}
-
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkError) {
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";

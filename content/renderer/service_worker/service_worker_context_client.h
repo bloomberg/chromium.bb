@@ -257,10 +257,17 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                            const base::string16& message);
   void OnPing();
 
+  // Called to resolve the FetchEvent.preloadResponse promise.
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<blink::WebURLResponse> response,
       std::unique_ptr<blink::WebDataConsumerHandle> data_consumer_handle);
+  // Called when the navigation preload request completed. Either
+  // OnNavigationPreloadComplete() or OnNavigationPreloadError() must be called
+  // to release the preload related resources.
+  void OnNavigationPreloadComplete(int fetch_event_id);
+  // Called when an error occurred while receiving the response of the
+  // navigation preload request.
   void OnNavigationPreloadError(
       int fetch_event_id,
       std::unique_ptr<blink::WebServiceWorkerError> error);

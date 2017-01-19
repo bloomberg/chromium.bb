@@ -565,7 +565,13 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     ServiceWorkerFetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
     const scoped_refptr<ServiceWorkerVersion>& version) {
-  fetch_dispatcher_.reset();
+  // Do not clear |fetch_dispatcher_| if it has dispatched a navigation preload
+  // request to keep the mojom::URLLoader related objects in it, because the
+  // preload response might still need to be streamed even after calling
+  // respondWith().
+  if (!did_navigation_preload_) {
+    fetch_dispatcher_.reset();
+  }
   ServiceWorkerMetrics::RecordFetchEventStatus(IsMainResourceLoad(), status);
 
   ServiceWorkerMetrics::URLRequestJobResult result =

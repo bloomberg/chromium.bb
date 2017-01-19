@@ -267,19 +267,6 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
         binding_(this, std::move(preload_handle->url_loader_client_request)) {}
 
   ~NavigationPreloadRequest() override {
-    if (result_reported_)
-      return;
-    ServiceWorkerContextClient* client =
-        ServiceWorkerContextClient::ThreadSpecificInstance();
-    if (!client)
-      return;
-    client->OnNavigationPreloadError(
-        fetch_event_id_,
-        base::MakeUnique<blink::WebServiceWorkerError>(
-            blink::WebServiceWorkerError::ErrorTypeAbort,
-            blink::WebString::fromASCII(
-                "Service Worker navigation preload aborted. Need to guard with "
-                "respondWith or waitUntil.")));
   }
 
   void OnReceiveResponse(
@@ -297,8 +284,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override {
-    // Cancel the request.
-    url_loader_ = nullptr;
+    // This will delete |this|.
     ReportErrorToClient(
         "Service Worker navigation preload doesn't suport redirect.");
   }
@@ -322,17 +308,22 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   }
 
   void OnComplete(const ResourceRequestCompletionStatus& status) override {
-    // We don't report to |client| if OnStartLoadingResponseBody() has already
-    // called OnNavigationPreloadResponse().
-    if (result_reported_)
+    if (status.error_code != net::OK) {
+      // This will delete |this|.
+      ReportErrorToClient("Service Worker navigation preload network error.");
       return;
-    DCHECK_NE(0, status.error_code);
-    ReportErrorToClient("Service Worker navigation preload network error.");
+    }
+
+    ServiceWorkerContextClient* client =
+        ServiceWorkerContextClient::ThreadSpecificInstance();
+    if (!client)
+      return;
+    // This will delete |this|.
+    client->OnNavigationPreloadComplete(fetch_event_id_);
   }
 
  private:
   void MaybeReportResponseToClient() {
-    DCHECK(!result_reported_);
     if (!response_ || !body_.is_valid())
       return;
     ServiceWorkerContextClient* client =
@@ -343,7 +334,6 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     client->OnNavigationPreloadResponse(
         fetch_event_id_, std::move(response_),
         base::MakeUnique<WebDataConsumerHandleImpl>(std::move(body_)));
-    result_reported_ = true;
   }
 
   void ReportErrorToClient(const char* error_message) {
@@ -351,11 +341,11 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
         ServiceWorkerContextClient::ThreadSpecificInstance();
     if (!client)
       return;
+    // This will delete |this|.
     client->OnNavigationPreloadError(
         fetch_event_id_, base::MakeUnique<blink::WebServiceWorkerError>(
                              blink::WebServiceWorkerError::ErrorTypeNetwork,
                              blink::WebString::fromUTF8(error_message)));
-    result_reported_ = true;
   }
 
   const int fetch_event_id_;
@@ -365,7 +355,6 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
 
   std::unique_ptr<blink::WebURLResponse> response_;
   mojo::ScopedDataPipeConsumerHandle body_;
-  bool result_reported_ = false;
 };
 
 ServiceWorkerContextClient*
@@ -709,12 +698,6 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
     int fetch_event_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
-  if (context_->preload_requests.Lookup(fetch_event_id)) {
-    // Deletes NavigationPreloadRequest. If the network request is ongoing, it
-    // will be canceled by deleting the mojom::URLLoaderPtr in the
-    // NavigationPreloadRequest.
-    context_->preload_requests.Remove(fetch_event_id);
-  }
   const FetchCallback* callback =
       context_->fetch_event_callbacks.Lookup(fetch_event_id);
   DCHECK(callback);
@@ -1258,6 +1241,12 @@ void ServiceWorkerContextClient::OnNavigationPreloadError(
     int fetch_event_id,
     std::unique_ptr<blink::WebServiceWorkerError> error) {
   proxy_->onNavigationPreloadError(fetch_event_id, std::move(error));
+  context_->preload_requests.Remove(fetch_event_id);
+}
+
+void ServiceWorkerContextClient::OnNavigationPreloadComplete(
+    int fetch_event_id) {
+  context_->preload_requests.Remove(fetch_event_id);
 }
 
 base::WeakPtr<ServiceWorkerContextClient>

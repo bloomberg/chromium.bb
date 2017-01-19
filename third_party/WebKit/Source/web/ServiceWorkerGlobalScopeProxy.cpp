@@ -212,7 +212,9 @@ void ServiceWorkerGlobalScopeProxy::onNavigationPreloadError(
     int fetchEventID,
     std::unique_ptr<WebServiceWorkerError> error) {
   FetchEvent* fetchEvent = m_pendingPreloadFetchEvents.take(fetchEventID);
-  DCHECK(fetchEvent);
+  // This method may be called after onNavigationPreloadResponse() was called.
+  if (!fetchEvent)
+    return;
   fetchEvent->onNavigationPreloadError(
       workerGlobalScope()->scriptController()->getScriptState(),
       std::move(error));

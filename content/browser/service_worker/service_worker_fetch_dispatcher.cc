@@ -75,7 +75,14 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
  public:
   explicit DelegatingURLLoaderClient(mojom::URLLoaderClientPtr client)
       : binding_(this), client_(std::move(client)) {}
-  ~DelegatingURLLoaderClient() override {}
+  ~DelegatingURLLoaderClient() override {
+    if (!completed_) {
+      // Let the service worker know that the request has been canceled.
+      ResourceRequestCompletionStatus status;
+      status.error_code = net::ERR_ABORTED;
+      client_->OnComplete(status);
+    }
+  }
 
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {
     client_->OnDataDownloaded(data_length, encoded_length);
@@ -102,6 +109,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   void OnComplete(
       const ResourceRequestCompletionStatus& completion_status) override {
     client_->OnComplete(completion_status);
+    completed_ = true;
   }
 
   void Bind(mojom::URLLoaderClientAssociatedPtrInfo* ptr_info,
@@ -112,6 +120,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
  private:
   mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
   mojom::URLLoaderClientPtr client_;
+  bool completed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingURLLoaderClient);
 };
@@ -167,18 +176,6 @@ ServiceWorkerMetrics::EventType FetchTypeToWaitUntilEventType(
   return ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL;
 }
 
-void OnFetchEventFinished(
-    ServiceWorkerVersion* version,
-    int event_finish_id,
-    mojom::URLLoaderFactoryPtr url_loader_factory,
-    std::unique_ptr<mojom::URLLoader> url_loader,
-    std::unique_ptr<mojom::URLLoaderClient> url_loader_client,
-    ServiceWorkerStatusCode status,
-    base::Time dispatch_event_time) {
-  version->FinishRequest(event_finish_id, status != SERVICE_WORKER_ERROR_ABORT,
-                         dispatch_event_time);
-}
-
 }  // namespace
 
 // Helper to receive the fetch event response even if
@@ -209,6 +206,29 @@ class ServiceWorkerFetchDispatcher::ResponseCallback {
   ServiceWorkerVersion* version_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseCallback);
+};
+
+// This class keeps the URL loader related assets alive while the FetchEvent is
+// ongoing in the service worker.
+class ServiceWorkerFetchDispatcher::URLLoaderAssets
+    : public base::RefCounted<ServiceWorkerFetchDispatcher::URLLoaderAssets> {
+ public:
+  URLLoaderAssets(mojom::URLLoaderFactoryPtr url_loader_factory,
+                  std::unique_ptr<mojom::URLLoader> url_loader,
+                  std::unique_ptr<mojom::URLLoaderClient> url_loader_client)
+      : url_loader_factory_(std::move(url_loader_factory)),
+        url_loader_(std::move(url_loader)),
+        url_loader_client_(std::move(url_loader_client)) {}
+
+ private:
+  friend class base::RefCounted<URLLoaderAssets>;
+  virtual ~URLLoaderAssets() {}
+
+  mojom::URLLoaderFactoryPtr url_loader_factory_;
+  std::unique_ptr<mojom::URLLoader> url_loader_;
+  std::unique_ptr<mojom::URLLoaderClient> url_loader_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLLoaderAssets);
 };
 
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
@@ -335,15 +355,13 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 
   // |event_dispatcher| is owned by |version_|. So it is safe to pass the
   // unretained raw pointer of |version_| to OnFetchEventFinished callback.
-  // Pass |url_loader_factory_|, |url_Loader_| and |url_loader_client_| to the
-  // callback to keep them alive while the FetchEvent is onging in the service
-  // worker.
+  // Pass |url_loader_assets_| to the callback to keep the URL loader related
+  // assets alive while the FetchEvent is ongoing in the service worker.
   version_->event_dispatcher()->DispatchFetchEvent(
       fetch_event_id, *request_, std::move(preload_handle_),
-      base::Bind(&OnFetchEventFinished, base::Unretained(version_.get()),
-                 event_finish_id, base::Passed(std::move(url_loader_factory_)),
-                 base::Passed(std::move(url_loader_)),
-                 base::Passed(std::move(url_loader_client_))));
+      base::Bind(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
+                 base::Unretained(version_.get()), event_finish_id,
+                 url_loader_assets_));
 }
 
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
@@ -413,11 +431,12 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       return false;
   }
 
-  DCHECK(!url_loader_factory_);
-  mojom::URLLoaderFactoryPtr factory;
+  DCHECK(!url_loader_assets_);
+
+  mojom::URLLoaderFactoryPtr url_loader_factory;
   URLLoaderFactoryImpl::Create(
       ResourceRequesterInfo::CreateForNavigationPreload(requester_info),
-      mojo::MakeRequest(&url_loader_factory_));
+      mojo::MakeRequest(&url_loader_factory));
 
   preload_handle_ = mojom::FetchEventPreloadHandle::New();
 
@@ -460,20 +479,22 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       std::move(url_loader_client_ptr));
   mojom::URLLoaderClientAssociatedPtrInfo url_loader_client_associated_ptr_info;
   url_loader_client->Bind(&url_loader_client_associated_ptr_info,
-                          url_loader_factory_.associated_group());
+                          url_loader_factory.associated_group());
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr;
 
-  url_loader_factory_->CreateLoaderAndStart(
+  url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr,
-                        url_loader_factory_.associated_group()),
+                        url_loader_factory.associated_group()),
       original_info->GetRouteID(), request_id, request,
       std::move(url_loader_client_associated_ptr_info));
 
   std::unique_ptr<DelegatingURLLoader> url_loader(
-      new DelegatingURLLoader(std::move(url_loader_associated_ptr)));
+      base::MakeUnique<DelegatingURLLoader>(
+          std::move(url_loader_associated_ptr)));
   preload_handle_->url_loader = url_loader->CreateInterfacePtrAndBind();
-  url_loader_ = std::move(url_loader);
-  url_loader_client_ = std::move(url_loader_client);
+  url_loader_assets_ =
+      new URLLoaderAssets(std::move(url_loader_factory), std::move(url_loader),
+                          std::move(url_loader_client));
   return true;
 }
 
@@ -482,6 +503,17 @@ ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()
   if (request_->fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH)
     return ServiceWorkerMetrics::EventType::FOREIGN_FETCH;
   return ResourceTypeToEventType(resource_type_);
+}
+
+// static
+void ServiceWorkerFetchDispatcher::OnFetchEventFinished(
+    ServiceWorkerVersion* version,
+    int event_finish_id,
+    scoped_refptr<URLLoaderAssets> url_loader_assets,
+    ServiceWorkerStatusCode status,
+    base::Time dispatch_event_time) {
+  version->FinishRequest(event_finish_id, status != SERVICE_WORKER_ERROR_ABORT,
+                         dispatch_event_time);
 }
 
 }  // namespace content

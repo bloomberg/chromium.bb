@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -61,6 +62,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
 
  private:
   class ResponseCallback;
+  class URLLoaderAssets;
 
   void DidWaitForActivation();
   void StartWorker();
@@ -76,6 +78,13 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                 ServiceWorkerFetchEventResult fetch_result,
                 const ServiceWorkerResponse& response);
 
+  static void OnFetchEventFinished(
+      ServiceWorkerVersion* version,
+      int event_finish_id,
+      scoped_refptr<URLLoaderAssets> url_loader_assets,
+      ServiceWorkerStatusCode status,
+      base::Time dispatch_event_time);
+
   ServiceWorkerMetrics::EventType GetEventType() const;
 
   scoped_refptr<ServiceWorkerVersion> version_;
@@ -86,9 +95,9 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   ResourceType resource_type_;
   base::Optional<base::TimeDelta> timeout_;
   bool did_complete_;
-  mojom::URLLoaderFactoryPtr url_loader_factory_;
-  std::unique_ptr<mojom::URLLoader> url_loader_;
-  std::unique_ptr<mojom::URLLoaderClient> url_loader_client_;
+
+  scoped_refptr<URLLoaderAssets> url_loader_assets_;
+
   mojom::FetchEventPreloadHandlePtr preload_handle_;
 
   base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_;
