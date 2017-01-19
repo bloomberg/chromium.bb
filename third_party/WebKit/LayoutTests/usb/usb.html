@@ -27,6 +27,7 @@ usb_test(usb => {
 }, 'requestDevice rejects when called without a user gesture');
 
 usb_test(usb => {
+  usb.mockChooserService.setChosenDevice(null);
   return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
     .then(device => {
       assert_unreachable('requestDevice should reject when no device selected');
@@ -38,6 +39,7 @@ usb_test(usb => {
 }, 'requestDevice rejects when no device is chosen');
 
 usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   usb.mockChooserService.setChosenDevice(usb.fakeDevices[0]);
   return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
     .then(device => {
@@ -45,6 +47,39 @@ usb_test(usb => {
     })
   );
 }, 'requestDevice returns the device chosen by the user');
+
+usb_test(usb => {
+  const expectedFilters = [
+    { vendorId: 1234, classCode: 0xFF, serialNumber: "123ABC" },
+    { vendorId: 5678, productId: 0xF00F }
+  ];
+  usb.mockChooserService.setChosenDevice(null);
+  return callWithKeyDown(() => navigator.usb.requestDevice({ filters: expectedFilters })
+    .then(device => {
+      assert_unreachable('requestDevice should reject because no device selected');
+    })
+    .catch(error => {
+      assert_equals(error.code, DOMException.NOT_FOUND_ERR);
+      let actualFilters = usb.mockChooserService.getLastFilters();
+      assert_equals(actualFilters.length, expectedFilters.length);
+      assert_true(actualFilters[0].has_vendor_id);
+      assert_equals(actualFilters[0].vendor_id, expectedFilters[0].vendorId);
+      assert_false(actualFilters[0].has_product_id);
+      assert_true(actualFilters[0].has_class_code, expectedFilters[0].classCode);
+      assert_false(actualFilters[0].has_subclass_code);
+      assert_false(actualFilters[0].has_protocol_code);
+      assert_equals(actualFilters[0].serial_number, expectedFilters[0].serialNumber);
+      assert_true(actualFilters[1].has_vendor_id);
+      assert_equals(actualFilters[1].vendor_id, expectedFilters[1].vendorId);
+      assert_true(actualFilters[1].has_product_id);
+      assert_equals(actualFilters[1].product_id, expectedFilters[1].productId);
+      assert_false(actualFilters[1].has_class_code);
+      assert_false(actualFilters[1].has_subclass_code);
+      assert_false(actualFilters[1].has_protocol_code);
+      assert_equals(actualFilters[1].serial_number, null);
+    })
+  );
+}, 'filters are sent correctly');
 
 usb_test(usb => {
   let promise = new Promise((resolve, reject) => {

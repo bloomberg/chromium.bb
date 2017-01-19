@@ -395,13 +395,19 @@ function usbMocks(mojo) {
             chooserService.ChooserService);
 
         this.chosenDevice_ = null;
+        this.lastFilters_ = null;
       }
 
       setChosenDevice(deviceInfo) {
         this.chosenDeviceInfo_ = deviceInfo;
       }
 
+      getLastFilters() {
+        return this.lastFilters_;
+      }
+
       getPermission(deviceFilters) {
+        this.lastFilters_ = deviceFilters;
         return Promise.resolve({ result: this.chosenDeviceInfo_ });
       }
     }

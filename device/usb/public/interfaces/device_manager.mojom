@@ -21,6 +21,8 @@ struct DeviceFilter {
 
   bool has_protocol_code;
   uint8 protocol_code;
+
+  string? serial_number;
 };
 
 struct EnumerationOptions {

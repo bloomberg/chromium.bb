@@ -10,4 +10,5 @@ dictionary USBDeviceFilter {
     octet classCode;
     octet subclassCode;
     octet protocolCode;
+    DOMString serialNumber;
 };

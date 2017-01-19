@@ -23,7 +23,8 @@ class UsbFilterTest : public testing::Test {
     UsbConfigDescriptor config(1, false, false, 0);
     config.interfaces.emplace_back(1, 0, 0xff, 0x42, 0x01);
 
-    android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2, config);
+    android_phone_ = new MockUsbDevice(0x18d1, 0x4ee2, "Google Inc.", "Nexus 5",
+                                       "ABC123", {config});
   }
 
  protected:
@@ -101,6 +102,19 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocolNegative) {
   filter.interface_subclass = 0x42;
   filter.interface_protocol = 0x02;
   ASSERT_FALSE(filter.Matches(android_phone_));
+}
+
+TEST_F(UsbFilterTest, MatchSerialNumber) {
+  UsbDeviceFilter filter;
+  filter.serial_number = std::string("ABC123");
+  EXPECT_TRUE(filter.Matches(android_phone_));
+  filter.vendor_id = 0x18d1;
+  EXPECT_TRUE(filter.Matches(android_phone_));
+  filter.vendor_id = 0x18d2;
+  EXPECT_FALSE(filter.Matches(android_phone_));
+  filter.vendor_id = 0x18d1;
+  filter.serial_number = std::string("DIFFERENT");
+  EXPECT_FALSE(filter.Matches(android_phone_));
 }
 
 TEST_F(UsbFilterTest, MatchAnyEmptyList) {

@@ -46,6 +46,8 @@ usb::DeviceFilterPtr convertDeviceFilter(const USBDeviceFilter& filter) {
   mojoFilter->has_protocol_code = filter.hasProtocolCode();
   if (mojoFilter->has_protocol_code)
     mojoFilter->protocol_code = filter.protocolCode();
+  if (filter.hasSerialNumber())
+    mojoFilter->serial_number = filter.serialNumber();
   return mojoFilter;
 }
 

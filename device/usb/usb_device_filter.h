@@ -37,6 +37,7 @@ struct UsbDeviceFilter {
   base::Optional<uint8_t> interface_class;
   base::Optional<uint8_t> interface_subclass;
   base::Optional<uint8_t> interface_protocol;
+  base::Optional<std::string> serial_number;
 };
 
 }  // namespace device

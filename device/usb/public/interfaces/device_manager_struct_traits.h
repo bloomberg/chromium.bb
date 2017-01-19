@@ -53,6 +53,11 @@ struct StructTraits<device::usb::DeviceFilterDataView,
     return filter.interface_protocol.value_or(0);
   }
 
+  static const base::Optional<std::string>& serial_number(
+      const device::UsbDeviceFilter& filter) {
+    return filter.serial_number;
+  }
+
   static bool Read(device::usb::DeviceFilterDataView input,
                    device::UsbDeviceFilter* output);
 };

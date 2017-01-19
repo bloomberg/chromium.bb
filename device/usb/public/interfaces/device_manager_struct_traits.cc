@@ -20,7 +20,7 @@ bool StructTraits<device::usb::DeviceFilterDataView, device::UsbDeviceFilter>::
     output->interface_subclass = input.subclass_code();
   if (input.has_protocol_code())
     output->interface_protocol = input.protocol_code();
-  return true;
+  return input.ReadSerialNumber(&output->serial_number);
 }
 
 }  // namespace mojo

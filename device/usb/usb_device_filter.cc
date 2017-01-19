@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
@@ -37,6 +38,11 @@ bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
 
     if (product_id && device->product_id() != *product_id)
       return false;
+  }
+
+  if (serial_number &&
+      device->serial_number() != base::UTF8ToUTF16(*serial_number)) {
+    return false;
   }
 
   if (interface_class) {
