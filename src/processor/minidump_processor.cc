@@ -141,6 +141,12 @@ ProcessResult MinidumpProcessor::Process(
     }
   }
 
+  MinidumpUnloadedModuleList *unloaded_module_list =
+      dump->GetUnloadedModuleList();
+  if (unloaded_module_list) {
+    process_state->unloaded_modules_ = unloaded_module_list->Copy();
+  }
+
   MinidumpMemoryList *memory_list = dump->GetMemoryList();
   if (memory_list) {
     BPLOG(INFO) << "Found " << memory_list->region_count()
@@ -262,6 +268,7 @@ ProcessResult MinidumpProcessor::Process(
                                        context,
                                        thread_memory,
                                        process_state->modules_,
+                                       process_state->unloaded_modules_,
                                        frame_symbolizer_));
 
     scoped_ptr<CallStack> stack(new CallStack());

@@ -118,6 +118,7 @@ class MockCodeModule: public google_breakpad::CodeModule {
   google_breakpad::CodeModule *Copy() const {
     abort(); // Tests won't use this.
   }
+  virtual bool is_unloaded() const { return false; }
   virtual uint64_t shrink_down_delta() const { return 0; }
   virtual void SetShrinkDownDelta(uint64_t shrink_down_delta) {}
 

@@ -399,6 +399,7 @@ class MinidumpModule : public MinidumpObject,
   virtual string debug_identifier() const;
   virtual string version() const;
   virtual CodeModule* Copy() const;
+  virtual bool is_unloaded() const { return false; }
 
   // Getter and setter for shrink_down_delta.  This is used when the address
   // range for a module is shrunk down due to address range conflicts with
@@ -775,6 +776,7 @@ class MinidumpUnloadedModule : public MinidumpObject,
   string debug_identifier() const override;
   string version() const override;
   CodeModule* Copy() const override;
+  bool is_unloaded() const override { return true; }
   uint64_t shrink_down_delta() const override;
   void SetShrinkDownDelta(uint64_t shrink_down_delta) override;
 

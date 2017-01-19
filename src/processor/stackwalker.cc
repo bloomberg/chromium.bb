@@ -72,6 +72,7 @@ Stackwalker::Stackwalker(const SystemInfo* system_info,
     : system_info_(system_info),
       memory_(memory),
       modules_(modules),
+      unloaded_modules_(NULL),
       frame_symbolizer_(frame_symbolizer) {
   assert(frame_symbolizer_);
 }
@@ -134,8 +135,9 @@ bool Stackwalker::Walk(
 
     // Resolve the module information, if a module map was provided.
     StackFrameSymbolizer::SymbolizerResult symbolizer_result =
-        frame_symbolizer_->FillSourceLineInfo(modules_, system_info_,
-                                             frame.get());
+        frame_symbolizer_->FillSourceLineInfo(modules_, unloaded_modules_,
+                                              system_info_,
+                                              frame.get());
     switch (symbolizer_result) {
       case StackFrameSymbolizer::kInterrupt:
         BPLOG(INFO) << "Stack walk is interrupted.";
@@ -186,13 +188,13 @@ bool Stackwalker::Walk(
   return true;
 }
 
-
 // static
 Stackwalker* Stackwalker::StackwalkerForCPU(
     const SystemInfo* system_info,
     DumpContext* context,
     MemoryRegion* memory,
     const CodeModules* modules,
+    const CodeModules* unloaded_modules,
     StackFrameSymbolizer* frame_symbolizer) {
   if (!context) {
     BPLOG(ERROR) << "Can't choose a stackwalker implementation without context";
@@ -263,6 +265,9 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
   BPLOG_IF(ERROR, !cpu_stackwalker) << "Unknown CPU type " << HexString(cpu) <<
                                        ", can't choose a stackwalker "
                                        "implementation";
+  if (cpu_stackwalker) {
+    cpu_stackwalker->unloaded_modules_ = unloaded_modules;
+  }
   return cpu_stackwalker;
 }
 
@@ -270,7 +275,8 @@ bool Stackwalker::InstructionAddressSeemsValid(uint64_t address) {
   StackFrame frame;
   frame.instruction = address;
   StackFrameSymbolizer::SymbolizerResult symbolizer_result =
-      frame_symbolizer_->FillSourceLineInfo(modules_, system_info_, &frame);
+      frame_symbolizer_->FillSourceLineInfo(modules_, unloaded_modules_,
+                                            system_info_, &frame);
 
   if (!frame.module) {
     // not inside any loaded module

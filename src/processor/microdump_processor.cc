@@ -73,6 +73,7 @@ ProcessResult MicrodumpProcessor::Process(const string &microdump_contents,
                             microdump.GetContext(),
                             microdump.GetMemory(),
                             process_state->modules_,
+                            /* unloaded_modules= */ NULL,
                             frame_symbolizer_));
 
   scoped_ptr<CallStack> stack(new CallStack());

@@ -89,7 +89,9 @@ class Stackwalker {
      DumpContext* context,
      MemoryRegion* memory,
      const CodeModules* modules,
+     const CodeModules* unloaded_modules,
      StackFrameSymbolizer* resolver_helper);
+
 
   static void set_max_frames(uint32_t max_frames) {
     max_frames_ = max_frames;
@@ -188,6 +190,11 @@ class Stackwalker {
   // A list of modules, for populating each StackFrame's module information.
   // This field is optional and may be NULL.
   const CodeModules* modules_;
+
+  // A list of unloaded modules, for populating frames which aren't matched
+  // to any loaded modules.
+  // This field is optional and may be NULL.
+  const CodeModules* unloaded_modules_;
 
  protected:
   // The StackFrameSymbolizer implementation.
