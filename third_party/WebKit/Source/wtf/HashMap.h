@@ -23,6 +23,7 @@
 
 #include "wtf/HashTable.h"
 #include "wtf/allocator/PartitionAllocator.h"
+#include <initializer_list>
 
 namespace WTF {
 
@@ -88,6 +89,15 @@ class HashMap {
                   "Cannot put raw pointers to garbage-collected classes into "
                   "an off-heap HashMap.  Use HeapHashMap<> instead.");
   }
+  HashMap(const HashMap&) = default;
+  HashMap& operator=(const HashMap&) = default;
+  HashMap(HashMap&&) = default;
+  HashMap& operator=(HashMap&&) = default;
+
+  // For example, HashMap<int, int>({{1, 11}, {2, 22}, {3, 33}}) will give you
+  // a HashMap containing a mapping {1 -> 11, 2 -> 22, 3 -> 33}.
+  HashMap(std::initializer_list<ValueType> elements);
+  HashMap& operator=(std::initializer_list<ValueType> elements);
 
   typedef HashTableIteratorAdapter<HashTableType, ValueType> iterator;
   typedef HashTableConstIteratorAdapter<HashTableType, ValueType>
@@ -329,6 +339,31 @@ struct HashMapTranslatorAdapter {
     ValueTraits::ValueTraits::store(std::forward<V>(mapped), location.value);
   }
 };
+
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+HashMap<T, U, V, W, X, Y>::HashMap(std::initializer_list<ValueType> elements) {
+  if (elements.size())
+    m_impl.reserveCapacityForSize(elements.size());
+  for (const ValueType& element : elements)
+    add(element.key, element.value);
+}
+
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+auto HashMap<T, U, V, W, X, Y>::operator=(
+    std::initializer_list<ValueType> elements) -> HashMap& {
+  *this = HashMap(std::move(elements));
+  return *this;
+}
 
 template <typename T,
           typename U,

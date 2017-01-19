@@ -653,6 +653,62 @@ TEST(HashMapTest, MoveOnlyPairKeyType) {
   map.clear();
 }
 
+bool isOneTwoThree(const HashMap<int, int>& map) {
+  return map.size() == 3 && map.contains(1) && map.contains(2) &&
+         map.contains(3) && map.get(1) == 11 && map.get(2) == 22 &&
+         map.get(3) == 33;
+};
+
+HashMap<int, int> returnOneTwoThree() {
+  return {{1, 11}, {2, 22}, {3, 33}};
+};
+
+TEST(HashMapTest, InitializerList) {
+  HashMap<int, int> empty({});
+  EXPECT_TRUE(empty.isEmpty());
+
+  HashMap<int, int> one({{1, 11}});
+  EXPECT_EQ(one.size(), 1u);
+  EXPECT_TRUE(one.contains(1));
+  EXPECT_EQ(one.get(1), 11);
+
+  HashMap<int, int> oneTwoThree({{1, 11}, {2, 22}, {3, 33}});
+  EXPECT_EQ(oneTwoThree.size(), 3u);
+  EXPECT_TRUE(oneTwoThree.contains(1));
+  EXPECT_TRUE(oneTwoThree.contains(2));
+  EXPECT_TRUE(oneTwoThree.contains(3));
+  EXPECT_EQ(oneTwoThree.get(1), 11);
+  EXPECT_EQ(oneTwoThree.get(2), 22);
+  EXPECT_EQ(oneTwoThree.get(3), 33);
+
+  // Put some jank so we can check if the assignments can clear them later.
+  empty.add(9999, 99999);
+  one.add(9999, 99999);
+  oneTwoThree.add(9999, 99999);
+
+  empty = {};
+  EXPECT_TRUE(empty.isEmpty());
+
+  one = {{1, 11}};
+  EXPECT_EQ(one.size(), 1u);
+  EXPECT_TRUE(one.contains(1));
+  EXPECT_EQ(one.get(1), 11);
+
+  oneTwoThree = {{1, 11}, {2, 22}, {3, 33}};
+  EXPECT_EQ(oneTwoThree.size(), 3u);
+  EXPECT_TRUE(oneTwoThree.contains(1));
+  EXPECT_TRUE(oneTwoThree.contains(2));
+  EXPECT_TRUE(oneTwoThree.contains(3));
+  EXPECT_EQ(oneTwoThree.get(1), 11);
+  EXPECT_EQ(oneTwoThree.get(2), 22);
+  EXPECT_EQ(oneTwoThree.get(3), 33);
+
+  // Other ways of construction: as a function parameter and in a return
+  // statement.
+  EXPECT_TRUE(isOneTwoThree({{1, 11}, {2, 22}, {3, 33}}));
+  EXPECT_TRUE(isOneTwoThree(returnOneTwoThree()));
+}
+
 }  // anonymous namespace
 
 }  // namespace WTF
