@@ -47,8 +47,10 @@ const IntelUarchTableEntry kIntelUarchTable[] = {
   {"06_46", "Haswell"},
   {"06_47", "Broadwell"},  // Broadwell-H
   {"06_4C", "Airmont"},    // Braswell
+  {"06_4D", "Silvermont"}, // Avoton/Rangely
   {"06_4E", "Skylake"},
   {"06_56", "Broadwell"},  // Broadwell-DE
+  {"06_5E", "Skylake"},
   {"0F_03", "Prescott"},
   {"0F_04", "Prescott"},
   {"0F_06", "Presler"},
