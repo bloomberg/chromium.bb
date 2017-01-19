@@ -53,6 +53,8 @@ bool PrePaintTreeWalk::walk(FrameView& frameView,
   }
 
   PrePaintTreeWalkContext context(parentContext);
+  // ancestorOverflowLayer does not cross frame boundaries.
+  context.ancestorOverflowPaintLayer = nullptr;
   m_propertyTreeBuilder.updateProperties(frameView, context.treeBuilderContext);
   m_paintInvalidator.invalidatePaintIfNeeded(frameView,
                                              context.paintInvalidatorContext);
