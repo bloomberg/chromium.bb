@@ -1936,6 +1936,53 @@ Node* CompositeEditCommand::splitTreeToNode(Node* start,
   return node;
 }
 
+void CompositeEditCommand::setStartingSelection(
+    const VisibleSelection& selection) {
+  for (CompositeEditCommand* command = this;; command = command->parent()) {
+    if (UndoStep* undoStep = command->undoStep()) {
+      DCHECK(command->isTopLevelCommand());
+      undoStep->setStartingSelection(selection);
+    }
+    command->m_startingSelection = selection;
+    if (!command->parent() || command->parent()->isFirstCommand(command))
+      break;
+  }
+}
+
+// TODO(yosin): We will make |SelectionInDOMTree| version of
+// |setEndingSelection()| as primary function instead of wrapper, once
+// |EditCommand| holds other than |VisibleSelection|.
+void CompositeEditCommand::setEndingSelection(
+    const SelectionInDOMTree& selection) {
+  // TODO(editing-dev): The use of
+  // updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  setEndingVisibleSelection(createVisibleSelection(selection));
+}
+
+// TODO(yosin): We will make |SelectionInDOMTree| version of
+// |setEndingSelection()| as primary function instead of wrapper.
+void CompositeEditCommand::setEndingVisibleSelection(
+    const VisibleSelection& selection) {
+  for (CompositeEditCommand* command = this; command;
+       command = command->parent()) {
+    if (UndoStep* undoStep = command->undoStep()) {
+      DCHECK(command->isTopLevelCommand());
+      undoStep->setEndingSelection(selection);
+    }
+    command->m_endingSelection = selection;
+  }
+}
+
+void CompositeEditCommand::setParent(CompositeEditCommand* parent) {
+  EditCommand::setParent(parent);
+  if (!parent)
+    return;
+  m_startingSelection = parent->m_endingSelection;
+  m_endingSelection = parent->m_endingSelection;
+}
+
 DEFINE_TRACE(CompositeEditCommand) {
   visitor->trace(m_commands);
   visitor->trace(m_startingSelection);
