@@ -101,6 +101,7 @@ if (use_system_harfbuzz) {
       "src/hb-ot-layout.h",
       "src/hb-ot-map-private.hh",
       "src/hb-ot-map.cc",
+      "src/hb-ot-math.cc",
       "src/hb-ot-maxp-table.hh",
       "src/hb-ot-name-table.hh",
       "src/hb-ot-shape-complex-arabic-fallback.hh",
