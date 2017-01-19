@@ -243,7 +243,11 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     }
 
     static int getMediaType(Uri uri) {
-        String path = uri.getPath().toLowerCase(Locale.US);
+        String path = uri.getPath();
+
+        if (path == null) return MEDIA_TYPE_UNKNOWN;
+
+        path = path.toLowerCase(Locale.US);
         if (path.endsWith(".m3u8")) return MEDIA_TYPE_HLS;
         if (path.endsWith(".mp4")) return MEDIA_TYPE_MPEG4;
         if (path.endsWith(".mpd")) return MEDIA_TYPE_DASH;
