@@ -3666,25 +3666,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  SEL selector = @selector(webController:
-         runAuthDialogForProtectionSpace:
-                      proposedCredential:
-                       completionHandler:);
-  if (![self.UIDelegate respondsToSelector:selector]) {
-    // Embedder does not support HTTP Authentication.
-    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-    return;
-  }
-
-  [self.UIDelegate webController:self
-      runAuthDialogForProtectionSpace:space
-                   proposedCredential:challenge.proposedCredential
-                    completionHandler:^(NSString* user, NSString* password) {
-                      [CRWWebController
-                          processHTTPAuthForUser:user
+  _webStateImpl->OnAuthRequired(
+      space, challenge.proposedCredential,
+      base::BindBlock(^(NSString* user, NSString* password) {
+        [CRWWebController processHTTPAuthForUser:user
                                         password:password
                                completionHandler:completionHandler];
-                    }];
+      }));
 }
 
 + (void)processHTTPAuthForUser:(NSString*)user

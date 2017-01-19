@@ -437,6 +437,23 @@ TEST_F(WebStateTest, DelegateTest) {
   EXPECT_FALSE(presenter->cancel_dialogs_called());
   web_state_->CancelDialogs();
   EXPECT_TRUE(presenter->cancel_dialogs_called());
+
+  // Test that OnAuthRequired() is called.
+  EXPECT_FALSE(delegate.last_authentication_request());
+  base::scoped_nsobject<NSURLProtectionSpace> protection_space(
+      [[NSURLProtectionSpace alloc] init]);
+  base::scoped_nsobject<NSURLCredential> credential(
+      [[NSURLCredential alloc] init]);
+  WebStateDelegate::AuthCallback callback;
+  web_state_->OnAuthRequired(protection_space.get(), credential.get(),
+                             callback);
+  ASSERT_TRUE(delegate.last_authentication_request());
+  EXPECT_EQ(delegate.last_authentication_request()->web_state,
+            web_state_.get());
+  EXPECT_EQ(delegate.last_authentication_request()->protection_space,
+            protection_space.get());
+  EXPECT_EQ(delegate.last_authentication_request()->credential,
+            credential.get());
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.

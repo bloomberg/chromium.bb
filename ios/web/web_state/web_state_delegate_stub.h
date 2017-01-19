@@ -23,6 +23,9 @@
 @property(nonatomic, readonly) web::ContextMenuParams* contextMenuParams;
 // Whether |javaScriptDialogPresenterForWebState:| has been called or not.
 @property(nonatomic, readonly) BOOL javaScriptDialogPresenterRequested;
+// Whether |authenticationRequested| has been called or not.
+@property(nonatomic, readonly) BOOL authenticationRequested;
+
 @end
 
 #endif  // IOS_WEB_WEB_STATE_WEB_STATE_DELEGATE_STUB_H_

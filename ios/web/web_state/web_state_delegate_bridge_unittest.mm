@@ -4,6 +4,8 @@
 
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 
+#import <Foundation/Foundation.h>
+
 #include <memory>
 
 #import "base/mac/scoped_nsobject.h"
@@ -100,6 +102,21 @@ TEST_F(WebStateDelegateBridgeTest, GetJavaScriptDialogPresenter) {
   EXPECT_FALSE([delegate_ javaScriptDialogPresenterRequested]);
   bridge_->GetJavaScriptDialogPresenter(nullptr);
   EXPECT_TRUE([delegate_ javaScriptDialogPresenterRequested]);
+}
+
+// Tests |OnAuthRequired| forwarding.
+TEST_F(WebStateDelegateBridgeTest, OnAuthRequired) {
+  EXPECT_FALSE([delegate_ authenticationRequested]);
+  EXPECT_FALSE([delegate_ webState]);
+  base::scoped_nsobject<NSURLProtectionSpace> protection_space(
+      [[NSURLProtectionSpace alloc] init]);
+  base::scoped_nsobject<NSURLCredential> credential(
+      [[NSURLCredential alloc] init]);
+  WebStateDelegate::AuthCallback callback;
+  bridge_->OnAuthRequired(&test_web_state_, protection_space.get(),
+                          credential.get(), callback);
+  EXPECT_TRUE([delegate_ authenticationRequested]);
+  EXPECT_EQ(&test_web_state_, [delegate_ webState]);
 }
 
 }  // namespace web

@@ -46,4 +46,27 @@ JavaScriptDialogPresenter* WebStateDelegateBridge::GetJavaScriptDialogPresenter(
   return nullptr;
 }
 
+void WebStateDelegateBridge::OnAuthRequired(
+    WebState* source,
+    NSURLProtectionSpace* protection_space,
+    NSURLCredential* proposed_credential,
+    const AuthCallback& callback) {
+  AuthCallback local_callback(callback);
+  if ([delegate_
+          respondsToSelector:@selector(webState:
+                                 didRequestHTTPAuthForProtectionSpace:
+                                                   proposedCredential:
+                                                    completionHandler:)]) {
+    [delegate_ webState:source
+        didRequestHTTPAuthForProtectionSpace:protection_space
+                          proposedCredential:proposed_credential
+                           completionHandler:^(NSString* username,
+                                               NSString* password) {
+                             local_callback.Run(username, password);
+                           }];
+  } else {
+    local_callback.Run(nil, nil);
+  }
+}
+
 }  // web

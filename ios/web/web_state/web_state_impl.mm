@@ -468,6 +468,18 @@ void WebStateImpl::RunJavaScriptDialog(
                                  message_text, default_prompt_text, callback);
 }
 
+void WebStateImpl::OnAuthRequired(
+    NSURLProtectionSpace* protection_space,
+    NSURLCredential* proposed_credential,
+    const WebStateDelegate::AuthCallback& callback) {
+  if (delegate_) {
+    delegate_->OnAuthRequired(this, protection_space, proposed_credential,
+                              callback);
+  } else {
+    callback.Run(nil, nil);
+  }
+}
+
 void WebStateImpl::CancelDialogs() {
   if (delegate_) {
     JavaScriptDialogPresenter* presenter =

@@ -2169,21 +2169,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 #pragma mark - WebUserInterfaceDelegate methods.
 
-- (void)webController:(CRWWebController*)webController
-    runAuthDialogForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
-                 proposedCredential:(NSURLCredential*)credential
-                  completionHandler:
-                      (void (^)(NSString* user, NSString* password))handler {
-  if (self.dialogDelegate) {
-    [self.dialogDelegate tab:self
-        runAuthDialogForProtectionSpace:protectionSpace
-                     proposedCredential:credential
-                      completionHandler:handler];
-  } else if (handler) {
-    handler(nil, nil);
-  }
-}
-
 - (void)cancelDialogsForWebController:(CRWWebController*)webController {
   [self.dialogDelegate cancelDialogForTab:self];
 }

@@ -18,6 +18,7 @@
 
 @synthesize webState = _webState;
 @synthesize changedProgress = _changedProgress;
+@synthesize authenticationRequested = _authenticationRequested;
 
 - (web::WebState*)webState:(web::WebState*)webState
          openURLWithParams:(const web::WebState::OpenURLParams&)params {
@@ -43,6 +44,15 @@
   _webState = webState;
   _javaScriptDialogPresenterRequested = YES;
   return nil;
+}
+
+- (void)webState:(web::WebState*)webState
+    didRequestHTTPAuthForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
+                      proposedCredential:(NSURLCredential*)proposedCredential
+                       completionHandler:(void (^)(NSString* username,
+                                                   NSString* password))handler {
+  _webState = webState;
+  _authenticationRequested = YES;
 }
 
 - (const web::WebState::OpenURLParams*)openURLParams {

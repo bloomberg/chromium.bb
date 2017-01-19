@@ -16,18 +16,6 @@
 
  @optional
 
-// Displays an HTTP authentication dialog.  |completionHandler| should be called
-// with non-nil |username| and |password| if embedder wants to proceed with
-// authentication.  If this selector isn't implemented or completion is called
-// with nil |username| and nil |password|, authentication will be cancelled.
-// If this method is implemented, but |handler| is not called then
-// NSInternalInconsistencyException will be thrown.
-- (void)webController:(CRWWebController*)webController
-    runAuthDialogForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
-                 proposedCredential:(NSURLCredential*)credential
-                  completionHandler:
-                      (void (^)(NSString* user, NSString* password))handler;
-
 // Cancels any outstanding dialogs requested by the methods above.
 - (void)cancelDialogsForWebController:(CRWWebController*)webController;
 

@@ -23,6 +23,7 @@
 #import "ios/web/public/java_script_dialog_callback.h"
 #include "ios/web/public/java_script_dialog_type.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_delegate.h"
 #include "url/gurl.h"
 
 @protocol CRWRequestTrackerDelegate;
@@ -45,7 +46,6 @@ struct LoadCommittedDetails;
 class NavigationManager;
 class ImageDataFetcher;
 class WebInterstitialImpl;
-class WebStateDelegate;
 class WebStateFacadeDelegate;
 class WebStatePolicyDecider;
 class WebUIIOS;
@@ -276,6 +276,12 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                            NSString* message_text,
                            NSString* default_prompt_text,
                            const DialogClosedCallback& callback);
+
+  // Notifies the delegate that request receives an authentication challenge
+  // and is unable to respond using cached credentials.
+  void OnAuthRequired(NSURLProtectionSpace* protection_space,
+                      NSURLCredential* proposed_credential,
+                      const WebStateDelegate::AuthCallback& callback);
 
   // Cancels all dialogs associated with this web_state.
   void CancelDialogs();

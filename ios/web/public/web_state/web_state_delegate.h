@@ -7,6 +7,8 @@
 
 #include <set>
 
+#import <Foundation/Foundation.h>
+
 #include "base/callback.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -42,6 +44,17 @@ class WebStateDelegate {
   // TODO(crbug.com/622084): Find better place for this method.
   virtual JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
       WebState* source);
+
+  // Called when a request receives an authentication challenge specified by
+  // |protection_space|, and is unable to respond using cached credentials.
+  // Clients must call |callback| even if they want to cancel authentication
+  // (in which case |username| or |password| should be nil).
+  typedef base::Callback<void(NSString* username, NSString* password)>
+      AuthCallback;
+  virtual void OnAuthRequired(WebState* source,
+                              NSURLProtectionSpace* protection_space,
+                              NSURLCredential* proposed_credential,
+                              const AuthCallback& callback) = 0;
 
  protected:
   virtual ~WebStateDelegate();

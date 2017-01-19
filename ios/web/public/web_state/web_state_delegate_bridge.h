@@ -35,6 +35,15 @@
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState;
 
+// Called when a request receives an authentication challenge specified by
+// |protectionSpace|, and is unable to respond using cached credentials.
+// Clients must call |handler| even if they want to cancel authentication
+// (in which case |username| or |password| should be nil).
+- (void)webState:(web::WebState*)webState
+    didRequestHTTPAuthForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
+                      proposedCredential:(NSURLCredential*)proposedCredential
+                       completionHandler:(void (^)(NSString* username,
+                                                   NSString* password))handler;
 @end
 
 namespace web {
@@ -53,6 +62,10 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
                          const ContextMenuParams& params) override;
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
       WebState* source) override;
+  void OnAuthRequired(WebState* source,
+                      NSURLProtectionSpace* protection_space,
+                      NSURLCredential* proposed_credential,
+                      const AuthCallback& callback) override;
 
  private:
   // CRWWebStateDelegate which receives forwarded calls.

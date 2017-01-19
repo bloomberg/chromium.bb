@@ -35,6 +35,13 @@ JavaScriptDialogPresenter* WebStateDelegate::GetJavaScriptDialogPresenter(
   return nullptr;
 }
 
+void WebStateDelegate::OnAuthRequired(WebState* source,
+                                      NSURLProtectionSpace* protection_space,
+                                      NSURLCredential* proposed_credential,
+                                      const AuthCallback& callback) {
+  callback.Run(nil, nil);
+}
+
 void WebStateDelegate::Attach(WebState* source) {
   DCHECK(attached_states_.find(source) == attached_states_.end());
   attached_states_.insert(source);

@@ -10,15 +10,6 @@
 // A protocol delegating the display of dialogs for a Tab.
 @protocol TabDialogDelegate
 
-// Displays an HTTP authentication dialog. |completionHandler| should be called
-// with non nil |username| and |password| in order to proceed with
-// authentication.
-- (void)tab:(Tab*)tab
-    runAuthDialogForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
-                 proposedCredential:(NSURLCredential*)credential
-                  completionHandler:
-                      (void (^)(NSString* user, NSString* password))handler;
-
 // Called by Tabs to cancel a previously-requested dialog.
 - (void)cancelDialogForTab:(Tab*)tab;
 

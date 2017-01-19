@@ -2574,6 +2574,17 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   return _javaScriptDialogPresenter.get();
 }
 
+- (void)webState:(web::WebState*)webState
+    didRequestHTTPAuthForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
+                      proposedCredential:(NSURLCredential*)proposedCredential
+                       completionHandler:(void (^)(NSString* username,
+                                                   NSString* password))handler {
+  [self.dialogPresenter runAuthDialogForProtectionSpace:protectionSpace
+                                     proposedCredential:proposedCredential
+                                               webState:webState
+                                      completionHandler:handler];
+}
+
 #pragma mark - FullScreenControllerDelegate methods
 
 - (CGFloat)headerOffset {
@@ -5080,17 +5091,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 #pragma mark - TabDialogDelegate methods
-
-- (void)tab:(Tab*)tab
-    runAuthDialogForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
-                 proposedCredential:(NSURLCredential*)credential
-                  completionHandler:
-                      (void (^)(NSString* user, NSString* password))handler {
-  [self.dialogPresenter runAuthDialogForProtectionSpace:protectionSpace
-                                     proposedCredential:credential
-                                               webState:tab.webState
-                                      completionHandler:handler];
-}
 
 - (void)cancelDialogForTab:(Tab*)tab {
   [self.dialogPresenter cancelDialogForWebState:tab.webState];
