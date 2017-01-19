@@ -359,7 +359,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kUninitialized);
-  DVLOG(2) << "Initializing VAVDA, profile: " << profile;
+  DVLOG(2) << "Initializing VAVDA, profile: " << GetProfileName(profile);
 
 #if defined(USE_X11)
   if (gl::GetGLImplementation() != gl::kGLImplementationDesktopGL) {
@@ -379,7 +379,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
       VaapiWrapper::kDecode, profile, base::Bind(&ReportToUMA, VAAPI_ERROR));
 
   if (!vaapi_wrapper_.get()) {
-    DVLOG(1) << "Failed initializing VAAPI for profile " << profile;
+    DVLOG(1) << "Failed initializing VAAPI for profile "
+             << GetProfileName(profile);
     return false;
   }
 
@@ -394,7 +395,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
     vp9_accelerator_.reset(new VaapiVP9Accelerator(this, vaapi_wrapper_.get()));
     decoder_.reset(new VP9Decoder(vp9_accelerator_.get()));
   } else {
-    DLOG(ERROR) << "Unsupported profile " << profile;
+    DLOG(ERROR) << "Unsupported profile " << GetProfileName(profile);
     return false;
   }
 

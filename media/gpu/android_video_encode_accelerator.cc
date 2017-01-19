@@ -156,7 +156,8 @@ bool AndroidVideoEncodeAccelerator::Initialize(
 
   if (!(MediaCodecUtil::SupportsSetParameters() &&
         format == PIXEL_FORMAT_I420)) {
-    DLOG(ERROR) << "Unexpected combo: " << format << ", " << output_profile;
+    DLOG(ERROR) << "Unexpected combo: " << format << ", "
+                << GetProfileName(output_profile);
     return false;
   }
 

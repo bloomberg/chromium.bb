@@ -253,7 +253,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       factories_->GetVideoDecodeAcceleratorCapabilities();
   if (!IsProfileSupported(capabilities, config.profile(), config.coded_size(),
                           config.is_encrypted())) {
-    DVLOG(1) << "Unsupported profile " << config.profile()
+    DVLOG(1) << "Unsupported profile " << GetProfileName(config.profile())
              << ", unsupported coded size " << config.coded_size().ToString()
              << ", or accelerator should only be used for encrypted content. "
              << " is_encrypted: " << (config.is_encrypted() ? "yes." : "no.");

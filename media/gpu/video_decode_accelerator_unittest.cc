@@ -1012,7 +1012,7 @@ static bool FragmentHasConfigInfo(const uint8_t* data,
     return (size > 0 && !(data[0] & 0x01));
   }
   // Shouldn't happen at this point.
-  LOG(FATAL) << "Invalid profile: " << profile;
+  LOG(FATAL) << "Invalid profile: " << GetProfileName(profile);
   return false;
 }
 

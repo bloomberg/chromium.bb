@@ -167,7 +167,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
   DVLOGF(1) << "Initializing VAVEA, input_format: "
             << VideoPixelFormatToString(format)
             << ", input_visible_size: " << input_visible_size.ToString()
-            << ", output_profile: " << output_profile
+            << ", output_profile: " << GetProfileName(output_profile)
             << ", initial_bitrate: " << initial_bitrate;
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
@@ -179,7 +179,8 @@ bool VaapiVideoEncodeAccelerator::Initialize(
                            return profile.profile == output_profile;
                          });
   if (profile == profiles.end()) {
-    DVLOGF(1) << "Unsupported output profile " << output_profile;
+    DVLOGF(1) << "Unsupported output profile "
+              << GetProfileName(output_profile);
     return false;
   }
   if (input_visible_size.width() > profile->max_resolution.width() ||
@@ -212,7 +213,8 @@ bool VaapiVideoEncodeAccelerator::Initialize(
       VaapiWrapper::CreateForVideoCodec(VaapiWrapper::kEncode, output_profile,
                                         base::Bind(&ReportToUMA, VAAPI_ERROR));
   if (!vaapi_wrapper_.get()) {
-    DVLOGF(1) << "Failed initializing VAAPI for profile " << output_profile;
+    DVLOGF(1) << "Failed initializing VAAPI for profile "
+              << GetProfileName(output_profile);
     return false;
   }
 

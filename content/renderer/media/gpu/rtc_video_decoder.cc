@@ -739,7 +739,7 @@ void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (!IsProfileSupported(profile)) {
-    DVLOG(1) << "Unsupported profile " << profile;
+    DVLOG(1) << "Unsupported profile " << GetProfileName(profile);
   } else {
     vda_ = factories_->CreateVideoDecodeAccelerator();
 

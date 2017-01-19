@@ -123,7 +123,7 @@ bool VTVideoEncodeAccelerator::Initialize(VideoPixelFormat format,
                                           Client* client) {
   DVLOG(3) << __func__ << ": input_format=" << VideoPixelFormatToString(format)
            << ", input_visible_size=" << input_visible_size.ToString()
-           << ", output_profile=" << output_profile
+           << ", output_profile=" << GetProfileName(output_profile)
            << ", initial_bitrate=" << initial_bitrate;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(client);
@@ -134,7 +134,8 @@ bool VTVideoEncodeAccelerator::Initialize(VideoPixelFormat format,
     return false;
   }
   if (H264PROFILE_BASELINE != output_profile) {
-    DLOG(ERROR) << "Output profile not supported= " << output_profile;
+    DLOG(ERROR) << "Output profile not supported= "
+                << GetProfileName(output_profile);
     return false;
   }
 

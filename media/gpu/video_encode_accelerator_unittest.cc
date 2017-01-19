@@ -700,7 +700,7 @@ std::unique_ptr<StreamValidator> StreamValidator::Create(
   } else if (IsVP8(profile)) {
     validator.reset(new VP8Validator(frame_cb));
   } else {
-    LOG(FATAL) << "Unsupported profile: " << profile;
+    LOG(FATAL) << "Unsupported profile: " << GetProfileName(profile);
   }
 
   return validator;
@@ -773,7 +773,7 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
                       COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
                       natural_size, EmptyExtraData(), Unencrypted());
   else
-    LOG_ASSERT(0) << "Invalid profile " << profile_;
+    LOG_ASSERT(0) << "Invalid profile " << GetProfileName(profile_);
 
   decoder_->Initialize(
       config, false, nullptr,

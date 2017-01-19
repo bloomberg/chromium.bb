@@ -289,7 +289,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
       codec_config_->codec != kCodecHEVC &&
 #endif
       codec_config_->codec != kCodecH264) {
-    DLOG(ERROR) << "Unsupported profile: " << config.profile;
+    DLOG(ERROR) << "Unsupported profile: " << GetProfileName(config.profile);
     return false;
   }
 
