@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"

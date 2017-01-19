@@ -5,9 +5,12 @@
 #import "components/translate/ios/browser/js_language_detection_manager.h"
 
 #include "base/callback.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace language_detection {
 // Note: This should stay in sync with the constant in language_detection.js.

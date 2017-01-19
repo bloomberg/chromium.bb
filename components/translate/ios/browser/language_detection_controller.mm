@@ -18,6 +18,10 @@
 #import "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_state/web_state.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace translate {
 
 namespace {
@@ -33,7 +37,7 @@ LanguageDetectionController::LanguageDetectionController(
     JsLanguageDetectionManager* manager,
     PrefService* prefs)
     : web::WebStateObserver(web_state),
-      js_manager_([manager retain]),
+      js_manager_(manager),
       weak_method_factory_(this) {
   DCHECK(web::WebStateObserver::web_state());
   DCHECK(js_manager_);

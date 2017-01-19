@@ -5,6 +5,7 @@
 import("//ios/web/js_compile.gni")
 
 source_set("browser") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_translate_driver.h",
     "ios_translate_driver.mm",
