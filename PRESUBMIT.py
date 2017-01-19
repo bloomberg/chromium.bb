@@ -1965,6 +1965,7 @@ _DEPRECATED_CSS = [
   ( "-webkit-background-origin", "background-origin" ),
   ( "-webkit-background-size", "background-size" ),
   ( "-webkit-box-shadow", "box-shadow" ),
+  ( "-webkit-user-select", "user-select" ),
 
   # Functions
   ( "-webkit-gradient", "gradient" ),
