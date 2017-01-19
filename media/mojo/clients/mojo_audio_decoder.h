@@ -45,6 +45,8 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   void OnBufferDecoded(mojom::AudioBufferPtr buffer) final;
 
  private:
+  void BindRemoteDecoder();
+
   // Callback for connection error on |remote_decoder_|.
   void OnConnectionError();
 
@@ -80,12 +82,9 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   DecodeCB decode_cb_;
   base::Closure reset_cb_;
 
-  // Flag that is set if we got connection error. Never cleared.
-  bool has_connection_error_;
-
   // Flag telling whether this decoder requires bitstream conversion.
   // Passed from |remote_decoder_| as a result of its initialization.
-  bool needs_bitstream_conversion_;
+  bool needs_bitstream_conversion_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioDecoder);
 };

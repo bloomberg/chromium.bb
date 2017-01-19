@@ -24,9 +24,7 @@ MojoAudioDecoder::MojoAudioDecoder(
     mojom::AudioDecoderPtr remote_decoder)
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
-      client_binding_(this),
-      has_connection_error_(false),
-      needs_bitstream_conversion_(false) {
+      client_binding_(this) {
   DVLOG(1) << __func__;
 }
 
@@ -45,8 +43,14 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // Bind |remote_decoder_| to the |task_runner_|.
-  remote_decoder_.Bind(std::move(remote_decoder_info_));
+  if (!remote_decoder_.is_bound())
+    BindRemoteDecoder();
+
+  // This could happen during reinitialization.
+  if (remote_decoder_.encountered_error()) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
+    return;
+  }
 
   // Fail immediately if the stream is encrypted but |cdm_context| is invalid.
   int cdm_id = (config.is_encrypted() && cdm_context)
@@ -58,23 +62,13 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
     return;
   }
 
-  // Otherwise, set an error handler to catch the connection error.
-  // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
-  // and the error handler can't be invoked once |remote_decoder_| is destroyed.
-  remote_decoder_.set_connection_error_handler(
-      base::Bind(&MojoAudioDecoder::OnConnectionError, base::Unretained(this)));
-
   init_cb_ = init_cb;
   output_cb_ = output_cb;
-
-  mojom::AudioDecoderClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(&client_ptr_info, remote_decoder_.associated_group());
 
   // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
   // and the callback won't be dispatched if |remote_decoder_| is destroyed.
   remote_decoder_->Initialize(
-      std::move(client_ptr_info), mojom::AudioDecoderConfig::From(config),
-      cdm_id,
+      mojom::AudioDecoderConfig::From(config), cdm_id,
       base::Bind(&MojoAudioDecoder::OnInitialized, base::Unretained(this)));
 }
 
@@ -83,7 +77,7 @@ void MojoAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& media_buffer,
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (has_connection_error_) {
+  if (remote_decoder_.encountered_error()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
     return;
@@ -109,7 +103,7 @@ void MojoAudioDecoder::Reset(const base::Closure& closure) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (has_connection_error_) {
+  if (remote_decoder_.encountered_error()) {
     if (!decode_cb_.is_null()) {
       task_runner_->PostTask(FROM_HERE,
                              base::Bind(base::ResetAndReturn(&decode_cb_),
@@ -133,6 +127,23 @@ bool MojoAudioDecoder::NeedsBitstreamConversion() const {
   return needs_bitstream_conversion_;
 }
 
+void MojoAudioDecoder::BindRemoteDecoder() {
+  DVLOG(1) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  remote_decoder_.Bind(std::move(remote_decoder_info_));
+
+  // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
+  // and the error handler can't be invoked once |remote_decoder_| is destroyed.
+  remote_decoder_.set_connection_error_handler(
+      base::Bind(&MojoAudioDecoder::OnConnectionError, base::Unretained(this)));
+
+  mojom::AudioDecoderClientAssociatedPtrInfo client_ptr_info;
+  client_binding_.Bind(&client_ptr_info, remote_decoder_.associated_group());
+
+  remote_decoder_->Construct(std::move(client_ptr_info));
+}
+
 void MojoAudioDecoder::OnBufferDecoded(mojom::AudioBufferPtr buffer) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -143,8 +154,7 @@ void MojoAudioDecoder::OnBufferDecoded(mojom::AudioBufferPtr buffer) {
 void MojoAudioDecoder::OnConnectionError() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  has_connection_error_ = true;
+  DCHECK(remote_decoder_.encountered_error());
 
   if (!init_cb_.is_null()) {
     base::ResetAndReturn(&init_cb_).Run(false);
@@ -164,7 +174,7 @@ void MojoAudioDecoder::OnInitialized(bool success,
 
   needs_bitstream_conversion_ = needs_bitstream_conversion;
 
-  if (success) {
+  if (success && !mojo_decoder_buffer_writer_) {
     mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
     mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
         DemuxerStream::AUDIO, &remote_consumer_handle);

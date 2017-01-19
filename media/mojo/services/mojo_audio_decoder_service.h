@@ -31,8 +31,8 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService
   ~MojoAudioDecoderService() final;
 
   // mojom::AudioDecoder implementation
-  void Initialize(mojom::AudioDecoderClientAssociatedPtrInfo client,
-                  mojom::AudioDecoderConfigPtr config,
+  void Construct(mojom::AudioDecoderClientAssociatedPtrInfo client) final;
+  void Initialize(mojom::AudioDecoderConfigPtr config,
                   int32_t cdm_id,
                   const InitializeCallback& callback) final;
 

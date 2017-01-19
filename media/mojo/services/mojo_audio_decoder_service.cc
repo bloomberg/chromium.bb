@@ -26,8 +26,13 @@ MojoAudioDecoderService::MojoAudioDecoderService(
 
 MojoAudioDecoderService::~MojoAudioDecoderService() {}
 
+void MojoAudioDecoderService::Construct(
+    mojom::AudioDecoderClientAssociatedPtrInfo client) {
+  DVLOG(1) << __func__;
+  client_.Bind(std::move(client));
+}
+
 void MojoAudioDecoderService::Initialize(
-    mojom::AudioDecoderClientAssociatedPtrInfo client,
     mojom::AudioDecoderConfigPtr config,
     int32_t cdm_id,
     const InitializeCallback& callback) {
@@ -58,8 +63,6 @@ void MojoAudioDecoderService::Initialize(
       return;
     }
   }
-
-  client_.Bind(std::move(client));
 
   decoder_->Initialize(
       config.To<media::AudioDecoderConfig>(), cdm_context,

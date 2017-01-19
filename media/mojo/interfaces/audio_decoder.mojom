@@ -7,12 +7,18 @@ module media.mojom;
 import "media/mojo/interfaces/media_types.mojom";
 
 interface AudioDecoder {
+  // Initialize the decoder. This must be called before any other method.
+  //
+  // TODO(sandersd): Rename to Initialize() if/when
+  // media::AudioDecoder::Initialize() is renamed to Configure().
+  Construct(associated AudioDecoderClient client);
+
   // Initializes the AudioDecoder with the audio codec configuration and CDM id.
   // For the unencrypted streams the |cdm_id| is ignored. Executed the callback
   // with whether the initialization succeeded, and whether the pipeline needs
   // bitstream conversion.
-  Initialize(associated AudioDecoderClient client, AudioDecoderConfig config,
-             int32 cdm_id) => (bool success, bool needs_bitstream_conversion);
+  Initialize(AudioDecoderConfig config, int32 cdm_id)
+    => (bool success, bool needs_bitstream_conversion);
 
   // Establishes data connection. Should be called before Decode().
   SetDataSource(handle<data_pipe_consumer> receive_pipe);
