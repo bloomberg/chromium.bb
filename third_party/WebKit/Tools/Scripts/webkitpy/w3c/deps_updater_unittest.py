@@ -62,6 +62,21 @@ class DepsUpdaterTest(unittest.TestCase):
 
     # Tests for protected methods - pylint: disable=protected-access
 
+    def test_commit_changes(self):
+        host = MockHost()
+        updater = DepsUpdater(host)
+        updater._has_changes = lambda: True
+        updater._commit_changes('dummy message')
+        self.assertEqual(
+            host.executive.calls,
+            [['git', 'commit', '--all', '-F', '-']])
+
+    def test_commit_message(self):
+        updater = DepsUpdater(MockHost())
+        self.assertEqual(
+            updater._commit_message('aaaa', '1111'),
+            'Import 1111\n\nUsing update-w3c-deps in Chromium aaaa.\n\n')
+
     def test_cl_description_with_empty_environ(self):
         host = MockHost()
         host.executive = MockExecutive(output='Last commit message\n')

@@ -58,18 +58,26 @@ class DepsUpdater(object):
 
         _log.info('Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
-        chromium_commitish = show_ref_output.split()[0]
+        chromium_commit = show_ref_output.split()[0]
 
         if options.target == 'wpt':
-            import_commitish = self.update(WPT_DEST_NAME, WPT_REPO_URL, options.keep_w3c_repos_around, options.revision)
+            import_commit = self.update(WPT_DEST_NAME, WPT_REPO_URL, options.keep_w3c_repos_around, options.revision)
             self._copy_resources()
         elif options.target == 'css':
-            import_commitish = self.update(CSS_DEST_NAME, CSS_REPO_URL, options.keep_w3c_repos_around, options.revision)
+            import_commit = self.update(CSS_DEST_NAME, CSS_REPO_URL, options.keep_w3c_repos_around, options.revision)
         else:
             raise AssertionError("Unsupported target %s" % options.target)
 
-        has_changes = self.commit_changes_if_needed(chromium_commitish, import_commitish)
-        if options.auto_update and has_changes:
+        has_changes = self._has_changes()
+        if not has_changes:
+            _log.info('Done: no changes to import.')
+            return 0
+
+        commit_message = self._commit_message(chromium_commit, import_commit)
+        self._commit_changes(commit_message)
+        _log.info('Done: changes imported and committed.')
+
+        if options.auto_update:
             commit_successful = self.do_auto_update()
             if not commit_successful:
                 return 1
@@ -229,36 +237,28 @@ class DepsUpdater(object):
 
         return '%s@%s' % (dest_dir_name, master_commitish)
 
-    def commit_changes_if_needed(self, chromium_commitish, import_commitish):
-        if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
-            _log.info('Committing changes.')
-            commit_msg = ('Import %s\n'
-                          '\n'
-                          'Using update-w3c-deps in Chromium %s.\n'
-                          % (import_commitish, chromium_commitish))
-            path_to_commit_msg = self.path_from_webkit_base('commit_msg')
-            _log.debug('cat > %s <<EOF', path_to_commit_msg)
-            _log.debug(commit_msg)
-            _log.debug('EOF')
-            self.fs.write_text_file(path_to_commit_msg, commit_msg)
-            self.run(['git', 'commit', '-a', '-F', path_to_commit_msg])
-            self.remove(path_to_commit_msg)
-            _log.info('Done: changes imported and committed.')
-            return True
-        else:
-            _log.info('Done: no changes to import.')
-            return False
+    def _commit_changes(self, commit_message):
+        _log.info('Committing changes.')
+        self.run(['git', 'commit', '--all', '-F', '-'], stdin=commit_message)
+
+    def _has_changes(self):
+        return_code, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
+        return return_code == 1
+
+    def _commit_message(self, chromium_commit, import_commit):
+        return ('Import %s\n\nUsing update-w3c-deps in Chromium %s.\n\n' %
+                (import_commit, chromium_commit))
 
     @staticmethod
     def is_baseline(basename):
         return basename.endswith('-expected.txt')
 
-    def run(self, cmd, exit_on_failure=True, cwd=None):
+    def run(self, cmd, exit_on_failure=True, cwd=None, stdin=''):
         _log.debug('Running command: %s', ' '.join(cmd))
 
         cwd = cwd or self.finder.webkit_base()
-        proc = self.executive.popen(cmd, stdout=self.executive.PIPE, stderr=self.executive.PIPE, cwd=cwd)
-        out, err = proc.communicate()
+        proc = self.executive.popen(cmd, stdout=self.executive.PIPE, stderr=self.executive.PIPE, stdin=self.executive.PIPE)
+        out, err = proc.communicate(stdin)
         if proc.returncode or self.verbose:
             _log.info('# ret> %d', proc.returncode)
             if out:
