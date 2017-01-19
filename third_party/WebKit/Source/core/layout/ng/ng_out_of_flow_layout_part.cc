@@ -17,23 +17,22 @@ namespace blink {
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     PassRefPtr<const ComputedStyle> container_style,
     NGLogicalSize container_size) {
-  contains_fixed_ = container_style->canContainFixedPositionObjects();
-  contains_absolute_ =
-      container_style->canContainAbsolutePositionObjects() || contains_fixed_;
-  // Initialize ConstraintSpace
-  NGLogicalSize space_size = container_size;
+  NGWritingMode writing_mode(
+      FromPlatformWritingMode(container_style->getWritingMode()));
+
   NGBoxStrut borders = ComputeBorders(*container_style);
+  parent_border_offset_ =
+      NGLogicalOffset{borders.inline_start, borders.block_start};
+  parent_border_physical_offset_ = parent_border_offset_.ConvertToPhysical(
+      writing_mode, container_style->direction(),
+      container_size.ConvertToPhysical(writing_mode), NGPhysicalSize());
+
+  NGLogicalSize space_size = container_size;
   space_size.block_size -= borders.BlockSum();
   space_size.inline_size -= borders.InlineSum();
-  parent_offset_ = NGLogicalOffset{borders.inline_start, borders.block_start};
-  parent_physical_offset_ = parent_offset_.ConvertToPhysical(
-      FromPlatformWritingMode(container_style->getWritingMode()),
-      container_style->direction(),
-      container_size.ConvertToPhysical(
-          FromPlatformWritingMode(container_style->getWritingMode())),
-      NGPhysicalSize());
-  NGConstraintSpaceBuilder space_builder(
-      FromPlatformWritingMode(container_style->getWritingMode()));
+
+  // Initialize ConstraintSpace
+  NGConstraintSpaceBuilder space_builder(writing_mode);
   space_builder.SetAvailableSize(space_size);
   space_builder.SetPercentageResolutionSize(space_size);
   space_builder.SetIsNewFormattingContext(true);
@@ -41,130 +40,89 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   parent_space_ = space_builder.ToConstraintSpace();
 }
 
-bool NGOutOfFlowLayoutPart::StartLayout(
-    NGBlockNode* node,
-    const NGStaticPosition& static_position) {
-  EPosition position = node->Style()->position();
-  if ((contains_absolute_ && position == AbsolutePosition) ||
-      (contains_fixed_ && position == FixedPosition)) {
-    node_ = node;
-    static_position_ = static_position;
-    // Adjust static_position origin. static_position coordinate origin is
-    //  border_box, absolute position coordinate origin is padding box.
-    static_position_.offset -= parent_physical_offset_;
-    node_fragment_ = nullptr;
-    node_position_ = NGAbsolutePhysicalPosition();
-    inline_estimate_.reset();
-    block_estimate_.reset();
-    state_ = kComputeInlineEstimate;
-    return true;
+void NGOutOfFlowLayoutPart::Layout(NGBlockNode& node,
+                                   NGStaticPosition static_position,
+                                   NGFragment** fragment_out,
+                                   NGLogicalOffset* offset) {
+  // Adjust the static_position origin. The static_position coordinate origin is
+  // relative to the parent's border box, ng_absolute_utils expects it to be
+  // relative to the parent's padding box.
+  static_position.offset -= parent_border_physical_offset_;
+
+  NGFragment* fragment = nullptr;
+  Optional<MinAndMaxContentSizes> inline_estimate;
+  Optional<LayoutUnit> block_estimate;
+
+  if (AbsoluteNeedsChildInlineSize(*node.Style())) {
+    inline_estimate = node.ComputeMinAndMaxContentSizesSync();
   }
-  return false;
+
+  NGAbsolutePhysicalPosition node_position =
+      ComputePartialAbsoluteWithChildInlineSize(
+          *parent_space_, *node.Style(), static_position, inline_estimate);
+
+  if (AbsoluteNeedsChildBlockSize(*node.Style())) {
+    fragment = GenerateFragment(node, block_estimate, node_position);
+    block_estimate = fragment->BlockSize();
+  }
+
+  ComputeFullAbsoluteWithChildBlockSize(*parent_space_, *node.Style(),
+                                        static_position, block_estimate,
+                                        &node_position);
+
+  // Skip this step if we produced a fragment when estimating the block size.
+  if (!fragment) {
+    block_estimate =
+        node_position.size.ConvertToLogical(parent_space_->WritingMode())
+            .block_size;
+    fragment = GenerateFragment(node, block_estimate, node_position);
+  }
+
+  *fragment_out = fragment;
+
+  // Compute logical offset, NGAbsolutePhysicalPosition is calculated relative
+  // to the padding box so add back the parent's borders.
+  NGBoxStrut inset = node_position.inset.ConvertToLogical(
+      parent_space_->WritingMode(), parent_space_->Direction());
+  offset->inline_offset =
+      inset.inline_start + parent_border_offset_.inline_offset;
+  offset->block_offset = inset.block_start + parent_border_offset_.block_offset;
 }
 
-NGLayoutStatus NGOutOfFlowLayoutPart::Layout(NGFragment** fragment,
-                                             NGLogicalOffset* offset) {
-  DCHECK(node_);
-  switch (state_) {
-    case kComputeInlineEstimate:
-      if (ComputeInlineSizeEstimate())
-        state_ = kPartialPosition;
-      break;
-    case kPartialPosition:
-      node_position_ = ComputePartialAbsoluteWithChildInlineSize(
-          *parent_space_, *node_->Style(), static_position_, inline_estimate_);
-      state_ = kComputeBlockEstimate;
-      break;
-    case kComputeBlockEstimate:
-      if (ComputeBlockSizeEstimate())
-        state_ = kFullPosition;
-      break;
-    case kFullPosition:
-      ComputeFullAbsoluteWithChildBlockSize(*parent_space_, *node_->Style(),
-                                            static_position_, block_estimate_,
-                                            &node_position_);
-      state_ = kGenerateFragment;
-      break;
-    case kGenerateFragment:
-      block_estimate_ =
-          node_position_.size.ConvertToLogical(parent_space_->WritingMode())
-              .block_size;
-      if (!ComputeNodeFragment())
-        return kNotFinished;
-      state_ = kDone;
-      break;
-    case kDone:
-      *fragment = node_fragment_;
-      // Compute offset
-      NGBoxStrut inset = node_position_.inset.ConvertToLogical(
-          parent_space_->WritingMode(), parent_space_->Direction());
-      offset->inline_offset = inset.inline_start + parent_offset_.inline_offset;
-      offset->block_offset = inset.block_start + parent_offset_.block_offset;
-      return kNewFragment;
-  }
-  return kNotFinished;
-}
+NGFragment* NGOutOfFlowLayoutPart::GenerateFragment(
+    NGBlockNode& node,
+    const Optional<LayoutUnit>& block_estimate,
+    const NGAbsolutePhysicalPosition node_position) {
+  // The fragment is generated in one of these two scenarios:
+  // 1. To estimate child's block size, in this case block_size is parent's
+  //    available size.
+  // 2. To compute final fragment, when block size is known from the absolute
+  //    position calculation.
+  LayoutUnit inline_size =
+      node_position.size.ConvertToLogical(parent_space_->WritingMode())
+          .inline_size;
+  LayoutUnit block_size = block_estimate
+                              ? *block_estimate
+                              : parent_space_->AvailableSize().block_size;
 
-bool NGOutOfFlowLayoutPart::ComputeInlineSizeEstimate() {
-  if (AbsoluteNeedsChildInlineSize(*node_->Style())) {
-    MinAndMaxContentSizes size;
-    if (node_->ComputeMinAndMaxContentSizes(&size)) {
-      inline_estimate_ = size;
-      return true;
-    }
-    return false;
-  }
-  return true;
-}
+  NGLogicalSize available_size{inline_size, block_size};
 
-bool NGOutOfFlowLayoutPart::ComputeBlockSizeEstimate() {
-  if (AbsoluteNeedsChildBlockSize(*node_->Style())) {
-    if (ComputeNodeFragment()) {
-      block_estimate_ = node_fragment_->BlockSize();
-      return true;
-    }
-    return false;
-  }
-  return true;
-}
+  NGConstraintSpaceBuilder builder(parent_space_->WritingMode());
+  builder.SetAvailableSize(available_size);
+  builder.SetPercentageResolutionSize(parent_space_->AvailableSize());
+  if (block_estimate)
+    builder.SetIsFixedSizeBlock(true);
+  builder.SetIsFixedSizeInline(true);
+  builder.SetIsNewFormattingContext(true);
+  NGConstraintSpace* space = builder.ToConstraintSpace();
 
-bool NGOutOfFlowLayoutPart::ComputeNodeFragment() {
-  if (node_fragment_)
-    return true;
-  if (!node_space_) {
-    NGConstraintSpaceBuilder builder(parent_space_->WritingMode());
-    LayoutUnit inline_width =
-        node_position_.size.ConvertToLogical(parent_space_->WritingMode())
-            .inline_size;
-    // Node fragment is computed in one of these two scenarios:
-    // 1. To estimate block size
-    //    In this case, available block_size is parent's size.
-    // 2. To compute final block fragment, when block size is known.
-
-    NGLogicalSize available_size =
-        NGLogicalSize(inline_width, parent_space_->AvailableSize().block_size);
-    if (block_estimate_)
-      available_size.block_size = *block_estimate_;
-    builder.SetAvailableSize(available_size);
-    builder.SetPercentageResolutionSize(parent_space_->AvailableSize());
-    if (block_estimate_)
-      builder.SetIsFixedSizeBlock(true);
-    builder.SetIsFixedSizeInline(true);
-    builder.SetIsNewFormattingContext(true);
-    node_space_ = builder.ToConstraintSpace();
-  }
   NGFragment* fragment;
-  if (node_->Layout(node_space_, &fragment)) {
-    node_fragment_ = fragment;
-    return true;
-  }
-  return false;
+  node.LayoutSync(space, &fragment);
+  return fragment;
 }
 
 DEFINE_TRACE(NGOutOfFlowLayoutPart) {
-  visitor->trace(node_);
   visitor->trace(parent_space_);
-  visitor->trace(node_fragment_);
-  visitor->trace(node_space_);
 }
-}
+
+}  // namespace blink

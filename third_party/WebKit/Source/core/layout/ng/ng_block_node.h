@@ -36,6 +36,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   ~NGBlockNode() override;
 
   bool Layout(NGConstraintSpace*, NGFragment**) override;
+  void LayoutSync(NGConstraintSpace*, NGFragment**);
+
   NGBlockNode* NextSibling() override;
 
   // Computes the value of min-content and max-content for this box.
@@ -48,6 +50,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // often enough that it returns true before calling
   // ComputeOrSynthesizeMinAndMaxContentSizes)
   bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*);
+  MinAndMaxContentSizes ComputeMinAndMaxContentSizesSync();
 
   const ComputedStyle* Style() const;
   ComputedStyle* MutableStyle();

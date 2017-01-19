@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
+#include "core/layout/ng/ng_absolute_utils.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_column_mapper.h"
@@ -398,30 +399,27 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(NGFragment* fragment) {
 }
 
 bool NGBlockLayoutAlgorithm::LayoutOutOfFlowChild() {
-  if (!current_child_) {
-    if (out_of_flow_candidates_.isEmpty()) {
-      out_of_flow_layout_ = nullptr;
-      out_of_flow_candidate_positions_.clear();
-      return true;
-    }
-    current_child_ = out_of_flow_candidates_.first();
-    out_of_flow_candidates_.removeFirst();
-    NGStaticPosition position = out_of_flow_candidate_positions_
-        [out_of_flow_candidate_positions_index_++];
-
-    if (!out_of_flow_layout_->StartLayout(current_child_, position)) {
-      builder_->AddOutOfFlowDescendant(current_child_, position);
-      current_child_ = nullptr;
-      return false;
-    }
+  if (out_of_flow_candidates_.isEmpty()) {
+    out_of_flow_layout_ = nullptr;
+    out_of_flow_candidate_positions_.clear();
+    return true;
   }
-  NGFragment* fragment;
-  NGLogicalOffset offset;
-  if (out_of_flow_layout_->Layout(&fragment, &offset) == kNewFragment) {
+  current_child_ = out_of_flow_candidates_.first();
+  out_of_flow_candidates_.removeFirst();
+  NGStaticPosition static_position = out_of_flow_candidate_positions_
+      [out_of_flow_candidate_positions_index_++];
+
+  if (IsContainingBlockForAbsoluteChild(Style(), *current_child_->Style())) {
+    NGFragment* fragment;
+    NGLogicalOffset offset;
+    out_of_flow_layout_->Layout(*current_child_, static_position, &fragment,
+                                &offset);
     // TODO(atotic) Need to adjust size of overflow rect per spec.
     builder_->AddChild(fragment, offset);
-    current_child_ = nullptr;
+  } else {
+    builder_->AddOutOfFlowDescendant(current_child_, static_position);
   }
+
   return false;
 }
 

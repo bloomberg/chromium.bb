@@ -40,6 +40,12 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
 // included from a compilation unit that lacks the ComputedStyle definition.
 NGBlockNode::~NGBlockNode() {}
 
+void NGBlockNode::LayoutSync(NGConstraintSpace* constraint_space,
+                             NGFragment** out) {
+  while (!Layout(constraint_space, out))
+    continue;
+}
+
 bool NGBlockNode::Layout(NGConstraintSpace* constraint_space,
                          NGFragment** out) {
   DCHECK(!minmax_algorithm_)
@@ -78,6 +84,13 @@ void NGBlockNode::UpdateLayoutBox(NGPhysicalBoxFragment* fragment,
   if (layout_box_) {
     CopyFragmentDataToLayoutBox(*constraint_space);
   }
+}
+
+MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizesSync() {
+  MinAndMaxContentSizes sizes;
+  while (!ComputeMinAndMaxContentSizes(&sizes))
+    continue;
+  return sizes;
 }
 
 bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {

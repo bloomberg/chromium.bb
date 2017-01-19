@@ -30,41 +30,18 @@ class CORE_EXPORT NGOutOfFlowLayoutPart
  public:
   NGOutOfFlowLayoutPart(PassRefPtr<const ComputedStyle>, NGLogicalSize);
 
-  // If false, this fragment should be passed up the tree for layout by
-  // an ancestor.
-  bool StartLayout(NGBlockNode*, const NGStaticPosition&);
-  NGLayoutStatus Layout(NGFragment**, NGLogicalOffset*);
+  void Layout(NGBlockNode&, NGStaticPosition, NGFragment**, NGLogicalOffset*);
 
   DECLARE_TRACE();
 
  private:
-  bool ComputeInlineSizeEstimate();
-  bool ComputeBlockSizeEstimate();
-  bool ComputeNodeFragment();
+  NGFragment* GenerateFragment(NGBlockNode& node,
+                               const Optional<LayoutUnit>& block_estimate,
+                               const NGAbsolutePhysicalPosition node_position);
 
-  bool contains_fixed_;
-  bool contains_absolute_;
-
-  enum State {
-    kComputeInlineEstimate,
-    kPartialPosition,
-    kComputeBlockEstimate,
-    kFullPosition,
-    kGenerateFragment,
-    kDone
-  };
-  State state_;
-
-  NGStaticPosition static_position_;
-  NGLogicalOffset parent_offset_;
-  NGPhysicalOffset parent_physical_offset_;
+  NGLogicalOffset parent_border_offset_;
+  NGPhysicalOffset parent_border_physical_offset_;
   Member<NGConstraintSpace> parent_space_;
-  Member<NGBlockNode> node_;
-  Member<NGConstraintSpace> node_space_;
-  Member<NGFragment> node_fragment_;
-  NGAbsolutePhysicalPosition node_position_;
-  Optional<MinAndMaxContentSizes> inline_estimate_;
-  Optional<LayoutUnit> block_estimate_;
 };
 
 }  // namespace blink
