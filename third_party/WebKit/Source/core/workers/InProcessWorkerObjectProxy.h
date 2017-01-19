@@ -95,7 +95,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
 
   // Used for checking pending activities on the worker global scope. This is
   // cancelled when the worker global scope is destroyed.
-  std::unique_ptr<Timer<InProcessWorkerObjectProxy>> m_timer;
+  std::unique_ptr<TaskRunnerTimer<InProcessWorkerObjectProxy>> m_timer;
 
   // The default interval duration of the timer. This is usually
   // kDefaultIntervalInSec but made as a member variable for testing.

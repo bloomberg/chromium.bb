@@ -43,6 +43,7 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
+#include "public/platform/Platform.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -113,8 +114,9 @@ void InProcessWorkerObjectProxy::didCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* globalScope) {
   DCHECK(!m_workerGlobalScope);
   m_workerGlobalScope = toWorkerGlobalScope(globalScope);
-  m_timer = WTF::wrapUnique(new Timer<InProcessWorkerObjectProxy>(
-      this, &InProcessWorkerObjectProxy::checkPendingActivity));
+  m_timer = WTF::makeUnique<TaskRunnerTimer<InProcessWorkerObjectProxy>>(
+      Platform::current()->currentThread()->getWebTaskRunner(), this,
+      &InProcessWorkerObjectProxy::checkPendingActivity);
 }
 
 void InProcessWorkerObjectProxy::didEvaluateWorkerScript(bool) {
