@@ -1847,8 +1847,8 @@ void Textfield::UpdateBackgroundColor() {
   const SkColor color = GetBackgroundColor();
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     set_background(Background::CreateBackgroundPainter(
-        true, Painter::CreateSolidRoundRectPainter(
-                  color, FocusableBorder::kCornerRadiusDp)));
+        Painter::CreateSolidRoundRectPainter(
+            color, FocusableBorder::kCornerRadiusDp)));
   } else {
     set_background(Background::CreateSolidBackground(color));
   }

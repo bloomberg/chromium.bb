@@ -126,8 +126,8 @@ class TooltipAura::TooltipView : public views::View {
     views::Background* background =
         CanUseTranslucentTooltipWidget()
             ? views::Background::CreateBackgroundPainter(
-                  true, views::Painter::CreateSolidRoundRectPainter(
-                            background_color, kTooltipCornerRadius))
+                  views::Painter::CreateSolidRoundRectPainter(
+                      background_color, kTooltipCornerRadius))
             : views::Background::CreateSolidBackground(background_color);
     set_background(background);
     // Force the text color to be readable when |background_color| is not

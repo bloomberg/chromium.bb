@@ -130,11 +130,9 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   }
 
   const int kImages[] = IMAGE_GRID(IDR_AURA_PHANTOM_WINDOW);
-  views::Painter* background_painter =
-      views::Painter::CreateImageGridPainter(kImages);
   views::View* content_view = new views::View;
-  content_view->set_background(
-      views::Background::CreateBackgroundPainter(true, background_painter));
+  content_view->set_background(views::Background::CreateBackgroundPainter(
+      views::Painter::CreateImageGridPainter(kImages)));
   phantom_widget->SetContentsView(content_view);
 
   // Show the widget after all the setups.

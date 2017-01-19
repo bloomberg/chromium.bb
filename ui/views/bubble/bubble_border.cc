@@ -42,7 +42,7 @@ BorderImages::BorderImages(const int border_image_ids[],
   if (!border_image_ids)
     return;
 
-  border_painter.reset(Painter::CreateImageGridPainter(border_image_ids));
+  border_painter = Painter::CreateImageGridPainter(border_image_ids);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   border_thickness = rb.GetImageSkiaNamed(border_image_ids[0])->width();
 

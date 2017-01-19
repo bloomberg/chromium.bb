@@ -58,7 +58,9 @@ class VIEWS_EXPORT LabelButtonAssetBorder : public LabelButtonBorder {
   // Get or set the painter used for the specified |focused| button |state|.
   // LabelButtonAssetBorder takes and retains ownership of |painter|.
   Painter* GetPainter(bool focused, Button::ButtonState state);
-  void SetPainter(bool focused, Button::ButtonState state, Painter* painter);
+  void SetPainter(bool focused,
+                  Button::ButtonState state,
+                  std::unique_ptr<Painter> painter);
 
  private:
   // The painters used for each unfocused or focused button state.

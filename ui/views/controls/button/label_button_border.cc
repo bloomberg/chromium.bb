@@ -183,8 +183,8 @@ Painter* LabelButtonAssetBorder::GetPainter(bool focused,
 
 void LabelButtonAssetBorder::SetPainter(bool focused,
                                         Button::ButtonState state,
-                                        Painter* painter) {
-  painters_[focused ? 1 : 0][state].reset(painter);
+                                        std::unique_ptr<Painter> painter) {
+  painters_[focused ? 1 : 0][state] = std::move(painter);
 }
 
 }  // namespace views

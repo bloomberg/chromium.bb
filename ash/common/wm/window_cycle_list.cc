@@ -14,7 +14,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -247,9 +246,9 @@ class WindowCycleView : public views::WidgetDelegateView {
     // because the layer animates bounds changes but the View's bounds change
     // immediately.
     highlight_view_->set_background(new LayerFillBackgroundPainter(
-        base::WrapUnique(views::Painter::CreateRoundRectWith1PxBorderPainter(
+        views::Painter::CreateRoundRectWith1PxBorderPainter(
             SkColorSetA(SK_ColorWHITE, 0x4D), SkColorSetA(SK_ColorWHITE, 0x33),
-            kBackgroundCornerRadius))));
+            kBackgroundCornerRadius)));
     highlight_view_->SetPaintToLayer(true);
     highlight_view_->layer()->SetFillsBoundsOpaquely(false);
 

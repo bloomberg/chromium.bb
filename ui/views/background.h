@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -60,22 +62,11 @@ class VIEWS_EXPORT Background {
   static Background* CreateVerticalGradientBackground(SkColor color1,
                                                       SkColor color2);
 
-  // Creates a background that contains a vertical gradient. The gradient can
-  // have multiple |colors|. The |pos| array contains the relative positions of
-  // each corresponding color. |colors| and |pos| must be the same size. The
-  // first element in |pos| must be 0.0 and the last element must be 1.0.
-  // |count| contains the number of elements in |colors| and |pos|.
-  static Background* CreateVerticalMultiColorGradientBackground(SkColor* colors,
-                                                                SkScalar* pos,
-                                                                size_t count);
-
   // Creates Chrome's standard panel background
   static Background* CreateStandardPanelBackground();
 
-  // Creates a Background from the specified Painter. If owns_painter is
-  // true, the Painter is deleted when the Border is deleted.
-  static Background* CreateBackgroundPainter(bool owns_painter,
-                                             Painter* painter);
+  // Creates a Background from the specified Painter.
+  static Background* CreateBackgroundPainter(std::unique_ptr<Painter> painter);
 
   // Render the background for the provided view
   virtual void Paint(gfx::Canvas* canvas, View* view) const = 0;

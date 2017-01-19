@@ -299,8 +299,8 @@ void MdTextButton::UpdateColors() {
 
   DCHECK_EQ(SK_AlphaOPAQUE, static_cast<int>(SkColorGetA(bg_color)));
   set_background(Background::CreateBackgroundPainter(
-      true, Painter::CreateRoundRectWith1PxBorderPainter(
-                bg_color, stroke_color, kInkDropSmallCornerRadius)));
+      Painter::CreateRoundRectWith1PxBorderPainter(bg_color, stroke_color,
+                                                   kInkDropSmallCornerRadius)));
 }
 
 }  // namespace views

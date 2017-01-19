@@ -428,8 +428,8 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
       size_t num;
       bool focused = !!i;
       const int* ids = GetBodyButtonImageIds(focused, state, &num);
-      body_button_painters_[focused][state].reset(
-          Painter::CreateImageGridPainter(ids));
+      body_button_painters_[focused][state] =
+          Painter::CreateImageGridPainter(ids);
       menu_button_images_[focused][state] = GetMenuButtonImages(focused, state);
     }
   }
@@ -553,11 +553,11 @@ void Combobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   if (!UseMd())
     return;
 
-  set_background(Background::CreateBackgroundPainter(
-      true, Painter::CreateSolidRoundRectPainter(
-                theme->GetSystemColor(
-                    ui::NativeTheme::kColorId_TextfieldDefaultBackground),
-                FocusableBorder::kCornerRadiusDp)));
+  set_background(
+      Background::CreateBackgroundPainter(Painter::CreateSolidRoundRectPainter(
+          theme->GetSystemColor(
+              ui::NativeTheme::kColorId_TextfieldDefaultBackground),
+          FocusableBorder::kCornerRadiusDp)));
 }
 
 int Combobox::GetRowCount() {

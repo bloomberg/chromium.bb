@@ -95,8 +95,8 @@ BrowserActionsContainer::BrowserActionsContainer(
     AddChildView(resize_area_);
 
     const int kWarningImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
-    warning_highlight_painter_.reset(
-        views::Painter::CreateImageGridPainter(kWarningImages));
+    warning_highlight_painter_ =
+        views::Painter::CreateImageGridPainter(kWarningImages);
   }
 }
 

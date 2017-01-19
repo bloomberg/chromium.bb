@@ -50,39 +50,34 @@ class VIEWS_EXPORT Painter {
 
   // Creates a painter that draws a RoundRect with a solid color and given
   // corner radius.
-  static Painter* CreateSolidRoundRectPainter(SkColor color, float radius);
+  static std::unique_ptr<Painter> CreateSolidRoundRectPainter(SkColor color,
+                                                              float radius);
 
   // Creates a painter that draws a RoundRect with a solid color and a given
   // corner radius, and also adds a 1px border (inset) in the given color.
-  static Painter* CreateRoundRectWith1PxBorderPainter(SkColor bg_color,
-                                                      SkColor stroke_color,
-                                                      float radius);
+  static std::unique_ptr<Painter> CreateRoundRectWith1PxBorderPainter(
+      SkColor bg_color,
+      SkColor stroke_color,
+      float radius);
 
-  // Creates a painter that draws a gradient between the two colors.
-  static Painter* CreateHorizontalGradient(SkColor c1, SkColor c2);
-  static Painter* CreateVerticalGradient(SkColor c1, SkColor c2);
-
-  // Creates a painter that draws a multi-color gradient. |colors| contains the
-  // gradient colors and |pos| the relative positions of the colors. The first
-  // element in |pos| must be 0.0 and the last element 1.0. |count| contains
-  // the number of elements in |colors| and |pos|.
-  static Painter* CreateVerticalMultiColorGradient(SkColor* colors,
-                                                   SkScalar* pos,
-                                                   size_t count);
+  // TODO(estade): remove. The last client (table_header.cc) is going away soon.
+  static std::unique_ptr<Painter> CreateVerticalGradient(SkColor c1,
+                                                         SkColor c2);
 
   // Creates a painter that divides |image| into nine regions. The four corners
   // are rendered at the size specified in insets (eg. the upper-left corner is
   // rendered at 0 x 0 with a size of insets.left() x insets.top()). The center
   // and edge images are stretched to fill the painted area.
-  static Painter* CreateImagePainter(const gfx::ImageSkia& image,
-                                     const gfx::Insets& insets);
+  static std::unique_ptr<Painter> CreateImagePainter(
+      const gfx::ImageSkia& image,
+      const gfx::Insets& insets);
 
   // Creates a painter that paints images in a scalable grid. The images must
   // share widths by column and heights by row. The corners are painted at full
   // size, while center and edge images are stretched to fill the painted area.
   // The center image may be zero (to be skipped). This ordering must be used:
   // Top-Left/Top/Top-Right/Left/[Center]/Right/Bottom-Left/Bottom/Bottom-Right.
-  static Painter* CreateImageGridPainter(const int image_ids[]);
+  static std::unique_ptr<Painter> CreateImageGridPainter(const int image_ids[]);
 
   // Factory methods for creating painters intended for rendering focus.
   static std::unique_ptr<Painter> CreateDashedFocusPainter();

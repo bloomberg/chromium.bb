@@ -297,51 +297,42 @@ void Painter::PaintFocusPainter(View* view,
 }
 
 // static
-Painter* Painter::CreateSolidRoundRectPainter(SkColor color, float radius) {
-  return new SolidRoundRectPainter(color, SK_ColorTRANSPARENT, radius);
+std::unique_ptr<Painter> Painter::CreateSolidRoundRectPainter(SkColor color,
+                                                              float radius) {
+  return base::MakeUnique<SolidRoundRectPainter>(color, SK_ColorTRANSPARENT,
+                                                 radius);
 }
 
 // static
-Painter* Painter::CreateRoundRectWith1PxBorderPainter(SkColor bg_color,
-                                                      SkColor stroke_color,
-                                                      float radius) {
-  return new SolidRoundRectPainter(bg_color, stroke_color, radius);
+std::unique_ptr<Painter> Painter::CreateRoundRectWith1PxBorderPainter(
+    SkColor bg_color,
+    SkColor stroke_color,
+    float radius) {
+  return base::MakeUnique<SolidRoundRectPainter>(bg_color, stroke_color,
+                                                 radius);
 }
 
 // static
-Painter* Painter::CreateHorizontalGradient(SkColor c1, SkColor c2) {
+std::unique_ptr<Painter> Painter::CreateVerticalGradient(SkColor c1,
+                                                         SkColor c2) {
   SkColor colors[2];
   colors[0] = c1;
   colors[1] = c2;
   SkScalar pos[] = {0, 1};
-  return new GradientPainter(true, colors, pos, 2);
+  return base::MakeUnique<GradientPainter>(false, colors, pos, 2);
 }
 
 // static
-Painter* Painter::CreateVerticalGradient(SkColor c1, SkColor c2) {
-  SkColor colors[2];
-  colors[0] = c1;
-  colors[1] = c2;
-  SkScalar pos[] = {0, 1};
-  return new GradientPainter(false, colors, pos, 2);
+std::unique_ptr<Painter> Painter::CreateImagePainter(
+    const gfx::ImageSkia& image,
+    const gfx::Insets& insets) {
+  return base::MakeUnique<ImagePainter>(image, insets);
 }
 
 // static
-Painter* Painter::CreateVerticalMultiColorGradient(SkColor* colors,
-                                                   SkScalar* pos,
-                                                   size_t count) {
-  return new GradientPainter(false, colors, pos, count);
-}
-
-// static
-Painter* Painter::CreateImagePainter(const gfx::ImageSkia& image,
-                                     const gfx::Insets& insets) {
-  return new ImagePainter(image, insets);
-}
-
-// static
-Painter* Painter::CreateImageGridPainter(const int image_ids[]) {
-  return new ImagePainter(image_ids);
+std::unique_ptr<Painter> Painter::CreateImageGridPainter(
+    const int image_ids[]) {
+  return base::MakeUnique<ImagePainter>(image_ids);
 }
 
 // static

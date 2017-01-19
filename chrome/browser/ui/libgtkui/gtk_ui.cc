@@ -687,17 +687,14 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
       owning_button->GetClassName() == views::BlueButton::kViewClassName;
 
   for (unsigned i = 0; i < arraysize(paintstate); i++) {
-    views::Painter* painter = nullptr;
-
     if (border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)) {
       std::string idr = is_blue ? paintstate[i].idr_blue : paintstate[i].idr;
-      painter = new GtkButtonPainter(idr);
+      gtk_border->SetPainter(paintstate[i].focus, paintstate[i].state,
+                             base::MakeUnique<GtkButtonPainter>(idr));
     }
-
-    gtk_border->SetPainter(paintstate[i].focus, paintstate[i].state, painter);
   }
 
-  return std::move(gtk_border);
+  return gtk_border;
 }
 
 void GtkUi::AddWindowButtonOrderObserver(
