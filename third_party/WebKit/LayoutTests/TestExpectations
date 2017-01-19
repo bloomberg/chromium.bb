@@ -152,12 +152,10 @@ crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition
 # LayoutNG - is a new layout system for Blink.
 
 #### css2.1/20110323
-#### Passed: 244
-#### Skipped: 165
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-001.htm [ Skip ]
+#### Passed: 247
+#### Skipped: 162
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-006.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-009.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-003.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-004.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-005.htm [ Skip ]
@@ -175,7 +173,6 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-0
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-022.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-023.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-024.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-002.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-003.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-004.htm [ Skip ]

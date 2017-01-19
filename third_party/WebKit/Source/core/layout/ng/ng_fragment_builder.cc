@@ -77,6 +77,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
       NGStaticPosition::Create(writing_mode_, direction_, NGPhysicalOffset());
   out_of_flow_candidate_placements_.push_back(
       OutOfFlowPlacement{child_offset, child_position});
+  child->SaveStaticOffsetForLegacy(child_offset);
   return *this;
 }
 

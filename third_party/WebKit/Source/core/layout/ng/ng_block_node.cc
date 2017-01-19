@@ -17,6 +17,7 @@
 #include "core/layout/ng/ng_layout_coordinator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -344,6 +345,15 @@ void NGBlockNode::UseOldOutOfFlowPositioning() {
   DCHECK(layout_box_);
   DCHECK(layout_box_->isOutOfFlowPositioned());
   layout_box_->containingBlock()->insertPositionedObject(layout_box_);
+}
+
+// Save static position for legacy AbsPos layout.
+void NGBlockNode::SaveStaticOffsetForLegacy(const NGLogicalOffset& offset) {
+  DCHECK(layout_box_);
+  DCHECK(layout_box_->isOutOfFlowPositioned());
+  DCHECK(layout_box_->layer());
+  layout_box_->layer()->setStaticBlockPosition(offset.block_offset);
+  layout_box_->layer()->setStaticInlinePosition(offset.inline_offset);
 }
 
 }  // namespace blink
