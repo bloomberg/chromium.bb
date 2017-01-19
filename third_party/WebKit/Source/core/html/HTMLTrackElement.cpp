@@ -27,6 +27,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/CrossOriginAttribute.h"
@@ -49,7 +50,9 @@ static String urlForLoggingTrack(const KURL& url) {
 
 inline HTMLTrackElement::HTMLTrackElement(Document& document)
     : HTMLElement(trackTag, document),
-      m_loadTimer(this, &HTMLTrackElement::loadTimerFired) {
+      m_loadTimer(TaskRunnerHelper::get(TaskType::Networking, &document),
+                  this,
+                  &HTMLTrackElement::loadTimerFired) {
   DVLOG(TRACK_LOG_LEVEL) << "HTMLTrackElement - " << (void*)this;
 }
 

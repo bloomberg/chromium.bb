@@ -86,7 +86,7 @@ class HTMLTrackElement final : public HTMLElement,
 
   Member<LoadableTextTrack> m_track;
   Member<TextTrackLoader> m_loader;
-  Timer<HTMLTrackElement> m_loadTimer;
+  TaskRunnerTimer<HTMLTrackElement> m_loadTimer;
   KURL m_url;
 };
 
