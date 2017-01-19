@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.bindViewHolders;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
 
 import org.junit.Before;
@@ -35,6 +37,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -44,6 +47,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -418,38 +422,139 @@ public class SuggestionsSectionTest {
     }
 
     /**
-     * Tests that the UI does not update when the section has been viewed.
-     */
-    @Test
-    @Feature({"Ntp"})
-    public void testSectionDoesNotUpdateOnNewSuggestionsWhenSectionSeen() {
-        SuggestionsSection section = createSectionWithSuggestions(createDummySuggestions(4));
-        assertEquals(4, section.getSuggestionsCount());
-
-        section.childSeen(2);
-
-        section.setSuggestions(
-                createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
-        assertEquals(4, section.getSuggestionsCount());
-    }
-
-    /**
      * Tests that the UI does not update the first item of the section if it has been viewed.
      */
     @Test
     @Feature({"Ntp"})
     public void testSectionDoesNotUpdateFirstSuggestionOnNewSuggestionsWhenSeen() {
-        List<SnippetArticle> snippets = createDummySuggestions(4);
-        SnippetArticle firstFromOriginalList = snippets.get(0);
+        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES, "old");
+        // Copy the list when passing to the section - it may alter it but we later need it.
+        SuggestionsSection section =
+                createSectionWithSuggestions(new ArrayList<>(snippets));
+        assertEquals(4, section.getSuggestionsCount());
+
+        // Bind the first suggestion - indicate that it is being viewed.
+        // Indices in {@code section} are off-by-one (index 0 is the header).
+        bindViewHolders(section, 1, 2);
+
+        List<SnippetArticle> newSnippets =
+                createDummySuggestions(3, KnownCategories.ARTICLES, "new");
+        // Copy the list when passing to the section - it may alter it but we later need it.
+        section.setSuggestions(new ArrayList<>(newSnippets), CategoryStatus.AVAILABLE,
+                /* replaceExisting = */ true);
+        assertEquals(3, section.getSuggestionsCount());
+        assertEquals(snippets.get(0), section.getSuggestionAt(1));
+        assertNotEquals(snippets.get(1), section.getSuggestionAt(2));
+        assertEquals(newSnippets.get(0), section.getSuggestionAt(2));
+    }
+
+    /**
+     * Tests that the UI does not update the first two items of the section if they have been
+     * viewed.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testSectionDoesNotUpdateFirstTwoSuggestionOnNewSuggestionsWhenSeen() {
+        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES, "old");
+        // Copy the list when passing to the section - it may alter it but we later need it.
+        SuggestionsSection section =
+                createSectionWithSuggestions(new ArrayList<>(snippets));
+        assertEquals(4, section.getSuggestionsCount());
+
+        // Bind the first two suggestions - indicate that they are being viewed.
+        // Indices in {@code section} are off-by-one (index 0 is the header).
+        bindViewHolders(section, 1, 3);
+
+        List<SnippetArticle> newSnippets =
+                createDummySuggestions(3, KnownCategories.ARTICLES, "new");
+        // Copy the list when passing to the section - it may alter it but we later need it.
+        section.setSuggestions(new ArrayList<>(newSnippets), CategoryStatus.AVAILABLE,
+                /* replaceExisting = */ true);
+        assertEquals(3, section.getSuggestionsCount());
+        assertEquals(snippets.get(0), section.getSuggestionAt(1));
+        assertEquals(snippets.get(1), section.getSuggestionAt(2));
+        assertNotEquals(snippets.get(2), section.getSuggestionAt(3));
+        assertEquals(newSnippets.get(0), section.getSuggestionAt(3));
+    }
+
+    /**
+     * Tests that the UI does not update any items of the section if the new list is shorter than
+     * what has been viewed.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testSectionDoesNotUpdateOnNewSuggestionsWhenNewListIsShorter() {
+        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES, "old");
+        // Copy the list when passing to the section - it may alter it but we later need it.
+        SuggestionsSection section =
+                createSectionWithSuggestions(new ArrayList<>(snippets));
+        assertEquals(4, section.getSuggestionsCount());
+
+        // Bind the first two suggestions - indicate that they are being viewed.
+        // Indices in {@code section} are off-by-one (index 0 is the header).
+        bindViewHolders(section, 1, 3);
+
+        section.setSuggestions(
+                createDummySuggestions(1), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        // Even though the new list has just one suggestion, we need to keep the two seen ones
+        // around.
+        assertEquals(2, section.getSuggestionsCount());
+        assertEquals(snippets.get(0), section.getSuggestionAt(1));
+        assertEquals(snippets.get(1), section.getSuggestionAt(2));
+    }
+
+    /**
+     * Tests that the UI does not update any items of the section if the current list is shorter
+     * than what has been viewed.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testSectionDoesNotUpdateOnNewSuggestionsWhenCurrentListIsShorter() {
+        List<SnippetArticle> snippets = createDummySuggestions(3, KnownCategories.ARTICLES, "old");
+        // Copy the list when passing to the section - it may alter it but we later need it.
+        SuggestionsSection section =
+                createSectionWithSuggestions(new ArrayList<>(snippets));
+        assertEquals(3, section.getSuggestionsCount());
+
+        // Bind the first two suggestions - indicate that they are being viewed.
+        // Indices in {@code section} are off-by-one (index 0 is the header).
+        bindViewHolders(section, 1, 3);
+
+        // Remove last two items.
+        section.removeSuggestionById(section.getSuggestionAt(3).mIdWithinCategory);
+        section.removeSuggestionById(section.getSuggestionAt(2).mIdWithinCategory);
+
+        assertEquals(1, section.getSuggestionsCount());
+
+        section.setSuggestions(
+                createDummySuggestions(4), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
+        // We do not touch the current list if all has been seen.
+        assertEquals(1, section.getSuggestionsCount());
+        assertEquals(snippets.get(0), section.getSuggestionAt(1));
+    }
+
+    /**
+     * Tests that the UI does not update when the section has been viewed.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testSectionDoesNotUpdateOnNewSuggestionsWhenAllSeen() {
+        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES, "old");
         SuggestionsSection section = createSectionWithSuggestions(snippets);
         assertEquals(4, section.getSuggestionsCount());
 
-        section.childSeen(1);
+        // Bind all the suggestions - indicate that they are being viewed.
+        bindViewHolders(section);
 
         section.setSuggestions(
                 createDummySuggestions(3), CategoryStatus.AVAILABLE, /* replaceExisting = */ true);
-        assertEquals(3, section.getSuggestionsCount());
-        assertEquals(firstFromOriginalList, section.getSuggestionAt(1));
+
+        // All old snippets should be in place.
+        assertEquals(4, section.getSuggestionsCount());
+        int index = 1;
+        for (SnippetArticle snippet : snippets) {
+            assertEquals(snippet, section.getSuggestionAt(index++));
+        }
     }
 
     private SuggestionsSection createSectionWithSuggestions(List<SnippetArticle> snippets) {

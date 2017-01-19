@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.base.test.util.Matchers.greaterThanOrEqualTo;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.bindViewHolders;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.viewTypeToString;
@@ -420,9 +421,9 @@ public class NewTabPageAdapterTest {
         reloadNtp();
         assertItemsFor(section(4), section(2));
 
-        mAdapter.getSectionListForTesting()
-                .getSectionForTesting(KnownCategories.BOOKMARKS)
-                .childSeen(2);
+        // Bind the whole section - indicate that it is being viewed.
+        bindViewHolders(mAdapter.getSectionListForTesting().getSectionForTesting(
+                KnownCategories.BOOKMARKS));
 
         List<SnippetArticle> newSnippets = createDummySuggestions(3, KnownCategories.ARTICLES);
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, newSnippets);
@@ -430,40 +431,6 @@ public class NewTabPageAdapterTest {
 
         reloadNtp();
         assertItemsFor(section(3), section(2));
-    }
-
-    /**
-    * Tests that the UI updates the first item of the section if the first item of some other
-    * section has been viewed.
-    */
-    @Test
-    @Feature({"Ntp"})
-    public void testUIUpdatesOnNewSuggestionsWhenFirstOfOtherSectionIsSeen() {
-        List<SnippetArticle> snippets = createDummySuggestions(4, KnownCategories.ARTICLES);
-        mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
-        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
-
-        List<SnippetArticle> bookmarks = createDummySuggestions(1, KnownCategories.BOOKMARKS);
-        mSource.setStatusForCategory(KnownCategories.BOOKMARKS, CategoryStatus.AVAILABLE);
-        mSource.setInfoForCategory(KnownCategories.BOOKMARKS,
-                new CategoryInfoBuilder(KnownCategories.BOOKMARKS).showIfEmpty().build());
-        mSource.setSuggestionsForCategory(KnownCategories.BOOKMARKS, bookmarks);
-
-        reloadNtp();
-        assertItemsFor(section(4), section(1));
-
-        mAdapter.getSectionListForTesting()
-                .getSectionForTesting(KnownCategories.BOOKMARKS)
-                .childSeen(1);
-
-        List<SnippetArticle> newSnippets = createDummySuggestions(3, KnownCategories.ARTICLES);
-        SnippetArticle newer = newSnippets.get(0);
-
-        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, newSnippets);
-        assertItemsFor(section(3).withFirstItem(newer), section(1));
-
-        reloadNtp();
-        assertItemsFor(section(3).withFirstItem(newer), section(1));
     }
 
     /** Tests whether a section stays visible if empty, if required. */

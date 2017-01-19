@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.bindViewHolders;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
 
@@ -22,18 +23,14 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
-import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
-import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -230,33 +227,5 @@ public class SectionListTest {
                            .getActionItem()
                            .getPerSectionRank(),
                 equalTo(3));
-    }
-
-    private static void bindViewHolders(InnerNode node) {
-        bindViewHolders(node, 0, node.getItemCount());
-    }
-
-    private static void bindViewHolders(InnerNode node, int startIndex, int endIndex) {
-        for (int i = startIndex; i < endIndex; ++i) {
-            node.onBindViewHolder(
-                    makeViewHolder(node.getItemViewType(i)), i, Collections.emptyList());
-        }
-    }
-
-    private static NewTabPageViewHolder makeViewHolder(@CategoryInt int viewType) {
-        switch (viewType) {
-            case ItemViewType.SNIPPET:
-                return mock(SnippetArticleViewHolder.class);
-            case ItemViewType.HEADER:
-                return mock(SectionHeaderViewHolder.class);
-            case ItemViewType.STATUS:
-                return mock(StatusCardViewHolder.class);
-            case ItemViewType.ACTION:
-                return mock(ActionItem.ViewHolder.class);
-            case ItemViewType.PROGRESS:
-                return mock(ProgressViewHolder.class);
-            default:
-                return mock(NewTabPageViewHolder.class);
-        }
     }
 }
