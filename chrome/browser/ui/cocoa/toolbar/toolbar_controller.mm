@@ -103,42 +103,6 @@ const CGFloat kContainerYOffset = 2;
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
 
-class BrowserActionsContainerDelegate :
-    public BrowserActionsContainerViewSizeDelegate {
- public:
-  BrowserActionsContainerDelegate(
-      AutocompleteTextField* location_bar,
-      BrowserActionsContainerView* browser_actions_container_view);
-  ~BrowserActionsContainerDelegate() override;
-
- private:
-  // BrowserActionsContainerSizeDelegate:
-  CGFloat GetMaxAllowedWidth() override;
-
-  AutocompleteTextField* location_bar_;
-  BrowserActionsContainerView* browser_actions_container_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainerDelegate);
-};
-
-BrowserActionsContainerDelegate::BrowserActionsContainerDelegate(
-    AutocompleteTextField* location_bar,
-    BrowserActionsContainerView* browser_actions_container_view)
-    : location_bar_(location_bar),
-      browser_actions_container_(browser_actions_container_view) {
-  [browser_actions_container_ setDelegate:this];
-}
-
-BrowserActionsContainerDelegate::~BrowserActionsContainerDelegate() {
-  [browser_actions_container_ setDelegate:nil];
-}
-
-CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
-  CGFloat location_bar_flex =
-      NSWidth([location_bar_ frame]) - kMinimumLocationBarWidth;
-  return NSWidth([browser_actions_container_ frame]) + location_bar_flex;
-}
-
 }  // namespace
 
 @interface ToolbarController()
@@ -528,7 +492,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
   // Destroy owned objects that hold a weak Browser*.
   locationBarView_.reset();
-  browserActionsContainerDelegate_.reset();
   browser_ = nullptr;
 }
 
@@ -786,9 +749,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
 - (void)createBrowserActionButtons {
   if (!browserActionsController_.get()) {
-    browserActionsContainerDelegate_.reset(
-        new BrowserActionsContainerDelegate(locationBar_,
-                                            browserActionsContainerView_));
     browserActionsController_.reset([[BrowserActionsController alloc]
             initWithBrowser:browser_
               containerView:browserActionsContainerView_
@@ -814,8 +774,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
                name:NSWindowDidBecomeKeyNotification
              object:[[self view] window]];
   }
-  if (![browserActionsContainerView_ isHidden])
-    [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
+  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
 }
 
 - (void)updateVisibility:(BOOL)visible withAnimation:(BOOL)animate {
@@ -875,10 +834,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     }
   }
 
-  if (delta != 0.0)
-    [self adjustLocationSizeBy:delta animate:animate];
-  else
-    [locationBar_ stopAnimation];
+  [self adjustLocationSizeBy:delta animate:animate];
 }
 
 - (void)maintainMinimumLocationBarWidth {
@@ -979,13 +935,23 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate {
-  // Ensure that the location bar is in its proper place.
   NSRect locationFrame = [locationBar_ frame];
+
+  CGFloat location_bar_flex = NSWidth(locationFrame) - kMinimumLocationBarWidth;
+  [browserActionsController_
+      setMaxWidth:NSWidth(browserActionsContainerView_.frame) +
+                  location_bar_flex];
+
+  [locationBar_ stopAnimation];
+
+  if (dX == 0)
+    return;
+
+  // Ensure that the location bar is in its proper place.
   locationFrame.size.width += dX;
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
     locationFrame.origin.x -= dX;
 
-  [locationBar_ stopAnimation];
   if (animate)
     [locationBar_ animateToFrame:locationFrame];
   else

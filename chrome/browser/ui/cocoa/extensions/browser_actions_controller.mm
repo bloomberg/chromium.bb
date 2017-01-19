@@ -135,9 +135,6 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Handles clicks for BrowserActionButtons.
 - (BOOL)browserActionClicked:(BrowserActionButton*)button;
 
-// Updates the container's grippy cursor based on the number of hidden buttons.
-- (void)updateGrippyCursors;
-
 // Returns the associated ToolbarController.
 - (ToolbarController*)toolbarController;
 
@@ -249,6 +246,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
 @implementation BrowserActionsController
 
+@synthesize maxWidth = maxWidth_;
 @synthesize containerView = containerView_;
 @synthesize browser = browser_;
 @synthesize isOverflow = isOverflow_;
@@ -275,6 +273,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
                               mainBar));
 
     containerView_ = container;
+    [containerView_ setMinWidth:toolbarActionsBar_->GetMinimumWidth()];
     [containerView_ setPostsFrameChangedNotifications:YES];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -314,7 +313,6 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
     buttons_.reset([[NSMutableArray alloc] init]);
     toolbarActionsBar_->CreateActions();
-    [self updateGrippyCursors];
     [container setIsOverflow:isOverflow_];
 
     focusedViewIndex_ = -1;
@@ -405,6 +403,17 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   return [self preferredSize];
 }
 
+- (void)updateMaxWidth {
+  const CGFloat ownMaxWidth = toolbarActionsBar_->GetMaximumWidth();
+  containerView_.maxWidth =
+      (maxWidth_ ? std::min(maxWidth_, ownMaxWidth) : ownMaxWidth);
+}
+
+- (void)setMaxWidth:(CGFloat)maxWidth {
+  maxWidth_ = maxWidth;
+  [self updateMaxWidth];
+}
+
 - (void)addViewForAction:(ToolbarActionViewController*)action
                withIndex:(NSUInteger)index {
   NSRect buttonFrame = NSMakeRect(NSMaxX([containerView_ bounds]),
@@ -420,13 +429,12 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   [newButton setAction:@selector(browserActionClicked:)];
   [buttons_ insertObject:newButton atIndex:index];
 
+  [self updateMaxWidth];
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(actionButtonDragging:)
              name:kBrowserActionButtonDraggingNotification
            object:newButton];
-
-  [containerView_ setMaxDesiredWidth:toolbarActionsBar_->GetMaximumWidth()];
 }
 
 - (void)redraw {
@@ -505,9 +513,8 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   [button removeFromSuperview];
   [buttons_ removeObject:button];
 
+  [self updateMaxWidth];
   [button onRemoved];
-
-  [containerView_ setMaxDesiredWidth:toolbarActionsBar_->GetMaximumWidth()];
 }
 
 - (void)removeAllViews {
@@ -537,7 +544,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
                       object:self];
   }
   [self redraw];
-  [self updateGrippyCursors];
+  [[containerView_ window] invalidateCursorRectsForView:containerView_];
 }
 
 - (BOOL)updateContainerVisibility {
@@ -622,27 +629,8 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 }
 
 - (void)containerDragFinished:(NSNotification*)notification {
-  for (BrowserActionButton* button in buttons_.get()) {
-    NSRect buttonFrame = [button frame];
-    if (NSContainsRect([containerView_ bounds], buttonFrame))
-      continue;
-
-    CGFloat intersectionWidth =
-        NSWidth(NSIntersectionRect([containerView_ bounds], buttonFrame));
-    // Hide the button if it's not "mostly" visible. "Mostly" here equates to
-    // having three or fewer pixels hidden.
-    if (([containerView_ grippyPinned] && intersectionWidth > 0) ||
-        (intersectionWidth <= NSWidth(buttonFrame) - 3.0)) {
-      [button setAlphaValue:0.0];
-      [button removeFromSuperview];
-    }
-  }
-
-  toolbarActionsBar_->OnResizeComplete(
-      toolbarActionsBar_->IconCountToWidth([self visibleButtonCount]));
-
-  [self updateGrippyCursors];
-  [self resizeContainerToWidth:toolbarActionsBar_->GetPreferredSize().width()];
+  toolbarActionsBar_->OnResizeComplete(NSWidth(containerView_.bounds));
+  [[containerView_ window] invalidateCursorRectsForView:containerView_];
 }
 
 - (void)containerAnimationEnded:(NSNotification*)notification {
@@ -784,20 +772,6 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
 - (BOOL)browserActionClicked:(BrowserActionButton*)button {
   return [button viewController]->ExecuteAction(true);
-}
-
-- (void)updateGrippyCursors {
-  BOOL canClose = [self visibleButtonCount] > 0;
-  BOOL canOpen = toolbarActionsBar_->GetIconCount() != [buttons_ count];
-  [containerView_
-      setCanDragLeft:cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
-                         ? canClose
-                         : canOpen];
-  [containerView_
-      setCanDragRight:cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
-                          ? canOpen
-                          : canClose];
-  [[containerView_ window] invalidateCursorRectsForView:containerView_];
 }
 
 - (ToolbarController*)toolbarController {

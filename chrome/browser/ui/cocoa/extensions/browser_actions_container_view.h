@@ -49,12 +49,6 @@ enum BrowserActionsContainerKeyAction {
   BROWSER_ACTIONS_INVALID_KEY_ACTION = 3,
 };
 
-class BrowserActionsContainerViewSizeDelegate {
- public:
-  virtual CGFloat GetMaxAllowedWidth() = 0;
-  virtual ~BrowserActionsContainerViewSizeDelegate() {}
-};
-
 // The view that encompasses the Browser Action buttons in the toolbar and
 // provides mechanisms for resizing.
 @interface BrowserActionsContainerView : NSView<NSAnimationDelegate> {
@@ -62,13 +56,8 @@ class BrowserActionsContainerViewSizeDelegate {
   // The frame encompasing the grippy used for resizing the container.
   NSRect grippyRect_;
 
-  // Used to cache the original position within the container that initiated the
-  // drag.
-  NSPoint initialDragPoint_;
-
-  // The maximum width the container could want; i.e., the width required to
-  // display all the icons.
-  CGFloat maxDesiredWidth_;
+  // Remember where in the grippy the drag began.
+  CGFloat dragOffset_;
 
   // Whether the container is currently being resized by the user.
   BOOL userIsResizing_;
@@ -83,15 +72,6 @@ class BrowserActionsContainerViewSizeDelegate {
   // app menu.
   BOOL isOverflow_;
 
-  // Whether the user is allowed to drag the grippy to the left. NO if all
-  // extensions are shown or the location bar has hit its minimum width (handled
-  // within toolbar_controller.mm).
-  BOOL canDragLeft_;
-
-  // Whether the user is allowed to drag the grippy to the right. NO if all
-  // extensions are hidden.
-  BOOL canDragRight_;
-
   // When the left grippy is pinned, resizing the window has no effect on its
   // position. This prevents it from overlapping with other elements as well
   // as letting the container expand when the window is going from super small
@@ -100,10 +80,6 @@ class BrowserActionsContainerViewSizeDelegate {
 
   // The nine-grid of the highlight to paint, if any.
   std::unique_ptr<ui::NinePartImageIds> highlight_;
-
-  // The size delegate, if any.
-  // Weak; delegate is responsible for adding/removing itself.
-  BrowserActionsContainerViewSizeDelegate* sizeDelegate_;
 
   base::scoped_nsobject<NSViewAnimation> resizeAnimation_;
 }
@@ -130,12 +106,10 @@ class BrowserActionsContainerViewSizeDelegate {
 // Stops any animation in progress.
 - (void)stopAnimation;
 
-@property(nonatomic) BOOL canDragLeft;
-@property(nonatomic) BOOL canDragRight;
+@property(nonatomic) CGFloat minWidth;
+@property(nonatomic) CGFloat maxWidth;
 @property(nonatomic) BOOL grippyPinned;
-@property(nonatomic) CGFloat maxDesiredWidth;
 @property(readonly, nonatomic) BOOL userIsResizing;
-@property(nonatomic) BrowserActionsContainerViewSizeDelegate* delegate;
 
 @end
 

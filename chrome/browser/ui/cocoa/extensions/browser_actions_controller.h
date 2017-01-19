@@ -60,6 +60,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
   NSInteger focusedViewIndex_;
 }
 
+@property(nonatomic) CGFloat maxWidth;
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
 @property(readonly, nonatomic) Browser* browser;
 @property(readonly, nonatomic) BOOL isOverflow;
