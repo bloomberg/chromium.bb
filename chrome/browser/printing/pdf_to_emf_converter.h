@@ -15,17 +15,17 @@ namespace printing {
 class MetafilePlayer;
 struct PdfRenderSettings;
 
-class PdfToEmfConverter {
+class PdfConverter {
  public:
-  typedef base::Callback<void(int page_count)> StartCallback;
-  typedef base::Callback<void(int page_number,
-                              float scale_factor,
-                              std::unique_ptr<MetafilePlayer> emf)>
-      GetPageCallback;
+  using StartCallback = base::Callback<void(int page_count)>;
+  using GetPageCallback =
+      base::Callback<void(int page_number,
+                          float scale_factor,
+                          std::unique_ptr<MetafilePlayer> file)>;
 
-  virtual ~PdfToEmfConverter();
+  virtual ~PdfConverter();
 
-  static std::unique_ptr<PdfToEmfConverter> CreateDefault();
+  static std::unique_ptr<PdfConverter> CreatePdfToEmfConverter();
 
   // Starts conversion of PDF provided as |data|. Calls |start_callback|
   // with positive |page_count|. |page_count| is 0 if initialization failed.

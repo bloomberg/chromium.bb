@@ -231,18 +231,17 @@ class PrintJob::PdfToEmfState {
         pages_in_progress_(0),
         page_size_(page_size),
         content_area_(content_area),
-        converter_(PdfToEmfConverter::CreateDefault()) {}
+        converter_(PdfConverter::CreatePdfToEmfConverter()) {}
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
              bool print_text_with_gdi,
-             const PdfToEmfConverter::StartCallback& start_callback) {
+             const PdfConverter::StartCallback& start_callback) {
     converter_->Start(data, conversion_settings, print_text_with_gdi,
                       start_callback);
   }
 
-  void GetMorePages(
-      const PdfToEmfConverter::GetPageCallback& get_page_callback) {
+  void GetMorePages(const PdfConverter::GetPageCallback& get_page_callback) {
     const int kMaxNumberOfTempFilesPerDocument = 3;
     while (pages_in_progress_ < kMaxNumberOfTempFilesPerDocument &&
            current_page_ < page_count_) {
@@ -251,8 +250,7 @@ class PrintJob::PdfToEmfState {
     }
   }
 
-  void OnPageProcessed(
-      const PdfToEmfConverter::GetPageCallback& get_page_callback) {
+  void OnPageProcessed(const PdfConverter::GetPageCallback& get_page_callback) {
     --pages_in_progress_;
     GetMorePages(get_page_callback);
     // Release converter if we don't need this any more.
@@ -270,7 +268,7 @@ class PrintJob::PdfToEmfState {
   int pages_in_progress_;
   gfx::Size page_size_;
   gfx::Rect content_area_;
-  std::unique_ptr<PdfToEmfConverter> converter_;
+  std::unique_ptr<PdfConverter> converter_;
 };
 
 void PrintJob::AppendPrintedPage(int page_number) {
