@@ -32,11 +32,11 @@
              ContextualSearchTabProvider>
 @property(nonatomic, assign) BOOL active;
 // The tab that is credited with opening the search results tab.
-@property(nonatomic, weak) Tab* opener;
+@property(nonatomic, assign) Tab* opener;
 // Object that can handle promoting the search results.
-@property(nonatomic, weak) id<ContextualSearchTabPromoter> promoter;
+@property(nonatomic, assign) id<ContextualSearchTabPromoter> promoter;
 // Object that can determine if search results can be preloaded.
-@property(nonatomic, weak) id<ContextualSearchPreloadChecker> preloadChecker;
+@property(nonatomic, assign) id<ContextualSearchPreloadChecker> preloadChecker;
 // YES if the search results have loaded and this view was visible.
 @property(nonatomic, readonly) BOOL contentVisible;
 

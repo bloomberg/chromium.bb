@@ -21,7 +21,7 @@
 @property(nonatomic, assign) ContextualSearch::PanelState state;
 // Panel configuration, for motion observers that want to do different
 // computations around panel state and position.
-@property(nonatomic, strong, readonly) PanelConfiguration* configuration;
+@property(nonatomic, readonly) PanelConfiguration* configuration;
 
 // Create a panel view. It will need to have a delegate and controller assigned
 // to do anything useful.

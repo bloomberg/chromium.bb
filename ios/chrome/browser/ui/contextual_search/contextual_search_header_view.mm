@@ -4,8 +4,10 @@
 
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_header_view.h"
 
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
@@ -13,10 +15,6 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 const CGFloat kHorizontalMargin = 24.0;
@@ -107,8 +105,8 @@ const NSTimeInterval kLogoIrisAnimationDuration = ios::material::kDuration1;
   // Label showing the text the user tapped on in the web page, and any
   // additional context that will be displayed.
   __unsafe_unretained UILabel* _textLabel;
-  __weak id<ContextualSearchPanelTapHandler> _tapHandler;
-  UIGestureRecognizer* _tapRecognizer;
+  base::WeakNSProtocol<id<ContextualSearchPanelTapHandler>> _tapHandler;
+  base::scoped_nsobject<UIGestureRecognizer> _tapRecognizer;
 }
 
 + (BOOL)requiresConstraintBasedLayout {
@@ -124,30 +122,27 @@ const NSTimeInterval kLogoIrisAnimationDuration = ios::material::kDuration1;
 
   self.translatesAutoresizingMaskIntoConstraints = NO;
   self.backgroundColor = [UIColor whiteColor];
-  _tapRecognizer = [[UITapGestureRecognizer alloc] init];
+  _tapRecognizer.reset([[UITapGestureRecognizer alloc] init]);
   [self addGestureRecognizer:_tapRecognizer];
   [_tapRecognizer addTarget:self action:@selector(panelWasTapped:)];
 
   UIImage* logoImage = ios::GetChromeBrowserProvider()
                            ->GetBrandedImageProvider()
                            ->GetContextualSearchHeaderImage();
-  IrisingImageView* logo = [[IrisingImageView alloc] initWithImage:logoImage];
-  _logo = logo;
+  _logo = [[[IrisingImageView alloc] initWithImage:logoImage] autorelease];
   _logo.translatesAutoresizingMaskIntoConstraints = NO;
   _logo.iris = 0.0;
 
-  UIImageView* caret =
-      [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"expand_less"]];
-  _caret = caret;
+  _caret = [[[UIImageView alloc]
+      initWithImage:[UIImage imageNamed:@"expand_less"]] autorelease];
   _caret.translatesAutoresizingMaskIntoConstraints = NO;
   [_caret setContentHuggingPriority:UILayoutPriorityDefaultHigh
                             forAxis:UILayoutConstraintAxisVertical];
   [_caret setContentHuggingPriority:UILayoutPriorityDefaultHigh
                             forAxis:UILayoutConstraintAxisHorizontal];
 
-  TappableButton* closeButton =
-      [[TappableButton alloc] initWithFrame:CGRectZero];
-  _closeButton = closeButton;
+  _closeButton =
+      [[[TappableButton alloc] initWithFrame:CGRectZero] autorelease];
   _closeButton.translatesAutoresizingMaskIntoConstraints = NO;
   [_closeButton setImage:[UIImage imageNamed:@"card_close_button"]
                 forState:UIControlStateNormal];
@@ -159,8 +154,7 @@ const NSTimeInterval kLogoIrisAnimationDuration = ios::material::kDuration1;
                                   forAxis:UILayoutConstraintAxisHorizontal];
   _closeButton.alpha = 0;
 
-  UILabel* textLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-  _textLabel = textLabel;
+  _textLabel = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
   _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _textLabel.font = [MDCTypography subheadFont];
   _textLabel.textAlignment = NSTextAlignmentNatural;
@@ -233,7 +227,7 @@ const NSTimeInterval kLogoIrisAnimationDuration = ios::material::kDuration1;
                         action:@selector(closePanel)
               forControlEvents:UIControlEventTouchUpInside];
   }
-  _tapHandler = tapHandler;
+  _tapHandler.reset(tapHandler);
   if (_tapHandler) {
     [_closeButton addTarget:_tapHandler
                      action:@selector(closePanel)
@@ -308,7 +302,7 @@ const NSTimeInterval kLogoIrisAnimationDuration = ios::material::kDuration1;
     followingTextRange:(NSRange)followingTextRange
               animated:(BOOL)animated {
   NSMutableAttributedString* styledText =
-      [[NSMutableAttributedString alloc] initWithString:text];
+      [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
   [styledText addAttribute:NSForegroundColorAttributeName
                      value:[UIColor colorWithWhite:0 alpha:0.71f]
                      range:followingTextRange];

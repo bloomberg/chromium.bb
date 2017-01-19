@@ -58,7 +58,7 @@ typedef NS_ENUM(NSInteger, TouchToSearchPreferenceState) {
     TouchToSearch::TouchToSearchPreferenceState preferenceState;
 
 // Current audience object.
-@property(nonatomic, weak)
+@property(nonatomic, assign)
     NSObject<TouchToSearchPermissionsChangeAudience>* audience;
 
 // YES if, given the current permissions state, touch-to-search can be enabled.

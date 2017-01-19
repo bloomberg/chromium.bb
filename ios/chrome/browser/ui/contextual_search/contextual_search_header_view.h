@@ -12,7 +12,7 @@
 @interface ContextualSearchHeaderView
     : UIView<ContextualSearchPanelMotionObserver>
 
-@property(nonatomic, weak) id<ContextualSearchPanelTapHandler> tapHandler;
+@property(nonatomic, assign) id<ContextualSearchPanelTapHandler> tapHandler;
 
 - (instancetype)initWithHeight:(CGFloat)height NS_DESIGNATED_INITIALIZER;
 

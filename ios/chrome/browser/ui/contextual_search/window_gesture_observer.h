@@ -33,8 +33,8 @@
 
 @interface WindowGestureObserver : UIGestureRecognizer
 
-@property(nonatomic, weak) UIView* viewToExclude;
-@property(nonatomic, weak, readonly) UIView* touchedView;
+@property(nonatomic, assign) UIView* viewToExclude;
+@property(nonatomic, readonly) UIView* touchedView;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTEXTUAL_SEARCH_WINDOW_GESTURE_OBSERVER_H_

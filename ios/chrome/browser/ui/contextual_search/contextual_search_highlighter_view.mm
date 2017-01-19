@@ -5,11 +5,8 @@
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_highlighter_view.h"
 
 #include "base/logging.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_controller.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @implementation ContextualSearchHighlighterView {
   // Store size of the container view. If size change, text layout will likely
@@ -21,7 +18,7 @@
   CGFloat _zoom;
   CGFloat _offset;
 
-  __weak id<ContextualSearchHighlighterDelegate> _delegate;
+  __unsafe_unretained id<ContextualSearchHighlighterDelegate> _delegate;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -73,7 +70,7 @@
     rect.size.height *= zoom;
     rect.origin.x -= scroll.x;
     rect.origin.y += offset - scroll.y;
-    UIView* view = [[UIView alloc] initWithFrame:rect];
+    UIView* view = [[[UIView alloc] initWithFrame:rect] autorelease];
     [self addSubview:view];
     view.backgroundColor =
         [UIColor colorWithRed:0.67 green:0.88 blue:0.96 alpha:0.6];
