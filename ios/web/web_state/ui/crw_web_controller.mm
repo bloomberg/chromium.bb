@@ -2273,14 +2273,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)didFinishWithURL:(const GURL&)currentURL loadSuccess:(BOOL)loadSuccess {
   DCHECK(_loadPhase == web::PAGE_LOADED);
   _webStateImpl->GetRequestTracker()->FinishPageLoad(currentURL, loadSuccess);
-  // Reset the navigation type to the default value.
-  // Note: it is possible that the web view has already started loading the
-  // next page when this is called. In that case the cache mode can leak to
-  // (some of) the requests of the next page. It's expected to be an edge case,
-  // but if it becomes a problem it should be possible to notice it afterwards
-  // and react to it (by warning the user or reloading the page for example).
-  _webStateImpl->GetRequestTracker()->SetCacheModeFromUIThread(
-      net::RequestTracker::CACHE_NORMAL);
 
   // Rather than creating a new WKBackForwardListItem when loading WebUI pages,
   // WKWebView will cache the WebUI HTML in the previous WKBackForwardListItem

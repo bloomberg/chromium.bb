@@ -658,14 +658,6 @@ void RequestTrackerImpl::ScheduleIOTask(const base::Closure& task) {
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, task);
 }
 
-void RequestTrackerImpl::SetCacheModeFromUIThread(
-    RequestTracker::CacheMode mode) {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
-      base::Bind(&RequestTracker::SetCacheMode, this, mode));
-}
-
 #pragma mark Private Object Lifecycle API
 
 RequestTrackerImpl::RequestTrackerImpl(

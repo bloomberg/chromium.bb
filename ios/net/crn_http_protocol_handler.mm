@@ -581,27 +581,9 @@ void HttpProtocolHandlerCore::SetLoadFlags() {
   if (![request_ HTTPShouldHandleCookies])
     load_flags |= LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES;
 
-  // Cache flags.
-  if (tracker_) {
-    RequestTracker::CacheMode cache_mode = tracker_->GetCacheMode();
-    switch (cache_mode) {
-      case RequestTracker::CACHE_RELOAD:
-        load_flags |= LOAD_VALIDATE_CACHE;
-        break;
-      case RequestTracker::CACHE_HISTORY:
-        load_flags |= LOAD_SKIP_CACHE_VALIDATION;
-        break;
-      case RequestTracker::CACHE_BYPASS:
-        load_flags |= LOAD_DISABLE_CACHE | LOAD_BYPASS_CACHE;
-        break;
-      case RequestTracker::CACHE_ONLY:
-        load_flags |= LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
-        break;
-      case RequestTracker::CACHE_NORMAL:
-        // Do nothing, normal load.
-        break;
-    }
-  } else {
+  // If a RequestTracker is defined, always use normal load, otherwise
+  // respect the cache policy from the request.
+  if (!tracker_) {
     switch ([request_ cachePolicy]) {
       case NSURLRequestReloadIgnoringLocalAndRemoteCacheData:
         load_flags |= LOAD_BYPASS_CACHE;

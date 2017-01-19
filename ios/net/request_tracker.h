@@ -27,14 +27,6 @@ namespace net {
 // The RequestTracker can be created on one thread and used on a different one.
 class RequestTracker {
  public:
-  enum CacheMode {
-    CACHE_NORMAL,
-    CACHE_RELOAD,
-    CACHE_HISTORY,
-    CACHE_BYPASS,
-    CACHE_ONLY,
-  };
-
   typedef base::Callback<void(bool)> SSLCallback;
 
   class RequestTrackerFactory {
@@ -108,10 +100,6 @@ class RequestTracker {
                                      bool recoverable,
                                      const SSLCallback& should_continue) = 0;
 
-  // Gets and sets the cache mode.
-  CacheMode GetCacheMode() const;
-  void SetCacheMode(RequestTracker::CacheMode mode);
-
  protected:
   virtual ~RequestTracker();
 
@@ -119,7 +107,6 @@ class RequestTracker {
 
  private:
   bool initialized_;
-  CacheMode cache_mode_;
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<RequestTracker> weak_ptr_factory_;

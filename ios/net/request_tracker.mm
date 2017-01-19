@@ -41,7 +41,6 @@ bool RequestTracker::GetRequestTracker(NSURLRequest* request,
 
 RequestTracker::RequestTracker()
     : initialized_(false),
-      cache_mode_(CACHE_NORMAL),
       weak_ptr_factory_(this) {
   // RequestTracker can be created from the main thread and used from another
   // thread.
@@ -63,16 +62,6 @@ void RequestTracker::Init() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!initialized_);
   initialized_ = true;
-}
-
-RequestTracker::CacheMode RequestTracker::GetCacheMode() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return cache_mode_;
-}
-
-void RequestTracker::SetCacheMode(RequestTracker::CacheMode mode) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  cache_mode_ = mode;
 }
 
 }  // namespace net

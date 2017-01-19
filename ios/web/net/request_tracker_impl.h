@@ -182,9 +182,6 @@ class RequestTrackerImpl
   static void PostUITaskIfOpen(const base::WeakPtr<RequestTracker> tracker,
                                const base::Closure& task);
 
-  // Sets the cache mode. Must be called from the UI thread.
-  void SetCacheModeFromUIThread(RequestTracker::CacheMode mode);
-
 #pragma mark Testing methods
 
   void SetCertificatePolicyCacheForTest(web::CertificatePolicyCache* cache);
