@@ -948,11 +948,11 @@ FrameLoadType FrameLoader::determineFrameLoadType(
     return FrameLoadTypeReplaceCurrentItem;
 
   if (request.resourceRequest().url() == m_documentLoader->urlForHistory()) {
+    if (request.resourceRequest().httpMethod() == HTTPNames::POST)
+      return FrameLoadTypeStandard;
     if (!request.originDocument())
       return FrameLoadTypeReloadMainResource;
-    return request.resourceRequest().httpMethod() == HTTPNames::POST
-               ? FrameLoadTypeStandard
-               : FrameLoadTypeReplaceCurrentItem;
+    return FrameLoadTypeReplaceCurrentItem;
   }
 
   if (request.substituteData().failingURL() ==

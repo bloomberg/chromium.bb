@@ -1,13 +1,12 @@
 # These tests currently fail when run with --enable-browser-side-navigation
 # See https://crbug.com/576261
 # https://crbug.com/608372: PlzNavigate: support POST navigations
-crbug.com/608372 fast/forms/submit-to-url-fragment.html [ Failure ]
 crbug.com/608372 fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
+#  Layout test does not end for unknown reasons.
 crbug.com/608372 http/tests/history/back-to-post.html [ Timeout ]
-crbug.com/608372 http/tests/navigation/post-goback-same-url.html [ Failure ]
-crbug.com/608372 virtual/stable/http/tests/navigation/post-goback-same-url.html [ Failure ]
 crbug.com/608372 virtual/mojo-loading/http/tests/history/back-to-post.html [ Timeout ]
-crbug.com/608372 virtual/mojo-loading/http/tests/navigation/post-goback-same-url.html [ Failure ]
+#  Layout test ending too soon.
+crbug.com/608372 fast/forms/submit-to-url-fragment.html [ Failure ]
 
 # https://crbug.com/575210: PlzNavigate: history navigation support
 crbug.com/575210 fast/history/history-length-append-subframe-with-hash.html [ Failure ]
