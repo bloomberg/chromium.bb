@@ -196,22 +196,9 @@ void GLHelperHolder::Initialize() {
   // reasonable but small limit.
   limits.start_transfer_buffer_size = 4 * 1024;
   limits.min_transfer_buffer_size = 4 * 1024;
-
-  // Use the largest available display size as the max texture size.
-  constexpr size_t kBytesPerPixel = 4;
-  size_t max_screen_texture_size_in_bytes = limits.min_transfer_buffer_size;
-  for (auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
-    gfx::Size size = display.GetSizeInPixel();
-    size_t display_size_in_bytes =
-        kBytesPerPixel * size.width() * size.height();
-    if (display_size_in_bytes > max_screen_texture_size_in_bytes)
-      max_screen_texture_size_in_bytes = display_size_in_bytes;
-  }
-
-  limits.max_transfer_buffer_size = max_screen_texture_size_in_bytes;
-  // This context is used for doing async readbacks, so allow at least a full
-  // screen readback to be mapped.
-  limits.mapped_memory_reclaim_limit = max_screen_texture_size_in_bytes;
+  limits.max_transfer_buffer_size = 128 * 1024;
+  // Very few allocations from mapped memory pool, so this can be really low.
+  limits.mapped_memory_reclaim_limit = 4 * 1024;
 
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
