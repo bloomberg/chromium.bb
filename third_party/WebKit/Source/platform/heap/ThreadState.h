@@ -181,24 +181,7 @@ class PLATFORM_EXPORT ThreadState {
   static void detachCurrentThread();
 
   static ThreadState* current() {
-#if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
-    // TLS lookup is fast in these platforms.
     return **s_threadSpecific;
-#else
-    uintptr_t dummy;
-    uintptr_t addressDiff =
-        s_mainThreadStackStart - reinterpret_cast<uintptr_t>(&dummy);
-    // This is a fast way to judge if we are in the main thread.
-    // If |&dummy| is within |s_mainThreadUnderestimatedStackSize| byte from
-    // the stack start of the main thread, we judge that we are in
-    // the main thread.
-    if (LIKELY(addressDiff < s_mainThreadUnderestimatedStackSize)) {
-      ASSERT(**s_threadSpecific == mainThreadState());
-      return mainThreadState();
-    }
-    // TLS lookup is slow.
-    return **s_threadSpecific;
-#endif
   }
 
   static ThreadState* mainThreadState() {
@@ -511,10 +494,6 @@ class PLATFORM_EXPORT ThreadState {
     m_accumulatedSweepingTime += time;
   }
 
-#if OS(WIN) && COMPILER(MSVC)
-  size_t threadStackSize();
-#endif
-
   void freePersistentNode(PersistentNode*);
 
   using PersistentClearCallback = void (*)(void*);
@@ -655,8 +634,6 @@ class PLATFORM_EXPORT ThreadState {
   friend class SafePointScope;
 
   static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
-  static uintptr_t s_mainThreadStackStart;
-  static uintptr_t s_mainThreadUnderestimatedStackSize;
 
   // We can't create a static member of type ThreadState here
   // because it will introduce global constructor and destructor.
@@ -671,9 +648,6 @@ class PLATFORM_EXPORT ThreadState {
   ThreadIdentifier m_thread;
   std::unique_ptr<PersistentRegion> m_persistentRegion;
   BlinkGC::StackState m_stackState;
-#if OS(WIN) && COMPILER(MSVC)
-  size_t m_threadStackSize;
-#endif
   intptr_t* m_startOfStack;
   intptr_t* m_endOfStack;
 

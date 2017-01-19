@@ -103,15 +103,7 @@ void unlockAtomicallyInitializedStaticMutex() {
 }
 
 ThreadIdentifier currentThread() {
-// TLS lookup is fast on these platforms.
-#if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
   return wtfThreadData().threadId();
-#else
-  // TODO(csharrison): For platforms where TLS lookup is slow, use the hack that
-  // oilpan uses in ThreadState::current() to check if this is the main thread
-  // via stack address.
-  return internal::currentThreadSyscall();
-#endif
 }
 
 MutexBase::MutexBase(bool recursive) {

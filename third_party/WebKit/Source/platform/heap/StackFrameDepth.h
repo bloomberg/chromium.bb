@@ -46,9 +46,6 @@ class PLATFORM_EXPORT StackFrameDepth final {
 #endif
   }
 
-  static size_t getUnderestimatedStackSize();
-  static void* getStackStart();
-
 #if COMPILER(MSVC)
 // Ignore C4172: returning address of local variable or temporary: dummy. This
 // warning suppression has to go outside of the function to take effect.

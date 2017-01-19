@@ -52,6 +52,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/DataLog.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/StackUtil.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/allocator/Partitions.h"
 #include <memory>
@@ -74,8 +75,6 @@
 namespace blink {
 
 WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = nullptr;
-uintptr_t ThreadState::s_mainThreadStackStart = 0;
-uintptr_t ThreadState::s_mainThreadUnderestimatedStackSize = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 
 const size_t defaultAllocatedObjectSizeThreshold = 100 * 1024;
@@ -142,13 +141,8 @@ class ParkThreadsScope final {
 ThreadState::ThreadState()
     : m_thread(currentThread()),
       m_persistentRegion(WTF::makeUnique<PersistentRegion>()),
-#if OS(WIN) && COMPILER(MSVC)
-      m_threadStackSize(0),
-#endif
-      m_startOfStack(
-          reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart())),
-      m_endOfStack(
-          reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart())),
+      m_startOfStack(reinterpret_cast<intptr_t*>(WTF::getStackStart())),
+      m_endOfStack(reinterpret_cast<intptr_t*>(WTF::getStackStart())),
       m_safePointScopeMarker(nullptr),
       m_atSafePoint(false),
       m_interruptors(),
@@ -180,16 +174,6 @@ ThreadState::ThreadState()
   ASSERT(!**s_threadSpecific);
   **s_threadSpecific = this;
 
-  if (isMainThread()) {
-    s_mainThreadStackStart =
-        reinterpret_cast<uintptr_t>(m_startOfStack) - sizeof(void*);
-    size_t underestimatedStackSize =
-        StackFrameDepth::getUnderestimatedStackSize();
-    if (underestimatedStackSize > sizeof(void*)) {
-      s_mainThreadUnderestimatedStackSize =
-          underestimatedStackSize - sizeof(void*);
-    }
-  }
   m_heap = new ThreadHeap();
   ASSERT(m_heap);
   m_heap->attach(this);
@@ -211,47 +195,7 @@ ThreadState::~ThreadState() {
     delete m_arenas[i];
 
   **s_threadSpecific = nullptr;
-  if (isMainThread()) {
-    s_mainThreadStackStart = 0;
-    s_mainThreadUnderestimatedStackSize = 0;
-  }
 }
-
-#if OS(WIN) && COMPILER(MSVC)
-size_t ThreadState::threadStackSize() {
-  if (m_threadStackSize)
-    return m_threadStackSize;
-
-  // Notice that we cannot use the TIB's StackLimit for the stack end, as it
-  // tracks the end of the committed range. We're after the end of the reserved
-  // stack area (most of which will be uncommitted, most times.)
-  MEMORY_BASIC_INFORMATION stackInfo;
-  memset(&stackInfo, 0, sizeof(MEMORY_BASIC_INFORMATION));
-  size_t resultSize =
-      VirtualQuery(&stackInfo, &stackInfo, sizeof(MEMORY_BASIC_INFORMATION));
-  DCHECK_GE(resultSize, sizeof(MEMORY_BASIC_INFORMATION));
-  Address stackEnd = reinterpret_cast<Address>(stackInfo.AllocationBase);
-
-  Address stackStart =
-      reinterpret_cast<Address>(StackFrameDepth::getStackStart());
-  RELEASE_ASSERT(stackStart && stackStart > stackEnd);
-  m_threadStackSize = static_cast<size_t>(stackStart - stackEnd);
-  // When the third last page of the reserved stack is accessed as a
-  // guard page, the second last page will be committed (along with removing
-  // the guard bit on the third last) _and_ a stack overflow exception
-  // is raised.
-  //
-  // We have zero interest in running into stack overflow exceptions while
-  // marking objects, so simply consider the last three pages + one above
-  // as off-limits and adjust the reported stack size accordingly.
-  //
-  // http://blogs.msdn.com/b/satyem/archive/2012/08/13/thread-s-stack-memory-management.aspx
-  // explains the details.
-  RELEASE_ASSERT(m_threadStackSize > 4 * 0x1000);
-  m_threadStackSize -= 4 * 0x1000;
-  return m_threadStackSize;
-}
-#endif
 
 void ThreadState::attachMainThread() {
   RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
@@ -1337,7 +1281,7 @@ void ThreadState::safePoint(BlinkGC::StackState stackState) {
 // match behavior of code running without AddressSanitizer.
 NO_SANITIZE_ADDRESS static void* adjustScopeMarkerForAdressSanitizer(
     void* scopeMarker) {
-  Address start = reinterpret_cast<Address>(StackFrameDepth::getStackStart());
+  Address start = reinterpret_cast<Address>(WTF::getStackStart());
   Address end = reinterpret_cast<Address>(&start);
   RELEASE_ASSERT(end < start);
 

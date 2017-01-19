@@ -111,6 +111,8 @@ component("wtf") {
     "SizeAssertions.h",
     "SizeLimits.cpp",
     "SpinLock.h",
+    "StackUtil.cpp",
+    "StackUtil.h",
     "StaticConstructors.h",
     "StdLibExtras.h",
     "StringExtras.h",

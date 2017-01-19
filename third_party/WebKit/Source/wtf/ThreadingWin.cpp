@@ -161,7 +161,7 @@ void initializeThreading() {
 }
 
 ThreadIdentifier currentThread() {
-  return internal::currentThreadSyscall();
+  return wtfThreadData().threadId();
 }
 
 MutexBase::MutexBase(bool recursive) {

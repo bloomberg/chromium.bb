@@ -26,6 +26,7 @@
 
 #include "wtf/WTFThreadData.h"
 
+#include "wtf/StackUtil.h"
 #include "wtf/text/AtomicStringTable.h"
 #include "wtf/text/TextCodecICU.h"
 
@@ -39,5 +40,19 @@ WTFThreadData::WTFThreadData()
       m_threadId(internal::currentThreadSyscall()) {}
 
 WTFThreadData::~WTFThreadData() {}
+
+#if OS(WIN) && COMPILER(MSVC)
+size_t WTFThreadData::threadStackSize() {
+  // Needed to bootstrap WTFThreadData on Windows, because this value is needed
+  // before the main thread data is fully initialized.
+  if (!WTFThreadData::staticData->isSet())
+    return internal::threadStackSize();
+
+  WTFThreadData& data = wtfThreadData();
+  if (!data.m_threadStackSize)
+    data.m_threadStackSize = internal::threadStackSize();
+  return data.m_threadStackSize;
+}
+#endif
 
 }  // namespace WTF
