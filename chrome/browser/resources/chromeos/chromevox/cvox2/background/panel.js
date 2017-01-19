@@ -705,6 +705,11 @@ Panel.onKeyDown = function(event) {
     return;
   }
 
+  // Events don't propagate correctly because blur places focus on body.
+  if (Panel.mode_ == Panel.Mode.FULLSCREEN_TUTORIAL &&
+      !Panel.tutorial_.onKeyDown(event))
+    return;
+
   if (!Panel.activeMenu_)
     return;
 

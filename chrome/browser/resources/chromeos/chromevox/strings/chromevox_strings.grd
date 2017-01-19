@@ -2530,8 +2530,8 @@
       <message desc="Introductory text for the 'ChromeVox Next' tutorial" name="IDS_CHROMEVOX_TUTORIAL_WELCOME_TEXT">
         Are you using ChromeVox Next spoken feedback for the first time? This quick tutorial explains the essentials for getting started with ChromeVox Next.
       </message>
-      <message desc="Text that tells users to press the enter key to move to the next page in the tutorial" name="IDS_CHROMEVOX_TUTORIAL_ENTER_TO_ADVANCE">
-        To advance, press Enter.
+      <message desc="Text that tells users to press the enter key to move to the next page or backspace to move to the previous page in the tutorial" name="IDS_CHROMEVOX_TUTORIAL_ENTER_TO_ADVANCE">
+        To advance, press enter; to go back, press backspace.
       </message>
       <message desc="Heading that talks about turning ChromeVox on, off, and stopping it from speaking" name="IDS_CHROMEVOX_TUTORIAL_ON_OFF_HEADING">
         On, Off, and Stop

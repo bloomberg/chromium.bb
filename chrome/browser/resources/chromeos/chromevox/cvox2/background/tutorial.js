@@ -25,6 +25,7 @@ Tutorial = function() {
   this.page = sessionStorage['tutorial_page_pos'] !== undefined ?
       sessionStorage['tutorial_page_pos'] : 0;
 };
+
 /**
  * @param {Node} container
  * @private
@@ -117,6 +118,26 @@ Tutorial.PAGES = [
 ];
 
 Tutorial.prototype = {
+  /**
+   * Handles key down events.
+   * @param {Event} evt
+   * @return {boolean}
+   */
+  onKeyDown: function(evt) {
+    if (document.activeElement &&
+        (document.activeElement.id == 'tutorial_previous' ||
+        document.activeElement.id == 'tutorial_next'))
+      return true;
+
+    if (evt.key == 'Enter')
+      this.nextPage();
+    else if (evt.key == 'Backspace')
+      this.previousPage();
+    else
+      return true;
+    return false;
+  },
+
   /** Open the last viewed page in the tutorial. */
   lastViewedPage: function() {
     this.page = sessionStorage['tutorial_page_pos'] !== undefined ?
