@@ -126,14 +126,15 @@ ChildConnection::ChildConnection(
     const std::string& child_token,
     service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : context_(new IOThreadContext),
+    : child_token_(child_token),
+      context_(new IOThreadContext),
       child_identity_(service_name,
                       service_manager::mojom::kInheritUserID,
                       instance_id),
       service_token_(mojo::edk::GenerateRandomToken()),
       weak_factory_(this) {
   mojo::ScopedMessagePipeHandle service_pipe =
-      mojo::edk::CreateParentMessagePipe(service_token_, child_token);
+      mojo::edk::CreateParentMessagePipe(service_token_, child_token_);
 
   context_->Initialize(child_identity_, connector, std::move(service_pipe),
                        io_task_runner);
@@ -145,9 +146,18 @@ ChildConnection::ChildConnection(
 
 ChildConnection::~ChildConnection() {
   context_->ShutDown();
+
+  if (process_handle_ == base::kNullProcessHandle) {
+    // The process handle was never set, so we have to assume the process was
+    // not successfully launched. Note that ChildProcessLauncher may also call
+    // call ChildProcessLaunchFailed for the same token, so this is (harmlessly)
+    // redundant in some cases.
+    mojo::edk::ChildProcessLaunchFailed(child_token_);
+  }
 }
 
 void ChildConnection::SetProcessHandle(base::ProcessHandle handle) {
+  process_handle_ = handle;
   context_->SetProcessHandle(handle);
 }
 

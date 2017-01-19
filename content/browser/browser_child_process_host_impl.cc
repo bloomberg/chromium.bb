@@ -551,6 +551,9 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   const base::Process& process = child_process_->GetProcess();
   DCHECK(process.IsValid());
 
+  if (child_connection_)
+    child_connection_->SetProcessHandle(process.Handle());
+
 #if defined(OS_WIN)
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the
   // child process exits. This watcher is stopped once the IPC channel is

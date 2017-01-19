@@ -61,9 +61,11 @@ class CONTENT_EXPORT ChildConnection {
  private:
   class IOThreadContext;
 
+  const std::string child_token_;
   scoped_refptr<IOThreadContext> context_;
   service_manager::Identity child_identity_;
   const std::string service_token_;
+  base::ProcessHandle process_handle_ = base::kNullProcessHandle;
 
   service_manager::InterfaceProvider remote_interfaces_;
 
