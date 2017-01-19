@@ -522,11 +522,13 @@ void GaiaScreenHandler::DoAdAuth(const std::string& username,
     case authpolicy::ERROR_PASSWORD_EXPIRED:
       core_oobe_actor_->ShowActiveDirectoryPasswordChangeScreen(username);
       break;
-    case authpolicy::ERROR_UNKNOWN:
-    case authpolicy::ERROR_DBUS_FAILURE:
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
     case authpolicy::ERROR_BAD_PASSWORD:
+      CallJS("invalidateAd", username);
+      return;
+    case authpolicy::ERROR_UNKNOWN:
+    case authpolicy::ERROR_DBUS_FAILURE:
     case authpolicy::ERROR_CANNOT_RESOLVE_KDC:
     case authpolicy::ERROR_KINIT_FAILED:
     case authpolicy::ERROR_NET_FAILED:

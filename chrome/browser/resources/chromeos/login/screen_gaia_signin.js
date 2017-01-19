@@ -50,6 +50,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'monitorOfflineIdle',
       'updateControlsState',
       'showWhitelistCheckFailedError',
+      'invalidateAd',
     ],
 
     /**
@@ -1090,6 +1091,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         ADAuthUI.realm = params['realm'];
         ADAuthUI.userRealm = '@' + params['realm'];
       }
+      if ('email' in params)
+        ADAuthUI.setUser(params['email']);
       this.onAuthReady_();
     },
 
@@ -1116,6 +1119,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         Oobe.showSigninUI();
 
       this.updateControlsState();
+    },
+
+    invalidateAd: function(username) {
+      if (this.screenMode_ != ScreenMode.AD_AUTH)
+        return;
+      var adAuthUI = this.getSigninFrame_();
+      adAuthUI.setUser(username);
+      adAuthUI.setInvalid(ACTIVE_DIRECTORY_ERROR_STATE.BAD_PASSWORD);
+      this.loading = false;
     }
   };
 });
