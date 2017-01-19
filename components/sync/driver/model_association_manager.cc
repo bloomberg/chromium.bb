@@ -169,6 +169,7 @@ void ModelAssociationManager::LoadEnabledTypes() {
     if (dtc->state() == DataTypeController::NOT_RUNNING) {
       DCHECK(!loaded_types_.Has(dtc->type()));
       DCHECK(!associated_types_.Has(dtc->type()));
+      delegate_->OnSingleDataTypeWillStart(dtc->type());
       dtc->LoadModels(base::Bind(&ModelAssociationManager::ModelLoadCallback,
                                  weak_ptr_factory_.GetWeakPtr()));
     }

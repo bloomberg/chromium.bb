@@ -219,15 +219,6 @@ class SyncerTest : public testing::Test,
   void OnProtocolEvent(const ProtocolEvent& event) override {}
   void OnSyncProtocolError(const SyncProtocolError& error) override {}
 
-  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
-    // We're just testing the sync engine here, so we shunt everything to
-    // the SyncerThread.  Datatypes which aren't enabled aren't in the map.
-    for (ModelTypeSet::Iterator it = enabled_datatypes_.First(); it.Good();
-         it.Inc()) {
-      (*out)[it.Get()] = GROUP_PASSIVE;
-    }
-  }
-
   void OnSyncCycleEvent(const SyncCycleEvent& event) override {
     DVLOG(1) << "HandleSyncEngineEvent in unittest " << event.what_happened;
     // we only test for entry-specific events, not status changed ones.
@@ -271,18 +262,10 @@ class SyncerTest : public testing::Test,
     mock_server_ = base::MakeUnique<MockConnectionManager>(
         directory(), &cancelation_signal_);
     debug_info_getter_ = base::MakeUnique<MockDebugInfoGetter>();
-    EnableDatatype(BOOKMARKS);
-    EnableDatatype(EXTENSIONS);
-    EnableDatatype(NIGORI);
-    EnableDatatype(PREFERENCES);
-    EnableDatatype(NIGORI);
     workers_.push_back(
         scoped_refptr<ModelSafeWorker>(new FakeModelWorker(GROUP_PASSIVE)));
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(this);
-
-    ModelSafeRoutingInfo routing_info;
-    GetModelSafeRoutingInfo(&routing_info);
 
     model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
@@ -290,13 +273,17 @@ class SyncerTest : public testing::Test,
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
 
+    EnableDatatype(BOOKMARKS);
+    EnableDatatype(EXTENSIONS);
+    EnableDatatype(NIGORI);
+    EnableDatatype(PREFERENCES);
+
     context_ = base::MakeUnique<SyncCycleContext>(
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
         true,   // enable keystore encryption
         false,  // force enable pre-commit GU avoidance experiment
         "fake_invalidator_client_id");
-    context_->SetRoutingInfo(routing_info);
     syncer_ = new Syncer(&cancelation_signal_);
     scheduler_ = base::MakeUnique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(),
@@ -510,27 +497,13 @@ class SyncerTest : public testing::Test,
 
   void EnableDatatype(ModelType model_type) {
     enabled_datatypes_.Put(model_type);
-
-    ModelSafeRoutingInfo routing_info;
-    GetModelSafeRoutingInfo(&routing_info);
-
-    if (context_) {
-      context_->SetRoutingInfo(routing_info);
-    }
-
+    model_type_registry_->RegisterDirectoryType(model_type, GROUP_PASSIVE);
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
   void DisableDatatype(ModelType model_type) {
     enabled_datatypes_.Remove(model_type);
-
-    ModelSafeRoutingInfo routing_info;
-    GetModelSafeRoutingInfo(&routing_info);
-
-    if (context_) {
-      context_->SetRoutingInfo(routing_info);
-    }
-
+    model_type_registry_->UnregisterDirectoryType(model_type);
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
@@ -4896,15 +4869,10 @@ TEST_F(SyncerTest, GetUpdatesSetsRequestedTypes) {
   // The expectations of this test happen in the MockConnectionManager's
   // GetUpdates handler.  EnableDatatype sets the expectation value from our
   // set of enabled/disabled datatypes.
-  EnableDatatype(BOOKMARKS);
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 
   EnableDatatype(AUTOFILL);
-  EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-
-  EnableDatatype(PREFERENCES);
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 

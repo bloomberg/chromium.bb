@@ -17,10 +17,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/engine_components_factory.h"
-#include "components/sync/engine/fake_model_type_connector.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/syncable/directory.h"
-#include "components/sync/test/fake_sync_encryption_handler.h"
 
 class GURL;
 
@@ -33,9 +31,7 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
       progress_marker_types_(progress_marker_types),
       configure_fail_types_(configure_fail_types),
       last_configure_reason_(CONFIGURE_REASON_UNKNOWN),
-      num_invalidations_received_(0) {
-  fake_encryption_handler_ = base::MakeUnique<FakeSyncEncryptionHandler>();
-}
+      num_invalidations_received_(0) {}
 
 FakeSyncManager::~FakeSyncManager() {}
 
@@ -55,12 +51,6 @@ ModelTypeSet FakeSyncManager::GetAndResetDownloadedTypes() {
   ModelTypeSet downloaded_types = downloaded_types_;
   downloaded_types_.Clear();
   return downloaded_types;
-}
-
-ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
-  ModelTypeSet enabled_types = enabled_types_;
-  enabled_types_.Clear();
-  return enabled_types;
 }
 
 ConfigureReason FakeSyncManager::GetAndResetConfigureReason() {
@@ -144,20 +134,20 @@ void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {
   NOTIMPLEMENTED();
 }
 
-void FakeSyncManager::StartSyncingNormally(
-    const ModelSafeRoutingInfo& routing_info,
-    base::Time last_poll_time) {
+void FakeSyncManager::StartSyncingNormally(base::Time last_poll_time) {
+  // Do nothing.
+}
+
+void FakeSyncManager::StartConfiguration() {
   // Do nothing.
 }
 
 void FakeSyncManager::ConfigureSyncer(
     ConfigureReason reason,
     ModelTypeSet to_download,
-    const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
   last_configure_reason_ = reason;
-  enabled_types_ = GetRoutingInfoTypes(new_routing_info);
   ModelTypeSet success_types = to_download;
   success_types.RemoveAll(configure_fail_types_);
 
@@ -208,6 +198,10 @@ UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
 }
 
+ModelTypeConnector* FakeSyncManager::GetModelTypeConnector() {
+  return &fake_model_type_connector_;
+}
+
 std::unique_ptr<ModelTypeConnector>
 FakeSyncManager::GetModelTypeConnectorProxy() {
   return base::MakeUnique<FakeModelTypeConnector>();
@@ -227,7 +221,7 @@ bool FakeSyncManager::HasUnsyncedItems() {
 }
 
 SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
-  return fake_encryption_handler_.get();
+  return &fake_encryption_handler_;
 }
 
 std::vector<std::unique_ptr<ProtocolEvent>>

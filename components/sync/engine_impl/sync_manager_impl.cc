@@ -182,7 +182,6 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 void SyncManagerImpl::ConfigureSyncer(
     ConfigureReason reason,
     ModelTypeSet to_download,
-    const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -195,12 +194,9 @@ void SyncManagerImpl::ConfigureSyncer(
 
   DVLOG(1) << "Configuring -"
            << "\n\t"
-           << "current types: "
-           << ModelTypeSetToString(GetRoutingInfoTypes(new_routing_info))
-           << "\n\t"
            << "types to download: " << ModelTypeSetToString(to_download);
   ConfigurationParams params(GetSourceFromReason(reason), to_download,
-                             new_routing_info, ready_task, retry_task);
+                             ready_task, retry_task);
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
   scheduler_->ScheduleConfiguration(params);
@@ -396,16 +392,15 @@ void SyncManagerImpl::OnLocalSetPassphraseEncryption(
     const SyncEncryptionHandler::NigoriState& nigori_state) {}
 
 void SyncManagerImpl::StartSyncingNormally(
-    const ModelSafeRoutingInfo& routing_info,
     base::Time last_poll_time) {
   // Start the sync scheduler.
-  // TODO(sync): We always want the newest set of routes when we switch back
-  // to normal mode. Figure out how to enforce set_routing_info is always
-  // appropriately set and that it's only modified when switching to normal
-  // mode.
   DCHECK(thread_checker_.CalledOnValidThread());
-  cycle_context_->SetRoutingInfo(routing_info);
   scheduler_->Start(SyncScheduler::NORMAL_MODE, last_poll_time);
+}
+
+void SyncManagerImpl::StartConfiguration() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
 }
 
 syncable::Directory* SyncManagerImpl::directory() {
@@ -904,6 +899,11 @@ void SyncManagerImpl::SaveChanges() {
 UserShare* SyncManagerImpl::GetUserShare() {
   DCHECK(initialized_);
   return &share_;
+}
+
+ModelTypeConnector* SyncManagerImpl::GetModelTypeConnector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return model_type_registry_.get();
 }
 
 std::unique_ptr<ModelTypeConnector>

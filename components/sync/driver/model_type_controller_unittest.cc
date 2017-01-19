@@ -92,6 +92,15 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
     NOTREACHED() << "Not implemented.";
   }
 
+  void RegisterDirectoryDataType(ModelType type,
+                                 ModelSafeGroup group) override {
+    NOTREACHED() << "Not implemented.";
+  }
+
+  void UnregisterDirectoryDataType(ModelType type) override {
+    NOTREACHED() << "Not implemented.";
+  }
+
   void ActivateDirectoryDataType(ModelType type,
                                  ModelSafeGroup group,
                                  ChangeProcessor* change_processor) override {

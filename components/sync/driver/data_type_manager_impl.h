@@ -59,6 +59,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   State state() const override;
 
   // |ModelAssociationManagerDelegate| implementation.
+  void OnSingleDataTypeWillStart(ModelType type) override;
   void OnAllDataTypesReadyForConfigure() override;
   void OnSingleDataTypeAssociationDone(
       ModelType type,

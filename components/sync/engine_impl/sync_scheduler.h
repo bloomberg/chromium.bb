@@ -26,7 +26,6 @@ struct ConfigurationParams {
   ConfigurationParams(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
       ModelTypeSet types_to_download,
-      const ModelSafeRoutingInfo& routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task);
   ConfigurationParams(const ConfigurationParams& other);
@@ -36,8 +35,6 @@ struct ConfigurationParams {
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source;
   // The types that should be downloaded.
   ModelTypeSet types_to_download;
-  // The new routing info (superset of types to be downloaded).
-  ModelSafeRoutingInfo routing_info;
   // Callback to invoke on configuration completion.
   base::Closure ready_task;
   // Callback to invoke on configuration failure.

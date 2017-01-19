@@ -1446,6 +1446,7 @@ void ProfileSyncService::OnConfigureDone(
 void ProfileSyncService::OnConfigureStart() {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_configure_start_time_ = base::Time::Now();
+  engine_->StartConfiguration();
   NotifyObservers();
 }
 

@@ -12,8 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "components/sync/engine/fake_model_type_connector.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/syncable/test_user_share.h"
+#include "components/sync/test/fake_sync_encryption_handler.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -55,11 +57,6 @@ class FakeSyncManager : public SyncManager {
   // GetAndResetDownloadedTypes(), or since startup if never called.
   ModelTypeSet GetAndResetDownloadedTypes();
 
-  // Returns those types that have been marked as enabled since the
-  // last call to GetAndResetEnabledTypes(), or since startup if never
-  // called.
-  ModelTypeSet GetAndResetEnabledTypes();
-
   // Returns the types that have most recently received a refresh request.
   ModelTypeSet GetLastRefreshRequestTypes();
 
@@ -85,11 +82,10 @@ class FakeSyncManager : public SyncManager {
                           ModelTypeSet to_journal,
                           ModelTypeSet to_unapply) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
-  void StartSyncingNormally(const ModelSafeRoutingInfo& routing_info,
-                            base::Time last_poll_time) override;
+  void StartSyncingNormally(base::Time last_poll_time) override;
+  void StartConfiguration() override;
   void ConfigureSyncer(ConfigureReason reason,
                        ModelTypeSet to_download,
-                       const ModelSafeRoutingInfo& new_routing_info,
                        const base::Closure& ready_task,
                        const base::Closure& retry_task) override;
   void OnIncomingInvalidation(
@@ -102,6 +98,7 @@ class FakeSyncManager : public SyncManager {
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
+  ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;
@@ -140,8 +137,6 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet unapplied_types_;
   // The set of types that have been downloaded.
   ModelTypeSet downloaded_types_;
-  // The set of types that have been enabled.
-  ModelTypeSet enabled_types_;
 
   // The types for which a refresh was most recently requested.
   ModelTypeSet last_refresh_request_types_;
@@ -149,7 +144,9 @@ class FakeSyncManager : public SyncManager {
   // The most recent configure reason.
   ConfigureReason last_configure_reason_;
 
-  std::unique_ptr<FakeSyncEncryptionHandler> fake_encryption_handler_;
+  FakeModelTypeConnector fake_model_type_connector_;
+
+  FakeSyncEncryptionHandler fake_encryption_handler_;
 
   TestUserShare test_user_share_;
 

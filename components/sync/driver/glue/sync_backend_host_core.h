@@ -106,10 +106,14 @@ class SyncBackendHostCore
   // SyncEngine::UpdateCredentials.
   void DoUpdateCredentials(const SyncCredentials& credentials);
 
+  // Switches sync engine into configuration mode. In this mode only initial
+  // data for newly enabled types is downloaded from server. No local changes
+  // are committed to server.
+  void DoStartConfiguration();
+
   // Called to tell the syncapi to start syncing (generally after
   // initialization and authentication).
-  void DoStartSyncing(const ModelSafeRoutingInfo& routing_info,
-                      base::Time last_poll_time);
+  void DoStartSyncing(base::Time last_poll_time);
 
   // Called to set the passphrase for encryption.
   void DoSetEncryptionPassphrase(const std::string& passphrase,

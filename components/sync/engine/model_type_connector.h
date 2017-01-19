@@ -8,13 +8,17 @@
 #include <memory>
 
 #include "components/sync/base/model_type.h"
+#include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
 struct ActivationContext;
 
-// An interface into the core parts of sync for USS model types. Handles
-// creating the connection between the ModelTypeWorker (CommitQueue) on the sync
-// side and the (Shared)ModelTypeProcessor on the model type side.
+// An interface into the core parts of sync for model types. By adding/removing
+// types through methods of this interface consumer controls which types will be
+// syncing (receiving updates and committing local changes).
+// In addition it handles creating the connection between the ModelTypeWorker
+// (CommitQueue) on the sync side and the (Shared)ModelTypeProcessor on the
+// model type side for non-blocking types.
 class ModelTypeConnector {
  public:
   ModelTypeConnector();
@@ -24,7 +28,7 @@ class ModelTypeConnector {
   // thread. Note that in production |activation_context| actually owns a
   // processor proxy that forwards calls to the model thread and is safe to call
   // from the sync thread.
-  virtual void ConnectType(
+  virtual void ConnectNonBlockingType(
       ModelType type,
       std::unique_ptr<ActivationContext> activation_context) = 0;
 
@@ -33,7 +37,16 @@ class ModelTypeConnector {
   // This is the sync thread's chance to clear state associated with the type.
   // It also causes the syncer to stop requesting updates for this type, and to
   // abort any in-progress commit requests.
-  virtual void DisconnectType(ModelType type) = 0;
+  virtual void DisconnectNonBlockingType(ModelType type) = 0;
+
+  // Registers directory based type with sync engine. Sync engine will create
+  // update handler and commit contributor objects for this type. It will start
+  // including the type in GetUpdates and commit requests.
+  virtual void RegisterDirectoryType(ModelType type, ModelSafeGroup group) = 0;
+
+  // Unregisters directory based type from sync engine. Type will no longer be
+  // included in communications with server.
+  virtual void UnregisterDirectoryType(ModelType type) = 0;
 };
 
 }  // namespace syncer
