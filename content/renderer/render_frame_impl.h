@@ -767,7 +767,8 @@ class CONTENT_EXPORT RenderFrameImpl
   };
 
   typedef std::map<GURL, double> HostZoomLevels;
-  typedef std::map<url::Origin, blink::mojom::EngagementLevel> EngagementLevels;
+  typedef std::pair<url::Origin, blink::mojom::EngagementLevel>
+      EngagementOriginAndLevel;
 
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
@@ -1356,7 +1357,7 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   HostZoomLevels host_zoom_levels_;
-  EngagementLevels engagement_levels_;
+  EngagementOriginAndLevel engagement_level_;
 
   mojo::AssociatedBinding<blink::mojom::EngagementClient> engagement_binding_;
   mojo::Binding<mojom::Frame> frame_binding_;

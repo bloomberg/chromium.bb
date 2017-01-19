@@ -2684,7 +2684,7 @@ void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
     return;
   }
 
-  engagement_levels_[origin] = level;
+  engagement_level_ = std::make_pair(origin, level);
 }
 
 // mojom::Frame implementation -------------------------------------------------
@@ -4826,13 +4826,12 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
-  // Set the correct engagement level on the frame.
-  EngagementLevels::iterator engagement_level =
-      engagement_levels_.find(url::Origin(frame_->getSecurityOrigin()));
-
-  if (engagement_level != engagement_levels_.end())
-    frame_->setEngagementLevel(engagement_level->second);
-  engagement_levels_.clear();
+  // Set the correct engagement level on the frame, and wipe the cached origin
+  // so this will not be reused accidentally.
+  if (url::Origin(frame_->getSecurityOrigin()) == engagement_level_.first) {
+    frame_->setEngagementLevel(engagement_level_.second);
+    engagement_level_.first = url::Origin();
+  }
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.http_status_code = response.httpStatusCode();
