@@ -367,6 +367,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPITextDecorationColor.cpp",
     "properties/CSSPropertyAPITextDecorationSkip.cpp",
     "properties/CSSPropertyAPITextIndent.cpp",
+    "properties/CSSPropertyAPITextSizeAdjust.cpp",
     "properties/CSSPropertyAPITextUnderlinePosition.cpp",
     "properties/CSSPropertyAPITransformOrigin.cpp",
     "properties/CSSPropertyAPITranslate.cpp",

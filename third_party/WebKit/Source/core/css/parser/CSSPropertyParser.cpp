@@ -599,15 +599,6 @@ static CSSValue* consumeSpacing(CSSParserTokenRange& range,
                        UnitlessQuirk::Allow);
 }
 
-static CSSValue* consumeTextSizeAdjust(CSSParserTokenRange& range,
-                                       CSSParserMode cssParserMode) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  if (range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-  return consumePercent(range, ValueRangeNonNegative);
-}
-
 static CSSValue* consumeFontSize(
     CSSParserTokenRange& range,
     CSSParserMode cssParserMode,
@@ -2914,8 +2905,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyLetterSpacing:
     case CSSPropertyWordSpacing:
       return consumeSpacing(m_range, m_context->mode());
-    case CSSPropertyTextSizeAdjust:
-      return consumeTextSizeAdjust(m_range, m_context->mode());
     case CSSPropertyFontSize:
       return consumeFontSize(m_range, m_context->mode(), UnitlessQuirk::Allow);
     case CSSPropertyLineHeight:
