@@ -4,7 +4,7 @@
 
 // Custom binding for the runtime API.
 
-var binding = require('binding').Binding.create('runtime');
+var binding = apiBridge || require('binding').Binding.create('runtime');
 
 var messaging = require('messaging');
 var runtimeNatives = requireNative('runtime');
@@ -188,4 +188,5 @@ binding.registerCustomHook(function(binding, id, contextType) {
 });
 
 exports.$set('bindDirectoryEntryCallback', bindDirectoryEntryCallback);
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

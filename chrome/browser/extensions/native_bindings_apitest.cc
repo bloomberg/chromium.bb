@@ -27,6 +27,8 @@ class NativeBindingsApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleEndToEndTest) {
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("native_bindings")) << message_;
 }
 

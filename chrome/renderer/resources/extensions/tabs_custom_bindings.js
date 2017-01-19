@@ -4,7 +4,7 @@
 
 // Custom binding for the tabs API.
 
-var binding = require('binding').Binding.create('tabs');
+var binding = apiBridge || require('binding').Binding.create('tabs');
 
 var messaging = require('messaging');
 var OpenChannelToTab = requireNative('messaging_natives').OpenChannelToTab;
@@ -52,4 +52,5 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   });
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());
