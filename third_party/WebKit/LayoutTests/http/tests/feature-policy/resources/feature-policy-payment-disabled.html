@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<head>
+  <title>Feature-Policy PaymentRequest Disabled</title>
+  <script src="/resources/testharness.js"></script>
+  <script src="/resources/testharnessreport.js"></script>
+</head>
+<script>
+  test(function() {
+    var supportedInstruments = [ { supportedMethods: [ 'visa' ] } ];
+    var details = {
+      total: { label: 'Test', amount: { currency: 'USD', value: '5.00' } }
+    };
+    try {
+      new PaymentRequest(supportedInstruments, details);
+      assert_unreached('PaymentRequest should be disabled by FeaturePolicy');
+    } catch (e) {
+      if ( e.message.includes("assert_unreached") ) { throw e; }
+      assert_equals(e.name, "SecurityError");
+      assert_equals(e.message, "Failed to construct 'PaymentRequest': Must be in a top-level browsing context or an iframe needs to specify 'allowpaymentrequest' explicitly");
+    }
+  }, 'No iframe may construct PaymentRequest when disabled.');
+</script>
