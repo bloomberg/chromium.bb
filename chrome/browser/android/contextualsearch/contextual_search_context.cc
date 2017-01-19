@@ -6,14 +6,13 @@
 
 ContextualSearchContext::ContextualSearchContext(
     const std::string& selected_text,
-    const bool use_resolved_search_term,
+    const std::string& home_country,
     const GURL& page_url,
     const std::string& encoding)
     : selected_text(selected_text),
-      use_resolved_search_term(use_resolved_search_term),
+      home_country(home_country),
       page_url(page_url),
-      encoding(encoding) {
-}
+      encoding(encoding) {}
 
 ContextualSearchContext::~ContextualSearchContext() {
 }

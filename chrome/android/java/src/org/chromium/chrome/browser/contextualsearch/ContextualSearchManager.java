@@ -67,9 +67,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         ContextualSearchTranslateInterface, ContextualSearchNetworkCommunicator,
         ContextualSearchSelectionHandler, ContextualSearchClient {
 
-    private static final boolean ALWAYS_USE_RESOLVED_SEARCH_TERM = true;
-    private static final boolean NEVER_USE_RESOLVED_SEARCH_TERM = false;
-
     private static final String INTENT_URL_PREFIX = "intent:";
 
     // The animation duration of a URL being promoted to a tab when triggered by an
@@ -81,6 +78,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     private static final String BLACKLISTED_URL = "about:blank";
 
     private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
+
+    // When we don't need to send any "home country" code we can just pass the empty string.
+    private static final String NO_HOME_COUNTRY = "";
 
     private final ObserverList<ContextualSearchObserver> mObservers =
             new ObserverList<ContextualSearchObserver>();
@@ -421,7 +421,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
         boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
         boolean didRequestSurroundings = false;
-
         if (isTap) {
             // If the user action was not a long-press, immediately start loading content.
             mShouldLoadDelayedSearch = false;
@@ -461,7 +460,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             // part of search term resolution, just sent to Icing which keeps them local until
             // the user activates a Voice Search.
             nativeGatherSurroundingText(mNativeContextualSearchManagerPtr,
-                    mSelectionController.getSelectedText(), NEVER_USE_RESOLVED_SEARCH_TERM,
+                    mSelectionController.getSelectedText(), NO_HOME_COUNTRY,
                     getBaseContentView().getWebContents(), mPolicy.maySendBasePageUrl());
         }
 
@@ -508,7 +507,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         ContentViewCore baseContentView = getBaseContentView();
         if (baseContentView != null) {
             nativeStartSearchTermResolutionRequest(mNativeContextualSearchManagerPtr, selection,
-                    ALWAYS_USE_RESOLVED_SEARCH_TERM, getBaseContentView().getWebContents(),
+                    mPolicy.getHomeCountry(mActivity), getBaseContentView().getWebContents(),
                     mPolicy.maySendBasePageUrl());
         }
     }
@@ -1445,10 +1444,10 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     private native long nativeInit();
     private native void nativeDestroy(long nativeContextualSearchManager);
     private native void nativeStartSearchTermResolutionRequest(long nativeContextualSearchManager,
-            String selection, boolean useResolvedSearchTerm, WebContents baseWebContents,
+            String selection, String homeCountry, WebContents baseWebContents,
             boolean maySendBasePageUrl);
     protected native void nativeGatherSurroundingText(long nativeContextualSearchManager,
-            String selection, boolean useResolvedSearchTerm, WebContents baseWebContents,
+            String selection, String homeCountry, WebContents baseWebContents,
             boolean maySendBasePageUrl);
     private native void nativeEnableContextualSearchJsApiForOverlay(
             long nativeContextualSearchManager, WebContents overlayWebContents);

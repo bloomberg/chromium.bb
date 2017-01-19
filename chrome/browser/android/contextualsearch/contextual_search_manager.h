@@ -39,7 +39,7 @@ class ContextualSearchManager
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_selection,
-      jboolean j_use_resolved_search_term,
+      const base::android::JavaParamRef<jstring>& j_home_country,
       const base::android::JavaParamRef<jobject>& j_base_web_contents,
       jboolean j_may_send_base_page_url);
 
@@ -49,7 +49,7 @@ class ContextualSearchManager
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_selection,
-      jboolean j_use_resolved_search_term,
+      const base::android::JavaParamRef<jstring>& j_home_country,
       const base::android::JavaParamRef<jobject>& j_base_web_contents,
       jboolean j_may_send_base_page_url);
 

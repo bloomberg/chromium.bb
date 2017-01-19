@@ -83,6 +83,9 @@ public class ContextualSearchFieldTrial {
 
     private static final String ENABLE_AMP_AS_SEPARATE_TAB = "enable_amp_as_separate_tab";
 
+    // Privacy-related flags
+    private static final String ENABLE_SEND_HOME_COUNTRY = "enable_send_home_country";
+
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
@@ -108,6 +111,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabEnabled;
     private static Boolean sContextualSearchSingleActionsEnabled;
+    private static Boolean sCanSendHomeCountry;
 
     /**
      * Don't instantiate.
@@ -396,6 +400,16 @@ public class ContextualSearchFieldTrial {
             sIsOnlineDetectionDisabled = getBooleanParam(ONLINE_DETECTION_DISABLED);
         }
         return sIsOnlineDetectionDisabled;
+    }
+
+    /**
+     * @return Whether sending the "home country" to Google is enabled.
+     */
+    static boolean isSendHomeCountryEnabled() {
+        if (sCanSendHomeCountry == null) {
+            sCanSendHomeCountry = getBooleanParam(ENABLE_SEND_HOME_COUNTRY);
+        }
+        return sCanSendHomeCountry.booleanValue();
     }
 
     // ---------------

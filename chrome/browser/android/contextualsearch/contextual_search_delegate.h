@@ -70,15 +70,14 @@ class ContextualSearchDelegate
   // request. The "search term" is the best query to issue for a section of text
   // in the context of a web page. When the response is available the callback
   // specified in the constructor is run.
-  void StartSearchTermResolutionRequest(
-      const std::string& selection,
-      bool use_resolved_search_term,
-      content::WebContents* web_contents,
-      bool may_send_base_page_url);
+  void StartSearchTermResolutionRequest(const std::string& selection,
+                                        const std::string& home_country,
+                                        content::WebContents* web_contents,
+                                        bool may_send_base_page_url);
 
   // Gathers surrounding text and saves it locally for a future query.
   void GatherAndSaveSurroundingText(const std::string& selection,
-                                    bool use_resolved_search_term,
+                                    const std::string& home_country,
                                     content::WebContents* web_contents,
                                     bool may_send_base_page_url);
 
@@ -122,7 +121,7 @@ class ContextualSearchDelegate
   // Builds the ContextualSearchContext in the current context from
   // the given parameters.
   void BuildContext(const std::string& selection,
-                    bool use_resolved_search_term,
+                    const std::string& home_country,
                     content::WebContents* web_contents,
                     bool may_send_base_page_url);
 
@@ -139,12 +138,11 @@ class ContextualSearchDelegate
 
   // Will gather the surrounding text from the |content_view_core| and call the
   // |callback|.
-  void GatherSurroundingTextWithCallback(
-      const std::string& selection,
-      bool use_resolved_search_term,
-      content::WebContents* web_contents,
-      bool may_send_base_page_url,
-      HandleSurroundingsCallback callback);
+  void GatherSurroundingTextWithCallback(const std::string& selection,
+                                         const std::string& home_country,
+                                         content::WebContents* web_contents,
+                                         bool may_send_base_page_url,
+                                         HandleSurroundingsCallback callback);
 
   // Callback for GatherSurroundingTextWithCallback(). Will start the search
   // term resolution request.

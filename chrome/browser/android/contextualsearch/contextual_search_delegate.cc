@@ -101,22 +101,22 @@ ContextualSearchDelegate::~ContextualSearchDelegate() {
 
 void ContextualSearchDelegate::StartSearchTermResolutionRequest(
     const std::string& selection,
-    bool use_resolved_search_term,
+    const std::string& home_country,
     content::WebContents* web_contents,
     bool may_send_base_page_url) {
   GatherSurroundingTextWithCallback(
-      selection, use_resolved_search_term, web_contents, may_send_base_page_url,
+      selection, home_country, web_contents, may_send_base_page_url,
       base::Bind(&ContextualSearchDelegate::StartSearchTermRequestFromSelection,
                  AsWeakPtr()));
 }
 
 void ContextualSearchDelegate::GatherAndSaveSurroundingText(
     const std::string& selection,
-    bool use_resolved_search_term,
+    const std::string& home_country,
     content::WebContents* web_contents,
     bool may_send_base_page_url) {
   GatherSurroundingTextWithCallback(
-      selection, use_resolved_search_term, web_contents, may_send_base_page_url,
+      selection, home_country, web_contents, may_send_base_page_url,
       base::Bind(&ContextualSearchDelegate::SaveSurroundingText, AsWeakPtr()));
   // TODO(donnd): clear the context here, since we're done with it (but risky).
 }
@@ -125,7 +125,7 @@ void ContextualSearchDelegate::ContinueSearchTermResolutionRequest() {
   DCHECK(context_.get());
   if (!context_.get())
     return;
-  GURL request_url(BuildRequestUrl(context_->selected_text));
+  GURL request_url(BuildRequestUrl(context_->home_country));
   DCHECK(request_url.is_valid());
 
   // Reset will delete any previous fetcher, and we won't get any callback.
@@ -219,14 +219,14 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
       quick_action_category));
 }
 
-std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
+std::string ContextualSearchDelegate::BuildRequestUrl(
+    std::string home_country) {
   // TODO(donnd): Confirm this is the right way to handle TemplateURL fails.
   if (!template_url_service_ ||
       !template_url_service_->GetDefaultSearchProvider()) {
     return std::string();
   }
 
-  std::string selected_text(net::EscapeQueryParamValue(selection, true));
   TemplateURL* template_url = template_url_service_->GetDefaultSearchProvider();
 
   TemplateURLRef::SearchTermsArgs search_terms_args =
@@ -248,7 +248,7 @@ std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
   }
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      kContextualSearchRequestVersion, contextual_cards_version, std::string());
+      kContextualSearchRequestVersion, contextual_cards_version, home_country);
 
   search_terms_args.contextual_search_params = params;
 
@@ -274,15 +274,14 @@ std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
 
 void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
     const std::string& selection,
-    bool use_resolved_search_term,
+    const std::string& home_country,
     content::WebContents* web_contents,
     bool may_send_base_page_url,
     HandleSurroundingsCallback callback) {
   // Immediately cancel any request that's in flight, since we're building a new
   // context (and the response disposes of any existing context).
   search_term_fetcher_.reset();
-  BuildContext(selection, use_resolved_search_term, web_contents,
-               may_send_base_page_url);
+  BuildContext(selection, home_country, web_contents, may_send_base_page_url);
   DCHECK(web_contents);
   RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
   if (focused_frame) {
@@ -293,11 +292,10 @@ void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
   }
 }
 
-void ContextualSearchDelegate::BuildContext(
-    const std::string& selection,
-    bool use_resolved_search_term,
-    content::WebContents* web_contents,
-    bool may_send_base_page_url) {
+void ContextualSearchDelegate::BuildContext(const std::string& selection,
+                                            const std::string& home_country,
+                                            content::WebContents* web_contents,
+                                            bool may_send_base_page_url) {
   // Decide if the URL should be sent with the context.
   GURL page_url(web_contents->GetURL());
   GURL url_to_send;
@@ -307,8 +305,8 @@ void ContextualSearchDelegate::BuildContext(
     url_to_send = page_url;
   }
   std::string encoding(web_contents->GetEncoding());
-  context_.reset(new ContextualSearchContext(
-      selection, use_resolved_search_term, url_to_send, encoding));
+  context_.reset(new ContextualSearchContext(selection, home_country,
+                                             url_to_send, encoding));
 }
 
 void ContextualSearchDelegate::StartSearchTermRequestFromSelection(
