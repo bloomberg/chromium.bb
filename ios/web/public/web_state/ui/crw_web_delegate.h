@@ -180,9 +180,6 @@ struct Referrer;
 - (void)webControllerDidUpdateSSLStatusForCurrentNavigationItem:
     (CRWWebController*)webController;
 
-// Called when web view process has been terminated.
-- (void)webControllerWebProcessDidCrash:(CRWWebController*)webController;
-
 // Called when a PassKit file is downloaded. |data| should be the data from a
 // PassKit file, but this is not guaranteed, and the delegate is responsible for
 // error handling non PassKit data using -[PKPass initWithData:error:]. If the

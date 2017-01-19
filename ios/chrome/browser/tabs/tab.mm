@@ -2110,7 +2110,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [self updateFullscreenWithToolbarVisible:YES];
 }
 
-- (void)webControllerWebProcessDidCrash:(CRWWebController*)webController {
+- (void)renderProcessGoneForWebState:(web::WebState*)webState {
   if (browserState_ && !browserState_->IsOffTheRecord()) {
     // Report the crash.
     GetApplicationContext()

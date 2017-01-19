@@ -94,6 +94,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Notifies the observers that the history state of the current page changed.
   void OnHistoryStateChanged();
 
+  // Notifies the observers that the render process was terminated.
+  void OnRenderProcessGone();
+
   // Called when a script command is received.
   // Returns true if the command was handled.
   bool OnScriptCommandReceived(const std::string& command,

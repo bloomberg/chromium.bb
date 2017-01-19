@@ -119,6 +119,11 @@ void WebStateObserverBridge::FaviconUrlUpdated(
     [observer_ webState:web_state() didUpdateFaviconURLCandidates:candidates];
 }
 
+void WebStateObserverBridge::RenderProcessGone() {
+  if ([observer_ respondsToSelector:@selector(renderProcessGoneForWebState:)])
+    [observer_ renderProcessGoneForWebState:web_state()];
+}
+
 void WebStateObserverBridge::WebStateDestroyed() {
   SEL selector = @selector(webStateDestroyed:);
   if ([observer_ respondsToSelector:selector]) {

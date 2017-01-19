@@ -1022,18 +1022,31 @@ class CRWWebControllerWebProcessTest : public web::WebTestWithWebController {
   base::scoped_nsobject<WKWebView> webView_;
 };
 
-// Tests that -[CRWWebDelegate webControllerWebProcessDidCrash:] is called
-// when WKWebView web process has crashed.
+// Tests that WebStateDelegate::RenderProcessGone is called when WKWebView web
+// process has crashed.
 TEST_F(CRWWebControllerWebProcessTest, Crash) {
-  id delegate = [OCMockObject niceMockForProtocol:@protocol(CRWWebDelegate)];
-  [[delegate expect] webControllerWebProcessDidCrash:web_controller()];
+  // Observes and waits for RenderProcessGone call.
+  class RenderProcessGoneObserver : public web::WebStateObserver {
+   public:
+    explicit RenderProcessGoneObserver(web::WebState* web_state)
+        : web::WebStateObserver(web_state) {}
+    void WaitForRenderProcessGone() const {
+      base::test::ios::WaitUntilCondition(^{
+        return render_process_gone_;
+      });
+    }
+    // WebStateObserver overrides:
+    void RenderProcessGone() override { render_process_gone_ = true; }
 
-  [web_controller() setDelegate:delegate];
+   private:
+    bool render_process_gone_ = false;
+  };
+
+  RenderProcessGoneObserver observer(web_state());
   web::SimulateWKWebViewCrash(webView_);
+  observer.WaitForRenderProcessGone();
 
-  EXPECT_OCMOCK_VERIFY(delegate);
   EXPECT_FALSE([web_controller() isViewAlive]);
-  [web_controller() setDelegate:nil];
 };
 
 }  // namespace

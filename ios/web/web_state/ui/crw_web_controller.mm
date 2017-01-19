@@ -4544,9 +4544,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self.UIDelegate cancelDialogsForWebController:self];
   _webStateImpl->CancelDialogs();
 
-  SEL rendererCrashSelector = @selector(webControllerWebProcessDidCrash:);
-  if ([self.delegate respondsToSelector:rendererCrashSelector])
-    [self.delegate webControllerWebProcessDidCrash:self];
+  _webStateImpl->OnRenderProcessGone();
 }
 
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {

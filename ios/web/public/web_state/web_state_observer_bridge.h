@@ -60,6 +60,9 @@ class GURL;
     didUpdateFaviconURLCandidates:
         (const std::vector<web::FaviconURL>&)candidates;
 
+// Invoked by WebStateObserverBridge::RenderProcessGone.
+- (void)renderProcessGoneForWebState:(web::WebState*)webState;
+
 // Note: after |webStateDestroyed:| is invoked, the WebState being observed
 // is no longer valid.
 - (void)webStateDestroyed:(web::WebState*)webState;
@@ -103,6 +106,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
                               const std::string& value,
                               bool input_missing) override;
   void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) override;
+  void RenderProcessGone() override;
   void WebStateDestroyed() override;
   void DidStartLoading() override;
   void DidStopLoading() override;

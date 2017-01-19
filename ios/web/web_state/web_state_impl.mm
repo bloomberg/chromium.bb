@@ -179,6 +179,11 @@ void WebStateImpl::OnHistoryStateChanged() {
     observer.HistoryStateChanged();
 }
 
+void WebStateImpl::OnRenderProcessGone() {
+  for (auto& observer : observers_)
+    observer.RenderProcessGone();
+}
+
 bool WebStateImpl::OnScriptCommandReceived(const std::string& command,
                                            const base::DictionaryValue& value,
                                            const GURL& url,

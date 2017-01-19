@@ -82,6 +82,10 @@ class WebStateObserver {
   // Invoked when new favicon URL candidates are received.
   virtual void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) {}
 
+  // Called when the web process is terminated (usually by crashing, though
+  // possibly by other means).
+  virtual void RenderProcessGone() {}
+
   // Notifies the observer that the credential manager API was invoked from
   // |source_url| to request a credential from the browser. If |unmediated|
   // is true, the browser MUST NOT show any UI to the user. If this means that
