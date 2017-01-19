@@ -5,8 +5,8 @@
 #include "media/blink/video_frame_compositor.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/auto_open_close_event.h"
 #include "base/trace_event/trace_event.h"
@@ -139,6 +139,7 @@ void VideoFrameCompositor::Stop() {
   compositor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoFrameCompositor::OnRendererStateUpdate,
                             base::Unretained(this), false));
+  new_processed_frame_cb_.Reset();
 }
 
 void VideoFrameCompositor::PaintSingleFrame(
@@ -189,9 +190,10 @@ base::TimeDelta VideoFrameCompositor::GetCurrentFrameTimestamp() const {
   return current_frame_->timestamp();
 }
 
-void VideoFrameCompositor::SetForegroundTime(base::TimeTicks when) {
+void VideoFrameCompositor::SetOnNewProcessedFrameCallback(
+    const OnNewProcessedFrameCB& cb) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  foreground_time_ = when;
+  new_processed_frame_cb_ = cb;
 }
 
 bool VideoFrameCompositor::ProcessNewFrame(
@@ -210,13 +212,8 @@ bool VideoFrameCompositor::ProcessNewFrame(
 
   current_frame_ = frame;
 
-  if (!foreground_time_.is_null()) {
-    base::TimeDelta time_to_first_frame =
-        base::TimeTicks::Now() - foreground_time_;
-    UMA_HISTOGRAM_TIMES("Media.Video.TimeFromForegroundToFirstFrame",
-                        time_to_first_frame);
-    foreground_time_ = base::TimeTicks();
-  }
+  if (!new_processed_frame_cb_.is_null())
+    base::ResetAndReturn(&new_processed_frame_cb_).Run(base::TimeTicks::Now());
 
   return true;
 }

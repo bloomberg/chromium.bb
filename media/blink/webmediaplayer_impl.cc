@@ -470,8 +470,7 @@ void WebMediaPlayerImpl::pause() {
   // requires that currentTime() == duration() after ending.  We want to ensure
   // |paused_time_| matches currentTime() in this case or a future seek() may
   // incorrectly discard what it thinks is a seek to the existing time.
-  paused_time_ =
-      ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
+  paused_time_ = ended_ ? GetPipelineMediaDuration() : pipeline_.GetMediaTime();
 
   if (observer_)
     observer_->OnPaused();
@@ -726,7 +725,7 @@ double WebMediaPlayerImpl::duration() const {
   if (chunk_demuxer_)
     return chunk_demuxer_->GetDuration();
 
-  base::TimeDelta pipeline_duration = pipeline_.GetMediaDuration();
+  base::TimeDelta pipeline_duration = GetPipelineMediaDuration();
   return pipeline_duration == kInfiniteDuration
              ? std::numeric_limits<double>::infinity()
              : pipeline_duration.InSecondsF();
@@ -785,7 +784,7 @@ blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
   Ranges<base::TimeDelta> buffered_time_ranges =
       pipeline_.GetBufferedTimeRanges();
 
-  const base::TimeDelta duration = pipeline_.GetMediaDuration();
+  const base::TimeDelta duration = GetPipelineMediaDuration();
   if (duration != kInfiniteDuration) {
     buffered_data_source_host_.AddBufferedTimeRanges(
         &buffered_time_ranges, duration);
@@ -1409,7 +1408,7 @@ void WebMediaPlayerImpl::OnFrameHidden() {
   if (watch_time_reporter_)
     watch_time_reporter_->OnHidden();
 
-  if (ShouldPauseWhenHidden()) {
+  if (ShouldPauseVideoWhenHidden()) {
     if (!paused_when_hidden_) {
       // OnPause() will set |paused_when_hidden_| to false and call
       // UpdatePlayState(), so set the flag to true after and then return.
@@ -1440,10 +1439,20 @@ void WebMediaPlayerImpl::OnFrameShown() {
   if (watch_time_reporter_)
     watch_time_reporter_->OnShown();
 
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoFrameCompositor::SetForegroundTime,
-                 base::Unretained(compositor_), base::TimeTicks::Now()));
+  // Only track the time to the first frame if playing or about to play because
+  // of being shown and only for videos we would optimize background playback
+  // for.
+  if ((!paused_ && IsBackgroundOptimizationCandidate()) ||
+      paused_when_hidden_) {
+    VideoFrameCompositor::OnNewProcessedFrameCB new_processed_frame_cb =
+        BIND_TO_RENDER_LOOP1(
+            &WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame,
+            base::TimeTicks::Now());
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoFrameCompositor::SetOnNewProcessedFrameCallback,
+                   base::Unretained(compositor_), new_processed_frame_cb));
+  }
 
   if (paused_when_hidden_) {
     paused_when_hidden_ = false;
@@ -1834,7 +1843,7 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
     case DelegateState::PLAYING: {
       delegate_->DidPlay(
           delegate_id_, hasVideo(), has_audio,
-          media::DurationToMediaContentType(pipeline_.GetMediaDuration()));
+          media::DurationToMediaContentType(GetPipelineMediaDuration()));
       break;
     }
     case DelegateState::PAUSED:
@@ -2121,30 +2130,46 @@ void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {
   client_->activateViewportIntersectionMonitoring(activate);
 }
 
-bool WebMediaPlayerImpl::ShouldPauseWhenHidden() const {
-  DCHECK(IsHidden());
-// Don't pause videos being Cast (Android only) or if the background video
-// optimizations are off (desktop only).
-#if defined(OS_ANDROID)  // WMPI_CAST
-  if (isRemote())
-    return false;
-#else   // defined(OS_ANDROID)
+bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
+#if !defined(OS_ANDROID)
+  // On desktop, this behavior is behind the feature flag.
   if (!IsBackgroundVideoTrackOptimizationEnabled())
     return false;
-#endif  // defined(OS_ANDROID)
+#endif
 
-  return hasVideo() && !hasAudio();
+  // Pause video-only players that match the criteria for being optimized.
+  return !hasAudio() && IsBackgroundOptimizationCandidate();
 }
 
 bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK(IsHidden());
-
-  if (!IsBackgroundVideoTrackOptimizationEnabled() || !hasVideo() ||
-      !hasAudio() || IsStreaming()) {
+  // This optimization is behind the flag on all platforms.
+  if (!IsBackgroundVideoTrackOptimizationEnabled())
     return false;
-  }
 
+  // Disable video track only for players with audio that match the criteria for
+  // being optimized.
+  return hasAudio() && IsBackgroundOptimizationCandidate();
+}
+
+bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+// Don't optimize players being Cast (Android only).
+#if defined(OS_ANDROID)  // WMPI_CAST
+  if (isRemote())
+    return false;
+#endif  // defined(OS_ANDROID)
+
+  // Don't optimize audio-only or streaming players.
+  if (!hasVideo() || IsStreaming())
+    return false;
+
+  // Videos shorter than the maximum allowed keyframe distance can be optimized.
+  base::TimeDelta duration = GetPipelineMediaDuration();
+  if (duration < max_keyframe_distance_to_disable_background_video_)
+    return true;
+
+  // Otherwise, only optimize videos with shorter average keyframe distance.
   PipelineStatistics stats = GetPipelineStatistics();
   return stats.video_keyframe_distance_average <
          max_keyframe_distance_to_disable_background_video_;
@@ -2188,6 +2213,32 @@ PipelineStatistics WebMediaPlayerImpl::GetPipelineStatistics() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return pipeline_statistics_for_test_.value_or(pipeline_.GetStatistics());
+}
+
+void WebMediaPlayerImpl::SetPipelineMediaDurationForTest(
+    base::TimeDelta duration) {
+  pipeline_media_duration_for_test_ = base::make_optional(duration);
+}
+
+base::TimeDelta WebMediaPlayerImpl::GetPipelineMediaDuration() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  return pipeline_media_duration_for_test_.value_or(
+      pipeline_.GetMediaDuration());
+}
+
+void WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame(
+    base::TimeTicks foreground_time,
+    base::TimeTicks new_frame_time) {
+  base::TimeDelta time_to_first_frame = new_frame_time - foreground_time;
+  if (hasAudio()) {
+    UMA_HISTOGRAM_TIMES(
+        "Media.Video.TimeFromForegroundToFirstFrame.DisableTrack",
+        time_to_first_frame);
+  } else {
+    UMA_HISTOGRAM_TIMES("Media.Video.TimeFromForegroundToFirstFrame.Paused",
+                        time_to_first_frame);
+  }
 }
 
 }  // namespace media

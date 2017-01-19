@@ -284,10 +284,22 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->ShouldDisableVideoWhenHidden();
   }
 
+  bool ShouldPauseVideoWhenHidden() const {
+    return wmpi_->ShouldPauseVideoWhenHidden();
+  }
+
+  bool IsBackgroundOptimizationCandidate() const {
+    return wmpi_->IsBackgroundOptimizationCandidate();
+  }
+
   void SetVideoKeyframeDistanceAverage(base::TimeDelta value) {
     PipelineStatistics statistics;
     statistics.video_keyframe_distance_average = value;
     wmpi_->SetPipelineStatisticsForTest(statistics);
+  }
+
+  void SetDuration(base::TimeDelta value) {
+    wmpi_->SetPipelineMediaDurationForTest(value);
   }
 
   // "Renderer" thread.
@@ -668,36 +680,88 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->naturalSize());
 }
 
-TEST_F(WebMediaPlayerImplTest, ShouldDisableVideoWhenHidden) {
+TEST_F(WebMediaPlayerImplTest, BackgroundOptimizationsFeatureEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBackgroundVideoTrackOptimization);
-
   InitializeWebMediaPlayerImpl();
-  delegate_.SetFrameHiddenForTesting(true);
-
-  SetMetadata(true, true);
   SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(5));
+  SetDuration(base::TimeDelta::FromSeconds(300));
+
+  // Audible video.
+  SetMetadata(true, true);
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  EXPECT_TRUE(ShouldDisableVideoWhenHidden());
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+
+  // Video only.
+  SetMetadata(false, true);
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  EXPECT_TRUE(ShouldPauseVideoWhenHidden());
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+
+  // Audio only.
+  SetMetadata(true, false);
+  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+
+  // Duration is shorter than max video keyframe distance.
+  SetDuration(base::TimeDelta::FromSeconds(5));
+  SetMetadata(true, true);
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
   EXPECT_TRUE(ShouldDisableVideoWhenHidden());
 
-  SetMetadata(false, true);
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
-
-  SetMetadata(true, false);
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
-
+  // Average keyframe distance is too big.
   SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(100));
-  SetMetadata(true, true);
+  SetDuration(base::TimeDelta::FromSeconds(300));
+  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 }
 
-TEST_F(WebMediaPlayerImplTest, ShouldDisableVideoWhenHiddenFeatureDisabled) {
+TEST_F(WebMediaPlayerImplTest, BackgroundOptimizationsFeatureDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kBackgroundVideoTrackOptimization);
 
   InitializeWebMediaPlayerImpl();
-  delegate_.SetFrameHiddenForTesting(true);
+  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(5));
+  SetDuration(base::TimeDelta::FromSeconds(300));
 
+  // Audible video.
   SetMetadata(true, true);
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+
+  // Video only (pausing is enabled on Android).
+  SetMetadata(false, true);
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(ShouldPauseVideoWhenHidden());
+#else
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+#endif
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+
+  // Audio only.
+  SetMetadata(true, false);
+  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+
+  // Duration is shorter than max video keyframe distance.
+  SetDuration(base::TimeDelta::FromSeconds(5));
+  SetMetadata(true, true);
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
+
+  // Average keyframe distance is too big.
+  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(100));
+  SetDuration(base::TimeDelta::FromSeconds(300));
+  EXPECT_FALSE(IsBackgroundOptimizationCandidate());
+  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 }
 

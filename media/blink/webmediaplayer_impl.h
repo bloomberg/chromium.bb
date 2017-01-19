@@ -300,9 +300,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetNetworkState(blink::WebMediaPlayer::NetworkState state);
   void SetReadyState(blink::WebMediaPlayer::ReadyState state);
 
-  // Gets the duration value reported by the pipeline.
-  double GetPipelineDuration() const;
-
   // Returns the current video frame from |compositor_|. Blocks until the
   // compositor can return the frame.
   scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor();
@@ -380,13 +377,18 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // is intended for android.
   bool DoesOverlaySupportMetadata() const;
 
-  // Whether the media should be paused when hidden. Uses metadata so has
+  // Whether the video should be paused when hidden. Uses metadata so has
   // meaning only after the pipeline has started, otherwise returns false.
-  bool ShouldPauseWhenHidden() const;
+  bool ShouldPauseVideoWhenHidden() const;
 
   // Whether the video track should be disabled when hidden. Uses metadata so
   // has meaning only after the pipeline has started, otherwise returns false.
   bool ShouldDisableVideoWhenHidden() const;
+
+  // Whether the video is suitable for background playback optimizations (either
+  // pausing it or disabling the video track). Uses metadata so has meaning only
+  // after the pipeline has started, otherwise returns false.
+  bool IsBackgroundOptimizationCandidate() const;
 
   // Disables the video track to save power if possible.
   // Must be called when either of the following happens:
@@ -404,11 +406,22 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // - right after the pipeline has resumed if the video is not hidden.
   void EnableVideoTrackIfNeeded();
 
-  // Overrides the pipeline statistics returned by GetStatistics() for tests.
+  // Overrides the pipeline statistics returned by GetPiplineStatistics() for
+  // tests.
   void SetPipelineStatisticsForTest(const PipelineStatistics& stats);
 
   // Returns the pipeline statistics or the value overridden by tests.
   PipelineStatistics GetPipelineStatistics() const;
+
+  // Overrides the pipeline media duration returned by
+  // GetPipelineMediaDuration() for tests.
+  void SetPipelineMediaDurationForTest(base::TimeDelta duration);
+
+  // Return the pipeline media duration or the value overridden by tests.
+  base::TimeDelta GetPipelineMediaDuration() const;
+
+  void ReportTimeFromForegroundToFirstFrame(base::TimeTicks foreground_time,
+                                            base::TimeTicks new_frame_time);
 
   blink::WebLocalFrame* frame_;
 
@@ -649,6 +662,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Pipeline statistics overridden by tests.
   base::Optional<PipelineStatistics> pipeline_statistics_for_test_;
+
+  // Pipeline media duration overridden by tests.
+  base::Optional<base::TimeDelta> pipeline_media_duration_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
