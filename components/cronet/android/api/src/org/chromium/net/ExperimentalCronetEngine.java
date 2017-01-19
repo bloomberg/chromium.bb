@@ -316,11 +316,12 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * before round trip time and throughput listeners are added, and after the
      * network quality estimator has been enabled.
      * @param useLocalHostRequests include requests to localhost in estimates.
-     * @param useSmallerResponses include small responses in throughput
-     * estimates.
+     * @param useSmallerResponses include small responses in throughput estimates.
+     * @param disableOfflineCheck when set to true, disables the device offline checks when
+     *        computing the effective connection type or when writing the prefs.
      */
-    public void configureNetworkQualityEstimatorForTesting(
-            boolean useLocalHostRequests, boolean useSmallerResponses) {}
+    public void configureNetworkQualityEstimatorForTesting(boolean useLocalHostRequests,
+            boolean useSmallerResponses, boolean disableOfflineCheck) {}
 
     /**
      * Registers a listener that gets called whenever the network quality

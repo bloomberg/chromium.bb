@@ -40,6 +40,7 @@
 #include "components/cronet/url_request_context_config.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_filter.h"
+#include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
@@ -57,6 +58,7 @@
 #include "net/log/file_net_log_observer.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/nqe/external_estimate_provider.h"
+#include "net/nqe/network_qualities_prefs_manager.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
@@ -115,6 +117,7 @@ static base::LazyInstance<NetLogWithNetworkChangeEvents>::Leaky g_net_log =
     LAZY_INSTANCE_INITIALIZER;
 
 const char kHttpServerProperties[] = "net.http_server_properties";
+const char kNetworkQualities[] = "net.network_qualities";
 // Current version of disk storage.
 const int32_t kStorageVersion = 1;
 // Version number used when the version of disk storage is unknown.
@@ -156,10 +159,75 @@ class PrefServiceAdapter
 
  private:
   PrefService* pref_service_;
-  std::string path_;
+  const std::string path_;
   PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceAdapter);
+};
+
+class NetworkQualitiesPrefDelegateImpl
+    : public net::NetworkQualitiesPrefsManager::PrefDelegate {
+ public:
+  // Caller must guarantee that |pref_service| outlives |this|.
+  explicit NetworkQualitiesPrefDelegateImpl(PrefService* pref_service)
+      : pref_service_(pref_service),
+        lossy_prefs_writing_task_posted_(false),
+        weak_ptr_factory_(this) {
+    DCHECK(pref_service_);
+  }
+
+  ~NetworkQualitiesPrefDelegateImpl() override {}
+
+  // net::NetworkQualitiesPrefsManager::PrefDelegate implementation.
+  void SetDictionaryValue(const base::DictionaryValue& value) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    pref_service_->Set(kNetworkQualities, value);
+    if (lossy_prefs_writing_task_posted_)
+      return;
+
+    // Post the task that schedules the writing of the lossy prefs.
+    lossy_prefs_writing_task_posted_ = true;
+
+    // Delay after which the task that schedules the writing of the lossy prefs.
+    // This is needed in case the writing of the lossy prefs is not scheduled
+    // automatically. The delay was chosen so that it is large enough that it
+    // does not affect the startup performance.
+    static const int32_t kUpdatePrefsDelaySeconds = 10;
+
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(
+            &NetworkQualitiesPrefDelegateImpl::SchedulePendingLossyWrites,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(kUpdatePrefsDelaySeconds));
+  }
+  std::unique_ptr<base::DictionaryValue> GetDictionaryValue() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    // TODO(tbansal): Add logic to read prefs if the embedder has enabled cached
+    // estimates.
+    return base::WrapUnique(new base::DictionaryValue());
+  }
+
+ private:
+  // Schedules the writing of the lossy prefs.
+  void SchedulePendingLossyWrites() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    pref_service_->SchedulePendingLossyWrites();
+    lossy_prefs_writing_task_posted_ = false;
+  }
+
+  PrefService* pref_service_;
+
+  // True if the task that schedules the writing of the lossy prefs has been
+  // posted.
+  bool lossy_prefs_writing_task_posted_;
+
+  base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<NetworkQualitiesPrefDelegateImpl> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkQualitiesPrefDelegateImpl);
 };
 
 // Connects the SdchOwner's storage to the prefs.
@@ -424,6 +492,8 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
 
   if (http_server_properties_manager_)
     http_server_properties_manager_->ShutdownOnPrefThread();
+  if (network_qualities_prefs_manager_)
+    network_qualities_prefs_manager_->ShutdownOnPrefThread();
   if (pref_service_)
     pref_service_->CommitPendingWrite();
   if (network_quality_estimator_) {
@@ -462,25 +532,29 @@ void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
 void CronetURLRequestContextAdapter::
     ConfigureNetworkQualityEstimatorOnNetworkThreadForTesting(
         bool use_local_host_requests,
-        bool use_smaller_responses) {
+        bool use_smaller_responses,
+        bool disable_offline_check) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   network_quality_estimator_->SetUseLocalHostRequestsForTesting(
       use_local_host_requests);
   network_quality_estimator_->SetUseSmallResponsesForTesting(
       use_smaller_responses);
+  network_quality_estimator_->DisableOfflineCheckForTesting(
+      disable_offline_check);
 }
 
 void CronetURLRequestContextAdapter::ConfigureNetworkQualityEstimatorForTesting(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jboolean use_local_host_requests,
-    jboolean use_smaller_responses) {
+    jboolean use_smaller_responses,
+    jboolean disable_offline_check) {
   PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::
                      ConfigureNetworkQualityEstimatorOnNetworkThreadForTesting,
                  base::Unretained(this), use_local_host_requests,
-                 use_smaller_responses));
+                 use_smaller_responses, disable_offline_check));
 }
 
 void CronetURLRequestContextAdapter::ProvideRTTObservationsOnNetworkThread(
@@ -591,6 +665,11 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
     registry->RegisterDictionaryPref(kHttpServerProperties,
                                      new base::DictionaryValue());
+    if (config->enable_network_quality_estimator) {
+      // Use lossy prefs to limit the overhead of reading/writing the prefs.
+      registry->RegisterDictionaryPref(kNetworkQualities,
+                                       PrefRegistry::LOSSY_PREF);
+    }
     pref_service_ = factory.Create(registry.get());
 
     std::unique_ptr<net::HttpServerPropertiesManager>
@@ -622,15 +701,26 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     // quality estimator.
     variation_params["effective_connection_type_algorithm"] =
         "TransportRTTOrDownstreamThroughput";
-    network_quality_estimator_.reset(new net::NetworkQualityEstimator(
+    network_quality_estimator_ = base::MakeUnique<net::NetworkQualityEstimator>(
         std::unique_ptr<net::ExternalEstimateProvider>(), variation_params,
-        false, false));
+        false, false);
     // Set the socket performance watcher factory so that network quality
     // estimator is notified of socket performance metrics from TCP and QUIC.
     context_builder.set_socket_performance_watcher_factory(
         network_quality_estimator_->GetSocketPerformanceWatcherFactory());
     network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
     network_quality_estimator_->AddRTTAndThroughputEstimatesObserver(this);
+
+    // Set up network quality prefs if the storage path is specified.
+    if (!config->storage_path.empty()) {
+      DCHECK(!network_qualities_prefs_manager_);
+      network_qualities_prefs_manager_ =
+          base::MakeUnique<net::NetworkQualitiesPrefsManager>(
+              base::MakeUnique<NetworkQualitiesPrefDelegateImpl>(
+                  pref_service_.get()));
+      network_qualities_prefs_manager_->InitializeOnNetworkThread(
+          network_quality_estimator_.get());
+    }
   }
 
   context_ = context_builder.Build();

@@ -278,6 +278,11 @@ class NET_EXPORT NetworkQualityEstimator
   // network quality estimation.
   void SetUseSmallResponsesForTesting(bool use_small_responses);
 
+  // If |disable_offline_check| is set to true, then the device offline check is
+  // disabled when computing the effective connection type or when writing the
+  // prefs.
+  void DisableOfflineCheckForTesting(bool disable_offline_check);
+
   // Reports |effective_connection_type| to all
   // EffectiveConnectionTypeObservers.
   void ReportEffectiveConnectionTypeForTesting(
@@ -598,6 +603,10 @@ class NET_EXPORT NetworkQualityEstimator
   // or shorter than |kMinTransferSizeInBytes| can be used in estimating the
   // network quality. Set to true only for tests.
   bool use_small_responses_;
+
+  // When set to true, the device offline check is disabled when computing the
+  // effective connection type or when writing the prefs.
+  bool disable_offline_check_;
 
   // If true, default values provided by the platform are used for estimation.
   const bool add_default_platform_observations_;

@@ -394,15 +394,15 @@ public class CronetUrlRequestContext extends CronetEngineBase {
 
     @VisibleForTesting
     @Override
-    public void configureNetworkQualityEstimatorForTesting(
-            boolean useLocalHostRequests, boolean useSmallerResponses) {
+    public void configureNetworkQualityEstimatorForTesting(boolean useLocalHostRequests,
+            boolean useSmallerResponses, boolean disableOfflineCheck) {
         if (!mNetworkQualityEstimatorEnabled) {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mLock) {
             checkHaveAdapter();
-            nativeConfigureNetworkQualityEstimatorForTesting(
-                    mUrlRequestContextAdapter, useLocalHostRequests, useSmallerResponses);
+            nativeConfigureNetworkQualityEstimatorForTesting(mUrlRequestContextAdapter,
+                    useLocalHostRequests, useSmallerResponses, disableOfflineCheck);
         }
     }
 
@@ -733,8 +733,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     private native void nativeInitRequestContextOnMainThread(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
-    private native void nativeConfigureNetworkQualityEstimatorForTesting(
-            long nativePtr, boolean useLocalHostRequests, boolean useSmallerResponses);
+    private native void nativeConfigureNetworkQualityEstimatorForTesting(long nativePtr,
+            boolean useLocalHostRequests, boolean useSmallerResponses, boolean disableOfflineCheck);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeProvideRTTObservations(long nativePtr, boolean should);

@@ -2396,7 +2396,7 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test3g");
   estimator.RunOneRequest();
-  EXPECT_EQ(1u, observer.get_notification_received_and_reset());
+  EXPECT_EQ(2u, observer.get_notification_received_and_reset());
   EXPECT_EQ("test3g", observer.network_id().id);
 
   estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);

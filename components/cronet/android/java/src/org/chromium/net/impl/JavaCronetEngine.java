@@ -137,8 +137,8 @@ public final class JavaCronetEngine extends CronetEngineBase {
     }
 
     @Override
-    public void configureNetworkQualityEstimatorForTesting(
-            boolean useLocalHostRequests, boolean useSmallerResponses) {}
+    public void configureNetworkQualityEstimatorForTesting(boolean useLocalHostRequests,
+            boolean useSmallerResponses, boolean disableOfflineCheck) {}
 
     @Override
     public void addRttListener(NetworkQualityRttListener listener) {}

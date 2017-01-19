@@ -171,7 +171,7 @@ public class QuicTest extends CronetTestBase {
         mTestFramework.mCronetEngine.addRttListener(rttListener);
         mTestFramework.mCronetEngine.addThroughputListener(throughputListener);
 
-        mTestFramework.mCronetEngine.configureNetworkQualityEstimatorForTesting(true, true);
+        mTestFramework.mCronetEngine.configureNetworkQualityEstimatorForTesting(true, true, true);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
 
         // Although the native stack races QUIC and SPDY for the first request,
@@ -207,6 +207,26 @@ public class QuicTest extends CronetTestBase {
         assertTrue(mTestFramework.mCronetEngine.getEffectiveConnectionType()
                 != EffectiveConnectionType.TYPE_UNKNOWN);
 
+        // Verify that the HTTP RTT, transport RTT and downstream throughput
+        // estimates are available.
+        assertTrue(mTestFramework.mCronetEngine.getHttpRttMs() >= 0);
+        assertTrue(mTestFramework.mCronetEngine.getTransportRttMs() >= 0);
+        assertTrue(mTestFramework.mCronetEngine.getDownstreamThroughputKbps() >= 0);
+
+        // Verify that the cached estimates were written to the prefs.
+        while (true) {
+            Log.i(TAG, "Still waiting for pref file update.....");
+            Thread.sleep(10000);
+            try {
+                if (fileContainsString("local_prefs.json", "network_qualities")) {
+                    break;
+                }
+            } catch (FileNotFoundException e) {
+                // Ignored this exception since the file will only be created when updates are
+                // flushed to the disk.
+            }
+        }
+        assertTrue(fileContainsString("local_prefs.json", "network_qualities"));
         mTestFramework.mCronetEngine.shutdown();
     }
 

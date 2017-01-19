@@ -239,6 +239,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
                                     TRANSPORT_RTT_OR_DOWNSTREAM_THROUGHOUT}}),
       use_localhost_requests_(use_local_host_requests_for_tests),
       use_small_responses_(use_smaller_responses_for_tests),
+      disable_offline_check_(false),
       add_default_platform_observations_(add_default_platform_observations),
       weight_multiplier_per_second_(
           nqe::internal::GetWeightMultiplierPerSecond(variation_params)),
@@ -721,6 +722,13 @@ void NetworkQualityEstimator::SetUseSmallResponsesForTesting(
   throughput_analyzer_->SetUseSmallResponsesForTesting(use_small_responses_);
 }
 
+void NetworkQualityEstimator::DisableOfflineCheckForTesting(
+    bool disable_offline_check) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  disable_offline_check_ = disable_offline_check;
+  network_quality_store_->DisableOfflineCheckForTesting(disable_offline_check_);
+}
+
 void NetworkQualityEstimator::ReportEffectiveConnectionTypeForTesting(
     EffectiveConnectionType effective_connection_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1109,8 +1117,11 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
 
   // If the device is currently offline, then return
   // EFFECTIVE_CONNECTION_TYPE_OFFLINE.
-  if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_NONE)
+
+  if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_NONE &&
+      !disable_offline_check_) {
     return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
+  }
 
   if (!GetRecentHttpRTT(start_time, http_rtt))
     *http_rtt = nqe::internal::InvalidRTT();
