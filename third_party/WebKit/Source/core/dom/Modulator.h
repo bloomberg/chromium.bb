@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 
@@ -20,6 +21,10 @@ class LocalFrame;
 class CORE_EXPORT Modulator : public GarbageCollectedMixin {
  public:
   static Modulator* from(LocalFrame*);
+
+  // https://html.spec.whatwg.org/#resolve-a-module-specifier
+  static KURL resolveModuleSpecifier(const String& moduleRequest,
+                                     const KURL& baseURL);
 };
 
 }  // namespace blink

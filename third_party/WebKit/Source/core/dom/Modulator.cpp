@@ -16,4 +16,30 @@ Modulator* Modulator::from(LocalFrame* frame) {
   return scriptState->perContextData()->modulator();
 }
 
+KURL Modulator::resolveModuleSpecifier(const String& moduleRequest,
+                                       const KURL& baseURL) {
+  // Step 1. Apply the URL parser to specifier. If the result is not failure,
+  // return the result.
+  KURL url(KURL(), moduleRequest);
+  if (url.isValid())
+    return url;
+
+  // Step 2. If specifier does not start with the character U+002F SOLIDUS (/),
+  // the two-character sequence U+002E FULL STOP, U+002F SOLIDUS (./), or the
+  // three-character sequence U+002E FULL STOP, U+002E FULL STOP, U+002F SOLIDUS
+  // (../), return failure and abort these steps.
+  if (!moduleRequest.startsWith("/") && !moduleRequest.startsWith("./") &&
+      !moduleRequest.startsWith("../"))
+    return KURL();
+
+  // Step 3. Return the result of applying the URL parser to specifier with
+  // script's base URL as the base URL.
+  DCHECK(baseURL.isValid());
+  KURL absoluteURL(baseURL, moduleRequest);
+  if (absoluteURL.isValid())
+    return absoluteURL;
+
+  return KURL();
+}
+
 }  // namespace blink
