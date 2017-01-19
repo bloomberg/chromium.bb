@@ -9,6 +9,7 @@ import("//build/config/mac/symbols.gni")
 declare_args() {
   # Enable today extension.
   ios_enable_today_extension = true
+  ios_enable_widget_extension = false
 
   # Enable share extension.
   ios_enable_share_extension = true
@@ -24,6 +25,8 @@ declare_args() {
   # List of plist templates to merge when generating chrome entitlements.
   ios_chrome_entitlements_additions = []
 }
+assert(!(ios_enable_today_extension && ios_enable_widget_extension),
+       "Both today extensions cannot be enabled simultaneously.")
 
 # Configure whether breakpad support is enabled.
 breakpad_enabled = is_official_build && is_chrome_branded

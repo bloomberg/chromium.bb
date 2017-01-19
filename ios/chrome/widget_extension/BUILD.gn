@@ -1,0 +1,50 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ios/rules.gni")
+import("//build/mac/tweak_info_plist.gni")
+import("//ios/build/chrome_build.gni")
+
+tweak_info_plist("tweak_info_plist") {
+  info_plist = "Info.plist"
+}
+
+compile_plist("entitlements") {
+  format = "xml1"
+  substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
+  output_name = "$target_gen_dir/today_extension.appex.entitlements"
+  plist_templates =
+      [ "entitlements/external/widget_extension.appex.entitlements" ] +
+      ios_chrome_entitlements_additions
+}
+
+ios_appex_bundle("widget_extension") {
+  sources = [
+    "widget_view.h",
+    "widget_view.mm",
+    "widget_view_controller.h",
+    "widget_view_controller.mm",
+  ]
+
+  libs = [
+    "Foundation.framework",
+    "NotificationCenter.framework",
+    "UIKit.framework",
+  ]
+
+  extra_substitutions = [
+    "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
+    "CHROMIUM_SHORT_NAME=$chromium_short_name",
+
+    # The widget_extension and today_extension are using the same provisioning
+    # profile during development work.
+    # TODO(crbug.com/682238) : Request provisioning profile if widget is kept.
+    "WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.TodayExtension",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  entitlements_target = ":entitlements"
+  info_plist_target = ":tweak_info_plist"
+}

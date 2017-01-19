@@ -273,12 +273,16 @@ ios_app_bundle("chrome") {
 
   bundle_deps = [ "//ios/chrome/app/resources" ]
 
-  if (ios_enable_today_extension && current_toolchain == default_toolchain) {
-    deps += [ ":today_extension_bundle" ]
-  }
-
-  if (ios_enable_share_extension && current_toolchain == default_toolchain) {
-    deps += [ ":share_extension_bundle" ]
+  if (current_toolchain == default_toolchain) {
+    if (ios_enable_today_extension) {
+      deps += [ ":today_extension_bundle" ]
+    }
+    if (ios_enable_widget_extension) {
+      deps += [ ":widget_extension_bundle" ]
+    }
+    if (ios_enable_share_extension) {
+      deps += [ ":share_extension_bundle" ]
+    }
   }
 
   extra_substitutions = [
@@ -298,30 +302,52 @@ ios_app_bundle("chrome") {
   }
 }
 
-if (ios_enable_today_extension && current_toolchain == default_toolchain) {
-  bundle_data("today_extension_bundle") {
-    public_deps = [
-      "//ios/chrome/today_extension",
-    ]
-    sources = [
-      "$root_out_dir/today_extension.appex",
-    ]
-    outputs = [
-      "{{bundle_plugins_dir}}/{{source_file_part}}",
-    ]
+if (current_toolchain == default_toolchain) {
+  if (ios_enable_today_extension) {
+    bundle_data("today_extension_bundle") {
+      public_deps = [
+        "//ios/chrome/today_extension",
+      ]
+      sources = [
+        "$root_out_dir/today_extension.appex",
+      ]
+      outputs = [
+        "{{bundle_plugins_dir}}/{{source_file_part}}",
+      ]
+    }
   }
-}
 
-if (ios_enable_share_extension && current_toolchain == default_toolchain) {
-  bundle_data("share_extension_bundle") {
-    public_deps = [
-      "//ios/chrome/share_extension",
-    ]
-    sources = [
-      "$root_out_dir/share_extension.appex",
-    ]
-    outputs = [
-      "{{bundle_plugins_dir}}/{{source_file_part}}",
-    ]
+  if (ios_enable_widget_extension) {
+    bundle_data("widget_extension_bundle") {
+      public_deps = [
+        "//ios/chrome/widget_extension",
+      ]
+      sources = [
+        "$root_out_dir/widget_extension.appex",
+      ]
+
+      # The output is renamed today_extension.appex so that signing in canary
+      # works and clobbering is not necessary when switching between this
+      # extension and the today extension.
+      # TODO(crbug.com/682230) : Rename this when widget gets its own
+      # mobileprovision.
+      outputs = [
+        "{{bundle_plugins_dir}}/today_extension.appex",
+      ]
+    }
+  }
+
+  if (ios_enable_share_extension) {
+    bundle_data("share_extension_bundle") {
+      public_deps = [
+        "//ios/chrome/share_extension",
+      ]
+      sources = [
+        "$root_out_dir/share_extension.appex",
+      ]
+      outputs = [
+        "{{bundle_plugins_dir}}/{{source_file_part}}",
+      ]
+    }
   }
 }
