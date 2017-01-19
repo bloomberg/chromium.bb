@@ -1534,6 +1534,7 @@ cr.define('login', function() {
         case 'Meta':
           break;
         case 'Escape':
+          this.actionBoxAreaElement.focus();
           this.isActionBoxMenuActive = false;
           e.stopPropagation();
           break;
