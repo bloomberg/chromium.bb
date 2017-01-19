@@ -289,9 +289,7 @@ void HTMLLinkElement::dispatchPendingEvent(
 }
 
 void HTMLLinkElement::scheduleEvent() {
-  // TODO(hiroshige): Use DOMManipulation task runner. Unthrottled
-  // is temporarily used for fixing https://crbug.com/649942 only on M-56.
-  TaskRunnerHelper::get(TaskType::Unthrottled, &document())
+  TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
       ->postTask(
           BLINK_FROM_HERE,
           WTF::bind(
