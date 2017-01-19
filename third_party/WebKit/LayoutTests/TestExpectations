@@ -2033,6 +2033,7 @@ Bug(dpranke) external/wpt/service-workers/service-worker/extendable-event-async-
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event-after-navigation-within-page.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event-network-error.https.html [ Failure ]
 # TIMOUT failures crbug/682065
+Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Failure Timeout ]
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-frame-resource.https.html [ Failure ]
 Bug(dpranke) external/wpt/service-workers/service-worker/fetch-request-css-images.https.html [ Failure ]
