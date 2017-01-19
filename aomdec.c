@@ -97,6 +97,8 @@ static const arg_def_t fb_arg =
     ARG_DEF(NULL, "frame-buffers", 1, "Number of frame buffers to use");
 static const arg_def_t md5arg =
     ARG_DEF(NULL, "md5", 0, "Compute the MD5 sum of the decoded frame");
+static const arg_def_t framestatsarg =
+    ARG_DEF(NULL, "framestats", 1, "Output per-frame stats (.csv format)");
 #if CONFIG_AOM_HIGHBITDEPTH
 static const arg_def_t outbitdeptharg =
     ARG_DEF(NULL, "output-bit-depth", 1, "Output bit-depth for decoded frames");
@@ -128,6 +130,7 @@ static const arg_def_t *all_args[] = { &codecarg,
                                        &scalearg,
                                        &fb_arg,
                                        &md5arg,
+                                       &framestatsarg,
                                        &error_concealment,
                                        &continuearg,
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -541,6 +544,8 @@ static int main_loop(int argc, const char **argv_) {
   char outfile_name[PATH_MAX] = { 0 };
   FILE *outfile = NULL;
 
+  FILE *framestats_file = NULL;
+
   MD5Context md5_ctx;
   unsigned char md5_digest[16];
 
@@ -567,9 +572,9 @@ static int main_loop(int argc, const char **argv_) {
         die("Error: Unrecognized argument (%s) to --codec\n", arg.val);
     } else if (arg_match(&arg, &looparg, argi)) {
       // no-op
-    } else if (arg_match(&arg, &outputfile, argi))
+    } else if (arg_match(&arg, &outputfile, argi)) {
       outfile_pattern = arg.val;
-    else if (arg_match(&arg, &use_yv12, argi)) {
+    } else if (arg_match(&arg, &use_yv12, argi)) {
       use_y4m = 0;
       flipuv = 1;
       opt_yv12 = 1;
@@ -579,24 +584,31 @@ static int main_loop(int argc, const char **argv_) {
       opt_i420 = 1;
     } else if (arg_match(&arg, &rawvideo, argi)) {
       use_y4m = 0;
-    } else if (arg_match(&arg, &flipuvarg, argi))
+    } else if (arg_match(&arg, &flipuvarg, argi)) {
       flipuv = 1;
-    else if (arg_match(&arg, &noblitarg, argi))
+    } else if (arg_match(&arg, &noblitarg, argi)) {
       noblit = 1;
-    else if (arg_match(&arg, &progressarg, argi))
+    } else if (arg_match(&arg, &progressarg, argi)) {
       progress = 1;
-    else if (arg_match(&arg, &limitarg, argi))
+    } else if (arg_match(&arg, &limitarg, argi)) {
       stop_after = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &skiparg, argi))
+    } else if (arg_match(&arg, &skiparg, argi)) {
       arg_skip = arg_parse_uint(&arg);
-    else if (arg_match(&arg, &postprocarg, argi))
+    } else if (arg_match(&arg, &postprocarg, argi)) {
       postproc = 1;
-    else if (arg_match(&arg, &md5arg, argi))
+    } else if (arg_match(&arg, &md5arg, argi)) {
       do_md5 = 1;
-    else if (arg_match(&arg, &summaryarg, argi))
+    } else if (arg_match(&arg, &framestatsarg, argi)) {
+      framestats_file = fopen(arg.val, "w");
+      if (!framestats_file) {
+        die("Error: Could not open --framestats file (%s) for writing.\n",
+            arg.val);
+      }
+    } else if (arg_match(&arg, &summaryarg, argi)) {
       summary = 1;
-    else if (arg_match(&arg, &threadsarg, argi))
+    } else if (arg_match(&arg, &threadsarg, argi)) {
       cfg.threads = arg_parse_uint(&arg);
+    }
 #if CONFIG_AV1_DECODER
     else if (arg_match(&arg, &frameparallelarg, argi))
       frame_parallel = 1;
@@ -756,6 +768,8 @@ static int main_loop(int argc, const char **argv_) {
   frame_avail = 1;
   got_data = 0;
 
+  if (framestats_file) fprintf(framestats_file, "bytes,qp\r\n");
+
   /* Decode file */
   while (frame_avail || got_data) {
     aom_codec_iter_t iter = NULL;
@@ -779,6 +793,16 @@ static int main_loop(int argc, const char **argv_) {
 
           if (detail) warn("Additional information: %s", detail);
           if (!keep_going) goto fail;
+        }
+
+        if (framestats_file) {
+          int qp;
+          if (aom_codec_control(&decoder, AOMD_GET_LAST_QUANTIZER, &qp)) {
+            warn("Failed AOMD_GET_LAST_QUANTIZER: %s",
+                 aom_codec_error(&decoder));
+            if (!keep_going) goto fail;
+          }
+          fprintf(framestats_file, "%d,%d\r\n", (int)bytes_in_buffer, qp);
         }
 
         aom_usec_timer_mark(&timer);
@@ -1017,6 +1041,8 @@ fail2:
   free(ext_fb_list.ext_fb);
 
   fclose(infile);
+  if (framestats_file) fclose(framestats_file);
+
   free(argv);
 
   return ret;

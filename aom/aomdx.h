@@ -115,7 +115,10 @@ enum aom_dec_control_id {
    */
   AV1_GET_ACCOUNTING,
 
-  AOM_DECODER_CTRL_ID_MAX,
+  /** control function to get last decoded frame quantizer. Returned value uses
+   * internal quantizer scale defined by the codec.
+   */
+  AOMD_GET_LAST_QUANTIZER,
 
   /** control function to set the range of tile decoding. A value that is
    * greater and equal to zero indicates only the specific row/column is
@@ -124,7 +127,9 @@ enum aom_dec_control_id {
    * decoded.
    */
   AV1_SET_DECODE_TILE_ROW,
-  AV1_SET_DECODE_TILE_COL
+  AV1_SET_DECODE_TILE_COL,
+
+  AOM_DECODER_CTRL_ID_MAX,
 };
 
 /** Decrypt n bytes of data from input -> output, using the decrypt_state
@@ -159,6 +164,8 @@ AOM_CTRL_USE_TYPE(AOMD_GET_FRAME_CORRUPTED, int *)
 #define AOM_CTRL_AOMD_GET_FRAME_CORRUPTED
 AOM_CTRL_USE_TYPE(AOMD_GET_LAST_REF_USED, int *)
 #define AOM_CTRL_AOMD_GET_LAST_REF_USED
+AOM_CTRL_USE_TYPE(AOMD_GET_LAST_QUANTIZER, int *)
+#define AOM_CTRL_AOMD_GET_LAST_QUANTIZER
 AOM_CTRL_USE_TYPE(AOMD_SET_DECRYPTOR, aom_decrypt_init *)
 #define AOM_CTRL_AOMD_SET_DECRYPTOR
 // AOM_CTRL_USE_TYPE(AOMD_SET_DECRYPTOR, aom_decrypt_init *)

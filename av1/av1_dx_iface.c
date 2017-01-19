@@ -947,6 +947,15 @@ static aom_codec_err_t ctrl_get_last_ref_updates(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_INVALID_PARAM;
 }
 
+static aom_codec_err_t ctrl_get_last_quantizer(aom_codec_alg_priv_t *ctx,
+                                               va_list args) {
+  int *const arg = va_arg(args, int *);
+  if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  *arg =
+      ((FrameWorkerData *)ctx->frame_workers[0].data1)->pbi->common.base_qindex;
+  return AOM_CODEC_OK;
+}
+
 static aom_codec_err_t ctrl_get_frame_corrupted(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   int *corrupted = va_arg(args, int *);
@@ -1142,14 +1151,15 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1_SET_DECODE_TILE_COL, ctrl_set_decode_tile_col },
 
   // Getters
-  { AOMD_GET_LAST_REF_UPDATES, ctrl_get_last_ref_updates },
   { AOMD_GET_FRAME_CORRUPTED, ctrl_get_frame_corrupted },
-  { AV1_GET_REFERENCE, ctrl_get_reference },
-  { AV1D_GET_DISPLAY_SIZE, ctrl_get_render_size },
+  { AOMD_GET_LAST_QUANTIZER, ctrl_get_last_quantizer },
+  { AOMD_GET_LAST_REF_UPDATES, ctrl_get_last_ref_updates },
   { AV1D_GET_BIT_DEPTH, ctrl_get_bit_depth },
+  { AV1D_GET_DISPLAY_SIZE, ctrl_get_render_size },
   { AV1D_GET_FRAME_SIZE, ctrl_get_frame_size },
   { AV1_GET_ACCOUNTING, ctrl_get_accounting },
   { AV1_GET_NEW_FRAME_IMAGE, ctrl_get_new_frame_image },
+  { AV1_GET_REFERENCE, ctrl_get_reference },
 
   { -1, NULL },
 };
