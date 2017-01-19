@@ -30,6 +30,18 @@
   WidgetView* widgetView = [[WidgetView alloc] init];
   self.widgetView = widgetView;
   [self.view addSubview:self.widgetView];
+
+  [self.widgetView setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [NSLayoutConstraint activateConstraints:@[
+    [self.widgetView.leadingAnchor
+        constraintEqualToAnchor:[self.view leadingAnchor]],
+    [self.widgetView.trailingAnchor
+        constraintEqualToAnchor:[self.view trailingAnchor]],
+    [self.widgetView.heightAnchor
+        constraintEqualToAnchor:[self.view heightAnchor]],
+    [self.widgetView.widthAnchor
+        constraintEqualToAnchor:[self.view widthAnchor]]
+  ]];
 }
 
 @end
