@@ -5,7 +5,7 @@
 /* #undef HAVE_ANSIDECL_H */
 
 /* Define to 1 if you have the `asctime' function. */
-#define HAVE_ASCTIME 1
+
 
 /* Define to 1 if you have the `clock_gettime' function. */
 
@@ -59,7 +59,7 @@
 #define HAVE_LOCALE_H 1
 
 /* Define to 1 if you have the `localtime' function. */
-#define HAVE_LOCALTIME 1
+
 
 /* Define to 1 if you have the `localtime_r' function. */
 #define HAVE_LOCALTIME_R 1
@@ -71,7 +71,7 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `mktime' function. */
-#define HAVE_MKTIME 1
+
 
 /* Define to 1 if you have the <nan.h> header file. */
 /* #undef HAVE_NAN_H */

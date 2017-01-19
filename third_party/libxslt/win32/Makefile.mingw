@@ -155,37 +155,37 @@ libexslta : $(BINDIR)\$(EXSLT_A)
 utils : $(UTILS)
 
 clean :
-	cmd.exe /C if exist $(XSLT_INTDIR) rmdir /S /Q $(XSLT_INTDIR)
-	cmd.exe /C if exist $(XSLT_INTDIR_A) rmdir /S /Q $(XSLT_INTDIR_A)
-	cmd.exe /C if exist $(EXSLT_INTDIR) rmdir /S /Q $(EXSLT_INTDIR)
-	cmd.exe /C if exist $(EXSLT_INTDIR_A) rmdir /S /Q $(EXSLT_INTDIR_A)
-	cmd.exe /C if exist $(UTILS_INTDIR) rmdir /S /Q $(UTILS_INTDIR)
-	cmd.exe /C if exist $(BINDIR) rmdir /S /Q $(BINDIR)
-	cmd.exe /C if exist depends.mingw del depends.mingw
+	cmd.exe /C "if exist $(XSLT_INTDIR) rmdir /S /Q $(XSLT_INTDIR)"
+	cmd.exe /C "if exist $(XSLT_INTDIR_A) rmdir /S /Q $(XSLT_INTDIR_A)"
+	cmd.exe /C "if exist $(EXSLT_INTDIR) rmdir /S /Q $(EXSLT_INTDIR)"
+	cmd.exe /C "if exist $(EXSLT_INTDIR_A) rmdir /S /Q $(EXSLT_INTDIR_A)"
+	cmd.exe /C "if exist $(UTILS_INTDIR) rmdir /S /Q $(UTILS_INTDIR)"
+	cmd.exe /C "if exist $(BINDIR) rmdir /S /Q $(BINDIR)"
+	cmd.exe /C "if exist depends.mingw del depends.mingw"
 
 rebuild : clean all
 
 distclean : clean
-	cmd.exe /C if exist config.* del config.*
-	cmd.exe /C if exist depends.* del depends.*
-	cmd.exe /C if exist Makefile del Makefile
+	cmd.exe /C "if exist config.* del config.*"
+	cmd.exe /C "if exist depends.* del depends.*"
+	cmd.exe /C "if exist Makefile del Makefile"
 
 install-libs : all
-	cmd.exe /C if not exist $(INCPREFIX)\$(XSLT_BASENAME) mkdir $(INCPREFIX)\$(XSLT_BASENAME)
-	cmd.exe /C if not exist $(INCPREFIX)\$(EXSLT_BASENAME) mkdir $(INCPREFIX)\$(EXSLT_BASENAME)
-	cmd.exe /C if not exist $(BINPREFIX) mkdir $(BINPREFIX)
-	cmd.exe /C if not exist $(LIBPREFIX) mkdir $(LIBPREFIX)
-	cmd.exe /C copy $(XSLT_SRCDIR)\*.h $(INCPREFIX)\$(XSLT_BASENAME)
-	cmd.exe /C copy $(EXSLT_SRCDIR)\*.h $(INCPREFIX)\$(EXSLT_BASENAME)
-	cmd.exe /C copy $(BINDIR)\$(XSLT_SO) $(SOPREFIX)
-	cmd.exe /C copy $(BINDIR)\$(XSLT_A) $(LIBPREFIX)
-	cmd.exe /C copy $(BINDIR)\$(XSLT_IMP) $(LIBPREFIX)
-	cmd.exe /C copy $(BINDIR)\$(EXSLT_SO) $(SOPREFIX)
-	cmd.exe /C copy $(BINDIR)\$(EXSLT_A) $(LIBPREFIX)
-	cmd.exe /C copy $(BINDIR)\$(EXSLT_IMP) $(LIBPREFIX)
+	cmd.exe /C "if not exist $(INCPREFIX)\$(XSLT_BASENAME) mkdir $(INCPREFIX)\$(XSLT_BASENAME)"
+	cmd.exe /C "if not exist $(INCPREFIX)\$(EXSLT_BASENAME) mkdir $(INCPREFIX)\$(EXSLT_BASENAME)"
+	cmd.exe /C "if not exist $(BINPREFIX) mkdir $(BINPREFIX)"
+	cmd.exe /C "if not exist $(LIBPREFIX) mkdir $(LIBPREFIX)"
+	cmd.exe /C "copy $(XSLT_SRCDIR)\*.h $(INCPREFIX)\$(XSLT_BASENAME)"
+	cmd.exe /C "copy $(EXSLT_SRCDIR)\*.h $(INCPREFIX)\$(EXSLT_BASENAME)"
+	cmd.exe /C "copy $(BINDIR)\$(XSLT_SO) $(SOPREFIX)"
+	cmd.exe /C "copy $(BINDIR)\$(XSLT_A) $(LIBPREFIX)"
+	cmd.exe /C "copy $(BINDIR)\$(XSLT_IMP) $(LIBPREFIX)"
+	cmd.exe /C "copy $(BINDIR)\$(EXSLT_SO) $(SOPREFIX)"
+	cmd.exe /C "copy $(BINDIR)\$(EXSLT_A) $(LIBPREFIX)"
+	cmd.exe /C "copy $(BINDIR)\$(EXSLT_IMP) $(LIBPREFIX)"
 
 install : install-libs
-	cmd.exe /C copy $(BINDIR)\*.exe $(BINPREFIX)
+	cmd.exe /C "copy $(BINDIR)\*.exe $(BINPREFIX)"
 
 install-dist : install
 
@@ -205,16 +205,16 @@ dep :
 
 # Makes the compiler output directory.
 $(BINDIR) :
-	cmd.exe /C if not exist $(BINDIR) mkdir $(BINDIR)
+	cmd.exe /C "if not exist $(BINDIR) mkdir $(BINDIR)"
 
 
 # Makes the libxslt intermediate directory.
 $(XSLT_INTDIR) :
-	cmd.exe /C if not exist $(XSLT_INTDIR) mkdir $(XSLT_INTDIR)
+	cmd.exe /C "if not exist $(XSLT_INTDIR) mkdir $(XSLT_INTDIR)"
 
 # Makes the static libxslt intermediate directory.
 $(XSLT_INTDIR_A) :
-	cmd.exe /C if not exist $(XSLT_INTDIR_A) mkdir $(XSLT_INTDIR_A)
+	cmd.exe /C "if not exist $(XSLT_INTDIR_A) mkdir $(XSLT_INTDIR_A)"
 
 # An implicit rule for libxslt compilation.
 $(XSLT_INTDIR)/%.o : $(XSLT_SRCDIR)/%.c
@@ -244,11 +244,11 @@ $(BINDIR)\$(XSLT_A) : $(BINDIR) $(XSLT_OBJS_A)
 
 # Creates the libexslt intermediate directory.
 $(EXSLT_INTDIR) :
-	cmd.exe /C if not exist $(EXSLT_INTDIR) mkdir $(EXSLT_INTDIR)
+	cmd.exe /C "if not exist $(EXSLT_INTDIR) mkdir $(EXSLT_INTDIR)"
 
 # Creates the static libexslt intermediate directory.
 $(EXSLT_INTDIR_A) :
-	cmd.exe /C if not exist $(EXSLT_INTDIR_A) mkdir $(EXSLT_INTDIR_A)
+	cmd.exe /C "if not exist $(EXSLT_INTDIR_A) mkdir $(EXSLT_INTDIR_A)"
 
 # An implicit rule for libexslt compilation.
 $(EXSLT_INTDIR)/%.o : $(EXSLT_SRCDIR)/%.c
@@ -279,7 +279,7 @@ $(BINDIR)\$(EXSLT_A) : $(BINDIR) $(EXSLT_OBJS_A) libxslta
 
 # Creates the utils intermediate directory.
 $(UTILS_INTDIR) :
-	cmd.exe /C if not exist $(UTILS_INTDIR) mkdir $(UTILS_INTDIR)
+	cmd.exe /C "if not exist $(UTILS_INTDIR) mkdir $(UTILS_INTDIR)"
 
 # An implicit rule for xsltproc and friends.
 APPLIBS = $(LIBS)

@@ -40,7 +40,7 @@
 const xmlChar *xsltDocFragFake = (const xmlChar *) " fake node libxslt";
 #endif
 
-const xmlChar *xsltComputingGlobalVarMarker =
+static const xmlChar *xsltComputingGlobalVarMarker =
  (const xmlChar *) " var/param being computed";
 
 #define XSLT_VAR_GLOBAL (1<<0)

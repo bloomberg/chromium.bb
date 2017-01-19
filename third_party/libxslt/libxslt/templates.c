@@ -63,6 +63,12 @@ xsltEvalXPathPredicate(xsltTransformContextPtr ctxt, xmlXPathCompExprPtr comp,
     xmlNodePtr oldInst;
     int oldProximityPosition, oldContextSize;
 
+    if ((ctxt == NULL) || (ctxt->inst == NULL)) {
+        xsltTransformError(ctxt, NULL, NULL,
+            "xsltEvalXPathPredicate: No context or instruction\n");
+        return(0);
+    }
+
     oldContextSize = ctxt->xpathCtxt->contextSize;
     oldProximityPosition = ctxt->xpathCtxt->proximityPosition;
     oldNsNr = ctxt->xpathCtxt->nsNr;
@@ -123,6 +129,12 @@ xsltEvalXPathStringNs(xsltTransformContextPtr ctxt, xmlXPathCompExprPtr comp,
     int	oldPos, oldSize;
     int oldNsNr;
     xmlNsPtr *oldNamespaces;
+
+    if ((ctxt == NULL) || (ctxt->inst == NULL)) {
+        xsltTransformError(ctxt, NULL, NULL,
+            "xsltEvalXPathStringNs: No context or instruction\n");
+        return(0);
+    }
 
     oldInst = ctxt->inst;
     oldNode = ctxt->node;

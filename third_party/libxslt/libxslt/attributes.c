@@ -742,9 +742,9 @@ xsltResolveStylesheetAttributeSet(xsltStylesheetPtr style) {
 /**
  * xsltAttribute:
  * @ctxt:  a XSLT process context
- * @node:  the current node in the source tree
+ * @contextNode:  the current node in the source tree
  * @inst:  the xsl:attribute element
- * @comp:  precomputed information
+ * @castedComp:  precomputed information
  *
  * Process the xslt attribute node on the source node
  */

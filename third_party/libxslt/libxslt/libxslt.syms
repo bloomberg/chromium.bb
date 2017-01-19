@@ -107,7 +107,7 @@ LIBXML2_1.0.11 {
   xsltFreeCompMatchList;
   xsltFreeTemplateHashes;
   xsltGetTemplate;
-  xsltMatchPattern;
+# xsltMatchPattern; removed in 1.0.12
   xsltTestCompMatchList;
 
 # preproc
@@ -210,6 +210,9 @@ LIBXML2_1.0.11 {
 
 # xslt
   xsltCleanupGlobals;
+
+  local:
+    *;
 } ;
 
 LIBXML2_1.0.12 {
@@ -307,7 +310,6 @@ LIBXML2_1.0.24 {
   xsltLibxmlVersion; # variable
   xsltLibxsltVersion; # variable
   xsltMaxDepth; # variable
-  xsltMaxVars; # variable
 
 # xsltInternals
   xsltParseStylesheetImportedDoc;
@@ -407,7 +409,7 @@ LIBXML2_1.1.18 {
     global:
 
 # xsltInternals
-  xsltConstNamespaceNameXSLT; # variable
+# xsltConstNamespaceNameXSLT; requires switch REFACTORED
   xsltExtensionInstructionResultFinalize;
   xsltExtensionInstructionResultRegister;
   xsltInitCtxtKey;
@@ -416,24 +418,24 @@ LIBXML2_1.1.18 {
   xsltInit;
 
 # xsltInternals
-  xsltParseAnyXSLTElem;
-  xsltParseSequenceConstructor;
-  xsltPointerListAddSize;
-  xsltPointerListClear;
-  xsltPointerListCreate;
-  xsltPointerListFree;
+# xsltParseAnyXSLTElem; requires switch REFACTORED
+# xsltParseSequenceConstructor; requires switch REFACTORED
+# xsltPointerListAddSize; requires switch REFACTORED
+# xsltPointerListClear; requires switch REFACTORED
+# xsltPointerListCreate; requires switch REFACTORED
+# xsltPointerListFree; requires switch REFACTORED
   xsltRegisterLocalRVT;
   xsltReleaseRVT;
-  xsltRestoreDocumentNamespaces;
+# xsltRestoreDocumentNamespaces; requires switch REFACTORED
 
 # extensions
-  xsltStyleStylesheetLevelGetExtData;
+# xsltStyleStylesheetLevelGetExtData; requires switch REFACTORED
 
 # xsltInternals
 # xsltTransStorageAdd; removed in 1.1.28
 # xsltTransStorageRemove; removed in 1.1.28
   xsltUninit;
-  xsltXSLTAttrMarker; # variable
+# xsltXSLTAttrMarker; requires switch REFACTORED
 } LIBXML2_1.1.9;
 
 LIBXML2_1.1.20 {
@@ -484,7 +486,17 @@ LIBXML2_1.1.27 {
 # xsltlocale
   xsltFreeLocales;
 
+# xslt
+  xsltMaxVars; # variable
+
 # xsltutils
   xsltXPathCompileFlags;
 } LIBXML2_1.1.26;
+
+LIBXML2_1.1.30 {
+    global:
+
+# xsltInternals
+  xsltFlagRVTs;
+} LIBXML2_1.1.27;
 

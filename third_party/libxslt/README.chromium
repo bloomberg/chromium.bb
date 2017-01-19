@@ -1,6 +1,6 @@
 Name: libxslt
 URL: http://xmlsoft.org/XSLT
-Version: 8345634c5482ca04293ae1862d52fa9dd764aeca
+Version: 96c9c644f30ed762735802a27784cc522cff1643
 Security Critical: yes
 License: MIT
 License File: Copyright
@@ -16,9 +16,6 @@ Modifications:
 - Apply patch contributed here:
   https://bugs.chromium.org/p/chromium/issues/detail?id=583171#c17
 
-- Apply patch contributed here:
-  https://crbug.com/619006
-
 To import a new version:
 
 On Linux, get the latest tar via libxml.org and extract and replace
@@ -28,7 +25,8 @@ remove .gitignore and archive it.
 mkdir linux && cd linux
 ../configure --without-debug --without-mem-debug --without-debugger --without-plugins --with-libxml-src=../../libxml/linux/ 
 
-Patch to not define HAVE_CLOCK_GETTIME.
+Patch to not define HAVE_CLOCK_GETTIME, HAVE_ASCTIME, HAVE_LOCALTIME
+or HAVE_MKTIME.
 
 Disable both branches of locale support in libxslt/xsltconfig.h. This
 file is shared between all platforms and there is no common locale
@@ -49,3 +47,6 @@ Remove:
   python/
   tests/
   vms/
+
+This roll was done using a script:
+<https://github.com/dominiccooney/blink-tools/blob/bb28df6/roll.py>

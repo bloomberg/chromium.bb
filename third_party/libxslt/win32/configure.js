@@ -424,7 +424,7 @@ if (buildIncPrefix == "")
 if (buildLibPrefix == "")
 	buildLibPrefix = "$(PREFIX)" + dirSep + "lib";
 if (buildSoPrefix == "")
-	buildSoPrefix = "$(PREFIX)" + dirSep + "lib";
+	buildSoPrefix = "$(PREFIX)" + dirSep + "bin";
 
 // Discover the version.
 discoverVersion();
