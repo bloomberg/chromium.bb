@@ -570,6 +570,11 @@ void MediaControls::stoppedCasting() {
 void MediaControls::defaultEventHandler(Event* event) {
   HTMLDivElement::defaultEventHandler(event);
 
+  // Do not handle events to not interfere with the rest of the page if no
+  // controls should be visible.
+  if (!mediaElement().shouldShowControls())
+    return;
+
   // Add IgnoreControlsHover to m_hideTimerBehaviorFlags when we see a touch
   // event, to allow the hide-timer to do the right thing when it fires.
   // FIXME: Preferably we would only do this when we're actually handling the
