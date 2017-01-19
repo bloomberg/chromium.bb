@@ -216,7 +216,7 @@ class CORE_EXPORT ResourceFetcher
   Member<HeapListHashSet<Member<Resource>>> m_preloads;
   Member<MHTMLArchive> m_archive;
 
-  Timer<ResourceFetcher> m_resourceTimingReportTimer;
+  TaskRunnerTimer<ResourceFetcher> m_resourceTimingReportTimer;
 
   using ResourceTimingInfoMap =
       HeapHashMap<Member<Resource>, std::unique_ptr<ResourceTimingInfo>>;

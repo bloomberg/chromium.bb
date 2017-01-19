@@ -248,14 +248,17 @@ static WebURLRequest::RequestContext requestContextFromType(
 ResourceFetcher::ResourceFetcher(FetchContext* newContext)
     : m_context(newContext),
       m_archive(context().isMainFrame() ? nullptr : context().archive()),
+      // loadingTaskRunner() is null in tests that use the null fetch context.
       m_resourceTimingReportTimer(
+          context().loadingTaskRunner()
+              ? context().loadingTaskRunner()
+              : Platform::current()->currentThread()->getWebTaskRunner(),
           this,
           &ResourceFetcher::resourceTimingReportTimerFired),
       m_autoLoadImages(true),
       m_imagesEnabled(true),
       m_allowStaleResources(false),
-      m_imageFetched(false) {
-}
+      m_imageFetched(false) {}
 
 ResourceFetcher::~ResourceFetcher() {}
 
