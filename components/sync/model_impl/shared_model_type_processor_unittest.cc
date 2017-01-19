@@ -71,7 +71,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   }
 
   void OnPendingCommitDataLoaded() {
-    DCHECK(!data_callback_.is_null());
+    ASSERT_TRUE(data_callback_);
     data_callback_.Run();
     data_callback_.Reset();
   }
@@ -88,6 +88,9 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     db_->set_model_type_state(model_type_state);
   }
 
+  // Expect a GetData call in the future and return its data immediately.
+  void ExpectSynchronousDataCallback() { synchronous_data_callback_ = true; }
+
   int merge_call_count() const { return merge_call_count_; }
 
   // FakeModelTypeSyncBridge overrides.
@@ -101,14 +104,20 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   }
 
   void GetData(StorageKeyList keys, DataCallback callback) override {
-    FakeModelTypeSyncBridge::GetData(
-        keys, base::Bind(&TestModelTypeSyncBridge::CaptureDataCallback,
-                         base::Unretained(this), callback));
+    if (synchronous_data_callback_) {
+      synchronous_data_callback_ = false;
+      FakeModelTypeSyncBridge::GetData(keys, callback);
+    } else {
+      FakeModelTypeSyncBridge::GetData(
+          keys, base::Bind(&TestModelTypeSyncBridge::CaptureDataCallback,
+                           base::Unretained(this), callback));
+    }
   }
 
   void CheckPostConditions() override {
     FakeModelTypeSyncBridge::CheckPostConditions();
-    DCHECK(data_callback_.is_null());
+    EXPECT_FALSE(synchronous_data_callback_);
+    EXPECT_FALSE(data_callback_);
   }
 
  private:
@@ -122,6 +131,10 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 
   // Stores the data callback between GetData() and OnPendingCommitDataLoaded().
   base::Closure data_callback_;
+
+  // Whether to return GetData results synchronously. Overrides the default
+  // callback capture behavior if set to true.
+  bool synchronous_data_callback_ = false;
 };
 
 }  // namespace
@@ -529,6 +542,25 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kHash1, kEmptySpecifics);
+}
+
+// Tests cases where pending data loads synchronously.
+TEST_F(SharedModelTypeProcessorTest, LoadPendingSynchronous) {
+  // Model, sync.
+  EntitySpecifics specifics1 = ResetStateWriteItem(kKey1, kValue1);
+  bridge()->ExpectSynchronousDataCallback();
+  InitializeToMetadataLoaded();
+  OnSyncStarting();
+  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kHash1, specifics1);
+
+  // Sync, model.
+  EntitySpecifics specifics2 = ResetStateWriteItem(kKey1, kValue1);
+  OnSyncStarting();
+  bridge()->ExpectSynchronousDataCallback();
+  InitializeToMetadataLoaded();
+  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kHash1, specifics2);
 }
 
 // This test covers race conditions during loading a pending delete. All cases
