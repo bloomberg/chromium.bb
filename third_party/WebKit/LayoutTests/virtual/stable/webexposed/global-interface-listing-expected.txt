@@ -3901,8 +3901,10 @@ interface PointerEvent : MouseEvent
     getter pointerId
     getter pointerType
     getter pressure
+    getter tangentialPressure
     getter tiltX
     getter tiltY
+    getter twist
     getter width
     method constructor
 interface PopStateEvent : Event

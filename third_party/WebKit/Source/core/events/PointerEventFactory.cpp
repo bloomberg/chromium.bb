@@ -129,6 +129,9 @@ void updateTouchPointerEventInit(const PlatformTouchPoint& touchPoint,
       getPointerEventPressure(touchPoint.force(), pointerEventInit->buttons()));
   pointerEventInit->setTiltX(touchPoint.pointerProperties().tiltX);
   pointerEventInit->setTiltY(touchPoint.pointerProperties().tiltY);
+  pointerEventInit->setTangentialPressure(
+      touchPoint.pointerProperties().tangentialPressure);
+  pointerEventInit->setTwist(touchPoint.pointerProperties().twist);
 }
 
 void updateMousePointerEventInit(const PlatformMouseEvent& mouseEvent,
@@ -159,6 +162,9 @@ void updateMousePointerEventInit(const PlatformMouseEvent& mouseEvent,
       mouseEvent.pointerProperties().force, pointerEventInit->buttons()));
   pointerEventInit->setTiltX(mouseEvent.pointerProperties().tiltX);
   pointerEventInit->setTiltY(mouseEvent.pointerProperties().tiltY);
+  pointerEventInit->setTangentialPressure(
+      mouseEvent.pointerProperties().tangentialPressure);
+  pointerEventInit->setTwist(mouseEvent.pointerProperties().twist);
 }
 
 }  // namespace
@@ -369,6 +375,8 @@ PointerEvent* PointerEventFactory::createPointerEventFrom(
   pointerEventInit.setPressure(pointerEvent->pressure());
   pointerEventInit.setTiltX(pointerEvent->tiltX());
   pointerEventInit.setTiltY(pointerEvent->tiltY());
+  pointerEventInit.setTangentialPressure(pointerEvent->tangentialPressure());
+  pointerEventInit.setTwist(pointerEvent->twist());
   pointerEventInit.setView(pointerEvent->view());
 
   setEventSpecificFields(pointerEventInit, type);

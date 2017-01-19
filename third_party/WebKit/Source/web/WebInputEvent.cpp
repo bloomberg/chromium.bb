@@ -49,7 +49,7 @@ struct SameSizeAsWebKeyboardEvent : public SameSizeAsWebInputEvent {
 };
 
 struct SameSizeAsWebMouseEvent : public SameSizeAsWebInputEvent {
-  int mouseData[15];
+  int mouseData[17];
 };
 
 struct SameSizeAsWebMouseWheelEvent : public SameSizeAsWebMouseEvent {

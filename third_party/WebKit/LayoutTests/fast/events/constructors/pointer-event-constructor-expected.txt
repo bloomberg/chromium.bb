@@ -74,6 +74,29 @@ PASS new PointerEvent('eventType', { tiltY: {abc:1} }).tiltY is 0
 PASS new PointerEvent('eventType', { tiltY: {} }).tiltY is 0
 PASS new PointerEvent('eventType', { tiltY: {valueOf: function () { return 123; }} }).tiltY is 123
 -- no init --
+PASS new PointerEvent('eventType').twist is 0
+-- init with valid long values --
+PASS new PointerEvent('eventType', { twist: 0 }).twist is 0
+PASS new PointerEvent('eventType', { twist: 123 }).twist is 123
+PASS new PointerEvent('eventType', { twist: -123 }).twist is -123
+PASS new PointerEvent('eventType', { twist: 2147483647 }).twist is 2147483647
+PASS new PointerEvent('eventType', { twist: -2147483648 }).twist is -2147483648
+-- init with non-long values --
+PASS new PointerEvent('eventType', { twist: 18446744073709551615 }).twist is 0
+PASS new PointerEvent('eventType', {twist: 123.45 }).twist is 123
+PASS new PointerEvent('eventType', { twist: '123abc' }).twist is 0
+PASS new PointerEvent('eventType', { twist: 'dummy' }).twist is 0
+PASS new PointerEvent('eventType', { twist: NaN }).twist is 0
+PASS new PointerEvent('eventType', { twist: null }).twist is 0
+PASS new PointerEvent('eventType', { twist: undefined }).twist is 0
+PASS new PointerEvent('eventType', { twist: [] }).twist is 0
+PASS new PointerEvent('eventType', { twist: [12] }).twist is 12
+PASS new PointerEvent('eventType', { twist: [12, 34] }).twist is 0
+PASS new PointerEvent('eventType', { twist: {} }).twist is 0
+PASS new PointerEvent('eventType', { twist: {abc:1} }).twist is 0
+PASS new PointerEvent('eventType', { twist: {} }).twist is 0
+PASS new PointerEvent('eventType', { twist: {valueOf: function () { return 123; }} }).twist is 123
+-- no init --
 PASS new PointerEvent('eventType').width is 1
 -- init with valid float/double values --
 PASS new PointerEvent('eventType', { width: 0 }).width is 0
@@ -148,6 +171,31 @@ PASS new PointerEvent('eventType', { pressure: {} }).pressure threw exception Ty
 PASS new PointerEvent('eventType', { pressure: {abc:1} }).pressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
 PASS new PointerEvent('eventType', { pressure: {} }).pressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
 PASS new PointerEvent('eventType', { pressure: {valueOf: function () { return 123; }} }).pressure is 123
+-- no init --
+PASS new PointerEvent('eventType').tangentialPressure is 0
+-- init with valid float/double values --
+PASS new PointerEvent('eventType', { tangentialPressure: 0 }).tangentialPressure is 0
+PASS new PointerEvent('eventType', { tangentialPressure: 123 }).tangentialPressure is 123
+PASS new PointerEvent('eventType', { tangentialPressure: -123 }).tangentialPressure is -123
+PASS new PointerEvent('eventType', { tangentialPressure: 123.45 }).tangentialPressure is within 0.00001 of 123.45
+PASS new PointerEvent('eventType', { tangentialPressure: -123.45 }).tangentialPressure is within 0.00001 of -123.45
+PASS new PointerEvent('eventType', { tangentialPressure: 1.23e5 }).tangentialPressure is within 0.00001 of 123000
+PASS new PointerEvent('eventType', { tangentialPressure: -1.2e-3 }).tangentialPressure is within 0.00001 of -0.0012
+PASS new PointerEvent('eventType', { tangentialPressure: 16777215 }).tangentialPressure is 16777215
+PASS new PointerEvent('eventType', { tangentialPressure: -16777216 }).tangentialPressure is -16777216
+-- init with non-float/double values --
+PASS new PointerEvent('eventType', { tangentialPressure: '123abc' }).tangentialPressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
+PASS new PointerEvent('eventType', { tangentialPressure: 'dummy' }).tangentialPressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
+PASS new PointerEvent('eventType', { tangentialPressure: NaN }).tangentialPressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
+PASS new PointerEvent('eventType', { tangentialPressure: null }).tangentialPressure is 0
+PASS new PointerEvent('eventType', { tangentialPressure: undefined }).tangentialPressure is 0
+PASS new PointerEvent('eventType', { tangentialPressure: [] }).tangentialPressure is 0
+PASS new PointerEvent('eventType', { tangentialPressure: [12] }).tangentialPressure is 12
+PASS new PointerEvent('eventType', { tangentialPressure: [12, 34] }).tangentialPressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
+PASS new PointerEvent('eventType', { tangentialPressure: {} }).tangentialPressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
+PASS new PointerEvent('eventType', { tangentialPressure: {abc:1} }).tangentialPressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
+PASS new PointerEvent('eventType', { tangentialPressure: {} }).tangentialPressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
+PASS new PointerEvent('eventType', { tangentialPressure: {valueOf: function () { return 123; }} }).tangentialPressure is 123
 -- no init --
 PASS new PointerEvent('eventType').screenX is 0
 -- init with valid float/double values --

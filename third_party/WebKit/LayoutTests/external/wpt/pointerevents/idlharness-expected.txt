@@ -58,10 +58,10 @@ PASS PointerEvent interface: attribute pointerId
 PASS PointerEvent interface: attribute width 
 PASS PointerEvent interface: attribute height 
 PASS PointerEvent interface: attribute pressure 
-FAIL PointerEvent interface: attribute tangentialPressure assert_true: The prototype object must have a property "tangentialPressure" expected true got false
+PASS PointerEvent interface: attribute tangentialPressure 
 PASS PointerEvent interface: attribute tiltX 
 PASS PointerEvent interface: attribute tiltY 
-FAIL PointerEvent interface: attribute twist assert_true: The prototype object must have a property "twist" expected true got false
+PASS PointerEvent interface: attribute twist 
 PASS PointerEvent interface: attribute pointerType 
 PASS PointerEvent interface: attribute isPrimary 
 Harness: the test ran to completion.

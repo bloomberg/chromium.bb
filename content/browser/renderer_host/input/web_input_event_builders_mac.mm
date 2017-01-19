@@ -344,6 +344,14 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
     NSPoint tilt = [event tilt];
     result.tiltX = lround(tilt.x * 90);
     result.tiltY = lround(tilt.y * 90);
+    result.tangentialPressure = [event tangentialPressure];
+    // NSEvent spec doesn't specify the range of rotation, we make sure that
+    // this value is in the range of [0,359].
+    int twist = (int)[event rotation];
+    twist = twist % 360;
+    if (twist < 0)
+      twist += 360;
+    result.twist = twist;
   }
   return result;
 }

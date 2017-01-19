@@ -22,6 +22,8 @@ class WebPointerProperties {
         force(std::numeric_limits<float>::quiet_NaN()),
         tiltX(0),
         tiltY(0),
+        tangentialPressure(0.0f),
+        twist(0),
         button(Button::NoButton),
         pointerType(PointerType::Unknown) {}
 
@@ -57,6 +59,16 @@ class WebPointerProperties {
   // tiltY is towards the user.
   int tiltX;
   int tiltY;
+
+  // The normalized tangential pressure (or barrel pressure), typically set by
+  // an additional control of the stylus, which has a range of [-1,1], where 0
+  // is the neutral position of the control. Always 0 if the device does not
+  // support it.
+  float tangentialPressure;
+
+  // The clockwise rotation of a pen stylus around its own major axis, in
+  // degrees in the range [0,359]. Always 0 if the device does not support it.
+  int twist;
 
   Button button;
   PointerType pointerType;

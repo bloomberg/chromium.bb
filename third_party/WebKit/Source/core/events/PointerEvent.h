@@ -26,6 +26,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   float pressure() const { return m_pressure; }
   long tiltX() const { return m_tiltX; }
   long tiltY() const { return m_tiltY; }
+  float tangentialPressure() const { return m_tangentialPressure; }
+  long twist() const { return m_twist; }
   const String& pointerType() const { return m_pointerType; }
   bool isPrimary() const { return m_isPrimary; }
 
@@ -48,6 +50,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   float m_pressure;
   long m_tiltX;
   long m_tiltY;
+  float m_tangentialPressure;
+  long m_twist;
   String m_pointerType;
   bool m_isPrimary;
 

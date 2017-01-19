@@ -14,6 +14,8 @@
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute float     pressure;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      tiltX;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      tiltY;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute float     tangentialPressure;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      twist;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute DOMString pointerType;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute boolean   isPrimary;
 

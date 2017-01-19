@@ -7,7 +7,7 @@ description("This tests the constructor for the PointerEvent DOM class.");
 
 debug("--- tests for intrinsic attributes plus screen & client coordinates ---");
 
-["pointerId", "tiltX", "tiltY"].forEach(function (attr) {
+["pointerId", "tiltX", "tiltY", "twist"].forEach(function (attr) {
   debug("-- no init --");
   shouldBeZero("new PointerEvent('eventType')." + attr);
 
@@ -35,7 +35,7 @@ debug("--- tests for intrinsic attributes plus screen & client coordinates ---")
   shouldBeEqualToNumber("new PointerEvent('eventType', { " + attr + ": {valueOf: function () { return 123; }} })." + attr, 123);
 });
 
-["width", "height", "pressure", "screenX", "screenY", "clientX", "clientY"].forEach(function (attr) {
+["width", "height", "pressure", "tangentialPressure", "screenX", "screenY", "clientX", "clientY"].forEach(function (attr) {
   debug("-- no init --");
   var defaultValue = (attr == "width" || attr == "height") ? 1 : 0;
   shouldBeEqualToNumber("new PointerEvent('eventType')." + attr, defaultValue);
