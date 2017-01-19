@@ -18,7 +18,13 @@ CertificateManagerDialogWebUITest.prototype = {
   browsePreload: 'chrome://certificate-manager/',
 };
 
+// crbug.com/682497
+GEN('#if defined(ADDRESS_SANITIZER)');
+GEN('#define MAYBE_Basic DISABLED_Basic');
+GEN('#else');
+GEN('#define MAYBE_Basic Basic');
+GEN('#endif');
 // Sanity test of the WebUI could be opened with no errors.
-TEST_F('CertificateManagerDialogWebUITest', 'Basic', function() {
+TEST_F('CertificateManagerDialogWebUITest', 'MAYBE_Basic', function() {
   assertEquals(this.browsePreload, document.location.href);
 });
