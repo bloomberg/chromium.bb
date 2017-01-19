@@ -5,12 +5,14 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/message_port_message_filter.h"
@@ -45,14 +47,14 @@ class MockMessagePortMessageFilter : public MessagePortMessageFilter {
                        base::Unretained(&next_routing_id_))) {}
 
   bool Send(IPC::Message* message) override {
-    message_queue_.push_back(message);
+    message_queue_.push_back(base::WrapUnique(message));
     return true;
   }
 
  private:
   ~MockMessagePortMessageFilter() override {}
   base::AtomicSequenceNumber next_routing_id_;
-  ScopedVector<IPC::Message> message_queue_;
+  std::vector<std::unique_ptr<IPC::Message>> message_queue_;
 };
 
 }  // namespace
