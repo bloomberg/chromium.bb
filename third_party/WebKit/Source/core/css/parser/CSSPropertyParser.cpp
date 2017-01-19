@@ -1221,33 +1221,6 @@ static CSSValue* consumeTextDecorationLine(CSSParserTokenRange& range) {
   return list;
 }
 
-// none | strict | content | [ layout || style || paint || size ]
-static CSSValue* consumeContain(CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueNone)
-    return consumeIdent(range);
-
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (id == CSSValueStrict || id == CSSValueContent) {
-    list->append(*consumeIdent(range));
-    return list;
-  }
-  while (true) {
-    CSSIdentifierValue* ident =
-        consumeIdent<CSSValuePaint, CSSValueLayout, CSSValueStyle,
-                     CSSValueSize>(range);
-    if (!ident)
-      break;
-    if (list->hasValue(*ident))
-      return nullptr;
-    list->append(*ident);
-  }
-
-  if (!list->length())
-    return nullptr;
-  return list;
-}
-
 static CSSValue* consumePath(CSSParserTokenRange& range) {
   // FIXME: Add support for <url>, <basic-shape>, <geometry-box>.
   if (range.peek().functionId() != CSSValuePath)
@@ -3178,8 +3151,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeRxOrRy(m_range);
     case CSSPropertyCursor:
       return consumeCursor(m_range, m_context, inQuirksMode());
-    case CSSPropertyContain:
-      return consumeContain(m_range);
     case CSSPropertyContent:
       return consumeContent(m_range, m_context);
     case CSSPropertyListStyleImage:

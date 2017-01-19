@@ -246,7 +246,7 @@ color-interpolation inherited, svg
 color-interpolation-filters inherited, svg, type_name=EColorInterpolation
 color-rendering inherited, svg
 column-fill type_name=ColumnFill
-contain runtime_flag=CSSContainment, converter=convertFlags<Containment>
+contain runtime_flag=CSSContainment, converter=convertFlags<Containment>, api_class
 content custom_all, typedom_types=[Image], repeated
 counter-increment custom_all
 counter-reset custom_all
