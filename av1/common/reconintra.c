@@ -347,7 +347,7 @@ static const uint16_t orders_verta_16x16[64] = {
   32, 34, 36, 38, 48, 50, 52, 54, 33, 34, 37, 38, 49, 50, 53, 54,
   40, 42, 44, 46, 56, 58, 60, 62, 41, 42, 45, 46, 57, 58, 61, 62,
 };
-#if CONFIG_EXT_PARTITION
+#if CONFIG_EXT_PARTITION || CONFIG_CB4X4
 static const uint16_t orders_verta_8x8[256] = {
   0,   2,   4,   6,   16,  18,  20,  22,  64,  66,  68,  70,  80,  82,  84,
   86,  1,   2,   5,   6,   17,  18,  21,  22,  65,  66,  69,  70,  81,  82,
@@ -368,7 +368,9 @@ static const uint16_t orders_verta_8x8[256] = {
   169, 170, 173, 174, 185, 186, 189, 190, 233, 234, 237, 238, 249, 250, 253,
   254,
 };
+#endif  // CONFIG_EXT_PARTITION || CONFIG_CB4X4
 
+#if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
   //                                  4X4
@@ -388,10 +390,19 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 #else
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  // 2X2,             2X4,                4X2
+  orders_verta_8x8,   orders_verta_8x8,   orders_verta_8x8,
+  //                                      4X4
+                                          orders_verta_8x8,
+  // 4X8,             8X4,                8X8
+  orders_verta_8x8,   orders_verta_8x8,   orders_verta_16x16,
+#else
   //                                      4X4
                                           orders_verta_16x16,
   // 4X8,             8X4,                8X8
   orders_verta_16x16, orders_verta_16x16, orders_verta_16x16,
+#endif
   // 8X16,            16X8,               16X16
   orders_16x32,       orders_32x16,       orders_verta_32x32,
   // 16X32,           32X16,              32X32
@@ -432,6 +443,7 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
     const int hl = mi_height_log2_lookup[bsize];
     const uint16_t *order;
     int my_order, tr_order;
+
 #if CONFIG_EXT_PARTITION_TYPES
     if (partition == PARTITION_VERT_A)
       order = orders_verta[bsize];
