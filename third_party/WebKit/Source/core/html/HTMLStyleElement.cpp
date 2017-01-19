@@ -117,7 +117,9 @@ void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(
   if (m_firedLoad && isLoadEvent)
     return;
   m_loadedSheet = isLoadEvent;
-  TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
+  // TODO(hiroshige): Use DOMManipulation task runner. Unthrottled
+  // is temporarily used for fixing https://crbug.com/649942 only on M-56.
+  TaskRunnerHelper::get(TaskType::Unthrottled, &document())
       ->postTask(
           BLINK_FROM_HERE,
           WTF::bind(
