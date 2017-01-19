@@ -193,4 +193,4 @@ bool IsOpeningNewWindow();
 
 }  // namespace app_controller_mac
 
-#endif
+#endif  // CHROME_BROWSER_APP_CONTROLLER_MAC_H_

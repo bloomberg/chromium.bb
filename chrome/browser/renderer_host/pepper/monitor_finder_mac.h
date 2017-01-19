@@ -49,4 +49,4 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_PEPPER_MONITOR_FINDER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_PEPPER_MONITOR_FINDER_MAC_H_

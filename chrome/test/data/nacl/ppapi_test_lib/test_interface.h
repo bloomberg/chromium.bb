@@ -37,8 +37,8 @@
 //   }
 //
 
-#ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H
-#define NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H
+#ifndef CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_TEST_INTERFACE_H_
+#define CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_TEST_INTERFACE_H_
 
 #include <stdint.h>
 #include <stdio.h>
@@ -222,4 +222,4 @@ bool IsImageRectOnScreen(PP_Resource graphics2d,
                          PP_Size size,
                          ColorPremul color);
 
-#endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H
+#endif  // CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_TEST_INTERFACE_H_

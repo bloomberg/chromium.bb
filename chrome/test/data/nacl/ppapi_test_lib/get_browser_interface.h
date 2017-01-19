@@ -5,8 +5,8 @@
 // Defines helper functions for all interfaces supported by the Native Client
 // proxy.
 
-#ifndef PPAPI_NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
-#define PPAPI_NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
+#ifndef CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
+#define CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
 
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/ppb_audio.h"
@@ -79,4 +79,4 @@ const PPB_Memory_Dev* PPBMemoryDev();
 
 const PPB_Testing_Private* PPBTestingPrivate();
 
-#endif  // PPAPI_NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_
+#endif  // CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_GET_BROWSER_INTERFACE_H_

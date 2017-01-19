@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_WIN_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_WIN_H_
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_UTIL_WIN_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_UTIL_WIN_H_
 
 #include "ui/gfx/native_widget_types.h"
 
@@ -22,4 +22,4 @@ void DelayReportOsPassword();
 
 }  // namespace password_manager_util_win
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_WIN_H_
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_UTIL_WIN_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SAFE_BROWSING_SIGNATURE_EVALUATOR_MAC_H_
-#define CHROME_COMMON_SAFE_BROWSING_SIGNATURE_EVALUATOR_MAC_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_SIGNATURE_EVALUATOR_MAC_H_
+#define CHROME_BROWSER_SAFE_BROWSING_SIGNATURE_EVALUATOR_MAC_H_
 
 #include <Security/Security.h>
 
@@ -68,4 +68,4 @@ class MacSignatureEvaluator {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_COMMON_SAFE_BROWSING_SIGNATURE_EVALUATOR_MAC_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_SIGNATURE_EVALUATOR_MAC_H_

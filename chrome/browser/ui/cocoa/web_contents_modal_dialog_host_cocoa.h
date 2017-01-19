@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_DIALOG_HOST_COCOA_H_
-#define CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_DIALOG_HOST_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_MODAL_DIALOG_HOST_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_MODAL_DIALOG_HOST_COCOA_H_
 
 #include "base/macros.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -34,4 +34,4 @@ class WebContentsModalDialogHostCocoa
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogHostCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_DIALOG_HOST_COCOA_H_
+#endif  // CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_MODAL_DIALOG_HOST_COCOA_H_

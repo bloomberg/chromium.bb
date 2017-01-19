@@ -4,8 +4,8 @@
 //
 // This is an internal header. Do not include in your test implementation.
 
-#ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_INTERNAL_UTILS_H
-#define NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_INTERNAL_UTILS_H
+#ifndef CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_INTERNAL_UTILS_H_
+#define CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_INTERNAL_UTILS_H_
 
 #include "native_client/src/include/nacl_string.h"
 
@@ -28,4 +28,4 @@ bool HasScriptableTest(nacl::string test_name);
 PP_Var RunScriptableTest(nacl::string test_name);
 
 void RunTest(nacl::string test_name);
-#endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_INTERNAL_UTILS_H
+#endif  // CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_INTERNAL_UTILS_H_

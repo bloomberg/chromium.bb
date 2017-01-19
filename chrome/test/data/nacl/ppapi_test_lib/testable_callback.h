@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_TESTABLE_CALLBACK_H
-#define NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_TESTABLE_CALLBACK_H
+#ifndef CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_TESTABLE_CALLBACK_H_
+#define CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_TESTABLE_CALLBACK_H_
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -62,4 +62,4 @@ class TestableCallback {
   PP_Instance instance_;
 };
 
-#endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_TESTABLE_CALLBACK_H
+#endif  // CHROME_TEST_DATA_NACL_PPAPI_TEST_LIB_TESTABLE_CALLBACK_H_
