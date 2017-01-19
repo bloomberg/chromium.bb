@@ -8,7 +8,7 @@ namespace arc {
 
 // Controls if Arc should use silent auth code request API.
 const base::Feature kArcUseAuthEndpointFeature {
-    "ArcUseAuthEndpoint", base::FEATURE_DISABLED_BY_DEFAULT
+    "ArcUseAuthEndpoint", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
