@@ -1566,10 +1566,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(
          switches::kSyncServiceURL,
          "https://chrome-sync.sandbox.google.com/chrome-sync/alpha")},
-    {"v8-pac-mojo-out-of-process", IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_NAME,
-     IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_DESCRIPTION, kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kV8PacMojoOutOfProcess,
-                               switches::kDisableOutOfProcessPac)},
 #if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
     {"load-media-router-component-extension",
      IDS_FLAGS_LOAD_MEDIA_ROUTER_COMPONENT_EXTENSION_NAME,

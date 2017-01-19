@@ -39,20 +39,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-#if !defined(OS_ANDROID)
-bool EnableOutOfProcessV8Pac(const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kDisableOutOfProcessPac))
-    return false;
-  if (command_line.HasSwitch(switches::kV8PacMojoOutOfProcess))
-    return true;
-  return true;
-}
-#endif  // !defined(OS_ANDROID)
-
-}  // namespace
-
 // static
 std::unique_ptr<net::ProxyConfigService>
 ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
@@ -159,23 +145,19 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
 #endif
 
 #if !defined(OS_ANDROID)
-    if (EnableOutOfProcessV8Pac(command_line)) {
-      proxy_service = net::CreateProxyServiceUsingMojoFactory(
-          UtilityProcessMojoProxyResolverFactory::GetInstance(),
-          std::move(proxy_config_service),
-          new net::ProxyScriptFetcherImpl(context),
-          std::move(dhcp_proxy_script_fetcher), context->host_resolver(),
-          net_log, network_delegate);
-    }
+    proxy_service = net::CreateProxyServiceUsingMojoFactory(
+        UtilityProcessMojoProxyResolverFactory::GetInstance(),
+        std::move(proxy_config_service),
+        new net::ProxyScriptFetcherImpl(context),
+        std::move(dhcp_proxy_script_fetcher), context->host_resolver(), net_log,
+        network_delegate);
+#else
+    proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
+        std::move(proxy_config_service),
+        new net::ProxyScriptFetcherImpl(context),
+        std::move(dhcp_proxy_script_fetcher), context->host_resolver(), net_log,
+        network_delegate);
 #endif  // !defined(OS_ANDROID)
-
-    if (!proxy_service) {
-      proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
-          std::move(proxy_config_service),
-          new net::ProxyScriptFetcherImpl(context),
-          std::move(dhcp_proxy_script_fetcher), context->host_resolver(),
-          net_log, network_delegate);
-    }
   } else {
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(
         std::move(proxy_config_service), num_pac_threads, net_log);

@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(DataProxyScriptBrowserTest, Verify) {
   VerifyProxyScript(browser());
 }
 
-// Fetch PAC script via a data: URL and run out-of-process using Mojo.
+// Fetch PAC script via a data: URL.
 class OutOfProcessProxyResolverBrowserTest : public InProcessBrowserTest {
  public:
   OutOfProcessProxyResolverBrowserTest() {}
@@ -264,7 +264,6 @@ class OutOfProcessProxyResolverBrowserTest : public InProcessBrowserTest {
         &contents));
     command_line->AppendSwitchASCII(
         switches::kProxyPacUrl, "data:," + contents);
-    command_line->AppendSwitch(switches::kV8PacMojoOutOfProcess);
   }
 
  private:

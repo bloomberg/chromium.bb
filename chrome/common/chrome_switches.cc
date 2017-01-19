@@ -250,9 +250,6 @@ const char kDisableOfflineAutoReload[]      = "disable-offline-auto-reload";
 const char kDisableOfflineAutoReloadVisibleOnly[] =
     "disable-offline-auto-reload-visible-only";
 
-// Disable out-of-process V8 proxy resolver.
-const char kDisableOutOfProcessPac[]        = "disable-out-of-process-pac";
-
 // Disables permission action reporting to Safe Browsing servers for opted in
 // users.
 const char kDisablePermissionActionReporting[] =
@@ -866,9 +863,6 @@ const char kUserDataDir[]                   = "user-data-dir";
 
 // Uses experimental simple cache backend if possible.
 const char kUseSimpleCacheBackend[]         = "use-simple-cache-backend";
-
-// Enables using an out-of-process Mojo service for the v8 proxy resolver.
-const char kV8PacMojoOutOfProcess[] = "v8-pac-mojo-out-of-process";
 
 // Examines a .crx for validity and prints the result.
 const char kValidateCrx[]                   = "validate-crx";

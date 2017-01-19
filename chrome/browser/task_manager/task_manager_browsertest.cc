@@ -166,9 +166,8 @@ class TaskManagerUtilityProcessBrowserTest : public TaskManagerBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     TaskManagerBrowserTest::SetUpCommandLine(command_line);
 
-    // Enable out-of-process proxy resolver. Use a trivial PAC script to ensure
-    // that some javascript is being executed.
-    command_line->AppendSwitch(switches::kV8PacMojoOutOfProcess);
+    // Use a trivial PAC script to ensure that some javascript is being
+    // executed.
     command_line->AppendSwitchASCII(
         switches::kProxyPacUrl,
         "data:,function FindProxyForURL(url, host){return \"DIRECT;\";}");
