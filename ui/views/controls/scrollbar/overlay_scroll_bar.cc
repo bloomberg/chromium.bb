@@ -149,15 +149,8 @@ void OverlayScrollBar::Layout() {
   thumb->SetBoundsRect(thumb_bounds);
 }
 
-bool OverlayScrollBar::CanAcceptEvent(const ui::Event& event) {
-  return layer()->opacity() > 0 && BaseScrollBar::CanAcceptEvent(event);
-}
-
 void OverlayScrollBar::OnMouseEntered(const ui::MouseEvent& event) {
-  // Note that events are only accepted when the scrollbar is already visible
-  // (due to a change in the scroll value). Don't let the scrollbar vanish from
-  // under the mouse pointer.
-  hide_timer_.Stop();
+  Show();
 }
 
 void OverlayScrollBar::OnMouseExited(const ui::MouseEvent& event) {

@@ -27,7 +27,6 @@ class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
 
   // View overrides:
   void Layout() override;
-  bool CanAcceptEvent(const ui::Event& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 
