@@ -148,6 +148,8 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
             profile_, extension_misc::EXTENSION_ICON_SMALL, this);
     app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
   }
+
+  SetShelfBehaviorsFromPrefs();
 }
 
 void ChromeLauncherController::OnShelfCreated(int64_t display_id) {

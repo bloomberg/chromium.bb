@@ -604,8 +604,8 @@ void ChromeLauncherControllerImpl::ActiveUserChanged(
   for (auto& controller : app_window_controllers_)
     controller->ActiveUserChanged(user_email);
   // Update the user specific shell properties from the new user profile.
+  // Shelf preferences are loaded in ChromeLauncherController::AttachProfile.
   UpdateAppLaunchersFromPref();
-  SetShelfBehaviorsFromPrefs();
   SetVirtualKeyboardBehaviorFromPrefs();
 
   // Restore the order of running, but unpinned applications for the activated
