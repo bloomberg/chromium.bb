@@ -336,7 +336,6 @@ test("headless_browsertests") {
     "//net/tools/testserver/",
     "//third_party/pyftpdlib/",
     "//third_party/pywebsocket/",
-    "//third_party/skia/",
     "//third_party/tlslite/",
     "test/data/",
   ]

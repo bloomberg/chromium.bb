@@ -267,6 +267,10 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 }
 
 static bool ShouldCreateGpuCompositorFrameSink(ui::Compositor* compositor) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kHeadless))
+    return false;
+
 #if defined(OS_CHROMEOS)
   // Software fallback does not happen on Chrome OS.
   return true;

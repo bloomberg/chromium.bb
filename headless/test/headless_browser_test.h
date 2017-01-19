@@ -94,10 +94,6 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
   IN_PROC_BROWSER_TEST_F(TEST_FIXTURE_NAME, RunAsyncTest) { RunTest(); } \
   class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
 
-#define HEADLESS_ASYNC_DEVTOOLED_TEST_P(TEST_FIXTURE_NAME)               \
-  IN_PROC_BROWSER_TEST_P(TEST_FIXTURE_NAME, RunAsyncTest) { RunTest(); } \
-  class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
-
 // Base class for tests that require access to a DevToolsClient. Subclasses
 // should override the RunDevTooledTest() method, which is called asynchronously
 // when the DevToolsClient is ready.
