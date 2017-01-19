@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -230,12 +229,6 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
             context.startActivity(chromeIntent);
             activityStarted = true;
         }
-    }
-
-    @Override
-    public void onSavePageLater(String linkUrl) {
-        OfflinePageBridge.getForProfile(mTab.getProfile())
-                .savePageLater(linkUrl, "async_loading", true /* userRequested */);
     }
 
     /**

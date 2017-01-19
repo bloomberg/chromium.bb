@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageNotificationBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -186,6 +187,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     }
 
     private void saveUrlForOffline(String url) {
+        OfflinePageNotificationBridge.showDownloadingToast(mActivity);
         OfflinePageBridge.getForProfile(mProfile).savePageLater(
                 url, "ntp_suggestions", true /* userRequested */);
     }
