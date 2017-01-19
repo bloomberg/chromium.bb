@@ -87,7 +87,10 @@ TabletPowerButtonController::TabletPowerButtonController(
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   WmShell::Get()->AddShellObserver(this);
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  // TODO(mash): Provide a way for this class to observe stylus events:
+  // http://crbug.com/682460
+  if (ui::InputDeviceManager::HasInstance())
+    ui::InputDeviceManager::GetInstance()->AddObserver(this);
   Shell::GetInstance()->PrependPreTargetHandler(this);
 
   GetInitialBacklightsForcedOff();
@@ -95,7 +98,8 @@ TabletPowerButtonController::TabletPowerButtonController(
 
 TabletPowerButtonController::~TabletPowerButtonController() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  if (ui::InputDeviceManager::HasInstance())
+    ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
