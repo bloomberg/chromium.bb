@@ -71,7 +71,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   }
 
   Position GetPositionInDisplay(const gfx::Point& point) {
-    const gfx::Rect& work_area =
+    const gfx::Rect work_area =
         display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
     const gfx::Point center_point = work_area.CenterPoint();
     if (work_area.x() > point.x() || work_area.y() > point.y() ||

@@ -331,9 +331,9 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
   EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
-  const gfx::Rect& kWorkAreaBoundsInScreen =
+  const gfx::Rect work_area_bounds_in_screen =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  generator.MoveMouseTo(kWorkAreaBoundsInScreen.bottom_left());
+  generator.MoveMouseTo(work_area_bounds_in_screen.bottom_left());
 
   // None of the buttons should be pressed because we are really far away from
   // any of the caption buttons. The minimize and close button icons should
@@ -382,9 +382,9 @@ TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
   // Moving the mouse far away from the caption buttons and then moving it over
   // the close button (snap right button) should hover the close button and
   // keep the size button pressed.
-  const gfx::Rect& kWorkAreaBoundsInScreen =
+  const gfx::Rect work_area_bounds_in_screen =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  generator.MoveMouseTo(kWorkAreaBoundsInScreen.bottom_left());
+  generator.MoveMouseTo(work_area_bounds_in_screen.bottom_left());
   EXPECT_TRUE(AllButtonsInNormalState());
   generator.MoveMouseTo(CenterPointInScreen(close_button()));
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
