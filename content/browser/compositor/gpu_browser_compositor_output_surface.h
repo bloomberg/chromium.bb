@@ -40,7 +40,8 @@ class GpuBrowserCompositorOutputSurface
       scoped_refptr<ui::ContextProviderCommandBuffer> context,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
-          overlay_candidate_validator);
+          overlay_candidate_validator,
+      bool support_stencil);
 
   ~GpuBrowserCompositorOutputSurface() override;
 

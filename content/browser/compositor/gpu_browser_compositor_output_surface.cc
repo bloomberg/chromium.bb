@@ -24,7 +24,8 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     scoped_refptr<ui::ContextProviderCommandBuffer> context,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
-        overlay_candidate_validator)
+        overlay_candidate_validator,
+    bool support_stencil)
     : BrowserCompositorOutputSurface(std::move(context),
                                      update_vsync_parameters_callback,
                                      std::move(overlay_candidate_validator)),
@@ -33,6 +34,9 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     capabilities_.flipped_output_surface =
         context_provider()->ContextCapabilities().flips_vertically;
   }
+  // TODO(reveman): Check context as there's no guarantee we support this
+  // even if we request it.
+  capabilities_.supports_stencil = support_stencil;
 }
 
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {

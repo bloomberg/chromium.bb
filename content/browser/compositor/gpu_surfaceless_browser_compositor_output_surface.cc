@@ -31,11 +31,11 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         update_vsync_parameters_callback,
-                                        std::move(overlay_candidate_validator)),
+                                        std::move(overlay_candidate_validator),
+                                        true  /* support_stencil */),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
-  capabilities_.supports_stencil = true;
   // Set |max_frames_pending| to 2 for surfaceless, which aligns scheduling
   // more closely with the previous surfaced behavior.
   // With a surface, swap buffer ack used to return early, before actually

@@ -111,6 +111,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextCommon(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::SurfaceHandle surface_handle,
     bool need_alpha_channel,
+    bool need_stencil_bits,
     bool support_locking,
     ui::ContextProviderCommandBuffer* shared_context_provider,
     ui::command_buffer_metrics::ContextType type) {
@@ -129,14 +130,13 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextCommon(
   //
   // The default framebuffer for an offscreen context is not used, so it does
   // not need alpha, stencil, depth, antialiasing. The display compositor does
-  // not use these things either, so we can request nothing here.
-  // The display compositor does not use these things either (except for alpha
-  // when using mus for non-opaque ui that overlaps the system's window
-  // borders), so we can request only that when needed.
+  // not use these things either (except for alpha when using mus for
+  // non-opaque ui that overlaps the system's window borders or stencil bits
+  // for overdraw feedback), so we can request only that when needed.
   gpu::gles2::ContextCreationAttribHelper attributes;
   attributes.alpha_size = need_alpha_channel ? 8 : -1;
   attributes.depth_size = 0;
-  attributes.stencil_size = 0;
+  attributes.stencil_size = need_stencil_bits ? 8 : 0;
   attributes.samples = 0;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
@@ -347,6 +347,16 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     create_gpu_output_surface = false;
   }
 
+  bool support_stencil = false;
+#if defined(OS_CHROMEOS)
+  // ChromeOS uses surfaceless when running on a real device and stencil
+  // buffers can then be added dynamically so supporting them does not have an
+  // impact on normal usage. If we are not running on a real ChromeOS device
+  // but instead on a workstation for development, then stencil support is
+  // useful as it allows the overdraw feedback debugging feature to be used.
+  support_stencil = true;
+#endif
+
 #if defined(OS_WIN)
   gfx::RenderingWindowManager::GetInstance()->RegisterParent(
       compositor->widget());
@@ -382,7 +392,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         const bool support_locking = true;
         shared_worker_context_provider_ = CreateContextCommon(
             gpu_channel_host, gpu::kNullSurfaceHandle, need_alpha_channel,
-            support_locking, nullptr,
+            false /* support_stencil */, support_locking, nullptr,
             ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
         // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
         // fixed. Tracking time in BindToCurrentThread.
@@ -409,7 +419,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         bool support_locking = false;
         context_provider = CreateContextCommon(
             std::move(gpu_channel_host), surface_handle, need_alpha_channel,
-            support_locking, shared_worker_context_provider_.get(),
+            support_stencil, support_locking,
+            shared_worker_context_provider_.get(),
             ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
         // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
         // fixed. Tracking time in BindToCurrentThread.
@@ -520,7 +531,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         if (!use_mus) {
           display_output_surface =
               base::MakeUnique<GpuBrowserCompositorOutputSurface>(
-                  context_provider, vsync_callback, std::move(validator));
+                  context_provider, vsync_callback, std::move(validator),
+                  support_stencil);
         } else {
 #if defined(USE_AURA)
           std::unique_ptr<MusBrowserCompositorOutputSurface> mus_output_surface;
@@ -830,7 +842,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   bool support_locking = false;
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
-      support_locking, nullptr,
+      false, support_locking, nullptr,
       ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
       &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,

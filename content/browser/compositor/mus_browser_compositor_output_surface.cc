@@ -32,7 +32,8 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
         overlay_candidate_validator)
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         update_vsync_parameters_callback,
-                                        std::move(overlay_candidate_validator)),
+                                        std::move(overlay_candidate_validator),
+                                        false /* support_stencil */),
       ui_window_(window),
       window_(nullptr),
       begin_frame_source_(nullptr) {
@@ -50,7 +51,8 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
         overlay_candidate_validator)
     : GpuBrowserCompositorOutputSurface(std::move(context),
                                         update_vsync_parameters_callback,
-                                        std::move(overlay_candidate_validator)),
+                                        std::move(overlay_candidate_validator),
+                                        false  /* support_stencil */),
       ui_window_(nullptr),
       window_(window),
       begin_frame_source_(nullptr) {
