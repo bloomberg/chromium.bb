@@ -21,6 +21,7 @@
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_type_store_test_util.h"
+#include "components/sync/model/recording_model_type_change_processor.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -169,43 +170,6 @@ EntityDataMap InlineEntityDataMap(
   }
   return map;
 }
-
-// Instead of actually processing anything, simply accumulates all instructions
-// in members that can then be accessed. TODO(skym): If this ends up being
-// useful for other model type unittests it should be moved out to a shared
-// location.
-class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
- public:
-  RecordingModelTypeChangeProcessor() {}
-  ~RecordingModelTypeChangeProcessor() override {}
-
-  void Put(const std::string& storage_key,
-           std::unique_ptr<EntityData> entity_data,
-           MetadataChangeList* metadata_changes) override {
-    put_multimap_.insert(std::make_pair(storage_key, std::move(entity_data)));
-  }
-
-  void Delete(const std::string& storage_key,
-              MetadataChangeList* metadata_changes) override {
-    delete_set_.insert(storage_key);
-  }
-
-  void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override {
-    std::swap(metadata_, batch);
-  }
-
-  const std::multimap<std::string, std::unique_ptr<EntityData>>& put_multimap()
-      const {
-    return put_multimap_;
-  }
-  const std::set<std::string>& delete_set() const { return delete_set_; }
-  const MetadataBatch* metadata() const { return metadata_.get(); }
-
- private:
-  std::multimap<std::string, std::unique_ptr<EntityData>> put_multimap_;
-  std::set<std::string> delete_set_;
-  std::unique_ptr<MetadataBatch> metadata_;
-};
 
 }  // namespace
 

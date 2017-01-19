@@ -42,7 +42,7 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
   static AutocompleteSyncBridge* FromWebDataService(
       AutofillWebDataService* web_data_service);
 
-  // syncer::ModelTypeService implementation.
+  // syncer::ModelTypeSyncBridge implementation.
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
   base::Optional<syncer::ModelError> MergeSyncData(
@@ -70,11 +70,13 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable() const;
 
-  std::string GetStorageKeyFromAutofillEntry(
-      const autofill::AutofillEntry& entry);
+  // Respond to local autofill entries changing by notifying sync of the
+  // changes.
+  void ActOnLocalChanges(const AutofillChangeList& changes);
 
-  static std::string FormatStorageKey(const std::string& name,
-                                      const std::string& value);
+  // Synchronously load sync metadata from the autofill table and pass it to the
+  // processor so that it can start tracking changes.
+  void LoadMetadata();
 
   base::ThreadChecker thread_checker_;
 

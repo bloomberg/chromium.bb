@@ -293,6 +293,8 @@ AutocompleteSyncBridge::AutocompleteSyncBridge(
   DCHECK(web_data_backend_);
 
   scoped_observer_.Add(web_data_backend_);
+
+  LoadMetadata();
 }
 
 AutocompleteSyncBridge::~AutocompleteSyncBridge() {
@@ -390,6 +392,55 @@ void AutocompleteSyncBridge::GetAllData(DataCallback callback) {
   callback.Run(std::move(batch));
 }
 
+void AutocompleteSyncBridge::ActOnLocalChanges(
+    const AutofillChangeList& changes) {
+  if (!change_processor()->IsTrackingMetadata()) {
+    return;
+  }
+
+  auto metadata_change_list = base::MakeUnique<AutofillMetadataChangeList>(
+      GetAutofillTable(), syncer::AUTOFILL);
+  for (const auto& change : changes) {
+    const std::string storage_key = GetStorageKeyFromModel(change.key());
+    switch (change.type()) {
+      case AutofillChange::ADD:
+      case AutofillChange::UPDATE: {
+        base::Time date_created, date_last_used;
+        bool success = GetAutofillTable()->GetAutofillTimestamps(
+            change.key().name(), change.key().value(), &date_created,
+            &date_last_used);
+        if (!success) {
+          change_processor()->ReportError(
+              FROM_HERE, "Failed reading autofill entry from WebDatabase.");
+          return;
+        }
+
+        const AutofillEntry entry(change.key(), date_created, date_last_used);
+        change_processor()->Put(storage_key, CreateEntityData(entry),
+                                metadata_change_list.get());
+        break;
+      }
+      case AutofillChange::REMOVE: {
+        change_processor()->Delete(storage_key, metadata_change_list.get());
+        break;
+      }
+    }
+  }
+
+  if (Optional<ModelError> error = metadata_change_list->TakeError())
+    change_processor()->ReportError(error.value());
+}
+
+void AutocompleteSyncBridge::LoadMetadata() {
+  auto batch = base::MakeUnique<syncer::MetadataBatch>();
+  if (!GetAutofillTable()->GetAllSyncMetadata(syncer::AUTOFILL, batch.get())) {
+    change_processor()->ReportError(
+        FROM_HERE, "Failed reading autofill metadata from WebDatabase.");
+    return;
+  }
+  change_processor()->ModelReadyToSync(std::move(batch));
+}
+
 std::string AutocompleteSyncBridge::GetClientTag(
     const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill());
@@ -411,6 +462,7 @@ std::string AutocompleteSyncBridge::GetStorageKey(
 void AutocompleteSyncBridge::AutofillEntriesChanged(
     const AutofillChangeList& changes) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  ActOnLocalChanges(changes);
 }
 
 AutofillTable* AutocompleteSyncBridge::GetAutofillTable() const {

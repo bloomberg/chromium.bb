@@ -16,18 +16,22 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_backend_impl.h"
 #include "components/sync/model/data_batch.h"
-#include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_error.h"
+#include "components/sync/model/recording_model_type_change_processor.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::UTF8ToUTF16;
 using base::ScopedTempDir;
 using base::Time;
+using base::TimeDelta;
 using sync_pb::AutofillSpecifics;
 using sync_pb::EntitySpecifics;
 using syncer::DataBatch;
@@ -79,16 +83,9 @@ void VerifyDataBatch(std::map<std::string, AutofillSpecifics> expected,
   EXPECT_TRUE(expected.empty());
 }
 
-std::unique_ptr<ModelTypeChangeProcessor> CreateModelTypeChangeProcessor(
-    ModelType type,
-    ModelTypeSyncBridge* bridge) {
-  return base::MakeUnique<FakeModelTypeChangeProcessor>();
-}
-
-AutofillEntry CreateAutofillEntry(
-    const sync_pb::AutofillSpecifics& autofill_specifics) {
-  AutofillKey key(base::UTF8ToUTF16(autofill_specifics.name()),
-                  base::UTF8ToUTF16(autofill_specifics.value()));
+AutofillEntry CreateAutofillEntry(const AutofillSpecifics& autofill_specifics) {
+  AutofillKey key(UTF8ToUTF16(autofill_specifics.name()),
+                  UTF8ToUTF16(autofill_specifics.value()));
   Time date_created, date_last_used;
   const google::protobuf::RepeatedField<int64_t>& timestamps =
       autofill_specifics.usage_timestamp();
@@ -99,7 +96,6 @@ AutofillEntry CreateAutofillEntry(
   return AutofillEntry(key, date_created, date_last_used);
 }
 
-// Creates an EntityData/EntityDataPtr around a copy of the given specifics.
 EntityDataPtr SpecificsToEntity(const AutofillSpecifics& specifics) {
   EntityData data;
   data.client_tag_hash = "ignored";
@@ -135,14 +131,18 @@ class AutocompleteSyncBridgeTest : public testing::Test {
       db_.Init(temp_dir_.GetPath().AppendASCII("SyncTestWebDatabase"));
       backend_.SetWebDatabase(&db_);
 
+      sync_pb::ModelTypeState model_type_state;
+      model_type_state.set_initial_sync_done(true);
+      table_.UpdateModelTypeState(syncer::AUTOFILL, model_type_state);
+
       bridge_.reset(new AutocompleteSyncBridge(
-          &backend_, base::Bind(&CreateModelTypeChangeProcessor)));
+          &backend_,
+          base::Bind(
+              &AutocompleteSyncBridgeTest::CreateModelTypeChangeProcessor,
+              base::Unretained(this))));
     }
   }
   ~AutocompleteSyncBridgeTest() override {}
-
- protected:
-  AutocompleteSyncBridge* bridge() { return bridge_.get(); }
 
   void SaveSpecificsToTable(
       const std::vector<AutofillSpecifics>& specifics_list) {
@@ -217,13 +217,49 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     bridge()->GetAllData(base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
   }
 
+  void VerifyProcessorRecordedPut(const AutofillSpecifics& specifics,
+                                  int position = 0) {
+    const std::string storage_key = GetStorageKey(specifics);
+    auto recorded_specifics_iterator =
+        processor()->put_multimap().find(storage_key);
+
+    EXPECT_NE(processor()->put_multimap().end(), recorded_specifics_iterator);
+    while (position > 0) {
+      recorded_specifics_iterator++;
+      EXPECT_NE(processor()->put_multimap().end(), recorded_specifics_iterator);
+      position--;
+    }
+
+    AutofillSpecifics recorded_specifics =
+        recorded_specifics_iterator->second->specifics.autofill();
+    VerifyEqual(recorded_specifics, specifics);
+  }
+
+  AutocompleteSyncBridge* bridge() { return bridge_.get(); }
+
+  syncer::RecordingModelTypeChangeProcessor* processor() { return processor_; }
+
+  AutofillTable* table() { return &table_; }
+
  private:
+  std::unique_ptr<syncer::ModelTypeChangeProcessor>
+  CreateModelTypeChangeProcessor(syncer::ModelType type,
+                                 syncer::ModelTypeSyncBridge* bridge) {
+    auto processor =
+        base::MakeUnique<syncer::RecordingModelTypeChangeProcessor>();
+    processor_ = processor.get();
+    return std::move(processor);
+  }
+
   ScopedTempDir temp_dir_;
   base::MessageLoop message_loop_;
   FakeAutofillBackend backend_;
   AutofillTable table_;
   WebDatabase db_;
   std::unique_ptr<AutocompleteSyncBridge> bridge_;
+  // A non-owning pointer to the processor given to the bridge. Will be null
+  // before being given to the bridge, to make ownership easier.
+  syncer::RecordingModelTypeChangeProcessor* processor_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncBridgeTest);
 };
@@ -424,6 +460,65 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesBadStorageKey) {
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesDatabaseFailure) {
   // TODO(skym, crbug.com/672619): Should have tests that get false back when
   // making db calls and verify the errors are propagated up.
+}
+
+TEST_F(AutocompleteSyncBridgeTest, LocalEntriesAdded) {
+  const AutofillSpecifics added_specifics1 = CreateSpecifics(1, {2, 3});
+  const AutofillSpecifics added_specifics2 = CreateSpecifics(2, {2, 3});
+
+  const AutofillEntry added_entry1 = CreateAutofillEntry(added_specifics1);
+  const AutofillEntry added_entry2 = CreateAutofillEntry(added_specifics2);
+
+  table()->UpdateAutofillEntries({added_entry1, added_entry2});
+
+  bridge()->AutofillEntriesChanged(
+      {AutofillChange(AutofillChange::ADD, added_entry1.key()),
+       AutofillChange(AutofillChange::ADD, added_entry2.key())});
+
+  EXPECT_EQ(2u, processor()->put_multimap().size());
+
+  VerifyProcessorRecordedPut(added_specifics1);
+  VerifyProcessorRecordedPut(added_specifics2);
+}
+
+TEST_F(AutocompleteSyncBridgeTest, LocalEntryAddedThenUpdated) {
+  const AutofillSpecifics added_specifics = CreateSpecifics(1, {2, 3});
+  const AutofillEntry added_entry = CreateAutofillEntry(added_specifics);
+  table()->UpdateAutofillEntries({added_entry});
+
+  bridge()->AutofillEntriesChanged(
+      {AutofillChange(AutofillChange::ADD, added_entry.key())});
+
+  EXPECT_EQ(1u, processor()->put_multimap().size());
+
+  VerifyProcessorRecordedPut(added_specifics);
+
+  const AutofillSpecifics updated_specifics = CreateSpecifics(1, {2, 4});
+  const AutofillEntry updated_entry = CreateAutofillEntry(updated_specifics);
+  table()->UpdateAutofillEntries({updated_entry});
+
+  bridge()->AutofillEntriesChanged(
+      {AutofillChange(AutofillChange::UPDATE, updated_entry.key())});
+
+  VerifyProcessorRecordedPut(updated_specifics, 1);
+}
+
+TEST_F(AutocompleteSyncBridgeTest, LocalEntryDeleted) {
+  const AutofillSpecifics deleted_specifics = CreateSpecifics(1, {2, 3});
+  const AutofillEntry deleted_entry = CreateAutofillEntry(deleted_specifics);
+  const std::string storage_key = GetStorageKey(deleted_specifics);
+
+  bridge()->AutofillEntriesChanged(
+      {AutofillChange(AutofillChange::REMOVE, deleted_entry.key())});
+
+  EXPECT_EQ(1u, processor()->delete_set().size());
+  EXPECT_NE(processor()->delete_set().end(),
+            processor()->delete_set().find(storage_key));
+}
+
+TEST_F(AutocompleteSyncBridgeTest, LoadMetadataCalled) {
+  EXPECT_NE(processor()->metadata(), nullptr);
+  EXPECT_TRUE(processor()->metadata()->GetModelTypeState().initial_sync_done());
 }
 
 }  // namespace autofill
