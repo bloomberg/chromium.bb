@@ -66,6 +66,14 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_INITIAL_BACKGROUND_COLOR =
             "org.chromium.chrome.browser.customtabs.EXTRA_INITIAL_BACKGROUND_COLOR";
 
+    /** Extra that enables the client to disable the star button in menu. */
+    public static final String EXTRA_DISABLE_STAR_BUTTON =
+            "org.chromium.chrome.browser.customtabs.EXTRA_DISABLE_STAR_BUTTON";
+
+    /** Extra that enables the client to disable the download button in menu. */
+    public static final String EXTRA_DISABLE_DOWNLOAD_BUTTON =
+            "org.chromium.chrome.browser.customtabs.EXTRA_DISABLE_DOWNLOAD_BUTTON";
+
     //TODO(yusufo): Move this to CustomTabsIntent.
     /** Signals custom tabs to favor sending initial urls to external handler apps if possible. */
     public static final String EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER =
@@ -87,6 +95,8 @@ public class CustomTabIntentDataProvider {
     private final boolean mIsMediaViewer;
     private final boolean mIsInfoPage;
     private final int mInitialBackgroundColor;
+    private final boolean mDisableStar;
+    private final boolean mDisableDownload;
 
     private int mToolbarColor;
     private int mBottomBarColor;
@@ -169,6 +179,9 @@ public class CustomTabIntentDataProvider {
                 && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_MEDIA_VIEWER, false);
         mIsInfoPage = mIsTrustedIntent
                 && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_INFO_PAGE, false);
+        mDisableStar = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STAR_BUTTON, false);
+        mDisableDownload = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_DOWNLOAD_BUTTON,
+                false);
     }
 
     /**
@@ -483,5 +496,19 @@ public class CustomTabIntentDataProvider {
      */
     int getInitialBackgroundColor() {
         return mInitialBackgroundColor;
+    }
+
+    /**
+     * @return Whether there should be a star button in the menu.
+     */
+    boolean shouldShowStarButton() {
+        return !mDisableStar;
+    }
+
+    /**
+     * @return Whether there should be a download button in the menu.
+     */
+    boolean shouldShowDownloadButton() {
+        return !mDisableDownload;
     }
 }
