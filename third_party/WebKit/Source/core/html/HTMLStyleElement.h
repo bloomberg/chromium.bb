@@ -44,12 +44,14 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   bool disabled() const;
   void setDisabled(bool);
 
-  void dispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
   HTMLStyleElement(Document&, bool createdByParser);
+
+  // Always call this asynchronously because this can cause synchronous
+  // Document load event and JavaScript execution.
+  void dispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
 
   // overload from HTMLElement
   void parseAttribute(const AttributeModificationParams&) override;
