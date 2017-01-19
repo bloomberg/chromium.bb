@@ -133,7 +133,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.context_factory_private = content::GetContextFactoryPrivate();
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
-  ash::WmShell::Get()->CreateShelf();
+  ash::WmShell::Get()->CreateShelfView();
   ash::WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
 
   window_watcher_.reset(new ash::shell::WindowWatcher);

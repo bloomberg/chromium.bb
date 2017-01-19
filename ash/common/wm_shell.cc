@@ -153,14 +153,14 @@ void WmShell::ShowContextMenu(const gfx::Point& location_in_screen,
                                                    source_type);
 }
 
-void WmShell::CreateShelf() {
+void WmShell::CreateShelfView() {
   // Must occur after SessionStateDelegate creation and user login.
   DCHECK(GetSessionStateDelegate());
   DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
   CreateShelfDelegate();
 
   for (WmWindow* root_window : GetAllRootWindows())
-    root_window->GetRootWindowController()->CreateShelf();
+    root_window->GetRootWindowController()->CreateShelfView();
 }
 
 void WmShell::CreateShelfDelegate() {
@@ -438,7 +438,7 @@ void WmShell::SessionStateChanged(session_manager::SessionState state) {
   // Create the shelf when a session becomes active. It's safe to do this
   // multiple times (e.g. initial login vs. multiprofile add session).
   if (state == session_manager::SessionState::ACTIVE)
-    CreateShelf();
+    CreateShelfView();
 }
 
 void WmShell::OnWindowActivated(

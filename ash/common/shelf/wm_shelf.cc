@@ -127,7 +127,7 @@ void WmShelf::DestroyShelfWidget() {
   shelf_widget_.reset();
 }
 
-void WmShelf::InitializeShelf() {
+void WmShelf::CreateShelfView() {
   DCHECK(shelf_layout_manager_);
   DCHECK(shelf_widget_);
   DCHECK(!shelf_view_);

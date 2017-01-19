@@ -355,11 +355,13 @@ WmShelf* RootWindowController::GetShelf() {
   return wm_shelf_.get();
 }
 
-void RootWindowController::CreateShelf() {
+void RootWindowController::CreateShelfView() {
   if (wm_shelf_->IsShelfInitialized())
     return;
-  wm_shelf_->InitializeShelf();
+  wm_shelf_->CreateShelfView();
 
+  // TODO(jamescook): Pass |wm_shelf_| into the constructors for these layout
+  // managers.
   if (panel_layout_manager_)
     panel_layout_manager_->SetShelf(wm_shelf_.get());
   if (docked_window_layout_manager_) {
@@ -800,7 +802,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
     // Create a shelf if a user is already logged in.
     if (wm_shell->GetSessionStateDelegate()->NumberOfLoggedInUsers())
-      CreateShelf();
+      CreateShelfView();
 
     // Notify shell observers about new root window.
     shell->OnRootWindowAdded(WmWindow::Get(root_window));

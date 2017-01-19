@@ -144,8 +144,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   WmShelf* GetShelf();
 
-  // Creates the shelf for this root window and notifies observers.
-  void CreateShelf();
+  // Creates the shelf view for this root window and notifies observers.
+  void CreateShelfView();
 
   // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }

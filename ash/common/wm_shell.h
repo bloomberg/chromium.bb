@@ -360,8 +360,8 @@ class ASH_EXPORT WmShell : public SessionStateObserver,
   virtual std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() = 0;
 
   // Creates the ShelfView for each display and populates it with items.
-  // TODO(jamescook): Rename this. http://crbug.com/679925
-  void CreateShelf();
+  // Called after the user session is active and profile is available.
+  void CreateShelfView();
 
   void CreateShelfDelegate();
 

@@ -59,7 +59,9 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   ShelfWidget* shelf_widget() { return shelf_widget_.get(); }
 
   // Creates the shelf view.
-  void InitializeShelf();
+  void CreateShelfView();
+
+  // TODO(jamescook): Eliminate this method.
   void ShutdownShelf();
 
   // True after the ShelfView has been created (e.g. after login).

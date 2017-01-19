@@ -119,7 +119,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
     SessionManager::Get()->CreateSession(account_id, user_id_hash);
     // Adding a secondary display creates a shelf on that display, which
     // assumes a shelf on the primary display if the user was logged in.
-    ash::WmShell::Get()->CreateShelf();
+    ash::WmShell::Get()->CreateShelfView();
     WaitAsyncWallpaperLoadStarted();
   }
 
