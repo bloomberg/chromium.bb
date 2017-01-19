@@ -295,6 +295,13 @@ CGFloat kShadowOpacity = 0.2f;
   [self exitSearchMode];
 }
 
+#pragma mark UIAccessibilityAction
+
+- (BOOL)accessibilityPerformEscape {
+  [self closeHistory];
+  return YES;
+}
+
 #pragma mark - Private methods
 
 - (void)closeHistory {
