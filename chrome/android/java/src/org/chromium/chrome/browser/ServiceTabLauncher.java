@@ -76,9 +76,14 @@ public class ServiceTabLauncher {
         final WebappDataStorage storage =
                 WebappRegistry.getInstance().getWebappDataStorageForUrl(url);
 
-        // If we do not find a WebappDataStorage corresponding to this URL, or if it hasn't
-        // been opened recently enough, open the URL in a tab.
-        if (storage == null || !storage.wasLaunchedRecently()) {
+        // Open a new tab if:
+        // - We did not find a WebappDataStorage corresponding to this URL.
+        // OR
+        // - The WebappDataStorage hasn't been opened recently enough.
+        // OR
+        // - The WebappDataStorage corresponds to a WebAPK (and WebAPKs are disabled).
+        if (storage == null || !storage.wasLaunchedRecently()
+                || storage.getWebApkPackageName() != null) {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
             loadUrlParams.setPostData(postData);
             loadUrlParams.setVerbatimHeaders(extraHeaders);

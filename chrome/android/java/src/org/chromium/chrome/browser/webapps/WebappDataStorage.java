@@ -345,7 +345,7 @@ public class WebappDataStorage {
     /**
      * Returns the package name if the data is for a WebAPK, null otherwise.
      */
-    String getWebApkPackageName() {
+    public String getWebApkPackageName() {
         return mPreferences.getString(KEY_WEBAPK_PACKAGE_NAME, null);
     }
 
