@@ -14,7 +14,8 @@ Are you a Google employee? See
 
 * A 64-bit Intel machine with at least 8GB of RAM. More than 16GB is highly
   recommended.
-* At least 100GB of free disk space.
+* At least 100GB of free disk space on an NTFS-formatted hard drive. FAT32
+  will not work, as some of the Git packfiles are larger than 4GB.
 * Visual Studio 2015 Update 3, see below (no other version is supported).
 * Windows 7 or newer.
 
@@ -52,20 +53,17 @@ context menu though.
 ***
 
 Add depot_tools to the start of your PATH (must be ahead of any installs of 
-Python). Assuming you unzipped the bundle to C:\src\depot_tools:
-
-With Administrator access:
+Python). Assuming you unzipped the bundle to C:\src\depot_tools, open:
 
 Control Panel → System and Security → System → Advanced system settings
 
-Modify the PATH system variable to include C:\src\depot_tools.
+If you have Administrator access, Modify the PATH system variable and
+put `C:\src\depot_tools` at the front (or at least in front of any directory
+that might already have a copy of Python or Git).
 
-Without Administrator access:
-
-Control Panel → User Accounts → User Accounts → Change my environment variables
-
-Add a PATH user variable (or modify the existing one to include):
-`C:\src\depot_tools`.
+If you don't have Administrator access, you can add a user-level PATH
+environment variable and put `C:\src\depot_tools` at the front, but
+if your system PATH has a Python in it, you will be out of luck.
 
 Also, add a DEPOT_TOOLS_WIN_TOOLCHAIN system variable in the same way, and set
 it to 0. This tells depot_tools to use your locally installed version of Visual
