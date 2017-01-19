@@ -26,14 +26,9 @@ class BrowserProcessTask : public Task {
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
   int64_t GetSqliteMemoryUsed() const override;
-  int64_t GetV8MemoryAllocated() const override;
-  int64_t GetV8MemoryUsed() const override;
 
  private:
-  int64_t allocated_v8_memory_;
-  int64_t used_v8_memory_;
   int64_t used_sqlite_memory_;
-  bool reports_v8_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessTask);
 };
