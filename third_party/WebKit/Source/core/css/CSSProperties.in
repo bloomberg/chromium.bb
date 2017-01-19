@@ -174,7 +174,7 @@ font-size interpolable, inherited, font, name_for_methods=Size, getter=getSize, 
 font-size-adjust runtime_flag=CSSFontSizeAdjust, interpolable, inherited, font, name_for_methods=SizeAdjust, converter=convertFontSizeAdjust, api_class, priority=High
 font-stretch inherited, font, type_name=FontStretch, name_for_methods=Stretch, priority=High
 font-style inherited, font, type_name=FontStyle, name_for_methods=Style, priority=High
-font-variant-ligatures inherited, font, type_name=VariantLigatures, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures, priority=High
+font-variant-ligatures inherited, font, type_name=VariantLigatures, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures, priority=High, api_class
 font-variant-caps inherited, font, name_for_methods=VariantCaps, converter=convertFontVariantCaps, priority=High
 font-variant-numeric inherited, font, name_for_methods=VariantNumeric, converter=convertFontVariantNumeric, priority=High
 font-weight interpolable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight, priority=High

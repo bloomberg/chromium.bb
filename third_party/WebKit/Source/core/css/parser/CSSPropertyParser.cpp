@@ -41,6 +41,7 @@
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
+#include "core/css/parser/FontVariantLigaturesParser.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/frame/UseCounter.h"
@@ -334,81 +335,6 @@ static CSSValue* consumeWebkitHighlight(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
   return consumeString(range);
-}
-
-class FontVariantLigaturesParser {
-  STACK_ALLOCATED();
-
- public:
-  FontVariantLigaturesParser()
-      : m_sawCommonLigaturesValue(false),
-        m_sawDiscretionaryLigaturesValue(false),
-        m_sawHistoricalLigaturesValue(false),
-        m_sawContextualLigaturesValue(false),
-        m_result(CSSValueList::createSpaceSeparated()) {}
-
-  enum class ParseResult { ConsumedValue, DisallowedValue, UnknownValue };
-
-  ParseResult consumeLigature(CSSParserTokenRange& range) {
-    CSSValueID valueID = range.peek().id();
-    switch (valueID) {
-      case CSSValueNoCommonLigatures:
-      case CSSValueCommonLigatures:
-        if (m_sawCommonLigaturesValue)
-          return ParseResult::DisallowedValue;
-        m_sawCommonLigaturesValue = true;
-        break;
-      case CSSValueNoDiscretionaryLigatures:
-      case CSSValueDiscretionaryLigatures:
-        if (m_sawDiscretionaryLigaturesValue)
-          return ParseResult::DisallowedValue;
-        m_sawDiscretionaryLigaturesValue = true;
-        break;
-      case CSSValueNoHistoricalLigatures:
-      case CSSValueHistoricalLigatures:
-        if (m_sawHistoricalLigaturesValue)
-          return ParseResult::DisallowedValue;
-        m_sawHistoricalLigaturesValue = true;
-        break;
-      case CSSValueNoContextual:
-      case CSSValueContextual:
-        if (m_sawContextualLigaturesValue)
-          return ParseResult::DisallowedValue;
-        m_sawContextualLigaturesValue = true;
-        break;
-      default:
-        return ParseResult::UnknownValue;
-    }
-    m_result->append(*consumeIdent(range));
-    return ParseResult::ConsumedValue;
-  }
-
-  CSSValue* finalizeValue() {
-    if (!m_result->length())
-      return CSSIdentifierValue::create(CSSValueNormal);
-    return m_result.release();
-  }
-
- private:
-  bool m_sawCommonLigaturesValue;
-  bool m_sawDiscretionaryLigaturesValue;
-  bool m_sawHistoricalLigaturesValue;
-  bool m_sawContextualLigaturesValue;
-  Member<CSSValueList> m_result;
-};
-
-static CSSValue* consumeFontVariantLigatures(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueNormal || range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-
-  FontVariantLigaturesParser ligaturesParser;
-  do {
-    if (ligaturesParser.consumeLigature(range) !=
-        FontVariantLigaturesParser::ParseResult::ConsumedValue)
-      return nullptr;
-  } while (!range.atEnd());
-
-  return ligaturesParser.finalizeValue();
 }
 
 static CSSIdentifierValue* consumeFontVariantCaps(CSSParserTokenRange& range) {
@@ -2892,8 +2818,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeWebkitHighlight(m_range);
     case CSSPropertyFontVariantCaps:
       return consumeFontVariantCaps(m_range);
-    case CSSPropertyFontVariantLigatures:
-      return consumeFontVariantLigatures(m_range);
     case CSSPropertyFontVariantNumeric:
       return consumeFontVariantNumeric(m_range);
     case CSSPropertyFontFeatureSettings:
