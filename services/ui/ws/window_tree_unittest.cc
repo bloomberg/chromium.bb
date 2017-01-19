@@ -162,8 +162,8 @@ class WindowTreeTest : public testing::Test {
     WindowManagerStateTestApi test_api(
         display()->GetActiveWindowManagerDisplayRoot()->window_manager_state());
     while (test_api.tree_awaiting_input_ack()) {
-      test_api.tree_awaiting_input_ack()->OnWindowInputEventAck(
-          0, mojom::EventResult::HANDLED);
+      WindowTreeTestApi(test_api.tree_awaiting_input_ack())
+          .AckOldestEvent(mojom::EventResult::HANDLED);
     }
   }
 
@@ -220,6 +220,10 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   ASSERT_TRUE(FirstRoot(wm_tree()));
   const ClientWindowId wm_root_id = FirstRootId(wm_tree());
   EXPECT_TRUE(wm_tree()->AddWindow(wm_root_id, embed_window_id));
+  ServerWindow* wm_root = FirstRoot(wm_tree());
+  ASSERT_TRUE(wm_root);
+  wm_root->SetBounds(gfx::Rect(0, 0, 100, 100));
+  EnableHitTest(wm_root);
   display()->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request(&client);
@@ -285,7 +289,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   // event).
   DispatchEventAndAckImmediately(CreatePointerDownEvent(61, 22));
   EXPECT_EQ(child1, display()->GetFocusedWindow());
-  ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u)
+  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size())
       << SingleChangeToDescription(*wm_client()->tracker()->changes());
   EXPECT_EQ("InputEvent window=0,3 event_action=16",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
@@ -443,7 +447,7 @@ TEST_F(WindowTreeTest, StartPointerWatcherWrongUser) {
   // An event is watched by the wm tree, but not by the other user's tree.
   DispatchEventAndAckImmediately(CreatePointerUpEvent(5, 5));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=0,3 event_action=18 matches_pointer_watcher",
+  EXPECT_EQ("PointerWatcherEvent event_action=18 window=null",
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
   ASSERT_EQ(0u, other_binding->client()->tracker()->changes()->size());
 }
@@ -599,7 +603,11 @@ TEST_F(WindowTreeTest, EventAck) {
   EXPECT_TRUE(wm_tree()->SetWindowVisibility(embed_window_id, true));
   ASSERT_TRUE(FirstRoot(wm_tree()));
   EXPECT_TRUE(wm_tree()->AddWindow(FirstRootId(wm_tree()), embed_window_id));
-  display()->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  ASSERT_EQ(1u, display()->root_window()->children().size());
+  ServerWindow* wm_root = FirstRoot(wm_tree());
+  ASSERT_TRUE(wm_root);
+  wm_root->SetBounds(gfx::Rect(0, 0, 100, 100));
+  EnableHitTest(wm_root);
 
   wm_client()->tracker()->changes()->clear();
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));

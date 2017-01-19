@@ -106,7 +106,9 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   // and if that's the case, releases the capture.
   void ReleaseCaptureBlockedByAnyModalWindow();
 
-  // Retrieves the ServerWindow of the last mouse move.
+  // Retrieves the ServerWindow of the last mouse move. If there is no valid
+  // window event target this falls back to the root of the display. In general
+  // this is not null, but may be null during shutdown.
   ServerWindow* mouse_cursor_source_window() const {
     return mouse_cursor_source_window_;
   }
@@ -146,8 +148,9 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
           in_nonclient_area(false),
           is_pointer_down(false) {}
 
-    // NOTE: this is set to null if the window is destroyed before a
-    // corresponding release/cancel.
+    // The target window, which may be null. null is used in two situations:
+    // when there is no valid window target, or there was a target but the
+    // window is destroyed before a corresponding release/cancel.
     ServerWindow* window;
 
     bool is_mouse_event;
@@ -189,7 +192,9 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   void UpdateTargetForPointer(int32_t pointer_id,
                               const ui::LocatedEvent& event);
 
-  // Returns a PointerTarget from the supplied event.
+  // Returns a PointerTarget for the supplied event. If there is no valid
+  // event target for the specified location |window| in the returned value is
+  // null.
   PointerTarget PointerTargetForEvent(const ui::LocatedEvent& event);
 
   // Returns true if any pointers are in the pressed/down state.
@@ -223,8 +228,10 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   ServerWindow* FindDeepestVisibleWindowForEvents(gfx::Point* location);
 
   // Clears the implicit captures in |pointer_targets_|, with the exception of
-  // |window|. |window| may be null.
-  void CancelImplicitCaptureExcept(ServerWindow* window);
+  // |window|. |window| may be null. |client_id| is the target client of
+  // |window|.
+  void CancelImplicitCaptureExcept(ServerWindow* window,
+                                   ClientSpecificId client_id);
 
   // ServerWindowObserver:
   void OnWillChangeWindowHierarchy(ServerWindow* window,

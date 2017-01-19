@@ -508,6 +508,7 @@ ServerWindow* WindowManagerState::GetFocusedWindowForEventDispatcher() {
 }
 
 void WindowManagerState::SetNativeCapture(ServerWindow* window) {
+  DCHECK(window);
   DCHECK(IsActive());
   WindowManagerDisplayRoot* display_root =
       display_manager()->GetWindowManagerDisplayRoot(window);

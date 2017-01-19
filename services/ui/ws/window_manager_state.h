@@ -241,7 +241,7 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   EventDispatchPhase event_dispatch_phase_ = EventDispatchPhase::NONE;
   // The tree we're waiting to process the current accelerator or event.
-  mojom::WindowTree* tree_awaiting_input_ack_ = nullptr;
+  WindowTree* tree_awaiting_input_ack_ = nullptr;
   // The event we're awaiting an accelerator or input ack from.
   std::unique_ptr<ui::Event> event_awaiting_input_ack_;
   base::WeakPtr<Accelerator> post_target_accelerator_;

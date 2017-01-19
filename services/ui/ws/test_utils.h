@@ -109,9 +109,9 @@ class WindowTreeTestApi {
   void SetCanAcceptEvents(Id transport_window_id, bool can_accept_events) {
     tree_->SetCanAcceptEvents(transport_window_id, can_accept_events);
   }
-  void AckOldestEvent() {
-    tree_->OnWindowInputEventAck(tree_->event_ack_id_,
-                                 mojom::EventResult::UNHANDLED);
+  void AckOldestEvent(
+      mojom::EventResult result = mojom::EventResult::UNHANDLED) {
+    tree_->OnWindowInputEventAck(tree_->event_ack_id_, result);
   }
   void EnableCapture() { tree_->event_ack_id_ = 1u; }
   void AckLastEvent(mojom::EventResult result) {
@@ -215,7 +215,7 @@ class WindowManagerStateTestApi {
     return wms_->GetEventTargetClientId(window, in_nonclient_area);
   }
 
-  mojom::WindowTree* tree_awaiting_input_ack() {
+  WindowTree* tree_awaiting_input_ack() {
     return wms_->tree_awaiting_input_ack_;
   }
 

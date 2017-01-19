@@ -18,7 +18,7 @@ class ServerWindow;
 // Find the deepest visible child of |root| that should receive an event at
 // |location|. |location| is initially in the coordinate space of
 // |root_window|, on return it is converted to the coordinates of the return
-// value.
+// value. Returns null if there is no valid event target window over |location|.
 ServerWindow* FindDeepestVisibleWindowForEvents(
     ServerWindow* root_window,
     gfx::Point* location);

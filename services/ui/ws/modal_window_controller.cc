@@ -81,8 +81,9 @@ bool ModalWindowController::IsWindowBlocked(const ServerWindow* window) const {
 const ServerWindow* ModalWindowController::GetTargetForWindow(
     const ServerWindow* window) const {
   ServerWindow* system_modal_window = GetActiveSystemModalWindow();
-  return system_modal_window ? system_modal_window
-                             : GetWindowModalTargetForWindow(window);
+  if (system_modal_window)
+    return system_modal_window;
+  return window ? GetWindowModalTargetForWindow(window) : nullptr;
 }
 
 ServerWindow* ModalWindowController::GetActiveSystemModalWindow() const {

@@ -43,7 +43,7 @@ TEST(WindowFinderTest, FindDeepestVisibleWindow) {
 
   local_point.SetPoint(13, 14);
   child1.set_can_accept_events(false);
-  EXPECT_EQ(&root, FindDeepestVisibleWindowForEvents(&root, &local_point));
+  EXPECT_EQ(nullptr, FindDeepestVisibleWindowForEvents(&root, &local_point));
   EXPECT_EQ(gfx::Point(13, 14), local_point);
 
   child2.set_extended_hit_test_region(gfx::Insets(10, 10, 10, 10));
@@ -78,6 +78,33 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
   EXPECT_EQ(&child_with_mask,
             FindDeepestVisibleWindowForEvents(&root, &point_inside_mask));
   EXPECT_EQ(gfx::Point(5, 5), point_inside_mask);
+}
+
+TEST(WindowFinderTest, FindDeepestVisibleWindowForEventsOverNonTarget) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  // Create two windows, |child1| and |child2|. The two overlap but |child2| is
+  // not a valid event target.
+  ServerWindow child1(&window_delegate, WindowId(1, 3));
+  root.Add(&child1);
+  EnableHitTest(&child1);
+  child1.SetVisible(true);
+  child1.SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  ServerWindow child2(&window_delegate, WindowId(1, 4));
+  root.Add(&child2);
+  child2.SetVisible(true);
+  child2.SetBounds(gfx::Rect(15, 15, 20, 20));
+
+  // |location_point| is over |child2| and |child1|, but as |child2| isn't a
+  // valid event taret |child2| should be picked.
+  gfx::Point local_point(16, 16);
+  EXPECT_EQ(&child1, FindDeepestVisibleWindowForEvents(&root, &local_point));
+  EXPECT_EQ(gfx::Point(6, 6), local_point);
 }
 
 }  // namespace ws
