@@ -46,19 +46,16 @@ class GitCL(object):
             A list of try job result dicts, or None if a timeout occurred.
         """
         start = self._host.time()
-        self._host.print_('Waiting for try jobs (timeout: %d s, poll interval %d s).' %
-                          (timeout_seconds, poll_delay_seconds))
+        self._host.print_('Waiting for try jobs (timeout: %d seconds).' % timeout_seconds)
         while self._host.time() - start < timeout_seconds:
             self._host.sleep(poll_delay_seconds)
             try_results = self.fetch_try_results()
             _log.debug('Fetched try results: %s', try_results)
             if self.all_jobs_finished(try_results):
-                self._host.print_()
                 self._host.print_('All jobs finished.')
                 return try_results
-            self._host.print_('.', end='')
+            self._host.print_('Waiting. %d seconds passed.' % (self._host.time() - start))
             self._host.sleep(poll_delay_seconds)
-        self._host.print_()
         self._host.print_('Timed out waiting for try results.')
         return None
 

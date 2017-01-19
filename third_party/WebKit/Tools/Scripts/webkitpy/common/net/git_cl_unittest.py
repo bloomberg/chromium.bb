@@ -63,8 +63,14 @@ class GitCLTest(unittest.TestCase):
         git_cl.wait_for_try_jobs()
         self.assertEqual(
             host.stdout.getvalue(),
-            'Waiting for try jobs (timeout: 7200 s, poll interval 600 s).\n'
-            '......\nTimed out waiting for try results.\n')
+            'Waiting for try jobs (timeout: 7200 seconds).\n'
+            'Waiting. 600 seconds passed.\n'
+            'Waiting. 1800 seconds passed.\n'
+            'Waiting. 3000 seconds passed.\n'
+            'Waiting. 4200 seconds passed.\n'
+            'Waiting. 5400 seconds passed.\n'
+            'Waiting. 6600 seconds passed.\n'
+            'Timed out waiting for try results.\n')
 
     def test_wait_for_try_jobs_done(self):
         host = MockHost()
@@ -79,7 +85,7 @@ class GitCLTest(unittest.TestCase):
         git_cl.wait_for_try_jobs()
         self.assertEqual(
             host.stdout.getvalue(),
-            'Waiting for try jobs (timeout: 7200 s, poll interval 600 s).\n\n'
+            'Waiting for try jobs (timeout: 7200 seconds).\n'
             'All jobs finished.\n')
 
     def test_all_jobs_finished_with_started_jobs(self):
