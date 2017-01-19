@@ -38,6 +38,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -49,20 +50,8 @@ constexpr char kResourceURL[] = "http://resource.com/";
 
 // The origin time of our first request.
 constexpr char kOriginalRequestDateAsString[] = "Thu, 25 May 1977 18:30:00 GMT";
-constexpr double kOriginalRequestDateAsDouble = 233433000.;
-
 constexpr char kOneDayBeforeOriginalRequest[] = "Wed, 24 May 1977 18:30:00 GMT";
 constexpr char kOneDayAfterOriginalRequest[] = "Fri, 26 May 1977 18:30:00 GMT";
-
-double timeElapsed = 0.0;
-
-void advanceClock(double seconds) {
-  timeElapsed += seconds;
-}
-
-double returnMockTime() {
-  return kOriginalRequestDateAsDouble + timeElapsed;
-}
 
 }  // namespace
 
@@ -105,6 +94,9 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
     return MockResource::fetch(fetchRequest, fetcher());
   }
   ResourceFetcher* fetcher() const { return m_fetcher.get(); }
+  void advanceClock(double seconds) {
+    m_platform->advanceClockSeconds(seconds);
+  }
 
  private:
   // Overrides ::testing::Test.
@@ -114,22 +106,18 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
 
     m_fetcher = ResourceFetcher::create(
         MockFetchContext::create(MockFetchContext::kShouldNotLoadNewResource));
-
-    timeElapsed = 0.0;
-    m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
   }
   void TearDown() override {
     memoryCache()->evictResources();
 
     // Yield the ownership of the global memory cache back.
     replaceMemoryCacheForTesting(m_globalMemoryCache.release());
-
-    setTimeFunctionsForTesting(m_originalTimeFunction);
   }
 
   Persistent<MemoryCache> m_globalMemoryCache;
   Persistent<ResourceFetcher> m_fetcher;
-  TimeFunction m_originalTimeFunction;
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      m_platform;
 };
 
 TEST_F(MemoryCacheCorrectnessTest, FreshFromLastModified) {
