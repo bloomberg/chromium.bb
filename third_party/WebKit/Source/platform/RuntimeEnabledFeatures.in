@@ -144,7 +144,8 @@ MediaCaptureFromVideo status=experimental
 MediaConstraints status=stable
 MediaDocumentDownloadButton
 MediaGetSettings status=test
-MediaSession status=experimental
+// MediaSession is enabled by default on Android only.
+MediaSession status=test
 MediaSourceExperimental status=experimental
 MediaSourceNewAbortAndDuration status=experimental
 MediaStreamSpeech status=experimental
