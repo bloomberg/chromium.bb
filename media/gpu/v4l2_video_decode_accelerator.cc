@@ -927,6 +927,7 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
       if (result == H264Parser::kEOStream) {
         // We've reached the end of the buffer before finding a frame boundary.
         decoder_partial_frame_pending_ = true;
+        *endpos = size;
         return true;
       }
       switch (nalu.nal_unit_type) {
