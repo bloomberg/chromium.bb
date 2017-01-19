@@ -26,7 +26,7 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
     std::unique_ptr<autofill::PasswordForm> saved_form,
     CredentialManagerPasswordFormManagerDelegate* delegate,
     std::unique_ptr<FormSaver> form_saver,
-    FormFetcher* form_fetcher)
+    std::unique_ptr<FormFetcher> form_fetcher)
     : PasswordFormManager(driver->GetPasswordManager(),
                           client,
                           driver,
@@ -34,11 +34,15 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
                           (form_saver ? std::move(form_saver)
                                       : base::MakeUnique<FormSaverImpl>(
                                             client->GetPasswordStore())),
-                          form_fetcher),
+                          form_fetcher.get()),
       delegate_(delegate),
       saved_form_(std::move(saved_form)),
+      form_fetcher_(std::move(form_fetcher)),
       weak_factory_(this) {
   DCHECK(saved_form_);
+  // This condition is only false on iOS.
+  if (form_fetcher_)
+    form_fetcher_->Fetch();
 }
 
 CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {

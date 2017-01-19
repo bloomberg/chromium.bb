@@ -50,29 +50,28 @@ class CredentialManagerPasswordFormManagerTest : public testing::Test {
 TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
   PasswordForm observed_form;
   MockDelegate delegate;
-  auto form_fetcher = base::MakeUnique<FakeFormFetcher>();
-  form_fetcher->Fetch();
-  CredentialManagerPasswordFormManager form_manager(
+  auto form_manager = base::MakeUnique<CredentialManagerPasswordFormManager>(
       &client_, driver_.AsWeakPtr(), observed_form,
       base::MakeUnique<PasswordForm>(observed_form), &delegate,
-      base::MakeUnique<StubFormSaver>(), form_fetcher.get());
+      base::MakeUnique<StubFormSaver>(), base::MakeUnique<FakeFormFetcher>());
 
-  auto deleter = [&form_fetcher]() { form_fetcher.reset(); };
+  auto deleter = [&form_manager]() { form_manager.reset(); };
 
   // Simulate that the PasswordStore responded to the FormFetcher. As a result,
   // |form_manager| should call the delegate's OnProvisionalSaveComplete, which
   // in turn should delete |form_fetcher|.
   EXPECT_CALL(delegate, OnProvisionalSaveComplete()).WillOnce(Invoke(deleter));
-  form_fetcher->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
-  // Check that |form_fetcher| was not deleted yet; doing so would have caused
+  static_cast<FakeFormFetcher*>(form_manager->form_fetcher())
+      ->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  // Check that |form_manager| was not deleted yet; doing so would have caused
   // use after free during SetNonFederated.
-  EXPECT_TRUE(form_fetcher);
+  EXPECT_TRUE(form_manager);
 
   base::RunLoop().RunUntilIdle();
 
   // Ultimately, |form_fetcher| should have been deleted. It just should happen
   // after it finishes executing.
-  EXPECT_FALSE(form_fetcher);
+  EXPECT_FALSE(form_manager);
 }
 
 }  // namespace password_manager

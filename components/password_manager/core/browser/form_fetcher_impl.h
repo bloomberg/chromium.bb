@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/http_password_migrator.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
@@ -20,17 +21,20 @@ class PasswordManagerClient;
 
 // Production implementation of FormFetcher. Fetches credentials associated
 // with a particular origin.
-class FormFetcherImpl : public FormFetcher, public PasswordStoreConsumer {
+class FormFetcherImpl : public FormFetcher,
+                        public PasswordStoreConsumer,
+                        public HttpPasswordMigrator::Consumer {
  public:
   // |form_digest| describes what credentials need to be retrieved and
   // |client| serves the PasswordStore, the logging information etc.
   FormFetcherImpl(PasswordStore::FormDigest form_digest,
-                  const PasswordManagerClient* client);
+                  const PasswordManagerClient* client,
+                  bool should_migrate_http_passwords);
 
   ~FormFetcherImpl() override;
 
   // FormFetcher:
-  void AddConsumer(Consumer* consumer) override;
+  void AddConsumer(FormFetcher::Consumer* consumer) override;
   State GetState() const override;
   const std::vector<InteractionsStats>& GetInteractionsStats() const override;
   const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()
@@ -42,7 +46,15 @@ class FormFetcherImpl : public FormFetcher, public PasswordStoreConsumer {
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
   void OnGetSiteStatistics(std::vector<InteractionsStats> stats) override;
 
+  // HttpPasswordMigrator::Consumer:
+  void ProcessMigratedForms(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
+
  private:
+  // Processes password form results and forwards them to the |consumers_|.
+  void ProcessPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+
   // PasswordStore results will be fetched for this description.
   const PasswordStore::FormDigest form_digest_;
 
@@ -62,7 +74,7 @@ class FormFetcherImpl : public FormFetcher, public PasswordStoreConsumer {
   std::vector<const autofill::PasswordForm*> weak_federated_;
 
   // Consumers of the fetcher, all are assumed to outlive |this|.
-  std::set<Consumer*> consumers_;
+  std::set<FormFetcher::Consumer*> consumers_;
 
   // Client used to obtain a CredentialFilter.
   const PasswordManagerClient* const client_;
@@ -77,6 +89,12 @@ class FormFetcherImpl : public FormFetcher, public PasswordStoreConsumer {
   // False unless FetchDataFromPasswordStore has been called again without the
   // password store returning results in the meantime.
   bool need_to_refetch_ = false;
+
+  // Indicates whether HTTP passwords should be migrated to HTTPS.
+  const bool should_migrate_http_passwords_;
+
+  // Does the actual migration.
+  std::unique_ptr<HttpPasswordMigrator> http_migrator_;
 
   DISALLOW_COPY_AND_ASSIGN(FormFetcherImpl);
 };

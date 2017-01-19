@@ -228,10 +228,12 @@ PasswordFormManager::PasswordFormManager(
       submit_result_(kSubmitResultNotSubmitted),
       form_type_(kFormTypeUnspecified),
       form_saver_(std::move(form_saver)),
-      form_fetcher_impl_(
-          form_fetcher ? nullptr : base::MakeUnique<FormFetcherImpl>(
-                                       PasswordStore::FormDigest(observed_form),
-                                       client)),
+      form_fetcher_impl_(form_fetcher
+                             ? nullptr
+                             : base::MakeUnique<FormFetcherImpl>(
+                                   PasswordStore::FormDigest(observed_form),
+                                   client,
+                                   /* should_migrate_http_passwords */ true)),
       form_fetcher_(form_fetcher ? form_fetcher : form_fetcher_impl_.get()) {
   if (form_fetcher_impl_)
     form_fetcher_impl_->Fetch();

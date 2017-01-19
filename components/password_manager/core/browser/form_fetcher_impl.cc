@@ -59,12 +59,15 @@ std::vector<const PasswordForm*> MakeWeakCopies(
 }  // namespace
 
 FormFetcherImpl::FormFetcherImpl(PasswordStore::FormDigest form_digest,
-                                 const PasswordManagerClient* client)
-    : form_digest_(std::move(form_digest)), client_(client) {}
+                                 const PasswordManagerClient* client,
+                                 bool should_migrate_http_passwords)
+    : form_digest_(std::move(form_digest)),
+      client_(client),
+      should_migrate_http_passwords_(should_migrate_http_passwords) {}
 
 FormFetcherImpl::~FormFetcherImpl() = default;
 
-void FormFetcherImpl::AddConsumer(Consumer* consumer) {
+void FormFetcherImpl::AddConsumer(FormFetcher::Consumer* consumer) {
   DCHECK(consumer);
   consumers_.insert(consumer);
   if (state_ == State::NOT_WAITING)
@@ -105,21 +108,14 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
     logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
   }
 
-  federated_ = SplitFederatedMatches(&results);
-  non_federated_ = std::move(results);
+  if (should_migrate_http_passwords_ && results.empty() &&
+      form_digest_.origin.SchemeIs(url::kHttpsScheme)) {
+    http_migrator_ = base::MakeUnique<HttpPasswordMigrator>(
+        form_digest_.origin, client_->GetPasswordStore(), this);
+    return;
+  }
 
-  const size_t original_count = non_federated_.size();
-
-  non_federated_ =
-      client_->GetStoreResultFilter()->FilterResults(std::move(non_federated_));
-
-  filtered_count_ = original_count - non_federated_.size();
-
-  weak_non_federated_ = MakeWeakCopies(non_federated_);
-  weak_federated_ = MakeWeakCopies(federated_);
-
-  for (Consumer* consumer : consumers_)
-    consumer->ProcessMatches(weak_non_federated_, filtered_count_);
+  ProcessPasswordStoreResults(std::move(results));
 }
 
 void FormFetcherImpl::OnGetSiteStatistics(
@@ -127,6 +123,11 @@ void FormFetcherImpl::OnGetSiteStatistics(
   // On Windows the password request may be resolved after the statistics due to
   // importing from IE.
   interactions_stats_ = std::move(stats);
+}
+
+void FormFetcherImpl::ProcessMigratedForms(
+    std::vector<std::unique_ptr<autofill::PasswordForm>> forms) {
+  ProcessPasswordStoreResults(std::move(forms));
 }
 
 void FormFetcherImpl::Fetch() {
@@ -162,6 +163,25 @@ void FormFetcherImpl::Fetch() {
   // The statistics is needed for the "Save password?" bubble.
   password_store->GetSiteStats(form_digest_.origin.GetOrigin(), this);
 #endif
+}
+
+void FormFetcherImpl::ProcessPasswordStoreResults(
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  federated_ = SplitFederatedMatches(&results);
+  non_federated_ = std::move(results);
+
+  const size_t original_count = non_federated_.size();
+
+  non_federated_ =
+      client_->GetStoreResultFilter()->FilterResults(std::move(non_federated_));
+
+  filtered_count_ = original_count - non_federated_.size();
+
+  weak_non_federated_ = MakeWeakCopies(non_federated_);
+  weak_federated_ = MakeWeakCopies(federated_);
+
+  for (FormFetcher::Consumer* consumer : consumers_)
+    consumer->ProcessMatches(weak_non_federated_, filtered_count_);
 }
 
 }  // namespace password_manager

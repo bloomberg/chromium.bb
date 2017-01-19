@@ -45,12 +45,16 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       std::unique_ptr<autofill::PasswordForm> saved_form,
       CredentialManagerPasswordFormManagerDelegate* delegate,
       std::unique_ptr<FormSaver> form_saver,
-      FormFetcher* form_fetcher);
+      std::unique_ptr<FormFetcher> form_fetcher);
   ~CredentialManagerPasswordFormManager() override;
 
   void ProcessMatches(
       const std::vector<const autofill::PasswordForm*>& non_federated,
       size_t filtered_count) override;
+
+#if defined(UNIT_TEST)
+  FormFetcher* form_fetcher() const { return form_fetcher_.get(); }
+#endif  // defined(UNIT_TEST)
 
  private:
   // Calls OnProvisionalSaveComplete on |delegate_|.
@@ -58,6 +62,7 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
 
   CredentialManagerPasswordFormManagerDelegate* delegate_;
   std::unique_ptr<autofill::PasswordForm> saved_form_;
+  std::unique_ptr<FormFetcher> form_fetcher_;
 
   base::WeakPtrFactory<CredentialManagerPasswordFormManager> weak_factory_;
 

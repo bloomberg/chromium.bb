@@ -16,6 +16,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/credential_manager_logger.h"
+#include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -76,9 +77,14 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   std::unique_ptr<autofill::PasswordForm> form(
       CreatePasswordFormFromCredentialInfo(credential, origin));
 
+  std::unique_ptr<autofill::PasswordForm> observed_form =
+      CreateObservedPasswordFormFromOrigin(origin);
+  // Create a custom form fetcher with suppressed HTTP->HTTPS migration.
+  auto form_fetcher = base::MakeUnique<FormFetcherImpl>(
+      PasswordStore::FormDigest(*observed_form), client_, false);
   form_manager_ = base::MakeUnique<CredentialManagerPasswordFormManager>(
-      client_, GetDriver(), *CreateObservedPasswordFormFromOrigin(origin),
-      std::move(form), this, nullptr, nullptr);
+      client_, GetDriver(), *observed_form, std::move(form), this, nullptr,
+      std::move(form_fetcher));
 }
 
 void CredentialManagerImpl::OnProvisionalSaveComplete() {
