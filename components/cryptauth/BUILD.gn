@@ -132,6 +132,7 @@ source_set("unit_tests") {
     ":cryptauth",
     ":test_support",
     "//base/test:test_support",
+    "//components/cryptauth/ble:unit_tests",
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
     "//google_apis:test_support",

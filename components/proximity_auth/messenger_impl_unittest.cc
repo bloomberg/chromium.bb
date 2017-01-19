@@ -112,13 +112,13 @@ TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendsExpectedMessage) {
   cryptauth::WireMessage* message =
       messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
-  EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
       "{"
       "\"name\":\"easy_unlock\","
       "\"type\":\"event\""
       "}, but encoded",
       message->payload());
+  EXPECT_EQ("easy_unlock", message->feature());
 }
 
 TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendMessageFails) {
@@ -155,7 +155,6 @@ TEST(ProximityAuthMessengerImplTest, RequestDecryption_SendsExpectedMessage) {
   cryptauth::WireMessage* message =
       messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
-  EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
       "{"
       "\"encrypted_data\":\"YSBtb3N0IGRpZmZpY3VsdCBjaGFsbGVuZ2U=\","
@@ -172,7 +171,6 @@ TEST(ProximityAuthMessengerImplTest,
   cryptauth::WireMessage* message =
       messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
-  EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
       "{"
       "\"encrypted_data\":\"_-Y=\","
@@ -274,7 +272,6 @@ TEST(ProximityAuthMessengerImplTest, RequestUnlock_SendsExpectedMessage) {
   cryptauth::WireMessage* message =
       messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
-  EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ("{\"type\":\"unlock_request\"}, but encoded", message->payload());
 }
 

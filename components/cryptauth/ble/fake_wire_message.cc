@@ -12,18 +12,12 @@
 
 namespace cryptauth {
 
-FakeWireMessage::FakeWireMessage(const std::string& payload)
-    : WireMessage(payload) {}
-
-std::unique_ptr<FakeWireMessage> FakeWireMessage::Deserialize(
-    const std::string& serialized_message,
-    bool* is_incomplete_message) {
-  *is_incomplete_message = false;
-  return std::unique_ptr<FakeWireMessage>(
-      new FakeWireMessage(serialized_message));
-}
+FakeWireMessage::FakeWireMessage(
+    const std::string& payload, const std::string& feature)
+    : WireMessage(payload, feature) {}
 
 std::string FakeWireMessage::Serialize() const {
-  return std::string(payload());
+  return feature() + "," + payload();
 }
+
 }

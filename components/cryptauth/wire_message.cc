@@ -33,7 +33,14 @@ const size_t kHeaderLength = 3;
 const int kMessageFormatVersionThree = 3;
 
 const char kPayloadKey[] = "payload";
-const char kPermitIdKey[] = "permit_id";
+const char kFeatureKey[] = "feature";
+
+// The default feature value. This is the default for backward compatibility
+// reasons; previously, the protocol did not transmit the feature in the
+// message, but because EasyUnlock was the only feature used, it didn't matter.
+// So, if a message is received without a feature, it is assumed to be
+// EasyUnlock by default.
+const char kDefaultFeature[] = "easy_unlock";
 
 // Parses the |serialized_message|'s header. Returns |true| iff the message has
 // a valid header, is complete, and is well-formed according to the header. Sets
@@ -83,29 +90,24 @@ std::unique_ptr<WireMessage> WireMessage::Deserialize(
     const std::string& serialized_message,
     bool* is_incomplete_message) {
   if (!ParseHeader(serialized_message, is_incomplete_message))
-    return std::unique_ptr<WireMessage>();
+    return nullptr;
 
   std::unique_ptr<base::Value> body_value =
       base::JSONReader::Read(serialized_message.substr(kHeaderLength));
   if (!body_value || !body_value->IsType(base::Value::Type::DICTIONARY)) {
     PA_LOG(WARNING) << "Error: Unable to parse message as JSON.";
-    return std::unique_ptr<WireMessage>();
+    return nullptr;
   }
 
   base::DictionaryValue* body;
   bool success = body_value->GetAsDictionary(&body);
   DCHECK(success);
 
-  // The permit ID is optional. In the Easy Unlock protocol, only the first
-  // message includes this field.
-  std::string permit_id;
-  body->GetString(kPermitIdKey, &permit_id);
-
   std::string payload_base64;
   if (!body->GetString(kPayloadKey, &payload_base64) ||
       payload_base64.empty()) {
     PA_LOG(WARNING) << "Error: Missing payload.";
-    return std::unique_ptr<WireMessage>();
+    return nullptr;
   }
 
   std::string payload;
@@ -113,10 +115,15 @@ std::unique_ptr<WireMessage> WireMessage::Deserialize(
                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
                              &payload)) {
     PA_LOG(WARNING) << "Error: Invalid base64 encoding for payload.";
-    return std::unique_ptr<WireMessage>();
+    return nullptr;
   }
 
-  return base::WrapUnique(new WireMessage(payload, permit_id));
+  std::string feature;
+  if (!body->GetString(kFeatureKey, &feature) || feature.empty()) {
+    feature = std::string(kDefaultFeature);
+  }
+
+  return base::WrapUnique(new WireMessage(payload, feature));
 }
 
 std::string WireMessage::Serialize() const {
@@ -127,13 +134,12 @@ std::string WireMessage::Serialize() const {
 
   // Create JSON body containing permit id and payload.
   base::DictionaryValue body;
-  if (!permit_id_.empty())
-    body.SetString(kPermitIdKey, permit_id_);
 
   std::string base64_payload;
   base::Base64UrlEncode(payload_, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &base64_payload);
   body.SetString(kPayloadKey, base64_payload);
+  body.SetString(kFeatureKey, feature_);
 
   std::string json_body;
   if (!base::JSONWriter::Write(body, &json_body)) {
@@ -161,11 +167,7 @@ std::string WireMessage::Serialize() const {
   return header_string + json_body;
 }
 
-WireMessage::WireMessage(const std::string& payload)
-    : WireMessage(payload, std::string()) {}
-
-WireMessage::WireMessage(const std::string& payload,
-                         const std::string& permit_id)
-    : payload_(payload), permit_id_(permit_id) {}
+WireMessage::WireMessage(const std::string& payload, const std::string& feature)
+    : payload_(payload), feature_(feature) {}
 
 }  // namespace cryptauth

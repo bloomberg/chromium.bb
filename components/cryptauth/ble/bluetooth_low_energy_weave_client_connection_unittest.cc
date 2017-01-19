@@ -40,6 +40,8 @@ using testing::SaveArg;
 namespace cryptauth {
 namespace {
 
+const std::string kTestFeature = "testFeature";
+
 class MockBluetoothThrottler : public BluetoothThrottler {
  public:
   MockBluetoothThrottler() {}
@@ -175,10 +177,11 @@ class MockBluetoothLowEnergyWeavePacketGenerator
   void SetMaxPacketSize(uint16_t size) override { max_packet_size_ = size; }
 
   std::vector<Packet> EncodeDataMessage(std::string message) override {
-    if (message == kSmallMessage && max_packet_size_ == kDefaultMaxPacketSize) {
+    if (message == (kTestFeature + "," + kSmallMessage)
+        && max_packet_size_ == kDefaultMaxPacketSize) {
       return kSmallPackets;
-    } else if (message == kLargeMessage &&
-               max_packet_size_ == kLargeMaxPacketSize) {
+    } else if (message == (kTestFeature + "," + kLargeMessage)
+          && max_packet_size_ == kLargeMaxPacketSize) {
       return kLargePackets;
     } else {
       NOTREACHED();
@@ -350,7 +353,6 @@ class ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest
         notify_session_alias_(NULL),
         bluetooth_throttler_(new NiceMock<MockBluetoothThrottler>),
         task_runner_(new base::TestSimpleTaskRunner),
-        last_completed_wire_message_(""),
         generator_factory_(
             new MockBluetoothLowEnergyWeavePacketGeneratorFactory()),
         receiver_factory_(
@@ -599,7 +601,6 @@ class ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest
   std::unique_ptr<MockBluetoothThrottler> bluetooth_throttler_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::MessageLoop message_loop_;
-  WireMessage last_completed_wire_message_;
   bool last_wire_message_success_;
   std::shared_ptr<MockBluetoothLowEnergyWeavePacketGeneratorFactory>
       generator_factory_;
@@ -806,7 +807,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<1>(&write_remote_characteristic_success_callback_),
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
-  connection->SendMessage(base::MakeUnique<FakeWireMessage>(kSmallMessage));
+  connection->SendMessage(
+      base::MakeUnique<FakeWireMessage>(kSmallMessage, kTestFeature));
 
   EXPECT_EQ(last_value_written_on_tx_characteristic_, kSmallPackets0);
 
@@ -832,7 +834,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<1>(&write_remote_characteristic_success_callback_),
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
-  connection->SendMessage(base::MakeUnique<FakeWireMessage>(kLargeMessage));
+  connection->SendMessage(
+      base::MakeUnique<FakeWireMessage>(kLargeMessage, kTestFeature));
 
   EXPECT_EQ(last_value_written_on_tx_characteristic_, kLargePackets0);
   std::vector<uint8_t> bytes_received(
@@ -873,7 +876,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<1>(&write_remote_characteristic_success_callback_),
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
-  connection->SendMessage(base::MakeUnique<FakeWireMessage>(kSmallMessage));
+  connection->SendMessage(
+      base::MakeUnique<FakeWireMessage>(kSmallMessage, kTestFeature));
 
   for (int i = 0; i < kMaxNumberOfTries; i++) {
     EXPECT_EQ(last_value_written_on_tx_characteristic_, kSmallPackets0);
@@ -949,7 +953,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest,
                 SaveArg<1>(&write_remote_characteristic_success_callback_),
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
-  connection->SendMessage(base::MakeUnique<FakeWireMessage>(kLargeMessage));
+  connection->SendMessage(
+      base::MakeUnique<FakeWireMessage>(kLargeMessage, kTestFeature));
 
   connection->GattCharacteristicValueChanged(
       adapter_.get(), rx_characteristic_.get(), kErroneousPacket);

@@ -17,6 +17,7 @@
 #include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/wire_message.h"
+#include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/device_to_device_responder_operations.h"
 #include "components/proximity_auth/secure_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -181,8 +182,6 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
         base::Unretained(this)));
 
     EXPECT_EQ(1u, connection_.message_buffer().size());
-    EXPECT_EQ(std::string("permit://google.com/easyunlock/v1/") + kAccountId,
-              connection_.message_buffer()[0]->permit_id());
     std::string hello_message = connection_.message_buffer()[0]->payload();
     connection_.ClearMessageBuffer();
 
@@ -214,7 +213,8 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
         base::Bind(&SaveStringResult, &responder_auth_message));
     EXPECT_FALSE(responder_auth_message.empty());
 
-    cryptauth::WireMessage wire_message(responder_auth_message);
+    cryptauth::WireMessage wire_message(responder_auth_message,
+                                        Authenticator::kAuthenticationFeature);
     connection_.OnBytesReceived(wire_message.Serialize());
 
     return responder_auth_message;
@@ -281,7 +281,8 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest, ResponderRejectsHello) {
 
   // If the responder could not validate the [Hello message], it essentially
   // sends random bytes back for privacy reasons.
-  cryptauth::WireMessage wire_message(base::RandBytesAsString(300u));
+  cryptauth::WireMessage wire_message(base::RandBytesAsString(300u),
+                                      Authenticator::kAuthenticationFeature);
   EXPECT_CALL(*this,
               OnAuthenticationResultProxy(Authenticator::Result::FAILURE));
   connection_.OnBytesReceived(wire_message.Serialize());
@@ -346,12 +347,13 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest,
 
   // Test that the authenticator is properly cleaned up after authentication
   // completes.
-  cryptauth::WireMessage wire_message(base::RandBytesAsString(300u));
-  connection_.SendMessage(
-      base::MakeUnique<cryptauth::WireMessage>(base::RandBytesAsString(300u)));
+  cryptauth::WireMessage wire_message(base::RandBytesAsString(300u),
+                                      Authenticator::kAuthenticationFeature);
+  connection_.SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+      base::RandBytesAsString(300u), Authenticator::kAuthenticationFeature));
   connection_.OnBytesReceived(wire_message.Serialize());
-  connection_.SendMessage(
-      base::MakeUnique<cryptauth::WireMessage>(base::RandBytesAsString(300u)));
+  connection_.SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+      base::RandBytesAsString(300u), Authenticator::kAuthenticationFeature));
   connection_.OnBytesReceived(wire_message.Serialize());
 }
 

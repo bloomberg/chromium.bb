@@ -52,6 +52,8 @@ const char kServiceID[] = "service id";
 const char kToPeripheralCharID[] = "to peripheral char id";
 const char kFromPeripheralCharID[] = "from peripheral char id";
 
+const char kTestFeature[] = "testFeature";
+
 const device::BluetoothRemoteGattCharacteristic::Properties
     kCharacteristicProperties =
         device::BluetoothRemoteGattCharacteristic::PROPERTY_BROADCAST |
@@ -598,19 +600,25 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   int message_size = 100;
   std::string message(message_size, 'A');
   message[0] = 'B';
-  connection->SendMessage(
-      base::MakeUnique<cryptauth::FakeWireMessage>(message));
+
+  std::unique_ptr<cryptauth::FakeWireMessage> wire_message =
+      base::MakeUnique<cryptauth::FakeWireMessage>(message,
+                                                   std::string(kTestFeature));
+  std::string serialized_message = wire_message->Serialize();
+
+  connection->SendMessage(std::move(wire_message));
 
   // Expecting that |kSendSignal| + |message_size| + |message| was written.
   EXPECT_EQ(last_value_written_on_to_peripheral_char_,
-            CreateFirstCharacteristicValue(message, message.size()));
+            CreateFirstCharacteristicValue(serialized_message,
+                                           serialized_message.size()));
   EXPECT_CALL(*connection, OnDidSendMessage(_, _));
 
   RunWriteCharacteristicSuccessCallback();
 }
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
-       SendMessage_LagerThanCharacteristicSize) {
+       SendMessage_LargerThanCharacteristicSize) {
   std::unique_ptr<MockBluetoothLowEnergyConnection> connection(
       CreateConnection());
   InitializeConnection(connection.get());
@@ -627,15 +635,21 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   int message_size = 600;
   std::string message(message_size, 'A');
   message[0] = 'B';
-  connection->SendMessage(
-      base::MakeUnique<cryptauth::FakeWireMessage>(message));
 
-  // Expecting that |kSendSignal| + |message_size| was written in the first 8
-  // bytes.
+  std::unique_ptr<cryptauth::FakeWireMessage> wire_message =
+      base::MakeUnique<cryptauth::FakeWireMessage>(message,
+                                                   std::string(kTestFeature));
+  std::string serialized_message = wire_message->Serialize();
+
+  // Send the message.
+  connection->SendMessage(std::move(wire_message));
+
+  // Expecting that |kSendSignal| + |serialized_message| was written in the
+  // first 8 bytes.
   std::vector<uint8_t> prefix(
       last_value_written_on_to_peripheral_char_.begin(),
       last_value_written_on_to_peripheral_char_.begin() + 8);
-  EXPECT_EQ(prefix, CreateSendSignalWithSize(message_size));
+  EXPECT_EQ(prefix, CreateSendSignalWithSize(serialized_message.size()));
   std::vector<uint8_t> bytes_received(
       last_value_written_on_to_peripheral_char_.begin() + 8,
       last_value_written_on_to_peripheral_char_.end());
@@ -654,7 +668,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
                         last_value_written_on_to_peripheral_char_.end());
 
   // Expecting that the message was written.
-  std::vector<uint8_t> expected_value(message.begin(), message.end());
+  std::vector<uint8_t> expected_value(serialized_message.begin(),
+                                      serialized_message.end());
   EXPECT_EQ(expected_value.size(), bytes_received.size());
   EXPECT_EQ(expected_value, bytes_received);
 

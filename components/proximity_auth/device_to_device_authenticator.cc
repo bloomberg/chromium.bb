@@ -12,6 +12,7 @@
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/cryptauth/wire_message.h"
+#include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/device_to_device_initiator_operations.h"
 #include "components/proximity_auth/device_to_device_secure_context.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -25,10 +26,6 @@ namespace {
 // [Responder Auth] message. If we do not get the message in this time, then
 // authentication will fail.
 const int kResponderAuthTimeoutSeconds = 5;
-
-// The prefix of the permit id sent to the remote device. The permit id
-// is used by the remote device to find the credentials of the local device.
-const char kPermitIdPrefix[] = "permit://google.com/easyunlock/v1/";
 
 }  // namespace
 
@@ -113,9 +110,8 @@ void DeviceToDeviceAuthenticator::OnHelloMessageCreated(
   // Send the [Hello] message to the remote device.
   state_ = State::SENT_HELLO;
   hello_message_ = message;
-  std::string permit_id = kPermitIdPrefix + account_id_;
-  connection_->SendMessage(
-      base::MakeUnique<cryptauth::WireMessage>(hello_message_, permit_id));
+  connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+      hello_message_, std::string(Authenticator::kAuthenticationFeature)));
 }
 
 void DeviceToDeviceAuthenticator::OnResponderAuthTimedOut() {
@@ -154,7 +150,8 @@ void DeviceToDeviceAuthenticator::OnInitiatorAuthCreated(
   }
 
   state_ = State::SENT_INITIATOR_AUTH;
-  connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(message));
+  connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+      message, std::string(Authenticator::kAuthenticationFeature)));
 }
 
 void DeviceToDeviceAuthenticator::Fail(const std::string& error_message) {
@@ -200,7 +197,8 @@ void DeviceToDeviceAuthenticator::OnConnectionStatusChanged(
 void DeviceToDeviceAuthenticator::OnMessageReceived(
     const cryptauth::Connection& connection,
     const cryptauth::WireMessage& message) {
-  if (state_ == State::SENT_HELLO) {
+  if (state_ == State::SENT_HELLO &&
+      message.feature() == std::string(Authenticator::kAuthenticationFeature)) {
     PA_LOG(INFO) << "Received [Responder Auth] message, payload_size="
                  << message.payload().size();
     state_ = State::RECEIVED_RESPONDER_AUTH;

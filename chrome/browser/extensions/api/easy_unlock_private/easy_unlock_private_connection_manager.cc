@@ -19,6 +19,9 @@ using cryptauth::WireMessage;
 
 namespace extensions {
 namespace {
+
+const char kEasyUnlockFeatureName[] = "easy_unlock";
+
 api::easy_unlock_private::ConnectionStatus ToApiConnectionStatus(
     Connection::Status status) {
   switch (status) {
@@ -31,6 +34,7 @@ api::easy_unlock_private::ConnectionStatus ToApiConnectionStatus(
   }
   return api::easy_unlock_private::CONNECTION_STATUS_NONE;
 }
+
 }  // namespace
 
 EasyUnlockPrivateConnectionManager::EasyUnlockPrivateConnectionManager(
@@ -98,7 +102,8 @@ bool EasyUnlockPrivateConnectionManager::SendMessage(
     const std::string& payload) {
   Connection* connection = GetConnection(extension->id(), connection_id);
   if (connection && connection->IsConnected()) {
-    connection->SendMessage(base::MakeUnique<WireMessage>(payload));
+    connection->SendMessage(base::MakeUnique<WireMessage>(
+        payload, std::string(kEasyUnlockFeatureName)));
     return true;
   }
   return false;
@@ -123,6 +128,11 @@ void EasyUnlockPrivateConnectionManager::OnConnectionStatusChanged(
 void EasyUnlockPrivateConnectionManager::OnMessageReceived(
     const Connection& connection,
     const WireMessage& message) {
+  if (message.feature() != std::string(kEasyUnlockFeatureName)) {
+    // Only process messages received as part of EasyUnlock.
+    return;
+  }
+
   std::string event_name = api::easy_unlock_private::OnDataReceived::kEventName;
   events::HistogramValue histogram_value =
       events::EASY_UNLOCK_PRIVATE_ON_DATA_RECEIVED;
@@ -137,6 +147,11 @@ void EasyUnlockPrivateConnectionManager::OnSendCompleted(
     const Connection& connection,
     const WireMessage& message,
     bool success) {
+  if (message.feature() != std::string(kEasyUnlockFeatureName)) {
+    // Only process messages sent as part of EasyUnlock.
+    return;
+  }
+
   std::string event_name =
       api::easy_unlock_private::OnSendCompleted::kEventName;
   events::HistogramValue histogram_value =

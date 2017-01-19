@@ -50,6 +50,8 @@ const char kScreenUnlocked[] = "Screen Unlocked";
 const char kScreenLocked[] = "Screen Locked";
 const int kIOSPollingIntervalSeconds = 5;
 
+const char kEasyUnlockFeatureName[] = "easy_unlock";
+
 // Serializes the |value| to a JSON string and returns the result.
 std::string SerializeValueToJson(const base::Value& value) {
   std::string json;
@@ -179,8 +181,8 @@ void MessengerImpl::ProcessMessageQueue() {
 }
 
 void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
-  connection_->SendMessage(
-      base::MakeUnique<cryptauth::WireMessage>(encoded_message));
+  connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+      encoded_message, std::string(kEasyUnlockFeatureName)));
 }
 
 void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {

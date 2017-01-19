@@ -11,6 +11,10 @@
 
 namespace cryptauth {
 
+namespace {
+const char kFakeFeatureName[] = "fakeFeature";
+}  // namespace
+
 FakeConnection::FakeConnection(const cryptauth::RemoteDevice& remote_device)
     : Connection(remote_device) {
   Connect();
@@ -50,7 +54,8 @@ void FakeConnection::SendMessageImpl(std::unique_ptr<WireMessage> message) {
 std::unique_ptr<WireMessage> FakeConnection::DeserializeWireMessage(
     bool* is_incomplete_message) {
   *is_incomplete_message = false;
-  return base::MakeUnique<WireMessage>(pending_payload_);
+  return base::MakeUnique<WireMessage>(
+      pending_payload_, std::string(kFakeFeatureName));
 }
 
 }  // namespace cryptauth

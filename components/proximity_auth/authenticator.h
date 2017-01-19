@@ -27,6 +27,10 @@ class Authenticator {
     FAILURE,
   };
 
+  // Feature to be used in |WireMessage|s sent during the authentication
+  // handshake.
+  static const char kAuthenticationFeature[];
+
   virtual ~Authenticator() {}
 
   // Initiates the authentication attempt, invoking |callback| with the result.
