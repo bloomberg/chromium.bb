@@ -101,6 +101,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       view_visible_(false),
       window_visible_(false),
       attached_to_window_(false),
+      was_attached_(false),
       hardware_enabled_(false),
       dip_scale_(0.f),
       page_scale_factor_(1.f),
@@ -444,6 +445,8 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
                "height",
                height);
   attached_to_window_ = true;
+  was_attached_ = true;
+
   size_.SetSize(width, height);
   if (offscreen_pre_raster_)
     UpdateMemoryPolicy();
@@ -486,7 +489,13 @@ bool BrowserViewRenderer::IsVisible() const {
 }
 
 bool BrowserViewRenderer::IsClientVisible() const {
-  return !is_paused_ && (!attached_to_window_ || window_visible_);
+  // When WebView is not paused, we declare it visible even before it is
+  // attached to window to allow for background operations. If it ever gets
+  // attached though, the WebView is visible as long as it is attached
+  // to a window and the window is visible.
+  return is_paused_
+             ? false
+             : !was_attached_ || (attached_to_window_ && window_visible_);
 }
 
 gfx::Rect BrowserViewRenderer::GetScreenRect() const {

@@ -145,6 +145,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
     return compositor_;
   }
 
+  bool window_visible_for_tests() const { return window_visible_; }
+
  private:
   void SetTotalRootLayerScrollOffset(const gfx::Vector2dF& new_value_dip);
   bool CanOnDraw();
@@ -193,6 +195,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool view_visible_;
   bool window_visible_;  // Only applicable if |attached_to_window_| is true.
   bool attached_to_window_;
+  bool was_attached_;  // Whether the view was attached to window at least once.
   bool hardware_enabled_;
   float dip_scale_;
   float page_scale_factor_;
