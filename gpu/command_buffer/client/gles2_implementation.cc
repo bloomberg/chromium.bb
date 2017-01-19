@@ -2418,7 +2418,7 @@ void GLES2Implementation::CompressedTexSubImage2D(
     helper_->CompressedTexSubImage2D(
         target, level, xoffset, yoffset, width, height, format, image_size,
         0, ToGLuint(data));
-  } else {
+  } else if (data) {
     SetBucketContents(kResultBucketId, data, image_size);
     helper_->CompressedTexSubImage2DBucket(
         target, level, xoffset, yoffset, width, height, format,
@@ -2427,6 +2427,9 @@ void GLES2Implementation::CompressedTexSubImage2D(
     // and we don't have to wait for the result so from the client's perspective
     // it's cheap.
     helper_->SetBucketSize(kResultBucketId, 0);
+  } else {
+    helper_->CompressedTexSubImage2D(target, level, xoffset, yoffset, width,
+                                     height, format, image_size, 0, 0);
   }
   CheckGLError();
 }
@@ -2521,7 +2524,7 @@ void GLES2Implementation::CompressedTexSubImage3D(
     helper_->CompressedTexSubImage3D(
         target, level, xoffset, yoffset, zoffset, width, height, depth, format,
         image_size, 0, ToGLuint(data));
-  } else {
+  } else if (data) {
     SetBucketContents(kResultBucketId, data, image_size);
     helper_->CompressedTexSubImage3DBucket(
         target, level, xoffset, yoffset, zoffset, width, height, depth, format,
@@ -2530,6 +2533,10 @@ void GLES2Implementation::CompressedTexSubImage3D(
     // and we don't have to wait for the result so from the client's perspective
     // it's cheap.
     helper_->SetBucketSize(kResultBucketId, 0);
+  } else {
+    helper_->CompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset,
+                                     width, height, depth, format, image_size,
+                                     0, 0);
   }
   CheckGLError();
 }

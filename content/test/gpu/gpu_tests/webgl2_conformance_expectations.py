@@ -41,10 +41,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
     # All platforms.
-
-    self.Fail('conformance/extensions/webgl-compressed-texture-etc.html',
-        bug=679678)
-
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
