@@ -166,6 +166,7 @@ test("keyboard_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
+    "//ui/resources:ui_test_pak",
     "//ui/wm",
   ]
 }
