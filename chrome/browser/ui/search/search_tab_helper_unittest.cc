@@ -283,16 +283,13 @@ class TabTitleObserver : public content::WebContentsObserver {
   base::string16 title_on_commit() { return title_on_commit_; }
 
  private:
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* /* render_frame_host */,
-      const GURL& /* validated_url */,
-      bool /* is_error_page */) override {
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
     title_on_start_ = web_contents()->GetTitle();
   }
 
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& /* details */,
-      const content::FrameNavigateParams& /* params */) override {
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
     title_on_commit_ = web_contents()->GetTitle();
   }
 

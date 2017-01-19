@@ -50,9 +50,18 @@ chrome.test.runTests([
   function newTab() {
     // Test for crbug.com/27208.
     expect([
+      { title : "New Tab" },
       { status: 'loading', url: 'chrome://newtab/' },
       { status: 'complete' }
-    ]);
+    ], function(info) {
+      // TODO(jam): remove this logic and the title line above when PlzNavigate
+      // is turned on by default. Right now the test has to handle both cases
+      // which have different timing. http://crbug.com/368813
+      if (info.status === 'loading' && capturedEventData.length == 0) {
+        expectedEventData.shift();
+      }
+      return false;
+    });
 
     chrome.tabs.create({ url: 'chrome://newtab/' });
   },
