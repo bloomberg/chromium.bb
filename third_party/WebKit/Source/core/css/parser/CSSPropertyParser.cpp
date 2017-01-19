@@ -1341,14 +1341,6 @@ bool CSSPropertyParser::consumeOffsetShorthand(bool important) {
   return true;
 }
 
-static CSSValue* consumeOutlineColor(CSSParserTokenRange& range,
-                                     CSSParserMode cssParserMode) {
-  // Allow the special focus color even in HTML Standard parsing mode.
-  if (range.peek().id() == CSSValueWebkitFocusRingColor)
-    return consumeIdent(range);
-  return consumeColor(range, cssParserMode);
-}
-
 static CSSValue* consumeLineWidth(CSSParserTokenRange& range,
                                   CSSParserMode cssParserMode,
                                   UnitlessQuirk unitless) {
@@ -3135,8 +3127,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation:
       return consumeOffsetRotate(m_range);
-    case CSSPropertyOutlineColor:
-      return consumeOutlineColor(m_range, m_context->mode());
     case CSSPropertyOutlineWidth:
       return consumeLineWidth(m_range, m_context->mode(),
                               UnitlessQuirk::Forbid);
