@@ -184,7 +184,6 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
     : NGLayoutAlgorithm(kBlockLayoutAlgorithm),
-      layout_state_(kStateInit),
       style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
@@ -224,136 +223,113 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
     NGPhysicalFragment* child_fragment,
     NGPhysicalFragment** fragment_out,
     NGLayoutAlgorithm** algorithm_out) {
-  switch (layout_state_) {
-    case kStateInit: {
-      WTF::Optional<MinAndMaxContentSizes> sizes;
-      if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
-        sizes = MinAndMaxContentSizes();
-        ComputeMinAndMaxContentSizes(&*sizes);
-      }
+  WTF::Optional<MinAndMaxContentSizes> sizes;
+  if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
+    // TODO(ikilpatrick): Change ComputeMinAndMaxContentSizes to return
+    // MinAndMaxContentSizes.
+    sizes = MinAndMaxContentSizes();
+    ComputeMinAndMaxContentSizes(&*sizes);
+  }
 
-      border_and_padding_ =
-          ComputeBorders(Style()) + ComputePadding(ConstraintSpace(), Style());
+  border_and_padding_ =
+      ComputeBorders(Style()) + ComputePadding(ConstraintSpace(), Style());
 
-      LayoutUnit inline_size =
-          ComputeInlineSizeForFragment(ConstraintSpace(), Style(), sizes);
-      LayoutUnit adjusted_inline_size =
-          inline_size - border_and_padding_.InlineSum();
-      // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
-      // -1?
-      LayoutUnit block_size = ComputeBlockSizeForFragment(
-          ConstraintSpace(), Style(), NGSizeIndefinite);
-      LayoutUnit adjusted_block_size(block_size);
-      // Our calculated block-axis size may be indefinite at this point.
-      // If so, just leave the size as NGSizeIndefinite instead of subtracting
-      // borders and padding.
-      if (adjusted_block_size != NGSizeIndefinite)
-        adjusted_block_size -= border_and_padding_.BlockSum();
+  LayoutUnit inline_size =
+      ComputeInlineSizeForFragment(ConstraintSpace(), Style(), sizes);
+  LayoutUnit adjusted_inline_size =
+      inline_size - border_and_padding_.InlineSum();
+  // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
+  // -1?
+  LayoutUnit block_size =
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), NGSizeIndefinite);
+  LayoutUnit adjusted_block_size(block_size);
+  // Our calculated block-axis size may be indefinite at this point.
+  // If so, just leave the size as NGSizeIndefinite instead of subtracting
+  // borders and padding.
+  if (adjusted_block_size != NGSizeIndefinite)
+    adjusted_block_size -= border_and_padding_.BlockSum();
 
-      space_builder_ = new NGConstraintSpaceBuilder(constraint_space_);
-      if (Style().specifiesColumns()) {
-        space_builder_->SetFragmentationType(kFragmentColumn);
-        adjusted_inline_size =
-            ResolveUsedColumnInlineSize(adjusted_inline_size, Style());
-        LayoutUnit inline_progression =
-            adjusted_inline_size + ResolveUsedColumnGap(Style());
-        fragmentainer_mapper_ =
-            new NGColumnMapper(inline_progression, adjusted_block_size);
-      }
-      space_builder_->SetAvailableSize(
-          NGLogicalSize(adjusted_inline_size, adjusted_block_size));
-      space_builder_->SetPercentageResolutionSize(
-          NGLogicalSize(adjusted_inline_size, adjusted_block_size));
+  space_builder_ = new NGConstraintSpaceBuilder(constraint_space_);
+  if (Style().specifiesColumns()) {
+    space_builder_->SetFragmentationType(kFragmentColumn);
+    adjusted_inline_size =
+        ResolveUsedColumnInlineSize(adjusted_inline_size, Style());
+    LayoutUnit inline_progression =
+        adjusted_inline_size + ResolveUsedColumnGap(Style());
+    fragmentainer_mapper_ =
+        new NGColumnMapper(inline_progression, adjusted_block_size);
+  }
+  space_builder_->SetAvailableSize(
+      NGLogicalSize(adjusted_inline_size, adjusted_block_size));
+  space_builder_->SetPercentageResolutionSize(
+      NGLogicalSize(adjusted_inline_size, adjusted_block_size));
 
-      builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
-      builder_->SetDirection(constraint_space_->Direction());
-      builder_->SetWritingMode(constraint_space_->WritingMode());
-      builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
+  builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
+  builder_->SetDirection(constraint_space_->Direction());
+  builder_->SetWritingMode(constraint_space_->WritingMode());
+  builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
 
-      if (NGBlockBreakToken* token = CurrentBlockBreakToken()) {
-        // Resume after a previous break.
-        content_size_ = token->BreakOffset();
-        current_child_ = token->InputNode();
-      } else {
-        content_size_ = border_and_padding_.block_start;
-        current_child_ = first_child_;
-      }
+  if (NGBlockBreakToken* token = CurrentBlockBreakToken()) {
+    // Resume after a previous break.
+    content_size_ = token->BreakOffset();
+    current_child_ = token->InputNode();
+  } else {
+    content_size_ = border_and_padding_.block_start;
+    current_child_ = first_child_;
+  }
 
-      layout_state_ = kStatePrepareForChildLayout;
-      return kNotFinished;
+  while (current_child_) {
+    EPosition position = current_child_->Style()->position();
+    if (position == AbsolutePosition || position == FixedPosition) {
+      builder_->AddOutOfFlowChildCandidate(current_child_,
+                                           GetChildSpaceOffset());
+      current_child_ = current_child_->NextSibling();
+      continue;
     }
-    case kStatePrepareForChildLayout: {
-      if (current_child_) {
-        EPosition position = current_child_->Style()->position();
-        if ((position == AbsolutePosition || position == FixedPosition)) {
-          builder_->AddOutOfFlowChildCandidate(current_child_,
-                                               GetChildSpaceOffset());
-          current_child_ = current_child_->NextSibling();
-          return kNotFinished;
-        }
-        DCHECK(!ConstraintSpace().HasBlockFragmentation() ||
-               SpaceAvailableForCurrentChild() > LayoutUnit());
-        space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
-        *algorithm_out = NGLayoutInputNode::AlgorithmForInputNode(
-            current_child_, space_for_current_child_);
-        layout_state_ = kStateChildLayout;
-        return kChildAlgorithmRequired;
-      }
 
-      // Prepare for kStateOutOfFlowLayout
-      content_size_ += border_and_padding_.block_end;
+    DCHECK(!ConstraintSpace().HasBlockFragmentation() ||
+           SpaceAvailableForCurrentChild() > LayoutUnit());
+    space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
 
-      // Recompute the block-axis size now that we know our content size.
-      LayoutUnit block_size = ComputeBlockSizeForFragment(
-          ConstraintSpace(), Style(), content_size_);
-      builder_->SetBlockSize(block_size);
+    NGFragment* fragment;
+    current_child_->LayoutSync(space_for_current_child_, &fragment);
+    NGPhysicalFragment* child_fragment = fragment->PhysicalFragment();
 
-      // Out of flow setup.
-      out_of_flow_layout_ =
-          new NGOutOfFlowLayoutPart(&Style(), builder_->Size());
-      builder_->GetAndClearOutOfFlowDescendantCandidates(
-          &out_of_flow_candidates_, &out_of_flow_candidate_positions_);
-      out_of_flow_candidate_positions_index_ = 0;
-      current_child_ = nullptr;
-      layout_state_ = kStateOutOfFlowLayout;
-      return kNotFinished;
-    }
-    case kStateChildLayout: {
-      DCHECK(current_child_);
-      DCHECK(child_fragment);
+    // TODO(layout_ng): Seems like a giant hack to call this here.
+    current_child_->UpdateLayoutBox(toNGPhysicalBoxFragment(child_fragment),
+                                    space_for_current_child_);
 
-      // TODO(layout_ng): Seems like a giant hack to call this here.
-      current_child_->UpdateLayoutBox(toNGPhysicalBoxFragment(child_fragment),
-                                      space_for_current_child_);
+    FinishCurrentChildLayout(new NGBoxFragment(
+        ConstraintSpace().WritingMode(), ConstraintSpace().Direction(),
+        toNGPhysicalBoxFragment(child_fragment)));
 
-      FinishCurrentChildLayout(new NGBoxFragment(
-          ConstraintSpace().WritingMode(), ConstraintSpace().Direction(),
-          toNGPhysicalBoxFragment(child_fragment)));
+    if (!ProceedToNextUnfinishedSibling(child_fragment))
+      break;
+  }
 
-      if (ProceedToNextUnfinishedSibling(child_fragment))
-        layout_state_ = kStatePrepareForChildLayout;
-      else
-        layout_state_ = kStateFinalize;
-      return kNotFinished;
-    }
-    case kStateOutOfFlowLayout:
-      if (LayoutOutOfFlowChild())
-        layout_state_ = kStateFinalize;
-      return kNotFinished;
-    case kStateFinalize: {
-      builder_->SetInlineOverflow(max_inline_size_)
-          .SetBlockOverflow(content_size_);
+  content_size_ += border_and_padding_.block_end;
 
-      if (ConstraintSpace().HasBlockFragmentation())
-        FinalizeForFragmentation();
+  // Recompute the block-axis size now that we know our content size.
+  block_size =
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), content_size_);
+  builder_->SetBlockSize(block_size);
 
-      *fragment_out = builder_->ToBoxFragment();
-      layout_state_ = kStateInit;
-      return kNewFragment;
-    }
-  };
-  NOTREACHED();
-  *fragment_out = nullptr;
+  // Out of flow setup.
+  out_of_flow_layout_ = new NGOutOfFlowLayoutPart(&Style(), builder_->Size());
+  builder_->GetAndClearOutOfFlowDescendantCandidates(
+      &out_of_flow_candidates_, &out_of_flow_candidate_positions_);
+  out_of_flow_candidate_positions_index_ = 0;
+  current_child_ = nullptr;
+
+  while (!LayoutOutOfFlowChild())
+    continue;
+
+  builder_->SetInlineOverflow(max_inline_size_).SetBlockOverflow(content_size_);
+
+  if (ConstraintSpace().HasBlockFragmentation())
+    FinalizeForFragmentation();
+
+  *fragment_out = builder_->ToBoxFragment();
   return kNewFragment;
 }
 

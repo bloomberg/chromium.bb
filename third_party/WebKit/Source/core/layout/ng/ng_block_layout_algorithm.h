@@ -146,15 +146,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   const ComputedStyle& Style() const { return *style_; }
 
-  enum LayoutState {
-    kStateInit,
-    kStatePrepareForChildLayout,
-    kStateChildLayout,
-    kStateOutOfFlowLayout,
-    kStateFinalize
-  };
-  LayoutState layout_state_;
-
   RefPtr<const ComputedStyle> style_;
 
   Member<NGBlockNode> first_child_;

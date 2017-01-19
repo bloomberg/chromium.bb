@@ -40,13 +40,11 @@ class NGBlockLayoutAlgorithmTest : public ::testing::Test {
     NGBlockNode parent(style_.get());
     parent.SetFirstChild(first_child);
 
-    NGLayoutCoordinator coordinator(&parent, space);
+    NGBlockLayoutAlgorithm algorithm(style_.get(), first_child, space);
+
     NGPhysicalFragment* fragment;
-    coordinator.Tick(&fragment);
-    EXPECT_EQ(kBlockLayoutAlgorithm,
-              coordinator.GetAlgorithmStackForTesting()[0]->algorithmType());
-    while (!coordinator.Tick(&fragment))
-      ;
+    NGLayoutAlgorithm* not_used;
+    EXPECT_EQ(kNewFragment, algorithm.Layout(nullptr, &fragment, &not_used));
 
     return toNGPhysicalBoxFragment(fragment);
   }
