@@ -1874,12 +1874,17 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
   var legacyConstraints = {
     video: {
       mandatory: {
-        sourceId: constraints.video.deviceId,
         minWidth: constraints.video.width,
         minHeight: constraints.video.height
       }
     }
   };
+
+  // If the deviceId is passed, then request it. Otherwise, let's open the
+  // default system camera.
+  if (constraints.video.deviceId) {
+    legacyConstraints.video.mandatory.sourceId = constraints.video.deviceId;
+  }
 
   // TODO(mtomasz): Move to navigator.mediaDevices.getUserMedia() when
   // it's fully implemented.
@@ -2116,6 +2121,13 @@ camera.views.Camera.prototype.start_ = function() {
       else
         return 1;
     }.bind(this));
+
+
+    // Prepended 'null' deviceId means the system default camera. Add it only
+    // when the app is launched (no deviceId_ set).
+    if (this.videoDeviceId_ == null) {
+        sortedDeviceIds.unshift(null);
+    }
 
     // TODO(mtomasz): Remove this when support for advanced (multiple)
     // constraints is added to Chrome. For now try to obtain stream with
