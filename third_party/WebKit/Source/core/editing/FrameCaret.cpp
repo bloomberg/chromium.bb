@@ -235,8 +235,7 @@ static IntRect absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect) {
       .enclosingBoundingBox();
 }
 
-// TDOO(yosin): We should mark |FrameCaret::absoluteCaretBounds()| to |const|.
-IntRect FrameCaret::absoluteCaretBounds() {
+IntRect FrameCaret::absoluteCaretBounds() const {
   DCHECK_NE(m_frame->document()->lifecycle().state(),
             DocumentLifecycle::InPaintInvalidation);
   DCHECK(!m_frame->document()->needsLayoutTreeUpdate());

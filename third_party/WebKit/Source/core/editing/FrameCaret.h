@@ -71,7 +71,7 @@ class CORE_EXPORT FrameCaret final
   // If |forceInvalidation| is true the caret's previous and new rectangles
   // are forcibly invalidated regardless of the state of the blink timer.
   void invalidateCaretRect(bool forceInvalidation);
-  IntRect absoluteCaretBounds();
+  IntRect absoluteCaretBounds() const;
 
   bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
   void setShouldShowBlockCursor(bool);
