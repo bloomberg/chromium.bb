@@ -2237,9 +2237,9 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       struct macroblockd_plane *const pd = &xd->plane[0];
       uint8_t *dst =
           &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-      av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mbmi->mode,
-                              dst, pd->dst.stride, dst, pd->dst.stride, col,
-                              row, 0);
+      av1_predict_intra_block(xd, pd->width, pd->height,
+                              txsize_to_bsize[tx_size], mbmi->mode, dst,
+                              pd->dst.stride, dst, pd->dst.stride, col, row, 0);
     }
   }
   // RD estimation.
@@ -2558,9 +2558,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
           assert(IMPLIES(tx_size == TX_4X8 || tx_size == TX_8X4,
                          block == 0 || block == 2));
           xd->mi[0]->bmi[block_raster_idx].as_mode = mode;
-          av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mode, dst,
-                                  dst_stride, dst, dst_stride, col + idx,
-                                  row + idy, 0);
+          av1_predict_intra_block(
+              xd, pd->width, pd->height, txsize_to_bsize[tx_size], mode, dst,
+              dst_stride, dst, dst_stride, col + idx, row + idy, 0);
           aom_highbd_subtract_block(tx_height, tx_width, src_diff, 8, src,
                                     src_stride, dst, dst_stride, xd->bd);
           if (is_lossless) {
@@ -2717,8 +2717,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
         assert(IMPLIES(tx_size == TX_4X8 || tx_size == TX_8X4,
                        block == 0 || block == 2));
         xd->mi[0]->bmi[block_raster_idx].as_mode = mode;
-        av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mode, dst,
-                                dst_stride, dst, dst_stride,
+        av1_predict_intra_block(xd, pd->width, pd->height,
+                                txsize_to_bsize[tx_size], mode, dst, dst_stride,
+                                dst, dst_stride,
 #if CONFIG_CB4X4
                                 2 * (col + idx), 2 * (row + idy),
 #else

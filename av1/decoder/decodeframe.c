@@ -495,8 +495,9 @@ static void predict_and_reconstruct_intra_block(AV1_COMMON *cm,
     if (plane == 0) mode = xd->mi[0]->bmi[block_idx].as_mode;
 #endif
 
-  av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mode, dst,
-                          pd->dst.stride, dst, pd->dst.stride, col, row, plane);
+  av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
+                          mode, dst, pd->dst.stride, dst, pd->dst.stride, col,
+                          row, plane);
 
   if (!mbmi->skip) {
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);

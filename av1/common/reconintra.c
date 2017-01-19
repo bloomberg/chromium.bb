@@ -1977,40 +1977,41 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
 }
 
 void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
-                             TX_SIZE tx_size, PREDICTION_MODE mode,
+                             BLOCK_SIZE bsize, PREDICTION_MODE mode,
                              const uint8_t *ref, int ref_stride, uint8_t *dst,
                              int dst_stride, int col_off, int row_off,
                              int plane) {
-  const int tx_width = tx_size_wide[tx_size];
-  const int tx_height = tx_size_high[tx_size];
-  if (tx_width == tx_height) {
+  const int block_width = block_size_wide[bsize];
+  const int block_height = block_size_high[bsize];
+  TX_SIZE tx_size = max_txsize_lookup[bsize];
+  assert(tx_size < TX_SIZES);
+  if (block_width == block_height) {
     predict_square_intra_block(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
                                dst, dst_stride, col_off, row_off, plane);
   } else {
-#if (CONFIG_VAR_TX || CONFIG_RECT_TX)
+#if (CONFIG_VAR_TX || CONFIG_RECT_TX) || \
+    (CONFIG_EXT_INTER && USE_RECT_INTERINTRA)
 #if CONFIG_AOM_HIGHBITDEPTH
     uint16_t tmp16[MAX_SB_SIZE];
 #endif
     uint8_t tmp[MAX_SB_SIZE];
-    const TX_SIZE sub_tx_size = txsize_sqr_map[tx_size];
-    assert(sub_tx_size < TX_SIZES);
-    assert((tx_width == wpx && tx_height == hpx) ||
-           (tx_width == (wpx >> 1) && tx_height == hpx) ||
-           (tx_width == wpx && tx_height == (hpx >> 1)));
+    assert((block_width == wpx && block_height == hpx) ||
+           (block_width == (wpx >> 1) && block_height == hpx) ||
+           (block_width == wpx && block_height == (hpx >> 1)));
 
-    if (tx_width < tx_height) {
-      assert(tx_height == (tx_width << 1));
+    if (block_width < block_height) {
+      assert(block_height == (block_width << 1));
       // Predict the top square sub-block.
-      predict_square_intra_block(xd, wpx, hpx, sub_tx_size, mode, ref,
-                                 ref_stride, dst, dst_stride, col_off, row_off,
-                                 plane);
+      predict_square_intra_block(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
+                                 dst, dst_stride, col_off, row_off, plane);
       {
-        const int half_tx_height = tx_height >> 1;
-        const int half_txh_unit = tx_size_high_unit[tx_size] >> 1;
+        const int half_block_height = block_height >> 1;
+        const int half_block_height_unit =
+            half_block_height >> tx_size_wide_log2[0];
         // Cast away const to modify 'ref' temporarily; will be restored later.
-        uint8_t *src_2 = (uint8_t *)ref + half_tx_height * ref_stride;
-        uint8_t *dst_2 = dst + half_tx_height * dst_stride;
-        const int row_off_2 = row_off + half_txh_unit;
+        uint8_t *src_2 = (uint8_t *)ref + half_block_height * ref_stride;
+        uint8_t *dst_2 = dst + half_block_height * dst_stride;
+        const int row_off_2 = row_off + half_block_height_unit;
         // Save the last row of top square sub-block as 'above' row for bottom
         // square sub-block.
         if (src_2 != dst_2 || ref_stride != dst_stride) {
@@ -2018,20 +2019,21 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
             uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
             uint16_t *dst_2_16 = CONVERT_TO_SHORTPTR(dst_2);
-            memcpy(tmp16, src_2_16 - ref_stride, tx_width * sizeof(*src_2_16));
+            memcpy(tmp16, src_2_16 - ref_stride,
+                   block_width * sizeof(*src_2_16));
             memcpy(src_2_16 - ref_stride, dst_2_16 - dst_stride,
-                   tx_width * sizeof(*src_2_16));
+                   block_width * sizeof(*src_2_16));
           } else {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-            memcpy(tmp, src_2 - ref_stride, tx_width * sizeof(*src_2));
+            memcpy(tmp, src_2 - ref_stride, block_width * sizeof(*src_2));
             memcpy(src_2 - ref_stride, dst_2 - dst_stride,
-                   tx_width * sizeof(*src_2));
+                   block_width * sizeof(*src_2));
 #if CONFIG_AOM_HIGHBITDEPTH
           }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
         }
         // Predict the bottom square sub-block.
-        predict_square_intra_block(xd, wpx, hpx, sub_tx_size, mode, src_2,
+        predict_square_intra_block(xd, wpx, hpx, tx_size, mode, src_2,
                                    ref_stride, dst_2, dst_stride, col_off,
                                    row_off_2, plane);
         // Restore the last row of top square sub-block.
@@ -2039,29 +2041,30 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
 #if CONFIG_AOM_HIGHBITDEPTH
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
             uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
-            memcpy(src_2_16 - ref_stride, tmp16, tx_width * sizeof(*src_2_16));
+            memcpy(src_2_16 - ref_stride, tmp16,
+                   block_width * sizeof(*src_2_16));
           } else {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-            memcpy(src_2 - ref_stride, tmp, tx_width * sizeof(*src_2));
+            memcpy(src_2 - ref_stride, tmp, block_width * sizeof(*src_2));
 #if CONFIG_AOM_HIGHBITDEPTH
           }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
         }
       }
-    } else {  // tx_width > tx_height
-      assert(tx_width == (tx_height << 1));
+    } else {  // block_width > block_height
+      assert(block_width == (block_height << 1));
       // Predict the left square sub-block
-      predict_square_intra_block(xd, wpx, hpx, sub_tx_size, mode, ref,
-                                 ref_stride, dst, dst_stride, col_off, row_off,
-                                 plane);
+      predict_square_intra_block(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
+                                 dst, dst_stride, col_off, row_off, plane);
       {
         int i;
-        const int half_tx_width = tx_width >> 1;
-        const int half_txw_unit = tx_size_wide_unit[tx_size] >> 1;
+        const int half_block_width = block_width >> 1;
+        const int half_block_width_unit =
+            half_block_width >> tx_size_wide_log2[0];
         // Cast away const to modify 'ref' temporarily; will be restored later.
-        uint8_t *src_2 = (uint8_t *)ref + half_tx_width;
-        uint8_t *dst_2 = dst + half_tx_width;
-        const int col_off_2 = col_off + half_txw_unit;
+        uint8_t *src_2 = (uint8_t *)ref + half_block_width;
+        uint8_t *dst_2 = dst + half_block_width;
+        const int col_off_2 = col_off + half_block_width_unit;
         // Save the last column of left square sub-block as 'left' column for
         // right square sub-block.
         if (src_2 != dst_2 || ref_stride != dst_stride) {
@@ -2069,13 +2072,13 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
             uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
             uint16_t *dst_2_16 = CONVERT_TO_SHORTPTR(dst_2);
-            for (i = 0; i < tx_height; ++i) {
+            for (i = 0; i < block_height; ++i) {
               tmp16[i] = src_2_16[i * ref_stride - 1];
               src_2_16[i * ref_stride - 1] = dst_2_16[i * dst_stride - 1];
             }
           } else {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-            for (i = 0; i < tx_height; ++i) {
+            for (i = 0; i < block_height; ++i) {
               tmp[i] = src_2[i * ref_stride - 1];
               src_2[i * ref_stride - 1] = dst_2[i * dst_stride - 1];
             }
@@ -2084,7 +2087,7 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
         }
         // Predict the right square sub-block.
-        predict_square_intra_block(xd, wpx, hpx, sub_tx_size, mode, src_2,
+        predict_square_intra_block(xd, wpx, hpx, tx_size, mode, src_2,
                                    ref_stride, dst_2, dst_stride, col_off_2,
                                    row_off, plane);
         // Restore the last column of left square sub-block.
@@ -2092,12 +2095,12 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
 #if CONFIG_AOM_HIGHBITDEPTH
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
             uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
-            for (i = 0; i < tx_height; ++i) {
+            for (i = 0; i < block_height; ++i) {
               src_2_16[i * ref_stride - 1] = tmp16[i];
             }
           } else {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-            for (i = 0; i < tx_height; ++i) {
+            for (i = 0; i < block_height; ++i) {
               src_2[i * ref_stride - 1] = tmp[i];
             }
 #if CONFIG_AOM_HIGHBITDEPTH

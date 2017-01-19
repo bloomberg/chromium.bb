@@ -40,7 +40,7 @@ extern "C" {
 
 #if CONFIG_EXT_INTER
 // Should we try rectangular interintra predictions?
-#define USE_RECT_INTERINTRA 0
+#define USE_RECT_INTERINTRA 1
 
 #if CONFIG_COMPOUND_SEGMENT
 
