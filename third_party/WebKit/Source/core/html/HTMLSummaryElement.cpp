@@ -98,7 +98,7 @@ bool HTMLSummaryElement::supportsFocus() const {
 }
 
 void HTMLSummaryElement::defaultEventHandler(Event* event) {
-  if (isMainSummary() && layoutObject()) {
+  if (isMainSummary()) {
     if (event->type() == EventTypeNames::DOMActivate &&
         !isClickableControl(event->target()->toNode())) {
       if (HTMLDetailsElement* details = detailsElement())
@@ -140,10 +140,7 @@ void HTMLSummaryElement::defaultEventHandler(Event* event) {
 }
 
 bool HTMLSummaryElement::willRespondToMouseClickEvents() {
-  if (isMainSummary() && layoutObject())
-    return true;
-
-  return HTMLElement::willRespondToMouseClickEvents();
+  return isMainSummary() || HTMLElement::willRespondToMouseClickEvents();
 }
 
 }  // namespace blink
