@@ -90,6 +90,7 @@ std::string GetIntelUarch(const CPUIdentity& cpuid) {
 CPUIdentity GetCPUIdentity() {
   CPUIdentity result = {};
   result.arch = base::SysInfo::OperatingSystemArchitecture();
+  result.release = base::SysInfo::OperatingSystemVersion();
   base::CPU cpuid;
   result.vendor = cpuid.vendor_name();
   result.family = cpuid.family();

@@ -109,14 +109,40 @@ bool ExtractPerfCommandCpuSpecifier(const std::string& key,
   return true;
 }
 
+// Parses the components of a version string, e.g. major.minor.bugfix
+void ExtractVersionNumbers(const std::string& version,
+                           int32_t* major_version,
+                           int32_t* minor_version,
+                           int32_t* bugfix_version) {
+  *major_version = *minor_version = *bugfix_version = 0;
+  // Parse out the version numbers from the string.
+  sscanf(version.c_str(), "%d.%d.%d", major_version, minor_version,
+         bugfix_version);
+}
+
+// Returns if a micro-architecture supports LBR callgraph profiling.
+bool MicroarchitectureHasLBRCallgraph(const std::string& uarch) {
+  return uarch == "Haswell" || uarch == "Broadwell" || uarch == "Skylake";
+}
+
+// Returns if a kernel release supports LBR callgraph profiling.
+bool KernelReleaseHasLBRCallgraph(const std::string& release) {
+  int32_t major, minor, bugfix;
+  ExtractVersionNumbers(release, &major, &minor, &bugfix);
+  return major > 4 || (major == 4 && minor >= 4) || (major == 3 && minor == 18);
+}
+
 // Hopefully we never need a space in a command argument.
 const char kPerfCommandDelimiter[] = " ";
 
 const char kPerfRecordCyclesCmd[] =
   "perf record -a -e cycles -c 1000003";
 
-const char kPerfRecordCallgraphCmd[] =
+const char kPerfRecordFPCallgraphCmd[] =
   "perf record -a -e cycles -g -c 4000037";
+
+const char kPerfRecordLBRCallgraphCmd[] =
+  "perf record -a -e cycles -c 4000037 --call-graph lbr";
 
 const char kPerfRecordLBRCmd[] =
   "perf record -a -e r20c4 -b -c 200011";
@@ -144,11 +170,22 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   std::vector<WeightAndValue> cmds;
   DCHECK_EQ(cpuid.arch, "x86_64");
   const std::string intel_uarch = GetIntelUarch(cpuid);
+  // Haswell and newer big Intel cores support LBR callstack profiling. This
+  // requires kernel support, which was added in kernel 4.4, and it was
+  // backported to kernel 3.18. Prefer LBR callstack profiling where supported
+  // instead of FP callchains, because the former works with binaries compiled
+  // with frame pointers disabled, such as the ARC++ runtime.
+  const char *callgraph_cmd = kPerfRecordFPCallgraphCmd;
+  if (MicroarchitectureHasLBRCallgraph(intel_uarch) &&
+      KernelReleaseHasLBRCallgraph(cpuid.release)) {
+    callgraph_cmd = kPerfRecordLBRCallgraphCmd;
+  }
+
   if (intel_uarch == "IvyBridge" ||
       intel_uarch == "Haswell" ||
       intel_uarch == "Broadwell") {
     cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
-    cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+    cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
@@ -157,7 +194,7 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   }
   if (intel_uarch == "SandyBridge" || intel_uarch == "Skylake") {
     cmds.push_back(WeightAndValue(55.0, kPerfRecordCyclesCmd));
-    cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+    cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
@@ -165,7 +202,7 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   }
   if (intel_uarch == "Silvermont" || intel_uarch == "Airmont") {
     cmds.push_back(WeightAndValue(55.0, kPerfRecordCyclesCmd));
-    cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+    cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
     cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
@@ -173,7 +210,7 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   }
   // Other 64-bit x86
   cmds.push_back(WeightAndValue(70.0, kPerfRecordCyclesCmd));
-  cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+  cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
   cmds.push_back(WeightAndValue(5.0, kPerfRecordInstructionTLBMissesCmd));
   cmds.push_back(WeightAndValue(5.0, kPerfRecordDataTLBMissesCmd));
   return cmds;
@@ -226,7 +263,7 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
   if (cpuid.arch == "x86" ||     // 32-bit x86, or...
       cpuid.arch == "armv7l") {  // ARM
     cmds.push_back(WeightAndValue(80.0, kPerfRecordCyclesCmd));
-    cmds.push_back(WeightAndValue(20.0, kPerfRecordCallgraphCmd));
+    cmds.push_back(WeightAndValue(20.0, kPerfRecordFPCallgraphCmd));
     return cmds;
   }
 
