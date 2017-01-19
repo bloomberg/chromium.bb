@@ -194,7 +194,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
 // }
 template <class T, typename... Args>
 class ScopedTestingPlatformSupport final {
-  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(ScopedTestingPlatformSupport);
 
  public:
   explicit ScopedTestingPlatformSupport(Args&&... args) {

@@ -128,6 +128,7 @@ class AnimationWorkletThreadTest : public ::testing::Test {
 
   RefPtr<SecurityOrigin> m_securityOrigin;
   std::unique_ptr<WorkerReportingProxy> m_reportingProxy;
+  ScopedTestingPlatformSupport<AnimationWorkletTestPlatform> m_platform;
 };
 
 TEST_F(AnimationWorkletThreadTest, Basic) {
@@ -142,8 +143,6 @@ TEST_F(AnimationWorkletThreadTest, Basic) {
 // Tests that the same WebThread is used for new worklets if the WebThread is
 // still alive.
 TEST_F(AnimationWorkletThreadTest, CreateSecondAndTerminateFirst) {
-  ScopedTestingPlatformSupport<AnimationWorkletTestPlatform> platform;
-
   // Create the first worklet and wait until it is initialized.
   std::unique_ptr<AnimationWorkletThread> firstWorklet =
       createAnimationWorkletThread();
@@ -179,8 +178,6 @@ TEST_F(AnimationWorkletThreadTest, CreateSecondAndTerminateFirst) {
 // Tests that a new WebThread is created if all existing worklets are
 // terminated before a new worklet is created.
 TEST_F(AnimationWorkletThreadTest, TerminateFirstAndCreateSecond) {
-  ScopedTestingPlatformSupport<AnimationWorkletTestPlatform> platform;
-
   // Create the first worklet, wait until it is initialized, and terminate it.
   std::unique_ptr<AnimationWorkletThread> worklet =
       createAnimationWorkletThread();
@@ -205,8 +202,6 @@ TEST_F(AnimationWorkletThreadTest, TerminateFirstAndCreateSecond) {
 // Tests that v8::Isolate and WebThread are correctly set-up if a worklet is
 // created while another is terminating.
 TEST_F(AnimationWorkletThreadTest, CreatingSecondDuringTerminationOfFirst) {
-  ScopedTestingPlatformSupport<AnimationWorkletTestPlatform> platform;
-
   std::unique_ptr<AnimationWorkletThread> firstWorklet =
       createAnimationWorkletThread();
   checkWorkletCanExecuteScript(firstWorklet.get());

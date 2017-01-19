@@ -43,41 +43,34 @@ class ScriptRunnerTest : public testing::Test {
       : m_document(Document::create()),
         m_element(m_document->createElement("foo")) {}
 
-  void TearDown() override { m_scriptRunner.release(); }
-
- protected:
-  void initialize() {
+  void SetUp() override {
     // We have to create ScriptRunner after initializing platform, because we
     // need Platform::current()->currentThread()->scheduler()->
     // loadingTaskRunner() to be initialized before creating ScriptRunner to
     // save it in constructor.
     m_scriptRunner = ScriptRunner::create(m_document.get());
   }
+  void TearDown() override { m_scriptRunner.release(); }
 
+ protected:
   Persistent<Document> m_document;
   Persistent<Element> m_element;
   Persistent<ScriptRunner> m_scriptRunner;
   WTF::Vector<int> m_order;
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      m_platform;
 };
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader = MockScriptLoader::create(m_element.get());
   m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::Async);
   m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::Async);
 
   EXPECT_CALL(*scriptLoader, execute());
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 }
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader = MockScriptLoader::create(m_element.get());
   m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::InOrder);
 
@@ -86,14 +79,10 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder) {
 
   m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::InOrder);
 
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 }
 
 TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
@@ -125,7 +114,7 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
   for (int i = 2; i >= 0; i--) {
     isReady[i] = true;
     m_scriptRunner->notifyScriptReady(scriptLoaders[i], ScriptRunner::InOrder);
-    platform->runUntilIdle();
+    m_platform->runUntilIdle();
   }
 
   // But ensure the scripts were run in the expected order.
@@ -133,10 +122,6 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, QueueMixedScripts) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
@@ -179,17 +164,13 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts) {
     m_order.push_back(5);
   }));
 
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 
   // Async tasks are expected to run first.
   EXPECT_THAT(m_order, ElementsAre(4, 5, 1, 2, 3));
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
@@ -217,21 +198,17 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
 
   // Make sure that re-entrant calls to notifyScriptReady don't cause
   // ScriptRunner::execute to do more work than expected.
-  platform->runSingleTask();
+  m_platform->runSingleTask();
   EXPECT_THAT(m_order, ElementsAre(1));
 
-  platform->runSingleTask();
+  m_platform->runSingleTask();
   EXPECT_THAT(m_order, ElementsAre(1, 2));
 
-  platform->runSingleTask();
+  m_platform->runSingleTask();
   EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
@@ -267,21 +244,17 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder) {
 
   // Make sure that re-entrant calls to queueScriptForExecution don't cause
   // ScriptRunner::execute to do more work than expected.
-  platform->runSingleTask();
+  m_platform->runSingleTask();
   EXPECT_THAT(m_order, ElementsAre(1));
 
-  platform->runSingleTask();
+  m_platform->runSingleTask();
   EXPECT_THAT(m_order, ElementsAre(1, 2));
 
-  platform->runSingleTask();
+  m_platform->runSingleTask();
   EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoaders[20];
   for (int i = 0; i < 20; i++)
     scriptLoaders[i] = nullptr;
@@ -311,7 +284,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
         m_order.push_back(0);
       }));
 
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 
   int expected[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
                     10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
@@ -320,10 +293,6 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
@@ -356,20 +325,16 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
   EXPECT_CALL(*scriptLoader3, isReady()).WillRepeatedly(Return(true));
   m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::InOrder);
 
-  platform->runSingleTask();
+  m_platform->runSingleTask();
   m_scriptRunner->suspend();
   m_scriptRunner->resume();
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 
   // Make sure elements are correct and in right order.
   EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
@@ -392,20 +357,16 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
     m_order.push_back(3);
   }));
 
-  platform->runSingleTask();
+  m_platform->runSingleTask();
   m_scriptRunner->suspend();
   m_scriptRunner->resume();
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 
   // Make sure elements are correct.
   EXPECT_THAT(m_order, WhenSorted(ElementsAre(1, 2, 3)));
 }
 
 TEST_F(ScriptRunnerTest, LateNotifications) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
   MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
 
@@ -423,21 +384,17 @@ TEST_F(ScriptRunnerTest, LateNotifications) {
   }));
 
   m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::InOrder);
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 
   // At this moment all tasks can be already executed. Make sure that we do not
   // crash here.
   m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::InOrder);
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 
   EXPECT_THAT(m_order, ElementsAre(1, 2));
 }
 
 TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform;
-  initialize();
-
   Persistent<MockScriptLoader> scriptLoader1 =
       MockScriptLoader::create(m_element.get());
   Persistent<MockScriptLoader> scriptLoader2 =
@@ -461,7 +418,7 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
   EXPECT_CALL(*scriptLoader1, execute()).Times(0);
   EXPECT_CALL(*scriptLoader2, execute()).Times(0);
 
-  platform->runUntilIdle();
+  m_platform->runUntilIdle();
 }
 
 }  // namespace blink
