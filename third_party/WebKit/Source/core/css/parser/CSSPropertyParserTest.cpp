@@ -22,18 +22,18 @@ static int computeNumberOfTracks(const CSSValueList* valueList) {
 
 TEST(CSSPropertyParserTest, GridTrackLimit1) {
   const CSSValue* value = CSSParser::parseSingleValue(
-      CSSPropertyGridTemplateColumns, "repeat(999999, 20px)");
+      CSSPropertyGridTemplateColumns, "repeat(999, 20px)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit2) {
   const CSSValue* value = CSSParser::parseSingleValue(
-      CSSPropertyGridTemplateRows, "repeat(999999, 20px)");
+      CSSPropertyGridTemplateRows, "repeat(999, 20px)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit3) {
@@ -41,7 +41,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit3) {
       CSSPropertyGridTemplateColumns, "repeat(1000000, 10%)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000000);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit4) {
@@ -49,7 +49,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit4) {
       CSSPropertyGridTemplateRows, "repeat(1000000, 10%)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000000);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit5) {
@@ -58,7 +58,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit5) {
       "repeat(1000000, [first] min-content [last])");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000000);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit6) {
@@ -67,7 +67,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit6) {
       "repeat(1000000, [first] min-content [last])");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000000);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit7) {
@@ -75,7 +75,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit7) {
       CSSPropertyGridTemplateColumns, "repeat(1000001, auto)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000000);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit8) {
@@ -83,7 +83,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit8) {
       CSSPropertyGridTemplateRows, "repeat(1000001, auto)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000000);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit9) {
@@ -92,7 +92,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit9) {
       "repeat(400000, 2em minmax(10px, max-content) 0.5fr)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit10) {
@@ -101,7 +101,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit10) {
       "repeat(400000, 2em minmax(10px, max-content) 0.5fr)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit11) {
@@ -110,7 +110,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit11) {
       "repeat(600000, [first] 3vh 10% 2fr [nav] 10px auto 1fr 6em [last])");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 994);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit12) {
@@ -119,7 +119,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit12) {
       "repeat(600000, [first] 3vh 10% 2fr [nav] 10px auto 1fr 6em [last])");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 994);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit13) {
@@ -127,7 +127,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit13) {
       CSSPropertyGridTemplateColumns, "repeat(100000000000000000000, 10% 1fr)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000000);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit14) {
@@ -135,7 +135,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit14) {
       CSSPropertyGridTemplateRows, "repeat(100000000000000000000, 10% 1fr)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000000);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit15) {
@@ -144,7 +144,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit15) {
       "repeat(100000000000000000000, 10% 5em 1fr auto auto 15px min-content)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 994);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit16) {
@@ -153,7 +153,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit16) {
       "repeat(100000000000000000000, 10% 5em 1fr auto auto 15px min-content)");
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->isValueList());
-  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
+  EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 994);
 }
 
 static int getGridPositionInteger(const CSSValue& value) {
@@ -167,58 +167,58 @@ static int getGridPositionInteger(const CSSValue& value) {
 
 TEST(CSSPropertyParserTest, GridPositionLimit1) {
   const CSSValue* value =
-      CSSParser::parseSingleValue(CSSPropertyGridColumnStart, "999999");
+      CSSParser::parseSingleValue(CSSPropertyGridColumnStart, "999");
   DCHECK(value);
-  EXPECT_EQ(getGridPositionInteger(*value), 999999);
+  EXPECT_EQ(getGridPositionInteger(*value), 999);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit2) {
   const CSSValue* value =
       CSSParser::parseSingleValue(CSSPropertyGridColumnEnd, "1000000");
   DCHECK(value);
-  EXPECT_EQ(getGridPositionInteger(*value), 1000000);
+  EXPECT_EQ(getGridPositionInteger(*value), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit3) {
   const CSSValue* value =
       CSSParser::parseSingleValue(CSSPropertyGridRowStart, "1000001");
   DCHECK(value);
-  EXPECT_EQ(getGridPositionInteger(*value), 1000000);
+  EXPECT_EQ(getGridPositionInteger(*value), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit4) {
   const CSSValue* value =
       CSSParser::parseSingleValue(CSSPropertyGridRowEnd, "5000000000");
   DCHECK(value);
-  EXPECT_EQ(getGridPositionInteger(*value), 1000000);
+  EXPECT_EQ(getGridPositionInteger(*value), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit5) {
   const CSSValue* value =
-      CSSParser::parseSingleValue(CSSPropertyGridColumnStart, "-999999");
+      CSSParser::parseSingleValue(CSSPropertyGridColumnStart, "-999");
   DCHECK(value);
-  EXPECT_EQ(getGridPositionInteger(*value), -999999);
+  EXPECT_EQ(getGridPositionInteger(*value), -999);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit6) {
   const CSSValue* value =
       CSSParser::parseSingleValue(CSSPropertyGridColumnEnd, "-1000000");
   DCHECK(value);
-  EXPECT_EQ(getGridPositionInteger(*value), -1000000);
+  EXPECT_EQ(getGridPositionInteger(*value), -1000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit7) {
   const CSSValue* value =
       CSSParser::parseSingleValue(CSSPropertyGridRowStart, "-1000001");
   DCHECK(value);
-  EXPECT_EQ(getGridPositionInteger(*value), -1000000);
+  EXPECT_EQ(getGridPositionInteger(*value), -1000);
 }
 
 TEST(CSSPropertyParserTest, GridPositionLimit8) {
   const CSSValue* value =
       CSSParser::parseSingleValue(CSSPropertyGridRowEnd, "-5000000000");
   DCHECK(value);
-  EXPECT_EQ(getGridPositionInteger(*value), -1000000);
+  EXPECT_EQ(getGridPositionInteger(*value), -1000);
 }
 
 }  // namespace blink

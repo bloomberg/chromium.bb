@@ -51,6 +51,8 @@ size_t LayoutGrid::Grid::numTracks(GridTrackSizingDirection direction) const {
 
 void LayoutGrid::Grid::ensureGridSize(size_t maximumRowSize,
                                       size_t maximumColumnSize) {
+  DCHECK(maximumRowSize <= kGridMaxTracks * 2);
+  DCHECK(maximumColumnSize <= kGridMaxTracks * 2);
   const size_t oldRowSize = numTracks(ForRows);
   if (maximumRowSize > oldRowSize) {
     m_grid.grow(maximumRowSize);

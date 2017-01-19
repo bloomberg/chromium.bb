@@ -34,13 +34,18 @@
 #include "core/style/GridPositionsResolver.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
+#include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 
 namespace blink {
 
-// Recommended maximum size for both explicit and implicit grids.
-const int kGridMaxTracks = 1000000;
+// Recommended maximum size for both explicit and implicit grids. Note that this
+// actually allows a [-9999,9999] range. The limit is low on purpouse because
+// higher values easly trigger OOM situations. That will definitely improve once
+// we switch from a vector of vectors based grid representation to a more
+// efficient one memory-wise.
+const int kGridMaxTracks = 1000;
 
 // A span in a single direction (either rows or columns). Note that |startLine|
 // and |endLine| are grid lines' indexes.
@@ -141,15 +146,8 @@ struct GridSpan {
     }
 #endif
 
-    if (startLine >= 0)
-      m_startLine = std::min(startLine, kGridMaxTracks - 1);
-    else
-      m_startLine = std::max(startLine, -kGridMaxTracks);
-
-    if (endLine >= 0)
-      m_endLine = std::min(endLine, kGridMaxTracks);
-    else
-      m_endLine = std::max(endLine, -kGridMaxTracks + 1);
+    m_startLine = clampTo<int>(startLine, -kGridMaxTracks, kGridMaxTracks - 1);
+    m_endLine = clampTo<int>(endLine, -kGridMaxTracks + 1, kGridMaxTracks);
   }
 
   int m_startLine;
