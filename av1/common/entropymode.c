@@ -580,6 +580,9 @@ const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
 
 static const aom_prob default_motion_mode_prob[BLOCK_SIZES]
                                               [MOTION_MODES - 1] = {
+#if CONFIG_CB4X4
+                                                { 255 }, { 255 }, { 255 },
+#endif
                                                 { 255 }, { 255 }, { 255 },
                                                 { 151 }, { 153 }, { 144 },
                                                 { 178 }, { 165 }, { 160 },
@@ -597,6 +600,9 @@ const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
 };
 static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
     {
+#if CONFIG_CB4X4
+      { 255, 200 }, { 255, 200 }, { 255, 200 },
+#endif
       { 255, 200 }, { 255, 200 }, { 255, 200 }, { 151, 200 }, { 153, 200 },
       { 144, 200 }, { 178, 200 }, { 165, 200 }, { 160, 200 }, { 207, 200 },
       { 195, 200 }, { 168, 200 }, { 244, 200 },
@@ -607,6 +613,9 @@ static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
 
 // Probability for the case that only 1 additional motion mode is allowed
 static const aom_prob default_obmc_prob[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  255, 255, 255,
+#endif
   255, 255, 255, 151, 153, 144, 178, 165, 160, 207, 195, 168, 244,
 #if CONFIG_EXT_PARTITION
   252, 252, 252,
