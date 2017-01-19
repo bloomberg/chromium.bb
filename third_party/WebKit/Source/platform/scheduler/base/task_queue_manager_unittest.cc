@@ -117,7 +117,13 @@ class TaskQueueManagerTest : public testing::Test {
   }
 
   void UpdateWorkQueues(LazyNow lazy_now) {
+    manager_->UpdateWorkQueues(&lazy_now);
+  }
+
+  base::Optional<base::TimeDelta> ComputeDelayTillNextTask(LazyNow* lazy_now) {
+    // TODO(alexclarke): Remove this once the DoWork refactor lands.
     manager_->UpdateWorkQueues(lazy_now);
+    return manager_->ComputeDelayTillNextTask(lazy_now);
   }
 
   // Runs all immediate tasks until there is no more work to do and advances
@@ -2198,6 +2204,53 @@ TEST_F(TaskQueueManagerTest, SweepCanceledDelayedTasks) {
 
   manager_->SweepCanceledDelayedTasks();
   EXPECT_EQ(2u, runners_[0]->GetNumberOfPendingTasks());
+}
+
+TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask) {
+  Initialize(2u);
+
+  std::unique_ptr<RealTimeDomain> domain2(new RealTimeDomain("test"));
+  manager_->RegisterTimeDomain(domain2.get());
+  runners_[1]->SetTimeDomain(domain2.get());
+
+  LazyNow lazy_now(now_src_.get());
+  EXPECT_FALSE(static_cast<bool>(ComputeDelayTillNextTask(&lazy_now)));
+
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
+                               base::TimeDelta::FromSeconds(10));
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(10),
+            ComputeDelayTillNextTask(&lazy_now).value());
+
+  runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
+                               base::TimeDelta::FromSeconds(15));
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(10),
+            ComputeDelayTillNextTask(&lazy_now).value());
+
+  runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
+                               base::TimeDelta::FromSeconds(5));
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(5),
+            ComputeDelayTillNextTask(&lazy_now).value());
+
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  EXPECT_EQ(base::TimeDelta(), ComputeDelayTillNextTask(&lazy_now).value());
+
+  // Tidy up.
+  runners_[1]->UnregisterTaskQueue();
+  manager_->UnregisterTimeDomain(domain2.get());
+}
+
+TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_TaskBlocked) {
+  Initialize(1u);
+
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  LazyNow lazy_now(now_src_.get());
+  EXPECT_FALSE(ComputeDelayTillNextTask(&lazy_now));
 }
 
 }  // namespace scheduler

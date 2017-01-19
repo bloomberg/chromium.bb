@@ -62,9 +62,12 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // Evaluate this TimeDomain's Now. Can be called from any thread.
   virtual base::TimeTicks Now() const = 0;
 
-  // Some TimeDomains support virtual time, this method tells us to advance time
-  // if possible and return true if time was advanced.
-  virtual bool MaybeAdvanceTime() = 0;
+  // Computes the delay until the next task the TimeDomain is aware of, if any.
+  // Note virtual time domains may return base::TimeDelta() if they have any
+  // delayed tasks they deem eligible to run.  Virtual time domains are allowed
+  // to advance their internal clock when this method is called.
+  virtual base::Optional<base::TimeDelta> DelayTillNextTask(
+      LazyNow* lazy_now) = 0;
 
   // Returns the name of this time domain for tracing.
   virtual const char* GetName() const = 0;
@@ -108,7 +111,7 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   void UnregisterQueue(internal::TaskQueueImpl* queue);
 
   // Updates active queues associated with this TimeDomain.
-  void UpdateWorkQueues(LazyNow lazy_now);
+  void UpdateWorkQueues(LazyNow* lazy_now);
 
   // Called by the TaskQueueManager when the TimeDomain is registered.
   virtual void OnRegisterWithTaskQueueManager(

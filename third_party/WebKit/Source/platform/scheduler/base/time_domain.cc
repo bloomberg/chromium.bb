@@ -117,11 +117,11 @@ void TimeDomain::OnQueueHasIncomingImmediateWork(
     observer_->OnTimeDomainHasImmediateWork(queue);
 }
 
-void TimeDomain::UpdateWorkQueues(LazyNow lazy_now) {
+void TimeDomain::UpdateWorkQueues(LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   // Move any ready delayed tasks into the Incoming queues.
-  WakeupReadyDelayedQueues(&lazy_now);
+  WakeupReadyDelayedQueues(lazy_now);
 
   std::set<internal::TaskQueueImpl*> queues_to_reload_if_empty;
 
