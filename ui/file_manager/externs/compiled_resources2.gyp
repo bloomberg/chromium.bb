@@ -116,6 +116,10 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'progress_center_panel',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'video_player_foreground',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },

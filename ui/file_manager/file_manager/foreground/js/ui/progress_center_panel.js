@@ -246,6 +246,7 @@ function ProgressCenterPanel(element) {
   /**
    * Callback to be called with the ID of the progress item when the cancel
    * button is clicked.
+   * @type {?function(string)}
    */
   this.cancelCallback = null;
 
