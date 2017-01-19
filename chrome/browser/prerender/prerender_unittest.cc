@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -400,6 +401,8 @@ class PrerenderTest : public testing::Test {
         chrome_browser_net::NETWORK_PREDICTION_ALWAYS);
   }
 
+  const base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
  private:
   // Needed to pass PrerenderManager's DCHECKs.
   base::MessageLoop message_loop_;
@@ -410,6 +413,7 @@ class PrerenderTest : public testing::Test {
   std::unique_ptr<PrerenderLinkManager> prerender_link_manager_;
   int last_prerender_id_;
   base::FieldTrialList field_trial_list_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(PrerenderTest, PrerenderRespectsDisableFlag) {
@@ -471,6 +475,8 @@ TEST_F(PrerenderTest, PrerenderRespectsThirdPartyCookiesPref) {
 
   profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_FALSE(AddSimplePrerender(url));
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.FinalStatus", FINAL_STATUS_BLOCK_THIRD_PARTY_COOKIES, 1);
 }
 
 TEST_F(PrerenderTest, OfflinePrerenderIgnoresThirdPartyCookiesPref) {
@@ -570,6 +576,8 @@ TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
   ASSERT_TRUE(PrerenderManager::IsPrerenderingPossible());
   prerender_manager()->SetIsLowEndDevice(true);
   EXPECT_FALSE(AddSimplePrerender(url));
+  histogram_tester().ExpectUniqueSample("Prerender.FinalStatus",
+                                        FINAL_STATUS_LOW_END_DEVICE, 1);
 }
 
 TEST_F(PrerenderTest, OfflinePrerenderPossibleOnLowEndDevice) {
@@ -838,6 +846,8 @@ TEST_F(PrerenderTest, NoStatePrefetchDuplicate) {
   tick_clock->Advance(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(
       prerender_manager()->AddPrerenderFromOmnibox(kUrl, nullptr, gfx::Size()));
+  histogram_tester().ExpectBucketCount("Prerender.FinalStatus",
+                                       FINAL_STATUS_DUPLICATE, 1);
 
   // Prefetching after time_to_live succeeds.
   tick_clock->Advance(
@@ -1244,6 +1254,8 @@ TEST_F(PrerenderTest, OmniboxNotAllowedWhenDisabled) {
   DisablePrerender();
   EXPECT_FALSE(prerender_manager()->AddPrerenderFromOmnibox(
       GURL("http://www.example.com"), nullptr, gfx::Size()));
+  histogram_tester().ExpectUniqueSample("Prerender.FinalStatus",
+                                        FINAL_STATUS_PRERENDERING_DISABLED, 1);
 }
 
 TEST_F(PrerenderTest, LinkRelStillAllowedWhenDisabled) {
@@ -1293,6 +1305,8 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
           url, content::Referrer(), nullptr, gfx::Rect(kSize)));
   EXPECT_FALSE(prerender_handle);
   EXPECT_FALSE(prerender_contents->prerendering_has_started());
+  histogram_tester().ExpectUniqueSample("Prerender.FinalStatus",
+                                        FINAL_STATUS_CELLULAR_NETWORK, 1);
 }
 
 // Checks that the "PrerenderSilence" experiment does not disable offline

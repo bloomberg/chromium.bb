@@ -69,6 +69,7 @@ const char* kFinalStatusNames[] = {
     "Block Third Party Cookies",
     "Credential Manager API",
     "NoStatePrefetch Finished",
+    "Low-End Device",
     "Max",
 };
 static_assert(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

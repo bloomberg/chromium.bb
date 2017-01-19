@@ -903,8 +903,11 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
 
   // Allow only Requests for offlining on low end devices, the lifetime of
   // those prerenders is managed by the offliner.
-  if (IsLowEndDevice() && origin != ORIGIN_OFFLINE)
+  if (IsLowEndDevice() && origin != ORIGIN_OFFLINE) {
+    RecordFinalStatusWithoutCreatingPrerenderContents(
+        url_arg, origin, FINAL_STATUS_LOW_END_DEVICE);
     return nullptr;
+  }
 
   if ((origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN ||
        origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) &&
