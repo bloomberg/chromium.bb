@@ -4,21 +4,39 @@
 
 #include "remoting/client/plugin/pepper_main_thread_task_runner.h"
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
+#include "ppapi/cpp/module.h"
 
 namespace remoting {
+namespace {
+
+void RunAndDestroy(void* task_ptr, int32_t) {
+  std::unique_ptr<base::Closure> task(static_cast<base::Closure*>(task_ptr));
+  task->Run();
+}
+
+}  // namespace
 
 PepperMainThreadTaskRunner::PepperMainThreadTaskRunner()
-    : core_(pp::Module::Get()->core()), callback_factory_(this) {}
+    : core_(pp::Module::Get()->core()), weak_ptr_factory_(this) {
+  DCHECK(core_->IsMainThread());
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+}
 
 bool PepperMainThreadTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  core_->CallOnMainThread(delay.InMillisecondsRoundedUp(),
-                          callback_factory_.NewCallback(
-                              &PepperMainThreadTaskRunner::RunTask, task));
+  auto task_ptr = base::MakeUnique<base::Closure>(
+      base::Bind(&PepperMainThreadTaskRunner::RunTask, weak_ptr_, task));
+  core_->CallOnMainThread(
+      delay.InMillisecondsRoundedUp(),
+      pp::CompletionCallback(&RunAndDestroy, task_ptr.release()));
   return true;
 }
 
@@ -35,8 +53,7 @@ bool PepperMainThreadTaskRunner::RunsTasksOnCurrentThread() const {
 
 PepperMainThreadTaskRunner::~PepperMainThreadTaskRunner() {}
 
-void PepperMainThreadTaskRunner::RunTask(int32_t result,
-                                         const base::Closure& task) {
+void PepperMainThreadTaskRunner::RunTask(const base::Closure& task) {
   task.Run();
 }
 

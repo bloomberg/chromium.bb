@@ -10,9 +10,9 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 namespace pp {
 class Core;
@@ -40,10 +40,12 @@ class PepperMainThreadTaskRunner : public base::SingleThreadTaskRunner {
  private:
   // Helper that allows a base::Closure to be used as a pp::CompletionCallback,
   // by ignoring the completion result.
-  void RunTask(int32_t result, const base::Closure& task);
+  void RunTask(const base::Closure& task);
 
   pp::Core* core_;
-  pp::CompletionCallbackFactory<PepperMainThreadTaskRunner> callback_factory_;
+
+  base::WeakPtr<PepperMainThreadTaskRunner> weak_ptr_;
+  base::WeakPtrFactory<PepperMainThreadTaskRunner> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMainThreadTaskRunner);
 };
