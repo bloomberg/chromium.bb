@@ -150,6 +150,9 @@ class GFX_EXPORT ColorSpace {
   static MatrixID MatrixIDFromInt(int matrix_id);
 
   static ColorSpace CreateSRGB();
+  // scRGB is like RGB, but linear and values outside of 0-1 are allowed.
+  // scRGB is normally used with fp16 textures.
+  static ColorSpace CreateSCRGBLinear();
   static ColorSpace CreateXYZD50();
 
   // TODO: Remove these, and replace with more generic constructors.
@@ -160,6 +163,8 @@ class GFX_EXPORT ColorSpace {
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;
   bool operator<(const ColorSpace& other) const;
+
+  bool IsHDR() const;
 
   // Note that this may return nullptr.
   const sk_sp<SkColorSpace>& ToSkColorSpace() const { return sk_color_space_; }

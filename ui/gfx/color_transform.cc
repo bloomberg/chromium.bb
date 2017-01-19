@@ -288,6 +288,8 @@ GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
       }
     }
     case ColorSpace::TransferID::SMPTEST2084: {
+      // Go from scRGB levels to 0-1.
+      v *= 80.0f / 10000.0f;
       v = fmax(0.0f, v);
       float m1 = (2610.0f / 4096.0f) / 4.0f;
       float m2 = (2523.0f / 4096.0f) * 128.0f;
@@ -306,8 +308,7 @@ GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
       const float a = 0.17883277f;
       const float b = 0.28466892f;
       const float c = 0.55991073f;
-      const float Lmax = 12.0f;
-      v = Lmax * fmax(0.0f, v);
+      v = fmax(0.0f, v);
       if (v <= 1)
         return 0.5f * sqrtf(v);
       else
@@ -423,9 +424,14 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
       float c1 = 3424.0f / 4096.0f;
       float c2 = (2413.0f / 4096.0f) * 32.0f;
       float c3 = (2392.0f / 4096.0f) * 32.0f;
-      return powf(
+      v = powf(
           fmax(powf(v, 1.0f / m2) - c1, 0) / (c2 - c3 * powf(v, 1.0f / m2)),
           1.0f / m1);
+      // This matches the scRGB definition that 1.0 means 80 nits.
+      // TODO(hubbe): It would be *nice* if 1.0 meant more than that, but
+      // that might be difficult to do right now.
+      v *= 10000.0f / 80.0f;
+      return v;
     }
 
     case ColorSpace::TransferID::SMPTEST428_1:
@@ -446,14 +452,13 @@ GFX_EXPORT float ToLinear(ColorSpace::TransferID id, float v) {
       const float a = 0.17883277f;
       const float b = 0.28466892f;
       const float c = 0.55991073f;
-      const float Lmax = 12.0f;
       float v_ = 0.0f;
       if (v <= 0.5f) {
         v_ = (v * 2.0f) * (v * 2.0f);
       } else {
         v_ = exp((v - c) / a) + b;
       }
-      return v_ / Lmax;
+      return v_;
     }
   }
 

@@ -86,6 +86,12 @@ ColorSpace ColorSpace::CreateSRGB() {
   return result;
 }
 
+// static
+ColorSpace ColorSpace::CreateSCRGBLinear() {
+  return ColorSpace(PrimaryID::BT709, TransferID::LINEAR, MatrixID::RGB,
+                    RangeID::FULL);
+}
+
 // Static
 ColorSpace ColorSpace::CreateXYZD50() {
   return ColorSpace(PrimaryID::XYZ_D50, TransferID::LINEAR, MatrixID::RGB,
@@ -119,6 +125,11 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
              sizeof(custom_primary_matrix_)))
     return false;
   return true;
+}
+
+bool ColorSpace::IsHDR() const {
+  return transfer_ == TransferID::SMPTEST2084 ||
+         transfer_ == TransferID::ARIB_STD_B67;
 }
 
 bool ColorSpace::operator!=(const ColorSpace& other) const {
