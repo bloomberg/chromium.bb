@@ -806,7 +806,13 @@ IN_PROC_BROWSER_TEST_F(RestrictedFileSystemExtensionApiTest,
 //
 // DriveFileSystemExtensionApiTests.
 //
-IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, FileSystemOperations) {
+#if defined(LEAK_SANITIZER)
+#define MAYBE_FileSystemOperations DISABLED_FileSystemOperations
+#else
+#define MAYBE_FileSystemOperations FileSystemOperations
+#endif
+IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest,
+                       MAYBE_FileSystemOperations) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/filesystem_operations_test",
       FILE_PATH_LITERAL("manifest.json"),
