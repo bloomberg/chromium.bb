@@ -89,7 +89,6 @@ set(AOM_DSP_SRCS
     "${AOM_ROOT}/aom_dsp/aom_dsp_rtcd.c"
     "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
     "${AOM_ROOT}/aom_dsp/aom_filter.h"
-    "${AOM_ROOT}/aom_dsp/aom_simd.c"
     "${AOM_ROOT}/aom_dsp/aom_simd.h"
     "${AOM_ROOT}/aom_dsp/aom_simd_inline.h"
     "${AOM_ROOT}/aom_dsp/avg.c"
