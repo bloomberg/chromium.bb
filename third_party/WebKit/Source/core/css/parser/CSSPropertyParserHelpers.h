@@ -26,6 +26,8 @@ class CSSValuePair;
 // will not be modified.
 namespace CSSPropertyParserHelpers {
 
+void complete4Sides(CSSValue* side[4]);
+
 // TODO(timloh): These should probably just be consumeComma and consumeSlash.
 bool consumeCommaIncludingWhitespace(CSSParserTokenRange&);
 bool consumeSlashIncludingWhitespace(CSSParserTokenRange&);
