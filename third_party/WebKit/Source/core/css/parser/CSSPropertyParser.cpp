@@ -1463,28 +1463,6 @@ static CSSValue* consumePositionY(CSSParserTokenRange& range,
                                                               cssParserMode);
 }
 
-static CSSValue* consumePaintStroke(CSSParserTokenRange& range,
-                                    const CSSParserContext* context) {
-  if (range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-  CSSURIValue* url = consumeUrl(range, context);
-  if (url) {
-    CSSValue* parsedValue = nullptr;
-    if (range.peek().id() == CSSValueNone)
-      parsedValue = consumeIdent(range);
-    else
-      parsedValue = consumeColor(range, context->mode());
-    if (parsedValue) {
-      CSSValueList* values = CSSValueList::createSpaceSeparated();
-      values->append(*url);
-      values->append(*parsedValue);
-      return values;
-    }
-    return url;
-  }
-  return consumeColor(range, context->mode());
-}
-
 static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range,
                                   const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNone)
@@ -3016,9 +2994,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitPerspectiveOriginY:
       return consumePositionY(m_range, m_context->mode());
-    case CSSPropertyFill:
-    case CSSPropertyStroke:
-      return consumePaintStroke(m_range, m_context);
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:

@@ -257,7 +257,7 @@ d interpolable, svg, converter=convertPathOrNone
 display
 dominant-baseline inherited, svg
 empty-cells inherited, independent, type_name=EEmptyCells, keyword_only, keywords=[show|hide], initial_keyword=show
-fill interpolable, inherited, svg, setter=setFillPaint, custom_all
+fill interpolable, inherited, svg, setter=setFillPaint, custom_all, api_class=CSSPropertyAPIPaintStroke
 fill-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 fill-rule inherited, svg, type_name=WindRule
 filter interpolable, converter=convertFilterOperations
@@ -363,7 +363,7 @@ snap-height runtime_flag=CSSSnapSize, inherited, custom_all
 speak inherited
 stop-color interpolable, svg, converter=convertColor
 stop-opacity interpolable, svg, converter=convertNumberOrPercentage
-stroke interpolable, inherited, svg, setter=setStrokePaint, custom_all
+stroke interpolable, inherited, svg, setter=setStrokePaint, custom_all, api_class=CSSPropertyAPIPaintStroke
 stroke-dasharray interpolable, inherited, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray, api_class
 stroke-dashoffset interpolable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertLength
 stroke-linecap svg, inherited, type_name=LineCap, name_for_methods=CapStyle
