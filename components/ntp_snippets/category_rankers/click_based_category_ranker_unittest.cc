@@ -4,6 +4,8 @@
 
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
@@ -73,6 +75,14 @@ class ClickBasedCategoryRankerTest : public testing::Test {
     variation_params_manager_.SetVariationParamsWithFeatureAssociations(
         ntp_snippets::kStudyName,
         {{"click_based_category_ranker-dismissed_category_penalty",
+          base::IntToString(value)}},
+        {kCategoryRanker.name});
+  }
+
+  void SetPromotedCategoryVariationParam(int value) {
+    variation_params_manager_.SetVariationParamsWithFeatureAssociations(
+        ntp_snippets::kStudyName,
+        {{"click_based_category_ranker-promoted_category",
           base::IntToString(value)}},
         {kCategoryRanker.name});
   }
@@ -557,6 +567,86 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldIgnorePartialClearHistory) {
 
   // The order should not be cleared.
   EXPECT_FALSE(CompareCategories(first, second));
+}
+
+TEST_F(ClickBasedCategoryRankerTest, ShouldPromoteCategory) {
+  const Category downloads =
+      Category::FromKnownCategory(KnownCategories::DOWNLOADS);
+  const Category bookmarks =
+      Category::FromKnownCategory(KnownCategories::BOOKMARKS);
+  const Category articles =
+      Category::FromKnownCategory(KnownCategories::ARTICLES);
+  ASSERT_TRUE(CompareCategories(downloads, bookmarks));
+  ASSERT_TRUE(CompareCategories(bookmarks, articles));
+  SetPromotedCategoryVariationParam(articles.id());
+  ResetRanker(base::MakeUnique<base::DefaultClock>());
+  EXPECT_TRUE(CompareCategories(articles, downloads));
+  EXPECT_TRUE(CompareCategories(articles, bookmarks));
+  EXPECT_FALSE(CompareCategories(downloads, articles));
+  EXPECT_FALSE(CompareCategories(bookmarks, articles));
+  EXPECT_FALSE(CompareCategories(articles, articles));
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldHandleInvalidCategoryIDForPromotion) {
+  SetPromotedCategoryVariationParam(
+      static_cast<int>(KnownCategories::LOCAL_CATEGORIES_COUNT));
+  ResetRanker(base::MakeUnique<base::DefaultClock>());
+  // Make sure we have the default order.
+  EXPECT_TRUE(CompareCategories(
+      Category::FromKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES),
+      Category::FromKnownCategory(KnownCategories::DOWNLOADS)));
+  EXPECT_TRUE(CompareCategories(
+      Category::FromKnownCategory(KnownCategories::DOWNLOADS),
+      Category::FromKnownCategory(KnownCategories::RECENT_TABS)));
+  EXPECT_TRUE(CompareCategories(
+      Category::FromKnownCategory(KnownCategories::RECENT_TABS),
+      Category::FromKnownCategory(KnownCategories::FOREIGN_TABS)));
+  EXPECT_TRUE(CompareCategories(
+      Category::FromKnownCategory(KnownCategories::FOREIGN_TABS),
+      Category::FromKnownCategory(KnownCategories::BOOKMARKS)));
+  EXPECT_TRUE(CompareCategories(
+      Category::FromKnownCategory(KnownCategories::BOOKMARKS),
+      Category::FromKnownCategory(KnownCategories::ARTICLES)));
+}
+
+TEST_F(ClickBasedCategoryRankerTest, ShouldEndPromotionOnSectionDismissal) {
+  const Category physical_web =
+      Category::FromKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
+  const Category articles =
+      Category::FromKnownCategory(KnownCategories::ARTICLES);
+  ASSERT_TRUE(CompareCategories(physical_web, articles));
+
+  SetPromotedCategoryVariationParam(articles.id());
+  ResetRanker(base::MakeUnique<base::DefaultClock>());
+
+  ASSERT_TRUE(CompareCategories(articles, physical_web));
+
+  ranker()->OnCategoryDismissed(articles);
+  EXPECT_FALSE(CompareCategories(articles, physical_web));
+  EXPECT_TRUE(CompareCategories(physical_web, articles));
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldResumePromotionAfter2WeeksSinceDismissal) {
+  const Category downloads =
+      Category::FromKnownCategory(KnownCategories::DOWNLOADS);
+  const Category recent_tabs =
+      Category::FromKnownCategory(KnownCategories::RECENT_TABS);
+  ASSERT_TRUE(CompareCategories(downloads, recent_tabs));
+
+  SetPromotedCategoryVariationParam(recent_tabs.id());
+  ResetRanker(base::MakeUnique<base::DefaultClock>());
+  ASSERT_TRUE(CompareCategories(recent_tabs, downloads));
+
+  ranker()->OnCategoryDismissed(recent_tabs);
+  ASSERT_FALSE(CompareCategories(recent_tabs, downloads));
+
+  // Simulate a little over 2 weeks of time passing.
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(base::Time::Now() + base::TimeDelta::FromDays(15));
+  ResetRanker(std::move(test_clock));
+  EXPECT_TRUE(CompareCategories(recent_tabs, downloads));
 }
 
 }  // namespace ntp_snippets

@@ -16,6 +16,19 @@ TEST(CategoryTest, FromKnownCategoryShouldReturnSameCategoryForSameInput) {
   EXPECT_EQ(first, second);
 }
 
+TEST(CategoryTest, ShouldIdentifyValidIDValues) {
+  EXPECT_TRUE(
+      Category::IsValidIDValue(static_cast<int>(KnownCategories::ARTICLES)));
+  EXPECT_FALSE(Category::IsValidIDValue(-1));
+  EXPECT_TRUE(Category::IsValidIDValue(0));
+  EXPECT_FALSE(Category::IsValidIDValue(
+      static_cast<int>(KnownCategories::REMOTE_CATEGORIES_OFFSET)));
+  EXPECT_TRUE(Category::IsValidIDValue(
+      static_cast<int>(KnownCategories::REMOTE_CATEGORIES_OFFSET) + 5));
+  EXPECT_FALSE(Category::IsValidIDValue(
+      static_cast<int>(KnownCategories::LOCAL_CATEGORIES_COUNT)));
+}
+
 TEST(CategoryFactoryTest,
      FromRemoteCategoryShouldReturnSameCategoryForSameInput) {
   const int remote_category_id = 123;

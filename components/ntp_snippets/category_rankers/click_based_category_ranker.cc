@@ -5,8 +5,11 @@
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 
 #include <algorithm>
+#include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/features.h"
@@ -64,11 +67,28 @@ const char* kDismissedCategoryPenaltyParamName =
 
 const char kCategoryIdKey[] = "category";
 const char kClicksKey[] = "clicks";
+const char kLastDismissedKey[] = "last_dismissed";
+const char kContentSuggestionsPromotedCategory[] =
+    "click_based_category_ranker-promoted_category";
 
 int GetDismissedCategoryPenaltyVariationValue() {
   return variations::GetVariationParamByFeatureAsInt(
       kCategoryRanker, kDismissedCategoryPenaltyParamName,
       kDefaultDismissedCategoryPenalty);
+}
+
+base::Optional<Category> GetPromotedCategoryFromVariations() {
+  int category_id = variations::GetVariationParamByFeatureAsInt(
+      kCategoryRanker, kContentSuggestionsPromotedCategory, -1);
+  if (category_id < 0) {
+    return base::nullopt;
+  }
+  if (!Category::IsValidIDValue(category_id)) {
+    LOG(WARNING) << "Received invalid category ID for promotion: "
+                 << category_id << ". Ignoring promotion.";
+    return base::nullopt;
+  }
+  return Category::FromIDValue(category_id);
 }
 
 }  // namespace
@@ -87,6 +107,25 @@ ClickBasedCategoryRanker::ClickBasedCategoryRanker(
   if (ReadLastDecayTimeFromPrefs() == base::Time::FromInternalValue(0)) {
     StoreLastDecayTimeToPrefs(clock_->Now());
   }
+  promoted_category_ = DeterminePromotedCategory();
+}
+
+// |ordered_categories_| needs to be properly initialized before calling
+// this method.
+base::Optional<Category> ClickBasedCategoryRanker::DeterminePromotedCategory() {
+  base::Optional<Category> promoted = GetPromotedCategoryFromVariations();
+  if (!promoted.has_value()) {
+    return base::nullopt;
+  }
+  auto promoted_it = FindCategory(promoted.value());
+  if (promoted_it != ordered_categories_.end() &&
+      promoted_it->last_dismissed >
+          clock_->Now() - base::TimeDelta::FromDays(14)) {
+    // Only promote categories to the top if they weren't dismissed within the
+    // last 2 weeks.
+    return base::nullopt;
+  }
+  return promoted;
 }
 
 ClickBasedCategoryRanker::~ClickBasedCategoryRanker() = default;
@@ -101,6 +140,12 @@ bool ClickBasedCategoryRanker::Compare(Category left, Category right) const {
                 << " has not been added using AppendCategoryIfNecessary.";
   }
   if (left == right) {
+    return false;
+  }
+  if (promoted_category_.has_value() && left == *promoted_category_) {
+    return true;
+  }
+  if (promoted_category_.has_value() && right == *promoted_category_) {
     return false;
   }
   for (const RankedCategory& ranked_category : ordered_categories_) {
@@ -150,7 +195,8 @@ void ClickBasedCategoryRanker::ClearHistory(base::Time begin, base::Time end) {
             Category::CompareByID());
 
   for (Category added_category : added_categories) {
-    ordered_categories_.push_back(RankedCategory(added_category, /*clicks=*/0));
+    ordered_categories_.push_back(RankedCategory(
+        added_category, /*clicks=*/0, /*last_dismissed=*/base::Time()));
   }
 
   StoreOrderToPrefs(ordered_categories_);
@@ -158,7 +204,8 @@ void ClickBasedCategoryRanker::ClearHistory(base::Time begin, base::Time end) {
 
 void ClickBasedCategoryRanker::AppendCategoryIfNecessary(Category category) {
   if (!ContainsCategory(category)) {
-    ordered_categories_.push_back(RankedCategory(category, /*clicks=*/0));
+    ordered_categories_.push_back(RankedCategory(
+        category, /*clicks=*/0, /*last_dismissed=*/base::Time()));
   }
 }
 
@@ -199,28 +246,29 @@ void ClickBasedCategoryRanker::OnCategoryDismissed(Category category) {
   }
 
   const int penalty = GetDismissedCategoryPenaltyVariationValue();
-  if (penalty == 0) {
-    // The dismissed category penalty is turned off, the call is ignored.
-    return;
-  }
-
-  std::vector<RankedCategory>::iterator current = FindCategory(category);
-  for (int downgrade = 0; downgrade < penalty; ++downgrade) {
-    std::vector<RankedCategory>::iterator next = current + 1;
-    if (next == ordered_categories_.end()) {
-      break;
+  if (penalty != 0) {  // Dismissed category penalty is turned on?
+    std::vector<RankedCategory>::iterator current = FindCategory(category);
+    for (int downgrade = 0; downgrade < penalty; ++downgrade) {
+      std::vector<RankedCategory>::iterator next = current + 1;
+      if (next == ordered_categories_.end()) {
+        break;
+      }
+      std::swap(*current, *next);
+      current = next;
     }
-    std::swap(*current, *next);
-    current = next;
-  }
 
-  DCHECK(current != ordered_categories_.begin());
-  std::vector<RankedCategory>::iterator previous = current - 1;
-  int new_clicks = std::max(previous->clicks - kPassingMargin, 0);
-  // The previous category may have more clicks (but not enough to pass the
-  // margin, this is possible when penalty >= 2), therefore, we ensure that for
-  // this category we don't increase clicks.
-  current->clicks = std::min(current->clicks, new_clicks);
+    DCHECK(current != ordered_categories_.begin());
+    std::vector<RankedCategory>::iterator previous = current - 1;
+    int new_clicks = std::max(previous->clicks - kPassingMargin, 0);
+    // The previous category may have more clicks (but not enough to pass the
+    // margin, this is possible when penalty >= 2), therefore, we ensure that
+    // for this category we don't increase clicks.
+    current->clicks = std::min(current->clicks, new_clicks);
+  }
+  FindCategory(category)->last_dismissed = clock_->Now();
+  if (promoted_category_.has_value() && category == *promoted_category_) {
+    promoted_category_.reset();
+  }
   StoreOrderToPrefs(ordered_categories_);
 }
 
@@ -251,9 +299,11 @@ int ClickBasedCategoryRanker::GetDismissedCategoryPenalty() {
   return GetDismissedCategoryPenaltyVariationValue();
 }
 
-ClickBasedCategoryRanker::RankedCategory::RankedCategory(Category category,
-                                                         int clicks)
-    : category(category), clicks(clicks) {}
+ClickBasedCategoryRanker::RankedCategory::RankedCategory(
+    Category category,
+    int clicks,
+    const base::Time& last_dismissed)
+    : category(category), clicks(clicks), last_dismissed(last_dismissed) {}
 
 // Returns passing margin for a given position taking into account whether it is
 // a top category.
@@ -285,8 +335,25 @@ void ClickBasedCategoryRanker::AppendKnownCategory(
     KnownCategories known_category) {
   Category category = Category::FromKnownCategory(known_category);
   DCHECK(!ContainsCategory(category));
-  ordered_categories_.push_back(RankedCategory(category, /*clicks=*/0));
+  ordered_categories_.push_back(RankedCategory(
+      category, /*clicks=*/0, /*last_dismissed=*/base::Time()));
 }
+
+namespace {
+
+base::Time ParseLastDismissedDate(const base::DictionaryValue& value) {
+  // We don't expect the last-dismissed value to be present in all cases (we
+  // added this after the fact).
+  std::string serialized_value;
+  int64_t parsed_value;
+  if (value.GetString(kLastDismissedKey, &serialized_value) &&
+      base::StringToInt64(serialized_value, &parsed_value)) {
+    return base::Time::FromInternalValue(parsed_value);
+  }
+  return base::Time();
+}
+
+}  // namespace
 
 bool ClickBasedCategoryRanker::ReadOrderFromPrefs(
     std::vector<RankedCategory>* result_categories) const {
@@ -314,8 +381,10 @@ bool ClickBasedCategoryRanker::ReadOrderFromPrefs(
       LOG(DFATAL) << "Dictionary does not have '" << kClicksKey << "' key.";
       return false;
     }
+    base::Time last_dismissed = ParseLastDismissedDate(*dictionary);
     Category category = Category::FromIDValue(category_id);
-    result_categories->push_back(RankedCategory(category, clicks));
+    result_categories->push_back(
+        RankedCategory(category, clicks, last_dismissed));
   }
   return true;
 }
@@ -327,6 +396,9 @@ void ClickBasedCategoryRanker::StoreOrderToPrefs(
     auto dictionary = base::MakeUnique<base::DictionaryValue>();
     dictionary->SetInteger(kCategoryIdKey, category.category.id());
     dictionary->SetInteger(kClicksKey, category.clicks);
+    dictionary->SetString(
+        kLastDismissedKey,
+        base::Int64ToString(category.last_dismissed.ToInternalValue()));
     list.Append(std::move(dictionary));
   }
   pref_service_->Set(prefs::kClickBasedCategoryRankerOrderWithClicks, list);

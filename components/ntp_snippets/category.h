@@ -67,8 +67,14 @@ class Category {
   static Category FromRemoteCategory(int remote_category);
 
   // Creates a category from an ID as returned by |id()|. |id| must be a
-  // non-negative value.
+  // non-negative value. Callers should make sure this is a valid id (if in
+  // doubt, call IsValidIDValue()).
   static Category FromIDValue(int id);
+
+  // Verifies if |id| is a valid ID value. Only checks that the value is within
+  // a valid range -- not that the system actually knows about the corresponding
+  // category.
+  static bool IsValidIDValue(int id);
 
   // Returns a non-negative identifier that is unique for the category and can
   // be converted back to a Category instance using
