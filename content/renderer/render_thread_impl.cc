@@ -891,6 +891,9 @@ void RenderThreadImpl::Init(
 
   record_purge_suspend_metric_closure_.Reset(base::Bind(
       &RenderThreadImpl::RecordPurgeAndSuspendMetrics, base::Unretained(this)));
+  record_purge_suspend_growth_metric_closure_.Reset(
+      base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
+                 base::Unretained(this)));
 
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 
@@ -1646,6 +1649,10 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
     record_purge_suspend_metric_closure_.Reset(
         base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMetrics,
                    base::Unretained(this)));
+    record_purge_suspend_growth_metric_closure_.Cancel();
+    record_purge_suspend_growth_metric_closure_.Reset(
+        base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
+                   base::Unretained(this)));
   }
 }
 
@@ -1760,7 +1767,7 @@ void RenderThreadImpl::GetRendererMemoryMetrics(
 // we should collect the metrics using memory-infra.
 // TODO(tasak): We should also report a difference between the memory usages
 // before and after purging by using memory-infra.
-void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
+void RenderThreadImpl::RecordPurgeAndSuspendMetrics() {
   // If this renderer is resumed, we should not update UMA.
   if (!RendererIsHidden())
     return;
@@ -1781,6 +1788,56 @@ void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
                           memory_metrics.v8_main_thread_isolate_mb);
   UMA_HISTOGRAM_MEMORY_MB("PurgeAndSuspend.Memory.TotalAllocatedMB",
                           memory_metrics.total_allocated_mb);
+  purge_and_suspend_memory_metrics_ = memory_metrics;
+
+  // record how many memory usage increases after purged.
+  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE, record_purge_suspend_growth_metric_closure_.callback(),
+      base::TimeDelta::FromMinutes(5));
+  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE, record_purge_suspend_growth_metric_closure_.callback(),
+      base::TimeDelta::FromMinutes(10));
+  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE, record_purge_suspend_growth_metric_closure_.callback(),
+      base::TimeDelta::FromMinutes(15));
+}
+
+#define GET_MEMORY_GROWTH(current, previous, allocator) \
+  (current.allocator > previous.allocator               \
+       ? current.allocator - previous.allocator         \
+       : 0)
+
+void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics() const {
+  // If this renderer is resumed, we should not update UMA.
+  if (!RendererIsHidden())
+    return;
+
+  RendererMemoryMetrics memory_metrics;
+  GetRendererMemoryMetrics(&memory_metrics);
+  UMA_HISTOGRAM_MEMORY_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.PartitionAllocKB",
+      GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
+                        partition_alloc_kb));
+  UMA_HISTOGRAM_MEMORY_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.BlinkGCKB",
+      GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
+                        blink_gc_kb));
+  UMA_HISTOGRAM_MEMORY_MB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.MallocKB",
+      GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
+                        malloc_mb) * 1024);
+  UMA_HISTOGRAM_MEMORY_KB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.DiscardableKB",
+      GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
+                        discardable_kb));
+  UMA_HISTOGRAM_MEMORY_MB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.V8MainThreadIsolateKB",
+      GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
+                        v8_main_thread_isolate_mb) * 1024);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "PurgeAndSuspend.Experimental.MemoryGrowth.TotalAllocatedKB",
+      GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
+                        total_allocated_mb) * 1024);
 }
 
 void RenderThreadImpl::OnProcessResume() {

@@ -564,7 +564,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnRendererHidden();
   void OnRendererVisible();
 
-  void RecordPurgeAndSuspendMetrics() const;
+  void RecordPurgeAndSuspendMetrics();
+  void RecordPurgeAndSuspendMemoryGrowthMetrics() const;
 
   void ReleaseFreeMemory();
 
@@ -763,6 +764,8 @@ class CONTENT_EXPORT RenderThreadImpl
       thread_safe_render_message_filter_;
 
   base::CancelableClosure record_purge_suspend_metric_closure_;
+  RendererMemoryMetrics purge_and_suspend_memory_metrics_;
+  base::CancelableClosure record_purge_suspend_growth_metric_closure_;
 
   int32_t client_id_;
 
