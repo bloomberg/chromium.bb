@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
@@ -374,7 +375,7 @@ class TitleWatcher : public WebContentsObserver {
   void TestTitle();
 
   std::vector<base::string16> expected_titles_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 
   // The most recently observed expected title, if any.
   base::string16 observed_title_;

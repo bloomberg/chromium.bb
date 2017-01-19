@@ -262,7 +262,7 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
       const ChildProcessData& data) override;
 
   int child_thread_count_;
-  scoped_refptr<MessageLoopRunner> runner_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);
@@ -303,7 +303,7 @@ class WebContentsDestroyedWatcher : public WebContentsObserver {
   // Overridden WebContentsObserver methods.
   void WebContentsDestroyed() override;
 
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
 };

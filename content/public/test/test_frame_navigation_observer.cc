@@ -32,9 +32,7 @@ TestFrameNavigationObserver::TestFrameNavigationObserver(
       frame_tree_node_id_(ToRenderFrameHostImpl(adapter)->GetFrameTreeNodeId()),
       navigation_started_(false),
       has_committed_(false),
-      wait_for_commit_(false),
-      message_loop_runner_(
-          new MessageLoopRunner(MessageLoopRunner::QuitMode::IMMEDIATE)) {
+      wait_for_commit_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -43,7 +41,7 @@ TestFrameNavigationObserver::~TestFrameNavigationObserver() {}
 void TestFrameNavigationObserver::Wait() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   wait_for_commit_ = false;
-  message_loop_runner_->Run();
+  run_loop_.Run();
 }
 
 void TestFrameNavigationObserver::WaitForCommit() {
@@ -53,7 +51,7 @@ void TestFrameNavigationObserver::WaitForCommit() {
     return;
 
   wait_for_commit_ = true;
-  message_loop_runner_->Run();
+  run_loop_.Run();
 }
 
 void TestFrameNavigationObserver::DidStartProvisionalLoadForFrame(
@@ -82,7 +80,7 @@ void TestFrameNavigationObserver::DidCommitProvisionalLoadForFrame(
 
   has_committed_ = true;
   if (wait_for_commit_)
-    message_loop_runner_->Quit();
+    run_loop_.Quit();
 }
 
 void TestFrameNavigationObserver::DidStopLoading() {
@@ -90,7 +88,7 @@ void TestFrameNavigationObserver::DidStopLoading() {
     return;
 
   navigation_started_ = false;
-  message_loop_runner_->Quit();
+  run_loop_.Quit();
 }
 
 }  // namespace content
