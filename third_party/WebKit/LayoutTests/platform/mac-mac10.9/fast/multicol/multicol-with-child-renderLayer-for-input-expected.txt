@@ -20,9 +20,9 @@ layer at (8,8) size 384x118
       text run at (0,77) width 351: "Filler Text Filler Text Filler Text Filler Text Filler Text"
       text run at (0,97) width 142: "Filler Text Filler Text "
     LayoutText {#text} at (0,0) size 0x0
-layer at (152,105) size 123x19
+layer at (152,105) size 123x19 clip at (154,107) size 119x15
   LayoutTextControl (relative positioned) {INPUT} at (143.73,97) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-layer at (155,108) size 117x13
+layer at (155,108) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 40x13
       text run at (0,0) width 40: "Testing"

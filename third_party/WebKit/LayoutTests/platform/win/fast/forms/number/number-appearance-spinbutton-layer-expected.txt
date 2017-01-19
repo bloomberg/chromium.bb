@@ -12,7 +12,7 @@ layer at (10,33) size 154x16
   LayoutBlockFlow {DIV} at (0,0) size 154x16
     LayoutText {#text} at (0,0) size 14x16
       text run at (0,0) width 14: "10"
-layer at (8,8) size 173x22 transparent
+layer at (8,8) size 173x22 clip at (10,10) size 169x18 transparent
   LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
     LayoutFlexibleBox {DIV} at (2,3) size 169x16
       LayoutBlockFlow {DIV} at (0,0) size 154x16

@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
         text run at (0,18) width 682: "This tests that preventDefault called onmousedown will prevent a caret from being placed in the text field."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-layer at (10,50) size 173x22
+layer at (10,50) size 173x22 clip at (12,52) size 169x18
   LayoutTextControl (positioned) {INPUT} at (10,50) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
 layer at (12,53) size 169x16
   LayoutBlockFlow {DIV} at (2,3) size 169x16
