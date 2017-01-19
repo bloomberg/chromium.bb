@@ -222,7 +222,7 @@ class CORE_EXPORT MouseEventManager final
 
   LayoutPoint m_dragStartPos;
 
-  Timer<MouseEventManager> m_fakeMouseMoveEventTimer;
+  TaskRunnerTimer<MouseEventManager> m_fakeMouseMoveEventTimer;
 };
 
 }  // namespace blink

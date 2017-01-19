@@ -8,6 +8,7 @@
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionController.h"
 #include "core/events/DragEvent.h"
@@ -79,6 +80,7 @@ MouseEventManager::MouseEventManager(LocalFrame& frame,
     : m_frame(frame),
       m_scrollManager(scrollManager),
       m_fakeMouseMoveEventTimer(
+          TaskRunnerHelper::get(TaskType::UserInteraction, &frame),
           this,
           &MouseEventManager::fakeMouseMoveEventTimerFired) {
   clear();
