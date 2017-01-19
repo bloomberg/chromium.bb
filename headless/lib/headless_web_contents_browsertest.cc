@@ -89,6 +89,9 @@ class HeadlessWebContentsSecurityTest
       const security::SecurityStateChangedParams& params) override {
     EXPECT_EQ(security::SecurityState::NEUTRAL, params.GetSecurityState());
 
+    devtools_client_->GetSecurity()->GetExperimental()->Disable(
+        security::DisableParams::Builder().Build());
+    devtools_client_->GetSecurity()->GetExperimental()->RemoveObserver(this);
     FinishAsynchronousTest();
   }
 };
