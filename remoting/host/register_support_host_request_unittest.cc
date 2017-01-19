@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/mock_callback.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/test_rsa_key_pair.h"
@@ -48,13 +49,6 @@ ACTION_P(RemoveListener, list) {
   list->RemoveObserver(arg0);
 }
 
-class MockCallback {
- public:
-  MOCK_METHOD3(OnResponse, void(const std::string& support_id,
-                                const base::TimeDelta& lifetime,
-                                const std::string& error_message));
-};
-
 }  // namespace
 
 class RegisterSupportHostRequestTest : public testing::Test {
@@ -76,7 +70,7 @@ class RegisterSupportHostRequestTest : public testing::Test {
   MockSignalStrategy signal_strategy_;
   base::ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;
-  MockCallback callback_;
+  base::MockCallback<RegisterSupportHostRequest::RegisterCallback> callback_;
 };
 
 TEST_F(RegisterSupportHostRequestTest, Send) {
@@ -84,9 +78,8 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   int64_t start_time = static_cast<int64_t>(base::Time::Now().ToDoubleT());
 
   std::unique_ptr<RegisterSupportHostRequest> request(
-      new RegisterSupportHostRequest(
-          &signal_strategy_, key_pair_, kTestBotJid,
-          base::Bind(&MockCallback::OnResponse, base::Unretained(&callback_))));
+      new RegisterSupportHostRequest(&signal_strategy_, key_pair_, kTestBotJid,
+                                     callback_.Get()));
 
   XmlElement* sent_iq = nullptr;
   EXPECT_CALL(signal_strategy_, GetNextId())
@@ -129,9 +122,8 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   EXPECT_EQ(expected_signature, signature->BodyText());
 
   // Generate response and verify that callback is called.
-  EXPECT_CALL(callback_, OnResponse(kSupportId,
-                                    base::TimeDelta::FromSeconds(300),
-                                    ""));
+  EXPECT_CALL(callback_,
+              Run(kSupportId, base::TimeDelta::FromSeconds(300), ""));
 
   std::unique_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName(std::string(), "from"), kTestBotJid);

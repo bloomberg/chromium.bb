@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -42,11 +43,6 @@ void QuitCurrentThread() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
-
-class MockSocketCallback {
- public:
-  MOCK_METHOD1(OnDone, void(int result));
-};
 
 class MockConnectCallback {
  public:
@@ -241,21 +237,14 @@ TEST_F(ChannelMultiplexerTest, WriteFailSync) {
 
   scoped_refptr<net::IOBufferWithSize> buf = CreateTestBuffer(100);
 
-  MockSocketCallback cb1;
-  MockSocketCallback cb2;
-  EXPECT_CALL(cb1, OnDone(net::ERR_FAILED));
-  EXPECT_CALL(cb2, OnDone(net::ERR_FAILED));
+  base::MockCallback<net::CompletionCallback> cb1, cb2;
+  EXPECT_CALL(cb1, Run(net::ERR_FAILED));
+  EXPECT_CALL(cb2, Run(net::ERR_FAILED));
 
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket1_->Write(buf.get(),
-                                 buf->size(),
-                                 base::Bind(&MockSocketCallback::OnDone,
-                                            base::Unretained(&cb1))));
+            host_socket1_->Write(buf.get(), buf->size(), cb1.Get()));
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket2_->Write(buf.get(),
-                                 buf->size(),
-                                 base::Bind(&MockSocketCallback::OnDone,
-                                            base::Unretained(&cb2))));
+            host_socket2_->Write(buf.get(), buf->size(), cb2.Get()));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -274,21 +263,14 @@ TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
 
   scoped_refptr<net::IOBufferWithSize> buf = CreateTestBuffer(100);
 
-  MockSocketCallback cb1;
-  MockSocketCallback cb2;
-  EXPECT_CALL(cb1, OnDone(net::ERR_FAILED));
-  EXPECT_CALL(cb2, OnDone(net::ERR_FAILED));
+  base::MockCallback<net::CompletionCallback> cb1, cb2;
+  EXPECT_CALL(cb1, Run(net::ERR_FAILED));
+  EXPECT_CALL(cb2, Run(net::ERR_FAILED));
 
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket1_->Write(buf.get(),
-                                 buf->size(),
-                                 base::Bind(&MockSocketCallback::OnDone,
-                                            base::Unretained(&cb1))));
+            host_socket1_->Write(buf.get(), buf->size(), cb1.Get()));
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket2_->Write(buf.get(),
-                                 buf->size(),
-                                 base::Bind(&MockSocketCallback::OnDone,
-                                            base::Unretained(&cb2))));
+            host_socket2_->Write(buf.get(), buf->size(), cb2.Get()));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -306,26 +288,18 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
 
   scoped_refptr<net::IOBufferWithSize> buf = CreateTestBuffer(100);
 
-  MockSocketCallback cb1;
-  MockSocketCallback cb2;
-
-  EXPECT_CALL(cb1, OnDone(net::ERR_FAILED))
+  base::MockCallback<net::CompletionCallback> cb1, cb2;
+  EXPECT_CALL(cb1, Run(net::ERR_FAILED))
       .Times(AtMost(1))
       .WillOnce(InvokeWithoutArgs(this, &ChannelMultiplexerTest::DeleteAll));
-  EXPECT_CALL(cb2, OnDone(net::ERR_FAILED))
+  EXPECT_CALL(cb2, Run(net::ERR_FAILED))
       .Times(AtMost(1))
       .WillOnce(InvokeWithoutArgs(this, &ChannelMultiplexerTest::DeleteAll));
 
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket1_->Write(buf.get(),
-                                 buf->size(),
-                                 base::Bind(&MockSocketCallback::OnDone,
-                                            base::Unretained(&cb1))));
+            host_socket1_->Write(buf.get(), buf->size(), cb1.Get()));
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket2_->Write(buf.get(),
-                                 buf->size(),
-                                 base::Bind(&MockSocketCallback::OnDone,
-                                            base::Unretained(&cb2))));
+            host_socket2_->Write(buf.get(), buf->size(), cb2.Get()));
 
   base::RunLoop().RunUntilIdle();
 

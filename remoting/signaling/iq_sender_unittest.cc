@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/mock_callback.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,11 +39,6 @@ const char kBodyTag[] = "test";
 const char kType[] = "get";
 const char kTo[] = "user@domain.com";
 
-class MockCallback {
- public:
-  MOCK_METHOD2(OnReply, void(IqRequest* request, const XmlElement* reply));
-};
-
 MATCHER_P(XmlEq, expected, "") {
   return arg->Str() == expected->Str();
 }
@@ -67,8 +63,7 @@ class IqSenderTest : public testing::Test {
         .WillOnce(Return(kStanzaId));
     EXPECT_CALL(signal_strategy_, SendStanzaPtr(_))
         .WillOnce(DoAll(SaveArg<0>(&sent_stanza), Return(true)));
-    request_ = sender_->SendIq(kType, kTo, std::move(iq_body), base::Bind(
-        &MockCallback::OnReply, base::Unretained(&callback_)));
+    request_ = sender_->SendIq(kType, kTo, std::move(iq_body), callback_.Get());
 
     std::string expected_xml_string =
         base::StringPrintf(
@@ -104,7 +99,7 @@ class IqSenderTest : public testing::Test {
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   std::unique_ptr<IqSender> sender_;
-  MockCallback callback_;
+  base::MockCallback<IqSender::ReplyCallback> callback_;
   std::unique_ptr<IqRequest> request_;
 };
 
@@ -116,7 +111,7 @@ TEST_F(IqSenderTest, SendIq) {
   std::unique_ptr<XmlElement> response;
   EXPECT_TRUE(FormatAndDeliverResponse(kTo, &response));
 
-  EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
+  EXPECT_CALL(callback_, Run(request_.get(), XmlEq(response.get())));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -127,7 +122,7 @@ TEST_F(IqSenderTest, Timeout) {
 
   request_->SetTimeout(base::TimeDelta::FromMilliseconds(2));
 
-  EXPECT_CALL(callback_, OnReply(request_.get(), nullptr))
+  EXPECT_CALL(callback_, Run(request_.get(), nullptr))
       .WillOnce(
           InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitWhenIdle));
   base::RunLoop().Run();
@@ -143,7 +138,7 @@ TEST_F(IqSenderTest, NotNormalizedJid) {
   std::unique_ptr<XmlElement> response;
   EXPECT_TRUE(FormatAndDeliverResponse("USER@domain.com", &response));
 
-  EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
+  EXPECT_CALL(callback_, Run(request_.get(), XmlEq(response.get())));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -154,7 +149,7 @@ TEST_F(IqSenderTest, InvalidFrom) {
 
   EXPECT_FALSE(FormatAndDeliverResponse("different_user@domain.com", nullptr));
 
-  EXPECT_CALL(callback_, OnReply(_, _)).Times(0);
+  EXPECT_CALL(callback_, Run(_, _)).Times(0);
   base::RunLoop().RunUntilIdle();
 }
 
