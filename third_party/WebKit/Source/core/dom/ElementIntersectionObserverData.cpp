@@ -33,8 +33,9 @@ void ElementIntersectionObserverData::removeObserver(
 
 void ElementIntersectionObserverData::addObservation(
     IntersectionObservation& observation) {
+  DCHECK(observation.observer());
   m_intersectionObservations.add(
-      TraceWrapperMember<IntersectionObserver>(this, &observation.observer()),
+      TraceWrapperMember<IntersectionObserver>(this, observation.observer()),
       &observation);
 }
 

@@ -20,13 +20,12 @@ class IntersectionObservation final
                           Element&,
                           bool shouldReportRootBounds);
 
-  IntersectionObserver& observer() const { return *m_observer; }
+  IntersectionObserver* observer() const { return m_observer.get(); }
   Element* target() const { return m_target; }
   unsigned lastThresholdIndex() const { return m_lastThresholdIndex; }
   void setLastThresholdIndex(unsigned index) { m_lastThresholdIndex = index; }
   void computeIntersectionObservations(DOMHighResTimeStamp);
   void disconnect();
-  void clearRootAndRemoveFromTarget();
 
   DECLARE_TRACE();
 

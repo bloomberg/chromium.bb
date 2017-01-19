@@ -230,12 +230,8 @@ Document& IntersectionObserver::trackingDocument() const {
 
 void IntersectionObserver::observe(Element* target,
                                    ExceptionState& exceptionState) {
-  if (!rootIsValid()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "observe() called on an IntersectionObserver with an invalid root.");
+  if (!rootIsValid())
     return;
-  }
 
   if (!target || root() == target)
     return;
@@ -287,19 +283,14 @@ void IntersectionObserver::observe(Element* target,
 
 void IntersectionObserver::unobserve(Element* target,
                                      ExceptionState& exceptionState) {
-  if (!rootIsValid()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "unobserve() called on an IntersectionObserver with an invalid root.");
-    return;
-  }
-
   if (!target || !target->intersectionObserverData())
     return;
 
   if (IntersectionObservation* observation =
-          target->intersectionObserverData()->getObservationFor(*this))
+          target->intersectionObserverData()->getObservationFor(*this)) {
     observation->disconnect();
+    m_observations.remove(observation);
+  }
 }
 
 void IntersectionObserver::computeIntersectionObservations() {
@@ -318,21 +309,9 @@ void IntersectionObserver::computeIntersectionObservations() {
 }
 
 void IntersectionObserver::disconnect(ExceptionState& exceptionState) {
-  if (!rootIsValid()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "disconnect() called on an IntersectionObserver with an invalid root.");
-    return;
-  }
-
   for (auto& observation : m_observations)
-    observation->clearRootAndRemoveFromTarget();
+    observation->disconnect();
   m_observations.clear();
-}
-
-void IntersectionObserver::removeObservation(
-    IntersectionObservation& observation) {
-  m_observations.remove(&observation);
 }
 
 void IntersectionObserver::setInitialState(InitialState initialState) {
@@ -343,16 +322,7 @@ void IntersectionObserver::setInitialState(InitialState initialState) {
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
     ExceptionState& exceptionState) {
   HeapVector<Member<IntersectionObserverEntry>> entries;
-
-  if (!rootIsValid()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "takeRecords() called on an "
-                                     "IntersectionObserver with an invalid "
-                                     "root.");
-  } else {
-    entries.swap(m_entries);
-  }
-
+  entries.swap(m_entries);
   return entries;
 }
 

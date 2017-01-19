@@ -80,40 +80,8 @@
 
   observer = initializeObserverThenRemoveRootDiv();
   gc();
-
-  try {
-    observer.observe(target);
-    testFailed("IntersectionObserver.observe() with a deleted root did not throw.");
-  } catch(e) {
-    exc = e;
-    shouldBeType("exc", "DOMException");
-    shouldBe("exc.code", "DOMException.INVALID_STATE_ERR");
-  }
-
-  try {
-    observer.unobserve(target);
-    testFailed("IntersectionObserver.unobserve() with a deleted root did not throw.");
-  } catch(e) {
-    exc = e;
-    shouldBeType("exc", "DOMException");
-    shouldBe("exc.code", "DOMException.INVALID_STATE_ERR");
-  }
-
-  try {
-    observer.disconnect();
-    testFailed("IntersectionObserver.disconnect() with a deleted root did not throw.");
-  } catch(e) {
-    exc = e;
-    shouldBeType("exc", "DOMException");
-    shouldBe("exc.code", "DOMException.INVALID_STATE_ERR");
-  }
-
-  try {
-    observer.takeRecords();
-    testFailed("IntersectionObserver.takeRecords() with a deleted root did not throw.");
-  } catch(e) {
-    exc = e;
-    shouldBeType("exc", "DOMException");
-    shouldBe("exc.code", "DOMException.INVALID_STATE_ERR");
-  }
+  observer.observe(target);
+  observer.unobserve(target);
+  observer.disconnect();
+  shouldBeEqualToNumber("0", observer.takeRecords().length);
 </script>

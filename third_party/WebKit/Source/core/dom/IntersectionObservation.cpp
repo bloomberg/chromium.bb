@@ -20,6 +20,7 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
 
 void IntersectionObservation::computeIntersectionObservations(
     DOMHighResTimeStamp timestamp) {
+  DCHECK(observer());
   if (!m_target)
     return;
   Vector<Length> rootMargin(4);
@@ -57,7 +58,7 @@ void IntersectionObservation::computeIntersectionObservations(
                          geometry.targetRect().size().height().toFloat();
       newVisibleRatio = intersectionArea / targetArea;
     }
-    newThresholdIndex = observer().firstThresholdGreaterThan(newVisibleRatio);
+    newThresholdIndex = observer()->firstThresholdGreaterThan(newVisibleRatio);
   } else {
     newVisibleRatio = 0;
     newThresholdIndex = 0;
@@ -69,20 +70,15 @@ void IntersectionObservation::computeIntersectionObservations(
     IntersectionObserverEntry* newEntry = new IntersectionObserverEntry(
         timestamp, newVisibleRatio, geometry.targetIntRect(), rootBoundsPointer,
         geometry.intersectionIntRect(), target());
-    observer().enqueueIntersectionObserverEntry(*newEntry);
+    observer()->enqueueIntersectionObserverEntry(*newEntry);
     setLastThresholdIndex(newThresholdIndex);
   }
 }
 
 void IntersectionObservation::disconnect() {
-  IntersectionObserver* observer = m_observer;
-  clearRootAndRemoveFromTarget();
-  observer->removeObservation(*this);
-}
-
-void IntersectionObservation::clearRootAndRemoveFromTarget() {
+  DCHECK(observer());
   if (m_target)
-    target()->ensureIntersectionObserverData().removeObservation(observer());
+    target()->ensureIntersectionObserverData().removeObservation(*observer());
   m_observer.clear();
 }
 

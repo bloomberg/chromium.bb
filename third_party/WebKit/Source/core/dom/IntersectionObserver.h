@@ -87,7 +87,6 @@ class CORE_EXPORT IntersectionObserver final
   void enqueueIntersectionObserverEntry(IntersectionObserverEntry&);
   unsigned firstThresholdGreaterThan(float ratio) const;
   void deliver();
-  void removeObservation(IntersectionObservation&);
   bool hasEntries() const { return m_entries.size(); }
   const HeapLinkedHashSet<WeakMember<IntersectionObservation>>& observations()
       const {
