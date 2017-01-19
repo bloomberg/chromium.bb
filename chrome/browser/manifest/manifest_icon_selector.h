@@ -16,10 +16,7 @@ class ManifestIconSelector {
   // Runs the algorithm to find the best matching icon in the icons listed in
   // the Manifest.
   //
-  // Size is defined in Android's density-independent pixels (dp):
-  // http://developer.android.com/guide/practices/screens_support.html
-  // If/when this class is generalized, it may be a good idea to switch this to
-  // taking in pixels, instead.
+  // Size is defined in pixels.
   //
   // Any icon returned will be close as possible to |ideal_icon_size_in_px|
   // with a size not less than |minimum_icon_size_in_px|.
