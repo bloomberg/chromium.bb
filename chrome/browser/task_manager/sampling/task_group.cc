@@ -26,11 +26,12 @@ namespace {
 const int kBackgroundRefreshTypesMask =
     REFRESH_TYPE_CPU | REFRESH_TYPE_MEMORY | REFRESH_TYPE_IDLE_WAKEUPS |
 #if defined(OS_WIN)
-    REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME |
+        REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME |
 #endif  // defined(OS_WIN)
 #if defined(OS_LINUX)
-    REFRESH_TYPE_FD_COUNT |
+        REFRESH_TYPE_FD_COUNT |
 #endif  // defined(OS_LINUX)
+        REFRESH_TYPE_NACL ||
     REFRESH_TYPE_PRIORITY;
 
 #if defined(OS_WIN)
@@ -176,7 +177,8 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
   }
 #endif  // defined(OS_WIN)
 
-  // 4- Refresh the NACL debug stub port (if enabled).
+// 4- Refresh the NACL debug stub port (if enabled). This calls out to
+//    NaClBrowser on the browser's IO thread, completing asynchronously.
 #if !defined(DISABLE_NACL)
   if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_NACL,
                                                     refresh_flags) &&
@@ -255,13 +257,24 @@ void TaskGroup::RefreshWindowsHandles() {
 #endif  // defined(OS_WIN)
 }
 
-void TaskGroup::RefreshNaClDebugStubPort(int child_process_unique_id) {
 #if !defined(DISABLE_NACL)
+void TaskGroup::RefreshNaClDebugStubPort(int child_process_unique_id) {
   nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
-  nacl_debug_stub_port_ =
-      nacl_browser->GetProcessGdbDebugStubPort(child_process_unique_id);
-#endif  // !defined(DISABLE_NACL)
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&nacl::NaClBrowser::GetProcessGdbDebugStubPort,
+                 base::Unretained(nacl_browser), child_process_unique_id),
+      base::Bind(&TaskGroup::OnRefreshNaClDebugStubPortDone,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
+
+void TaskGroup::OnRefreshNaClDebugStubPortDone(int nacl_debug_stub_port) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  nacl_debug_stub_port_ = nacl_debug_stub_port;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_NACL);
+}
+#endif  // !defined(DISABLE_NACL)
 
 void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
