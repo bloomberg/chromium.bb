@@ -42,7 +42,7 @@ enum DataBits {
 
 enum ParityBit {
   NONE,
-  NO,
+  NO_PARITY,
   ODD,
   EVEN,
 };

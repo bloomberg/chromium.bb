@@ -27,7 +27,7 @@ SerialIoHandler::SerialIoHandler(
       ui_thread_task_runner_(ui_thread_task_runner) {
   options_.bitrate = 9600;
   options_.data_bits = serial::DataBits::EIGHT;
-  options_.parity_bit = serial::ParityBit::NO;
+  options_.parity_bit = serial::ParityBit::NO_PARITY;
   options_.stop_bits = serial::StopBits::ONE;
   options_.cts_flow_control = false;
   options_.has_cts_flow_control = true;

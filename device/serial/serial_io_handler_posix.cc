@@ -223,7 +223,7 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
     case serial::ParityBit::ODD:
       config.c_cflag |= (PARODD | PARENB);
       break;
-    case serial::ParityBit::NO:
+    case serial::ParityBit::NO_PARITY:
     default:
       config.c_cflag &= ~(PARODD | PARENB);
       break;
@@ -492,7 +492,7 @@ serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
     info->parity_bit = (config.c_cflag & PARODD) ? serial::ParityBit::ODD
                                                  : serial::ParityBit::EVEN;
   } else {
-    info->parity_bit = serial::ParityBit::NO;
+    info->parity_bit = serial::ParityBit::NO_PARITY;
   }
   info->stop_bits =
       (config.c_cflag & CSTOPB) ? serial::StopBits::TWO : serial::StopBits::ONE;
