@@ -4,7 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "preferences_manager": [ "prefs::mojom::PreferencesManager" ]
+        "preferences_manager": [ "prefs::mojom::PreferencesFactory" ]
       },
       "requires": {
       }

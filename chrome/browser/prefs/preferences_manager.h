@@ -25,7 +25,8 @@ class Profile;
 // the requested preferences, notifying the client of all changes.
 class PreferencesManager : public prefs::mojom::PreferencesManager {
  public:
-  explicit PreferencesManager(Profile* profile);
+  PreferencesManager(prefs::mojom::PreferencesObserverPtr client,
+                     Profile* profile);
   ~PreferencesManager() override;
 
  private:
@@ -35,7 +36,6 @@ class PreferencesManager : public prefs::mojom::PreferencesManager {
   void PreferenceChanged(const std::string& preference_name);
 
   // mojom::PreferencesManager:
-  void AddObserver(prefs::mojom::PreferencesObserverPtr client) override;
   void SetPreferences(
       std::unique_ptr<base::DictionaryValue> preferences) override;
   void Subscribe(const std::vector<std::string>& preferences) override;

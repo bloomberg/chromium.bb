@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -23,8 +24,9 @@
 // TODO(jonross): Observe profile switching and update PreferenceManager
 // connections.
 class PreferencesConnectionManager
-    : public NON_EXPORTED_BASE(
-          service_manager::InterfaceFactory<prefs::mojom::PreferencesManager>),
+    : public NON_EXPORTED_BASE(prefs::mojom::PreferencesFactory),
+      public NON_EXPORTED_BASE(
+          service_manager::InterfaceFactory<prefs::mojom::PreferencesFactory>),
       public NON_EXPORTED_BASE(service_manager::Service) {
  public:
   PreferencesConnectionManager();
@@ -39,18 +41,24 @@ class PreferencesConnectionManager
   // the active PrefService is being destroyed.
   void OnProfileDestroyed();
 
-  // service_manager::InterfaceFactory<PreferencesManager>:
+  // prefs::mojom::PreferencesFactory:
+  void Create(prefs::mojom::PreferencesObserverPtr observer,
+              prefs::mojom::PreferencesManagerRequest manager) override;
+
+  // service_manager::InterfaceFactory<PreferencesFactory>:
   void Create(const service_manager::Identity& remote_identity,
-              prefs::mojom::PreferencesManagerRequest request) override;
+              prefs::mojom::PreferencesFactoryRequest request) override;
 
   // service_manager::Service:
   void OnStart() override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
+  mojo::BindingSet<prefs::mojom::PreferencesFactory> factory_bindings_;
+
   // Bindings that automatically cleanup during connection errors.
   std::vector<mojo::StrongBindingPtr<prefs::mojom::PreferencesManager>>
-      bindings_;
+      manager_bindings_;
 
   // Observes shutdown, when PrefService is being destroyed.
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>

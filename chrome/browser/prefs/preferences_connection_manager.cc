@@ -47,16 +47,17 @@ void PreferencesConnectionManager::OnConnectionError(
     mojo::StrongBindingPtr<prefs::mojom::PreferencesManager> binding) {
   if (!binding)
     return;
-  for (auto it = std::begin(bindings_); it != std::end(bindings_); ++it) {
+  for (auto it = manager_bindings_.begin(); it != manager_bindings_.end();
+       ++it) {
     if (it->get() == binding.get()) {
-      bindings_.erase(it);
+      manager_bindings_.erase(it);
       return;
     }
   }
 }
 
 void PreferencesConnectionManager::OnProfileDestroyed() {
-  for (auto& it : bindings_) {
+  for (auto& it : manager_bindings_) {
     // Shutdown any PreferenceManager that is still alive.
     if (it)
       it->Close();
@@ -66,8 +67,8 @@ void PreferencesConnectionManager::OnProfileDestroyed() {
 }
 
 void PreferencesConnectionManager::Create(
-    const service_manager::Identity& remote_identity,
-    prefs::mojom::PreferencesManagerRequest request) {
+    prefs::mojom::PreferencesObserverPtr observer,
+    prefs::mojom::PreferencesManagerRequest manager) {
   // Certain tests have no profiles to connect to, and static initializers
   // which block the creation of test profiles.
   if (!g_browser_process->profile_manager()->GetNumberOfProfiles())
@@ -75,13 +76,20 @@ void PreferencesConnectionManager::Create(
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
   mojo::StrongBindingPtr<prefs::mojom::PreferencesManager> binding =
-      mojo::MakeStrongBinding(base::MakeUnique<PreferencesManager>(profile),
-                              std::move(request));
+      mojo::MakeStrongBinding(
+          base::MakeUnique<PreferencesManager>(std::move(observer), profile),
+          std::move(manager));
   // Copying the base::WeakPtr for future deletion.
   binding->set_connection_error_handler(
       base::Bind(&PreferencesConnectionManager::OnConnectionError,
                  base::Unretained(this), binding));
-  bindings_.push_back(std::move(binding));
+  manager_bindings_.push_back(std::move(binding));
+}
+
+void PreferencesConnectionManager::Create(
+    const service_manager::Identity& remote_identity,
+    prefs::mojom::PreferencesFactoryRequest request) {
+  factory_bindings_.AddBinding(this, std::move(request));
 }
 
 void PreferencesConnectionManager::OnStart() {
@@ -101,6 +109,6 @@ void PreferencesConnectionManager::OnStart() {
 bool PreferencesConnectionManager::OnConnect(
     const service_manager::ServiceInfo& remote_info,
     service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<prefs::mojom::PreferencesManager>(this);
+  registry->AddInterface<prefs::mojom::PreferencesFactory>(this);
   return true;
 }

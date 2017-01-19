@@ -293,13 +293,13 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
           base::MakeUnique<WindowSelectorController>()) {
   session_controller_->AddSessionStateObserver(this);
 
-  prefs::mojom::PreferencesManagerPtr pref_manager_ptr;
+  prefs::mojom::PreferencesFactoryPtr pref_factory_ptr;
   // Can be null in tests.
   if (!delegate_->GetShellConnector())
     return;
   delegate_->GetShellConnector()->BindInterface(prefs::mojom::kServiceName,
-                                                &pref_manager_ptr);
-  pref_store_ = new preferences::PrefObserverStore(std::move(pref_manager_ptr));
+                                                &pref_factory_ptr);
+  pref_store_ = new preferences::PrefObserverStore(std::move(pref_factory_ptr));
 }
 
 RootWindowController* WmShell::GetPrimaryRootWindowController() {

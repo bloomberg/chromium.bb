@@ -12,10 +12,14 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 
-PreferencesManager::PreferencesManager(Profile* profile)
+PreferencesManager::PreferencesManager(
+    prefs::mojom::PreferencesObserverPtr client,
+    Profile* profile)
     : preferences_change_registrar_(new PrefChangeRegistrar),
+      client_(std::move(client)),
       setting_preferences_(false) {
   DCHECK(profile);
+  DCHECK(client_.is_bound());
   service_ = profile->GetPrefs();
   preferences_change_registrar_->Init(service_);
 }
@@ -33,18 +37,8 @@ void PreferencesManager::PreferenceChanged(const std::string& preference_name) {
   client_->OnPreferencesChanged(std::move(dictionary));
 }
 
-void PreferencesManager::AddObserver(
-    prefs::mojom::PreferencesObserverPtr client) {
-  // TODO(jonross): once service_manager::Connector supports enforcing two-way
-  // binding at connection time, update PreferencesManager to use that approach.
-  // After which enforcing bind checks will not be needed (crbug.com/674140)
-  client_ = std::move(client);
-}
-
 void PreferencesManager::SetPreferences(
     std::unique_ptr<base::DictionaryValue> preferences) {
-  if (!client_.is_bound())
-    return;
   DCHECK(!setting_preferences_);
   // We ignore preference changes caused by us.
   base::AutoReset<bool> setting_preferences(&setting_preferences_, true);
@@ -65,8 +59,6 @@ void PreferencesManager::SetPreferences(
 
 void PreferencesManager::Subscribe(
     const std::vector<std::string>& preferences) {
-  if (!client_.is_bound())
-    return;
   std::unique_ptr<base::DictionaryValue> dictionary =
       base::MakeUnique<base::DictionaryValue>();
   for (auto& it : preferences) {

@@ -30,7 +30,7 @@ class PrefObserverStore : public ValueMapPrefStore,
                           public prefs::mojom::PreferencesObserver {
  public:
   explicit PrefObserverStore(
-      prefs::mojom::PreferencesManagerPtr prefs_manager_ptr);
+      prefs::mojom::PreferencesFactoryPtr pref_factory_ptr);
 
   // Adds a set of |keys| which PrefObserverStore will handle. Begins listening
   // for changes to these from |prefs_manager_|.
@@ -67,6 +67,7 @@ class PrefObserverStore : public ValueMapPrefStore,
       std::unique_ptr<base::DictionaryValue> preferences) override;
 
   mojo::Binding<prefs::mojom::PreferencesObserver> prefs_binding_;
+  prefs::mojom::PreferencesFactoryPtr pref_factory_ptr_;
   prefs::mojom::PreferencesManagerPtr prefs_manager_ptr_;
 
   std::set<std::string> keys_;

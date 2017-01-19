@@ -162,9 +162,8 @@ void PreferencesManagerTest::SetUp() {
   ASSERT_NE(nullptr, profile_->GetPrefs());
 
   observer_.reset(new TestPreferencesObserver(mojo::MakeRequest(&proxy_)));
-  manager_ = base::MakeUnique<PreferencesManager>(profile_);
+  manager_ = base::MakeUnique<PreferencesManager>(std::move(proxy_), profile_);
   ASSERT_TRUE(manager_->preferences_change_registrar_->IsEmpty());
-  manager_->AddObserver(std::move(proxy_));
 }
 
 void PreferencesManagerTest::TearDown() {

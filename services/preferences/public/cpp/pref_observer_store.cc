@@ -11,14 +11,15 @@
 namespace preferences {
 
 PrefObserverStore::PrefObserverStore(
-    prefs::mojom::PreferencesManagerPtr prefs_manager_ptr)
+    prefs::mojom::PreferencesFactoryPtr pref_factory_ptr)
     : prefs_binding_(this),
-      prefs_manager_ptr_(std::move(prefs_manager_ptr)),
-      initialized_(false) {}
+      pref_factory_ptr_(std::move(pref_factory_ptr)),
+      initialized_(false) {
+  pref_factory_ptr_->Create(prefs_binding_.CreateInterfacePtrAndBind(),
+                            mojo::MakeRequest(&prefs_manager_ptr_));
+}
 
 void PrefObserverStore::Subscribe(const std::set<std::string>& keys) {
-  if (keys_.empty())
-    prefs_manager_ptr_->AddObserver(prefs_binding_.CreateInterfacePtrAndBind());
   keys_.insert(keys.begin(), keys.end());
 
   std::vector<std::string> pref_array;
