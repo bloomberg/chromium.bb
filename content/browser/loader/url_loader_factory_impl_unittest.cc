@@ -182,11 +182,9 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
 
   ASSERT_FALSE(client.has_received_completion());
 
-  client.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(client.response_body().is_valid());
-  ASSERT_FALSE(client.has_received_completion());
-
   client.RunUntilComplete();
+  ASSERT_TRUE(client.response_body().is_valid());
+  ASSERT_TRUE(client.has_received_completion());
 
   EXPECT_EQ(200, client.response_head().headers->response_code());
   std::string content_type;
@@ -273,7 +271,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
 
   client.RunUntilComplete();
   ASSERT_FALSE(client.has_received_response());
-  ASSERT_TRUE(client.response_body().is_valid());
+  ASSERT_FALSE(client.response_body().is_valid());
 
   EXPECT_EQ(net::ERR_TIMED_OUT, client.completion_status().error_code);
   EXPECT_GT(client.completion_status().encoded_data_length, 0);

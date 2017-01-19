@@ -457,11 +457,11 @@ TEST_F(MojoAsyncResourceHandlerTest, OnWillReadAndOnReadCompleted) {
   ASSERT_GE(mock_loader_->io_buffer_size(),
             kSizeMimeSnifferRequiresForFirstOnWillRead);
 
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
-
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("AB"));
+
+  url_loader_client_.RunUntilResponseBodyArrived();
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   std::string contents;
   while (contents.size() < 2) {
@@ -489,12 +489,12 @@ TEST_F(MojoAsyncResourceHandlerTest,
   ASSERT_GE(mock_loader_->io_buffer_size(),
             kSizeMimeSnifferRequiresForFirstOnWillRead);
 
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
-
   const std::string data("abcdefgh");
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnReadCompleted(data));
+
+  url_loader_client_.RunUntilResponseBodyArrived();
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   std::string contents;
   while (contents.size() < data.size()) {
@@ -619,9 +619,10 @@ TEST_F(MojoAsyncResourceHandlerTest, ResponseCompletionShouldCloseDataPipe) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
+  ASSERT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader_->OnReadCompleted("AB"));
   url_loader_client_.RunUntilResponseBodyArrived();
   ASSERT_TRUE(url_loader_client_.response_body().is_valid());
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnReadCompleted(0));
 
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -639,7 +640,7 @@ TEST_F(MojoAsyncResourceHandlerTest, ResponseCompletionShouldCloseDataPipe) {
                           &read_size, MOJO_READ_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_FAILED_PRECONDITION)
       break;
-    ASSERT_EQ(result, MOJO_RESULT_SHOULD_WAIT);
+    ASSERT_TRUE(result == MOJO_RESULT_SHOULD_WAIT || result == MOJO_RESULT_OK);
   }
 }
 
@@ -647,11 +648,11 @@ TEST_F(MojoAsyncResourceHandlerTest, OutOfBandCancelDuringBodyTransmission) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
   std::string data(mock_loader_->io_buffer_size(), 'a');
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnReadCompleted(data));
+  url_loader_client_.RunUntilResponseBodyArrived();
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   net::URLRequestStatus status(net::URLRequestStatus::FAILED, net::ERR_FAILED);
   ASSERT_EQ(
@@ -679,34 +680,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OutOfBandCancelDuringBodyTransmission) {
     actual.append(buf, read_size);
   }
   EXPECT_EQ(data, actual);
-}
-
-// In this case, an error is notified after OnWillRead, before OnReadCompleted.
-TEST_F(MojoAsyncResourceHandlerTest, ResponseErrorDuringBodyTransmission2) {
-  ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-
-  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
-  net::URLRequestStatus status(net::URLRequestStatus::FAILED, net::ERR_FAILED);
-  ASSERT_EQ(MockResourceLoader::Status::IDLE,
-            mock_loader_->OnResponseCompleted(status));
-
-  url_loader_client_.RunUntilComplete();
-  EXPECT_TRUE(url_loader_client_.has_received_completion());
-  EXPECT_EQ(net::ERR_FAILED, url_loader_client_.completion_status().error_code);
-
-  while (true) {
-    char buf[16];
-    uint32_t read_size = sizeof(buf);
-    MojoResult result =
-        mojo::ReadDataRaw(url_loader_client_.response_body(), buf, &read_size,
-                          MOJO_READ_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_FAILED_PRECONDITION)
-      break;
-    ASSERT_EQ(MOJO_RESULT_SHOULD_WAIT, result);
-    base::RunLoop().RunUntilIdle();
-  }
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, BeginWriteFailsOnWillRead) {
@@ -793,8 +766,6 @@ TEST_F(MojoAsyncResourceHandlerTest,
   MojoAsyncResourceHandler::SetAllocationSizeForTesting(8);
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   while (true) {
     MockResourceLoader::Status result = mock_loader_->OnReadCompleted(
@@ -805,6 +776,9 @@ TEST_F(MojoAsyncResourceHandlerTest,
 
     ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
   }
+
+  url_loader_client_.RunUntilResponseBodyArrived();
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   while (true) {
     char buf[16];
@@ -834,9 +808,6 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnReadCompleted(0));
 
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
-
   size_t written = 0;
   std::string actual;
   while (actual.size() < expected.size()) {
@@ -853,6 +824,10 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
                     expected.substr(written, to_be_written)));
 
       written += to_be_written;
+    }
+    if (!url_loader_client_.response_body().is_valid()) {
+      url_loader_client_.RunUntilResponseBodyArrived();
+      ASSERT_TRUE(url_loader_client_.response_body().is_valid());
     }
 
     char buf[16];
@@ -899,8 +874,6 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnReadCompleted(0));
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   while (true) {
     ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
@@ -910,6 +883,9 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
       break;
     ASSERT_EQ(MockResourceLoader::Status::IDLE, result);
   }
+  url_loader_client_.RunUntilResponseBodyArrived();
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
+
   handler_->set_begin_write_expectation(MOJO_RESULT_UNKNOWN);
 
   while (mock_loader_->status() != MockResourceLoader::Status::CANCELED) {
@@ -1056,11 +1032,12 @@ TEST_P(
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
 
   ASSERT_FALSE(url_loader_client_.response_body().is_valid());
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("A"));
+  url_loader_client_.RunUntilResponseBodyArrived();
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
+
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseCompleted(status));
@@ -1099,10 +1076,6 @@ TEST_P(
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead(-1));
 
-  ASSERT_FALSE(url_loader_client_.response_body().is_valid());
-  url_loader_client_.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
-
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(
                 make_scoped_refptr(new ResourceResponse())));
@@ -1112,6 +1085,11 @@ TEST_P(
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("B"));
+
+  ASSERT_FALSE(url_loader_client_.response_body().is_valid());
+  url_loader_client_.RunUntilResponseBodyArrived();
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
+
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseCompleted(status));

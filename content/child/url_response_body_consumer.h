@@ -37,9 +37,6 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
       mojo::ScopedDataPipeConsumerHandle handle,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // Starts watching the handle.
-  void Start();
-
   // Sets the completion status. The completion status is dispatched to the
   // ResourceDispatcher when the both following conditions hold:
   //  1) This function has been called and the completion status is set, and

@@ -114,8 +114,6 @@ void URLLoaderClientImpl::OnReceiveResponse(
     const ResourceResponseHead& response_head,
     mojom::DownloadedTempFilePtr downloaded_file) {
   has_received_response_ = true;
-  if (body_consumer_)
-    body_consumer_->Start();
   downloaded_file_ = std::move(downloaded_file);
   Dispatch(ResourceMsg_ReceivedResponse(request_id_, response_head));
 }
@@ -153,10 +151,9 @@ void URLLoaderClientImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 void URLLoaderClientImpl::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(!body_consumer_);
+  DCHECK(has_received_response_);
   body_consumer_ = new URLResponseBodyConsumer(
       request_id_, resource_dispatcher_, std::move(body), task_runner_);
-  if (has_received_response_)
-    body_consumer_->Start();
   if (is_deferred_)
     body_consumer_->SetDefersLoading();
 }

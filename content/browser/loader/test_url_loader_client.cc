@@ -16,6 +16,9 @@ TestURLLoaderClient::~TestURLLoaderClient() {}
 void TestURLLoaderClient::OnReceiveResponse(
     const ResourceResponseHead& response_head,
     mojom::DownloadedTempFilePtr downloaded_file) {
+  EXPECT_FALSE(has_received_response_);
+  EXPECT_FALSE(has_received_cached_metadata_);
+  EXPECT_FALSE(has_received_completion_);
   has_received_response_ = true;
   response_head_ = response_head;
   if (quit_closure_for_on_receive_response_)
@@ -25,10 +28,12 @@ void TestURLLoaderClient::OnReceiveResponse(
 void TestURLLoaderClient::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const ResourceResponseHead& response_head) {
+  EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(response_body_.is_valid());
   EXPECT_FALSE(has_received_response_);
   // Use ClearHasReceivedRedirect to accept more redirects.
   EXPECT_FALSE(has_received_redirect_);
+  EXPECT_FALSE(has_received_completion_);
   has_received_redirect_ = true;
   redirect_info_ = redirect_info;
   response_head_ = response_head;
@@ -38,6 +43,8 @@ void TestURLLoaderClient::OnReceiveRedirect(
 
 void TestURLLoaderClient::OnDataDownloaded(int64_t data_length,
                                            int64_t encoded_data_length) {
+  EXPECT_TRUE(has_received_response_);
+  EXPECT_FALSE(has_received_completion_);
   has_data_downloaded_ = true;
   download_data_length_ += data_length;
   encoded_download_data_length_ += encoded_data_length;
@@ -58,12 +65,16 @@ void TestURLLoaderClient::OnReceiveCachedMetadata(
 }
 
 void TestURLLoaderClient::OnTransferSizeUpdated(int32_t transfer_size_diff) {
+  EXPECT_TRUE(has_received_response_);
+  EXPECT_FALSE(has_received_completion_);
   EXPECT_GT(transfer_size_diff, 0);
   body_transfer_size_ += transfer_size_diff;
 }
 
 void TestURLLoaderClient::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
+  EXPECT_TRUE(has_received_response_);
+  EXPECT_FALSE(has_received_completion_);
   response_body_ = std::move(body);
   if (quit_closure_for_on_start_loading_response_body_)
     quit_closure_for_on_start_loading_response_body_.Run();
@@ -71,6 +82,7 @@ void TestURLLoaderClient::OnStartLoadingResponseBody(
 
 void TestURLLoaderClient::OnComplete(
     const ResourceRequestCompletionStatus& status) {
+  EXPECT_FALSE(has_received_completion_);
   has_received_completion_ = true;
   completion_status_ = status;
   if (quit_closure_for_on_complete_)

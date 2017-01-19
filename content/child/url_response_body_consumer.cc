@@ -47,13 +47,7 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
       handle_(std::move(handle)),
       handle_watcher_(task_runner),
       task_runner_(task_runner),
-      has_seen_end_of_data_(!handle_.is_valid()) {}
-
-URLResponseBodyConsumer::~URLResponseBodyConsumer() {}
-
-void URLResponseBodyConsumer::Start() {
-  if (has_been_cancelled_)
-    return;
+      has_seen_end_of_data_(!handle_.is_valid()) {
   handle_watcher_.Start(
       handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&URLResponseBodyConsumer::OnReadable, base::Unretained(this)));
@@ -61,6 +55,8 @@ void URLResponseBodyConsumer::Start() {
       FROM_HERE, base::Bind(&URLResponseBodyConsumer::OnReadable, AsWeakPtr(),
                             MOJO_RESULT_OK));
 }
+
+URLResponseBodyConsumer::~URLResponseBodyConsumer() {}
 
 void URLResponseBodyConsumer::OnComplete(
     const ResourceRequestCompletionStatus& status) {

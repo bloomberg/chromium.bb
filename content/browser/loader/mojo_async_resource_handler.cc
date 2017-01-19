@@ -24,7 +24,6 @@
 #include "content/public/common/resource_response.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
@@ -213,11 +212,10 @@ bool MojoAsyncResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
     options.capacity_num_bytes = g_allocation_size;
     mojo::DataPipe data_pipe(options);
 
-    url_loader_client_->OnStartLoadingResponseBody(
-        std::move(data_pipe.consumer_handle));
-    if (!data_pipe.producer_handle.is_valid())
-      return false;
+    DCHECK(data_pipe.producer_handle.is_valid());
+    DCHECK(data_pipe.consumer_handle.is_valid());
 
+    response_body_consumer_handle_ = std::move(data_pipe.consumer_handle);
     shared_writer_ = new SharedWriter(std::move(data_pipe.producer_handle));
     handle_watcher_.Start(shared_writer_->writer(), MOJO_HANDLE_SIGNAL_WRITABLE,
                           base::Bind(&MojoAsyncResourceHandler::OnWritable,
@@ -261,6 +259,13 @@ bool MojoAsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
     auto transfer_size_diff = CalculateRecentlyReceivedBytes();
     if (transfer_size_diff > 0)
       url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
+  }
+
+  if (response_body_consumer_handle_.is_valid()) {
+    // Send the data pipe on the first OnReadCompleted call.
+    url_loader_client_->OnStartLoadingResponseBody(
+        std::move(response_body_consumer_handle_));
+    response_body_consumer_handle_.reset();
   }
 
   if (is_using_io_buffer_not_from_writer_) {

@@ -118,35 +118,6 @@ TEST_F(URLLoaderClientImplTest, ResponseBody) {
   EXPECT_EQ("hello", request_peer_context_.data);
 }
 
-// OnStartLoadingResponseBody can be called before OnReceiveResponse. Because
-// of the lack of the ordering guarantee between the message channel and the
-// data pipe, bytes can arrive before OnReceiveResponse. URLLoaderClientImpl
-// should restore the order.
-TEST_F(URLLoaderClientImplTest, ResponseBodyShouldComeAfterResponse) {
-  ResourceResponseHead response_head;
-
-  mojo::DataPipe data_pipe(DataPipeOptions());
-  url_loader_client_->OnStartLoadingResponseBody(
-      std::move(data_pipe.consumer_handle));
-  uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
-  ASSERT_EQ(MOJO_RESULT_OK, result);
-  EXPECT_EQ(5u, size);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("", request_peer_context_.data);
-
-  url_loader_client_->OnReceiveResponse(response_head, nullptr);
-
-  EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_EQ("", request_peer_context_.data);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_EQ("hello", request_peer_context_.data);
-}
-
 TEST_F(URLLoaderClientImplTest, OnReceiveRedirect) {
   ResourceResponseHead response_head;
   net::RedirectInfo redirect_info;
@@ -284,7 +255,7 @@ TEST_F(URLLoaderClientImplTest, OnCompleteShouldBeTheLastMessage) {
   EXPECT_TRUE(request_peer_context_.complete);
 }
 
-TEST_F(URLLoaderClientImplTest, CancelOnReceiveResponseWithoutResponseBody) {
+TEST_F(URLLoaderClientImplTest, CancelOnReceiveResponse) {
   request_peer_context_.cancel_on_receive_response = true;
 
   ResourceResponseHead response_head;
@@ -294,36 +265,6 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveResponseWithoutResponseBody) {
   mojo::DataPipe data_pipe(DataPipeOptions());
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
-  url_loader_client_->OnComplete(completion_status);
-
-  EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_FALSE(request_peer_context_.cancelled);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_TRUE(request_peer_context_.cancelled);
-}
-
-TEST_F(URLLoaderClientImplTest, CancelOnReceiveResponseWithResponseBody) {
-  request_peer_context_.cancel_on_receive_response = true;
-
-  ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
-
-  mojo::DataPipe data_pipe(DataPipeOptions());
-  uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
-  ASSERT_EQ(MOJO_RESULT_OK, result);
-  EXPECT_EQ(5u, size);
-
-  url_loader_client_->OnStartLoadingResponseBody(
-      std::move(data_pipe.consumer_handle));
-  base::RunLoop().RunUntilIdle();
-  url_loader_client_->OnReceiveResponse(response_head, nullptr);
   url_loader_client_->OnComplete(completion_status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
@@ -350,10 +291,9 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveData) {
   ASSERT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(5u, size);
 
+  url_loader_client_->OnReceiveResponse(response_head, nullptr);
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
-  base::RunLoop().RunUntilIdle();
-  url_loader_client_->OnReceiveResponse(response_head, nullptr);
   url_loader_client_->OnComplete(completion_status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
