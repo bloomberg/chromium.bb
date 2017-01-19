@@ -1,6 +1,6 @@
 {##############################################################################}
 {% macro constant_getter_callback(constant) %}
-void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
+{{exported}}void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if constant.deprecate_as %}
   Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.deprecate_as}});
   {% endif %}

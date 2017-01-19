@@ -64,7 +64,7 @@ static void voidCallbackFunctionAttributeAttributeGetter(const v8::FunctionCallb
   v8SetReturnValueFast(info, impl->voidCallbackFunctionAttribute(), impl);
 }
 
-void voidCallbackFunctionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void voidCallbackFunctionAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeGetter(info);
 }
 
@@ -78,7 +78,7 @@ static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8
   impl->setVoidCallbackFunctionAttribute(cppValue);
 }
 
-void voidCallbackFunctionAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void voidCallbackFunctionAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeSetter(v8Value, info);
@@ -92,7 +92,7 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(const v8::
   v8SetReturnValueFast(info, impl->anyCallbackFunctionOptionalAnyArgAttribute(), impl);
 }
 
-void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(info);
 }
 
@@ -106,7 +106,7 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<
   impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
 }
 
-void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8Value, info);
@@ -120,7 +120,7 @@ static void customElementsCallbacksReadonlyAttributeAttributeGetter(const v8::Fu
   v8SetReturnValueInt(info, impl->customElementsCallbacksReadonlyAttribute());
 }
 
-void customElementsCallbacksReadonlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void customElementsCallbacksReadonlyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::customElementsCallbacksReadonlyAttributeAttributeGetter(info);
 }
 
@@ -130,7 +130,7 @@ static void returnCallbackFunctionMethodMethod(const v8::FunctionCallbackInfo<v8
   v8SetReturnValue(info, impl->returnCallbackFunctionMethod());
 }
 
-void returnCallbackFunctionMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void returnCallbackFunctionMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::returnCallbackFunctionMethodMethod(info);
 }
 
@@ -140,7 +140,7 @@ static void returnCallbackFunctionMethod2Method(const v8::FunctionCallbackInfo<v
   v8SetReturnValue(info, impl->returnCallbackFunctionMethod2());
 }
 
-void returnCallbackFunctionMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void returnCallbackFunctionMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::returnCallbackFunctionMethod2Method(info);
 }
 
@@ -163,7 +163,7 @@ static void voidMethodCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo
   impl->voidMethodCallbackFunctionInArg(voidCallbackFunctionArg);
 }
 
-void voidMethodCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArgMethod(info);
 }
 
@@ -186,7 +186,7 @@ static void voidMethodCallbackFunctionInArg2Method(const v8::FunctionCallbackInf
   impl->voidMethodCallbackFunctionInArg2(anyCallbackFunctionOptionalAnyArgArg);
 }
 
-void voidMethodCallbackFunctionInArg2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodCallbackFunctionInArg2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionInArg2Method(info);
 }
 
@@ -209,7 +209,7 @@ static void voidMethodCallbackFunctionWithReturnValueInArgMethod(const v8::Funct
   impl->voidMethodCallbackFunctionWithReturnValueInArg(longCallbackFunctionArg);
 }
 
-void voidMethodCallbackFunctionWithReturnValueInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodCallbackFunctionWithReturnValueInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::voidMethodCallbackFunctionWithReturnValueInArgMethod(info);
 }
 
@@ -237,7 +237,7 @@ static void voidMethodOptionalCallbackFunctionInArgMethod(const v8::FunctionCall
   impl->voidMethodOptionalCallbackFunctionInArg(voidCallbackFunctionArg);
 }
 
-void voidMethodOptionalCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodOptionalCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::voidMethodOptionalCallbackFunctionInArgMethod(info);
 }
 
@@ -260,7 +260,7 @@ static void voidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCall
   impl->voidMethodNullableCallbackFunctionInArg(voidCallbackFunctionArg);
 }
 
-void voidMethodNullableCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodNullableCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::voidMethodNullableCallbackFunctionInArgMethod(info);
 }
 
@@ -272,7 +272,7 @@ static void customElementCallbacksMethodMethod(const v8::FunctionCallbackInfo<v8
   impl->customElementCallbacksMethod();
 }
 
-void customElementCallbacksMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void customElementCallbacksMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestCallbackFunctionsV8Internal::customElementCallbacksMethodMethod(info);
 }
 

@@ -66,7 +66,7 @@ static void uLongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
   v8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
 }
 
-void uLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void uLongLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::uLongLongAttributeAttributeGetter(info);
 }
 
@@ -84,7 +84,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   impl->setULongLongAttribute(cppValue);
 }
 
-void uLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void uLongLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestTypedefsV8Internal::uLongLongAttributeAttributeSetter(v8Value, info);
@@ -101,7 +101,7 @@ static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCa
   v8SetReturnValue(info, result);
 }
 
-void domStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void domStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeGetter(info);
 }
 
@@ -120,7 +120,7 @@ static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value>
   impl->setDomStringOrDoubleOrNullAttribute(cppValue);
 }
 
-void domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void domStringOrDoubleOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestTypedefsV8Internal::domStringOrDoubleOrNullAttributeAttributeSetter(v8Value, info);
@@ -149,7 +149,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
   impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
 
-void voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::voidMethodArrayOfLongsArgMethod(info);
 }
 
@@ -176,7 +176,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
   impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
 
-void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::voidMethodFloatArgStringArgMethod(info);
 }
 
@@ -199,7 +199,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
   impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg);
 }
 
-void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::voidMethodTestCallbackInterfaceTypeArgMethod(info);
 }
 
@@ -221,7 +221,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
   v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
 
-void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(info);
 }
 
@@ -233,7 +233,7 @@ static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCall
   v8SetReturnValue(info, result);
 }
 
-void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::testInterfaceOrTestInterfaceEmptyMethodMethod(info);
 }
 
@@ -245,7 +245,7 @@ static void domStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   v8SetReturnValue(info, result);
 }
 
-void domStringOrDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void domStringOrDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::domStringOrDoubleMethodMethod(info);
 }
 
@@ -267,7 +267,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
   v8SetReturnValue(info, ToV8(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
 }
 
-void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::arrayOfStringsMethodArrayOfStringsArgMethod(info);
 }
 
@@ -289,7 +289,7 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
   v8SetReturnValue(info, ToV8(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
 }
 
-void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethod(info);
 }
 

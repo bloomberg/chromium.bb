@@ -48,7 +48,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 {% block indexed_property_getter_callback %}
 {% if indexed_property_getter or named_property_getter %}
 {% set getter = indexed_property_getter or named_property_getter %}
-void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+{{exported}}void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if indexed_property_getter %}
 
   {% if getter.is_custom %}
@@ -122,7 +122,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
 {% block indexed_property_setter_callback %}
 {% if indexed_property_setter or named_property_setter %}
 {% set setter = indexed_property_setter or named_property_setter %}
-void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+{{exported}}void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if setter.is_ce_reactions %}
   CEReactionsScope ceReactionsScope;
   {% endif %}
@@ -190,7 +190,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 {% block indexed_property_deleter_callback %}
 {% if indexed_property_deleter or named_property_deleter %}
 {% set deleter = indexed_property_deleter or named_property_deleter %}
-void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+{{exported}}void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   {% if deleter.is_ce_reactions %}
   CEReactionsScope ceReactionsScope;
   {% endif %}
@@ -253,7 +253,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
 {% block named_property_getter_callback %}
 {% if named_property_getter %}
 {% set getter = named_property_getter %}
-void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+{{exported}}void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -320,7 +320,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
 {% block named_property_setter_callback %}
 {% if named_property_setter %}
 {% set setter = named_property_setter %}
-void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+{{exported}}void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -381,7 +381,7 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
 {% block named_property_deleter_callback %}
 {% if named_property_deleter %}
 {% set deleter = named_property_deleter %}
-void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+{{exported}}void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -435,7 +435,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
 {% block named_property_query_callback %}
 {% if named_property_getter and named_property_getter.is_enumerable %}
 {% set getter = named_property_getter %}
-void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+{{exported}}void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -475,7 +475,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 {% block named_property_enumerator_callback %}
 {% if named_property_getter and named_property_getter.is_enumerable %}
 {% set getter = named_property_getter %}
-void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+{{exported}}void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
   {% if getter.is_custom_property_enumerator %}
   {{v8_class}}::namedPropertyEnumeratorCustom(info);
   {% else %}
@@ -510,7 +510,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Lo
   V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.Holder()), name.As<v8::String>(), v8Value);
 }
 
-void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info) {
+{{exported}}void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info) {
   {{cpp_class}}V8Internal::{{cpp_class}}OriginSafeMethodSetter(name, v8Value, info);
 }
 

@@ -60,7 +60,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
   v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -82,7 +82,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
   v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetter(index, info);
 }
 

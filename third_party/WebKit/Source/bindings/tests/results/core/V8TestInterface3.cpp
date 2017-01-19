@@ -66,7 +66,7 @@ static void readonlyStringifierAttributeAttributeGetter(const v8::FunctionCallba
   v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
-void readonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void readonlyStringifierAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetter(info);
 }
 
@@ -89,7 +89,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   impl->voidMethodDocument(document);
 }
 
-void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3V8Internal::voidMethodDocumentMethod(info);
 }
 
@@ -107,7 +107,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValue(info, result);
 }
 
-void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3V8Internal::keysMethod(info);
 }
 
@@ -125,7 +125,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValue(info, result);
 }
 
-void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3V8Internal::valuesMethod(info);
 }
 
@@ -143,7 +143,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValue(info, result);
 }
 
-void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3V8Internal::entriesMethod(info);
 }
 
@@ -176,7 +176,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
 }
 
-void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3V8Internal::forEachMethod(info);
 }
 
@@ -186,7 +186,7 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
-void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3V8Internal::toStringMethod(info);
 }
 
@@ -204,11 +204,11 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValue(info, result);
 }
 
-void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface3V8Internal::iteratorMethod(info);
 }
 
-void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -216,7 +216,7 @@ void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCal
   V8TestInterface3::namedPropertyGetterCustom(propertyName, info);
 }
 
-void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -224,7 +224,7 @@ void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> 
   V8TestInterface3::namedPropertySetterCustom(propertyName, v8Value, info);
 }
 
-void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+CORE_EXPORT void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -232,7 +232,7 @@ void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCa
   V8TestInterface3::namedPropertyDeleterCustom(propertyName, info);
 }
 
-void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+CORE_EXPORT void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -240,19 +240,19 @@ void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCall
   V8TestInterface3::namedPropertyQueryCustom(propertyName, info);
 }
 
-void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+CORE_EXPORT void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
   V8TestInterface3::namedPropertyEnumeratorCustom(info);
 }
 
-void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   V8TestInterface3::indexedPropertyGetterCustom(index, info);
 }
 
-void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   V8TestInterface3::indexedPropertySetterCustom(index, v8Value, info);
 }
 
-void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+CORE_EXPORT void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   V8TestInterface3::indexedPropertyDeleterCustom(index, info);
 }
 

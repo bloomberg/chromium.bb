@@ -86,7 +86,7 @@ static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo
   v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceAttribute()), impl);
 }
 
-void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::V8TestInterface_TestInterfaceAttribute_AttributeGetter);
 
   TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetter(info);
@@ -110,7 +110,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   impl->setTestInterfaceAttribute(cppValue);
 }
 
-void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::V8TestInterface_TestInterfaceAttribute_AttributeSetter);
@@ -126,7 +126,7 @@ static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
   v8SetReturnValue(info, impl->doubleAttribute());
 }
 
-void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::doubleAttributeAttributeGetter(info);
 }
 
@@ -144,7 +144,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   impl->setDoubleAttribute(cppValue);
 }
 
-void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::doubleAttributeAttributeSetter(v8Value, info);
@@ -158,7 +158,7 @@ static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
   v8SetReturnValue(info, impl->floatAttribute());
 }
 
-void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::floatAttributeAttributeGetter(info);
 }
 
@@ -176,7 +176,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
   impl->setFloatAttribute(cppValue);
 }
 
-void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::floatAttributeAttributeSetter(v8Value, info);
@@ -190,7 +190,7 @@ static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbac
   v8SetReturnValue(info, impl->unrestrictedDoubleAttribute());
 }
 
-void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeGetter(info);
 }
 
@@ -208,7 +208,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   impl->setUnrestrictedDoubleAttribute(cppValue);
 }
 
-void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeSetter(v8Value, info);
@@ -222,7 +222,7 @@ static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallback
   v8SetReturnValue(info, impl->unrestrictedFloatAttribute());
 }
 
-void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::unrestrictedFloatAttributeAttributeGetter(info);
 }
 
@@ -240,7 +240,7 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   impl->setUnrestrictedFloatAttribute(cppValue);
 }
 
-void unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::unrestrictedFloatAttributeAttributeSetter(v8Value, info);
@@ -254,7 +254,7 @@ static void testEnumAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::
   v8SetReturnValueString(info, impl->testEnumAttribute(), info.GetIsolate());
 }
 
-void testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::testEnumAttributeAttributeGetter(info);
 }
 
@@ -286,7 +286,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   impl->setTestEnumAttribute(cppValue);
 }
 
-void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::testEnumAttributeAttributeSetter(v8Value, info);
@@ -303,7 +303,7 @@ static void stringOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackInf
   v8SetReturnValue(info, result);
 }
 
-void stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeGetter(info);
 }
 
@@ -322,7 +322,7 @@ static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   impl->setStringOrDoubleAttribute(cppValue);
 }
 
-void stringOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void stringOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeSetter(v8Value, info);
@@ -336,7 +336,7 @@ static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackIn
   v8SetReturnValueInt(info, impl->conditionalLongAttribute());
 }
 
-void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeGetter(info);
 }
 
@@ -354,7 +354,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   impl->setConditionalLongAttribute(cppValue);
 }
 
-void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeSetter(v8Value, info);
@@ -368,7 +368,7 @@ static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCa
   v8SetReturnValueInt(info, impl->conditionalReadOnlyLongAttribute());
 }
 
-void conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::conditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
@@ -376,7 +376,7 @@ static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<
   v8SetReturnValueString(info, TestInterfaceImplementation::staticStringAttribute(), info.GetIsolate());
 }
 
-void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::staticStringAttributeAttributeGetter(info);
 }
 
@@ -389,7 +389,7 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   TestInterfaceImplementation::setStaticStringAttribute(cppValue);
 }
 
-void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::staticStringAttributeAttributeSetter(v8Value, info);
@@ -399,7 +399,7 @@ static void staticReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCal
   v8SetReturnValue(info, WTF::getPtr(TestInterfaceImplementation::staticReturnDOMWrapperAttribute()), info.GetIsolate()->GetCurrentContext()->Global());
 }
 
-void staticReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::staticReturnDOMWrapperAttributeAttributeGetter(info);
 }
 
@@ -418,7 +418,7 @@ static void staticReturnDOMWrapperAttributeAttributeSetter(v8::Local<v8::Value> 
   TestInterfaceImplementation::setStaticReturnDOMWrapperAttribute(cppValue);
 }
 
-void staticReturnDOMWrapperAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticReturnDOMWrapperAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::staticReturnDOMWrapperAttributeAttributeSetter(v8Value, info);
@@ -428,7 +428,7 @@ static void staticReadOnlyStringAttributeAttributeGetter(const v8::FunctionCallb
   v8SetReturnValueString(info, TestInterfaceImplementation::staticReadOnlyStringAttribute(), info.GetIsolate());
 }
 
-void staticReadOnlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticReadOnlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::staticReadOnlyStringAttributeAttributeGetter(info);
 }
 
@@ -446,7 +446,7 @@ static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::Fun
   v8SetReturnValue(info, v8Value);
 }
 
-void staticReadOnlyReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticReadOnlyReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(info);
 }
 
@@ -454,7 +454,7 @@ static void staticConditionalReadOnlyLongAttributeAttributeGetter(const v8::Func
   v8SetReturnValueInt(info, TestInterfaceImplementation::staticConditionalReadOnlyLongAttribute());
 }
 
-void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
@@ -466,7 +466,7 @@ static void legacyInterfaceTypeCheckingAttributeAttributeGetter(const v8::Functi
   v8SetReturnValueFast(info, WTF::getPtr(impl->legacyInterfaceTypeCheckingAttribute()), impl);
 }
 
-void legacyInterfaceTypeCheckingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void legacyInterfaceTypeCheckingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingAttributeAttributeGetter(info);
 }
 
@@ -480,7 +480,7 @@ static void legacyInterfaceTypeCheckingAttributeAttributeSetter(v8::Local<v8::Va
   impl->setLegacyInterfaceTypeCheckingAttribute(cppValue);
 }
 
-void legacyInterfaceTypeCheckingAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void legacyInterfaceTypeCheckingAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingAttributeAttributeSetter(v8Value, info);
@@ -494,7 +494,7 @@ static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
   v8SetReturnValueInt(info, impl->alwaysExposedAttribute());
 }
 
-void alwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void alwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeGetter(info);
 }
 
@@ -512,7 +512,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   impl->setAlwaysExposedAttribute(cppValue);
 }
 
-void alwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void alwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeSetter(v8Value, info);
@@ -526,7 +526,7 @@ static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
   v8SetReturnValueInt(info, impl->workerExposedAttribute());
 }
 
-void workerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void workerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeGetter(info);
 }
 
@@ -544,7 +544,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   impl->setWorkerExposedAttribute(cppValue);
 }
 
-void workerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void workerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeSetter(v8Value, info);
@@ -558,7 +558,7 @@ static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
   v8SetReturnValueInt(info, impl->windowExposedAttribute());
 }
 
-void windowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void windowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetter(info);
 }
 
@@ -576,7 +576,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   impl->setWindowExposedAttribute(cppValue);
 }
 
-void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeSetter(v8Value, info);
@@ -595,7 +595,7 @@ static void lenientThisAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
   v8SetReturnValue(info, impl->lenientThisAttribute().v8Value());
 }
 
-void lenientThisAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void lenientThisAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::lenientThisAttributeAttributeGetter(info);
 }
 
@@ -614,7 +614,7 @@ static void lenientThisAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   impl->setLenientThisAttribute(cppValue);
 }
 
-void lenientThisAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void lenientThisAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::lenientThisAttributeAttributeSetter(v8Value, info);
@@ -628,7 +628,7 @@ static void secureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextAttribute()), impl);
 }
 
-void secureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextAttributeAttributeGetter(info);
 }
 
@@ -650,7 +650,7 @@ static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   impl->setSecureContextAttribute(cppValue);
 }
 
-void secureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextAttributeAttributeSetter(v8Value, info);
@@ -664,7 +664,7 @@ static void secureContextRuntimeEnabledAttributeAttributeGetter(const v8::Functi
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -686,7 +686,7 @@ static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Va
   impl->setSecureContextRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -700,7 +700,7 @@ static void secureContextWindowExposedAttributeAttributeGetter(const v8::Functio
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedAttribute()), impl);
 }
 
-void secureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextWindowExposedAttributeAttributeGetter(info);
 }
 
@@ -722,7 +722,7 @@ static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Val
   impl->setSecureContextWindowExposedAttribute(cppValue);
 }
 
-void secureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextWindowExposedAttributeAttributeSetter(v8Value, info);
@@ -736,7 +736,7 @@ static void secureContextWorkerExposedAttributeAttributeGetter(const v8::Functio
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedAttribute()), impl);
 }
 
-void secureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedAttributeAttributeGetter(info);
 }
 
@@ -758,7 +758,7 @@ static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Val
   impl->setSecureContextWorkerExposedAttribute(cppValue);
 }
 
-void secureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
@@ -772,7 +772,7 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(con
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -794,7 +794,7 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8:
   impl->setSecureContextWindowExposedRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -808,7 +808,7 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(con
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -830,7 +830,7 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8:
   impl->setSecureContextWorkerExposedRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -840,7 +840,7 @@ static void implementsStaticReadOnlyLongAttributeAttributeGetter(const v8::Funct
   v8SetReturnValueInt(info, TestInterfaceImplementation::implementsStaticReadOnlyLongAttribute());
 }
 
-void implementsStaticReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsStaticReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsStaticReadOnlyLongAttributeAttributeGetter(info);
 }
 
@@ -848,7 +848,7 @@ static void implementsStaticStringAttributeAttributeGetter(const v8::FunctionCal
   v8SetReturnValueString(info, TestInterfaceImplementation::implementsStaticStringAttribute(), info.GetIsolate());
 }
 
-void implementsStaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsStaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeGetter(info);
 }
 
@@ -861,7 +861,7 @@ static void implementsStaticStringAttributeAttributeSetter(v8::Local<v8::Value> 
   TestInterfaceImplementation::setImplementsStaticStringAttribute(cppValue);
 }
 
-void implementsStaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsStaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeSetter(v8Value, info);
@@ -875,7 +875,7 @@ static void implementsReadonlyStringAttributeAttributeGetter(const v8::FunctionC
   v8SetReturnValueString(info, impl->implementsReadonlyStringAttribute(), info.GetIsolate());
 }
 
-void implementsReadonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsReadonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsReadonlyStringAttributeAttributeGetter(info);
 }
 
@@ -887,7 +887,7 @@ static void implementsStringAttributeAttributeGetter(const v8::FunctionCallbackI
   v8SetReturnValueString(info, impl->implementsStringAttribute(), info.GetIsolate());
 }
 
-void implementsStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeGetter(info);
 }
 
@@ -903,7 +903,7 @@ static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
   impl->setImplementsStringAttribute(cppValue);
 }
 
-void implementsStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeSetter(v8Value, info);
@@ -917,7 +917,7 @@ static void implementsNodeAttributeAttributeGetter(const v8::FunctionCallbackInf
   v8SetReturnValueFast(info, WTF::getPtr(impl->implementsNodeAttribute()), impl);
 }
 
-void implementsNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeGetter(info);
 }
 
@@ -939,7 +939,7 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   impl->setImplementsNodeAttribute(cppValue);
 }
 
-void implementsNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeSetter(v8Value, info);
@@ -955,7 +955,7 @@ static void implementsEventHandlerAttributeAttributeGetter(const v8::FunctionCal
   v8SetReturnValue(info, cppValue ? V8AbstractEventListener::cast(cppValue)->getListenerOrNull(info.GetIsolate(), impl->getExecutionContext()) : v8::Null(info.GetIsolate()).As<v8::Value>());
 }
 
-void implementsEventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsEventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeGetter(info);
 }
 
@@ -969,7 +969,7 @@ static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> 
   impl->setImplementsEventHandlerAttribute(V8EventListenerHelper::getEventListener(ScriptState::forReceiverObject(info), v8Value, true, ListenerFindOrCreate));
 }
 
-void implementsEventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsEventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeSetter(v8Value, info);
@@ -983,7 +983,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::Funct
   v8SetReturnValueFast(info, WTF::getPtr(impl->implementsRuntimeEnabledNodeAttribute()), impl);
 }
 
-void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeGetter(info);
 }
 
@@ -1005,7 +1005,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
   impl->setImplementsRuntimeEnabledNodeAttribute(cppValue);
 }
 
-void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeSetter(v8Value, info);
@@ -1015,7 +1015,7 @@ static void implements2StaticStringAttributeAttributeGetter(const v8::FunctionCa
   v8SetReturnValueString(info, TestImplements2::implements2StaticStringAttribute(), info.GetIsolate());
 }
 
-void implements2StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implements2StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeGetter(info);
 }
 
@@ -1028,7 +1028,7 @@ static void implements2StaticStringAttributeAttributeSetter(v8::Local<v8::Value>
   TestImplements2::setImplements2StaticStringAttribute(cppValue);
 }
 
-void implements2StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implements2StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeSetter(v8Value, info);
@@ -1042,7 +1042,7 @@ static void implements2StringAttributeAttributeGetter(const v8::FunctionCallback
   v8SetReturnValueString(info, TestImplements2::implements2StringAttribute(*impl), info.GetIsolate());
 }
 
-void implements2StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implements2StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeGetter(info);
 }
 
@@ -1058,7 +1058,7 @@ static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   TestImplements2::setImplements2StringAttribute(*impl, cppValue);
 }
 
-void implements2StringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implements2StringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeSetter(v8Value, info);
@@ -1072,7 +1072,7 @@ static void implements3StringAttributeAttributeGetter(const v8::FunctionCallback
   v8SetReturnValueString(info, TestImplements3Implementation::implements3StringAttribute(*impl), info.GetIsolate());
 }
 
-void implements3StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implements3StringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeGetter(info);
 }
 
@@ -1088,7 +1088,7 @@ static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   TestImplements3Implementation::setImplements3StringAttribute(*impl, cppValue);
 }
 
-void implements3StringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implements3StringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeSetter(v8Value, info);
@@ -1098,7 +1098,7 @@ static void implements3StaticStringAttributeAttributeGetter(const v8::FunctionCa
   v8SetReturnValueString(info, TestImplements3Implementation::implements3StaticStringAttribute(), info.GetIsolate());
 }
 
-void implements3StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implements3StaticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implements3StaticStringAttributeAttributeGetter(info);
 }
 
@@ -1111,7 +1111,7 @@ static void implements3StaticStringAttributeAttributeSetter(v8::Local<v8::Value>
   TestImplements3Implementation::setImplements3StaticStringAttribute(cppValue);
 }
 
-void implements3StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void implements3StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::implements3StaticStringAttributeAttributeSetter(v8Value, info);
@@ -1125,7 +1125,7 @@ static void partialLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
   v8SetReturnValueInt(info, TestInterfacePartial::partialLongAttribute(*impl));
 }
 
-void partialLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialLongAttributeAttributeGetter(info);
 }
 
@@ -1143,7 +1143,7 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
   TestInterfacePartial::setPartialLongAttribute(*impl, cppValue);
 }
 
-void partialLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialLongAttributeAttributeSetter(v8Value, info);
@@ -1153,7 +1153,7 @@ static void partialStaticLongAttributeAttributeGetter(const v8::FunctionCallback
   v8SetReturnValueInt(info, TestInterfacePartial::partialStaticLongAttribute());
 }
 
-void partialStaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialStaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeGetter(info);
 }
 
@@ -1168,7 +1168,7 @@ static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Val
   TestInterfacePartial::setPartialStaticLongAttribute(cppValue);
 }
 
-void partialStaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialStaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeSetter(v8Value, info);
@@ -1184,7 +1184,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8
   v8SetReturnValueInt(info, TestInterfacePartial::partialCallWithExecutionContextLongAttribute(executionContext, *impl));
 }
 
-void partialCallWithExecutionContextLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialCallWithExecutionContextLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeGetter(info);
 }
 
@@ -1204,7 +1204,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
   TestInterfacePartial::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
 }
 
-void partialCallWithExecutionContextLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialCallWithExecutionContextLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeSetter(v8Value, info);
@@ -1218,7 +1218,7 @@ static void partialPartialEnumTypeAttributeAttributeGetter(const v8::FunctionCal
   v8SetReturnValueString(info, TestInterfacePartial::partialPartialEnumTypeAttribute(*impl), info.GetIsolate());
 }
 
-void partialPartialEnumTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialPartialEnumTypeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeGetter(info);
 }
 
@@ -1248,7 +1248,7 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
   TestInterfacePartial::setPartialPartialEnumTypeAttribute(*impl, cppValue);
 }
 
-void partialPartialEnumTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialPartialEnumTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeSetter(v8Value, info);
@@ -1262,7 +1262,7 @@ static void partial2LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
   v8SetReturnValueInt(info, TestInterfacePartial2Implementation::partial2LongAttribute(*impl));
 }
 
-void partial2LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partial2LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeGetter(info);
 }
 
@@ -1280,7 +1280,7 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   TestInterfacePartial2Implementation::setPartial2LongAttribute(*impl, cppValue);
 }
 
-void partial2LongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partial2LongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeSetter(v8Value, info);
@@ -1290,7 +1290,7 @@ static void partial2StaticLongAttributeAttributeGetter(const v8::FunctionCallbac
   v8SetReturnValueInt(info, TestInterfacePartial2Implementation::partial2StaticLongAttribute());
 }
 
-void partial2StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partial2StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetter(info);
 }
 
@@ -1305,7 +1305,7 @@ static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Va
   TestInterfacePartial2Implementation::setPartial2StaticLongAttribute(cppValue);
 }
 
-void partial2StaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partial2StaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetter(v8Value, info);
@@ -1319,7 +1319,7 @@ static void partial2SecureContextAttributeAttributeGetter(const v8::FunctionCall
   v8SetReturnValueFast(info, TestInterfacePartial2Implementation::partial2SecureContextAttribute(*impl), impl);
 }
 
-void partial2SecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partial2SecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeGetter(info);
 }
 
@@ -1341,7 +1341,7 @@ static void partial2SecureContextAttributeAttributeSetter(v8::Local<v8::Value> v
   TestInterfacePartial2Implementation::setPartial2SecureContextAttribute(*impl, cppValue);
 }
 
-void partial2SecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partial2SecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeSetter(v8Value, info);
@@ -1355,7 +1355,7 @@ static void partialSecureContextAttributeAttributeGetter(const v8::FunctionCallb
   v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextAttribute(*impl), impl);
 }
 
-void partialSecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeGetter(info);
 }
 
@@ -1377,7 +1377,7 @@ static void partialSecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8
   TestInterfacePartialSecureContext::setPartialSecureContextAttribute(*impl, cppValue);
 }
 
-void partialSecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeSetter(v8Value, info);
@@ -1391,7 +1391,7 @@ static void partialSecureContextRuntimeEnabledAttributeAttributeGetter(const v8:
   v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextRuntimeEnabledAttribute(*impl), impl);
 }
 
-void partialSecureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -1413,7 +1413,7 @@ static void partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8::Local
   TestInterfacePartialSecureContext::setPartialSecureContextRuntimeEnabledAttribute(*impl, cppValue);
 }
 
-void partialSecureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -1427,7 +1427,7 @@ static void partialSecureContextWindowExposedAttributeAttributeGetter(const v8::
   v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWindowExposedAttribute(*impl), impl);
 }
 
-void partialSecureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeGetter(info);
 }
 
@@ -1449,7 +1449,7 @@ static void partialSecureContextWindowExposedAttributeAttributeSetter(v8::Local<
   TestInterfacePartialSecureContext::setPartialSecureContextWindowExposedAttribute(*impl, cppValue);
 }
 
-void partialSecureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeSetter(v8Value, info);
@@ -1463,7 +1463,7 @@ static void partialSecureContextWorkerExposedAttributeAttributeGetter(const v8::
   v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWorkerExposedAttribute(*impl), impl);
 }
 
-void partialSecureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeGetter(info);
 }
 
@@ -1485,7 +1485,7 @@ static void partialSecureContextWorkerExposedAttributeAttributeSetter(v8::Local<
   TestInterfacePartialSecureContext::setPartialSecureContextWorkerExposedAttribute(*impl, cppValue);
 }
 
-void partialSecureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
@@ -1499,7 +1499,7 @@ static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGet
   v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWindowExposedRuntimeEnabledAttribute(*impl), impl);
 }
 
-void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -1521,7 +1521,7 @@ static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSet
   TestInterfacePartialSecureContext::setPartialSecureContextWindowExposedRuntimeEnabledAttribute(*impl, cppValue);
 }
 
-void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -1535,7 +1535,7 @@ static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGet
   v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWorkerExposedRuntimeEnabledAttribute(*impl), impl);
 }
 
-void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -1557,7 +1557,7 @@ static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSet
   TestInterfacePartialSecureContext::setPartialSecureContextWorkerExposedRuntimeEnabledAttribute(*impl, cppValue);
 }
 
-void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -1582,7 +1582,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
   impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
-void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethod(info);
 }
 
@@ -1609,7 +1609,7 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
   impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
 
-void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::voidMethodDoubleArgFloatArgMethod(info);
 }
 
@@ -1636,7 +1636,7 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
   impl->voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestrictedDoubleArg, unrestrictedFloatArg);
 }
 
-void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(info);
 }
 
@@ -1667,7 +1667,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
   impl->voidMethodTestEnumArg(testEnumArg);
 }
 
-void voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::voidMethodTestEnumArgMethod(info);
 }
 
@@ -1677,7 +1677,7 @@ static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   impl->voidMethod();
 }
 
-void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::voidMethodMethod(info);
 }
 
@@ -1687,7 +1687,7 @@ static void voidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Valu
   impl->voidMethod();
 }
 
-void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::voidMethodMethodForMainWorld(info);
 }
 
@@ -1697,7 +1697,7 @@ static void alwaysExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
   impl->alwaysExposedMethod();
 }
 
-void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::alwaysExposedMethodMethod(info);
 }
 
@@ -1707,7 +1707,7 @@ static void workerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
   impl->workerExposedMethod();
 }
 
-void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::workerExposedMethodMethod(info);
 }
 
@@ -1717,7 +1717,7 @@ static void windowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
   impl->windowExposedMethod();
 }
 
-void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::windowExposedMethodMethod(info);
 }
 
@@ -1725,7 +1725,7 @@ static void alwaysExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
   TestInterfaceImplementation::alwaysExposedStaticMethod();
 }
 
-void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethod(info);
 }
 
@@ -1733,7 +1733,7 @@ static void workerExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
   TestInterfaceImplementation::workerExposedStaticMethod();
 }
 
-void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::workerExposedStaticMethodMethod(info);
 }
 
@@ -1741,7 +1741,7 @@ static void windowExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
   TestInterfaceImplementation::windowExposedStaticMethod();
 }
 
-void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethod(info);
 }
 
@@ -1749,7 +1749,7 @@ static void staticReturnDOMWrapperMethodMethod(const v8::FunctionCallbackInfo<v8
   v8SetReturnValue(info, TestInterfaceImplementation::staticReturnDOMWrapperMethod(), info.GetIsolate()->GetCurrentContext()->Global());
 }
 
-void staticReturnDOMWrapperMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void staticReturnDOMWrapperMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::staticReturnDOMWrapperMethodMethod(info);
 }
 
@@ -1759,7 +1759,7 @@ static void methodWithExposedAndRuntimeEnabledFlagMethod(const v8::FunctionCallb
   impl->methodWithExposedAndRuntimeEnabledFlag();
 }
 
-void methodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void methodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethod(info);
 }
 
@@ -1841,7 +1841,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
   exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-void overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethod(info);
 }
 
@@ -1851,7 +1851,7 @@ static void methodWithExposedHavingRuntimeEnabldFlagMethod(const v8::FunctionCal
   impl->methodWithExposedHavingRuntimeEnabldFlag();
 }
 
-void methodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void methodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethod(info);
 }
 
@@ -1861,7 +1861,7 @@ static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallback
   impl->windowAndServiceWorkerExposedMethod();
 }
 
-void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethod(info);
 }
 
@@ -1944,7 +1944,7 @@ static void legacyInterfaceTypeCheckingMethodMethod(const v8::FunctionCallbackIn
   impl->legacyInterfaceTypeCheckingMethod(testInterfaceEmptyArg);
 }
 
-void legacyInterfaceTypeCheckingMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void legacyInterfaceTypeCheckingMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingMethodMethod(info);
 }
 
@@ -1954,7 +1954,7 @@ static void secureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
   impl->secureContextMethod();
 }
 
-void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextMethodMethod(info);
 }
 
@@ -1964,7 +1964,7 @@ static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackIn
   impl->secureContextRuntimeEnabledMethod();
 }
 
-void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledMethodMethod(info);
 }
 
@@ -1974,7 +1974,7 @@ static void secureContextWindowExposedMethodMethod(const v8::FunctionCallbackInf
   impl->secureContextWindowExposedMethod();
 }
 
-void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextWindowExposedMethodMethod(info);
 }
 
@@ -1984,7 +1984,7 @@ static void secureContextWorkerExposedMethodMethod(const v8::FunctionCallbackInf
   impl->secureContextWorkerExposedMethod();
 }
 
-void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedMethodMethod(info);
 }
 
@@ -1994,7 +1994,7 @@ static void secureContextWindowExposedRuntimeEnabledMethodMethod(const v8::Funct
   impl->secureContextWindowExposedRuntimeEnabledMethod();
 }
 
-void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
 
@@ -2004,7 +2004,7 @@ static void secureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::Funct
   impl->secureContextWorkerExposedRuntimeEnabledMethod();
 }
 
-void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
 
@@ -2014,7 +2014,7 @@ static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
   impl->implementsVoidMethod();
 }
 
-void implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsVoidMethodMethod(info);
 }
 
@@ -2049,11 +2049,11 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   v8SetReturnValue(info, result);
 }
 
-void implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsComplexMethodMethod(info);
 }
 
-void implementsCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void implementsCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8TestInterface::implementsCustomVoidMethodMethodCustom(info);
 }
 
@@ -2061,7 +2061,7 @@ static void implementsStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::
   TestInterfaceImplementation::implementsStaticVoidMethod();
 }
 
-void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethod(info);
 }
 
@@ -2071,7 +2071,7 @@ static void implements2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
   TestImplements2::implements2VoidMethod(*impl);
 }
 
-void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implements2VoidMethodMethod(info);
 }
 
@@ -2081,7 +2081,7 @@ static void implements3VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
   TestImplements3Implementation::implements3VoidMethod(*impl);
 }
 
-void implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implements3VoidMethodMethod(info);
 }
 
@@ -2089,7 +2089,7 @@ static void implements3StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8:
   TestImplements3Implementation::implements3StaticVoidMethod();
 }
 
-void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethod(info);
 }
 
@@ -2099,7 +2099,7 @@ static void partialVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   TestInterfacePartial::partialVoidMethod(*impl);
 }
 
-void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialVoidMethodMethod(info);
 }
 
@@ -2107,7 +2107,7 @@ static void partialStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   TestInterfacePartial::partialStaticVoidMethod();
 }
 
-void partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethod(info);
 }
 
@@ -2129,7 +2129,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
   TestInterfacePartial::partialVoidMethodLongArg(*impl, longArg);
 }
 
-void partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethod(info);
 }
 
@@ -2145,7 +2145,7 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
   }
 }
 
-void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(info);
 }
 
@@ -2168,7 +2168,7 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
   TestInterfacePartial::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);
 }
 
-void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethod(info);
 }
 
@@ -2188,7 +2188,7 @@ static void partial2SecureContextMethodMethod(const v8::FunctionCallbackInfo<v8:
   TestInterfacePartial2Implementation::partial2SecureContextMethod(*impl);
 }
 
-void partial2SecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partial2SecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partial2SecureContextMethodMethod(info);
 }
 
@@ -2198,7 +2198,7 @@ static void partialSecureContextMethodMethod(const v8::FunctionCallbackInfo<v8::
   TestInterfacePartialSecureContext::partialSecureContextMethod(*impl);
 }
 
-void partialSecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialSecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextMethodMethod(info);
 }
 
@@ -2208,7 +2208,7 @@ static void partialSecureContextRuntimeEnabledMethodMethod(const v8::FunctionCal
   TestInterfacePartialSecureContext::partialSecureContextRuntimeEnabledMethod(*impl);
 }
 
-void partialSecureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialSecureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledMethodMethod(info);
 }
 
@@ -2218,7 +2218,7 @@ static void partialSecureContextWindowExposedMethodMethod(const v8::FunctionCall
   TestInterfacePartialSecureContext::partialSecureContextWindowExposedMethod(*impl);
 }
 
-void partialSecureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialSecureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedMethodMethod(info);
 }
 
@@ -2228,7 +2228,7 @@ static void partialSecureContextWorkerExposedMethodMethod(const v8::FunctionCall
   TestInterfacePartialSecureContext::partialSecureContextWorkerExposedMethod(*impl);
 }
 
-void partialSecureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialSecureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedMethodMethod(info);
 }
 
@@ -2238,7 +2238,7 @@ static void partialSecureContextWindowExposedRuntimeEnabledMethodMethod(const v8
   TestInterfacePartialSecureContext::partialSecureContextWindowExposedRuntimeEnabledMethod(*impl);
 }
 
-void partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
 
@@ -2248,7 +2248,7 @@ static void partialSecureContextWorkerExposedRuntimeEnabledMethodMethod(const v8
   TestInterfacePartialSecureContext::partialSecureContextWorkerExposedRuntimeEnabledMethod(*impl);
 }
 
-void partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
 
@@ -2276,7 +2276,7 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
   (voidMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethod(info);
 }
 
@@ -2296,7 +2296,7 @@ static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
   (staticVoidMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-void staticVoidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void staticVoidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethod(info);
 }
 
@@ -2320,7 +2320,7 @@ static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8
   (promiseMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-void promiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void promiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethod(info);
 }
 
@@ -2340,7 +2340,7 @@ static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackI
   (staticPromiseMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-void staticPromiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void staticPromiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethod(info);
 }
 
@@ -2360,7 +2360,7 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   (partial2VoidMethodMethodForPartialInterface)(info);
 }
 
-void partial2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partial2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partial2VoidMethodMethod(info);
 }
 
@@ -2380,7 +2380,7 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
   (partial2StaticVoidMethodMethodForPartialInterface)(info);
 }
 
-void partial2StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void partial2StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethod(info);
 }
 
@@ -2398,7 +2398,7 @@ static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValue(info, result.v8Value());
 }
 
-void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::toJSONMethod(info);
 }
 
@@ -2408,7 +2408,7 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
-void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::toStringMethod(info);
 }
 
@@ -2426,7 +2426,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8SetReturnValue(info, result);
 }
 
-void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::iteratorMethod(info);
 }
 
@@ -2438,7 +2438,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
   v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -2458,7 +2458,7 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
   v8SetReturnValue(info, v8Value);
 }
 
-void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -2475,7 +2475,7 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
   v8SetReturnValue(info, result == DeleteSuccess);
 }
 
-void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+CORE_EXPORT void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -2495,7 +2495,7 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   v8SetReturnValueInt(info, v8::None);
 }
 
-void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+CORE_EXPORT void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
   if (!name->IsString())
     return;
   const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
@@ -2515,7 +2515,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
   v8SetReturnValue(info, ToV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
 }
 
-void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+CORE_EXPORT void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
   TestInterfaceImplementationV8Internal::namedPropertyEnumerator(info);
 }
 
@@ -2533,7 +2533,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
   v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::indexedPropertyGetter(index, info);
 }
 
@@ -2549,7 +2549,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
   v8SetReturnValue(info, v8Value);
 }
 
-void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationV8Internal::indexedPropertySetter(index, v8Value, info);
 }
 
@@ -2562,7 +2562,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
   v8SetReturnValue(info, result == DeleteSuccess);
 }
 
-void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
+CORE_EXPORT void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   TestInterfaceImplementationV8Internal::indexedPropertyDeleter(index, info);
 }
 

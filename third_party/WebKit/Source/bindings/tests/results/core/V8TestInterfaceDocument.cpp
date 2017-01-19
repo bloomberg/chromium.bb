@@ -66,7 +66,7 @@ static void locationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& i
   v8SetReturnValueFast(info, WTF::getPtr(impl->location()), impl);
 }
 
-void locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void locationAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceDocumentV8Internal::locationAttributeGetter(info);
 }
 
@@ -87,7 +87,7 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
   impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue, exceptionState);
 }
 
-void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceDocumentV8Internal::locationAttributeSetter(v8Value, info);

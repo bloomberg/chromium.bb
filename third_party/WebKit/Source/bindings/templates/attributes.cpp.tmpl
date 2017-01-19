@@ -188,7 +188,7 @@ if ({{cpp_value}}.isEmpty()) {
 
 {##############################################################################}
 {% macro attribute_getter_callback(attribute, world_suffix) %}
-void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
+{{exported}}void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
 {%- else %}
@@ -229,7 +229,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro attribute_cache_property_callback(attribute) %}
-v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate)
+{{exported}}v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate)
 {
     return V8PrivateProperty::get{{attribute.cached_accessor_name}}(isolate).getPrivate();
 }
@@ -238,7 +238,7 @@ v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* iso
 
 {##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
-void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+{{exported}}void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if attribute.deprecate_as %}
   Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
   {% endif %}
@@ -366,7 +366,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro attribute_setter_callback(attribute, world_suffix) %}
-void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
+{{exported}}void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- else %}

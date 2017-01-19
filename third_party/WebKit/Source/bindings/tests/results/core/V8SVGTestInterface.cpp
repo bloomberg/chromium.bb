@@ -62,7 +62,7 @@ static void typeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
   v8SetReturnValueString(info, impl->fastGetAttribute(SVGNames::typeAttr), info.GetIsolate());
 }
 
-void typeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void typeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   SVGTestInterfaceV8Internal::typeAttributeGetter(info);
 }
 
@@ -81,7 +81,7 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   impl->setAttribute(SVGNames::typeAttr, cppValue);
 }
 
-void typeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void typeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;

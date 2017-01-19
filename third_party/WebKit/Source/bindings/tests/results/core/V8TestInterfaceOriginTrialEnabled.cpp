@@ -61,7 +61,7 @@ static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
   v8SetReturnValue(info, impl->doubleAttribute());
 }
 
-void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceOriginTrialEnabledV8Internal::doubleAttributeAttributeGetter(info);
 }
 
@@ -79,7 +79,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
   impl->setDoubleAttribute(cppValue);
 }
 
-void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceOriginTrialEnabledV8Internal::doubleAttributeAttributeSetter(v8Value, info);
@@ -93,7 +93,7 @@ static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackIn
   v8SetReturnValueInt(info, impl->conditionalLongAttribute());
 }
 
-void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceOriginTrialEnabledV8Internal::conditionalLongAttributeAttributeGetter(info);
 }
 
@@ -111,7 +111,7 @@ static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   impl->setConditionalLongAttribute(cppValue);
 }
 
-void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceOriginTrialEnabledV8Internal::conditionalLongAttributeAttributeSetter(v8Value, info);
@@ -125,7 +125,7 @@ static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCa
   v8SetReturnValueInt(info, impl->conditionalReadOnlyLongAttribute());
 }
 
-void conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void conditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceOriginTrialEnabledV8Internal::conditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
@@ -133,7 +133,7 @@ static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<
   v8SetReturnValueString(info, TestInterfaceOriginTrialEnabled::staticStringAttribute(), info.GetIsolate());
 }
 
-void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceOriginTrialEnabledV8Internal::staticStringAttributeAttributeGetter(info);
 }
 
@@ -146,7 +146,7 @@ static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   TestInterfaceOriginTrialEnabled::setStaticStringAttribute(cppValue);
 }
 
-void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceOriginTrialEnabledV8Internal::staticStringAttributeAttributeSetter(v8Value, info);
@@ -156,7 +156,7 @@ static void staticConditionalReadOnlyLongAttributeAttributeGetter(const v8::Func
   v8SetReturnValueInt(info, TestInterfaceOriginTrialEnabled::staticConditionalReadOnlyLongAttribute());
 }
 
-void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceOriginTrialEnabledV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
@@ -183,7 +183,7 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
   impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
 
-void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceOriginTrialEnabledV8Internal::voidMethodDoubleArgFloatArgMethod(info);
 }
 
@@ -232,7 +232,7 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
   exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceOriginTrialEnabledV8Internal::voidMethodPartialOverloadMethod(info);
 }
 

@@ -310,7 +310,7 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
   TestInterfacePartial3Implementation::partialVoidTestEnumModulesArgMethod(*impl, arg);
 }
 
-void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+ void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethod(info);
 }
 
@@ -351,7 +351,7 @@ static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
   TestInterfacePartial3Implementation::unscopableVoidMethod(*impl);
 }
 
-void unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+ void unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethod(info);
 }
 
@@ -361,7 +361,7 @@ static void partial4VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   TestInterfacePartial4::partial4VoidMethod(*impl);
 }
 
-void partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+ void partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethod(info);
 }
 
@@ -369,7 +369,7 @@ static void partial4StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
   TestInterfacePartial4::partial4StaticVoidMethod();
 }
 
-void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+ void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationPartialV8Internal::partial4StaticVoidMethodMethod(info);
 }
 

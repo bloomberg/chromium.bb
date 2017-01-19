@@ -61,7 +61,7 @@ static void secureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextAttribute()), impl);
 }
 
-void secureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeGetter(info);
 }
 
@@ -83,7 +83,7 @@ static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
   impl->setSecureContextAttribute(cppValue);
 }
 
-void secureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceSecureContextV8Internal::secureContextAttributeAttributeSetter(v8Value, info);
@@ -97,7 +97,7 @@ static void secureContextRuntimeEnabledAttributeAttributeGetter(const v8::Functi
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -119,7 +119,7 @@ static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Va
   impl->setSecureContextRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -133,7 +133,7 @@ static void secureContextWindowExposedAttributeAttributeGetter(const v8::Functio
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedAttribute()), impl);
 }
 
-void secureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWindowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeGetter(info);
 }
 
@@ -155,7 +155,7 @@ static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Val
   impl->setSecureContextWindowExposedAttribute(cppValue);
 }
 
-void secureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceSecureContextV8Internal::secureContextWindowExposedAttributeAttributeSetter(v8Value, info);
@@ -169,7 +169,7 @@ static void secureContextWorkerExposedAttributeAttributeGetter(const v8::Functio
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedAttribute()), impl);
 }
 
-void secureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWorkerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeGetter(info);
 }
 
@@ -191,7 +191,7 @@ static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Val
   impl->setSecureContextWorkerExposedAttribute(cppValue);
 }
 
-void secureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceSecureContextV8Internal::secureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
@@ -205,7 +205,7 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(con
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -227,7 +227,7 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8:
   impl->setSecureContextWindowExposedRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -241,7 +241,7 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(con
   v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedRuntimeEnabledAttribute()), impl);
 }
 
-void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(info);
 }
 
@@ -263,7 +263,7 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8:
   impl->setSecureContextWorkerExposedRuntimeEnabledAttribute(cppValue);
 }
 
-void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
   TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
@@ -275,7 +275,7 @@ static void secureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
   impl->secureContextMethod();
 }
 
-void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextMethodMethod(info);
 }
 
@@ -285,7 +285,7 @@ static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackIn
   impl->secureContextRuntimeEnabledMethod();
 }
 
-void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledMethodMethod(info);
 }
 
@@ -295,7 +295,7 @@ static void secureContextWindowExposedMethodMethod(const v8::FunctionCallbackInf
   impl->secureContextWindowExposedMethod();
 }
 
-void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextWindowExposedMethodMethod(info);
 }
 
@@ -305,7 +305,7 @@ static void secureContextWorkerExposedMethodMethod(const v8::FunctionCallbackInf
   impl->secureContextWorkerExposedMethod();
 }
 
-void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextWorkerExposedMethodMethod(info);
 }
 
@@ -315,7 +315,7 @@ static void secureContextWindowExposedRuntimeEnabledMethodMethod(const v8::Funct
   impl->secureContextWindowExposedRuntimeEnabledMethod();
 }
 
-void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
 
@@ -325,7 +325,7 @@ static void secureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::Funct
   impl->secureContextWorkerExposedRuntimeEnabledMethod();
 }
 
-void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT  void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
 

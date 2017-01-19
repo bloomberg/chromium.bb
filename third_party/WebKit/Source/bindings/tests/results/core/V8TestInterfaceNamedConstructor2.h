@@ -27,7 +27,7 @@ class V8TestInterfaceNamedConstructor2Constructor {
   STATIC_ONLY(V8TestInterfaceNamedConstructor2Constructor);
  public:
   static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  static const WrapperTypeInfo wrapperTypeInfo;
+  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
 };
 
 class V8TestInterfaceNamedConstructor2 {
