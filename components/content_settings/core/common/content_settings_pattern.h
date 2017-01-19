@@ -221,7 +221,6 @@ class ContentSettingsPattern {
 
  private:
   friend class content_settings::PatternParser;
-  friend class ContentSettingsPatternSerializer;
   friend struct mojo::StructTraits<
       content_settings::mojom::ContentSettingsPatternDataView,
       ContentSettingsPattern>;

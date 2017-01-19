@@ -8,11 +8,9 @@
 #ifndef CHROME_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 
-#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ipc/ipc_message_macros.h"
 
-IPC_ENUM_TRAITS_MAX_VALUE(ContentSetting, CONTENT_SETTING_NUM_SETTINGS - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(ContentSettingsType,
                           CONTENT_SETTINGS_NUM_TYPES_DO_NOT_USE - 1)
 

@@ -60,21 +60,6 @@ enum class ChromeViewHostMsg_GetPluginInfo_Status {
   kUnauthorized,
 };
 
-namespace IPC {
-
-template <>
-struct ParamTraits<ContentSettingsPattern> {
-  typedef ContentSettingsPattern param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
-
 #endif  // CHROME_COMMON_RENDER_MESSAGES_H_
 
 #define IPC_MESSAGE_START ChromeMsgStart
@@ -97,31 +82,6 @@ IPC_STRUCT_BEGIN(ChromeViewHostMsg_GetPluginInfo_Output)
   IPC_STRUCT_MEMBER(std::string, group_identifier)
   IPC_STRUCT_MEMBER(base::string16, group_name)
 IPC_STRUCT_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ContentSettingsPattern::PatternParts)
-  IPC_STRUCT_TRAITS_MEMBER(scheme)
-  IPC_STRUCT_TRAITS_MEMBER(is_scheme_wildcard)
-  IPC_STRUCT_TRAITS_MEMBER(host)
-  IPC_STRUCT_TRAITS_MEMBER(has_domain_wildcard)
-  IPC_STRUCT_TRAITS_MEMBER(port)
-  IPC_STRUCT_TRAITS_MEMBER(is_port_wildcard)
-  IPC_STRUCT_TRAITS_MEMBER(path)
-  IPC_STRUCT_TRAITS_MEMBER(is_path_wildcard)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)
-  IPC_STRUCT_TRAITS_MEMBER(primary_pattern)
-  IPC_STRUCT_TRAITS_MEMBER(secondary_pattern)
-  IPC_STRUCT_TRAITS_MEMBER(setting)
-  IPC_STRUCT_TRAITS_MEMBER(source)
-  IPC_STRUCT_TRAITS_MEMBER(incognito)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
-  IPC_STRUCT_TRAITS_MEMBER(image_rules)
-  IPC_STRUCT_TRAITS_MEMBER(script_rules)
-  IPC_STRUCT_TRAITS_MEMBER(autoplay_rules)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(RGBAColor)
   IPC_STRUCT_TRAITS_MEMBER(r)
@@ -159,10 +119,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_WebUIJavaScript,
                     base::string16  /* javascript */)
 #endif
-
-// Set the content setting rules stored by the renderer.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
-                     RendererContentSettingRules /* rules */)
 
 // Tells the render frame to load all blocked plugins with the given identifier.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,

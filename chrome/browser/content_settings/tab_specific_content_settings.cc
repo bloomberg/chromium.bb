@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/renderer_configuration.mojom.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
@@ -41,6 +42,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -763,8 +765,15 @@ void TabSpecificContentSettings::OnContentSettingChanged(
     }
     RendererContentSettingRules rules;
     GetRendererContentSettingRules(map, &rules);
-    // TODO(nigeltao): use Mojo instead of legacy IPC.
-    Send(new ChromeViewMsg_SetContentSettingRules(rules));
+
+    IPC::ChannelProxy* channel =
+        web_contents()->GetRenderProcessHost()->GetChannel();
+    // channel might be NULL in tests.
+    if (channel) {
+      chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
+      channel->GetRemoteAssociatedInterface(&rc_interface);
+      rc_interface->SetContentSettingRules(rules);
+    }
   }
 }
 
