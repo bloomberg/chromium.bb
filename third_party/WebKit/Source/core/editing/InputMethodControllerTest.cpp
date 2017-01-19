@@ -1071,64 +1071,6 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
                document().title().utf8().data());
 }
 
-TEST_F(InputMethodControllerTest, CompositionEndEventForConfirm) {
-  createHTMLWithCompositionEndEventListener(CaretSelection);
-
-  // Simulate composition in the |contentEditable|.
-  Vector<CompositionUnderline> underlines;
-  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-
-  controller().setComposition("hello", underlines, 1, 1);
-  document().updateStyleAndLayout();
-  EXPECT_EQ(1u, controller().getSelectionOffsets().start());
-  EXPECT_EQ(1u, controller().getSelectionOffsets().end());
-
-  // Confirm the ongoing composition. Note that it moves the caret to the end of
-  // text [5,5] before firing 'compositonend' event.
-  controller().finishComposingText(InputMethodController::DoNotKeepSelection);
-  document().updateStyleAndLayout();
-  EXPECT_EQ(3u, controller().getSelectionOffsets().start());
-  EXPECT_EQ(3u, controller().getSelectionOffsets().end());
-}
-
-TEST_F(InputMethodControllerTest, CompositionEndEventForInsert) {
-  createHTMLWithCompositionEndEventListener(CaretSelection);
-
-  // Simulate composition in the |contentEditable|.
-  Vector<CompositionUnderline> underlines;
-  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-
-  controller().setComposition("n", underlines, 1, 1);
-
-  // Insert new text with previous composition. Note that it moves the caret to
-  // [4,4] before firing 'compositonend' event.
-  document().updateStyleAndLayout();
-  controller().commitText("hello", underlines, -1);
-  document().updateStyleAndLayout();
-  EXPECT_EQ(3u, controller().getSelectionOffsets().start());
-  EXPECT_EQ(3u, controller().getSelectionOffsets().end());
-}
-
-TEST_F(InputMethodControllerTest, CompositionEndEventWithRangeSelection) {
-  createHTMLWithCompositionEndEventListener(RangeSelection);
-
-  // Simulate composition in the |contentEditable|.
-  Vector<CompositionUnderline> underlines;
-  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-
-  controller().setComposition("hello", underlines, 1, 1);
-  document().updateStyleAndLayout();
-  EXPECT_EQ(1u, controller().getSelectionOffsets().start());
-  EXPECT_EQ(1u, controller().getSelectionOffsets().end());
-
-  // Confirm the ongoing composition. Note that it moves the caret to the end of
-  // text [5,5] before firing 'compositonend' event.
-  controller().finishComposingText(InputMethodController::DoNotKeepSelection);
-  document().updateStyleAndLayout();
-  EXPECT_EQ(2u, controller().getSelectionOffsets().start());
-  EXPECT_EQ(4u, controller().getSelectionOffsets().end());
-}
-
 TEST_F(InputMethodControllerTest, CompositionEndEventWithNoSelection) {
   createHTMLWithCompositionEndEventListener(NoSelection);
 

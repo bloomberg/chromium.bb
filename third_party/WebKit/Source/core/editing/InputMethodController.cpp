@@ -251,18 +251,13 @@ bool InputMethodController::finishComposingText(
     PlainTextRange oldOffsets = getSelectionOffsets();
     Editor::RevealSelectionScope revealSelectionScope(&editor());
 
-    const String& composing = composingText();
-    const bool result = replaceComposition(composing);
+    bool result = replaceComposition(composingText());
 
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     setSelectionOffsets(oldOffsets);
-
-    // No DOM update after 'compositionend'.
-    dispatchCompositionEndEvent(frame(), composing);
-
     return result;
   }
 
@@ -317,6 +312,9 @@ bool InputMethodController::replaceComposition(const String& text) {
   if (!isAvailable())
     return false;
 
+  // No DOM update after 'compositionend'.
+  dispatchCompositionEndEvent(frame(), text);
+
   return true;
 }
 
@@ -364,17 +362,15 @@ bool InputMethodController::replaceCompositionAndMoveCaret(
   if (!replaceComposition(text))
     return false;
 
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   addCompositionUnderlines(underlines, rootEditableElement, textStart);
 
   int absoluteCaretPosition = computeAbsoluteCaretPosition(
       textStart, text.length(), relativeCaretPosition);
-  if (!moveCaret(absoluteCaretPosition))
-    return false;
-
-  // No DOM update after 'compositionend'.
-  dispatchCompositionEndEvent(frame(), text);
-
-  return true;
+  return moveCaret(absoluteCaretPosition);
 }
 
 bool InputMethodController::insertText(const String& text) {
@@ -543,9 +539,7 @@ void InputMethodController::setComposition(
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     setEditableSelectionOffsets(selectedRange);
-
-    // No DOM update after 'compositionend'.
-    return dispatchCompositionEndEvent(frame(), text);
+    return;
   }
 
   // We should send a 'compositionstart' event only when the given text is not
