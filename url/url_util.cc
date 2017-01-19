@@ -169,6 +169,10 @@ bool DoCanonicalize(const CHAR* spec,
                     CharsetConverter* charset_converter,
                     CanonOutput* output,
                     Parsed* output_parsed) {
+  // Reserve enough room in the output for the input, plus some extra so that
+  // we have room if we have to escape a few things without reallocating.
+  output->ReserveSizeIfNeeded(spec_len + 8);
+
   // Remove any whitespace from the middle of the relative URL if necessary.
   // Possibly this will result in copying to the new buffer.
   RawCanonOutputT<CHAR> whitespace_buffer;
@@ -278,6 +282,9 @@ bool DoResolveRelative(const char* base_spec,
     return false;
   }
 
+  // Don't reserve buffer space here. Instead, reserve in DoCanonicalize and
+  // ReserveRelativeURL, to enable more accurate buffer sizes.
+
   // Pretend for a moment that |base_spec| is a standard URL. Normally
   // non-standard URLs are treated as PathURLs, but if the base has an
   // authority we would like to preserve it.
@@ -379,6 +386,12 @@ bool DoReplaceComponents(const char* spec,
                                recanonicalized_parsed, replacements_no_scheme,
                                charset_converter, output, out_parsed);
   }
+
+  // TODO(csharrison): We could be smarter about size to reserve if this is done
+  // in callers below, and the code checks to see which components are being
+  // replaced, and with what length. If this ends up being a hot spot it should
+  // be changed.
+  output->ReserveSizeIfNeeded(spec_len + 8);
 
   // If we get here, then we know the scheme doesn't need to be replaced, so can
   // just key off the scheme in the spec to know how to do the replacements.
