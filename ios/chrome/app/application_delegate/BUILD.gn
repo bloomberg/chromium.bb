@@ -73,6 +73,7 @@ source_set("unit_tests") {
 }
 
 source_set("application_delegate_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "app_navigation.h",
     "app_state.h",

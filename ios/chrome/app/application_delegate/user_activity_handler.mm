@@ -9,7 +9,6 @@
 
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
@@ -31,6 +30,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using base::UserMetricsAction;
 
@@ -76,8 +79,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     // at this time is opening a New Tab Page.
     GURL newTabURL(kChromeUINewTabURL);
     webpageURL = net::NSURLWithGURL(newTabURL);
-    base::scoped_nsobject<AppStartupParameters> startupParams(
-        [[AppStartupParameters alloc] initWithExternalURL:newTabURL]);
+    AppStartupParameters* startupParams =
+        [[AppStartupParameters alloc] initWithExternalURL:newTabURL];
     [startupInformation setStartupParameters:startupParams];
     base::RecordAction(base::UserMetricsAction("IOSLaunchedByUniversalLink"));
   } else if (spotlight::IsSpotlightAvailable() &&
@@ -101,9 +104,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     if (domain == spotlight::DOMAIN_ACTIONS) {
       webpageURL =
           [NSURL URLWithString:base::SysUTF8ToNSString(kChromeUINewTabURL)];
-      base::scoped_nsobject<AppStartupParameters> startupParams(
-          [[AppStartupParameters alloc]
-              initWithExternalURL:GURL(kChromeUINewTabURL)]);
+      AppStartupParameters* startupParams = [[AppStartupParameters alloc]
+          initWithExternalURL:GURL(kChromeUINewTabURL)];
       BOOL startupParamsSet = spotlight::SetStartupParametersForSpotlightAction(
           itemID, startupParams);
       if (!startupParamsSet) {
@@ -174,8 +176,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   [startupInformation resetFirstUserActionRecorder];
 
   if (![startupInformation startupParameters]) {
-    base::scoped_nsobject<AppStartupParameters> startupParams(
-        [[AppStartupParameters alloc] initWithExternalURL:webpageGURL]);
+    AppStartupParameters* startupParams =
+        [[AppStartupParameters alloc] initWithExternalURL:webpageGURL];
     [startupInformation setStartupParameters:startupParams];
   }
   return YES;
@@ -256,9 +258,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   if ([startupInformation isPresentingFirstRunUI])
     return NO;
 
-  base::scoped_nsobject<AppStartupParameters> startupParams(
-      [[AppStartupParameters alloc]
-          initWithExternalURL:GURL(kChromeUINewTabURL)]);
+  AppStartupParameters* startupParams = [[AppStartupParameters alloc]
+      initWithExternalURL:GURL(kChromeUINewTabURL)];
 
   if ([shortcutItem.type isEqualToString:kShortcutNewTab]) {
     base::RecordAction(UserMetricsAction("ApplicationShortcut.NewTabPressed"));

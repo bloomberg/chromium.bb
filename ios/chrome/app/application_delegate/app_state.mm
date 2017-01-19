@@ -6,8 +6,8 @@
 
 #include "base/critical_closure.h"
 #import "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/metrics/metrics_service.h"
+#import "ios/chrome/app/main_application_delegate.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
@@ -40,6 +40,10 @@
 #include "ios/web/net/request_tracker_impl.h"
 #include "net/url_request/url_request_context.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Helper method to post |closure| on the UI thread.
 void PostTaskOnUIThread(const base::Closure& closure) {
@@ -50,16 +54,16 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
 
 @interface AppState ()<SafeModeCoordinatorDelegate> {
   // Container for startup information.
-  base::WeakNSProtocol<id<StartupInformation>> _startupInformation;
+  __weak id<StartupInformation> _startupInformation;
   // Browser launcher to launch browser in different states.
-  base::WeakNSProtocol<id<BrowserLauncher>> _browserLauncher;
+  __weak id<BrowserLauncher> _browserLauncher;
   // UIApplicationDelegate for the application.
-  base::WeakNSObject<MainApplicationDelegate> _mainApplicationDelegate;
+  __weak MainApplicationDelegate* _mainApplicationDelegate;
   // Window for the application.
-  base::WeakNSObject<UIWindow> _window;
+  __weak UIWindow* _window;
 
   // Variables backing properties of same name.
-  base::scoped_nsobject<SafeModeCoordinator> _safeModeCoordinator;
+  SafeModeCoordinator* _safeModeCoordinator;
 
   // Start of the current session, used for UMA.
   base::TimeTicks _sessionStartTime;
@@ -69,7 +73,7 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
   // active.
   BOOL _shouldOpenNTPTabOnActive;
   // Interstitial view used to block any incognito tabs after backgrounding.
-  base::scoped_nsobject<UIView> _incognitoBlocker;
+  UIView* _incognitoBlocker;
   // Whether the application is currently in the background.
   // This is a workaround for rdar://22392526 where
   // -applicationDidEnterBackground: can be called twice.
@@ -81,7 +85,7 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
 
 // Safe mode coordinator. If this is non-nil, the app is displaying the safe
 // mode UI.
-@property(nonatomic, retain) SafeModeCoordinator* safeModeCoordinator;
+@property(nonatomic, strong) SafeModeCoordinator* safeModeCoordinator;
 
 // Return value for -requiresHandlingAfterLaunchWithOptions that determines if
 // UIKit should make followup delegate calls such as
@@ -115,9 +119,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     applicationDelegate:(MainApplicationDelegate*)applicationDelegate {
   self = [super init];
   if (self) {
-    _startupInformation.reset(startupInformation);
-    _browserLauncher.reset(browserLauncher);
-    _mainApplicationDelegate.reset(applicationDelegate);
+    _startupInformation = startupInformation;
+    _browserLauncher = browserLauncher;
+    _mainApplicationDelegate = applicationDelegate;
   }
   return self;
 }
@@ -129,11 +133,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 }
 
 - (void)setSafeModeCoordinator:(SafeModeCoordinator*)safeModeCoordinator {
-  _safeModeCoordinator.reset([safeModeCoordinator retain]);
+  _safeModeCoordinator = safeModeCoordinator;
 }
 
 - (void)setWindow:(UIWindow*)window {
-  _window.reset(window);
+  _window = window;
 }
 
 - (UIWindow*)window {
@@ -192,8 +196,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     CGRect screenBounds = [[UIScreen mainScreen] bounds];
     CGFloat maxDimension =
         std::max(CGRectGetWidth(screenBounds), CGRectGetHeight(screenBounds));
-    _incognitoBlocker.reset([[UIView alloc]
-        initWithFrame:CGRectMake(0, 0, maxDimension, maxDimension)]);
+    _incognitoBlocker = [[UIView alloc]
+        initWithFrame:CGRectMake(0, 0, maxDimension, maxDimension)];
     InstallBackgroundInView(_incognitoBlocker);
     [_window addSubview:_incognitoBlocker];
   }
@@ -207,12 +211,13 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         [[_browserLauncher browserViewInformation] currentBVC]
             .browserState->GetRequestContext();
     _savingCookies = YES;
-    base::Closure criticalClosure = base::MakeCriticalClosure(base::BindBlock(^{
-      DCHECK_CURRENTLY_ON(web::WebThread::UI);
-      _savingCookies = NO;
-    }));
+    base::Closure criticalClosure =
+        base::MakeCriticalClosure(base::BindBlockArc(^{
+          DCHECK_CURRENTLY_ON(web::WebThread::UI);
+          _savingCookies = NO;
+        }));
     web::WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+        web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
           net::CookieStoreIOS* store = static_cast<net::CookieStoreIOS*>(
               getter->GetURLRequestContext()->cookie_store());
           // FlushStore() runs its callback on any thread. Jump back to UI.
@@ -259,7 +264,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   _applicationInBackground = NO;
 
   [_incognitoBlocker removeFromSuperview];
-  _incognitoBlocker.reset();
+  _incognitoBlocker = nil;
 
   breakpad_helper::SetCurrentlyInBackground(false);
 
@@ -315,7 +320,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (void)resumeSessionWithTabOpener:(id<TabOpening>)tabOpener
                        tabSwitcher:(id<TabSwitching>)tabSwitcher {
   [_incognitoBlocker removeFromSuperview];
-  _incognitoBlocker.reset();
+  _incognitoBlocker = nil;
 
   DCHECK([_browserLauncher browserInitializationStage] ==
          INITIALIZATION_STAGE_FOREGROUND);
@@ -443,7 +448,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   DCHECK([_window rootViewController] == nil);
   if ([SafeModeCoordinator shouldStart]) {
     SafeModeCoordinator* safeModeCoordinator =
-        [[[SafeModeCoordinator alloc] initWithWindow:_window] autorelease];
+        [[SafeModeCoordinator alloc] initWithWindow:_window];
 
     self.safeModeCoordinator = safeModeCoordinator;
     [self.safeModeCoordinator setDelegate:self];

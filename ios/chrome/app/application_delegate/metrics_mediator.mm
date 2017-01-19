@@ -4,7 +4,6 @@
 
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 
-#include "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -30,6 +29,10 @@
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The amount of time (in seconds) between two background fetch calls.
@@ -238,18 +241,16 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   }
 
   // If metrics are enabled, process the logs. Otherwise, just delete them.
-  base::mac::ScopedBlock<app_group::ProceduralBlockWithData> callback;
+  app_group::ProceduralBlockWithData callback;
   if (enabled) {
-    callback.reset(
-        ^(NSData* log_content) {
-          std::string log(static_cast<const char*>([log_content bytes]),
-                          static_cast<size_t>([log_content length]));
-          web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                                   base::BindBlock(^{
-                                     metrics->PushExternalLog(log);
-                                   }));
-        },
-        base::scoped_policy::RETAIN);
+    callback = [^(NSData* log_content) {
+      std::string log(static_cast<const char*>([log_content bytes]),
+                      static_cast<size_t>([log_content length]));
+      web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+                               base::BindBlockArc(^{
+                                 metrics->PushExternalLog(log);
+                               }));
+    } copy];
   }
 
   web::WebThread::PostTask(

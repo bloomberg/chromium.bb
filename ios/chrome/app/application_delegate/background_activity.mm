@@ -4,7 +4,6 @@
 
 #import "ios/chrome/app/application_delegate/background_activity.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -15,6 +14,10 @@
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Key of the UMA Startup.BackgroundFetchTimeInterval histogram.

@@ -37,7 +37,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 // Window for the application, it is not set during the initialization method.
 // Set the property before calling methods related to it.
-@property(nonatomic, assign) UIWindow* window;
+@property(nonatomic, weak) UIWindow* window;
 
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch

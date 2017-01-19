@@ -6,13 +6,15 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/chrome_app_startup_parameters.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Key of the UMA Startup.MobileSessionStartFromApps histogram.
@@ -36,10 +38,9 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
     startupInformation:(id<StartupInformation>)startupInformation {
   NSString* sourceApplication =
       options[UIApplicationOpenURLOptionsSourceApplicationKey];
-  base::scoped_nsobject<ChromeAppStartupParameters> params(
-      [ChromeAppStartupParameters
-          newChromeAppStartupParametersWithURL:url
-                         fromSourceApplication:sourceApplication]);
+  ChromeAppStartupParameters* params = [ChromeAppStartupParameters
+      newChromeAppStartupParametersWithURL:url
+                     fromSourceApplication:sourceApplication];
 
   MobileSessionCallerApp callerApp = [params callerApp];
 
