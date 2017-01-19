@@ -102,7 +102,8 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
       callback.Run(false);
       return;
     }
-    callback.Run(true);
+    dbus::MessageReader reader(response);
+    callback.Run(GetErrorFromReader(&reader) == authpolicy::ERROR_NONE);
   }
 
   void HandleJoinCallback(const JoinCallback& callback,
