@@ -235,6 +235,11 @@ importer.MediaImportHandler.ImportTask = function(
   /** @private {number} */
   this.processedBytes_ = 0;
 
+  /**
+   * Number of duplicate files found by the content hash check.
+   * @private {number} */
+  this.duplicateFilesCount_ = 0;
+
   /** @private {number} */
   this.remainingFilesCount_ = 0;
 
@@ -401,6 +406,7 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
             if (disposition === importer.Disposition.ORIGINAL) {
               return this.copy_(entry, destinationDirectory);
             }
+            this.duplicateFilesCount_++;
             this.markAsImported_(entry);
           }.bind(this))
       // Regardless of the result of this copy, push on to the next file.
@@ -581,6 +587,11 @@ importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ =
   // Finally we want to report on the number of duplicates
   // that were identified during scanning.
   var totalDeduped = 0;
+  // The scan is run without content duplicate check.
+  // Instead, report the number of duplicated files found at import.
+  assert(scanStats.duplicates[importer.Disposition.CONTENT_DUPLICATE] === 0);
+  scanStats.duplicates[importer.Disposition.CONTENT_DUPLICATE] =
+      this.duplicateFilesCount_;
   Object.keys(scanStats.duplicates).forEach(
       /**
        * @param {!importer.Disposition} disposition
