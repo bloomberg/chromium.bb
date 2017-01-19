@@ -64,11 +64,6 @@ void RunStandaloneService(const StandaloneServiceCallback& callback) {
   MachBroker::SendTaskPortToParent();
 #endif
 
-#if !defined(OFFICIAL_BUILD)
-  // Initialize stack dumping just before initializing sandbox to make
-  // sure symbol names in all loaded libraries will be cached.
-  base::debug::EnableInProcessStackDumping();
-#endif
 #if defined(OS_LINUX)
   std::unique_ptr<LinuxSandbox> sandbox;
   const base::CommandLine& command_line =

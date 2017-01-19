@@ -88,6 +88,12 @@ int main(int argc, char** argv) {
     base::i18n::InitializeICU();
   }
 
+#if !defined(OFFICIAL_BUILD)
+  // Initialize stack dumping before initializing sandbox to make sure symbol
+  // names in all loaded libraries will be cached.
+  base::debug::EnableInProcessStackDumping();
+#endif
+
   service_manager::WaitForDebuggerIfNecessary();
 
   service_manager::RunStandaloneService(base::Bind(&RunServiceMain));

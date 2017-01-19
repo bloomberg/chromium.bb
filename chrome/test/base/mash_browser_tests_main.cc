@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -152,6 +153,11 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     base::AtExitManager exit_manager;
 #endif
     base::i18n::InitializeICU();
+
+#if !defined(OFFICIAL_BUILD)
+    base::debug::EnableInProcessStackDumping();
+#endif
+
     service_manager::RunStandaloneService(base::Bind(&StartChildApp));
     *exit_code = 0;
     return true;

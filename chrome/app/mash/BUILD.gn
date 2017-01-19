@@ -33,7 +33,17 @@ source_set("mash") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//ash/resources" ]
+    sources += [
+      "mash_crash_reporter_client.cc",
+      "mash_crash_reporter_client.h",
+    ]
+    deps += [
+      "//ash/resources",
+      "//components/crash/content/app",
+      "//components/crash/core/common",
+      "//components/upload_list",
+      "//components/version_info:generate_version_info",
+    ]
   }
 
   if (is_linux && !is_android) {

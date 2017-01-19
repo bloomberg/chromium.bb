@@ -46,6 +46,12 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/debug/leak_annotations.h"
+#include "chrome/app/mash/mash_crash_reporter_client.h"
+#include "components/crash/content/app/breakpad_linux.h"
+#endif
+
 using service_manager::mojom::ServiceFactory;
 
 namespace {
@@ -126,6 +132,26 @@ class ServiceProcessLauncherDelegateImpl
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);
 };
+
+#if defined(OS_CHROMEOS)
+// Initializes breakpad crash reporting. MashCrashReporterClient handles
+// registering crash keys.
+void InitializeCrashReporting() {
+  DCHECK(!breakpad::IsCrashReporterEnabled());
+
+  // Intentionally leaked. The crash client needs to outlive all other code.
+  MashCrashReporterClient* client = new MashCrashReporterClient;
+  ANNOTATE_LEAKING_OBJECT_PTR(client);
+  crash_reporter::SetCrashReporterClient(client);
+
+  // For now all standalone services act like the browser process and write
+  // their own in-process crash dumps. When ash and the window server are
+  // sandboxed we will need to hook up the crash signal file descriptor, make
+  // the root process handle dumping, and pass a process type here.
+  const std::string process_type_unused;
+  breakpad::InitCrashReporter(process_type_unused);
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -223,10 +249,23 @@ int MashMain() {
   // TODO(sky): wire this up correctly.
   service_manager::InitializeLogging();
 
-  std::unique_ptr<base::MessageLoop> message_loop;
 #if defined(OS_LINUX)
   base::AtExitManager exit_manager;
 #endif
+
+#if !defined(OFFICIAL_BUILD)
+  // Initialize stack dumping before initializing sandbox to make sure symbol
+  // names in all loaded libraries will be cached.
+  base::debug::EnableInProcessStackDumping();
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Breakpad installs signal handlers, so crash reporting must be set up after
+  // EnableInProcessStackDumping() resets the signal handlers.
+  InitializeCrashReporting();
+#endif
+
+  std::unique_ptr<base::MessageLoop> message_loop;
   if (!IsChild())
     message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
 
