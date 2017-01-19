@@ -88,27 +88,54 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
   return "_UNKNOWN";
 }
 
-std::string GetWorkerPreparationSuffix(
+ServiceWorkerMetrics::WorkerPreparationType GetWorkerPreparationType(
     EmbeddedWorkerStatus initial_worker_status,
     ServiceWorkerMetrics::StartSituation start_situation) {
+  using Situation = ServiceWorkerMetrics::StartSituation;
+  using Preparation = ServiceWorkerMetrics::WorkerPreparationType;
   switch (initial_worker_status) {
     case EmbeddedWorkerStatus::STOPPED: {
       switch (start_situation) {
-        case ServiceWorkerMetrics::StartSituation::DURING_STARTUP:
-          return "_StartWorkerDuringStartup";
-        case ServiceWorkerMetrics::StartSituation::NEW_PROCESS:
-          return "_StartWorkerNewProcess";
-        case ServiceWorkerMetrics::StartSituation::EXISTING_PROCESS:
-          return "_StartWorkerExistingProcess";
-        default:
-          NOTREACHED() << static_cast<int>(start_situation);
+        case Situation::DURING_STARTUP:
+          return Preparation::START_DURING_STARTUP;
+        case Situation::NEW_PROCESS:
+          return Preparation::START_IN_NEW_PROCESS;
+        case Situation::EXISTING_PROCESS:
+          return Preparation::START_IN_EXISTING_PROCESS;
+        case Situation::UNKNOWN:
+          break;
       }
+      break;
     }
     case EmbeddedWorkerStatus::STARTING:
-      return "_StartingWorker";
+      return Preparation::STARTING;
     case EmbeddedWorkerStatus::RUNNING:
-      return "_RunningWorker";
+      return Preparation::RUNNING;
     case EmbeddedWorkerStatus::STOPPING:
+      return Preparation::STOPPING;
+  }
+  NOTREACHED() << static_cast<int>(initial_worker_status);
+  return Preparation::UNKNOWN;
+}
+
+std::string GetWorkerPreparationSuffix(
+    ServiceWorkerMetrics::WorkerPreparationType status) {
+  using Preparation = ServiceWorkerMetrics::WorkerPreparationType;
+  switch (status) {
+    case Preparation::UNKNOWN:
+    case Preparation::NUM_TYPES:
+      break;
+    case Preparation::START_DURING_STARTUP:
+      return "_StartWorkerDuringStartup";
+    case Preparation::START_IN_NEW_PROCESS:
+      return "_StartWorkerNewProcess";
+    case Preparation::START_IN_EXISTING_PROCESS:
+      return "_StartWorkerExistingProcess";
+    case Preparation::STARTING:
+      return "_StartingWorker";
+    case Preparation::RUNNING:
+      return "_RunningWorker";
+    case Preparation::STOPPING:
       return "_StoppingWorker";
   }
   NOTREACHED();
@@ -387,10 +414,10 @@ void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,
                                                  StartSituation start_situation,
                                                  EventType purpose) {
   if (is_installed) {
-    std::string name = "ServiceWorker.StartWorker.Time";
-    UMA_HISTOGRAM_MEDIUM_TIMES(name, time);
-    RecordSuffixedMediumTimeHistogram(
-        name, StartSituationToSuffix(start_situation), time);
+    UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartWorker.Time", time);
+    RecordSuffixedMediumTimeHistogram("ServiceWorker.StartWorker.Time",
+                                      StartSituationToSuffix(start_situation),
+                                      time);
     RecordSuffixedMediumTimeHistogram(
         "ServiceWorker.StartWorker.Time",
         StartSituationToSuffix(start_situation) + EventTypeToSuffix(purpose),
@@ -400,16 +427,51 @@ void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,
   }
 }
 
-void ServiceWorkerMetrics::RecordActivatedWorkerPreparationTimeForMainFrame(
+void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
     base::TimeDelta time,
     EmbeddedWorkerStatus initial_worker_status,
-    StartSituation start_situation) {
-  std::string name =
-      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time";
-  UMA_HISTOGRAM_MEDIUM_TIMES(name, time);
+    StartSituation start_situation,
+    bool did_navigation_preload) {
+  // Record the worker preparation type.
+  WorkerPreparationType preparation =
+      GetWorkerPreparationType(initial_worker_status, start_situation);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type",
+      static_cast<int>(preparation),
+      static_cast<int>(WorkerPreparationType::NUM_TYPES));
+  if (did_navigation_preload) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
+        "NavigationPreloadEnabled",
+        static_cast<int>(preparation),
+        static_cast<int>(WorkerPreparationType::NUM_TYPES));
+  }
+
+  // Record the preparation time.
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time", time);
+
+  // Record the preparation time using the worker preparation suffix.
   RecordSuffixedMediumTimeHistogram(
-      name, GetWorkerPreparationSuffix(initial_worker_status, start_situation),
-      time);
+      "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time",
+      GetWorkerPreparationSuffix(preparation), time);
+
+  // Record the preparation time using the navigation preload suffix.
+  if (did_navigation_preload) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_"
+        "NavigationPreloadEnabled",
+        time);
+    // We're mostly interested in when the worker needed to start up. To avoid
+    // using too much memory, just log the the common case of startup in an
+    // existing process.
+    if (preparation == WorkerPreparationType::START_IN_EXISTING_PROCESS) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_"
+          "StartWorkerExistingProcess_NavigationPreloadEnabled",
+          time);
+    }
+  }
 }
 
 void ServiceWorkerMetrics::RecordWorkerStopped(StopStatus status) {

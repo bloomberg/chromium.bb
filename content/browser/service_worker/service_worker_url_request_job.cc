@@ -555,9 +555,9 @@ void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
   }
   if (version->should_exclude_from_uma())
     return;
-  ServiceWorkerMetrics::RecordActivatedWorkerPreparationTimeForMainFrame(
+  ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
       worker_ready_time_ - request()->creation_time(), initial_worker_status_,
-      version->embedded_worker()->start_situation());
+      version->embedded_worker()->start_situation(), did_navigation_preload_);
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
@@ -879,7 +879,8 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
   worker_start_time_ = base::TimeTicks::Now();
-  fetch_dispatcher_->MaybeStartNavigationPreload(request());
+  did_navigation_preload_ =
+      fetch_dispatcher_->MaybeStartNavigationPreload(request());
   fetch_dispatcher_->Run();
 }
 

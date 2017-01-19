@@ -293,6 +293,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   bool worker_already_activated_ = false;
   EmbeddedWorkerStatus initial_worker_status_ = EmbeddedWorkerStatus::STOPPED;
+  bool did_navigation_preload_ = false;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 

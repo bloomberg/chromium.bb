@@ -383,23 +383,23 @@ void ServiceWorkerFetchDispatcher::Complete(
   fetch_callback.Run(status, fetch_result, response, version);
 }
 
-void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
+bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     net::URLRequest* original_request) {
   if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
       resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
-    return;
+    return false;
   }
   if (!version_->navigation_preload_state().enabled)
-    return;
+    return false;
   // TODO(horo): Currently NavigationPreload doesn't support request body.
   if (!request_->blob_uuid.empty())
-    return;
+    return false;
 
   ServiceWorkerVersion::NavigationPreloadSupportStatus support_status =
       version_->GetNavigationPreloadSupportStatus();
   if (support_status !=
       ServiceWorkerVersion::NavigationPreloadSupportStatus::SUPPORTED) {
-    return;
+    return false;
   }
 
   ResourceRequestInfoImpl* original_info =
@@ -410,7 +410,7 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   } else {
     DCHECK(requester_info->IsRenderer());
     if (!requester_info->filter())
-      return;
+      return false;
   }
 
   DCHECK(!url_loader_factory_);
@@ -474,6 +474,7 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   preload_handle_->url_loader = url_loader->CreateInterfacePtrAndBind();
   url_loader_ = std::move(url_loader);
   url_loader_client_ = std::move(url_loader_client);
+  return true;
 }
 
 ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()

@@ -141,6 +141,31 @@ class ServiceWorkerMetrics {
     NEW_PROCESS
   };
 
+  // Used for UMA. Append only.
+  // This enum describes how an activated worker was found and prepared (i.e.,
+  // reached the RUNNING status) in order to dispatch a fetch event to.
+  enum class WorkerPreparationType {
+    UNKNOWN,
+    // The worker was already starting up. We waited for it to finish.
+    STARTING,
+    // The worker was already running.
+    RUNNING,
+    // The worker was stopping. We waited for it to stop, and then started it
+    // up.
+    STOPPING,
+    // The worker was in the stopped state. We started it up, and startup
+    // required a new process to be created.
+    START_IN_NEW_PROCESS,
+    // The worker was in the stopped state. We started it up, and it used an
+    // existing process.
+    START_IN_EXISTING_PROCESS,
+    // The worker was in the stopped state. We started it up, and this occurred
+    // during browser startup.
+    START_DURING_STARTUP,
+    // Add new types here.
+    NUM_TYPES
+  };
+
   // Not used for UMA.
   enum class LoadSource { NETWORK, HTTP_CACHE, SERVICE_WORKER_STORAGE };
 
@@ -193,12 +218,13 @@ class ServiceWorkerMetrics {
                                     StartSituation start_situation,
                                     EventType purpose);
 
-  // Records the time taken to prepare an activated Service Worker for a main
-  // frame fetch.
-  static void RecordActivatedWorkerPreparationTimeForMainFrame(
+  // Records metrics for the preparation of an activated Service Worker for a
+  // main frame navigation.
+  CONTENT_EXPORT static void RecordActivatedWorkerPreparationForMainFrame(
       base::TimeDelta time,
       EmbeddedWorkerStatus initial_worker_status,
-      StartSituation start_situation);
+      StartSituation start_situation,
+      bool did_navigation_preload);
 
   // Records the result of trying to stop a worker.
   static void RecordWorkerStopped(StopStatus status);
