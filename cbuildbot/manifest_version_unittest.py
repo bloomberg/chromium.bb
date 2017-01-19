@@ -459,7 +459,9 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      '_GetSlaveStatusesFromCIDB',
                      side_effect=status_runs)
     self.PatchObject(build_status.SlaveStatus,
-                     '_GetSlaveStatusesFromBuildbucket',
+                     '_GetAllSlaveBuildbucketInfo')
+    self.PatchObject(build_status.SlaveStatus,
+                     '_GetNewlyCompletedSlaveBuildbucketInfo',
                      side_effect=buildbucket_info_dicts)
 
     final_status_dict = status_runs[-1]

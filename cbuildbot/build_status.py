@@ -72,7 +72,10 @@ class SlaveStatus(object):
     self.missing_builds = None
     self.scheduled_builds = None
     self.builds_to_retry = None
+    # Dict mapping newly completed slave config names to BuildbucketInfo
     self.buildbucket_info_dict = None
+    # Dict mapping all slave config names to BuildbucketInfo
+    self.all_buildbucket_info_dict = None
     self.status_buildset_dict = None
 
     self.UpdateSlaveStatus()
@@ -103,23 +106,23 @@ class SlaveStatus(object):
           cidb_status[d['build_config']] = CIDBStatusInfo(d['id'], d['status'])
     return cidb_status
 
-  def _GetSlaveStatusesFromBuildbucket(self):
-    """Get statues of slaves (not in completed_builds set) from Buildbucket.
+  def _GetAllSlaveBuildbucketInfo(self):
+    """Get buildbucket info for all slave builds from Buildbucket.
 
-    For slave builds scheduled by Buildbucket, query the build information
-    ('status' and 'result') from Buildbucket.
+    For slave builds scheduled by Buildbucket, query statuses from Buildbucket
+    and return a build to BuildbucketInfo dict.
 
     Returns:
-       A dict mapping slave build config name to its BuildbucketInfo.
-       The dict only contains builds not in completed_builds.
+      A dict mapping all slave build config names to their BuildbucketInfos
+      (The BuildbucketInfo of the most recently retried one of there're
+      multiple retries for a slave build config).
     """
     assert self.buildbucket_client is not None, 'buildbucket_client is None'
 
     buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(self.metadata)
-    updated_buildbucket_info_dict = {}
+    all_buildbucket_info_dict = {}
 
-    for build_config in (set(buildbucket_info_dict.keys()) -
-                         self.completed_builds):
+    for build_config in buildbucket_info_dict.keys():
       buildbucket_id = buildbucket_info_dict[build_config]['buildbucket_id']
       retry = buildbucket_info_dict[build_config]['retry']
       status = None
@@ -137,10 +140,27 @@ class SlaveStatus(object):
         logging.error('Failed to get status for build %s id %s: %s',
                       build_config, buildbucket_id, e)
 
-      updated_buildbucket_info_dict[build_config] = BuildbucketInfo(
+      all_buildbucket_info_dict[build_config] = BuildbucketInfo(
           buildbucket_id, retry, status, result)
 
-    return updated_buildbucket_info_dict
+    return all_buildbucket_info_dict
+
+  def _GetNewlyCompletedSlaveBuildbucketInfo(self, all_buildbucket_info_dict,
+                                             completed):
+    """Get buildbucket info for newly completed builds.
+
+    Args:
+      all_buildbucket_info_dict: A dict mapping all slave build config names
+        to their BuildbucketInfos.
+      completed: A set of builds completed before.
+
+    Returns:
+       A dict mapping newly completed slave build config name to its
+       BuildbucketInfo. The dict only contains builds not in completed set.
+    """
+    completed = completed or {}
+    return {k: v for k, v in all_buildbucket_info_dict.iteritems()
+            if k not in completed}
 
   def _SetStatusBuildsDict(self):
     """Set status_buildset_dict by sorting the builds into their status set."""
@@ -155,7 +175,9 @@ class SlaveStatus(object):
     if (self.config is not None and
         self.metadata is not None and
         config_lib.UseBuildbucketScheduler(self.config)):
-      self.buildbucket_info_dict = self._GetSlaveStatusesFromBuildbucket()
+      self.all_buildbucket_info_dict = self._GetAllSlaveBuildbucketInfo()
+      self.buildbucket_info_dict = self._GetNewlyCompletedSlaveBuildbucketInfo(
+          self.all_buildbucket_info_dict, self.completed_builds)
       self._SetStatusBuildsDict()
 
     self.cidb_status = self._GetSlaveStatusesFromCIDB(
