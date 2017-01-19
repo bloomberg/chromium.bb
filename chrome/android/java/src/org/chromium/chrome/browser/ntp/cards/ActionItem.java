@@ -12,11 +12,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -82,16 +82,16 @@ public class ActionItem extends OptionalLeaf {
     }
 
     @VisibleForTesting
-    void performAction(NewTabPageManager manager) {
-        manager.getSuggestionsMetricsReporter().onMoreButtonClicked(this);
+    void performAction(SuggestionsUiDelegate uiDelegate) {
+        uiDelegate.getMetricsReporter().onMoreButtonClicked(this);
 
         switch (mCurrentAction) {
             case ACTION_VIEW_ALL:
-                mCategoryInfo.performViewAllAction(manager);
+                mCategoryInfo.performViewAllAction(uiDelegate.getNavigationDelegate());
                 return;
             case ACTION_FETCH_MORE:
             case ACTION_RELOAD:
-                manager.getSuggestionsSource().fetchSuggestions(
+                uiDelegate.getSuggestionsSource().fetchSuggestions(
                         mCategoryInfo.getCategory(), mParentSection.getDisplayedSuggestionIds());
                 mParentSection.onFetchStarted();
                 return;
@@ -116,14 +116,15 @@ public class ActionItem extends OptionalLeaf {
         private ActionItem mActionListItem;
 
         public ViewHolder(final NewTabPageRecyclerView recyclerView,
-                final NewTabPageManager manager, UiConfig uiConfig) {
-            super(R.layout.new_tab_page_action_card, recyclerView, uiConfig, manager);
+                ContextMenuManager contextMenuManager, final SuggestionsUiDelegate uiDelegate,
+                UiConfig uiConfig) {
+            super(R.layout.new_tab_page_action_card, recyclerView, uiConfig, contextMenuManager);
 
             itemView.findViewById(R.id.action_button)
                     .setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mActionListItem.performAction(manager);
+                            mActionListItem.performAction(uiDelegate);
                         }
                     });
 
@@ -132,7 +133,7 @@ public class ActionItem extends OptionalLeaf {
                 public void onImpression() {
                     if (mActionListItem != null && !mActionListItem.mImpressionTracked) {
                         mActionListItem.mImpressionTracked = true;
-                        manager.getSuggestionsMetricsReporter().onMoreButtonShown(mActionListItem);
+                        uiDelegate.getMetricsReporter().onMoreButtonShown(mActionListItem);
                     }
                 }
             });

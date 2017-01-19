@@ -21,7 +21,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
@@ -31,6 +30,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Collections;
@@ -43,7 +43,7 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 public class SectionListTest {
     @Mock
-    private NewTabPageManager mNtpManager;
+    private SuggestionsUiDelegate mUiDelegate;
     @Mock
     private OfflinePageBridge mOfflinePageBridge;
     @Mock
@@ -55,8 +55,8 @@ public class SectionListTest {
         MockitoAnnotations.initMocks(this);
         mSuggestionSource = new FakeSuggestionsSource();
 
-        when(mNtpManager.getSuggestionsSource()).thenReturn(mSuggestionSource);
-        when(mNtpManager.getSuggestionsMetricsReporter()).thenReturn(mMetricsReporter);
+        when(mUiDelegate.getSuggestionsSource()).thenReturn(mSuggestionSource);
+        when(mUiDelegate.getMetricsReporter()).thenReturn(mMetricsReporter);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class SectionListTest {
         List<SnippetArticle> bookmarks =
                 registerCategory(mSuggestionSource, KnownCategories.BOOKMARKS, 4);
 
-        SectionList sectionList = new SectionList(mNtpManager, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
 
         bindViewHolders(sectionList);
 
@@ -119,7 +119,7 @@ public class SectionListTest {
         List<SnippetArticle> bookmarks =
                 registerCategory(mSuggestionSource, KnownCategories.BOOKMARKS, 4);
 
-        SectionList sectionList = new SectionList(mNtpManager, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
 
         bindViewHolders(sectionList, 0, 5); // Bind until after the third article.
 
@@ -219,7 +219,7 @@ public class SectionListTest {
         registerCategory(mSuggestionSource,
                 new CategoryInfoBuilder(KnownCategories.DOWNLOADS).withViewAllAction().build(), 3);
 
-        SectionList sectionList = new SectionList(mNtpManager, mOfflinePageBridge);
+        SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         bindViewHolders(sectionList);
 
         assertThat(sectionList.getSectionForTesting(KnownCategories.ARTICLES)

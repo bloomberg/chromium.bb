@@ -13,12 +13,13 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +31,9 @@ import java.util.List;
  * elements will be the cards shown to the user
  */
 public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements NodeParent {
-    private final NewTabPageManager mNewTabPageManager;
+    private final SuggestionsUiDelegate mUiDelegate;
+    private final ContextMenuManager mContextMenuManager;
+
     @Nullable
     private final View mAboveTheFoldView;
     private final UiConfig mUiConfig;
@@ -48,24 +51,26 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     /**
      * Creates the adapter that will manage all the cards to display on the NTP.
-     *
-     * @param manager the NewTabPageManager to use to interact with the rest of the system.
+     * @param uiDelegate used to interact with the rest of the system.
      * @param aboveTheFoldView the layout encapsulating all the above-the-fold elements
      *         (logo, search box, most visited tiles), or null if only suggestions should
      *         be displayed.
      * @param uiConfig the NTP UI configuration, to be passed to created views.
-     * @param offlinePageBridge the OfflinePageBridge used to determine if articles are available
-     *         offline.
+     * @param offlinePageBridge used to determine if articles are available.
+     * @param contextMenuManager used to build context menus.
      */
-    public NewTabPageAdapter(NewTabPageManager manager, @Nullable View aboveTheFoldView,
-            UiConfig uiConfig, OfflinePageBridge offlinePageBridge) {
-        mNewTabPageManager = manager;
+    public NewTabPageAdapter(SuggestionsUiDelegate uiDelegate, @Nullable View aboveTheFoldView,
+            UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
+            ContextMenuManager contextMenuManager) {
+        mUiDelegate = uiDelegate;
+        mContextMenuManager = contextMenuManager;
+
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
         mRoot = new InnerNode();
 
-        mSections = new SectionList(mNewTabPageManager, offlinePageBridge);
-        mSigninPromo = new SignInPromo(mNewTabPageManager);
+        mSections = new SectionList(mUiDelegate, offlinePageBridge);
+        mSigninPromo = new SignInPromo(mUiDelegate);
         mAllDismissed = new AllDismissedItem();
         mFooter = new Footer();
 
@@ -105,25 +110,27 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                 return new SectionHeaderViewHolder(mRecyclerView, mUiConfig);
 
             case ItemViewType.SNIPPET:
-                return new SnippetArticleViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
+                return new SnippetArticleViewHolder(
+                        mRecyclerView, mContextMenuManager, mUiDelegate, mUiConfig);
 
             case ItemViewType.SPACING:
                 return new NewTabPageViewHolder(SpacingItem.createView(parent));
 
             case ItemViewType.STATUS:
-                return new StatusCardViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
+                return new StatusCardViewHolder(mRecyclerView, mContextMenuManager, mUiConfig);
 
             case ItemViewType.PROGRESS:
                 return new ProgressViewHolder(mRecyclerView);
 
             case ItemViewType.ACTION:
-                return new ActionItem.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
+                return new ActionItem.ViewHolder(
+                        mRecyclerView, mContextMenuManager, mUiDelegate, mUiConfig);
 
             case ItemViewType.PROMO:
-                return new SignInPromo.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
+                return new SignInPromo.ViewHolder(mRecyclerView, mContextMenuManager, mUiConfig);
 
             case ItemViewType.FOOTER:
-                return new Footer.ViewHolder(mRecyclerView, mNewTabPageManager);
+                return new Footer.ViewHolder(mRecyclerView, mUiDelegate.getNavigationDelegate());
 
             case ItemViewType.ALL_DISMISSED:
                 return new AllDismissedItem.ViewHolder(mRecyclerView, mSections);

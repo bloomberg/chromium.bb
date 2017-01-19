@@ -5,11 +5,10 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
-
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
+import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 
 /**
  * Contains meta information about a Category. Equivalent of the CategoryInfo class in
@@ -53,7 +52,7 @@ public class SuggestionsCategoryInfo {
      * Whether the category supports a "ViewAll" action, that triggers displaying all the content
      * related to the current categories.
      * @see ActionItem
-     * @see #performViewAllAction(NewTabPageManager)
+     * @see #performViewAllAction(SuggestionsNavigationDelegate)
      */
     private final boolean mHasViewAllAction;
 
@@ -121,16 +120,16 @@ public class SuggestionsCategoryInfo {
      * Performs the View All action for the provided category, navigating navigating to the view
      * showing all the content.
      */
-    public void performViewAllAction(NewTabPageManager manager) {
+    public void performViewAllAction(SuggestionsNavigationDelegate navigationDelegate) {
         switch (mCategory) {
             case KnownCategories.BOOKMARKS:
-                manager.navigateToBookmarks();
+                navigationDelegate.navigateToBookmarks();
                 break;
             case KnownCategories.DOWNLOADS:
-                manager.navigateToDownloadManager();
+                navigationDelegate.navigateToDownloadManager();
                 break;
             case KnownCategories.FOREIGN_TABS:
-                manager.navigateToRecentTabs();
+                navigationDelegate.navigateToRecentTabs();
                 break;
             case KnownCategories.PHYSICAL_WEB_PAGES:
             case KnownCategories.RECENT_TABS:

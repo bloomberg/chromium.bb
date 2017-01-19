@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -35,7 +35,7 @@ public class Footer extends OptionalLeaf {
      * The {@code ViewHolder} for the {@link Footer}.
      */
     public static class ViewHolder extends NewTabPageViewHolder {
-        public ViewHolder(ViewGroup root, final NewTabPageManager manager) {
+        public ViewHolder(ViewGroup root, final SuggestionsNavigationDelegate navigationDelegate) {
             super(LayoutInflater.from(root.getContext())
                             .inflate(R.layout.new_tab_page_footer, root, false));
 
@@ -43,7 +43,7 @@ public class Footer extends OptionalLeaf {
                 @Override
                 public void onClick(View view) {
                     // TODO(mvanouwerkerk): Ensure this can be activated when using TalkBack.
-                    manager.onLearnMoreClicked();
+                    navigationDelegate.navigateToHelpPage();
                 }
             };
 

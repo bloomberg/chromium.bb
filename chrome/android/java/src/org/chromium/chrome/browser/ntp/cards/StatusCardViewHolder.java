@@ -15,7 +15,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 
@@ -28,8 +27,8 @@ public class StatusCardViewHolder extends CardViewHolder implements ContextMenuM
     private final Button mActionView;
 
     public StatusCardViewHolder(
-            NewTabPageRecyclerView parent, NewTabPageManager newTabPageManager, UiConfig config) {
-        super(R.layout.new_tab_page_status_card, parent, config, newTabPageManager);
+            NewTabPageRecyclerView parent, ContextMenuManager contextMenuManager, UiConfig config) {
+        super(R.layout.new_tab_page_status_card, parent, config, contextMenuManager);
         mTitleView = (TextView) itemView.findViewById(R.id.status_title);
         mBodyView = (TextView) itemView.findViewById(R.id.status_body);
         mActionView = (Button) itemView.findViewById(R.id.status_action_button);

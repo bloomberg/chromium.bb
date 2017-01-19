@@ -14,9 +14,9 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -43,7 +43,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     public static final int ID_REMOVE = 4;
 
     private final Activity mActivity;
-    private final NewTabPageManager mManager;
+    private final SuggestionsNavigationDelegate mNavigationDelegate;
     private final TouchDisableableView mOuterView;
     private boolean mContextMenuOpen;
 
@@ -71,10 +71,10 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     /** Interface for a view that can be set to stop responding to touches. */
     public interface TouchDisableableView { void setTouchEnabled(boolean enabled); }
 
-    public ContextMenuManager(Activity activity, NewTabPageManager newTabPageManager,
+    public ContextMenuManager(Activity activity, SuggestionsNavigationDelegate navigationDelegate,
             TouchDisableableView outerView) {
         mActivity = activity;
-        mManager = newTabPageManager;
+        mNavigationDelegate = navigationDelegate;
         mOuterView = outerView;
     }
 
@@ -140,11 +140,11 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
 
         switch (itemId) {
             case ID_OPEN_IN_NEW_WINDOW:
-                return mManager.isOpenInNewWindowEnabled();
+                return mNavigationDelegate.isOpenInNewWindowEnabled();
             case ID_OPEN_IN_NEW_TAB:
                 return true;
             case ID_OPEN_IN_INCOGNITO_TAB:
-                return mManager.isOpenInIncognitoEnabled();
+                return mNavigationDelegate.isOpenInIncognitoEnabled();
             case ID_SAVE_FOR_OFFLINE: {
                 if (!SnippetsConfig.isSaveToOfflineEnabled()) return false;
                 String itemUrl = delegate.getUrl();

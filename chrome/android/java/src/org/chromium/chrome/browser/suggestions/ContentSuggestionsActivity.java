@@ -4,154 +4,44 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 
-import org.chromium.base.Callback;
-import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
-import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
-import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
-import org.chromium.chrome.browser.ntp.MostVisitedItem;
-import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
-import java.util.Set;
+import java.lang.ref.WeakReference;
 
 /**
  * Experimental activity to show content suggestions outside of the New Tab Page.
  */
 public class ContentSuggestionsActivity extends SynchronousInitializationActivity {
-    private final ObserverList<DestructionObserver> mDestructionObservers = new ObserverList<>();
+    private static WeakReference<ChromeActivity> sCallerActivity;
 
     private ContextMenuManager mContextMenuManager;
+    private SuggestionsUiDelegateImpl mSuggestionsManager;
     private SnippetsBridge mSnippetsBridge;
-    private NewTabPageRecyclerView mRecyclerView;
 
-    public static void launch(Context context) {
+    public static void launch(ChromeActivity activity) {
+        sCallerActivity = new WeakReference<>(activity);
+
         Intent intent = new Intent();
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClass(context, ContentSuggestionsActivity.class);
-        context.startActivity(intent);
-    }
-
-    private class SuggestionsNewTabPageManager implements NewTabPageManager {
-        @Override
-        public void removeMostVisitedItem(MostVisitedItem item) {}
-
-        @Override
-        public void openMostVisitedItem(int windowDisposition, MostVisitedItem item) {}
-
-        @Override
-        public boolean isLocationBarShownInNTP() {
-            return false;
-        }
-
-        @Override
-        public boolean isVoiceSearchEnabled() {
-            return false;
-        }
-
-        @Override
-        public boolean isFakeOmniboxTextEnabledTablet() {
-            return false;
-        }
-
-        @Override
-        public boolean isOpenInNewWindowEnabled() {
-            return true;
-        }
-
-        @Override
-        public boolean isOpenInIncognitoEnabled() {
-            return true;
-        }
-
-        @Override
-        public void navigateToBookmarks() {}
-
-        @Override
-        public void navigateToRecentTabs() {}
-
-        @Override
-        public void navigateToDownloadManager() {}
-
-        @Override
-        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {}
-
-        @Override
-        public void focusSearchBox(boolean beginVoiceSearch, String pastedText) {}
-
-        @Override
-        public void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults) {}
-
-        @Override
-        public void getLocalFaviconImageForURL(
-                String url, int size, FaviconImageCallback faviconCallback) {}
-
-        @Override
-        public void getLargeIconForUrl(String url, int size, LargeIconCallback callback) {}
-
-        @Override
-        public void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
-                boolean isTemporary, IconAvailabilityCallback callback) {}
-
-        @Override
-        public void getUrlsAvailableOffline(Set<String> pageUrls, Callback<Set<String>> callback) {}
-
-        @Override
-        public void onLogoClicked(boolean isAnimatedLogoShowing) {}
-
-        @Override
-        public void getSearchProviderLogo(LogoObserver logoObserver) {}
-
-        @Override
-        public void onLoadingComplete(MostVisitedItem[] mostVisitedItems) {}
-
-        @Override
-        public void onLearnMoreClicked() {}
-
-        @Override
-        public SuggestionsSource getSuggestionsSource() {
-            return mSnippetsBridge;
-        }
-
-        @Override
-        public void addDestructionObserver(DestructionObserver destructionObserver) {
-            mDestructionObservers.addObserver(destructionObserver);
-        }
-
-        @Override
-        public boolean isCurrentPage() {
-            return true;
-        }
-
-        @Override
-        public ContextMenuManager getContextMenuManager() {
-            return mContextMenuManager;
-        }
-
-        @Override
-        public SuggestionsMetricsReporter getSuggestionsMetricsReporter() {
-            return mSnippetsBridge;
-        }
+        intent.setClass(activity, ContentSuggestionsActivity.class);
+        activity.startActivity(intent);
     }
 
     @Override
@@ -160,21 +50,35 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
 
         assert ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SUGGESTIONS_STANDALONE_UI);
 
-        mRecyclerView = (NewTabPageRecyclerView) LayoutInflater.from(this).inflate(
-                R.layout.new_tab_page_recycler_view, null, false);
+        // TODO(dgn): properly handle retrieving the tab information, or the base activity being
+        // destroyed. (https://crbug.com/677672)
+        ChromeActivity activity = sCallerActivity.get();
+        if (activity == null) throw new IllegalStateException();
+
+        NewTabPageRecyclerView recyclerView =
+                (NewTabPageRecyclerView) LayoutInflater.from(this).inflate(
+                        R.layout.new_tab_page_recycler_view, null, false);
 
         Profile profile = Profile.getLastUsedProfile();
+        UiConfig uiConfig = new UiConfig(recyclerView);
+
+        Tab currentTab = activity.getActivityTab();
+        TabModelSelector tabModelSelector = activity.getTabModelSelector();
+
         mSnippetsBridge = new SnippetsBridge(profile);
+        SuggestionsNavigationDelegate navigationDelegate =
+                new SuggestionsNavigationDelegateImpl(this, profile, currentTab, tabModelSelector);
 
-        NewTabPageManager manager = new SuggestionsNewTabPageManager();
-        mContextMenuManager = new ContextMenuManager(this, manager, mRecyclerView);
-        UiConfig uiConfig = new UiConfig(mRecyclerView);
-        NewTabPageAdapter adapter = new NewTabPageAdapter(
-                manager, null, uiConfig, OfflinePageBridge.getForProfile(profile));
-        mRecyclerView.setAdapter(adapter);
-        mRecyclerView.setUpSwipeToDismiss();
+        mSuggestionsManager = new SuggestionsUiDelegateImpl(
+                mSnippetsBridge, mSnippetsBridge, navigationDelegate, profile, currentTab);
+        mContextMenuManager = new ContextMenuManager(this, navigationDelegate, recyclerView);
 
-        setContentView(mRecyclerView);
+        NewTabPageAdapter adapter = new NewTabPageAdapter(mSuggestionsManager, null, uiConfig,
+                OfflinePageBridge.getForProfile(profile), mContextMenuManager);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setUpSwipeToDismiss();
+
+        setContentView(recyclerView);
     }
 
     @Override
@@ -184,13 +88,8 @@ public class ContentSuggestionsActivity extends SynchronousInitializationActivit
 
     @Override
     protected void onDestroy() {
-        for (DestructionObserver observer : mDestructionObservers) {
-            observer.onDestroy();
-        }
-
         mSnippetsBridge.destroy();
-        mSnippetsBridge = null;
-
+        mSuggestionsManager.onDestroy();
         super.onDestroy();
     }
 }

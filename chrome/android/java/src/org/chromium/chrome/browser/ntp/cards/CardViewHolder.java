@@ -20,7 +20,6 @@ import android.view.animation.Interpolator;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -59,7 +58,6 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
 
     private final UiConfig mUiConfig;
     private final MarginResizer mMarginResizer;
-    private final NewTabPageManager mNtpManager;
 
     /**
      * To what extent the card is "peeking". 0 means the card is not peeking at all and spans the
@@ -74,9 +72,10 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
      * @param layoutId resource id of the layout to inflate and to use as card.
      * @param recyclerView ViewGroup that will contain the newly created view.
      * @param uiConfig The NTP UI configuration object used to adjust the card UI.
+     * @param contextMenuManager The manager responsible for the context menu.
      */
     public CardViewHolder(int layoutId, final NewTabPageRecyclerView recyclerView,
-            UiConfig uiConfig, NewTabPageManager ntpManager) {
+            UiConfig uiConfig, final ContextMenuManager contextMenuManager) {
         super(inflateView(layoutId, recyclerView));
 
         mCards9PatchAdjustment = recyclerView.getResources().getDimensionPixelSize(
@@ -106,7 +105,7 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
                 ContextMenuManager.Delegate delegate = getContextMenuDelegate();
                 if (delegate == null) return;
 
-                mNtpManager.getContextMenuManager().createContextMenu(menu, itemView, delegate);
+                contextMenuManager.createContextMenu(menu, itemView, delegate);
             }
         });
 
@@ -117,8 +116,6 @@ public abstract class CardViewHolder extends NewTabPageViewHolder {
         // Configure the resizer to use negative margins on regular display to balance out the
         // lateral shadow of the card 9-patch and avoid a rounded corner effect.
         mMarginResizer.setMargins(-mCards9PatchAdjustment);
-
-        mNtpManager = ntpManager;
     }
 
     /**

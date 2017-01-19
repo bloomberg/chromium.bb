@@ -1250,7 +1250,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         } else if (id == R.id.enter_vr_id) {
             mVrShellDelegate.enterVRIfNecessary();
         } else if (id == R.id.content_suggestions_standalone_ui) {
-            ContentSuggestionsActivity.launch(getApplicationContext());
+            ContentSuggestionsActivity.launch(this);
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }

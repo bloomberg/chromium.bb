@@ -8,7 +8,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
@@ -20,6 +19,7 @@ import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -60,7 +60,7 @@ public class SuggestionsSection extends InnerNode {
         void dismissSection(SuggestionsSection section);
     }
 
-    public SuggestionsSection(Delegate delegate, NewTabPageManager manager,
+    public SuggestionsSection(Delegate delegate, SuggestionsUiDelegate uiDelegate,
             SuggestionsRanker ranker, OfflinePageBridge offlinePageBridge,
             SuggestionsCategoryInfo info) {
         mDelegate = delegate;
@@ -68,25 +68,27 @@ public class SuggestionsSection extends InnerNode {
         mOfflinePageBridge = offlinePageBridge;
 
         mHeader = new SectionHeader(info.getTitle());
-        mSuggestionsList = new SuggestionsList(manager, ranker, info);
+        mSuggestionsList = new SuggestionsList(uiDelegate, ranker, info);
         mStatus = StatusItem.createNoSuggestionsItem(info);
         mMoreButton = new ActionItem(this, ranker);
         mProgressIndicator = new ProgressItem();
         addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton, mProgressIndicator);
 
-        setupOfflinePageBridgeObserver(manager);
+        setupOfflinePageBridgeObserver(uiDelegate);
         refreshChildrenVisibility();
     }
 
     private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
-        private final NewTabPageManager mNewTabPageManager;
+
+        // TODO(crbug.com/677672): Replace by SuggestionSource when it handles destruction.
+        private final SuggestionsUiDelegate mUiDelegate;
         private final SuggestionsRanker mSuggestionsRanker;
         private final SuggestionsCategoryInfo mCategoryInfo;
 
-        public SuggestionsList(NewTabPageManager newTabPageManager,
-                SuggestionsRanker ranker, SuggestionsCategoryInfo categoryInfo) {
-            mNewTabPageManager = newTabPageManager;
+        public SuggestionsList(SuggestionsUiDelegate uiDelegate, SuggestionsRanker ranker,
+                SuggestionsCategoryInfo categoryInfo) {
+            mUiDelegate = uiDelegate;
             mSuggestionsRanker = ranker;
             mCategoryInfo = categoryInfo;
         }
@@ -166,7 +168,7 @@ public class SuggestionsSection extends InnerNode {
         @Override
         public void dismissItem(int position, Callback<String> itemRemovedCallback) {
             checkIndex(position);
-            SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
+            SuggestionsSource suggestionsSource = mUiDelegate.getSuggestionsSource();
             if (suggestionsSource == null) {
                 // It is possible for this method to be called after the NewTabPage has had
                 // destroy() called. This can happen when
@@ -194,7 +196,7 @@ public class SuggestionsSection extends InnerNode {
         }
     }
 
-    private void setupOfflinePageBridgeObserver(NewTabPageManager manager) {
+    private void setupOfflinePageBridgeObserver(SuggestionsUiDelegate uiDelegate) {
         final OfflinePageBridge.OfflinePageModelObserver observer =
                 new OfflinePageBridge.OfflinePageModelObserver() {
                     @Override
@@ -224,7 +226,7 @@ public class SuggestionsSection extends InnerNode {
 
         mOfflinePageBridge.addObserver(observer);
 
-        manager.addDestructionObserver(new DestructionObserver() {
+        uiDelegate.addDestructionObserver(new DestructionObserver() {
             @Override
             public void onDestroy() {
                 mIsNtpDestroyed = true;

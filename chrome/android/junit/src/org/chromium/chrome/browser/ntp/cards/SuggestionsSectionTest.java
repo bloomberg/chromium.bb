@@ -33,14 +33,15 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.EnableFeatures;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
@@ -57,7 +58,8 @@ public class SuggestionsSectionTest {
     private SuggestionsSection.Delegate mDelegate;
     @Mock
     private NodeParent mParent;
-    @Mock private NewTabPageManager mManager;
+    @Mock
+    private SuggestionsUiDelegate mUiDelegate;
     private FakeOfflinePageBridge mBridge;
 
     @Before
@@ -465,7 +467,7 @@ public class SuggestionsSectionTest {
 
     private SuggestionsSection createSection(SuggestionsCategoryInfo info) {
         SuggestionsSection section = new SuggestionsSection(
-                mDelegate, mManager, mock(SuggestionsRanker.class), mBridge, info);
+                mDelegate, mUiDelegate, mock(SuggestionsRanker.class), mBridge, info);
         section.setParent(mParent);
         return section;
     }
@@ -476,10 +478,11 @@ public class SuggestionsSectionTest {
 
     private static void verifyAction(SuggestionsSection section, @ActionItem.Action int action) {
         SuggestionsSource suggestionsSource = mock(SuggestionsSource.class);
-        NewTabPageManager manager = mock(NewTabPageManager.class);
+        SuggestionsUiDelegate manager = mock(SuggestionsUiDelegate.class);
+        SuggestionsNavigationDelegate navDelegate = mock(SuggestionsNavigationDelegate.class);
         when(manager.getSuggestionsSource()).thenReturn(suggestionsSource);
-        when(manager.getSuggestionsMetricsReporter())
-                .thenReturn(mock(SuggestionsMetricsReporter.class));
+        when(manager.getNavigationDelegate()).thenReturn(navDelegate);
+        when(manager.getMetricsReporter()).thenReturn(mock(SuggestionsMetricsReporter.class));
 
         if (action != ActionItem.ACTION_NONE) {
             section.getActionItem().performAction(manager);
@@ -487,7 +490,7 @@ public class SuggestionsSectionTest {
 
         verify(section.getCategoryInfo(),
                 (action == ActionItem.ACTION_VIEW_ALL ? times(1) : never()))
-                .performViewAllAction(manager);
+                .performViewAllAction(navDelegate);
         verify(suggestionsSource,
                 action == ActionItem.ACTION_RELOAD || action == ActionItem.ACTION_FETCH_MORE
                         ? times(1)

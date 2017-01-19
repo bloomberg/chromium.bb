@@ -42,8 +42,6 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
@@ -53,13 +51,11 @@ import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -102,9 +98,6 @@ public class NewTabPageView extends FrameLayout
     private View mMostVisitedPlaceholder;
     private View mNoSearchLogoSpacer;
 
-    /** Adapter for {@link #mRecyclerView}. Will be {@code null} when using the old UI */
-    private NewTabPageAdapter mNewTabPageAdapter;
-
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
     private ChromeActivity mActivity;
@@ -139,7 +132,7 @@ public class NewTabPageView extends FrameLayout
     /**
      * Manages the view interaction with the rest of the system.
      */
-    public interface NewTabPageManager extends MostVisitedItemManager {
+    public interface NewTabPageManager extends MostVisitedItemManager, SuggestionsUiDelegate {
         /** @return Whether the location bar is shown in the NTP. */
         boolean isLocationBarShownInNTP();
 
@@ -148,28 +141,6 @@ public class NewTabPageView extends FrameLayout
 
         /** @return Whether the omnibox 'Search or type URL' text should be shown. */
         boolean isFakeOmniboxTextEnabledTablet();
-
-        /** @return Whether context menus should allow the option to open a link in a new window. */
-        boolean isOpenInNewWindowEnabled();
-
-        /** @return Whether context menus should allow the option to open a link in incognito. */
-        boolean isOpenInIncognitoEnabled();
-
-        /** Opens the bookmarks page in the current tab. */
-        void navigateToBookmarks();
-
-        /** Opens the recent tabs page in the current tab. */
-        void navigateToRecentTabs();
-
-        /** Opens the Download Manager UI in the current tab. */
-        void navigateToDownloadManager();
-
-        /**
-         * Opens a content suggestion and records related metrics.
-         * @param windowOpenDisposition How to open (current tab, new tab, new window etc).
-         * @param article The content suggestion to open.
-         */
-        void openSnippet(int windowOpenDisposition, SnippetArticle article);
 
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.
@@ -184,41 +155,6 @@ public class NewTabPageView extends FrameLayout
          * @param numResults The maximum number of sites to retrieve.
          */
         void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults);
-
-        /**
-         * Gets the favicon image for a given URL.
-         * @param url The URL of the site whose favicon is being requested.
-         * @param size The desired size of the favicon in pixels.
-         * @param faviconCallback The callback to be notified when the favicon is available.
-         */
-        void getLocalFaviconImageForURL(
-                String url, int size, FaviconImageCallback faviconCallback);
-
-        /**
-         * Gets the large icon (e.g. favicon or touch icon) for a given URL.
-         * @param url The URL of the site whose icon is being requested.
-         * @param size The desired size of the icon in pixels.
-         * @param callback The callback to be notified when the icon is available.
-         */
-        void getLargeIconForUrl(String url, int size, LargeIconCallback callback);
-
-        /**
-         * Checks if an icon with the given URL is available. If not,
-         * downloads it and stores it as a favicon/large icon for the given {@code pageUrl}.
-         * @param pageUrl The URL of the site whose icon is being requested.
-         * @param iconUrl The URL of the favicon/large icon.
-         * @param isLargeIcon Whether the {@code iconUrl} represents a large icon or favicon.
-         * @param callback The callback to be notified when the favicon has been checked.
-         */
-        void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
-                boolean isTemporary, IconAvailabilityCallback callback);
-
-        /**
-         * Checks if the pages with the given URLs are available offline.
-         * @param pageUrls The URLs of the sites whose offline availability is requested.
-         * @param callback Fired when the results are available.
-         */
-        void getUrlsAvailableOffline(Set<String> pageUrls, Callback<Set<String>> callback);
 
         /**
          * Called when the user clicks on the logo.
@@ -240,23 +176,6 @@ public class NewTabPageView extends FrameLayout
         void onLoadingComplete(MostVisitedItem[] mostVisitedItems);
 
         /**
-         * Handles clicks on the "learn more" link in the footer.
-         */
-        void onLearnMoreClicked();
-
-        /**
-         * Returns the SuggestionsSource or null if it doesn't exist. The SuggestionsSource is
-         * invalidated (has destroy() called) when the NewTabPage is destroyed so use this method
-         * instead of keeping your own reference.
-         */
-        @Nullable SuggestionsSource getSuggestionsSource();
-
-        /**
-         * Registers a {@link DestructionObserver}, notified when the New Tab Page goes away.
-         */
-        void addDestructionObserver(DestructionObserver destructionObserver);
-
-        /**
          * @return whether the {@link NewTabPage} associated with this manager is the current page
          * displayed to the user.
          */
@@ -268,13 +187,6 @@ public class NewTabPageView extends FrameLayout
          */
         @Nullable
         ContextMenuManager getContextMenuManager();
-
-        /**
-         * @return The suggestion metrics reporter. Will be {@code null} if the
-         * {@link NewTabPageView} is not done initialising.
-         */
-        @Nullable
-        SuggestionsMetricsReporter getSuggestionsMetricsReporter();
     }
 
     /**
@@ -336,7 +248,7 @@ public class NewTabPageView extends FrameLayout
             mScrollView.enableBottomShadow(SHADOW_COLOR);
             mNewTabPageLayout = (NewTabPageLayout) findViewById(R.id.ntp_content);
         }
-        mContextMenuManager = new ContextMenuManager(mActivity, mManager,
+        mContextMenuManager = new ContextMenuManager(mActivity, mManager.getNavigationDelegate(),
                 mUseCardsUi ? mRecyclerView : mScrollView);
         mActivity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
         manager.addDestructionObserver(new DestructionObserver() {
@@ -369,13 +281,14 @@ public class NewTabPageView extends FrameLayout
 
         // Set up snippets
         if (mUseCardsUi) {
-            mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig,
-                    OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()));
-            mRecyclerView.setAdapter(mNewTabPageAdapter);
+            NewTabPageAdapter newTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout,
+                    mUiConfig, OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
+                    mContextMenuManager);
+            mRecyclerView.setAdapter(newTabPageAdapter);
 
             int scrollOffset;
             if (CardsVariationParameters.isScrollBelowTheFoldEnabled()) {
-                scrollPosition = mNewTabPageAdapter.getFirstHeaderPosition();
+                scrollPosition = newTabPageAdapter.getFirstHeaderPosition();
                 scrollOffset = getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height);
             } else {
                 scrollOffset = 0;
@@ -389,7 +302,7 @@ public class NewTabPageView extends FrameLayout
 
             // When the NewTabPageAdapter's data changes we need to invalidate any previous
             // screen captures of the NewTabPageView.
-            mNewTabPageAdapter.registerAdapterDataObserver(new AdapterDataObserver() {
+            newTabPageAdapter.registerAdapterDataObserver(new AdapterDataObserver() {
                 @Override
                 public void onChanged() {
                     mNewTabPageRecyclerViewChanged = true;
@@ -482,14 +395,14 @@ public class NewTabPageView extends FrameLayout
                 @Override
                 public void onClick(View v) {
                     NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
-                    mManager.navigateToRecentTabs();
+                    mManager.getNavigationDelegate().navigateToRecentTabs();
                 }
             });
             toolbar.getBookmarksButton().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
-                    mManager.navigateToBookmarks();
+                    mManager.getNavigationDelegate().navigateToBookmarks();
                 }
             });
         }

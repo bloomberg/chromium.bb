@@ -20,21 +20,18 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
-import org.chromium.chrome.browser.ntp.MostVisitedItem;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
+import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
 
@@ -48,7 +45,7 @@ import java.util.Set;
 public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private ViewRenderer mViewRenderer;
 
-    private NewTabPageManager mNtpManager;
+    private SuggestionsUiDelegate mUiDelegate;
     private FakeSuggestionsSource mSnippetsSource;
     private NewTabPageRecyclerView mRecyclerView;
     private NewTabPageAdapter mAdapter;
@@ -81,8 +78,9 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 View aboveTheFold = new View(getActivity());
 
                 mRecyclerView.setAboveTheFoldView(aboveTheFold);
-                mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mUiConfig,
-                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()));
+                mAdapter = new NewTabPageAdapter(mUiDelegate, aboveTheFold, mUiConfig,
+                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
+                        /* contextMenuManager = */null);
                 mRecyclerView.setAdapter(mAdapter);
             }
         });
@@ -183,17 +181,14 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mNtpManager = new MockNewTabPageManager();
+        mUiDelegate = new MockUiDelegate();
         mSnippetsSource = new FakeSuggestionsSource();
     }
 
     /**
-     * A NewTabPageManager to initialize our Adapter.
+     * A SuggestionsUiDelegate to initialize our Adapter.
      */
-    private class MockNewTabPageManager implements NewTabPageManager {
-        // TODO(dgn): provide a RecyclerView if we need to test the context menu.
-        private ContextMenuManager mContextMenuManager =
-                new ContextMenuManager(getActivity(), this, null);
+    private class MockUiDelegate implements SuggestionsUiDelegate {
         private SuggestionsMetricsReporter mSuggestionsMetricsReporter =
                 new DummySuggestionsMetricsReporter();
 
@@ -214,56 +209,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void removeMostVisitedItem(MostVisitedItem item) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void openMostVisitedItem(int windowDisposition, MostVisitedItem item) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isLocationBarShownInNTP() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isVoiceSearchEnabled() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isFakeOmniboxTextEnabledTablet() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void navigateToBookmarks() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void navigateToRecentTabs() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void focusSearchBox(boolean beginVoiceSearch, String pastedText) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void getLargeIconForUrl(String url, int size, LargeIconCallback callback) {
             throw new UnsupportedOperationException();
         }
@@ -280,41 +225,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void onLogoClicked(boolean isAnimatedLogoShowing) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void getSearchProviderLogo(LogoObserver logoObserver) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void onLoadingComplete(MostVisitedItem[] mostVisitedItems) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isOpenInNewWindowEnabled() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isOpenInIncognitoEnabled() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void navigateToDownloadManager() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void onLearnMoreClicked() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public SuggestionsSource getSuggestionsSource() {
             return mSnippetsSource;
         }
@@ -323,17 +233,13 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public void addDestructionObserver(DestructionObserver destructionObserver) {}
 
         @Override
-        public boolean isCurrentPage() {
-            return true;
+        public SuggestionsMetricsReporter getMetricsReporter() {
+            return mSuggestionsMetricsReporter;
         }
 
         @Override
-        public ContextMenuManager getContextMenuManager() {
-            return mContextMenuManager;
-        }
-
-        public SuggestionsMetricsReporter getSuggestionsMetricsReporter() {
-            return mSuggestionsMetricsReporter;
+        public SuggestionsNavigationDelegate getNavigationDelegate() {
+            return null;
         }
     }
 

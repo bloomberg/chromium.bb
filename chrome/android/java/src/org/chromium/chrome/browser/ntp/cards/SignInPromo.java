@@ -14,8 +14,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
 /**
  * Shows a card prompting the user to sign in. This item is also an {@link OptionalLeaf}, and sign
@@ -42,7 +43,7 @@ public class SignInPromo extends OptionalLeaf
     @Nullable
     private final SigninObserver mObserver;
 
-    public SignInPromo(NewTabPageManager newTabPageManager) {
+    public SignInPromo(SuggestionsUiDelegate uiDelegate) {
         mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                              .getNewTabPageSigninPromoDismissed();
 
@@ -51,7 +52,7 @@ public class SignInPromo extends OptionalLeaf
             mObserver = null;
         } else {
             mObserver = new SigninObserver(signinManager);
-            newTabPageManager.addDestructionObserver(mObserver);
+            uiDelegate.addDestructionObserver(mObserver);
         }
 
         setVisible(signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative());
@@ -175,10 +176,9 @@ public class SignInPromo extends OptionalLeaf
      * View Holder for {@link SignInPromo}.
      */
     public static class ViewHolder extends StatusCardViewHolder {
-
-        public ViewHolder(NewTabPageRecyclerView parent, NewTabPageManager newTabPageManager,
+        public ViewHolder(NewTabPageRecyclerView parent, ContextMenuManager contextMenuManager,
                 UiConfig config) {
-            super(parent, newTabPageManager, config);
+            super(parent, contextMenuManager, config);
             getParams().topMargin = parent.getResources().getDimensionPixelSize(
                     R.dimen.ntp_sign_in_promo_margin_top);
         }

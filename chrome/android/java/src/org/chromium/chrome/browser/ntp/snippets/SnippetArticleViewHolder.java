@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.Delegate;
 import org.chromium.chrome.browser.ntp.DisplayStyleObserver;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
@@ -39,6 +38,7 @@ import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
@@ -59,7 +59,7 @@ public class SnippetArticleViewHolder
 
     public static final int PARTIAL_UPDATE_OFFLINE_ID = 1;
 
-    private final NewTabPageManager mNewTabPageManager;
+    private final SuggestionsUiDelegate mUiDelegate;
     private final TextView mHeadlineTextView;
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
@@ -77,16 +77,17 @@ public class SnippetArticleViewHolder
 
     /**
      * Constructs a {@link SnippetArticleViewHolder} item used to display snippets.
-     *
-     * @param parent The NewTabPageRecyclerView that is going to contain the newly created view.
-     * @param manager The NewTabPageManager object used to open an article.
+     *  @param parent The NewTabPageRecyclerView that is going to contain the newly created view.
+     * @param contextMenuManager The manager responsible for the context menu.
+     * @param uiDelegate The delegate object used to open an article, fetch thumbnails, etc.
      * @param uiConfig The NTP UI configuration object used to adjust the article UI.
      */
-    public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
+    public SnippetArticleViewHolder(NewTabPageRecyclerView parent,
+            ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
             UiConfig uiConfig) {
-        super(R.layout.new_tab_page_snippets_card, parent, uiConfig, manager);
+        super(R.layout.new_tab_page_snippets_card, parent, uiConfig, contextMenuManager);
 
-        mNewTabPageManager = manager;
+        mUiDelegate = uiDelegate;
         mThumbnailView = (ImageView) itemView.findViewById(R.id.article_thumbnail);
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
@@ -110,19 +111,22 @@ public class SnippetArticleViewHolder
     @Override
     public void onImpression() {
         if (mArticle != null && mArticle.trackImpression()) {
-            mNewTabPageManager.getSuggestionsMetricsReporter().onSuggestionShown(mArticle);
+            mUiDelegate.getMetricsReporter().onSuggestionShown(mArticle);
             mRecyclerView.onSnippetImpression();
         }
     }
 
     @Override
     public void onCardTapped() {
-        mNewTabPageManager.openSnippet(WindowOpenDisposition.CURRENT_TAB, mArticle);
+        int windowDisposition = WindowOpenDisposition.CURRENT_TAB;
+        mUiDelegate.getMetricsReporter().onSuggestionOpened(mArticle, windowDisposition);
+        mUiDelegate.getNavigationDelegate().openSnippet(windowDisposition, mArticle);
     }
 
     @Override
     public void openItem(int windowDisposition) {
-        mNewTabPageManager.openSnippet(windowDisposition, mArticle);
+        mUiDelegate.getMetricsReporter().onSuggestionOpened(mArticle, windowDisposition);
+        mUiDelegate.getNavigationDelegate().openSnippet(windowDisposition, mArticle);
     }
 
     @Override
@@ -151,7 +155,7 @@ public class SnippetArticleViewHolder
 
     @Override
     public void onContextMenuCreated() {
-        mNewTabPageManager.getSuggestionsMetricsReporter().onSuggestionMenuOpened(mArticle);
+        mUiDelegate.getMetricsReporter().onSuggestionMenuOpened(mArticle);
     }
 
     @Override
@@ -258,8 +262,7 @@ public class SnippetArticleViewHolder
             } else {
                 mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
                 mImageCallback = new FetchImageCallback(this, mArticle);
-                mNewTabPageManager.getSuggestionsSource()
-                        .fetchSuggestionImage(mArticle, mImageCallback);
+                mUiDelegate.getSuggestionsSource().fetchSuggestionImage(mArticle, mImageCallback);
             }
         }
 
@@ -344,7 +347,7 @@ public class SnippetArticleViewHolder
     }
 
     private void fetchFaviconFromLocalCache(final URI snippetUri, final boolean fallbackToService) {
-        mNewTabPageManager.getLocalFaviconImageForURL(
+        mUiDelegate.getLocalFaviconImageForURL(
                 getSnippetDomain(snippetUri), mPublisherFaviconSizePx, new FaviconImageCallback() {
                     @Override
                     public void onFaviconAvailable(Bitmap image, String iconUrl) {
@@ -368,7 +371,7 @@ public class SnippetArticleViewHolder
         if (sizePx == 0) return;
 
         // Replace the default icon by another one from the service when it is fetched.
-        mNewTabPageManager.ensureIconIsAvailable(
+        mUiDelegate.ensureIconIsAvailable(
                 getSnippetDomain(snippetUri), // Store to the cache for the whole domain.
                 String.format(FAVICON_SERVICE_FORMAT, snippetUri.getHost(), sizePx),
                 /*useLargeIcon=*/false, /*isTemporary=*/true, new IconAvailabilityCallback() {
