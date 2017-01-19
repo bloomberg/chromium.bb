@@ -282,8 +282,6 @@ TEST_F(WebDataConsumerHandleImplTest, TwoPhaseReadData) {
 TEST_F(WebDataConsumerHandleImplTest, ZeroSizeRead) {
   ASSERT_GT(kDataPipeCapacity - 1, 0);
   constexpr size_t data_size = kDataPipeCapacity - 1;
-  std::string expected = ProduceData(data_size);
-  producer_.reset();
   std::unique_ptr<WebDataConsumerHandleImpl> handle(
       new WebDataConsumerHandleImpl(std::move(consumer_)));
   std::unique_ptr<WebDataConsumerHandle::Reader> reader(
@@ -292,6 +290,12 @@ TEST_F(WebDataConsumerHandleImplTest, ZeroSizeRead) {
   size_t read_size;
   WebDataConsumerHandle::Result rv =
       reader->read(nullptr, 0, WebDataConsumerHandle::FlagNone, &read_size);
+  EXPECT_EQ(WebDataConsumerHandle::Result::ShouldWait, rv);
+
+  std::string expected = ProduceData(data_size);
+  producer_.reset();
+
+  rv = reader->read(nullptr, 0, WebDataConsumerHandle::FlagNone, &read_size);
   EXPECT_EQ(WebDataConsumerHandle::Result::Ok, rv);
 
   char buffer[16];
@@ -300,6 +304,9 @@ TEST_F(WebDataConsumerHandleImplTest, ZeroSizeRead) {
   EXPECT_EQ(WebDataConsumerHandle::Result::Ok, rv);
   EXPECT_EQ(data_size, read_size);
   EXPECT_EQ(expected, std::string(buffer, read_size));
+
+  rv = reader->read(nullptr, 0, WebDataConsumerHandle::FlagNone, &read_size);
+  EXPECT_EQ(WebDataConsumerHandle::Result::Done, rv);
 }
 
 }  // namespace
