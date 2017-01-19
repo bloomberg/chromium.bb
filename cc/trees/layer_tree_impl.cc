@@ -1793,7 +1793,8 @@ static bool PointIsClippedByAncestorClipNode(
     return true;
 
   for (const ClipNode* clip_node = clip_tree.Node(layer->clip_tree_index());
-       clip_node->id > 1; clip_node = clip_tree.parent(clip_node)) {
+       clip_node->id > ClipTree::kViewportNodeId;
+       clip_node = clip_tree.parent(clip_node)) {
     if (clip_node->clip_type == ClipNode::ClipType::APPLIES_LOCAL_CLIP) {
       const TransformNode* transform_node =
           transform_tree.Node(clip_node->target_transform_id);
@@ -1802,10 +1803,11 @@ static bool PointIsClippedByAncestorClipNode(
 
       const LayerImpl* target_layer =
           layer->layer_tree_impl()->LayerById(transform_node->owning_layer_id);
-      DCHECK(transform_node->id == 0 || target_layer->render_surface() ||
+      DCHECK(transform_node->id == TransformTree::kRootNodeId ||
+             target_layer->render_surface() ||
              layer->layer_tree_impl()->is_in_resourceless_software_draw_mode());
       gfx::Transform surface_screen_space_transform =
-          transform_node->id == 0 ||
+          transform_node->id == TransformTree::kRootNodeId ||
                   (layer->layer_tree_impl()
                        ->is_in_resourceless_software_draw_mode())
               ? gfx::Transform()

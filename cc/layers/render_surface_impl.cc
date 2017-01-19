@@ -50,7 +50,7 @@ RenderSurfaceImpl* RenderSurfaceImpl::render_target() {
   EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(EffectTreeIndex());
   EffectNode* target_node = effect_tree.Node(node->target_id);
-  if (target_node->id != 0)
+  if (target_node->id != EffectTree::kRootNodeId)
     return target_node->render_surface;
   else
     return this;
@@ -61,7 +61,7 @@ const RenderSurfaceImpl* RenderSurfaceImpl::render_target() const {
       layer_tree_impl_->property_trees()->effect_tree;
   const EffectNode* node = effect_tree.Node(EffectTreeIndex());
   const EffectNode* target_node = effect_tree.Node(node->target_id);
-  if (target_node->id != 0)
+  if (target_node->id != EffectTree::kRootNodeId)
     return target_node->render_surface;
   else
     return this;

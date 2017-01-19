@@ -420,7 +420,7 @@ void CalculateVisibleRects(const LayerImplList& visible_layer_list,
 
     int effect_ancestor_with_copy_request =
         effect_tree.ClosestAncestorWithCopyRequest(layer->effect_tree_index());
-    if (effect_ancestor_with_copy_request > 1) {
+    if (effect_ancestor_with_copy_request > EffectTree::kContentsRootNodeId) {
       // Non root copy request.
       bool include_viewport_clip = false;
       bool include_expanding_clips = true;
@@ -821,10 +821,11 @@ void ComputeClips(PropertyTrees* property_trees,
   ClipTree* clip_tree = &property_trees->clip_tree;
   if (!clip_tree->needs_update())
     return;
-  for (int i = 1; i < static_cast<int>(clip_tree->size()); ++i) {
+  for (int i = ClipTree::kViewportNodeId;
+       i < static_cast<int>(clip_tree->size()); ++i) {
     ClipNode* clip_node = clip_tree->Node(i);
 
-    if (clip_node->id == 1) {
+    if (clip_node->id == ClipTree::kViewportNodeId) {
       ResetIfHasNanCoordinate(&clip_node->clip);
       clip_node->clip_in_target_space = clip_node->clip;
       clip_node->combined_clip_in_target_space = clip_node->clip;
@@ -975,20 +976,22 @@ void ComputeClips(PropertyTrees* property_trees,
 void ComputeTransforms(TransformTree* transform_tree) {
   if (!transform_tree->needs_update())
     return;
-  for (int i = 1; i < static_cast<int>(transform_tree->size()); ++i)
+  for (int i = TransformTree::kContentsRootNodeId;
+       i < static_cast<int>(transform_tree->size()); ++i)
     transform_tree->UpdateTransforms(i);
   transform_tree->set_needs_update(false);
 }
 
 void UpdateRenderTarget(EffectTree* effect_tree,
                         bool can_render_to_separate_surface) {
-  for (int i = 1; i < static_cast<int>(effect_tree->size()); ++i) {
+  for (int i = EffectTree::kContentsRootNodeId;
+       i < static_cast<int>(effect_tree->size()); ++i) {
     EffectNode* node = effect_tree->Node(i);
-    if (i == 1) {
+    if (i == EffectTree::kContentsRootNodeId) {
       // Render target of the node corresponding to root is itself.
-      node->target_id = 1;
+      node->target_id = EffectTree::kContentsRootNodeId;
     } else if (!can_render_to_separate_surface) {
-      node->target_id = 1;
+      node->target_id = EffectTree::kContentsRootNodeId;
     } else if (effect_tree->parent(node)->has_render_surface) {
       node->target_id = node->parent_id;
     } else {
@@ -1000,7 +1003,8 @@ void UpdateRenderTarget(EffectTree* effect_tree,
 void ComputeEffects(EffectTree* effect_tree) {
   if (!effect_tree->needs_update())
     return;
-  for (int i = 1; i < static_cast<int>(effect_tree->size()); ++i)
+  for (int i = EffectTree::kContentsRootNodeId;
+       i < static_cast<int>(effect_tree->size()); ++i)
     effect_tree->UpdateEffects(i);
   effect_tree->set_needs_update(false);
 }

@@ -30,9 +30,6 @@ namespace cc {
 
 namespace {
 
-static const int kRootPropertyTreeNodeId = 0;
-static const int kViewportClipTreeNodeId = 1;
-
 template <typename LayerType>
 struct DataForRecursion {
   PropertyTrees* property_trees;
@@ -571,7 +568,7 @@ bool AddTransformNodeIfNeeded(
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
   DCHECK(is_root || transform_parent);
 
-  int parent_index = kRootPropertyTreeNodeId;
+  int parent_index = TransformTree::kRootNodeId;
   if (transform_parent)
     parent_index = transform_parent->transform_tree_index();
 
@@ -1099,8 +1096,8 @@ bool AddEffectNodeIfNeeded(
     // into. Transform node created from root layer (includes device scale
     // factor) and clip node created from root layer (include viewports) applies
     // to root render surface's content, but not root render surface itself.
-    node.transform_id = kRootPropertyTreeNodeId;
-    node.clip_id = kViewportClipTreeNodeId;
+    node.transform_id = TransformTree::kRootNodeId;
+    node.clip_id = ClipTree::kViewportNodeId;
   }
   int node_id = effect_tree.Insert(node, parent_id);
   data_for_children->effect_tree_parent = node_id;
@@ -1424,10 +1421,10 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.property_trees = property_trees;
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
-  data_for_recursion.render_target = kRootPropertyTreeNodeId;
-  data_for_recursion.clip_tree_parent = kRootPropertyTreeNodeId;
+  data_for_recursion.render_target = EffectTree::kRootNodeId;
+  data_for_recursion.clip_tree_parent = ClipTree::kRootNodeId;
   data_for_recursion.effect_tree_parent = EffectTree::kInvalidNodeId;
-  data_for_recursion.scroll_tree_parent = kRootPropertyTreeNodeId;
+  data_for_recursion.scroll_tree_parent = ScrollTree::kRootNodeId;
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
   data_for_recursion.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
@@ -1458,11 +1455,11 @@ void BuildPropertyTreesTopLevelInternal(
   root_clip.resets_clip = true;
   root_clip.clip_type = ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   root_clip.clip = gfx::RectF(viewport);
-  root_clip.transform_id = kRootPropertyTreeNodeId;
-  root_clip.target_transform_id = kRootPropertyTreeNodeId;
+  root_clip.transform_id = TransformTree::kRootNodeId;
+  root_clip.target_transform_id = TransformTree::kRootNodeId;
   data_for_recursion.clip_tree_parent =
       data_for_recursion.property_trees->clip_tree.Insert(
-          root_clip, kRootPropertyTreeNodeId);
+          root_clip, ClipTree::kRootNodeId);
 
   DataForRecursionFromChild<LayerType> data_from_child;
   BuildPropertyTreesInternal(root_layer, data_for_recursion, &data_from_child);

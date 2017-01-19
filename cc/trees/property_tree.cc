@@ -200,7 +200,8 @@ bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
 }
 
 void TransformTree::ResetChangeTracking() {
-  for (int id = 1; id < static_cast<int>(size()); ++id) {
+  for (int id = TransformTree::kContentsRootNodeId;
+       id < static_cast<int>(size()); ++id) {
     TransformNode* node = Node(id);
     node->transform_changed = false;
   }
@@ -958,9 +959,9 @@ void EffectTree::ClearCopyRequests() {
 }
 
 int EffectTree::ClosestAncestorWithCopyRequest(int id) const {
-  DCHECK_GE(id, 0);
+  DCHECK_GE(id, EffectTree::kRootNodeId);
   const EffectNode* node = Node(id);
-  while (node->id > 1) {
+  while (node->id > EffectTree::kContentsRootNodeId) {
     if (node->has_copy_request)
       return node->id;
 
@@ -987,7 +988,8 @@ bool EffectTree::ContributesToDrawnSurface(int id) {
 }
 
 void EffectTree::ResetChangeTracking() {
-  for (int id = 1; id < static_cast<int>(size()); ++id) {
+  for (int id = EffectTree::kContentsRootNodeId; id < static_cast<int>(size());
+       ++id) {
     EffectNode* node = Node(id);
     node->effect_changed = false;
   }
@@ -1722,12 +1724,14 @@ bool PropertyTrees::IsInIdToIndexMap(TreeType tree_type, int id) {
 }
 
 void PropertyTrees::UpdateChangeTracking() {
-  for (int id = 1; id < static_cast<int>(effect_tree.size()); ++id) {
+  for (int id = EffectTree::kContentsRootNodeId;
+       id < static_cast<int>(effect_tree.size()); ++id) {
     EffectNode* node = effect_tree.Node(id);
     EffectNode* parent_node = effect_tree.parent(node);
     effect_tree.UpdateEffectChanged(node, parent_node);
   }
-  for (int i = 1; i < static_cast<int>(transform_tree.size()); ++i) {
+  for (int i = TransformTree::kContentsRootNodeId;
+       i < static_cast<int>(transform_tree.size()); ++i) {
     TransformNode* node = transform_tree.Node(i);
     TransformNode* parent_node = transform_tree.parent(node);
     TransformNode* source_node = transform_tree.Node(node->source_node_id);
@@ -1736,14 +1740,16 @@ void PropertyTrees::UpdateChangeTracking() {
 }
 
 void PropertyTrees::PushChangeTrackingTo(PropertyTrees* tree) {
-  for (int id = 1; id < static_cast<int>(effect_tree.size()); ++id) {
+  for (int id = EffectTree::kContentsRootNodeId;
+       id < static_cast<int>(effect_tree.size()); ++id) {
     EffectNode* node = effect_tree.Node(id);
     if (node->effect_changed) {
       EffectNode* target_node = tree->effect_tree.Node(node->id);
       target_node->effect_changed = true;
     }
   }
-  for (int id = 1; id < static_cast<int>(transform_tree.size()); ++id) {
+  for (int id = TransformTree::kContentsRootNodeId;
+       id < static_cast<int>(transform_tree.size()); ++id) {
     TransformNode* node = transform_tree.Node(id);
     if (node->transform_changed) {
       TransformNode* target_node = tree->transform_tree.Node(node->id);
@@ -2007,7 +2013,7 @@ DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
       FetchDrawTransformsDataFromCache(transform_id, dest_id);
 
   DCHECK(data.update_number != cached_data_.property_tree_update_number ||
-         data.target_id != -1);
+         data.target_id != EffectTree::kInvalidNodeId);
   if (data.update_number == cached_data_.property_tree_update_number)
     return data.transforms;
 
