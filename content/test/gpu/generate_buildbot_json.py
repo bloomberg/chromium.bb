@@ -697,6 +697,107 @@ FYI_WATERFALL = {
   }
 }
 
+V8_FYI_WATERFALL = {
+  'prologue': {
+    "V8 Android GN (dbg)": {
+      "additional_compile_targets": [
+        "chrome_public_apk"
+      ],
+      "gtest_tests": []
+    },
+    "V8 Linux GN": {
+      "additional_compile_targets": [
+        "accessibility_unittests",
+        "aura_unittests",
+        "browser_tests",
+        "cacheinvalidation_unittests",
+        "capture_unittests",
+        "cast_unittests",
+        "cc_unittests",
+        "chromedriver_unittests",
+        "components_browsertests",
+        "components_unittests",
+        "content_browsertests",
+        "content_unittests",
+        "crypto_unittests",
+        "dbus_unittests",
+        "device_unittests",
+        "display_unittests",
+        "events_unittests",
+        "extensions_browsertests",
+        "extensions_unittests",
+        "gcm_unit_tests",
+        "gfx_unittests",
+        "gn_unittests",
+        "google_apis_unittests",
+        "gpu_ipc_service_unittests",
+        "gpu_unittests",
+        "interactive_ui_tests",
+        "ipc_tests",
+        "jingle_unittests",
+        "media_unittests",
+        "media_blink_unittests",
+        "mojo_common_unittests",
+        "mojo_public_bindings_unittests",
+        "mojo_public_system_unittests",
+        "mojo_system_unittests",
+        "nacl_loader_unittests",
+        "net_unittests",
+        "pdf_unittests",
+        "ppapi_unittests",
+        "printing_unittests",
+        "remoting_unittests",
+        "sandbox_linux_unittests",
+        "skia_unittests",
+        "sql_unittests",
+        "storage_unittests",
+        "sync_integration_tests",
+        "ui_base_unittests",
+        "ui_touch_selection_unittests",
+        "unit_tests",
+        "url_unittests",
+        "views_unittests",
+        "wm_unittests"
+      ]
+    }
+  },
+  'testers': {
+    'Win Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+    },
+    'Mac Release (Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          'os': 'Mac-10.12'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Linux Release (NVIDIA)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:104a',
+          'os': 'Linux'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'linux',
+    },
+  }
+}
+
 COMMON_GTESTS = {
   'angle_deqp_egl_tests': {
     'tester_configs': [
@@ -1129,6 +1230,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'allow_on_android': True,
+        'run_on_v8': True,
       },
     ]
   },
@@ -1136,21 +1238,24 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'allow_on_android': True,
+        'run_on_v8': True,
       },
     ]
   },
   'gpu_process_launch_tests': {
-      'target_name': 'gpu_process',
-      'tester_configs': [
-        {
-          'allow_on_android': True,
-        }
-      ],
+    'target_name': 'gpu_process',
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+        'run_on_v8': True,
+      }
+    ],
   },
   'hardware_accelerated_feature': {
     'tester_configs': [
       {
         'allow_on_android': True,
+        'run_on_v8': True,
       },
     ],
   },
@@ -1167,6 +1272,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'allow_on_android': True,
+        'run_on_v8': True,
       },
     ],
   },
@@ -1191,6 +1297,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'allow_on_android': True,
+        'run_on_v8': True,
       },
     ],
   },
@@ -1198,6 +1305,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'allow_on_android': True,
+        'run_on_v8': True,
       },
     ],
   },
@@ -1205,6 +1313,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'allow_on_android': True,
+        'run_on_v8': True,
       },
     ],
   },
@@ -1212,6 +1321,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'tester_configs': [
       {
         'allow_on_android': True,
+        'run_on_v8': True,
       },
     ],
     'asan_args': ['--is-asan'],
@@ -1315,6 +1425,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'build_configs': ['Release', 'Release_x64'],
         'fyi_only': True,
         'run_on_optional': True,
+        'run_on_v8': True,
       },
     ],
     'disabled_tester_configs': [
@@ -1436,15 +1547,20 @@ def is_android(tester_config):
 def is_asan(tester_config):
   return tester_config.get('is_asan', False)
 
-def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
+def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi, is_v8,
                                  check_waterfall):
   if check_waterfall:
     if tc.get('fyi_only', False) and not is_fyi:
       return False
+
     # Handle the optional tryservers with the 'run_on_optional' flag.
     # Only a subset of the tests run on these tryservers.
     if tester_name.startswith('Optional') and not tc.get(
         'run_on_optional', False):
+      return False
+
+    # Handle the client.v8.fyi GPU bots with the 'run_on_v8' flag.
+    if (is_v8 and not tc.get('run_on_v8', False)):
       return False
 
   if 'names' in tc:
@@ -1468,17 +1584,18 @@ def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
       return False
   return True
 
-def should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
+def should_run_on_tester(tester_name, tester_config, test_config,
+                         is_fyi, is_v8):
   # Check if this config is disabled on this tester
   if 'disabled_tester_configs' in test_config:
     for dtc in test_config['disabled_tester_configs']:
-      if tester_config_matches_tester(tester_name, tester_config, dtc, is_fyi,
-                                      False):
+      if tester_config_matches_tester(tester_name, tester_config, dtc,
+                                      is_fyi, is_v8, False):
         return False
   if 'tester_configs' in test_config:
     for tc in test_config['tester_configs']:
-      if tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
-                                      True):
+      if tester_config_matches_tester(tester_name, tester_config, tc,
+                                      is_fyi, is_v8, True):
         return True
     return False
   else:
@@ -1486,10 +1603,12 @@ def should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
     # but let tester_config_matches_tester filter out any undesired
     # tests, such as ones that should only run on the Optional bots.
     return tester_config_matches_tester(tester_name, tester_config, {},
-                                        is_fyi, True)
+                                        is_fyi, is_v8, True)
 
-def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
-  if not should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
+def generate_gtest(tester_name, tester_config, test, test_config,
+                   is_fyi, is_v8):
+  if not should_run_on_tester(tester_name, tester_config, test_config,
+                              is_fyi, is_v8):
     return None
   result = copy.deepcopy(test_config)
   if 'tester_configs' in result:
@@ -1569,7 +1688,7 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
   result['use_xvfb'] = False
   return result
 
-def generate_gtests(tester_name, tester_config, test_dictionary, is_fyi):
+def generate_gtests(tester_name, tester_config, test_dictionary, is_fyi, is_v8):
   # The relative ordering of some of the tests is important to
   # minimize differences compared to the handwritten JSON files, since
   # Python's sorts are stable and there are some tests with the same
@@ -1578,16 +1697,17 @@ def generate_gtests(tester_name, tester_config, test_dictionary, is_fyi):
   gtests = []
   for test_name, test_config in sorted(test_dictionary.iteritems()):
     test = generate_gtest(tester_name, tester_config,
-                          test_name, test_config, is_fyi)
+                          test_name, test_config, is_fyi, is_v8)
     if test:
       # generate_gtest may veto the test generation on this platform.
       gtests.append(test)
   return gtests
 
 def generate_isolated_test(tester_name, tester_config, test, test_config,
-                           is_fyi, extra_browser_args, isolate_name,
+                           is_fyi, is_v8, extra_browser_args, isolate_name,
                            override_compile_targets, prefix_args):
-  if not should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
+  if not should_run_on_tester(tester_name, tester_config, test_config,
+                              is_fyi, is_v8):
     return None
   test_args = ['-v']
   extra_browser_args_string = ""
@@ -1640,7 +1760,7 @@ def generate_isolated_test(tester_name, tester_config, test, test_config,
   return result
 
 def generate_telemetry_test(tester_name, tester_config,
-                            test, test_config, is_fyi):
+                            test, test_config, is_fyi, is_v8):
   extra_browser_args = ['--enable-logging=stderr', '--js-flags=--expose-gc']
   benchmark_name = test_config.get('target_name') or test
   prefix_args = [
@@ -1649,61 +1769,64 @@ def generate_telemetry_test(tester_name, tester_config,
     '--browser=%s' % tester_config['build_config'].lower()
   ]
   return generate_isolated_test(tester_name, tester_config, test,
-                                test_config, is_fyi, extra_browser_args,
+                                test_config, is_fyi, is_v8, extra_browser_args,
                                 'telemetry_gpu_integration_test',
                                 ['telemetry_gpu_integration_test_run'],
                                 prefix_args)
 
 def generate_telemetry_tests(tester_name, tester_config,
-                             test_dictionary, is_fyi):
+                             test_dictionary, is_fyi, is_v8):
   isolated_scripts = []
   for test_name, test_config in sorted(test_dictionary.iteritems()):
     test = generate_telemetry_test(
-      tester_name, tester_config, test_name, test_config, is_fyi)
+      tester_name, tester_config, test_name, test_config, is_fyi, is_v8)
     if test:
       isolated_scripts.append(test)
   return isolated_scripts
 
 def generate_non_telemetry_isolated_test(tester_name, tester_config,
-                                         test, test_config, is_fyi):
+                                         test, test_config, is_fyi, is_v8):
   return generate_isolated_test(tester_name, tester_config, test,
-                                test_config, is_fyi, None, test, None, [])
+                                test_config, is_fyi, is_v8,
+                                None, test, None, [])
 
 def generate_non_telemetry_isolated_tests(tester_name, tester_config,
-                                          test_dictionary, is_fyi):
+                                          test_dictionary, is_fyi, is_v8):
   isolated_scripts = []
   for test_name, test_config in sorted(test_dictionary.iteritems()):
     test = generate_non_telemetry_isolated_test(
-      tester_name, tester_config, test_name, test_config, is_fyi)
+      tester_name, tester_config, test_name, test_config, is_fyi, is_v8)
     if test:
       isolated_scripts.append(test)
   return isolated_scripts
 
-def generate_all_tests(waterfall, is_fyi):
+def generate_all_tests(waterfall, filename, is_fyi, is_v8):
   tests = {}
-  for builder, config in waterfall['builders'].iteritems():
+  for builder, config in waterfall.get('prologue', {}).iteritems():
+    tests[builder] = config
+  for builder, config in waterfall.get('builders', {}).iteritems():
     tests[builder] = config
   for name, config in waterfall['testers'].iteritems():
-    gtests = generate_gtests(name, config, COMMON_GTESTS, is_fyi)
+    gtests = generate_gtests(name, config, COMMON_GTESTS, is_fyi, is_v8)
     isolated_scripts = \
       generate_telemetry_tests(
-        name, config, TELEMETRY_GPU_INTEGRATION_TESTS, is_fyi) + \
+        name, config, TELEMETRY_GPU_INTEGRATION_TESTS, is_fyi, is_v8) + \
       generate_non_telemetry_isolated_tests(name, config,
-          NON_TELEMETRY_ISOLATED_SCRIPT_TESTS, is_fyi)
+        NON_TELEMETRY_ISOLATED_SCRIPT_TESTS, is_fyi, is_v8)
     tests[name] = {
       'gtest_tests': sorted(gtests, key=lambda x: x['test']),
       'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
     }
   tests['AAAAA1 AUTOGENERATED FILE DO NOT EDIT'] = {}
   tests['AAAAA2 See generate_buildbot_json.py to make changes'] = {}
-  filename = 'chromium.gpu.fyi.json' if is_fyi else 'chromium.gpu.json'
   with open(os.path.join(SRC_DIR, 'testing', 'buildbot', filename), 'wb') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
 
 def main():
-  generate_all_tests(FYI_WATERFALL, True)
-  generate_all_tests(WATERFALL, False)
+  generate_all_tests(FYI_WATERFALL, 'chromium.gpu.fyi.json', True, False)
+  generate_all_tests(WATERFALL, 'chromium.gpu.json', False, False)
+  generate_all_tests(V8_FYI_WATERFALL, 'client.v8.fyi.json', True, True)
   return 0
 
 if __name__ == "__main__":
