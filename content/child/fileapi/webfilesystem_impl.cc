@@ -443,23 +443,6 @@ void WebFileSystemImpl::resolveURL(
       waitable_results.get());
 }
 
-void WebFileSystemImpl::deleteFileSystem(
-    const blink::WebURL& storage_partition,
-    blink::WebFileSystemType type,
-    WebFileSystemCallbacks callbacks) {
-  int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::DeleteFileSystem,
-      std::make_tuple(
-          GURL(storage_partition), static_cast<storage::FileSystemType>(type),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
-}
-
 void WebFileSystemImpl::move(
     const blink::WebURL& src_path,
     const blink::WebURL& dest_path,

@@ -57,9 +57,6 @@ class WebFileSystemImpl : public blink::WebFileSystem,
                       blink::WebFileSystemCallbacks) override;
   void resolveURL(const blink::WebURL& filesystem_url,
                   blink::WebFileSystemCallbacks) override;
-  void deleteFileSystem(const blink::WebURL& storage_partition,
-                        const blink::WebFileSystemType type,
-                        blink::WebFileSystemCallbacks) override;
   void move(const blink::WebURL& src_path,
             const blink::WebURL& dest_path,
             blink::WebFileSystemCallbacks) override;

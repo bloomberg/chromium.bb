@@ -195,14 +195,6 @@ void FileSystemDispatcher::ResolveURL(
           request_id, filesystem_url));
 }
 
-void FileSystemDispatcher::DeleteFileSystem(const GURL& origin_url,
-                                            storage::FileSystemType type,
-                                            const StatusCallback& callback) {
-  int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
-  ChildThreadImpl::current()->Send(new FileSystemHostMsg_DeleteFileSystem(
-          request_id, origin_url, type));
-}
-
 void FileSystemDispatcher::Move(
     const GURL& src_path,
     const GURL& dest_path,

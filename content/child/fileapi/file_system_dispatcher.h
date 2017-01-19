@@ -72,9 +72,6 @@ class FileSystemDispatcher : public IPC::Listener {
   void ResolveURL(const GURL& filesystem_url,
                   const ResolveURLCallback& success_callback,
                   const StatusCallback& error_callback);
-  void DeleteFileSystem(const GURL& origin_url,
-                        storage::FileSystemType type,
-                        const StatusCallback& callback);
   void Move(const GURL& src_path,
             const GURL& dest_path,
             const StatusCallback& callback);

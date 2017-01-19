@@ -67,9 +67,6 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                          FileSystemType,
                          long long size,
                          std::unique_ptr<AsyncFileSystemCallbacks>);
-  void deleteFileSystem(ExecutionContext*,
-                        FileSystemType,
-                        std::unique_ptr<AsyncFileSystemCallbacks>);
 
   FileSystemClient* client() const { return m_client.get(); }
 
@@ -90,9 +87,6 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                                  FileSystemType,
                                  CallbackWrapper*);
   void resolveURLInternal(ExecutionContext*, const KURL&, CallbackWrapper*);
-  void deleteFileSystemInternal(ExecutionContext*,
-                                FileSystemType,
-                                CallbackWrapper*);
 
   std::unique_ptr<FileSystemClient> m_client;
 };

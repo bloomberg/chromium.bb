@@ -90,9 +90,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                         storage::FileSystemType type);
   void OnResolveURL(int request_id,
                     const GURL& filesystem_url);
-  void OnDeleteFileSystem(int request_id,
-                          const GURL& origin_url,
-                          storage::FileSystemType type);
   void OnMove(int request_id,
               const GURL& src_path,
               const GURL& dest_path);
@@ -168,8 +165,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                      const storage::FileSystemInfo& info,
                      const base::FilePath& file_path,
                      storage::FileSystemContext::ResolvedEntryType type);
-  void DidDeleteFileSystem(int request_id,
-                           base::File::Error result);
   void DidCreateSnapshot(
       int request_id,
       const storage::FileSystemURL& url,

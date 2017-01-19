@@ -105,24 +105,6 @@ void LocalFileSystem::requestFileSystem(
                 wrapPersistent(wrapper)));
 }
 
-void LocalFileSystem::deleteFileSystem(
-    ExecutionContext* context,
-    FileSystemType type,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
-  ASSERT(context);
-  SECURITY_DCHECK(context->isDocument());
-
-  CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
-  requestFileSystemAccessInternal(
-      context,
-      WTF::bind(&LocalFileSystem::deleteFileSystemInternal,
-                wrapCrossThreadPersistent(this), wrapPersistent(context), type,
-                wrapPersistent(wrapper)),
-      WTF::bind(&LocalFileSystem::fileSystemNotAllowedInternal,
-                wrapCrossThreadPersistent(this), wrapPersistent(context),
-                wrapPersistent(wrapper)));
-}
-
 WebFileSystem* LocalFileSystem::getFileSystem() const {
   Platform* platform = Platform::current();
   if (!platform)
@@ -192,21 +174,6 @@ void LocalFileSystem::resolveURLInternal(ExecutionContext* context,
     return;
   }
   fileSystem->resolveURL(fileSystemURL, callbacks->release());
-}
-
-void LocalFileSystem::deleteFileSystemInternal(ExecutionContext* context,
-                                               FileSystemType type,
-                                               CallbackWrapper* callbacks) {
-  WebFileSystem* fileSystem = getFileSystem();
-  if (!fileSystem) {
-    fileSystemNotAvailable(context, callbacks);
-    return;
-  }
-  KURL storagePartition =
-      KURL(KURL(), context->getSecurityOrigin()->toString());
-  fileSystem->deleteFileSystem(storagePartition,
-                               static_cast<WebFileSystemType>(type),
-                               callbacks->release());
 }
 
 LocalFileSystem::LocalFileSystem(LocalFrame& frame,
