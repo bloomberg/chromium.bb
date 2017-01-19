@@ -482,7 +482,7 @@ camera.views.Camera = function(context, router) {
   this.performanceTestUIInterval_ = null;
 
   /**
-   * DeviceId of the camera device used for the last time.
+   * DeviceId of the camera device used for the last time during this session.
    * @type {string?}
    * @private
    */
@@ -712,7 +712,6 @@ camera.views.Camera.prototype.initialize = function(callback) {
             toggleTimer: false,
             toggleMulti: false,
             toggleMirror: true,  // Deprecated.
-            videoDeviceId: null,
             mirroringToggles: {},  // Per device.
           },
           function(values) {
@@ -723,7 +722,6 @@ camera.views.Camera.prototype.initialize = function(callback) {
             document.querySelector('#toggle-timer').checked = values.toggleTimer;
             document.querySelector('#toggle-multi').checked =
                 values.toggleMulti;
-            this.videoDeviceId_ = values.videoDeviceId;
             this.legacyMirroringToggle_ = values.toggleMirror;
             this.mirroringToggles_ = values.mirroringToggles;
 
@@ -2094,7 +2092,6 @@ camera.views.Camera.prototype.start_ = function() {
         constraintsCandidates[index],
         function() {
           this.videoDeviceId_ = constraintsCandidates[index].video.deviceId;
-          chrome.storage.local.set({videoDeviceId: this.videoDeviceId_});
           this.updateMirroring_();
           onSuccess();
         }.bind(this),
