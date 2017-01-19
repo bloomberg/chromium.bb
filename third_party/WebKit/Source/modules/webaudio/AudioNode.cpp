@@ -621,7 +621,7 @@ AudioNode* AudioNode::connect(AudioNode* destination,
   }
 
   if (context() != destination->context()) {
-    exceptionState.throwDOMException(SyntaxError,
+    exceptionState.throwDOMException(InvalidAccessError,
                                      "cannot connect to a destination "
                                      "belonging to a different audio context.");
     return nullptr;

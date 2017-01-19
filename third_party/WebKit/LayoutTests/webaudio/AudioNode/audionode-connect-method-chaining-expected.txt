@@ -55,7 +55,7 @@ PASS The return value of MediaStreamAudioSourceNode.connect(GainNode) matches th
 PASS The return value of MediaStreamAudioSourceNode.connect(BiquadFilterNode, 0) matches the destination BiquadFilterNode.
 PASS The return value of MediaStreamAudioSourceNode.connect(ChannelMergerNode, 0, 1) matches the destination ChannelMergerNode.
 PASS Connecting with an invalid output threw IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (1) exceeds number of outputs (1)..
-PASS Connecting to a node from the different context threw SyntaxError: Failed to execute 'connect' on 'AudioNode': cannot connect to a destination belonging to a different audio context..
+PASS Connecting to a node from the different context threw InvalidAccessError: Failed to execute 'connect' on 'AudioNode': cannot connect to a destination belonging to a different audio context..
 PASS The output of chained connection of gain nodes contains only the constant 0.125.
 PASS successfullyParsed is true
 

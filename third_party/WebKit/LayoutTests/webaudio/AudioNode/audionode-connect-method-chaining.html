@@ -125,7 +125,7 @@
       // first connection succeeds but the second one should throw.
       Should('Connecting to a node from the different context', function () {
         gain1.connect(gain2).connect(contextB.destination);
-      }).throw('SyntaxError');
+      }).throw('InvalidAccessError');
 
       done();
     });
