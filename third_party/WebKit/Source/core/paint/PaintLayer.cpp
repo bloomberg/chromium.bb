@@ -1925,10 +1925,6 @@ PaintLayer* PaintLayer::hitTestLayer(
   if (hitTestClippedOutByClipPath(rootLayer, hitTestLocation))
     return nullptr;
 
-  // Ensure our lists and 3d status are up to date.
-  m_stackingNode->updateLayerListsIfNeeded();
-  update3DTransformedDescendantStatus();
-
   // The natural thing would be to keep HitTestingTransformState on the stack,
   // but it's big, so we heap-allocate.
   RefPtr<HitTestingTransformState> localTransformState;
