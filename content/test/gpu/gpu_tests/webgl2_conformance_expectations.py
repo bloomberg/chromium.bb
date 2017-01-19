@@ -196,14 +196,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/reading/format-r11f-g11f-b10f.html',
         ['mac'], bug=1832) # khronos WebGL issue
-    self.Fail('deqp/functional/gles3/fborender/recreate_color_02.html',
-        ['mac'], bug=679682)
-    self.Fail('deqp/functional/gles3/fborender/resize_01.html',
-        ['mac'], bug=679682)
-    self.Fail('deqp/functional/gles3/fragmentoutput/basic.float.html',
-        ['mac'], bug=679684)
-    self.Fail('deqp/functional/gles3/fragmentoutput/array.float.html',
-        ['mac'], bug=679684)
 
     # Mac Retina NVIDIA
     self.Fail('conformance/textures/misc/cube-map-uploads-out-of-order.html',
@@ -487,6 +479,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('amd', 0x679e)], bug=483282)
 
     # Mac Multi-vendor failures.
+    self.Fail('deqp/functional/gles3/fborender/recreate_color_02.html',
+        ['mac', 'nvidia', 'amd'], bug=679682)
+    self.Fail('deqp/functional/gles3/fborender/resize_01.html',
+        ['mac', 'nvidia', 'amd'], bug=679682)
+    self.Fail('deqp/functional/gles3/fragmentoutput/basic.float.html',
+        ['mac', 'nvidia', 'amd'], bug=679684)
+    self.Fail('deqp/functional/gles3/fragmentoutput/array.float.html',
+        ['mac', 'nvidia', 'amd'], bug=679684)
     self.Fail('deqp/functional/gles3/fragmentoutput/random_00.html',
         ['mac', 'amd', 'intel'], bug=679690)
     self.Fail('deqp/functional/gles3/fragmentoutput/random_02.html',
