@@ -1154,27 +1154,35 @@ void GpuProcessHost::RecordProcessCrash() {
   }
 }
 
-std::string GpuProcessHost::GetShaderPrefixKey() {
-  if (shader_prefix_key_.empty()) {
+std::string GpuProcessHost::GetShaderPrefixKey(const std::string& shader) {
+  if (shader_prefix_key_info_.empty()) {
     gpu::GPUInfo info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
 
-    std::string in_str = GetContentClient()->GetProduct() + "-" +
+    shader_prefix_key_info_ =
+        GetContentClient()->GetProduct() + "-" +
 #if defined(OS_ANDROID)
         base::android::BuildInfo::GetInstance()->android_build_fp() + "-" +
 #endif
-        info.gl_vendor + "-" + info.gl_renderer + "-" +
-        info.driver_version + "-" + info.driver_vendor;
-
-    base::Base64Encode(base::SHA1HashString(in_str), &shader_prefix_key_);
+        info.gl_vendor + "-" + info.gl_renderer + "-" + info.driver_version +
+        "-" + info.driver_vendor;
   }
 
-  return shader_prefix_key_;
+  // The shader prefix key is a SHA1 hash of a set of per-machine info, such as
+  // driver version and os version, as well as the shader data being cached.
+  // This ensures both that the shader was not corrupted on disk, as well as
+  // that the shader is correctly configured for the current hardware.
+  std::string prefix;
+  base::Base64Encode(base::SHA1HashString(shader_prefix_key_info_ + shader),
+                     &prefix);
+  return prefix;
 }
 
 void GpuProcessHost::LoadedShader(const std::string& key,
                                   const std::string& data) {
-  std::string prefix = GetShaderPrefixKey();
-  if (!key.compare(0, prefix.length(), prefix))
+  std::string prefix = GetShaderPrefixKey(data);
+  bool prefix_ok = !key.compare(0, prefix.length(), prefix);
+  UMA_HISTOGRAM_BOOLEAN("GPU.ShaderLoadPrefixOK", prefix_ok);
+  if (prefix_ok)
     Send(new GpuMsg_LoadedShader(data));
 }
 
@@ -1205,7 +1213,7 @@ void GpuProcessHost::OnCacheShader(int32_t client_id,
   // If the cache doesn't exist then this is an off the record profile.
   if (iter == client_id_to_shader_cache_.end())
     return;
-  iter->second->Cache(GetShaderPrefixKey() + ":" + key, shader);
+  iter->second->Cache(GetShaderPrefixKey(shader) + ":" + key, shader);
 }
 
 }  // namespace content
