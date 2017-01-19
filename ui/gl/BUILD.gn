@@ -411,24 +411,21 @@ test("gl_unittests") {
   ]
 }
 
-# Non-Ozone trybots end up trying to build this when building "all" and failing
-# when X11 isn't there.
-if (ozone_platform_x11) {
-  group("gl_unittests_ozonex") {
-    testonly = true
-    data_deps = [
-      ":gl_unittests",
-    ]
-  }
+# We can't run this test on real Chrome OS hardware for Ozone, so new target.
+group("gl_unittests_ozone") {
+  testonly = true
+  data_deps = [
+    ":gl_unittests",
+  ]
+}
 
-  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("gl_unittests_ozonex_run") {
-    testonly = true
-    deps = [
-      ":gl_unittests_ozonex",
-    ]
-  }
+# TODO(GYP_GONE): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gl_unittests_ozone_run") {
+  testonly = true
+  deps = [
+    ":gl_unittests_ozone",
+  ]
 }
 
 if (is_android) {
