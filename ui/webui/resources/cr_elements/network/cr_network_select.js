@@ -10,8 +10,6 @@
 Polymer({
   is: 'cr-network-select',
 
-  behaviors: [I18nBehavior],
-
   properties: {
     /**
      * Show all buttons in list items.

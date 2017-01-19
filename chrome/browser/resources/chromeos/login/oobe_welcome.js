@@ -109,6 +109,31 @@ Polymer({
     },
   },
 
+  /** @override */
+  ready: function() {
+    CrOncStrings = {
+      OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
+      OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
+      OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
+      OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
+      OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
+      networkDisabled: loadTimeData.getString('networkDisabled'),
+      networkListItemConnected:
+          loadTimeData.getString('networkListItemConnected'),
+      networkListItemConnecting:
+          loadTimeData.getString('networkListItemConnecting'),
+      networkListItemNotConnected:
+          loadTimeData.getString('networkListItemNotConnected'),
+      vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
+
+      // Additional strings for custom items.
+      addMobileNetworkMenuName:
+          loadTimeData.getString('addMobileNetworkMenuName'),
+      addWiFiNetworkMenuName: loadTimeData.getString('addWiFiNetworkMenuName'),
+      proxySettingsMenuName: loadTimeData.getString('proxySettingsMenuName'),
+    };
+  },
+
   /**
    * Hides all screens to help switching from one screen to another.
    */

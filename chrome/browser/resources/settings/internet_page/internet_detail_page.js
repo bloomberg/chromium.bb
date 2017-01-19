@@ -198,8 +198,7 @@ Polymer({
     this.IPAddress_ = (ipv4 && ipv4.IPAddress) || '';
 
     // Update the detail page title.
-    this.parentNode.pageTitle =
-        CrOnc.getNetworkName(this.networkProperties, this);
+    this.parentNode.pageTitle = CrOnc.getNetworkName(this.networkProperties);
   },
 
   /** @private */

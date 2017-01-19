@@ -1227,21 +1227,6 @@
     <message name="IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED" desc="Settings > Internet > Message when connecting to a non policy network is not allowed.">
       Connecting to this network is disabled by your administrator.
     </message>
-    <message name="IDS_SETTINGS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
-      Ethernet
-    </message>
-    <message name="IDS_SETTINGS_NETWORK_TYPE_WIFI" desc="The wifi network type.">
-      Wi-Fi
-    </message>
-    <message name="IDS_SETTINGS_NETWORK_TYPE_WIMAX" desc="The wimax network type.">
-      WiMAX
-    </message>
-    <message name="IDS_SETTINGS_NETWORK_TYPE_CELLULAR" desc="The cellular network type.">
-      Cellular
-    </message>
-    <message name="IDS_SETTINGS_NETWORK_TYPE_VPN" desc="The vpn network type.">
-      VPN
-    </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON" desc="Text for button that opens the known networks subpage.">
       Known networks
     </message>
@@ -1256,23 +1241,6 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL" desc="Title for list of all other (non preferred) networks.">
       All networks
-    </message>
-
-    <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
-    <message name="IDS_NETWORK_LIST_DISABLED" desc="Settings > Internet, text in network summary when the network type is connected">
-      Disabled
-    </message>
-    <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Settings > Internet, text in network summary when there is no network for the type.">
-      No network
-    </message>
-    <message name="IDS_NETWORK_LIST_CONNECTED" desc="Settings > Internet, text to show in a network list item that is connected.">
-      connected
-    </message>
-    <message name="IDS_NETWORK_LIST_CONNECTING" desc="Settings > Internet, text in network summary when the primary network is connecting.">
-      Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
-    </message>
-    <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
-      <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
     </message>
 
      <!-- Strings translating ONC (Open Network Configuration) properties -->

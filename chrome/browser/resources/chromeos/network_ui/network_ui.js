@@ -5,6 +5,22 @@
 var NetworkUI = (function() {
   'use strict';
 
+  CrOncStrings = {
+    OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
+    OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
+    OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
+    OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
+    OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
+    networkDisabled: loadTimeData.getString('networkDisabled'),
+    networkListItemConnected:
+        loadTimeData.getString('networkListItemConnected'),
+    networkListItemConnecting:
+        loadTimeData.getString('networkListItemConnecting'),
+    networkListItemNotConnected:
+        loadTimeData.getString('networkListItemNotConnected'),
+    vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
+  };
+
   // Properties to display in the network state table. Each entry can be either
   // a single state field or an array of state fields. If more than one is
   // specified then the first non empty value is used.

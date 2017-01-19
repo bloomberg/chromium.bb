@@ -3,17 +3,36 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview This file has two parts:
+ * @fileoverview This file has three parts:
  *
- * 1. Typedefs for network properties. Note: These 'types' define a subset of
+ * 1. A dictionary of strings for network element translations.
+ *
+ * 2. Typedefs for network properties. Note: These 'types' define a subset of
  * ONC properties in the ONC data dictionary. The first letter is capitalized to
  * match the ONC spec and avoid an extra layer of translation.
  * See components/onc/docs/onc_spec.html for the complete spec.
  * TODO(stevenjb): Replace with chrome.networkingPrivate.NetworkStateProperties
  * once that is fully defined.
  *
- * 2. Helper functions to facilitate extracting and setting ONC properties.
+ * 3. Helper functions to facilitate extracting and setting ONC properties.
  */
+
+/**
+ * Strings required for networking elements. These must be set at runtime.
+ * @type {{
+ *   OncTypeCellular: string,
+ *   OncTypeEthernet: string,
+ *   OncTypeVPN: string,
+ *   OncTypeWiFi: string,
+ *   OncTypeWiMAX: string,
+ *   networkDisabled: string,
+ *   networkListItemConnected: string,
+ *   networkListItemConnecting: string,
+ *   networkListItemNotConnected: string,
+ *   vpnNameTemplate: string,
+ * }}
+ */
+var CrOncStrings;
 
 var CrOnc = {};
 
@@ -80,10 +99,19 @@ CrOnc.IPConfigUIProperties;
 /** @typedef {chrome.networkingPrivate.PaymentPortal} */
 CrOnc.PaymentPortal;
 
+/** @enum {string} */
 CrOnc.ActivationState = chrome.networkingPrivate.ActivationStateType;
+
+/** @enum {string} */
 CrOnc.ConnectionState = chrome.networkingPrivate.ConnectionStateType;
+
+/** @enum {string} */
 CrOnc.IPConfigType = chrome.networkingPrivate.IPConfigType;
+
+/** @enum {string} */
 CrOnc.ProxySettingsType = chrome.networkingPrivate.ProxySettingsType;
+
+/** @enum {string} */
 CrOnc.Type = chrome.networkingPrivate.NetworkType;
 
 /** @enum {string} */
@@ -321,22 +349,23 @@ CrOnc.getAutoConnect = function(properties) {
 /**
  * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
  *     properties The ONC network properties or state properties.
- * @param {!I18nBehavior.Proto} i18nBehavior An I18nBehavior instance.
  * @return {string} The name to display for |network|.
  */
-CrOnc.getNetworkName = function(properties, i18nBehavior) {
+CrOnc.getNetworkName = function(properties) {
   if (!properties)
     return '';
   let name = CrOnc.getStateOrActiveString(properties.Name);
   let type = CrOnc.getStateOrActiveString(properties.Type);
   if (!name)
-    return i18nBehavior.i18n('OncType' + type);
+    return CrOncStrings['OncType' + type];
   if (type == 'VPN' && properties.VPN) {
     let vpnType = CrOnc.getStateOrActiveString(properties.VPN.Type);
     if (vpnType == 'ThirdPartyVPN' && properties.VPN.ThirdPartyVPN) {
       let providerName = properties.VPN.ThirdPartyVPN.ProviderName;
-      if (providerName)
-        return i18nBehavior.i18n('vpnNameTemplate', providerName, name);
+      if (providerName) {
+        return CrOncStrings.vpnNameTemplate.replace('$1', providerName)
+            .replace('$2', name);
+      }
     }
   }
   return name;

@@ -57,7 +57,7 @@ Polymer({
     },
   },
 
-  behaviors: [I18nBehavior, CrPolicyNetworkBehavior],
+  behaviors: [CrPolicyNetworkBehavior],
 
   /** @private */
   itemChanged_: function() {
@@ -85,14 +85,14 @@ Polymer({
     if (this.item.hasOwnProperty('customItemName')) {
       let item = /** @type {!CrNetworkList.CustomItemState} */ (this.item);
       let name = item.customItemName || '';
-      if (this.i18nExists(item.customItemName))
-        name = this.i18n(item.customItemName);
+      if (CrOncStrings.hasOwnProperty(item.customItemName))
+        name = CrOncStrings[item.customItemName];
       return name;
     }
     let network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
     if (this.isListItem)
-      return CrOnc.getNetworkName(network, this);
-    return this.i18n('OncType' + network.Type);
+      return CrOnc.getNetworkName(network);
+    return CrOncStrings['OncType' + network.Type];
   },
 
   /** @private */
@@ -115,33 +115,33 @@ Polymer({
     let network = this.networkState;
     if (this.isListItem) {
       if (this.isConnected_())
-        return this.i18n('networkListItemConnected');
+        return CrOncStrings.networkListItemConnected;
       return '';
     }
     if (network.Name && network.ConnectionState) {
       return this.getConnectionStateText_(
-          network.ConnectionState, CrOnc.getNetworkName(network, this));
+          network.ConnectionState, CrOnc.getNetworkName(network));
     }
-    return this.i18n('networkDisabled');
+    return CrOncStrings.networkDisabled;
   },
 
   /**
    * Returns the appropriate connection state text.
-   * @param {string} state The connection state.
+   * @param {CrOnc.ConnectionState} state The connection state.
    * @param {string} name The name of the network.
    * @return {string}
    * @private
    */
   getConnectionStateText_: function(state, name) {
-    if (state == CrOnc.ConnectionState.CONNECTED)
-      return name;
-    if (state == CrOnc.ConnectionState.CONNECTING)
-      return this.i18n('networkListItemConnecting', name);
-    if (state == CrOnc.ConnectionState.NOT_CONNECTED)
-      return this.i18n('networkListItemNotConnected');
-    // TODO(stevenjb): Audit state translations and remove test.
-    if (this.i18nExists(state))
-      return this.i18n(state);
+    switch (state) {
+      case CrOnc.ConnectionState.CONNECTED:
+        return name;
+      case CrOnc.ConnectionState.CONNECTING:
+        return CrOncStrings.networkListItemConnecting.replace('$1', name);
+      case CrOnc.ConnectionState.NOT_CONNECTED:
+        return CrOncStrings.networkListItemNotConnected;
+    }
+    assertNotReached();
     return state;
   },
 

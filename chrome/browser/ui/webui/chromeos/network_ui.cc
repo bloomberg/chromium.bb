@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -214,7 +214,7 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUINetworkHost);
   html->AddLocalizedStrings(localized_strings);
 
-  settings::AddCrNetworkStrings(html);
+  network_element::AddLocalizedStrings(html);
 
   html->SetJsonPath("strings.js");
   html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);

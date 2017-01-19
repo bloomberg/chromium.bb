@@ -2314,6 +2314,23 @@ Press any key to continue exploring.
     Certificates not loaded
   </message>
 
+  <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
+  <message name="IDS_NETWORK_LIST_DISABLED" desc="Text in the network list element when the network type is disabled.">
+    Disabled
+  </message>
+  <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Text in the network list element when there is no network for the type.">
+    No network
+  </message>
+  <message name="IDS_NETWORK_LIST_CONNECTED" desc="Text in a network list item when the network is connected.">
+    connected
+  </message>
+  <message name="IDS_NETWORK_LIST_CONNECTING" desc="Text in the network element when a network is connecting.">
+    Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+  </message>
+  <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
+    <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
+  </message>
+
   <!-- Other Network UI strings -->
   <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
     Network Connection Error

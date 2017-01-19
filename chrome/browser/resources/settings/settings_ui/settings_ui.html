@@ -15,6 +15,10 @@
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_vars_css.html">
 
+<if expr="chromeos">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+</if>
+
 <dom-module id="settings-ui">
   <template>
     <style include="settings-shared">
