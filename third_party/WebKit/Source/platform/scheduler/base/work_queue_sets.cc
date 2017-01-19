@@ -53,7 +53,7 @@ void WorkQueueSets::ChangeSetIndex(WorkQueue* work_queue, size_t set_index) {
   work_queue_heaps_[set_index].insert({enqueue_order, work_queue});
 }
 
-void WorkQueueSets::OnPushQueue(WorkQueue* work_queue) {
+void WorkQueueSets::OnTaskPushedToEmptyQueue(WorkQueue* work_queue) {
   // NOTE if this function changes, we need to keep |WorkQueueSets::AddQueue| in
   // sync.
   DCHECK_EQ(this, work_queue->work_queue_sets());

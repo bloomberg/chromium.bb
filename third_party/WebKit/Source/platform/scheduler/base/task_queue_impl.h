@@ -140,9 +140,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   const char* GetName() const override;
   QueueType GetQueueType() const override;
 
-  // If this returns false then future updates for this queue are not needed
-  // unless requested.
-  bool MaybeUpdateImmediateWorkQueues();
+  // Must only be called from the thread this task queue was created on.
+  void ReloadImmediateWorkQueueIfEmpty();
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -193,6 +192,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     main_thread_only().heap_handle = heap_handle;
   }
 
+  void PushImmediateIncomingTaskForTest(TaskQueueImpl::Task&& task);
   EnqueueOrder GetFenceForTest() const;
 
   class QueueEnabledVoterImpl : public QueueEnabledVoter {
@@ -294,6 +294,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
       EnqueueOrder sequence_number,
       bool nestable);
 
+  // Extracts all the tasks from the immediate incoming queue and clears it.
+  // Can be called from any thread.
+  WTF::Deque<TaskQueueImpl::Task> TakeImmediateIncomingQueue();
+
   // As BlockedByFence but safe to be called while locked.
   bool BlockedByFenceLocked() const;
 
@@ -323,9 +327,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   }
 
   const QueueType type_;
-  const char* name_;
-  const char* disabled_by_default_tracing_category_;
-  const char* disabled_by_default_verbose_tracing_category_;
+  const char* const name_;
+  const char* const disabled_by_default_tracing_category_;
+  const char* const disabled_by_default_verbose_tracing_category_;
 
   base::ThreadChecker main_thread_checker_;
   MainThreadOnly main_thread_only_;

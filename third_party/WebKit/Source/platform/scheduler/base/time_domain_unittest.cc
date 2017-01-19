@@ -35,7 +35,7 @@ class MockTimeDomain : public TimeDomain {
   using TimeDomain::ScheduleDelayedWork;
   using TimeDomain::UnregisterQueue;
   using TimeDomain::UpdateWorkQueues;
-  using TimeDomain::RegisterAsUpdatableTaskQueue;
+  using TimeDomain::OnQueueHasIncomingImmediateWork;
 
   // TimeSource implementation:
   LazyNow CreateLazyNow() const override { return LazyNow(now_); }
@@ -235,7 +235,7 @@ class TimeDomainWithObserverTest : public TimeDomainTest {
 
 TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasImmediateWork) {
   EXPECT_CALL(*observer_, OnTimeDomainHasImmediateWork(task_queue_.get()));
-  time_domain_->RegisterAsUpdatableTaskQueue(task_queue_.get());
+  time_domain_->OnQueueHasIncomingImmediateWork(task_queue_.get());
 }
 
 TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasDelayedWork) {

@@ -10,12 +10,15 @@ namespace blink {
 namespace scheduler {
 namespace internal {
 
-WorkQueue::WorkQueue(TaskQueueImpl* task_queue, const char* name)
+WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
+                     const char* name,
+                     QueueType queue_type)
     : work_queue_sets_(nullptr),
       task_queue_(task_queue),
       work_queue_set_index_(0),
       name_(name),
-      fence_(0) {}
+      fence_(0),
+      queue_type_(queue_type) {}
 
 void WorkQueue::AsValueInto(base::trace_event::TracedValue* state) const {
   for (const TaskQueueImpl::Task& task : work_queue_) {
@@ -76,7 +79,7 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
 
   // If we hit the fence, pretend to WorkQueueSets that we're empty.
   if (work_queue_sets_ && !BlockedByFence())
-    work_queue_sets_->OnPushQueue(this);
+    work_queue_sets_->OnTaskPushedToEmptyQueue(this);
 }
 
 void WorkQueue::PopTaskForTest() {
@@ -85,14 +88,16 @@ void WorkQueue::PopTaskForTest() {
   work_queue_.pop_front();
 }
 
-void WorkQueue::SwapLocked(WTF::Deque<TaskQueueImpl::Task>& incoming_queue) {
+void WorkQueue::ReloadEmptyImmediateQueue() {
   DCHECK(work_queue_.empty());
-  work_queue_.swap(incoming_queue);
+
+  work_queue_ = task_queue_->TakeImmediateIncomingQueue();
   if (work_queue_.empty())
     return;
+
   // If we hit the fence, pretend to WorkQueueSets that we're empty.
   if (work_queue_sets_ && !BlockedByFence())
-    work_queue_sets_->OnPushQueue(this);
+    work_queue_sets_->OnTaskPushedToEmptyQueue(this);
 }
 
 TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
@@ -106,6 +111,13 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   }
 
   TaskQueueImpl::Task pending_task = work_queue_.takeFirst();
+  // NB immediate tasks have a different pipeline to delayed ones.
+  if (queue_type_ == QueueType::IMMEDIATE && work_queue_.empty()) {
+    // Short-circuit the queue reload so that OnPopQueue does the right thing.
+    work_queue_ = task_queue_->TakeImmediateIncomingQueue();
+  }
+  // OnPopQueue calls GetFrontTaskEnqueueOrder which checks BlockedByFence() so
+  // we don't need to here.
   work_queue_sets_->OnPopQueue(this);
   task_queue_->TraceQueueSize(false);
   return pending_task;
@@ -127,7 +139,7 @@ bool WorkQueue::InsertFence(EnqueueOrder fence) {
   // Moving the fence forward may unblock some tasks.
   if (work_queue_sets_ && !work_queue_.empty() && was_blocked_by_fence &&
       !BlockedByFence()) {
-    work_queue_sets_->OnPushQueue(this);
+    work_queue_sets_->OnTaskPushedToEmptyQueue(this);
     return true;
   }
   // Fence insertion may have blocked all tasks in this work queue.
@@ -140,7 +152,7 @@ bool WorkQueue::RemoveFence() {
   bool was_blocked_by_fence = BlockedByFence();
   fence_ = 0;
   if (work_queue_sets_ && !work_queue_.empty() && was_blocked_by_fence) {
-    work_queue_sets_->OnPushQueue(this);
+    work_queue_sets_->OnTaskPushedToEmptyQueue(this);
     return true;
   }
   return false;

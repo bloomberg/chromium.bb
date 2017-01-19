@@ -31,7 +31,9 @@ class WorkQueueSets;
 // throttling mechanisms.
 class BLINK_PLATFORM_EXPORT WorkQueue {
  public:
-  WorkQueue(TaskQueueImpl* task_queue, const char* name);
+  enum class QueueType { DELAYED, IMMEDIATE };
+
+  WorkQueue(TaskQueueImpl* task_queue, const char* name, QueueType queue_type);
   ~WorkQueue();
 
   // Associates this work queue with the given work queue sets. This must be
@@ -63,10 +65,10 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   // informs the WorkQueueSets if the head changed.
   void Push(TaskQueueImpl::Task task);
 
-  // Swap the |work_queue_| with |incoming_queue| and if a fence hasn't been
-  // reached it informs the WorkQueueSets if the head changed. Assumes
-  // |task_queue_->any_thread_lock_| is locked.
-  void SwapLocked(WTF::Deque<TaskQueueImpl::Task>& incoming_queue);
+  // Reloads the empty |work_queue_| with
+  // |task_queue_->TakeImmediateIncomingQueue| and if a fence hasn't been
+  // reached it informs the WorkQueueSets if the head changed.
+  void ReloadEmptyImmediateQueue();
 
   size_t Size() const { return work_queue_.size(); }
 
@@ -114,12 +116,13 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
 
  private:
   WTF::Deque<TaskQueueImpl::Task> work_queue_;
-  WorkQueueSets* work_queue_sets_;  // NOT OWNED.
-  TaskQueueImpl* task_queue_;       // NOT OWNED.
+  WorkQueueSets* work_queue_sets_;   // NOT OWNED.
+  TaskQueueImpl* const task_queue_;  // NOT OWNED.
   size_t work_queue_set_index_;
   HeapHandle heap_handle_;
-  const char* name_;
+  const char* const name_;
   EnqueueOrder fence_;
+  const QueueType queue_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkQueue);
 };

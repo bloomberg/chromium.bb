@@ -43,7 +43,7 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   void ChangeSetIndex(WorkQueue* queue, size_t set_index);
 
   // O(log num queues)
-  void OnPushQueue(WorkQueue* work_queue);
+  void OnTaskPushedToEmptyQueue(WorkQueue* work_queue);
 
   // If empty it's O(1) amortized, otherwise it's O(log num queues)
   // Assumes |work_queue| contains the lowest enqueue order in the set.

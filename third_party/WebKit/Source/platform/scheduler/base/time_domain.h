@@ -88,9 +88,11 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // the next task was posted to and it returns true.  Returns false otherwise.
   bool NextScheduledTaskQueue(TaskQueue** out_task_queue) const;
 
-  // Adds |queue| to the set of task queues that UpdateWorkQueues calls
-  // UpdateWorkQueue on.
-  void RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
+  // Adds |queue| to |has_incoming_immediate_work_| which causes
+  // UpdateWorkQueues to reload the immediate work queue if empty. Can be
+  // called from any thread.
+  // TODO(alexclarke): Move this to the TaskQueueManager.
+  void OnQueueHasIncomingImmediateWork(internal::TaskQueueImpl* queue);
 
   // Schedules a call to TaskQueueImpl::WakeUpForDelayedWork when this
   // TimeDomain reaches |delayed_run_time|.  This supersedes any previously
@@ -101,10 +103,6 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
   // Registers the |queue|.
   void RegisterQueue(internal::TaskQueueImpl* queue);
-
-  // Removes |queue| from the set of task queues that UpdateWorkQueues calls
-  // UpdateWorkQueue on. Returns true if |queue| was updatable.
-  bool UnregisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
 
   // Removes |queue| from all internal data structures.
   void UnregisterQueue(internal::TaskQueueImpl* queue);
@@ -136,8 +134,6 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   }
 
  private:
-  void MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
-
   struct DelayedWakeup {
     base::TimeTicks time;
     internal::TaskQueueImpl* queue;
@@ -164,14 +160,13 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
   IntrusiveHeap<DelayedWakeup> delayed_wakeup_queue_;
 
-  // This lock guards only |newly_updatable_|.  It's not expected to be heavily
-  // contended.
-  base::Lock newly_updatable_lock_;
-  std::vector<internal::TaskQueueImpl*> newly_updatable_;
+  // This lock guards only |has_incoming_immediate_work_|.  It's not expected to
+  // be heavily contended.
+  mutable base::Lock has_incoming_immediate_work_lock_;
 
-  // Set of task queues with avaliable work on the incoming queue.  This should
-  // only be accessed from the main thread.
-  std::set<internal::TaskQueueImpl*> updatable_queue_set_;
+  // Set of task queues with newly available work on the incoming queue.
+  // TODO(alexclarke): Move this to the TaskQueueManager.
+  std::set<internal::TaskQueueImpl*> has_incoming_immediate_work_;
 
   Observer* observer_;  // NOT OWNED.
 

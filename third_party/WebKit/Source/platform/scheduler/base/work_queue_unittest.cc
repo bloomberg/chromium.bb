@@ -28,11 +28,10 @@ class WorkQueueTest : public testing::Test {
         new TaskQueueImpl(nullptr, time_domain_.get(),
                           TaskQueue::Spec(TaskQueue::QueueType::TEST), "", ""));
 
-    work_queue_.reset(new WorkQueue(task_queue_.get(), "test"));
+    work_queue_.reset(new WorkQueue(task_queue_.get(), "test",
+                                    WorkQueue::QueueType::IMMEDIATE));
     work_queue_sets_.reset(new WorkQueueSets(1, "test"));
     work_queue_sets_->AddQueue(work_queue_.get(), 0);
-
-    incoming_queue_.reset(new WTF::Deque<TaskQueueImpl::Task>());
   }
 
   void TearDown() override { work_queue_sets_->RemoveQueue(work_queue_.get()); }
@@ -123,19 +122,18 @@ TEST_F(WorkQueueTest, PushAfterFenceHit) {
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
 }
 
-TEST_F(WorkQueueTest, SwapLocked) {
-  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(2));
-  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(3));
-  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(4));
+TEST_F(WorkQueueTest, ReloadEmptyImmediateQueue) {
+  task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(2));
+  task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(3));
+  task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(4));
 
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
   EXPECT_TRUE(work_queue_->Empty());
-  work_queue_->SwapLocked(*incoming_queue_.get());
+  work_queue_->ReloadEmptyImmediateQueue();
 
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
   EXPECT_FALSE(work_queue_->Empty());
-  EXPECT_TRUE(incoming_queue_->empty());
 
   ASSERT_NE(nullptr, work_queue_->GetFrontTask());
   EXPECT_EQ(2ull, work_queue_->GetFrontTask()->enqueue_order());
@@ -144,20 +142,19 @@ TEST_F(WorkQueueTest, SwapLocked) {
   EXPECT_EQ(4ull, work_queue_->GetBackTask()->enqueue_order());
 }
 
-TEST_F(WorkQueueTest, SwapLockedAfterFenceHit) {
+TEST_F(WorkQueueTest, ReloadEmptyImmediateQueueAfterFenceHit) {
   work_queue_->InsertFence(1);
-  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(2));
-  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(3));
-  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(4));
+  task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(2));
+  task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(3));
+  task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(4));
 
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
   EXPECT_TRUE(work_queue_->Empty());
-  work_queue_->SwapLocked(*incoming_queue_.get());
+  work_queue_->ReloadEmptyImmediateQueue();
 
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
   EXPECT_FALSE(work_queue_->Empty());
-  EXPECT_TRUE(incoming_queue_->empty());
 
   ASSERT_NE(nullptr, work_queue_->GetFrontTask());
   EXPECT_EQ(2ull, work_queue_->GetFrontTask()->enqueue_order());
