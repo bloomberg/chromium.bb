@@ -55,6 +55,11 @@ const int kTextFilterHorizontalPadding = 10;
 // The height of the text filtering textbox.
 const int kTextFilterHeight = 40;
 
+// The margin at the bottom to make sure the text filter layer is hidden.
+// This is needed because positioning the text filter directly touching the top
+// edge of the screen still allows the shadow to peek through.
+const int kTextFieldBottomMargin = 2;
+
 // Distance from top of overview to the top of text filtering textbox as a
 // proportion of the total overview area.
 const float kTextFilterTopScreenProportion = 0.02f;
@@ -157,7 +162,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   params.accept_events = true;
   params.bounds = GetTextFilterPosition(root_window);
   params.name = "OverviewModeTextFilter";
-  *text_filter_bottom = params.bounds.bottom();
+  *text_filter_bottom = params.bounds.bottom() + kTextFieldBottomMargin;
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       widget, kShellWindowId_StatusContainer, &params);
   widget->Init(params);
@@ -193,8 +198,11 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   // The textfield initially contains no text, so shift its position to be
   // outside the visible bounds of the screen.
   gfx::Transform transform;
-  transform.Translate(0, -params.bounds.bottom());
-  WmLookup::Get()->GetWindowForWidget(widget)->SetTransform(transform);
+  transform.Translate(0, -(*text_filter_bottom));
+  WmWindow* text_filter_widget_window =
+      WmLookup::Get()->GetWindowForWidget(widget);
+  text_filter_widget_window->SetOpacity(0);
+  text_filter_widget_window->SetTransform(transform);
   widget->Show();
   textfield->RequestFocus();
 
@@ -615,13 +623,15 @@ void WindowSelector::PositionWindows(bool animate) {
 void WindowSelector::RepositionTextFilterOnDisplayMetricsChange() {
   WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
   const gfx::Rect rect = GetTextFilterPosition(root_window);
-  text_filter_bottom_ = rect.bottom();
+  text_filter_bottom_ = rect.bottom() + kTextFieldBottomMargin;
   text_filter_widget_->SetBounds(rect);
 
   gfx::Transform transform;
   transform.Translate(
       0, text_filter_string_length_ == 0 ? -text_filter_bottom_ : 0);
-  GetTextFilterWidgetWindow()->SetTransform(transform);
+  WmWindow* text_filter_window = GetTextFilterWidgetWindow();
+  text_filter_window->SetOpacity(text_filter_string_length_ == 0 ? 0 : 1);
+  text_filter_window->SetTransform(transform);
 }
 
 void WindowSelector::ResetFocusRestoreWindow(bool focus) {

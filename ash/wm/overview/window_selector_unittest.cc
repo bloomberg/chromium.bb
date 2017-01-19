@@ -379,10 +379,10 @@ TEST_F(WindowSelectorTest, OverviewScreenRotation) {
   // The text filter position is calculated as:
   // x: 0.5 * (total_bounds.width() -
   //           std::min(kTextFilterWidth, total_bounds.width())).
-  // y: -kTextFilterHeight (since there's no text in the filter).
+  // y: -kTextFilterHeight (since there's no text in the filter) - 2.
   // w: std::min(kTextFilterWidth, total_bounds.width()).
   // h: kTextFilterHeight.
-  gfx::Rect expected_bounds(60, -40, 280, 40);
+  gfx::Rect expected_bounds(60, -42, 280, 40);
   EXPECT_EQ(expected_bounds.ToString(),
             text_filter->GetClientAreaBoundsInScreen().ToString());
 
@@ -391,7 +391,7 @@ TEST_F(WindowSelectorTest, OverviewScreenRotation) {
   UpdateDisplay("400x300/r");
 
   // Uses the same formulas as above using width = 300, height = 400.
-  expected_bounds = gfx::Rect(10, -40, 280, 40);
+  expected_bounds = gfx::Rect(10, -42, 280, 40);
   EXPECT_EQ(expected_bounds.ToString(),
             text_filter->GetClientAreaBoundsInScreen().ToString());
 }
