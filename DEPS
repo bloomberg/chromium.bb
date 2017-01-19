@@ -449,10 +449,6 @@ deps_os = {
     'src/third_party/wds/src':
       Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'ac3d8210d95f3000bf5c8e16a79dbbbf22d554a5',
 
-    # gRPC, an RPC framework. For Blimp use only.
-    'src/third_party/grpc':
-      Var('chromium_git') + '/external/github.com/grpc/grpc' + '@' + '5945dfa700a0566be7ea6691cc8a86ecb4a53924',
-
     # DevTools node modules. Used on Linux buildbots only.
     'src/third_party/WebKit/Source/devtools/devtools-node-modules':
       Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision')
@@ -1035,18 +1031,6 @@ hooks = [
                 '--num_threads=16',
                 '--bucket', 'chromium-apache-win32',
                 'src/third_party/apache-win32',
-    ],
-  },
-  {
-    'name': 'blimp_fonts',
-    'pattern': '.',
-    'action': [ 'download_from_google_storage',
-                '--no_resume',
-                '--platform=linux*',
-                '--extract',
-                '--no_auth',
-                '--bucket', 'chromium-fonts',
-                '-s', 'src/third_party/blimp_fonts/font_bundle.tar.gz.sha1',
     ],
   },
   {
