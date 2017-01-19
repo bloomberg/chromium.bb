@@ -234,7 +234,7 @@ class HttpDisabledByDefaultWhenMojoBindingsUsed : public EmbedderMojoTest,
   }
 
   void ReturnTestResult(const std::string& result) override {
-    FinishAsynchronousTest();
+    DisableClientAndFinishAsynchronousTest();
     FAIL() << "The HTTP page should not have been served and we should not have"
               " recieved a mojo callback!";
   }
@@ -242,6 +242,12 @@ class HttpDisabledByDefaultWhenMojoBindingsUsed : public EmbedderMojoTest,
   void OnLoadingFailed(const network::LoadingFailedParams& params) override {
     // The navigation should fail since HTTP requests are blackholed.
     EXPECT_EQ(params.GetErrorText(), "net::ERR_FILE_NOT_FOUND");
+    DisableClientAndFinishAsynchronousTest();
+  }
+
+  void DisableClientAndFinishAsynchronousTest() {
+    devtools_client_->GetNetwork()->Disable();
+    devtools_client_->GetNetwork()->RemoveObserver(this);
     FinishAsynchronousTest();
   }
 };

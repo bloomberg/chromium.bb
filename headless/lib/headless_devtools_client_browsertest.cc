@@ -65,6 +65,7 @@ class HeadlessDevToolsClientNavigationTest
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    devtools_client_->GetPage()->Disable();
     devtools_client_->GetPage()->GetExperimental()->RemoveObserver(this);
     FinishAsynchronousTest();
   }
@@ -174,6 +175,7 @@ class HeadlessDevToolsClientObserverTest
                                                               &content_type));
     EXPECT_EQ("text/html", content_type);
 
+    devtools_client_->GetNetwork()->Disable();
     devtools_client_->GetNetwork()->RemoveObserver(this);
     FinishAsynchronousTest();
   }
@@ -208,6 +210,9 @@ class HeadlessDevToolsClientExperimentalTest
 
   void OnFrameStoppedLoading(
       const page::FrameStoppedLoadingParams& params) override {
+    devtools_client_->GetPage()->Disable();
+    devtools_client_->GetPage()->GetExperimental()->RemoveObserver(this);
+
     // Check that a non-experimental command which has no return value can be
     // called with a void() callback.
     devtools_client_->GetPage()->Reload(

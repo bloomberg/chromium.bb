@@ -49,6 +49,7 @@ class DomTreeExtractorBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    devtools_client_->GetPage()->Disable();
     devtools_client_->GetPage()->RemoveObserver(this);
 
     extractor_.reset(new DomTreeExtractor(devtools_client_.get()));
