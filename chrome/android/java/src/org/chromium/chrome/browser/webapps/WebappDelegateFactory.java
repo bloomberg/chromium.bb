@@ -8,16 +8,12 @@ import android.content.Intent;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
 /**
@@ -60,51 +56,6 @@ public class WebappDelegateFactory extends FullScreenDelegateFactory {
         }
     }
 
-    @VisibleForTesting
-    static class BrowserControlsDelegate extends TabStateBrowserControlsVisibilityDelegate {
-        private final WebappActivity mActivity;
-
-        public BrowserControlsDelegate(WebappActivity activity, Tab tab) {
-            super(tab);
-            mActivity = activity;
-        }
-
-        @Override
-        public boolean isShowingBrowserControlsEnabled() {
-            if (!super.isShowingBrowserControlsEnabled()) return false;
-
-            String webappStartUrl = mActivity.getWebappInfo().uri().toString();
-            return shouldShowBrowserControls(
-                    webappStartUrl, mTab.getUrl(), mTab.getSecurityLevel());
-        }
-
-        @Override
-        public boolean isHidingBrowserControlsEnabled() {
-            return !isShowingBrowserControlsEnabled();
-        }
-
-        /**
-         * Returns whether the browser controls should be shown when a webapp is navigated to
-         * {@link url}.
-         * @param webappStartUrl The webapp's URL when it is opened from the home screen.
-         * @param url The webapp's current URL
-         * @param securityLevel The security level for the webapp's current URL.
-         * @return Whether the browser controls should be shown for {@link url}.
-         */
-        public static boolean shouldShowBrowserControls(
-                String webappStartUrl, String url, int securityLevel) {
-            // Do not show browser controls when URL is not ready yet.
-            boolean visible = false;
-            if (TextUtils.isEmpty(url)) return false;
-
-            boolean isSameWebsite =
-                    UrlUtilities.sameDomainOrHost(webappStartUrl, url, true);
-            visible = !isSameWebsite || securityLevel == ConnectionSecurityLevel.DANGEROUS
-                    || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING;
-            return visible;
-        }
-    }
-
     private final WebappActivity mActivity;
 
     public WebappDelegateFactory(WebappActivity activity) {
@@ -118,6 +69,6 @@ public class WebappDelegateFactory extends FullScreenDelegateFactory {
 
     @Override
     public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
-        return new BrowserControlsDelegate(mActivity, tab);
+        return new WebappBrowserControlsDelegate(mActivity, tab);
     }
 }

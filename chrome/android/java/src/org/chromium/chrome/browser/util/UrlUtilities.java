@@ -150,6 +150,12 @@ public class UrlUtilities {
         return nativeGetDomainAndRegistry(uri, includePrivateRegistries);
     }
 
+    /** Returns whether a URL is within another URL's scope. */
+    @VisibleForTesting
+    public static boolean isUrlWithinScope(String url, String scopeUrl) {
+        return nativeIsUrlWithinScope(url, scopeUrl);
+    }
+
     /** @return whether two URLs match, ignoring the #fragment. */
     @VisibleForTesting
     public static boolean urlsMatchIgnoringFragments(String url, String url2) {
@@ -322,6 +328,7 @@ public class UrlUtilities {
             boolean includePrivateRegistries);
     public static native boolean nativeIsGoogleSearchUrl(String url);
     public static native boolean nativeIsGoogleHomePageUrl(String url);
+    private static native boolean nativeIsUrlWithinScope(String url, String scopeUrl);
     private static native boolean nativeUrlsMatchIgnoringFragments(String url, String url2);
     private static native boolean nativeUrlsFragmentsDiffer(String url, String url2);
 }

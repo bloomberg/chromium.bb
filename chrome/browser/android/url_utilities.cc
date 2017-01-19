@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/strings/string_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "jni/UrlUtilities_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -113,6 +114,17 @@ static jboolean IsGoogleHomePageUrl(JNIEnv* env,
   if (gurl.is_empty())
     return false;
   return google_util::IsGoogleHomePageUrl(gurl);
+}
+
+static jboolean IsUrlWithinScope(JNIEnv* env,
+                                 const JavaParamRef<jclass>& clazz,
+                                 const JavaParamRef<jstring>& url,
+                                 const JavaParamRef<jstring>& scope_url) {
+  GURL gurl = ConvertJavaStringToGURL(env, url);
+  GURL gscope_url = ConvertJavaStringToGURL(env, scope_url);
+  return gurl.GetOrigin() == gscope_url.GetOrigin() &&
+         base::StartsWith(gurl.path(), gscope_url.path(),
+                          base::CompareCase::SENSITIVE);
 }
 
 static jboolean UrlsMatchIgnoringFragments(JNIEnv* env,

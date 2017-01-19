@@ -394,12 +394,6 @@ public class ExternalNavigationHandler {
         // startActivityIfNeeded or startActivity.
         if (!isExternalProtocol) {
             if (!mDelegate.isSpecializedHandlerAvailable(resolvingInfos)) {
-                if (params.webApkPackageName() != null) {
-                    intent.setPackage(packageName);
-                    mDelegate.startActivity(intent, false);
-                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-                }
-
                 if (incomingIntentRedirect && mDelegate.maybeLaunchInstantApp(
                         params.getTab(), params.getUrl(), params.getReferrerUrl(), true)) {
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;

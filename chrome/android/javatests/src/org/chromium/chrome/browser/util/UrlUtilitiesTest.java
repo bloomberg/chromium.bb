@@ -143,6 +143,22 @@ public class UrlUtilitiesTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    public void testIsUrlWithinScope() {
+        String scope = "http://www.example.com/sub";
+        assertTrue(UrlUtilities.isUrlWithinScope(scope, scope));
+        assertTrue(UrlUtilities.isUrlWithinScope(scope + "/path", scope));
+        assertTrue(UrlUtilities.isUrlWithinScope(scope + "/a b/path", scope + "/a%20b"));
+
+        assertFalse(UrlUtilities.isUrlWithinScope("https://www.example.com/sub", scope));
+        assertFalse(UrlUtilities.isUrlWithinScope(scope, scope + "/inner"));
+        assertFalse(UrlUtilities.isUrlWithinScope(scope + "/this", scope + "/different"));
+        assertFalse(
+                UrlUtilities.isUrlWithinScope("http://awesome.example.com", "http://example.com"));
+        assertFalse(UrlUtilities.isUrlWithinScope(
+                "https://www.google.com.evil.com", "https://www.google.com"));
+    }
+
+    @SmallTest
     public void testUrlsMatchIgnoringFragments() {
         String url = "http://www.example.com/path";
         assertTrue(UrlUtilities.urlsMatchIgnoringFragments(url, url));

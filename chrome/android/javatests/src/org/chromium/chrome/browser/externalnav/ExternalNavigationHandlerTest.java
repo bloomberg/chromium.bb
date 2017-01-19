@@ -42,12 +42,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     // Expectations
     private static final int IGNORE = 0x0;
     private static final int START_INCOGNITO = 0x1;
-    private static final int START_CHROME = 0x2;
-    private static final int START_WEBAPK = 0x4;
-    private static final int START_FILE = 0x8;
-    private static final int START_OTHER_ACTIVITY = 0x10;
-    private static final int INTENT_SANITIZATION_EXCEPTION = 0x20;
-    private static final int PROXY_FOR_INSTANT_APPS = 0x40;
+    private static final int START_WEBAPK = 0x2;
+    private static final int START_FILE = 0x4;
+    private static final int START_OTHER_ACTIVITY = 0x8;
+    private static final int INTENT_SANITIZATION_EXCEPTION = 0x10;
+    private static final int PROXY_FOR_INSTANT_APPS = 0x20;
 
     private static final String SEARCH_RESULT_URL_FOR_TOM_HANKS =
             "https://www.google.com/search?q=tom+hanks";
@@ -1099,14 +1098,14 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     }
 
     /**
-     * Test that tapping on a link which is outside of the referrer WebAPK's scope brings the
-     * user back to Chrome.
+     * Test that tapping on a link which is outside of the referrer WebAPK's scope keeps the user in
+     * the WebAPK. (A minibar with the URL should show though).
      */
     @SmallTest
     public void testLeaveWebApk_LinkOutOfScope() {
         checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .withWebApkPackageName(WEBAPK_PACKAGE_NAME)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_CHROME);
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
     /**
@@ -1170,8 +1169,8 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     }
 
     /**
-     * Test that tapping a link which falls into the scope of the current WebAPK stays within the
-     * WebAPK.
+     * Test that tapping a link which falls into the scope of the current WebAPK keeps the user in
+     * the WebAPK.
      */
     @SmallTest
     public void testLaunchWebApk_StayInSameWebApk() {
@@ -1490,8 +1489,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 int otherExpectation) {
             boolean expectStartIncognito = (otherExpectation & START_INCOGNITO) != 0;
             boolean expectStartActivity =
-                    (otherExpectation & (START_CHROME | START_WEBAPK | START_OTHER_ACTIVITY)) != 0;
-            boolean expectStartChrome = (otherExpectation & START_CHROME) != 0;
+                    (otherExpectation & (START_WEBAPK | START_OTHER_ACTIVITY)) != 0;
             boolean expectStartWebApk = (otherExpectation & START_WEBAPK) != 0;
             boolean expectStartOtherActivity = (otherExpectation & START_OTHER_ACTIVITY) != 0;
             boolean expectStartFile = (otherExpectation & START_FILE) != 0;
@@ -1513,13 +1511,11 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                     .build();
             OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
             boolean startActivityCalled = false;
-            boolean startChromeCalled = false;
             boolean startWebApkCalled = false;
             if (mDelegate.startActivityIntent != null) {
                 startActivityCalled = true;
                 String packageName = mDelegate.startActivityIntent.getPackage();
                 if (packageName != null) {
-                    startChromeCalled = packageName.equals(getPackageName());
                     startWebApkCalled =
                             packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
                 }
@@ -1528,7 +1524,6 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             assertEquals(expectedOverrideResult, result);
             assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
             assertEquals(expectStartActivity, startActivityCalled);
-            assertEquals(expectStartChrome, startChromeCalled);
             assertEquals(expectStartWebApk, startWebApkCalled);
             assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
             assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
