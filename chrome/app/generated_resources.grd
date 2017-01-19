@@ -15196,6 +15196,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NTP_STANDALONE_SUGGESTIONS_UI_DESCRIPTION" desc="Description for the flag to enable a standalone content suggestions UI." translateable="false">
         Show a menu item to open a standalone content suggestions UI for testing.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_NAME" desc="Name for the flag to enable notifications for content suggestions on the New Tab page." translateable="false">
+        Notify about new content suggestions available at the New Tab page
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable notifications for content suggestions on the New Tab page." translateable="false">
+        If enabled, notifications will inform about new content suggestions on the New Tab page (see #enable-ntp-snippets).
+      </message>
     </if>
 
     <if expr="is_android">

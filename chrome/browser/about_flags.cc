@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -535,6 +536,19 @@ const FeatureEntry::FeatureVariation
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam
+    kContentSuggestionsNotificationsFeatureVariationAlways[] = {
+        {kContentSuggestionsNotificationsAlwaysNotifyParam, "true"}};
+
+const FeatureEntry::FeatureVariation
+    kContentSuggestionsNotificationsFeatureVariations[] = {
+        {"(notify always)",
+         kContentSuggestionsNotificationsFeatureVariationAlways,
+         arraysize(kContentSuggestionsNotificationsFeatureVariationAlways),
+         nullptr}};
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationChromeReader[] = {
     {"content_suggestions_backend", ntp_snippets::kChromeReaderServer}};
 
@@ -734,8 +748,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-overdraw-feedback", IDS_FLAGS_SHOW_OVERDRAW_FEEDBACK,
      IDS_FLAGS_SHOW_OVERDRAW_FEEDBACK_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kShowOverdrawFeedback)},
-    {"ui-disable-partial-swap",
-     IDS_FLAGS_UI_PARTIAL_SWAP_NAME,
+    {"ui-disable-partial-swap", IDS_FLAGS_UI_PARTIAL_SWAP_NAME,
      IDS_FLAGS_UI_PARTIAL_SWAP_DESCRIPTION, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kUIDisablePartialSwap)},
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -1050,8 +1063,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SPEED_NAME,
      IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SPEED_DESCRIPTION, kOsCrOS,
      MULTI_VALUE_TYPE(kAshMaterialDesignInkDropAnimationSpeed)},
-    {"ui-slow-animations",
-     IDS_FLAGS_UI_SLOW_ANIMATIONS_NAME,
+    {"ui-slow-animations", IDS_FLAGS_UI_SLOW_ANIMATIONS_NAME,
      IDS_FLAGS_UI_SLOW_ANIMATIONS_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kUISlowAnimations)},
     {"disable-cloud-import", IDS_FLAGS_CLOUD_IMPORT,
@@ -1914,6 +1926,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_NTP_STANDALONE_SUGGESTIONS_UI_NAME,
      IDS_FLAGS_ENABLE_NTP_STANDALONE_SUGGESTIONS_UI_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPSuggestionsStandaloneUIFeature)},
+    {"enable-ntp-suggestions-notifications",
+     IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_NAME,
+     IDS_FLAGS_ENABLE_NTP_SUGGESTIONS_NOTIFICATIONS_DESCRIPTION, kOsAndroid,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         kContentSuggestionsNotificationsFeature,
+         kContentSuggestionsNotificationsFeatureVariations,
+         ntp_snippets::kStudyName)},
 #endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264) && \
     !defined(MEDIA_DISABLE_FFMPEG)
@@ -2185,7 +2204,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_LSD_PERMISSION_PROMPT_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kLsdPermissionPrompt)},
 #endif
-
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
