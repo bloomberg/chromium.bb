@@ -14,6 +14,10 @@ namespace chromeos {
 
 namespace {
 
+// The first device policy fetch after joining Active Directory can be very slow
+// because machine credentials need to propagate through the AD deployment.
+const int kRefreshDevicePolicyTimeoutMilliseconds = 90000;
+
 authpolicy::ErrorType GetErrorFromReader(dbus::MessageReader* reader) {
   int32_t int_error;
   if (!reader->PopInt32(&int_error)) {
@@ -64,7 +68,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
                                  authpolicy::kAuthPolicyRefreshDevicePolicy);
     proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kRefreshDevicePolicyTimeoutMilliseconds,
         base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
