@@ -19,6 +19,9 @@ group("media_router_perf_tests") {
     "../../../tools/perf/",
     "../../../tools/variations/",
   ]
+  deps = [
+    ":test_extension_resource_files",
+  ]
 }
 
 group("media_router_tests") {
