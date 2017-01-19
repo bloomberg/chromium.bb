@@ -13,6 +13,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 
 namespace policy {
 
@@ -115,6 +116,7 @@ void ActiveDirectoryPolicyManager::PublishPolicy() {
   // TODO(tnagel): Rename CloudPolicyStore to PolicyStore and make the source
   // configurable, then drop PolicyMap::SetSourceForAll().
   policy_map.SetSourceForAll(POLICY_SOURCE_ACTIVE_DIRECTORY);
+  SetEnterpriseUsersDefaults(&policy_map);
   UpdatePolicy(std::move(bundle));
 }
 
