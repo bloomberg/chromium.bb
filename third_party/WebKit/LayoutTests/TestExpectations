@@ -147,6 +147,8 @@ crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition
 
 # ====== Paint team owned tests to here ======
 
+crbug.com/681369 editing/selection/select-delete-in-event-handler.html [ NeedsRebaseline ]
+
 
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.

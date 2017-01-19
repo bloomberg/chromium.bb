@@ -732,7 +732,11 @@ WebInputEventResult MouseEventManager::handleMouseDraggedEvent(
       event, m_mouseDownPos, m_dragStartPos, m_mousePressNode.get(),
       m_lastKnownMousePosition);
 
-  if (m_mouseDownMayStartAutoscroll &&
+  // The call into handleMouseDraggedEvent may have caused a re-layout,
+  // so get the LayoutObject again.
+  layoutObject = targetNode->layoutObject();
+
+  if (layoutObject && m_mouseDownMayStartAutoscroll &&
       !m_scrollManager->middleClickAutoscrollInProgress() &&
       !m_frame->selection().selectedHTMLForClipboard().isEmpty()) {
     if (AutoscrollController* controller =
