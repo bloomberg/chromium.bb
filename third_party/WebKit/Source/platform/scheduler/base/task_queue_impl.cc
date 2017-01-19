@@ -183,7 +183,6 @@ void TaskQueueImpl::UnregisterTaskQueue() {
 }
 
 bool TaskQueueImpl::RunsTasksOnCurrentThread() const {
-  base::AutoLock lock(any_thread_lock_);
   return base::PlatformThread::CurrentId() == thread_id_;
 }
 
