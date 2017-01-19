@@ -1,0 +1,24 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("coordinator_context") {
+  sources = [
+    "coordinator_context.h",
+    "coordinator_context.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "coordinator_context_unittest.mm",
+  ]
+  deps = [
+    ":coordinator_context",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

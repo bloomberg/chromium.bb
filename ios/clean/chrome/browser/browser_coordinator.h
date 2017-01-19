@@ -11,6 +11,7 @@
 
 #import <UIKit/UIKit.h>
 
+@class CoordinatorContext;
 namespace ios {
 class ChromeBrowserState;
 }
@@ -21,6 +22,9 @@ class ChromeBrowserState;
 // file declares all the methods and properties a subclass must either override,
 // call, or reset.
 @interface BrowserCoordinator : NSObject
+
+// The context object for this coordinator.
+@property(nonatomic, strong, readonly) CoordinatorContext* context;
 
 // The browser state used by this coordinator and passed into any child
 // coordinators added to it. This is a weak pointer, and setting this property

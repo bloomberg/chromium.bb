@@ -9,6 +9,7 @@
 #import "base/logging.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/browser_coordinator.h"
+#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,6 +26,7 @@
 
 @implementation BrowserCoordinator
 
+@synthesize context = _context;
 @synthesize browserState = _browserState;
 @synthesize rootViewController = _rootViewController;
 @synthesize childCoordinators = _childCoordinators;
@@ -33,6 +35,7 @@
 
 - (instancetype)init {
   if (self = [super init]) {
+    _context = [[CoordinatorContext alloc] init];
     _childCoordinators = [NSMutableSet set];
   }
   return self;

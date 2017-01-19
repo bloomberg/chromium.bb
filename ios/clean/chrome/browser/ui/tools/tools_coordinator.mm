@@ -11,6 +11,7 @@
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
 #import "ios/clean/chrome/browser/ui/presenters/menu_presentation_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_view_controller.h"
+#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,12 +33,13 @@
   self.menuViewController.transitioningDelegate = self;
 
   [self.rootViewController presentViewController:self.menuViewController
-                                        animated:YES
+                                        animated:self.context.animated
                                       completion:nil];
 }
 
 - (void)stop {
-  [self.menuViewController dismissViewControllerAnimated:YES completion:nil];
+  [self.menuViewController dismissViewControllerAnimated:self.context.animated
+                                              completion:nil];
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate

@@ -17,8 +17,9 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
-#import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_container_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
+#import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_container_coordinator.h"
+#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"
@@ -56,7 +57,7 @@
   // been set. This may be true in a unit test, or if this coordinator is being
   // used as a root coordinator.
   [self.rootViewController presentViewController:self.viewController
-                                        animated:YES
+                                        animated:self.context.animated
                                       completion:nil];
 }
 

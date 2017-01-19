@@ -18,6 +18,7 @@ source_set("browser") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs:tabs_internal",
+    "//ios/shared/chrome/browser/coordinator_context",
   ]
 }
 
