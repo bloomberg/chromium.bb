@@ -337,12 +337,6 @@ static CSSValue* consumeWebkitHighlight(CSSParserTokenRange& range) {
   return consumeString(range);
 }
 
-static CSSIdentifierValue* consumeFontVariantCaps(CSSParserTokenRange& range) {
-  return consumeIdent<CSSValueNormal, CSSValueSmallCaps, CSSValueAllSmallCaps,
-                      CSSValuePetiteCaps, CSSValueAllPetiteCaps,
-                      CSSValueUnicase, CSSValueTitlingCaps>(range);
-}
-
 class FontVariantNumericParser {
   STACK_ALLOCATED();
 
@@ -2733,8 +2727,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
   switch (property) {
     case CSSPropertyWebkitHighlight:
       return consumeWebkitHighlight(m_range);
-    case CSSPropertyFontVariantCaps:
-      return consumeFontVariantCaps(m_range);
     case CSSPropertyFontVariantNumeric:
       return consumeFontVariantNumeric(m_range);
     case CSSPropertyFontFeatureSettings:
