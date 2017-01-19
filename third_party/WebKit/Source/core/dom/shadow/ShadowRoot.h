@@ -123,7 +123,15 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void registerScopedHTMLStyleChild();
   void unregisterScopedHTMLStyleChild();
 
-  SlotAssignment& ensureSlotAssignment();
+  SlotAssignment& slotAssignment() {
+    DCHECK(m_slotAssignment);
+    return *m_slotAssignment;
+  }
+
+  HTMLSlotElement* assignedSlotFor(const Node&);
+  void didAddSlot(HTMLSlotElement&);
+  void didChangeHostChildSlotName(const AtomicString& oldValue,
+                                  const AtomicString& newValue);
 
   void distributeV1();
 
@@ -155,6 +163,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void childrenChanged(const ChildrenChange&) override;
 
   ShadowRootRareDataV0& ensureShadowRootRareDataV0();
+  SlotAssignment& ensureSlotAssignment();
 
   void addChildShadowRoot() { ++m_childShadowRootCount; }
   void removeChildShadowRoot() {

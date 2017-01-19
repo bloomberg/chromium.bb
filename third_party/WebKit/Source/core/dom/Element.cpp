@@ -1290,10 +1290,8 @@ void Element::attributeChanged(const AttributeModificationParams& params) {
       parentElementShadow->setNeedsDistributionRecalc();
   }
   if (name == HTMLNames::slotAttr && params.oldValue != params.newValue) {
-    if (ShadowRoot* root = v1ShadowRootOfParent()) {
-      root->ensureSlotAssignment().hostChildSlotNameChanged(params.oldValue,
-                                                            params.newValue);
-    }
+    if (ShadowRoot* root = v1ShadowRootOfParent())
+      root->didChangeHostChildSlotName(params.oldValue, params.newValue);
   }
 
   parseAttribute(params);

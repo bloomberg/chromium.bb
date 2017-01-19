@@ -2325,7 +2325,7 @@ HTMLSlotElement* Node::assignedSlot() const {
   // assignedSlot doesn't need to call updateDistribution().
   DCHECK(!isPseudoElement());
   if (ShadowRoot* root = v1ShadowRootOfParent())
-    return root->ensureSlotAssignment().findSlot(*this);
+    return root->assignedSlotFor(*this);
   return nullptr;
 }
 
@@ -2333,7 +2333,7 @@ HTMLSlotElement* Node::assignedSlotForBinding() {
   // assignedSlot doesn't need to call updateDistribution().
   if (ShadowRoot* root = v1ShadowRootOfParent()) {
     if (root->type() == ShadowRootType::Open)
-      return root->ensureSlotAssignment().findSlot(*this);
+      return root->assignedSlotFor(*this);
   }
   return nullptr;
 }
@@ -2456,7 +2456,7 @@ void Node::checkSlotChange(SlotChangeType slotChangeType) {
 
     // Although DOM Standard requires "assign a slot for node / run assign
     // slotables" at this timing, we skip it as an optimization.
-    if (HTMLSlotElement* slot = root->ensureSlotAssignment().findSlot(*this))
+    if (HTMLSlotElement* slot = root->assignedSlotFor(*this))
       slot->didSlotChange(slotChangeType);
   } else {
     // Relevant DOM Standard:

@@ -203,8 +203,8 @@ void HTMLSlotElement::attributeChanged(
   if (params.name == nameAttr) {
     if (ShadowRoot* root = containingShadowRoot()) {
       if (root->isV1() && params.oldValue != params.newValue) {
-        root->ensureSlotAssignment().slotRenamed(
-            normalizeSlotName(params.oldValue), *this);
+        root->slotAssignment().slotRenamed(normalizeSlotName(params.oldValue),
+                                           *this);
       }
     }
   }
@@ -231,7 +231,7 @@ Node::InsertionNotificationRequest HTMLSlotElement::insertedInto(
     // - 6.4:  Run assign slotables for a tree with node's tree and a set
     // containing each inclusive descendant of node that is a slot.
     if (root->isV1() && !wasInShadowTreeBeforeInserted(*this, *insertionPoint))
-      root->ensureSlotAssignment().slotAdded(*this);
+      root->didAddSlot(*this);
   }
 
   // We could have been distributed into in a detached subtree, make sure to
@@ -271,7 +271,7 @@ void HTMLSlotElement::removedFrom(ContainerNode* insertionPoint) {
 
   if (root && root->isV1() && root == insertionPoint->treeScope().rootNode()) {
     // This slot was in a shadow tree and got disconnected from the shadow root.
-    root->ensureSlotAssignment().slotRemoved(*this);
+    root->slotAssignment().slotRemoved(*this);
   }
 
   HTMLElement::removedFrom(insertionPoint);
@@ -338,7 +338,7 @@ bool HTMLSlotElement::hasAssignedNodesSlow() const {
   ShadowRoot* root = containingShadowRoot();
   DCHECK(root);
   DCHECK(root->isV1());
-  SlotAssignment& assignment = root->ensureSlotAssignment();
+  SlotAssignment& assignment = root->slotAssignment();
   if (assignment.findSlotByName(name()) != this)
     return false;
   return assignment.findHostChildBySlotName(name());
@@ -348,7 +348,7 @@ bool HTMLSlotElement::findHostChildWithSameSlotName() const {
   ShadowRoot* root = containingShadowRoot();
   DCHECK(root);
   DCHECK(root->isV1());
-  SlotAssignment& assignment = root->ensureSlotAssignment();
+  SlotAssignment& assignment = root->slotAssignment();
   return assignment.findHostChildBySlotName(name());
 }
 

@@ -42,11 +42,11 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   void resolveDistribution();
   const HeapVector<Member<HTMLSlotElement>>& slots();
 
-  void slotAdded(HTMLSlotElement&);
+  void didAddSlot(HTMLSlotElement&);
   void slotRemoved(HTMLSlotElement&);
   void slotRenamed(const AtomicString& oldName, HTMLSlotElement&);
-  void hostChildSlotNameChanged(const AtomicString& oldValue,
-                                const AtomicString& newValue);
+  void didChangeHostChildSlotName(const AtomicString& oldValue,
+                                  const AtomicString& newValue);
 
   bool findHostChildBySlotName(const AtomicString& slotName) const;
 
