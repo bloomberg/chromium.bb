@@ -334,7 +334,7 @@ public class ToolbarPhone extends ToolbarLayout
                 new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
 
         mLocationBarBackground =
-                ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.textbox);
+                ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.card_single);
         mLocationBarBackground.getPadding(mLocationBarBackgroundPadding);
         mLocationBar.setPadding(
                 mLocationBarBackgroundPadding.left, mLocationBarBackgroundPadding.top,

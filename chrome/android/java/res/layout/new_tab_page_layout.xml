@@ -64,7 +64,7 @@
         android:layout_marginTop="0dp"
         android:layout_marginBottom="1dp"
         android:gravity="center_vertical"
-        android:background="@drawable/textbox"
+        android:background="@drawable/card_single"
         android:orientation="horizontal"
         android:paddingStart="2dp"
         android:paddingEnd="2dp"

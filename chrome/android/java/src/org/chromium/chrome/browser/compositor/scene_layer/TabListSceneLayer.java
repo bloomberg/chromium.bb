@@ -97,7 +97,7 @@ public class TabListSceneLayer extends SceneLayer {
                     LayoutTab.CLOSE_BUTTON_WIDTH_DP * dpToPx, t.getStaticToViewBlend(),
                     t.getBorderScale(), t.getSaturation(), t.getBrightness(), t.showToolbar(),
                     defaultThemeColor, t.getToolbarBackgroundColor(), closeButtonColor,
-                    t.anonymizeToolbar(), t.isTitleNeeded(), R.drawable.textbox,
+                    t.anonymizeToolbar(), t.isTitleNeeded(), R.drawable.card_single,
                     t.getTextBoxBackgroundColor(), t.getTextBoxAlpha(), t.getToolbarAlpha(),
                     t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(),
                     t.insetBorderVertical());

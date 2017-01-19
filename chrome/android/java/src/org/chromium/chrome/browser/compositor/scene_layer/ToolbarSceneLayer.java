@@ -96,8 +96,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 : fullscreenManager.getTopControlOffset();
 
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,
-                browserControlsBackgroundColor, R.drawable.textbox, browserControlsUrlBarAlpha,
-                controlsOffset, windowHeight, useTexture, showShadow,
+                browserControlsBackgroundColor, R.drawable.card_single,
+                browserControlsUrlBarAlpha, controlsOffset, windowHeight, useTexture, showShadow,
                 fullscreenManager.areBrowserControlsAtBottom());
 
         if (mProgressBarDrawingInfo == null) return;

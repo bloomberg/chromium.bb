@@ -290,7 +290,8 @@
          (https://crbug.com/660837). -->
     <dimen name="snippets_peeking_card_peek_amount">32dp</dimen>
     <dimen name="snippets_peeking_card_bounce_distance">10dp</dimen>
-    <dimen name="snippets_card_9_patch_adjustment">2dp</dimen>
+    <dimen name="snippets_card_corner_radius">2dp</dimen>
+    <dimen name="snippets_card_gap">0.5dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
     <dimen name="snippets_publisher_margin_top_with_article_snippet">16dp</dimen>
     <dimen name="snippets_publisher_margin_top_without_article_snippet">8dp</dimen>

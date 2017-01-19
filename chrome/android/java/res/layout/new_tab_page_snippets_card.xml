@@ -12,7 +12,7 @@
     android:layout_height="wrap_content"
     android:foreground="@drawable/button_borderless_compat"
     android:padding="@dimen/snippets_padding"
-    android:background="@drawable/ntp_card_single">
+    android:background="@drawable/card_single">
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/article_headline"

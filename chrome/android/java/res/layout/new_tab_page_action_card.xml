@@ -14,7 +14,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp"
-    android:background="@drawable/ntp_card_single">
+    android:background="@drawable/card_single">
 
 
     <!-- Using some standard metrics (minWidth, paddings) to override the
