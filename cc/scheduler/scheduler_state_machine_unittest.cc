@@ -2123,32 +2123,5 @@ TEST(SchedulerStateMachineTest,
       SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
 }
 
-TEST(SchedulerStateMachineTest, CompositorFrameSinkCreationWhileCommitPending) {
-  SchedulerSettings settings;
-  settings.abort_commit_before_compositor_frame_sink_creation = false;
-  StateMachine state(settings);
-  SET_UP_STATE(state);
-
-  // Set up the request for a commit and start a frame.
-  state.SetNeedsBeginMainFrame();
-  state.OnBeginImplFrame();
-  PerformAction(&state, SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-
-  // Lose the CompositorFrameSink.
-  state.DidLoseCompositorFrameSink();
-
-  // The scheduler shouldn't trigger the CompositorFrameSink creation till the
-  // previous begin impl frame state is cleared from the pipeline.
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-
-  // Cycle through the frame stages to clear the scheduler state.
-  state.OnBeginImplFrameDeadline();
-  state.OnBeginImplFrameIdle();
-
-  // The scheduler should begin the CompositorFrameSink creation now.
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
-}
-
 }  // namespace
 }  // namespace cc

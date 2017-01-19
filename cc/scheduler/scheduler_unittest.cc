@@ -3183,34 +3183,6 @@ TEST_F(SchedulerTest, NoCompositorFrameSinkCreationWhileCommitPending) {
                        client_);
 }
 
-TEST_F(SchedulerTest, CompositorFrameSinkCreationWhileCommitPending) {
-  scheduler_settings_.abort_commit_before_compositor_frame_sink_creation =
-      false;
-  SetUpScheduler(THROTTLED_BFS);
-
-  // SetNeedsBeginMainFrame should begin the frame.
-  scheduler_->SetNeedsBeginMainFrame();
-  client_->Reset();
-  EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
-
-  // Lose the CompositorFrameSink and trigger the deadline.
-  client_->Reset();
-  scheduler_->DidLoseCompositorFrameSink();
-  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
-  EXPECT_NO_ACTION(client_);
-
-  // The scheduler should trigger the CompositorFrameSink creation immediately
-  // after
-  // the begin_impl_frame_state_ is cleared.
-  task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
-  EXPECT_ACTION("ScheduledActionBeginCompositorFrameSinkCreation", client_, 0,
-                2);
-  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
-}
-
 // The three letters appeneded to each version of this test mean the following:s
 // tree_priority: B = both trees same priority; A = active tree priority;
 // scroll_handler_state: H = affects scroll handler; N = does not affect scroll
