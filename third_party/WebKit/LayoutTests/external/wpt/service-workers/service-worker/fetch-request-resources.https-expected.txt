@@ -14,6 +14,6 @@ CONSOLE ERROR: line 54: Ignoring unrecogized 'integrity' attribute option '123'.
 CONSOLE ERROR: Uncaught (in promise) NetworkError: A network error occurred.
 CONSOLE ERROR: Uncaught (in promise) NetworkError: A network error occurred.
 This is a testharness.js-based test.
-FAIL Verify FetchEvent for resources. assert_equals: integrity of Script load (url:https://127.0.0.1:8444/service-workers/service-worker/resources/dummy?test21) must be      . expected "     " but got ""
+FAIL Verify FetchEvent for resources. assert_equals: integrity of Script load (url:https://web-platform.test:8444/service-workers/service-worker/resources/dummy?test21) must be      . expected "     " but got ""
 Harness: the test ran to completion.
 

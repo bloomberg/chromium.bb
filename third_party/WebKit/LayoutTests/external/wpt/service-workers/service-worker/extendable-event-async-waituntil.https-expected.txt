@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS Test calling waitUntil in a different task without an existing extension throws 
+FAIL Test calling waitUntil in a different microtask without an existing extension throws assert_unreached: unexpected rejection: assert_equals: expected "InvalidStateError" but got "OK" Reached unreachable code
+FAIL Test calling waitUntil in a different task with an existing extension succeeds assert_unreached: unexpected rejection: assert_equals: expected "OK" but got "InvalidStateError" Reached unreachable code
+PASS Test calling waitUntil with an existing extension promise handler succeeds 
+FAIL Test calling waitUntil at the end of the microtask turn throws assert_unreached: unexpected rejection: assert_equals: expected "InvalidStateError" but got "OK" Reached unreachable code
+PASS Test calling waitUntil after the current extension expired in a different task fails 
+FAIL Test calling waitUntil asynchronously with pending respondWith promise. assert_unreached: unexpected rejection: assert_equals: expected "OK" but got "InvalidStateError" Reached unreachable code
+Harness: the test ran to completion.
+

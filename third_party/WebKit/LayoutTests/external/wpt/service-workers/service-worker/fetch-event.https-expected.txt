@@ -10,7 +10,7 @@ PASS Service Worker fetches other file in fetch event
 PASS Service Worker responds to fetch event with POST form 
 PASS Multiple calls of respondWith must throw InvalidStateErrors 
 PASS Service Worker event.respondWith must set the used flag 
-PASS Service Worker must not expose FetchEvent URL fragments. 
+FAIL Service Worker must not expose FetchEvent URL fragments. assert_unreached: unexpected rejection: assert_equals: Service worker should expose URL fragments in request. expected "Fragment Found :#/some/fragment" but got "Fragment Not Found" Reached unreachable code
 FAIL Service Worker responds to fetch event with the correct cache types assert_unreached: unexpected rejection: assert_equals: expected "default" but got "" Reached unreachable code
 FAIL Service Worker should intercept EventSource assert_unreached: unexpected rejection: assert_equals: EventSource should bypass the http cache. expected (string) "no-store" but got (undefined) undefined Reached unreachable code
 PASS Service Worker responds to fetch event with the correct integrity_metadata 

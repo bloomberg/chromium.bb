@@ -1,5 +1,6 @@
-CONSOLE ERROR: XMLHttpRequest cannot load https://127.0.0.1:8444/service-workers/service-worker/resources/fetch-access-control.py?. Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'https://web-platform.test:8444' is therefore not allowed access.
+CONSOLE ERROR: XMLHttpRequest cannot load https://www1.web-platform.test:8444/service-workers/service-worker/resources/fetch-access-control.py?. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'https://web-platform.test:8444' is therefore not allowed access.
+CONSOLE ERROR: XMLHttpRequest cannot load https://www1.web-platform.test:8444/service-workers/service-worker/resources/fetch-access-control.py?. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'https://web-platform.test:8444' is therefore not allowed access.
 This is a testharness.js-based test.
-FAIL Verify the fallback behavior of FetchEvent assert_unreached: unexpected rejection: https://127.0.0.1:8444/service-workers/service-worker/resources/fetch-access-control.py? should succeed. Reached unreachable code
+PASS Verify the fallback behavior of FetchEvent 
 Harness: the test ran to completion.
 

@@ -726,6 +726,7 @@ crbug.com/411164 [ Win ] virtual/mojo-loading/http/tests/security/powerfulFeatur
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
 # Use crbug.com/490511 for untriaged failures.
+crbug.com/490511 external/wpt/html/browsers/offline/application-cache-api/api_update.html [ Failure Pass ]
 crbug.com/490511 [ Linux Win ] external/wpt/html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type.html [ Failure ]
 crbug.com/108417 external/wpt/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]
 crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure Pass ]
@@ -1710,7 +1711,6 @@ crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffect/copy-cont
 crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/spacing-keyframes-filters.html [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-pathname-setter-question-mark.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/moving-documents.html [ Timeout ]
-crbug.com/626703 external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/dynamic-append.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/interfaces.html [ Failure ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html [ Timeout ]
@@ -1761,16 +1761,17 @@ crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Fa
 crbug.com/626703 external/wpt/web-animations/timing-model/animations/set-the-target-effect-of-an-animation.html [ Failure ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
-crbug.com/626703 external/wpt/workers/opaque-origin.html [ Timeout Crash ]
+crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/dom/events/Event-dispatch-click.html [ Timeout Crash ]
-crbug.com/626703 external/wpt/domparsing/innerhtml-05.xhtml [ Timeout Crash ]
+crbug.com/626703 external/wpt/domparsing/innerhtml-05.xhtml [ Failure Crash ]
 crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout Failure ]
+crbug.com/626703 external/wpt/service-workers/service-worker/extendable-event-async-waituntil.https.html [ Pass Timeout ]
 
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 external/wpt/workers/baseurl/alpha/worker.html [ Failure ]
@@ -1968,34 +1969,6 @@ crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
 crbug.com/665820 external/wpt/webmessaging/with-ports/010.html [ Failure ]
 crbug.com/665820 external/wpt/webmessaging/without-ports/010.html [ Failure ]
 crbug.com/673526 external/wpt/webmessaging/message-channels/close.html [ Failure ]
-
-# Suppress wptserve-related failures temporarily.
-Bug(dpranke) external/wpt/html/browsers/offline/application-cache-api/api_update.html [ Failure Pass ]
-Bug(dpranke) external/wpt/html/dom/reflection-obsolete.html [ Failure ]
-Bug(dpranke) external/wpt/html/webappapis/scripting/events/messageevent-constructor.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/cache-storage/serviceworker/cache-add.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/cache-storage/serviceworker/cache-matchAll.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/cache-storage/serviceworker/cache-put.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/cache-storage/window/cache-add.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/cache-storage/window/cache-put.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/cache-storage/worker/cache-add.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/cache-storage/worker/cache-put.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/extendable-event-async-waituntil.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/fetch-event.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/fetch-request-fallback.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/fetch-request-redirect.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/navigate-window.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/oninstall-script-error.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/performance-timeline.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/service-worker-csp-connect.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/serviceworker-message-event-historical.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/websocket.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/worker-interception.https.html [ Failure ]
-Bug(dpranke) external/wpt/service-workers/service-worker/xhr.https.html [ Failure ]
-Bug(dpranke) external/wpt/webrtc/simplecall.html [ Failure ]
 
 # Added 2016-12-06
 crbug.com/671618 http/tests/websocket/workers/worker-reload.html [ Pass Timeout ]

@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 2448: Uncaught Error: assert_unreached: Got more than 1 load event Reached unreachable code
+This is a testharness.js-based test.
+FAIL Meta refresh only applies while in the document tree, not in a shadow tree Uncaught Error: assert_unreached: Got more than 1 load event Reached unreachable code
+Harness: the test ran to completion.
+

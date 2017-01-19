@@ -1,4 +1,5 @@
+CONSOLE ERROR: line 186: WebSocket connection to 'wss://web-platform.test:9444/echo' failed: Error during WebSocket handshake: Unexpected response code: 404
 This is a testharness.js-based test.
-FAIL Verify WebSocket handshake channel does not get intercepted assert_unreached: unexpected rejection: Blocked a frame with origin "https://web-platform.test:8444" from accessing a cross-origin frame. Reached unreachable code
+FAIL Verify WebSocket handshake channel does not get intercepted assert_unreached: unexpected rejection: [object Event] Reached unreachable code
 Harness: the test ran to completion.
 

@@ -441,44 +441,14 @@ PASS marquee.behavior: 32 tests
 PASS marquee.bgColor: 32 tests
 PASS marquee.direction: 32 tests
 PASS marquee.height: 32 tests
-PASS marquee.hspace: 2 tests
-FAIL marquee.hspace: setAttribute() to -2147483649 assert_equals: IDL get expected 0 but got 2147483647
-PASS marquee.hspace: 16 tests
-FAIL marquee.hspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS marquee.hspace: 2 tests
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to "﻿7" assert_equals: IDL get expected 0 but got 7
-PASS marquee.hspace: 2 tests
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to "᠎7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.hspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS marquee.hspace: 17 tests
-FAIL marquee.hspace: IDL set to 2147483648 assert_equals: getAttribute() expected "0" but got "2147483648"
-FAIL marquee.hspace: IDL set to 4294967295 assert_equals: getAttribute() expected "0" but got "4294967295"
+PASS marquee.hspace: 62 tests
 PASS marquee.scrollAmount: 19 tests
 FAIL marquee.scrollAmount: setAttribute() to "\v7" assert_equals: IDL get expected 6 but got 7
-PASS marquee.scrollAmount: 2 tests
-FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
-FAIL marquee.scrollAmount: setAttribute() to "﻿7" assert_equals: IDL get expected 6 but got 7
-PASS marquee.scrollAmount: 2 tests
+PASS marquee.scrollAmount: 6 tests
 FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
-FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
+PASS marquee.scrollAmount: setAttribute() to " 7" 
 FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
-FAIL marquee.scrollAmount: setAttribute() to "᠎7" assert_equals: IDL get expected 6 but got 7
+PASS marquee.scrollAmount: setAttribute() to "᠎7" 
 FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
 FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
 FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
@@ -490,21 +460,18 @@ FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expec
 FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
 FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
 FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
-FAIL marquee.scrollAmount: setAttribute() to " 7" assert_equals: IDL get expected 6 but got 7
+PASS marquee.scrollAmount: setAttribute() to " 7" 
 FAIL marquee.scrollAmount: setAttribute() to "　7" assert_equals: IDL get expected 6 but got 7
 PASS marquee.scrollAmount: 17 tests
 FAIL marquee.scrollAmount: IDL set to 2147483648 Failed to set the 'scrollAmount' property on 'HTMLMarqueeElement': The provided value (-2147483648) is negative.
 FAIL marquee.scrollAmount: IDL set to 4294967295 Failed to set the 'scrollAmount' property on 'HTMLMarqueeElement': The provided value (-1) is negative.
 PASS marquee.scrollDelay: 19 tests
 FAIL marquee.scrollDelay: setAttribute() to "\v7" assert_equals: IDL get expected 85 but got 7
-PASS marquee.scrollDelay: 2 tests
-FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
-FAIL marquee.scrollDelay: setAttribute() to "﻿7" assert_equals: IDL get expected 85 but got 7
-PASS marquee.scrollDelay: 2 tests
+PASS marquee.scrollDelay: 6 tests
 FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
-FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
+PASS marquee.scrollDelay: setAttribute() to " 7" 
 FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
-FAIL marquee.scrollDelay: setAttribute() to "᠎7" assert_equals: IDL get expected 85 but got 7
+PASS marquee.scrollDelay: setAttribute() to "᠎7" 
 FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
 FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
 FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
@@ -516,55 +483,13 @@ FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expect
 FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
 FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
 FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
-FAIL marquee.scrollDelay: setAttribute() to " 7" assert_equals: IDL get expected 85 but got 7
+PASS marquee.scrollDelay: setAttribute() to " 7" 
 FAIL marquee.scrollDelay: setAttribute() to "　7" assert_equals: IDL get expected 85 but got 7
 PASS marquee.scrollDelay: 17 tests
 FAIL marquee.scrollDelay: IDL set to 2147483648 Failed to set the 'scrollDelay' property on 'HTMLMarqueeElement': The provided value (-2147483648) is negative.
 FAIL marquee.scrollDelay: IDL set to 4294967295 Failed to set the 'scrollDelay' property on 'HTMLMarqueeElement': The provided value (-1) is negative.
-PASS marquee.trueSpeed: 2 tests
-FAIL marquee.trueSpeed: setAttribute() to "" assert_equals: IDL get expected true but got false
-PASS marquee.trueSpeed: 16 tests
-FAIL marquee.trueSpeed: IDL set to " foo " assert_equals: IDL get expected true but got false
-PASS marquee.trueSpeed: 2 tests
-FAIL marquee.trueSpeed: IDL set to 7 assert_equals: IDL get expected true but got false
-FAIL marquee.trueSpeed: IDL set to 1.5 assert_equals: IDL get expected true but got false
-FAIL marquee.trueSpeed: IDL set to true assert_equals: IDL get expected true but got false
-PASS marquee.trueSpeed: IDL set to false 
-FAIL marquee.trueSpeed: IDL set to object "[object Object]" assert_equals: IDL get expected true but got false
-PASS marquee.trueSpeed: IDL set to NaN 
-FAIL marquee.trueSpeed: IDL set to Infinity assert_equals: IDL get expected true but got false
-FAIL marquee.trueSpeed: IDL set to -Infinity assert_equals: IDL get expected true but got false
-FAIL marquee.trueSpeed: IDL set to "\0" assert_equals: IDL get expected true but got false
-FAIL marquee.trueSpeed: IDL set to object "test-toString" assert_equals: IDL get expected true but got false
-FAIL marquee.trueSpeed: IDL set to object "test-valueOf" assert_equals: IDL get expected true but got false
-PASS marquee.vspace: 2 tests
-FAIL marquee.vspace: setAttribute() to -2147483649 assert_equals: IDL get expected 0 but got 2147483647
-PASS marquee.vspace: 16 tests
-FAIL marquee.vspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS marquee.vspace: 2 tests
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to "﻿7" assert_equals: IDL get expected 0 but got 7
-PASS marquee.vspace: 2 tests
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to "᠎7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL marquee.vspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS marquee.vspace: 17 tests
-FAIL marquee.vspace: IDL set to 2147483648 assert_equals: getAttribute() expected "0" but got "2147483648"
-FAIL marquee.vspace: IDL set to 4294967295 assert_equals: getAttribute() expected "0" but got "4294967295"
+PASS marquee.trueSpeed: 33 tests
+PASS marquee.vspace: 62 tests
 PASS marquee.width: 32 tests
 PASS frameset.title: 32 tests
 PASS frameset.lang: 32 tests

@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL install handler throws an error assert_equals: The worker was installed expected true but got false
+FAIL install handler throws an error, error handler does not cancel assert_equals: The worker was installed expected true but got false
+PASS install handler dispatches an event that throws an error 
+PASS install handler throws an error in the waitUntil 
+FAIL install handler throws an error that is cancelled assert_equals: The worker was installed expected true but got false
+FAIL install handler throws an error and prevents default assert_equals: The worker was installed expected true but got false
+Harness: the test ran to completion.
+
