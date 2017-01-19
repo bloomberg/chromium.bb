@@ -41,6 +41,7 @@
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
+#include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
@@ -2436,41 +2437,11 @@ static CSSValue* consumeCommaSeparatedBackgroundComponent(
   return result;
 }
 
-static CSSIdentifierValue* consumeSelfPositionKeyword(
-    CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter ||
-      id == CSSValueSelfStart || id == CSSValueSelfEnd ||
-      id == CSSValueFlexStart || id == CSSValueFlexEnd || id == CSSValueLeft ||
-      id == CSSValueRight)
-    return consumeIdent(range);
-  return nullptr;
-}
-
-static CSSValue* consumeSelfPositionOverflowPosition(
-    CSSParserTokenRange& range) {
-  if (identMatches<CSSValueAuto, CSSValueNormal, CSSValueStretch,
-                   CSSValueBaseline, CSSValueLastBaseline>(range.peek().id()))
-    return consumeIdent(range);
-
-  CSSIdentifierValue* overflowPosition =
-      consumeIdent<CSSValueUnsafe, CSSValueSafe>(range);
-  CSSIdentifierValue* selfPosition = consumeSelfPositionKeyword(range);
-  if (!selfPosition)
-    return nullptr;
-  if (!overflowPosition)
-    overflowPosition = consumeIdent<CSSValueUnsafe, CSSValueSafe>(range);
-  if (overflowPosition)
-    return CSSValuePair::create(selfPosition, overflowPosition,
-                                CSSValuePair::DropIdenticalValues);
-  return selfPosition;
-}
-
 static CSSValue* consumeAlignItems(CSSParserTokenRange& range) {
   // align-items property does not allow the 'auto' value.
   if (identMatches<CSSValueAuto>(range.peek().id()))
     return nullptr;
-  return consumeSelfPositionOverflowPosition(range);
+  return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(range);
 }
 
 static CSSValue* consumeJustifyItems(CSSParserTokenRange& range) {
@@ -2485,7 +2456,7 @@ static CSSValue* consumeJustifyItems(CSSParserTokenRange& range) {
     return CSSValuePair::create(legacy, positionKeyword,
                                 CSSValuePair::DropIdenticalValues);
   }
-  return consumeSelfPositionOverflowPosition(range);
+  return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(range);
 }
 
 static CSSValue* consumeFitContent(CSSParserTokenRange& range,
@@ -3290,7 +3261,8 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyJustifySelf:
     case CSSPropertyAlignSelf:
       ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-      return consumeSelfPositionOverflowPosition(m_range);
+      return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
+          m_range);
     case CSSPropertyJustifyItems:
       ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
       return consumeJustifyItems(m_range);
