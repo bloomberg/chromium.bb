@@ -85,12 +85,51 @@ public class SectionListTest {
 
         SectionList sectionList = new SectionList(mNtpManager, mOfflinePageBridge);
 
+        bindViewHolders(sectionList);
+
         assertThat(articles.get(0).getGlobalRank(), equalTo(0));
         assertThat(articles.get(0).getPerSectionRank(), equalTo(0));
         assertThat(articles.get(2).getGlobalRank(), equalTo(2));
         assertThat(articles.get(2).getPerSectionRank(), equalTo(2));
         assertThat(bookmarks.get(1).getGlobalRank(), equalTo(4));
         assertThat(bookmarks.get(1).getPerSectionRank(), equalTo(1));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testGetSuggestionRankWithChanges() {
+        // Setup the section list the following way:
+        //
+        //  Item type | local rank | global rank
+        // -----------+------------+-------------
+        // HEADER     |            |
+        // ARTICLE    | 0          | 0
+        // ARTICLE    | 1          | 1
+        // ARTICLE    | 2          | 2
+        // HEADER     |            |
+        // STATUS     |            |
+        // ACTION     | 0          |
+        // BOOKMARK   | 0          | 3
+        // BOOKMARK   | 1          | 4
+        // BOOKMARK   | 2          | 5
+        // BOOKMARK   | 3          | 6
+        List<SnippetArticle> articles =
+                registerCategory(mSuggestionSource, KnownCategories.ARTICLES, 3);
+        registerCategory(mSuggestionSource, KnownCategories.DOWNLOADS, 0);
+        List<SnippetArticle> bookmarks =
+                registerCategory(mSuggestionSource, KnownCategories.BOOKMARKS, 4);
+
+        SectionList sectionList = new SectionList(mNtpManager, mOfflinePageBridge);
+
+        bindViewHolders(sectionList, 0, 5); // Bind until after the third article.
+
+        assertThat(articles.get(0).getGlobalRank(), equalTo(0));
+        assertThat(articles.get(0).getPerSectionRank(), equalTo(0));
+        assertThat(articles.get(2).getGlobalRank(), equalTo(2));
+        assertThat(articles.get(2).getPerSectionRank(), equalTo(2));
+        assertThat(bookmarks.get(1).getGlobalRank(), equalTo(-1));  // Not bound nor ranked yet.
+        assertThat(bookmarks.get(1).getPerSectionRank(), equalTo(-1));
+
 
         // Test ranks after changes: remove then add some items.
         @SuppressWarnings("unchecked")
@@ -103,8 +142,10 @@ public class SectionListTest {
         List<SnippetArticle> newBookmarks =
                 createDummySuggestions(6, KnownCategories.BOOKMARKS).subList(4, 6);
 
-        sectionList.onMoreSuggestions(KnownCategories.ARTICLES, newArticles);
+        sectionList.onMoreSuggestions(KnownCategories.ARTICLES, newArticles.subList(0, 1));
         sectionList.onMoreSuggestions(KnownCategories.BOOKMARKS, newBookmarks);
+
+        bindViewHolders(sectionList, 3, sectionList.getItemCount());
 
         // After the changes we should have:
         //  Item type | local rank | global rank
@@ -113,31 +154,62 @@ public class SectionListTest {
         // ARTICLE    | 0          | 0
         // ARTICLE    | 1          | 1
         //            | -          | -  (deleted)
-        // ARTICLE    | 3          | 7  (new)
-        // ARTICLE    | 4          | 8  (new)
+        // ARTICLE    | 3          | 3  (new)
         // HEADER     |            |
         // STATUS     |            |
         // ACTION     | 0          |
-        // BOOKMARK   | 0          | 3
-        // BOOKMARK   | 1          | 4
-        // BOOKMARK   | 2          | 5
-        // BOOKMARK   | 3          | 6
-        // BOOKMARK   | 4          | 9  (new)
-        // BOOKMARK   | 5          | 10 (new)
+        // BOOKMARK   | 0          | 4 (old but not seen until now)
+        // BOOKMARK   | 1          | 5 (old but not seen until now)
+        // BOOKMARK   | 2          | 6 (old but not seen until now)
+        // BOOKMARK   | 3          | 7 (old but not seen until now)
+        // BOOKMARK   | 4          | 8 (new)
+        // BOOKMARK   | 5          | 9 (new)
 
-        // The old ranks should not change.
+
+        // The new article is seen first and gets the next global rank
+        assertThat(newArticles.get(0).getGlobalRank(), equalTo(3));
+        assertThat(newArticles.get(0).getPerSectionRank(), equalTo(3));
+
+        // Bookmarks old and new are seen after the new article and have higher global ranks
+        assertThat(bookmarks.get(1).getGlobalRank(), equalTo(5));
+        assertThat(bookmarks.get(1).getPerSectionRank(), equalTo(1));
+        assertThat(newBookmarks.get(1).getGlobalRank(), equalTo(9));
+        assertThat(newBookmarks.get(1).getPerSectionRank(), equalTo(5));
+
+        // Add one more article
+        sectionList.onMoreSuggestions(KnownCategories.ARTICLES, newArticles.subList(1, 2));
+        bindViewHolders(sectionList);
+
+        // After the changes we should have:
+        //  Item type | local rank | global rank
+        // -----------+------------+-------------
+        // HEADER     |            |
+        // ARTICLE    | 0          | 0
+        // ARTICLE    | 1          | 1
+        //            | -          | -  (deleted)
+        // ARTICLE    | 3          | 3
+        // ARTICLE    | 4          | 10 (new)
+        // HEADER     |            |
+        // STATUS     |            |
+        // ACTION     | 0          |
+        // BOOKMARK   | 0          | 4
+        // BOOKMARK   | 1          | 5
+        // BOOKMARK   | 2          | 6
+        // BOOKMARK   | 3          | 7
+        // BOOKMARK   | 4          | 8
+        // BOOKMARK   | 5          | 9
+
+        // Old suggestions' ranks should not change.
         assertThat(articles.get(0).getGlobalRank(), equalTo(0));
         assertThat(articles.get(0).getPerSectionRank(), equalTo(0));
         assertThat(articles.get(2).getGlobalRank(), equalTo(2));
         assertThat(articles.get(2).getPerSectionRank(), equalTo(2));
-        assertThat(bookmarks.get(1).getGlobalRank(), equalTo(4));
+        assertThat(bookmarks.get(1).getGlobalRank(), equalTo(5));
         assertThat(bookmarks.get(1).getPerSectionRank(), equalTo(1));
 
-        // New ranks take into account the previously existing items.
-        assertThat(newArticles.get(1).getGlobalRank(), equalTo(8));
+        // The new article should get the last global rank
+        assertThat(newArticles.get(1).getGlobalRank(), equalTo(10));
         assertThat(newArticles.get(1).getPerSectionRank(), equalTo(4));
-        assertThat(newBookmarks.get(1).getGlobalRank(), equalTo(10));
-        assertThat(newBookmarks.get(1).getPerSectionRank(), equalTo(5));
     }
 
     @Test

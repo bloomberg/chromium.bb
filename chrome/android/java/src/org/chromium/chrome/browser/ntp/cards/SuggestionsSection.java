@@ -35,7 +35,6 @@ public class SuggestionsSection extends InnerNode {
     private final Delegate mDelegate;
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final OfflinePageBridge mOfflinePageBridge;
-    private final SuggestionsRanker mSuggestionsRanker;
 
     // Children
     private final SectionHeader mHeader;
@@ -67,10 +66,9 @@ public class SuggestionsSection extends InnerNode {
         mDelegate = delegate;
         mCategoryInfo = info;
         mOfflinePageBridge = offlinePageBridge;
-        mSuggestionsRanker = ranker;
 
         mHeader = new SectionHeader(info.getTitle());
-        mSuggestionsList = new SuggestionsList(manager, info);
+        mSuggestionsList = new SuggestionsList(manager, ranker, info);
         mStatus = StatusItem.createNoSuggestionsItem(info);
         mMoreButton = new ActionItem(this, ranker);
         mProgressIndicator = new ProgressItem();
@@ -83,11 +81,13 @@ public class SuggestionsSection extends InnerNode {
     private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
         private final NewTabPageManager mNewTabPageManager;
+        private final SuggestionsRanker mSuggestionsRanker;
         private final SuggestionsCategoryInfo mCategoryInfo;
 
         public SuggestionsList(NewTabPageManager newTabPageManager,
-                SuggestionsCategoryInfo categoryInfo) {
+                SuggestionsRanker ranker, SuggestionsCategoryInfo categoryInfo) {
             mNewTabPageManager = newTabPageManager;
+            mSuggestionsRanker = ranker;
             mCategoryInfo = categoryInfo;
         }
 
@@ -108,8 +108,10 @@ public class SuggestionsSection extends InnerNode {
                 NewTabPageViewHolder holder, int position, List<Object> payloads) {
             checkIndex(position);
             assert holder instanceof SnippetArticleViewHolder;
+            SnippetArticle suggestion = getSuggestionAt(position);
+            mSuggestionsRanker.rankSuggestion(suggestion);
             ((SnippetArticleViewHolder) holder)
-                    .onBindViewHolder(getSuggestionAt(position), mCategoryInfo, payloads);
+                    .onBindViewHolder(suggestion, mCategoryInfo, payloads);
         }
 
         @Override
@@ -356,7 +358,6 @@ public class SuggestionsSection extends InnerNode {
         mSuggestionsList.addAll(suggestions);
 
         for (SnippetArticle article : suggestions) {
-            mSuggestionsRanker.rankSuggestion(article);
             if (!article.requiresExactOfflinePage()) {
                 updateSnippetOfflineAvailability(article);
             }

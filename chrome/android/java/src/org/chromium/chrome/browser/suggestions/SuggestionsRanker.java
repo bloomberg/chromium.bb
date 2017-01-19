@@ -37,6 +37,8 @@ public class SuggestionsRanker {
      * @see SnippetArticle#getGlobalRank()
      */
     public void rankSuggestion(SnippetArticle suggestion) {
+        if (suggestion.getPerSectionRank() != -1) return; // Suggestion was already ranked.
+
         int globalRank = mTotalAddedSuggestions++;
         int perSectionRank = mSuggestionsAddedPerSection.get(suggestion.mCategory);
         mSuggestionsAddedPerSection.put(suggestion.mCategory, perSectionRank + 1);
