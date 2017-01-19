@@ -6,6 +6,7 @@
 <script>
     var ns_rule = "@namespace ns url(ns);";
     var default_ns_rules = "@namespace url(default_ns); @namespace nsdefault url(default_ns);" + ns_rule;
+    var escaped_ns_rule = "@namespace ns\\:odd url(ns);";
 
     function assert_selector_serializes_to(source, expected_result) {
         var style_element = document.getElementById("teststyles");
@@ -89,4 +90,10 @@
     test(function() {
         assert_selector_serializes_to(default_ns_rules + "nsdefault|*.c", ".c");
     }, "Universal selector with namespace equal to default namespace followed by class");
+    test(function() {
+        assert_selector_serializes_to(escaped_ns_rule + "ns\\:odd|e", "ns\\:odd|e");
+    }, "Type selector with namespace with escaped character");
+    test(function() {
+        assert_selector_serializes_to(escaped_ns_rule + "ns\\:odd|odd\\:e", "ns\\:odd|odd\\:e");
+    }, "Type selector with escaped character and namespace with escaped character");
 </script>

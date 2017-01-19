@@ -630,17 +630,28 @@ bool CSSSelector::operator==(const CSSSelector& other) const {
   return true;
 }
 
+static void serializeIdentifierOrAny(const AtomicString& identifier,
+                                     StringBuilder& builder) {
+  if (identifier != starAtom)
+    serializeIdentifier(identifier, builder);
+  else
+    builder.append(identifier);
+}
+
+static void serializeNamespacePrefixIfNeeded(const AtomicString& prefix,
+                                             StringBuilder& builder) {
+  if (prefix.isNull())
+    return;
+  serializeIdentifierOrAny(prefix, builder);
+  builder.append('|');
+}
+
 String CSSSelector::selectorText(const String& rightSide) const {
   StringBuilder str;
 
   if (m_match == Tag && !m_tagIsImplicit) {
-    if (tagQName().prefix().isNull()) {
-      str.append(tagQName().localName());
-    } else {
-      str.append(tagQName().prefix().getString());
-      str.append('|');
-      str.append(tagQName().localName());
-    }
+    serializeNamespacePrefixIfNeeded(tagQName().prefix(), str);
+    serializeIdentifierOrAny(tagQName().localName(), str);
   }
 
   const CSSSelector* cs = this;
@@ -699,12 +710,8 @@ String CSSSelector::selectorText(const String& rightSide) const {
       str.append(cs->serializingValue());
     } else if (cs->isAttributeSelector()) {
       str.append('[');
-      const AtomicString& prefix = cs->attribute().prefix();
-      if (!prefix.isNull()) {
-        str.append(prefix);
-        str.append('|');
-      }
-      str.append(cs->attribute().localName());
+      serializeNamespacePrefixIfNeeded(cs->attribute().prefix(), str);
+      serializeIdentifier(cs->attribute().localName(), str);
       switch (cs->m_match) {
         case AttributeExact:
           str.append('=');

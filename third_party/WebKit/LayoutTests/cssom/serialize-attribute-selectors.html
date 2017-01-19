@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<title>Attribute selector serialization</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style id="teststyles">
+</style>
+<script>
+    var escaped_ns_rule = "@namespace ns\\:odd url(ns);";
+
+    function assert_selector_serializes_to(source, expected_result) {
+        var style_element = document.getElementById("teststyles");
+        style_element.firstChild.data = source + "{ font-size: 1em; }";
+        var sheet = style_element.sheet;
+        assert_equals(sheet.cssRules[sheet.cssRules.length - 1].selectorText, expected_result);
+    }
+    test(function() {
+        assert_selector_serializes_to("[ns\\:foo]", "[ns\\:foo]");
+    }, document.title+", escaped character in attribute name");
+    test(function() {
+        assert_selector_serializes_to("[\\30zonk]", "[\\30 zonk]");
+    }, document.title+", escaped character as code point in attribute name");
+    test(function() {
+        assert_selector_serializes_to("[\\*]", "[\\*]");
+    }, document.title+", escaped character (*) in attribute");
+    test(function() {
+        assert_selector_serializes_to("[*|ns\\:foo]", "[*|ns\\:foo]");
+    }, document.title+", escaped character in attribute name with any namespace");
+    test(function() {
+        assert_selector_serializes_to(escaped_ns_rule + "[ns\\:odd|foo]", "[ns\\:odd|foo]");
+    }, document.title+", escaped character in attribute prefix");
+    test(function() {
+        assert_selector_serializes_to(escaped_ns_rule + "[ns\\:odd|odd\\:name]", "[ns\\:odd|odd\\:name]");
+    }, document.title+", escaped character in both attribute prefix and name");
+</script>
