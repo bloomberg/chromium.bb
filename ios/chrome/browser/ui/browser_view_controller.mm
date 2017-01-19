@@ -161,7 +161,6 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
@@ -287,8 +286,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 // Temporary key to use when storing native controllers vended to tabs before
 // they are added to the tab model.
 NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
-
-NSString* const kReadingListSnackbarCategory = @"ReadingListSnackbarCategory";
 
 }  // anonymous namespace
 
@@ -3504,12 +3501,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   readingModel->AddEntry(URL, base::SysNSStringToUTF8(title),
                          reading_list::ADDED_VIA_CURRENT_APP);
 
-  NSString* snackBarMessage =
-      l10n_util::GetNSString(IDS_IOS_READING_LIST_SNACKBAR_MESSAGE);
-  MDCSnackbarMessage* message =
-      [MDCSnackbarMessage messageWithText:snackBarMessage];
-  message.category = kReadingListSnackbarCategory;
-  [MDCSnackbarManager showMessage:message];
+  [self showSnackbar:l10n_util::GetNSString(
+                         IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
 }
 
 #pragma mark - Keyboard commands management
