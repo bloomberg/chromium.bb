@@ -15662,13 +15662,16 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TouchscreenScroll">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>tdresser@chromium.org</owner>
+  <description>
+    Logged at the beginning of touchscreen based scrolling. In M56 and earlier,
+    was logged at begin, update, and end events for touchscreen scrolling.
+  </description>
 </action>
 
 <action name="TouchscreenScrollFling">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>tdresser@chromium.org</owner>
+  <description>Logged on an ET_SCROLL_FLING_START gesture event.</description>
 </action>
 
 <action name="Touchscreen_Down">
@@ -15698,13 +15701,16 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TrackpadScroll">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>tdresser@chromium.org</owner>
+  <description>
+    Logged on trackpad scroll events. Logging was removed in M57, because it
+    caused too many events.
+  </description>
 </action>
 
 <action name="TrackpadScrollFling">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>tdresser@chromium.org</owner>
+  <description>Logged on an ET_SCROLL_FLING_START scroll event.</description>
 </action>
 
 <action name="Transpose">
