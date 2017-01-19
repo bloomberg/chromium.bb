@@ -15,10 +15,19 @@
       'target_name': 'file_type',
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'importer_common',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'importer_common',
+      'dependencies': [
+        '../../../externs/compiled_resources2.gyp:background_window',
+        '../../../externs/compiled_resources2.gyp:file_browser_background',
+        '<(DEPTH)/third_party/analytics/compiled_resources2.gyp:externs',
+        '<(EXTERNS_GYP):chrome_extensions',
+        '<(EXTERNS_GYP):command_line_private',
+        'file_type',
+        'volume_manager_common',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'lru_cache',
       'includes': ['../../../compile_js2.gypi'],

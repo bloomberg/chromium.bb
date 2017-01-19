@@ -21,8 +21,11 @@ BackgroundWindow.prototype.registerDialog = function(window) {};
 /**
  * @param {Object=} opt_appState App state.
  * @param {number=} opt_id Window id.
- * @param {LaunchType=} opt_type Launch type. Default: ALWAYS_CREATE.
- * @param {function(string)=} opt_callback Completion callback with the App ID.
+ * TODO(oka): We intentionally omit optional launchType and callback parameters
+ * here because to do so we need to define |LaunchType| in this file, but then
+ * gyp v1 fails due to double definition of |LaunchType|. Since no foreground
+ * scripts set launchType parameter, we can omit them though it's hacky. Let's
+ * add them back after v1 is gone.
  */
 BackgroundWindow.prototype.launchFileManager =
-    function(opt_appState, opt_id, opt_type, opt_callback) {};
+    function(opt_appState, opt_id) {};

@@ -10,6 +10,11 @@
 importer.MediaScanner = function() {};
 
 /**
+ * @typedef {function(!importer.ScanEvent, importer.ScanResult)}
+ */
+importer.ScanObserver;
+
+/**
  * Initiates scanning.
  *
  * @param {!DirectoryEntry} directory

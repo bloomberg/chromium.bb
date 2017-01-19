@@ -49,12 +49,6 @@ importer.Setting = {
 };
 
 /**
- * @typedef {function(
- *     !importer.ScanEvent, importer.ScanResult)}
- */
-importer.ScanObserver;
-
-/**
  * Volume types eligible for the affections of Cloud Import.
  * @private @const {!Array<!VolumeManagerCommon.VolumeType>}
  */
@@ -973,8 +967,7 @@ importer.getTracker_ = function() {
   return new Promise(
       function(resolve, reject) {
         chrome.runtime.getBackgroundPage(
-          /** @param {Window=} opt_background */
-          function(opt_background) {
+          function(/** BackgroundWindow */ opt_background) {
             if (chrome.runtime.lastError) {
               reject(chrome.runtime.lastError);
             }

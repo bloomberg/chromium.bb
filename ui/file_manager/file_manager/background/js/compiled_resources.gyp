@@ -58,6 +58,7 @@
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
           '../../../../../third_party/analytics/externs.js',
+          '../../../externs/background_window.js',
           '../../../externs/chrome_test.js',
           '../../../externs/connection.js',
           '../../../externs/css_rule.js',
