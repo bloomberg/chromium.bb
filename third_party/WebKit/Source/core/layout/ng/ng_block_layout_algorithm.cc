@@ -185,7 +185,6 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     NGBreakToken* break_token)
     : NGLayoutAlgorithm(kBlockLayoutAlgorithm),
       layout_state_(kStateInit),
-      compute_minmax_state_(kStateInit),
       style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
@@ -194,50 +193,31 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
   DCHECK(style_);
 }
 
-NGLayoutAlgorithm::MinAndMaxState
-NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
+bool NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
     MinAndMaxContentSizes* sizes) {
-  switch (compute_minmax_state_) {
-    case kStateInit:
-      pending_minmax_sizes_.min_content = pending_minmax_sizes_.max_content =
-          LayoutUnit();
-      // Size-contained elements don't consider their contents for intrinsic
-      // sizing.
-      if (Style().containsSize())
-        return kSuccess;
-      current_minmax_child_ = first_child_;
-      compute_minmax_state_ = kStateChildLayout;
-    case kStateChildLayout:
-      // TODO: handle floats & orthogonal children
-      if (current_minmax_child_) {
-        Optional<MinAndMaxContentSizes> child_minmax;
-        if (NeedMinAndMaxContentSizesForContentContribution(
-                *current_minmax_child_->Style())) {
-          child_minmax = MinAndMaxContentSizes();
-          if (!current_minmax_child_->ComputeMinAndMaxContentSizes(
-                  &*child_minmax))
-            return kPending;
-        }
-        MinAndMaxContentSizes child_sizes = ComputeMinAndMaxContentContribution(
-            *current_minmax_child_->Style(), child_minmax);
-        pending_minmax_sizes_.min_content = std::max(
-            pending_minmax_sizes_.min_content, child_sizes.min_content);
-        pending_minmax_sizes_.max_content = std::max(
-            pending_minmax_sizes_.max_content, child_sizes.max_content);
+  sizes->min_content = LayoutUnit();
+  sizes->max_content = LayoutUnit();
 
-        current_minmax_child_ = current_minmax_child_->NextSibling();
-        if (current_minmax_child_)
-          return kPending;
-      }
+  // Size-contained elements don't consider their contents for intrinsic sizing.
+  if (Style().containsSize())
+    return true;
 
-      *sizes = pending_minmax_sizes_;
-      sizes->max_content = std::max(sizes->min_content, sizes->max_content);
-      compute_minmax_state_ = kStateInit;
-      return kSuccess;
-    default:
-      NOTREACHED();
-      return kSuccess;
-  };
+  // TODO: handle floats & orthogonal children.
+  for (NGBlockNode* node = first_child_; node; node = node->NextSibling()) {
+    Optional<MinAndMaxContentSizes> child_minmax;
+    if (NeedMinAndMaxContentSizesForContentContribution(*node->Style())) {
+      child_minmax = node->ComputeMinAndMaxContentSizesSync();
+    }
+
+    MinAndMaxContentSizes child_sizes =
+        ComputeMinAndMaxContentContribution(*node->Style(), child_minmax);
+
+    sizes->min_content = std::max(sizes->min_content, child_sizes.min_content);
+    sizes->max_content = std::max(sizes->max_content, child_sizes.max_content);
+  }
+
+  sizes->max_content = std::max(sizes->min_content, sizes->max_content);
+  return true;
 }
 
 NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
@@ -249,8 +229,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       WTF::Optional<MinAndMaxContentSizes> sizes;
       if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
         sizes = MinAndMaxContentSizes();
-        if (ComputeMinAndMaxContentSizes(&*sizes) == kPending)
-          return kNotFinished;
+        ComputeMinAndMaxContentSizes(&*sizes);
       }
 
       border_and_padding_ =
@@ -724,7 +703,6 @@ DEFINE_TRACE(NGBlockLayoutAlgorithm) {
   visitor->trace(space_builder_);
   visitor->trace(space_for_current_child_);
   visitor->trace(current_child_);
-  visitor->trace(current_minmax_child_);
   visitor->trace(out_of_flow_layout_);
   visitor->trace(out_of_flow_candidates_);
   visitor->trace(fragmentainer_mapper_);

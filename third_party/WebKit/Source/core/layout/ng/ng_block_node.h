@@ -18,7 +18,6 @@ class LayoutObject;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGFragment;
-class NGLayoutAlgorithm;
 class NGLayoutCoordinator;
 struct NGLogicalOffset;
 struct MinAndMaxContentSizes;
@@ -102,7 +101,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   Member<NGBlockNode> next_sibling_;
   Member<NGLayoutInputNode> first_child_;
   Member<NGLayoutCoordinator> layout_coordinator_;
-  Member<NGLayoutAlgorithm> minmax_algorithm_;
   // TODO(mstensho): An input node may produce multiple fragments, so this
   // should probably be renamed to last_fragment_ or something like that, since
   // the last fragment is all we care about when resuming layout.

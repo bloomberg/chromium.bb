@@ -52,15 +52,13 @@ class CORE_EXPORT NGLayoutAlgorithm
   enum MinAndMaxState { kSuccess, kPending, kNotImplemented };
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
-  // The result will not take any min-width. max-width or width properties into
-  // account. Implementations can return NotImplemented, in which case the
-  // caller is expected to synthesize this value from the overflow rect returned
-  // from Layout called with a available width of 0 and LayoutUnit::max(),
+  // The result will not take any min-width, max-width or width properties into
+  // account. Implementations can return false, in which case the caller is
+  // expected to synthesize this value from the overflow rect returned from
+  // Layout called with a available width of 0 and LayoutUnit::max(),
   // respectively.
-  // A Pending return value has the same meaning as a false return from layout,
-  // i.e. it is a request to call this function again.
-  virtual MinAndMaxState ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) {
-    return kNotImplemented;
+  virtual bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) {
+    return false;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}

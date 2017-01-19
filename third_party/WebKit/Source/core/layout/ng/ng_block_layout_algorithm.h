@@ -39,7 +39,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGConstraintSpace* space,
                          NGBreakToken* break_token = nullptr);
 
-  MinAndMaxState ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) override;
+  bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) override;
   NGLayoutStatus Layout(NGPhysicalFragment*,
                         NGPhysicalFragment**,
                         NGLayoutAlgorithm**) override;
@@ -154,7 +154,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
     kStateFinalize
   };
   LayoutState layout_state_;
-  LayoutState compute_minmax_state_;
 
   RefPtr<const ComputedStyle> style_;
 
@@ -168,8 +167,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   Member<NGConstraintSpaceBuilder> space_builder_;
   Member<NGConstraintSpace> space_for_current_child_;
   Member<NGBlockNode> current_child_;
-  Member<NGBlockNode> current_minmax_child_;
-  MinAndMaxContentSizes pending_minmax_sizes_;
 
   Member<NGOutOfFlowLayoutPart> out_of_flow_layout_;
   HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_candidates_;

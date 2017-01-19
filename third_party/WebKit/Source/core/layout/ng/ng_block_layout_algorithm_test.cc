@@ -59,14 +59,7 @@ class NGBlockLayoutAlgorithmTest : public ::testing::Test {
                                  NGLogicalSize(LayoutUnit(), LayoutUnit()));
     NGBlockLayoutAlgorithm algorithm(style_.get(), first_child, space);
     MinAndMaxContentSizes sizes;
-    NGLayoutAlgorithm::MinAndMaxState state;
-    while ((state = algorithm.ComputeMinAndMaxContentSizes(&sizes)) !=
-           NGLayoutAlgorithm::kSuccess) {
-      EXPECT_NE(NGLayoutAlgorithm::kNotImplemented, state);
-      // shouldn't happen but let's avoid an infinite loop
-      if (state == NGLayoutAlgorithm::kNotImplemented)
-        break;
-    }
+    EXPECT_TRUE(algorithm.ComputeMinAndMaxContentSizes(&sizes));
     return sizes;
   }
 

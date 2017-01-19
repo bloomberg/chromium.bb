@@ -48,8 +48,6 @@ void NGBlockNode::LayoutSync(NGConstraintSpace* constraint_space,
 
 bool NGBlockNode::Layout(NGConstraintSpace* constraint_space,
                          NGFragment** out) {
-  DCHECK(!minmax_algorithm_)
-      << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
   // We can either use the new layout code to do the layout and then copy the
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
@@ -119,23 +117,11 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
           .SetTextDirection(Style()->direction())
           .ToConstraintSpace();
 
-  if (!minmax_algorithm_) {
-    minmax_algorithm_ = new NGBlockLayoutAlgorithm(
-        Style(), toNGBlockNode(FirstChild()), constraint_space);
-  }
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
-  NGLayoutAlgorithm::MinAndMaxState state =
-      minmax_algorithm_->ComputeMinAndMaxContentSizes(sizes);
-  if (state == NGLayoutAlgorithm::kSuccess) {
-    minmax_algorithm_ = nullptr;
+  NGBlockLayoutAlgorithm minmax_algorithm(Style(), toNGBlockNode(FirstChild()),
+                                          constraint_space);
+  if (minmax_algorithm.ComputeMinAndMaxContentSizes(sizes))
     return true;
-  }
-  if (state == NGLayoutAlgorithm::kPending)
-    return false;
-  DCHECK_EQ(state, NGLayoutAlgorithm::kNotImplemented);
-
-  // TODO(cbiesinger): Replace the loops below with a state machine like in
-  // Layout.
 
   NGLayoutCoordinator* minmax_coordinator =
       new NGLayoutCoordinator(this, constraint_space);
@@ -167,7 +153,6 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
       FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
       toNGPhysicalBoxFragment(physical_fragment));
   sizes->max_content = fragment->InlineOverflow();
-  minmax_algorithm_ = nullptr;
   return true;
 }
 
@@ -223,7 +208,6 @@ NGBreakToken* NGBlockNode::CurrentBreakToken() const {
 
 DEFINE_TRACE(NGBlockNode) {
   visitor->trace(layout_coordinator_);
-  visitor->trace(minmax_algorithm_);
   visitor->trace(fragment_);
   visitor->trace(next_sibling_);
   visitor->trace(first_child_);
