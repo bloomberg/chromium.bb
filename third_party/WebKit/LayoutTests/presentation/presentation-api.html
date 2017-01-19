@@ -22,7 +22,7 @@ test(function() {
 }, "Test that navigator.presentation is not an EventTarget.");
 
 test(function() {
-  var request = new PresentationRequest('foo.html');
+  var request = new PresentationRequest('http://foo.html');
   assert_equals(typeof(request.start), "function");
   assert_equals(typeof(request.reconnect), "function");
   assert_equals(typeof(request.getAvailability), "function");

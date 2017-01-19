@@ -43,6 +43,19 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructor) {
   EXPECT_EQ("cast://deadbeef?param=foo", requestUrls[1].getString());
 }
 
+TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidURLFamily) {
+  V8TestingScope scope;
+  WTF::Vector<String> urls;
+  urls.append("https://example.com");
+  urls.append("about://deadbeef?param=foo");
+
+  PresentationRequest::create(scope.getExecutionContext(), urls,
+                              scope.getExceptionState());
+  ASSERT_TRUE(scope.getExceptionState().hadException());
+
+  EXPECT_EQ(SyntaxError, scope.getExceptionState().code());
+}
+
 TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidUrl) {
   V8TestingScope scope;
   WTF::Vector<String> urls;

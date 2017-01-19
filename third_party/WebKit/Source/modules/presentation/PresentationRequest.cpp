@@ -84,7 +84,8 @@ PresentationRequest* PresentationRequest::create(
   for (size_t i = 0; i < urls.size(); ++i) {
     const KURL& parsedUrl = KURL(executionContext->url(), urls[i]);
 
-    if (!parsedUrl.isValid() || parsedUrl.protocolIsAbout()) {
+    if (!parsedUrl.isValid() ||
+        !(parsedUrl.protocolIsInHTTPFamily() || parsedUrl.protocolIs("cast"))) {
       exceptionState.throwDOMException(
           SyntaxError, "'" + urls[i] + "' can't be resolved to a valid URL.");
       return nullptr;
