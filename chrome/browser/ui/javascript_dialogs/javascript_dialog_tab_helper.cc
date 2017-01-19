@@ -78,8 +78,7 @@ JavaScriptDialogTabHelper::JavaScriptDialogTabHelper(
 
 JavaScriptDialogTabHelper::~JavaScriptDialogTabHelper() {
   if (dialog_) {
-    CloseDialog(true /*suppress_callback*/, false, base::string16(),
-                DismissalCause::TAB_HELPER_DESTROYED);
+    CloseDialog(false, base::string16(), DismissalCause::TAB_HELPER_DESTROYED);
   }
 }
 
@@ -148,7 +147,7 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
 
     if (dialog_) {
       // There's already a dialog up; clear it out.
-      CloseDialog(false, false, base::string16(),
+      CloseDialog(false, base::string16(),
                   DismissalCause::SUBSEQUENT_DIALOG_SHOWN);
     }
 
@@ -231,8 +230,7 @@ bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(
     bool accept,
     const base::string16* prompt_override) {
   if (dialog_) {
-    CloseDialog(false /*suppress_callback*/, accept,
-                prompt_override ? *prompt_override : base::string16(),
+    CloseDialog(accept, prompt_override ? *prompt_override : base::string16(),
                 DismissalCause::HANDLE_DIALOG_CALLED);
     return true;
   }
@@ -247,8 +245,7 @@ void JavaScriptDialogTabHelper::CancelDialogs(
     bool suppress_callbacks,
     bool reset_state) {
   if (dialog_) {
-    CloseDialog(suppress_callbacks, false, base::string16(),
-                DismissalCause::CANCEL_DIALOGS_CALLED);
+    CloseDialog(false, base::string16(), DismissalCause::CANCEL_DIALOGS_CALLED);
   }
 
   // Cancel any app-modal dialogs being run by the app-modal dialog system.
@@ -258,7 +255,7 @@ void JavaScriptDialogTabHelper::CancelDialogs(
 
 void JavaScriptDialogTabHelper::WasHidden() {
   if (dialog_)
-    CloseDialog(false, false, base::string16(), DismissalCause::TAB_HIDDEN);
+    CloseDialog(false, base::string16(), DismissalCause::TAB_HIDDEN);
 }
 
 // This function handles the case where browser-side navigation (PlzNavigate) is
@@ -270,7 +267,7 @@ void JavaScriptDialogTabHelper::DidStartNavigation(
   // Close the dialog if the user started a new navigation. This allows reloads
   // and history navigations to proceed.
   if (dialog_)
-    CloseDialog(false, false, base::string16(), DismissalCause::TAB_NAVIGATED);
+    CloseDialog(false, base::string16(), DismissalCause::TAB_NAVIGATED);
 }
 
 // This function handles the case where browser-side navigation (PlzNavigate) is
@@ -283,13 +280,12 @@ void JavaScriptDialogTabHelper::DidStartNavigationToPendingEntry(
   // Close the dialog if the user started a new navigation. This allows reloads
   // and history navigations to proceed.
   if (dialog_)
-    CloseDialog(false, false, base::string16(), DismissalCause::TAB_NAVIGATED);
+    CloseDialog(false, base::string16(), DismissalCause::TAB_NAVIGATED);
 }
 
 void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
   if (dialog_ && !IsWebContentsForemost(web_contents())) {
-    CloseDialog(false, false, base::string16(),
-                DismissalCause::BROWSER_SWITCHED);
+    CloseDialog(false, base::string16(), DismissalCause::BROWSER_SWITCHED);
   }
 }
 
@@ -324,16 +320,14 @@ void JavaScriptDialogTabHelper::OnDialogClosed(
   ClearDialogInfo();
 }
 
-void JavaScriptDialogTabHelper::CloseDialog(bool suppress_callback,
-                                            bool success,
+void JavaScriptDialogTabHelper::CloseDialog(bool success,
                                             const base::string16& user_input,
                                             DismissalCause cause) {
   DCHECK(dialog_);
   LogDialogDismissalCause(cause);
 
   dialog_->CloseDialogWithoutCallback();
-  if (!suppress_callback)
-    dialog_callback_.Run(success, user_input);
+  dialog_callback_.Run(success, user_input);
 
   ClearDialogInfo();
 }

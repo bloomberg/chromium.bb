@@ -79,8 +79,7 @@ class JavaScriptDialogTabHelper
                       bool success,
                       const base::string16& user_input);
 
-  void CloseDialog(bool suppress_callback,
-                   bool success,
+  void CloseDialog(bool success,
                    const base::string16& user_input,
                    DismissalCause cause);
 
