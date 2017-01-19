@@ -99,7 +99,8 @@ std::vector<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
     const char* const worker_pool_name = constant_worker_pool_params.name();
     auto it = variation_params.find(worker_pool_name);
     if (it == variation_params.end()) {
-      DLOG(ERROR) << "Missing Worker Pool Configuration: " << worker_pool_name;
+      // Non-branded builds don't have access to external worker pool
+      // configurations.
       return std::vector<base::SchedulerWorkerPoolParams>();
     }
     const auto variable_worker_pool_params =
