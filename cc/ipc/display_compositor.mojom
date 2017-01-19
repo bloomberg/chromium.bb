@@ -61,11 +61,6 @@ interface DisplayCompositor {
 // compositor. The display compositor host is either the browser process in
 // Chrome or the window server process.
 interface DisplayCompositorClient {
-  // Called by the display compostor when it is created. Provides the top level
-  // root surface id that should reference display roots. This will always be
-  // the first message sent.
-  OnDisplayCompositorCreated(cc.mojom.SurfaceId root_surface_id);
-
   // Called by the display compositor immediately upon receiving a
   // CompositorFrame with a new SurfaceId for the first time.
   OnSurfaceCreated(SurfaceInfo surface_info);

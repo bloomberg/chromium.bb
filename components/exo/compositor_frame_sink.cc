@@ -36,18 +36,6 @@ void CompositorFrameSink::SubmitCompositorFrame(
   support_.SubmitCompositorFrame(local_frame_id, std::move(frame));
 }
 
-void CompositorFrameSink::AddSurfaceReferences(
-    const std::vector<cc::SurfaceReference>& references) {
-  // TODO(fsamuel, staraz): Implement this.
-  NOTIMPLEMENTED();
-}
-
-void CompositorFrameSink::RemoveSurfaceReferences(
-    const std::vector<cc::SurfaceReference>& references) {
-  // TODO(fsamuel, staraz): Implement this.
-  NOTIMPLEMENTED();
-}
-
 void CompositorFrameSink::EvictFrame() {
   support_.EvictFrame();
 }

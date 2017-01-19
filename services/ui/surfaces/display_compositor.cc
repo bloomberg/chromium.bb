@@ -41,8 +41,6 @@ DisplayCompositor::DisplayCompositor(
       client_(std::move(client)),
       binding_(this, std::move(request)) {
   manager_.AddObserver(this);
-  if (client_)
-    client_->OnDisplayCompositorCreated(GetRootSurfaceId());
 }
 
 void DisplayCompositor::AddSurfaceReferences(

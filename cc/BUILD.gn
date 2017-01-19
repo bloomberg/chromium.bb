@@ -939,7 +939,7 @@ cc_test("cc_unittests") {
     "surfaces/direct_compositor_frame_sink_unittest.cc",
     "surfaces/display_scheduler_unittest.cc",
     "surfaces/display_unittest.cc",
-    "surfaces/embedded_surface_tracker_unittest.cc",
+    "surfaces/referenced_surface_tracker_unittest.cc",
     "surfaces/surface_aggregator_unittest.cc",
     "surfaces/surface_factory_unittest.cc",
     "surfaces/surface_hittest_unittest.cc",

@@ -17,10 +17,6 @@ cc::mojom::DisplayCompositor* TestServerWindowDelegate::GetDisplayCompositor() {
   return nullptr;
 }
 
-const cc::SurfaceId& TestServerWindowDelegate::GetRootSurfaceId() const {
-  return root_surface_id_;
-}
-
 ServerWindow* TestServerWindowDelegate::GetRootWindow(
     const ServerWindow* window) {
   return root_window_;

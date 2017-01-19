@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "cc/ipc/display_compositor.mojom.h"
-#include "cc/surfaces/embedded_surface_tracker.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -52,19 +51,8 @@ class FrameGenerator : public ServerWindowTracker,
   // Schedules a redraw for the provided region.
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
 
-  // Adds a reference to new surface with |surface_id| for |window|. This
-  // reference is to ensure the surface is not deleted while it's still being
-  // displayed. The display root surface has a reference from the top level
-  // root. All child surfaces are embedded by the display root and receive a
-  // reference from it.
-  //
-  // If a new display root Surface is created, then all child surfaces will
-  // receive a reference from the new display root so they are not deleted with
-  // the old display root.
-  //
-  // If there is an existing reference to an old surface with the same
-  // FrameSinkId then that reference will be removed after the next
-  // CompositorFrame is submitted.
+  // If |window| corresponds to the active WM for the display then update
+  // |window_manager_surface_id_|.
   void OnSurfaceCreated(const cc::SurfaceId& surface_id, ServerWindow* window);
 
  private:
@@ -75,9 +63,6 @@ class FrameGenerator : public ServerWindowTracker,
   void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface() override;
-
-  // Updates the display surface SurfaceId using new value in |local_frame_id_|.
-  void UpdateDisplaySurfaceId();
 
   // Generates the CompositorFrame.
   cc::CompositorFrame GenerateCompositorFrame(const gfx::Rect& output_rect);
@@ -99,8 +84,7 @@ class FrameGenerator : public ServerWindowTracker,
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
   cc::mojom::DisplayPrivatePtr display_private_;
 
-  // Tracks surface references for embedded surfaces.
-  cc::EmbeddedSurfaceTracker surface_tracker_;
+  cc::SurfaceId window_manager_surface_id_;
 
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> binding_;
 

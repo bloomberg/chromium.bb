@@ -32,10 +32,6 @@ class OffscreenCanvasCompositorFrameSink
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
                              cc::CompositorFrame frame) override;
-  void AddSurfaceReferences(
-      const std::vector<cc::SurfaceReference>& references) override;
-  void RemoveSurfaceReferences(
-      const std::vector<cc::SurfaceReference>& references) override;
   void EvictFrame() override;
   void Require(const cc::LocalFrameId& local_frame_id,
                const cc::SurfaceSequence& sequence) override;

@@ -228,7 +228,6 @@ class WindowServer : public ServerWindowDelegate,
 
   // ServerWindowDelegate:
   cc::mojom::DisplayCompositor* GetDisplayCompositor() override;
-  const cc::SurfaceId& GetRootSurfaceId() const override;
 
   // UserDisplayManagerDelegate:
   bool GetFrameDecorationsForUser(
@@ -329,8 +328,6 @@ class WindowServer : public ServerWindowDelegate,
 
   // cc::mojom::DisplayCompositorClient:
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
-  void OnDisplayCompositorCreated(
-      const cc::SurfaceId& root_surface_id) override;
 
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,

@@ -33,12 +33,6 @@ interface MojoCompositorFrameSink {
   SubmitCompositorFrame(cc.mojom.LocalFrameId local_frame_id,
                         cc.mojom.CompositorFrame frame);
 
-  // Adds surface references.
-  AddSurfaceReferences(array<SurfaceReference> references);
-
-  // Removes surface references.
-  RemoveSurfaceReferences(array<SurfaceReference> references);
-
   // Notify that the surface is no longer in use (and is okay to be evicted) so
   // that its resources gets returned in time.
   EvictFrame();

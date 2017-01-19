@@ -29,9 +29,6 @@ class ServerWindowDelegate {
   // DisplayCompositor running in the system.
   virtual cc::mojom::DisplayCompositor* GetDisplayCompositor() = 0;
 
-  // Returns the root surface id that was received from DisplayCompositor.
-  virtual const cc::SurfaceId& GetRootSurfaceId() const = 0;
-
   // Returns the root of the window tree to which this |window| is attached.
   // Returns null if this window is not attached up through to a root window.
   virtual ServerWindow* GetRootWindow(const ServerWindow* window) = 0;

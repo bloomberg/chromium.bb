@@ -14,6 +14,7 @@
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
+#include "cc/surfaces/referenced_surface_tracker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace cc {
@@ -52,10 +53,6 @@ class GpuCompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
                              cc::CompositorFrame frame) override;
-  void AddSurfaceReferences(
-      const std::vector<cc::SurfaceReference>& references) override;
-  void RemoveSurfaceReferences(
-      const std::vector<cc::SurfaceReference>& references) override;
   void Require(const cc::LocalFrameId& local_frame_id,
                const cc::SurfaceSequence& sequence) override;
   void Satisfy(const cc::SurfaceSequence& sequence) override;
@@ -84,6 +81,10 @@ class GpuCompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
   DisplayCompositor* const display_compositor_;
 
   cc::CompositorFrameSinkSupport support_;
+
+  // Track the surface references for the surface corresponding to this
+  // compositor frame sink.
+  cc::ReferencedSurfaceTracker surface_tracker_;
 
   bool client_connection_lost_ = false;
   bool private_connection_lost_ = false;
