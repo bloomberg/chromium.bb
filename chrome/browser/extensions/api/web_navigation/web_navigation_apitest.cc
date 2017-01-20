@@ -266,11 +266,9 @@ class StartProvisionalLoadObserver : public content::WebContentsObserver {
         message_loop_runner_(new content::MessageLoopRunner) {}
   ~StartProvisionalLoadObserver() override {}
 
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page) override {
-    if (validated_url == url_) {
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->GetURL() == url_) {
       url_seen_ = true;
       message_loop_runner_->Quit();
     }

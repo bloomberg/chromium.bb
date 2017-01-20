@@ -159,38 +159,6 @@ class ScreenshotTracker : public NavigationEntryScreenshotManager {
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTracker);
 };
 
-class NavigationWatcher : public WebContentsObserver {
- public:
-  explicit NavigationWatcher(WebContents* contents)
-      : WebContentsObserver(contents),
-        navigated_(false),
-        should_quit_loop_(false) {
-  }
-
-  ~NavigationWatcher() override {}
-
-  void WaitUntilNavigationStarts() {
-    if (navigated_)
-      return;
-    should_quit_loop_ = true;
-    base::RunLoop().Run();
-  }
-
- private:
-  // Overridden from WebContentsObserver:
-  void DidStartNavigationToPendingEntry(const GURL& validated_url,
-                                        ReloadType reload_type) override {
-    navigated_ = true;
-    if (should_quit_loop_)
-      base::MessageLoop::current()->QuitWhenIdle();
-  }
-
-  bool navigated_;
-  bool should_quit_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationWatcher);
-};
-
 class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
  public:
   InputEventMessageFilterWaitsForAcks()
@@ -848,14 +816,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   // right.
   base::string16 expected_title = base::ASCIIToUTF16("Title: #2");
   content::TitleWatcher title_watcher(web_contents, expected_title);
-  NavigationWatcher nav_watcher(web_contents);
+  TestNavigationManager nav_watcher(web_contents,
+      embedded_test_server()->GetURL("/overscroll_navigation.html#2"));
 
   generator.GestureScrollSequence(
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
       base::TimeDelta::FromMilliseconds(2000),
       10);
-  nav_watcher.WaitUntilNavigationStarts();
+  nav_watcher.WaitForNavigationFinished();
 
   generator.GestureScrollSequence(
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
