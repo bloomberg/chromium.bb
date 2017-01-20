@@ -687,11 +687,12 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
       owning_button->GetClassName() == views::BlueButton::kViewClassName;
 
   for (unsigned i = 0; i < arraysize(paintstate); i++) {
-    if (border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)) {
-      std::string idr = is_blue ? paintstate[i].idr_blue : paintstate[i].idr;
-      gtk_border->SetPainter(paintstate[i].focus, paintstate[i].state,
-                             base::MakeUnique<GtkButtonPainter>(idr));
-    }
+    std::string idr = is_blue ? paintstate[i].idr_blue : paintstate[i].idr;
+    gtk_border->SetPainter(
+        paintstate[i].focus, paintstate[i].state,
+        border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)
+            ? base::MakeUnique<GtkButtonPainter>(idr)
+            : nullptr);
   }
 
   return gtk_border;
