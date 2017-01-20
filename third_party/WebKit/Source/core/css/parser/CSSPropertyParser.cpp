@@ -43,6 +43,7 @@
 #include "core/css/parser/FontVariantLigaturesParser.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
+#include "core/css/properties/CSSPropertyLengthUtils.h"
 #include "core/css/properties/CSSPropertyShapeUtils.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
@@ -568,58 +569,6 @@ static CSSValue* consumeSnapHeight(CSSParserTokenRange& range,
   }
 
   return list;
-}
-
-static bool validWidthOrHeightKeyword(CSSValueID id,
-                                      const CSSParserContext* context) {
-  if (id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent ||
-      id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent ||
-      id == CSSValueMinContent || id == CSSValueMaxContent ||
-      id == CSSValueFitContent) {
-    if (context->isUseCounterRecordingEnabled()) {
-      UseCounter* useCounter = context->useCounter();
-      switch (id) {
-        case CSSValueWebkitMinContent:
-          useCounter->count(UseCounter::CSSValuePrefixedMinContent);
-          break;
-        case CSSValueWebkitMaxContent:
-          useCounter->count(UseCounter::CSSValuePrefixedMaxContent);
-          break;
-        case CSSValueWebkitFillAvailable:
-          useCounter->count(UseCounter::CSSValuePrefixedFillAvailable);
-          break;
-        case CSSValueWebkitFitContent:
-          useCounter->count(UseCounter::CSSValuePrefixedFitContent);
-          break;
-        default:
-          break;
-      }
-    }
-    return true;
-  }
-  return false;
-}
-
-static CSSValue* consumeMaxWidthOrHeight(
-    CSSParserTokenRange& range,
-    const CSSParserContext* context,
-    UnitlessQuirk unitless = UnitlessQuirk::Forbid) {
-  if (range.peek().id() == CSSValueNone ||
-      validWidthOrHeightKeyword(range.peek().id(), context))
-    return consumeIdent(range);
-  return consumeLengthOrPercent(range, context->mode(), ValueRangeNonNegative,
-                                unitless);
-}
-
-static CSSValue* consumeWidthOrHeight(
-    CSSParserTokenRange& range,
-    const CSSParserContext* context,
-    UnitlessQuirk unitless = UnitlessQuirk::Forbid) {
-  if (range.peek().id() == CSSValueAuto ||
-      validWidthOrHeightKeyword(range.peek().id(), context))
-    return consumeIdent(range);
-  return consumeLengthOrPercent(range, context->mode(), ValueRangeNonNegative,
-                                unitless);
 }
 
 static CSSValue* consumeMarginOrOffset(CSSParserTokenRange& range,
@@ -2427,17 +2376,20 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeSnapHeight(m_range, m_context->mode());
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:
-      return consumeMaxWidthOrHeight(m_range, m_context, UnitlessQuirk::Allow);
+      return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(
+          m_range, m_context, UnitlessQuirk::Allow);
     case CSSPropertyMaxInlineSize:
     case CSSPropertyMaxBlockSize:
     case CSSPropertyWebkitMaxLogicalWidth:
     case CSSPropertyWebkitMaxLogicalHeight:
-      return consumeMaxWidthOrHeight(m_range, m_context);
+      return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(m_range,
+                                                             m_context);
     case CSSPropertyMinWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyWidth:
     case CSSPropertyHeight:
-      return consumeWidthOrHeight(m_range, m_context, UnitlessQuirk::Allow);
+      return CSSPropertyLengthUtils::consumeWidthOrHeight(m_range, m_context,
+                                                          UnitlessQuirk::Allow);
     case CSSPropertyInlineSize:
     case CSSPropertyBlockSize:
     case CSSPropertyMinInlineSize:
@@ -2446,7 +2398,7 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitMinLogicalHeight:
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
-      return consumeWidthOrHeight(m_range, m_context);
+      return CSSPropertyLengthUtils::consumeWidthOrHeight(m_range, m_context);
     case CSSPropertyMarginTop:
     case CSSPropertyMarginRight:
     case CSSPropertyMarginBottom:
