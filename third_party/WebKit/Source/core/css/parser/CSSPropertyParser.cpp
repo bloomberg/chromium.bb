@@ -2368,13 +2368,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitMarginAfter:
       return consumeMarginOrOffset(m_range, m_context->mode(),
                                    UnitlessQuirk::Forbid);
-    case CSSPropertyPaddingTop:
-    case CSSPropertyPaddingRight:
-    case CSSPropertyPaddingBottom:
-    case CSSPropertyPaddingLeft:
-      return consumeLengthOrPercent(m_range, m_context->mode(),
-                                    ValueRangeNonNegative,
-                                    UnitlessQuirk::Allow);
     case CSSPropertyTouchAction:
       return consumeTouchAction(m_range);
     case CSSPropertyScrollSnapDestination:

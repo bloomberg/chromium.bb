@@ -333,10 +333,10 @@ overflow-anchor runtime_flag=ScrollAnchoring, type_name=EOverflowAnchor
 overflow-wrap inherited
 overflow-x type_name=EOverflow
 overflow-y type_name=EOverflow
-padding-bottom interpolable, initial=initialPadding, converter=convertLength
-padding-left interpolable, initial=initialPadding, converter=convertLength
-padding-right interpolable, initial=initialPadding, converter=convertLength
-padding-top interpolable, initial=initialPadding, converter=convertLength
+padding-bottom interpolable, initial=initialPadding, converter=convertLength, api_class=CSSPropertyAPIPadding
+padding-left interpolable, initial=initialPadding, converter=convertLength, api_class=CSSPropertyAPIPadding
+padding-right interpolable, initial=initialPadding, converter=convertLength, api_class=CSSPropertyAPIPadding
+padding-top interpolable, initial=initialPadding, converter=convertLength, api_class=CSSPropertyAPIPadding
 paint-order inherited, svg, converter=convertPaintOrder, api_class
 perspective interpolable, converter=convertPerspective
 perspective-origin interpolable, converter=convertPosition
