@@ -97,7 +97,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
 
   bool m_stopped;
 
-  Timer<RTCDTMFSender> m_scheduledEventTimer;
+  TaskRunnerTimer<RTCDTMFSender> m_scheduledEventTimer;
   HeapVector<Member<Event>> m_scheduledEvents;
 };
 
