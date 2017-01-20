@@ -11,30 +11,63 @@
       assert_equals(document.querySelector('[nonce=abc]'), null);
       assert_equals(document.currentScript.getAttribute('nonce'), '[Replaced]');
       assert_equals(document.currentScript.nonce, 'abc');
-    }, "Reading 'nonce' content attribute and IDL attribute.");
+    }, "HTML: Reading 'nonce' content attribute and IDL attribute.");
 
     test(t => {
       document.currentScript.setAttribute('nonce', 'xyz');
       assert_equals(document.currentScript.getAttribute('nonce'), '[Replaced]');
       assert_equals(document.currentScript.nonce, 'xyz');
-    }, "Writing 'nonce' content attribute.");
+    }, "HTML: Writing 'nonce' content attribute.");
 
     test(t => {
       assert_equals(document.currentScript.nonce, 'xyz');
       document.currentScript.nonce = 'foo';
       assert_equals(document.currentScript.nonce, 'foo');
-    }, "Writing 'nonce' DOM attribute.");
+      assert_equals(document.currentScript.getAttribute('nonce'), '[Replaced]');
+    }, "HTML: Writing 'nonce' DOM attribute.");
 
     async_test(t => {
       var script = document.currentScript;
       assert_equals(script.nonce, 'foo');
 
-      setTimeout(_ => {
-        assert_equals(script.nonce, "");
-        t.done();
-      }, 1);
-    }, "'nonce' DOM attribute cleared after current task.");
+      setTimeout(t.step_func_done(_ => {
+        assert_equals(script.nonce, "foo");
+      }), 1);
+    }, "HTML: 'nonce' DOM attribute present after current task.");
 </script>
+
+<!-- SVGScriptElement -->
+<svg xmlns="http://www.w3.org/2000/svg">
+  <script nonce="abc">
+    test(t => {
+      assert_equals(document.querySelector('[nonce=abc]'), null);
+      assert_equals(document.currentScript.getAttribute('nonce'), '[Replaced]');
+      assert_equals(document.currentScript.nonce, 'abc');
+    }, "SVG: Reading 'nonce' content attribute and IDL attribute.");
+
+    test(t => {
+      document.currentScript.setAttribute('nonce', 'xyz');
+      assert_equals(document.currentScript.getAttribute('nonce'), '[Replaced]');
+      assert_equals(document.currentScript.nonce, 'xyz');
+    }, "SVG: Writing 'nonce' content attribute.");
+
+    test(t => {
+      assert_equals(document.currentScript.nonce, 'xyz');
+      document.currentScript.nonce = 'foo';
+      assert_equals(document.currentScript.nonce, 'foo');
+      assert_equals(document.currentScript.getAttribute('nonce'), '[Replaced]');
+    }, "SVG: Writing 'nonce' DOM attribute.");
+
+    async_test(t => {
+      var script = document.currentScript;
+      assert_equals(script.nonce, 'foo');
+
+      setTimeout(t.step_func_done(_ => {
+        assert_equals(script.nonce, "foo");
+      }), 1);
+    }, "SVG: 'nonce' DOM attribute present after current task.");
+  </script>
+</svg>
 
 <!-- CSS Leakage -->
 <style>

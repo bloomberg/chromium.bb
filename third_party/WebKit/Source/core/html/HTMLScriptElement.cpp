@@ -90,7 +90,7 @@ void HTMLScriptElement::parseAttribute(
   } else if (params.name == nonceAttr) {
     if (params.newValue == ContentSecurityPolicy::getNonceReplacementString())
       return;
-    m_nonce = params.newValue;
+    setNonce(params.newValue);
     if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled()) {
       setAttribute(nonceAttr,
                    ContentSecurityPolicy::getNonceReplacementString());

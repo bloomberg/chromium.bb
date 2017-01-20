@@ -547,10 +547,6 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
     contextDocument->popCurrentScript();
   }
 
-  // "Number used _once_", so, clear it out after execution.
-  if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled())
-    client()->clearNonce();
-
   return true;
 }
 

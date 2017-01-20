@@ -52,11 +52,6 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
   ScriptLoader* loader() const { return m_loader.get(); }
 
-  // ScriptLoaderClient
-  AtomicString nonce() const override { return m_nonce; }
-  void setNonce(const String& nonce) override { m_nonce = AtomicString(nonce); }
-  void clearNonce() override { m_nonce = emptyAtom; }
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -90,7 +85,6 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   Element* cloneElementWithoutAttributesAndChildren() override;
 
   Member<ScriptLoader> m_loader;
-  AtomicString m_nonce;
 };
 
 }  // namespace blink

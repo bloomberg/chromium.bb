@@ -6013,8 +6013,10 @@ interface SVGSVGElement : SVGGraphicsElement
 interface SVGScriptElement : SVGElement
     attribute @@toStringTag
     getter href
+    getter nonce
     getter type
     method constructor
+    setter nonce
     setter type
 interface SVGSetElement : SVGAnimationElement
     attribute @@toStringTag

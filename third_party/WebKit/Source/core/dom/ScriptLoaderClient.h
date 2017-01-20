@@ -43,9 +43,11 @@ class CORE_EXPORT ScriptLoaderClient {
   virtual bool deferAttributeValue() const = 0;
   virtual bool hasSourceAttribute() const = 0;
 
-  virtual AtomicString nonce() const = 0;
-  virtual void setNonce(const String&) = 0;
-  virtual void clearNonce() = 0;
+  AtomicString nonce() const { return m_nonce; }
+  void setNonce(const String& nonce) { m_nonce = AtomicString(nonce); }
+
+ private:
+  AtomicString m_nonce;
 };
 
 }  // namespace blink

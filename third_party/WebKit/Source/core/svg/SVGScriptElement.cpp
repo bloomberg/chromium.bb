@@ -27,6 +27,7 @@
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/events/Event.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 
 namespace blink {
 
@@ -36,13 +37,7 @@ inline SVGScriptElement::SVGScriptElement(Document& document,
     : SVGElement(SVGNames::scriptTag, document),
       SVGURIReference(this),
       m_loader(
-          ScriptLoader::create(this, wasInsertedByParser, alreadyStarted)) {
-  if (fastHasAttribute(HTMLNames::nonceAttr)) {
-    m_nonce = fastGetAttribute(HTMLNames::nonceAttr);
-    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled())
-      removeAttribute(HTMLNames::nonceAttr);
-  }
-}
+          ScriptLoader::create(this, wasInsertedByParser, alreadyStarted)) {}
 
 SVGScriptElement* SVGScriptElement::create(Document& document,
                                            bool insertedByParser) {
@@ -56,6 +51,14 @@ void SVGScriptElement::parseAttribute(
         EventTypeNames::error,
         createAttributeEventListener(this, params.name, params.newValue,
                                      eventParameterName()));
+  } else if (params.name == HTMLNames::nonceAttr) {
+    if (params.newValue == ContentSecurityPolicy::getNonceReplacementString())
+      return;
+    setNonce(params.newValue);
+    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled()) {
+      setAttribute(HTMLNames::nonceAttr,
+                   ContentSecurityPolicy::getNonceReplacementString());
+    }
   } else {
     SVGElement::parseAttribute(params);
   }
