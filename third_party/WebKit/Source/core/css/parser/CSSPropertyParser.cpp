@@ -45,6 +45,7 @@
 #include "core/css/properties/CSSPropertyColumnUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
+#include "core/css/properties/CSSPropertyPositionUtils.h"
 #include "core/css/properties/CSSPropertyShapeUtils.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
@@ -1309,39 +1310,6 @@ static CSSValue* consumeTransform(CSSParserTokenRange& range,
   return list;
 }
 
-template <CSSValueID start, CSSValueID end>
-static CSSValue* consumePositionLonghand(CSSParserTokenRange& range,
-                                         CSSParserMode cssParserMode) {
-  if (range.peek().type() == IdentToken) {
-    CSSValueID id = range.peek().id();
-    int percent;
-    if (id == start)
-      percent = 0;
-    else if (id == CSSValueCenter)
-      percent = 50;
-    else if (id == end)
-      percent = 100;
-    else
-      return nullptr;
-    range.consumeIncludingWhitespace();
-    return CSSPrimitiveValue::create(percent,
-                                     CSSPrimitiveValue::UnitType::Percentage);
-  }
-  return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll);
-}
-
-static CSSValue* consumePositionX(CSSParserTokenRange& range,
-                                  CSSParserMode cssParserMode) {
-  return consumePositionLonghand<CSSValueLeft, CSSValueRight>(range,
-                                                              cssParserMode);
-}
-
-static CSSValue* consumePositionY(CSSParserTokenRange& range,
-                                  CSSParserMode cssParserMode) {
-  return consumePositionLonghand<CSSValueTop, CSSValueBottom>(range,
-                                                              cssParserMode);
-}
-
 static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range,
                                   const CSSParserContext* context) {
   if (range.peek().id() == CSSValueNone)
@@ -1740,10 +1708,14 @@ static CSSValue* consumeBackgroundComponent(CSSPropertyID unresolvedProperty,
       return consumeImageOrNone(range, context);
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyWebkitMaskPositionX:
-      return consumePositionX(range, context->mode());
+      return CSSPropertyPositionUtils::consumePositionLonghand<CSSValueLeft,
+                                                               CSSValueRight>(
+          range, context->mode());
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyWebkitMaskPositionY:
-      return consumePositionY(range, context->mode());
+      return CSSPropertyPositionUtils::consumePositionLonghand<CSSValueTop,
+                                                               CSSValueBottom>(
+          range, context->mode());
     case CSSPropertyBackgroundSize:
     case CSSPropertyAliasWebkitBackgroundSize:
     case CSSPropertyWebkitMaskSize:
@@ -2475,10 +2447,14 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
           unresolvedProperty == CSSPropertyAliasWebkitTransform);
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitPerspectiveOriginX:
-      return consumePositionX(m_range, m_context->mode());
+      return CSSPropertyPositionUtils::consumePositionLonghand<CSSValueLeft,
+                                                               CSSValueRight>(
+          m_range, m_context->mode());
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitPerspectiveOriginY:
-      return consumePositionY(m_range, m_context->mode());
+      return CSSPropertyPositionUtils::consumePositionLonghand<CSSValueTop,
+                                                               CSSValueBottom>(
+          m_range, m_context->mode());
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:
