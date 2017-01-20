@@ -31,7 +31,7 @@ cr.define('expandable_list', function() {
       this.briefContent_ = document.createElement('div');
       this.briefContent_.classList.add('brief-content');
       this.briefContent_.addEventListener(
-          'click', this.toggleExpand_.bind(this));
+          'click', this.onExpand_.bind(this));
       this.appendChild(this.briefContent_);
 
       this.expandedContent_ = document.createElement('div');
@@ -40,11 +40,17 @@ cr.define('expandable_list', function() {
     },
 
     /**
+     * Called when the list item is expanded or collapsed.
+     * @param {boolean} expanded
+     */
+    onExpandInternal: function(expanded) {},
+
+    /**
      * Toggles the expanded class on the item.
      * @private
      */
-    toggleExpand_: function() {
-      this.classList.toggle('expanded');
+    onExpand_: function() {
+      this.onExpandInternal(this.classList.toggle('expanded'));
     },
   };
 
@@ -78,6 +84,7 @@ cr.define('expandable_list', function() {
 
       this.autoExpands = true;
       this.boundUpdateMessage_ = this.updateMessageDisplay_.bind(this);
+      this.setLoading(true);
     },
 
     /**
@@ -108,6 +115,14 @@ cr.define('expandable_list', function() {
      */
     setLoading: function(loading) {
       this.spinner_.hidden = !loading;
+    },
+
+    /**
+     * Gets the loading state of the list. Returns true if the list is loading.
+     * @return {boolean}
+     */
+    isLoading: function() {
+      return !this.spinner_.hidden;
     },
 
     /**

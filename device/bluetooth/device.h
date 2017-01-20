@@ -14,6 +14,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/public/interfaces/device.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -50,6 +51,8 @@ class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
   void Disconnect() override;
   void GetInfo(const GetInfoCallback& callback) override;
   void GetServices(const GetServicesCallback& callback) override;
+  void GetCharacteristics(const std::string& service_id,
+                          const GetCharacteristicsCallback& callback) override;
 
  private:
   Device(scoped_refptr<device::BluetoothAdapter> adapter,
@@ -59,6 +62,9 @@ class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
 
   mojom::ServiceInfoPtr ConstructServiceInfoStruct(
       const device::BluetoothRemoteGattService& service);
+
+  void GetCharacteristicsImpl(const std::string& service_id,
+                              const GetCharacteristicsCallback& callback);
 
   const std::string& GetAddress();
 

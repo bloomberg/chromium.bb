@@ -8,8 +8,11 @@
  */
 
 cr.define('service_list', function() {
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
   /** @const */ var ExpandableList = expandable_list.ExpandableList;
   /** @const */ var ExpandableListItem = expandable_list.ExpandableListItem;
+  /** @const */ var Snackbar = snackbar.Snackbar;
+  /** @const */ var SnackbarType = snackbar.SnackbarType;
 
   /**
    * Property names that will be displayed in the ObjectFieldSet which contains
@@ -25,15 +28,18 @@ cr.define('service_list', function() {
    * A list item that displays the data in a ServiceInfo object. The brief
    * section contains the UUID of the given |serviceInfo|. The expanded section
    * contains an ObjectFieldSet that displays all of the properties in the
-   * given |serviceInfo|.
+   * given |serviceInfo|. Data is not loaded until the ServiceListItem is
+   * expanded for the first time.
    * @param {!interfaces.BluetoothDevice.ServiceInfo} serviceInfo
+   * @param {string} deviceAddress
    * @constructor
    */
-  function ServiceListItem(serviceInfo) {
+  function ServiceListItem(serviceInfo, deviceAddress) {
     var listItem = new ExpandableListItem();
     listItem.__proto__ = ServiceListItem.prototype;
 
     listItem.info = serviceInfo;
+    listItem.deviceAddress_ = deviceAddress;
     listItem.decorate();
 
     return listItem;
@@ -49,10 +55,6 @@ cr.define('service_list', function() {
      */
     decorate: function() {
       this.classList.add('service-list-item');
-
-      /** @private {!HTMLElement} */
-      this.infoDiv_ = document.createElement('div');
-      this.infoDiv_.classList.add('info-container');
 
       /** @private {!object_fieldset.ObjectFieldSet} */
       this.serviceFieldSet_ = object_fieldset.ObjectFieldSet();
@@ -83,9 +85,23 @@ cr.define('service_list', function() {
       serviceDiv.classList.add('flex');
       serviceDiv.appendChild(this.serviceFieldSet_);
 
-      this.infoDiv_.appendChild(serviceInfoHeader);
-      this.infoDiv_.appendChild(serviceDiv);
-      this.expandedContent_.appendChild(this.infoDiv_);
+      var characteristicsListHeader = document.createElement('h4');
+      characteristicsListHeader.textContent = 'Characteristics';
+      this.characteristicList_ = new characteristic_list.CharacteristicList();
+
+      var infoDiv = document.createElement('div');
+      infoDiv.classList.add('info-container');
+      infoDiv.appendChild(serviceInfoHeader);
+      infoDiv.appendChild(serviceDiv);
+      infoDiv.appendChild(characteristicsListHeader);
+      infoDiv.appendChild(this.characteristicList_);
+
+      this.expandedContent_.appendChild(infoDiv);
+    },
+
+    /** @override */
+    onExpandInternal: function(expanded) {
+      this.characteristicList_.load(this.deviceAddress_, this.info.id);
     },
   };
 
@@ -101,13 +117,47 @@ cr.define('service_list', function() {
     /** @override */
     decorate: function() {
       ExpandableList.prototype.decorate.call(this);
+
+      /** @private {string} */
+      this.deviceAddress_ = null;
+      /** @private {boolean} */
+      this.servicesRequested_ = false;
+
       this.classList.add('service-list');
       this.setEmptyMessage('No Services Found');
     },
 
     /** @override */
     createItem: function(data) {
-      return new ServiceListItem(data);
+      return new ServiceListItem(data, this.deviceAddress_);
+    },
+
+    /**
+     * Loads the service list with an array of ServiceInfo from the
+     * device with |deviceAddress|. If no active connection to the device
+     * exists, one is created.
+     * @param {string} deviceAddress
+     */
+    load: function(deviceAddress) {
+      if (this.servicesRequested_ || !this.isLoading())
+        return;
+
+      this.deviceAddress_ = deviceAddress;
+      this.servicesRequested_ = true;
+
+      device_broker.connectToDevice(this.deviceAddress_).then(
+          function(device) {
+            return device.getServices();
+          }.bind(this)).then(function(response) {
+            this.setData(new ArrayDataModel(response.services));
+            this.setLoading(false);
+            this.servicesRequested_ = false;
+          }.bind(this)).catch(function(error) {
+            this.servicesRequested_ = false;
+            Snackbar.show(
+                deviceAddress + ': ' + error.message, SnackbarType.ERROR,
+                'Retry', function() { this.load(deviceAddress); }.bind(this));
+          }.bind(this));
     },
   };
 

@@ -6,6 +6,33 @@ module bluetooth.mojom;
 
 import "device/bluetooth/public/interfaces/uuid.mojom";
 
+// Values representing the possible properties of a characteristic, which
+// define how the characteristic can be used. Each of these properties serve
+// a role as defined in the Bluetooth Specification.
+// |EXTENDED_PROPERTIES| is a special property that, if present,
+// indicates that there is a characteristic descriptor (namely the
+// "Characteristic Extended Properties Descriptor" with UUID 0x2900) that
+// contains additional properties pertaining to the characteristic.
+// The properties |RELIABLE_WRITE| and |WRITABLE_AUXILIARIES| are retrieved from
+// that characteristic.
+enum Property {
+  NONE = 0,
+  BROADCAST = 1,
+  READ = 2,
+  WRITE_WITHOUT_RESPONSE = 4,
+  WRITE = 8,
+  NOTIFY = 16,
+  INDICATE = 32,
+  AUTHENTICATED_SIGNED_WRITES = 64,
+  EXTENDED_PROPERTIES = 128,
+  RELIABLE_WRITE = 256,
+  WRITABLE_AUXILIARIES = 512,
+  READ_ENCRYPTED = 1024,
+  WRITE_ENCRYPTED = 2048,
+  READ_ENCRYPTED_AUTHENTICATED = 4096,
+  WRITE_ENCRYPTED_AUTHENTICATED = 8192
+};
+
 // TODO(crbug.com/657632): Remove when numerical values can be optional.
 struct RSSIWrapper {
   int8 value;
@@ -25,6 +52,12 @@ struct ServiceInfo {
   bool is_primary;
 };
 
+struct CharacteristicInfo {
+  string id;
+  UUID uuid;
+  uint32 properties;
+};
+
 interface Device {
   // Disconnects and deletes the Device.
   Disconnect();
@@ -35,4 +68,8 @@ interface Device {
 
   // Gets the GATT Services in this device's GATT Server.
   GetServices() => (array<ServiceInfo> services);
+
+  // Gets the GATT Characteristics in the GATT Service with |service_id|.
+  GetCharacteristics(string service_id) =>
+      (array<CharacteristicInfo> characteristics);
 };

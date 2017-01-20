@@ -334,13 +334,13 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
       devices.splice(0, devices.length);
       adapterBroker.adapterClient_.deviceAdded(fakeDeviceInfo1());
       adapterBroker.adapterClient_.deviceAdded(fakeDeviceInfo2());
-
     });
 
     teardown(function() {
       adapterFactory.reset();
       sidebarObj.close();
       snackbar.Snackbar.dismiss(true);
+      connectedDevices.clear();
 
       adapterFactory.adapter.deviceProxyMap.forEach(function(deviceProxy) {
         deviceProxy.reset();
@@ -790,6 +790,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
 
       return adapterFactory.adapter.deviceProxyMap.get(
           device.address).whenCalled('getServices').then(function() {
+            // At this point, the device details page should be fully loaded.
             checkDeviceDetailsFieldSet(detailsPage, device);
 
             // Second link is 'Forget'.

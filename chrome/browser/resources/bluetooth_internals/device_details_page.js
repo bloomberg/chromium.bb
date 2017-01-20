@@ -9,7 +9,6 @@
  */
 
 cr.define('device_details_page', function() {
-  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var Snackbar = snackbar.Snackbar;
   /** @const */ var SnackbarType = snackbar.SnackbarType;
@@ -28,10 +27,10 @@ cr.define('device_details_page', function() {
 
   /**
    * Page that displays all of the details of a device. This page is generated
-   * and managed dynamically in bluetooth_internals. This page is the owner of
-   * the DevicePtr when a connection is created. Therefore, it manages the
-   * connection to the Bluetooth device and performs all Device interface
-   * related actions.
+   * and managed dynamically in bluetooth_internals. The page contains two
+   * sections: Status and Services. The Status section displays information from
+   * the DeviceInfo object and the Services section contains a ServiceList
+   * compononent that lists all of the active services on the device.
    * @constructor
    * @param {string} id
    * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
@@ -43,16 +42,15 @@ cr.define('device_details_page', function() {
     /** @type {interfaces.BluetoothDevice.DeviceInfo} */
     this.deviceInfo = deviceInfo;
 
-    /** @type {?interfaces.BluetoothDevice.Device.ptrClass} */
-    this.devicePtr = null;
+    /** @private {?interfaces.BluetoothDevice.Device.ptrClass} */
+    this.devicePtr_ = null;
 
-    /** @type {!object_fieldset.ObjectFieldSet} */
-    this.deviceFieldSet = new object_fieldset.ObjectFieldSet();
-    this.deviceFieldSet.setPropertyDisplayNames(PROPERTY_NAMES);
+    /** @private {!object_fieldset.ObjectFieldSet} */
+    this.deviceFieldSet_ = new object_fieldset.ObjectFieldSet();
+    this.deviceFieldSet_.setPropertyDisplayNames(PROPERTY_NAMES);
 
-    /** @type {!service_list.ServiceList} */
-    this.serviceList = new service_list.ServiceList();
-    this.serviceList.setLoading(true);
+    /** @private {!service_list.ServiceList} */
+    this.serviceList_ = new service_list.ServiceList();
 
     /** @private {!device_collection.ConnectionStatus} */
     this.status_ = device_collection.ConnectionStatus.DISCONNECTED;
@@ -65,8 +63,8 @@ cr.define('device_details_page', function() {
                             true /* deep */));
 
     this.pageDiv.querySelector('.device-details').appendChild(
-        this.deviceFieldSet);
-    this.pageDiv.querySelector('.services').appendChild(this.serviceList);
+        this.deviceFieldSet_);
+    this.pageDiv.querySelector('.services').appendChild(this.serviceList_);
 
     this.pageDiv.querySelector('.forget').addEventListener(
         'click', function() {
@@ -80,7 +78,7 @@ cr.define('device_details_page', function() {
 
     this.connectBtn_ = this.pageDiv.querySelector('.disconnect');
     this.connectBtn_.addEventListener('click', function() {
-      this.devicePtr !== null ? this.disconnect() : this.connect();
+      this.devicePtr_ !== null ? this.disconnect() : this.connect();
     }.bind(this));
 
     this.redraw();
@@ -97,46 +95,43 @@ cr.define('device_details_page', function() {
       this.updateConnectionStatus_(
           device_collection.ConnectionStatus.CONNECTING);
 
-      adapter_broker.getAdapterBroker().then(function(adapterBroker) {
-        return adapterBroker.connectToDevice(this.deviceInfo.address);
-      }.bind(this)).then(function(devicePtr) {
-        this.devicePtr = devicePtr;
+      device_broker.connectToDevice(this.deviceInfo.address).then(
+          function(devicePtr) {
+            this.devicePtr_ = devicePtr;
 
-        this.updateConnectionStatus_(
-            device_collection.ConnectionStatus.CONNECTED);
+            this.updateConnectionStatus_(
+                device_collection.ConnectionStatus.CONNECTED);
 
-        // Fetch services asynchronously.
-        return this.devicePtr.getServices();
-      }.bind(this)).then(function(response) {
-        this.serviceList.setData(new ArrayDataModel(response.services));
-        this.deviceInfo.services = this.serviceList.dataModel;
-        this.serviceList.setLoading(false);
+            // Fetch services asynchronously.
+            return this.devicePtr_.getServices();
+          }.bind(this)).then(function(response) {
+            this.deviceInfo.services = response.services;
+            this.serviceList_.load(this.deviceInfo.address);
+            this.redraw();
+            this.fireDeviceInfoChanged_();
+          }.bind(this)).catch(function(error) {
+            // If a connection error occurs while fetching the services, the
+            // devicePtr reference must be removed.
+            if (this.devicePtr_) {
+              this.devicePtr_.disconnect();
+              this.devicePtr_ = null;
+            }
 
-        this.redraw();
-        this.fireDeviceInfoChanged_();
-      }.bind(this)).catch(function(error) {
-        // If a connection error occurs while fetching the services, the
-        // devicePtr reference must be removed.
-        if (this.devicePtr) {
-          this.devicePtr.disconnect();
-          this.devicePtr = null;
-        }
+            Snackbar.show(
+                this.deviceInfo.name_for_display + ': ' + error.message,
+                SnackbarType.ERROR, 'Retry', this.connect.bind(this));
 
-        Snackbar.show(
-            this.deviceInfo.name_for_display + ': ' + error.message,
-            SnackbarType.DANGER, 'Retry', this.connect.bind(this));
-
-        this.updateConnectionStatus_(
-            device_collection.ConnectionStatus.DISCONNECTED);
-      }.bind(this));
+            this.updateConnectionStatus_(
+                device_collection.ConnectionStatus.DISCONNECTED);
+          }.bind(this));
     },
 
     /** Disconnects the page from the Bluetooth device. */
     disconnect: function() {
-      if (!this.devicePtr) return;
+      if (!this.devicePtr_) return;
 
-      this.devicePtr.disconnect();
-      this.devicePtr = null;
+      this.devicePtr_.disconnect();
+      this.devicePtr_ = null;
       this.updateConnectionStatus_(
           device_collection.ConnectionStatus.DISCONNECTED);
     },
@@ -145,8 +140,12 @@ cr.define('device_details_page', function() {
     redraw: function() {
       var isConnected = this.deviceInfo.is_gatt_connected;
 
-      // Update status if connection was dropped.
-      if (!isConnected) this.disconnect();
+      // Update status if connection has changed.
+      if (isConnected)
+        this.connect();
+      else
+        this.disconnect();
+
       var connectedText = isConnected ? 'Connected' : 'Not Connected';
 
       var rssi = this.deviceInfo.rssi || {};
@@ -168,8 +167,8 @@ cr.define('device_details_page', function() {
         'services.length': serviceCount,
       };
 
-      this.deviceFieldSet.setObject(deviceViewObj);
-      this.serviceList.redraw();
+      this.deviceFieldSet_.setObject(deviceViewObj);
+      this.serviceList_.redraw();
     },
 
     /**
