@@ -288,9 +288,9 @@ var vrShellUi = (function() {
     }
   };
 
-  class Omnibox {
+  class UrlIndicator {
     constructor() {
-      this.domUiElement = new DomUiElement('#omnibox-container');
+      this.domUiElement = new DomUiElement('#url-indicator-container');
       this.enabled = false;
       this.hidden = false;
       this.loading = false;
@@ -306,10 +306,10 @@ var vrShellUi = (function() {
       ui.updateElement(this.domUiElement.uiElementId, update);
       this.nativeState.visible = false;
 
-      // Pull some CSS properties so that Javascript can reconfigure the omnibox
-      // programmatically.
+      // Pull some CSS properties so that Javascript can reconfigure the
+      // indicator programmatically.
       let border =
-          this.domUiElement.domElement.querySelector('#omnibox-border');
+          this.domUiElement.domElement.querySelector('#url-indicator-border');
       let style = window.getComputedStyle(border);
       this.statusBarColor = getStyleString(style, '--statusBarColor');
       this.backgroundColor = style.backgroundColor;
@@ -324,14 +324,14 @@ var vrShellUi = (function() {
         case 0:  // NONE
         case 1:  // HTTP_SHOW_WARNING
         case 4:  // SECURITY_WARNING
-          return '#omnibox-info-icon';
+          return '#url-indicator-info-icon';
         case 2:  // SECURE:
         case 3:  // EV_SECURE:
-          return '#omnibox-lock-icon';
+          return '#url-indicator-lock-icon';
         case 5:  // SECURE_WITH_POLICY_INSTALLED_CERT (ChromeOS only)
         case 6:  // DANGEROUS
         default:
-          return '#omnibox-warning-icon';
+          return '#url-indicator-warning-icon';
       }
     }
 
@@ -354,17 +354,18 @@ var vrShellUi = (function() {
     }
 
     setURL(host, path) {
-      let omnibox = this.domUiElement.domElement;
-      omnibox.querySelector('#domain').innerHTML = host;
-      omnibox.querySelector('#path').innerHTML = path;
+      let indicator = this.domUiElement.domElement;
+      indicator.querySelector('#domain').innerHTML = host;
+      indicator.querySelector('#path').innerHTML = path;
       this.resetVisibilityTimer();
       this.updateState();
     }
 
     setSecurityLevel(level) {
-      document.querySelector('#omnibox-warning-icon').style.display = 'none';
-      document.querySelector('#omnibox-info-icon').style.display = 'none';
-      document.querySelector('#omnibox-lock-icon').style.display = 'none';
+      document.querySelector('#url-indicator-warning-icon').style.display =
+          'none';
+      document.querySelector('#url-indicator-info-icon').style.display = 'none';
+      document.querySelector('#url-indicator-lock-icon').style.display = 'none';
       let icon = this.getSecurityIconElementId(level);
       document.querySelector(icon).style.display = 'block';
 
@@ -401,10 +402,10 @@ var vrShellUi = (function() {
         return;
       }
 
-      let indicator = document.querySelector('#omnibox-border');
+      let indicator = document.querySelector('#url-indicator-border');
       if (this.loading) {
         // Remap load progress range 0-100 as 5-95 percent, to avoid the
-        // extremities of the rounded ends of the omnibox.
+        // extremities of the rounded ends of the indicator.
         let percent = Math.round((this.loadProgress * 0.9 + 0.05) * 100);
         let gradient = 'linear-gradient(to right, ' + this.statusBarColor +
             ' 0%, ' + this.statusBarColor + ' ' + percent + '%, ' +
@@ -464,11 +465,11 @@ var vrShellUi = (function() {
 
       this.controls = new Controls(contentId);
       this.secureOriginWarnings = new SecureOriginWarnings();
-      this.omnibox = new Omnibox();
+      this.urlIndicator = new UrlIndicator();
     }
 
     setMode(mode, menuMode, fullscreen) {
-      /** @const */ var OMNIBOX_VISIBILITY_TIMEOUT_MS = 5000;
+      /** @const */ var URL_INDICATOR_VISIBILITY_TIMEOUT_MS = 5000;
 
       this.mode = mode;
       this.menuMode = menuMode;
@@ -479,12 +480,12 @@ var vrShellUi = (function() {
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
       // TODO(amp): Don't show controls in fullscreen once MENU mode lands.
       this.controls.setEnabled(mode == api.Mode.STANDARD && !menuMode);
-      this.omnibox.setEnabled(mode == api.Mode.STANDARD && !menuMode);
+      this.urlIndicator.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       // TODO(amp): Don't show controls in CINEMA mode once MENU mode lands.
-      this.omnibox.setVisibilityTimeout(
+      this.urlIndicator.setVisibilityTimeout(
           mode == api.Mode.STANDARD && !menuMode ?
               0 :
-              OMNIBOX_VISIBILITY_TIMEOUT_MS);
+              URL_INDICATOR_VISIBILITY_TIMEOUT_MS);
       this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
 
       api.setUiCssSize(
@@ -492,7 +493,7 @@ var vrShellUi = (function() {
     }
 
     setSecurityLevel(level) {
-      this.omnibox.setSecurityLevel(level);
+      this.urlIndicator.setSecurityLevel(level);
     }
 
     setWebVRSecureOrigin(secure) {
@@ -526,13 +527,13 @@ var vrShellUi = (function() {
     }
     if ('url' in dict) {
       let url = dict['url'];
-      uiManager.omnibox.setURL(url['host'], url['path']);
+      uiManager.urlIndicator.setURL(url['host'], url['path']);
     }
     if ('loading' in dict) {
-      uiManager.omnibox.setLoading(dict['loading']);
+      uiManager.urlIndicator.setLoading(dict['loading']);
     }
     if ('loadProgress' in dict) {
-      uiManager.omnibox.setLoadProgress(dict['loadProgress']);
+      uiManager.urlIndicator.setLoadProgress(dict['loadProgress']);
     }
     ui.flush();
   }

@@ -119,13 +119,13 @@ html {
   padding: 12px;
 }
 
-#omnibox-container {
+#url-indicator-container {
   --tranX: 0;
   --tranY: -0.65;
   --tranZ: -1.2;
 }
 
-#omnibox-border {
+#url-indicator-border {
   --fadeTimeMs: 500;
   --fadeYOffset: -0.1;
   --opacity: 0.9;
@@ -135,7 +135,7 @@ html {
   padding: 6px;
 }
 
-#omnibox {
+#url-indicator {
   align-items: center;
   background-color: #ececec;
   border-radius: 200px;
@@ -148,13 +148,13 @@ html {
   width: 512px;
 }
 
-#omnibox-content {
+#url-indicator-content {
   align-items: center;
   display: flex;
   max-width: 448px;
 }
 
-.omnibox-icon {
+.url-indicator-icon {
   -webkit-mask-size: 50px;
   display: none;
   flex: none;
@@ -163,29 +163,29 @@ html {
   width: 50px;
 }
 
-#omnibox-info-icon {
+#url-indicator-info-icon {
   -webkit-mask-image: url(../../../../ui/webui/resources/images/i_circle.svg);
   background-color: rgb(90, 90, 90);
 }
 
-#omnibox-lock-icon {
+#url-indicator-lock-icon {
   -webkit-mask-image: url(../../../../ui/webui/resources/images/lock.svg);
   background-color: rgb(11, 128, 67);
 }
 
-#omnibox-warning-icon {
+#url-indicator-warning-icon {
   -webkit-mask-image: url(../../../../ui/webui/resources/images/warning.svg);
   background-color: rgb(199, 56, 33);
 }
 
-#omnibox #url {
+#url-indicator #url {
   color: #252525;
   font-size: 34px;
   overflow: hidden;
   white-space: nowrap;
 }
 
-#omnibox #path {
+#url-indicator #path {
   color: #868686;
 }
 
