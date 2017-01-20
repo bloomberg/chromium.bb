@@ -5557,6 +5557,20 @@ bool Document::allowInlineEventHandler(Node* node,
   return true;
 }
 
+bool Document::allowExecutingScripts(Node* node) {
+  // FIXME: Eventually we'd like to evaluate scripts which are inserted into a
+  // viewless document but this'll do for now.
+  // See http://bugs.webkit.org/show_bug.cgi?id=5727
+  LocalFrame* frame = executingFrame();
+  if (!frame)
+    return false;
+  if (!node->document().executingFrame())
+    return false;
+  if (!frame->script().canExecuteScripts(AboutToExecuteScript))
+    return false;
+  return true;
+}
+
 void Document::enforceSandboxFlags(SandboxFlags mask) {
   RefPtr<SecurityOrigin> standInOrigin = getSecurityOrigin();
   applySandboxFlags(mask);
