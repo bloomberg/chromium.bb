@@ -2838,7 +2838,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_task_runner(), context_3d_cb,
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                  base::Unretained(blink::mainThreadIsolate())),
-      initial_cdm, media_surface_manager_, media_observer);
+      initial_cdm, media_surface_manager_, media_observer,
+      // TODO(avayvod, asvitkine): Query the value directly when it is available
+      // in the renderer process. See https://crbug.com/681160.
+      GetWebkitPreferences().max_keyframe_distance_to_disable_background_video);
 
   bool use_fallback_path = false;
 #if defined(OS_ANDROID)

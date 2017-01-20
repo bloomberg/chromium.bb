@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ui/base/touch/touch_device.h"
@@ -263,6 +264,13 @@ struct CONTENT_EXPORT WebPreferences {
 
   // If enabled, disabled video track when the video is in the background.
   bool background_video_track_optimization_enabled;
+
+  // If background video track optimization is enabled, don't disable video
+  // track for videos with the average keyframe distance greater than this
+  // value.
+  // TODO(avayvod, asvitkine): Query the value directly when it is available in
+  // the renderer process. See https://crbug.com/681160.
+  base::TimeDelta max_keyframe_distance_to_disable_background_video;
 
   // Whether it is a presentation receiver.
   bool presentation_receiver;

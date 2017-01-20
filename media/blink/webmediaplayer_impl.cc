@@ -243,7 +243,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       is_encrypted_(false),
       underflow_count_(0),
       preroll_attempt_pending_(false),
-      observer_(params.media_observer()) {
+      observer_(params.media_observer()),
+      max_keyframe_distance_to_disable_background_video_(
+          params.max_keyframe_distance_to_disable_background_video()) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);

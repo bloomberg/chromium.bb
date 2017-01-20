@@ -223,6 +223,8 @@ WebPreferences::WebPreferences()
 #endif
       hide_download_ui(false),
       background_video_track_optimization_enabled(false),
+      max_keyframe_distance_to_disable_background_video(
+          base::TimeDelta::FromSeconds(10)),
       presentation_receiver(false) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");

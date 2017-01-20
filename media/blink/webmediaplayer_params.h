@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "media/base/media_observer.h"
 #include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"
@@ -57,7 +58,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
       blink::WebContentDecryptionModule* initial_cdm,
       SurfaceManager* surface_manager,
-      base::WeakPtr<MediaObserver> media_observer);
+      base::WeakPtr<MediaObserver> media_observer,
+      base::TimeDelta max_keyframe_distance_to_disable_background_video);
 
   ~WebMediaPlayerParams();
 
@@ -101,6 +103,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return media_observer_;
   }
 
+  base::TimeDelta max_keyframe_distance_to_disable_background_video() const {
+    return max_keyframe_distance_to_disable_background_video_;
+  }
+
  private:
   DeferLoadCB defer_load_cb_;
   scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
@@ -114,6 +120,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   blink::WebContentDecryptionModule* initial_cdm_;
   SurfaceManager* surface_manager_;
   base::WeakPtr<MediaObserver> media_observer_;
+  base::TimeDelta max_keyframe_distance_to_disable_background_video_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

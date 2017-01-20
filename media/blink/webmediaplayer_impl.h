@@ -650,9 +650,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // The maximum video keyframe distance that allows triggering background
   // playback optimizations.
-  // 10 seconds by default but can be overridden by a Finch experiment.
-  base::TimeDelta max_keyframe_distance_to_disable_background_video_ =
-      base::TimeDelta::FromSeconds(10);
+  base::TimeDelta max_keyframe_distance_to_disable_background_video_;
 
   // Whether disabled the video track as an optimization.
   bool video_track_disabled_ = false;

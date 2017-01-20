@@ -541,6 +541,15 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.background_video_track_optimization_enabled =
       base::FeatureList::IsEnabled(media::kBackgroundVideoTrackOptimization);
 
+  // TODO(avayvod, asvitkine): Query the value directly when it is available in
+  // the renderer process. See https://crbug.com/681160.
+  prefs.max_keyframe_distance_to_disable_background_video =
+      base::TimeDelta::FromMilliseconds(
+          variations::GetVariationParamByFeatureAsInt(
+              media::kBackgroundVideoTrackOptimization,
+              "max_keyframe_distance_ms",
+              base::TimeDelta::FromSeconds(10).InMilliseconds()));
+
   std::map<std::string, std::string> expensive_background_throttling_prefs;
   variations::GetVariationParamsByFeature(
       features::kExpensiveBackgroundTimerThrottling,

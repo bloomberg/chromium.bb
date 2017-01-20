@@ -208,7 +208,8 @@ class WebMediaPlayerImplTest : public testing::Test {
             scoped_refptr<SwitchableAudioRendererSink>(), media_log_,
             media_thread_.task_runner(), message_loop_.task_runner(),
             message_loop_.task_runner(), WebMediaPlayerParams::Context3DCB(),
-            base::Bind(&OnAdjustAllocatedMemory), nullptr, nullptr, nullptr)));
+            base::Bind(&OnAdjustAllocatedMemory), nullptr, nullptr, nullptr,
+            base::TimeDelta::FromSeconds(10))));
   }
 
   ~WebMediaPlayerImplTest() override {
