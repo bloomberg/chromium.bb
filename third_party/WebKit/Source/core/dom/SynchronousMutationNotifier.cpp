@@ -17,10 +17,12 @@ void SynchronousMutationNotifier::notifyChangeChildren(
     observer->didChangeChildren(container);
 }
 
-void SynchronousMutationNotifier::notifyMergeTextNodes(Text& node,
-                                                       unsigned offset) {
+void SynchronousMutationNotifier::notifyMergeTextNodes(
+    const Text& node,
+    const NodeWithIndex& nodeToBeRemovedWithIndex,
+    unsigned oldLength) {
   for (SynchronousMutationObserver* observer : m_observers)
-    observer->didMergeTextNodes(node, offset);
+    observer->didMergeTextNodes(node, nodeToBeRemovedWithIndex, oldLength);
 }
 
 void SynchronousMutationNotifier::notifyMoveTreeToNewDocument(

@@ -30,6 +30,7 @@
 
 #include "core/dom/Document.h"
 
+#include "core/dom/NodeWithIndex.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/Text.h"
 #include "core/frame/FrameView.h"
@@ -79,13 +80,21 @@ class TestSynchronousMutationObserver
 
  public:
   struct MergeTextNodesRecord : GarbageCollected<MergeTextNodesRecord> {
-    Member<Text> m_node;
+    Member<const Text> m_node;
+    Member<Node> m_nodeToBeRemoved;
     unsigned m_offset = 0;
 
-    MergeTextNodesRecord(Text* node, unsigned offset)
-        : m_node(node), m_offset(offset) {}
+    MergeTextNodesRecord(const Text* node,
+                         const NodeWithIndex& nodeWithIndex,
+                         unsigned offset)
+        : m_node(node),
+          m_nodeToBeRemoved(nodeWithIndex.node()),
+          m_offset(offset) {}
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
+    DEFINE_INLINE_TRACE() {
+      visitor->trace(m_node);
+      visitor->trace(m_nodeToBeRemoved);
+    }
   };
 
   struct UpdateCharacterDataRecord
@@ -150,7 +159,7 @@ class TestSynchronousMutationObserver
   // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed(Document*) final;
   void didChangeChildren(const ContainerNode&) final;
-  void didMergeTextNodes(Text&, unsigned) final;
+  void didMergeTextNodes(const Text&, const NodeWithIndex&, unsigned) final;
   void didMoveTreeToNewDocument(const Node& root) final;
   void didSplitTextNode(const Text&) final;
   void didUpdateCharacterData(CharacterData*,
@@ -186,9 +195,12 @@ void TestSynchronousMutationObserver::didChangeChildren(
   m_childrenChangedNodes.push_back(&container);
 }
 
-void TestSynchronousMutationObserver::didMergeTextNodes(Text& node,
-                                                        unsigned offset) {
-  m_mergeTextNodesRecords.push_back(new MergeTextNodesRecord(&node, offset));
+void TestSynchronousMutationObserver::didMergeTextNodes(
+    const Text& node,
+    const NodeWithIndex& nodeWithIndex,
+    unsigned offset) {
+  m_mergeTextNodesRecords.push_back(
+      new MergeTextNodesRecord(&node, nodeWithIndex, offset));
 }
 
 void TestSynchronousMutationObserver::didMoveTreeToNewDocument(
@@ -521,7 +533,9 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
   document().body()->normalize();
 
   ASSERT_EQ(1u, observer.mergeTextNodesRecords().size());
-  EXPECT_EQ(mergeSampleB, observer.mergeTextNodesRecords()[0]->m_node);
+  EXPECT_EQ(mergeSampleA, observer.mergeTextNodesRecords()[0]->m_node);
+  EXPECT_EQ(mergeSampleB,
+            observer.mergeTextNodesRecords()[0]->m_nodeToBeRemoved);
   EXPECT_EQ(10u, observer.mergeTextNodesRecords()[0]->m_offset);
 }
 

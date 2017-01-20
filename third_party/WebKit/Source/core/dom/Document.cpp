@@ -4267,16 +4267,18 @@ void Document::didRemoveText(Node* text, unsigned offset, unsigned length) {
   m_markers->shiftMarkers(text, offset + length, 0 - length);
 }
 
-void Document::didMergeTextNodes(Text& oldNode, unsigned offset) {
+void Document::didMergeTextNodes(const Text& mergedNode,
+                                 const Text& nodeToBeRemoved,
+                                 unsigned oldLength) {
+  NodeWithIndex nodeToBeRemovedWithIndex(const_cast<Text&>(nodeToBeRemoved));
   if (!m_ranges.isEmpty()) {
-    NodeWithIndex oldNodeWithIndex(oldNode);
     for (Range* range : m_ranges)
-      range->didMergeTextNodes(oldNodeWithIndex, offset);
+      range->didMergeTextNodes(nodeToBeRemovedWithIndex, oldLength);
   }
 
-  notifyMergeTextNodes(oldNode, offset);
+  notifyMergeTextNodes(mergedNode, nodeToBeRemovedWithIndex, oldLength);
   if (m_frame)
-    m_frame->selection().didMergeTextNodes(oldNode, offset);
+    m_frame->selection().didMergeTextNodes(nodeToBeRemoved, oldLength);
 
   // FIXME: This should update markers for spelling and grammar checking.
 }
