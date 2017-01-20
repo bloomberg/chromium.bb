@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.precache;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.content.Context;
 import android.support.test.filters.SmallTest;
 
@@ -12,6 +14,8 @@ import com.google.android.gms.gcm.Task;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -108,6 +112,9 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
                 // on the fly.
                 mSync = new StubProfileSyncService();
                 ProfileSyncService.overrideForTests(mSync);
+                // This is currently the default, but let's verify that, lest it ever change and we
+                // get confusing test failures later.
+                assertTrue(PrivacyPreferencesManager.getInstance().shouldPrerender());
             }
         });
     }
@@ -120,6 +127,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
     public void testUpdateEnabled_SyncNotReady_ThenDisabled() {
         mLauncher.updateEnabled(getTargetContext());
@@ -137,6 +145,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
     public void testUpdateEnabled_SyncNotReady_ThenEnabled() {
         mLauncher.updateEnabled(getTargetContext());
@@ -155,6 +164,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
     public void testUpdateEnabled_Disabled_ThenEnabled() {
         setEngineInitialized(true);
@@ -170,6 +180,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
     public void testUpdateEnabled_Enabled_ThenDisabled() {
         mLauncher.setShouldRun(true);
@@ -186,6 +197,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @Feature({"Precache"})
     public void testUpdateEnabledNullProfileSyncService() {
         ProfileSyncService.overrideForTests(null);
