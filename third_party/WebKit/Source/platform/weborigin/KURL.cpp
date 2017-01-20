@@ -47,21 +47,20 @@ namespace blink {
 static const int maximumValidPortNumber = 0xFFFE;
 static const int invalidPortNumber = 0xFFFF;
 
-static void assertProtocolIsGood(const char* protocol) {
 #if DCHECK_IS_ON()
-  DCHECK_NE(protocol, "");
-  const char* p = protocol;
-  while (*p) {
-    ASSERT(*p > ' ' && *p < 0x7F && !(*p >= 'A' && *p <= 'Z'));
-    ++p;
+static void assertProtocolIsGood(const StringView protocol) {
+  DCHECK(protocol != "");
+  for (size_t i = 0; i < protocol.length(); ++i) {
+    LChar c = protocol.characters8()[i];
+    DCHECK(c > ' ' && c < 0x7F && !(c >= 'A' && c <= 'Z'));
   }
-#endif
 }
+#endif
 
 // Note: You must ensure that |spec| is a valid canonicalized URL before calling
 // this function.
 static const char* asURLChar8Subtle(const String& spec) {
-  ASSERT(spec.is8Bit());
+  DCHECK(spec.is8Bit());
   // characters8 really return characters in Latin-1, but because we
   // canonicalize URL strings, we know that everything before the fragment
   // identifier will actually be ASCII, which means this cast is safe as long as
@@ -318,7 +317,7 @@ bool KURL::hasPath() const {
 String KURL::lastPathComponent() const {
   if (!m_isValid)
     return stringViewForInvalidComponent().toString();
-  ASSERT(!m_string.isNull());
+  DCHECK(!m_string.isNull());
 
   // When the output ends in a slash, WebCore has different expectations than
   // the GoogleURL library. For "/foo/bar/" the library will return the empty
@@ -358,11 +357,11 @@ String KURL::host() const {
 unsigned short KURL::port() const {
   if (!m_isValid || m_parsed.port.len <= 0)
     return 0;
-  ASSERT(!m_string.isNull());
+  DCHECK(!m_string.isNull());
   int port = m_string.is8Bit()
                  ? url::ParsePort(asURLChar8Subtle(m_string), m_parsed.port)
                  : url::ParsePort(m_string.characters16(), m_parsed.port);
-  ASSERT(port != url::PORT_UNSPECIFIED);  // Checked port.len <= 0 before.
+  DCHECK_NE(port, url::PORT_UNSPECIFIED);  // Checked port.len <= 0 before.
 
   if (port == url::PORT_INVALID ||
       port > maximumValidPortNumber)  // Mimic KURL::port()
@@ -526,7 +525,7 @@ void KURL::setPort(unsigned short port) {
   }
 
   String portString = String::number(port);
-  ASSERT(portString.is8Bit());
+  DCHECK(portString.is8Bit());
 
   url::Replacements<char> replacements;
   replacements.SetPort(reinterpret_cast<const char*>(portString.characters8()),
@@ -714,7 +713,9 @@ unsigned KURL::pathAfterLastSlash() const {
 }
 
 bool protocolIs(const String& url, const char* protocol) {
+#if DCHECK_IS_ON()
   assertProtocolIsGood(protocol);
+#endif
   if (url.isNull())
     return false;
   if (url.is8Bit())
@@ -816,8 +817,10 @@ void KURL::initProtocolMetadata() {
   DCHECK_EQ(m_protocol, m_protocol.lower());
 }
 
-bool KURL::protocolIs(const char* protocol) const {
+bool KURL::protocolIs(const StringView protocol) const {
+#if DCHECK_IS_ON()
   assertProtocolIsGood(protocol);
+#endif
 
   // JavaScript URLs are "valid" and should be executed even if KURL decides
   // they are invalid.  The free function protocolIsJavaScript() should be used
