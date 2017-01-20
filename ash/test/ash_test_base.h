@@ -11,7 +11,6 @@
 #include <string>
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
@@ -19,10 +18,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/display.h"
 #include "ui/wm/public/window_types.h"
-
-#if defined(OS_WIN)
-#include "ui/base/win/scoped_ole_initializer.h"
-#endif
 
 namespace aura {
 class Window;
@@ -195,9 +190,6 @@ class AshTestBase : public testing::Test {
   std::unique_ptr<AshTestEnvironment> ash_test_environment_;
   std::unique_ptr<AshTestHelper> ash_test_helper_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-#if defined(OS_WIN)
-  ui::ScopedOleInitializer ole_initializer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

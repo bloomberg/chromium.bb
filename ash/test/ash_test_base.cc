@@ -44,11 +44,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#include "ui/platform_window/win/win_window.h"
-#endif
-
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_connection.h"  // nogncheck
 #endif
@@ -134,9 +129,6 @@ void AshTestBase::SetUp() {
     command_line->AppendSwitchASCII(::switches::kHostWindowBounds,
                                     "1+1-800x600");
   }
-#if defined(OS_WIN)
-  ui::test::SetUsePopupAsRootWindowForTest(true);
-#endif
 
   ash_test_helper_->SetUp(start_session_, material_mode_);
 
@@ -164,9 +156,6 @@ void AshTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
   ash_test_helper_->TearDown();
-#if defined(OS_WIN)
-  ui::test::SetUsePopupAsRootWindowForTest(false);
-#endif
 
   event_generator_.reset();
   // Some tests set an internal display id,

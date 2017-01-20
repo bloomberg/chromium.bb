@@ -17,11 +17,6 @@
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-#if defined(OS_WIN)
-#include "base/win/scoped_com_initializer.h"
-#include "ui/base/win/atl_module.h"
-#endif
-
 namespace ash {
 namespace test {
 
@@ -33,11 +28,6 @@ AuraShellTestSuite::~AuraShellTestSuite() {}
 void AuraShellTestSuite::Initialize() {
   base::TestSuite::Initialize();
   gl::GLSurfaceTestSupport::InitializeOneOff();
-
-#if defined(OS_WIN)
-  com_initializer_.reset(new base::win::ScopedCOMInitializer());
-  ui::win::CreateATLModuleIfNeeded();
-#endif
 
   gfx::RegisterPathProvider();
   ui::RegisterPathProvider();
@@ -73,9 +63,6 @@ void AuraShellTestSuite::Initialize() {
 void AuraShellTestSuite::Shutdown() {
   env_.reset();
   ui::ResourceBundle::CleanupSharedInstance();
-#if defined(OS_WIN)
-  com_initializer_.reset();
-#endif
   base::TestSuite::Shutdown();
 }
 

@@ -31,10 +31,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace ash {
 
 class PanelWindowResizerTest : public test::AshTestBase {

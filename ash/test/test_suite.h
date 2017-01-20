@@ -7,13 +7,9 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
-
-#if defined(OS_WIN)
-#include "base/win/scoped_com_initializer.h"
-#endif
 
 namespace aura {
 class Env;
@@ -33,12 +29,11 @@ class AuraShellTestSuite : public base::TestSuite {
   void Shutdown() override;
 
  private:
-#if defined(OS_WIN)
-  std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;
-#endif
   std::unique_ptr<aura::Env> env_;
 
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
+
+  DISALLOW_COPY_AND_ASSIGN(AuraShellTestSuite);
 };
 
 }  // namespace test
