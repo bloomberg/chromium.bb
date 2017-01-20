@@ -27,6 +27,7 @@
 #define FrameCaret_h
 
 #include "core/CoreExport.h"
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "platform/Timer.h"
 #include "platform/geometry/LayoutRect.h"
@@ -48,7 +49,10 @@ class SelectionEditor;
 enum class CaretVisibility { Visible, Hidden };
 
 class CORE_EXPORT FrameCaret final
-    : public GarbageCollectedFinalized<FrameCaret> {
+    : public GarbageCollectedFinalized<FrameCaret>,
+      public SynchronousMutationObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(FrameCaret);
+
  public:
   FrameCaret(LocalFrame&, const SelectionEditor&);
   ~FrameCaret();
@@ -56,6 +60,7 @@ class CORE_EXPORT FrameCaret final
   const DisplayItemClient& displayItemClient() const;
   bool isActive() const { return caretPosition().isNotNull(); }
 
+  void documentAttached(Document*);
   void updateAppearance();
 
   // Used to suspend caret blinking while the mouse is down.
@@ -79,9 +84,6 @@ class CORE_EXPORT FrameCaret final
   void paintCaret(GraphicsContext&, const LayoutPoint&);
 
   void dataWillChange(const CharacterData&);
-  void nodeWillBeRemoved(Node&);
-
-  void documentDetached();
 
   // For unittests
   bool shouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
@@ -97,6 +99,10 @@ class CORE_EXPORT FrameCaret final
   bool shouldBlinkCaret() const;
   void caretBlinkTimerFired(TimerBase*);
   bool caretPositionIsValidForDocument(const Document&) const;
+
+  // Implementation of |SynchronousMutationObserver| member functions.
+  void contextDestroyed(Document*) final;
+  void nodeWillBeRemoved(Node&) final;
 
   const Member<const SelectionEditor> m_selectionEditor;
   const Member<LocalFrame> m_frame;

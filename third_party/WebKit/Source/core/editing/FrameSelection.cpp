@@ -403,8 +403,6 @@ void FrameSelection::nodeWillBeRemoved(Node& node) {
       removingNodeRemovesPosition(node, selection().extent()),
       removingNodeRemovesPosition(node, selection().start()),
       removingNodeRemovesPosition(node, selection().end()));
-
-  m_frameCaret->nodeWillBeRemoved(node);
 }
 
 static SelectionState selectionStateOf(const Node& node) {
@@ -711,6 +709,7 @@ void FrameSelection::documentAttached(Document* document) {
   m_document = document;
   m_useSecureKeyboardEntryWhenActive = false;
   m_selectionEditor->documentAttached(document);
+  m_frameCaret->documentAttached(document);
 }
 
 void FrameSelection::documentDetached(const Document& document) {
@@ -724,7 +723,6 @@ void FrameSelection::documentDetached(const Document& document) {
 
   clearTypingStyle();
   m_selectionEditor->documentDetached(document);
-  m_frameCaret->documentDetached();
 }
 
 LayoutBlock* FrameSelection::caretLayoutObject() const {

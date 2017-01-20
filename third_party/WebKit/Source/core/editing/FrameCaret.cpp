@@ -66,6 +66,11 @@ DEFINE_TRACE(FrameCaret) {
   visitor->trace(m_frame);
   visitor->trace(m_previousCaretNode);
   visitor->trace(m_previousCaretAnchorNode);
+  SynchronousMutationObserver::trace(visitor);
+}
+
+void FrameCaret::documentAttached(Document* document) {
+  setContext(document);
 }
 
 const PositionWithAffinity FrameCaret::caretPosition() const {
@@ -302,7 +307,7 @@ void FrameCaret::nodeWillBeRemoved(Node& node) {
   m_previousCaretVisibility = CaretVisibility::Hidden;
 }
 
-void FrameCaret::documentDetached() {
+void FrameCaret::contextDestroyed(Document*) {
   m_caretBlinkTimer.stop();
   m_previousCaretNode.clear();
   m_previousCaretAnchorNode.clear();
