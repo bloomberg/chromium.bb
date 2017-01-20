@@ -6736,6 +6736,18 @@ bool RenderFrameImpl::IsBrowserSideNavigationPending() {
   return browser_side_navigation_pending_;
 }
 
+base::SingleThreadTaskRunner* RenderFrameImpl::GetTimerTaskRunner() {
+  return GetWebFrame()->timerTaskRunner();
+}
+
+base::SingleThreadTaskRunner* RenderFrameImpl::GetLoadingTaskRunner() {
+  return GetWebFrame()->loadingTaskRunner();
+}
+
+base::SingleThreadTaskRunner* RenderFrameImpl::GetUnthrottledTaskRunner() {
+  return GetWebFrame()->unthrottledTaskRunner();
+}
+
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {
   if (frame_->document().isPluginDocument())
     return frame_->document().to<WebPluginDocument>().plugin();

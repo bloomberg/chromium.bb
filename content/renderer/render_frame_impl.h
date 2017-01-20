@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/associated_interface_registry_impl.h"
@@ -454,6 +455,9 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsPasting() const override;
   blink::WebPageVisibilityState GetVisibilityState() const override;
   bool IsBrowserSideNavigationPending() override;
+  base::SingleThreadTaskRunner* GetTimerTaskRunner() override;
+  base::SingleThreadTaskRunner* GetLoadingTaskRunner() override;
+  base::SingleThreadTaskRunner* GetUnthrottledTaskRunner() override;
 
   // blink::mojom::EngagementClient implementation:
   void SetEngagementLevel(const url::Origin& origin,
