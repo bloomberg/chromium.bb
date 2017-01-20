@@ -5,7 +5,7 @@
 #ifndef ResizeObservation_h
 #define ResizeObservation_h
 
-#include "core/observer/ResizeObserverEntry.h"
+#include "core/dom/ResizeObserverEntry.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/heap/Handle.h"
 

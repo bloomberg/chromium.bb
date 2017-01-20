@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/observer/ResizeObserverEntry.h"
+#include "core/dom/ResizeObserverEntry.h"
 
 #include "core/dom/ClientRect.h"
 #include "core/dom/Element.h"
-#include "core/observer/ResizeObservation.h"
+#include "core/dom/ResizeObservation.h"
 
 namespace blink {
 

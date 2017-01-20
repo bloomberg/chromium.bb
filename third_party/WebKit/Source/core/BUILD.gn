@@ -186,7 +186,6 @@ component("core") {
     "//third_party/WebKit/Source/core/layout",
     "//third_party/WebKit/Source/core/layout/svg",
     "//third_party/WebKit/Source/core/loader",
-    "//third_party/WebKit/Source/core/observer",
     "//third_party/WebKit/Source/core/offscreencanvas",
     "//third_party/WebKit/Source/core/origin_trials",
     "//third_party/WebKit/Source/core/page",

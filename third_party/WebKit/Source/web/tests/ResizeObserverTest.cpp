@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/observer/ResizeObserver.h"
+#include "core/dom/ResizeObserver.h"
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "core/observer/ResizeObservation.h"
-#include "core/observer/ResizeObserverCallback.h"
-#include "core/observer/ResizeObserverController.h"
+#include "core/dom/ResizeObservation.h"
+#include "core/dom/ResizeObserverCallback.h"
+#include "core/dom/ResizeObserverController.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/web/WebHeap.h"
 #include "web/WebViewImpl.h"

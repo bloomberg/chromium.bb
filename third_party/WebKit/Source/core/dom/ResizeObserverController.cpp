@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/observer/ResizeObserverController.h"
+#include "core/dom/ResizeObserverController.h"
 
-#include "core/observer/ResizeObserver.h"
+#include "core/dom/ResizeObserver.h"
 
 namespace blink {
 
