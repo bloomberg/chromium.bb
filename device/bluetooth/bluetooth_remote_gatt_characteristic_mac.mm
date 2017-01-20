@@ -71,9 +71,7 @@ BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
     CBCharacteristic* cb_characteristic)
     : gatt_service_(gatt_service),
       cb_characteristic_(cb_characteristic, base::scoped_policy::RETAIN),
-      characteristic_value_read_or_write_in_progress_(false),
-      start_notifications_in_progress_(false),
-      weak_ptr_factory_(this) {
+      characteristic_value_read_or_write_in_progress_(false) {
   uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID(
       [cb_characteristic_.get() UUID]);
   identifier_ = base::SysNSStringToUTF8(
@@ -150,50 +148,6 @@ BluetoothRemoteGattCharacteristicMac::GetDescriptor(
       searched_pair->second.get());
 }
 
-void BluetoothRemoteGattCharacteristicMac::StartNotifySession(
-    const NotifySessionCallback& callback,
-    const ErrorCallback& error_callback) {
-  if (IsNotifying()) {
-    VLOG(2) << "Already notifying. Creating notify session.";
-    std::unique_ptr<BluetoothGattNotifySession> notify_session(
-        new BluetoothGattNotifySession(weak_ptr_factory_.GetWeakPtr()));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, base::Passed(std::move(notify_session))));
-    return;
-  }
-
-  if (!SupportsNotificationsOrIndications()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
-    return;
-  }
-
-  start_notify_session_callbacks_.push_back(
-      std::make_pair(callback, error_callback));
-
-  if (start_notifications_in_progress_) {
-    VLOG(2) << "Start Notifications already in progress. "
-            << "Request has been queued.";
-    return;
-  }
-
-  [GetCBPeripheral() setNotifyValue:YES
-                  forCharacteristic:cb_characteristic_.get()];
-  start_notifications_in_progress_ = true;
-}
-
-void BluetoothRemoteGattCharacteristicMac::StopNotifySession(
-    BluetoothGattNotifySession* session,
-    const base::Closure& callback) {
-  // TODO(http://crbug.com/633191): Remove this method and use the base version.
-  //   Instead, we should implement SubscribeToNotifications and
-  //   UnsubscribeFromNotifications.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-}
-
 void BluetoothRemoteGattCharacteristicMac::ReadRemoteCharacteristic(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
@@ -256,8 +210,12 @@ void BluetoothRemoteGattCharacteristicMac::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  // TODO(http://crbug.com/633191): Implement this method
-  NOTIMPLEMENTED();
+  DCHECK(subscribe_to_notification_callback_.first.is_null());
+  DCHECK(subscribe_to_notification_callback_.second.is_null());
+  subscribe_to_notification_callback_ =
+      std::make_pair(callback, error_callback);
+  [GetCBPeripheral() setNotifyValue:YES
+                  forCharacteristic:cb_characteristic_.get()];
 }
 
 void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
@@ -336,10 +294,8 @@ void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
 
 void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
     NSError* error) {
-  std::vector<std::pair<NotifySessionCallback, ErrorCallback>>
-      reentrant_safe_callbacks;
-  reentrant_safe_callbacks.swap(start_notify_session_callbacks_);
-  start_notifications_in_progress_ = false;
+  PendingNotifyCallback reentrant_safe_callbacks;
+  reentrant_safe_callbacks.swap(subscribe_to_notification_callback_);
   if (error) {
     VLOG(1) << "Bluetooth error while modifying notification state for "
                "characteristic, domain: "
@@ -348,14 +304,13 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
             << base::SysNSStringToUTF8(error.localizedDescription);
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
-    for (const auto& callback : reentrant_safe_callbacks) {
-      callback.second.Run(error_code);
+    if (!reentrant_safe_callbacks.second.is_null()) {
+      reentrant_safe_callbacks.second.Run(error_code);
     }
     return;
   }
-  for (const auto& callback : reentrant_safe_callbacks) {
-    callback.first.Run(base::MakeUnique<BluetoothGattNotifySession>(
-        weak_ptr_factory_.GetWeakPtr()));
+  if (!reentrant_safe_callbacks.first.is_null()) {
+    reentrant_safe_callbacks.first.Run();
   }
 }
 
