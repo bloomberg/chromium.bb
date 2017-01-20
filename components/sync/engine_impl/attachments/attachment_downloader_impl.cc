@@ -17,6 +17,7 @@
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/sync/engine/attachments/attachment_util.h"
 #include "components/sync/engine_impl/attachments/attachment_uploader_impl.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -218,6 +219,8 @@ std::unique_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
   AttachmentUploaderImpl::ConfigureURLFetcherCommon(
       url_fetcher.get(), access_token, raw_store_birthday_, model_type_,
       url_request_context_getter_.get());
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher.get(), data_use_measurement::DataUseUserData::SYNC);
   return url_fetcher;
 }
 
