@@ -221,6 +221,9 @@ class RemoteRendererImpl : public Renderer {
   int sum_video_frames_decoded_ = 0;
   int sum_video_frames_dropped_ = 0;
 
+  // Records the number of consecutive times that remoting playback was delayed.
+  int times_playback_delayed_ = 0;
+
   // Records events and measurements of interest.
   remoting::RendererMetricsRecorder metrics_recorder_;
 

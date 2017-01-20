@@ -26,12 +26,14 @@
 namespace {
 
 // The moving time window to track the media time and statistics updates.
-constexpr base::TimeDelta kTrackingWindow = base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kTrackingWindow = base::TimeDelta::FromSeconds(5);
 
-// The allowed delay for the remoting playback. When exceeds this limit, the
-// user experience is likely poor and the controller is notified.
+// The allowed delay for the remoting playback. When continuously exceeds this
+// limit for |kPlaybackDelayCountThreshold| times, the user experience is likely
+// poor and the controller is notified.
 constexpr base::TimeDelta kMediaPlaybackDelayThreshold =
-    base::TimeDelta::FromMilliseconds(450);
+    base::TimeDelta::FromMilliseconds(750);
+constexpr int kPlaybackDelayCountThreshold = 3;
 
 // The allowed percentage of the number of video frames dropped vs. the number
 // of the video frames decoded. When exceeds this limit, the user experience is
@@ -747,8 +749,13 @@ void RemoteRendererImpl::OnMediaTimeUpdated() {
     VLOG(1) << "Irregular playback detected: Media playback delayed."
             << " media_duration = " << media_duration
             << " update_duration = " << update_duration;
-    OnFatalError(remoting::PACING_TOO_SLOWLY);
+    ++times_playback_delayed_;
+    if (times_playback_delayed_ == kPlaybackDelayCountThreshold)
+      OnFatalError(remoting::PACING_TOO_SLOWLY);
+  } else {
+    times_playback_delayed_ = 0;
   }
+
   // Prune |media_time_queue_|.
   while (media_time_queue_.back().first - media_time_queue_.front().first >=
          kTrackingWindow)
