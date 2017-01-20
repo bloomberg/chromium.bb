@@ -5683,10 +5683,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     TX_SIZE tx_size = mbmi->tx_size;
 #endif
     if (cm->tx_mode == TX_MODE_SELECT &&
-#if CONFIG_CB4X4 && CONFIG_VAR_TX
-        (mbmi->sb_type >= BLOCK_8X8 ||
-         (mbmi->sb_type >= BLOCK_4X4 && is_inter &&
-          !(mbmi->skip || seg_skip))) &&
+#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
+        mbmi->sb_type > BLOCK_4X4 &&
 #else
         mbmi->sb_type >= BLOCK_8X8 &&
 #endif
@@ -5783,7 +5781,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT &&
 #if CONFIG_CB4X4
-      mbmi->sb_type >= BLOCK_4X4 &&
+      mbmi->sb_type > BLOCK_4X4 &&
 #else
       mbmi->sb_type >= BLOCK_8X8 &&
 #endif
@@ -5795,7 +5793,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     if (is_inter)
       tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, is_inter);
     else
-      tx_size = (bsize >= BLOCK_8X8) ? tx_size : TX_4X4;
+      tx_size = (bsize > BLOCK_4X4) ? tx_size : TX_4X4;
     mbmi->tx_size = tx_size;
     set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h, (mbmi->skip || seg_skip), xd);
   }

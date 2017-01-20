@@ -419,8 +419,8 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
   const TX_MODE tx_mode = cm->tx_mode;
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return TX_4X4;
-#if CONFIG_CB4X4 && CONFIG_VAR_TX
-  if ((bsize > BLOCK_4X4 && is_inter) || bsize >= BLOCK_8X8) {
+#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
+  if (bsize > BLOCK_4X4) {
 #else
   if (bsize >= BLOCK_8X8) {
 #endif  // CONFIG_CB4X4 && CONFIG_VAR_TX
@@ -1991,8 +1991,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
     if (cm->tx_mode == TX_MODE_SELECT &&
 #if CONFIG_CB4X4
-        (bsize >= BLOCK_8X8 ||
-         (bsize >= BLOCK_4X4 && inter_block && !mbmi->skip)) &&
+        bsize > BLOCK_4X4 &&
 #else
         bsize >= BLOCK_8X8 &&
 #endif

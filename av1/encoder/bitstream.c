@@ -427,8 +427,12 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                    aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  // For sub8x8 blocks the tx_size symbol does not need to be sent
+// For sub8x8 blocks the tx_size symbol does not need to be sent
+#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
+  if (bsize > BLOCK_4X4) {
+#else
   if (bsize >= BLOCK_8X8) {
+#endif
     const TX_SIZE tx_size = mbmi->tx_size;
     const int is_inter = is_inter_block(mbmi);
     const int tx_size_ctx = get_tx_size_context(xd);
@@ -1335,8 +1339,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       aom_write(w, is_inter, av1_get_intra_inter_prob(cm, xd));
 
   if (cm->tx_mode == TX_MODE_SELECT &&
-#if CONFIG_CB4X4 && CONFIG_VAR_TX
-      (bsize >= BLOCK_8X8 || (bsize >= BLOCK_4X4 && is_inter && !skip)) &&
+#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
+      bsize > BLOCK_4X4 &&
 #else
       bsize >= BLOCK_8X8 &&
 #endif
@@ -1700,7 +1704,12 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
   write_skip(cm, xd, mbmi->segment_id, mi, w);
 #endif
 
-  if (bsize >= BLOCK_8X8 && cm->tx_mode == TX_MODE_SELECT &&
+  if (cm->tx_mode == TX_MODE_SELECT &&
+#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
+      bsize > BLOCK_4X4 &&
+#else
+      bsize >= BLOCK_8X8 &&
+#endif
       !xd->lossless[mbmi->segment_id])
     write_selected_tx_size(cm, xd, w);
 

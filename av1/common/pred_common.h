@@ -184,7 +184,7 @@ static INLINE int get_tx_size_context(const MACROBLOCKD *xd) {
   int left_ctx = (has_left && !left_mbmi->skip)
                      ? (int)txsize_sqr_map[left_mbmi->tx_size]
                      : max_tx_size;
-  assert(xd->mi[0]->mbmi.sb_type >= BLOCK_8X8);
+
   if (!has_left) left_ctx = above_ctx;
 
   if (!has_above) above_ctx = left_ctx;

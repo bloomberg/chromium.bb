@@ -950,8 +950,12 @@ static const TX_SIZE uv_txsize_lookup[BLOCK_SIZES][TX_SIZES_ALL][2][2] = {
       { { TX_4X8, TX_4X4 }, { TX_4X4, TX_4X4 } },
 #if CONFIG_TX64X64
       { { TX_4X8, TX_4X4 }, { TX_4X4, TX_4X4 } },
-#endif                                             // CONFIG_TX64X64
+#endif  // CONFIG_TX64X64
+#if CONFIG_CB4X4
+      { { TX_4X8, TX_4X4 }, { TX_2X2, TX_2X2 } },  // used
+#else
       { { TX_4X8, TX_4X4 }, { TX_4X4, TX_4X4 } },  // used
+#endif
       { { TX_4X8, TX_4X4 }, { TX_4X4, TX_4X4 } },
       { { TX_4X8, TX_4X4 }, { TX_4X4, TX_4X4 } },
       { { TX_4X8, TX_4X4 }, { TX_4X4, TX_4X4 } },
@@ -977,7 +981,11 @@ static const TX_SIZE uv_txsize_lookup[BLOCK_SIZES][TX_SIZES_ALL][2][2] = {
       { { TX_8X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
 #endif  // CONFIG_TX64X64
       { { TX_8X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
+#if CONFIG_CB4X4
+      { { TX_8X4, TX_2X2 }, { TX_4X4, TX_2X2 } },  // used
+#else
       { { TX_8X4, TX_4X4 }, { TX_4X4, TX_4X4 } },  // used
+#endif
       { { TX_8X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
       { { TX_8X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
       { { TX_8X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
@@ -1293,6 +1301,7 @@ static const TX_SIZE uv_txsize_lookup[BLOCK_SIZES][TX_SIZES_ALL][2][2] = {
 // Generates 4 bit field in which each bit set to 1 represents
 // a blocksize partition  1111 means we split 64x64, 32x32, 16x16
 // and 8x8.  1000 means we just split the 64x64 to 32x32
+/* clang-format off */
 static const struct {
   PARTITION_CONTEXT above;
   PARTITION_CONTEXT left;
@@ -1340,6 +1349,7 @@ static const struct {
   { 0, 0 },    // 64X64 - {0b0000, 0b0000}
 #endif  // CONFIG_EXT_PARTITION
 };
+/* clang-format on */
 
 #if CONFIG_SUPERTX
 static const TX_SIZE uvsupertx_size_lookup[TX_SIZES][2][2] = {
