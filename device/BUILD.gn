@@ -147,6 +147,7 @@ test("device_unittests") {
       "test/test_device_client.cc",
       "test/test_device_client.h",
       "test/usb_test_gadget_impl.cc",
+      "u2f/u2f_apdu_unittest.cc",
       "u2f/u2f_message_unittest.cc",
       "usb/mojo/device_impl_unittest.cc",
       "usb/mojo/device_manager_impl_unittest.cc",

@@ -7,6 +7,10 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("u2f") {
   sources = [
+    "u2f_apdu_command.cc",
+    "u2f_apdu_command.h",
+    "u2f_apdu_response.cc",
+    "u2f_apdu_response.h",
     "u2f_message.cc",
     "u2f_message.h",
     "u2f_packet.cc",
@@ -17,6 +21,17 @@ source_set("u2f") {
     "//base",
     "//net",
   ]
+}
+
+fuzzer_test("u2f_apdu_fuzzer") {
+  sources = [
+    "u2f_apdu_fuzzer.cc",
+  ]
+  deps = [
+    ":u2f",
+    "//net",
+  ]
+  libfuzzer_options = [ "max_len=65537" ]
 }
 
 fuzzer_test("u2f_message_fuzzer") {
