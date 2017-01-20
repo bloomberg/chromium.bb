@@ -12,6 +12,7 @@
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_units.h"
+#include "core/layout/LayoutTestHelper.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,9 +32,19 @@ NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
       .ToConstraintSpace();
 }
 
-class NGBlockLayoutAlgorithmTest : public ::testing::Test {
+typedef bool TestParamLayoutNG;
+class NGBlockLayoutAlgorithmTest
+    : public ::testing::WithParamInterface<TestParamLayoutNG>,
+      public RenderingTest {
+ public:
+  NGBlockLayoutAlgorithmTest() {}
+
  protected:
-  void SetUp() override { style_ = ComputedStyle::create(); }
+  void SetUp() override {
+    style_ = ComputedStyle::create();
+    RenderingTest::SetUp();
+    enableCompositing();
+  }
 
   NGPhysicalBoxFragment* RunBlockLayoutAlgorithm(NGConstraintSpace* space,
                                                  NGBlockNode* first_child) {
