@@ -21,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
@@ -51,6 +52,7 @@ public class SectionListTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mSuggestionSource = new FakeSuggestionsSource();
+        RecordHistogram.disableForTests();
 
         when(mUiDelegate.getSuggestionsSource()).thenReturn(mSuggestionSource);
         when(mUiDelegate.getMetricsReporter()).thenReturn(mMetricsReporter);

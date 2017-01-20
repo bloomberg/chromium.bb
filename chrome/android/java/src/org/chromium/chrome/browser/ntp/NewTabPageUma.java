@@ -94,6 +94,33 @@ public final class NewTabPageUma {
     /** The number of possible results for the NewTabPageLayout calculations. */
     public static final int NUM_NTP_LAYOUT_RESULTS = 5;
 
+    /** Possible results when updating content suggestions list in the UI. Keep in sync with the
+     * ContentSuggestionsUIUpdateResult enum in histograms.xml. Do not remove or change existing
+     * values other than NUM_UI_UPDATE_RESULTS. */
+    @IntDef({UI_UPDATE_SUCCESS_APPENDED, UI_UPDATE_SUCCESS_NONE_SEEN, UI_UPDATE_SUCCESS_1_SEEN,
+            UI_UPDATE_SUCCESS_2_SEEN, UI_UPDATE_SUCCESS_3_SEEN, UI_UPDATE_SUCCESS_MORE_THAN_3_SEEN,
+            UI_UPDATE_FAIL_ALL_SEEN, UI_UPDATE_FAIL_DISABLED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ContentSuggestionsUIUpdateResult {}
+    /** The content suggestions are successfully appended (because they are set for the first time
+     * or explicitly marked to be appended). */
+    public static final int UI_UPDATE_SUCCESS_APPENDED = 0;
+    /** Update successful, none of the previous content suggestions have been seen. */
+    public static final int UI_UPDATE_SUCCESS_NONE_SEEN = 1;
+    /** Update successful, 1 previous content suggestion have been seen (and kept). */
+    public static final int UI_UPDATE_SUCCESS_1_SEEN = 2;
+    /** Update successful, 2 previous content suggestions have been seen (and kept). */
+    public static final int UI_UPDATE_SUCCESS_2_SEEN = 3;
+    /** Update successful, 2 previous content suggestions have been seen (and kept). */
+    public static final int UI_UPDATE_SUCCESS_3_SEEN = 4;
+    /** Update successful, more than 2 previous content suggestions have been seen (and kept). */
+    public static final int UI_UPDATE_SUCCESS_MORE_THAN_3_SEEN = 5;
+    /** Update failed, all previous content suggestions have been seen (and kept). */
+    public static final int UI_UPDATE_FAIL_ALL_SEEN = 6;
+    /** Update failed, all previous content suggestions have been seen (and kept). */
+    public static final int UI_UPDATE_FAIL_DISABLED = 7;
+    public static final int NUM_UI_UPDATE_RESULTS = 8;
+
     // The NTP was loaded in a cold startup.
     private static final int LOAD_TYPE_COLD_START = 0;
     // The NTP was loaded in a warm startup.
@@ -157,6 +184,16 @@ public final class NewTabPageUma {
     public static void recordNTPLayoutResult(@NTPLayoutResult int result) {
         RecordHistogram.recordEnumeratedHistogram(
                 "NewTabPage.Layout", result, NUM_NTP_LAYOUT_RESULTS);
+    }
+
+    /**
+     * Records how content suggestions have been updated in the UI.
+     * @param result result key, one of {@link ContentSuggestionsUIUpdateResult}'s values.
+     */
+    public static void recordUIUpdateResult(
+            @ContentSuggestionsUIUpdateResult int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "NewTabPage.ContentSuggestions.UIUpdateResult", result, NUM_UI_UPDATE_RESULTS);
     }
 
     /**

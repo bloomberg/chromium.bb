@@ -8,6 +8,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
@@ -328,11 +329,13 @@ public class SuggestionsSection extends InnerNode {
         if (replaceExisting && hasSuggestions()) {
             if (CardsVariationParameters.ignoreUpdatesForExistingSuggestions()) {
                 Log.d(TAG, "setSuggestions: replacing existing suggestion disabled");
+                NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_FAIL_DISABLED);
                 return;
             }
 
             if (mNumberOfSuggestionsSeen >= getSuggestionsCount()) {
                 Log.d(TAG, "setSuggestions: replacing existing suggestion not possible, all seen");
+                NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_FAIL_ALL_SEEN);
                 return;
             }
 
@@ -354,7 +357,22 @@ public class SuggestionsSection extends InnerNode {
                             suggestions.size() - targetCountToAppend);
                     suggestions.subList(targetCountToAppend, suggestions.size()).clear();
                 }
+
+                if (mNumberOfSuggestionsSeen == 1) {
+                    NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_1_SEEN);
+                } else if (mNumberOfSuggestionsSeen == 2) {
+                    NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_2_SEEN);
+                } else if (mNumberOfSuggestionsSeen == 3) {
+                    NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_3_SEEN);
+                } else {
+                    NewTabPageUma.recordUIUpdateResult(
+                            NewTabPageUma.UI_UPDATE_SUCCESS_MORE_THAN_3_SEEN);
+                }
+            } else {
+                NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_NONE_SEEN);
             }
+        } else {
+            NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_APPENDED);
         }
 
         mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
