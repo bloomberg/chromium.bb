@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
-import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -172,8 +171,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         Context context = mFilesizeView.getContext();
         mFilenameCompletedView.setText(item.getDisplayFileName());
         mFilenameInProgressView.setText(item.getDisplayFileName());
-        mHostnameView.setText(
-                UrlFormatter.formatUrlForSecurityDisplay(item.getUrl(), false));
+        mHostnameView.setText(item.getDisplayHostname());
         mFilesizeView.setText(
                 Formatter.formatFileSize(context, item.getFileSize()));
 

@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.download.DownloadNotificationService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.DownloadState;
 import org.chromium.ui.widget.Toast;
 
@@ -122,6 +123,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     public final File getFile() {
         if (mFile == null) mFile = new File(getFilePath());
         return mFile;
+    }
+
+    /** @return String to display for the hostname. */
+    public final String getDisplayHostname() {
+        return UrlFormatter.formatUrlForSecurityDisplay(getUrl(), false);
     }
 
     /** @return String to display for the file. */

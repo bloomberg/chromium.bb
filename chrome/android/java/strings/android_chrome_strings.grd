@@ -1834,6 +1834,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_OPEN_WITH" desc="Menu item to open an item with another app.">
         Open with…
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_SEARCH" desc="Placeholder text for the input field that allows users to search downloads.">
+        Search your downloads
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_NO_RESULTS" desc="Text explaining that no download items matched a search query.">
+        No downloads found
+      </message>
 
       <!-- Browsing History UI -->
       <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">

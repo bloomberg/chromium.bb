@@ -43,7 +43,7 @@ public class SelectableListLayout<E> extends RelativeLayout {
     private TextView mEmptyView;
     private LoadingView mLoadingView;
     private RecyclerView mRecyclerView;
-    SelectionToolbar<E> mToolbar;
+    SelectableListToolbar<E> mToolbar;
 
     private final AdapterDataObserver mAdapterObserver = new AdapterDataObserver() {
         @Override
@@ -120,7 +120,7 @@ public class SelectableListLayout<E> extends RelativeLayout {
      * @param listener The OnMenuItemClickListener to set on the toolbar.
      * @return The initialized SelectionToolbar.
      */
-    public SelectionToolbar<E> initializeToolbar(int toolbarLayoutId,
+    public SelectableListToolbar<E> initializeToolbar(int toolbarLayoutId,
             SelectionDelegate<E> delegate, int titleResId, @Nullable DrawerLayout drawerLayout,
             int normalGroupResId, int selectedGroupResId,
             @Nullable Integer normalBackgroundColorResId, boolean hideShadowOnLargeTablets,
@@ -136,7 +136,7 @@ public class SelectableListLayout<E> extends RelativeLayout {
 
         mToolbarStub.setLayoutResource(toolbarLayoutId);
         @SuppressWarnings("unchecked")
-        SelectionToolbar<E> toolbar = (SelectionToolbar<E>) mToolbarStub.inflate();
+        SelectableListToolbar<E> toolbar = (SelectableListToolbar<E>) mToolbarStub.inflate();
         mToolbar = toolbar;
         mToolbar.initialize(delegate, titleResId, drawerLayout, normalGroupResId,
                 selectedGroupResId, normalBackgroundColorResId);

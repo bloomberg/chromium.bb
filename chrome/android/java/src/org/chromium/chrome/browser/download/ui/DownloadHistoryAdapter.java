@@ -356,6 +356,32 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         mObservers.removeObserver(observer);
     }
 
+    /**
+     * Called to perform a search. If the query is empty all items matching the current filter will
+     * be displayed.
+     * @param query The text to search for.
+     */
+    void search(String query) {
+        if (TextUtils.isEmpty(query)) {
+            filter(mFilter);
+            return;
+        }
+
+        mFilteredItems.clear();
+        mRegularDownloadItems.filter(mFilter, query, mFilteredItems);
+        mIncognitoDownloadItems.filter(mFilter, query, mFilteredItems);
+        mOfflinePageItems.filter(mFilter, query, mFilteredItems);
+        clear(false);
+        loadItems(mFilteredItems);
+    }
+
+    /**
+     * Called when a search is ended.
+     */
+    void onEndSearch() {
+        filter(mFilter);
+    }
+
     private DownloadDelegate getDownloadDelegate() {
         return mBackendProvider.getDownloadDelegate();
     }

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,31 +6,64 @@ package org.chromium.chrome.browser.widget.selection;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.CallSuper;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
+import org.chromium.ui.UiUtils;
 
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 /**
- * A toolbar that changes its view depending on whether a selection is established. The XML inflated
- * for this class must include number_roll_view.xml.
+ * A toolbar that changes its view depending on whether a selection is established. The toolbar
+ * also optionally shows a search view depending on whether {@link #initializeSearchView()} has
+ * been called.
  *
  * @param <E> The type of the selectable items this toolbar interacts with.
  */
-public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>, OnClickListener {
+public class SelectableListToolbar<E> extends Toolbar implements SelectionObserver<E>,
+        OnClickListener, OnEditorActionListener {
+
+    /**
+     * A delegate that handles searching the list of selectable items associated with this toolbar.
+     */
+    public interface SearchDelegate {
+        /**
+         * Called when the text in the search EditText box has changed.
+         * @param query The text in the search EditText box.
+         */
+        void onSearchTextChanged(String query);
+
+        /**
+         * Called when a search is ended.
+         */
+        void onEndSearch();
+    }
+
     /** No navigation button is displayed. **/
     protected static final int NAVIGATION_BUTTON_NONE = 0;
     /** Button to open the DrawerLayout. Only valid if mDrawerLayout is set. **/
@@ -43,19 +76,33 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
     protected boolean mIsSelectionEnabled;
     protected SelectionDelegate<E> mSelectionDelegate;
 
+    private boolean mHasSearchView;
+    private boolean mIsSearching;
+    private LinearLayout mSearchView;
+    private EditText mSearchEditText;
+    private TintedImageButton mClearTextButton;
+    private SearchDelegate mSearchDelegate;
+
     protected NumberRollView mNumberRollView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mActionBarDrawerToggle;
+    private TintedDrawable mNormalMenuButton;
+    private TintedDrawable mSelectionMenuButton;
+
     private int mNavigationButton;
     private int mTitleResId;
+    private int mSearchMenuItemId;
+    private int mNormalGroupResId;
+    private int mSelectedGroupResId;
+
     private int mNormalBackgroundColor;
-    protected int mNormalGroupResId;
-    protected int mSelectedGroupResId;
+    private int mSelectionBackgroundColor;
+    private int mSearchBackgroundColor;
 
     /**
      * Constructor for inflating from XML.
      */
-    public SelectionToolbar(Context context, AttributeSet attrs) {
+    public SelectableListToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -101,12 +148,71 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
         mNormalBackgroundColor =
                 ApiCompatibilityUtils.getColor(getResources(), normalBackgroundColorResId);
         setBackgroundColor(mNormalBackgroundColor);
+
+        mSelectionBackgroundColor = ApiCompatibilityUtils.getColor(
+                getResources(), R.color.light_active_color);
+
         if (mTitleResId != 0) setTitle(mTitleResId);
+
+        // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar
+        //                    buttons.
+        mNormalMenuButton = TintedDrawable.constructTintedDrawable(getResources(),
+                R.drawable.btn_menu);
+        mSelectionMenuButton = TintedDrawable.constructTintedDrawable(getResources(),
+                R.drawable.btn_menu, android.R.color.white);
+    }
+
+    /**
+     * Inflates and initializes the search view.
+     * @param searchDelegate The delegate that will handle performing searches.
+     * @param hintStringResId The hint text to show in the search view's EditText box.
+     * @param searchMenuItemId The menu item used to activate the search view. This item will be
+     *                         hidden when selection is enabled or if the list of selectable items
+     *                         associated with this toolbar is empty.
+     */
+    public void initializeSearchView(SearchDelegate searchDelegate, int hintStringResId,
+            int searchMenuItemId) {
+        mHasSearchView = true;
+        mSearchDelegate = searchDelegate;
+        mSearchMenuItemId = searchMenuItemId;
+        mSearchBackgroundColor = Color.WHITE;
+
+        LayoutInflater.from(getContext()).inflate(R.layout.search_toolbar, this);
+
+        mSearchView = (LinearLayout) findViewById(R.id.search_view);
+
+        mSearchEditText = (EditText) findViewById(R.id.search_text);
+        mSearchEditText.setHint(hintStringResId);
+        mSearchEditText.setOnEditorActionListener(this);
+        mSearchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mClearTextButton.setVisibility(
+                        TextUtils.isEmpty(s) ? View.INVISIBLE : View.VISIBLE);
+                if (mIsSearching) mSearchDelegate.onSearchTextChanged(s.toString());
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        mClearTextButton = (TintedImageButton) findViewById(R.id.clear_text_button);
+        mClearTextButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSearchEditText.setText("");
+            }
+        });
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+
+        LayoutInflater.from(getContext()).inflate(R.layout.number_roll_view, this);
         mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
         mNumberRollView.setContentDescriptionString(R.plurals.accessibility_selected_items);
     }
@@ -124,34 +230,11 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
         }
 
         if (mIsSelectionEnabled) {
-            // TODO(twellington): add the concept of normal & selected tint to apply to all
-            //                    toolbar buttons.
-            setOverflowIcon(TintedDrawable.constructTintedDrawable(getResources(),
-                    R.drawable.btn_menu, android.R.color.white));
-            setNavigationButton(NAVIGATION_BUTTON_SELECTION_BACK);
-            setTitle(null);
-
-            getMenu().setGroupVisible(mNormalGroupResId, false);
-            getMenu().setGroupVisible(mSelectedGroupResId, true);
-
-            setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color));
-
-            mNumberRollView.setVisibility(View.VISIBLE);
-            if (!wasSelectionEnabled) mNumberRollView.setNumber(0, false);
-            mNumberRollView.setNumber(selectedItems.size(), true);
+            showSelectionView(selectedItems, wasSelectionEnabled);
+        } else if (mIsSearching) {
+            showSearchViewInternal();
         } else {
-            setOverflowIcon(TintedDrawable.constructTintedDrawable(getResources(),
-                    R.drawable.btn_menu));
-            getMenu().setGroupVisible(mNormalGroupResId, true);
-            getMenu().setGroupVisible(mSelectedGroupResId, false);
-            setBackgroundColor(mNormalBackgroundColor);
-
-            if (mTitleResId != 0) setTitle(mTitleResId);
-            setNavigationButton(NAVIGATION_BUTTON_MENU);
-
-            mNumberRollView.setVisibility(View.GONE);
-            mNumberRollView.setNumber(0, false);
+            showNormalView();
         }
 
         if (mIsSelectionEnabled && !wasSelectionEnabled) {
@@ -180,10 +263,15 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
     }
 
     /**
-     * Handle a click on the navigation back button. Subclasses should override this method if
-     * navigation back is a valid toolbar action.
+     * Handle a click on the navigation back button. If this toolbar has a search view, the search
+     * view will be hidden. Subclasses should override this method if navigation back is also a
+     * valid toolbar action when not searching.
      */
-    protected void onNavigationBack() {}
+    public void onNavigationBack() {
+        if (!mHasSearchView || !mIsSearching) return;
+
+        hideSearchView();
+    }
 
     /**
      * Update the current navigation button (the top-left icon on LTR)
@@ -238,10 +326,54 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
     }
 
     /**
+     * Shows the search edit text box and related views.
+     */
+    public void showSearchView() {
+        assert mHasSearchView;
+
+        mIsSearching = true;
+        mSelectionDelegate.clearSelection();
+
+        showSearchViewInternal();
+
+        mSearchEditText.requestFocus();
+        UiUtils.showKeyboard(mSearchEditText);
+        setTitle(null);
+    }
+
+    /**
+     * Hides the search edit text box and related views.
+     */
+    public void hideSearchView() {
+        assert mHasSearchView;
+
+        mIsSearching = false;
+
+        mSearchEditText.setText("");
+        UiUtils.hideKeyboard(mSearchEditText);
+        showNormalView();
+
+        mSearchDelegate.onEndSearch();
+    }
+
+    /**
      * Called when the data in the selectable list this toolbar is associated with changes.
      * @param numItems The number of items in the selectable list.
      */
-    protected void onDataChanged(int numItems) {}
+    protected void onDataChanged(int numItems) {
+        if (mHasSearchView) {
+            getMenu().findItem(mSearchMenuItemId).setVisible(
+                    !mIsSelectionEnabled && !mIsSearching && numItems != 0);
+        }
+    }
+
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            UiUtils.hideKeyboard(v);
+        }
+        return false;
+    }
 
     /**
      * Set up ActionBarDrawerToggle, a.k.a. hamburger button.
@@ -255,5 +387,50 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
                 R.string.accessibility_drawer_toggle_btn_close);
         mDrawerLayout.addDrawerListener(mActionBarDrawerToggle);
         mActionBarDrawerToggle.syncState();
+    }
+
+    private void showNormalView() {
+        getMenu().setGroupVisible(mNormalGroupResId, true);
+        getMenu().setGroupVisible(mSelectedGroupResId, false);
+        if (mHasSearchView) mSearchView.setVisibility(View.GONE);
+
+        setNavigationButton(NAVIGATION_BUTTON_MENU);
+        setBackgroundColor(mNormalBackgroundColor);
+        setOverflowIcon(mNormalMenuButton);
+        if (mTitleResId != 0) setTitle(mTitleResId);
+
+        mNumberRollView.setVisibility(View.GONE);
+        mNumberRollView.setNumber(0, false);
+    }
+
+    private void showSelectionView(List<E> selectedItems, boolean wasSelectionEnabled) {
+        getMenu().setGroupVisible(mNormalGroupResId, false);
+        getMenu().setGroupVisible(mSelectedGroupResId, true);
+        if (mHasSearchView) mSearchView.setVisibility(View.GONE);
+
+        setNavigationButton(NAVIGATION_BUTTON_SELECTION_BACK);
+        setBackgroundColor(mSelectionBackgroundColor);
+        setOverflowIcon(mSelectionMenuButton);
+        setTitle(null);
+
+        mNumberRollView.setVisibility(View.VISIBLE);
+        if (!wasSelectionEnabled) mNumberRollView.setNumber(0, false);
+        mNumberRollView.setNumber(selectedItems.size(), true);
+
+        if (mIsSearching) UiUtils.hideKeyboard(mSearchEditText);
+    }
+
+    private void showSearchViewInternal() {
+        getMenu().setGroupVisible(mNormalGroupResId, false);
+        getMenu().setGroupVisible(mSelectedGroupResId, false);
+        mSearchView.setVisibility(View.VISIBLE);
+
+        setNavigationButton(NAVIGATION_BUTTON_BACK);
+        setBackgroundColor(mSearchBackgroundColor);
+    }
+
+    @VisibleForTesting
+    public View getSearchViewForTests() {
+        return mSearchView;
     }
 }

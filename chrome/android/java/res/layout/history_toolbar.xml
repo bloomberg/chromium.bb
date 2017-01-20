@@ -9,38 +9,4 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingStart="0dp"
-    android:paddingEnd="0dp" >
-
-    <include layout="@layout/number_roll_view" />
-
-    <!-- TODO(twellington): extract so this can be shared with downloads. -->
-    <LinearLayout
-        android:id="@+id/history_search"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:visibility="gone" >
-        <EditText
-            android:id="@+id/history_search_text"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@null"
-            android:hint="@string/history_manager_search"
-            android:imeOptions="flagNoExtractUi|actionSearch"
-            android:inputType="textNoSuggestions"
-            android:singleLine="true"
-            android:textColor="@color/default_text_color"
-            android:textSize="16sp" />
-
-        <org.chromium.chrome.browser.widget.TintedImageButton
-            android:id="@+id/delete_button"
-            style="@style/HistoryEndIcon"
-            android:src="@drawable/btn_delete_url"
-            android:contentDescription="@string/accessibility_toolbar_btn_delete_url"
-            android:visibility="invisible"
-            chrome:tint="@color/dark_mode_tint" />
-
-    </LinearLayout>
-
-</org.chromium.chrome.browser.history.HistoryManagerToolbar>
+    android:paddingEnd="0dp" />

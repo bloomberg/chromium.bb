@@ -13,8 +13,8 @@ import android.view.View;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
+import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.chrome.browser.widget.selection.SelectionToolbar;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Handles toolbar functionality for the {@link DownloadManagerUi}.
  */
-public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItemWrapper>
+public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistoryItemWrapper>
         implements DownloadUiObserver {
     private int mFilter = DownloadFilter.FILTER_ALL;
 

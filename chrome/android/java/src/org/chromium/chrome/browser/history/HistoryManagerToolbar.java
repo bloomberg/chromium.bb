@@ -5,28 +5,15 @@
 package org.chromium.chrome.browser.history;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.widget.TintedImageButton;
-import org.chromium.chrome.browser.widget.selection.SelectionToolbar;
-import org.chromium.ui.UiUtils;
+import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
@@ -34,14 +21,8 @@ import java.util.List;
 /**
  * The SelectionToolbar for the browsing history UI.
  */
-public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
-        implements OnEditorActionListener {
+public class HistoryManagerToolbar extends SelectableListToolbar<HistoryItem> {
     private HistoryManager mManager;
-    private boolean mIsSearching;
-
-    private LinearLayout mSearchView;
-    private EditText mSearchEditText;
-    private TintedImageButton mDeleteTextButton;
 
     public HistoryManagerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -50,74 +31,11 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
         updateMenuItemVisibility();
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        mSearchView = (LinearLayout) findViewById(R.id.history_search);
-
-        mSearchEditText = (EditText) findViewById(R.id.history_search_text);
-        mSearchEditText.setOnEditorActionListener(this);
-        mSearchEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mDeleteTextButton.setVisibility(
-                        TextUtils.isEmpty(s) ? View.INVISIBLE : View.VISIBLE);
-                if (mIsSearching) mManager.performSearch(s.toString());
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-
-        mDeleteTextButton = (TintedImageButton) findViewById(R.id.delete_button);
-        mDeleteTextButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mSearchEditText.setText("");
-            }
-        });
-    }
-
     /**
      * @param manager The {@link HistoryManager} associated with this toolbar.
      */
     public void setManager(HistoryManager manager) {
         mManager = manager;
-    }
-
-    /**
-     * Shows the search edit text box and related views.
-     */
-    public void showSearchView() {
-        mIsSearching = true;
-        mSelectionDelegate.clearSelection();
-
-        getMenu().setGroupVisible(mNormalGroupResId, false);
-        getMenu().setGroupVisible(mSelectedGroupResId, false);
-        setNavigationButton(NAVIGATION_BUTTON_BACK);
-        mSearchView.setVisibility(View.VISIBLE);
-        setBackgroundColor(Color.WHITE);
-
-        mSearchEditText.requestFocus();
-        UiUtils.showKeyboard(mSearchEditText);
-        setTitle(null);
-    }
-
-    /**
-     * Hides the search edit text box and related views.
-     */
-    public void hideSearchView() {
-        mIsSearching = false;
-        mSearchEditText.setText("");
-        UiUtils.hideKeyboard(mSearchEditText);
-        mSearchView.setVisibility(View.GONE);
-        setBackgroundColor(ApiCompatibilityUtils.getColor(
-                getResources(), R.color.default_primary_color));
-
-        mManager.onEndSearch();
     }
 
     @Override
@@ -144,40 +62,6 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
                 mManager.recordUserActionWithOptionalSearch("SelectionEstablished");
             }
         }
-
-        if (!mIsSearching) return;
-
-        if (mIsSelectionEnabled) {
-            mSearchView.setVisibility(View.GONE);
-            UiUtils.hideKeyboard(mSearchEditText);
-        } else {
-            mSearchView.setVisibility(View.VISIBLE);
-            getMenu().setGroupVisible(mNormalGroupResId, false);
-            setNavigationButton(NAVIGATION_BUTTON_BACK);
-            setBackgroundColor(Color.WHITE);
-        }
-    }
-
-    @Override
-    protected void onDataChanged(int numItems) {
-        getMenu().findItem(R.id.search_menu_id).setVisible(
-                !mIsSelectionEnabled && !mIsSearching && numItems != 0);
-    }
-
-    @Override
-    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-            UiUtils.hideKeyboard(v);
-        }
-        return false;
-    }
-
-    @Override
-    protected void onNavigationBack() {
-        hideSearchView();
-
-        // Call #onSelectionStateChange() to reset toolbar buttons and title.
-        super.onSelectionStateChange(mSelectionDelegate.getSelectedItems());
     }
 
     /**
@@ -217,10 +101,5 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
     @VisibleForTesting
     Menu getMenuForTests() {
         return getMenu();
-    }
-
-    @VisibleForTesting
-    View getSearchViewForTests() {
-        return mSearchView;
     }
 }

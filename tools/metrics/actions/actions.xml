@@ -1129,6 +1129,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.DownloadManager.Search">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>User initiated a search of their downloads.</description>
+</action>
+
 <action name="Android.DownloadManager.SelectionEstablished">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>

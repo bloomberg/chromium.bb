@@ -389,6 +389,101 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         assertEquals(itemCompleted.getId(), toDelete.iterator().next().getId());
     }
 
+    @SmallTest
+    public void testSearch_NoFilter() throws Exception {
+        DownloadItem item0 = StubbedProvider.createDownloadItem(0, "19840116 12:00");
+        DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:01");
+        DownloadItem item2 = StubbedProvider.createDownloadItem(2, "19840117 12:00");
+        DownloadItem item3 = StubbedProvider.createDownloadItem(3, "19840117 12:01");
+        DownloadItem item4 = StubbedProvider.createDownloadItem(4, "19840118 12:00");
+        DownloadItem item5 = StubbedProvider.createDownloadItem(5, "19840118 12:01");
+        OfflinePageDownloadItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
+        mDownloadDelegate.regularItems.add(item0);
+        mDownloadDelegate.offTheRecordItems.add(item1);
+        mDownloadDelegate.regularItems.add(item2);
+        mDownloadDelegate.regularItems.add(item3);
+        mDownloadDelegate.offTheRecordItems.add(item4);
+        mDownloadDelegate.regularItems.add(item5);
+        mOfflineDelegate.items.add(item6);
+        initializeAdapter(true);
+        checkAdapterContents(null, item5, item4, item6, null, item3, item2, null, item1, item0);
+
+        // Perform a search that matches the file name for a few downloads.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.search("FiLe");
+            }
+        });
+
+        // Only items matching the query should be shown.
+        checkAdapterContents(null, item2, null, item1, item0);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.onEndSearch();
+            }
+        });
+
+        // All items should be shown again after the search is ended.
+        checkAdapterContents(null, item5, item4, item6, null, item3, item2, null, item1, item0);
+
+        // Perform a search that matches the hostname for a couple downloads.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.search("oNE");
+            }
+        });
+
+        checkAdapterContents(null, item4, null, item1);
+    }
+
+    @SmallTest
+    public void testSearch_WithFilter() throws Exception {
+        DownloadItem item0 = StubbedProvider.createDownloadItem(0, "19840116 12:00");
+        DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:01");
+        DownloadItem item2 = StubbedProvider.createDownloadItem(2, "19840117 12:00");
+        DownloadItem item3 = StubbedProvider.createDownloadItem(3, "19840117 12:01");
+        DownloadItem item4 = StubbedProvider.createDownloadItem(4, "19840118 12:00");
+        DownloadItem item5 = StubbedProvider.createDownloadItem(5, "19840118 12:01");
+        OfflinePageDownloadItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
+        mDownloadDelegate.regularItems.add(item0);
+        mDownloadDelegate.offTheRecordItems.add(item1);
+        mDownloadDelegate.regularItems.add(item2);
+        mDownloadDelegate.regularItems.add(item3);
+        mDownloadDelegate.offTheRecordItems.add(item4);
+        mDownloadDelegate.regularItems.add(item5);
+        mOfflineDelegate.items.add(item6);
+        initializeAdapter(true);
+        checkAdapterContents(null, item5, item4, item6, null, item3, item2, null, item1, item0);
+
+        // Change the filter
+        mAdapter.onFilterChanged(DownloadFilter.FILTER_IMAGE);
+        checkAdapterContents(null, item1, item0);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.search("FiRSt");
+            }
+        });
+
+        // Only items matching both the filter and the search query should be shown.
+        checkAdapterContents(null, item0);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.onEndSearch();
+            }
+        });
+
+        // All items matching the filter should be shown after the search is ended.
+        checkAdapterContents(null, item1, item0);
+    }
+
     /** Checks that the adapter has the correct items in the right places. */
     private void checkAdapterContents(Object... expectedItems) {
         assertEquals(expectedItems.length, mAdapter.getItemCount());

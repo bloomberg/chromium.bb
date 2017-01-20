@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemViewHolder;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadItemView;
+import org.chromium.chrome.browser.download.ui.DownloadManagerToolbar;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.download.ui.SpaceDisplay;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
@@ -536,6 +537,48 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         assertNull(getActivity().findViewById(R.id.selection_mode_share_menu_id));
         assertNull(getActivity().findViewById(R.id.selection_mode_delete_menu_id));
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+    }
+
+    @MediumTest
+    public void testSearchView() throws Exception {
+        final DownloadManagerToolbar toolbar = mUi.getDownloadManagerToolbarForTests();
+        View toolbarSearchView = toolbar.getSearchViewForTests();
+        assertEquals(View.GONE, toolbarSearchView.getVisibility());
+
+        toggleItemSelection(2);
+        assertTrue(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+
+        int callCount = mAdapterObserver.onSelectionCallback.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                toolbar.getMenu().performIdentifierAction(R.id.search_menu_id, 0);
+            }
+        });
+
+        // The selection should be cleared when a search is started.
+        mAdapterObserver.onSelectionCallback.waitForCallback(callCount, 1);
+        assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+        assertEquals(View.VISIBLE, toolbarSearchView.getVisibility());
+
+        // Select an item and assert that the search view is no longer showing.
+        toggleItemSelection(2);
+        assertTrue(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+        assertEquals(View.GONE, toolbarSearchView.getVisibility());
+
+        // Clear the selection and assert that the search view is showing again.
+        toggleItemSelection(2);
+        assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+        assertEquals(View.VISIBLE, toolbarSearchView.getVisibility());
+
+        // Close the search view.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                toolbar.onNavigationBack();
+            }
+        });
+        assertEquals(View.GONE, toolbarSearchView.getVisibility());
     }
 
     private DownloadActivity startDownloadActivity() throws Exception {

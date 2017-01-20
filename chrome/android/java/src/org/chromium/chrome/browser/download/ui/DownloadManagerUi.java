@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
+import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -53,7 +54,7 @@ import java.util.Set;
  * Displays and manages the UI for the download manager.
  */
 
-public class DownloadManagerUi implements OnMenuItemClickListener {
+public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegate {
 
     /**
      * Interface to observe the changes in the download manager ui. This should be implemented by
@@ -222,6 +223,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 0, drawerLayout, R.id.normal_menu_group, R.id.selection_mode_menu_group, null, true,
                 this);
         mToolbar.setTitle(R.string.menu_downloads);
+        mToolbar.initializeSearchView(this, R.string.download_manager_search, R.id.search_menu_id);
         addObserver(mToolbar);
 
         mFilterView = (ListView) mMainView.findViewById(R.id.section_list);
@@ -302,6 +304,11 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         } else if (item.getItemId() == R.id.selection_mode_share_menu_id) {
             shareSelectedItems();
             return true;
+        } else if (item.getItemId() == R.id.search_menu_id) {
+            mToolbar.showSearchView();
+            mSelectableListLayout.setEmptyViewText(R.string.download_manager_no_results);
+            RecordUserAction.record("Android.DownloadManager.Search");
+            return true;
         }
         return false;
     }
@@ -368,6 +375,17 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Filter", filter,
                 DownloadFilter.FILTER_BOUNDARY);
+    }
+
+    @Override
+    public void onSearchTextChanged(String query) {
+        mHistoryAdapter.search(query);
+    }
+
+    @Override
+    public void onEndSearch() {
+        mSelectableListLayout.setEmptyViewText(R.string.download_manager_ui_empty);
+        mHistoryAdapter.onEndSearch();
     }
 
     private void shareSelectedItems() {

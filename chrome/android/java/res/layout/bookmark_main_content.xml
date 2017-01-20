@@ -47,11 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:layout_alignParentTop="true"
-        android:background="@color/appbar_background" >
-
-        <include layout="@layout/number_roll_view" />
-
-    </org.chromium.chrome.browser.bookmarks.BookmarkActionBar>
+        android:background="@color/appbar_background" />
 
     <org.chromium.chrome.browser.widget.FadingShadowView
         android:id="@+id/shadow"
