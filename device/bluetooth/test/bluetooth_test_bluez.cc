@@ -66,13 +66,35 @@ void BluetoothTestBlueZ::SetUp() {
   BluetoothTestBase::SetUp();
   std::unique_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
       bluez::BluezDBusManager::GetSetterForTesting();
+
+  fake_bluetooth_adapter_client_ = new bluez::FakeBluetoothAdapterClient;
+  dbus_setter->SetBluetoothAdapterClient(
+      std::unique_ptr<bluez::BluetoothAdapterClient>(
+          fake_bluetooth_adapter_client_));
+
   fake_bluetooth_device_client_ = new bluez::FakeBluetoothDeviceClient;
   dbus_setter->SetBluetoothDeviceClient(
       std::unique_ptr<bluez::BluetoothDeviceClient>(
           fake_bluetooth_device_client_));
+
+  // Make the fake adapter post tasks without delay in order to avoid timing
+  // issues.
+  fake_bluetooth_adapter_client_->SetSimulationIntervalMs(0);
 }
 
 void BluetoothTestBlueZ::TearDown() {
+  for (const auto& connection : gatt_connections_) {
+    if (connection->IsConnected())
+      connection->Disconnect();
+  }
+  gatt_connections_.clear();
+
+  for (const auto& session : discovery_sessions_) {
+    if (session->IsActive())
+      session->Stop(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+  }
+  discovery_sessions_.clear();
+
   adapter_ = nullptr;
   bluez::BluezDBusManager::Shutdown();
   BluetoothTestBase::TearDown();
@@ -87,6 +109,8 @@ void BluetoothTestBlueZ::InitWithFakeAdapter() {
   adapter_ = new bluez::BluetoothAdapterBlueZ(
       base::Bind(&AdapterCallback, run_loop.QuitClosure()));
   run_loop.Run();
+  adapter_->SetPowered(true, base::Bind(&base::DoNothing),
+                       base::Bind(&base::DoNothing));
 }
 
 BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(

@@ -15,6 +15,7 @@
 #include <string>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -23,6 +24,7 @@
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1775,9 +1777,12 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
     device::BluetoothTransport type) {
   // Create a random device path.
   dbus::ObjectPath device_path;
+  std::string id;
   do {
-    device_path = dbus::ObjectPath(adapter_path.value() + "/dev" +
-                                   base::RandBytesAsString(10));
+    // Construct an id that is valid according to the DBUS specification.
+    base::Base64Encode(base::RandBytesAsString(10), &id);
+    base::RemoveChars(id, "+/=", &id);
+    device_path = dbus::ObjectPath(adapter_path.value() + "/dev" + id);
   } while (std::find(device_list_.begin(), device_list_.end(), device_path) !=
            device_list_.end());
 
@@ -1794,6 +1799,8 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
   properties->alias.ReplaceValue(alias);
 
   properties->uuids.ReplaceValue(service_uuids);
+  properties->bluetooth_class.ReplaceValue(
+      0x1F00u);  // Unspecified Device Class
 
   switch (type) {
     case device::BLUETOOTH_TRANSPORT_CLASSIC:

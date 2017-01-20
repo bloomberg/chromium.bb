@@ -16,6 +16,7 @@
 
 namespace bluez {
 class FakeBluetoothDeviceClient;
+class FakeBluetoothAdapterClient;
 }
 
 namespace device {
@@ -66,6 +67,7 @@ class BluetoothTestBlueZ : public BluetoothTestBase {
 
  private:
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
+  bluez::FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).
