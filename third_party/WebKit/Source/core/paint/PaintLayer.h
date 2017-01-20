@@ -1114,14 +1114,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool shouldFragmentCompositedBounds(const PaintLayer* compositingLayer) const;
 
-  void expandRectForStackingChildren(const PaintLayer* compositedLayer,
+  void expandRectForStackingChildren(const PaintLayer& compositedLayer,
                                      LayoutRect& result,
                                      PaintLayer::CalculateBoundsOptions) const;
 
   // The return value is in the space of |stackingParent|, if non-null, or
   // |this| otherwise.
   LayoutRect boundingBoxForCompositingInternal(
-      const PaintLayer* compositedLayer,
+      const PaintLayer& compositedLayer,
       const PaintLayer* stackingParent,
       CalculateBoundsOptions) const;
 

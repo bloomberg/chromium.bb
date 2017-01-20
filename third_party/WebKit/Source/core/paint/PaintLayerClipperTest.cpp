@@ -231,9 +231,9 @@ TEST_P(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
       toLayoutBoxModelObject(getLayoutObjectByElementId("fixed"))->layer();
 
   EXPECT_EQ(LayoutRect(0, 0, 100, 100),
-            transformed->clipper().localClipRect(transformed));
+            transformed->clipper().localClipRect(*transformed));
   EXPECT_EQ(LayoutRect(0, 50, 100, 100),
-            fixed->clipper().localClipRect(transformed));
+            fixed->clipper().localClipRect(*transformed));
 }
 
 TEST_P(PaintLayerClipperTest, ClearClipRectsRecursive) {

@@ -216,8 +216,8 @@ void PaintLayerClipper::clearClipRectsIncludingDescendants(
 }
 
 LayoutRect PaintLayerClipper::localClipRect(
-    const PaintLayer* clippingRootLayer) const {
-  ClipRectsContext context(clippingRootLayer, PaintingClipRects);
+    const PaintLayer& clippingRootLayer) const {
+  ClipRectsContext context(&clippingRootLayer, PaintingClipRects);
   if (m_geometryMapper) {
     LayoutRect premappedRect =
         applyOverflowClipToBackgroundRectWithGeometryMapper(
@@ -228,7 +228,7 @@ LayoutRect PaintLayerClipper::localClipRect(
     // PaintLayer.
     premappedRect.moveBy(context.rootLayer->layoutObject()->paintOffset());
 
-    const auto* clipRootLayerTransform = clippingRootLayer->layoutObject()
+    const auto* clipRootLayerTransform = clippingRootLayer.layoutObject()
                                              ->paintProperties()
                                              ->localBorderBoxProperties()
                                              ->transform();
@@ -256,7 +256,7 @@ LayoutRect PaintLayerClipper::localClipRect(
     return clipRect;
 
   LayoutPoint clippingRootOffset;
-  m_layer.convertToLayerCoords(clippingRootLayer, clippingRootOffset);
+  m_layer.convertToLayerCoords(&clippingRootLayer, clippingRootOffset);
   clipRect.moveBy(-clippingRootOffset);
 
   return clipRect;

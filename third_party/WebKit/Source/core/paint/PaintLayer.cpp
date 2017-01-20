@@ -2444,7 +2444,7 @@ LayoutRect PaintLayer::boundingBoxForCompositingOverlapTest() const {
   // assume fragmented layers always overlap?
   return overlapBoundsIncludeChildren()
              ? boundingBoxForCompositingInternal(
-                   this, nullptr, NeverIncludeTransformForAncestorLayer)
+                   *this, nullptr, NeverIncludeTransformForAncestorLayer)
              : fragmentsBoundingBox(this);
 }
 
@@ -2453,7 +2453,7 @@ bool PaintLayer::overlapBoundsIncludeChildren() const {
 }
 
 void PaintLayer::expandRectForStackingChildren(
-    const PaintLayer* compositedLayer,
+    const PaintLayer& compositedLayer,
     LayoutRect& result,
     PaintLayer::CalculateBoundsOptions options) const {
   DCHECK(stackingNode()->isStackingContext() ||
@@ -2487,7 +2487,7 @@ LayoutRect PaintLayer::physicalBoundingBoxIncludingStackingChildren(
 
   const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-  expandRectForStackingChildren(this, result, options);
+  expandRectForStackingChildren(*this, result, options);
 
   result.moveBy(offsetFromRoot);
   return result;
@@ -2495,11 +2495,11 @@ LayoutRect PaintLayer::physicalBoundingBoxIncludingStackingChildren(
 
 LayoutRect PaintLayer::boundingBoxForCompositing() const {
   return boundingBoxForCompositingInternal(
-      this, nullptr, MaybeIncludeTransformForAncestorLayer);
+      *this, nullptr, MaybeIncludeTransformForAncestorLayer);
 }
 
 LayoutRect PaintLayer::boundingBoxForCompositingInternal(
-    const PaintLayer* compositedLayer,
+    const PaintLayer& compositedLayer,
     const PaintLayer* stackingParent,
     CalculateBoundsOptions options) const {
   if (!isSelfPaintingLayer())
@@ -2507,7 +2507,7 @@ LayoutRect PaintLayer::boundingBoxForCompositingInternal(
 
   // FIXME: This could be improved to do a check like
   // hasVisibleNonCompositingDescendantLayers() (bug 92580).
-  if (this != compositedLayer && !hasVisibleContent() &&
+  if (this != &compositedLayer && !hasVisibleContent() &&
       !hasVisibleDescendant())
     return LayoutRect();
 
@@ -2547,12 +2547,13 @@ LayoutRect PaintLayer::boundingBoxForCompositingInternal(
 
   if (transform() && (options == IncludeTransformsAndCompositedChildLayers ||
                       ((paintsWithTransform(GlobalPaintNormalPhase) &&
-                        (this != compositedLayer ||
+                        (this != &compositedLayer ||
                          options == MaybeIncludeTransformForAncestorLayer)))))
     result = transform()->mapRect(result);
 
-  if (shouldFragmentCompositedBounds(compositedLayer)) {
-    convertFromFlowThreadToVisualBoundingBoxInAncestor(compositedLayer, result);
+  if (shouldFragmentCompositedBounds(&compositedLayer)) {
+    convertFromFlowThreadToVisualBoundingBoxInAncestor(&compositedLayer,
+                                                       result);
     return result;
   }
 
