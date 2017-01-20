@@ -129,11 +129,8 @@ chrome_ios_eg_test("ios_chrome_smoke_egtests") {
   ]
   deps = [
     ":test_support",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/test/app:test_support",
     "//ios/third_party/earl_grey",
-    "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
 }

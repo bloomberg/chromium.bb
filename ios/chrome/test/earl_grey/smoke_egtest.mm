@@ -6,41 +6,27 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "ios/chrome/app/main_application_delegate_testing.h"
-#import "ios/chrome/app/main_controller.h"
-#import "ios/chrome/app/main_controller_private.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ui/base/l10n/l10n_util.h"
 
-@interface BrowserViewController (TabStripTest)
-- (int)currentTabModelCount;
-@end
-@implementation BrowserViewController (TabStripTest)
-- (int)currentTabModelCount {
-  return [self tabModel].count;
-}
-@end
-
+// Test case to verify that EarlGrey tests can be launched and perform basic UI
+// interactions.
 @interface SmokeTestCase : ChromeTestCase
 @end
 
 @implementation SmokeTestCase
 
-// These aren't 'real' tests so please don't copy these.  They are just to get
-// plumbing working for EG/XCTests.
+// Tests that the tools menu is tappable.
 - (void)testTapToolsMenu {
-  NSString* menu = l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS);
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(menu)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::toolsMenuButton()]
       performAction:grey_tap()];
 }
 
-- (void)testTabs {
-  MainController* mainController =
-      [MainApplicationDelegate sharedMainController];
-  BrowserViewController* bvc =
-      [[mainController browserViewInformation] currentBVC];
-  XCTAssertEqual(1, [bvc currentTabModelCount]);
+// Tests that a tab can be opened.
+- (void)testOpenTab {
+  [ChromeEarlGreyUI openNewTab];
+  GREYAssertEqual(2, chrome_test_util::GetMainTabCount(), @"Expected 2 tabs.");
 }
 @end
