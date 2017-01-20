@@ -1373,9 +1373,9 @@ TEST_F(VideoRendererAlgorithmTest, VariablePlaybackRateCadence) {
     const double playback_rate = kTestRates[i];
     SCOPED_TRACE(base::StringPrintf("Playback Rate: %.03f", playback_rate));
     time_source_.SetPlaybackRate(playback_rate);
-    RunFramePumpTest(false, &frame_tg, &display_tg,
-                     [this](const scoped_refptr<VideoFrame>& frame,
-                            size_t frames_dropped) {});
+    RunFramePumpTest(
+        false, &frame_tg, &display_tg,
+        [](const scoped_refptr<VideoFrame>& frame, size_t frames_dropped) {});
     if (HasFatalFailure())
       return;
 
