@@ -364,6 +364,11 @@ external/wpt/webvtt [ Skip ]
 # (if it's a blink/test tooling issue) or an upstream bug reference
 # (if the test itself is buggy).
 
+# wpt.config.json overrides the following files with LayoutTests/resources
+# files. Having unused files would be confusing.
+imported/wpt/resources/testharnessreport.js [ Skip ]
+imported/wpt/common/vendor-prefix.js [ Skip ]
+
 # crbug.com/490694: Needs to support *.headers.
 external/wpt/html/dom/documents/resource-metadata-management/document-lastModified.html [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-001.html [ Skip ]

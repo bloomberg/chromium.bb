@@ -262,16 +262,6 @@ class PortTestCase(LoggingTestCase):
             port.host.filesystem.join(port.layout_tests_dir(), 'SlowTests'),
         ])
 
-    def test_expectations_files_wptserve_enabled(self):
-        port = self.make_port(options=optparse.Values(dict(enable_wptserve=True)))
-        self.assertEqual(port.expectations_files(), [
-            port.path_to_generic_test_expectations_file(),
-            port.host.filesystem.join(port.layout_tests_dir(), 'NeverFixTests'),
-            port.host.filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations'),
-            port.host.filesystem.join(port.layout_tests_dir(), 'SlowTests'),
-            port.host.filesystem.join(port.layout_tests_dir(), 'WPTServeExpectations'),
-        ])
-
     def test_check_sys_deps(self):
         port = self.make_port()
         port._executive = MockExecutive(exit_code=0)  # pylint: disable=protected-access

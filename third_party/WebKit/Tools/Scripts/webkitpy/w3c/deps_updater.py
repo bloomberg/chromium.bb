@@ -124,38 +124,18 @@ class DepsUpdater(object):
         return True
 
     def _copy_resources(self):
-        """Copies resources from LayoutTests/resources to wpt and vice versa.
+        """Copies resources from wpt to LayoutTests/resources.
 
-        There are resources from our repository that we use instead of the
-        upstream versions. Conversely, there are also some resources that
-        are copied in the other direction.
-
-        Specifically:
-          - testharnessreport.js contains code needed to integrate our testing
-            with testharness.js; we also want our code to be used for tests
-            in wpt.
-          - TODO(qyearsley, jsbell): Document why other other files are copied,
-            or stop copying them if it's unnecessary.
+        We copy idlharness.js and testharness.js in wpt to LayoutTests/resources
+        in order to use them in non-imported tests.
 
         If this method is changed, the lists of files expected to be identical
         in LayoutTests/PRESUBMIT.py should also be changed.
         """
-        # TODO(tkent): resources_to_copy_to_wpt is unnecessary after enabling
-        # WPTServe.
-        resources_to_copy_to_wpt = [
-            ('testharnessreport.js', 'resources'),
-            ('WebIDLParser.js', 'resources'),
-            ('vendor-prefix.js', 'common'),
-        ]
         resources_to_copy_from_wpt = [
             ('idlharness.js', 'resources'),
             ('testharness.js', 'resources'),
         ]
-        for filename, wpt_subdir in resources_to_copy_to_wpt:
-            source = self.path_from_webkit_base('LayoutTests', 'resources', filename)
-            destination = self.path_from_webkit_base('LayoutTests', 'external', WPT_DEST_NAME, wpt_subdir, filename)
-            self.copyfile(source, destination)
-            self.run(['git', 'add', destination])
         for filename, wpt_subdir in resources_to_copy_from_wpt:
             source = self.path_from_webkit_base('LayoutTests', 'external', WPT_DEST_NAME, wpt_subdir, filename)
             destination = self.path_from_webkit_base('LayoutTests', 'resources', filename)

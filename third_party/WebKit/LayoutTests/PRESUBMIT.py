@@ -64,14 +64,9 @@ def _CheckIdenticalFiles(input_api, output_api):
     """
     dirty_files = set(input_api.LocalPaths())
 
-    # TODO(tkent): Remove vendor-prefix.js, testharnessreport.js, and
-    # WebIDLParser.js from |groups| after enabling WPTServe.
     groups = [
-        ('external/wpt/common/vendor-prefix.js', 'resources/vendor-prefix.js'),
         ('external/wpt/resources/idlharness.js', 'resources/idlharness.js'),
         ('external/wpt/resources/testharness.js', 'resources/testharness.js'),
-        ('external/wpt/resources/testharnessreport.js', 'resources/testharnessreport.js'),
-        ('external/wpt/resources/WebIDLParser.js', 'resources/WebIDLParser.js'),
     ]
 
     def _absolute_path(s):
