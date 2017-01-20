@@ -26,6 +26,7 @@
 #include "core/loader/TextTrackLoader.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/RawResource.h"
@@ -40,7 +41,9 @@ TextTrackLoader::TextTrackLoader(TextTrackLoaderClient& client,
                                  Document& document)
     : m_client(client),
       m_document(document),
-      m_cueLoadTimer(this, &TextTrackLoader::cueLoadTimerFired),
+      m_cueLoadTimer(TaskRunnerHelper::get(TaskType::Networking, &document),
+                     this,
+                     &TextTrackLoader::cueLoadTimerFired),
       m_state(Idle),
       m_newCuesAvailable(false) {}
 

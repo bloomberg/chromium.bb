@@ -30,7 +30,6 @@
 #include "core/fetch/ResourceOwner.h"
 #include "core/html/track/vtt/VTTParser.h"
 #include "platform/CrossOriginAttributeValue.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -95,7 +94,7 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
   Member<VTTParser> m_cueParser;
   // FIXME: Remove this pointer and get the Document from m_client.
   Member<Document> m_document;
-  Timer<TextTrackLoader> m_cueLoadTimer;
+  TaskRunnerTimer<TextTrackLoader> m_cueLoadTimer;
   State m_state;
   bool m_newCuesAvailable;
 };
