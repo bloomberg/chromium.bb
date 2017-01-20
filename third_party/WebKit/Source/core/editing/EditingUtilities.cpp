@@ -930,8 +930,7 @@ Element* enclosingBlockFlowElement(const Node& node) {
 }
 
 bool nodeIsUserSelectAll(const Node* node) {
-  return RuntimeEnabledFeatures::userSelectAllEnabled() && node &&
-         node->layoutObject() &&
+  return node && node->layoutObject() &&
          node->layoutObject()->style()->userSelect() == SELECT_ALL;
 }
 

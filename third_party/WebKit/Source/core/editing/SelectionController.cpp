@@ -323,59 +323,56 @@ void SelectionController::updateSelectionForMouseDrag(
     newSelection = createVisibleSelection(builder.build());
   }
 
-  if (RuntimeEnabledFeatures::userSelectAllEnabled()) {
-    // TODO(yosin) Should we use |Strategy::rootUserSelectAllForNode()|?
-    Node* const rootUserSelectAllForMousePressNode =
-        EditingInFlatTreeStrategy::rootUserSelectAllForNode(mousePressNode);
-    Node* const rootUserSelectAllForTarget =
-        EditingInFlatTreeStrategy::rootUserSelectAllForNode(target);
-    if (rootUserSelectAllForMousePressNode &&
-        rootUserSelectAllForMousePressNode == rootUserSelectAllForTarget) {
-      newSelection.setBase(mostBackwardCaretPosition(
-          PositionInFlatTree::beforeNode(rootUserSelectAllForMousePressNode),
+  // TODO(yosin) Should we use |Strategy::rootUserSelectAllForNode()|?
+  Node* const rootUserSelectAllForMousePressNode =
+      EditingInFlatTreeStrategy::rootUserSelectAllForNode(mousePressNode);
+  Node* const rootUserSelectAllForTarget =
+      EditingInFlatTreeStrategy::rootUserSelectAllForNode(target);
+  if (rootUserSelectAllForMousePressNode &&
+      rootUserSelectAllForMousePressNode == rootUserSelectAllForTarget) {
+    newSelection.setBase(mostBackwardCaretPosition(
+        PositionInFlatTree::beforeNode(rootUserSelectAllForMousePressNode),
+        CanCrossEditingBoundary));
+    newSelection.setExtent(mostForwardCaretPosition(
+        PositionInFlatTree::afterNode(rootUserSelectAllForMousePressNode),
+        CanCrossEditingBoundary));
+  } else {
+    // Reset base for user select all when base is inside user-select-all area
+    // and extent < base.
+    if (rootUserSelectAllForMousePressNode) {
+      PositionInFlatTree eventPosition = toPositionInFlatTree(
+          target->layoutObject()
+              ->positionForPoint(hitTestResult.localPoint())
+              .position());
+      PositionInFlatTree dragStartPosition =
+          toPositionInFlatTree(mousePressNode->layoutObject()
+                                   ->positionForPoint(dragStartPos)
+                                   .position());
+      if (eventPosition.compareTo(dragStartPosition) < 0) {
+        newSelection.setBase(mostForwardCaretPosition(
+            PositionInFlatTree::afterNode(rootUserSelectAllForMousePressNode),
+            CanCrossEditingBoundary));
+      }
+    }
+
+    if (rootUserSelectAllForTarget && mousePressNode->layoutObject() &&
+        toPositionInFlatTree(target->layoutObject()
+                                 ->positionForPoint(hitTestResult.localPoint())
+                                 .position())
+                .compareTo(
+                    toPositionInFlatTree(mousePressNode->layoutObject()
+                                             ->positionForPoint(dragStartPos)
+                                             .position())) < 0) {
+      newSelection.setExtent(mostBackwardCaretPosition(
+          PositionInFlatTree::beforeNode(rootUserSelectAllForTarget),
           CanCrossEditingBoundary));
+    } else if (rootUserSelectAllForTarget && mousePressNode->layoutObject()) {
       newSelection.setExtent(mostForwardCaretPosition(
-          PositionInFlatTree::afterNode(rootUserSelectAllForMousePressNode),
+          PositionInFlatTree::afterNode(rootUserSelectAllForTarget),
           CanCrossEditingBoundary));
     } else {
-      // Reset base for user select all when base is inside user-select-all area
-      // and extent < base.
-      if (rootUserSelectAllForMousePressNode) {
-        PositionInFlatTree eventPosition = toPositionInFlatTree(
-            target->layoutObject()
-                ->positionForPoint(hitTestResult.localPoint())
-                .position());
-        PositionInFlatTree dragStartPosition =
-            toPositionInFlatTree(mousePressNode->layoutObject()
-                                     ->positionForPoint(dragStartPos)
-                                     .position());
-        if (eventPosition.compareTo(dragStartPosition) < 0)
-          newSelection.setBase(mostForwardCaretPosition(
-              PositionInFlatTree::afterNode(rootUserSelectAllForMousePressNode),
-              CanCrossEditingBoundary));
-      }
-
-      if (rootUserSelectAllForTarget && mousePressNode->layoutObject() &&
-          toPositionInFlatTree(
-              target->layoutObject()
-                  ->positionForPoint(hitTestResult.localPoint())
-                  .position())
-                  .compareTo(
-                      toPositionInFlatTree(mousePressNode->layoutObject()
-                                               ->positionForPoint(dragStartPos)
-                                               .position())) < 0)
-        newSelection.setExtent(mostBackwardCaretPosition(
-            PositionInFlatTree::beforeNode(rootUserSelectAllForTarget),
-            CanCrossEditingBoundary));
-      else if (rootUserSelectAllForTarget && mousePressNode->layoutObject())
-        newSelection.setExtent(mostForwardCaretPosition(
-            PositionInFlatTree::afterNode(rootUserSelectAllForTarget),
-            CanCrossEditingBoundary));
-      else
-        newSelection.setExtent(targetPosition);
+      newSelection.setExtent(targetPosition);
     }
-  } else {
-    newSelection.setExtent(targetPosition);
   }
 
   // TODO(yosin): We should have |newBase| and |newExtent| instead of

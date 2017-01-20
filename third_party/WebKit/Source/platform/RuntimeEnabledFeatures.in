@@ -252,7 +252,6 @@ TouchEventFeatureDetection status=stable
 TraceWrappables status=stable
 TrueColorRendering status=experimental
 TrustedEventsDefaultAction status=stable
-UserSelectAll status=stable
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
 WebAssemblySerialization status=test
