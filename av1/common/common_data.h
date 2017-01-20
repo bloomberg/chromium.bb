@@ -495,11 +495,16 @@ static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
   // 2X2,             2X4,                4X2,
   INT32_MIN,          INT32_MIN,          INT32_MIN,
-#endif
+  //                                      4X4,
+                                          INT32_MIN,
+  // 4X8,             8X4,                8X8,
+  TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,
+#else
   //                                      4X4
                                           INT32_MIN,
   // 4X8,             8X4,                8X8
   INT32_MIN,          INT32_MIN,          TX_8X8 - TX_8X8,
+#endif  // CONFIG_CB4X4
   // 8X16,            16X8,               16X16
   TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8,
   // 16X32,           32X16,              32X32
