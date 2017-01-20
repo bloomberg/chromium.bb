@@ -514,7 +514,7 @@ void SetDeviceColorProfile(
     RenderView* render_view, const gfx::ICCProfile& icc_profile) {
   static_cast<RenderViewImpl*>(render_view)
       ->GetWidget()
-      ->SetDeviceColorProfileForTesting(icc_profile.GetData());
+      ->SetDeviceColorProfileForTesting(icc_profile);
 }
 
 void SetTestBluetoothScanDuration() {

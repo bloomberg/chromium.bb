@@ -12,6 +12,10 @@
 
 class SkColorSpace;
 
+namespace gfx {
+class ICCProfile;
+}
+
 namespace blink {
 
 class PLATFORM_EXPORT ColorBehavior {
@@ -48,7 +52,7 @@ class PLATFORM_EXPORT ColorBehavior {
   // Set the target color profile into which all images with embedded color
   // profiles should be converted. Note that only the first call to this
   // function in this process has any effect.
-  static void setGlobalTargetColorProfile(const WebVector<char>&);
+  static void setGlobalTargetColorProfile(const gfx::ICCProfile&);
   static void setGlobalTargetColorSpaceForTesting(const sk_sp<SkColorSpace>&);
   static sk_sp<SkColorSpace> globalTargetColorSpace();
 

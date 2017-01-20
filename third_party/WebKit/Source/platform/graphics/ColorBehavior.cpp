@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "platform/graphics/BitmapImageMetrics.h"
 #include "third_party/skia/include/core/SkICC.h"
+#include "ui/gfx/icc_profile.h"
 #include "wtf/SpinLock.h"
 
 namespace blink {
@@ -21,7 +22,7 @@ SkColorSpace* gTargetColorSpace = nullptr;
 
 // static
 void ColorBehavior::setGlobalTargetColorProfile(
-    const WebVector<char>& profile) {
+    const gfx::ICCProfile& profile) {
   // Take a lock around initializing and accessing the global device color
   // profile.
   SpinLock::Guard guard(gTargetColorSpaceLock);
@@ -31,10 +32,11 @@ void ColorBehavior::setGlobalTargetColorProfile(
     return;
 
   // Attempt to convert the ICC profile to an SkColorSpace.
-  if (!profile.isEmpty()) {
+  if (!(profile == gfx::ICCProfile())) {
+    const std::vector<char>& data = profile.GetData();
     gTargetColorSpace =
-        SkColorSpace::MakeICC(profile.data(), profile.size()).release();
-    sk_sp<SkICC> skICC = SkICC::Make(profile.data(), profile.size());
+        SkColorSpace::MakeICC(data.data(), data.size()).release();
+    sk_sp<SkICC> skICC = SkICC::Make(data.data(), data.size());
     if (skICC) {
       SkMatrix44 toXYZD50;
       bool toXYZD50Result = skICC->toXYZD50(&toXYZD50);

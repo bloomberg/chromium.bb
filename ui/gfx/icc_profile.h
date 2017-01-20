@@ -40,6 +40,7 @@ class GFX_EXPORT ICCProfile {
   ICCProfile& operator=(const ICCProfile& other);
   ~ICCProfile();
   bool operator==(const ICCProfile& other) const;
+  bool operator!=(const ICCProfile& other) const;
 
   // Returns the color profile of the monitor that can best represent color.
   // This profile should be used for creating content that does not know on

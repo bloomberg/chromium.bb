@@ -40,6 +40,10 @@
 #include "../platform/WebVector.h"
 #include "WebWidget.h"
 
+namespace gfx {
+class ICCProfile;
+}
+
 namespace blink {
 
 class WebAXObject;
@@ -317,7 +321,7 @@ class WebView : protected WebWidget {
   virtual void setZoomFactorForDeviceScaleFactor(float) = 0;
 
   // Set and reset the device color profile.
-  virtual void setDeviceColorProfile(const WebVector<char>&) = 0;
+  virtual void setDeviceColorProfile(const gfx::ICCProfile&) = 0;
 
   // Resize the view at the same time as changing the state of the top
   // controls. If |browserControlsShrinkLayout| is true, the embedder shrunk the

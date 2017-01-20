@@ -1963,7 +1963,7 @@ void RenderWidget::UpdateSelectionBounds() {
 }
 
 void RenderWidget::SetDeviceColorProfileForTesting(
-    const std::vector<char>& color_profile) {
+    const gfx::ICCProfile& color_profile) {
   if (owner_delegate_)
     owner_delegate_->RenderWidgetDidSetColorProfile(color_profile);
 }

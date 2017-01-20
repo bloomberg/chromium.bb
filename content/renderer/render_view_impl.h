@@ -491,7 +491,7 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderWidgetOwnerDelegate implementation ----------------------------------
 
   void RenderWidgetDidSetColorProfile(
-      const std::vector<char>& color_profile) override;
+      const gfx::ICCProfile& color_profile) override;
   void RenderWidgetFocusChangeComplete() override;
   bool DoesRenderWidgetHaveTouchEventHandlersAt(
       const gfx::Point& point) const override;

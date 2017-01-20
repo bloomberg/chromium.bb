@@ -615,11 +615,11 @@ void RenderViewImpl::Initialize(
   webview()->setShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
 
-  if (auto overridden_color_profile =
+  if (std::unique_ptr<gfx::ICCProfile> overridden_color_profile =
           GetContentClient()->renderer()->GetImageDecodeColorProfile()) {
-    webview()->setDeviceColorProfile(overridden_color_profile->GetData());
+    webview()->setDeviceColorProfile(*overridden_color_profile);
   } else {
-    webview()->setDeviceColorProfile(params.image_decode_color_space.GetData());
+    webview()->setDeviceColorProfile(params.image_decode_color_space);
   }
 
   ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
@@ -2364,11 +2364,9 @@ void RenderViewImpl::SetFocus(bool enable) {
 }
 
 void RenderViewImpl::RenderWidgetDidSetColorProfile(
-    const std::vector<char>& profile) {
-  if (webview()) {
-    WebVector<char> colorProfile = profile;
-    webview()->setDeviceColorProfile(colorProfile);
-  }
+    const gfx::ICCProfile& profile) {
+  if (webview())
+    webview()->setDeviceColorProfile(profile);
 }
 
 void RenderViewImpl::DidCompletePageScaleAnimation() {

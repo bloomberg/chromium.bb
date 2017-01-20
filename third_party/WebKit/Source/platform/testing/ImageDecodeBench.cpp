@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
   if (argc >= 2 && strcmp(argv[1], "--color-correct") == 0) {
     applyColorCorrection = (--argc, ++argv, true);
     gfx::ICCProfile profile = gfx::ICCProfileForTestingColorSpin();
-    ColorBehavior::setGlobalTargetColorProfile(profile.GetData());
+    ColorBehavior::setGlobalTargetColorProfile(profile);
   }
 
   if (argc < 2) {

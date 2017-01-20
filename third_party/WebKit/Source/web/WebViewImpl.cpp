@@ -3022,7 +3022,7 @@ void WebViewImpl::setZoomFactorForDeviceScaleFactor(
   setZoomLevel(m_zoomLevel);
 }
 
-void WebViewImpl::setDeviceColorProfile(const WebVector<char>& colorProfile) {
+void WebViewImpl::setDeviceColorProfile(const gfx::ICCProfile& colorProfile) {
   ColorBehavior::setGlobalTargetColorProfile(colorProfile);
 }
 

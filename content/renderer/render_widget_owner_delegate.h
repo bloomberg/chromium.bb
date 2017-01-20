@@ -12,6 +12,7 @@ class WebMouseEvent;
 }
 
 namespace gfx {
+class ICCProfile;
 class Point;
 }
 
@@ -27,7 +28,7 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
  public:
   // The RenderWidget set a color profile.
   virtual void RenderWidgetDidSetColorProfile(
-      const std::vector<char>& color_profile) = 0;
+      const gfx::ICCProfile& color_profile) = 0;
 
   // As in RenderWidgetInputHandlerDelegate.
   virtual void RenderWidgetFocusChangeComplete() = 0;

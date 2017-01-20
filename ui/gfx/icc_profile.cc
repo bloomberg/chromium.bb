@@ -56,6 +56,10 @@ bool ICCProfile::operator==(const ICCProfile& other) const {
   return false;
 }
 
+bool ICCProfile::operator!=(const ICCProfile& other) const {
+  return !(*this == other);
+}
+
 // static
 ICCProfile ICCProfile::FromData(const char* data, size_t size) {
   ICCProfile icc_profile;
