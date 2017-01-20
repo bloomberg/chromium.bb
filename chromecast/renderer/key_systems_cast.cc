@@ -105,6 +105,9 @@ void AddChromecastKeySystems(
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
       ::media::EME_CODEC_MP4_VP9 | ::media::EME_CODEC_WEBM_VP8 |
       ::media::EME_CODEC_WEBM_VP9;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  codecs |= ::media::EME_CODEC_MP4_HEVC;
+#endif
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
       codecs,  // Regular codecs.
 #if defined(OS_ANDROID)
