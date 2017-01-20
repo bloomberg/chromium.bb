@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 
 using blink::WebInputEvent;
 using blink::WebTouchEvent;

@@ -26,6 +26,7 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "third_party/WebKit/public/platform/WebTouchPoint.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 #include "third_party/WebKit/public/platform/WebURL.h"

@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 
 using base::StringAppendF;
 using base::SStringPrintf;

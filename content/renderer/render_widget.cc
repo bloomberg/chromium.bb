@@ -123,7 +123,6 @@ using blink::WebImage;
 using blink::WebInputEvent;
 using blink::WebInputEventResult;
 using blink::WebInputMethodController;
-using blink::WebKeyboardEvent;
 using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;

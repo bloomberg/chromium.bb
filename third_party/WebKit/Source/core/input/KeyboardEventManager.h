@@ -19,6 +19,7 @@ namespace blink {
 class KeyboardEvent;
 class LocalFrame;
 class ScrollManager;
+class WebKeyboardEvent;
 
 enum class OverrideCapsLockState { Default, On, Off };
 

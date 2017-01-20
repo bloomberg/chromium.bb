@@ -73,6 +73,7 @@
 #include "public/platform/WebDragOperation.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebInputEvent.h"
+#include "public/platform/WebKeyboardEvent.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebMockClipboard.h"
 #include "public/platform/WebSize.h"

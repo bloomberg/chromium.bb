@@ -5,7 +5,9 @@
 #include "public/platform/WebCoalescedInputEvent.h"
 
 #include "public/platform/WebGestureEvent.h"
+#include "public/platform/WebKeyboardEvent.h"
 #include "public/platform/WebMouseWheelEvent.h"
+#include "public/platform/WebTouchEvent.h"
 
 namespace blink {
 

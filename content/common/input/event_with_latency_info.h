@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/latency_info.h"
 

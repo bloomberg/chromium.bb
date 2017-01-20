@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 
 namespace content {
 

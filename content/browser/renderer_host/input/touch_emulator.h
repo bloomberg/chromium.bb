@@ -11,12 +11,13 @@
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
+class WebKeyboardEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 }

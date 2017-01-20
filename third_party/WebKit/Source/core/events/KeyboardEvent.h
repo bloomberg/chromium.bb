@@ -28,7 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/events/KeyboardEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
-#include "public/platform/WebInputEvent.h"
+#include "public/platform/WebKeyboardEvent.h"
 #include <memory>
 
 namespace blink {

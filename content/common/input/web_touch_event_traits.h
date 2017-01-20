@@ -8,6 +8,10 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
+namespace blink {
+class WebTouchEvent;
+}
+
 namespace content {
 
 // Utility class for performing operations on and with WebTouchEvents.

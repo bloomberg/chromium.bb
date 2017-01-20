@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)

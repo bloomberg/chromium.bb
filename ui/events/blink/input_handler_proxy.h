@@ -25,6 +25,7 @@ class TickClock;
 
 namespace blink {
 class WebMouseWheelEvent;
+class WebTouchEvent;
 }
 
 namespace ui {

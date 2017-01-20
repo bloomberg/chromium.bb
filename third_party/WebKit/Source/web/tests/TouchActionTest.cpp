@@ -44,7 +44,7 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebInputEvent.h"
+#include "public/platform/WebTouchEvent.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebCache.h"
 #include "public/web/WebDocument.h"

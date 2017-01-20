@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 
 namespace content {
 

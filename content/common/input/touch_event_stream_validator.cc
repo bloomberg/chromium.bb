@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/input/web_touch_event_traits.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
 using base::StringPrintf;

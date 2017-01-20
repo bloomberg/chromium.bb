@@ -9,11 +9,8 @@
 
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/events/gesture_detection/motion_event.h"
-
-namespace blink {
-class WebTouchEvent;
-}
 
 namespace gfx {
 class PointF;
