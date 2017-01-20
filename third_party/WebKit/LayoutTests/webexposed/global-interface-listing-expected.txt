@@ -6493,9 +6493,10 @@ interface SyncManager
     method register
 interface TaskAttributionTiming : PerformanceEntry
     attribute @@toStringTag
-    getter frameId
-    getter frameName
-    getter frameSrc
+    getter containerId
+    getter containerName
+    getter containerSrc
+    getter containerType
     method constructor
 interface Text : CharacterData
     attribute @@toStringTag

@@ -17,15 +17,18 @@ class TaskAttributionTiming final : public PerformanceEntry {
 
  public:
   static TaskAttributionTiming* create(String type,
-                                       String frameSrc,
-                                       String frameId,
-                                       String frameName) {
-    return new TaskAttributionTiming(type, frameSrc, frameId, frameName);
+                                       String containerType,
+                                       String containerSrc,
+                                       String containerId,
+                                       String containerName) {
+    return new TaskAttributionTiming(type, containerType, containerSrc,
+                                     containerId, containerName);
   }
 
-  String frameSrc() const;
-  String frameId() const;
-  String frameName() const;
+  String containerType() const;
+  String containerSrc() const;
+  String containerId() const;
+  String containerName() const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -33,13 +36,15 @@ class TaskAttributionTiming final : public PerformanceEntry {
 
  private:
   TaskAttributionTiming(String type,
-                        String frameSrc,
-                        String frameId,
-                        String frameName);
+                        String containerType,
+                        String containerSrc,
+                        String containerId,
+                        String containerName);
 
-  String m_frameSrc;
-  String m_frameId;
-  String m_frameName;
+  String m_containerType;
+  String m_containerSrc;
+  String m_containerId;
+  String m_containerName;
 };
 
 }  // namespace blink

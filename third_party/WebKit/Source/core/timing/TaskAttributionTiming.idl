@@ -6,7 +6,8 @@
 [
     OriginTrialEnabled=LongTaskObserver,
 ] interface TaskAttributionTiming : PerformanceEntry {
-    readonly attribute DOMString frameSrc;
-    readonly attribute DOMString frameId;
-    readonly attribute DOMString frameName;
+    readonly attribute DOMString containerType;
+    readonly attribute DOMString containerSrc;
+    readonly attribute DOMString containerId;
+    readonly attribute DOMString containerName;
 };

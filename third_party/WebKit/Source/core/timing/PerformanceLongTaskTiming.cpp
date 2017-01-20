@@ -39,9 +39,10 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(double startTime,
                        "longtask",
                        clampToMillisecond(startTime),
                        clampToMillisecond(endTime)) {
-  // Only one possible name ("frame") currently.
+  // Only one possible task type exists currently: "script"
+  // Only one possible container type exists currently: "iframe"
   TaskAttributionTiming* attributionEntry = TaskAttributionTiming::create(
-      "frame", culpritFrameSrc, culpritFrameId, culpritFrameName);
+      "script", "iframe", culpritFrameSrc, culpritFrameId, culpritFrameName);
   m_attribution.push_back(*attributionEntry);
 }
 

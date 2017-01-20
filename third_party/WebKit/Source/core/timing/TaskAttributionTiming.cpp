@@ -9,26 +9,32 @@
 namespace blink {
 
 TaskAttributionTiming::TaskAttributionTiming(String name,
-                                             String frameSrc,
-                                             String frameId,
-                                             String frameName)
+                                             String containerType,
+                                             String containerSrc,
+                                             String containerId,
+                                             String containerName)
     : PerformanceEntry(name, "taskattribution", 0.0, 0.0),
-      m_frameSrc(frameSrc),
-      m_frameId(frameId),
-      m_frameName(frameName) {}
+      m_containerType(containerType),
+      m_containerSrc(containerSrc),
+      m_containerId(containerId),
+      m_containerName(containerName) {}
 
 TaskAttributionTiming::~TaskAttributionTiming() {}
 
-String TaskAttributionTiming::frameSrc() const {
-  return m_frameSrc;
+String TaskAttributionTiming::containerType() const {
+  return m_containerType;
 }
 
-String TaskAttributionTiming::frameId() const {
-  return m_frameId;
+String TaskAttributionTiming::containerSrc() const {
+  return m_containerSrc;
 }
 
-String TaskAttributionTiming::frameName() const {
-  return m_frameName;
+String TaskAttributionTiming::containerId() const {
+  return m_containerId;
+}
+
+String TaskAttributionTiming::containerName() const {
+  return m_containerName;
 }
 
 DEFINE_TRACE(TaskAttributionTiming) {
