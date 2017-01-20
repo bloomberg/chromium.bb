@@ -54,10 +54,10 @@
   self.viewController.tabCommandHandler = self;
   self.viewController.tabGridCommandHandler = self;
 
-  // |rootViewController| is nullable, so this is by design a no-op if it hasn't
+  // |baseViewController| is nullable, so this is by design a no-op if it hasn't
   // been set. This may be true in a unit test, or if this coordinator is being
   // used as a root coordinator.
-  [self.rootViewController presentViewController:self.viewController
+  [self.baseViewController presentViewController:self.viewController
                                         animated:self.context.animated
                                       completion:nil];
 }

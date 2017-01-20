@@ -31,10 +31,10 @@
   self.viewController = [[WebContentsViewController alloc]
       initWithWebState:self.webMediator.webState];
 
-  // Reminder: this is a no-op if |rootViewController| is nil, for example
+  // Reminder: this is a no-op if |baseViewController| is nil, for example
   // when this coordinator's view controller will be contained instead of
   // presented.
-  [self.rootViewController presentViewController:self.viewController
+  [self.baseViewController presentViewController:self.viewController
                                         animated:self.context.animated
                                       completion:nil];
 }

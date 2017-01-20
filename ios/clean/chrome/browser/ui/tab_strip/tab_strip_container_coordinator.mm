@@ -40,9 +40,9 @@
   TabCoordinator* tabCoordinator = [[TabCoordinator alloc] init];
   tabCoordinator.webMediator = self.webMediator;
   [self addChildCoordinator:tabCoordinator];
-  // Unset the root view controller, so |tabCoordinator| doesn't present
+  // Unset the base view controller, so |tabCoordinator| doesn't present
   // its view controller.
-  tabCoordinator.rootViewController = nil;
+  tabCoordinator.baseViewController = nil;
   [tabCoordinator start];
 
   // PLACEHOLDER: Replace this placeholder with an actual tab strip view
@@ -60,7 +60,7 @@
   self.viewController.tabStripViewController = tabStripViewController;
   self.viewController.contentViewController = tabCoordinator.viewController;
 
-  [self.rootViewController presentViewController:self.viewController
+  [self.baseViewController presentViewController:self.viewController
                                         animated:YES
                                       completion:nil];
 }

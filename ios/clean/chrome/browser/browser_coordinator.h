@@ -35,13 +35,13 @@ class ChromeBrowserState;
 // it is presenting content. This is not the view controller created and managed
 // by this coordinator; it should be supplied by whatever object is creating
 // this coordinator.
-@property(nonatomic, weak) UIViewController* rootViewController;
+@property(nonatomic, weak) UIViewController* baseViewController;
 
 // The basic lifecycle methods for coordinators are -start and -stop. These
 // are blank template methods; child classes are expected to implement them and
 // do not need to invoke the superclass methods.
 // Starts the user interaction managed by the receiver. Typical implementations
-// will create a view controller and then use |rootViewController| to present
+// will create a view controller and then use |baseViewController| to present
 // it.
 - (void)start;
 

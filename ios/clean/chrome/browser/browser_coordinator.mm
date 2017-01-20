@@ -28,7 +28,7 @@
 
 @synthesize context = _context;
 @synthesize browserState = _browserState;
-@synthesize rootViewController = _rootViewController;
+@synthesize baseViewController = _baseViewController;
 @synthesize childCoordinators = _childCoordinators;
 @synthesize parentCoordinator = _parentCoordinator;
 @synthesize overlaying = _overlaying;
@@ -72,7 +72,7 @@
   [self.childCoordinators addObject:coordinator];
   coordinator.parentCoordinator = self;
   coordinator.browserState = self.browserState;
-  coordinator.rootViewController = self.viewController;
+  coordinator.baseViewController = self.viewController;
 }
 
 - (BrowserCoordinator*)overlayCoordinator {

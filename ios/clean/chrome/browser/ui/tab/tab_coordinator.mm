@@ -51,9 +51,9 @@ const BOOL kUseBottomToolbar = NO;
   WebCoordinator* webCoordinator = [[WebCoordinator alloc] init];
   webCoordinator.webMediator = self.webMediator;
   [self addChildCoordinator:webCoordinator];
-  // Unset the root view controller, so |webCoordinator| doesn't present its
+  // Unset the base view controller, so |webCoordinator| doesn't present its
   // view controller.
-  webCoordinator.rootViewController = nil;
+  webCoordinator.baseViewController = nil;
   [webCoordinator start];
 
   ToolbarCoordinator* toolbarCoordinator = [[ToolbarCoordinator alloc] init];
@@ -62,15 +62,15 @@ const BOOL kUseBottomToolbar = NO;
   // and just provide -addObserver and -stopObserving methods.
   _webStateObserver = base::MakeUnique<web::WebStateObserverBridge>(
       self.webMediator.webState, toolbarCoordinator);
-  // Unset the .base view controller, so |toolbarCoordinator| doesn't present
+  // Unset the base view controller, so |toolbarCoordinator| doesn't present
   // its view controller.
-  toolbarCoordinator.rootViewController = nil;
+  toolbarCoordinator.baseViewController = nil;
   [toolbarCoordinator start];
 
   self.viewController.toolbarViewController = toolbarCoordinator.viewController;
   self.viewController.contentViewController = webCoordinator.viewController;
 
-  [self.rootViewController presentViewController:self.viewController
+  [self.baseViewController presentViewController:self.viewController
                                         animated:self.context.animated
                                       completion:nil];
 }

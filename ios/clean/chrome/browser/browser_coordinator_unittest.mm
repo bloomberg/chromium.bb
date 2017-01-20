@@ -69,13 +69,13 @@ TEST(BrowserCoordinatorTest, TestChildren) {
   [parent addChildCoordinator:child];
   EXPECT_TRUE([parent.children containsObject:child]);
   EXPECT_EQ(parent, child.parentCoordinator);
-  EXPECT_EQ(parent.viewController, child.rootViewController);
+  EXPECT_EQ(parent.viewController, child.baseViewController);
 
   [parent removeChildCoordinator:child];
   EXPECT_FALSE([parent.children containsObject:child]);
   EXPECT_EQ(nil, child.parentCoordinator);
-  // Unparenting shouldn't change a child's rootViewController.
-  EXPECT_EQ(parent.viewController, child.rootViewController);
+  // Unparenting shouldn't change a child's baseViewController.
+  EXPECT_EQ(parent.viewController, child.baseViewController);
 
   TestCoordinator* otherParent = [[TestCoordinator alloc] init];
   TestCoordinator* otherChild = [[TestCoordinator alloc] init];

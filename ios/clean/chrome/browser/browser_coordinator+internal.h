@@ -47,7 +47,7 @@
 @property(nonatomic, readonly) BrowserCoordinator* overlayCoordinator;
 
 // Adds |coordinator| as a child, taking ownership of it, setting the receiver's
-// viewController (if any) as the child's rootViewController, and setting
+// viewController (if any) as the child's baseViewController, and setting
 // the receiver's browserState as the child's browserState.
 - (void)addChildCoordinator:(BrowserCoordinator*)coordinator;
 
