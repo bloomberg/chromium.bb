@@ -80,7 +80,6 @@ source_set("lib") {
     "//chromeos:power_manager_proto",
     "//components/user_manager",
     "//components/wallpaper",
-    "//content/public/common:service_names",
     "//device/bluetooth",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
