@@ -256,15 +256,9 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
 }
 
 void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
-#if CONFIG_REF_MV
-                   int is_compound,
-#endif
                    nmv_context *mvctx, int usehp) {
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
-#if CONFIG_REF_MV
-  (void)is_compound;
-#endif
 #if CONFIG_EC_MULTISYMBOL
   aom_write_symbol(w, j, mvctx->joint_cdf, MV_JOINTS);
 #else
