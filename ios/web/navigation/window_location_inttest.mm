@@ -169,3 +169,20 @@ TEST_F(WindowLocationTest, DISABLED_Replace) {
   EXPECT_EQ(GetIndexOfNavigationItem(current_item) + 1,
             GetIndexOfNavigationItem(about_blank_item));
 }
+
+// Tests that calling window.location.replace() with an unresolvable URL loads
+// about:blank.
+TEST_F(WindowLocationTest, WindowLocationReplaceUnresolvable) {
+  // Attempt to call window.location.assign() using an unresolvable URL.
+  GURL about_blank("about:blank");
+  GURL unresolvable_url("http:https:not a url");
+  SetWindowLocationUrl(unresolvable_url);
+  ExecuteBlockAndWaitForLoad(about_blank, ^{
+    ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(),
+                                                   kWindowLocationReplaceID));
+  });
+
+  // Verify that about:blank was actually loaded.
+  EXPECT_EQ(about_blank,
+            navigation_manager()->GetLastCommittedItem()->GetURL());
+}
