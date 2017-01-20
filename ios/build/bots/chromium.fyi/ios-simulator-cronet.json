@@ -1,0 +1,35 @@
+{
+  "comments": [
+    "Cronet tests for 32- and 64-bit iOS 9.0 simulators.",
+    "Tests run on iPhone 5s (64-bit) and iPad Retina (32-bit)."
+  ],
+  "xcode version": "8.0",
+  "gn_args": [
+    "additional_target_cpus=[\"x86\"]",
+    "disable_brotli_filter=true",
+    "disable_file_support=true",
+    "disable_ftp_support=true",
+    "enable_websockets=false",
+    "goma_dir=\"$(goma_dir)\"",
+    "is_component_build=false",
+    "is_cronet_build=true",
+    "target_cpu=\"x64\"",
+    "target_os=\"ios\"",
+    "use_platform_icu_alternatives=true"
+  ],
+  "compiler": "ninja",
+  "configuration": "Debug",
+  "sdk": "iphonesimulator10.0",
+  "tests": [
+    {
+      "app": "cronet_test",
+      "device type": "iPhone 5s",
+      "os": "9.3"
+    },
+    {
+      "app": "cronet_test",
+      "device type": "iPad Retina",
+      "os": "9.3"
+    }
+  ]
+}
