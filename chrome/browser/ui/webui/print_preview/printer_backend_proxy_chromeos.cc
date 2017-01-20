@@ -43,6 +43,9 @@ printing::PrinterBasicInfo ToBasicInfo(const chromeos::Printer& printer) {
   // TODO(skau): Unify Mac with the other platforms for display name
   // presentation so I can remove this strange code.
   basic_info.options[kDriverInfoTagName] = printer.description();
+  basic_info.options[kCUPSEnterprisePrinter] =
+      (printer.source() == chromeos::Printer::SRC_POLICY) ? kValueTrue
+                                                          : kValueFalse;
   basic_info.printer_name = printer.id();
   basic_info.printer_description = printer.display_name();
   return basic_info;

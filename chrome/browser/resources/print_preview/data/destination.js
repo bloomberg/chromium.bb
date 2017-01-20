@@ -50,6 +50,7 @@ cr.define('print_preview', function() {
    *     Connection status of the print destination.
    * @param {{tags: (Array<string>|undefined),
    *          isOwned: (boolean|undefined),
+   *          isEnterprisePrinter: (boolean|undefined),
    *          account: (string|undefined),
    *          lastAccessTime: (number|undefined),
    *          isTosAccepted: (boolean|undefined),
@@ -111,6 +112,13 @@ cr.define('print_preview', function() {
      * @private {boolean}
      */
     this.isOwned_ = (opt_params && opt_params.isOwned) || false;
+
+    /**
+     * Whether the destination is an enterprise policy controlled printer.
+     * @private {boolean}
+     */
+    this.isEnterprisePrinter_ =
+        (opt_params && opt_params.isEnterprisePrinter) || false;
 
     /**
      * Account this destination is registered for, if known.
@@ -274,7 +282,8 @@ cr.define('print_preview', function() {
     THIRD_PARTY: 'images/third_party.png',
     PDF: 'images/pdf.png',
     DOCS: 'images/google_doc.png',
-    FEDEX: 'images/third_party_fedex.png'
+    FEDEX: 'images/third_party_fedex.png',
+    ENTERPRISE: 'images/business.svg'
   };
 
   Destination.prototype = {
@@ -489,6 +498,9 @@ cr.define('print_preview', function() {
       if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
         return Destination.IconUrl_.PDF;
       }
+      if (this.isEnterprisePrinter) {
+        return Destination.IconUrl_.ENTERPRISE;
+      }
       if (this.isLocal) {
         return Destination.IconUrl_.LOCAL;
       }
@@ -558,7 +570,15 @@ cr.define('print_preview', function() {
      */
     get isProvisional() {
       return this.provisionalType_ != Destination.ProvisionalType.NONE;
-    }
+    },
+
+    /**
+     * Whether the printer is enterprise policy controlled printer.
+     * @return {boolean}
+     */
+    get isEnterprisePrinter() {
+      return this.isEnterprisePrinter_;
+    },
   };
 
   // Export

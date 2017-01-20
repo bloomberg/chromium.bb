@@ -47,6 +47,7 @@ TEST(PrinterPrefManagerTest, AddPrinter) {
   auto printers = manager->GetPrinters();
   ASSERT_EQ(1U, printers.size());
   EXPECT_EQ(kPrinterId, printers[0]->id());
+  EXPECT_EQ(Printer::Source::SRC_USER_PREFS, printers[0]->source());
 }
 
 TEST(PrinterPrefManagerTest, UpdatePrinterAssignsId) {
@@ -132,6 +133,7 @@ TEST(PrinterPrefManagerTest, RecommendedPrinters) {
   ASSERT_EQ(2U, printers.size());
   EXPECT_EQ("Color Laser", printers[0]->display_name());
   EXPECT_EQ("ipp://192.168.1.5", printers[1]->uri());
+  EXPECT_EQ(Printer::Source::SRC_POLICY, printers[1]->source());
 }
 
 TEST(PrinterPrefManagerTest, GetRecommendedPrinter) {

@@ -390,6 +390,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                           IDR_PRINT_PREVIEW_IMAGES_PRINTER);
   source->AddResourcePath("images/printer_shared.png",
                           IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED);
+  source->AddResourcePath("images/business.svg",
+                          IDR_PRINT_PREVIEW_IMAGES_ENTERPRISE_PRINTER);
   source->AddResourcePath("images/third_party.png",
                           IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY);
   source->AddResourcePath("images/third_party_fedex.png",

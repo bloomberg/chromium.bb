@@ -1602,9 +1602,11 @@ cr.define('print_preview', function() {
           }
           destination.capabilities = capabilities;
         } else {
+          var isEnterprisePrinter = event.settingsInfo['cupsEnterprisePrinter'];
           destination = print_preview.LocalDestinationParser.parse(
               {deviceName: destinationId,
                printerName: printerName,
+               cupsEnterprisePrinter: isEnterprisePrinter,
                printerDescription: printerDescription});
           destination.capabilities = capabilities;
           this.insertDestination_(destination);

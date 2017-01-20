@@ -112,6 +112,7 @@ std::unique_ptr<Printer> PrefToPrinter(const DictionaryValue& value) {
   }
 
   std::unique_ptr<Printer> printer = DictionaryToPrinter(value);
+  printer->set_source(Printer::SRC_USER_PREFS);
 
   const DictionaryValue* ppd;
   if (value.GetDictionary(kPpdReference, &ppd)) {
@@ -141,6 +142,7 @@ std::unique_ptr<base::DictionaryValue> PrinterToPref(const Printer& printer) {
 std::unique_ptr<Printer> RecommendedPrinterToPrinter(
     const base::DictionaryValue& pref) {
   std::unique_ptr<Printer> printer = DictionaryToPrinter(pref);
+  printer->set_source(Printer::SRC_POLICY);
 
   const DictionaryValue* ppd;
   if (pref.GetDictionary(kPpdResource, &ppd)) {

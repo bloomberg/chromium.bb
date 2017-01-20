@@ -405,6 +405,8 @@
                  file="resources\print_preview\images\printer.png" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED"
                  file="resources\print_preview\images\printer_shared.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_ENTERPRISE_PRINTER"
+                 file="../../ui/webui/resources/images/business.svg" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC"
                  file="resources\print_preview\images\google_doc.png" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_PDF"

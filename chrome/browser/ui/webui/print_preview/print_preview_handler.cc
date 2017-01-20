@@ -423,6 +423,11 @@ void PrintersToValues(const printing::PrinterList& printer_list,
     for (const auto opt_it : printer.options)
       options->SetString(opt_it.first, opt_it.second);
 
+    printer_info->SetBoolean(
+        kCUPSEnterprisePrinter,
+        base::ContainsKey(printer.options, kCUPSEnterprisePrinter) &&
+            printer.options.at(kCUPSEnterprisePrinter) == kValueTrue);
+
     printer_info->Set(printing::kSettingPrinterOptions, std::move(options));
 
     printers->Append(std::move(printer_info));

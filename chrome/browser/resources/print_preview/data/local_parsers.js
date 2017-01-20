@@ -15,7 +15,8 @@ cr.define('print_preview', function() {
    * @return {!print_preview.Destination} Parsed local print destination.
    */
   LocalDestinationParser.parse = function(destinationInfo) {
-    var options = {'description': destinationInfo.printerDescription};
+    var options = {description: destinationInfo.printerDescription,
+                   isEnterprisePrinter: destinationInfo.cupsEnterprisePrinter};
     if (destinationInfo.printerOptions) {
       // Convert options into cloud print tags format.
       options.tags = Object.keys(destinationInfo.printerOptions).map(
