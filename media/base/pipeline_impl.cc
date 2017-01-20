@@ -647,8 +647,11 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
   shared_state_.statistics.video_frames_dropped += stats.video_frames_dropped;
   shared_state_.statistics.audio_memory_usage += stats.audio_memory_usage;
   shared_state_.statistics.video_memory_usage += stats.video_memory_usage;
-  shared_state_.statistics.video_keyframe_distance_average =
-      stats.video_keyframe_distance_average;
+
+  if (stats.video_keyframe_distance_average != kNoTimestamp) {
+    shared_state_.statistics.video_keyframe_distance_average =
+        stats.video_keyframe_distance_average;
+  }
 }
 
 void PipelineImpl::RendererWrapper::OnBufferingStateChange(

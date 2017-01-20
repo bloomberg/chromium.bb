@@ -107,13 +107,13 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::ReportStatistics(
   PipelineStatistics statistics;
   statistics.video_bytes_decoded = bytes_decoded;
 
-  // Before we have enough keyframes to calculate the average distance, we will
-  // assume the average keyframe distance is infinitely large.
-  if (keyframe_distance_average_.count() < 3) {
-    statistics.video_keyframe_distance_average = base::TimeDelta::Max();
-  } else {
+  if (keyframe_distance_average_.count()) {
     statistics.video_keyframe_distance_average =
         keyframe_distance_average_.Average();
+  } else {
+    // Before we have enough keyframes to calculate the average distance, we
+    // will assume the average keyframe distance is infinitely large.
+    statistics.video_keyframe_distance_average = base::TimeDelta::Max();
   }
 
   statistics_cb.Run(statistics);
@@ -135,7 +135,6 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnStreamReset(
     DemuxerStream* stream) {
   DCHECK(stream);
   last_keyframe_timestamp_ = base::TimeDelta();
-  keyframe_distance_average_.Reset();
 }
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
