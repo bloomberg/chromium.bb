@@ -84,6 +84,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void UpdateTrackingId(int slot, int tracking_id);
   void ReleaseTouches();
   void ReleaseButtons();
+  void CancelAllTouches();
   // Normalize pressure value to [0, 1].
   float ScalePressure(int32_t value);
 
