@@ -135,7 +135,7 @@ class MODULES_EXPORT RTCDataChannel final
   enum BinaryType { BinaryTypeBlob, BinaryTypeArrayBuffer };
   BinaryType m_binaryType;
 
-  Timer<RTCDataChannel> m_scheduledEventTimer;
+  TaskRunnerTimer<RTCDataChannel> m_scheduledEventTimer;
   HeapVector<Member<Event>> m_scheduledEvents;
 
   unsigned m_bufferedAmountLowThreshold;

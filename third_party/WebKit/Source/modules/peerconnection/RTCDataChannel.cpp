@@ -29,6 +29,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
@@ -88,7 +89,10 @@ RTCDataChannel::RTCDataChannel(
       m_handler(std::move(handler)),
       m_readyState(ReadyStateConnecting),
       m_binaryType(BinaryTypeArrayBuffer),
-      m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired),
+      m_scheduledEventTimer(
+          TaskRunnerHelper::get(TaskType::Networking, context),
+          this,
+          &RTCDataChannel::scheduledEventTimerFired),
       m_bufferedAmountLowThreshold(0U),
       m_stopped(false) {
   m_handler->setClient(this);
