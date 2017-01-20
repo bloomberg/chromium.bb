@@ -360,6 +360,11 @@ void MimeUtil::AddSupportedMediaFormats() {
   hls_codecs.insert(MP3);
   AddContainerWithCodecs("application/x-mpegurl", hls_codecs, true);
   AddContainerWithCodecs("application/vnd.apple.mpegurl", hls_codecs, true);
+  AddContainerWithCodecs("audio/mpegurl", hls_codecs, true);
+  // Not documented by Apple, but unfortunately used extensively by Apple and
+  // others for both audio-only and audio+video playlists. See
+  // https://crbug.com/675552 for details and examples.
+  AddContainerWithCodecs("audio/x-mpegurl", hls_codecs, true);
 #endif  // defined(OS_ANDROID)
 #endif  // defined(USE_PROPRIETARY_CODECS)
 }
@@ -502,9 +507,9 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
     case MPEG2_AAC:
       // MPEG-2 variants of AAC are not supported on Android unless the unified
       // media pipeline can be used and the container is not HLS. These codecs
-      // will be decoded in software. See https:crbug.com/544268 for details.
-      if (mime_type_lower_case == "application/x-mpegurl" ||
-          mime_type_lower_case == "application/vnd.apple.mpegurl") {
+      // will be decoded in software. See https://crbug.com/544268 for details.
+      if (base::EndsWith(mime_type_lower_case, "mpegurl",
+                         base::CompareCase::SENSITIVE)) {
         return false;
       }
       return !is_encrypted && platform_info.is_unified_media_pipeline_enabled;
