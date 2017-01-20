@@ -105,7 +105,6 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("searchButton", IDS_HISTORY_SEARCH_BUTTON);
   source->AddLocalizedString("noSearchResults", IDS_HISTORY_NO_SEARCH_RESULTS);
   source->AddLocalizedString("noResults", IDS_HISTORY_NO_RESULTS);
-  source->AddLocalizedString("historyInterval", IDS_HISTORY_INTERVAL);
   source->AddLocalizedString("removeSelected",
                              IDS_HISTORY_REMOVE_SELECTED_ITEMS);
   source->AddLocalizedString("clearAllHistory",

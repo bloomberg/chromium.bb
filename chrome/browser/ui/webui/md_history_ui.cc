@@ -80,7 +80,6 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
                              IDS_MD_HISTORY_HAS_SYNCED_RESULTS);
   source->AddLocalizedString("hasSyncedResultsDescription",
                              IDS_MD_HISTORY_HAS_SYNCED_RESULTS_DESCRIPTION);
-  source->AddLocalizedString("historyInterval", IDS_HISTORY_INTERVAL);
   source->AddLocalizedString("historyMenuButton",
                              IDS_MD_HISTORY_HISTORY_MENU_DESCRIPTION);
   source->AddLocalizedString("historyMenuItem",

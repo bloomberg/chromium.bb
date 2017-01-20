@@ -14,7 +14,6 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -522,6 +521,15 @@ void BrowsingHistoryHandler::OnQueryComplete(
   results_info.SetString(
       "queryEndTime",
       GetRelativeDateLocalized(clock_.get(), query_results_info->end_time));
+
+  results_info.SetString(
+      "queryStartMonth",
+      base::TimeFormatMonthAndYear(query_results_info->start_time));
+  results_info.SetString(
+      "queryInterval",
+      base::DateIntervalFormat(query_results_info->start_time,
+                               query_results_info->end_time,
+                               base::DATE_FORMAT_MONTH_WEEKDAY_DAY));
 
   web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info,
                                          results_value);

@@ -78,8 +78,6 @@ suite('history-grouped-list', function() {
   test('items grouped by domain', function() {
     app.set('queryState_.range', HistoryRange.WEEK);
     var info = createHistoryInfo();
-    info.queryStartTime = 'Yesterday';
-    info.queryEndTime = 'Now';
     app.historyResult(info, SIMPLE_RESULTS);
     return PolymerTest.flushTasks().then(function() {
       var data = groupedList.groupedHistoryData_;
@@ -91,11 +89,25 @@ suite('history-grouped-list', function() {
       assertEquals(2, data[0].domains[0].visits.length);
       assertEquals(1, data[0].domains[1].visits.length);
       assertEquals(1, data[0].domains[2].visits.length);
-
-      // Ensure the toolbar displays the correct begin and end time.
-      assertEquals('Yesterday', toolbar.queryStartTime);
-      assertEquals('Now', toolbar.queryEndTime);
     });
+  });
+
+  test('toolbar dates appear in grouped mode', function() {
+    var getInfo = function() {
+      var info = createHistoryInfo();
+      info.queryStartMonth = 'Dec 2016';
+      info.queryInterval = 'Yesterday - Now';
+      return info;
+    };
+    app.set('queryState_.range', HistoryRange.MONTH);
+    app.historyResult(getInfo(), SIMPLE_RESULTS);
+    assertEquals(
+        'Dec 2016', toolbar.$$('#grouped-date').textContent.trim());
+
+    app.set('queryState_.range', HistoryRange.WEEK);
+    app.historyResult(getInfo(), SIMPLE_RESULTS);
+    assertEquals(
+        'Yesterday - Now', toolbar.$$('#grouped-date').textContent.trim());
   });
 
   test('items grouped by day in week view', function() {

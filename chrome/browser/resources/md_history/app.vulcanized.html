@@ -2465,7 +2465,7 @@ paper-tab {
         </paper-tabs>
         <div id="grouped-nav-container">
           <span id="grouped-date">
-            {{getHistoryInterval_(queryStartTime, queryEndTime)}}
+            [[getHistoryInterval_(queryInfo)]]
           </span>
           <button is="paper-icon-button-light" id="today-button" class="icon-button" title="$i18n{rangeToday}" on-tap="onTodayTap_" disabled="[[isToday_(groupedOffset)]]">
             <iron-icon icon="history:today"></iron-icon>
@@ -3324,7 +3324,7 @@ dialog .body {
       <history-list id="infinite-list" querying="[[queryState.querying]]" searched-term="[[queryResult.info.term]]">
       </history-list>
       <template is="dom-if" if="[[grouped]]">
-        <history-grouped-list id="grouped-list" range="[[groupedRange]]" query-start-time="[[queryResult.info.queryStartTime]]" query-end-time="[[queryResult.info.queryEndTime]]" searched-term="[[queryResult.info.term]]">
+        <history-grouped-list id="grouped-list" range="[[groupedRange]]" query-interval="[[queryResult.info.queryInterval]]" searched-term="[[queryResult.info.term]]">
         </history-grouped-list>
       </template>
     </iron-pages>
@@ -3753,7 +3753,7 @@ history-toolbar {
 </style>
     <history-router selected-page="{{selectedPage_}}" query-state="{{queryState_}}">
     </history-router>
-    <history-toolbar id="toolbar" grouped-offset="{{queryState_.groupedOffset}}" grouped-range="{{queryState_.range}}" has-drawer="[[hasDrawer_]]" is-grouped-mode="{{grouped_}}" query-end-time="[[queryResult_.info.queryEndTime]]" has-more-results="[[!queryResult_.info.finished]]" query-start-time="[[queryResult_.info.queryStartTime]]" querying="[[queryState_.querying]]" search-term="{{queryState_.searchTerm}}" show-menu-promo="[[showMenuPromo_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]" spinner-active="[[shouldShowSpinner_(queryState_.querying,
+    <history-toolbar id="toolbar" grouped-offset="{{queryState_.groupedOffset}}" grouped-range="{{queryState_.range}}" has-drawer="[[hasDrawer_]]" has-more-results="[[!queryResult_.info.finished]]" is-grouped-mode="{{grouped_}}" query-info="[[queryResult_.info]]" querying="[[queryState_.querying]]" search-term="{{queryState_.searchTerm}}" show-menu-promo="[[showMenuPromo_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]" spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,
                                              queryState_.searchTerm)]]">
     </history-toolbar>

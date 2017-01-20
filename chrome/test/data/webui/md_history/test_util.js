@@ -90,8 +90,8 @@ function createHistoryInfo(searchTerm) {
   return {
     finished: true,
     hasSyncedResults: false,
-    queryEndTime: 'Monday',
-    queryStartTime: 'Tuesday',
+    queryInterval: 'Monday - Tuesday',
+    queryMonth: 'June',
     term: searchTerm || ''
   };
 }

@@ -261,8 +261,7 @@ function queryHistoryImpl(args, beginTime, history) {
       {
         term: searchText,
         finished: finished,
-        queryStartTime: queryStartTime,
-        queryEndTime: queryEndTime
+        queryInterval: queryStartTime + ' - ' + queryEndTime,
       },
       results);
 }

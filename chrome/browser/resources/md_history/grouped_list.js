@@ -35,9 +35,7 @@ Polymer({
     // An array of history entries in reverse chronological order.
     historyData: Array,
 
-    queryStartTime: String,
-
-    queryEndTime: String,
+    queryInterval: String,
 
     range: Number,
   },
@@ -125,7 +123,7 @@ Polymer({
     } else if (this.range == HistoryRange.MONTH) {
       // Group each all visits into a single list.
       this.groupedHistoryData_ = [{
-        title: this.queryStartTime + ' – ' + this.queryEndTime,
+        title: this.queryInterval,
         domains: this.createHistoryDomains_(this.historyData)
       }];
     }

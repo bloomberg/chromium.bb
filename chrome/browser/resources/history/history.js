@@ -631,8 +631,7 @@ HistoryModel.prototype.addResults = function(info, results) {
   $('loading-spinner').hidden = true;
   this.inFlight_ = false;
   this.isQueryFinished_ = info.finished;
-  this.queryStartTime = info.queryStartTime;
-  this.queryEndTime = info.queryEndTime;
+  this.queryInterval = info.queryInterval;
 
   var lastVisit = this.visits_.slice(-1)[0];
   var lastDay = lastVisit ? lastVisit.dateRelativeDay : null;
@@ -1579,10 +1578,8 @@ HistoryView.prototype.addTimeframeInterval_ = function(resultsFragment) {
       createElementWithClassName('h2', 'timeframe'));
   // TODO(sergiu): Figure the best way to show this for the first day of
   // the month.
-  timeFrame.appendChild(document.createTextNode(loadTimeData.getStringF(
-      'historyInterval',
-      this.model_.queryStartTime,
-      this.model_.queryEndTime)));
+  timeFrame.appendChild(
+      document.createTextNode(this.model_.queryInterval));
 };
 
 /**

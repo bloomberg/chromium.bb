@@ -60,15 +60,11 @@ Polymer({
       notify: true,
     },
 
-    querying: Boolean,
-
     hasMoreResults: Boolean,
 
-    // The start time of the query range.
-    queryStartTime: String,
+    querying: Boolean,
 
-    // The end time of the query range.
-    queryEndTime: String,
+    queryInfo: Object,
 
     // Whether to show the menu promo (a tooltip that points at the menu button
     // in narrow mode).
@@ -150,10 +146,13 @@ Polymer({
   },
 
   /** @private */
-  getHistoryInterval_: function(queryStartTime, queryEndTime) {
-    // TODO(calamity): Fix the format of these dates.
-    return loadTimeData.getStringF(
-        'historyInterval', queryStartTime, queryEndTime);
+  getHistoryInterval_: function() {
+    var info = this.queryInfo;
+    if (this.groupedRange == HistoryRange.WEEK)
+      return info.queryInterval;
+
+    if (this.groupedRange == HistoryRange.MONTH)
+      return info.queryStartMonth;
   },
 
   /** @private */

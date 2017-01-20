@@ -77,6 +77,8 @@
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_toolbar/compiled_resources2.gyp:cr_toolbar',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        'constants',
+        '../history/compiled_resources2.gyp:externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
