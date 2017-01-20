@@ -46,13 +46,7 @@ IN_PROC_BROWSER_TEST_F(FtpBrowserTest, BasicFtpUrlAuthentication) {
                "Index of /");
 }
 
-// http://crbug.com/521409
-#if defined(OS_WIN)
-#define MAYBE_DirectoryListingNavigation DISABLED_DirectoryListingNavigation
-#else
-#define MAYBE_DirectoryListingNavigation DirectoryListingNavigation
-#endif
-IN_PROC_BROWSER_TEST_F(FtpBrowserTest, MAYBE_DirectoryListingNavigation) {
+IN_PROC_BROWSER_TEST_F(FtpBrowserTest, DirectoryListingNavigation) {
   ftp_server_.set_no_anonymous_ftp_user(true);
   ASSERT_TRUE(ftp_server_.Start());
 
@@ -63,24 +57,40 @@ IN_PROC_BROWSER_TEST_F(FtpBrowserTest, MAYBE_DirectoryListingNavigation) {
   // Navigate to directory dir1/ without needing to re-authenticate
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      "var elements = document.getElementsByTagName('a');"
-      "for (var i = 0; i < elements.length; i++) {"
-      "  if (elements[i].innerHTML == 'dir1/') {"
-      "    elements[i].click();"
+      "(function() {"
+      "  function navigate() {"
+      "    for (const element of document.getElementsByTagName('a')) {"
+      "      if (element.innerHTML == 'dir1/') {"
+      "        element.click();"
+      "      }"
+      "    }"
       "  }"
-      "}"));
+      "  if (document.readyState === 'loading') {"
+      "    document.addEventListener('DOMContentLoaded', navigate);"
+      "  } else {"
+      "    navigate();"
+      "  }"
+      "})()"));
 
   WaitForTitle(browser()->tab_strip_model()->GetActiveWebContents(),
                "Index of /dir1/");
 
   EXPECT_TRUE(content::ExecuteScript(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        "var elements = document.getElementsByTagName('a');"
-        "for (var i = 0; i < elements.length; i++) {"
-        "  if (elements[i].innerHTML == 'test.html') {"
-        "    elements[i].click();"
-        "  }"
-        "}"));
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "(function() {"
+      "  function navigate() {"
+      "    for (const element of document.getElementsByTagName('a')) {"
+      "      if (element.innerHTML == 'test.html') {"
+      "        element.click();"
+      "      }"
+      "    }"
+      "  }"
+      "  if (document.readyState === 'loading') {"
+      "    document.addEventListener('DOMContentLoaded', navigate);"
+      "  } else {"
+      "    navigate();"
+      "  }"
+      "})()"));
 
   WaitForTitle(browser()->tab_strip_model()->GetActiveWebContents(),
                "PASS");
