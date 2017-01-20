@@ -229,6 +229,25 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
     settings.setHeight(platformSettings.height);
   }
   settings.setDeviceId(platformSettings.deviceId);
+  if (platformSettings.hasFacingMode()) {
+    switch (platformSettings.facingMode) {
+      case WebMediaStreamTrack::FacingMode::User:
+        settings.setFacingMode("user");
+        break;
+      case WebMediaStreamTrack::FacingMode::Environment:
+        settings.setFacingMode("environment");
+        break;
+      case WebMediaStreamTrack::FacingMode::Left:
+        settings.setFacingMode("left");
+        break;
+      case WebMediaStreamTrack::FacingMode::Right:
+        settings.setFacingMode("right");
+        break;
+      default:
+        // None, or unknown facing mode. Ignore.
+        break;
+    }
+  }
 }
 
 bool MediaStreamTrack::ended() const {

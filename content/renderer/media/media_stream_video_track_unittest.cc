@@ -255,4 +255,17 @@ TEST_F(MediaStreamVideoTrackTest, CheckTrackRequestsFrame) {
   sink.DisconnectFromTrack();
 }
 
+TEST_F(MediaStreamVideoTrackTest, GetSettings) {
+  blink::WebMediaStreamTrack track = CreateTrack();
+  MediaStreamVideoTrack* const native_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  blink::WebMediaStreamTrack::Settings settings;
+  native_track->getSettings(settings);
+  // These values come straight from the mock video track implementation.
+  EXPECT_EQ(640, settings.width);
+  EXPECT_EQ(480, settings.height);
+  EXPECT_EQ(30.0, settings.frameRate);
+  EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::None, settings.facingMode);
+}
+
 }  // namespace content

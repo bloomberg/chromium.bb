@@ -41,16 +41,20 @@ class WebString;
 
 class WebMediaStreamTrack {
  public:
+  enum class FacingMode { None, User, Environment, Left, Right };
+
   struct Settings {
     bool hasFrameRate() { return frameRate >= 0.0; }
     bool hasWidth() { return width >= 0; }
     bool hasHeight() { return height >= 0; }
+    bool hasFacingMode() { return facingMode != FacingMode::None; }
     // The variables are read from
     // MediaStreamTrack::GetSettings only.
     double frameRate = -1.0;
     long width = -1;
     long height = -1;
     WebString deviceId;
+    FacingMode facingMode = FacingMode::None;
   };
 
   class TrackData {

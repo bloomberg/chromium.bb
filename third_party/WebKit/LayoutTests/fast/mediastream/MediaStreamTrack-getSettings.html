@@ -33,4 +33,33 @@ promise_test(function() {
   });
 }, 'A video track returns frame rate');
 
+promise_test(function() {
+  return navigator.mediaDevices.getUserMedia(
+      {video: {facingMode: {exact: "user"}}})
+      .then(function(s) {
+    assert_unreached();
+  })
+      .catch(function(e) {
+    assert_equals(e.name, 'Error');
+  });
+}, 'With no fake device, asking for user-facing device rejects');
+
+promise_test(function() {
+  return internals.addFakeDevice({kind: "video"},
+                                 {facingMode: {exact: "user"}})
+      .then(function() {
+    navigator.mediaDevices.getUserMedia({video: {facingMode: {exact: "user"}}})
+  })
+      .then(function(s) {
+    settings = s.getVideoTracks()[0].getSettings();
+    assert_equals(settings.facingMode, "user");
+  })
+      .catch(function(e) {
+    console.log('Fake devices are not functional yet.');
+    // TODO(hta): Finish creation of fake devices. Until then, accept failure.
+    // crbug.com/678561
+    assert_equals(e.name, 'TypeError', "Check crbug.com/678561");
+  });
+}, 'With a fake user-facing device, facing mode is matched')
+
 </script>

@@ -308,6 +308,21 @@ void MediaStreamVideoTrack::getSettings(
       settings.width = format->frame_size.width();
       settings.height = format->frame_size.height();
     }
+    switch (source_->device_info().device.video_facing) {
+      case MEDIA_VIDEO_FACING_NONE:
+        settings.facingMode = blink::WebMediaStreamTrack::FacingMode::None;
+        break;
+      case MEDIA_VIDEO_FACING_USER:
+        settings.facingMode = blink::WebMediaStreamTrack::FacingMode::User;
+        break;
+      case MEDIA_VIDEO_FACING_ENVIRONMENT:
+        settings.facingMode =
+            blink::WebMediaStreamTrack::FacingMode::Environment;
+        break;
+      default:
+        settings.facingMode = blink::WebMediaStreamTrack::FacingMode::None;
+        break;
+    }
   }
   // TODO(hta): Extract the real value.
   settings.deviceId = blink::WebString("video device ID");
