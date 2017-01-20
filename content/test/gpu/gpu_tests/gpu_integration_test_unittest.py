@@ -128,6 +128,62 @@ class BrowserStartFailureIntegrationUnittest(
     pass
 
 
+class BrowserCrashAfterStartIntegrationUnittest(
+  gpu_integration_test.GpuIntegrationTest):
+
+  _num_browser_crashes = 0
+  _num_browser_starts = 0
+
+  @classmethod
+  def setUpClass(cls):
+    cls._fake_browser_options = fakes.CreateBrowserFinderOptions(
+      execute_after_browser_creation=cls.CrashAfterStart)
+    cls._fake_browser_options.browser_options.platform = \
+        fakes.FakeLinuxPlatform()
+    cls._fake_browser_options.output_formats = ['none']
+    cls._fake_browser_options.suppress_gtest_report = True
+    cls._fake_browser_options.output_dir = None
+    cls._fake_browser_options .upload_bucket = 'public'
+    cls._fake_browser_options .upload_results = False
+    cls._finder_options = cls._fake_browser_options
+    cls.platform = None
+    cls.browser = None
+    cls.SetBrowserOptions(cls._finder_options)
+    cls.StartBrowser()
+
+  @classmethod
+  def _CreateExpectations(cls):
+    return gpu_test_expectations.GpuTestExpectations()
+
+  @classmethod
+  def CrashAfterStart(cls, browser):
+    cls._num_browser_starts += 1
+    if cls._num_browser_crashes < 2:
+      cls._num_browser_crashes += 1
+      # This simulates the first tab's renderer process crashing upon
+      # startup. The try/catch forces the GpuIntegrationTest's first
+      # fetch of this tab to fail. crbug.com/682819
+      try:
+        browser.tabs[0].Navigate('chrome://crash')
+      except Exception:
+        pass
+
+  @classmethod
+  def Name(cls):
+    return 'browser_crash_after_start_integration_unittest'
+
+  @classmethod
+  def GenerateGpuTests(cls, options):
+    # This test causes the browser to try and restart the browser 3 times.
+    yield ('restart', 'restart.html', ())
+
+  def RunActualGpuTest(self, file_path, *args):
+    # The logic of this test is run when the browser starts, it fails twice
+    # and then succeeds on the third time so we are just testing that this
+    # is successful based on the parameters.
+    pass
+
+
 class GpuIntegrationTestUnittest(unittest.TestCase):
   @mock.patch('telemetry.internal.util.binary_manager.InitDependencyManager')
   def testSimpleIntegrationUnittest(self, mockInitDependencyManager):
@@ -153,10 +209,15 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertEquals( \
       BrowserStartFailureIntegrationUnittest._num_browser_starts, 3)
 
-  # TODO(kbr): write a new test utilizing the
-  # execute_after_browser_creation argument to
-  # fakes.CreateBrowserFinderOptions once that is available.
-  # crbug.com/682819
+  @mock.patch('telemetry.internal.util.binary_manager.InitDependencyManager')
+  def testIntegrationUnittestWithBrowserCrashUponStart(
+      self, mockInitDependencyManager):
+    self._RunIntegrationTest(
+      'browser_crash_after_start_integration_unittest', [], ['restart'])
+    self.assertEquals( \
+      BrowserCrashAfterStartIntegrationUnittest._num_browser_crashes, 2)
+    self.assertEquals( \
+      BrowserCrashAfterStartIntegrationUnittest._num_browser_starts, 3)
 
   def _RunIntegrationTest(self, test_name, failures, successes):
     options = browser_test_runner.TestRunOptions()
