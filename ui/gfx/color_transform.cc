@@ -928,16 +928,20 @@ class ColorSpaceToColorSpaceTransform {
           break;
 
         case ColorSpace::TransferID::SMPTEST2084:
-          // We don't have an HDR display, so replace SMPTE 2084 with something
-          // that returns ranges more or less suitable for a normal display.
-          from.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
+          if (!to.IsHDR()) {
+            // We don't have an HDR display, so replace SMPTE 2084 with
+            // something that returns ranges more or less suitable for a normal
+            // display.
+            from.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
+          }
           break;
 
         case ColorSpace::TransferID::ARIB_STD_B67:
-          // Interpreting HLG using a gamma 2.4 works reasonably well for SDR
-          // displays. Once we have HDR output capabilies, we'll need to
-          // change this.
-          from.transfer_ = ColorSpace::TransferID::GAMMA24;
+          if (!to.IsHDR()) {
+            // Interpreting HLG using a gamma 2.4 works reasonably well for SDR
+            // displays.
+            from.transfer_ = ColorSpace::TransferID::GAMMA24;
+          }
           break;
 
         default:  // Do nothing
