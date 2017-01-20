@@ -22,27 +22,9 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><meta charset="UTF-8"><link rel="import" href="chrome://resources/html/polymer.html">
-<style>
-/* Copyright 2016 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
+--><meta charset="UTF-8">
 
-:root {
-  /* This is a custom, Chrome-specific color that does not have a --paper or
-   * --google equivalent. */
-  --md-background-color: #f1f1f1;
-  --md-loading-message-color: #6e6e6e;
-  /* This is --google-blue-700, rewritten as a native custom property for speed.
-   */
-  --md-toolbar-color: rgb(51, 103, 214);
-}
-
-</style>
-
-
-
-</head><body><div hidden="" by-vulcanize=""><dom-module id="iron-pages" assetpath="chrome://resources/polymer/v1_0/iron-pages/" css-build="shadow">
+</head><body><div hidden="" by-vulcanize=""><link rel="import" href="chrome://resources/html/polymer.html"><dom-module id="iron-pages" assetpath="chrome://resources/polymer/v1_0/iron-pages/" css-build="shadow">
 
   <template>
     <style scope="iron-pages">:host {
@@ -64,9 +46,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   [hidden] {
     display: none !important;
   }
-</style>
-
-<style is="custom-style" css-build="shadow">html {
+</style><style is="custom-style" css-build="shadow">html {
   --layout_-_display:  flex;;
 
     --layout-inline_-_display:  inline-flex;;
@@ -184,10 +164,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --layout-fixed-left_-_position:  fixed; --layout-fixed-left_-_top:  0; --layout-fixed-left_-_bottom:  0; --layout-fixed-left_-_left:  0;;
 }
 
-</style>
-
-
-<dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/" css-build="shadow">
+</style><dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/" css-build="shadow">
   <template>
     <style scope="iron-icon">:host {
   display: var(--layout-inline_-_display);
@@ -614,10 +591,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --light-primary-opacity: 1.0;
 }
 
-</style>
-
-
-<style is="custom-style" css-build="shadow">html {
+</style><style is="custom-style" css-build="shadow">html {
   --primary-text-color: var(--light-theme-text-color);
     --primary-background-color: var(--light-theme-background-color);
     --secondary-text-color: var(--light-theme-secondary-color);
@@ -656,10 +630,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --default-primary-color: var(--primary-color);
 }
 
-</style>
-
-
-<dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/" css-build="shadow">
+</style><dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/" css-build="shadow">
   <template strip-whitespace="">
     <style scope="paper-icon-button">:host {
   display: inline-block;
@@ -688,12 +659,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 :host #ink {
-  color: var(--paper-icon-button-ink-color,var(--primary-text-color));;
+  color: var(--paper-icon-button-ink-color,var(--primary-text-color));
         opacity: 0.6;
 }
 
 :host([disabled]) {
-  color: var(--paper-icon-button-disabled-text,var(--disabled-text-color));;
+  color: var(--paper-icon-button-disabled-text,var(--disabled-text-color));
         pointer-events: none;
         cursor: auto;
 
@@ -769,23 +740,23 @@ to {
         height: 100%;
         opacity: 0;
         white-space: nowrap;
-        border-color: var(--paper-spinner-color,var(--google-blue-500));;
+        border-color: var(--paper-spinner-color,var(--google-blue-500));
 }
 
 .layer-1 {
-  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));;
+  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));
 }
 
 .layer-2 {
-  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));;
+  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));
 }
 
 .layer-3 {
-  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));;
+  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));
 }
 
 .layer-4 {
-  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));;
+  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));
 }
 
 .active .spinner-layer {
@@ -1253,8 +1224,6 @@ to {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-spinner-lite" assetpath="chrome://resources/polymer/v1_0/paper-spinner/" css-build="shadow">
   <template strip-whitespace="">
     <style scope="paper-spinner-lite">:host {
@@ -1309,23 +1278,23 @@ to {
         height: 100%;
         opacity: 0;
         white-space: nowrap;
-        border-color: var(--paper-spinner-color,var(--google-blue-500));;
+        border-color: var(--paper-spinner-color,var(--google-blue-500));
 }
 
 .layer-1 {
-  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));;
+  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));
 }
 
 .layer-2 {
-  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));;
+  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));
 }
 
 .layer-3 {
-  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));;
+  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));
 }
 
 .layer-4 {
-  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));;
+  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));
 }
 
 .active .spinner-layer {
@@ -2085,8 +2054,7 @@ h1 {
     </div>
   </template>
   </dom-module>
-<link rel="import" href="chrome://history/constants.html">
-<iron-iconset-svg size="24" name="history">
+<link rel="import" href="chrome://history/constants.html"><iron-iconset-svg size="24" name="history">
   <svg>
     <defs>
       
@@ -2119,8 +2087,7 @@ h1 {
     --toolbar-height: 56px;
 }
 
-</style>
-<dom-module id="shared-style" assetpath="chrome://history/" css-build="shadow">
+</style><dom-module id="shared-style" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="shared-style">[hidden] {
   display: none !important;
@@ -2202,8 +2169,6 @@ button.more-vert-button div {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="history-toolbar" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="history-toolbar">[hidden] {
@@ -2482,6 +2447,9 @@ paper-tab {
   </template>
   </dom-module>
 
+
+
+
 <style is="custom-style" css-build="shadow">html {
   --cr-actionable_-_cursor:  pointer;;
     --cr-focused-item-color: var(--google-grey-300);
@@ -2501,9 +2469,7 @@ paper-tab {
     --paper-checkbox-ink-size: 40px;
 }
 
-</style>
-
-<dom-module id="cr-shared-style" assetpath="chrome://resources/cr_elements/" css-build="shadow">
+</style><dom-module id="cr-shared-style" assetpath="chrome://resources/cr_elements/" css-build="shadow">
   <template>
     <style scope="cr-shared-style">paper-spinner {
   --paper-spinner-layer-1-color: var(--google-blue-500);
@@ -2712,13 +2678,9 @@ paper-icon-button.subpage-arrow {
                   0  8px 10px -5px rgba(0, 0, 0, 0.4);;
 }
 
-</style>
-<link rel="import" href="chrome://resources/html/util.html">
-<dom-module id="history-searched-label" assetpath="chrome://history/" css-build="shadow">
+</style><link rel="import" href="chrome://resources/html/util.html"><dom-module id="history-searched-label" assetpath="" css-build="shadow">
   </dom-module>
-
-
-<dom-module id="history-item" assetpath="chrome://history/" css-build="shadow">
+<dom-module id="history-item" assetpath="" css-build="shadow">
   <template>
     <style scope="history-item">[hidden] {
   display: none !important;
@@ -3127,8 +3089,6 @@ iron-list {
     </iron-scroll-threshold>
   </template>
   </dom-module>
-
-
 <dom-module id="history-list-container" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="history-list-container">[hidden] {
@@ -3436,8 +3396,7 @@ dialog .body {
     --paper-font-code1_-_font-family:  var(--paper-font-common-code_-_font-family); --paper-font-code1_-_-webkit-font-smoothing:  var(--paper-font-common-code_-_-webkit-font-smoothing); --paper-font-code1_-_font-size:  14px; --paper-font-code1_-_font-weight:  500; --paper-font-code1_-_line-height:  20px;;
 }
 
-</style>
-<dom-module id="history-side-bar" assetpath="chrome://history/" css-build="shadow">
+</style><dom-module id="history-side-bar" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="history-side-bar">[hidden] {
   display: none !important;
@@ -3620,7 +3579,22 @@ iron-selector > a.iron-selected {
     </iron-selector>
   </template>
   </dom-module>
-</div><dom-module id="history-app" css-build="shadow">
+<style>
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:root {
+  /* This is a custom, Chrome-specific color that does not have a --paper or
+   * --google equivalent. */
+  --md-background-color: #f1f1f1;
+  --md-loading-message-color: #6e6e6e;
+  /* This is --google-blue-700, rewritten as a native custom property for speed.
+   */
+  --md-toolbar-color: rgb(51, 103, 214);
+}
+
+</style></div><dom-module id="history-app" css-build="shadow">
   <template>
     <style scope="history-app">[hidden] {
   display: none !important;
