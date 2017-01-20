@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -23,11 +24,13 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/drag_drop_controller_mus.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
+#include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_manager_delegate.h"
@@ -147,7 +150,8 @@ WindowTreeClient::WindowTreeClient(
     service_manager::Connector* connector,
     WindowTreeClientDelegate* delegate,
     WindowManagerDelegate* window_manager_delegate,
-    mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request)
+    mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : connector_(connector),
       client_id_(0),
       next_window_id_(1),
@@ -164,6 +168,12 @@ WindowTreeClient::WindowTreeClient(
   client::GetTransientWindowClient()->AddObserver(this);
   if (window_manager_delegate)
     window_manager_delegate->SetWindowManagerClient(this);
+  if (connector) {  // |connector| can be null in tests.
+    gpu_ = ui::Gpu::Create(connector, std::move(io_task_runner));
+    compositor_context_factory_ =
+        base::MakeUnique<MusContextFactory>(gpu_.get());
+    Env::GetInstance()->set_context_factory(compositor_context_factory_.get());
+  }
 }
 
 WindowTreeClient::~WindowTreeClient() {

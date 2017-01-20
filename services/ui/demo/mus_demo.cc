@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -82,10 +81,6 @@ void MusDemo::OnStart() {
   capture_client_ = base::MakeUnique<aura::client::DefaultCaptureClient>();
   property_converter_ = base::MakeUnique<aura::PropertyConverter>();
   wm_state_ = base::MakeUnique<::wm::WMState>();
-
-  gpu_ = Gpu::Create(context()->connector());
-  context_factory_ = base::MakeUnique<aura::MusContextFactory>(gpu_.get());
-  env_->set_context_factory(context_factory_.get());
 
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
       context()->connector(), this, this);

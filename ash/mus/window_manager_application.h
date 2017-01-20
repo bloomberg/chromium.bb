@@ -19,7 +19,6 @@
 #include "services/ui/common/types.h"
 
 namespace aura {
-class MusContextFactory;
 class WindowTreeClient;
 }
 
@@ -35,10 +34,6 @@ class ScopedFakeStatisticsProvider;
 
 namespace views {
 class AuraInit;
-}
-
-namespace ui {
-class Gpu;
 }
 
 namespace ash {
@@ -76,8 +71,6 @@ class WindowManagerApplication : public service_manager::Service {
 
   std::unique_ptr<views::AuraInit> aura_init_;
 
-  std::unique_ptr<ui::Gpu> gpu_;
-  std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
   std::unique_ptr<WindowManager> window_manager_;
 
   // A blocking pool used by the WindowManager's shell; not used in tests.

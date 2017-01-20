@@ -20,7 +20,6 @@
 
 namespace aura {
 class PropertyConverter;
-class MusContextFactory;
 class Window;
 class WindowTreeClient;
 }
@@ -37,10 +36,6 @@ class ClientDiscardableSharedMemoryManager;
 namespace service_manager {
 class Connector;
 class Identity;
-}
-
-namespace ui {
-class Gpu;
 }
 
 namespace wm {
@@ -100,8 +95,6 @@ class VIEWS_MUS_EXPORT MusClient
     return pointer_watcher_event_router_.get();
   }
 
-  ui::Gpu* gpu() { return gpu_.get(); }
-
   // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is
   // set as the factory function used for creating NativeWidgets when a
   //  NativeWidget has not been explicitly set.
@@ -150,11 +143,7 @@ class VIEWS_MUS_EXPORT MusClient
 
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
-  std::unique_ptr<ui::Gpu> gpu_;
-
   std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
-
-  std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
 
   std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;

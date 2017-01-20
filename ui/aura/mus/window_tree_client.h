@@ -42,6 +42,10 @@ namespace service_manager {
 class Connector;
 }
 
+namespace ui {
+class Gpu;
+}
+
 namespace aura {
 class CaptureSynchronizer;
 class DragDropControllerMus;
@@ -51,6 +55,7 @@ class InFlightChange;
 class InFlightFocusChange;
 class InFlightPropertyChange;
 class InFlightVisibleChange;
+class MusContextFactory;
 class WindowMus;
 class WindowPortMus;
 struct WindowPortPropertyData;
@@ -87,7 +92,8 @@ class AURA_EXPORT WindowTreeClient
       service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
       WindowManagerDelegate* window_manager_delegate = nullptr,
-      ui::mojom::WindowTreeClientRequest request = nullptr);
+      ui::mojom::WindowTreeClientRequest request = nullptr,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
   ~WindowTreeClient() override;
 
   // Establishes the connection by way of the WindowTreeFactory.
@@ -97,6 +103,7 @@ class AURA_EXPORT WindowTreeClient
   void ConnectAsWindowManager();
 
   service_manager::Connector* connector() { return connector_; }
+  ui::Gpu* gpu() { return gpu_.get(); }
 
   bool connected() const { return tree_ != nullptr; }
   ClientSpecificId client_id() const { return client_id_; }
@@ -523,6 +530,8 @@ class AURA_EXPORT WindowTreeClient
 
   std::unique_ptr<DragDropControllerMus> drag_drop_controller_;
 
+  std::unique_ptr<ui::Gpu> gpu_;
+  std::unique_ptr<MusContextFactory> compositor_context_factory_;
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClient);

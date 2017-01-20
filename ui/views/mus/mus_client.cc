@@ -90,13 +90,9 @@ MusClient::MusClient(service_manager::Connector* connector,
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_shared_memory_manager_.get());
 
-  gpu_ = ui::Gpu::Create(connector, std::move(io_task_runner));
-  compositor_context_factory_ =
-      base::MakeUnique<aura::MusContextFactory>(gpu_.get());
-  aura::Env::GetInstance()->set_context_factory(
-      compositor_context_factory_.get());
-  window_tree_client_ =
-      base::MakeUnique<aura::WindowTreeClient>(connector, this);
+  window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
+      connector, this, nullptr /* window_manager_delegate */,
+      nullptr /* window_tree_client_request */, std::move(io_task_runner));
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
   window_tree_client_->ConnectViaWindowTreeFactory();
 
@@ -122,7 +118,6 @@ MusClient::~MusClient() {
   window_tree_client_.reset();
   ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
   ui::Clipboard::DestroyClipboardForCurrentThread();
-  gpu_.reset();
 
   if (ViewsDelegate::GetInstance()) {
     ViewsDelegate::GetInstance()->set_native_widget_factory(

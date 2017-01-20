@@ -20,11 +20,9 @@
 
 namespace aura {
 class Env;
-class MusContextFactory;
 }
 
 namespace ui {
-class Gpu;
 
 // WindowServerTestBase is a base class for use with shell tests that use
 // WindowServer. SetUp() connects to the WindowServer and blocks until OnEmbed()
@@ -134,9 +132,6 @@ class WindowServerTestBase
   ::wm::WMState wm_state_;
   display::ScreenBase screen_;
   aura::PropertyConverter property_converter_;
-
-  std::unique_ptr<Gpu> gpu_;
-  std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
 
   std::vector<std::unique_ptr<aura::WindowTreeClient>> window_tree_clients_;
 

@@ -286,6 +286,7 @@
 #if defined(USE_AURA)
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/views/mus/mus_client.h"
 #endif
 
@@ -2726,7 +2727,7 @@ gpu::GpuChannelEstablishFactory*
 ChromeContentBrowserClient::GetGpuChannelEstablishFactory() {
 #if defined(USE_AURA)
   if (views::MusClient::Exists())
-    return views::MusClient::Get()->gpu();
+    return views::MusClient::Get()->window_tree_client()->gpu();
 #endif
   return nullptr;
 }

@@ -353,8 +353,6 @@ SimpleWM::~SimpleWM() {
   // WindowTreeClient destruction may callback to us.
   window_tree_client_.reset();
 
-  gpu_.reset();
-
   display::Screen::SetScreenInstance(nullptr);
 }
 
@@ -369,11 +367,6 @@ void SimpleWM::OnStart() {
   aura_init_ = base::MakeUnique<views::AuraInit>(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
-  gpu_ = ui::Gpu::Create(context()->connector(), nullptr);
-  compositor_context_factory_ =
-      base::MakeUnique<aura::MusContextFactory>(gpu_.get());
-  aura::Env::GetInstance()->set_context_factory(
-      compositor_context_factory_.get());
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
       context()->connector(), this, this);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
