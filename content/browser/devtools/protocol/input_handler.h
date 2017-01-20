@@ -11,6 +11,7 @@
 #include "content/browser/devtools/protocol/input.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
+#include "content/public/browser/render_widget_host.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
@@ -25,7 +26,8 @@ class RenderFrameHostImpl;
 namespace protocol {
 
 class InputHandler : public DevToolsDomainHandler,
-                     public Input::Backend {
+                     public Input::Backend,
+                     public RenderWidgetHost::InputEventObserver {
  public:
   InputHandler();
   ~InputHandler() override;
@@ -37,27 +39,31 @@ class InputHandler : public DevToolsDomainHandler,
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
   Response Disable() override;
 
-  Response DispatchKeyEvent(const std::string& type,
-                            Maybe<int> modifiers,
-                            Maybe<double> timestamp,
-                            Maybe<std::string> text,
-                            Maybe<std::string> unmodified_text,
-                            Maybe<std::string> key_identifier,
-                            Maybe<std::string> code,
-                            Maybe<std::string> key,
-                            Maybe<int> windows_virtual_key_code,
-                            Maybe<int> native_virtual_key_code,
-                            Maybe<bool> auto_repeat,
-                            Maybe<bool> is_keypad,
-                            Maybe<bool> is_system_key) override;
+  void DispatchKeyEvent(
+      const std::string& type,
+      Maybe<int> modifiers,
+      Maybe<double> timestamp,
+      Maybe<std::string> text,
+      Maybe<std::string> unmodified_text,
+      Maybe<std::string> key_identifier,
+      Maybe<std::string> code,
+      Maybe<std::string> key,
+      Maybe<int> windows_virtual_key_code,
+      Maybe<int> native_virtual_key_code,
+      Maybe<bool> auto_repeat,
+      Maybe<bool> is_keypad,
+      Maybe<bool> is_system_key,
+      std::unique_ptr<DispatchKeyEventCallback> callback) override;
 
-  Response DispatchMouseEvent(const std::string& type,
-                              int x,
-                              int y,
-                              Maybe<int> modifiers,
-                              Maybe<double> timestamp,
-                              Maybe<std::string> button,
-                              Maybe<int> click_count) override;
+  void DispatchMouseEvent(
+      const std::string& type,
+      int x,
+      int y,
+      Maybe<int> modifiers,
+      Maybe<double> timestamp,
+      Maybe<std::string> button,
+      Maybe<int> click_count,
+      std::unique_ptr<DispatchMouseEventCallback> callback) override;
 
   Response EmulateTouchFromMouseEvent(const std::string& type,
                                       int x,
@@ -101,6 +107,10 @@ class InputHandler : public DevToolsDomainHandler,
       std::unique_ptr<SynthesizeTapGestureCallback> callback) override;
 
  private:
+  // InputEventObserver
+  void OnInputEvent(const blink::WebInputEvent& event) override;
+  void OnInputEventAck(const blink::WebInputEvent& event) override;
+
   void SynthesizeRepeatingScroll(
       SyntheticSmoothScrollGestureParams gesture_params,
       int repeat_count,
@@ -118,7 +128,15 @@ class InputHandler : public DevToolsDomainHandler,
       std::unique_ptr<SynthesizeScrollGestureCallback> callback,
       SyntheticGesture::Result result);
 
+  void ClearPendingKeyAndMouseCallbacks();
+
   RenderFrameHostImpl* host_;
+  // Callbacks for calls to Input.dispatchKey/MouseEvent that have been sent to
+  // the renderer, but that we haven't yet received an ack for.
+  bool input_queued_;
+  std::deque<std::unique_ptr<DispatchKeyEventCallback>> pending_key_callbacks_;
+  std::deque<std::unique_ptr<DispatchMouseEventCallback>>
+      pending_mouse_callbacks_;
   float page_scale_factor_;
   gfx::SizeF scrollable_viewport_size_;
   int last_id_;

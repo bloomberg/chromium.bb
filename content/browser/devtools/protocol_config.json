@@ -22,7 +22,7 @@
             {
                 "domain": "Input",
                 "exclude": ["dispatchTouchEvent"],
-                "async": ["synthesizePinchGesture", "synthesizeScrollGesture", "synthesizeTapGesture"]
+                "async": ["dispatchKeyEvent", "dispatchMouseEvent", "synthesizePinchGesture", "synthesizeScrollGesture", "synthesizeTapGesture"]
             },
             {
                 "domain": "Inspector"

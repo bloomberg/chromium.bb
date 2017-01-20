@@ -192,6 +192,7 @@ void SendSynthesizeScrollGestureResponse(
 InputHandler::InputHandler()
     : DevToolsDomainHandler(Input::Metainfo::domainName),
       host_(nullptr),
+      input_queued_(false),
       page_scale_factor_(1.0),
       last_id_(0),
       weak_factory_(this) {
@@ -207,7 +208,28 @@ InputHandler* InputHandler::FromSession(DevToolsSession* session) {
 }
 
 void InputHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
+  ClearPendingKeyAndMouseCallbacks();
+  if (host_)
+    host_->GetRenderWidgetHost()->RemoveInputEventObserver(this);
   host_ = host;
+  if (host)
+    host->GetRenderWidgetHost()->AddInputEventObserver(this);
+}
+
+void InputHandler::OnInputEvent(const blink::WebInputEvent& event) {
+  input_queued_ = true;
+}
+
+void InputHandler::OnInputEventAck(const blink::WebInputEvent& event) {
+  if (blink::WebInputEvent::isKeyboardEventType(event.type()) &&
+      !pending_key_callbacks_.empty()) {
+    pending_key_callbacks_.front()->sendSuccess();
+    pending_key_callbacks_.pop_front();
+  } else if (blink::WebInputEvent::isMouseEventType(event.type()) &&
+             !pending_mouse_callbacks_.empty()) {
+    pending_mouse_callbacks_.front()->sendSuccess();
+    pending_mouse_callbacks_.pop_front();
+  }
 }
 
 void InputHandler::Wire(UberDispatcher* dispatcher) {
@@ -221,10 +243,13 @@ void InputHandler::OnSwapCompositorFrame(
 }
 
 Response InputHandler::Disable() {
+  ClearPendingKeyAndMouseCallbacks();
+  if (host_)
+    host_->GetRenderWidgetHost()->RemoveInputEventObserver(this);
   return Response::OK();
 }
 
-Response InputHandler::DispatchKeyEvent(
+void InputHandler::DispatchKeyEvent(
     const std::string& type,
     Maybe<int> modifiers,
     Maybe<double> timestamp,
@@ -237,7 +262,8 @@ Response InputHandler::DispatchKeyEvent(
     Maybe<int> native_virtual_key_code,
     Maybe<bool> auto_repeat,
     Maybe<bool> is_keypad,
-    Maybe<bool> is_system_key) {
+    Maybe<bool> is_system_key,
+    std::unique_ptr<DispatchKeyEventCallback> callback) {
   blink::WebInputEvent::Type web_event_type;
 
   if (type == Input::DispatchKeyEvent::TypeEnum::KeyDown) {
@@ -249,8 +275,9 @@ Response InputHandler::DispatchKeyEvent(
   } else if (type == Input::DispatchKeyEvent::TypeEnum::RawKeyDown) {
     web_event_type = blink::WebInputEvent::RawKeyDown;
   } else {
-    return Response::InvalidParams(
-        base::StringPrintf("Unexpected event type '%s'", type.c_str()));
+    callback->sendFailure(Response::InvalidParams(
+        base::StringPrintf("Unexpected event type '%s'", type.c_str())));
+    return;
   }
 
   NativeWebKeyboardEvent event(
@@ -260,10 +287,15 @@ Response InputHandler::DispatchKeyEvent(
                         is_keypad.fromMaybe(false)),
       GetEventTimeTicks(std::move(timestamp)));
   event.skip_in_browser = true;
-  if (!SetKeyboardEventText(event.text, std::move(text)))
-    return Response::InvalidParams("Invalid 'text' parameter");
-  if (!SetKeyboardEventText(event.unmodifiedText, std::move(unmodified_text)))
-    return Response::InvalidParams("Invalid 'unmodifiedText' parameter");
+  if (!SetKeyboardEventText(event.text, std::move(text))) {
+    callback->sendFailure(Response::InvalidParams("Invalid 'text' parameter"));
+    return;
+  }
+  if (!SetKeyboardEventText(event.unmodifiedText, std::move(unmodified_text))) {
+    callback->sendFailure(
+        Response::InvalidParams("Invalid 'unmodifiedText' parameter"));
+    return;
+  }
 
   if (windows_virtual_key_code.isJust())
     event.windowsKeyCode = windows_virtual_key_code.fromJust();
@@ -282,33 +314,44 @@ Response InputHandler::DispatchKeyEvent(
         ui::KeycodeConverter::KeyStringToDomKey(key.fromJust()));
   }
 
-  if (!host_ || !host_->GetRenderWidgetHost())
-    return Response::InternalError();
+  if (!host_ || !host_->GetRenderWidgetHost()) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
 
   host_->GetRenderWidgetHost()->Focus();
+  input_queued_ = false;
+  pending_key_callbacks_.push_back(std::move(callback));
   host_->GetRenderWidgetHost()->ForwardKeyboardEvent(event);
-  return Response::OK();
+  if (!input_queued_) {
+    pending_key_callbacks_.back()->sendSuccess();
+    pending_key_callbacks_.pop_back();
+  }
 }
 
-Response InputHandler::DispatchMouseEvent(
+void InputHandler::DispatchMouseEvent(
     const std::string& type,
     int x,
     int y,
     Maybe<int> modifiers,
     Maybe<double> timestamp,
     Maybe<std::string> button,
-    Maybe<int> click_count) {
+    Maybe<int> click_count,
+    std::unique_ptr<DispatchMouseEventCallback> callback) {
   blink::WebInputEvent::Type event_type = GetMouseEventType(type);
   if (event_type == blink::WebInputEvent::Undefined) {
-    return Response::InvalidParams(
-        base::StringPrintf("Unexpected event type '%s'", type.c_str()));
+    callback->sendFailure(Response::InvalidParams(
+        base::StringPrintf("Unexpected event type '%s'", type.c_str())));
+    return;
   }
   blink::WebPointerProperties::Button event_button =
       blink::WebPointerProperties::Button::NoButton;
   int button_modifiers = 0;
   if (!GetMouseEventButton(button.fromMaybe(""), &event_button,
-                           &button_modifiers))
-    return Response::InvalidParams("Invalid mouse button");
+                           &button_modifiers)) {
+    callback->sendFailure(Response::InvalidParams("Invalid mouse button"));
+    return;
+  }
 
   blink::WebMouseEvent event(
       event_type,
@@ -328,11 +371,20 @@ Response InputHandler::DispatchMouseEvent(
   event.pointerType = blink::WebPointerProperties::PointerType::Mouse;
 
   if (!host_ || !host_->GetRenderWidgetHost())
-    return Response::InternalError();
+    callback->sendFailure(Response::InternalError());
 
   host_->GetRenderWidgetHost()->Focus();
+  input_queued_ = false;
+  pending_mouse_callbacks_.push_back(std::move(callback));
   host_->GetRenderWidgetHost()->ForwardMouseEvent(event);
-  return Response::OK();
+  // MouseUp/Down events don't create a round-trip to the renderer, so there's
+  // no point in blocking the response until an ack is received. Only wait for
+  // an ack if we're synthesizing a MouseMove event, which does make a
+  // round-trip to the renderer.
+  if (event_type != blink::WebInputEvent::MouseMove || !input_queued_) {
+    pending_mouse_callbacks_.back()->sendSuccess();
+    pending_mouse_callbacks_.pop_back();
+  }
 }
 
 Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
@@ -585,6 +637,15 @@ void InputHandler::SynthesizeTapGesture(
         base::Bind(&TapGestureResponse::OnGestureResult,
                    base::Unretained(response)));
   }
+}
+
+void InputHandler::ClearPendingKeyAndMouseCallbacks() {
+  for (auto& callback : pending_key_callbacks_)
+    callback->sendSuccess();
+  pending_key_callbacks_.clear();
+  for (auto& callback : pending_mouse_callbacks_)
+    callback->sendSuccess();
+  pending_mouse_callbacks_.clear();
 }
 
 }  // namespace protocol
