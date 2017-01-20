@@ -120,6 +120,8 @@ class CORE_EXPORT FrameCaret final
   bool m_shouldPaintCaret : 1;
   bool m_isCaretBlinkingSuspended : 1;
   bool m_shouldShowBlockCursor : 1;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameCaret);
 };
 
 }  // namespace blink
