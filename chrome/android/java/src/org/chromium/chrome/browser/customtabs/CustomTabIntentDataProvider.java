@@ -137,6 +137,7 @@ public class CustomTabIntentDataProvider {
         Bitmap bitmap = IntentUtils.safeGetParcelableExtra(intent,
                 CustomTabsIntent.EXTRA_CLOSE_BUTTON_ICON);
         if (bitmap != null && !checkCloseButtonSize(context, bitmap)) {
+            IntentUtils.safeRemoveExtra(intent, CustomTabsIntent.EXTRA_CLOSE_BUTTON_ICON);
             bitmap.recycle();
             bitmap = null;
         }
