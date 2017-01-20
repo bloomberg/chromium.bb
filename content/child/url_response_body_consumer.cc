@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/child/site_isolation_stats_gatherer.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/public/child/request_peer.h"
@@ -142,6 +143,16 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     ResourceDispatcher::PendingRequestInfo* request_info =
         resource_dispatcher_->GetPendingRequestInfo(request_id_);
     DCHECK(request_info);
+
+    // Check whether this response data is compliant with our cross-site
+    // document blocking policy. We only do this for the first chunk of data.
+    if (request_info->site_isolation_metadata.get()) {
+      SiteIsolationStatsGatherer::OnReceivedFirstChunk(
+          request_info->site_isolation_metadata,
+          static_cast<const char*>(buffer), available);
+      request_info->site_isolation_metadata.reset();
+    }
+
     request_info->peer->OnReceivedData(base::MakeUnique<ReceivedData>(
         static_cast<const char*>(buffer), available, this));
   }
