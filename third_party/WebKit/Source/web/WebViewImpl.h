@@ -332,8 +332,6 @@ class WEB_EXPORT WebViewImpl final
                                float newScale,
                                double durationInSeconds);
 
-  void hasTouchEventHandlers(bool);
-
   // WebGestureCurveTarget implementation for fling.
   bool scrollBy(const WebFloatSize& delta,
                 const WebFloatSize& velocity) override;

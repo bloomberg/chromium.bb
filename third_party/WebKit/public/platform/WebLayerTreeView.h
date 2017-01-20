@@ -160,6 +160,7 @@ class WebLayerTreeView {
   // Input properties ---------------------------------------------------
   virtual void setEventListenerProperties(WebEventListenerClass,
                                           WebEventListenerProperties){};
+  virtual void updateTouchRectsForSubframeIfNecessary() {}
   virtual void setHaveScrollEventHandlers(bool){};
 
   // Debugging / dangerous ---------------------------------------------

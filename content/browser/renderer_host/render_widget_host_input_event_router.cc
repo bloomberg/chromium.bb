@@ -359,6 +359,10 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
       break;
     case blink::WebInputEvent::TouchEnd:
     case blink::WebInputEvent::TouchCancel:
+      // It might be safer to test active_touches_ and only decrement it if it's
+      // non-zero, since active_touches_ can be reset to 0 in
+      // OnRenderWidgetHostViewBaseDestroyed, and this can happen between the
+      // TouchStart and a subsequent TouchMove/End/Cancel.
       DCHECK(active_touches_);
       active_touches_ -= CountChangedTouchPoints(*event);
       if (!touch_target_.target)

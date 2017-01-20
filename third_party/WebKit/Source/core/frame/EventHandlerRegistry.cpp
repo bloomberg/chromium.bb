@@ -119,8 +119,18 @@ void EventHandlerRegistry::updateEventHandlerInternal(
   bool targetSetChanged = updateEventHandlerTargets(op, handlerClass, target);
   bool hasHandlers = m_targets[handlerClass].size();
 
-  if (hadHandlers != hasHandlers)
-    notifyHasHandlersChanged(handlerClass, hasHandlers);
+  if (hadHandlers != hasHandlers) {
+    LocalFrame* frame = nullptr;
+    if (Node* node = target->toNode()) {
+      frame = node->document().frame();
+    } else if (LocalDOMWindow* domWindow = target->toLocalDOMWindow()) {
+      frame = domWindow->frame();
+    } else {
+      NOTREACHED() << "Unexpected target type for event handler.";
+    }
+
+    notifyHasHandlersChanged(frame, handlerClass, hasHandlers);
+  }
 
   if (targetSetChanged)
     notifyDidAddOrRemoveEventHandlerTarget(handlerClass);
@@ -195,23 +205,25 @@ void EventHandlerRegistry::didRemoveAllEventHandlers(EventTarget& target) {
 }
 
 void EventHandlerRegistry::notifyHasHandlersChanged(
+    LocalFrame* frame,
     EventHandlerClass handlerClass,
     bool hasActiveHandlers) {
   switch (handlerClass) {
     case ScrollEvent:
-      m_frameHost->chromeClient().setHasScrollEventHandlers(hasActiveHandlers);
+      m_frameHost->chromeClient().setHasScrollEventHandlers(frame,
+                                                            hasActiveHandlers);
       break;
     case WheelEventBlocking:
     case WheelEventPassive:
       m_frameHost->chromeClient().setEventListenerProperties(
-          WebEventListenerClass::MouseWheel,
+          frame, WebEventListenerClass::MouseWheel,
           webEventListenerProperties(hasEventHandlers(WheelEventBlocking),
                                      hasEventHandlers(WheelEventPassive)));
       break;
     case TouchStartOrMoveEventBlocking:
     case TouchStartOrMoveEventPassive:
       m_frameHost->chromeClient().setEventListenerProperties(
-          WebEventListenerClass::TouchStartOrMove,
+          frame, WebEventListenerClass::TouchStartOrMove,
           webEventListenerProperties(
               hasEventHandlers(TouchStartOrMoveEventBlocking),
               hasEventHandlers(TouchStartOrMoveEventPassive)));
@@ -219,7 +231,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(
     case TouchEndOrCancelEventBlocking:
     case TouchEndOrCancelEventPassive:
       m_frameHost->chromeClient().setEventListenerProperties(
-          WebEventListenerClass::TouchEndOrCancel,
+          frame, WebEventListenerClass::TouchEndOrCancel,
           webEventListenerProperties(
               hasEventHandlers(TouchEndOrCancelEventBlocking),
               hasEventHandlers(TouchEndOrCancelEventPassive)));

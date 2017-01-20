@@ -20,13 +20,13 @@ InputHandlerWrapper::InputHandlerWrapper(
     int routing_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const base::WeakPtr<cc::InputHandler>& input_handler,
-    const base::WeakPtr<RenderViewImpl>& render_view_impl,
+    const base::WeakPtr<RenderWidget>& render_widget,
     bool enable_smooth_scrolling)
     : input_handler_manager_(input_handler_manager),
       routing_id_(routing_id),
       input_handler_proxy_(input_handler.get(), this),
       main_task_runner_(main_task_runner),
-      render_view_impl_(render_view_impl) {
+      render_widget_(render_widget) {
   DCHECK(input_handler);
   input_handler_proxy_.set_smooth_scroll_enabled(enable_smooth_scrolling);
   input_handler_proxy_.set_touchpad_and_wheel_scroll_latching_enabled(
@@ -39,14 +39,14 @@ InputHandlerWrapper::~InputHandlerWrapper() {
 void InputHandlerWrapper::NeedsMainFrame() {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RenderViewImpl::SetNeedsMainFrame, render_view_impl_));
+      base::Bind(&RenderWidget::SetNeedsMainFrame, render_widget_));
 }
 
 void InputHandlerWrapper::TransferActiveWheelFlingAnimation(
     const blink::WebActiveWheelFlingParameters& params) {
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RenderViewImpl::TransferActiveWheelFlingAnimation,
-                            render_view_impl_, params));
+      FROM_HERE, base::Bind(&RenderWidget::TransferActiveWheelFlingAnimation,
+                            render_widget_, params));
 }
 
 void InputHandlerWrapper::DispatchNonBlockingEventToMainThread(

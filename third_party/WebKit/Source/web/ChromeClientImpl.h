@@ -136,12 +136,20 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void enumerateChosenDirectory(FileChooser*) override;
   void setCursor(const Cursor&, LocalFrame*) override;
   Cursor lastSetCursorForTesting() const override;
-  void setEventListenerProperties(WebEventListenerClass,
+  // The client keeps track of which touch/mousewheel event types have handlers,
+  // and if they do, whether the handlers are passive and/or blocking. This
+  // allows the client to know which optimizations can be used for the
+  // associated event classes.
+  void setEventListenerProperties(LocalFrame*,
+                                  WebEventListenerClass,
                                   WebEventListenerProperties) override;
   WebEventListenerProperties eventListenerProperties(
+      LocalFrame*,
       WebEventListenerClass) const override;
-  void setHasScrollEventHandlers(bool hasEventHandlers) override;
-  bool hasScrollEventHandlers() const override;
+  void updateTouchRectsForSubframeIfNecessary(LocalFrame*);
+  // Informs client about the existence of handlers for scroll events so
+  // appropriate scroll optimizations can be chosen.
+  void setHasScrollEventHandlers(LocalFrame*, bool hasEventHandlers) override;
   void setTouchAction(LocalFrame*, TouchAction) override;
 
   void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;

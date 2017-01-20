@@ -3003,6 +3003,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // we want to scroll the inner viewport -- to allow panning while zoomed --
   // but also move browser controls if needed.
   bool is_inner_viewport_scroll_layer =
+      InnerViewportScrollLayer() &&
       scroll_node->owning_layer_id == InnerViewportScrollLayer()->id();
 
   if (is_viewport_scroll_layer || is_inner_viewport_scroll_layer) {

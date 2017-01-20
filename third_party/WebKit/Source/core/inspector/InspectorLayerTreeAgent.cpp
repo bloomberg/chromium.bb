@@ -237,7 +237,7 @@ InspectorLayerTreeAgent::buildLayerTree() {
                              ->id();
   bool haveBlockingWheelEventHandlers =
       m_inspectedFrames->root()->chromeClient().eventListenerProperties(
-          WebEventListenerClass::MouseWheel) ==
+          m_inspectedFrames->root(), WebEventListenerClass::MouseWheel) ==
       WebEventListenerProperties::Blocking;
 
   gatherGraphicsLayers(rootGraphicsLayer(), layerIdToNodeIdMap, layers,
