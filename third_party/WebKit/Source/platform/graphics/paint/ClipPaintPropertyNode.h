@@ -76,6 +76,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
            m_clipRect == o.m_clipRect &&
            m_directCompositingReasons == o.m_directCompositingReasons;
   }
+
+  String toTreeString() const;
 #endif
 
   String toString() const;

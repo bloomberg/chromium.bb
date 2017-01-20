@@ -4,6 +4,8 @@
 
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 
+#include "platform/graphics/paint/PropertyTreeState.h"
+
 namespace blink {
 
 ScrollPaintPropertyNode* ScrollPaintPropertyNode::root() {
@@ -30,5 +32,14 @@ String ScrollPaintPropertyNode::toString() const {
       m_userScrollableVertical ? "yes" : "no",
       mainThreadScrollingReasonsAsText.c_str());
 }
+
+#if DCHECK_IS_ON()
+
+String ScrollPaintPropertyNode::toTreeString() const {
+  return blink::PropertyTreeStatePrinter<blink::ScrollPaintPropertyNode>()
+      .pathAsString(this);
+}
+
+#endif
 
 }  // namespace blink

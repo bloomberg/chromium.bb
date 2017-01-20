@@ -4,6 +4,8 @@
 
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 
+#include "platform/graphics/paint/PropertyTreeState.h"
+
 namespace blink {
 
 EffectPaintPropertyNode* EffectPaintPropertyNode::root() {
@@ -33,5 +35,14 @@ String EffectPaintPropertyNode::toString() const {
       compositingReasonsAsString(m_directCompositingReasons).ascii().data(),
       m_compositorElementId.primaryId, m_compositorElementId.secondaryId);
 }
+
+#if DCHECK_IS_ON()
+
+String EffectPaintPropertyNode::toTreeString() const {
+  return blink::PropertyTreeStatePrinter<blink::EffectPaintPropertyNode>()
+      .pathAsString(this);
+}
+
+#endif
 
 }  // namespace blink

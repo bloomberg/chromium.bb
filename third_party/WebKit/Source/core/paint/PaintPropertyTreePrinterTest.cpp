@@ -10,7 +10,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 namespace blink {
 
@@ -84,8 +84,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
       document().getElementById("transform")->layoutObject();
   const auto* transformedObjectProperties =
       transformedObject->paintProperties();
-  String transformPathAsString = transformPaintPropertyPathAsString(
-      transformedObjectProperties->transform());
+  String transformPathAsString =
+      transformedObjectProperties->transform()->toTreeString();
   EXPECT_THAT(transformPathAsString.ascii().data(),
               testing::MatchesRegex("root .* transform.*"
                                     "  .* transform.*"
@@ -100,8 +100,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
   LayoutObject* clippedObject =
       document().getElementById("clip")->layoutObject();
   const auto* clippedObjectProperties = clippedObject->paintProperties();
-  String clipPathAsString =
-      clipPaintPropertyPathAsString(clippedObjectProperties->cssClip());
+  String clipPathAsString = clippedObjectProperties->cssClip()->toTreeString();
   EXPECT_THAT(clipPathAsString.ascii().data(),
               testing::MatchesRegex("root .* rect.*"
                                     "  .* rect.*"
@@ -113,8 +112,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
   LayoutObject* effectObject =
       document().getElementById("effect")->layoutObject();
   const auto* effectObjectProperties = effectObject->paintProperties();
-  String effectPathAsString =
-      effectPaintPropertyPathAsString(effectObjectProperties->effect());
+  String effectPathAsString = effectObjectProperties->effect()->toTreeString();
   EXPECT_THAT(effectPathAsString.ascii().data(),
               testing::MatchesRegex("root .* opacity.*"
                                     "  .* opacity.*"));
@@ -128,8 +126,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
   LayoutObject* scrollObject =
       document().getElementById("scroll")->layoutObject();
   const auto* scrollObjectProperties = scrollObject->paintProperties();
-  String scrollPathAsString =
-      scrollPaintPropertyPathAsString(scrollObjectProperties->scroll());
+  String scrollPathAsString = scrollObjectProperties->scroll()->toTreeString();
   EXPECT_THAT(scrollPathAsString.ascii().data(),
               testing::MatchesRegex("root .* scroll.*"
                                     "  .* scroll.*"));
@@ -137,4 +134,4 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
 
 }  // namespace blink
 
-#endif
+#endif  // if DCHECK_IS_ON()

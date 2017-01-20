@@ -123,6 +123,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
            m_userScrollableVertical == o.m_userScrollableVertical &&
            m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons;
   }
+
+  String toTreeString() const;
 #endif
 
   String toString() const;

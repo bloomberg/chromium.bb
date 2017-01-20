@@ -111,6 +111,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
            m_directCompositingReasons == o.m_directCompositingReasons &&
            m_compositorElementId == o.m_compositorElementId;
   }
+
+  String toTreeString() const;
 #endif
 
   String toString() const;
