@@ -227,6 +227,29 @@ TEST_F(FallbackCrashHandlerWinTest, GenerateCrashDump) {
   it = parameters.find("ptype");
   EXPECT_NE(parameters.end(), it);
   EXPECT_EQ(kProcessType, it->second);
+
+  uint64_t int_value;
+  it = parameters.find("ProcessPrivateUsage");
+  EXPECT_NE(parameters.end(), it);
+  EXPECT_TRUE(base::StringToUint64(it->second, &int_value));
+  EXPECT_NE(0U, int_value);
+
+  it = parameters.find("ProcessPeakWorkingSetSize");
+  EXPECT_NE(parameters.end(), it);
+  EXPECT_TRUE(base::StringToUint64(it->second, &int_value));
+  EXPECT_NE(0U, int_value);
+
+  it = parameters.find("SystemCommitRemaining");
+  EXPECT_NE(parameters.end(), it);
+  EXPECT_TRUE(base::StringToUint64(it->second, &int_value));
+  // TODO(siggi): disable if this flakes, though bots shouldn't be that hard up
+  //     on memory :).
+  EXPECT_NE(0U, int_value);
+
+  it = parameters.find("SystemCommitLimit");
+  EXPECT_NE(parameters.end(), it);
+  EXPECT_TRUE(base::StringToUint64(it->second, &int_value));
+  EXPECT_NE(0U, int_value);
 }
 
 }  // namespace crash_reporter

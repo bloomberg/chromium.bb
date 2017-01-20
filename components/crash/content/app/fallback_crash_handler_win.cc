@@ -5,6 +5,7 @@
 #include "components/crash/content/app/fallback_crash_handler_win.h"
 
 #include <dbghelp.h>
+#include <psapi.h>
 
 #include <algorithm>
 #include <map>
@@ -31,6 +32,40 @@ using FilePosition = uint32_t;
 const FilePosition kInvalidFilePos = static_cast<FilePosition>(-1);
 
 using StringStringMap = std::map<std::string, std::string>;
+
+void AcquireMemoryMetrics(const base::Process& process,
+                          StringStringMap* crash_keys) {
+  // Grab the process private memory.
+  // This is best effort, though really shouldn't ever fail.
+  PROCESS_MEMORY_COUNTERS_EX process_memory = {sizeof(process_memory)};
+  if (GetProcessMemoryInfo(
+          process.Handle(),
+          reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&process_memory),
+          sizeof(process_memory))) {
+    // This is in units of bytes, re-scale to pages for consistency with
+    // system metrics.
+    const uint64_t kPageSize = 4096;
+    crash_keys->insert(std::make_pair(
+        "ProcessPrivateUsage",
+        base::Uint64ToString(process_memory.PrivateUsage / kPageSize)));
+
+    crash_keys->insert(std::make_pair(
+        "ProcessPeakWorkingSetSize",
+        base::Uint64ToString(process_memory.PeakWorkingSetSize / kPageSize)));
+  }
+
+  // Grab system commit memory. Also best effort.
+  PERFORMANCE_INFORMATION perf_info = {sizeof(perf_info)};
+  if (GetPerformanceInfo(&perf_info, sizeof(perf_info))) {
+    // Record the remaining committable memory and the limit. This is in units
+    // of system pages.
+    crash_keys->insert(std::make_pair(
+        "SystemCommitRemaining",
+        base::UintToString(perf_info.CommitLimit - perf_info.CommitTotal)));
+    crash_keys->insert(std::make_pair(
+        "SystemCommitLimit", base::UintToString(perf_info.CommitLimit)));
+  }
+}
 
 // This class is a helper to edit minidump files written by MiniDumpWriteDump.
 // It assumes the minidump file it operates on has a directory entry pointing to
@@ -412,6 +447,9 @@ bool FallbackCrashHandler::GenerateCrashDump(const std::string& product,
                                                    {"plat", platform},
                                                    {"ptype", process_type}};
 
+  // Add memory metrics relating to system-wide and target process memory usage.
+  AcquireMemoryMetrics(process_, &crash_keys);
+
   crashpad::UUID client_id;
   crashpad::Settings* settings = database->GetSettings();
   if (settings) {
@@ -434,8 +472,8 @@ bool FallbackCrashHandler::GenerateCrashDump(const std::string& product,
     return false;
 
   uint32_t minidump_type = MiniDumpWithUnloadedModules |
-                                 MiniDumpWithProcessThreadData |
-                                 MiniDumpWithThreadInfo;
+                           MiniDumpWithProcessThreadData |
+                           MiniDumpWithThreadInfo;
 
   // Capture more detail for canary and dev channels. The prefix search caters
   // for the soon to be outdated "-m" suffixed multi-install channels.
