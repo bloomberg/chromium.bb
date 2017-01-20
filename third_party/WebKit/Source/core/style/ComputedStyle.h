@@ -1993,7 +1993,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setVerticalBorderSpacing(short);
 
   // cursor
-  static ECursor initialCursor() { return ECursor::Auto; }
+  static ECursor initialCursor() { return ECursor::kAuto; }
   ECursor cursor() const {
     return static_cast<ECursor>(m_inheritedData.m_cursorStyle);
   }

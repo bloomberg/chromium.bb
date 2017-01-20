@@ -447,82 +447,82 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result) {
     }
   }
 
-  switch (style ? style->cursor() : ECursor::Auto) {
-    case ECursor::Auto: {
+  switch (style ? style->cursor() : ECursor::kAuto) {
+    case ECursor::kAuto: {
       bool horizontalText = !style || style->isHorizontalWritingMode();
       const Cursor& iBeam =
           horizontalText ? iBeamCursor() : verticalTextCursor();
       return selectAutoCursor(result, node, iBeam);
     }
-    case ECursor::Cross:
+    case ECursor::kCrosshair:
       return crossCursor();
-    case ECursor::Pointer:
+    case ECursor::kPointer:
       return handCursor();
-    case ECursor::Move:
+    case ECursor::kMove:
       return moveCursor();
-    case ECursor::AllScroll:
+    case ECursor::kAllScroll:
       return moveCursor();
-    case ECursor::EResize:
+    case ECursor::kEResize:
       return eastResizeCursor();
-    case ECursor::WResize:
+    case ECursor::kWResize:
       return westResizeCursor();
-    case ECursor::NResize:
+    case ECursor::kNResize:
       return northResizeCursor();
-    case ECursor::SResize:
+    case ECursor::kSResize:
       return southResizeCursor();
-    case ECursor::NeResize:
+    case ECursor::kNeResize:
       return northEastResizeCursor();
-    case ECursor::SwResize:
+    case ECursor::kSwResize:
       return southWestResizeCursor();
-    case ECursor::NwResize:
+    case ECursor::kNwResize:
       return northWestResizeCursor();
-    case ECursor::SeResize:
+    case ECursor::kSeResize:
       return southEastResizeCursor();
-    case ECursor::NsResize:
+    case ECursor::kNsResize:
       return northSouthResizeCursor();
-    case ECursor::EwResize:
+    case ECursor::kEwResize:
       return eastWestResizeCursor();
-    case ECursor::NeswResize:
+    case ECursor::kNeswResize:
       return northEastSouthWestResizeCursor();
-    case ECursor::NwseResize:
+    case ECursor::kNwseResize:
       return northWestSouthEastResizeCursor();
-    case ECursor::ColResize:
+    case ECursor::kColResize:
       return columnResizeCursor();
-    case ECursor::RowResize:
+    case ECursor::kRowResize:
       return rowResizeCursor();
-    case ECursor::Text:
+    case ECursor::kText:
       return iBeamCursor();
-    case ECursor::Wait:
+    case ECursor::kWait:
       return waitCursor();
-    case ECursor::Help:
+    case ECursor::kHelp:
       return helpCursor();
-    case ECursor::VerticalText:
+    case ECursor::kVerticalText:
       return verticalTextCursor();
-    case ECursor::Cell:
+    case ECursor::kCell:
       return cellCursor();
-    case ECursor::ContextMenu:
+    case ECursor::kContextMenu:
       return contextMenuCursor();
-    case ECursor::Progress:
+    case ECursor::kProgress:
       return progressCursor();
-    case ECursor::NoDrop:
+    case ECursor::kNoDrop:
       return noDropCursor();
-    case ECursor::Alias:
+    case ECursor::kAlias:
       return aliasCursor();
-    case ECursor::Copy:
+    case ECursor::kCopy:
       return copyCursor();
-    case ECursor::None:
+    case ECursor::kNone:
       return noneCursor();
-    case ECursor::NotAllowed:
+    case ECursor::kNotAllowed:
       return notAllowedCursor();
-    case ECursor::Default:
+    case ECursor::kDefault:
       return pointerCursor();
-    case ECursor::ZoomIn:
+    case ECursor::kZoomIn:
       return zoomInCursor();
-    case ECursor::ZoomOut:
+    case ECursor::kZoomOut:
       return zoomOutCursor();
-    case ECursor::WebkitGrab:
+    case ECursor::kWebkitGrab:
       return grabCursor();
-    case ECursor::WebkitGrabbing:
+    case ECursor::kWebkitGrabbing:
       return grabbingCursor();
   }
   return pointerCursor();

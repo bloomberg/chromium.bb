@@ -1002,112 +1002,112 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ECursor e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case ECursor::Auto:
+    case ECursor::kAuto:
       m_valueID = CSSValueAuto;
       break;
-    case ECursor::Cross:
+    case ECursor::kCrosshair:
       m_valueID = CSSValueCrosshair;
       break;
-    case ECursor::Default:
+    case ECursor::kDefault:
       m_valueID = CSSValueDefault;
       break;
-    case ECursor::Pointer:
+    case ECursor::kPointer:
       m_valueID = CSSValuePointer;
       break;
-    case ECursor::Move:
+    case ECursor::kMove:
       m_valueID = CSSValueMove;
       break;
-    case ECursor::Cell:
+    case ECursor::kCell:
       m_valueID = CSSValueCell;
       break;
-    case ECursor::VerticalText:
+    case ECursor::kVerticalText:
       m_valueID = CSSValueVerticalText;
       break;
-    case ECursor::ContextMenu:
+    case ECursor::kContextMenu:
       m_valueID = CSSValueContextMenu;
       break;
-    case ECursor::Alias:
+    case ECursor::kAlias:
       m_valueID = CSSValueAlias;
       break;
-    case ECursor::Copy:
+    case ECursor::kCopy:
       m_valueID = CSSValueCopy;
       break;
-    case ECursor::None:
+    case ECursor::kNone:
       m_valueID = CSSValueNone;
       break;
-    case ECursor::Progress:
+    case ECursor::kProgress:
       m_valueID = CSSValueProgress;
       break;
-    case ECursor::NoDrop:
+    case ECursor::kNoDrop:
       m_valueID = CSSValueNoDrop;
       break;
-    case ECursor::NotAllowed:
+    case ECursor::kNotAllowed:
       m_valueID = CSSValueNotAllowed;
       break;
-    case ECursor::ZoomIn:
+    case ECursor::kZoomIn:
       m_valueID = CSSValueZoomIn;
       break;
-    case ECursor::ZoomOut:
+    case ECursor::kZoomOut:
       m_valueID = CSSValueZoomOut;
       break;
-    case ECursor::EResize:
+    case ECursor::kEResize:
       m_valueID = CSSValueEResize;
       break;
-    case ECursor::NeResize:
+    case ECursor::kNeResize:
       m_valueID = CSSValueNeResize;
       break;
-    case ECursor::NwResize:
+    case ECursor::kNwResize:
       m_valueID = CSSValueNwResize;
       break;
-    case ECursor::NResize:
+    case ECursor::kNResize:
       m_valueID = CSSValueNResize;
       break;
-    case ECursor::SeResize:
+    case ECursor::kSeResize:
       m_valueID = CSSValueSeResize;
       break;
-    case ECursor::SwResize:
+    case ECursor::kSwResize:
       m_valueID = CSSValueSwResize;
       break;
-    case ECursor::SResize:
+    case ECursor::kSResize:
       m_valueID = CSSValueSResize;
       break;
-    case ECursor::WResize:
+    case ECursor::kWResize:
       m_valueID = CSSValueWResize;
       break;
-    case ECursor::EwResize:
+    case ECursor::kEwResize:
       m_valueID = CSSValueEwResize;
       break;
-    case ECursor::NsResize:
+    case ECursor::kNsResize:
       m_valueID = CSSValueNsResize;
       break;
-    case ECursor::NeswResize:
+    case ECursor::kNeswResize:
       m_valueID = CSSValueNeswResize;
       break;
-    case ECursor::NwseResize:
+    case ECursor::kNwseResize:
       m_valueID = CSSValueNwseResize;
       break;
-    case ECursor::ColResize:
+    case ECursor::kColResize:
       m_valueID = CSSValueColResize;
       break;
-    case ECursor::RowResize:
+    case ECursor::kRowResize:
       m_valueID = CSSValueRowResize;
       break;
-    case ECursor::Text:
+    case ECursor::kText:
       m_valueID = CSSValueText;
       break;
-    case ECursor::Wait:
+    case ECursor::kWait:
       m_valueID = CSSValueWait;
       break;
-    case ECursor::Help:
+    case ECursor::kHelp:
       m_valueID = CSSValueHelp;
       break;
-    case ECursor::AllScroll:
+    case ECursor::kAllScroll:
       m_valueID = CSSValueAllScroll;
       break;
-    case ECursor::WebkitGrab:
+    case ECursor::kWebkitGrab:
       m_valueID = CSSValueWebkitGrab;
       break;
-    case ECursor::WebkitGrabbing:
+    case ECursor::kWebkitGrabbing:
       m_valueID = CSSValueWebkitGrabbing;
       break;
   }
@@ -1117,82 +1117,82 @@ template <>
 inline ECursor CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueAuto:
-      return ECursor::Auto;
+      return ECursor::kAuto;
     case CSSValueCrosshair:
-      return ECursor::Cross;
+      return ECursor::kCrosshair;
     case CSSValueDefault:
-      return ECursor::Default;
+      return ECursor::kDefault;
     case CSSValuePointer:
-      return ECursor::Pointer;
+      return ECursor::kPointer;
     case CSSValueMove:
-      return ECursor::Move;
+      return ECursor::kMove;
     case CSSValueCell:
-      return ECursor::Cell;
+      return ECursor::kCell;
     case CSSValueVerticalText:
-      return ECursor::VerticalText;
+      return ECursor::kVerticalText;
     case CSSValueContextMenu:
-      return ECursor::ContextMenu;
+      return ECursor::kContextMenu;
     case CSSValueAlias:
-      return ECursor::Alias;
+      return ECursor::kAlias;
     case CSSValueCopy:
-      return ECursor::Copy;
+      return ECursor::kCopy;
     case CSSValueNone:
-      return ECursor::None;
+      return ECursor::kNone;
     case CSSValueProgress:
-      return ECursor::Progress;
+      return ECursor::kProgress;
     case CSSValueNoDrop:
-      return ECursor::NoDrop;
+      return ECursor::kNoDrop;
     case CSSValueNotAllowed:
-      return ECursor::NotAllowed;
+      return ECursor::kNotAllowed;
     case CSSValueZoomIn:
     case CSSValueWebkitZoomIn:
-      return ECursor::ZoomIn;
+      return ECursor::kZoomIn;
     case CSSValueZoomOut:
     case CSSValueWebkitZoomOut:
-      return ECursor::ZoomOut;
+      return ECursor::kZoomOut;
     case CSSValueEResize:
-      return ECursor::EResize;
+      return ECursor::kEResize;
     case CSSValueNeResize:
-      return ECursor::NeResize;
+      return ECursor::kNeResize;
     case CSSValueNwResize:
-      return ECursor::NwResize;
+      return ECursor::kNwResize;
     case CSSValueNResize:
-      return ECursor::NResize;
+      return ECursor::kNResize;
     case CSSValueSeResize:
-      return ECursor::SeResize;
+      return ECursor::kSeResize;
     case CSSValueSwResize:
-      return ECursor::SwResize;
+      return ECursor::kSwResize;
     case CSSValueSResize:
-      return ECursor::SResize;
+      return ECursor::kSResize;
     case CSSValueWResize:
-      return ECursor::WResize;
+      return ECursor::kWResize;
     case CSSValueEwResize:
-      return ECursor::EwResize;
+      return ECursor::kEwResize;
     case CSSValueNsResize:
-      return ECursor::NsResize;
+      return ECursor::kNsResize;
     case CSSValueNeswResize:
-      return ECursor::NeswResize;
+      return ECursor::kNeswResize;
     case CSSValueNwseResize:
-      return ECursor::NwseResize;
+      return ECursor::kNwseResize;
     case CSSValueColResize:
-      return ECursor::ColResize;
+      return ECursor::kColResize;
     case CSSValueRowResize:
-      return ECursor::RowResize;
+      return ECursor::kRowResize;
     case CSSValueText:
-      return ECursor::Text;
+      return ECursor::kText;
     case CSSValueWait:
-      return ECursor::Wait;
+      return ECursor::kWait;
     case CSSValueHelp:
-      return ECursor::Help;
+      return ECursor::kHelp;
     case CSSValueAllScroll:
-      return ECursor::AllScroll;
+      return ECursor::kAllScroll;
     case CSSValueWebkitGrab:
-      return ECursor::WebkitGrab;
+      return ECursor::kWebkitGrab;
     case CSSValueWebkitGrabbing:
-      return ECursor::WebkitGrabbing;
+      return ECursor::kWebkitGrabbing;
     default:
       NOTREACHED();
-      return ECursor::Auto;
+      return ECursor::kAuto;
   }
 }
 
