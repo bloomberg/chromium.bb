@@ -305,7 +305,6 @@ vs-chromium-project.txt
 /third_party/android_webview_glue/src
 /third_party/angle
 /third_party/angle_dx11
-/third_party/apache-mime4j
 /third_party/apache-portable-runtime/src
 /third_party/apache_velocity/lib/*.jar
 /third_party/apache-win32/bin/*.exe
@@ -364,14 +363,11 @@ vs-chromium-project.txt
 /third_party/gperf
 /third_party/guava/lib/*.jar
 /third_party/hamcrest/lib/*.jar
-/third_party/httpcomponents-client
-/third_party/httpcomponents-core
 /third_party/hunspell_dictionaries
 /third_party/icu
 /third_party/icu4j/lib/*.jar
 /third_party/intellij/lib/*.jar
 /third_party/inspector_protocol
-/third_party/jarjar
 /third_party/javax_inject/lib/*.jar
 /third_party/jsoncpp/source
 /third_party/jsr-305/src
