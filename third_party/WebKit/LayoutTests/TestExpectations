@@ -2198,8 +2198,3 @@ crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-
 
 crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
 crbug.com/681471 virtual/stable/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
-
-# Sheriff failures Jan 17 2017
-crbug.com/682105 shapedetection/detection-HTMLImageElement.html [ Pass Failure ]
-crbug.com/682105 shapedetection/detection-HTMLVideoElement.html [ Pass Failure ]
-crbug.com/682105 fast/shapedetection/shapedetection-security-test.html [ Pass Failure ]

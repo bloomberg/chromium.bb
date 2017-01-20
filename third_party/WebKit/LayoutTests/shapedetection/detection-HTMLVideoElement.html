@@ -11,7 +11,7 @@ var createTestForVideoElement = function(createDetector, mockReady,
                                          detectionResultTest) {
   async_test(function(t) {
     var video = document.createElement("video");
-    video.src = "../imported/wpt/media/white.webm";
+    video.src = "../external/wpt/media/white.webm";
     video.loop = true;
     video.autoplay = true;
     video.onerror = this.unreached_func("<video> error");

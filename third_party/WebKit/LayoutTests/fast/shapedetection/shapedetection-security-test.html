@@ -28,10 +28,9 @@ var createTestForBadImage = function(createDetector) {
   promise_test(function(t) {
     var image = new Image();
     return detectOnElementAndExpectError(createDetector, image,
-                                         "../../imported/wpt/images/broken.png")
+                                         "../../external/wpt/images/broken.png")
         .then(function(error) {
           assert_equals(error.name, "InvalidStateError");
-          assert_regexp_match(error.message, /Unable to decompress*/);
         });
   }, "Detector should reject undecodable images with an InvalidStateError.");
 };
