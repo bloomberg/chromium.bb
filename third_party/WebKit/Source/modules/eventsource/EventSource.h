@@ -134,7 +134,7 @@ class MODULES_EXPORT EventSource final
 
   Member<EventSourceParser> m_parser;
   Member<ThreadableLoader> m_loader;
-  Timer<EventSource> m_connectTimer;
+  TaskRunnerTimer<EventSource> m_connectTimer;
 
   unsigned long long m_reconnectDelay;
   String m_eventStreamOrigin;

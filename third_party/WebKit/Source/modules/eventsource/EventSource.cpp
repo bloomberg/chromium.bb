@@ -39,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -70,7 +71,9 @@ inline EventSource::EventSource(ExecutionContext* context,
       m_currentURL(url),
       m_withCredentials(eventSourceInit.withCredentials()),
       m_state(kConnecting),
-      m_connectTimer(this, &EventSource::connectTimerFired),
+      m_connectTimer(TaskRunnerHelper::get(TaskType::RemoteEvent, context),
+                     this,
+                     &EventSource::connectTimerFired),
       m_reconnectDelay(defaultReconnectDelay) {}
 
 EventSource* EventSource::create(ExecutionContext* context,
