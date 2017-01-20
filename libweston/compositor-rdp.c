@@ -85,6 +85,15 @@
 #define DEFAULT_AXIS_STEP_DISTANCE 10
 #define RDP_MODE_FREQ 60 * 1000
 
+#if FREERDP_VERSION_MAJOR >= 2 && defined(PIXEL_FORMAT_BGRA32) && !defined(RDP_PIXEL_FORMAT_B8G8R8A8)
+	/* The RDP API is truly wonderful: the pixel format definition changed
+	 * from BGRA32 to B8G8R8A8, but some versions ship with a definition of
+	 * PIXEL_FORMAT_BGRA32 which doesn't actually build. Try really, really,
+	 * hard to find one which does. */
+#	define DEFAULT_PIXEL_FORMAT PIXEL_FORMAT_BGRA32
+#else
+#	define DEFAULT_PIXEL_FORMAT RDP_PIXEL_FORMAT_B8G8R8A8
+#endif
 
 struct rdp_output;
 
@@ -664,13 +673,13 @@ rdp_peer_context_new(freerdp_peer* client, RdpPeerContext* context)
 	context->rfx_context->mode = RLGR3;
 	context->rfx_context->width = client->settings->DesktopWidth;
 	context->rfx_context->height = client->settings->DesktopHeight;
-	rfx_context_set_pixel_format(context->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+	rfx_context_set_pixel_format(context->rfx_context, DEFAULT_PIXEL_FORMAT);
 
 	context->nsc_context = nsc_context_new();
 	if (!context->nsc_context)
 		goto out_error_nsc;
 
-	nsc_context_set_pixel_format(context->nsc_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+	nsc_context_set_pixel_format(context->nsc_context, DEFAULT_PIXEL_FORMAT);
 
 	context->encode_stream = Stream_New(NULL, 65536);
 	if (!context->encode_stream)
