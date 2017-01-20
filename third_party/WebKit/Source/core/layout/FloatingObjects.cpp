@@ -55,7 +55,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject)
       m_isDescendant(false),
       m_isPlaced(false),
       m_isLowestNonOverhangingFloatInChild(false)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       ,
       m_isInPlacedTree(false)
 #endif
@@ -81,7 +81,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject,
       m_isDescendant(isDescendant),
       m_isPlaced(true),
       m_isLowestNonOverhangingFloatInChild(isLowestNonOverhangingFloatInChild)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       ,
       m_isInPlacedTree(false)
 #endif
