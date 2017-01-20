@@ -328,7 +328,11 @@ def get_waterfall_config():
        'device_ids': [
            'build164-m1', 'build165-m1',
            'build166-m1', 'build167-m1', 'build168-m1'
-          ]
+          ],
+       'perf_tests': [
+         ('angle_perftests', 2),
+         ('load_library_perf_tests', 2),
+         ('performance_browser_tests', 2)]
       }
     ])
   waterfall = add_tester(
