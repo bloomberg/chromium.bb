@@ -384,9 +384,6 @@ crbug.com/660468 [ Linux ] storage/indexeddb/observer-workers.html [ Slow ]
 
 crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Slow ]
 
-# These tests were timing out on the MSAN builder.
-crbug.com/671158 [ Linux ] external/wpt/encoding/textdecoder-labels.html [ Slow ]
-
 # Usually plenty fast, but sometimes very slow on windows.
 crbug.com/678498 [ Win ] http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
 crbug.com/678498 [ Win ] virtual/mojo-loading/http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
