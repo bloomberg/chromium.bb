@@ -543,6 +543,15 @@ CSSValue* consumeColor(CSSParserTokenRange& range,
   return CSSColorValue::create(color);
 }
 
+CSSValue* consumeLineWidth(CSSParserTokenRange& range,
+                           CSSParserMode cssParserMode,
+                           UnitlessQuirk unitless) {
+  CSSValueID id = range.peek().id();
+  if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
+    return consumeIdent(range);
+  return consumeLength(range, cssParserMode, ValueRangeNonNegative, unitless);
+}
+
 static CSSValue* consumePositionComponent(CSSParserTokenRange& range,
                                           CSSParserMode cssParserMode,
                                           UnitlessQuirk unitless,

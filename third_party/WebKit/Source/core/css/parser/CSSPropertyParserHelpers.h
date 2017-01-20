@@ -74,6 +74,8 @@ CSSValue* consumeColor(CSSParserTokenRange&,
                        CSSParserMode,
                        bool acceptQuirkyColors = false);
 
+CSSValue* consumeLineWidth(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk);
+
 CSSValuePair* consumePosition(CSSParserTokenRange&,
                               CSSParserMode,
                               UnitlessQuirk);

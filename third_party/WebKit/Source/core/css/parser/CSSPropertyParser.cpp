@@ -1124,24 +1124,10 @@ bool CSSPropertyParser::consumeOffsetShorthand(bool important) {
   return true;
 }
 
-static CSSValue* consumeLineWidth(CSSParserTokenRange& range,
-                                  CSSParserMode cssParserMode,
-                                  UnitlessQuirk unitless) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
-    return consumeIdent(range);
-  return consumeLength(range, cssParserMode, ValueRangeNonNegative, unitless);
-}
-
 static CSSValue* consumeBorderWidth(CSSParserTokenRange& range,
                                     CSSParserMode cssParserMode,
                                     UnitlessQuirk unitless) {
   return consumeLineWidth(range, cssParserMode, unitless);
-}
-
-static CSSValue* consumeTextStrokeWidth(CSSParserTokenRange& range,
-                                        CSSParserMode cssParserMode) {
-  return consumeLineWidth(range, cssParserMode, UnitlessQuirk::Forbid);
 }
 
 static CSSValue* consumeColumnRuleWidth(CSSParserTokenRange& range,
@@ -2411,8 +2397,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
       return consumePositiveInteger(m_range);
-    case CSSPropertyWebkitTextStrokeWidth:
-      return consumeTextStrokeWidth(m_range, m_context->mode());
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextEmphasisColor:

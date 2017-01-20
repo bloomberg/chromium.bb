@@ -463,7 +463,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-text-fill-color inherited, custom_all
 -webkit-text-security inherited
 -webkit-text-stroke-color interpolable, inherited, custom_all
--webkit-text-stroke-width inherited, converter=convertTextStrokeWidth
+-webkit-text-stroke-width inherited, converter=convertTextStrokeWidth, api_class
 -webkit-transform-origin-x interpolable, converter=convertLength
 -webkit-transform-origin-y interpolable, converter=convertLength
 -webkit-transform-origin-z interpolable, converter=convertComputedLength<float>, api_class
