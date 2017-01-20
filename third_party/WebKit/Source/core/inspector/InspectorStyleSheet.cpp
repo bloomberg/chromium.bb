@@ -173,7 +173,6 @@ class StyleSheetHandler final : public GarbageCollected<StyleSheetHandler>,
   CSSRuleSourceData* popRuleData();
   template <typename CharacterType>
   inline void setRuleHeaderEnd(const CharacterType*, unsigned);
-  void fixUnparsedPropertyRanges(CSSRuleSourceData*);
 
   const String& m_parsedText;
   Member<Document> m_document;
@@ -236,10 +235,7 @@ void StyleSheetHandler::startRuleBody(unsigned offset) {
 void StyleSheetHandler::endRuleBody(unsigned offset) {
   DCHECK(!m_currentRuleDataStack.isEmpty());
   m_currentRuleDataStack.back()->ruleBodyRange.end = offset;
-  CSSRuleSourceData* rule = popRuleData();
-
-  fixUnparsedPropertyRanges(rule);
-  addNewRuleToSourceTree(rule);
+  addNewRuleToSourceTree(popRuleData());
 }
 
 void StyleSheetHandler::addNewRuleToSourceTree(CSSRuleSourceData* rule) {
@@ -255,68 +251,6 @@ CSSRuleSourceData* StyleSheetHandler::popRuleData() {
   CSSRuleSourceData* data = m_currentRuleDataStack.back().get();
   m_currentRuleDataStack.pop_back();
   return data;
-}
-
-template <typename CharacterType>
-static inline void fixUnparsedProperties(const CharacterType* characters,
-                                         CSSRuleSourceData* ruleData) {
-  Vector<CSSPropertySourceData>& propertyData = ruleData->propertyData;
-  unsigned size = propertyData.size();
-  if (!size)
-    return;
-
-  CSSPropertySourceData* nextData = &(propertyData.at(0));
-  for (unsigned i = 0; i < size; ++i) {
-    CSSPropertySourceData* currentData = nextData;
-    nextData = i < size - 1 ? &(propertyData.at(i + 1)) : nullptr;
-
-    if (currentData->parsedOk)
-      continue;
-    if (currentData->range.end > 0 &&
-        characters[currentData->range.end - 1] == ';')
-      continue;
-
-    unsigned propertyEnd;
-    if (!nextData)
-      propertyEnd = ruleData->ruleBodyRange.end - 1;
-    else
-      propertyEnd = nextData->range.start - 1;
-
-    while (isHTMLSpace<CharacterType>(characters[propertyEnd]))
-      --propertyEnd;
-
-    // propertyEnd points at the last property text character.
-    unsigned newPropertyEnd =
-        propertyEnd + 1;  // Exclusive of the last property text character.
-    if (currentData->range.end != newPropertyEnd) {
-      currentData->range.end = newPropertyEnd;
-      unsigned valueStart =
-          currentData->range.start + currentData->name.length();
-      while (valueStart < propertyEnd && characters[valueStart] != ':')
-        ++valueStart;
-      if (valueStart < propertyEnd)
-        ++valueStart;  // Shift past the ':'.
-      while (valueStart < propertyEnd &&
-             isHTMLSpace<CharacterType>(characters[valueStart]))
-        ++valueStart;
-      // Need to exclude the trailing ';' from the property value.
-      currentData->value = String(
-          characters + valueStart,
-          propertyEnd - valueStart + (characters[propertyEnd] == ';' ? 0 : 1));
-    }
-  }
-}
-
-void StyleSheetHandler::fixUnparsedPropertyRanges(CSSRuleSourceData* ruleData) {
-  if (!ruleData->hasProperties())
-    return;
-
-  if (m_parsedText.is8Bit()) {
-    fixUnparsedProperties<LChar>(m_parsedText.characters8(), ruleData);
-    return;
-  }
-
-  fixUnparsedProperties<UChar>(m_parsedText.characters16(), ruleData);
 }
 
 void StyleSheetHandler::observeProperty(unsigned startOffset,
