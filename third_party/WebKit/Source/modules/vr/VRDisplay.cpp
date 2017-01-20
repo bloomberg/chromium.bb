@@ -10,6 +10,7 @@
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/ScriptedAnimationController.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
@@ -90,7 +91,11 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
       m_eyeParametersRight(new VREyeParameters()),
       m_depthNear(0.01),
       m_depthFar(10000.0),
-      m_fullscreenCheckTimer(this, &VRDisplay::onFullscreenCheck),
+      m_fullscreenCheckTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer,
+                                navigatorVR->document()->frame()),
+          this,
+          &VRDisplay::onFullscreenCheck),
       m_contextGL(nullptr),
       m_animationCallbackRequested(false),
       m_inAnimationFrame(false),

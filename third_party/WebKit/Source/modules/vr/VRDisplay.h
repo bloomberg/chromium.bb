@@ -151,7 +151,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   void dispose();
 
-  Timer<VRDisplay> m_fullscreenCheckTimer;
+  TaskRunnerTimer<VRDisplay> m_fullscreenCheckTimer;
   String m_fullscreenOrigWidth;
   String m_fullscreenOrigHeight;
   gpu::gles2::GLES2Interface* m_contextGL;
