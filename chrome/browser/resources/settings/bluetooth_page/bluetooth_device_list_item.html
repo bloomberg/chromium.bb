@@ -9,32 +9,27 @@
 
 <dom-module id="bluetooth-device-list-item">
   <style include="settings-shared">
-    #check {
-      -webkit-padding-start: 10px;
-    }
-
-    #deviceIcon {
-      -webkit-padding-end: 10px;
-    }
-
-    span.name {
-      padding: 10px 0;
-    }
-
-    span.name[connected] {
+    .name[connected] {
       font-weight: 500;
+    }
+
+    .state[connected] {
+      color: var(--google-green-500);
     }
   </style>
   <template>
-    <div class="flex layout horizontal center" dropdown$="[[dropdownOpened]]">
+    <div class="list-item">
       <iron-icon id="deviceIcon" icon="[[getDeviceIcon_(device)]]">
       </iron-icon>
-      <span class="name" connected$="[[device.connected]]">
-        [[getDeviceName_(device)]]
-      </span>
-      <iron-icon id="check" icon="cr:check" hidden$="[[!device.connected]]">
-      </iron-icon>
-      <span class="flex"></span>
+      <div class="middle">
+        <div class="name" connected$="[[device.connected]]">
+          [[getDeviceName_(device)]]
+        </div>
+        <div class="state secondary" connected$="[[device.connected]]"
+            hidden$="[[!hasConnectionStatusText_(device)]]">
+          [[getConnectionStatusText_(device)]]
+        </div>
+      </div>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
       <div hidden$="[[!device.paired]]">
         <paper-icon-button icon="cr:more-vert" on-tap="onMenuButtonTap_"

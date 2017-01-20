@@ -71,6 +71,28 @@ Polymer({
 
   /**
    * @param {!chrome.bluetooth.Device} device
+   * @return {string} The text to display the connection status of |device|.
+   * @private
+   */
+  getConnectionStatusText_: function(device) {
+    if (!this.hasConnectionStatusText_(device))
+      return '';
+    return this.i18n(
+        device.connected ? 'bluetoothConnected' : 'bluetoothNotConnected');
+  },
+
+  /**
+   * @param {!chrome.bluetooth.Device} device
+   * @return {boolean} True if connection status should be shown as the
+   *     secondary text of the |device| in device list.
+   * @private
+   */
+  hasConnectionStatusText_: function(device) {
+    return !!device.paired && !device.connecting;
+  },
+
+  /**
+   * @param {!chrome.bluetooth.Device} device
    * @return {boolean}
    * @private
    */

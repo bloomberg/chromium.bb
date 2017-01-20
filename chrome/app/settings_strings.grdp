@@ -517,6 +517,12 @@
     <message name="IDS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
       Please confirm this passkey is shown on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is already connected.">
+      Connected
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_NOT_CONNECTED" desc="In Bluetooth device list, this label is shown below a device which is not connected.">
+      Not connected
+    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_CONNECTING">
       Connecting...
     </message>

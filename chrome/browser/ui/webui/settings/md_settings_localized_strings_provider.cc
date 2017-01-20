@@ -321,6 +321,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 void AddBluetoothStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"bluetoothAccept", IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY},
+      {"bluetoothConnected", IDS_SETTINGS_BLUETOOTH_CONNECTED},
       {"bluetoothConnecting", IDS_SETTINGS_BLUETOOTH_CONNECTING},
       {"bluetoothDisabled", IDS_SETTINGS_BLUETOOTH_DISABLED},
       {"bluetoothDisconnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT},
@@ -329,6 +330,7 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetoothExpandA11yLabel",
        IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL},
       {"bluetoothNoDevices", IDS_SETTINGS_BLUETOOTH_NO_DEVICES},
+      {"bluetoothNotConnected", IDS_SETTINGS_BLUETOOTH_NOT_CONNECTED},
       {"bluetoothPageTitle", IDS_SETTINGS_BLUETOOTH},
       {"bluetoothPair", IDS_SETTINGS_BLUETOOTH_PAIR},
       {"bluetoothPairDevice", IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE},
