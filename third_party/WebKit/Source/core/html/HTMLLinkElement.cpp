@@ -280,12 +280,16 @@ void HTMLLinkElement::notifyLoadedSheetAndAllCriticalSubresources(
 }
 
 void HTMLLinkElement::dispatchPendingEvent(
-    std::unique_ptr<IncrementLoadEventDelayCount>) {
+    std::unique_ptr<IncrementLoadEventDelayCount> count) {
   DCHECK(m_link);
   if (m_link->hasLoaded())
     linkLoaded();
   else
     linkLoadingErrored();
+
+  // Checks Document's load event synchronously here for performance.
+  // This is safe because dispatchPendingEvent() is called asynchronously.
+  count->clearAndCheckLoadEvent();
 }
 
 void HTMLLinkElement::scheduleEvent() {
