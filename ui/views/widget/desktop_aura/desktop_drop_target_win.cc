@@ -5,7 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_drop_target_win.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/win/win_util.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"

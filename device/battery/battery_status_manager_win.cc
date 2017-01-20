@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/win/message_window.h"
 #include "base/win/windows_version.h"

@@ -28,7 +28,7 @@
 #include <wlanapi.h>
 
 #include "base/memory/free_deleter.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "device/geolocation/wifi_data_provider_common.h"
