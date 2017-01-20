@@ -4,6 +4,7 @@
 
 #include "ui/arc/notification/arc_custom_notification_view.h"
 
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
 #include "components/exo/notification_surface.h"
@@ -366,6 +367,11 @@ void ArcCustomNotificationView::AttachSurface() {
   UpdatePreferredSize();
   Attach(surface_->window());
 
+  // The texture for this window can be placed at subpixel position
+  // with fractional scale factor. Force to align it at the pixel
+  // boundary here, and when layout is updated in Layout().
+  ash::wm::SnapWindowToPixelBoundary(surface_->window());
+
   // Creates slide helper after this view is added to its parent.
   slide_helper_.reset(new SlideHelper(this));
 
@@ -432,6 +438,8 @@ void ArcCustomNotificationView::Layout() {
   floating_close_button_widget_->SetBounds(close_button_bounds);
 
   UpdateCloseButtonVisiblity();
+
+  ash::wm::SnapWindowToPixelBoundary(surface_->window());
 }
 
 void ArcCustomNotificationView::OnPaint(gfx::Canvas* canvas) {

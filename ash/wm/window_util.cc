@@ -80,6 +80,7 @@ bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
 }
 
 void SnapWindowToPixelBoundary(aura::Window* window) {
+  window->SetProperty(kSnapChildrenToPixelBoundary, true);
   aura::Window* snapped_ancestor = window->parent();
   while (snapped_ancestor) {
     if (snapped_ancestor->GetProperty(kSnapChildrenToPixelBoundary)) {

@@ -14,12 +14,14 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/root_window_controller.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/debug_utils.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/debug_utils.h"
@@ -60,7 +62,13 @@ void PrintWindowHierarchy(const WmWindow* active_window,
        << " type=" << window->GetType()
        << ((window == active_window) ? " [active] " : " ")
        << (window->IsVisible() ? " visible " : " ")
-       << window->GetBounds().ToString() << '\n';
+       << window->GetBounds().ToString()
+       << (window->GetBoolProperty(
+               WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY)
+               ? " [snapped] "
+               : "")
+       << ", subpixel offset="
+       << window->GetLayer()->subpixel_position_offset().ToString() << '\n';
 
   for (WmWindow* child : window->GetChildren())
     PrintWindowHierarchy(active_window, child, indent + 3, out);
