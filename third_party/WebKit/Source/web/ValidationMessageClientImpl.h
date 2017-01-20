@@ -69,7 +69,7 @@ class ValidationMessageClientImpl final
   IntRect m_lastAnchorRectInScreen;
   float m_lastPageScaleFactor;
   double m_finishTime;
-  Timer<ValidationMessageClientImpl> m_timer;
+  std::unique_ptr<TimerBase> m_timer;
 };
 
 }  // namespace blink

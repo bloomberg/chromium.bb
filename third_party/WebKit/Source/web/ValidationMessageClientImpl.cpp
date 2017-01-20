@@ -26,6 +26,7 @@
 #include "web/ValidationMessageClientImpl.h"
 
 #include "core/dom/Element.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameView.h"
 #include "platform/HostWindow.h"
 #include "public/platform/WebRect.h"
@@ -41,8 +42,7 @@ ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& webView)
     : m_webView(webView),
       m_currentAnchor(nullptr),
       m_lastPageScaleFactor(1),
-      m_finishTime(0),
-      m_timer(this, &ValidationMessageClientImpl::checkAnchorStatus) {}
+      m_finishTime(0) {}
 
 ValidationMessageClientImpl* ValidationMessageClientImpl::create(
     WebViewImpl& webView) {
@@ -90,13 +90,16 @@ void ValidationMessageClientImpl::showValidationMessage(
                (message.length() + subMessage.length()) * secondPerCharacter);
   // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
   // or page scale change happen.
-  m_timer.startRepeating(statusCheckInterval, BLINK_FROM_HERE);
+  m_timer = WTF::makeUnique<TaskRunnerTimer<ValidationMessageClientImpl>>(
+      TaskRunnerHelper::get(TaskType::UnspecedTimer, &anchor.document()), this,
+      &ValidationMessageClientImpl::checkAnchorStatus);
+  m_timer->startRepeating(statusCheckInterval, BLINK_FROM_HERE);
 }
 
 void ValidationMessageClientImpl::hideValidationMessage(const Element& anchor) {
   if (!m_currentAnchor || !isValidationMessageVisible(anchor))
     return;
-  m_timer.stop();
+  m_timer = nullptr;
   m_currentAnchor = nullptr;
   m_message = String();
   m_finishTime = 0;
