@@ -261,6 +261,17 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_TableGroupingIndicatorColor:
       return kTableGroupingIndicatorColor;
 
+    // Table Header
+    case NativeTheme::kColorId_TableHeaderText:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+    case NativeTheme::kColorId_TableHeaderBackground:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_MenuBackgroundColor);
+    case NativeTheme::kColorId_TableHeaderSeparator:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_EnabledMenuButtonBorderColor);
+
     // FocusableBorder
     case NativeTheme::kColorId_FocusedBorderColor:
       return gfx::kGoogleBlue500;

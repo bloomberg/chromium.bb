@@ -268,6 +268,14 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_TableGroupingIndicatorColor:
       return GetTextAAColor(GetTree(), NORMAL);
 
+    // Table Headers
+    case kColorId_TableHeaderText:
+      return GetTextColor(GetTree(), NORMAL);
+    case kColorId_TableHeaderBackground:
+      return GetBgColor(GetTree(), NORMAL);
+    case kColorId_TableHeaderSeparator:
+      return GetFgColor(GetSeparator(), INSENSITIVE);
+
     // Results Table
     case kColorId_ResultsTableNormalBackground:
       return GetSystemColor(kColorId_TextfieldDefaultBackground);

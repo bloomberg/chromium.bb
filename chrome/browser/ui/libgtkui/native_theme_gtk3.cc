@@ -226,6 +226,15 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
       return GetBgColor("GtkTreeView#treeview.view .view.cell:selected:focus");
 
+    // Table Header
+    case ui::NativeTheme::kColorId_TableHeaderText:
+      return GetFgColor(
+          "GtkTreeView#treeview.view GtkButton#button GtkLabel#label");
+    case ui::NativeTheme::kColorId_TableHeaderBackground:
+      return GetBgColor("GtkTreeView#treeview.view GtkButton#button");
+    case ui::NativeTheme::kColorId_TableHeaderSeparator:
+      return GetBorderColor("GtkTreeView#treeview.view GtkButton#button");
+
     // Results Table
     // TODO(thomasanderson): The GtkEntry selectors was how the gtk2 theme got
     // these colors.  Update this code to use a different widget.

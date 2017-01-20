@@ -57,11 +57,6 @@ class VIEWS_EXPORT Background {
     return CreateSolidBackground(SkColorSetARGB(a, r, g, b));
   }
 
-  // Creates a background that contains a vertical gradient that varies
-  // from |color1| to |color2|
-  static Background* CreateVerticalGradientBackground(SkColor color1,
-                                                      SkColor color2);
-
   // Creates Chrome's standard panel background
   static Background* CreateStandardPanelBackground();
 

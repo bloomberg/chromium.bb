@@ -33,11 +33,6 @@ const int kResizePadding = 5;
 // Amount of space above/below the separator.
 const int kSeparatorPadding = 4;
 
-const SkColor kTextColor = SK_ColorBLACK;
-const SkColor kBackgroundColor1 = SkColorSetRGB(0xF9, 0xF9, 0xF9);
-const SkColor kBackgroundColor2 = SkColorSetRGB(0xE8, 0xE8, 0xE8);
-const SkColor kSeparatorColor = SkColorSetRGB(0xAA, 0xAA, 0xAA);
-
 // Size of the sort indicator (doesn't include padding).
 const int kSortIndicatorSize = 8;
 
@@ -53,24 +48,25 @@ const int TableHeader::kSortIndicatorWidth = kSortIndicatorSize +
 
 typedef std::vector<TableView::VisibleColumn> Columns;
 
-TableHeader::TableHeader(TableView* table) : table_(table) {
-  set_background(Background::CreateVerticalGradientBackground(
-                     kBackgroundColor1, kBackgroundColor2));
-}
+TableHeader::TableHeader(TableView* table) : table_(table) {}
 
-TableHeader::~TableHeader() {
-}
+TableHeader::~TableHeader() {}
 
 void TableHeader::Layout() {
   SetBounds(x(), y(), table_->width(), GetPreferredSize().height());
 }
 
 void TableHeader::OnPaint(gfx::Canvas* canvas) {
+  ui::NativeTheme* theme = GetNativeTheme();
+  const SkColor text_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderText);
+  const SkColor separator_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderSeparator);
   // Paint the background and a separator at the bottom. The separator color
   // matches that of the border around the scrollview.
   OnPaintBackground(canvas);
-  SkColor border_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_UnfocusedBorderColor);
+  SkColor border_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_UnfocusedBorderColor);
   canvas->DrawLine(gfx::Point(0, height() - 1),
                    gfx::Point(width(), height() - 1), border_color);
 
@@ -83,7 +79,7 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
           columns[i].x + columns[i].width - 1);
       canvas->DrawLine(gfx::Point(separator_x, kSeparatorPadding),
                        gfx::Point(separator_x, height() - kSeparatorPadding),
-                       kSeparatorColor);
+                       separator_color);
     }
 
     const int x = columns[i].x + kHorizontalPadding;
@@ -103,14 +99,14 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
     }
 
     canvas->DrawStringRectWithFlags(
-        columns[i].column.title, font_list_, kTextColor,
+        columns[i].column.title, font_list_, text_color,
         gfx::Rect(GetMirroredXWithWidthInView(x, width), kVerticalPadding,
                   width, height() - kVerticalPadding * 2),
         TableColumnAlignmentToCanvasAlignment(columns[i].column.alignment));
 
     if (paint_sort_indicator) {
       SkPaint paint;
-      paint.setColor(kTextColor);
+      paint.setColor(text_color);
       paint.setStyle(SkPaint::kFill_Style);
       paint.setAntiAlias(true);
 
@@ -227,6 +223,11 @@ void TableHeader::OnGestureEvent(ui::GestureEvent* event) {
       return;
   }
   event->SetHandled();
+}
+
+void TableHeader::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  set_background(Background::CreateSolidBackground(
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderBackground)));
 }
 
 bool TableHeader::StartResize(const ui::LocatedEvent& event) {

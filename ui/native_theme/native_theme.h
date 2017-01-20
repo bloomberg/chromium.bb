@@ -321,6 +321,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TableSelectionBackgroundFocused,
     kColorId_TableSelectionBackgroundUnfocused,
     kColorId_TableGroupingIndicatorColor,
+    // Table Header
+    kColorId_TableHeaderText,
+    kColorId_TableHeaderBackground,
+    kColorId_TableHeaderSeparator,
     // Results Tables, such as the omnibox.
     kColorId_ResultsTableNormalBackground,
     kColorId_ResultsTableHoveredBackground,

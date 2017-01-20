@@ -7,10 +7,12 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/painter.h"
 #include "ui/views/view.h"
 
 using base::ASCIIToUTF16;
@@ -33,7 +35,11 @@ class ScrollViewExample::ScrollableView : public View {
   }
 
   void SetColor(SkColor from, SkColor to) {
-    set_background(Background::CreateVerticalGradientBackground(from, to));
+    Background* background = Background::CreateBackgroundPainter(
+        Painter::CreateVerticalGradient(from, to));
+    background->SetNativeControlColor(
+        color_utils::AlphaBlend(from, to, 128));
+    set_background(background);
   }
 
   void PlaceChildY(int index, int y) {
