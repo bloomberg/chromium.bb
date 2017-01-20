@@ -79,6 +79,7 @@ Polymer({
 
   /**
    * This gets called for network items and custom items.
+   * @return {string}
    * @private
    */
   getItemName_: function() {
@@ -95,33 +96,44 @@ Polymer({
     return CrOncStrings['OncType' + network.Type];
   },
 
-  /** @private */
+  /**
+   * @return {boolean}
+   * @private
+   */
   isStateTextVisible_: function() {
-    return !!this.networkState && (!this.isListItem || this.isConnected_());
+    return !!this.networkState &&
+        (!this.isListItem || (this.networkState.ConnectionState !=
+                              CrOnc.ConnectionState.NOT_CONNECTED));
   },
 
-  /** @private */
+  /**
+   * @return {boolean}
+   * @private
+   */
   isStateTextConnected_: function() {
     return this.isListItem && this.isConnected_();
   },
 
   /**
    * This only gets called for network items once networkState is set.
+   * @return {string}
    * @private
    */
   getNetworkStateText_: function() {
     if (!this.isStateTextVisible_())
       return '';
-    let network = this.networkState;
+    var network = this.networkState;
+    var state = network.ConnectionState;
+    var name = CrOnc.getNetworkName(network);
     if (this.isListItem) {
-      if (this.isConnected_())
+      if (state == CrOnc.ConnectionState.CONNECTED)
         return CrOncStrings.networkListItemConnected;
+      if (state == CrOnc.ConnectionState.CONNECTING)
+        return CrOncStrings.networkListItemConnecting;
       return '';
     }
-    if (network.Name && network.ConnectionState) {
-      return this.getConnectionStateText_(
-          network.ConnectionState, CrOnc.getNetworkName(network));
-    }
+    if (name && state)
+      return this.getConnectionStateText_(state, name);
     return CrOncStrings.networkDisabled;
   },
 
@@ -137,7 +149,9 @@ Polymer({
       case CrOnc.ConnectionState.CONNECTED:
         return name;
       case CrOnc.ConnectionState.CONNECTING:
-        return CrOncStrings.networkListItemConnecting.replace('$1', name);
+        if (name)
+          return CrOncStrings.networkListItemConnectingTo.replace('$1', name);
+        return CrOncStrings.networkListItemConnecting;
       case CrOnc.ConnectionState.NOT_CONNECTED:
         return CrOncStrings.networkListItemNotConnected;
     }

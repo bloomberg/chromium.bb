@@ -119,11 +119,12 @@ Polymer({
 
   /**
    * Event triggered when a cr-network-list-item is selected.
-   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
+   * @param {!{target: HTMLElement, detail: !CrOnc.NetworkStateProperties}} e
    * @private
    */
-  onNetworkListItemSelected_: function(event) {
-    var state = event.detail;
+  onNetworkListItemSelected_: function(e) {
+    var state = e.detail;
+    e.target.blur();
 
     if (!this.handleNetworkItemSelected) {
       this.fire('network-item-selected', state);

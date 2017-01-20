@@ -28,6 +28,7 @@
  *   networkDisabled: string,
  *   networkListItemConnected: string,
  *   networkListItemConnecting: string,
+ *   networkListItemConnectingTo: string,
  *   networkListItemNotConnected: string,
  *   vpnNameTemplate: string,
  * }}

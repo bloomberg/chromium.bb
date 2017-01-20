@@ -22,8 +22,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
       {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
       {"OncTypeWiMAX", IDS_NETWORK_TYPE_WIMAX},
       {"networkDisabled", IDS_NETWORK_LIST_DISABLED},
-      {"networkListItemConnected", IDS_NETWORK_LIST_CONNECTED},
-      {"networkListItemConnecting", IDS_NETWORK_LIST_CONNECTING},
+      {"networkListItemConnected", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED},
+      {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
+      {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
       {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},
       {"vpnNameTemplate", IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE},
   };

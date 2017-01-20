@@ -113,6 +113,8 @@ Polymer({
           loadTimeData.getString('networkListItemConnected'),
       networkListItemConnecting:
           loadTimeData.getString('networkListItemConnecting'),
+      networkListItemConnectingTo:
+          loadTimeData.getString('networkListItemConnectingTo'),
       networkListItemNotConnected:
           loadTimeData.getString('networkListItemNotConnected'),
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),

@@ -2321,10 +2321,7 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Text in the network list element when there is no network for the type.">
     No network
   </message>
-  <message name="IDS_NETWORK_LIST_CONNECTED" desc="Text in a network list item when the network is connected.">
-    connected
-  </message>
-  <message name="IDS_NETWORK_LIST_CONNECTING" desc="Text in the network element when a network is connecting.">
+  <message name="IDS_NETWORK_LIST_CONNECTING_TO" desc="Text in a network summary element when the default network for a type (e.g. WiFi) is connecting.">
     Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
   </message>
   <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
