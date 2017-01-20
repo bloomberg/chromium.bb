@@ -103,6 +103,51 @@ class BoxReaderTest : public testing::Test {
     EXPECT_EQ(reader->box_size(), data_size);
   }
 
+  template <typename ChildType>
+  void TestParsing32bitOverflow(const uint8_t* buffer,
+                                size_t size,
+                                const std::string& overflow_error) {
+    // Wrap whatever we're passed in a dummy EMSG so we can satisfy requirements
+    // for ReadTopLevelBox and to kick off parsing.
+    std::vector<uint8_t> buffer_wrapper = {
+        0x00, 0x00, 0x00, 0x00,  // dummy size
+        'e',  'm',  's',  'g',   // fourcc
+    };
+    buffer_wrapper.insert(buffer_wrapper.end(), buffer, buffer + size);
+
+    // Basic check of the nested buffer size. If box_size > buffer size the test
+    // will exit early (waiting for more bytes to be appended).
+    ASSERT_TRUE(base::IsValueInRangeForNumericType<uint8_t>(size));
+    ASSERT_LE(buffer[3], size);
+
+    // Update the size (keep it simple).
+    ASSERT_TRUE(
+        base::IsValueInRangeForNumericType<uint8_t>(buffer_wrapper.size()));
+    buffer_wrapper[3] = buffer_wrapper.size();
+
+    bool err;
+    std::unique_ptr<BoxReader> reader(BoxReader::ReadTopLevelBox(
+        &buffer_wrapper[0], buffer_wrapper.size(), media_log_, &err));
+    EXPECT_FALSE(err);
+    EXPECT_TRUE(reader);
+    EXPECT_EQ(FOURCC_EMSG, reader->type());
+
+// Overflow is only triggered/caught on 32-bit systems. 64-bit systems will
+// instead fail parsing because tests are written such that |buffer| never
+// contains enough bytes for parsing to succeed.
+#if defined(ARCH_CPU_32_BITS)
+    const int kOverflowLogCount = 1;
+#else
+    const int kOverflowLogCount = 0;
+#endif
+
+    if (!overflow_error.empty())
+      EXPECT_MEDIA_LOG(HasSubstr(overflow_error)).Times(kOverflowLogCount);
+
+    std::vector<ChildType> children;
+    EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
+  }
+
   scoped_refptr<StrictMock<MockMediaLog>> media_log_;
 };
 
@@ -276,13 +321,11 @@ TEST_F(BoxReaderTest, ScanChildrenWithInvalidChild) {
   // The sample specifies a large number of EditListEntry's, but only 1 is
   // actually included in the box. This test verifies that the code checks
   // properly that the buffer contains the specified number of EditListEntry's
-  // (does not cause an int32_t overflow when checking that the bytes are
-  // available, and does not read past the end of the buffer).
   static const uint8_t kData[] = {
       0x00, 0x00, 0x00, 0x2c, 'e',  'm',  's',  'g',  // outer box
       0x00, 0x00, 0x00, 0x24, 'e',  'l',  's',  't',  // nested box
       0x01, 0x00, 0x00, 0x00,                         // version = 1, flags = 0
-      0xff, 0xff, 0xff, 0xff,  // count = max, but only 1 actually included
+      0x00, 0x00, 0x00, 0x0a,  // count = 10, but only 1 actually included
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
@@ -320,93 +363,101 @@ TEST_F(BoxReaderTest, ReadAllChildrenWithChildLargerThanParent) {
 }
 
 TEST_F(BoxReaderTest, TrunSampleCount32bitOverflow) {
-  // This data is not a valid 'emsg' box. It is just used as a top-level box
-  // as ReadTopLevelBox() has a restricted set of boxes it allows.
-  // The nested 'trun' box specifies an unusually high number of samples, though
-  // only one sample is actually included in the box. The values for "sample
-  // count" and "flags" are chosen such that their 32-bit product will overflow
-  // to a very small number (4), leading to incorrect assumptions about bytes
-  // available and ultimately OOB reads. http://crbug.com/679640
+  // This 'trun' box specifies an unusually high sample count, though only one
+  // sample is  included in the bytes below. The values for "sample_count" and
+  // "flags" are chosen such that the needed number of bytes will overflow 32
+  // bits to yield a very small number (4), potentially passing the
+  // internal check for HasBytes(). http://crbug.com/679640
   static const uint8_t kData[] = {
-      0x00, 0x00, 0x00, 0x28,
-      'e',  'm',  's',  'g',  // outer box
-      0x00, 0x00, 0x00, 0x20,
-      't',  'r',  'u',  'n',  // nested box
-      0x00, 0x00,             // version = 0
+      0x00, 0x00, 0x00, 0x18, 't', 'r', 'u', 'n',  // header
+      0x00, 0x00,                                  // version = 0
       0x03, 0x00,  // flags = 2 fields present (sample duration and sample size)
       0x80, 0x00, 0x00, 0x02,  // sample count = 2147483650
-      0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,  // only one sample present
-      0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00};
 
-  bool err;
-  std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
-
-  EXPECT_FALSE(err);
-  EXPECT_TRUE(reader);
-  EXPECT_EQ(FOURCC_EMSG, reader->type());
-
-// Overflow is only triggered/caught on 32-bit systems. 64-bit systems will
-// instead fail parsing because kData does not have enough bytes to describe
-// the large number of samples.
-#if defined(ARCH_CPU_32_BITS)
-  const int kOverflowLogCount = 1;
-#else
-  const int kOverflowLogCount = 0;
-#endif
-
-  EXPECT_MEDIA_LOG(
-      HasSubstr("Extreme TRUN sample count exceeds system address space"))
-      .Times(kOverflowLogCount);
-
-  // Reading the child should fail since the number of samples specified
-  // doesn't match what is in the box.
-  std::vector<TrackFragmentRun> children;
-  EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
+  // Verify we catch the overflow to avoid OOB reads/writes.
+  TestParsing32bitOverflow<TrackFragmentRun>(
+      kData, sizeof(kData),
+      "Extreme TRUN sample count exceeds implementation limit.");
 }
 
 TEST_F(BoxReaderTest, SaioCount32bitOverflow) {
-  // This data is not a valid 'emsg' box. It is just used as a top-level box
-  // as ReadTopLevelBox() has a restricted set of boxes it allows.
-  // The nested 'saio' box specifies an unusually high number of offset counts,
-  // though only one offset is actually included in the box. The values for
-  // "count" and "version" are chosen such that the needed number of bytes will
-  // overflow to a very small number (4), leading to incorrect assumptions about
-  // bytes available and ultimately OOB reads. http://crbug.com/679641
+  // This 'saio' box specifies an unusually high number of offset counts, though
+  // only one offset is included in the bytes below. The values for "count" and
+  // "version" are chosen such that the needed number of bytes will overflow 32
+  // bits to yield a very small number (4), potentially passing the internal
+  // check for HasBytes(). http://crbug.com/679641
   static const uint8_t kData[] = {
-      0x00, 0x00, 0x00, 0x1c, 'e', 'm', 's', 'g',  // outer box
-      0x00, 0x00, 0x00, 0x14, 's', 'a', 'i', 'o',  // nested box
+      0x00, 0x00, 0x00, 0x14, 's', 'a', 'i', 'o',  // header
       0x00, 0x00,              // version = 0 (4 bytes per offset entry)
       0x00, 0x00,              // flags = 0
       0x40, 0x00, 0x00, 0x01,  // offsets count = 1073741825
       0x00, 0x00, 0x00, 0x00,  // single offset entry
   };
 
-  bool err;
-  std::unique_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(kData, sizeof(kData), media_log_, &err));
+  // Verify we catch the overflow to avoid OOB reads/writes.
+  TestParsing32bitOverflow<SampleAuxiliaryInformationOffset>(
+      kData, sizeof(kData), "Extreme SAIO count exceeds implementation limit.");
+}
 
-  EXPECT_FALSE(err);
-  EXPECT_TRUE(reader);
-  EXPECT_EQ(FOURCC_EMSG, reader->type());
+TEST_F(BoxReaderTest, ElstCount32bitOverflow) {
+  // This 'elst' box specifies an unusually high number of edit counts, though
+  // only one edit is included in the bytes below. The values for "count" and
+  // "version" are chosen such that the needed number of bytes will overflow 32
+  // bits to yield a very small number (12), potentially passing the internal
+  // check for HasBytes(). http://crbug.com/679645
+  static const uint8_t kData[] = {
+      0x00, 0x00, 0x00, 0x1c, 'e', 'l', 's', 't',  // header
+      0x00, 0x00,              // version = 0 (12 bytes per edit entry)
+      0x00, 0x00,              // flags = 0
+      0x80, 0x00, 0x00, 0x01,  // edits count = 2147483649
+      0x00, 0x00, 0x00, 0x00,  // single edit entry
+      0x00, 0x00, 0x00, 0x00,  // ...
+      0x00, 0x00, 0x00, 0x00,
+  };
 
-// Overflow is only triggered/caught on 32-bit systems. 64-bit systems will
-// instead fail parsing because kData does not have enough bytes to describe
-// the large number of samples.
-#if defined(ARCH_CPU_32_BITS)
-  const int kOverflowLogCount = 1;
-#else
-  const int kOverflowLogCount = 0;
-#endif
+  // Verify we catch the overflow to avoid OOB reads/writes.
+  TestParsing32bitOverflow<EditList>(
+      kData, sizeof(kData), "Extreme ELST count exceeds implementation limit.");
+}
 
-  EXPECT_MEDIA_LOG(
-      HasSubstr("Extreme SAIO count exceeds implementation limit."))
-      .Times(kOverflowLogCount);
+TEST_F(BoxReaderTest, SbgpCount32bitOverflow) {
+  // This 'sbgp' box specifies an unusually high count of entries, though only
+  // one partial entry is included in the bytes below. The value for "count" is
+  // chosen such that we could overflow attempting to allocate the vector for
+  // parsed entries. http://crbug.com/679646
+  static const uint8_t kData[] = {
+      0x00, 0x00, 0x00, 0x1c, 's', 'b', 'g', 'p',  // header
+      0x00, 0x00, 0x00, 0x00,                      // version = 0, flags = 0
+      's',  'e',  'i',  'g',                       // required grouping "type"
+      0xff, 0xff, 0xff, 0xff,                      // count = 4294967295
+      0x00, 0x00, 0x00, 0x00,                      // partial entry
+      0x00, 0x00, 0x00, 0x00,
+  };
 
-  std::vector<SampleAuxiliaryInformationOffset> children;
-  EXPECT_FALSE(reader->ReadAllChildrenAndCheckFourCC(&children));
+  // Verify we catch the overflow to avoid OOB reads/writes.
+  TestParsing32bitOverflow<SampleToGroup>(
+      kData, sizeof(kData), "Extreme SBGP count exceeds implementation limit.");
+}
+
+TEST_F(BoxReaderTest, SgpdCount32bitOverflow) {
+  // This 'sgpd' box specifies an unusually high count of entries, though only
+  // one partial entry is included in the bytes below. The value for "count" is
+  // chosen such that we could overflow attempting to allocate the vector for
+  // parsed entries. http://crbug.com/679647
+  static const uint8_t kData[] = {
+      0x00, 0x00, 0x00, 0x1c, 's', 'g', 'p', 'd',  // header
+      0x00, 0x00, 0x00, 0x00,                      // version = 0, flags = 0
+      's',  'e',  'i',  'g',                       // required grouping "type"
+      0xff, 0xff, 0xff, 0xff,                      // count = 4294967295
+      0x00, 0x00, 0x00, 0x00,                      // partial entry
+      0x00, 0x00, 0x00, 0x00,
+  };
+
+  // Verify we catch the overflow to avoid OOB reads/writes.
+  TestParsing32bitOverflow<SampleGroupDescription>(
+      kData, sizeof(kData), "Extreme SGPD count exceeds implementation limit.");
 }
 
 }  // namespace mp4
