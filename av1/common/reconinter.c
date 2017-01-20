@@ -1602,11 +1602,11 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_EXT_INTER
 void modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi) {
   if (is_interintra_pred(mbmi)) {
-    mbmi->ref_frame[1] = NONE;
+    mbmi->ref_frame[1] = NONE_FRAME;
   } else if (has_second_ref(mbmi) &&
              is_masked_compound_type(mbmi->interinter_compound_data.type)) {
     mbmi->interinter_compound_data.type = COMPOUND_AVERAGE;
-    mbmi->ref_frame[1] = NONE;
+    mbmi->ref_frame[1] = NONE_FRAME;
   }
   return;
 }

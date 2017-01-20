@@ -575,9 +575,9 @@ int av1_get_pred_context_comp_bwdref_p(const AV1_COMMON *cm,
       const int a_comp = has_second_ref(above_mbmi);
 
       const MV_REFERENCE_FRAME l_brf =
-          l_comp ? left_mbmi->ref_frame[bwd_ref_sign_idx] : NONE;
+          l_comp ? left_mbmi->ref_frame[bwd_ref_sign_idx] : NONE_FRAME;
       const MV_REFERENCE_FRAME a_brf =
-          a_comp ? above_mbmi->ref_frame[bwd_ref_sign_idx] : NONE;
+          a_comp ? above_mbmi->ref_frame[bwd_ref_sign_idx] : NONE_FRAME;
 
       const MV_REFERENCE_FRAME l_frf =
           !l_comp ? left_mbmi->ref_frame[0]

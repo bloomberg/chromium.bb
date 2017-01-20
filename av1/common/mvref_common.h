@@ -411,7 +411,7 @@ static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
     rf[1] = ref_frame_map[ref_frame_type - TOTAL_REFS_PER_FRAME][1];
   } else {
     rf[0] = ref_frame_type;
-    rf[1] = NONE;
+    rf[1] = NONE_FRAME;
     assert(ref_frame_type > INTRA_FRAME &&
            ref_frame_type < TOTAL_REFS_PER_FRAME);
   }

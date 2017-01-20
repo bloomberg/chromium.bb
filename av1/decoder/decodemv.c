@@ -834,7 +834,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
   mbmi->ref_frame[0] = INTRA_FRAME;
-  mbmi->ref_frame[1] = NONE;
+  mbmi->ref_frame[1] = NONE_FRAME;
 
 #if CONFIG_CB4X4
   (void)i;
@@ -1010,7 +1010,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
     ref_frame[0] = (MV_REFERENCE_FRAME)get_segdata(&cm->seg, segment_id,
                                                    SEG_LVL_REF_FRAME);
-    ref_frame[1] = NONE;
+    ref_frame[1] = NONE_FRAME;
   } else {
     const REFERENCE_MODE mode = read_block_reference_mode(cm, xd, r);
     // FIXME(rbultje) I'm pretty sure this breaks segmentation ref frame coding
@@ -1093,7 +1093,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
 #endif  // CONFIG_EXT_REFS
 
-      ref_frame[1] = NONE;
+      ref_frame[1] = NONE_FRAME;
     } else {
       assert(0 && "Invalid prediction mode.");
     }
@@ -1170,7 +1170,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
   int i;
 
   mbmi->ref_frame[0] = INTRA_FRAME;
-  mbmi->ref_frame[1] = NONE;
+  mbmi->ref_frame[1] = NONE_FRAME;
 
 #if CONFIG_CB4X4
   (void)i;
@@ -1559,7 +1559,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
                                               cm->allow_high_precision_mv)
                              .as_int;
-      zeromv[1].as_int = (rf[1] != NONE)
+      zeromv[1].as_int = (rf[1] != NONE_FRAME)
                              ? gm_get_motion_vector(&cm->global_motion[rf[1]],
                                                     cm->allow_high_precision_mv)
                                    .as_int
@@ -1849,7 +1849,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     const int interintra =
         aom_read(r, cm->fc->interintra_prob[bsize_group], ACCT_STR);
     if (xd->counts) xd->counts->interintra[bsize_group][interintra]++;
-    assert(mbmi->ref_frame[1] == NONE);
+    assert(mbmi->ref_frame[1] == NONE_FRAME);
     if (interintra) {
       const INTERINTRA_MODE interintra_mode =
           read_interintra_mode(cm, xd, r, bsize_group);
@@ -2079,8 +2079,8 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
       MV_REF *const frame_mv = frame_mvs + h * cm->mi_cols;
       for (w = 0; w < x_mis; ++w) {
         MV_REF *const mv = frame_mv + w;
-        mv->ref_frame[0] = NONE;
-        mv->ref_frame[1] = NONE;
+        mv->ref_frame[0] = NONE_FRAME;
+        mv->ref_frame[1] = NONE_FRAME;
       }
     }
 #endif

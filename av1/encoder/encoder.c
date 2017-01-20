@@ -2674,7 +2674,7 @@ void av1_update_reference(AV1_COMP *cpi, int ref_frame_flags) {
 
 static YV12_BUFFER_CONFIG *get_av1_ref_frame_buffer(
     AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag) {
-  MV_REFERENCE_FRAME ref_frame = NONE;
+  MV_REFERENCE_FRAME ref_frame = NONE_FRAME;
   if (ref_frame_flag == AOM_LAST_FLAG) ref_frame = LAST_FRAME;
 #if CONFIG_EXT_REFS
   else if (ref_frame_flag == AOM_LAST2_FLAG)
@@ -2691,7 +2691,7 @@ static YV12_BUFFER_CONFIG *get_av1_ref_frame_buffer(
   else if (ref_frame_flag == AOM_ALT_FLAG)
     ref_frame = ALTREF_FRAME;
 
-  return ref_frame == NONE ? NULL : get_ref_frame_buffer(cpi, ref_frame);
+  return ref_frame == NONE_FRAME ? NULL : get_ref_frame_buffer(cpi, ref_frame);
 }
 
 int av1_copy_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,

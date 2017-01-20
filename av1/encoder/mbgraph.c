@@ -71,7 +71,7 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
 
   xd->mi[0]->mbmi.mv[0] = x->best_mv;
 #if CONFIG_EXT_INTER
-  xd->mi[0]->mbmi.ref_frame[1] = NONE;
+  xd->mi[0]->mbmi.ref_frame[1] = NONE_FRAME;
 #endif  // CONFIG_EXT_INTER
 
   av1_build_inter_predictors_sby(xd, mb_row, mb_col, NULL, BLOCK_16X16);
@@ -246,7 +246,7 @@ static void update_mbgraph_frame_stats(AV1_COMP *cpi,
   xd->mi[0] = &mi_local;
   mi_local.mbmi.sb_type = BLOCK_16X16;
   mi_local.mbmi.ref_frame[0] = LAST_FRAME;
-  mi_local.mbmi.ref_frame[1] = NONE;
+  mi_local.mbmi.ref_frame[1] = NONE_FRAME;
 
   for (mb_row = 0; mb_row < cm->mb_rows; mb_row++) {
     MV gld_left_mv = gld_top_mv;

@@ -458,7 +458,7 @@ typedef enum {
 typedef uint8_t TXFM_CONTEXT;
 #endif
 
-#define NONE -1
+#define NONE_FRAME -1
 #define INTRA_FRAME 0
 #define LAST_FRAME 1
 
