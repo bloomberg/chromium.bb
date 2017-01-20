@@ -62,6 +62,16 @@
     ]
   },
 
+  "NewTabPageLocation": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "test_policy": { "NewTabPageLocation": "http://chromium.org" },
+    "pref_mappings": [
+      { "pref": "newtab_page_location_override"
+      }
+    ]
+  },
+
   "DefaultBrowserSettingEnabled": {
     "os": ["win", "mac", "linux"],
     "test_policy": { "DefaultBrowserSettingEnabled": true },

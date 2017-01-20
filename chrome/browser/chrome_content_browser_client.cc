@@ -515,6 +515,24 @@ bool RemoveUberHost(GURL* url) {
   return true;
 }
 
+// Handles the rewriting of the new tab page URL based on group policy.
+bool HandleNewTabPageLocationOverride(
+    GURL* url,
+    content::BrowserContext* browser_context) {
+  if (!url->SchemeIs(content::kChromeUIScheme) ||
+      url->host() != chrome::kChromeUINewTabHost)
+    return false;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  std::string ntp_location =
+      profile->GetPrefs()->GetString(prefs::kNewTabPageLocationOverride);
+  if (ntp_location.empty())
+    return false;
+
+  *url = GURL(ntp_location);
+  return true;
+}
+
 // Handles rewriting Web UI URLs.
 bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   // Do not handle special URLs such as "about:foo"
@@ -2555,6 +2573,11 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   // actually handle them.  Also relies on a preliminary fixup phase.
   handler->SetFixupHandler(&FixupBrowserAboutURL);
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
+                          BrowserURLHandler::null_handler());
+
+  // The group policy NTP URL handler must be registered before the other NTP
+  // URL handlers below.
+  handler->AddHandlerPair(&HandleNewTabPageLocationOverride,
                           BrowserURLHandler::null_handler());
 
 #if defined(OS_ANDROID)

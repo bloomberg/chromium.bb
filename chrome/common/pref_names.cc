@@ -76,6 +76,9 @@ const char kHomePage[] = "homepage";
 const char kLastProfileResetTimestamp[] = "profile.last_reset_timestamp";
 #endif
 
+// The URL to open the new tab page to. Only set by Group Policy.
+const char kNewTabPageLocationOverride[] = "newtab_page_location_override";
+
 // An integer that keeps track of the profile icon version. This allows us to
 // determine the state of the profile icon for icon format changes.
 const char kProfileIconVersion[] = "profile.icon_version";

@@ -5,11 +5,15 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -71,6 +75,30 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(url, entry->GetURL());
   EXPECT_EQ(url, entry->GetVirtualURL());
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
+                       UberURLHandler_NewTabPageOverride) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  static const char kOverrideUrl[] = "http://override.com";
+  prefs->SetString(prefs::kNewTabPageLocationOverride, kOverrideUrl);
+  const GURL ntp_url(chrome::kChromeUINewTabURL);
+
+  ui_test_utils::NavigateToURL(browser(), ntp_url);
+  NavigationEntry* entry = GetLastCommittedEntry();
+
+  ASSERT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry->GetVirtualURL().is_valid());
+  EXPECT_EQ(GURL(kOverrideUrl), entry->GetVirtualURL());
+
+  prefs->SetString(prefs::kNewTabPageLocationOverride, "");
+
+  ui_test_utils::NavigateToURL(browser(), ntp_url);
+  entry = GetLastCommittedEntry();
+
+  ASSERT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry->GetVirtualURL().is_valid());
+  EXPECT_EQ(ntp_url, entry->GetVirtualURL());
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,

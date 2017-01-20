@@ -139,7 +139,9 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 359
+#   For your editing convenience: highest ID currently used: 360
+#   And don't forget to also update the EnterprisePolicies enum of
+#   histograms.xml.
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -281,6 +283,41 @@
 
           This policy is not available on Windows instances that are not joined
           to an Active Directory domain.''',
+        },
+      ],
+    },
+    {
+      'name': 'NewTabPage',
+      'type': 'group',
+      'caption': '''New Tab Page''',
+      'desc': '''Configure the default New Tab page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'policies': [
+        {
+          'name': 'NewTabPageLocation',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:57-', 'chrome_os:57-'],
+          'features': {
+            'can_be_recommended': True,
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 'https://www.chromium.org',
+          'id': 360,
+          'caption': '''Configure the New Tab page URL''',
+          'tags': [],
+          'desc': '''Configures the default New Tab page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
+
+          The New Tab page is the page opened when new tabs are created (including the one opened in new windows).
+
+          This policy does not decide which pages to be opened on start up. They are controlled by the RestoreOnStartup policies, which could be to open the New Tab page.
+
+          The NewTabPageLocation can be set to a URL you specify here. It will also affect the Home Page if it is set to open the New Tab page, as well as the startup page if set to New Tab page.
+
+          If the policy is not set or left empty the default new tab page is used.
+
+          This policy is not available on Windows instances that are not joined to an Active Directory domain.''',
+          'label': '''New Tab page URL''',
         },
       ],
     },

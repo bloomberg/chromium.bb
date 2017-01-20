@@ -39,6 +39,7 @@ extern const char kHomePage[];
 #if defined(OS_WIN)
 extern const char kLastProfileResetTimestamp[];
 #endif
+extern const char kNewTabPageLocationOverride[];
 extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
 extern const char kSessionExitedCleanly[];

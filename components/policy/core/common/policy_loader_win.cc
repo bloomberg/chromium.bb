@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -63,13 +64,10 @@ const char kBlockedExtensionPrefix[] = "[BLOCKED]";
 // List of policies that are considered only if the user is part of a AD domain.
 // Please document any new additions in policy_templates.json!
 const char* kInsecurePolicies[] = {
-    key::kMetricsReportingEnabled,
-    key::kDefaultSearchProviderEnabled,
-    key::kHomepageIsNewTabPage,
-    key::kHomepageLocation,
-    key::kRestoreOnStartup,
-    key::kRestoreOnStartupURLs
-};
+    key::kMetricsReportingEnabled, key::kDefaultSearchProviderEnabled,
+    key::kHomepageIsNewTabPage,    key::kHomepageLocation,
+    key::kNewTabPageLocation,      key::kRestoreOnStartup,
+    key::kRestoreOnStartupURLs};
 
 #pragma warning(push)
 #pragma warning(disable: 4068)  // unknown pragmas

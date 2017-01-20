@@ -1202,7 +1202,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
         nullptr,          // ForceYouTubeSafetyMode
         nullptr           // ForceYouTubeRestrict
     );
-
     // Verify that the safe search pref behaves the way we expect.
     PrefService* prefs = browser()->profile()->GetPrefs();
     EXPECT_EQ(safe_search != 0,
