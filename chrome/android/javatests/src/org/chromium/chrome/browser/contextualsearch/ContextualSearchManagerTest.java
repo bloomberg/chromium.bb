@@ -2315,7 +2315,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertNotSame(cvc2, cvc3);
 
         // Closing the Panel should destroy the Content.
-        tapBasePageToClosePanel();
+        closePanel();
         assertNoContentViewCore();
         assertEquals(3, mFakeServer.getLoadedUrlCount());
     }
@@ -2465,7 +2465,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertNotSame(url2, url3);
 
         // Close the Panel without seeing any Content.
-        tapBasePageToClosePanel();
+        closePanel();
 
         // Now check that all three URLs have been removed from history.
         assertEquals(3, mFakeServer.getLoadedUrlCount());
