@@ -11,6 +11,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/log/test_net_log.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,9 +40,11 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
   TestNetworkQualityEstimator(
       std::unique_ptr<chrome::android::ExternalEstimateProviderAndroid>
           external_estimate_provider,
-      const std::map<std::string, std::string>& variation_params)
+      const std::map<std::string, std::string>& variation_params,
+      net::NetLog* net_log)
       : NetworkQualityEstimator(std::move(external_estimate_provider),
-                                variation_params),
+                                variation_params,
+                                net_log),
         notified_(false) {}
 
   ~TestNetworkQualityEstimator() override {}
@@ -91,9 +94,10 @@ TEST(ExternalEstimateProviderAndroidTest, DelegateTest) {
   external_estimate_provider.reset(new TestExternalEstimateProviderAndroid());
 
   TestExternalEstimateProviderAndroid* ptr = external_estimate_provider.get();
+  net::TestNetLog net_log;
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator network_quality_estimator(
-      std::move(external_estimate_provider), variation_params);
+      std::move(external_estimate_provider), variation_params, &net_log);
   ptr->NotifyUpdatedEstimateAvailable();
   EXPECT_TRUE(network_quality_estimator.notified());
 

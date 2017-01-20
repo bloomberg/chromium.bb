@@ -572,7 +572,8 @@ void IOThread::Init() {
 #endif  // defined(OS_ANDROID)
   // Pass ownership.
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
-      std::move(external_estimate_provider), network_quality_estimator_params));
+      std::move(external_estimate_provider), network_quality_estimator_params,
+      net_log_));
 
   UpdateDnsClientEnabled();
 #if defined(OS_CHROMEOS)

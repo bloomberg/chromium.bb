@@ -33,6 +33,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
+#include "net/nqe/event_creator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/socket_watcher_factory.h"
 #include "net/nqe/throughput_analyzer.h"
@@ -208,29 +209,37 @@ void RecordEffectiveConnectionTypeAccuracy(
 
 NetworkQualityEstimator::NetworkQualityEstimator(
     std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
-    const std::map<std::string, std::string>& variation_params)
+    const std::map<std::string, std::string>& variation_params,
+    NetLog* net_log)
     : NetworkQualityEstimator(std::move(external_estimates_provider),
                               variation_params,
                               false,
-                              false) {}
-
-NetworkQualityEstimator::NetworkQualityEstimator(
-    std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
-    const std::map<std::string, std::string>& variation_params,
-    bool use_local_host_requests_for_tests,
-    bool use_smaller_responses_for_tests)
-    : NetworkQualityEstimator(std::move(external_estimates_provider),
-                              variation_params,
-                              use_local_host_requests_for_tests,
-                              use_smaller_responses_for_tests,
-                              true) {}
+                              false,
+                              net_log) {}
 
 NetworkQualityEstimator::NetworkQualityEstimator(
     std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
     const std::map<std::string, std::string>& variation_params,
     bool use_local_host_requests_for_tests,
     bool use_smaller_responses_for_tests,
-    bool add_default_platform_observations)
+    NetLog* net_log)
+    : NetworkQualityEstimator(
+          std::move(external_estimates_provider),
+          variation_params,
+          use_local_host_requests_for_tests,
+          use_smaller_responses_for_tests,
+          true,
+          NetLogWithSource::Make(
+              net_log,
+              net::NetLogSourceType::NETWORK_QUALITY_ESTIMATOR)) {}
+
+NetworkQualityEstimator::NetworkQualityEstimator(
+    std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
+    const std::map<std::string, std::string>& variation_params,
+    bool use_local_host_requests_for_tests,
+    bool use_smaller_responses_for_tests,
+    bool add_default_platform_observations,
+    const NetLogWithSource& net_log)
     : algorithm_name_to_enum_({{"HttpRTTAndDownstreamThroughput",
                                 EffectiveConnectionTypeAlgorithm::
                                     HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT},
@@ -281,6 +290,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
               variation_params)),
       forced_effective_connection_type_(
           nqe::internal::forced_effective_connection_type(variation_params)),
+      net_log_(net_log),
       weak_ptr_factory_(this) {
   // None of the algorithms can have an empty name.
   DCHECK(algorithm_name_to_enum_.end() ==
@@ -736,6 +746,14 @@ void NetworkQualityEstimator::DisableOfflineCheckForTesting(
 void NetworkQualityEstimator::ReportEffectiveConnectionTypeForTesting(
     EffectiveConnectionType effective_connection_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  nqe::internal::AddEffectiveConnectionTypeChangedEventToNetLog(
+      net_log_, typical_network_quality_[effective_connection_type].http_rtt(),
+      typical_network_quality_[effective_connection_type].transport_rtt(),
+      typical_network_quality_[effective_connection_type]
+          .downstream_throughput_kbps(),
+      effective_connection_type);
+
   for (auto& observer : effective_connection_type_observer_list_)
     observer.OnEffectiveConnectionTypeChanged(effective_connection_type);
 
@@ -1568,6 +1586,11 @@ void NetworkQualityEstimator::
     NotifyObserversOfEffectiveConnectionTypeChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(EFFECTIVE_CONNECTION_TYPE_LAST, effective_connection_type_);
+
+  nqe::internal::AddEffectiveConnectionTypeChangedEventToNetLog(
+      net_log_, network_quality_.http_rtt(), network_quality_.transport_rtt(),
+      network_quality_.downstream_throughput_kbps(),
+      effective_connection_type_);
 
   // TODO(tbansal): Add hysteresis in the notification.
   for (auto& observer : effective_connection_type_observer_list_)

@@ -859,6 +859,8 @@
       'nqe/cached_network_quality.h',
       'nqe/effective_connection_type.cc',
       'nqe/effective_connection_type.h',
+      'nqe/event_creator.cc',
+      'nqe/event_creator.h',
       'nqe/external_estimate_provider.h',
       'nqe/network_id.h',
       'nqe/network_qualities_prefs_manager.cc',

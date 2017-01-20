@@ -703,7 +703,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         "TransportRTTOrDownstreamThroughput";
     network_quality_estimator_ = base::MakeUnique<net::NetworkQualityEstimator>(
         std::unique_ptr<net::ExternalEstimateProvider>(), variation_params,
-        false, false);
+        false, false, g_net_log.Get().net_log());
     // Set the socket performance watcher factory so that network quality
     // estimator is notified of socket performance metrics from TCP and QUIC.
     context_builder.set_socket_performance_watcher_factory(

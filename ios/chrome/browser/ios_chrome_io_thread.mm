@@ -360,7 +360,8 @@ void IOSChromeIOThread::Init() {
   std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider;
   // Pass ownership.
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
-      std::move(external_estimate_provider), network_quality_estimator_params));
+      std::move(external_estimate_provider), network_quality_estimator_params,
+      net_log_));
 
   globals_->cert_verifier = net::CertVerifier::CreateDefault();
 
