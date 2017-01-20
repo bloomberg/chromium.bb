@@ -13,7 +13,7 @@ namespace extensions {
 namespace api {
 
 class SystemNetworkGetNetworkInterfacesFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.network.getNetworkInterfaces",
                              SYSTEM_NETWORK_GETNETWORKINTERFACES)
@@ -23,8 +23,8 @@ class SystemNetworkGetNetworkInterfacesFunction
  protected:
   ~SystemNetworkGetNetworkInterfacesFunction() override;
 
-  // AsyncApiFunction:
-  bool RunAsync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void GetListOnFileThread();

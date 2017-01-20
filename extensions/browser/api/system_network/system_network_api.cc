@@ -19,14 +19,15 @@ SystemNetworkGetNetworkInterfacesFunction::
     ~SystemNetworkGetNetworkInterfacesFunction() {
 }
 
-bool SystemNetworkGetNetworkInterfacesFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+SystemNetworkGetNetworkInterfacesFunction::Run() {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
           &SystemNetworkGetNetworkInterfacesFunction::GetListOnFileThread,
           this));
-  return true;
+  return RespondLater();
 }
 
 void SystemNetworkGetNetworkInterfacesFunction::GetListOnFileThread() {
@@ -52,8 +53,7 @@ void SystemNetworkGetNetworkInterfacesFunction::GetListOnFileThread() {
 
 void SystemNetworkGetNetworkInterfacesFunction::HandleGetListError() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  error_ = kNetworkListError;
-  SendResponse(false);
+  Respond(Error(kNetworkListError));
 }
 
 void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
@@ -70,9 +70,8 @@ void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
     create_arg.push_back(std::move(info));
   }
 
-  results_ =
-      api::system_network::GetNetworkInterfaces::Results::Create(create_arg);
-  SendResponse(true);
+  Respond(ArgumentList(
+      api::system_network::GetNetworkInterfaces::Results::Create(create_arg)));
 }
 
 }  // namespace api
