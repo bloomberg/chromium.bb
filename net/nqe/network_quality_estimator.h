@@ -614,6 +614,11 @@ class NET_EXPORT NetworkQualityEstimator
   // The factor by which the weight of an observation reduces every second.
   const double weight_multiplier_per_second_;
 
+  // The factor by which the weight of an observation reduces for every dBm
+  // difference between the current signal strength (in dBm), and the signal
+  // strength at the time when the observation was taken.
+  const double weight_multiplier_per_dbm_;
+
   // Algorithm to use for computing effective connection type. The value is
   // obtained from field trial parameters. If the value from field trial
   // parameters is unavailable, it is set to
@@ -727,7 +732,7 @@ class NET_EXPORT NetworkQualityEstimator
   // change events.
   int32_t signal_strength_dbm_;
 
-  // Minimum and maximum signal strength (in dbM) observed since last connection
+  // Minimum and maximum signal strength (in dBm) observed since last connection
   // change. Updated on connection change and main frame requests.
   int32_t min_signal_strength_since_connection_change_;
   int32_t max_signal_strength_since_connection_change_;

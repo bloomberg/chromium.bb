@@ -243,6 +243,8 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       add_default_platform_observations_(add_default_platform_observations),
       weight_multiplier_per_second_(
           nqe::internal::GetWeightMultiplierPerSecond(variation_params)),
+      weight_multiplier_per_dbm_(
+          nqe::internal::GetWeightMultiplierPerDbm(variation_params)),
       effective_connection_type_algorithm_(
           algorithm_name_to_enum_.find(
               nqe::internal::GetEffectiveConnectionTypeAlgorithm(
@@ -257,8 +259,10 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       current_network_id_(nqe::internal::NetworkID(
           NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
           std::string())),
-      downstream_throughput_kbps_observations_(weight_multiplier_per_second_),
-      rtt_observations_(weight_multiplier_per_second_),
+      downstream_throughput_kbps_observations_(weight_multiplier_per_second_,
+                                               weight_multiplier_per_dbm_),
+      rtt_observations_(weight_multiplier_per_second_,
+                        weight_multiplier_per_dbm_),
       effective_connection_type_at_last_main_frame_(
           EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       external_estimate_provider_(std::move(external_estimates_provider)),
@@ -1293,7 +1297,8 @@ base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
   // RTT observations are sorted by duration from shortest to longest, thus
   // a higher percentile RTT will have a longer RTT than a lower percentile.
   base::TimeDelta rtt = nqe::internal::InvalidRTT();
-  if (!rtt_observations_.GetPercentile(start_time, &rtt, percentile,
+  if (!rtt_observations_.GetPercentile(start_time, signal_strength_dbm_, &rtt,
+                                       percentile,
                                        disallowed_observation_sources)) {
     return nqe::internal::InvalidRTT();
   }
@@ -1309,7 +1314,7 @@ int32_t NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimateInternal(
   // thus a higher percentile throughput will be faster than a lower one.
   int32_t kbps = nqe::internal::kInvalidThroughput;
   if (!downstream_throughput_kbps_observations_.GetPercentile(
-          start_time, &kbps, 100 - percentile,
+          start_time, signal_strength_dbm_, &kbps, 100 - percentile,
           std::vector<NetworkQualityObservationSource>())) {
     return nqe::internal::kInvalidThroughput;
   }
