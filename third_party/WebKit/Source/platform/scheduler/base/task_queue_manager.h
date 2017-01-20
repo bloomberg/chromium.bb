@@ -143,6 +143,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // Removes all canceled delayed tasks.
   void SweepCanceledDelayedTasks();
 
+  // There is a small overhead to recording task delay histograms. If you don't
+  // need them, you can turn them off.
+  void SetRecordTaskDelayHistograms(bool record_task_delay_histograms);
+
  private:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;
@@ -245,6 +249,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // Protects |other_thread_pending_wakeup_|.
   mutable base::Lock other_thread_lock_;
   bool other_thread_pending_wakeup_;
+
+  bool record_task_delay_histograms_;
 
   int work_batch_size_;
   size_t task_count_;

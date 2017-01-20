@@ -30,6 +30,10 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
       const char* disabled_by_default_verbose_tracing_category);
   ~SchedulerHelper() override;
 
+  // There is a small overhead to recording task delay histograms, we may not
+  // wish to do this on all threads.
+  void SetRecordTaskDelayHistograms(bool record_task_delay_histograms);
+
   // TaskQueueManager::Observer implementation:
   void OnUnregisterTaskQueue(const scoped_refptr<TaskQueue>& queue) override;
   void OnTriedToExecuteBlockedTask(const TaskQueue& queue,

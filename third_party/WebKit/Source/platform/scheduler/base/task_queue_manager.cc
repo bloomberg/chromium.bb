@@ -59,6 +59,7 @@ TaskQueueManager::TaskQueueManager(
       delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
       other_thread_pending_wakeup_(false),
+      record_task_delay_histograms_(true),
       work_batch_size_(1),
       task_count_(0),
       tracing_category_(tracing_category),
@@ -347,7 +348,8 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     return ProcessTaskResult::DEFERRED;
   }
 
-  MaybeRecordTaskDelayHistograms(pending_task, queue);
+  if (record_task_delay_histograms_)
+    MaybeRecordTaskDelayHistograms(pending_task, queue);
 
   double task_start_time = 0;
   TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
@@ -521,6 +523,12 @@ void TaskQueueManager::OnTriedToSelectBlockedWorkQueue(
 
 bool TaskQueueManager::HasImmediateWorkForTesting() const {
   return !selector_.EnabledWorkQueuesEmpty();
+}
+
+void TaskQueueManager::SetRecordTaskDelayHistograms(
+    bool record_task_delay_histograms) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  record_task_delay_histograms_ = record_task_delay_histograms;
 }
 
 void TaskQueueManager::SweepCanceledDelayedTasks() {
