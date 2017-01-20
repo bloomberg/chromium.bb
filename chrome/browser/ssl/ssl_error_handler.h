@@ -126,9 +126,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       const content::NotificationDetails& details) override;
 
   // content::WebContentsObserver:
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // content::WebContentsObserver:
   void NavigationStopped() override;

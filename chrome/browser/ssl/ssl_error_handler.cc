@@ -25,6 +25,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
@@ -468,9 +469,11 @@ void SSLErrorHandler::Observe(
 #endif
 }
 
-void SSLErrorHandler::DidStartNavigationToPendingEntry(
-    const GURL& /* url */,
-    content::ReloadType /* reload_type */) {
+void SSLErrorHandler::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage())
+    return;
+
   // Destroy the error handler on all new navigations. This ensures that the
   // handler is properly recreated when a hanging page is navigated to an SSL
   // error, even when the tab's WebContents doesn't change.
