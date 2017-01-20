@@ -138,6 +138,8 @@ public class FullscreenHtmlApiHandler {
                             contentView.removeOnLayoutChangeListener(this);
                         }
                     });
+
+                    contentView.requestLayout();
                     break;
                 }
                 case MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG: {
@@ -299,7 +301,7 @@ public class FullscreenHtmlApiHandler {
         contentView.setSystemUiVisibility(systemUiVisibility);
 
         // Request a layout so the updated system visibility takes affect.
-        contentView.getRootView().requestLayout();
+        contentView.requestLayout();
 
         mContentViewCoreInFullscreen = contentViewCore;
         mTabInFullscreen = tab;
