@@ -496,6 +496,7 @@ void DOMSelection::addRange(Range* newRange) {
   // really do the same, since we don't support discontiguous selection. Further
   // discussions at
   // <https://code.google.com/p/chromium/issues/detail?id=353069>.
+  UseCounter::count(frame(), UseCounter::SelectionAddRangeIntersect);
 
   Range* start = originalRange->compareBoundaryPoints(
                      Range::kStartToStart, newRange, ASSERT_NO_EXCEPTION) < 0
