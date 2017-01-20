@@ -1551,6 +1551,24 @@ TEST_F(TileManagerTest, AllWorkFinished) {
     host_impl()->tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
     run_loop.Run();
   }
+
+  // Same test as above but with SMOOTHNESS_TAKES_PRIORITY.
+  {
+    base::RunLoop run_loop;
+    EXPECT_FALSE(
+        host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+    EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate());
+    EXPECT_CALL(MockHostImpl(), NotifyReadyToDraw());
+    EXPECT_CALL(MockHostImpl(), NotifyAllTileTasksCompleted())
+        .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+    host_impl()->tile_manager()->ResetSignalsForTesting();
+    auto global_state = host_impl()->global_tile_state();
+    global_state.tree_priority = SMOOTHNESS_TAKES_PRIORITY;
+    host_impl()->tile_manager()->SetGlobalStateForTesting(global_state);
+    host_impl()->tile_manager()->SetMoreTilesNeedToBeRasterizedForTesting();
+    host_impl()->tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
+    run_loop.Run();
+  }
 }
 
 TEST_F(TileManagerTest, ActivateAndDrawWhenOOM) {

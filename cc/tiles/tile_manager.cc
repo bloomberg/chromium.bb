@@ -1210,6 +1210,10 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
 
   // TODO(vmpstr): Temporary check to debug crbug.com/642927.
   CHECK(tile_task_manager_);
+
+  // Schedule all checks in case we're left with solid color tiles only.
+  signals_.ready_to_activate = true;
+  signals_.ready_to_draw = true;
   signals_.all_tile_tasks_completed = true;
   signals_check_notifier_.Schedule();
 
@@ -1245,9 +1249,6 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
 
   DCHECK(IsReadyToActivate());
   DCHECK(IsReadyToDraw());
-  // Signals notifier is already scheduled above in the same function.
-  signals_.ready_to_activate = true;
-  signals_.ready_to_draw = true;
 }
 
 void TileManager::MarkTilesOutOfMemory(
