@@ -4249,6 +4249,7 @@ std::string GLES2Util::GetStringQueryParameter(uint32_t value) {
 
 std::string GLES2Util::GetStringQueryTarget(uint32_t value) {
   static const EnumToString string_table[] = {
+      {GL_SAMPLES_PASSED_ARB, "GL_SAMPLES_PASSED_ARB"},
       {GL_ANY_SAMPLES_PASSED_EXT, "GL_ANY_SAMPLES_PASSED_EXT"},
       {GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
        "GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT"},

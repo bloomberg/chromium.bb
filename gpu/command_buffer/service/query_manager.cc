@@ -803,6 +803,9 @@ QueryManager::Query* QueryManager::CreateQuery(GLenum target,
     case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
       query = new SummedIntegerQuery(this, target, shm_id, shm_offset);
       break;
+    case GL_SAMPLES_PASSED:
+      query = new SummedIntegerQuery(this, target, shm_id, shm_offset);
+      break;
     default: {
       NOTREACHED();
     }

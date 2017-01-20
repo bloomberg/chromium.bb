@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <numeric>
 #include <set>
 #include <string>
 #include <vector>
@@ -403,6 +404,7 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
   use_blend_equation_advanced_ = context_caps.blend_equation_advanced;
   use_blend_equation_advanced_coherent_ =
       context_caps.blend_equation_advanced_coherent;
+  use_occlusion_query_ = context_caps.occlusion_query;
 
   InitializeSharedObjects();
 }
@@ -3530,16 +3532,25 @@ void GLRenderer::FlushOverdrawFeedback(const DrawingFrame* frame,
   if (frame->current_render_pass != frame->root_render_pass)
     tracing_enabled = false;
 
+  // ARB_occlusion_query is required for tracing.
+  if (!use_occlusion_query_)
+    tracing_enabled = false;
+
+  // Use the current surface area as max result. The effect is that overdraw
+  // is reported as a percentage of the output surface size. ie. 2x overdraw
+  // for the whole screen is reported as 200.
+  int max_result = current_surface_size_.GetArea();
+  DCHECK_GT(max_result, 0);
+
   OverdrawFeedbackCallback overdraw_feedback_callback = base::Bind(
       &GLRenderer::ProcessOverdrawFeedback, weak_ptr_factory_.GetWeakPtr(),
-      base::Owned(new std::vector<int>), arraysize(stencil_tests));
+      base::Owned(new std::vector<int>), arraysize(stencil_tests), max_result);
 
   for (const auto& test : stencil_tests) {
     GLuint query = 0;
     if (tracing_enabled) {
       gl_->GenQueriesEXT(1, &query);
-      // TODO(reveman): Use SAMPLES_PASSED_ARB for exact amount of overdraw.
-      gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, query);
+      gl_->BeginQueryEXT(GL_SAMPLES_PASSED_ARB, query);
     }
 
     gl_->StencilFunc(test.func, test.ref, 0xffffffff);
@@ -3550,7 +3561,7 @@ void GLRenderer::FlushOverdrawFeedback(const DrawingFrame* frame,
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
     if (query) {
-      gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
+      gl_->EndQueryEXT(GL_SAMPLES_PASSED_ARB);
       context_support_->SignalQuery(
           query,
           base::Bind(overdraw_feedback_callback, query, test.multiplier));
@@ -3560,12 +3571,12 @@ void GLRenderer::FlushOverdrawFeedback(const DrawingFrame* frame,
 
 void GLRenderer::ProcessOverdrawFeedback(std::vector<int>* overdraw,
                                          size_t num_expected_results,
+                                         int max_result,
                                          unsigned query,
                                          int multiplier) {
   unsigned result = 0;
   if (query) {
     gl_->GetQueryObjectuivEXT(query, GL_QUERY_RESULT_EXT, &result);
-    DCHECK_LE(result, 1u);
     gl_->DeleteQueriesEXT(1, &query);
   }
 
@@ -3576,9 +3587,11 @@ void GLRenderer::ProcessOverdrawFeedback(std::vector<int>* overdraw,
   if (overdraw->size() < num_expected_results)
     return;
 
-  // Report the maximum amount of overdraw.
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.overdraw"), "GPU Overdraw",
-                 *std::max_element(overdraw->begin(), overdraw->end()));
+  // Report GPU overdraw as a percentage of |max_result|.
+  TRACE_COUNTER1(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.overdraw"), "GPU Overdraw",
+      (std::accumulate(overdraw->begin(), overdraw->end(), 0) * 100) /
+          max_result);
 }
 
 }  // namespace cc

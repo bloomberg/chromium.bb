@@ -129,6 +129,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       angle_pack_reverse_row_order(false),
       arb_texture_rectangle(false),
       angle_instanced_arrays(false),
+      occlusion_query(false),
       occlusion_query_boolean(false),
       use_arb_occlusion_query2_for_occlusion_query_boolean(false),
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
@@ -1173,12 +1174,15 @@ void FeatureInfo::InitializeFeatures() {
   bool have_arb_occlusion_query2 =
       extensions.Contains("GL_ARB_occlusion_query2");
   bool have_arb_occlusion_query =
+      (gl_version_info_->is_desktop_core_profile &&
+       gl_version_info_->IsAtLeastGL(1, 5)) ||
       extensions.Contains("GL_ARB_occlusion_query");
 
   if (have_occlusion_query ||
       have_ext_occlusion_query_boolean ||
       have_arb_occlusion_query2 ||
       have_arb_occlusion_query) {
+    feature_flags_.occlusion_query = have_arb_occlusion_query;
     if (context_type_ == CONTEXT_TYPE_OPENGLES2) {
       AddExtensionString("GL_EXT_occlusion_query_boolean");
     }

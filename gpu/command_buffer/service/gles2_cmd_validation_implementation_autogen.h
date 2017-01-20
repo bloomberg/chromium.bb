@@ -733,6 +733,7 @@ bool Validators::QueryObjectParameterValidator::IsValid(
 
 bool Validators::QueryTargetValidator::IsValid(const GLenum value) const {
   switch (value) {
+    case GL_SAMPLES_PASSED_ARB:
     case GL_ANY_SAMPLES_PASSED_EXT:
     case GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT:
     case GL_COMMANDS_ISSUED_CHROMIUM:

@@ -1211,6 +1211,11 @@ GL_APICALL void GL_APIENTRY glCoverageModulationCHROMIUM(GLenum components);
 #define GL_COVERAGE_MODULATION_CHROMIUM 0x9332
 #endif /* GL_CHROMIUM_framebuffer_mixed_samples */
 
+#ifndef GL_ARB_occlusion_query
+#define GL_ARB_occlusion_query 1
+#define GL_SAMPLES_PASSED_ARB 0x8914
+#endif /* GL_ARB_occlusion_query */
+
 #ifdef __cplusplus
 }
 #endif

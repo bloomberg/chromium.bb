@@ -278,6 +278,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   using OverdrawFeedbackCallback = base::Callback<void(unsigned, int)>;
   void ProcessOverdrawFeedback(std::vector<int>* overdraw,
                                size_t num_expected_results,
+                               int max_result,
                                unsigned query,
                                int multiplier);
 
@@ -364,6 +365,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   BoundGeometry bound_geometry_;
   ColorLUTCache color_lut_cache_;
 
+  bool use_occlusion_query_;
   unsigned offscreen_stencil_renderbuffer_id_ = 0;
   gfx::Size offscreen_stencil_renderbuffer_size_;
 

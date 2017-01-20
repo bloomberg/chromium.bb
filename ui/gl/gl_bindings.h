@@ -117,6 +117,9 @@
 #define GL_QUERY_RESULT_EXT                              0x8866
 #define GL_QUERY_RESULT_AVAILABLE_EXT                    0x8867
 
+// GL_ARB_occlusion_query
+#define GL_SAMPLES_PASSED_ARB                            0x8914
+
 // GL_CHROMIUM_command_buffer_query
 #define GL_COMMANDS_ISSUED_CHROMIUM                      0x6004
 

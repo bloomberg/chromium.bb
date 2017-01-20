@@ -1486,7 +1486,7 @@ class GLES2DecoderDoCommandsTest : public GLES2DecoderTest {
 
 TEST_P(GLES3DecoderTest, BeginInvalidTargetQueryFails) {
   BeginQueryEXT begin_cmd;
-  begin_cmd.Init(GL_SAMPLES_PASSED,
+  begin_cmd.Init(0xdeadbeef,
                  kNewClientId,
                  kSharedMemoryId,
                  kSharedMemoryOffset);

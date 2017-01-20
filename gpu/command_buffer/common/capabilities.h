@@ -142,6 +142,7 @@ struct GPU_EXPORT Capabilities {
   bool image_ycbcr_422;
   bool image_ycbcr_420v;
   bool render_buffer_format_bgra8888;
+  bool occlusion_query;
   bool occlusion_query_boolean;
   bool timer_queries;
   bool surfaceless;

@@ -954,6 +954,38 @@ TEST_F(QueryManagerTest, GetErrorQuery) {
   manager->Destroy(false);
 }
 
+TEST_F(QueryManagerTest, OcclusionQuery) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLenum kTarget = GL_SAMPLES_PASSED_ARB;
+  const base::subtle::Atomic32 kSubmitCount = 123;
+
+  TestHelper::SetupFeatureInfoInitExpectations(
+      gl_.get(),
+      "GL_ARB_occlusion_query");
+  scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
+  feature_info->InitializeForTesting();
+  std::unique_ptr<QueryManager> manager(
+      new QueryManager(decoder_.get(), feature_info.get()));
+
+  EXPECT_CALL(*gl_, GenQueries(1, _))
+      .WillOnce(SetArgumentPointee<1>(kService1Id))
+      .RetiresOnSaturation();
+  QueryManager::Query* query = manager->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  EXPECT_CALL(*gl_, BeginQuery(GL_SAMPLES_PASSED_ARB, kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, EndQuery(GL_SAMPLES_PASSED_ARB))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(manager->BeginQuery(query));
+  EXPECT_TRUE(manager->EndQuery(query, kSubmitCount));
+  manager->Destroy(false);
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

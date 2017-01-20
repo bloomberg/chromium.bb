@@ -3733,6 +3733,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
       feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
+  caps.occlusion_query = feature_info_->feature_flags().occlusion_query;
   caps.occlusion_query_boolean =
       feature_info_->feature_flags().occlusion_query_boolean;
   caps.timer_queries =
@@ -15883,12 +15884,20 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
         return error::kNoError;
       }
       break;
+    case GL_SAMPLES_PASSED_ARB:
+      if (!features().occlusion_query) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, "glBeginQueryEXT",
+            "not enabled for occlusion queries");
+        return error::kNoError;
+      }
+      break;
     case GL_ANY_SAMPLES_PASSED:
     case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
       if (!features().occlusion_query_boolean) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, "glBeginQueryEXT",
-            "not enabled for occlusion queries");
+            "not enabled for boolean occlusion queries");
         return error::kNoError;
       }
       break;
