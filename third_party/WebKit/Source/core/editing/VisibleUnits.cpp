@@ -2559,15 +2559,31 @@ template <typename Strategy>
 LayoutRect localSelectionRectOfPositionTemplate(
     const PositionWithAffinityTemplate<Strategy>& position,
     LayoutObject*& layoutObject) {
-  LayoutRect rect = localCaretRectOfPositionTemplate(position, layoutObject);
-
-  if (rect.isEmpty())
-    return rect;
+  if (position.isNull()) {
+    layoutObject = nullptr;
+    return LayoutRect();
+  }
+  Node* node = position.anchorNode();
+  layoutObject = node->layoutObject();
+  if (!layoutObject)
+    return LayoutRect();
 
   InlineBoxPosition boxPosition =
       computeInlineBoxPosition(position.position(), position.affinity());
 
-  InlineTextBox* box = toInlineTextBox(boxPosition.inlineBox);
+  if (!boxPosition.inlineBox)
+    return LayoutRect();
+
+  layoutObject = LineLayoutAPIShim::layoutObjectFrom(
+      boxPosition.inlineBox->getLineLayoutItem());
+
+  LayoutRect rect = layoutObject->localCaretRect(boxPosition.inlineBox,
+                                                 boxPosition.offsetInBox);
+
+  if (rect.isEmpty())
+    return rect;
+
+  InlineBox* const box = boxPosition.inlineBox;
   if (layoutObject->style()->isHorizontalWritingMode()) {
     rect.setY(box->root().selectionTop());
     rect.setHeight(box->root().selectionHeight());

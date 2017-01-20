@@ -1997,4 +1997,14 @@ TEST_F(VisibleUnitsTest,
   EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button));
 }
 
+// Repro case of crbug.com/680428
+TEST_F(VisibleUnitsTest, localSelectionRectOfPositionTemplateNotCrash) {
+  setBodyContent("<div>foo<img></div>");
+
+  Node* node = document().querySelector("img");
+  IntRect rect = absoluteSelectionBoundsOf(VisiblePosition::create(
+      PositionWithAffinity(Position(node, PositionAnchorType::AfterChildren))));
+  EXPECT_FALSE(rect.isEmpty());
+}
+
 }  // namespace blink
