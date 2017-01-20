@@ -19,6 +19,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT StubKeyboardLayoutEngine
   // KeyboardLayoutEngineOzone:
   bool CanSetCurrentLayout() const override;
   bool SetCurrentLayoutByName(const std::string& layout_name) override;
+  bool SetCurrentLayoutFromBuffer(const char* keymap_string,
+                                  size_t size) override;
   bool UsesISOLevel5Shift() const override;
   bool UsesAltGr() const override;
   bool Lookup(DomCode dom_code,

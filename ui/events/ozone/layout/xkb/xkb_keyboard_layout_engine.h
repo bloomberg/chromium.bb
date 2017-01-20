@@ -30,11 +30,13 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
   XkbKeyboardLayoutEngine(const XkbKeyCodeConverter& converter);
   ~XkbKeyboardLayoutEngine() override;
 
-  void SetKeymapFromStringForTest(const char* keymap_string);
-
   // KeyboardLayoutEngine:
   bool CanSetCurrentLayout() const override;
   bool SetCurrentLayoutByName(const std::string& layout_name) override;
+  // Required by Ozone/Wayland (at least) for non ChromeOS builds. See
+  // http://xkbcommon.org/doc/current/md_doc_quick-guide.html for further info.
+  bool SetCurrentLayoutFromBuffer(const char* keymap_string,
+                                  size_t size) override;
 
   bool UsesISOLevel5Shift() const override;
   bool UsesAltGr() const override;

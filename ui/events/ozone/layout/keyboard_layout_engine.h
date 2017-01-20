@@ -37,6 +37,12 @@ class EVENTS_OZONE_LAYOUT_EXPORT KeyboardLayoutEngine {
   // the argument string is defined by that interface (crbug.com/362698).
   virtual bool SetCurrentLayoutByName(const std::string& layout_name) = 0;
 
+  // Sets the current layout given a memory location and the buffer size in
+  // bytes, that represent keyboard mapping description; returns true on
+  // success.
+  virtual bool SetCurrentLayoutFromBuffer(const char* keymap_string,
+                                          size_t size) = 0;
+
   // Returns true if the current layout makes use of the ISO Level 5 Shift key.
   // Drop-in replacement for ImeKeyboard::IsISOLevel5ShiftAvailable().
   virtual bool UsesISOLevel5Shift() const = 0;

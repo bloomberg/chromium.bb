@@ -15,6 +15,11 @@ bool NoKeyboardLayoutEngine::SetCurrentLayoutByName(
   return false;
 }
 
+bool NoKeyboardLayoutEngine::SetCurrentLayoutFromBuffer(const char* keymap_str,
+                                                        size_t size) {
+  return false;
+}
+
 bool NoKeyboardLayoutEngine::UsesISOLevel5Shift() const {
   return false;
 }

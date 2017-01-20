@@ -692,18 +692,10 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
                      .MayBlock(),
       base::Bind(&LoadKeymap, layout_name, base::ThreadTaskRunnerHandle::Get(),
                  reply_callback));
-  return true;
 #else
-  // Required by ozone-wayland (at least) for non ChromeOS builds. See
-  // http://xkbcommon.org/doc/current/md_doc_quick-guide.html for further info.
-  xkb_keymap* keymap = xkb_keymap_new_from_string(
-      xkb_context_.get(), layout_name.c_str(), XKB_KEYMAP_FORMAT_TEXT_V1,
-      XKB_KEYMAP_COMPILE_NO_FLAGS);
-  if (!keymap)
-    return false;
-  SetKeymap(keymap);
-  return true;
+  NOTIMPLEMENTED();
 #endif  // defined(OS_CHROMEOS)
+  return true;
 }
 
 void XkbKeyboardLayoutEngine::OnKeymapLoaded(
@@ -802,13 +794,17 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
   return true;
 }
 
-void XkbKeyboardLayoutEngine::SetKeymapFromStringForTest(
-    const char* keymap_string) {
-  xkb_keymap* keymap = xkb_keymap_new_from_string(
-      xkb_context_.get(), keymap_string, XKB_KEYMAP_FORMAT_TEXT_V1,
+bool XkbKeyboardLayoutEngine::SetCurrentLayoutFromBuffer(
+    const char* keymap_string,
+    size_t size) {
+  xkb_keymap* keymap = xkb_keymap_new_from_buffer(
+      xkb_context_.get(), keymap_string, size, XKB_KEYMAP_FORMAT_TEXT_V1,
       XKB_KEYMAP_COMPILE_NO_FLAGS);
-  if (keymap)
-    SetKeymap(keymap);
+  if (!keymap)
+    return false;
+
+  SetKeymap(keymap);
+  return true;
 }
 
 void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {

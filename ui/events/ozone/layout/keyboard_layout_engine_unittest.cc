@@ -222,7 +222,8 @@ TEST(LayoutEngineTest, Lookup) {
   XkbEvdevCodes xkb_evdev_code_converter;
   XkbKeyboardLayoutEngine* xkb_engine =
       new XkbKeyboardLayoutEngine(xkb_evdev_code_converter);
-  xkb_engine->SetKeymapFromStringForTest(kUsLayoutXkbKeymap);
+  xkb_engine->SetCurrentLayoutFromBuffer(kUsLayoutXkbKeymap,
+                                         strlen(kUsLayoutXkbKeymap));
   TestLookup("XkbKeyboardLayoutEngine", xkb_engine);
 }
 
