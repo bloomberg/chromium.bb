@@ -57,7 +57,6 @@ class WebStateImpl;
 // This is an abstract class which must not be instantiated directly.
 // TODO(stuartmorgan): Move all of the navigation APIs out of this class.
 @interface CRWWebController : NSObject<CRWJSInjectionEvaluator,
-                                       CRWRequestTrackerDelegate,
                                        CRWTouchTrackingDelegate,
                                        UIGestureRecognizerDelegate>
 
