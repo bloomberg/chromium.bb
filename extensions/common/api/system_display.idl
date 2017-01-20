@@ -207,6 +207,7 @@ namespace system.display {
   callback DisplayLayoutCallback = void (DisplayLayout[] layouts);
   callback SetDisplayUnitInfoCallback = void();
   callback SetDisplayLayoutCallback = void();
+  callback NativeTouchCalibrationCallback = void(boolean success);
 
   interface Functions {
     // Get the information of all attached display devices.
@@ -276,27 +277,40 @@ namespace system.display {
     // |id|: The display's unique identifier.
     static void overscanCalibrationComplete(DOMString id);
 
-    // Starts touch calibration for a display. This will show an overlay on the
-    // screen and initialize the UX for touch calibration. If touch calibration
-    // for display |id| is already in progress this will throw an error.
+    // Displays the native touch calibration UX for the display with |id| as
+    // display id. This will show an overlay on the screen with required
+    // instructions on how to proceed. The callback will be invoked in case of
+    // successful calibraion only. If the calibration fails, this will throw an
+    // error.
     // |id|: The display's unique identifier.
-    static void touchCalibrationStart(DOMString id);
+    // |callback|: Optional callback to inform the caller that the touch
+    //      calibration has ended. The argument of the callback informs if the
+    //      calibration was a success or not.
+    static void showNativeTouchCalibration(
+        DOMString id, optional NativeTouchCalibrationCallback callback);
+
+    // Starts custom touch calibration for a display. This should be called when
+    // using a custom UX for collecting calibration data. If another touch
+    // calibration is already in progress this will throw an error.
+    // |id|: The display's unique identifier.
+    static void startCustomTouchCalibration(DOMString id);
 
     // Sets the touch calibration pairs for a display. These |pairs| would be
-    // used to calibrate the touch screen for display |id|. If touch calibration
-    // for display |id| is in progress this will do nothing.
-    // |id|: The display's unique identifier.
+    // used to calibrate the touch screen for display with |id| called in
+    // startCustomTouchCalibration(). Always call |startCustomTouchCalibration|
+    // before calling this method. If another touch calibration is already in
+    // progress this will throw an error.
     // |pairs|: The pairs of point used to calibrate the display.
     // |bounds|: Bounds of the display when the touch calibration was performed.
     //     |bounds.left| and |bounds.top| values are ignored.
-    static void touchCalibrationSet(DOMString id,
-                                    TouchCalibrationPairQuad pairs,
-                                    Bounds bounds);
+    static void completeCustomTouchCalibration(TouchCalibrationPairQuad pairs,
+                                               Bounds bounds);
 
-    // Resets the touch calibration for the display and removes the saved
-    // calibration data.
+    // Resets the touch calibration for the display and brings it back to its
+    // default state by clearing any touch calibration data associated with the
+    // display.
     // |id|: The display's unique identifier.
-    static void touchCalibrationReset(DOMString id);
+    static void clearTouchCalibration(DOMString id);
   };
 
   interface Events {

@@ -9,6 +9,7 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/shell.h"
+#include "ash/touch/ash_touch_transform_controller.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/display/overscan_calibrator.h"
@@ -408,6 +409,33 @@ bool ValidateParamsForTouchCalibration(
 
 }  // namespace
 
+// static
+const char DisplayInfoProviderChromeOS::
+    kCustomTouchCalibrationInProgressError[] =
+        "Another custom touch calibration already under progress.";
+
+// static
+const char DisplayInfoProviderChromeOS::
+    kCompleteCalibrationCalledBeforeStartError[] =
+        "system.display.completeCustomTouchCalibration called before "
+             "system.display.startCustomTouchCalibration before.";
+
+// static
+const char DisplayInfoProviderChromeOS::kTouchBoundsNegativeError[] =
+    "Bounds cannot have negative values.";
+
+// static
+const char DisplayInfoProviderChromeOS::kTouchCalibrationPointsNegativeError[] =
+    "Display points and touch points cannot have negative coordinates";
+
+// static
+const char DisplayInfoProviderChromeOS::kTouchCalibrationPointsTooLargeError[] =
+    "Display point coordinates cannot be more than size of the display.";
+
+// static
+const char DisplayInfoProviderChromeOS::kNativeTouchCalibrationActiveError[] =
+    "Another touch calibration is already active.";
+
 DisplayInfoProviderChromeOS::DisplayInfoProviderChromeOS() {}
 
 DisplayInfoProviderChromeOS::~DisplayInfoProviderChromeOS() {}
@@ -660,16 +688,68 @@ bool DisplayInfoProviderChromeOS::OverscanCalibrationComplete(
   return true;
 }
 
-bool DisplayInfoProviderChromeOS::TouchCalibrationSet(
-    const std::string& id,
-    const api::system_display::TouchCalibrationPairQuad& pairs,
-    const api::system_display::Bounds& bounds,
-    std::string* error) {
-  VLOG(1) << "TouchCalibrationSet: " << id;
+bool DisplayInfoProviderChromeOS::ShowNativeTouchCalibration(
+    const std::string& id, std::string* error,
+    const DisplayInfoProvider::TouchCalibrationCallback& callback) {
+  VLOG(1) << "StartNativeTouchCalibration: " << id;
+
+  // If a custom calibration is already running, then throw an error.
+  if (custom_touch_calibration_active_) {
+    *error = kCustomTouchCalibrationInProgressError;
+    return false;
+  }
 
   const display::Display display = GetDisplay(id);
   if (!ValidateParamsForTouchCalibration(id, display, GetTouchCalibrator(),
                                          error)) {
+    return false;
+  }
+
+  GetTouchCalibrator()->StartCalibration(display, callback);
+  return true;
+}
+
+bool DisplayInfoProviderChromeOS::StartCustomTouchCalibration(
+    const std::string& id,
+    std::string* error) {
+  VLOG(1) << "StartCustomTouchCalibration: " << id;
+  const display::Display display = GetDisplay(id);
+  if (!ValidateParamsForTouchCalibration(id, display, GetTouchCalibrator(),
+                                         error)) {
+    return false;
+  }
+
+  touch_calibration_target_id_ = id;
+  custom_touch_calibration_active_ = true;
+
+  // Enable un-transformed touch input.
+  ash::Shell::GetInstance()->touch_transformer_controller()->SetForCalibration(
+      true);
+  return true;
+}
+
+bool DisplayInfoProviderChromeOS::CompleteCustomTouchCalibration(
+    const api::system_display::TouchCalibrationPairQuad& pairs,
+    const api::system_display::Bounds& bounds,
+    std::string* error) {
+  VLOG(1) << "CompleteCustomTouchCalibration: " << touch_calibration_target_id_;
+
+  ash::Shell::GetInstance()->touch_transformer_controller()->SetForCalibration(
+      false);
+
+  const display::Display display = GetDisplay(touch_calibration_target_id_);
+  touch_calibration_target_id_.clear();
+
+  // If Complete() is called before calling Start(), throw an error.
+  if (!custom_touch_calibration_active_) {
+    *error = kCompleteCalibrationCalledBeforeStartError;
+    return false;
+  }
+
+  custom_touch_calibration_active_ = false;
+
+  if (!ValidateParamsForTouchCalibration(
+      touch_calibration_target_id_, display, GetTouchCalibrator(), error)) {
     return false;
   }
 
@@ -681,7 +761,7 @@ bool DisplayInfoProviderChromeOS::TouchCalibrationSet(
 
   // The display bounds cannot have negative values.
   if (bounds.width < 0 || bounds.height < 0) {
-    *error = "Bounds cannot have negative values.";
+    *error = kTouchBoundsNegativeError;
     return false;
   }
 
@@ -691,15 +771,13 @@ bool DisplayInfoProviderChromeOS::TouchCalibrationSet(
         calibration_points[row].first.y() < 0 ||
         calibration_points[row].second.x() < 0 ||
         calibration_points[row].second.y() < 0) {
-      *error = "Display points and touch points cannot have negative "
-               "coordinates";
+      *error = kTouchCalibrationPointsNegativeError;
       return false;
     }
     // Coordinates for display points cannot be greater than the screen bounds.
     if (calibration_points[row].first.x() > bounds.width ||
         calibration_points[row].first.y() > bounds.height) {
-      *error = "Display point coordinates cannot be more than size of the "
-               "display.";
+      *error = kTouchCalibrationPointsTooLargeError;
       return false;
     }
   }
@@ -710,7 +788,7 @@ bool DisplayInfoProviderChromeOS::TouchCalibrationSet(
   return true;
 }
 
-bool DisplayInfoProviderChromeOS::TouchCalibrationReset(const std::string& id,
+bool DisplayInfoProviderChromeOS::ClearTouchCalibration(const std::string& id,
                                                         std::string* error) {
   const display::Display display = GetDisplay(id);
 
@@ -724,9 +802,11 @@ bool DisplayInfoProviderChromeOS::TouchCalibrationReset(const std::string& id,
   return true;
 }
 
-bool DisplayInfoProviderChromeOS::IsTouchCalibrationActive(std::string* error) {
+bool DisplayInfoProviderChromeOS::IsNativeTouchCalibrationActive(
+    std::string* error) {
+  // If native touch calibration UX is active, set error and return false.
   if (GetTouchCalibrator()->is_calibrating()) {
-    *error = "Another touch calibration is already active.";
+    *error = kNativeTouchCalibrationActiveError;
     return true;
   }
   return false;

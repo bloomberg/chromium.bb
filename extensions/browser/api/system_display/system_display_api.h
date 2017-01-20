@@ -121,36 +121,50 @@ class SystemDisplayOverscanCalibrationCompleteFunction
   ResponseAction Run() override;
 };
 
-class SystemDisplayTouchCalibrationStartFunction
+class SystemDisplayShowNativeTouchCalibrationFunction
     : public SystemDisplayFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("system.display.touchCalibrationStart",
-                             SYSTEM_DISPLAY_TOUCHCALIBRATIONSTART);
+  static const char kTouchCalibrationError[];
+  DECLARE_EXTENSION_FUNCTION("system.display.showNativeTouchCalibration",
+                             SYSTEM_DISPLAY_SHOWNATIVETOUCHCALIBRATION);
 
  protected:
-  ~SystemDisplayTouchCalibrationStartFunction() override {}
+  ~SystemDisplayShowNativeTouchCalibrationFunction() override {}
+  ResponseAction Run() override;
+
+  void OnCalibrationComplete(bool success);
+};
+
+class SystemDisplayStartCustomTouchCalibrationFunction
+    : public SystemDisplayFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("system.display.startCustomTouchCalibration",
+                             SYSTEM_DISPLAY_STARTCUSTOMTOUCHCALIBRATION);
+
+ protected:
+  ~SystemDisplayStartCustomTouchCalibrationFunction() override {}
   ResponseAction Run() override;
 };
 
-class SystemDisplayTouchCalibrationSetFunction
+class SystemDisplayCompleteCustomTouchCalibrationFunction
     : public SystemDisplayFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("system.display.touchCalibrationSet",
-                              SYSTEM_DISPLAY_TOUCHCALIBRATIONSET);
+  DECLARE_EXTENSION_FUNCTION("system.display.completeCustomTouchCalibration",
+                             SYSTEM_DISPLAY_COMPLETECUSTOMTOUCHCALIBRATION);
 
  protected:
-  ~SystemDisplayTouchCalibrationSetFunction() override {}
+  ~SystemDisplayCompleteCustomTouchCalibrationFunction() override {}
   ResponseAction Run() override;
 };
 
-class SystemDisplayTouchCalibrationResetFunction
+class SystemDisplayClearTouchCalibrationFunction
     : public SystemDisplayFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("system.display.touchCalibrationReset",
-                              SYSTEM_DISPLAY_TOUCHCALIBRATIONRESET);
+  DECLARE_EXTENSION_FUNCTION("system.display.clearTouchCalibration",
+                             SYSTEM_DISPLAY_CLEARTOUCHCALIBRATION);
 
  protected:
-  ~SystemDisplayTouchCalibrationResetFunction() override {}
+  ~SystemDisplayClearTouchCalibrationFunction() override {}
   ResponseAction Run() override;
 };
 

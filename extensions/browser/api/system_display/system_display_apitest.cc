@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/system_display/system_display_api.h"
@@ -141,6 +142,23 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     return base::ContainsKey(overscan_adjusted_, id);
   }
 
+  void SetTouchCalibrationWillSucceed(bool success) {
+    native_touch_calibration_success_ = success;
+  }
+
+  bool IsNativeTouchCalibrationActive(std::string* error) override {
+    return false;
+  }
+
+  bool ShowNativeTouchCalibration(
+      const std::string& id,
+      std::string* error,
+      const DisplayInfoProvider::TouchCalibrationCallback& callback) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, native_touch_calibration_success_));
+    return true;
+  }
+
  private:
   // Update the content of the |unit| obtained for |display| using
   // platform specific method.
@@ -170,6 +188,8 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   bool unified_desktop_enabled_ = false;
   std::set<std::string> overscan_started_;
   std::set<std::string> overscan_adjusted_;
+
+  bool native_touch_calibration_success_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockDisplayInfoProvider);
 };
@@ -405,6 +425,56 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, OverscanCalibrationAppNoComplete) {
   UnloadApp(extension);
   ASSERT_FALSE(provider_->calibration_changed(id));
   ASSERT_FALSE(provider_->calibration_started(id));
+}
+
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibrationFail) {
+  const std::string id = "display0";
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary(kTestManifestKiosk));
+  scoped_refptr<Extension> test_extension(
+      api_test_utils::CreateExtension(test_extension_value.get()));
+
+  scoped_refptr<SystemDisplayShowNativeTouchCalibrationFunction>
+      show_native_calibration(
+          new SystemDisplayShowNativeTouchCalibrationFunction());
+
+  show_native_calibration->set_has_callback(true);
+  show_native_calibration->set_extension(test_extension.get());
+
+  provider_->SetTouchCalibrationWillSucceed(false);
+
+  std::string result(api_test_utils::RunFunctionAndReturnError(
+      show_native_calibration.get(), "[\"" + id + "\"]", browser_context()));
+
+  EXPECT_EQ(
+      result,
+      SystemDisplayShowNativeTouchCalibrationFunction::kTouchCalibrationError);
+}
+
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, ShowNativeTouchCalibration) {
+  const std::string id = "display0";
+  std::unique_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary(kTestManifestKiosk));
+  scoped_refptr<Extension> test_extension(
+      api_test_utils::CreateExtension(test_extension_value.get()));
+
+  scoped_refptr<SystemDisplayShowNativeTouchCalibrationFunction>
+      show_native_calibration(
+          new SystemDisplayShowNativeTouchCalibrationFunction());
+
+  show_native_calibration->set_has_callback(true);
+  show_native_calibration->set_extension(test_extension.get());
+
+  provider_->SetTouchCalibrationWillSucceed(true);
+
+  std::unique_ptr<base::Value> result(
+      api_test_utils::RunFunctionAndReturnSingleResult(
+          show_native_calibration.get(), "[\"" + id + "\"]",
+          browser_context()));
+
+  bool callback_result;
+  ASSERT_TRUE(result->GetAsBoolean(&callback_result));
+  ASSERT_TRUE(callback_result);
 }
 
 #endif  // !defined(OS_CHROMEOS)

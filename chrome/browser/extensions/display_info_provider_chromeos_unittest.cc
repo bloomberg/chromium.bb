@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/display_info_provider_chromeos.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
@@ -1196,7 +1197,7 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
   EXPECT_TRUE(active_mode->IsEquivalent(other_mode_ash));
 }
 
-TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationInternal) {
+TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationInternal) {
   UpdateDisplay("1200x600,600x1000*2");
   const int64_t internal_display_id =
       display::test::DisplayManagerTestApi(
@@ -1205,23 +1206,35 @@ TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationInternal) {
 
   std::string id = base::Int64ToString(internal_display_id);
 
-  api::system_display::TouchCalibrationPairQuad pairs;
-  api::system_display::Bounds bounds;
-
-  bool success = false;
   std::string error;
   std::string expected_err =
       "Display Id(" + id + ") is an internal display." +
       " Internal displays cannot be calibrated for touch.";
-
-  success = DisplayInfoProvider::Get()->TouchCalibrationSet(id, pairs, bounds,
-                                                            &error);
+  bool success = DisplayInfoProvider::Get()->StartCustomTouchCalibration(
+      id, &error);
 
   ASSERT_FALSE(success);
   EXPECT_EQ(expected_err, error);
 }
 
-TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationNonTouchDisplay) {
+TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationWithoutStart) {
+  UpdateDisplay("1200x600,600x1000*2");
+
+  api::system_display::TouchCalibrationPairQuad pairs;
+  api::system_display::Bounds bounds;
+
+  std::string error;
+  std::string expected_err =
+      DisplayInfoProviderChromeOS::kCompleteCalibrationCalledBeforeStartError;
+  bool success = DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
+      pairs, bounds, &error);
+
+  ASSERT_FALSE(success);
+  EXPECT_EQ(expected_err, error);
+}
+
+
+TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationNonTouchDisplay) {
   UpdateDisplay("1200x600,600x1000*2");
 
   const int64_t internal_display_id =
@@ -1243,21 +1256,17 @@ TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationNonTouchDisplay) {
 
   std::string id = base::Int64ToString(display_id);
 
-  api::system_display::TouchCalibrationPairQuad pairs;
-  api::system_display::Bounds bounds;
-
-  bool success = false;
   std::string error;
   std::string expected_err = "Display Id(" + id + ") does not support touch.";
 
-  success = DisplayInfoProvider::Get()->TouchCalibrationSet(id, pairs, bounds,
-                                                            &error);
+  bool success = DisplayInfoProvider::Get()->StartCustomTouchCalibration(
+      id, &error);
 
   ASSERT_FALSE(success);
   EXPECT_EQ(expected_err, error);
 }
 
-TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationNegativeBounds) {
+TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationNegativeBounds) {
   UpdateDisplay("1200x600,600x1000*2");
 
   const int64_t internal_display_id =
@@ -1281,12 +1290,14 @@ TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationNegativeBounds) {
   api::system_display::Bounds bounds;
   bounds.width = -1;
 
-  bool success = false;
   std::string error;
-  success = DisplayInfoProvider::Get()->TouchCalibrationSet(id, pairs, bounds,
-                                                            &error);
+  DisplayInfoProvider::Get()->StartCustomTouchCalibration(id, &error);
+  error.clear();
+  bool success = DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
+      pairs, bounds, &error);
 
-  std::string expected_err = "Bounds cannot have negative values.";
+  std::string expected_err =
+      DisplayInfoProviderChromeOS::kTouchBoundsNegativeError;
 
   ASSERT_FALSE(success);
   EXPECT_EQ(expected_err, error);
@@ -1295,13 +1306,15 @@ TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationNegativeBounds) {
   bounds.width = 0;
   bounds.height = -1;
 
-  success = DisplayInfoProvider::Get()->TouchCalibrationSet(id, pairs, bounds,
-                                                            &error);
+  DisplayInfoProvider::Get()->StartCustomTouchCalibration(id, &error);
+  error.clear();
+  success = DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
+      pairs, bounds, &error);
   ASSERT_FALSE(success);
   EXPECT_EQ(expected_err, error);
 }
 
-TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationInvalidPoints) {
+TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationInvalidPoints) {
   UpdateDisplay("1200x600,600x1000*2");
 
   const int64_t internal_display_id =
@@ -1325,13 +1338,14 @@ TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationInvalidPoints) {
   api::system_display::Bounds bounds;
 
   pairs.pair1.display_point.x = -1;
-  bool success = false;
   std::string error;
-  success = DisplayInfoProvider::Get()->TouchCalibrationSet(id, pairs, bounds,
-                                                            &error);
+  DisplayInfoProvider::Get()->StartCustomTouchCalibration(id, &error);
+  error.clear();
+  bool success = DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
+      pairs, bounds, &error);
 
-  std::string expected_err = "Display points and touch points cannot have "
-                             "negative coordinates";
+  std::string expected_err =
+      DisplayInfoProviderChromeOS::kTouchCalibrationPointsNegativeError;
 
   ASSERT_FALSE(success);
   EXPECT_EQ(expected_err, error);
@@ -1339,16 +1353,18 @@ TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationInvalidPoints) {
   error.clear();
   bounds.width = 1;
   pairs.pair1.display_point.x = 2;
-  expected_err = "Display point coordinates cannot be more than size of the "
-                 "display.";
+  expected_err =
+      DisplayInfoProviderChromeOS::kTouchCalibrationPointsTooLargeError;
 
-  success = DisplayInfoProvider::Get()->TouchCalibrationSet(id, pairs, bounds,
-                                                            &error);
+  DisplayInfoProvider::Get()->StartCustomTouchCalibration(id, &error);
+  error.clear();
+  success = DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
+      pairs, bounds, &error);
   ASSERT_FALSE(success);
   EXPECT_EQ(expected_err, error);
 }
 
-TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationSuccess) {
+TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationSuccess) {
   UpdateDisplay("1200x600,600x1000*2");
 
   const int64_t internal_display_id =
@@ -1392,10 +1408,11 @@ TEST_F(DisplayInfoProviderChromeosTest, SetTouchCalibrationSuccess) {
   bounds.width = 600;
   bounds.height = 1000;
 
-  bool success = false;
   std::string error;
-  success = DisplayInfoProvider::Get()->TouchCalibrationSet(id, pairs, bounds,
-                                                            &error);
+  DisplayInfoProvider::Get()->StartCustomTouchCalibration(id, &error);
+  error.clear();
+  bool success = DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
+      pairs, bounds, &error);
 
   ASSERT_TRUE(success);
   EXPECT_EQ(error, "");

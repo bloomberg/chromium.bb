@@ -31,6 +31,7 @@ class TouchCalibratorController : public ui::EventHandler,
  public:
   using CalibrationPointPairQuad =
       display::TouchCalibrationData::CalibrationPointPairQuad;
+  using TouchCalibrationCallback = base::Callback<void(bool)>;
 
   static const base::TimeDelta kTouchIntervalThreshold;
 
@@ -45,7 +46,8 @@ class TouchCalibratorController : public ui::EventHandler,
   void OnDisplayConfigurationChanged() override;
 
   // Starts the calibration process for the given |target_display|.
-  void StartCalibration(const display::Display& target_display);
+  void StartCalibration(const display::Display& target_display,
+                        const TouchCalibrationCallback& callback);
 
   // Stops any ongoing calibration process.
   void StopCalibration();
@@ -77,6 +79,9 @@ class TouchCalibratorController : public ui::EventHandler,
   // An array of Calibration point pairs. This stores all the 4 display and
   // touch input point pairs that will be used for calibration.
   CalibrationPointPairQuad touch_point_quad_;
+
+  // A callback to be called when touch calibration completes.
+  TouchCalibrationCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchCalibratorController);
 };

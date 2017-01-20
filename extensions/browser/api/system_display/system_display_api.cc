@@ -30,6 +30,10 @@ const char SystemDisplayFunction::kCrosOnlyError[] =
 const char SystemDisplayFunction::kKioskOnlyError[] =
     "Only kiosk enabled extensions are allowed to use this function.";
 
+const char
+    SystemDisplayShowNativeTouchCalibrationFunction::kTouchCalibrationError[] =
+        "Touch calibration failed";
+
 namespace {
 
 class OverscanTracker;
@@ -267,45 +271,73 @@ SystemDisplayOverscanCalibrationCompleteFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
-SystemDisplayTouchCalibrationStartFunction::Run() {
-  std::unique_ptr<display::TouchCalibrationStart::Params> params(
-      display::TouchCalibrationStart::Params::Create(*args_));
+SystemDisplayShowNativeTouchCalibrationFunction::Run() {
+  std::unique_ptr<display::ShowNativeTouchCalibration::Params> params(
+      display::ShowNativeTouchCalibration::Params::Create(*args_));
 
   std::string error;
-  if (DisplayInfoProvider::Get()->IsTouchCalibrationActive(&error))
+  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive(&error))
     return RespondNow(Error(error));
 
-  if (!DisplayInfoProvider::Get()->TouchCalibrationStart(params->id))
-    return RespondNow(Error("Invalid display ID: " + params->id));
+  if (!DisplayInfoProvider::Get()->ShowNativeTouchCalibration(
+          params->id, &error,
+          base::Bind(&SystemDisplayShowNativeTouchCalibrationFunction::
+                         OnCalibrationComplete,
+                     this))) {
+    return RespondNow(Error(error));
+  }
+  return RespondLater();
+}
+
+void SystemDisplayShowNativeTouchCalibrationFunction::OnCalibrationComplete(
+    bool success) {
+  if (success)
+    Respond(OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+  else
+    Respond(Error(kTouchCalibrationError));
+}
+
+ExtensionFunction::ResponseAction
+SystemDisplayStartCustomTouchCalibrationFunction::Run() {
+  std::unique_ptr<display::StartCustomTouchCalibration::Params> params(
+      display::StartCustomTouchCalibration::Params::Create(*args_));
+
+  std::string error;
+  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive(&error))
+    return RespondNow(Error(error));
+
+  if (!DisplayInfoProvider::Get()->StartCustomTouchCalibration(params->id,
+                                                               &error))
+    return RespondNow(Error(error));
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction
-SystemDisplayTouchCalibrationSetFunction::Run() {
-  std::unique_ptr<display::TouchCalibrationSet::Params> params(
-      display::TouchCalibrationSet::Params::Create(*args_));
+SystemDisplayCompleteCustomTouchCalibrationFunction::Run() {
+  std::unique_ptr<display::CompleteCustomTouchCalibration::Params> params(
+      display::CompleteCustomTouchCalibration::Params::Create(*args_));
 
   std::string error;
-  if (DisplayInfoProvider::Get()->IsTouchCalibrationActive(&error))
+  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive(&error))
     return RespondNow(Error(error));
 
-  if (!DisplayInfoProvider::Get()->TouchCalibrationSet(
-          params->id, params->pairs, params->bounds, &error)) {
+  if (!DisplayInfoProvider::Get()->CompleteCustomTouchCalibration(
+          params->pairs, params->bounds, &error)) {
     return RespondNow(Error(error));
   }
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction
-SystemDisplayTouchCalibrationResetFunction::Run() {
-  std::unique_ptr<display::TouchCalibrationReset::Params> params(
-      display::TouchCalibrationReset::Params::Create(*args_));
+SystemDisplayClearTouchCalibrationFunction::Run() {
+  std::unique_ptr<display::ClearTouchCalibration::Params> params(
+      display::ClearTouchCalibration::Params::Create(*args_));
 
   std::string error;
-  if (DisplayInfoProvider::Get()->IsTouchCalibrationActive(&error))
+  if (DisplayInfoProvider::Get()->IsNativeTouchCalibrationActive(&error))
     return RespondNow(Error(error));
 
-  if (!DisplayInfoProvider::Get()->TouchCalibrationReset(params->id, &error))
+  if (!DisplayInfoProvider::Get()->ClearTouchCalibration(params->id, &error))
     return RespondNow(Error(error));
   return RespondNow(NoArguments());
 }

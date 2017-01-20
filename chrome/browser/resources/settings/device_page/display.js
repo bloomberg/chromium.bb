@@ -315,7 +315,7 @@ Polymer({
    * @private
    */
   onTouchCalibrationTap_: function(e) {
-    settings.display.systemDisplayApi.touchCalibrationStart(
+    settings.display.systemDisplayApi.showNativeTouchCalibration(
         this.selectedDisplay.id);
   },
 

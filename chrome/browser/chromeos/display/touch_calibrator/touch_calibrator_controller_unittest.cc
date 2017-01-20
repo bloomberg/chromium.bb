@@ -44,7 +44,9 @@ class TouchCalibratorControllerTest : public ash::test::AshTestBase {
     EXPECT_FALSE(ctrl->is_calibrating());
     EXPECT_FALSE(!!ctrl->touch_calibrator_views_.size());
 
-    ctrl->StartCalibration(target_display);
+    TouchCalibratorController::TouchCalibrationCallback empty_callback;
+
+    ctrl->StartCalibration(target_display, empty_callback);
     EXPECT_TRUE(ctrl->is_calibrating());
 
     // There should be a touch calibrator view associated with each of the
