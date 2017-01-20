@@ -71,7 +71,8 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA) && \
+    !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #include "gin/v8_initializer.h"
 #endif
 
@@ -732,8 +733,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       gin::V8Initializer::LoadV8Natives();
     }
 #else
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
     gin::V8Initializer::LoadV8Snapshot();
     gin::V8Initializer::LoadV8Natives();
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 #endif  // OS_POSIX && !OS_MACOSX
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 

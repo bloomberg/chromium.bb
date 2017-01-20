@@ -5,6 +5,24 @@
 import("//testing/test.gni")
 import("//v8/gni/v8.gni")
 
+# This is depended upon from the browser DLL on Windows, where V8 is not used,
+# but features are enabled. This cannot depend on V8.
+source_set("gin_features") {
+  sources = [
+    "gin_export.h",
+    "gin_features.cc",
+    "public/gin_features.h",
+  ]
+
+  defines = [ "GIN_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+  ]
+
+  assert_no_deps = [ "//v8" ]
+}
+
 component("gin") {
   sources = [
     "arguments.cc",
@@ -21,7 +39,6 @@ component("gin") {
     "function_template.cc",
     "function_template.h",
     "gin_export.h",
-    "gin_features.cc",
     "handle.h",
     "interceptor.cc",
     "interceptor.h",
@@ -46,7 +63,6 @@ component("gin") {
     "public/context_holder.h",
     "public/debug.h",
     "public/gin_embedders.h",
-    "public/gin_features.h",
     "public/isolate_holder.h",
     "public/v8_idle_task_runner.h",
     "public/v8_platform.h",
@@ -83,6 +99,7 @@ component("gin") {
     "//v8",
   ]
   deps = [
+    ":gin_features",
     "//base/third_party/dynamic_annotations",
     "//crypto",
   ]

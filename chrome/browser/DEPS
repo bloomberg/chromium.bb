@@ -27,7 +27,7 @@ include_rules = [
   "+extensions/features",
   "+extensions/grit",
   "+extensions/test",
-  "+gin",
+  "+gin/public/gin_features.h",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",
   "+google_update",

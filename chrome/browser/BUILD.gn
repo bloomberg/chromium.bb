@@ -1532,6 +1532,7 @@ split_static_library("browser") {
     "//device/usb/mojo",
     "//device/usb/public/interfaces",
     "//extensions/features",
+    "//gin:gin_features",
     "//google_apis",
     "//gpu/config",
     "//media",

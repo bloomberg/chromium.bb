@@ -211,7 +211,6 @@ static_library("common") {
     "//crypto",
     "//extensions/common:common_constants",
     "//extensions/features",
-    "//gin",
     "//google_apis",
     "//gpu/command_buffer/service",
     "//gpu/config",
