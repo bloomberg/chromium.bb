@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
 #include "components/sync/protocol/experiment_status.pb.h"
 #include "net/base/escape.h"
@@ -68,6 +69,8 @@ void GCMChannelStatusRequest::Start() {
 
   url_fetcher_ =
       net::URLFetcher::Create(request_url, net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(), data_use_measurement::DataUseUserData::GCM_DRIVER);
   url_fetcher_->SetRequestContext(request_context_getter_.get());
   url_fetcher_->AddExtraRequestHeader("User-Agent: " + user_agent_);
   url_fetcher_->SetUploadData(kRequestContentType, upload_data);

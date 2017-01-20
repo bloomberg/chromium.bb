@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/web_history_service_observer.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -178,6 +179,9 @@ class RequestImpl : public WebHistoryService::Request,
         net::URLFetcher::POST : net::URLFetcher::GET;
     std::unique_ptr<net::URLFetcher> fetcher =
         net::URLFetcher::Create(url_, request_type, this);
+    data_use_measurement::DataUseUserData::AttachToFetcher(
+        fetcher.get(),
+        data_use_measurement::DataUseUserData::WEB_HISTORY_SERVICE);
     fetcher->SetRequestContext(request_context_.get());
     fetcher->SetMaxRetriesOn5xx(kMaxRetries);
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

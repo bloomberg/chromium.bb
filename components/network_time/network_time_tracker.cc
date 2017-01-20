@@ -20,6 +20,7 @@
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "components/client_update_protocol/ecdsa.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/network_time/network_time_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -464,6 +465,9 @@ void NetworkTimeTracker::CheckTime() {
     DVLOG(1) << "tried to make fetch happen; failed";
     return;
   }
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      time_fetcher_.get(),
+      data_use_measurement::DataUseUserData::NETWORK_TIME_TRACKER);
   time_fetcher_->SaveResponseWithWriter(
       std::unique_ptr<net::URLFetcherResponseWriter>(
           new SizeLimitingStringWriter(max_response_size_)));

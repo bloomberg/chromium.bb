@@ -100,6 +100,12 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "SearchProviderLogos";
     case UPDATE_CLIENT:
       return "UpdateClient";
+    case GCM_DRIVER:
+      return "GCMDriver";
+    case WEB_HISTORY_SERVICE:
+      return "WebHistoryService";
+    case NETWORK_TIME_TRACKER:
+      return "NetworkTimeTracker";
   }
   return "INVALID";
 }
