@@ -388,7 +388,8 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
   return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), stream_id, stream_priority,
       gpu::kNullSurfaceHandle,
-      GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext"),
+      GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext/" +
+           ui::command_buffer_metrics::ContextTypeToString(type)),
       automatic_flushes, support_locking, limits, attributes, nullptr, type));
 }
 
