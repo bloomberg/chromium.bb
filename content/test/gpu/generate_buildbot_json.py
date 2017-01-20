@@ -100,7 +100,7 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -111,7 +111,7 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Debug',
@@ -437,7 +437,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -448,7 +448,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:041a',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -461,7 +461,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '1002:6779',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -474,7 +474,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:0f02',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -487,7 +487,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Debug',
@@ -498,7 +498,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:1912',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -511,7 +511,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:1912',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Debug',
@@ -524,7 +524,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '1002:6613',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -687,7 +687,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -788,7 +788,7 @@ V8_FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Linux'
+          'os': 'Ubuntu'
         },
       ],
       'build_config': 'Release',
@@ -870,7 +870,7 @@ COMMON_GTESTS = {
           # NVIDIA Linux
           {
             'gpu': '10de:104a',
-            'os': 'Linux'
+            'os': 'Ubuntu'
           },
         ],
       },
@@ -961,7 +961,7 @@ COMMON_GTESTS = {
           # NVIDIA Linux
           {
             'gpu': '10de:104a',
-            'os': 'Linux'
+            'os': 'Ubuntu'
           }
         ],
       }
@@ -1017,7 +1017,7 @@ COMMON_GTESTS = {
           },
           {
             'gpu': '10de:104a',
-            'os': 'Linux'
+            'os': 'Ubuntu'
           }
         ],
       }
@@ -1465,15 +1465,15 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
-            'os': 'Linux'
+            'os': 'Ubuntu'
           },
           {
             'gpu': '8086:0412',
-            'os': 'Linux'
+            'os': 'Ubuntu'
           },
           {
             'gpu': '8086:1912',
-            'os': 'Linux'
+            'os': 'Ubuntu'
           },
         ],
       },
@@ -1517,7 +1517,7 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
           },
           {
             'gpu': '10de:104a',
-            'os': 'Linux'
+            'os': 'Ubuntu'
           }
         ],
       },

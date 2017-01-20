@@ -2098,7 +2098,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2115,7 +2115,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2131,7 +2131,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2147,7 +2147,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2163,7 +2163,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2179,7 +2179,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2192,7 +2192,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2219,7 +2219,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2242,7 +2242,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2265,7 +2265,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2288,7 +2288,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2317,7 +2317,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2354,7 +2354,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2377,7 +2377,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2400,7 +2400,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2423,7 +2423,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2446,7 +2446,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2465,7 +2465,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2482,7 +2482,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2498,7 +2498,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2514,7 +2514,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2530,7 +2530,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2546,7 +2546,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2559,7 +2559,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2586,7 +2586,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2609,7 +2609,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2632,7 +2632,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2655,7 +2655,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2684,7 +2684,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2721,7 +2721,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2744,7 +2744,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2767,7 +2767,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2790,7 +2790,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2813,7 +2813,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2832,7 +2832,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2849,7 +2849,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2865,7 +2865,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2894,7 +2894,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2910,7 +2910,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2926,7 +2926,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2939,7 +2939,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -2966,7 +2966,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -2989,7 +2989,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3012,7 +3012,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3035,7 +3035,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3064,7 +3064,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3101,7 +3101,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3124,7 +3124,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3147,7 +3147,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3172,7 +3172,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -3196,7 +3196,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3219,7 +3219,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6779",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3238,7 +3238,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3255,7 +3255,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3271,7 +3271,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3300,7 +3300,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3316,7 +3316,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3332,7 +3332,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3345,7 +3345,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3372,7 +3372,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3395,7 +3395,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3418,7 +3418,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3441,7 +3441,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3470,7 +3470,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3507,7 +3507,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3530,7 +3530,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3553,7 +3553,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3578,7 +3578,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -3602,7 +3602,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3625,7 +3625,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6613",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3644,7 +3644,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3661,7 +3661,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3677,7 +3677,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3706,7 +3706,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3722,7 +3722,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3738,7 +3738,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3751,7 +3751,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -3778,7 +3778,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3801,7 +3801,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3824,7 +3824,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3847,7 +3847,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3876,7 +3876,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3913,7 +3913,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3936,7 +3936,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3959,7 +3959,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -3984,7 +3984,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -4008,7 +4008,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4031,7 +4031,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:041a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4050,7 +4050,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4067,7 +4067,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4083,7 +4083,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4112,7 +4112,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4128,7 +4128,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4144,7 +4144,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4157,7 +4157,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4184,7 +4184,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4207,7 +4207,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4230,7 +4230,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4253,7 +4253,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4282,7 +4282,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4319,7 +4319,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4342,7 +4342,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4365,7 +4365,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4390,7 +4390,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -4416,7 +4416,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -4440,7 +4440,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4463,7 +4463,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:1912",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4482,7 +4482,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4499,7 +4499,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4515,7 +4515,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4544,7 +4544,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4560,7 +4560,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4576,7 +4576,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4589,7 +4589,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4616,7 +4616,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4639,7 +4639,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4662,7 +4662,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4685,7 +4685,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4714,7 +4714,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4751,7 +4751,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4774,7 +4774,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4797,7 +4797,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4822,7 +4822,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -4846,7 +4846,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4869,7 +4869,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0f02",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -4889,7 +4889,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 4
@@ -4908,7 +4908,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 4
@@ -4927,7 +4927,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 12
@@ -4945,7 +4945,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4962,7 +4962,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4978,7 +4978,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -4994,7 +4994,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -5010,7 +5010,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -5026,7 +5026,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -5039,7 +5039,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -5055,7 +5055,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -5075,7 +5075,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5098,7 +5098,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5121,7 +5121,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5144,7 +5144,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5167,7 +5167,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5196,7 +5196,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5233,7 +5233,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5256,7 +5256,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5279,7 +5279,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5304,7 +5304,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -5330,7 +5330,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -5354,7 +5354,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -5377,7 +5377,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -9506,7 +9506,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 4
@@ -9524,7 +9524,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -9540,7 +9540,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -9553,7 +9553,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         },
@@ -9573,7 +9573,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
@@ -9598,7 +9598,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ],
           "shards": 15
@@ -9622,7 +9622,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:104a",
-              "os": "Linux"
+              "os": "Ubuntu"
             }
           ]
         }
