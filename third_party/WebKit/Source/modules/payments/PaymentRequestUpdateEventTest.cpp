@@ -37,8 +37,8 @@ class MockPaymentUpdater : public GarbageCollectedFinalized<MockPaymentUpdater>,
 
 TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled) {
   V8TestingScope scope;
-  PaymentRequestUpdateEvent* event =
-      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
+      scope.getExecutionContext(), EventTypeNames::shippingaddresschange);
   MockPaymentUpdater* updater = new MockPaymentUpdater;
   event->setPaymentDetailsUpdater(updater);
   event->setEventPhase(Event::kCapturingPhase);
@@ -56,8 +56,8 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled) {
 
 TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled) {
   V8TestingScope scope;
-  PaymentRequestUpdateEvent* event =
-      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
+      scope.getExecutionContext(), EventTypeNames::shippingaddresschange);
   MockPaymentUpdater* updater = new MockPaymentUpdater;
   event->setPaymentDetailsUpdater(updater);
   event->setEventPhase(Event::kCapturingPhase);
@@ -75,8 +75,8 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled) {
 
 TEST(PaymentRequestUpdateEventTest, CannotUpdateWithoutDispatching) {
   V8TestingScope scope;
-  PaymentRequestUpdateEvent* event =
-      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
+      scope.getExecutionContext(), EventTypeNames::shippingaddresschange);
   event->setPaymentDetailsUpdater(new MockPaymentUpdater);
 
   event->updateWith(
@@ -89,8 +89,8 @@ TEST(PaymentRequestUpdateEventTest, CannotUpdateWithoutDispatching) {
 
 TEST(PaymentRequestUpdateEventTest, CannotUpdateTwice) {
   V8TestingScope scope;
-  PaymentRequestUpdateEvent* event =
-      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
+      scope.getExecutionContext(), EventTypeNames::shippingaddresschange);
   MockPaymentUpdater* updater = new MockPaymentUpdater;
   event->setPaymentDetailsUpdater(updater);
   event->setEventPhase(Event::kCapturingPhase);
@@ -110,8 +110,8 @@ TEST(PaymentRequestUpdateEventTest, CannotUpdateTwice) {
 
 TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired) {
   V8TestingScope scope;
-  PaymentRequestUpdateEvent* event =
-      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
+      scope.getExecutionContext(), EventTypeNames::shippingaddresschange);
 
   event->updateWith(
       scope.getScriptState(),
@@ -128,8 +128,8 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout) {
   PaymentRequest* request = PaymentRequest::create(
       scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
-  PaymentRequestUpdateEvent* event =
-      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
+      scope.getExecutionContext(), EventTypeNames::shippingaddresschange);
   event->setPaymentDetailsUpdater(request);
   EXPECT_FALSE(scope.getExceptionState().hadException());
 

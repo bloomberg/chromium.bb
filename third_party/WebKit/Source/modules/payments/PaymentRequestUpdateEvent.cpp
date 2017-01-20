@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ScriptFunction.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/payments/PaymentUpdater.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/text/WTFString.h"
@@ -85,9 +87,10 @@ class UpdatePaymentDetailsErrorFunction : public ScriptFunction {
 PaymentRequestUpdateEvent::~PaymentRequestUpdateEvent() {}
 
 PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::create(
+    ExecutionContext* executionContext,
     const AtomicString& type,
     const PaymentRequestUpdateEventInit& init) {
-  return new PaymentRequestUpdateEvent(type, init);
+  return new PaymentRequestUpdateEvent(executionContext, type, init);
 }
 
 void PaymentRequestUpdateEvent::setPaymentDetailsUpdater(
@@ -145,10 +148,14 @@ void PaymentRequestUpdateEvent::onUpdateEventTimeout(TimerBase*) {
 }
 
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(
+    ExecutionContext* executionContext,
     const AtomicString& type,
     const PaymentRequestUpdateEventInit& init)
     : Event(type, init),
       m_waitForUpdate(false),
-      m_abortTimer(this, &PaymentRequestUpdateEvent::onUpdateEventTimeout) {}
+      m_abortTimer(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext),
+          this,
+          &PaymentRequestUpdateEvent::onUpdateEventTimeout) {}
 
 }  // namespace blink

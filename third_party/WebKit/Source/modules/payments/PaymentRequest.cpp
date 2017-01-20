@@ -857,8 +857,8 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
   }
 
   m_shippingAddress = new PaymentAddress(std::move(address));
-  PaymentRequestUpdateEvent* event =
-      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
+      getExecutionContext(), EventTypeNames::shippingaddresschange);
   event->setTarget(this);
   event->setPaymentDetailsUpdater(this);
   bool success = getExecutionContext()->getEventQueue()->enqueueEvent(event);
@@ -870,8 +870,8 @@ void PaymentRequest::OnShippingOptionChange(const String& shippingOptionId) {
   DCHECK(m_showResolver);
   DCHECK(!m_completeResolver);
   m_shippingOption = shippingOptionId;
-  PaymentRequestUpdateEvent* event =
-      PaymentRequestUpdateEvent::create(EventTypeNames::shippingoptionchange);
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(
+      getExecutionContext(), EventTypeNames::shippingoptionchange);
   event->setTarget(this);
   event->setPaymentDetailsUpdater(this);
   bool success = getExecutionContext()->getEventQueue()->enqueueEvent(event);
