@@ -6,7 +6,11 @@
 
 import datetime
 import logging
+
 from webkitpy.layout_tests.servers import server_base
+
+
+_log = logging.getLogger(__name__)
 
 
 class WPTServe(server_base.ServerBase):
@@ -57,3 +61,34 @@ class WPTServe(server_base.ServerBase):
                 'Pre-generated keys and certificates are going to be expired at %s.'
                 ' Please re-generate them by following steps in %s/README.chromium.'
                 % (expiration_date.strftime('%b %d %Y'), path_to_wpt_support))
+
+    def _stop_running_server(self):
+        self._wait_for_action(self._check_and_kill_wptserve)
+        if self._filesystem.exists(self._pid_file):
+            self._filesystem.remove(self._pid_file)
+
+    def _check_and_kill_wptserve(self):
+        """Tries to kill wptserve.
+
+        Returns True if it appears to be not running. Or, if it appears to be
+        running, tries to kill the process and returns False.
+        """
+        if not (self._pid and self._executive.check_running_pid(self._pid)):
+            _log.debug('pid %d is not running', self._pid)
+            return True
+
+        _log.debug('pid %d is running, killing it', self._pid)
+
+        # Executive.kill_process appears to not to effectively kill the
+        # wptserve processes on Linux (and presumably other platforms).
+        if self._platform.is_win():
+            self._executive.kill_process(self._pid)
+        else:
+            self._executive.interrupt(self._pid)
+
+        # According to Popen.wait(), this can deadlock when using stdout=PIPE or
+        # stderr=PIPE. We're using DEVNULL for both so that should not occur.
+        if self._process is not None:
+            self._process.wait()
+
+        return False
