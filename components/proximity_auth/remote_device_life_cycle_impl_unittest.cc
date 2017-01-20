@@ -13,13 +13,13 @@
 #include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_connection.h"
+#include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/wire_message.h"
-#include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/messenger.h"
-#include "components/proximity_auth/secure_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +33,7 @@ namespace proximity_auth {
 
 namespace {
 
-class StubSecureContext : public SecureContext {
+class StubSecureContext : public cryptauth::SecureContext {
  public:
   StubSecureContext() {}
   ~StubSecureContext() override {}
@@ -92,7 +92,7 @@ class FakeConnectionFinder : public cryptauth::ConnectionFinder {
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionFinder);
 };
 
-class FakeAuthenticator : public Authenticator {
+class FakeAuthenticator : public cryptauth::Authenticator {
  public:
   FakeAuthenticator(cryptauth::Connection* connection)
       : connection_(connection) {}
@@ -104,16 +104,16 @@ class FakeAuthenticator : public Authenticator {
               connection_->remote_device().public_key);
   }
 
-  void OnAuthenticationResult(Authenticator::Result result) {
+  void OnAuthenticationResult(cryptauth::Authenticator::Result result) {
     ASSERT_FALSE(callback_.is_null());
-    std::unique_ptr<SecureContext> secure_context;
+    std::unique_ptr<cryptauth::SecureContext> secure_context;
     if (result == Authenticator::Result::SUCCESS)
       secure_context.reset(new StubSecureContext());
     callback_.Run(result, std::move(secure_context));
   }
 
  private:
-  // Authenticator:
+  // cryptauth::Authenticator:
   void Authenticate(const AuthenticationCallback& callback) override {
     ASSERT_TRUE(callback_.is_null());
     callback_ = callback;
@@ -148,7 +148,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
     return std::move(scoped_connection_finder);
   }
 
-  std::unique_ptr<Authenticator> CreateAuthenticator() override {
+  std::unique_ptr<cryptauth::Authenticator> CreateAuthenticator() override {
     EXPECT_TRUE(connection_finder_);
     std::unique_ptr<FakeAuthenticator> scoped_authenticator(
         new FakeAuthenticator(connection_finder_->connection()));
@@ -209,12 +209,12 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
     return life_cycle_.connection_finder()->connection();
   }
 
-  void Authenticate(Authenticator::Result result) {
+  void Authenticate(cryptauth::Authenticator::Result result) {
     EXPECT_EQ(RemoteDeviceLifeCycle::State::AUTHENTICATING,
               life_cycle_.GetState());
 
     RemoteDeviceLifeCycle::State expected_state =
-        (result == Authenticator::Result::SUCCESS)
+        (result == cryptauth::Authenticator::Result::SUCCESS)
             ? RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED
             : RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED;
 
@@ -223,7 +223,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
                            expected_state));
     life_cycle_.authenticator()->OnAuthenticationResult(result);
 
-    if (result == Authenticator::Result::SUCCESS)
+    if (result == cryptauth::Authenticator::Result::SUCCESS)
       task_runner_->RunUntilIdle();
 
     EXPECT_EQ(expected_state, life_cycle_.GetState());
@@ -259,7 +259,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticateAndDisconnect) {
   StartLifeCycle();
   for (size_t i = 0; i < 3; ++i) {
     cryptauth::Connection* connection = OnConnectionFound();
-    Authenticate(Authenticator::Result::SUCCESS);
+    Authenticate(cryptauth::Authenticator::Result::SUCCESS);
     EXPECT_TRUE(life_cycle_.GetMessenger());
 
     EXPECT_CALL(*this,
@@ -275,7 +275,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticationFails) {
   // Simulate an authentication failure after connecting to the device.
   StartLifeCycle();
   OnConnectionFound();
-  Authenticate(Authenticator::Result::FAILURE);
+  Authenticate(cryptauth::Authenticator::Result::FAILURE);
   EXPECT_FALSE(life_cycle_.GetMessenger());
 
   // After a delay, the life cycle should return to FINDING_CONNECTION.
@@ -288,7 +288,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticationFails) {
 
   // Try failing with the DISCONNECTED state instead.
   OnConnectionFound();
-  Authenticate(Authenticator::Result::DISCONNECTED);
+  Authenticate(cryptauth::Authenticator::Result::DISCONNECTED);
   EXPECT_FALSE(life_cycle_.GetMessenger());
 
   // Check we're back in FINDING_CONNECTION state again.
@@ -305,14 +305,14 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
   // Authentication fails on first pass.
   StartLifeCycle();
   OnConnectionFound();
-  Authenticate(Authenticator::Result::FAILURE);
+  Authenticate(cryptauth::Authenticator::Result::FAILURE);
   EXPECT_FALSE(life_cycle_.GetMessenger());
   EXPECT_CALL(*this, OnLifeCycleStateChanged(_, _));
   task_runner_->RunUntilIdle();
 
   // Authentication succeeds on second pass.
   cryptauth::Connection* connection = OnConnectionFound();
-  Authenticate(Authenticator::Result::SUCCESS);
+  Authenticate(cryptauth::Authenticator::Result::SUCCESS);
   EXPECT_TRUE(life_cycle_.GetMessenger());
   EXPECT_CALL(*this, OnLifeCycleStateChanged(_, _));
   connection->Disconnect();

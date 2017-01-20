@@ -12,9 +12,9 @@
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/fake_connection.h"
+#include "components/cryptauth/fake_secure_context.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/wire_message.h"
-#include "components/proximity_auth/fake_secure_context.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -65,15 +65,15 @@ class TestMessenger : public MessengerImpl {
   TestMessenger()
       : MessengerImpl(base::MakeUnique<cryptauth::FakeConnection>(
                           cryptauth::CreateClassicRemoteDeviceForTest()),
-                      base::MakeUnique<FakeSecureContext>()) {}
+                      base::MakeUnique<cryptauth::FakeSecureContext>()) {}
   ~TestMessenger() override {}
 
   // Simple getters for the mock objects owned by |this| messenger.
   cryptauth::FakeConnection* GetFakeConnection() {
     return static_cast<cryptauth::FakeConnection*>(connection());
   }
-  FakeSecureContext* GetFakeSecureContext() {
-    return static_cast<FakeSecureContext*>(GetSecureContext());
+  cryptauth::FakeSecureContext* GetFakeSecureContext() {
+    return static_cast<cryptauth::FakeSecureContext*>(GetSecureContext());
   }
 
  private:
@@ -85,14 +85,14 @@ class TestMessenger : public MessengerImpl {
 TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeZero) {
   TestMessenger messenger;
   messenger.GetFakeSecureContext()->set_protocol_version(
-      SecureContext::PROTOCOL_VERSION_THREE_ZERO);
+      cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ZERO);
   EXPECT_FALSE(messenger.SupportsSignIn());
 }
 
 TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeOne) {
   TestMessenger messenger;
   messenger.GetFakeSecureContext()->set_protocol_version(
-      SecureContext::PROTOCOL_VERSION_THREE_ONE);
+      cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ONE);
   EXPECT_TRUE(messenger.SupportsSignIn());
 }
 
@@ -143,7 +143,7 @@ TEST(ProximityAuthMessengerImplTest,
      RequestDecryption_SignInUnsupported_DoesntSendMessage) {
   TestMessenger messenger;
   messenger.GetFakeSecureContext()->set_protocol_version(
-      SecureContext::PROTOCOL_VERSION_THREE_ZERO);
+      cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ZERO);
   messenger.RequestDecryption(kChallenge);
   EXPECT_FALSE(messenger.GetFakeConnection()->current_message());
 }
@@ -260,7 +260,7 @@ TEST(ProximityAuthMessengerImplTest,
      RequestUnlock_SignInUnsupported_DoesntSendMessage) {
   TestMessenger messenger;
   messenger.GetFakeSecureContext()->set_protocol_version(
-      SecureContext::PROTOCOL_VERSION_THREE_ZERO);
+      cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ZERO);
   messenger.RequestUnlock();
   EXPECT_FALSE(messenger.GetFakeConnection()->current_message());
 }

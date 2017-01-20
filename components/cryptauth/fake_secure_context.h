@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_FAKE_SECURE_CONTEXT_H_
-#define COMPONENTS_PROXIMITY_AUTH_FAKE_SECURE_CONTEXT_H_
+#ifndef COMPONENTS_CRYPTAUTH_FAKE_SECURE_CONTEXT_H_
+#define COMPONENTS_CRYPTAUTH_FAKE_SECURE_CONTEXT_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/proximity_auth/secure_context.h"
+#include "components/cryptauth/secure_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 class FakeSecureContext : public SecureContext {
  public:
@@ -37,6 +37,6 @@ class FakeSecureContext : public SecureContext {
   DISALLOW_COPY_AND_ASSIGN(FakeSecureContext);
 };
 
-}  // namespace proximity_auth
+}  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_FAKE_SECURE_CONTEXT_H_
+#endif  // COMPONENTS_CRYPTAUTH_FAKE_SECURE_CONTEXT_H_

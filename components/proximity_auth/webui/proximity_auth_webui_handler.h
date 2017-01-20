@@ -13,7 +13,6 @@
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_gcm_manager.h"
-#include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/logging/log_buffer.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/proximity_auth_client.h"

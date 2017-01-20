@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/fake_secure_context.h"
+#include "components/cryptauth/fake_secure_context.h"
 
 #include <stddef.h>
 
 #include "base/strings/string_util.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 namespace {
 
@@ -48,4 +48,4 @@ void FakeSecureContext::Decode(const std::string& encoded_message,
   callback.Run(decoded_message);
 }
 
-}  // namespace proximity_auth
+}  // namespace cryptauth

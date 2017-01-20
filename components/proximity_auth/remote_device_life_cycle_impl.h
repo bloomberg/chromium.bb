@@ -11,19 +11,22 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"
+
+namespace cryptauth {
+class SecureContext;
+}
 
 namespace proximity_auth {
 
 class Messenger;
 class ProximityAuthClient;
-class SecureContext;
 
 // Implementation of RemoteDeviceLifeCycle.
 class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
@@ -51,7 +54,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
 
   // Creates and returns an Authenticator instance for |connection_|.
   // Exposed for testing.
-  virtual std::unique_ptr<Authenticator> CreateAuthenticator();
+  virtual std::unique_ptr<cryptauth::Authenticator> CreateAuthenticator();
 
  private:
   // Transitions to |new_state|, and notifies observers.
@@ -65,8 +68,9 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   void OnConnectionFound(std::unique_ptr<cryptauth::Connection> connection);
 
   // Callback when |authenticator_| completes authentication.
-  void OnAuthenticationResult(Authenticator::Result result,
-                              std::unique_ptr<SecureContext> secure_context);
+  void OnAuthenticationResult(
+      cryptauth::Authenticator::Result result,
+      std::unique_ptr<cryptauth::SecureContext> secure_context);
 
   // Creates the messenger which parses status updates.
   void CreateMessenger();
@@ -91,7 +95,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
 
   // Context for encrypting and decrypting messages. Created after
   // authentication succeeds. Ownership is eventually passed to |messenger_|.
-  std::unique_ptr<SecureContext> secure_context_;
+  std::unique_ptr<cryptauth::SecureContext> secure_context_;
 
   // The messenger for sending and receiving messages in the
   // SECURE_CHANNEL_ESTABLISHED state.
@@ -99,7 +103,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
 
   // Authenticates the remote device after it is connected. Used in the
   // AUTHENTICATING state.
-  std::unique_ptr<Authenticator> authenticator_;
+  std::unique_ptr<cryptauth::Authenticator> authenticator_;
 
   // Used in the FINDING_CONNECTION state to establish a connection to the
   // remote device.

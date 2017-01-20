@@ -19,9 +19,11 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace proximity_auth {
-
+namespace cryptauth {
 class SecureContext;
+}
+
+namespace proximity_auth {
 
 // Concrete implementation of the Messenger interface.
 class MessengerImpl : public Messenger, public cryptauth::ConnectionObserver {
@@ -31,7 +33,7 @@ class MessengerImpl : public Messenger, public cryptauth::ConnectionObserver {
   // messages. The |connection| must be connected. The messenger begins
   // observing messages as soon as it is constructed.
   MessengerImpl(std::unique_ptr<cryptauth::Connection> connection,
-                std::unique_ptr<SecureContext> secure_context);
+                std::unique_ptr<cryptauth::SecureContext> secure_context);
   ~MessengerImpl() override;
 
   // Messenger:
@@ -41,7 +43,7 @@ class MessengerImpl : public Messenger, public cryptauth::ConnectionObserver {
   void DispatchUnlockEvent() override;
   void RequestDecryption(const std::string& challenge) override;
   void RequestUnlock() override;
-  SecureContext* GetSecureContext() const override;
+  cryptauth::SecureContext* GetSecureContext() const override;
 
   // Exposed for testing.
   cryptauth::Connection* connection() { return connection_.get(); }
@@ -104,7 +106,7 @@ class MessengerImpl : public Messenger, public cryptauth::ConnectionObserver {
 
   // Used to encrypt and decrypt payloads sent and received over the
   // |connection_|.
-  std::unique_ptr<SecureContext> secure_context_;
+  std::unique_ptr<cryptauth::SecureContext> secure_context_;
 
   // The registered observers of |this_| messenger.
   base::ObserverList<MessengerObserver> observers_;

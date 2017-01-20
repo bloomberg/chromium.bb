@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_MESSENGER_H
 #define COMPONENTS_PROXIMITY_AUTH_MESSENGER_H
 
+namespace cryptauth {
+class SecureContext;
+}
+
 namespace proximity_auth {
 
 class MessengerObserver;
-class SecureContext;
 
 // A messenger handling the Easy Unlock protocol, capable of parsing events from
 // the remote device and sending events for the local device.
@@ -38,7 +41,7 @@ class Messenger {
 
   // Returns the SecureContext instance used by the messenger. Ownership of the
   // SecureContext is not passed.
-  virtual SecureContext* GetSecureContext() const = 0;
+  virtual cryptauth::SecureContext* GetSecureContext() const = 0;
 };
 
 }  // namespace proximity_auth

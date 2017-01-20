@@ -2,30 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_DEVICE_TO_DEVICE_SECURE_CONTEXT_H
-#define COMPONENTS_PROXIMITY_AUTH_DEVICE_TO_DEVICE_SECURE_CONTEXT_H
+#ifndef COMPONENTS_CRYPTAUTH_DEVICE_TO_DEVICE_SECURE_CONTEXT_H_
+#define COMPONENTS_CRYPTAUTH_DEVICE_TO_DEVICE_SECURE_CONTEXT_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/proximity_auth/secure_context.h"
+#include "components/cryptauth/secure_context.h"
 
 namespace securemessage {
 class Header;
 }
 
 namespace cryptauth {
-class SecureMessageDelegate;
-}
 
-namespace proximity_auth {
+class SecureMessageDelegate;
 
 // SecureContext implementation for the DeviceToDevice protocol.
 class DeviceToDeviceSecureContext : public SecureContext {
  public:
   DeviceToDeviceSecureContext(
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
       const std::string& symmetric_key,
       const std::string& responder_auth_message_,
       ProtocolVersion protocol_version);
@@ -51,7 +49,7 @@ class DeviceToDeviceSecureContext : public SecureContext {
       const securemessage::Header& header);
 
   // Delegate for handling the creation and unwrapping of SecureMessages.
-  std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<SecureMessageDelegate> secure_message_delegate_;
 
   // The symmetric key used to create and unwrap messages.
   const std::string symmetric_key_;
@@ -71,6 +69,6 @@ class DeviceToDeviceSecureContext : public SecureContext {
   DISALLOW_COPY_AND_ASSIGN(DeviceToDeviceSecureContext);
 };
 
-}  // namespace proximity_auth
+}  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_DEVICE_TO_DEVICE_SECURE_CONTEXT_H
+#endif  // COMPONENTS_CRYPTAUTH_DEVICE_TO_DEVICE_SECURE_CONTEXT_H_

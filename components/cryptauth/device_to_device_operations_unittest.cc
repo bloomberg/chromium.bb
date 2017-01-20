@@ -5,12 +5,12 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "components/cryptauth/device_to_device_initiator_operations.h"
+#include "components/cryptauth/device_to_device_responder_operations.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
-#include "components/proximity_auth/device_to_device_initiator_operations.h"
-#include "components/proximity_auth/device_to_device_responder_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 namespace {
 
@@ -76,7 +76,7 @@ class ProximityAuthDeviceToDeviceOperationsTest : public testing::Test {
         secure_message_delegate_.GetPrivateKeyForPublicKey(
             remote_session_public_key_);
 
-    // Note: cryptauth::FakeSecureMessageDelegate functions are synchronous.
+    // Note: FakeSecureMessageDelegate functions are synchronous.
     secure_message_delegate_.DeriveKey(
         local_session_private_key_, remote_session_public_key_,
         base::Bind(&SaveMessageResult, &session_symmetric_key_));
@@ -123,7 +123,7 @@ class ProximityAuthDeviceToDeviceOperationsTest : public testing::Test {
     return local_auth_message;
   }
 
-  cryptauth::FakeSecureMessageDelegate secure_message_delegate_;
+  FakeSecureMessageDelegate secure_message_delegate_;
 
   std::string persistent_symmetric_key_;
   std::string local_session_public_key_;
@@ -266,4 +266,4 @@ TEST_F(ProximityAuthDeviceToDeviceOperationsTest,
   EXPECT_FALSE(validation_success);
 }
 
-}  // namespace proximity_auth
+}  // namespace cryptauth

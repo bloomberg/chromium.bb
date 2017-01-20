@@ -6,8 +6,6 @@ import("//testing/test.gni")
 
 static_library("proximity_auth") {
   sources = [
-    "authenticator.cc",
-    "authenticator.h",
     "bluetooth_connection.cc",
     "bluetooth_connection.h",
     "bluetooth_connection_finder.cc",
@@ -17,12 +15,6 @@ static_library("proximity_auth") {
     "bluetooth_util_chromeos.cc",
     "cryptauth_enroller_factory_impl.cc",
     "cryptauth_enroller_factory_impl.h",
-    "device_to_device_authenticator.cc",
-    "device_to_device_authenticator.h",
-    "device_to_device_initiator_operations.cc",
-    "device_to_device_initiator_operations.h",
-    "device_to_device_secure_context.cc",
-    "device_to_device_secure_context.h",
     "messenger.h",
     "messenger_impl.cc",
     "messenger_impl.h",
@@ -50,7 +42,6 @@ static_library("proximity_auth") {
     "screenlock_bridge.cc",
     "screenlock_bridge.h",
     "screenlock_state.h",
-    "secure_context.h",
     "switches.cc",
     "switches.h",
     "throttled_bluetooth_connection_finder.cc",
@@ -85,10 +76,6 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "device_to_device_responder_operations.cc",
-    "device_to_device_responder_operations.h",
-    "fake_secure_context.cc",
-    "fake_secure_context.h",
     "mock_proximity_auth_client.cc",
     "mock_proximity_auth_client.h",
   ]
@@ -110,9 +97,6 @@ source_set("unit_tests") {
   sources = [
     "bluetooth_connection_finder_unittest.cc",
     "bluetooth_connection_unittest.cc",
-    "device_to_device_authenticator_unittest.cc",
-    "device_to_device_operations_unittest.cc",
-    "device_to_device_secure_context_unittest.cc",
     "messenger_impl_unittest.cc",
     "proximity_auth_pref_manager_unittest.cc",
     "proximity_auth_system_unittest.cc",

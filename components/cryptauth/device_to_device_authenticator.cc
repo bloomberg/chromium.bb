@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/device_to_device_authenticator.h"
+#include "components/cryptauth/device_to_device_authenticator.h"
 
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
+#include "components/cryptauth/device_to_device_initiator_operations.h"
+#include "components/cryptauth/device_to_device_secure_context.h"
+#include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/cryptauth/wire_message.h"
-#include "components/proximity_auth/authenticator.h"
-#include "components/proximity_auth/device_to_device_initiator_operations.h"
-#include "components/proximity_auth/device_to_device_secure_context.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/secure_context.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 namespace {
 
@@ -30,9 +30,9 @@ const int kResponderAuthTimeoutSeconds = 5;
 }  // namespace
 
 DeviceToDeviceAuthenticator::DeviceToDeviceAuthenticator(
-    cryptauth::Connection* connection,
+    Connection* connection,
     const std::string& account_id,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
+    std::unique_ptr<SecureMessageDelegate> secure_message_delegate)
     : connection_(connection),
       account_id_(account_id),
       secure_message_delegate_(std::move(secure_message_delegate)),
@@ -110,7 +110,7 @@ void DeviceToDeviceAuthenticator::OnHelloMessageCreated(
   // Send the [Hello] message to the remote device.
   state_ = State::SENT_HELLO;
   hello_message_ = message;
-  connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+  connection_->SendMessage(base::MakeUnique<WireMessage>(
       hello_message_, std::string(Authenticator::kAuthenticationFeature)));
 }
 
@@ -150,7 +150,7 @@ void DeviceToDeviceAuthenticator::OnInitiatorAuthCreated(
   }
 
   state_ = State::SENT_INITIATOR_AUTH;
-  connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+  connection_->SendMessage(base::MakeUnique<WireMessage>(
       message, std::string(Authenticator::kAuthenticationFeature)));
 }
 
@@ -184,19 +184,19 @@ void DeviceToDeviceAuthenticator::Succeed() {
 }
 
 void DeviceToDeviceAuthenticator::OnConnectionStatusChanged(
-    cryptauth::Connection* connection,
-    cryptauth::Connection::Status old_status,
-    cryptauth::Connection::Status new_status) {
+    Connection* connection,
+    Connection::Status old_status,
+    Connection::Status new_status) {
   // We do not expect the connection to drop during authentication.
-  if (new_status == cryptauth::Connection::DISCONNECTED) {
+  if (new_status == Connection::DISCONNECTED) {
     Fail("Disconnected while authentication is in progress",
          Result::DISCONNECTED);
   }
 }
 
 void DeviceToDeviceAuthenticator::OnMessageReceived(
-    const cryptauth::Connection& connection,
-    const cryptauth::WireMessage& message) {
+    const Connection& connection,
+    const WireMessage& message) {
   if (state_ == State::SENT_HELLO &&
       message.feature() == std::string(Authenticator::kAuthenticationFeature)) {
     PA_LOG(INFO) << "Received [Responder Auth] message, payload_size="
@@ -221,8 +221,8 @@ void DeviceToDeviceAuthenticator::OnMessageReceived(
 }
 
 void DeviceToDeviceAuthenticator::OnSendCompleted(
-    const cryptauth::Connection& connection,
-    const cryptauth::WireMessage& message,
+    const Connection& connection,
+    const WireMessage& message,
     bool success) {
   if (state_ == State::SENT_INITIATOR_AUTH) {
     if (success)
@@ -235,4 +235,4 @@ void DeviceToDeviceAuthenticator::OnSendCompleted(
   }
 }
 
-}  // namespace proximity_auth
+}  // namespace cryptauth

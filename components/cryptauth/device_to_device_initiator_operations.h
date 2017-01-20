@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_DEVICE_TO_DEVICE_INITIATOR_OPERATIONS_H
-#define COMPONENTS_PROXIMITY_AUTH_DEVICE_TO_DEVICE_INITIATOR_OPERATIONS_H
+#ifndef COMPONENTS_CRYPTAUTH_DEVICE_TO_DEVICE_INITIATOR_OPERATIONS_H_
+#define COMPONENTS_CRYPTAUTH_DEVICE_TO_DEVICE_INITIATOR_OPERATIONS_H_
 
 #include <string>
 
@@ -11,10 +11,8 @@
 #include "base/macros.h"
 
 namespace cryptauth {
-class SecureMessageDelegate;
-}
 
-namespace proximity_auth {
+class SecureMessageDelegate;
 
 // Utility class containing operations in the DeviceToDevice protocol that the
 // initiator needs to perform. For Smart Lock, in which a phone unlocks a
@@ -60,7 +58,7 @@ class DeviceToDeviceInitiatorOperations {
   static void CreateHelloMessage(
       const std::string& session_public_key,
       const std::string& persistent_symmetric_key,
-      cryptauth::SecureMessageDelegate* secure_message_delegate,
+      SecureMessageDelegate* secure_message_delegate,
       const MessageCallback& callback);
 
   // Validates that the [Responder Auth] message, received from the responder,
@@ -86,7 +84,7 @@ class DeviceToDeviceInitiatorOperations {
       const std::string& persistent_symmetric_key,
       const std::string& session_private_key,
       const std::string& hello_message,
-      cryptauth::SecureMessageDelegate* secure_message_delegate,
+      SecureMessageDelegate* secure_message_delegate,
       const ValidateResponderAuthCallback& callback);
 
   // Creates the [Initiator Auth] message, which allows the responder to
@@ -103,13 +101,13 @@ class DeviceToDeviceInitiatorOperations {
       const std::string& session_symmetric_key,
       const std::string& persistent_symmetric_key,
       const std::string& responder_auth_message,
-      cryptauth::SecureMessageDelegate* secure_message_delegate,
+      SecureMessageDelegate* secure_message_delegate,
       const MessageCallback& callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(DeviceToDeviceInitiatorOperations);
 };
 
-}  // proximity_auth
+}  // cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_DEVICE_TO_DEVICE_INITIATOR_OPERATIONS_H
+#endif  // COMPONENTS_CRYPTAUTH_DEVICE_TO_DEVICE_INITIATOR_OPERATIONS_H_

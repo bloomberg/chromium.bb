@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/device_to_device_authenticator.h"
+#include "components/cryptauth/device_to_device_authenticator.h"
 
 #include <utility>
 
@@ -13,17 +13,17 @@
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/timer/mock_timer.h"
+#include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/cryptauth_test_util.h"
+#include "components/cryptauth/device_to_device_responder_operations.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
+#include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/wire_message.h"
-#include "components/proximity_auth/authenticator.h"
-#include "components/proximity_auth/device_to_device_responder_operations.h"
-#include "components/proximity_auth/secure_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 namespace {
 
@@ -62,25 +62,25 @@ void SaveValidateHelloMessageResult(bool* validated_out,
 }
 
 // Connection implementation for testing.
-class FakeConnection : public cryptauth::Connection {
+class FakeConnection : public Connection {
  public:
-  FakeConnection(const cryptauth::RemoteDevice& remote_device)
-      : cryptauth::Connection(remote_device), connection_blocked_(false) {}
+  FakeConnection(const RemoteDevice& remote_device)
+      : Connection(remote_device), connection_blocked_(false) {}
   ~FakeConnection() override {}
 
   // Connection:
   void Connect() override {
-    SetStatus(cryptauth::Connection::Status::CONNECTED);
+    SetStatus(Connection::Status::CONNECTED);
   }
   void Disconnect() override {
-    SetStatus(cryptauth::Connection::Status::DISCONNECTED);
+    SetStatus(Connection::Status::DISCONNECTED);
   }
 
-  using cryptauth::Connection::OnBytesReceived;
+  using Connection::OnBytesReceived;
 
   void ClearMessageBuffer() { message_buffer_.clear(); }
 
-  const ScopedVector<cryptauth::WireMessage>& message_buffer() {
+  const ScopedVector<WireMessage>& message_buffer() {
     return message_buffer_;
   }
 
@@ -91,16 +91,16 @@ class FakeConnection : public cryptauth::Connection {
   bool connection_blocked() { return connection_blocked_; }
 
  protected:
-  // cryptauth::Connection:
+  // Connection:
   void SendMessageImpl(
-      std::unique_ptr<cryptauth::WireMessage> message) override {
-    const cryptauth::WireMessage& message_alias = *message;
+      std::unique_ptr<WireMessage> message) override {
+    const WireMessage& message_alias = *message;
     message_buffer_.push_back(std::move(message));
     OnDidSendMessage(message_alias, !connection_blocked_);
   }
 
  private:
-  ScopedVector<cryptauth::WireMessage> message_buffer_;
+  ScopedVector<WireMessage> message_buffer_;
 
   bool connection_blocked_;
 
@@ -111,8 +111,8 @@ class FakeConnection : public cryptauth::Connection {
 class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
  public:
   DeviceToDeviceAuthenticatorForTest(
-      cryptauth::Connection* connection,
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
+      Connection* connection,
+      std::unique_ptr<SecureMessageDelegate> secure_message_delegate)
       : DeviceToDeviceAuthenticator(connection,
                                     kAccountId,
                                     std::move(secure_message_delegate)),
@@ -145,9 +145,9 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
 class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
  public:
   ProximityAuthDeviceToDeviceAuthenticatorTest()
-      : remote_device_(cryptauth::CreateClassicRemoteDeviceForTest()),
+      : remote_device_(CreateClassicRemoteDeviceForTest()),
         connection_(remote_device_),
-        secure_message_delegate_(new cryptauth::FakeSecureMessageDelegate),
+        secure_message_delegate_(new FakeSecureMessageDelegate),
         authenticator_(&connection_,
                        base::WrapUnique(secure_message_delegate_)) {}
   ~ProximityAuthDeviceToDeviceAuthenticatorTest() override {}
@@ -203,7 +203,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   std::string SimulateResponderAuth(const std::string& hello_message) {
     std::string remote_device_private_key =
         secure_message_delegate_->GetPrivateKeyForPublicKey(
-            cryptauth::kTestRemoteDevicePublicKey);
+            kTestRemoteDevicePublicKey);
 
     std::string responder_auth_message;
     DeviceToDeviceResponderOperations::CreateResponderAuthMessage(
@@ -213,8 +213,8 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
         base::Bind(&SaveStringResult, &responder_auth_message));
     EXPECT_FALSE(responder_auth_message.empty());
 
-    cryptauth::WireMessage wire_message(responder_auth_message,
-                                        Authenticator::kAuthenticationFeature);
+    WireMessage wire_message(responder_auth_message,
+                             Authenticator::kAuthenticationFeature);
     connection_.OnBytesReceived(wire_message.Serialize());
 
     return responder_auth_message;
@@ -229,14 +229,14 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   MOCK_METHOD1(OnAuthenticationResultProxy, void(Authenticator::Result result));
 
   // Contains information about the remote device.
-  const cryptauth::RemoteDevice remote_device_;
+  const RemoteDevice remote_device_;
 
   // Simulates the connection to the remote device.
   FakeConnection connection_;
 
   // The SecureMessageDelegate used by the authenticator.
   // Owned by |authenticator_|.
-  cryptauth::FakeSecureMessageDelegate* secure_message_delegate_;
+  FakeSecureMessageDelegate* secure_message_delegate_;
 
   // The DeviceToDeviceAuthenticator under test.
   DeviceToDeviceAuthenticatorForTest authenticator_;
@@ -281,8 +281,8 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest, ResponderRejectsHello) {
 
   // If the responder could not validate the [Hello message], it essentially
   // sends random bytes back for privacy reasons.
-  cryptauth::WireMessage wire_message(base::RandBytesAsString(300u),
-                                      Authenticator::kAuthenticationFeature);
+  WireMessage wire_message(base::RandBytesAsString(300u),
+                           Authenticator::kAuthenticationFeature);
   EXPECT_CALL(*this,
               OnAuthenticationResultProxy(Authenticator::Result::FAILURE));
   connection_.OnBytesReceived(wire_message.Serialize());
@@ -347,8 +347,8 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest,
 
   // Test that the authenticator is properly cleaned up after authentication
   // completes.
-  cryptauth::WireMessage wire_message(base::RandBytesAsString(300u),
-                                      Authenticator::kAuthenticationFeature);
+  WireMessage wire_message(base::RandBytesAsString(300u),
+                           Authenticator::kAuthenticationFeature);
   connection_.SendMessage(base::MakeUnique<cryptauth::WireMessage>(
       base::RandBytesAsString(300u), Authenticator::kAuthenticationFeature));
   connection_.OnBytesReceived(wire_message.Serialize());
@@ -357,4 +357,4 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest,
   connection_.OnBytesReceived(wire_message.Serialize());
 }
 
-}  // namespace proximity_auth
+}  // namespace cryptauth

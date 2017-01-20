@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/authenticator.h"
+#include "components/cryptauth/authenticator.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 // static
 const char Authenticator::kAuthenticationFeature[] = "auth";
 
-}  // namespace proximity_auth
+}  // namespace cryptauth

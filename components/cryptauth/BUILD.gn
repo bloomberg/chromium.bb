@@ -8,6 +8,8 @@
 
 static_library("cryptauth") {
   sources = [
+    "authenticator.cc",
+    "authenticator.h",
     "bluetooth_throttler.h",
     "bluetooth_throttler_impl.cc",
     "bluetooth_throttler_impl.h",
@@ -34,6 +36,12 @@ static_library("cryptauth") {
     "cryptauth_gcm_manager.h",
     "cryptauth_gcm_manager_impl.cc",
     "cryptauth_gcm_manager_impl.h",
+    "device_to_device_authenticator.cc",
+    "device_to_device_authenticator.h",
+    "device_to_device_initiator_operations.cc",
+    "device_to_device_initiator_operations.h",
+    "device_to_device_secure_context.cc",
+    "device_to_device_secure_context.h",
     "eid_generator.cc",
     "eid_generator.h",
     "pref_names.cc",
@@ -42,6 +50,7 @@ static_library("cryptauth") {
     "remote_beacon_seed_fetcher.h",
     "remote_device.cc",
     "remote_device.h",
+    "secure_context.h",
     "secure_message_delegate.cc",
     "secure_message_delegate.h",
     "switches.cc",
@@ -80,10 +89,14 @@ static_library("test_support") {
   sources = [
     "cryptauth_test_util.cc",
     "cryptauth_test_util.h",
+    "device_to_device_responder_operations.cc",
+    "device_to_device_responder_operations.h",
     "fake_connection.cc",
     "fake_connection.h",
     "fake_cryptauth_gcm_manager.cc",
     "fake_cryptauth_gcm_manager.h",
+    "fake_secure_context.cc",
+    "fake_secure_context.h",
     "fake_secure_message_delegate.cc",
     "fake_secure_message_delegate.h",
     "mock_cryptauth_client.cc",
@@ -105,6 +118,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
+    "//components/proximity_auth/logging",
     "//testing/gmock",
   ]
 }
@@ -121,6 +135,9 @@ source_set("unit_tests") {
     "cryptauth_enroller_impl_unittest.cc",
     "cryptauth_enrollment_manager_unittest.cc",
     "cryptauth_gcm_manager_impl_unittest.cc",
+    "device_to_device_authenticator_unittest.cc",
+    "device_to_device_operations_unittest.cc",
+    "device_to_device_secure_context_unittest.cc",
     "eid_generator_unittest.cc",
     "fake_secure_message_delegate_unittest.cc",
     "remote_beacon_seed_fetcher_unittest.cc",

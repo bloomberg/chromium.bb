@@ -15,11 +15,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/cryptauth/connection.h"
+#include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/wire_message.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_status_update.h"
-#include "components/proximity_auth/secure_context.h"
 
 namespace proximity_auth {
 namespace {
@@ -70,8 +70,9 @@ std::string GetMessageType(const base::DictionaryValue& message) {
 
 }  // namespace
 
-MessengerImpl::MessengerImpl(std::unique_ptr<cryptauth::Connection> connection,
-                             std::unique_ptr<SecureContext> secure_context)
+MessengerImpl::MessengerImpl(
+    std::unique_ptr<cryptauth::Connection> connection,
+    std::unique_ptr<cryptauth::SecureContext> secure_context)
     : connection_(std::move(connection)),
       secure_context_(std::move(secure_context)),
       weak_ptr_factory_(this) {
@@ -101,7 +102,7 @@ void MessengerImpl::RemoveObserver(MessengerObserver* observer) {
 bool MessengerImpl::SupportsSignIn() const {
   // TODO(tengs): Support sign-in for Bluetooth LE protocol.
   return (secure_context_->GetProtocolVersion() ==
-          SecureContext::PROTOCOL_VERSION_THREE_ONE) &&
+          cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ONE) &&
          connection_->remote_device().bluetooth_type !=
              cryptauth::RemoteDevice::BLUETOOTH_LE;
 }
@@ -151,7 +152,7 @@ void MessengerImpl::RequestUnlock() {
   ProcessMessageQueue();
 }
 
-SecureContext* MessengerImpl::GetSecureContext() const {
+cryptauth::SecureContext* MessengerImpl::GetSecureContext() const {
   return secure_context_.get();
 }
 

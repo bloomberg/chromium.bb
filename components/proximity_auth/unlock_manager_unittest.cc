@@ -13,7 +13,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/cryptauth/cryptauth_test_util.h"
-#include "components/proximity_auth/fake_secure_context.h"
+#include "components/cryptauth/fake_secure_context.h"
+#include "components/cryptauth/secure_context.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/mock_proximity_auth_client.h"
@@ -21,7 +22,6 @@
 #include "components/proximity_auth/remote_device_life_cycle.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/screenlock_bridge.h"
-#include "components/proximity_auth/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,7 +80,7 @@ class MockMessenger : public Messenger {
   MOCK_METHOD0(DispatchUnlockEvent, void());
   MOCK_METHOD1(RequestDecryption, void(const std::string& challenge));
   MOCK_METHOD0(RequestUnlock, void());
-  MOCK_CONST_METHOD0(GetSecureContext, SecureContext*());
+  MOCK_CONST_METHOD0(GetSecureContext, cryptauth::SecureContext*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMessenger);
@@ -262,7 +262,7 @@ class ProximityAuthUnlockManagerTest : public testing::Test {
   NiceMock<MockRemoteDeviceLifeCycle> life_cycle_;
   NiceMock<MockMessenger> messenger_;
   std::unique_ptr<TestUnlockManager> unlock_manager_;
-  FakeSecureContext secure_context_;
+  cryptauth::FakeSecureContext secure_context_;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;

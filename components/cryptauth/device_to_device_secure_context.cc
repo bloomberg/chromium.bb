@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/device_to_device_secure_context.h"
+#include "components/cryptauth/device_to_device_secure_context.h"
 
 #include <utility>
 
@@ -13,7 +13,7 @@
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/logging/logging.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 namespace {
 
@@ -27,7 +27,7 @@ const int kAuthenticationSequenceNumber = 2;
 }  // namespace
 
 DeviceToDeviceSecureContext::DeviceToDeviceSecureContext(
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<SecureMessageDelegate> secure_message_delegate,
     const std::string& symmetric_key,
     const std::string& responder_auth_message,
     ProtocolVersion protocol_version)
@@ -42,7 +42,7 @@ DeviceToDeviceSecureContext::~DeviceToDeviceSecureContext() {}
 
 void DeviceToDeviceSecureContext::Decode(const std::string& encoded_message,
                                          const MessageCallback& callback) {
-  cryptauth::SecureMessageDelegate::UnwrapOptions unwrap_options;
+  SecureMessageDelegate::UnwrapOptions unwrap_options;
   unwrap_options.encryption_scheme = securemessage::AES_256_CBC;
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
 
@@ -55,8 +55,8 @@ void DeviceToDeviceSecureContext::Decode(const std::string& encoded_message,
 void DeviceToDeviceSecureContext::Encode(const std::string& message,
                                          const MessageCallback& callback) {
   // Create a GcmMetadata field to put in the header.
-  cryptauth::GcmMetadata gcm_metadata;
-  gcm_metadata.set_type(cryptauth::DEVICE_TO_DEVICE_MESSAGE);
+  GcmMetadata gcm_metadata;
+  gcm_metadata.set_type(DEVICE_TO_DEVICE_MESSAGE);
   gcm_metadata.set_version(kGcmMetadataVersion);
 
   // Wrap |message| inside a DeviceToDeviceMessage proto.
@@ -64,7 +64,7 @@ void DeviceToDeviceSecureContext::Encode(const std::string& message,
   device_to_device_message.set_sequence_number(++last_sequence_number_);
   device_to_device_message.set_message(message);
 
-  cryptauth::SecureMessageDelegate::CreateOptions create_options;
+  SecureMessageDelegate::CreateOptions create_options;
   create_options.encryption_scheme = securemessage::AES_256_CBC;
   create_options.signature_scheme = securemessage::HMAC_SHA256;
   gcm_metadata.SerializeToString(&create_options.public_metadata);
@@ -105,9 +105,9 @@ void DeviceToDeviceSecureContext::HandleUnwrapResult(
   }
 
   // Validate the GcmMetadata proto in the header.
-  cryptauth::GcmMetadata gcm_metadata;
+  GcmMetadata gcm_metadata;
   if (!gcm_metadata.ParseFromString(header.public_metadata()) ||
-      gcm_metadata.type() != cryptauth::DEVICE_TO_DEVICE_MESSAGE ||
+      gcm_metadata.type() != DEVICE_TO_DEVICE_MESSAGE ||
       gcm_metadata.version() != kGcmMetadataVersion) {
     PA_LOG(ERROR) << "Failed to validate GcmMetadata.";
     callback.Run(std::string());
@@ -118,4 +118,4 @@ void DeviceToDeviceSecureContext::HandleUnwrapResult(
   callback.Run(device_to_device_message.message());
 }
 
-}  // proximity_auth
+}  // cryptauth

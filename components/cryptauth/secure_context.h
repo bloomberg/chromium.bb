@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_SECURE_CONTEXT_H
-#define COMPONENTS_PROXIMITY_AUTH_SECURE_CONTEXT_H
+#ifndef COMPONENTS_CRYPTAUTH_SECURE_CONTEXT_H_
+#define COMPONENTS_CRYPTAUTH_SECURE_CONTEXT_H_
 
 #include "base/callback_forward.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 // An interface used to decode and encode messages.
 class SecureContext {
@@ -42,6 +42,6 @@ class SecureContext {
   virtual std::string GetChannelBindingData() const = 0;
 };
 
-}  // namespace proximity_auth
+}  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_SECURE_CONTEXT_H
+#endif  // COMPONENTS_CRYPTAUTH_SECURE_CONTEXT_H_

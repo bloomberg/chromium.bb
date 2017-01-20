@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/device_to_device_secure_context.h"
+#include "components/cryptauth/device_to_device_secure_context.h"
 
 #include <memory>
 
@@ -13,7 +13,7 @@
 #include "components/cryptauth/proto/securemessage.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 
 namespace {
 
@@ -33,7 +33,7 @@ class ProximityAuthDeviceToDeviceSecureContextTest : public testing::Test {
  protected:
   ProximityAuthDeviceToDeviceSecureContextTest()
       : secure_context_(
-            base::MakeUnique<cryptauth::FakeSecureMessageDelegate>(),
+            base::MakeUnique<FakeSecureMessageDelegate>(),
             kSymmetricKey,
             kResponderAuthMessage,
             kProtocolVersion) {}
@@ -57,11 +57,11 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, CheckEncodedHeader) {
   ASSERT_TRUE(
       header_and_body.ParseFromString(secure_message.header_and_body()));
 
-  cryptauth::GcmMetadata gcm_metadata;
+  GcmMetadata gcm_metadata;
   ASSERT_TRUE(
       gcm_metadata.ParseFromString(header_and_body.header().public_metadata()));
   EXPECT_EQ(1, gcm_metadata.version());
-  EXPECT_EQ(cryptauth::DEVICE_TO_DEVICE_MESSAGE, gcm_metadata.type());
+  EXPECT_EQ(DEVICE_TO_DEVICE_MESSAGE, gcm_metadata.type());
 }
 
 TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, DecodeInvalidMessage) {
@@ -75,7 +75,7 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, DecodeInvalidMessage) {
 TEST_F(ProximityAuthDeviceToDeviceSecureContextTest, EncodeAndDecode) {
   // Initialize second secure channel with the same parameters as the first.
   DeviceToDeviceSecureContext secure_context2(
-      base::MakeUnique<cryptauth::FakeSecureMessageDelegate>(), kSymmetricKey,
+      base::MakeUnique<FakeSecureMessageDelegate>(), kSymmetricKey,
       kResponderAuthMessage, kProtocolVersion);
   std::string message = "encrypt this message";
 
@@ -96,7 +96,7 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest,
        DecodeInvalidSequenceNumber) {
   // Initialize second secure channel with the same parameters as the first.
   DeviceToDeviceSecureContext secure_context2(
-      base::MakeUnique<cryptauth::FakeSecureMessageDelegate>(), kSymmetricKey,
+      base::MakeUnique<FakeSecureMessageDelegate>(), kSymmetricKey,
       kResponderAuthMessage, kProtocolVersion);
 
   // Send a few messages over the first secure context.
@@ -113,4 +113,4 @@ TEST_F(ProximityAuthDeviceToDeviceSecureContextTest,
   EXPECT_TRUE(decoded_message.empty());
 }
 
-}  // proximity_auth
+}  // cryptauth

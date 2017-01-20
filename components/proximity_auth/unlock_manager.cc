@@ -13,12 +13,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/secure_context.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/metrics.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/proximity_monitor_impl.h"
-#include "components/proximity_auth/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 #if defined(OS_CHROMEOS)
