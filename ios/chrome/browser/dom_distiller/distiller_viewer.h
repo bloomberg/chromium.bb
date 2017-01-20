@@ -52,16 +52,15 @@ class DistillerViewerInterface : public DomDistillerRequestViewBase {
 class DistillerViewer : public DistillerViewerInterface {
  public:
   // Creates a |DistillerView| that will be used to distill |url|.
-  // If |factory| is not null, it will be used to create the DistillerPage that
-  // will load the URL and distill the page. If |factory| is null, the default
-  // factory of |distillerService| will be used.
+  // If |page| is not null, it will be used to load |url| and inject the page.
+  // If |page| is null, the default factory of |distillerService| will be used.
   // |callback| is called when distillation is finished with the protobuf
   // containing the distilled page.
   DistillerViewer(dom_distiller::DomDistillerService* distillerService,
                   PrefService* prefs,
                   const GURL& url,
                   const DistillationFinishedCallback& callback,
-                  const DistillerPageFactory* factory);
+                  std::unique_ptr<dom_distiller::DistillerPage> page);
   ~DistillerViewer() override;
 
   void OnArticleReady(

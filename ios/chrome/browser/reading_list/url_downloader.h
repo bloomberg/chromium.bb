@@ -48,12 +48,14 @@ class URLDownloader {
   using SuccessCompletion = base::Callback<void(const GURL&, bool)>;
 
   // A download completion callback that takes, in order, the GURL that was
-  // downloaded, a SuccessState indicating the outcome of the download, the
-  // path to the downloaded page (relative to |OfflineRootDirectoryPath()|, and
-  // the title of the url, and returns void.
-  // The path to downloaded file  and title should not be used in case of
+  // downloaded, the GURL of the page that was downloaded after redirections, a
+  // SuccessState indicating the outcome of the download, the path to the
+  // downloaded page (relative to |OfflineRootDirectoryPath()|, and the title of
+  // the url, and returns void.
+  // The path to downloaded file and title should not be used in case of
   // failure.
   using DownloadCompletion = base::Callback<void(const GURL&,
+                                                 const GURL&,
                                                  SuccessState,
                                                  const base::FilePath&,
                                                  const std::string&)>;
@@ -131,6 +133,9 @@ class URLDownloader {
           images,
       const std::string& title);
 
+  // A callback called if the URL passed to the distilled led to a redirection.
+  void RedirectionCallback(const GURL& page_url, const GURL& redirected_url);
+
   dom_distiller::DomDistillerService* distiller_service_;
   reading_list::ReadingListDistillerPageFactory* distiller_page_factory_;
   PrefService* pref_service_;
@@ -139,6 +144,8 @@ class URLDownloader {
   std::deque<Task> tasks_;
   bool working_;
   base::FilePath base_directory_;
+  GURL original_url_;
+  GURL distilled_url_;
   std::unique_ptr<dom_distiller::DistillerViewerInterface> distiller_;
   base::CancelableTaskTracker task_tracker_;
 

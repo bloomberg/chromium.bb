@@ -15,6 +15,7 @@ class BrowserState;
 
 namespace reading_list {
 class FaviconWebStateDispatcher;
+class ReadingListDistillerPage;
 
 // ReadingListDistillerPageFactory is an iOS-specific implementation of the
 // DistillerPageFactory interface allowing the creation of DistillerPage
@@ -25,6 +26,10 @@ class ReadingListDistillerPageFactory
  public:
   explicit ReadingListDistillerPageFactory(web::BrowserState* browser_state);
   ~ReadingListDistillerPageFactory() override;
+
+  // Creates a ReadingListDistillerPage.
+  std::unique_ptr<reading_list::ReadingListDistillerPage>
+  CreateReadingListDistillerPage() const;
 
   // Implementation of DistillerPageFactory:
   std::unique_ptr<dom_distiller::DistillerPage> CreateDistillerPage(

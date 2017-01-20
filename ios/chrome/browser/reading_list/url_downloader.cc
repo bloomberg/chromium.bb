@@ -14,6 +14,7 @@
 #include "components/reading_list/ios/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
+#include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/escape.h"
@@ -94,8 +95,9 @@ void URLDownloader::DownloadCompletionHandler(const GURL& url,
   auto post_delete = base::Bind(
       [](URLDownloader* _this, const GURL& url, const std::string& title,
          SuccessState success) {
-        _this->download_completion_.Run(
-            url, success, reading_list::OfflinePagePath(url), title);
+        _this->download_completion_.Run(url, _this->distilled_url_, success,
+                                        reading_list::OfflinePagePath(url),
+                                        title);
         _this->distiller_.reset();
         _this->working_ = false;
         _this->HandleNextTask();
@@ -157,10 +159,24 @@ void URLDownloader::DownloadURL(GURL url, bool offline_url_exists) {
     return;
   }
 
+  original_url_ = url;
+  distilled_url_ = url;
+  std::unique_ptr<reading_list::ReadingListDistillerPage>
+      reading_list_distiller_page =
+          distiller_page_factory_->CreateReadingListDistillerPage();
+  reading_list_distiller_page->SetRedirectionCallback(
+      base::Bind(&URLDownloader::RedirectionCallback, base::Unretained(this)));
+
   distiller_.reset(new dom_distiller::DistillerViewer(
       distiller_service_, pref_service_, url,
       base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this)),
-      distiller_page_factory_));
+      std::move(reading_list_distiller_page)));
+}
+
+void URLDownloader::RedirectionCallback(const GURL& page_url,
+                                        const GURL& redirected_url) {
+  DCHECK(original_url_ == page_url);
+  distilled_url_ = redirected_url;
 }
 
 void URLDownloader::DistillerCallback(

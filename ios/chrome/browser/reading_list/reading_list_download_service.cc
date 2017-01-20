@@ -185,6 +185,7 @@ void ReadingListDownloadService::RemoveDownloadedEntry(const GURL& url) {
 
 void ReadingListDownloadService::OnDownloadEnd(
     const GURL& url,
+    const GURL& distilled_url,
     URLDownloader::SuccessState success,
     const base::FilePath& distilled_path,
     const std::string& title) {
@@ -192,7 +193,8 @@ void ReadingListDownloadService::OnDownloadEnd(
   if ((success == URLDownloader::DOWNLOAD_SUCCESS ||
        success == URLDownloader::DOWNLOAD_EXISTS) &&
       !distilled_path.empty()) {
-    reading_list_model_->SetEntryDistilledInfo(url, distilled_path, url);
+    reading_list_model_->SetEntryDistilledInfo(url, distilled_path,
+                                               distilled_url);
     if (!title.empty())
       reading_list_model_->SetEntryTitle(url, title);
 

@@ -6,6 +6,7 @@
 #define COMPONENTS_DOM_DISTILLER_IOS_DISTILLER_PAGE_IOS_H_
 
 #include <memory>
+#include <objc/objc.h>
 #include <string>
 
 #include "base/memory/weak_ptr.h"

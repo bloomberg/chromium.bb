@@ -38,6 +38,11 @@ ReadingListDistillerPage::ReadingListDistillerPage(
 
 ReadingListDistillerPage::~ReadingListDistillerPage() {}
 
+void ReadingListDistillerPage::SetRedirectionCallback(
+    RedirectionCallback redirection_callback) {
+  redirection_callback_ = redirection_callback;
+}
+
 void ReadingListDistillerPage::DistillPageImpl(const GURL& url,
                                                const std::string& script) {
   std::unique_ptr<web::WebState> old_web_state = DetachWebState();
@@ -52,6 +57,7 @@ void ReadingListDistillerPage::DistillPageImpl(const GURL& url,
     favicon_driver->FetchFavicon(url);
   }
   AttachWebState(std::move(new_web_state));
+  original_url_ = url;
 
   DistillerPageIOS::DistillPageImpl(url, script);
 }
@@ -117,6 +123,13 @@ void ReadingListDistillerPage::WaitForPageLoadCompletion() {
 }
 
 void ReadingListDistillerPage::DelayedOnLoadURLDone() {
+  // The page is ready to be distilled.
+  // If the visible URL is not the original URL, notify the caller that URL
+  // changed.
+  GURL redirected_url = CurrentWebState()->GetVisibleURL();
+  if (redirected_url != original_url_ && !redirection_callback_.is_null()) {
+    redirection_callback_.Run(original_url_, redirected_url);
+  }
   DistillerPageIOS::OnLoadURLDone(web::PageLoadCompletionStatus::SUCCESS);
 }
 
@@ -166,7 +179,7 @@ void ReadingListDistillerPage::HandleGoogleCachedAMPPage() {
 
 bool ReadingListDistillerPage::HandleGoogleCachedAMPPageJavaScriptResult(
     id result,
-    NSError* error) {
+    id error) {
   if (error) {
     return false;
   }

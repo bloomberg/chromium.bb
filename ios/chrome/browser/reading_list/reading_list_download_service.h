@@ -81,6 +81,7 @@ class ReadingListDownloadService
   void RemoveDownloadedEntry(const GURL& url);
   // Callback for entry download.
   void OnDownloadEnd(const GURL& url,
+                     const GURL& distilled_url,
                      URLDownloader::SuccessState success,
                      const base::FilePath& distilled_path,
                      const std::string& title);

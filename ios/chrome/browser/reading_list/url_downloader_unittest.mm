@@ -86,6 +86,7 @@ class MockURLDownloader : public URLDownloader {
   }
 
   void OnEndDownload(const GURL& url,
+                     const GURL& distilled_url,
                      SuccessState success,
                      const base::FilePath& distilled_path,
                      const std::string& title) {

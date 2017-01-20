@@ -21,6 +21,12 @@ ReadingListDistillerPageFactory::ReadingListDistillerPageFactory(
 
 ReadingListDistillerPageFactory::~ReadingListDistillerPageFactory() {}
 
+std::unique_ptr<reading_list::ReadingListDistillerPage>
+ReadingListDistillerPageFactory::CreateReadingListDistillerPage() const {
+  return base::MakeUnique<ReadingListDistillerPage>(
+      browser_state_, web_state_dispatcher_.get());
+}
+
 std::unique_ptr<dom_distiller::DistillerPage>
 ReadingListDistillerPageFactory::CreateDistillerPage(
     const gfx::Size& view_size) const {
