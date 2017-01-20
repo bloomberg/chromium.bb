@@ -1132,15 +1132,15 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled-PeekingCardAnimated",
                     "params": {
                         "content_suggestions_backend": "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch",
-                        "quota_SuggestionFetcher": "2"
+                        "first_card_animation_max_runs": "7",
+                        "first_card_offset": "0"
                     },
                     "enable_features": [
-                        "NTPArticleSuggestions",
-                        "NTPBookmarkSuggestions",
-                        "NTPSnippets"
+                        "NTPSnippets",
+                        "NTPSnippetsIncreasedVisibility"
                     ]
                 }
             ]
