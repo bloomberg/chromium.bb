@@ -17,6 +17,10 @@
   z-index: 5;
 }
 
+#popup-overlay[md-mode] {
+  background: rgba(0, 0, 0, .5);
+}
+
 .oobe-popup {
   background: white;
   border: 1px solid rgb(188, 193, 208);
