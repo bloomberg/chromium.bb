@@ -13517,6 +13517,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_FLAGS_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION" desc="Description of about::flags option for bypass proxy for captive portal authorization on Chrome OS.">
           If proxy is configured, it usually prevents from authorization on different captive portals. This enables opening captive portal authorization dialog in a separate window, which ignores proxy settings.
         </message>
+        <message name="IDS_FLAGS_TOUCHSCREEN_CALIBRATION_NAME" desc="Name of option to enable touch screen calibration settings in chrome://md-settings/display.">
+          Enable/Disable touchscreen calibration md settings option
+        </message>
+        <message name="IDS_FLAGS_TOUCHSCREEN_CALIBRATION_DESCRIPTION" desc="Description of option to enable touch screen calibration settings in chrome://md-settings/display.">
+          If enabled, the user can calibrate the touch screen displays in chrome://md-settings/display.
+        </message>
       </if>
 
       <!-- Strings for controlling credit card assist feature in about:flags. -->
