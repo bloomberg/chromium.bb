@@ -379,7 +379,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortReload) {
       internal::kHistogramAbortReloadBeforeCommit, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortClose) {
+// TODO(crbug.com/675061): Flaky on Win7 dbg.
+#if defined(OS_WIN)
+#define MAYBE_AbortClose DISABLED_AbortClose
+#else
+#define MAYBE_AbortClose AbortClose
+#endif
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_AbortClose) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
