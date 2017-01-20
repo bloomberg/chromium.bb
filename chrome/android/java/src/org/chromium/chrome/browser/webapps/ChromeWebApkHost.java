@@ -96,6 +96,7 @@ public class ChromeWebApkHost {
         if (!ChromeVersionInfo.isCanaryBuild() && !ChromeVersionInfo.isDevBuild()) return;
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_A2HS)
+                && !canUseGooglePlayToInstallWebApk()
                 && !installingFromUnknownSourcesAllowed()) {
             showUnknownSourcesNeededDialog(context);
         }
