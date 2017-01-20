@@ -57,200 +57,90 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
     return;
   }
 
-  SectionStateIcon icon_id = ICON_STATE_OK;
-  base::string16 headline;
-  base::string16 description;
+  base::string16 hostname(base::UTF8ToUTF16(url.host()));
 
-  // Identity section.
-  base::string16 subject_name(base::UTF8ToUTF16(url.host()));
-  bool empty_subject_name = false;
-  if (subject_name.empty()) {
-    subject_name.assign(
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
-    empty_subject_name = true;
-  }
+  base::string16 summary;
+  base::string16 details;
+  base::string16 certificate_details;
 
-  bool is_cert_present = !!ssl.certificate;
-  bool is_major_cert_error = net::IsCertStatusError(ssl.cert_status) &&
-                             !net::IsCertStatusMinorError(ssl.cert_status);
-
-  // It is possible to have |SECURITY_STYLE_AUTHENTICATION_BROKEN| and non-error
-  // |cert_status| for WKWebView because |security_style| and |cert_status| are
-  // calculated using different API, which may lead to different cert
-  // verification results.
-  if (is_cert_present && !is_major_cert_error &&
-      ssl.security_style != web::SECURITY_STYLE_AUTHENTICATION_BROKEN) {
-    // There are no major errors. Check for minor errors.
-    if (net::IsCertStatusMinorError(ssl.cert_status)) {
-      base::string16 issuer_name(
-          base::UTF8ToUTF16(ssl.certificate->issuer().GetDisplayName()));
-      if (issuer_name.empty()) {
-        issuer_name.assign(l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
-      }
-      description.assign(l10n_util::GetStringFUTF16(
-          IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
-
-      description += base::ASCIIToUTF16("\n\n");
-      if (ssl.cert_status & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
-        description += l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_UNABLE_TO_CHECK_REVOCATION);
-      } else if (ssl.cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
-        description += l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_NO_REVOCATION_MECHANISM);
-      } else {
-        NOTREACHED() << "Need to specify string for this warning";
-      }
-      icon_id = ICON_STATE_INFO;
-    } else {
-      // OK HTTPS page.
-      DCHECK(!(ssl.cert_status & net::CERT_STATUS_IS_EV))
-          << "Extended Validation should be disabled";
-      if (empty_subject_name)
-        headline.clear();  // Don't display any title.
-      else
-        headline.assign(subject_name);
-      base::string16 issuer_name(
-          base::UTF8ToUTF16(ssl.certificate->issuer().GetDisplayName()));
-      if (issuer_name.empty()) {
-        issuer_name.assign(l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
-      }
-      description.assign(l10n_util::GetStringFUTF16(
-          IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
-    }
-    if (ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) {
-      icon_id = ICON_STATE_INFO;
-      description +=
-          base::UTF8ToUTF16("\n\n") +
-          l10n_util::GetStringUTF16(
-              IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM);
-    }
-  } else {
-    // HTTP or HTTPS with errors (not warnings).
-    description.assign(l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
-    icon_id = ssl.security_style == web::SECURITY_STYLE_UNAUTHENTICATED
-                  ? ICON_STATE_INFO
-                  : ICON_STATE_ERROR;
-
-    const base::string16 bullet = base::UTF8ToUTF16("\n • ");
-    std::vector<ssl_errors::ErrorInfo> errors;
-    ssl_errors::ErrorInfo::GetErrorsForCertStatus(
-        ssl.certificate, ssl.cert_status, url, &errors);
-    for (size_t i = 0; i < errors.size(); ++i) {
-      description += bullet;
-      description += errors[i].short_description();
-    }
-
-    if (ssl.cert_status & net::CERT_STATUS_NON_UNIQUE_NAME) {
-      description += base::ASCIIToUTF16("\n\n");
-      description +=
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
-    }
-  }
-  sections_.push_back(SectionInfo(icon_id, headline, description,
-                                  SECTION_INFO_IDENTITY,
-                                  BUTTON_SHOW_SECURITY_HELP));
-
-  // Connection section.
-  icon_id = ICON_STATE_OK;
-  headline.clear();
-  description.clear();
+  // Summary and details.
+  SectionStateIcon icon_id = ICON_NONE;
   if (!ssl.certificate) {
     // Not HTTPS.
-    icon_id = ssl.security_style == web::SECURITY_STYLE_UNAUTHENTICATED
-                  ? ICON_STATE_INFO
-                  : ICON_STATE_ERROR;
-    description.assign(
-        l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_SUMMARY));
-    description += base::ASCIIToUTF16("\n\n");
-    description += l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_DETAILS);
-  } else if (ssl.security_bits < 0) {
-    if (ssl.content_status == web::SSLStatus::DISPLAYED_INSECURE_CONTENT) {
-      DCHECK(description.empty());
-      // For WKWebView security_bits flag is always -1, and description is empty
-      // because ciphersuite is unknown. On iOS9 WKWebView blocks active
-      // mixed content, so warning should be about page look, not about page
-      // behavior.
-      icon_id = ICON_NONE;
-      description.assign(l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING));
-    } else {
-      // Security strength is unknown.  Say nothing.
-      icon_id = ICON_STATE_ERROR;
-    }
-  } else if (ssl.security_bits == 0) {
-    DCHECK_NE(ssl.security_style, web::SECURITY_STYLE_UNAUTHENTICATED);
-    icon_id = ICON_STATE_ERROR;
-    description.assign(l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
-        subject_name));
+    icon_id = ICON_STATE_INFO;
+    summary.assign(l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_SUMMARY));
+    details.assign(l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_DETAILS));
   } else {
-    if (net::SSLConnectionStatusToVersion(ssl.connection_status) >=
-            net::SSL_CONNECTION_VERSION_TLS1_2 &&
-        (net::OBSOLETE_SSL_NONE ==
-         net::ObsoleteSSLStatus(
-             net::SSLConnectionStatusToCipherSuite(ssl.connection_status)))) {
-      description.assign(l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT, subject_name));
+    // It is possible to have |SECURITY_STYLE_AUTHENTICATION_BROKEN| and
+    // non-error
+    // |cert_status| for WKWebView because |security_style| and |cert_status|
+    // are
+    // calculated using different API, which may lead to different cert
+    // verification results.
+    if (net::IsCertStatusError(ssl.cert_status) ||
+        ssl.security_style == web::SECURITY_STYLE_AUTHENTICATION_BROKEN) {
+      // HTTPS with major errors
+      icon_id = ICON_STATE_ERROR;
+      DCHECK(!net::IsCertStatusMinorError(ssl.cert_status));
+      summary.assign(
+          l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_SUMMARY));
+      details.assign(
+          l10n_util::GetStringUTF16(IDS_PAGEINFO_NOT_SECURE_DETAILS));
+
+      certificate_details.assign(l10n_util::GetStringUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
+      const base::string16 bullet = base::UTF8ToUTF16("\n • ");
+      std::vector<ssl_errors::ErrorInfo> errors;
+      ssl_errors::ErrorInfo::GetErrorsForCertStatus(
+          ssl.certificate, ssl.cert_status, url, &errors);
+      for (size_t i = 0; i < errors.size(); ++i) {
+        certificate_details += bullet;
+        certificate_details += errors[i].short_description();
+      }
     } else {
-      description.assign(l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
-          subject_name));
-    }
-    if (ssl.content_status) {
-      bool ran_insecure_content = false;  // Always false on iOS.
-      icon_id = ran_insecure_content ? ICON_STATE_ERROR : ICON_NONE;
-      description.assign(l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK, description,
-          l10n_util::GetStringUTF16(
-              ran_insecure_content
-                  ? IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR
-                  : IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
-    }
-  }
+      // Valid HTTPS or HTTPS with minor errors.
+      base::string16 issuer_name(
+          base::UTF8ToUTF16(ssl.certificate->issuer().GetDisplayName()));
+      if (!issuer_name.empty()) {
+        // Show the issuer name if it's available.
+        // TODO(crbug.com/502470): Implement a certificate viewer instead.
+        certificate_details.assign(l10n_util::GetStringFUTF16(
+            IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
+      }
+      if (ssl.content_status == web::SSLStatus::DISPLAYED_INSECURE_CONTENT) {
+        // HTTPS with mixed content.
+        icon_id = ICON_STATE_INFO;
+        summary.assign(
+            l10n_util::GetStringUTF16(IDS_PAGEINFO_MIXED_CONTENT_SUMMARY));
+        details.assign(
+            l10n_util::GetStringUTF16(IDS_PAGEINFO_MIXED_CONTENT_DETAILS));
+      } else {
+        // Valid HTTPS
+        icon_id = ICON_STATE_OK;
+        summary.assign(l10n_util::GetStringUTF16(IDS_PAGEINFO_SECURE_SUMMARY));
+        details.assign(l10n_util::GetStringUTF16(IDS_PAGEINFO_SECURE_DETAILS));
 
-  uint16_t cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(ssl.connection_status);
-  if (ssl.security_bits > 0 && cipher_suite) {
-    int ssl_version = net::SSLConnectionStatusToVersion(ssl.connection_status);
-    const char* ssl_version_str;
-    net::SSLVersionToString(&ssl_version_str, ssl_version);
-    description += base::ASCIIToUTF16("\n\n");
-    description +=
-        l10n_util::GetStringFUTF16(IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION,
-                                   base::ASCIIToUTF16(ssl_version_str));
-
-    const char *key_exchange, *cipher, *mac;
-    bool is_aead;
-    bool is_tls13;
-    net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
-                                 &is_tls13, cipher_suite);
-
-    description += base::ASCIIToUTF16("\n\n");
-    if (is_aead) {
-      description += l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS_AEAD,
-          base::ASCIIToUTF16(cipher), base::ASCIIToUTF16(key_exchange));
-    } else {
-      description += l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS,
-          base::ASCIIToUTF16(cipher), base::ASCIIToUTF16(mac),
-          base::ASCIIToUTF16(key_exchange));
+        DCHECK(!(ssl.cert_status & net::CERT_STATUS_IS_EV))
+            << "Extended Validation should be disabled";
+      }
     }
   }
 
-  if (!description.empty()) {
-    sections_.push_back(SectionInfo(icon_id, headline, description,
-                                    SECTION_INFO_CONNECTION,
-                                    BUTTON_SHOW_SECURITY_HELP));
+  base::string16 description;
+  base::string16 spacer = base::UTF8ToUTF16("\n\n");
+
+  description.assign(summary);
+  description += spacer;
+  description += details;
+
+  if (!certificate_details.empty()) {
+    description += spacer;
+    description += certificate_details;
   }
 
-  if (ssl.certificate) {
-    certificate_label_ =
-        l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON);
-  }
+  sections_.push_back(SectionInfo(icon_id, hostname, description,
+                                  SECTION_INFO_CONNECTION,
+                                  BUTTON_SHOW_SECURITY_HELP));
 }
 
 PageInfoModel::~PageInfoModel() {}
