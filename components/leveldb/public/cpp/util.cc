@@ -4,6 +4,7 @@
 
 #include "components/leveldb/public/cpp/util.h"
 
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace leveldb {
@@ -43,6 +44,25 @@ leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
   // This will never be reached, but we still have configurations which don't
   // do switch enum checking.
   return leveldb::Status::InvalidArgument(msg, msg2);
+}
+
+int GetLevelDBStatusUMAValue(mojom::DatabaseError status) {
+  switch (status) {
+    case mojom::DatabaseError::OK:
+      return leveldb_env::LEVELDB_STATUS_OK;
+    case mojom::DatabaseError::NOT_FOUND:
+      return leveldb_env::LEVELDB_STATUS_NOT_FOUND;
+    case mojom::DatabaseError::CORRUPTION:
+      return leveldb_env::LEVELDB_STATUS_CORRUPTION;
+    case mojom::DatabaseError::NOT_SUPPORTED:
+      return leveldb_env::LEVELDB_STATUS_NOT_SUPPORTED;
+    case mojom::DatabaseError::INVALID_ARGUMENT:
+      return leveldb_env::LEVELDB_STATUS_INVALID_ARGUMENT;
+    case mojom::DatabaseError::IO_ERROR:
+      return leveldb_env::LEVELDB_STATUS_IO_ERROR;
+  }
+  NOTREACHED();
+  return leveldb_env::LEVELDB_STATUS_OK;
 }
 
 leveldb::Slice GetSliceFor(const std::vector<uint8_t>& key) {

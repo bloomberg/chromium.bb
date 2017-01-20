@@ -43,6 +43,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
     virtual void DidCommit(leveldb::mojom::DatabaseError error) = 0;
     // Called during loading if no data was found. Needs to call |callback|.
     virtual void MigrateData(ValueMapCallback callback);
+    virtual void OnMapLoaded(leveldb::mojom::DatabaseError error);
   };
 
   // |no_bindings_callback| will be called when this object has no more

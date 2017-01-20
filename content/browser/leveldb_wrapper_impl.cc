@@ -5,6 +5,7 @@
 #include "content/browser/leveldb_wrapper_impl.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
@@ -15,6 +16,8 @@ void LevelDBWrapperImpl::Delegate::MigrateData(
     base::OnceCallback<void(std::unique_ptr<ValueMap>)> callback) {
   std::move(callback).Run(nullptr);
 }
+
+void LevelDBWrapperImpl::Delegate::OnMapLoaded(leveldb::mojom::DatabaseError) {}
 
 bool LevelDBWrapperImpl::s_aggressive_flushing_enabled_ = false;
 
@@ -269,7 +272,6 @@ void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
     return;
   }
 
-  // TODO(michaeln): Import from sqlite localstorage db.
   database_->GetPrefixed(prefix_, base::Bind(&LevelDBWrapperImpl::OnMapLoaded,
                                              weak_ptr_factory_.GetWeakPtr()));
 }
@@ -297,7 +299,7 @@ void LevelDBWrapperImpl::OnMapLoaded(
 
   // We proceed without using a backing store, nothing will be persisted but the
   // class is functional for the lifetime of the object.
-  // TODO(michaeln): Uma here or in the DB file?
+  delegate_->OnMapLoaded(status);
   if (status != leveldb::mojom::DatabaseError::OK)
     database_ = nullptr;
 
@@ -368,7 +370,7 @@ base::TimeDelta LevelDBWrapperImpl::ComputeCommitDelay() const {
       default_commit_delay_,
       std::max(commit_rate_limiter_.ComputeDelayNeeded(elapsed_time),
                data_rate_limiter_.ComputeDelayNeeded(elapsed_time)));
-  // TODO(michaeln): UMA_HISTOGRAM_LONG_TIMES("LevelDBWrapper.CommitDelay", d);
+  UMA_HISTOGRAM_LONG_TIMES("LevelDBWrapper.CommitDelay", delay);
   return delay;
 }
 
@@ -422,7 +424,6 @@ void LevelDBWrapperImpl::CommitChanges() {
 }
 
 void LevelDBWrapperImpl::OnCommitComplete(leveldb::mojom::DatabaseError error) {
-  // TODO(michaeln): What if it fails, uma here or in the DB class?
   --commit_batches_in_flight_;
   StartCommitTimer();
   delegate_->DidCommit(error);

@@ -22,6 +22,9 @@ leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
                                       const Slice& msg,
                                       const Slice& msg2);
 
+// Returns an UMA value for a mojom::DatabaseError.
+int GetLevelDBStatusUMAValue(mojom::DatabaseError status);
+
 // Builds a Slice pointing to the data inside |a|. This is not a type-converter
 // as it is not a copy operation; the returned Slice points into |a| and must
 // outlive |a|.
