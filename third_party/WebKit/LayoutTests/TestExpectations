@@ -800,6 +800,9 @@ crbug.com/605840 [ Android ] fast/text/hyphens/midword-break-priority.html [ Pas
 
 crbug.com/655963 inspector/console/console-dir.html [ NeedsManualRebaseline ]
 
+crbug.com/682574 css3/flexbox/button.html [ NeedsRebaseline ]
+crbug.com/682574 fast/forms/select-popup/popup-menu-appearance-transform.html [ NeedsRebaseline ]
+
 crbug.com/405389 external/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 crbug.com/424365 external/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
 crbug.com/424365 external/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ Failure ]

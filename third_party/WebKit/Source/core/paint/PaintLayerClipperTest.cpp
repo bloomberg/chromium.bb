@@ -101,6 +101,37 @@ TEST_P(PaintLayerClipperTest, ControlClip) {
 #endif
 }
 
+TEST_P(PaintLayerClipperTest, ControlClipSelect) {
+  setBodyInnerHTML(
+      "<select id='target' style='position: relative; width: 100px; "
+      "    background: none; border: none; padding: 0px 15px 0px 5px;'>"
+      "  <option>"
+      "    Test long texttttttttttttttttttttttttttttttt"
+      "  </option>"
+      "</select>");
+  Element* target = document().getElementById("target");
+  PaintLayer* targetPaintLayer =
+      toLayoutBoxModelObject(target->layoutObject())->layer();
+  ClipRectsContext context(document().layoutView()->layer(), UncachedClipRects);
+  // When RLS is enabled, the LayoutView will have a composited scrolling layer,
+  // so don't apply an overflow clip.
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    context.setIgnoreOverflowClip();
+  LayoutRect layerBounds;
+  ClipRect backgroundRect, foregroundRect;
+  targetPaintLayer->clipper().calculateRects(
+      context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds,
+      backgroundRect, foregroundRect);
+// The control clip for a select excludes the area for the down arrow.
+#if OS(MACOSX)
+  EXPECT_EQ(LayoutRect(16, 9, 79, 13), foregroundRect.rect());
+#elif OS(WIN)
+  EXPECT_EQ(LayoutRect(17, 9, 60, 16), foregroundRect.rect());
+#else
+  EXPECT_EQ(LayoutRect(17, 9, 60, 15), foregroundRect.rect());
+#endif
+}
+
 TEST_P(PaintLayerClipperTest, LayoutSVGRootChild) {
   setBodyInnerHTML(
       "<svg width=200 height=300 style='position: relative'>"
