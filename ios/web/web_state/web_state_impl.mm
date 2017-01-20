@@ -15,7 +15,6 @@
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
-#import "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/image_fetcher/image_data_fetcher.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
@@ -28,6 +27,7 @@
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
+#include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -37,6 +37,7 @@
 #include "ios/web/webui/web_ui_ios_impl.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -98,8 +99,6 @@ WebStateImpl::~WebStateImpl() {
   for (auto& observer : policy_deciders_)
     observer.ResetWebState();
   DCHECK(script_command_callbacks_.empty());
-  if (request_tracker_.get())
-    CloseRequestTracker();
   SetDelegate(nullptr);
 }
 
@@ -528,31 +527,6 @@ bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response) {
 }
 
 #pragma mark - RequestTracker management
-
-void WebStateImpl::InitializeRequestTracker(
-    id<CRWRequestTrackerDelegate> delegate) {
-  BrowserState* browser_state = navigation_manager_.GetBrowserState();
-  request_tracker_ = RequestTrackerImpl::CreateTrackerForRequestGroupID(
-      GetRequestGroupID(), browser_state, browser_state->GetRequestContext(),
-      delegate);
-}
-
-void WebStateImpl::CloseRequestTracker() {
-  request_tracker_->Close();
-  request_tracker_ = NULL;
-}
-
-RequestTrackerImpl* WebStateImpl::GetRequestTracker() {
-  DCHECK(request_tracker_.get());
-  return request_tracker_.get();
-}
-
-NSString* WebStateImpl::GetRequestGroupID() {
-  if (request_group_id_.get() == nil)
-    request_group_id_.reset([GenerateNewRequestGroupID() copy]);
-
-  return request_group_id_;
-}
 
 int WebStateImpl::DownloadImage(
     const GURL& url,

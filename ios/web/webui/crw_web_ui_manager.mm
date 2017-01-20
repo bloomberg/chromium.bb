@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "ios/web/grit/ios_web_resources.h"
-#import "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -113,21 +112,16 @@ const char kScriptCommandPrefix[] = "webui";
   if (!web::GetWebClient()->IsAppSpecificURL(URL))
     return;
 
-  GURL navigationURL(URL);
-  // Add request group ID to the URL, if not present. Request group ID may
-  // already be added if restoring state to a WebUI page.
-  GURL requestURL =
-      web::ExtractRequestGroupIDFromURL(net::NSURLWithGURL(URL))
-          ? URL
-          : net::GURLWithNSURL(web::AddRequestGroupIDToURL(
-                net::NSURLWithGURL(URL), _webState->GetRequestGroupID()));
+  // Copy |URL| as it is passed by reference which does not work correctly
+  // with blocks (if the object is destroyed the block will have a dangling
+  // reference).
+  GURL copyURL(URL);
   base::WeakNSObject<CRWWebUIManager> weakSelf(self);
-  [self loadWebUIPageForURL:requestURL
+  [self loadWebUIPageForURL:copyURL
           completionHandler:^(NSString* HTML) {
             web::WebStateImpl* webState = [weakSelf webState];
             if (webState) {
-              webState->LoadWebUIHtml(base::SysNSStringToUTF16(HTML),
-                                      navigationURL);
+              webState->LoadWebUIHtml(base::SysNSStringToUTF16(HTML), copyURL);
             }
           }];
 }

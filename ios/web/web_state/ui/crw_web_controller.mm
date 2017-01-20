@@ -49,7 +49,6 @@
 #include "ios/web/net/cert_host_pair.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
 #import "ios/web/net/crw_ssl_status_updater.h"
-#import "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
@@ -994,7 +993,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (self) {
     _webStateImpl = webState;
     DCHECK(_webStateImpl);
-    _webStateImpl->InitializeRequestTracker(self);
     // Load phase when no WebView present is 'loaded' because this represents
     // the idle state.
     _loadPhase = web::PAGE_LOADED;
@@ -1226,7 +1224,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // (since this may be called from within the handling loop) to prevent any
   // asynchronous JavaScript invocation handling from continuing.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-  _webStateImpl->CloseRequestTracker();
 }
 
 - (void)dismissModals {
@@ -2157,10 +2154,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // and the delegate is called.
       _loadPhase = web::PAGE_LOADED;
       if (!_isHalted) {
-        // RequestTracker expects StartPageLoad to be followed by
-        // FinishPageLoad, passing the exact same URL.
-        self.webStateImpl->GetRequestTracker()->FinishPageLoad(
-            _URLOnStartLoading, false);
         _webStateImpl->SetIsLoading(false);
       }
       [_delegate webLoadCancelled:_URLOnStartLoading];
@@ -2272,8 +2265,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)didFinishWithURL:(const GURL&)currentURL loadSuccess:(BOOL)loadSuccess {
   DCHECK(_loadPhase == web::PAGE_LOADED);
-  _webStateImpl->GetRequestTracker()->FinishPageLoad(currentURL, loadSuccess);
-
   // Rather than creating a new WKBackForwardListItem when loading WebUI pages,
   // WKWebView will cache the WebUI HTML in the previous WKBackForwardListItem
   // since it's loaded via |-loadHTML:forURL:| instead of an NSURLRequest.  As a
@@ -3157,8 +3148,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _pageHasZoomed = NO;
 
   [[self sessionController] commitPendingEntry];
-  _webStateImpl->GetRequestTracker()->StartPageLoad(
-      url, [[self sessionController] currentEntry]);
   [_delegate webDidStartLoadingURL:url shouldUpdateHistory:updateHistory];
 }
 
@@ -4277,7 +4266,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)didUpdateHistoryStateWithPageURL:(const GURL&)url {
-  _webStateImpl->GetRequestTracker()->HistoryStateChange(url);
   [_delegate webDidUpdateHistoryStateWithPageURL:url];
 }
 
