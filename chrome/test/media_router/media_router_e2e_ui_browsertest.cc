@@ -18,10 +18,12 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_MirrorHTML5Video) {
   // Play the video on loop.
   std::string script = "document.getElementsByTagName('video')[0].loop=true;";
   ExecuteScript(web_contents, script);
+  // Wait for 5s to the video is playing smoothly.
+  Wait(base::TimeDelta::FromSeconds(5));
   content::WebContents* dialog_contents = OpenMRDialog(web_contents);
+  // Wait for 10s to make sure the dialog finishes rendering.
+  Wait(base::TimeDelta::FromSeconds(10));
   ASSERT_TRUE(dialog_contents);
-  // Wait for 1s to make sure the dialog finishes rendering.
-  Wait(base::TimeDelta::FromSeconds(1));
   WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, receiver());
   WaitUntilRouteCreated();
@@ -33,7 +35,11 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_MirrorHTML5Video) {
   script = "document.getElementsByTagName('video')[0]."
       "webkitRequestFullScreen();";
   ExecuteScript(web_contents, script);
+  // Wait for 5s to the video is playing smoothly in full screen.
+  Wait(base::TimeDelta::FromSeconds(5));
   OpenMRDialog(web_contents);
+  // Wait for 5s to make sure the dialog finishes rendering.
+  Wait(base::TimeDelta::FromSeconds(5));
 
   // Check the mirroring session is still live.
   ASSERT_TRUE(!GetRouteId(receiver()).empty());

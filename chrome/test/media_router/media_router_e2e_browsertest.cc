@@ -40,7 +40,7 @@ const char kCastAppPresentationUrl[] =
     "https://google.com/cast#__castAppId__=BE6E4473/"
     "__castClientId__=143692175507258981";
 const char kVideo[] = "video";
-const char kBearVP9Video[] = "bear-vp9-opus.webm";
+const char kBearVP9Video[] = "bear-vp9.webm";
 const char kPlayer[] = "player.html";
 const char kOriginUrl[] = "http://origin/";
 }  // namespace

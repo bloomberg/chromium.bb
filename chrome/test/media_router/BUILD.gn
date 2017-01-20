@@ -33,7 +33,7 @@ group("media_router_tests") {
     "$root_out_dir/mr_extension/",
     "internal/",
     "../../../media/test/data/player.html",
-    "../../../media/test/data/bear-vp9-opus.webm",
+    "../../../media/test/data/bear-vp9.webm",
   ]
 }
 
