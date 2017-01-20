@@ -21,7 +21,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
@@ -30,7 +29,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BrowserStateBrowserControlsVisibilityDelegateTest {
-    @Mock private Tab mTab;
+    @Mock private Runnable mCallback;
 
     private BrowserStateBrowserControlsVisibilityDelegate mDelegate;
 
@@ -38,8 +37,7 @@ public class BrowserStateBrowserControlsVisibilityDelegateTest {
     public void beforeTest() {
         MockitoAnnotations.initMocks(this);
 
-        mDelegate = new BrowserStateBrowserControlsVisibilityDelegate();
-        mDelegate.setTab(mTab);
+        mDelegate = new BrowserStateBrowserControlsVisibilityDelegate(mCallback);
     }
 
     private void advanceTime(long amount) {
@@ -56,7 +54,7 @@ public class BrowserStateBrowserControlsVisibilityDelegateTest {
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertTrue(mDelegate.isHidingBrowserControlsEnabled());
 
-        verify(mTab, times(2)).updateFullscreenEnabledState();
+        verify(mCallback, times(2)).run();
     }
 
     @Test
@@ -71,7 +69,7 @@ public class BrowserStateBrowserControlsVisibilityDelegateTest {
         mDelegate.hideControlsPersistent(token);
         assertTrue(mDelegate.isHidingBrowserControlsEnabled());
 
-        verify(mTab, times(2)).updateFullscreenEnabledState();
+        verify(mCallback, times(2)).run();
     }
 
     @Test
@@ -89,7 +87,7 @@ public class BrowserStateBrowserControlsVisibilityDelegateTest {
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertTrue(mDelegate.isHidingBrowserControlsEnabled());
 
-        verify(mTab, times(2)).updateFullscreenEnabledState();
+        verify(mCallback, times(2)).run();
     }
 
     @Test
@@ -108,7 +106,7 @@ public class BrowserStateBrowserControlsVisibilityDelegateTest {
         mDelegate.hideControlsPersistent(token);
         assertTrue(mDelegate.isHidingBrowserControlsEnabled());
 
-        verify(mTab, times(2)).updateFullscreenEnabledState();
+        verify(mCallback, times(2)).run();
     }
 
     @Test
@@ -131,7 +129,7 @@ public class BrowserStateBrowserControlsVisibilityDelegateTest {
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertTrue(mDelegate.isHidingBrowserControlsEnabled());
 
-        verify(mTab, times(2)).updateFullscreenEnabledState();
+        verify(mCallback, times(2)).run();
     }
 
     @Test
@@ -158,6 +156,6 @@ public class BrowserStateBrowserControlsVisibilityDelegateTest {
         mDelegate.hideControlsPersistent(thirdToken);
         assertTrue(mDelegate.isHidingBrowserControlsEnabled());
 
-        verify(mTab, times(2)).updateFullscreenEnabledState();
+        verify(mCallback, times(2)).run();
     }
 }

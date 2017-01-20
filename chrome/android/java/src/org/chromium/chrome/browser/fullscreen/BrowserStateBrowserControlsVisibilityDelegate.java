@@ -9,7 +9,6 @@ import android.os.Message;
 import android.os.SystemClock;
 
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
@@ -30,10 +29,10 @@ public class BrowserStateBrowserControlsVisibilityDelegate
 
     private final Set<Integer> mPersistentControlTokens = new HashSet<Integer>();
     private final Handler mHandler;
+    private final Runnable mStateChangedCallback;
 
     private long mCurrentShowTime;
     private int mPersistentControlsCurrentToken;
-    private Tab mTab;
 
     // This static inner class holds a WeakReference to the outer object, to avoid triggering the
     // lint HandlerLeak warning.
@@ -60,16 +59,13 @@ public class BrowserStateBrowserControlsVisibilityDelegate
     /**
      * Constructs a BrowserControlsVisibilityDelegate designed to deal with overrides driven by
      * the browser UI (as opposed to the state of the tab).
+     *
+     * @param stateChangedCallback The callback to be triggered when the fullscreen state should be
+     *                             updated based on the state of the browser visibility override.
      */
-    public BrowserStateBrowserControlsVisibilityDelegate() {
+    public BrowserStateBrowserControlsVisibilityDelegate(Runnable stateChangedCallback) {
         mHandler = new VisibilityDelegateHandler(this);
-    }
-
-    /**
-     * Sets the currently visible tab for fullscreen control.
-     */
-    protected void setTab(Tab tab) {
-        mTab = tab;
+        mStateChangedCallback = stateChangedCallback;
     }
 
     private void ensureControlsVisibleForMinDuration() {
@@ -86,16 +82,14 @@ public class BrowserStateBrowserControlsVisibilityDelegate
     private int generateToken() {
         int token = mPersistentControlsCurrentToken++;
         mPersistentControlTokens.add(token);
-        if (mPersistentControlTokens.size() == 1 && mTab != null) {
-            mTab.updateFullscreenEnabledState();
-        }
+        if (mPersistentControlTokens.size() == 1) mStateChangedCallback.run();
         return token;
     }
 
     private void releaseToken(int token) {
         if (mPersistentControlTokens.remove(token)
-                && mPersistentControlTokens.isEmpty() && mTab != null) {
-            mTab.updateFullscreenEnabledState();
+                && mPersistentControlTokens.isEmpty()) {
+            mStateChangedCallback.run();
         }
     }
 

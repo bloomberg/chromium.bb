@@ -123,7 +123,17 @@ public class ChromeFullscreenManager
         mActivity = activity;
         mWindow = activity.getWindow();
         mIsBottomControls = isBottomControls;
-        mBrowserVisibilityDelegate = new BrowserStateBrowserControlsVisibilityDelegate();
+        mBrowserVisibilityDelegate = new BrowserStateBrowserControlsVisibilityDelegate(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getTab() != null) {
+                            getTab().updateFullscreenEnabledState();
+                        } else if (!mBrowserVisibilityDelegate.isHidingBrowserControlsEnabled()) {
+                            setPositionsForTabToNonFullscreen();
+                        }
+                    }
+                });
     }
 
     /**
@@ -158,6 +168,11 @@ public class ChromeFullscreenManager
 
             @Override
             public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+                setTab(mTabModelSelector.getCurrentTab());
+            }
+
+            @Override
+            public void didCloseTab(int tabId, boolean incognito) {
                 setTab(mTabModelSelector.getCurrentTab());
             }
         };
@@ -198,9 +213,11 @@ public class ChromeFullscreenManager
     public void setTab(Tab tab) {
         Tab previousTab = getTab();
         super.setTab(tab);
-        mBrowserVisibilityDelegate.setTab(getTab());
         if (tab != null && previousTab != getTab()) {
             mBrowserVisibilityDelegate.showControlsTransient();
+        }
+        if (tab == null && !mBrowserVisibilityDelegate.isHidingBrowserControlsEnabled()) {
+            setPositionsForTabToNonFullscreen();
         }
     }
 
