@@ -4,11 +4,14 @@
 
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 
+#include "core/dom/ExecutionContextTask.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/CrossThreadFunctional.h"
+#include "wtf/Functional.h"
 
 namespace blink {
 
@@ -47,16 +50,15 @@ void WorkerOrWorkletGlobalScope::postTask(
                                                  task.get());
   }
 
-  std::unique_ptr<ExecutionContextTask> wrappedTask = createCrossThreadTask(
-      &WorkerOrWorkletGlobalScope::runTask, wrapCrossThreadWeakPersistent(this),
-      WTF::passed(std::move(task)), isInstrumented);
-  thread()->postTask(location, std::move(wrappedTask));
+  thread()->postTask(
+      location, crossThreadBind(&WorkerOrWorkletGlobalScope::runTask,
+                                wrapCrossThreadWeakPersistent(this),
+                                WTF::passed(std::move(task)), isInstrumented));
 }
 
 void WorkerOrWorkletGlobalScope::runTask(
     std::unique_ptr<ExecutionContextTask> task,
-    bool isInstrumented,
-    ExecutionContext*) {
+    bool isInstrumented) {
   DCHECK(thread()->isCurrentThread());
   InspectorInstrumentation::AsyncTask asyncTask(this, task.get(),
                                                 isInstrumented);

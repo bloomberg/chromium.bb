@@ -190,20 +190,13 @@ bool WorkerThread::isCurrentThread() {
 }
 
 void WorkerThread::postTask(const WebTraceLocation& location,
-                            std::unique_ptr<ExecutionContextTask> task) {
+                            std::unique_ptr<WTF::CrossThreadClosure> task) {
   if (isInShutdown())
     return;
   workerBackingThread().backingThread().postTask(
       location, crossThreadBind(&WorkerThread::performTaskOnWorkerThread,
                                 crossThreadUnretained(this),
                                 WTF::passed(std::move(task))));
-}
-
-void WorkerThread::postTask(const WebTraceLocation& location,
-                            std::unique_ptr<WTF::CrossThreadClosure> task) {
-  std::unique_ptr<ExecutionContextTask> wrappedTask = createCrossThreadTask(
-      &WTF::CrossThreadClosure::operator(), WTF::passed(std::move(task)));
-  postTask(location, std::move(wrappedTask));
 }
 
 void WorkerThread::appendDebuggerTask(
@@ -565,7 +558,7 @@ void WorkerThread::performShutdownOnWorkerThread() {
 }
 
 void WorkerThread::performTaskOnWorkerThread(
-    std::unique_ptr<ExecutionContextTask> task) {
+    std::unique_ptr<WTF::CrossThreadClosure> task) {
   DCHECK(isCurrentThread());
   if (m_threadState != ThreadState::Running)
     return;
@@ -575,7 +568,7 @@ void WorkerThread::performTaskOnWorkerThread(
         CustomCountHistogram, scopedUsCounter,
         new CustomCountHistogram("WorkerThread.Task.Time", 0, 10000000, 50));
     ScopedUsHistogramTimer timer(scopedUsCounter);
-    task->performTask(globalScope());
+    (*task)();
   }
 }
 

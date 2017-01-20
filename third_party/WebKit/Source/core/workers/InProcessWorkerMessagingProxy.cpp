@@ -28,7 +28,6 @@
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SecurityContext.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/MessageEvent.h"
@@ -43,6 +42,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "wtf/WTF.h"
 #include <memory>
@@ -141,7 +141,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(
     // A message event is an activity and may initiate another activity.
     m_workerGlobalScopeHasPendingActivity = true;
     ++m_unconfirmedMessageCount;
-    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(
+    std::unique_ptr<WTF::CrossThreadClosure> task = crossThreadBind(
         &InProcessWorkerObjectProxy::processMessageFromWorkerObject,
         crossThreadUnretained(&workerObjectProxy()), std::move(message),
         WTF::passed(std::move(channels)),
@@ -189,7 +189,7 @@ void InProcessWorkerMessagingProxy::workerThreadCreated() {
   DCHECK_EQ(0u, m_unconfirmedMessageCount);
   m_unconfirmedMessageCount = m_queuedEarlyTasks.size();
   for (auto& queuedTask : m_queuedEarlyTasks) {
-    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(
+    std::unique_ptr<WTF::CrossThreadClosure> task = crossThreadBind(
         &InProcessWorkerObjectProxy::processMessageFromWorkerObject,
         crossThreadUnretained(&workerObjectProxy()),
         queuedTask->message.release(),

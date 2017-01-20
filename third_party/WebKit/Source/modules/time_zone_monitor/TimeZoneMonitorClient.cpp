@@ -7,9 +7,10 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/workers/WorkerBackingThread.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/ServiceConnector.h"
 #include "public/platform/Platform.h"
 #include "services/device/public/interfaces/constants.mojom-blink.h"
@@ -26,8 +27,9 @@ void NotifyTimezoneChangeToV8(v8::Isolate* isolate) {
   v8::Date::DateTimeConfigurationChangeNotification(isolate);
 }
 
-void NotifyTimezoneChangeOnWorkerThread(ExecutionContext* context) {
-  NotifyTimezoneChangeToV8(toIsolate(context));
+void NotifyTimezoneChangeOnWorkerThread(WorkerThread* workerThread) {
+  DCHECK(workerThread->isCurrentThread());
+  NotifyTimezoneChangeToV8(toIsolate(workerThread->globalScope()));
 }
 
 }  // namespace
@@ -68,8 +70,9 @@ void TimeZoneMonitorClient::OnTimeZoneChange(const String& timeZoneInfo) {
     // among multiple WorkerThreads.
     if (posted.contains(&thread->workerBackingThread()))
       continue;
-    thread->postTask(BLINK_FROM_HERE, createCrossThreadTask(
-                                          &NotifyTimezoneChangeOnWorkerThread));
+    thread->postTask(BLINK_FROM_HERE,
+                     crossThreadBind(&NotifyTimezoneChangeOnWorkerThread,
+                                     WTF::crossThreadUnretained(thread)));
     posted.add(&thread->workerBackingThread());
   }
 }

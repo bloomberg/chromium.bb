@@ -12,6 +12,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "core/workers/WorkletThreadHolder.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -173,8 +174,8 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   EXPECT_FALSE(UseCounter::isCounted(document(), feature1));
   workerThread()->postTask(
       BLINK_FROM_HERE,
-      createCrossThreadTask(&ThreadedWorkletThreadForTest::countFeature,
-                            crossThreadUnretained(workerThread()), feature1));
+      crossThreadBind(&ThreadedWorkletThreadForTest::countFeature,
+                      crossThreadUnretained(workerThread()), feature1));
   testing::enterRunLoop();
   EXPECT_TRUE(UseCounter::isCounted(document(), feature1));
 
@@ -186,8 +187,8 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
   EXPECT_FALSE(UseCounter::isCounted(document(), feature2));
   workerThread()->postTask(
       BLINK_FROM_HERE,
-      createCrossThreadTask(&ThreadedWorkletThreadForTest::countDeprecation,
-                            crossThreadUnretained(workerThread()), feature2));
+      crossThreadBind(&ThreadedWorkletThreadForTest::countDeprecation,
+                      crossThreadUnretained(workerThread()), feature2));
   testing::enterRunLoop();
   EXPECT_TRUE(UseCounter::isCounted(document(), feature2));
 }

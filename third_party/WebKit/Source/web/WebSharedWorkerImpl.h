@@ -143,7 +143,7 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
   void didReceiveScriptLoaderResponse();
   void onScriptLoaderFinished();
 
-  static void connectTask(WebMessagePortChannelUniquePtr, ExecutionContext*);
+  void connectTask(WebMessagePortChannelUniquePtr);
 
   // Tasks that are run on the main thread.
   void didCloseWorkerGlobalScopeOnMainThread();

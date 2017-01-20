@@ -28,7 +28,6 @@
 #define WorkerThread_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
@@ -135,10 +134,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   WorkerReportingProxy& workerReportingProxy() const {
     return m_workerReportingProxy;
   }
-
-  // DEPRECATED: Use postTask() for WTF::CrossThreadClosure instead.
-  // TODO(nhiroki): Remove this after https://crbug.com/625927 is completed.
-  void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
 
   void postTask(const WebTraceLocation&,
                 std::unique_ptr<WTF::CrossThreadClosure>);
@@ -250,7 +245,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
   void prepareForShutdownOnWorkerThread();
   void performShutdownOnWorkerThread();
-  void performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask>);
+  void performTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
   void performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
   void performDebuggerTaskDontWaitOnWorkerThread();
 
