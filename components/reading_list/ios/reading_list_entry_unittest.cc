@@ -75,8 +75,10 @@ TEST(ReadingListEntry, DistilledPathAndURL) {
   EXPECT_TRUE(e.DistilledPath().empty());
 
   const base::FilePath distilled_path("distilled/page.html");
-  e.SetDistilledPath(distilled_path);
+  const GURL distilled_url("http://example.com/distilled");
+  e.SetDistilledInfo(distilled_path, distilled_url);
   EXPECT_EQ(distilled_path, e.DistilledPath());
+  EXPECT_EQ(distilled_url, e.DistilledURL());
 }
 
 TEST(ReadingListEntry, DistilledState) {
@@ -88,7 +90,8 @@ TEST(ReadingListEntry, DistilledState) {
   EXPECT_EQ(ReadingListEntry::ERROR, e.DistilledState());
 
   const base::FilePath distilled_path("distilled/page.html");
-  e.SetDistilledPath(distilled_path);
+  const GURL distilled_url("http://example.com/distilled");
+  e.SetDistilledInfo(distilled_path, distilled_url);
   EXPECT_EQ(ReadingListEntry::PROCESSED, e.DistilledState());
 }
 
@@ -180,7 +183,9 @@ TEST(ReadingListEntry, ResetTimeUntilNextTry) {
               kFirstBackoff * fuzzing);
 
   // Action.
-  e.SetDistilledPath(base::FilePath("distilled/page.html"));
+  const base::FilePath distilled_path("distilled/page.html");
+  const GURL distilled_url("http://example.com/distilled");
+  e.SetDistilledInfo(distilled_path, distilled_url);
 
   // Test.
   EXPECT_EQ(0, e.TimeUntilNextTry().InSeconds());
@@ -281,7 +286,9 @@ TEST(ReadingListEntry, AsReadingListLocal) {
             reading_list::ReadingListLocal::WILL_RETRY);
   EXPECT_EQ(will_retry_pb_entry->failed_download_counter(), 1);
 
-  entry.SetDistilledPath(base::FilePath("distilled/page.html"));
+  const base::FilePath distilled_path("distilled/page.html");
+  const GURL distilled_url("http://example.com/distilled");
+  entry.SetDistilledInfo(distilled_path, distilled_url);
   entry.SetRead(true);
   entry.MarkEntryUpdated();
   EXPECT_NE(entry.UpdateTime(), creation_time_us);

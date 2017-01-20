@@ -54,6 +54,7 @@ ReadingListEntry::ReadingListEntry(const GURL& url,
                        0,
                        WAITING,
                        base::FilePath(),
+                       GURL(),
                        0,
                        std::move(backoff)) {}
 
@@ -67,12 +68,14 @@ ReadingListEntry::ReadingListEntry(
     int64_t update_title_time,
     ReadingListEntry::DistillationState distilled_state,
     const base::FilePath& distilled_path,
+    const GURL& distilled_url,
     int failed_download_counter,
     std::unique_ptr<net::BackoffEntry> backoff)
     : url_(url),
       title_(title),
       state_(state),
       distilled_path_(distilled_path),
+      distilled_url_(distilled_url),
       distilled_state_(distilled_state),
       failed_download_counter_(failed_download_counter),
       creation_time_us_(creation_time),
@@ -101,6 +104,7 @@ ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
       title_(std::move(entry.title_)),
       state_(std::move(entry.state_)),
       distilled_path_(std::move(entry.distilled_path_)),
+      distilled_url_(std::move(entry.distilled_url_)),
       distilled_state_(std::move(entry.distilled_state_)),
       backoff_(std::move(entry.backoff_)),
       failed_download_counter_(std::move(entry.failed_download_counter_)),
@@ -127,6 +131,10 @@ const base::FilePath& ReadingListEntry::DistilledPath() const {
   return distilled_path_;
 }
 
+const GURL& ReadingListEntry::DistilledURL() const {
+  return distilled_url_;
+}
+
 base::TimeDelta ReadingListEntry::TimeUntilNextTry() const {
   return backoff_->GetTimeUntilRelease();
 }
@@ -139,6 +147,7 @@ ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
   url_ = std::move(other.url_);
   title_ = std::move(other.title_);
   distilled_path_ = std::move(other.distilled_path_);
+  distilled_url_ = std::move(other.distilled_url_);
   distilled_state_ = std::move(other.distilled_state_);
   backoff_ = std::move(other.backoff_);
   state_ = std::move(other.state_);
@@ -185,10 +194,13 @@ bool ReadingListEntry::HasBeenSeen() const {
   return state_ != UNSEEN;
 }
 
-void ReadingListEntry::SetDistilledPath(const base::FilePath& path) {
+void ReadingListEntry::SetDistilledInfo(const base::FilePath& path,
+                                        const GURL& distilled_url) {
   DCHECK(!path.empty());
+  DCHECK(distilled_url.is_valid());
   distilled_path_ = path;
   distilled_state_ = PROCESSED;
+  distilled_url_ = distilled_url;
   backoff_->Reset();
   failed_download_counter_ = 0;
 }
@@ -206,6 +218,7 @@ void ReadingListEntry::SetDistilledState(DistillationState distilled_state) {
 
   distilled_state_ = distilled_state;
   distilled_path_ = base::FilePath();
+  distilled_url_ = GURL::EmptyGURL();
 }
 
 int64_t ReadingListEntry::UpdateTime() const {
@@ -306,6 +319,11 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
     distilled_path = base::FilePath(pb_entry.distilled_path());
   }
 
+  GURL distilled_url;
+  if (pb_entry.has_distilled_url()) {
+    distilled_url = GURL(pb_entry.distilled_url());
+  }
+
   int64_t failed_download_counter = 0;
   if (pb_entry.has_failed_download_counter()) {
     failed_download_counter = pb_entry.failed_download_counter();
@@ -324,7 +342,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
 
   return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
       url, title, state, creation_time_us, first_read_time_us, update_time_us,
-      update_title_time_us, distillation_state, distilled_path,
+      update_title_time_us, distillation_state, distilled_path, distilled_url,
       failed_download_counter, std::move(backoff)));
 }
 
@@ -380,7 +398,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
 
   return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
       url, title, state, creation_time_us, first_read_time_us, update_time_us,
-      update_title_time_us, WAITING, base::FilePath(), 0, nullptr));
+      update_title_time_us, WAITING, base::FilePath(), GURL(), 0, nullptr));
 }
 
 void ReadingListEntry::MergeWithEntry(const ReadingListEntry& other) {
@@ -483,6 +501,9 @@ ReadingListEntry::AsReadingListLocal() const {
   pb_entry->set_distillation_state(distilation_state);
   if (!DistilledPath().empty()) {
     pb_entry->set_distilled_path(DistilledPath().value());
+  }
+  if (DistilledURL().is_valid()) {
+    pb_entry->set_distilled_url(DistilledURL().spec());
   }
   pb_entry->set_failed_download_counter(failed_download_counter_);
 

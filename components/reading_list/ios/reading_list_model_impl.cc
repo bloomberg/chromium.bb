@@ -388,9 +388,10 @@ void ReadingListModelImpl::SetEntryTitle(const GURL& url,
   }
 }
 
-void ReadingListModelImpl::SetEntryDistilledPath(
+void ReadingListModelImpl::SetEntryDistilledInfo(
     const GURL& url,
-    const base::FilePath& distilled_path) {
+    const base::FilePath& distilled_path,
+    const GURL& distilled_url) {
   DCHECK(CalledOnValidThread());
   DCHECK(loaded());
   auto iterator = entries_->find(url);
@@ -406,7 +407,7 @@ void ReadingListModelImpl::SetEntryDistilledPath(
   for (ReadingListModelObserver& observer : observers_) {
     observer.ReadingListWillUpdateEntry(this, url);
   }
-  entry.SetDistilledPath(distilled_path);
+  entry.SetDistilledInfo(distilled_path, distilled_url);
   if (storage_layer_) {
     storage_layer_->SaveEntry(entry);
   }

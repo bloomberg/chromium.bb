@@ -59,6 +59,8 @@ class ReadingListEntry {
   // The local file path for the distilled version of the page. This should only
   // be called if the state is "PROCESSED".
   const base::FilePath& DistilledPath() const;
+  // The URL that has been distilled to produce file stored at |DistilledPath|.
+  const GURL& DistilledURL() const;
   // The time before the next try. This is automatically increased when the
   // state is set to WILL_RETRY or ERROR from a non-error state.
   base::TimeDelta TimeUntilNextTry() const;
@@ -124,9 +126,9 @@ class ReadingListEntry {
 
   // Sets the title.
   void SetTitle(const std::string& title);
-  // Sets the distilled URL and switch the state to PROCESSED and reset the time
-  // until the next try.
-  void SetDistilledPath(const base::FilePath& path);
+  // Sets the distilled info (offline path and online URL) about distilled page,
+  // switch the state to PROCESSED and reset the time until the next try.
+  void SetDistilledInfo(const base::FilePath& path, const GURL& distilled_url);
   // Sets the state to one of PROCESSING, WILL_RETRY or ERROR.
   void SetDistilledState(DistillationState distilled_state);
   // Sets the read state of the entry. Will set the UpdateTime of the entry.
@@ -143,12 +145,14 @@ class ReadingListEntry {
                    int64_t update_title_time,
                    ReadingListEntry::DistillationState distilled_state,
                    const base::FilePath& distilled_path,
+                   const GURL& distilled_url,
                    int failed_download_counter,
                    std::unique_ptr<net::BackoffEntry> backoff);
   GURL url_;
   std::string title_;
   State state_;
   base::FilePath distilled_path_;
+  GURL distilled_url_;
   DistillationState distilled_state_;
 
   std::unique_ptr<net::BackoffEntry> backoff_;

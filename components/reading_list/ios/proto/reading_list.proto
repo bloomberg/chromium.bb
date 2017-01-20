@@ -39,6 +39,7 @@ message ReadingListLocal {
   }
   optional DistillationState distillation_state = 7;
   optional string distilled_path = 8;
+  optional string distilled_url = 13;
   optional int64 failed_download_counter = 9;
   optional string backoff = 10;
 }

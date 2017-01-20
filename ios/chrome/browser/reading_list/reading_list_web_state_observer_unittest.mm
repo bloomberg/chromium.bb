@@ -19,6 +19,7 @@ namespace {
 const char kTestURL[] = "http://foo.bar";
 const char kTestTitle[] = "title";
 const char kTestDistilledPath[] = "distilled/page.html";
+const char kTestDistilledURL[] = "http://foo.bar/distilled";
 }
 
 // A Test navigation manager that checks if Reload was called.
@@ -87,12 +88,13 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListFailure) {
   EXPECT_FALSE(entry->IsRead());
 }
 
-// Tests that loading an online version of an entry.
+// Tests that loading an online version of an entry does not alter navigation
+// stack and mark entry read.
 TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListOnline) {
   GURL url(kTestURL);
   std::string distilled_path = kTestDistilledPath;
-  reading_list_model_->SetEntryDistilledPath(url,
-                                             base::FilePath(distilled_path));
+  reading_list_model_->SetEntryDistilledInfo(
+      url, base::FilePath(distilled_path), GURL(kTestDistilledURL));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
   GURL distilled_url =
       reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
@@ -110,12 +112,13 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListOnline) {
   EXPECT_TRUE(entry->IsRead());
 }
 
-// Tests that loading a distilled version of an entry from a commited entry.
+// Tests that loading an online version of an entry does update navigation
+// stack and mark entry read.
 TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledCommitted) {
   GURL url(kTestURL);
   std::string distilled_path = kTestDistilledPath;
-  reading_list_model_->SetEntryDistilledPath(url,
-                                             base::FilePath(distilled_path));
+  reading_list_model_->SetEntryDistilledInfo(
+      url, base::FilePath(distilled_path), GURL(kTestDistilledURL));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
   GURL distilled_url =
       reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
@@ -135,12 +138,13 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledCommitted) {
   EXPECT_TRUE(entry->IsRead());
 }
 
-// Tests that loading a distilled version of an entry.
+// Tests that loading an online version of a pending entry on reload does update
+// committed entry, reload, and mark entry read.
 TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledPending) {
   GURL url(kTestURL);
   std::string distilled_path = kTestDistilledPath;
-  reading_list_model_->SetEntryDistilledPath(url,
-                                             base::FilePath(distilled_path));
+  reading_list_model_->SetEntryDistilledInfo(
+      url, base::FilePath(distilled_path), GURL(kTestDistilledURL));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
   GURL distilled_url =
       reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());

@@ -295,6 +295,7 @@ class ReadingListModelTest : public ReadingListModelObserver,
   std::unique_ptr<ReadingListModelImpl> model_;
 };
 
+// Tests creating an empty model.
 TEST_F(ReadingListModelTest, EmptyLoaded) {
   EXPECT_TRUE(model_->loaded());
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -305,6 +306,7 @@ TEST_F(ReadingListModelTest, EmptyLoaded) {
   AssertObserverCount(1, 0, 0, 1, 0, 0, 0, 0, 0);
 }
 
+// Tests load model.
 TEST_F(ReadingListModelTest, ModelLoaded) {
   ClearCounts();
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
@@ -329,6 +331,7 @@ TEST_F(ReadingListModelTest, ModelLoaded) {
   EXPECT_EQ(loaded_entries[GURL("http://read_c.com")], "read_c");
 }
 
+// Tests adding entry.
 TEST_F(ReadingListModelTest, AddEntry) {
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
   SetStorage(std::move(storage));
@@ -354,6 +357,7 @@ TEST_F(ReadingListModelTest, AddEntry) {
   EXPECT_EQ("sample Test", other_entry->Title());
 }
 
+// Tests addin entry from sync.
 TEST_F(ReadingListModelTest, SyncAddEntry) {
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
   SetStorage(std::move(storage));
@@ -370,13 +374,16 @@ TEST_F(ReadingListModelTest, SyncAddEntry) {
   ClearCounts();
 }
 
+// Tests updating entry from sync.
 TEST_F(ReadingListModelTest, SyncMergeEntry) {
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
   SetStorage(std::move(storage));
   model_->AddEntry(GURL("http://example.com"), "sample",
                    reading_list::ADDED_VIA_CURRENT_APP);
-  model_->SetEntryDistilledPath(GURL("http://example.com"),
-                                base::FilePath("distilled/page.html"));
+  const base::FilePath distilled_path("distilled/page.html");
+  const GURL distilled_url("http://example.com/distilled");
+  model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
+                                distilled_url);
   const ReadingListEntry* local_entry =
       model_->GetEntryByURL(GURL("http://example.com"));
   int64_t local_update_time = local_entry->UpdateTime();
@@ -402,6 +409,7 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
   EXPECT_EQ(merged_entry->UpdateTime(), sync_update_time);
 }
 
+// Tests deleting entry.
 TEST_F(ReadingListModelTest, RemoveEntryByUrl) {
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
   SetStorage(std::move(storage));
@@ -433,6 +441,7 @@ TEST_F(ReadingListModelTest, RemoveEntryByUrl) {
   EXPECT_EQ(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
 }
 
+// Tests deleting entry from sync.
 TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
   auto storage = base::MakeUnique<TestReadingListStorage>(this);
   SetStorage(std::move(storage));
@@ -464,6 +473,7 @@ TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
   EXPECT_EQ(model_->GetEntryByURL(GURL("http://example.com")), nullptr);
 }
 
+// Tests marking entry read.
 TEST_F(ReadingListModelTest, ReadEntry) {
   model_->AddEntry(GURL("http://example.com"), "sample",
                    reading_list::ADDED_VIA_CURRENT_APP);
@@ -483,6 +493,7 @@ TEST_F(ReadingListModelTest, ReadEntry) {
   EXPECT_EQ("sample", other_entry->Title());
 }
 
+// Tests accessing existing entry.
 TEST_F(ReadingListModelTest, EntryFromURL) {
   GURL url1("http://example.com");
   GURL url2("http://example2.com");
@@ -508,6 +519,7 @@ TEST_F(ReadingListModelTest, EntryFromURL) {
   EXPECT_EQ(nullptr, entry2);
 }
 
+// Tests mark entry unread.
 TEST_F(ReadingListModelTest, UnreadEntry) {
   // Setup.
   model_->AddEntry(GURL("http://example.com"), "sample",
@@ -536,6 +548,7 @@ TEST_F(ReadingListModelTest, UnreadEntry) {
   EXPECT_EQ("sample", other_entry->Title());
 }
 
+// Tests batch updates observers are called.
 TEST_F(ReadingListModelTest, BatchUpdates) {
   auto token = model_->BeginBatchUpdates();
   AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0);
@@ -546,6 +559,7 @@ TEST_F(ReadingListModelTest, BatchUpdates) {
   EXPECT_FALSE(model_->IsPerformingBatchUpdates());
 }
 
+// Tests batch updates are reentrant.
 TEST_F(ReadingListModelTest, BatchUpdatesReentrant) {
   // When two updates happen at the same time, the notification is only sent
   // for beginning of first update and completion of last update.
@@ -577,6 +591,7 @@ TEST_F(ReadingListModelTest, BatchUpdatesReentrant) {
   EXPECT_FALSE(model_->IsPerformingBatchUpdates());
 }
 
+// Tests setting title on unread entry.
 TEST_F(ReadingListModelTest, UpdateEntryTitle) {
   const GURL gurl("http://example.com");
   const ReadingListEntry& entry =
@@ -587,7 +602,7 @@ TEST_F(ReadingListModelTest, UpdateEntryTitle) {
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ("ping", entry.Title());
 }
-
+// Tests setting distillation state on unread entry.
 TEST_F(ReadingListModelTest, UpdateEntryDistilledState) {
   const GURL gurl("http://example.com");
   const ReadingListEntry& entry =
@@ -599,18 +614,24 @@ TEST_F(ReadingListModelTest, UpdateEntryDistilledState) {
   EXPECT_EQ(ReadingListEntry::PROCESSING, entry.DistilledState());
 }
 
-TEST_F(ReadingListModelTest, UpdateDistilledPath) {
+// Tests setting distillation info on unread entry.
+TEST_F(ReadingListModelTest, UpdateDistilledInfo) {
   const GURL gurl("http://example.com");
   const ReadingListEntry& entry =
       model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
 
-  model_->SetEntryDistilledPath(gurl, base::FilePath("distilled/page.html"));
+  const base::FilePath distilled_path("distilled/page.html");
+  const GURL distilled_url("http://example.com/distilled");
+  model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
+                                distilled_url);
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry.DistilledState());
-  EXPECT_EQ(base::FilePath("distilled/page.html"), entry.DistilledPath());
+  EXPECT_EQ(distilled_path, entry.DistilledPath());
+  EXPECT_EQ(distilled_url, entry.DistilledURL());
 }
 
+// Tests setting title on read entry.
 TEST_F(ReadingListModelTest, UpdateReadEntryTitle) {
   const GURL gurl("http://example.com");
   model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
@@ -623,6 +644,7 @@ TEST_F(ReadingListModelTest, UpdateReadEntryTitle) {
   EXPECT_EQ("ping", entry->Title());
 }
 
+// Tests setting distillation state on read entry.
 TEST_F(ReadingListModelTest, UpdateReadEntryState) {
   const GURL gurl("http://example.com");
   model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
@@ -635,17 +657,22 @@ TEST_F(ReadingListModelTest, UpdateReadEntryState) {
   EXPECT_EQ(ReadingListEntry::PROCESSING, entry->DistilledState());
 }
 
-TEST_F(ReadingListModelTest, UpdateReadDistilledPath) {
+// Tests setting distillation info on read entry.
+TEST_F(ReadingListModelTest, UpdateReadDistilledInfo) {
   const GURL gurl("http://example.com");
   model_->AddEntry(gurl, "sample", reading_list::ADDED_VIA_CURRENT_APP);
   model_->SetReadStatus(gurl, true);
   const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
   ClearCounts();
 
-  model_->SetEntryDistilledPath(gurl, base::FilePath("distilled/page.html"));
+  const base::FilePath distilled_path("distilled/page.html");
+  const GURL distilled_url("http://example.com/distilled");
+  model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
+                                distilled_url);
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry->DistilledState());
-  EXPECT_EQ(base::FilePath("distilled/page.html"), entry->DistilledPath());
+  EXPECT_EQ(distilled_path, entry->DistilledPath());
+  EXPECT_EQ(distilled_url, entry->DistilledURL());
 }
 
 // Tests that ReadingListModel calls CallbackModelBeingDeleted when destroyed.

@@ -192,7 +192,7 @@ void ReadingListDownloadService::OnDownloadEnd(
   if ((success == URLDownloader::DOWNLOAD_SUCCESS ||
        success == URLDownloader::DOWNLOAD_EXISTS) &&
       !distilled_path.empty()) {
-    reading_list_model_->SetEntryDistilledPath(url, distilled_path);
+    reading_list_model_->SetEntryDistilledInfo(url, distilled_path, url);
     if (!title.empty())
       reading_list_model_->SetEntryTitle(url, title);
 

@@ -110,11 +110,17 @@ class ReadingListModel : public base::NonThreadSafe {
   // Methods to mutate an entry. Will locate the relevant entry by URL. Does
   // nothing if the entry is not found.
   virtual void SetEntryTitle(const GURL& url, const std::string& title) = 0;
-  virtual void SetEntryDistilledPath(const GURL& url,
-                                     const base::FilePath& distilled_path) = 0;
   virtual void SetEntryDistilledState(
       const GURL& url,
       ReadingListEntry::DistillationState state) = 0;
+
+  // Sets the Distilled info for the entry |url|. This method sets the
+  // DistillationState of the entry to PROCESSED and sets the |distilled_path|
+  // (path of the file on disk) and the |distilled_url| (url of the page that
+  // was distilled.
+  virtual void SetEntryDistilledInfo(const GURL& url,
+                                     const base::FilePath& distilled_path,
+                                     const GURL& distilled_url) = 0;
 
   // Observer registration methods. The model will remove all observers upon
   // destruction automatically.

@@ -66,11 +66,12 @@ class ReadingListModelImpl : public ReadingListModel,
   void SetReadStatus(const GURL& url, bool read) override;
 
   void SetEntryTitle(const GURL& url, const std::string& title) override;
-  void SetEntryDistilledPath(const GURL& url,
-                             const base::FilePath& distilled_path) override;
   void SetEntryDistilledState(
       const GURL& url,
       ReadingListEntry::DistillationState state) override;
+  void SetEntryDistilledInfo(const GURL& url,
+                             const base::FilePath& distilled_path,
+                             const GURL& distilled_url) override;
 
   void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry) override;
   ReadingListEntry* SyncMergeEntry(
