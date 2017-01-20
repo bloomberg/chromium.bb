@@ -8,19 +8,18 @@ import logging
 
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.w3c.chromium_commit import ChromiumCommit
+from webkitpy.w3c.common import WPT_REPO_URL, CHROMIUM_WPT_DIR
 
-WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
-WPT_TEMP_DIR = '/tmp/wpt'
+
 WPT_SSH_URL = 'git@github.com:w3c/web-platform-tests.git'
 REMOTE_NAME = 'github'
-CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
 _log = logging.getLogger(__name__)
 
 
 class LocalWPT(object):
 
-    def __init__(self, host, path=WPT_TEMP_DIR):
+    def __init__(self, host, path='/tmp/wpt'):
         """
         Args:
             host: A Host object.

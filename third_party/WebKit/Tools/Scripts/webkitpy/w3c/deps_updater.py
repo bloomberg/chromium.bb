@@ -9,6 +9,10 @@ If this script is given the argument --auto-update, it will also:
  2. Trigger try jobs and wait for them to complete.
  3. Make any changes that are required for new failing tests.
  4. Commit the CL.
+
+If this script is given the argument --auto-update, it will also attempt to
+upload a CL, trigger try jobs, and make any changes that are required for
+new failing tests before committing.
 """
 
 import logging
@@ -19,14 +23,7 @@ from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.w3c.test_importer import TestImporter
-
-# Import destination directories (under LayoutTests/external/).
-WPT_DEST_NAME = 'wpt'
-CSS_DEST_NAME = 'csswg-test'
-
-# Our mirrors of the official w3c repos, which we pull from.
-WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
-CSS_REPO_URL = 'https://chromium.googlesource.com/external/w3c/csswg-test.git'
+from webkitpy.w3c.common import WPT_REPO_URL, CSS_REPO_URL, WPT_DEST_NAME, CSS_DEST_NAME
 
 # Settings for how often to check try job results and how long to wait.
 POLL_DELAY_SECONDS = 2 * 60
@@ -232,6 +229,7 @@ class DepsUpdater(object):
 
     @staticmethod
     def is_baseline(basename):
+        # TODO(qyearsley): Find a better, centralized place for this.
         return basename.endswith('-expected.txt')
 
     def run(self, cmd, exit_on_failure=True, cwd=None, stdin=''):
