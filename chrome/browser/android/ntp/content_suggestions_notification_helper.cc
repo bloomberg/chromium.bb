@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
-#include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -41,7 +40,8 @@ bool IsDisabledForProfile(Profile* profile) {
 
 }  // namespace
 
-void ContentSuggestionsNotificationHelper::SendNotification(
+bool ContentSuggestionsNotificationHelper::SendNotification(
+    const ContentSuggestion::ID& id,
     const GURL& url,
     const base::string16& title,
     const base::string16& text,
@@ -50,23 +50,42 @@ void ContentSuggestionsNotificationHelper::SendNotification(
   JNIEnv* env = base::android::AttachCurrentThread();
   SkBitmap skimage = image.AsImageSkia().GetRepresentation(1.0f).sk_bitmap();
   if (skimage.empty())
-    return;
+    return false;
 
   jint timeout_at_millis = timeout_at.ToJavaTime();
   if (timeout_at == base::Time::Max()) {
     timeout_at_millis = std::numeric_limits<jint>::max();
   }
 
-  Java_ContentSuggestionsNotificationHelper_showNotification(
-      env, base::android::ConvertUTF8ToJavaString(env, url.spec()),
-      base::android::ConvertUTF16ToJavaString(env, title),
-      base::android::ConvertUTF16ToJavaString(env, text),
-      gfx::ConvertToJavaBitmap(&skimage), timeout_at_millis);
+  if (Java_ContentSuggestionsNotificationHelper_showNotification(
+          env, id.category().id(),
+          base::android::ConvertUTF8ToJavaString(env, id.id_within_category()),
+          base::android::ConvertUTF8ToJavaString(env, url.spec()),
+          base::android::ConvertUTF16ToJavaString(env, title),
+          base::android::ConvertUTF16ToJavaString(env, text),
+          gfx::ConvertToJavaBitmap(&skimage), timeout_at_millis)) {
+    DVLOG(1) << "Displayed notification for " << id;
+    return true;
+  } else {
+    DVLOG(1) << "Suppressed notification for " << url.spec();
+    return false;
+  }
 }
 
-void ContentSuggestionsNotificationHelper::HideAllNotifications() {
+void ContentSuggestionsNotificationHelper::HideNotification(
+    const ContentSuggestion::ID& id,
+    ContentSuggestionsNotificationAction why) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotificationHelper_hideAllNotifications(env);
+  Java_ContentSuggestionsNotificationHelper_hideNotification(
+      env, id.category().id(),
+      base::android::ConvertUTF8ToJavaString(env, id.id_within_category()),
+      static_cast<int>(why));
+}
+
+void ContentSuggestionsNotificationHelper::HideAllNotifications(
+    ContentSuggestionsNotificationAction why) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ContentSuggestionsNotificationHelper_hideAllNotifications(env, why);
 }
 
 void ContentSuggestionsNotificationHelper::FlushCachedMetrics() {
@@ -89,10 +108,18 @@ static void ReceiveFlushedMetrics(JNIEnv* env,
                                   jint tap_count,
                                   jint dismissal_count,
                                   jint hide_deadline_count,
+                                  jint hide_expiry_count,
+                                  jint hide_frontmost_count,
+                                  jint hide_disabled_count,
+                                  jint hide_shutdown_count,
                                   jint consecutive_ignored) {
   DVLOG(1) << "Flushing metrics: tap_count=" << tap_count
            << "; dismissal_count=" << dismissal_count
            << "; hide_deadline_count=" << hide_deadline_count
+           << "; hide_expiry_count=" << hide_expiry_count
+           << "; hide_frontmost_count=" << hide_frontmost_count
+           << "; hide_disabled_count=" << hide_disabled_count
+           << "; hide_shutdown_count=" << hide_shutdown_count
            << "; consecutive_ignored=" << consecutive_ignored;
   Profile* profile = ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
   PrefService* prefs = profile->GetPrefs();
@@ -106,6 +133,21 @@ static void ReceiveFlushedMetrics(JNIEnv* env,
   for (int i = 0; i < hide_deadline_count; ++i) {
     RecordContentSuggestionsNotificationAction(
         CONTENT_SUGGESTIONS_HIDE_DEADLINE);
+  }
+  for (int i = 0; i < hide_expiry_count; ++i) {
+    RecordContentSuggestionsNotificationAction(CONTENT_SUGGESTIONS_HIDE_EXPIRY);
+  }
+  for (int i = 0; i < hide_frontmost_count; ++i) {
+    RecordContentSuggestionsNotificationAction(
+        CONTENT_SUGGESTIONS_HIDE_FRONTMOST);
+  }
+  for (int i = 0; i < hide_disabled_count; ++i) {
+    RecordContentSuggestionsNotificationAction(
+        CONTENT_SUGGESTIONS_HIDE_DISABLED);
+  }
+  for (int i = 0; i < hide_shutdown_count; ++i) {
+    RecordContentSuggestionsNotificationAction(
+        CONTENT_SUGGESTIONS_HIDE_SHUTDOWN);
   }
 
   const bool was_disabled = IsDisabledForProfile(profile);

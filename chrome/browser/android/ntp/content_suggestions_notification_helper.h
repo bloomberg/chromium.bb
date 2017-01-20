@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
+#include "components/ntp_snippets/content_suggestion.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -23,12 +25,15 @@ namespace ntp_snippets {
 
 class ContentSuggestionsNotificationHelper {
  public:
-  static void SendNotification(const GURL& url,
+  static bool SendNotification(const ContentSuggestion::ID& id,
+                               const GURL& url,
                                const base::string16& title,
                                const base::string16& text,
                                const gfx::Image& image,
                                base::Time timeout_at);
-  static void HideAllNotifications();
+  static void HideNotification(const ContentSuggestion::ID& id,
+                               ContentSuggestionsNotificationAction why);
+  static void HideAllNotifications(ContentSuggestionsNotificationAction why);
 
   // Moves metrics tracked in Java into native histograms. Should be called when
   // the native library starts up, to capture any actions that were taken since

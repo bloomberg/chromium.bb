@@ -77,9 +77,12 @@ class ContentSuggestionsNotifierService::NotifyingObserver
         weak_ptr_factory_(this) {}
 
   void OnNewSuggestions(Category category) override {
-    if (!ShouldNotifyInState(app_status_listener_.GetState()) ||
-        ContentSuggestionsNotificationHelper::IsDisabledForProfile(profile_)) {
-      DVLOG(1) << "notification suppressed";
+    if (!ShouldNotifyInState(app_status_listener_.GetState())) {
+      DVLOG(1) << "Suppressed notification because Chrome is frontmost";
+      return;
+    } else if (ContentSuggestionsNotificationHelper::IsDisabledForProfile(
+                   profile_)) {
+      DVLOG(1) << "Suppressed notification due to opt-out";
       return;
     }
     const ContentSuggestion* suggestion = GetSuggestionToNotifyAbout(category);
@@ -112,8 +115,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
       case CategoryStatus::LOADING_ERROR:
       case CategoryStatus::NOT_PROVIDED:
       case CategoryStatus::SIGNED_OUT:
-        ContentSuggestionsNotificationHelper::HideAllNotifications();
-        RecordContentSuggestionsNotificationAction(
+        ContentSuggestionsNotificationHelper::HideAllNotifications(
             CONTENT_SUGGESTIONS_HIDE_DISABLED);
         break;
     }
@@ -125,20 +127,18 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     if (suggestion_id.category().IsKnownCategory(KnownCategories::ARTICLES) &&
         (suggestion_id.id_within_category() ==
          prefs_->GetString(kNotificationIDWithinCategory))) {
-      ContentSuggestionsNotificationHelper::HideAllNotifications();
-      RecordContentSuggestionsNotificationAction(
-          CONTENT_SUGGESTIONS_HIDE_EXPIRY);
+      ContentSuggestionsNotificationHelper::HideNotification(
+          suggestion_id, CONTENT_SUGGESTIONS_HIDE_EXPIRY);
     }
   }
 
   void OnFullRefreshRequired() override {
-    ContentSuggestionsNotificationHelper::HideAllNotifications();
-    RecordContentSuggestionsNotificationAction(CONTENT_SUGGESTIONS_HIDE_EXPIRY);
+    ContentSuggestionsNotificationHelper::HideAllNotifications(
+        CONTENT_SUGGESTIONS_HIDE_EXPIRY);
   }
 
   void ContentSuggestionsServiceShutdown() override {
-    ContentSuggestionsNotificationHelper::HideAllNotifications();
-    RecordContentSuggestionsNotificationAction(
+    ContentSuggestionsNotificationHelper::HideAllNotifications(
         CONTENT_SUGGESTIONS_HIDE_SHUTDOWN);
   }
 
@@ -166,8 +166,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 
   void AppStatusChanged(base::android::ApplicationState state) {
     if (!ShouldNotifyInState(state)) {
-      ContentSuggestionsNotificationHelper::HideAllNotifications();
-      RecordContentSuggestionsNotificationAction(
+      ContentSuggestionsNotificationHelper::HideAllNotifications(
           CONTENT_SUGGESTIONS_HIDE_FRONTMOST);
     }
   }
@@ -184,13 +183,14 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     // check if suggestion is still valid.
     DVLOG(1) << "Fetched " << image.Size().width() << "x"
              << image.Size().height() << " image for " << url.spec();
-    prefs_->SetString(kNotificationIDWithinCategory, id.id_within_category());
-    ContentSuggestionsNotificationHelper::SendNotification(
-        url, title, publisher, CropSquare(image), timeout_at);
-    RecordContentSuggestionsNotificationImpression(
-        id.category().IsKnownCategory(KnownCategories::ARTICLES)
-            ? CONTENT_SUGGESTIONS_ARTICLE
-            : CONTENT_SUGGESTIONS_NONARTICLE);
+    prefs_->ClearPref(kNotificationIDWithinCategory);
+    if (ContentSuggestionsNotificationHelper::SendNotification(
+            id, url, title, publisher, CropSquare(image), timeout_at)) {
+      RecordContentSuggestionsNotificationImpression(
+          id.category().IsKnownCategory(KnownCategories::ARTICLES)
+              ? CONTENT_SUGGESTIONS_ARTICLE
+              : CONTENT_SUGGESTIONS_NONARTICLE);
+    }
   }
 
   ContentSuggestionsService* const service_;

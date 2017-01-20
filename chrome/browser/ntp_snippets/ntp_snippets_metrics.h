@@ -12,6 +12,7 @@ enum ContentSuggestionsNotificationImpression {
   MAX_CONTENT_SUGGESTIONS_NOTIFICATION_IMPRESSION
 };
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
 enum ContentSuggestionsNotificationAction {
   CONTENT_SUGGESTIONS_TAP = 0,    // User tapped notification to open article.
   CONTENT_SUGGESTIONS_DISMISSAL,  // User swiped notification to dismiss it.

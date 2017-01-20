@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,9 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.Browser;
-import android.service.notification.StatusBarNotification;
 import android.support.v4.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
@@ -27,6 +24,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Provides functionality needed for content suggestion notifications.
@@ -37,6 +40,8 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 public class ContentSuggestionsNotificationHelper {
     private static final String NOTIFICATION_TAG = "ContentSuggestionsNotification";
     private static final String NOTIFICATION_ID_EXTRA = "notification_id";
+    private static final String NOTIFICATION_CATEGORY_EXTRA = "category";
+    private static final String NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA = "id_within_category";
 
     private static final String PREF_CACHED_ACTION_TAP =
             "ntp.content_suggestions.notification.cached_action_tap";
@@ -44,8 +49,20 @@ public class ContentSuggestionsNotificationHelper {
             "ntp.content_suggestions.notification.cached_action_dismissal";
     private static final String PREF_CACHED_ACTION_HIDE_DEADLINE =
             "ntp.content_suggestions.notification.cached_action_hide_deadline";
+    private static final String PREF_CACHED_ACTION_HIDE_EXPIRY =
+            "ntp.content_suggestions.notification.cached_action_hide_expiry";
+    private static final String PREF_CACHED_ACTION_HIDE_FRONTMOST =
+            "ntp.content_suggestions.notification.cached_action_hide_frontmost";
+    private static final String PREF_CACHED_ACTION_HIDE_DISABLED =
+            "ntp.content_suggestions.notification.cached_action_hide_disabled";
+    private static final String PREF_CACHED_ACTION_HIDE_SHUTDOWN =
+            "ntp.content_suggestions.notification.cached_action_hide_shutdown";
     private static final String PREF_CACHED_CONSECUTIVE_IGNORED =
             "ntp.content_suggestions.notification.cached_consecutive_ignored";
+
+    // Tracks which URIs there is an active notification for.
+    private static final String PREF_ACTIVE_NOTIFICATIONS =
+            "ntp.content_suggestions.notification.active";
 
     private ContentSuggestionsNotificationHelper() {} // Prevent instantiation
 
@@ -54,8 +71,11 @@ public class ContentSuggestionsNotificationHelper {
      */
     public static final class OpenUrlReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
+            int category = intent.getIntExtra(NOTIFICATION_CATEGORY_EXTRA, -1);
+            String idWithinCategory = intent.getStringExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA);
             openUrl(intent.getData());
-            recordCachedActionMetric(PREF_CACHED_ACTION_TAP);
+            recordCachedActionMetric(ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_TAP);
+            removeActiveNotification(category, idWithinCategory);
         }
     }
 
@@ -64,7 +84,11 @@ public class ContentSuggestionsNotificationHelper {
      */
     public static final class DeleteReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
-            recordCachedActionMetric(PREF_CACHED_ACTION_DISMISSAL);
+            int category = intent.getIntExtra(NOTIFICATION_CATEGORY_EXTRA, -1);
+            String idWithinCategory = intent.getStringExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA);
+            recordCachedActionMetric(
+                    ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_DISMISSAL);
+            removeActiveNotification(category, idWithinCategory);
         }
     }
 
@@ -73,10 +97,14 @@ public class ContentSuggestionsNotificationHelper {
      */
     public static final class TimeoutReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
-            int id = intent.getIntExtra(NOTIFICATION_ID_EXTRA, -1);
-            if (id < 0) return;
-            hideNotification(id);
-            recordCachedActionMetric(PREF_CACHED_ACTION_HIDE_DEADLINE);
+            int category = intent.getIntExtra(NOTIFICATION_CATEGORY_EXTRA, -1);
+            String idWithinCategory = intent.getStringExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA);
+            if (findActiveNotification(category, idWithinCategory) == null) {
+                return; // tapped or swiped
+            }
+
+            hideNotification(category, idWithinCategory,
+                    ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DEADLINE);
         }
     }
 
@@ -93,28 +121,28 @@ public class ContentSuggestionsNotificationHelper {
         context.startActivity(intent);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
     @CalledByNative
-    private static void showNotification(
-            String url, String title, String text, Bitmap image, long timeoutAtMillis) {
+    private static boolean showNotification(int category, String idWithinCategory, String url,
+            String title, String text, Bitmap image, long timeoutAtMillis) {
+        if (findActiveNotification(category, idWithinCategory) != null) return false;
+
         // Post notification.
         Context context = ContextUtils.getApplicationContext();
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Find an available notification ID.
-        int nextId = 0;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            for (StatusBarNotification activeNotification : manager.getActiveNotifications()) {
-                if (activeNotification.getTag() != NOTIFICATION_TAG) continue;
-                if (activeNotification.getId() >= nextId) {
-                    nextId = activeNotification.getId() + 1;
-                }
-            }
-        }
-
-        Intent contentIntent = new Intent(context, OpenUrlReceiver.class).setData(Uri.parse(url));
-        Intent deleteIntent = new Intent(context, DeleteReceiver.class).setData(Uri.parse(url));
+        int nextId = nextNotificationId();
+        Uri uri = Uri.parse(url);
+        Intent contentIntent =
+                new Intent(context, OpenUrlReceiver.class)
+                        .setData(uri)
+                        .putExtra(NOTIFICATION_CATEGORY_EXTRA, category)
+                        .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory);
+        Intent deleteIntent =
+                new Intent(context, DeleteReceiver.class)
+                        .setData(uri)
+                        .putExtra(NOTIFICATION_CATEGORY_EXTRA, category)
+                        .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory);
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context)
                         .setAutoCancel(true)
@@ -128,42 +156,189 @@ public class ContentSuggestionsNotificationHelper {
                         .setLargeIcon(image)
                         .setSmallIcon(R.drawable.ic_chrome);
         manager.notify(NOTIFICATION_TAG, nextId, builder.build());
+        addActiveNotification(new ActiveNotification(nextId, category, idWithinCategory, uri));
 
         // Set timeout.
         if (timeoutAtMillis != Long.MAX_VALUE) {
             AlarmManager alarmManager =
                     (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            Intent timeoutIntent = new Intent(context, TimeoutReceiver.class)
-                                           .setData(Uri.parse(url))
-                                           .putExtra(NOTIFICATION_ID_EXTRA, nextId);
+            Intent timeoutIntent =
+                    new Intent(context, TimeoutReceiver.class)
+                            .setData(Uri.parse(url))
+                            .putExtra(NOTIFICATION_ID_EXTRA, nextId)
+                            .putExtra(NOTIFICATION_CATEGORY_EXTRA, category)
+                            .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory);
             alarmManager.set(AlarmManager.RTC, timeoutAtMillis,
                     PendingIntent.getBroadcast(
                             context, 0, timeoutIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
+        return true;
     }
 
-    private static void hideNotification(int id) {
-        Context context = ContextUtils.getApplicationContext();
-        NotificationManager manager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(NOTIFICATION_TAG, id);
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
     @CalledByNative
-    private static void hideAllNotifications() {
+    private static void hideNotification(int category, String idWithinCategory, int why) {
         Context context = ContextUtils.getApplicationContext();
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            for (StatusBarNotification activeNotification : manager.getActiveNotifications()) {
-                if (activeNotification.getTag() == NOTIFICATION_TAG) {
-                    manager.cancel(NOTIFICATION_TAG, activeNotification.getId());
-                }
-            }
-        } else {
-            manager.cancel(NOTIFICATION_TAG, 0);
+        ActiveNotification activeNotification = findActiveNotification(category, idWithinCategory);
+        if (activeNotification == null) return;
+        manager.cancel(NOTIFICATION_TAG, activeNotification.mId);
+        if (removeActiveNotification(category, idWithinCategory)) {
+            recordCachedActionMetric(why);
         }
+    }
+
+    @CalledByNative
+    private static void hideAllNotifications(int why) {
+        Context context = ContextUtils.getApplicationContext();
+        NotificationManager manager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        for (ActiveNotification activeNotification : getActiveNotifications()) {
+            manager.cancel(NOTIFICATION_TAG, activeNotification.mId);
+            recordCachedActionMetric(why);
+        }
+    }
+
+    private static class ActiveNotification {
+        final int mId;
+        final int mCategory;
+        final String mIdWithinCategory;
+        final Uri mUri;
+
+        ActiveNotification(int id, int category, String idWithinCategory, Uri uri) {
+            mId = id;
+            mCategory = category;
+            mIdWithinCategory = idWithinCategory;
+            mUri = uri;
+        }
+
+        /** Parses the fields out of a chrome://content-suggestions-notification URI */
+        static ActiveNotification fromUri(Uri notificationUri) {
+            assert notificationUri.getScheme().equals("chrome");
+            assert notificationUri.getAuthority().equals("content-suggestions-notification");
+            assert notificationUri.getQueryParameter("id") != null;
+            assert notificationUri.getQueryParameter("category") != null;
+            assert notificationUri.getQueryParameter("idWithinCategory") != null;
+            assert notificationUri.getQueryParameter("uri") != null;
+
+            return new ActiveNotification(Integer.parseInt(notificationUri.getQueryParameter("id")),
+                    Integer.parseInt(notificationUri.getQueryParameter("category")),
+                    notificationUri.getQueryParameter("idWithinCategory"),
+                    Uri.parse(notificationUri.getQueryParameter("uri")));
+        }
+
+        /** Serializes the fields to a chrome://content-suggestions-notification URI */
+        Uri toUri() {
+            return new Uri.Builder()
+                    .scheme("chrome")
+                    .authority("content-suggestions-notification")
+                    .appendQueryParameter("id", Integer.toString(mId))
+                    .appendQueryParameter("category", Integer.toString(mCategory))
+                    .appendQueryParameter("idWithinCategory", mIdWithinCategory)
+                    .appendQueryParameter("uri", mUri.toString())
+                    .build();
+        }
+    }
+
+    /** Returns a mutable copy of the named pref. Never returns null. */
+    private static Set<String> getMutableStringSetPreference(
+            SharedPreferences prefs, String prefName) {
+        Set<String> prefValue = prefs.getStringSet(prefName, null);
+        if (prefValue == null) {
+            return new HashSet<String>();
+        }
+        return new HashSet<String>(prefValue);
+    }
+
+    private static void addActiveNotification(ActiveNotification notification) {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        Set<String> activeNotifications =
+                getMutableStringSetPreference(prefs, PREF_ACTIVE_NOTIFICATIONS);
+        activeNotifications.add(notification.toUri().toString());
+        prefs.edit().putStringSet(PREF_ACTIVE_NOTIFICATIONS, activeNotifications).apply();
+    }
+
+    private static boolean removeActiveNotification(int category, String idWithinCategory) {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        ActiveNotification notification = findActiveNotification(category, idWithinCategory);
+        if (notification == null) return false;
+
+        Set<String> activeNotifications =
+                getMutableStringSetPreference(prefs, PREF_ACTIVE_NOTIFICATIONS);
+        boolean result = activeNotifications.remove(notification.toUri().toString());
+        prefs.edit().putStringSet(PREF_ACTIVE_NOTIFICATIONS, activeNotifications).apply();
+        return result;
+    }
+
+    private static Collection<ActiveNotification> getActiveNotifications() {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        Set<String> activeNotifications = prefs.getStringSet(PREF_ACTIVE_NOTIFICATIONS, null);
+        if (activeNotifications == null) return Collections.emptySet();
+
+        Set<ActiveNotification> result = new HashSet<ActiveNotification>();
+        for (String serialized : activeNotifications) {
+            Uri notificationUri = Uri.parse(serialized);
+            ActiveNotification activeNotification = ActiveNotification.fromUri(notificationUri);
+            if (activeNotification != null) result.add(activeNotification);
+        }
+        return result;
+    }
+
+    /** Returns an ActiveNotification if a corresponding one is found, otherwise null. */
+    private static ActiveNotification findActiveNotification(
+            int category, String idWithinCategory) {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        Set<String> activeNotifications = prefs.getStringSet(PREF_ACTIVE_NOTIFICATIONS, null);
+        if (activeNotifications == null) return null;
+
+        for (String serialized : activeNotifications) {
+            Uri notificationUri = Uri.parse(serialized);
+            ActiveNotification activeNotification = ActiveNotification.fromUri(notificationUri);
+            if ((activeNotification != null) && (activeNotification.mCategory == category)
+                    && (activeNotification.mIdWithinCategory.equals(idWithinCategory))) {
+                return activeNotification;
+            }
+        }
+        return null;
+    }
+
+    /** Returns a non-negative integer greater than any active notification's notification ID. */
+    private static int nextNotificationId() {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        Set<String> activeNotifications = prefs.getStringSet(PREF_ACTIVE_NOTIFICATIONS, null);
+        if (activeNotifications == null) return 0;
+
+        int nextId = 0;
+        for (String serialized : activeNotifications) {
+            Uri notificationUri = Uri.parse(serialized);
+            ActiveNotification activeNotification = ActiveNotification.fromUri(notificationUri);
+            if ((activeNotification != null) && (activeNotification.mId >= nextId)) {
+                nextId = activeNotification.mId + 1;
+            }
+        }
+        return nextId;
+    }
+
+    private static String cachedMetricNameForAction(
+            @ContentSuggestionsNotificationAction.ContentSuggestionsNotificationActionEnum
+            int action) {
+        switch (action) {
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_TAP:
+                return PREF_CACHED_ACTION_TAP;
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_DISMISSAL:
+                return PREF_CACHED_ACTION_DISMISSAL;
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DEADLINE:
+                return PREF_CACHED_ACTION_HIDE_DEADLINE;
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_EXPIRY:
+                return PREF_CACHED_ACTION_HIDE_EXPIRY;
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_FRONTMOST:
+                return PREF_CACHED_ACTION_HIDE_FRONTMOST;
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_DISABLED:
+                return PREF_CACHED_ACTION_HIDE_DISABLED;
+            case ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_HIDE_SHUTDOWN:
+                return PREF_CACHED_ACTION_HIDE_SHUTDOWN;
+        }
+        return "";
     }
 
     /**
@@ -176,15 +351,18 @@ public class ContentSuggestionsNotificationHelper {
      * will immediately be sent to C++. If not, it will cache them for a later call to
      * flushCachedMetrics().
      *
-     * @param prefName The name of the action metric pref to update (<tt>PREF_CACHED_ACTION_*</tt>)
+     * @param action The action to update the pref for.
      */
-    private static void recordCachedActionMetric(String prefName) {
-        assert prefName.startsWith("ntp.content_suggestions.notification.cached_action_");
+    private static void recordCachedActionMetric(
+            @ContentSuggestionsNotificationAction.ContentSuggestionsNotificationActionEnum
+            int action) {
+        String prefName = cachedMetricNameForAction(action);
+        assert !prefName.isEmpty();
 
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         int currentValue = prefs.getInt(prefName, 0);
         int consecutiveIgnored = 0;
-        if (!prefName.equals(PREF_CACHED_ACTION_TAP)) {
+        if (action != ContentSuggestionsNotificationAction.CONTENT_SUGGESTIONS_TAP) {
             consecutiveIgnored = 1 + prefs.getInt(PREF_CACHED_CONSECUTIVE_IGNORED, 0);
         }
         prefs.edit()
@@ -210,20 +388,31 @@ public class ContentSuggestionsNotificationHelper {
         int tapCount = prefs.getInt(PREF_CACHED_ACTION_TAP, 0);
         int dismissalCount = prefs.getInt(PREF_CACHED_ACTION_DISMISSAL, 0);
         int hideDeadlineCount = prefs.getInt(PREF_CACHED_ACTION_HIDE_DEADLINE, 0);
+        int hideExpiryCount = prefs.getInt(PREF_CACHED_ACTION_HIDE_EXPIRY, 0);
+        int hideFrontmostCount = prefs.getInt(PREF_CACHED_ACTION_HIDE_FRONTMOST, 0);
+        int hideDisabledCount = prefs.getInt(PREF_CACHED_ACTION_HIDE_DISABLED, 0);
+        int hideShutdownCount = prefs.getInt(PREF_CACHED_ACTION_HIDE_SHUTDOWN, 0);
         int consecutiveIgnored = prefs.getInt(PREF_CACHED_CONSECUTIVE_IGNORED, 0);
 
-        if (tapCount > 0 || dismissalCount > 0 || hideDeadlineCount > 0) {
+        if (tapCount > 0 || dismissalCount > 0 || hideDeadlineCount > 0 || hideExpiryCount > 0
+                || hideFrontmostCount > 0 || hideDisabledCount > 0 || hideShutdownCount > 0) {
             nativeReceiveFlushedMetrics(tapCount, dismissalCount, hideDeadlineCount,
-                                        consecutiveIgnored);
+                    hideExpiryCount, hideFrontmostCount, hideDisabledCount, hideShutdownCount,
+                    consecutiveIgnored);
             prefs.edit()
                     .remove(PREF_CACHED_ACTION_TAP)
                     .remove(PREF_CACHED_ACTION_DISMISSAL)
                     .remove(PREF_CACHED_ACTION_HIDE_DEADLINE)
+                    .remove(PREF_CACHED_ACTION_HIDE_EXPIRY)
+                    .remove(PREF_CACHED_ACTION_HIDE_FRONTMOST)
+                    .remove(PREF_CACHED_ACTION_HIDE_DISABLED)
+                    .remove(PREF_CACHED_ACTION_HIDE_SHUTDOWN)
                     .remove(PREF_CACHED_CONSECUTIVE_IGNORED)
                     .apply();
         }
     }
 
-    private static native void nativeReceiveFlushedMetrics(
-            int tapCount, int dismissalCount, int hideDeadlineCount, int consecutiveIgnored);
+    private static native void nativeReceiveFlushedMetrics(int tapCount, int dismissalCount,
+            int hideDeadlineCount, int hideExpiryCount, int hideFrontmostCount,
+            int hideDisabledCount, int hideShutdownCount, int consecutiveIgnored);
 }
