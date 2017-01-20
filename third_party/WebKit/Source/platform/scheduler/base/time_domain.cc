@@ -142,10 +142,18 @@ void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
   while (!delayed_wakeup_queue_.empty() &&
          delayed_wakeup_queue_.min().time <= lazy_now->Now()) {
     internal::TaskQueueImpl* queue = delayed_wakeup_queue_.min().queue;
-    // O(log n)
-    delayed_wakeup_queue_.pop();
+    base::Optional<base::TimeTicks> next_wakeup =
+        queue->WakeUpForDelayedWork(lazy_now);
 
-    queue->WakeUpForDelayedWork(lazy_now);
+    if (next_wakeup) {
+      // O(log n)
+      delayed_wakeup_queue_.ReplaceMin({next_wakeup.value(), queue});
+      queue->set_scheduled_time_domain_wakeup(next_wakeup.value());
+    } else {
+      // O(log n)
+      delayed_wakeup_queue_.pop();
+      DCHECK_EQ(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
+    }
   }
 }
 

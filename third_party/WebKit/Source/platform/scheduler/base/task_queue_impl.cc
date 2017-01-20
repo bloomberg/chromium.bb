@@ -412,7 +412,8 @@ base::Optional<base::TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
   return main_thread_only().delayed_incoming_queue.top().delayed_run_time;
 }
 
-void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
+base::Optional<base::TimeTicks> TaskQueueImpl::WakeUpForDelayedWork(
+    LazyNow* lazy_now) {
   // Enqueue all delayed tasks that should be running now, skipping any that
   // have been canceled.
   while (!main_thread_only().delayed_incoming_queue.empty()) {
@@ -431,11 +432,10 @@ void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
   }
 
   // Make sure the next wake up is scheduled.
-  if (!main_thread_only().delayed_incoming_queue.empty()) {
-    main_thread_only().time_domain->ScheduleDelayedWork(
-        this, main_thread_only().delayed_incoming_queue.top().delayed_run_time,
-        lazy_now->Now());
-  }
+  if (!main_thread_only().delayed_incoming_queue.empty())
+    return main_thread_only().delayed_incoming_queue.top().delayed_run_time;
+
+  return base::nullopt;
 }
 
 void TaskQueueImpl::TraceQueueSize(bool is_locked) const {

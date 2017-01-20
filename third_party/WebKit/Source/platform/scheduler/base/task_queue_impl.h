@@ -172,9 +172,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   }
 
   // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|. It also schedules the next wake up with the
-  // TimeDomain. Must be called from the main thread.
-  void WakeUpForDelayedWork(LazyNow* lazy_now);
+  // |delayed_work_queue|. Returns the deadline if a subsequent wakeup is
+  // required. Must be called from the main thread.
+  base::Optional<base::TimeTicks> WakeUpForDelayedWork(LazyNow* lazy_now);
 
   base::TimeTicks scheduled_time_domain_wakeup() const {
     return main_thread_only().scheduled_time_domain_wakeup;
