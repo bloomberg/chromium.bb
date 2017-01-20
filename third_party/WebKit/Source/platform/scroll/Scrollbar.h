@@ -236,7 +236,7 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
 
   bool m_enabled;
 
-  Timer<Scrollbar> m_scrollTimer;
+  TaskRunnerTimer<Scrollbar> m_scrollTimer;
 
   float m_elasticOverscroll;
 
