@@ -96,8 +96,6 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListOnline) {
   reading_list_model_->SetEntryDistilledInfo(
       url, base::FilePath(distilled_path), GURL(kTestDistilledURL));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
-  GURL distilled_url =
-      reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
 
   test_navigation_manager_->GetPendingItem()->SetURL(url);
   test_web_state_.SetLoading(true);
@@ -120,8 +118,8 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledCommitted) {
   reading_list_model_->SetEntryDistilledInfo(
       url, base::FilePath(distilled_path), GURL(kTestDistilledURL));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
-  GURL distilled_url =
-      reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
+  GURL distilled_url = reading_list::OfflineURLForPath(
+      entry->DistilledPath(), entry->URL(), entry->DistilledURL());
 
   // Test on commited entry, there must be no pending item.
   test_navigation_manager_->SetPendingItem(nullptr);
@@ -146,8 +144,8 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledPending) {
   reading_list_model_->SetEntryDistilledInfo(
       url, base::FilePath(distilled_path), GURL(kTestDistilledURL));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
-  GURL distilled_url =
-      reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
+  GURL distilled_url = reading_list::OfflineURLForPath(
+      entry->DistilledPath(), entry->URL(), entry->DistilledURL());
 
   test_navigation_manager_->SetPendingItem(nil);
   test_navigation_manager_->GetLastCommittedItem()->SetURL(url);

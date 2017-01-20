@@ -14,13 +14,15 @@
 #include "net/base/url_util.h"
 
 namespace {
+const char kEntryURLQueryParam[] = "entryURL";
 const char kVirtualURLQueryParam[] = "virtualURL";
 }
 
 namespace reading_list {
 
-GURL DistilledURLForPath(const base::FilePath& distilled_path,
-                         const GURL& virtual_url) {
+GURL OfflineURLForPath(const base::FilePath& distilled_path,
+                       const GURL& entry_url,
+                       const GURL& virtual_url) {
   if (distilled_path.empty()) {
     return GURL();
   }
@@ -28,6 +30,10 @@ GURL DistilledURLForPath(const base::FilePath& distilled_path,
   GURL::Replacements replacements;
   replacements.SetPathStr(distilled_path.value());
   page_url = page_url.ReplaceComponents(replacements);
+  if (entry_url.is_valid()) {
+    page_url = net::AppendQueryParameter(page_url, kEntryURLQueryParam,
+                                         entry_url.spec());
+  }
   if (virtual_url.is_valid()) {
     page_url = net::AppendQueryParameter(page_url, kVirtualURLQueryParam,
                                          virtual_url.spec());
@@ -35,16 +41,28 @@ GURL DistilledURLForPath(const base::FilePath& distilled_path,
   return page_url;
 }
 
-GURL VirtualURLForDistilledURL(const GURL& distilled_url) {
+GURL EntryURLForOfflineURL(const GURL& offline_url) {
+  std::string entry_url_string;
+  if (net::GetValueForKeyInQuery(offline_url, kEntryURLQueryParam,
+                                 &entry_url_string)) {
+    GURL entry_url = GURL(entry_url_string);
+    if (entry_url.is_valid()) {
+      return entry_url;
+    }
+  }
+  return offline_url;
+}
+
+GURL VirtualURLForOfflineURL(const GURL& offline_url) {
   std::string virtual_url_string;
-  if (net::GetValueForKeyInQuery(distilled_url, kVirtualURLQueryParam,
+  if (net::GetValueForKeyInQuery(offline_url, kVirtualURLQueryParam,
                                  &virtual_url_string)) {
     GURL virtual_url = GURL(virtual_url_string);
     if (virtual_url.is_valid()) {
       return virtual_url;
     }
   }
-  return distilled_url;
+  return EntryURLForOfflineURL(offline_url);
 }
 
 GURL FileURLForDistilledURL(const GURL& distilled_url,

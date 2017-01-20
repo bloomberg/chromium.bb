@@ -15,34 +15,75 @@
 // Checks the distilled URL for the page is chrome://offline/MD5/page.html;
 TEST(OfflineURLUtilsTest, DistilledURLForPathTest) {
   base::FilePath page_path("MD5/page.html");
-  GURL distilled_url = reading_list::DistilledURLForPath(page_path, GURL());
+  GURL distilled_url =
+      reading_list::OfflineURLForPath(page_path, GURL(), GURL());
   EXPECT_EQ("chrome://offline/MD5/page.html", distilled_url.spec());
 }
 
 // Checks the distilled URL for the page with an onlineURL is
-// chrome://offline/MD5/page.html?virtualURL=encorded%20URL;
-TEST(OfflineURLUtilsTest, DistilledURLForPathWithVirtualURLTest) {
+// chrome://offline/MD5/page.html?entryURL=...&virtualURL=...
+TEST(OfflineURLUtilsTest, OfflineURLForPathWithEntryURLAndVirtualURLTest) {
   base::FilePath page_path("MD5/page.html");
-  GURL online_url = GURL("http://foo.bar");
-  GURL distilled_url = reading_list::DistilledURLForPath(page_path, online_url);
-  EXPECT_EQ("chrome://offline/MD5/page.html?virtualURL=http%3A%2F%2Ffoo.bar%2F",
-            distilled_url.spec());
+  GURL entry_url = GURL("http://foo.bar");
+  GURL virtual_url = GURL("http://foo.bar/virtual");
+  GURL distilled_url =
+      reading_list::OfflineURLForPath(page_path, entry_url, virtual_url);
+  EXPECT_EQ(
+      "chrome://offline/MD5/page.html?"
+      "entryURL=http%3A%2F%2Ffoo.bar%2F&"
+      "virtualURL=http%3A%2F%2Ffoo.bar%2Fvirtual",
+      distilled_url.spec());
 }
 
-// Checks the distilled URL for the page is chrome://offline/MD5/page.html;
-TEST(OfflineURLUtilsTest, VirtualURLForDistilledURLTest) {
+// Checks the parsing of offline URL chrome://offline/MD5/page.html.
+// As entryURL and virtualURL are absent, they should return the offline URL.
+TEST(OfflineURLUtilsTest, ParseOfflineURLTest) {
   GURL distilled_url("chrome://offline/MD5/page.html");
-  GURL virtual_url = reading_list::VirtualURLForDistilledURL(distilled_url);
+  GURL entry_url = reading_list::EntryURLForOfflineURL(distilled_url);
+  EXPECT_EQ("chrome://offline/MD5/page.html", entry_url.spec());
+  GURL virtual_url = reading_list::VirtualURLForOfflineURL(distilled_url);
   EXPECT_EQ("chrome://offline/MD5/page.html", virtual_url.spec());
 }
 
-// Checks the distilled URL for the page with an onlineURL is
-// chrome://offline/MD5/page.html?virtualURL=encorded%20URL;
-TEST(OfflineURLUtilsTest, VirtualURLForDistilledURLWithVirtualURLTest) {
-  GURL distilled_url(
-      "chrome://offline/MD5/page.html?virtualURL=http%3A%2F%2Ffoo.bar%2F");
-  GURL virtual_url = reading_list::VirtualURLForDistilledURL(distilled_url);
+// Checks the parsing of offline URL
+// chrome://offline/MD5/page.html?entryURL=encorded%20URL
+// As entryURL is present, it should be returned correctly.
+// As virtualURL is absent, it should return the entryURL.
+TEST(OfflineURLUtilsTest, ParseOfflineURLWithEntryURLTest) {
+  GURL offline_url(
+      "chrome://offline/MD5/page.html?entryURL=http%3A%2F%2Ffoo.bar%2F");
+  GURL entry_url = reading_list::EntryURLForOfflineURL(offline_url);
+  EXPECT_EQ("http://foo.bar/", entry_url.spec());
+  GURL virtual_url = reading_list::VirtualURLForOfflineURL(offline_url);
   EXPECT_EQ("http://foo.bar/", virtual_url.spec());
+}
+
+// Checks the parsing of offline URL
+// chrome://offline/MD5/page.html?virtualURL=encorded%20URL
+// As entryURL is absent, it should return the offline URL.
+// As virtualURL is present, it should be returned correctly.
+TEST(OfflineURLUtilsTest, ParseOfflineURLWithVirtualURLTest) {
+  GURL offline_url(
+      "chrome://offline/MD5/page.html?virtualURL=http%3A%2F%2Ffoo.bar%2F");
+  GURL entry_url = reading_list::EntryURLForOfflineURL(offline_url);
+  EXPECT_EQ(offline_url, entry_url);
+  GURL virtual_url = reading_list::VirtualURLForOfflineURL(offline_url);
+  EXPECT_EQ("http://foo.bar/", virtual_url.spec());
+}
+
+// Checks the parsing of offline URL
+// chrome://offline/MD5/page.html?entryURL=...&virtualURL=...
+// As entryURL is present, it should be returned correctly.
+// As virtualURL is present, it should be returned correctly.
+TEST(OfflineURLUtilsTest, ParseOfflineURLWithVirtualAndEntryURLTest) {
+  GURL offline_url(
+      "chrome://offline/MD5/"
+      "page.html?virtualURL=http%3A%2F%2Ffoo.bar%2Fvirtual&entryURL=http%3A%2F%"
+      "2Ffoo.bar%2Fentry");
+  GURL entry_url = reading_list::EntryURLForOfflineURL(offline_url);
+  EXPECT_EQ("http://foo.bar/entry", entry_url.spec());
+  GURL virtual_url = reading_list::VirtualURLForOfflineURL(offline_url);
+  EXPECT_EQ("http://foo.bar/virtual", virtual_url.spec());
 }
 
 // Checks the file path for chrome://offline/MD5/page.html is

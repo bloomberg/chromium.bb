@@ -7,12 +7,10 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "components/reading_list/core/reading_list_switches.h"
-#include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
-#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation_item.h"
@@ -32,11 +30,15 @@
   // The virtual URL that will be displayed to the user.
   GURL _virtualURL;
 
-  // The Reading list model needed to reload the entry.
-  ReadingListModel* _model;
+  // The URL of the Reading List entry that is being displayed..
+  GURL _entryURL;
 
   // The WebState of the current tab.
   web::WebState* _webState;
+
+  // A guard tracking if |restoreOnlineURL| has been called to avoid calling
+  // it twice.
+  BOOL _restored;
 }
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
@@ -48,8 +50,6 @@
   DCHECK(URL.is_valid());
 
   DCHECK(reading_list::switches::IsReadingListEnabled());
-  _model = ReadingListModelFactory::GetForBrowserState(
-      ios::ChromeBrowserState::FromBrowserState(browserState));
   base::FilePath offline_root =
       ReadingListDownloadServiceFactory::GetForBrowserState(
           ios::ChromeBrowserState::FromBrowserState(browserState))
@@ -64,7 +64,8 @@
       [[StaticHtmlViewController alloc] initWithFileURL:fileURL
                                 allowingReadAccessToURL:resourcesRoot
                                            browserState:browserState];
-  _virtualURL = reading_list::VirtualURLForDistilledURL(URL);
+  _entryURL = reading_list::EntryURLForOfflineURL(URL);
+  _virtualURL = reading_list::VirtualURLForOfflineURL(URL);
 
   return [super initWithLoader:loader
       staticHTMLViewController:HTMLViewController
@@ -90,11 +91,15 @@
 }
 
 - (void)restoreOnlineURL {
+  if (_restored) {
+    return;
+  }
+  _restored = YES;
   web::NavigationItem* item =
       _webState->GetNavigationManager()->GetLastCommittedItem();
   DCHECK(item && item->GetVirtualURL() == [self virtualURL]);
-  item->SetURL([self virtualURL]);
-  item->SetVirtualURL([self virtualURL]);
+  item->SetURL(_entryURL);
+  item->SetVirtualURL(_entryURL);
 }
 
 @end
