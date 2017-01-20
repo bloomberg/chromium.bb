@@ -193,7 +193,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   DataRef<SVGComputedStyle> m_svgStyle;
 
   // !START SYNC!: Keep this in sync with the copy constructor in
-  // ComputedStyle.cpp and implicitlyInherited() in StyleResolver.cpp
+  // ComputedStyle.cpp.
 
   // inherit
   struct InheritedData {
