@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omaha;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -55,13 +54,13 @@ public class OmahaClientTest extends InstrumentationTestCase {
         DUE, NOT_DUE
     }
 
-    private MockOmahaContext mContext;
+    private AdvancedMockContext mContext;
     private HookedOmahaClient mOmahaClient;
 
     @Override
     protected void setUp() {
         Context targetContext = getInstrumentation().getTargetContext();
-        mContext = new MockOmahaContext(targetContext);
+        mContext = new AdvancedMockContext(targetContext);
         mOmahaClient = HookedOmahaClient.create(mContext);
     }
 
@@ -77,11 +76,8 @@ public class OmahaClientTest extends InstrumentationTestCase {
         mOmahaClient.onHandleIntent(intent);
         assertTrue("OmahaClient has no registered request", mOmahaClient.hasRequest());
         assertTrue("Alarm does not have the correct state", mOmahaClient.getRequestAlarmWasSet());
-        assertTrue("OmahaClient wasn't restarted.", mContext.mOmahaClientRestarted);
-        assertNotNull(mContext.mIntentFired);
-        assertEquals("POST intent not fired.",
-                OmahaClient.createPostRequestIntent(mContext).getAction(),
-                mContext.mIntentFired.getAction());
+        assertEquals("OmahaClient didn't post the request",
+                OmahaClient.POST_RESULT_SCHEDULED, mOmahaClient.mPostResult);
     }
 
     /**
@@ -94,8 +90,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         mOmahaClient.onHandleIntent(intent);
         assertFalse("OmahaClient has a registered request", mOmahaClient.hasRequest());
         assertTrue("Alarm does not have the correct state", mOmahaClient.getRequestAlarmWasSet());
-        assertFalse("OmahaClient was restarted.", mContext.mOmahaClientRestarted);
-        assertNull(mContext.mIntentFired);
+        assertEquals("OmahaClient called handlePostRequest", -1, mOmahaClient.mPostResult);
     }
 
     /**
@@ -106,9 +101,9 @@ public class OmahaClientTest extends InstrumentationTestCase {
     public void testInstallSourceSetBeforeRestoringRequest() {
         // Plant a failed request.
         Context targetContext = getInstrumentation().getTargetContext();
-        MockOmahaContext mockContext = new MockOmahaContext(targetContext);
-        SharedPreferences prefs =
-                mockContext.getSharedPreferences(OmahaClient.PREF_PACKAGE, Context.MODE_PRIVATE);
+        AdvancedMockContext mockContext = new AdvancedMockContext(targetContext);
+        SharedPreferences prefs = mockContext.getSharedPreferences(OmahaClient.PREF_PACKAGE,
+                Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putLong(OmahaClient.PREF_TIMESTAMP_OF_REQUEST, 0);
         editor.putString(OmahaClient.PREF_PERSISTED_REQUEST_ID, "persisted_id");
@@ -138,7 +133,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
         mOmahaClient.onHandleIntent(intent);
         assertFalse("OmahaClient has a registered request", mOmahaClient.hasRequest());
-        assertFalse("OmahaClient was relaunched", mContext.mOmahaClientRestarted);
+        assertEquals(-1, mOmahaClient.mPostResult);
     }
 
     /**
@@ -151,8 +146,8 @@ public class OmahaClientTest extends InstrumentationTestCase {
         mOmahaClient.mMockScheduler.setCurrentTime(1000);
         Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
         mOmahaClient.onHandleIntent(intent);
-        assertTrue("OmahaClient has no registered request", mOmahaClient.hasRequest());
-        assertTrue("OmahaClient wasn't relaunched", mContext.mOmahaClientRestarted);
+        assertFalse("OmahaClient has no registered request", mOmahaClient.hasRequest());
+        assertEquals(OmahaClient.POST_RESULT_SENT, mOmahaClient.mPostResult);
     }
 
     /**
@@ -481,6 +476,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
 
         private boolean mRequestAlarmWasSet;
         private int mNumUUIDsGenerated;
+        private int mPostResult = -1;
 
         public static HookedOmahaClient create(Context context) {
             HookedOmahaClient omahaClient = new HookedOmahaClient(context, DeviceType.TABLET,
@@ -510,6 +506,12 @@ public class OmahaClientTest extends InstrumentationTestCase {
         @Override
         public int getApplicationFlags() {
             return mInstalledOnSystemImage ? ApplicationInfo.FLAG_SYSTEM : 0;
+        }
+
+        @Override
+        protected int handlePostRequest() {
+            mPostResult = super.handlePostRequest();
+            return mPostResult;
         }
 
         /**
@@ -756,24 +758,6 @@ public class OmahaClientTest extends InstrumentationTestCase {
 
         public String getRequestPropertyValue() {
             return mRequestPropertyValue;
-        }
-    }
-
-    private static class MockOmahaContext extends AdvancedMockContext {
-        private boolean mOmahaClientRestarted;
-        private Intent mIntentFired;
-
-        public MockOmahaContext(Context targetContext) {
-            super(targetContext);
-        }
-
-        @Override
-        public ComponentName startService(Intent intent) {
-            assertEquals(OmahaClient.class.getCanonicalName(),
-                    intent.getComponent().getClassName());
-            mOmahaClientRestarted = true;
-            mIntentFired = intent;
-            return intent.getComponent();
         }
     }
 }

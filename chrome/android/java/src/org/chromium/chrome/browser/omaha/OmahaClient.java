@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.os.Build;
 import android.os.Looper;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -57,6 +58,12 @@ import java.util.UUID;
  * http://docs.google.com/a/google.com/document/d/1scTCovqASf5ktkOeVj8wFRkWTCeDYw2LrOBNn05CDB0/edit
  */
 public class OmahaClient extends IntentService {
+    // Results of {@link #handlePostRequest()}.
+    static final int POST_RESULT_NO_REQUEST = 0;
+    static final int POST_RESULT_SENT = 1;
+    static final int POST_RESULT_FAILED = 2;
+    static final int POST_RESULT_SCHEDULED = 3;
+
     private static final String TAG = "omaha";
 
     // Intent actions.
@@ -193,12 +200,9 @@ public class OmahaClient extends IntentService {
     public void onHandleIntent(Intent intent) {
         assert Looper.myLooper() != Looper.getMainLooper();
 
-        if (!sEnableCommunication) {
+        if (!sEnableCommunication || Build.VERSION.SDK_INT > Build.VERSION_CODES.N
+                || getRequestGenerator() == null) {
             Log.v(TAG, "Disabled.  Ignoring intent.");
-            return;
-        }
-
-        if (getRequestGenerator() == null) {
             return;
         }
 
@@ -209,9 +213,9 @@ public class OmahaClient extends IntentService {
         if (ACTION_INITIALIZE.equals(intent.getAction())) {
             handleInitialize();
         } else if (ACTION_REGISTER_REQUEST.equals(intent.getAction())) {
-            handleRegisterRequest(intent);
+            handleRegisterRequest();
         } else if (ACTION_POST_REQUEST.equals(intent.getAction())) {
-            handlePostRequestIntent(intent);
+            handlePostRequest();
         } else {
             Log.e(TAG, "Got unknown action from intent: " + intent.getAction());
         }
@@ -221,7 +225,10 @@ public class OmahaClient extends IntentService {
      * Begin communicating with the Omaha Update Server.
      */
     public static void onForegroundSessionStart(Context context) {
-        if (!ChromeVersionInfo.isOfficialBuild()) return;
+        if (!ChromeVersionInfo.isOfficialBuild() || Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+            return;
+        }
+
         Intent omahaIntent = createInitializeIntent(context);
         context.startService(omahaIntent);
     }
@@ -238,8 +245,8 @@ public class OmahaClient extends IntentService {
     private void handleInitialize() {
         scheduleRepeatingAlarm();
 
-        // If a request exists, fire a POST intent to restart its timer.
-        if (hasRequest()) startService(createPostRequestIntent(this));
+        // If a request exists, kick off POSTing it to the server immediately.
+        if (hasRequest()) handlePostRequest();
     }
 
     /**
@@ -255,7 +262,7 @@ public class OmahaClient extends IntentService {
      * Determines if a new request should be generated.  New requests are only generated if enough
      * time has passed between now and the last time a request was generated.
      */
-    private void handleRegisterRequest(Intent intent) {
+    private void handleRegisterRequest() {
         if (!isChromeBeingUsed()) {
             cancelRepeatingAlarm();
             return;
@@ -270,9 +277,9 @@ public class OmahaClient extends IntentService {
             registerNewRequest(currentTimestamp);
         }
 
-        // Create an intent to send the request.
+        // Send the request.
         if (hasRequest()) {
-            startService(createPostRequestIntent(this));
+            handlePostRequest();
         }
     }
 
@@ -289,12 +296,11 @@ public class OmahaClient extends IntentService {
      * Sends the request it is holding.
      */
     @VisibleForTesting
-    private void handlePostRequestIntent(Intent intent) {
-        if (!hasRequest()) {
-            return;
-        }
+    protected int handlePostRequest() {
+        if (!hasRequest()) return POST_RESULT_NO_REQUEST;
 
         // If enough time has passed since the last attempt, try sending a request.
+        int result;
         long currentTimestamp = getBackoffScheduler().getCurrentTime();
         if (currentTimestamp >= mTimestampForNextPostAttempt) {
             // All requests made during the same session should have the same ID.
@@ -310,14 +316,18 @@ public class OmahaClient extends IntentService {
                 registerNewRequest(currentTimestamp);
                 generateAndPostRequest(currentTimestamp, sessionID);
             }
+
+            result = succeeded ? POST_RESULT_SENT : POST_RESULT_FAILED;
         } else {
             // Set an alarm to POST at the proper time.  Previous alarms are destroyed.
             Intent postIntent = createPostRequestIntent(this);
             getBackoffScheduler().createAlarm(postIntent, mTimestampForNextPostAttempt);
+            result = POST_RESULT_SCHEDULED;
         }
 
         // Write everything back out again to save our state.
         saveState();
+        return result;
     }
 
     private boolean generateAndPostRequest(long currentTimestamp, String sessionID) {

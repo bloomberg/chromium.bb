@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 /**
  * Triggered when Chrome's package is replaced (e.g. when it is upgraded).
@@ -28,6 +29,7 @@ import android.content.Intent;
 public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) return;
         UpgradeIntentService.startMigrationIfNecessary(context);
     }
 }
