@@ -7,6 +7,8 @@
 
 module extensions.mojom;
 
+import "mojo/common/file.mojom";
+import "mojo/common/time.mojom";
 import "mojo/common/values.mojom";
 
 struct AttachedImage {
@@ -21,4 +23,13 @@ interface MediaParser {
       => (bool parse_success,
           mojo.common.mojom.DictionaryValue metadata,
           array<AttachedImage> attached_images);
+
+  // Validate the passed media file with sanity checks, and file decoding
+  // for at most |decode_time| wall clock time. Returns |success| true if
+  // |file| appears to be a well-formed media file, false otherwise.
+  // Note: it is still not safe to decode the file in the browser process
+  // after this check.
+  CheckMediaFile(mojo.common.mojom.TimeDelta decode_time,
+                 mojo.common.mojom.File file)
+      => (bool success);
 };

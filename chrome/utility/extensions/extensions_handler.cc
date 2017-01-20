@@ -46,10 +46,6 @@
 
 namespace {
 
-bool Send(IPC::Message* message) {
-  return content::UtilityThread::Get()->Send(message);
-}
-
 void ReleaseProcessIfNeeded() {
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
@@ -88,6 +84,18 @@ class MediaParserImpl : public extensions::mojom::MediaParser {
       const extensions::api::media_galleries::MediaMetadata& metadata,
       const std::vector<metadata::AttachedImage>& attached_images) {
     callback.Run(true, metadata.ToValue(), attached_images);
+    ReleaseProcessIfNeeded();
+  }
+
+  void CheckMediaFile(base::TimeDelta decode_time,
+                      base::File file,
+                      const CheckMediaFileCallback& callback) override {
+#if !defined(MEDIA_DISABLE_FFMPEG)
+    media::MediaFileChecker checker(std::move(file));
+    callback.Run(checker.Start(decode_time));
+#else
+    callback.Run(false);
+#endif
     ReleaseProcessIfNeeded();
   }
 
@@ -173,8 +181,6 @@ void ExtensionsHandler::ExposeInterfacesToBrowser(
 bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionsHandler, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CheckMediaFile, OnCheckMediaFile)
-
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesPrefXml,
                         OnParseITunesPrefXml)
@@ -195,27 +201,13 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
   return handled || utility_handler_.OnMessageReceived(message);
 }
 
-void ExtensionsHandler::OnCheckMediaFile(
-    int64_t milliseconds_of_decoding,
-    const IPC::PlatformFileForTransit& media_file) {
-#if !defined(MEDIA_DISABLE_FFMPEG)
-  media::MediaFileChecker checker(
-      IPC::PlatformFileForTransitToFile(media_file));
-  const bool check_success = checker.Start(
-      base::TimeDelta::FromMilliseconds(milliseconds_of_decoding));
-  Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(check_success));
-#else
-  Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(false));
-#endif
-  ReleaseProcessIfNeeded();
-}
-
 #if defined(OS_WIN)
 void ExtensionsHandler::OnParseITunesPrefXml(
     const std::string& itunes_xml_data) {
   base::FilePath library_path(
       itunes::FindLibraryLocationInPrefXml(itunes_xml_data));
-  Send(new ChromeUtilityHostMsg_GotITunesDirectory(library_path));
+  content::UtilityThread::Get()->Send(
+      new ChromeUtilityHostMsg_GotITunesDirectory(library_path));
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_WIN)
@@ -226,7 +218,8 @@ void ExtensionsHandler::OnParseITunesLibraryXmlFile(
   itunes::ITunesLibraryParser parser;
   base::File file = IPC::PlatformFileForTransitToFile(itunes_library_file);
   bool result = parser.Parse(iapps::ReadFileAsString(std::move(file)));
-  Send(new ChromeUtilityHostMsg_GotITunesLibrary(result, parser.library()));
+  content::UtilityThread::Get()->Send(
+      new ChromeUtilityHostMsg_GotITunesLibrary(result, parser.library()));
   ReleaseProcessIfNeeded();
 }
 
@@ -250,8 +243,9 @@ void ExtensionsHandler::OnParsePicasaPMPDatabase(
 
   picasa::PicasaAlbumTableReader reader(std::move(files));
   bool parse_success = reader.Init();
-  Send(new ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished(
-      parse_success, reader.albums(), reader.folders()));
+  content::UtilityThread::Get()->Send(
+      new ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished(
+          parse_success, reader.albums(), reader.folders()));
   ReleaseProcessIfNeeded();
 }
 
@@ -260,9 +254,9 @@ void ExtensionsHandler::OnIndexPicasaAlbumsContents(
     const std::vector<picasa::FolderINIContents>& folders_inis) {
   picasa::PicasaAlbumsIndexer indexer(album_uids);
   indexer.ParseFolderINI(folders_inis);
-
-  Send(new ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished(
-      indexer.albums_images()));
+  content::UtilityThread::Get()->Send(
+      new ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished(
+          indexer.albums_images()));
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

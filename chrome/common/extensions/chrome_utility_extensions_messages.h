@@ -85,14 +85,6 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_IndexPicasaAlbumsContents,
                      std::vector<picasa::FolderINIContents> /* folders_inis */)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-// Tell the utility process to attempt to validate the passed media file. The
-// file will undergo basic sanity checks and will be decoded for up to
-// |milliseconds_of_decoding| wall clock time. It is still not safe to decode
-// the file in the browser process after this check.
-IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_CheckMediaFile,
-                     int64_t /* milliseconds_of_decoding */,
-                     IPC::PlatformFileForTransit /* Media file to parse */)
-
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RequestBlobBytes_Finished,
                      int64_t /* request_id */,
                      std::string /* bytes */)
@@ -144,11 +136,6 @@ IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished,
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished,
                      picasa::AlbumImagesMap /* albums_images */)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-// Reply after checking the passed media file. A true result indicates that
-// the file appears to be a well formed media file.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_CheckMediaFile_Finished,
-                     bool /* passed_checks */)
 
 IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_RequestBlobBytes,
                      int64_t /* request_id */,

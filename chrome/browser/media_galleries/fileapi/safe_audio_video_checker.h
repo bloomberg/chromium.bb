@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/common/extensions/media_parser.mojom.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"
 
@@ -54,6 +55,8 @@ class SafeAudioVideoChecker : public content::UtilityProcessHostClient {
   const storage::CopyOrMoveFileValidator::ResultCallback callback_;
 
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
+
+  extensions::mojom::MediaParserPtr interface_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeAudioVideoChecker);
 };
