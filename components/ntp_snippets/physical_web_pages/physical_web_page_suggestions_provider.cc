@@ -19,6 +19,7 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/pref_util.h"
+#include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "grit/components_strings.h"
@@ -27,67 +28,38 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-using base::DictionaryValue;
-using base::ListValue;
-using base::Value;
-
 namespace ntp_snippets {
 
 namespace {
 
 const size_t kMaxSuggestionsCount = 10;
 
-std::string GetGroupId(const DictionaryValue& page_dictionary) {
-  std::string group_id;
-  if (!page_dictionary.GetString(physical_web::kGroupIdKey, &group_id)) {
-    LOG(DFATAL) << physical_web::kGroupIdKey << " field is missing.";
-  }
-  return group_id;
+std::string GetPageId(const physical_web::Metadata& page_metadata) {
+  return page_metadata.resolved_url.spec();
 }
 
-std::string GetPageId(const DictionaryValue& page_dictionary) {
-  std::string raw_resolved_url;
-  if (!page_dictionary.GetString(physical_web::kResolvedUrlKey,
-                                 &raw_resolved_url)) {
-    LOG(DFATAL) << physical_web::kResolvedUrlKey << " field is missing.";
-  }
-  return raw_resolved_url;
-}
-
-bool CompareByDistance(const DictionaryValue* left,
-                       const DictionaryValue* right) {
-  double left_distance, right_distance;
-  bool success =
-      left->GetDouble(physical_web::kDistanceEstimateKey, &left_distance);
-  success =
-      right->GetDouble(physical_web::kDistanceEstimateKey, &right_distance) &&
-      success;
-  if (!success) {
-    LOG(DFATAL) << "Distance field is missing.";
-  }
-
+bool CompareByDistance(const physical_web::Metadata& left,
+                       const physical_web::Metadata& right) {
   // When there is no estimate, the value is <= 0, so we implicitly treat it as
   // infinity.
-  bool is_left_estimated = left_distance > 0;
-  bool is_right_estimated = right_distance > 0;
+  bool is_left_estimated = left.distance_estimate > 0;
+  bool is_right_estimated = right.distance_estimate > 0;
 
   if (is_left_estimated != is_right_estimated)
     return is_left_estimated;
-  return left_distance < right_distance;
+  return left.distance_estimate < right.distance_estimate;
 }
 
 void FilterOutByGroupId(
-    std::vector<const DictionaryValue*>* page_dictionaries) {
+    physical_web::MetadataList& page_metadata_list) {
   // |std::unique| only removes duplicates that immediately follow each other.
   // Thus, first, we have to sort by group_id and distance and only then remove
   // duplicates.
-  std::sort(page_dictionaries->begin(), page_dictionaries->end(),
-            [](const DictionaryValue* left, const DictionaryValue* right) {
-              std::string left_group_id = GetGroupId(*left);
-              std::string right_group_id = GetGroupId(*right);
-
-              if (left_group_id != right_group_id) {
-                return left_group_id < right_group_id;
+  std::sort(page_metadata_list.begin(), page_metadata_list.end(),
+            [](const physical_web::Metadata& left,
+               const physical_web::Metadata& right) {
+              if (left.group_id != right.group_id) {
+                return left.group_id < right.group_id;
               }
 
               // We want closest pages first, so in case of same group_id we
@@ -98,16 +70,19 @@ void FilterOutByGroupId(
   // Each empty group_id must be treated as unique, so we do not apply
   // std::unique to them at all.
   auto nonempty_group_id_begin = std::find_if(
-      page_dictionaries->begin(), page_dictionaries->end(),
-      [](const DictionaryValue* page) { return !GetGroupId(*page).empty(); });
-
-  auto new_end = std::unique(
-      nonempty_group_id_begin, page_dictionaries->end(),
-      [](const DictionaryValue* left, const DictionaryValue* right) {
-        return GetGroupId(*left) == GetGroupId(*right);
+      page_metadata_list.begin(), page_metadata_list.end(),
+      [](const physical_web::Metadata& page) {
+        return !page.group_id.empty();
       });
 
-  page_dictionaries->erase(new_end, page_dictionaries->end());
+  auto new_end = std::unique(
+      nonempty_group_id_begin, page_metadata_list.end(),
+      [](const physical_web::Metadata& left,
+         const physical_web::Metadata& right) {
+        return left.group_id == right.group_id;
+      });
+
+  page_metadata_list.erase(new_end, page_metadata_list.end());
 }
 
 }  // namespace
@@ -200,19 +175,13 @@ void PhysicalWebPageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
     const DismissedSuggestionsCallback& callback) {
   DCHECK_EQ(provided_category_, category);
-  std::unique_ptr<ListValue> page_values =
-      physical_web_data_source_->GetMetadata();
+  std::unique_ptr<physical_web::MetadataList> page_metadata_list =
+      physical_web_data_source_->GetMetadataList();
   const std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs();
   std::vector<ContentSuggestion> suggestions;
-  for (const std::unique_ptr<Value>& page_value : *page_values) {
-    const DictionaryValue* page_dictionary;
-    if (!page_value->GetAsDictionary(&page_dictionary)) {
-      LOG(DFATAL) << "Physical Web page is not a dictionary.";
-      continue;
-    }
-
-    if (dismissed_ids.count(GetPageId(*page_dictionary))) {
-      suggestions.push_back(ConvertPhysicalWebPage(*page_dictionary));
+  for (const auto& page_metadata : *page_metadata_list) {
+    if (dismissed_ids.count(GetPageId(page_metadata))) {
+      suggestions.push_back(ConvertPhysicalWebPage(page_metadata));
     }
   }
 
@@ -256,25 +225,19 @@ std::vector<ContentSuggestion>
 PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
     int max_quantity,
     const std::set<std::string>& excluded_ids) {
-  std::unique_ptr<ListValue> page_values =
-      physical_web_data_source_->GetMetadata();
+  std::unique_ptr<physical_web::MetadataList> page_metadata_list =
+      physical_web_data_source_->GetMetadataList();
 
   // These is to filter out dismissed suggestions and at the same time prune the
   // dismissed IDs list removing nonavailable pages (this is need since some
   // OnLost() calls may have been missed).
   const std::set<std::string> old_dismissed_ids = ReadDismissedIDsFromPrefs();
   std::set<std::string> new_dismissed_ids;
-  std::vector<const DictionaryValue*> page_dictionaries;
-  for (const std::unique_ptr<Value>& page_value : *page_values) {
-    const DictionaryValue* page_dictionary;
-    if (!page_value->GetAsDictionary(&page_dictionary)) {
-      LOG(DFATAL) << "Physical Web page is not a dictionary.";
-      continue;
-    }
-
-    const std::string page_id = GetPageId(*page_dictionary);
+  physical_web::MetadataList filtered_metadata_list;
+  for (const auto& page_metadata : *page_metadata_list) {
+    const std::string page_id = GetPageId(page_metadata);
     if (!excluded_ids.count(page_id) && !old_dismissed_ids.count(page_id)) {
-      page_dictionaries.push_back(page_dictionary);
+      filtered_metadata_list.push_back(page_metadata);
     }
 
     if (old_dismissed_ids.count(page_id)) {
@@ -286,43 +249,31 @@ PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
     StoreDismissedIDsToPrefs(new_dismissed_ids);
   }
 
-  FilterOutByGroupId(&page_dictionaries);
+  FilterOutByGroupId(filtered_metadata_list);
 
-  std::sort(page_dictionaries.begin(), page_dictionaries.end(),
+  std::sort(filtered_metadata_list.begin(), filtered_metadata_list.end(),
             CompareByDistance);
 
   std::vector<ContentSuggestion> suggestions;
-  for (const DictionaryValue* page_dictionary : page_dictionaries) {
+  for (const auto& page_metadata : filtered_metadata_list) {
     if (static_cast<int>(suggestions.size()) == max_quantity) {
       break;
     }
-    suggestions.push_back(ConvertPhysicalWebPage(*page_dictionary));
+    suggestions.push_back(ConvertPhysicalWebPage(page_metadata));
   }
 
   return suggestions;
 }
 
 ContentSuggestion PhysicalWebPageSuggestionsProvider::ConvertPhysicalWebPage(
-    const DictionaryValue& page) const {
-  std::string scanned_url, raw_resolved_url, title, description;
-  bool success = page.GetString(physical_web::kScannedUrlKey, &scanned_url);
-  success = page.GetString(physical_web::kResolvedUrlKey, &raw_resolved_url) &&
-            success;
-  success = page.GetString(physical_web::kTitleKey, &title) && success;
-  success =
-      page.GetString(physical_web::kDescriptionKey, &description) && success;
-  if (!success) {
-    LOG(DFATAL) << "Expected field is missing.";
-  }
-
-  const GURL resolved_url(raw_resolved_url);
+    const physical_web::Metadata& page) const {
   ContentSuggestion suggestion(provided_category_, GetPageId(page),
-                               resolved_url);
-  DCHECK(base::IsStringUTF8(title));
-  suggestion.set_title(base::UTF8ToUTF16(title));
-  suggestion.set_publisher_name(base::UTF8ToUTF16(resolved_url.host()));
-  DCHECK(base::IsStringUTF8(description));
-  suggestion.set_snippet_text(base::UTF8ToUTF16(description));
+                               page.resolved_url);
+  DCHECK(base::IsStringUTF8(page.title));
+  suggestion.set_title(base::UTF8ToUTF16(page.title));
+  suggestion.set_publisher_name(base::UTF8ToUTF16(page.resolved_url.host()));
+  DCHECK(base::IsStringUTF8(page.description));
+  suggestion.set_snippet_text(base::UTF8ToUTF16(page.description));
   return suggestion;
 }
 

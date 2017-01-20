@@ -14,7 +14,7 @@ using base::DictionaryValue;
 
 namespace physical_web {
 
-std::unique_ptr<DictionaryValue> CreatePhysicalWebPage(
+std::unique_ptr<Metadata> CreatePhysicalWebPage(
     const std::string& resolved_url,
     double distance_estimate,
     const std::string& group_id,
@@ -22,22 +22,20 @@ std::unique_ptr<DictionaryValue> CreatePhysicalWebPage(
     const std::string& title,
     const std::string& description,
     const std::string& scanned_url) {
-  auto page = base::MakeUnique<DictionaryValue>();
-  page->SetString(kScannedUrlKey, scanned_url);
-  page->SetDouble(kDistanceEstimateKey, distance_estimate);
-  page->SetString(kGroupIdKey, group_id);
-  // TODO(crbug.com/667722): Remove this integer workaround once timestamp is
-  // fixed.
-  page->SetInteger(kScanTimestampKey, scan_timestamp);
-  page->SetString(kResolvedUrlKey, resolved_url);
-  page->SetString(kTitleKey, title);
-  page->SetString(kDescriptionKey, description);
+  auto page = base::MakeUnique<Metadata>();
+  page->resolved_url = GURL(resolved_url);
+  page->distance_estimate = distance_estimate;
+  page->group_id = group_id;
+  page->scan_timestamp = base::Time::FromJavaTime(scan_timestamp);
+  page->title = title;
+  page->description = description;
+  page->scanned_url = GURL(scanned_url);
   return page;
 }
 
-std::unique_ptr<DictionaryValue> CreateDummyPhysicalWebPage(int id,
-                                                            double distance,
-                                                            int timestamp) {
+std::unique_ptr<Metadata> CreateDummyPhysicalWebPage(int id,
+                                                     double distance,
+                                                     int timestamp) {
   const std::string id_string = base::IntToString(id);
   return CreatePhysicalWebPage("https://resolved_url.com/" + id_string,
                                distance, /*group_id=*/std::string(), timestamp,
@@ -45,13 +43,15 @@ std::unique_ptr<DictionaryValue> CreateDummyPhysicalWebPage(int id,
                                "https://scanned_url.com/" + id_string);
 }
 
-std::unique_ptr<ListValue> CreateDummyPhysicalWebPages(
+std::unique_ptr<MetadataList> CreateDummyPhysicalWebPages(
     const std::vector<int>& ids) {
   int distance = 1;
   int timestamp = static_cast<int>(ids.size());
-  auto list = base::MakeUnique<ListValue>();
+  auto list = base::MakeUnique<MetadataList>();
   for (int id : ids) {
-    list->Append(CreateDummyPhysicalWebPage(id, distance, timestamp));
+    std::unique_ptr<Metadata> page =
+        CreateDummyPhysicalWebPage(id, distance, timestamp);
+    list->push_back(*page);
     ++distance;
     --timestamp;
   }
@@ -59,7 +59,7 @@ std::unique_ptr<ListValue> CreateDummyPhysicalWebPages(
 }
 
 FakePhysicalWebDataSource::FakePhysicalWebDataSource()
-    : metadata_(base::MakeUnique<ListValue>()) {}
+    : metadata_(base::MakeUnique<base::ListValue>()) {}
 
 FakePhysicalWebDataSource::~FakePhysicalWebDataSource() = default;
 

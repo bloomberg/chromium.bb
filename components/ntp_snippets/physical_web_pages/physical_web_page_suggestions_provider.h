@@ -9,17 +9,20 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/values.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/physical_web/data_source/physical_web_listener.h"
 
+class GURL;
 class PrefRegistrySimple;
 class PrefService;
-class GURL;
+
+namespace physical_web {
+class PhysicalWebDataSource;
+struct Metadata;
+}  // namespace physical_web
 
 namespace ntp_snippets {
 
@@ -75,7 +78,7 @@ class PhysicalWebPageSuggestionsProvider
 
   // Converts an Physical Web page to a ContentSuggestion.
   ContentSuggestion ConvertPhysicalWebPage(
-      const base::DictionaryValue& page) const;
+      const physical_web::Metadata& page) const;
 
   // PhysicalWebListener implementation.
   void OnFound(const GURL& url) override;

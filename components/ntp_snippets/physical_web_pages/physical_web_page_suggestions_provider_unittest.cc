@@ -24,8 +24,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using base::DictionaryValue;
-using base::ListValue;
 using ntp_snippets::test::CaptureDismissedSuggestions;
 using physical_web::CreateDummyPhysicalWebPages;
 using physical_web::FakePhysicalWebDataSource;
@@ -149,7 +147,7 @@ class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
 
 TEST_F(PhysicalWebPageSuggestionsProviderTest,
        ShouldSubmitSuggestionsOnStartup) {
-  physical_web_data_source()->SetMetadata(
+  physical_web_data_source()->SetMetadataList(
       CreateDummyPhysicalWebPages({1, 2, 3}));
   EXPECT_CALL(*observer(), OnCategoryStatusChanged(_, provided_category(),
                                                    CategoryStatus::AVAILABLE));
@@ -167,7 +165,7 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest, ShouldSortByDistance) {
   IgnoreOnSuggestionInvalidated();
   // |CreateDummyPhysicalWebPages| builds pages with distances 1, 2 and 3
   // respectively.
-  physical_web_data_source()->SetMetadata(
+  physical_web_data_source()->SetMetadataList(
       CreateDummyPhysicalWebPages({3, 2, 1}));
   EXPECT_CALL(
       *observer(),
@@ -184,13 +182,11 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
   IgnoreOnSuggestionInvalidated();
   // |CreateDummyPhysicalWebPages| builds pages with distances 1, 2 and 3
   // respectively.
-  std::unique_ptr<base::ListValue> pages =
+  std::unique_ptr<physical_web::MetadataList> pages =
       CreateDummyPhysicalWebPages({3, 2, 1});
-  DictionaryValue* second_page;
   // Set the second page distance estimate to unknown.
-  ASSERT_TRUE(pages->GetDictionary(1, &second_page));
-  second_page->SetDouble(physical_web::kDistanceEstimateKey, -1);
-  physical_web_data_source()->SetMetadata(std::move(pages));
+  (*pages)[1].distance_estimate = -1.0;
+  physical_web_data_source()->SetMetadataList(std::move(pages));
   EXPECT_CALL(
       *observer(),
       OnNewSuggestions(_, provided_category(),
@@ -206,14 +202,13 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
   IgnoreOnSuggestionInvalidated();
   // |CreateDummyPhysicalWebPages| builds pages with distances 1, 2
   // respectively.
-  std::unique_ptr<base::ListValue> pages = CreateDummyPhysicalWebPages({2, 1});
-  for (int i = 0; i < 2; ++i) {
-    DictionaryValue* page;
-    ASSERT_TRUE(pages->GetDictionary(i, &page));
-    page->SetString(physical_web::kGroupIdKey, "some_group_id");
+  std::unique_ptr<physical_web::MetadataList> pages =
+      CreateDummyPhysicalWebPages({2, 1});
+  for (auto& page : *pages) {
+    page.group_id = "some_group_id";
   }
 
-  physical_web_data_source()->SetMetadata(std::move(pages));
+  physical_web_data_source()->SetMetadataList(std::move(pages));
   // The closest page should be reported.
   EXPECT_CALL(
       *observer(),
@@ -226,14 +221,13 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
        ShouldShowSuggestionsWithEmptyGroupId) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
-  std::unique_ptr<base::ListValue> pages = CreateDummyPhysicalWebPages({1, 2});
-  for (int i = 0; i < 2; ++i) {
-    DictionaryValue* page;
-    pages->GetDictionary(i, &page);
-    page->SetString(physical_web::kGroupIdKey, "");
+  std::unique_ptr<physical_web::MetadataList> pages =
+      CreateDummyPhysicalWebPages({1, 2});
+  for (auto& page : *pages) {
+    page.group_id = "";
   }
 
-  physical_web_data_source()->SetMetadata(std::move(pages));
+  physical_web_data_source()->SetMetadataList(std::move(pages));
   EXPECT_CALL(*observer(),
               OnNewSuggestions(
                   _, provided_category(),
@@ -254,7 +248,7 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
   }
   // |CreateDummyPhysicalWebPages| builds pages with distances 1, 2, 3, ... ,
   // so we know the order of suggestions in the provider.
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages(ids));
+  physical_web_data_source()->SetMetadataList(CreateDummyPhysicalWebPages(ids));
   EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _));
   CreateProvider();
 
@@ -288,7 +282,7 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
 TEST_F(PhysicalWebPageSuggestionsProviderTest, ShouldDismiss) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1}));
+  physical_web_data_source()->SetMetadataList(CreateDummyPhysicalWebPages({1}));
   EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _))
       .Times(AtMost(1));
   CreateProvider();
@@ -307,7 +301,7 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
        ShouldInvalidateSuggestionOnUrlLost) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnNewSuggestions();
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1}));
+  physical_web_data_source()->SetMetadataList(CreateDummyPhysicalWebPages({1}));
   CreateProvider();
 
   EXPECT_CALL(*observer(), OnSuggestionInvalidated(_, GetDummySuggestionId(1)));
@@ -318,7 +312,7 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
        ShouldNotShowDismissedSuggestions) {
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1}));
+  physical_web_data_source()->SetMetadataList(CreateDummyPhysicalWebPages({1}));
   EXPECT_CALL(*observer(), OnNewSuggestions(_, provided_category(), _))
       .Times(AtMost(1));
   CreateProvider();
@@ -326,7 +320,8 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
 
   provider()->DismissSuggestion(GetDummySuggestionId(1));
 
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  physical_web_data_source()->SetMetadataList(
+      CreateDummyPhysicalWebPages({1, 2}));
   EXPECT_CALL(
       *observer(),
       OnNewSuggestions(_, provided_category(),
@@ -339,20 +334,22 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
   IgnoreOnNewSuggestions();
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  physical_web_data_source()->SetMetadataList(
+      CreateDummyPhysicalWebPages({1, 2}));
   CreateProvider();
 
   provider()->DismissSuggestion(GetDummySuggestionId(1));
   provider()->DismissSuggestion(GetDummySuggestionId(2));
 
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({2, 3}));
+  physical_web_data_source()->SetMetadataList(
+      CreateDummyPhysicalWebPages({2, 3}));
   FireUrlFound("https://resolved_url.com/3");
 
   // The first page needs to be silently added back to the source, because
   // |GetDismissedSuggestionsForDebugging| uses the data source to return
   // suggestions and dismissed suggestions, which are not present there, cannot
   // be returned.
-  physical_web_data_source()->SetMetadata(
+  physical_web_data_source()->SetMetadataList(
       CreateDummyPhysicalWebPages({1, 2, 3}));
   std::vector<ContentSuggestion> dismissed_suggestions;
   provider()->GetDismissedSuggestionsForDebugging(
@@ -367,16 +364,19 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
   IgnoreOnNewSuggestions();
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  physical_web_data_source()->SetMetadataList(
+      CreateDummyPhysicalWebPages({1, 2}));
   CreateProvider();
 
   provider()->DismissSuggestion(GetDummySuggestionId(1));
   provider()->DismissSuggestion(GetDummySuggestionId(2));
 
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({2}));
+  physical_web_data_source()->SetMetadataList(
+      CreateDummyPhysicalWebPages({2}));
   FireUrlLost("https://resolved_url.com/1");
 
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  physical_web_data_source()->SetMetadataList(
+      CreateDummyPhysicalWebPages({1, 2}));
   std::vector<ContentSuggestion> dismissed_suggestions;
   provider()->GetDismissedSuggestionsForDebugging(
       provided_category(),
@@ -390,7 +390,8 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
   IgnoreOnCategoryStatusChangedToAvailable();
   IgnoreOnSuggestionInvalidated();
   IgnoreOnNewSuggestions();
-  physical_web_data_source()->SetMetadata(CreateDummyPhysicalWebPages({1, 2}));
+  physical_web_data_source()->SetMetadataList(
+      CreateDummyPhysicalWebPages({1, 2}));
   CreateProvider();
   provider()->DismissSuggestion(GetDummySuggestionId(1));
   DestroyProvider();
