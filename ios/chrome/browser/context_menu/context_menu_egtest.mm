@@ -57,6 +57,22 @@ id<GREYMatcher> openLinkInNewTabButton() {
   return buttonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
 }
 
+// Waits for the context menu item to disappear. TODO(crbug.com/682871): Remove
+// this once EarlGrey is synchronized with context menu.
+void WaitForContextMenuItemDisappeared(id<GREYMatcher> contextMenuItemButton) {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:contextMenuItemButton]
+        assertWithMatcher:grey_nil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(
+                 testing::kWaitForUIElementTimeout, condition),
+             [NSString stringWithFormat:@"Waiting for matcher %@ failed.",
+                                        contextMenuItemButton]);
+}
+
 // Long press on |elementId| to trigger context menu and then tap on
 // |contextMenuItemButton| item.
 void LongPressElementAndTapOnButton(const char* elementId,
@@ -70,8 +86,7 @@ void LongPressElementAndTapOnButton(const char* elementId,
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:contextMenuItemButton]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:contextMenuItemButton]
-      assertWithMatcher:grey_nil()];
+  WaitForContextMenuItemDisappeared(contextMenuItemButton);
 }
 
 // A simple wrapper that sleeps for 1s to wait for the animation, triggered from
@@ -174,15 +189,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 // Tests "Open in New Tab" on context menu  on a link that requires scrolling
 // on the page to verify that context menu can be properly triggered in the
 // current screen view.
-// TODO(crbug.com/681130): Re-enable this test on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuOpenInNewTabFromTallPage \
-  testContextMenuOpenInNewTabFromTallPage
-#else
-#define MAYBE_testContextMenuOpenInNewTabFromTallPage \
-  FLAKY_testContextMenuOpenInNewTabFromTallPage
-#endif
-- (void)MAYBE_testContextMenuOpenInNewTabFromTallPage {
+- (void)testContextMenuOpenInNewTabFromTallPage {
   // Set up test simple http server.
   std::map<GURL, std::string> responses;
   GURL initialURL =
