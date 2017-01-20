@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -200,7 +201,7 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(
       web_contents_(web_contents),
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
-      started_navigation_(false),
+      first_navigation_ignored_(false),
       restored_(false) {
   set_close_on_deactivate(false);
   registrar_.Add(
@@ -334,17 +335,21 @@ void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_HELP);
 }
 
-void SessionCrashedBubbleView::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    content::ReloadType reload_type) {
-  started_navigation_ = true;
-}
-
 void SessionCrashedBubbleView::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  if (started_navigation_)
-    CloseBubble();
+  // We want to close the bubble if the user navigates the first tab away after
+  // a crash. Ignore subframe navigations since they're noise and don't affect
+  // the desired behavior.
+  if (render_frame_host->GetParent())
+    return;
+
+  if (!first_navigation_ignored_) {
+    first_navigation_ignored_ = true;
+    return;
+  }
+
+  CloseBubble();
 }
 
 void SessionCrashedBubbleView::WasShown() {

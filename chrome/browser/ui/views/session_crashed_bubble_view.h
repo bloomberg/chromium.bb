@@ -75,9 +75,6 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
                               int event_flags) override;
 
   // content::WebContentsObserver methods.
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void WasShown() override;
@@ -114,8 +111,9 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
   // Whether or not the UMA opt-in option should be shown.
   bool offer_uma_optin_;
 
-  // Whether or not a navigation has started on current tab.
-  bool started_navigation_;
+  // Whether or not the first navigation was ignored. This is needed because the
+  // bubble shouldn't go away when the new tab page loads after a crash.
+  bool first_navigation_ignored_;
 
   // Whether or not the user chose to restore previous session. It is used to
   // collect bubble usage stats.
