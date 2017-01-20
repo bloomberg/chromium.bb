@@ -483,18 +483,22 @@ public class MediaNotificationManager {
     }
 
     /**
-     * Scales |icon| to the size returned by {@link getIdealMediaImageSize()}. Returns null if
-     * |icon| is null.
+     * Downscale |icon| for display in the notification if needed. Returns null if |icon| is null.
+     * If |icon| is larger than {@link getIdealMediaImageSize()}, scale it down to
+     * {@link getIdealMediaImageSize()} and return. Otherwise return the original |icon|.
      * @param icon The icon to be scaled.
      */
     @Nullable
-    public static Bitmap scaleIconToIdealSize(Bitmap icon) {
+    public static Bitmap downscaleIconToIdealSize(@Nullable Bitmap icon) {
         if (icon == null) return null;
 
         int targetSize = getIdealMediaImageSize();
 
         Matrix m = new Matrix();
         int dominantLength = Math.max(icon.getWidth(), icon.getHeight());
+
+        if (dominantLength < getIdealMediaImageSize()) return icon;
+
         // Move the center to (0,0).
         m.postTranslate(icon.getWidth() / -2.0f, icon.getHeight() / -2.0f);
         // Scale to desired size.
@@ -843,7 +847,7 @@ public class MediaNotificationManager {
                 int resourceId = (mMediaNotificationInfo.defaultNotificationLargeIcon != 0)
                         ? mMediaNotificationInfo.defaultNotificationLargeIcon
                         : R.drawable.audio_playing_square;
-                mDefaultNotificationLargeIcon = scaleIconToIdealSize(
+                mDefaultNotificationLargeIcon = downscaleIconToIdealSize(
                     BitmapFactory.decodeResource(mContext.getResources(), resourceId));
             }
             builder.setLargeIcon(mDefaultNotificationLargeIcon);
