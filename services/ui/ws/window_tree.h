@@ -445,6 +445,7 @@ class WindowTree : public mojom::WindowTree,
   void SetCanAcceptDrops(Id window_id, bool accepts_drops) override;
   void SetHitTestMask(Id transport_window_id,
                       const base::Optional<gfx::Rect>& mask) override;
+  void StackAtTop(uint32_t change_id, Id window_id) override;
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;
@@ -488,6 +489,8 @@ class WindowTree : public mojom::WindowTree,
   bool HasRootForAccessPolicy(const ServerWindow* window) const override;
   bool IsWindowKnownForAccessPolicy(const ServerWindow* window) const override;
   bool IsWindowRootOfAnotherTreeForAccessPolicy(
+      const ServerWindow* window) const override;
+  bool IsWindowCreatedByWindowManager(
       const ServerWindow* window) const override;
 
   // DragSource:

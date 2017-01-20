@@ -52,6 +52,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanSetHitTestMask(const ServerWindow* window) const override;
   bool CanSetAcceptDrops(const ServerWindow* window) const override;
   bool CanSetAcceptEvents(const ServerWindow* window) const override;
+  bool CanStackAtTop(const ServerWindow* window) const override;
   bool CanSetCursorProperties(const ServerWindow* window) const override;
   bool CanInitiateDragLoop(const ServerWindow* window) const override;
   bool CanInitiateMoveLoop(const ServerWindow* window) const override;

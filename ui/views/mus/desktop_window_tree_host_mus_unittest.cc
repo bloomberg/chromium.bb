@@ -7,9 +7,11 @@
 #include "base/debug/stack_trace.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/mus/in_flight_change.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -145,6 +147,38 @@ TEST_F(DesktopWindowTreeHostMusTest, CursorClientDuringTearDown) {
 
   widget->GetNativeWindow()->AddChild(window.release());
   widget.reset();
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, StackAtTop) {
+  std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
+  widget1->Show();
+
+  std::unique_ptr<Widget> widget2(CreateWidget(nullptr));
+  widget2->Show();
+
+  aura::test::ChangeCompletionWaiter waiter(
+      MusClient::Get()->window_tree_client(),
+      aura::ChangeType::REORDER, true);
+  widget1->StackAtTop();
+  waiter.Wait();
+
+  // Other than the signal that our StackAtTop() succeeded, we don't have any
+  // pieces of public data that we can check. If we actually stopped waiting,
+  // count that as success.
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, StackAtTopAlreadyOnTop) {
+  std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
+  widget1->Show();
+
+  std::unique_ptr<Widget> widget2(CreateWidget(nullptr));
+  widget2->Show();
+
+  aura::test::ChangeCompletionWaiter waiter(
+      MusClient::Get()->window_tree_client(),
+      aura::ChangeType::REORDER, true);
+  widget2->StackAtTop();
+  waiter.Wait();
 }
 
 }  // namespace views

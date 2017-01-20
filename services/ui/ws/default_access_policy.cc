@@ -156,6 +156,11 @@ bool DefaultAccessPolicy::CanSetAcceptEvents(const ServerWindow* window) const {
          delegate_->HasRootForAccessPolicy(window);
 }
 
+bool DefaultAccessPolicy::CanStackAtTop(const ServerWindow* window) const {
+  return delegate_->HasRootForAccessPolicy(window) &&
+         delegate_->IsWindowCreatedByWindowManager(window);
+}
+
 bool DefaultAccessPolicy::CanSetCursorProperties(
     const ServerWindow* window) const {
   return WasCreatedByThisClient(window) ||

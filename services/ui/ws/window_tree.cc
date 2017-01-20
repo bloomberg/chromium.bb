@@ -824,16 +824,7 @@ bool WindowTree::ShouldRouteToWindowManager(const ServerWindow* window) const {
   if (roots_.count(window) == 0)
     return false;
 
-  // The WindowManager is attached to the root of the Display, if there isn't a
-  // WindowManager attached no need to route to it.
-  const WindowManagerDisplayRoot* display_root =
-      GetWindowManagerDisplayRoot(window);
-  if (!display_root)
-    return false;
-
-  // Route to the windowmanager if the windowmanager created the window.
-  return display_root->window_manager_state()->window_tree()->id() ==
-         window->id().client_id;
+  return IsWindowCreatedByWindowManager(window);
 }
 
 void WindowTree::ProcessCaptureChanged(const ServerWindow* new_capture,
@@ -1605,6 +1596,44 @@ void WindowTree::DeactivateWindow(Id window_id) {
       wm_tree->ClientWindowIdForWindow(window).id);
 }
 
+void WindowTree::StackAtTop(uint32_t change_id, Id window_id) {
+  ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
+  if (!window) {
+    DVLOG(1) << "StackAtTop failed (invalid id)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  if (!access_policy_->CanStackAtTop(window)) {
+    DVLOG(1) << "StackAtTop failed (access denied)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  ServerWindow* parent = window->parent();
+  if (!parent) {
+    DVLOG(1) << "StackAtTop failed (window unparented)";
+    client()->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  DCHECK(!parent->children().empty());
+  if (parent->children().back() == window) {
+    // Ignore this call; the client didn't know they were already at the top.
+    DVLOG(3) << "StackAtTop ignored (already at top)";
+    client()->OnChangeCompleted(change_id, true);
+    return;
+  }
+
+  ServerWindow* relative_window = parent->children().back();
+  Operation op(this, window_server_, OperationType::REORDER_WINDOW);
+  window->Reorder(relative_window, mojom::OrderDirection::ABOVE);
+  window_server_->ProcessWindowReorder(window, relative_window,
+                                       mojom::OrderDirection::ABOVE);
+
+  client()->OnChangeCompleted(change_id, true);
+}
+
 void WindowTree::GetWindowManagerClient(
     mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal) {
   if (!access_policy_->CanSetWindowManager() || !window_manager_internal_ ||
@@ -1934,6 +1963,19 @@ bool WindowTree::IsWindowRootOfAnotherTreeForAccessPolicy(
     const ServerWindow* window) const {
   WindowTree* tree = window_server_->GetTreeWithRoot(window);
   return tree && tree != this;
+}
+
+bool WindowTree::IsWindowCreatedByWindowManager(
+    const ServerWindow* window) const {
+  // The WindowManager is attached to the root of the Display, if there isn't a
+  // WindowManager attached, the window manager didn't create this window.
+  const WindowManagerDisplayRoot* display_root =
+      GetWindowManagerDisplayRoot(window);
+  if (!display_root)
+    return false;
+
+  return display_root->window_manager_state()->window_tree()->id() ==
+         window->id().client_id;
 }
 
 void WindowTree::OnDragCompleted(bool success, uint32_t action_taken) {

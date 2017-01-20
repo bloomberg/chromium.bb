@@ -126,6 +126,10 @@ void WindowTreeHostMus::DeactivateWindow() {
   delegate_->OnWindowTreeHostDeactivateWindow(this);
 }
 
+void WindowTreeHostMus::StackAtTop() {
+  delegate_->OnWindowTreeHostStackAtTop(this);
+}
+
 display::Display WindowTreeHostMus::GetDisplay() const {
   display::Display display;
   display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_, &display);

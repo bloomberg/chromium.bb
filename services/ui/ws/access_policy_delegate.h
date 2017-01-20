@@ -30,6 +30,10 @@ class AccessPolicyDelegate {
   virtual bool IsWindowRootOfAnotherTreeForAccessPolicy(
       const ServerWindow* window) const = 0;
 
+  // Returns true if |window| was created by the window manager.
+  virtual bool IsWindowCreatedByWindowManager(
+      const ServerWindow* window) const = 0;
+
  protected:
   virtual ~AccessPolicyDelegate() {}
 };

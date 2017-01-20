@@ -404,8 +404,10 @@ void DesktopWindowTreeHostMus::StackAbove(aura::Window* window) {
 }
 
 void DesktopWindowTreeHostMus::StackAtTop() {
-  // TODO: implement window stacking, http://crbug.com/663617.
-  NOTIMPLEMENTED();
+  // Request to the server to stack our current mus window at the top. Our
+  // window() is a root, and we can't reach up past it so we can't just request
+  // a Reorder(), which is what we'd do to reorder our own subwindows.
+  WindowTreeHostMus::StackAtTop();
 }
 
 void DesktopWindowTreeHostMus::CenterWindow(const gfx::Size& size) {

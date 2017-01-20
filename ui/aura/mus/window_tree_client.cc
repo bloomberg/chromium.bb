@@ -38,6 +38,7 @@
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_client_observer.h"
+#include "ui/aura/mus/window_tree_client_test_observer.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -327,8 +328,11 @@ uint32_t WindowTreeClient::ScheduleInFlightChange(
     std::unique_ptr<InFlightChange> change) {
   DCHECK(!change->window() ||
          windows_.count(change->window()->server_id()) > 0);
+  ChangeType t = change->change_type();
   const uint32_t change_id = next_change_id_++;
   in_flight_map_[change_id] = std::move(change);
+  for (auto& observer : test_observers_)
+    observer.OnChangeStarted(change_id, t);
   return change_id;
 }
 
@@ -833,6 +837,15 @@ void WindowTreeClient::RemoveObserver(WindowTreeClientObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WindowTreeClient::AddTestObserver(WindowTreeClientTestObserver* observer) {
+  test_observers_.AddObserver(observer);
+}
+
+void WindowTreeClient::RemoveTestObserver(
+    WindowTreeClientTestObserver* observer) {
+  test_observers_.RemoveObserver(observer);
+}
+
 void WindowTreeClient::SetCanAcceptDrops(Id window_id, bool can_accept_drops) {
   DCHECK(tree_);
   tree_->SetCanAcceptDrops(window_id, can_accept_drops);
@@ -1293,6 +1306,9 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   if (!change)
     return;
 
+  for (auto& observer : test_observers_)
+    observer.OnChangeCompleted(change_id, change->change_type(), success);
+
   if (!success)
     change->ChangeFailed();
 
@@ -1618,6 +1634,14 @@ void WindowTreeClient::OnWindowTreeHostDeactivateWindow(
     WindowTreeHostMus* window_tree_host) {
   tree_->DeactivateWindow(
       WindowMus::Get(window_tree_host->window())->server_id());
+}
+
+void WindowTreeClient::OnWindowTreeHostStackAtTop(
+    WindowTreeHostMus* window_tree_host) {
+  WindowMus* window = WindowMus::Get(window_tree_host->window());
+  const uint32_t change_id = ScheduleInFlightChange(
+      base::MakeUnique<CrashInFlightChange>(window, ChangeType::REORDER));
+  tree_->StackAtTop(change_id, window->server_id());
 }
 
 std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel(

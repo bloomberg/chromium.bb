@@ -62,6 +62,7 @@ struct WindowPortPropertyData;
 class WindowTreeClientDelegate;
 class WindowTreeClientPrivate;
 class WindowTreeClientObserver;
+class WindowTreeClientTestObserver;
 class WindowTreeHostMus;
 
 namespace client {
@@ -167,6 +168,9 @@ class AURA_EXPORT WindowTreeClient
 
   void AddObserver(WindowTreeClientObserver* observer);
   void RemoveObserver(WindowTreeClientObserver* observer);
+
+  void AddTestObserver(WindowTreeClientTestObserver* observer);
+  void RemoveTestObserver(WindowTreeClientTestObserver* observer);
 
  private:
   friend class InFlightBoundsChange;
@@ -437,6 +441,7 @@ class AURA_EXPORT WindowTreeClient
       const base::Optional<gfx::Rect>& mask_rect) override;
   void OnWindowTreeHostDeactivateWindow(
       WindowTreeHostMus* window_tree_host) override;
+  void OnWindowTreeHostStackAtTop(WindowTreeHostMus* window_tree_host) override;
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
       const std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;
@@ -529,6 +534,8 @@ class AURA_EXPORT WindowTreeClient
   Id current_wm_move_loop_window_id_ = 0u;
 
   std::unique_ptr<DragDropControllerMus> drag_drop_controller_;
+
+  base::ObserverList<WindowTreeClientTestObserver> test_observers_;
 
   std::unique_ptr<ui::Gpu> gpu_;
   std::unique_ptr<MusContextFactory> compositor_context_factory_;
