@@ -816,7 +816,8 @@ void FrameLoader::updateForSameDocumentNavigation(
   if (!m_currentItem)
     historyCommitType = HistoryInertCommit;
   if (m_frame->settings()->getHistoryEntryRequiresUserGesture() &&
-      initiatingDocument && !initiatingDocument->hasReceivedUserGesture()) {
+      initiatingDocument &&
+      !initiatingDocument->frame()->hasReceivedUserGesture()) {
     historyCommitType = HistoryInertCommit;
   }
 
@@ -962,7 +963,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(
 
   if (m_frame->settings()->getHistoryEntryRequiresUserGesture() &&
       request.originDocument() &&
-      !request.originDocument()->hasReceivedUserGesture())
+      !request.originDocument()->frame()->hasReceivedUserGesture())
     return FrameLoadTypeReplaceCurrentItem;
 
   return FrameLoadTypeStandard;

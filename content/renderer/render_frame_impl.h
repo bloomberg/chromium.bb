@@ -519,6 +519,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
       override;
+  void setHasReceivedUserGesture() override;
   bool shouldReportDetailedMessageForSource(
       const blink::WebString& source) override;
   void didAddMessageToConsole(const blink::WebConsoleMessage& message,
@@ -890,7 +891,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnStopFinding(StopFindAction action);
   void OnEnableViewSourceMode();
   void OnSuppressFurtherDialogs();
-  void OnSetHasReceivedUserGesture();
   void OnFileChooserResponse(
       const std::vector<content::FileChooserFileInfo>& files);
   void OnClearFocusedElement();

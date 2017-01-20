@@ -1571,8 +1571,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGesture,
-                        OnSetHasReceivedUserGesture)
     IPC_MESSAGE_HANDLER(FrameMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(FrameMsg_ClearFocusedElement, OnClearFocusedElement)
 #if defined(OS_ANDROID)
@@ -3222,6 +3220,10 @@ void RenderFrameImpl::didMatchCSS(
 
   for (auto& observer : observers_)
     observer.DidMatchCSS(newly_matching_selectors, stopped_matching_selectors);
+}
+
+void RenderFrameImpl::setHasReceivedUserGesture() {
+  Send(new FrameHostMsg_SetHasReceivedUserGesture(routing_id_));
 }
 
 bool RenderFrameImpl::shouldReportDetailedMessageForSource(
@@ -5672,11 +5674,6 @@ void RenderFrameImpl::OnEnableViewSourceMode() {
 
 void RenderFrameImpl::OnSuppressFurtherDialogs() {
   suppress_further_dialogs_ = true;
-}
-
-void RenderFrameImpl::OnSetHasReceivedUserGesture() {
-  DCHECK(frame_);
-  frame_->setHasReceivedUserGesture();
 }
 
 void RenderFrameImpl::OnFileChooserResponse(

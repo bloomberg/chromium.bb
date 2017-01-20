@@ -47,8 +47,6 @@ class WebRemoteFrameClient {
 
   virtual void visibilityChanged(bool visible) {}
 
-  virtual void setHasReceivedUserGesture() {}
-
   // This frame updated its opener to another frame.
   virtual void didChangeOpener(WebFrame* opener) {}
 

@@ -252,6 +252,9 @@ class BLINK_EXPORT WebFrameClient {
       const WebVector<WebString>& newlyMatchingSelectors,
       const WebVector<WebString>& stoppedMatchingSelectors) {}
 
+  // Called the first time this frame is the target of a user gesture.
+  virtual void setHasReceivedUserGesture() {}
+
   // Console messages ----------------------------------------------------
 
   // Whether or not we should report a detailed message for the given source.

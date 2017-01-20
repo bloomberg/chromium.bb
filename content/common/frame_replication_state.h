@@ -44,7 +44,8 @@ struct CONTENT_EXPORT FrameReplicationState {
                         const std::string& unique_name,
                         blink::WebSandboxFlags sandbox_flags,
                         blink::WebInsecureRequestPolicy insecure_request_policy,
-                        bool has_potentially_trustworthy_unique_origin);
+                        bool has_potentially_trustworthy_unique_origin,
+                        bool has_received_user_gesture);
   FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
 
@@ -123,6 +124,9 @@ struct CONTENT_EXPORT FrameReplicationState {
   // True if a frame's origin is unique and should be considered potentially
   // trustworthy.
   bool has_potentially_trustworthy_unique_origin;
+
+  // Whether the frame has ever received a user gesture anywhere.
+  bool has_received_user_gesture;
 };
 
 }  // namespace content

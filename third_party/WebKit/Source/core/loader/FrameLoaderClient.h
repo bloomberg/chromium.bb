@@ -338,6 +338,8 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
   virtual KURL overrideFlashEmbedWithHTML(const KURL&) { return KURL(); }
 
   virtual BlameContext* frameBlameContext() { return nullptr; }
+
+  virtual void setHasReceivedUserGesture() {}
 };
 
 }  // namespace blink

@@ -1,3 +1,6 @@
-localhost
 
-PASSED: Navigation succeeded.
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+

@@ -174,8 +174,7 @@ bool Frame::canNavigate(const Frame& targetFrame) {
       canNavigateWithoutFramebusting(targetFrame, errorReason);
   const bool sandboxed = securityContext()->getSandboxFlags() != SandboxNone;
   const bool hasUserGesture =
-      isLocalFrame() ? toLocalFrame(this)->document()->hasReceivedUserGesture()
-                     : false;
+      isLocalFrame() ? toLocalFrame(this)->hasReceivedUserGesture() : false;
 
   // Top navigation in sandbox with or w/o 'allow-top-navigation'.
   if (targetFrame != this && sandboxed && targetFrame == tree().top()) {
@@ -398,6 +397,12 @@ void Frame::didChangeVisibilityState() {
     childFrames.push_back(child);
   for (size_t i = 0; i < childFrames.size(); ++i)
     childFrames[i]->didChangeVisibilityState();
+}
+
+void Frame::setDocumentHasReceivedUserGesture() {
+  m_hasReceivedUserGesture = true;
+  if (Frame* parent = tree().parent())
+    parent->setDocumentHasReceivedUserGesture();
 }
 
 Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)

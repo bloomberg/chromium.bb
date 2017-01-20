@@ -45,8 +45,6 @@ class RemoteFrameClient : public FrameClient {
   virtual void advanceFocus(WebFocusType, LocalFrame* source) = 0;
 
   virtual void visibilityChanged(bool visible) = 0;
-
-  virtual void setHasReceivedUserGesture() = 0;
 };
 
 }  // namespace blink

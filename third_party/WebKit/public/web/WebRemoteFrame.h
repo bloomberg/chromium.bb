@@ -95,6 +95,8 @@ class WebRemoteFrame : public WebFrame {
   // owner.
   virtual void willEnterFullscreen() = 0;
 
+  virtual void setHasReceivedUserGesture() = 0;
+
   // Temporary method to allow embedders to get the script context of a
   // remote frame. This should only be used by legacy code that has not yet
   // migrated over to the new OOPI infrastructure.

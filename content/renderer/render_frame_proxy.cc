@@ -243,6 +243,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
       state.has_potentially_trustworthy_unique_origin);
   web_frame_->setReplicatedFeaturePolicyHeader(
       ToWebParsedFeaturePolicy(state.feature_policy_header));
+  if (state.has_received_user_gesture)
+    web_frame_->setHasReceivedUserGesture();
 
   web_frame_->resetReplicatedContentSecurityPolicy();
   for (const auto& header : state.accumulated_csp_headers)
@@ -302,6 +304,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_WillEnterFullscreen, OnWillEnterFullscreen)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGesture,
+                        OnSetHasReceivedUserGesture)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -409,6 +413,10 @@ void RenderFrameProxy::OnWillEnterFullscreen() {
   web_frame_->willEnterFullscreen();
 }
 
+void RenderFrameProxy::OnSetHasReceivedUserGesture() {
+  web_frame_->setHasReceivedUserGesture();
+}
+
 void RenderFrameProxy::frameDetached(DetachType type) {
   if (type == DetachType::Remove && web_frame_->parent()) {
     web_frame_->parent()->removeChild(web_frame_);
@@ -501,10 +509,6 @@ void RenderFrameProxy::updateRemoteViewportIntersection(
 
 void RenderFrameProxy::visibilityChanged(bool visible) {
   Send(new FrameHostMsg_VisibilityChanged(routing_id_, visible));
-}
-
-void RenderFrameProxy::setHasReceivedUserGesture() {
-  Send(new FrameHostMsg_SetHasReceivedUserGesture(routing_id_));
 }
 
 void RenderFrameProxy::didChangeOpener(blink::WebFrame* opener) {

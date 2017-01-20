@@ -445,7 +445,6 @@ class CORE_EXPORT EmptyRemoteFrameClient
       const IntRect& viewportIntersection) override {}
   void advanceFocus(WebFocusType, LocalFrame* source) override {}
   void visibilityChanged(bool visible) override {}
-  void setHasReceivedUserGesture() override {}
 
   // FrameClient implementation.
   bool inShadowTree() const override { return false; }

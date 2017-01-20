@@ -219,6 +219,8 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
 
   KURL overrideFlashEmbedWithHTML(const KURL&) override;
 
+  void setHasReceivedUserGesture() override;
+
  private:
   explicit FrameLoaderClientImpl(WebLocalFrameImpl*);
 

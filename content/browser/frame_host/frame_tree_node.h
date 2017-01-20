@@ -299,6 +299,8 @@ class CONTENT_EXPORT FrameTreeNode {
   // Returns the BlameContext associated with this node.
   FrameTreeNodeBlameContext& blame_context() { return blame_context_; }
 
+  void OnSetHasReceivedUserGesture();
+
  private:
   class OpenerDestroyedObserver;
 

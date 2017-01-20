@@ -163,6 +163,8 @@ class WEB_EXPORT WebRemoteFrameImpl final
 
   void willEnterFullscreen() override;
 
+  void setHasReceivedUserGesture() override;
+
   DECLARE_TRACE();
 
  private:

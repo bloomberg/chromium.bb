@@ -89,8 +89,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   void disconnectOwnerElement();
   virtual bool shouldClose() = 0;
 
-  virtual void setDocumentHasReceivedUserGesture() = 0;
-
   FrameClient* client() const;
 
   // NOTE: Page is moving out of Blink up into the browser process as
@@ -147,6 +145,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   virtual void didChangeVisibilityState();
 
+  void setDocumentHasReceivedUserGesture();
+  bool hasReceivedUserGesture() const { return m_hasReceivedUserGesture; }
+
   bool isDetaching() const { return m_isDetaching; }
 
  protected:
@@ -158,6 +159,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<FrameOwner> m_owner;
   Member<DOMWindow> m_domWindow;
 
+  bool m_hasReceivedUserGesture = false;
   bool m_isDetaching = false;
 
  private:

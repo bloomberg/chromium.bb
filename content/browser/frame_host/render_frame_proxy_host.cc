@@ -139,8 +139,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGesture,
-                        OnSetHasReceivedUserGesture)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -376,10 +374,6 @@ void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
 void RenderFrameProxyHost::OnFrameFocused() {
   frame_tree_node_->current_frame_host()->delegate()->SetFocusedFrame(
       frame_tree_node_, GetSiteInstance());
-}
-
-void RenderFrameProxyHost::OnSetHasReceivedUserGesture() {
-  frame_tree_node_->current_frame_host()->SetHasReceivedUserGesture();
 }
 
 }  // namespace content

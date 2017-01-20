@@ -442,7 +442,7 @@ WebViewImpl::UserGestureNotifier::UserGestureNotifier(WebViewImpl* view)
 
 WebViewImpl::UserGestureNotifier::~UserGestureNotifier() {
   if (!*m_userGestureObserved && m_frame &&
-      m_frame->frame()->document()->hasReceivedUserGesture()) {
+      m_frame->frame()->hasReceivedUserGesture()) {
     *m_userGestureObserved = true;
     if (m_frame && m_frame->autofillClient())
       m_frame->autofillClient()->firstUserGestureObserved();

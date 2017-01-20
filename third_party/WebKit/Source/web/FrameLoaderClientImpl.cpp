@@ -998,4 +998,9 @@ KURL FrameLoaderClientImpl::overrideFlashEmbedWithHTML(const KURL& url) {
   return m_webFrame->client()->overrideFlashEmbedWithHTML(WebURL(url));
 }
 
+void FrameLoaderClientImpl::setHasReceivedUserGesture() {
+  if (m_webFrame->client())
+    m_webFrame->client()->setHasReceivedUserGesture();
+}
+
 }  // namespace blink

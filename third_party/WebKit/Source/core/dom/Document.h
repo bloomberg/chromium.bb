@@ -1305,10 +1305,6 @@ class CORE_EXPORT Document : public ContainerNode,
   const PropertyRegistry* propertyRegistry() const;
   PropertyRegistry* propertyRegistry();
 
-  // Indicates whether the user has interacted with this particular Document.
-  void setHasReceivedUserGesture() { m_hasReceivedUserGesture = true; }
-  bool hasReceivedUserGesture() const { return m_hasReceivedUserGesture; }
-
   // Document maintains a counter of visible non-secure password
   // fields in the page. Used to notify the embedder when all visible
   // non-secure passwords fields are no longer visible.
@@ -1566,7 +1562,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool m_designMode;
   bool m_isRunningExecCommand;
-  bool m_hasReceivedUserGesture;
 
   HeapHashSet<WeakMember<const LiveNodeListBase>> m_listsInvalidatedAtDocument;
   // Oilpan keeps track of all registered NodeLists.

@@ -53,8 +53,7 @@ bool WebUserGestureIndicator::consumeUserGesture() {
 
 bool WebUserGestureIndicator::processedUserGestureSinceLoad(
     WebLocalFrame* frame) {
-  Document* document = toWebLocalFrameImpl(frame)->frame()->document();
-  return document->hasReceivedUserGesture();
+  return toWebLocalFrameImpl(frame)->frame()->hasReceivedUserGesture();
 }
 
 WebUserGestureToken WebUserGestureIndicator::currentUserGestureToken() {

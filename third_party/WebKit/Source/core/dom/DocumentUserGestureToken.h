@@ -7,6 +7,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {
@@ -36,12 +37,10 @@ class DocumentUserGestureToken final : public UserGestureToken {
   DocumentUserGestureToken(Status status) : UserGestureToken(status) {}
 
   static void setHasReceivedUserGesture(Document* document) {
-    if (!document || document->hasReceivedUserGesture())
-      return;
-    document->setHasReceivedUserGesture();
-    for (Frame* frame = document->frame()->tree().parent(); frame;
-         frame = frame->tree().parent()) {
-      frame->setDocumentHasReceivedUserGesture();
+    if (document && document->frame() &&
+        !document->frame()->hasReceivedUserGesture()) {
+      document->frame()->setDocumentHasReceivedUserGesture();
+      document->frame()->loader().client()->setHasReceivedUserGesture();
     }
   }
 };

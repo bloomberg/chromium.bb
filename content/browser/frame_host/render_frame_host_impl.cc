@@ -760,6 +760,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnSerializeAsMHTMLResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGesture,
+                        OnSetHasReceivedUserGesture)
 #if defined(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -2197,6 +2199,10 @@ void RenderFrameHostImpl::OnFocusedNodeChanged(
       this, gfx::Rect(GetView()->TransformPointToRootCoordSpace(
                           bounds_in_frame_widget.origin()),
                       bounds_in_frame_widget.size()));
+}
+
+void RenderFrameHostImpl::OnSetHasReceivedUserGesture() {
+  frame_tree_node_->OnSetHasReceivedUserGesture();
 }
 
 #if defined(USE_EXTERNAL_POPUP_MENU)

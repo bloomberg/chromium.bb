@@ -134,7 +134,6 @@ class CONTENT_EXPORT RenderFrameProxy
   void updateRemoteViewportIntersection(
       const blink::WebRect& viewportIntersection) override;
   void visibilityChanged(bool visible) override;
-  void setHasReceivedUserGesture() override;
   void didChangeOpener(blink::WebFrame* opener) override;
   void advanceFocus(blink::WebFocusType type,
                     blink::WebLocalFrame* source) override;
@@ -175,6 +174,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnSetPageFocus(bool is_focused);
   void OnSetFocusedFrame();
   void OnWillEnterFullscreen();
+  void OnSetHasReceivedUserGesture();
 
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;

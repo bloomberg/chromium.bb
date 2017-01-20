@@ -553,11 +553,6 @@ void LocalFrame::didChangeVisibilityState() {
   Frame::didChangeVisibilityState();
 }
 
-void LocalFrame::setDocumentHasReceivedUserGesture() {
-  if (document())
-    document()->setHasReceivedUserGesture();
-}
-
 LocalFrame* LocalFrame::localFrameRoot() {
   LocalFrame* curFrame = this;
   while (curFrame && curFrame->tree().parent() &&

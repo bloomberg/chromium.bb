@@ -509,6 +509,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // match the provided |render_frame_host|.
   void CancelPendingIfNecessary(RenderFrameHostImpl* render_frame_host);
 
+  void OnSetHasReceivedUserGesture();
+
   // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not
   // null, it creates a RenderFrameProxy in the target renderer process which is
   // used to route IPC messages when in swapped out state.  Returns early if the

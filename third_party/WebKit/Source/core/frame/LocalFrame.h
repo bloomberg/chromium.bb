@@ -121,7 +121,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void printNavigationWarning(const String&) override;
   bool prepareForCommit() override;
   void didChangeVisibilityState() override;
-  void setDocumentHasReceivedUserGesture() override;
 
   void detachChildren();
   void documentAttached();

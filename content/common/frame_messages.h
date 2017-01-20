@@ -936,7 +936,7 @@ IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
 IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
 
 // Tells the frame to consider itself to have received a user gesture (based
-// on a user gesture proceed by a descendant).
+// on a user gesture processed in a different process).
 IPC_MESSAGE_ROUTED0(FrameMsg_SetHasReceivedUserGesture)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_RunFileChooserResponse,
@@ -1323,8 +1323,8 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
 
-// Indicates that a child of this frame recieved a user gesture, and this
-// frame should in turn consider itself to have received a user gesture.
+// Indicates that this frame recieved a user gesture, so that the state can be
+// propagated to any remote frames.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SetHasReceivedUserGesture)
 
 // Used to tell the parent that the user right clicked on an area of the

@@ -102,7 +102,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
           unique_name,
           blink::WebSandboxFlags::None,
           false /* should enforce strict mixed content checking */,
-          false /* is a potentially trustworthy unique origin */),
+          false /* is a potentially trustworthy unique origin */,
+          false /* has received a user gesture */),
       pending_sandbox_flags_(blink::WebSandboxFlags::None),
       frame_owner_properties_(frame_owner_properties),
       loading_progress_(kLoadingProgressNotStarted),
@@ -507,6 +508,11 @@ void FrameTreeNode::BeforeUnloadCanceled() {
     if (pending_frame_host)
       pending_frame_host->ResetLoadingState();
   }
+}
+
+void FrameTreeNode::OnSetHasReceivedUserGesture() {
+  render_manager_.OnSetHasReceivedUserGesture();
+  replication_state_.has_received_user_gesture = true;
 }
 
 FrameTreeNode* FrameTreeNode::GetSibling(int relative_offset) const {

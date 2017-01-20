@@ -520,6 +520,10 @@ void WebRemoteFrameImpl::willEnterFullscreen() {
       Fullscreen::RequestType::PrefixedForCrossProcessDescendant);
 }
 
+void WebRemoteFrameImpl::setHasReceivedUserGesture() {
+  frame()->setDocumentHasReceivedUserGesture();
+}
+
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
                                        WebRemoteFrameClient* client)
     : WebRemoteFrame(scope),

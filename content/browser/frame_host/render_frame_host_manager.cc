@@ -1059,6 +1059,13 @@ void RenderFrameHostManager::CancelPendingIfNecessary(
   }
 }
 
+void RenderFrameHostManager::OnSetHasReceivedUserGesture() {
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(
+        new FrameMsg_SetHasReceivedUserGesture(pair.second->GetRoutingID()));
+  }
+}
+
 void RenderFrameHostManager::ActiveFrameCountIsZero(
     SiteInstanceImpl* site_instance) {
   // |site_instance| no longer contains any active RenderFrameHosts, so we don't

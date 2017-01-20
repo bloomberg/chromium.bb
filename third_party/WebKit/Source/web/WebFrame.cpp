@@ -105,6 +105,9 @@ bool WebFrame::swap(WebFrame* frame) {
                                                      uniqueName);
   }
 
+  if (oldFrame->hasReceivedUserGesture())
+    frame->toImplBase()->frame()->setDocumentHasReceivedUserGesture();
+
   frame->toImplBase()->frame()->getWindowProxyManager()->setGlobals(globals);
 
   m_parent = nullptr;
