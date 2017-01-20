@@ -224,9 +224,15 @@ var GetIntListAttribute =
  */
 var GetHtmlAttribute = requireNative('automationInternal').GetHtmlAttribute;
 
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {automation.NameFromType} The source of the node's name.
+ */
+var GetNameFrom = requireNative('automationInternal').GetNameFrom;
+
 var lastError = require('lastError');
 var logging = requireNative('logging');
-var schema = requireNative('automationInternal').GetSchemaAdditions();
 var utils = require('utils');
 
 /**
@@ -357,6 +363,10 @@ AutomationNodeImpl.prototype = {
     var indexInParent = GetIndexInParent(this.treeID, this.id);
     return this.rootImpl.get(
         GetChildIDAtIndex(parent.treeID, parent.id, indexInParent + 1));
+  },
+
+  get nameFrom() {
+    return GetNameFrom(this.treeID, this.id);
   },
 
   doDefault: function() {
@@ -669,23 +679,17 @@ AutomationNodeImpl.prototype = {
 
 var stringAttributes = [
     'accessKey',
-    'action',
     'ariaInvalidValue',
-    'autoComplete',
     'containerLiveRelevant',
     'containerLiveStatus',
     'description',
     'display',
-    'dropeffect',
-    'help',
-    'htmlTag',
     'imageDataUrl',
     'language',
     'liveRelevant',
     'liveStatus',
     'name',
     'placeholder',
-    'shortcut',
     'textInputType',
     'url',
     'value'];
@@ -693,24 +697,16 @@ var stringAttributes = [
 var boolAttributes = [
     'ariaReadonly',
     'buttonMixed',
-    'canSetValue',
-    'canvasHasFallback',
     'containerLiveAtomic',
     'containerLiveBusy',
-    'grabbed',
-    'isAxTreeHost',
     'liveAtomic',
-    'liveBusy',
-    'updateLocationOnly'];
+    'liveBusy'];
 
 var intAttributes = [
     'backgroundColor',
     'color',
     'colorValue',
-    'descriptionFrom',
     'hierarchicalLevel',
-    'invalidState',
-    'nameFrom',
     'posInSet',
     'scrollX',
     'scrollXMax',
@@ -719,7 +715,6 @@ var intAttributes = [
     'scrollYMax',
     'scrollYMin',
     'setSize',
-    'sortDirection',
     'tableCellColumnIndex',
     'tableCellColumnSpan',
     'tableCellRowIndex',
@@ -728,10 +723,8 @@ var intAttributes = [
     'tableColumnIndex',
     'tableRowCount',
     'tableRowIndex',
-    'textDirection',
     'textSelEnd',
-    'textSelStart',
-    'textStyle'];
+    'textSelStart'];
 
 var nodeRefAttributes = [
     ['activedescendantId', 'activeDescendant'],
@@ -739,11 +732,9 @@ var nodeRefAttributes = [
     ['previousOnLineId', 'previousOnLine'],
     ['tableColumnHeaderId', 'tableColumnHeader'],
     ['tableHeaderId', 'tableHeader'],
-    ['tableRowHeaderId', 'tableRowHeader'],
-    ['titleUiElement', 'titleUIElement']];
+    ['tableRowHeaderId', 'tableRowHeader']];
 
 var intListAttributes = [
-    'characterOffsets',
     'lineBreaks',
     'markerEnds',
     'markerStarts',
@@ -752,18 +743,15 @@ var intListAttributes = [
     'wordStarts'];
 
 var nodeRefListAttributes = [
-    ['cellIds', 'cells'],
     ['controlsIds', 'controls'],
     ['describedbyIds', 'describedBy'],
     ['flowtoIds', 'flowTo'],
-    ['labelledbyIds', 'labelledBy'],
-    ['uniqueCellIds', 'uniqueCells']];
+    ['labelledbyIds', 'labelledBy']];
 
 var floatAttributes = [
     'valueForRange',
     'minValueForRange',
-    'maxValueForRange',
-    'fontSize'];
+    'maxValueForRange'];
 
 var htmlAttributes = [
     ['type', 'inputType']];
@@ -1036,7 +1024,7 @@ AutomationRootNodeImpl.prototype = {
   },
 
   destroy: function() {
-    this.dispatchEvent(schema.EventType.destroyed, 'none');
+    this.dispatchEvent('destroyed', 'none');
     for (var id in this.axNodeDataCache_)
       this.remove(id);
     this.detach();
@@ -1120,6 +1108,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
       'lineStartOffsets',
       'root',
       'htmlAttributes',
+      'nameFrom',
   ]),
 });
 

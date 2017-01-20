@@ -8,6 +8,9 @@ goog.provide('FindHandler');
 
 goog.require('Output');
 
+goog.scope(function() {
+var TreeChangeObserverFilter = chrome.automation.TreeChangeObserverFilter;
+
 /**
  * Responds to mode changes.
  * @param {ChromeVoxMode} newMode
@@ -27,7 +30,7 @@ FindHandler.onModeChanged = function(newMode, oldMode) {
  */
 FindHandler.init_ = function() {
   chrome.automation.addTreeChangeObserver(
-      'textMarkerChanges', FindHandler.onTextMatch_);
+      TreeChangeObserverFilter.NO_TREE_CHANGES, FindHandler.onTextMatch_);
 };
 
 /**
@@ -54,3 +57,5 @@ FindHandler.onTextMatch_ = function(evt) {
       .withRichSpeechAndBraille(range, null, Output.EventType.NAVIGATE)
       .go();
 };
+
+});  // goog.scope

@@ -10,7 +10,7 @@ var allTests = [
         });
 
     assertTrue(!!firstFocusableNode);
-    listenOnce(firstFocusableNode, EventType.focus, function(e) {
+    listenOnce(firstFocusableNode, EventType.FOCUS, function(e) {
       chrome.test.succeed();
     }, true);
     firstFocusableNode.focus();

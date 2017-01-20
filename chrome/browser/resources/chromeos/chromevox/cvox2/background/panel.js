@@ -794,7 +794,7 @@ Panel.getCallbackForCurrentItem = function() {
 Panel.closeMenusAndRestoreFocus = function() {
   // Watch for the next focus event.
   var onFocus = function(desktop, evt) {
-    desktop.removeEventListener(chrome.automation.EventType.focus, onFocus);
+    desktop.removeEventListener(chrome.automation.EventType.FOCUS, onFocus);
     if (Panel.pendingCallback_) {
       // Clear it before calling it, in case the callback itself triggers
       // another pending callback.
@@ -807,7 +807,7 @@ Panel.closeMenusAndRestoreFocus = function() {
   chrome.automation.getDesktop(function(desktop) {
     onFocus = /** @type {function(chrome.automation.AutomationEvent)} */(
         onFocus.bind(this, desktop));
-    desktop.addEventListener(chrome.automation.EventType.focus,
+    desktop.addEventListener(chrome.automation.EventType.FOCUS,
                              onFocus,
                              true);
 

@@ -42,8 +42,8 @@ CommandHandler.onCommand = function(command) {
     case 'speakTimeAndDate':
       chrome.automation.getDesktop(function(d) {
         // First, try speaking the on-screen time.
-        var allTime = d.findAll({role: RoleType.time});
-        allTime.filter(function(t) { return t.root.role == RoleType.desktop; });
+        var allTime = d.findAll({role: RoleType.TIME});
+        allTime.filter(function(t) { return t.root.role == RoleType.DESKTOP; });
 
         var timeString = '';
         allTime.forEach(function(t) {
@@ -445,7 +445,7 @@ CommandHandler.onCommand = function(command) {
     case 'forceClickOnCurrentItem':
       if (ChromeVoxState.instance.currentRange_) {
         var actionNode = ChromeVoxState.instance.currentRange_.start.node;
-        if (actionNode.role == RoleType.inlineTextBox)
+        if (actionNode.role == RoleType.INLINE_TEXT_BOX)
           actionNode = actionNode.parent;
         actionNode.doDefault();
       }
@@ -466,8 +466,8 @@ CommandHandler.onCommand = function(command) {
 
         // Stop if we've wrapped back to the document.
         var maybeDoc = newRange.start.node;
-        if (maybeDoc.role == RoleType.rootWebArea &&
-            maybeDoc.parent.root.role == RoleType.desktop) {
+        if (maybeDoc.role == RoleType.ROOT_WEB_AREA &&
+            maybeDoc.parent.root.role == RoleType.DESKTOP) {
           ChromeVoxState.isReadingContinuously = false;
           return;
         }
@@ -493,7 +493,7 @@ CommandHandler.onCommand = function(command) {
     case 'contextMenu':
       if (ChromeVoxState.instance.currentRange_) {
         var actionNode = ChromeVoxState.instance.currentRange_.start.node;
-        if (actionNode.role == RoleType.inlineTextBox)
+        if (actionNode.role == RoleType.INLINE_TEXT_BOX)
           actionNode = actionNode.parent;
         actionNode.showContextMenu();
         return false;
@@ -524,13 +524,13 @@ CommandHandler.onCommand = function(command) {
       var target = ChromeVoxState.instance.currentRange_.start.node;
       var output = new Output();
 
-      if (target.root.role == RoleType.rootWebArea) {
+      if (target.root.role == RoleType.ROOT_WEB_AREA) {
         // Web.
         target = target.root;
         output.withString(target.name || target.docUrl);
       } else {
         // Views.
-        while (target.role != RoleType.window) target = target.parent;
+        while (target.role != RoleType.WINDOW) target = target.parent;
         if (target)
           output.withString(target.name || '');
       }
@@ -615,7 +615,7 @@ CommandHandler.onCommand = function(command) {
     case 'goToRowFirstCell':
     case 'goToRowLastCell':
       var node = current.start.node;
-      while (node && node.role != RoleType.row)
+      while (node && node.role != RoleType.ROW)
         node = node.parent;
       if (!node)
         break;
@@ -628,7 +628,7 @@ CommandHandler.onCommand = function(command) {
     case 'goToColFirstCell':
       dir = Dir.FORWARD;
       var node = current.start.node;
-      while (node && node.role != RoleType.table)
+      while (node && node.role != RoleType.TABLE)
         node = node.parent;
       if (!node || !node.firstChild)
         return false;
@@ -643,7 +643,7 @@ CommandHandler.onCommand = function(command) {
     case 'goToColLastCell':
       dir = Dir.BACKWARD;
       var node = current.start.node;
-      while (node && node.role != RoleType.table)
+      while (node && node.role != RoleType.TABLE)
         node = node.parent;
       if (!node || !node.lastChild)
         return false;
@@ -658,7 +658,7 @@ CommandHandler.onCommand = function(command) {
     case 'goToFirstCell':
     case 'goToLastCell':
       node = current.start.node;
-      while (node && node.role != RoleType.table)
+      while (node && node.role != RoleType.TABLE)
         node = node.parent;
       if (!node)
         break;
