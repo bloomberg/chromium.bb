@@ -78,12 +78,14 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebTextInputType.h",
   "+third_party/WebKit/public/platform/mime_registry.mojom.h",
   "+third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h",
+  "+third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
   "+third_party/WebKit/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",
   "+third_party/WebKit/public/platform/modules/notifications/notification.mojom.h",
+  "+third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h",
   "+third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission.mojom.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
@@ -120,11 +122,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
   "+third_party/WebKit/public/web/mac/WebScrollbarTheme.h",
-
-  # Until we define where mojo interfaces should live in blink we whitelist each
-  # one separately.
-  "+third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
-  "+third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
