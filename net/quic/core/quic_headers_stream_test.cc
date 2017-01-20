@@ -854,10 +854,6 @@ TEST_P(QuicHeadersStreamTest, NoConnectionLevelFlowControl) {
 }
 
 TEST_P(QuicHeadersStreamTest, HpackDecoderDebugVisitor) {
-  if (test_params_.hpack_decoder == HPACK_DECODER3) {
-    return;
-  }
-
   StrictMock<MockQuicHpackDebugVisitor>* hpack_decoder_visitor =
       hpack_decoder_visitor_.get();
   QuicSpdySessionPeer::SetHpackDecoderDebugVisitor(

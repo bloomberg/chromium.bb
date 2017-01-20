@@ -91,7 +91,13 @@ const SpdyHeaderBlock& HpackDecoder3::decoded_block() const {
 void HpackDecoder3::SetHeaderTableDebugVisitor(
     std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
   DVLOG(2) << "HpackDecoder3::SetHeaderTableDebugVisitor";
-  // Dropping on the floor for now. Not sure yet if needed at all.
+  if (visitor != nullptr) {
+    listener_adapter_.SetHeaderTableDebugVisitor(std::move(visitor));
+    hpack_decoder_.set_tables_debug_listener(&listener_adapter_);
+  } else {
+    hpack_decoder_.set_tables_debug_listener(nullptr);
+    listener_adapter_.SetHeaderTableDebugVisitor(nullptr);
+  }
 }
 
 void HpackDecoder3::set_max_decode_buffer_size_bytes(
@@ -107,6 +113,11 @@ HpackDecoder3::ListenerAdapter::~ListenerAdapter() {}
 void HpackDecoder3::ListenerAdapter::set_handler(
     SpdyHeadersHandlerInterface* handler) {
   handler_ = handler;
+}
+
+void HpackDecoder3::ListenerAdapter::SetHeaderTableDebugVisitor(
+    std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
+  visitor_ = std::move(visitor);
 }
 
 void HpackDecoder3::ListenerAdapter::OnHeaderListStart() {
@@ -146,6 +157,34 @@ void HpackDecoder3::ListenerAdapter::OnHeaderListEnd() {
 void HpackDecoder3::ListenerAdapter::OnHeaderErrorDetected(
     StringPiece error_message) {
   VLOG(1) << error_message;
+}
+
+int64_t HpackDecoder3::ListenerAdapter::OnEntryInserted(
+    const HpackStringPair& sp,
+    size_t insert_count) {
+  DVLOG(2) << "HpackDecoder3::ListenerAdapter::OnEntryInserted: " << sp
+           << ",  insert_count=" << insert_count;
+  if (visitor_ == nullptr) {
+    return 0;
+  }
+  HpackEntry entry(sp.name, sp.value, /*is_static*/ false, insert_count);
+  int64_t time_added = visitor_->OnNewEntry(entry);
+  DVLOG(2) << "HpackDecoder3::ListenerAdapter::OnEntryInserted: time_added="
+           << time_added;
+  return time_added;
+}
+
+void HpackDecoder3::ListenerAdapter::OnUseEntry(const HpackStringPair& sp,
+                                                size_t insert_count,
+                                                int64_t time_added) {
+  DVLOG(2) << "HpackDecoder3::ListenerAdapter::OnUseEntry: " << sp
+           << ",  insert_count=" << insert_count
+           << ",  time_added=" << time_added;
+  if (visitor_ != nullptr) {
+    HpackEntry entry(sp.name, sp.value, /*is_static*/ false, insert_count);
+    entry.set_time_added(time_added);
+    visitor_->OnUseEntry(entry);
+  }
 }
 
 }  // namespace net

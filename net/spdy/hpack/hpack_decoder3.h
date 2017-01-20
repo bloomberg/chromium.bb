@@ -52,7 +52,9 @@ class NET_EXPORT_PRIVATE HpackDecoder3 : public HpackDecoderInterface {
       size_t max_decode_buffer_size_bytes) override;
 
  private:
-  class NET_EXPORT_PRIVATE ListenerAdapter : public HpackDecoderListener {
+  class NET_EXPORT_PRIVATE ListenerAdapter
+      : public HpackDecoderListener,
+        public HpackDecoderTablesDebugListener {
    public:
     ListenerAdapter();
     ~ListenerAdapter() override;
@@ -64,14 +66,23 @@ class NET_EXPORT_PRIVATE HpackDecoder3 : public HpackDecoderInterface {
     void set_handler(SpdyHeadersHandlerInterface* handler);
     const SpdyHeaderBlock& decoded_block() const { return decoded_block_; }
 
-    // Override the HpackDecoderListener methods:
+    void SetHeaderTableDebugVisitor(
+        std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
 
+    // Override the HpackDecoderListener methods:
     void OnHeaderListStart() override;
     void OnHeader(HpackEntryType entry_type,
                   const HpackString& name,
                   const HpackString& value) override;
     void OnHeaderListEnd() override;
     void OnHeaderErrorDetected(base::StringPiece error_message) override;
+
+    // Override the HpackDecoderTablesDebugListener methods:
+    int64_t OnEntryInserted(const HpackStringPair& entry,
+                            size_t insert_count) override;
+    void OnUseEntry(const HpackStringPair& entry,
+                    size_t insert_count,
+                    int64_t insert_time) override;
 
    private:
     // If the caller doesn't provide a handler, the header list is stored in
@@ -83,6 +94,10 @@ class NET_EXPORT_PRIVATE HpackDecoder3 : public HpackDecoderInterface {
 
     // Total bytes of the name and value strings in the current HPACK block.
     size_t total_uncompressed_bytes_;
+
+    // visitor_ is used by a QUIC experiment regarding HPACK; remove
+    // when the experiment is done.
+    std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor_;
   };
 
   // Converts calls to HpackDecoderListener into calls to
