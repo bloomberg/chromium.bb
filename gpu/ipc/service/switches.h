@@ -5,12 +5,15 @@
 #ifndef GPU_IPC_SERVICE_SWITCHES_H_
 #define GPU_IPC_SERVICE_SWITCHES_H_
 
+#include "base/feature_list.h"
 #include "gpu/gpu_export.h"
 
 namespace switches {
 
 GPU_EXPORT extern const char kDisableGpuWatchdog[];
 GPU_EXPORT extern const char kGpuSandboxStartEarly[];
+
+GPU_EXPORT extern const base::Feature kDirectCompositionOverlays;
 
 }  // namespace switches
 
