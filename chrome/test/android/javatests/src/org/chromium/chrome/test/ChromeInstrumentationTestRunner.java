@@ -103,8 +103,16 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                     ChromeRestriction.RESTRICTION_TYPE_DAYDREAM)
                     || TextUtils.equals(restriction,
                     ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM)) {
-                // TODO(crbug/671373): Re-enable vr instrumentation tests when they are safe.
-                return true;
+                boolean isDaydream = isDaydreamReady();
+                if (TextUtils.equals(restriction,
+                        ChromeRestriction.RESTRICTION_TYPE_DAYDREAM)
+                        && !isDaydream) {
+                    return true;
+                } else if (TextUtils.equals(restriction,
+                        ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM)
+                        && isDaydream) {
+                    return true;
+                }
             }
             return false;
         }

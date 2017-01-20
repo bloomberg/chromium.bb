@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -604,6 +605,14 @@ public class VrShellDelegate {
         // controller.
         if (mVrSupportLevel != VR_DAYDREAM) return false;
         return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
+    }
+
+    /**
+     * @param api The VrDaydreamApi object this delegate will use instead of the default one
+     */
+    @VisibleForTesting
+    public void overrideDaydreamApiForTesting(VrDaydreamApi api) {
+        mVrDaydreamApi = api;
     }
 
     /**
