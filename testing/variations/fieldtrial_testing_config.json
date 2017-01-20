@@ -1605,7 +1605,7 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledGlobalMedium2",
+                    "name": "EnabledGlobalRankingNoVersioned",
                     "params": {
                         "config_url": "https://www.gstatic.com/chrome/wifiprefetch/precache_config_gm"
                     }
