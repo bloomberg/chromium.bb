@@ -20,6 +20,7 @@
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/dip_util.h"
 
 namespace content {
 
@@ -71,8 +72,6 @@ cc::BeginFrameSource* MusBrowserCompositorOutputSurface::GetBeginFrameSource() {
 
 void MusBrowserCompositorOutputSurface::SwapBuffers(
     cc::OutputSurfaceFrame frame) {
-  const gfx::Rect bounds = ui_window_ ? gfx::Rect(ui_window_->bounds().size())
-                                      : gfx::Rect(window_->bounds().size());
   cc::CompositorFrame ui_frame;
   ui_frame.metadata.device_scale_factor = display::Screen::GetScreen()
                                               ->GetDisplayNearestWindow(window_)
@@ -81,14 +80,20 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
   // Reset latency_info to known empty state after moving contents.
   frame.latency_info.clear();
   const int render_pass_id = 1;
+  const gfx::Rect bounds_in_dip = ui_window_
+                                      ? gfx::Rect(ui_window_->bounds().size())
+                                      : gfx::Rect(window_->bounds().size());
+  const gfx::Rect bounds_in_pixels = gfx::ConvertRectToPixel(
+      ui_frame.metadata.device_scale_factor, bounds_in_dip);
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  pass->SetNew(render_pass_id, bounds, bounds, gfx::Transform());
+  pass->SetNew(render_pass_id, bounds_in_pixels, bounds_in_pixels,
+               gfx::Transform());
   // The SharedQuadState is owned by the SharedQuadStateList
   // shared_quad_state_list.
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(gfx::Transform(), bounds.size(), bounds, bounds,
-              false /* is_clipped */, 1.f /* opacity */, SkBlendMode::kSrc,
-              0 /* sorting_context_id */);
+  sqs->SetAll(gfx::Transform(), bounds_in_pixels.size(), bounds_in_pixels,
+              bounds_in_pixels, false /* is_clipped */, 1.f /* opacity */,
+              SkBlendMode::kSrc, 0 /* sorting_context_id */);
 
   cc::TransferableResource resource;
   resource.id = AllocateResourceId();
