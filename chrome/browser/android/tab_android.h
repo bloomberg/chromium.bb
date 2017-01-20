@@ -97,6 +97,10 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Return the tab url.
   GURL GetURL() const;
 
+  // Return whether the tab is currently visible and the user can interact with
+  // it.
+  bool IsUserInteractable() const;
+
   // Load the tab if it was unloaded from memory.
   bool LoadIfNeeded();
 

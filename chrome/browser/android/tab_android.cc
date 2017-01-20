@@ -167,6 +167,11 @@ GURL TabAndroid::GetURL() const {
       Java_Tab_getUrl(env, weak_java_tab_.get(env))));
 }
 
+bool TabAndroid::IsUserInteractable() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_Tab_isUserInteractable(env, weak_java_tab_.get(env));
+}
+
 bool TabAndroid::LoadIfNeeded() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_Tab_loadIfNeeded(env, weak_java_tab_.get(env));
