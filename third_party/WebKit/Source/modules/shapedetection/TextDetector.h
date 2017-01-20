@@ -15,19 +15,17 @@
 
 namespace blink {
 
-class LocalFrame;
-
 class MODULES_EXPORT TextDetector final : public ShapeDetector,
                                           public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TextDetector* create(Document&);
+  static TextDetector* create();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit TextDetector(LocalFrame&);
+  TextDetector();
   ~TextDetector() override = default;
 
   ScriptPromise doDetect(ScriptPromiseResolver*,

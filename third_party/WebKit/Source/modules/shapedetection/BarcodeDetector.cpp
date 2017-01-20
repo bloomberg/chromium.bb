@@ -6,20 +6,21 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMRect.h"
-#include "core/frame/LocalFrame.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "modules/imagecapture/Point2D.h"
 #include "modules/shapedetection/DetectedBarcode.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
-BarcodeDetector* BarcodeDetector::create(Document& document) {
-  return new BarcodeDetector(*document.frame());
+BarcodeDetector* BarcodeDetector::create() {
+  return new BarcodeDetector();
 }
 
-BarcodeDetector::BarcodeDetector(LocalFrame& frame) : ShapeDetector(frame) {
-  frame.interfaceProvider()->getInterface(mojo::MakeRequest(&m_barcodeService));
+BarcodeDetector::BarcodeDetector() : ShapeDetector() {
+  Platform::current()->interfaceProvider()->getInterface(
+      mojo::MakeRequest(&m_barcodeService));
   m_barcodeService.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&BarcodeDetector::onBarcodeServiceConnectionError,
                 wrapWeakPersistent(this))));

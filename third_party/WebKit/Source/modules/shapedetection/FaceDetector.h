@@ -16,19 +16,18 @@
 namespace blink {
 
 class FaceDetectorOptions;
-class LocalFrame;
 
 class MODULES_EXPORT FaceDetector final : public ShapeDetector,
                                           public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FaceDetector* create(Document&, const FaceDetectorOptions&);
+  static FaceDetector* create(const FaceDetectorOptions&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  FaceDetector(LocalFrame&, const FaceDetectorOptions&);
+  explicit FaceDetector(const FaceDetectorOptions&);
   ~FaceDetector() override = default;
 
   ScriptPromise doDetect(ScriptPromiseResolver*,

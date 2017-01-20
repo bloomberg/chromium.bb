@@ -71,8 +71,6 @@
           "media_router::mojom::MediaRouter",
           "mojom::OmniboxPageHandler",
           "password_manager::mojom::CredentialManager",
-          "shape_detection::mojom::BarcodeDetection",
-          "shape_detection::mojom::TextDetection",
           "translate::mojom::ContentTranslateDriver",
 
           // TODO(beng): These should be moved to a separate capability.

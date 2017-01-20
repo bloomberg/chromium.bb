@@ -6,7 +6,6 @@
 
 [
     Constructor,
-    ConstructorCallWith=Document,
     Exposed=(Window,Worker),
     RuntimeEnabled=ShapeDetection,
 ] interface TextDetector {

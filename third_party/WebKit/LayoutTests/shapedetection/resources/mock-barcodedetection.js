@@ -5,7 +5,7 @@ let mockBarcodeDetectionReady = define(
   ['services/shape_detection/public/interfaces/barcodedetection.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/core',
-   'content/public/renderer/frame_interfaces',
+   'content/public/renderer/interfaces',
   ], (barcodeDetection, bindings, mojo, interfaces) => {
 
   class MockBarcodeDetection {

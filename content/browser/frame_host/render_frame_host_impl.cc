@@ -106,7 +106,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -2285,11 +2284,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
-  GetInterfaceRegistry()->AddInterface(
-      GetGlobalJavaInterfaces()
-          ->CreateInterfaceFactory<
-              shape_detection::mojom::FaceDetectionProvider>());
-
   GetInterfaceRegistry()->AddInterface(
       GetGlobalJavaInterfaces()
           ->CreateInterfaceFactory<device::VibrationManager>());

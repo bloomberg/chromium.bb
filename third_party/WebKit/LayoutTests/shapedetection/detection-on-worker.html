@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-barcodedetection.js"></script>
+<script src="resources/mock-facedetection.js"></script>
+<script src="resources/mock-textdetection.js"></script>
+<script>
+
+// ImageBitmap is of transferable type and can be sent to and tested on worker.
+var createTestForImageBitmap = function(detectorType, mockReady,
+                                        resultSize) {
+  async_test(function(t) {
+    var img = new Image();
+
+    img.onload = function() {
+      var theImageBitmap = null;
+      var theMock = null;
+
+      createImageBitmap(img)
+          .then(imageBitmap => {
+            theImageBitmap = imageBitmap;
+            return mockReady();
+          })
+          .catch(error => {
+            assert_unreached("createImageBitmap() error: " + error);
+          })
+          .then(mock => {
+            theMock = mock;
+            return new Worker("resources/worker.js");
+          })
+          .catch(error => {
+            assert_unreached("Error creating Mock: " + error);
+          })
+          .then(worker => {
+            worker.postMessage({
+              detectorType: detectorType,
+              bitmap: theImageBitmap,
+              expectedLength: resultSize
+            }, [theImageBitmap]);
+            worker.onmessage = function(e) {
+              if(e.data=="PASS")
+                t.done();
+            }
+          })
+          .catch(error => {
+            assert_unreached("Error creating detector: " + error);
+          });
+    }
+    img.src = "../media/content/greenbox.png";
+  }, detectorType + "Detector detect(ImageBitmap) on worker");
+};
+
+// These tests verify that a Detector's detect() works on an ImageBitmap on
+// workers. Use the mock mojo server implemented in mock-*detection.js.
+generate_tests(createTestForImageBitmap, [
+  [
+    "Face",
+    "Face",
+    () => { return mockFaceDetectionProviderReady; },
+    3 // Number of faces
+  ],
+  [
+    "Barcode",
+    "Barcode",
+    () => { return mockBarcodeDetectionReady; },
+    2 // Number of barcodes
+  ],
+  [
+    "Text",
+    "Text",
+    () => { return mockTextDetectionReady; },
+    2 // Number of text blocks
+  ]
+]);
+
+</script>

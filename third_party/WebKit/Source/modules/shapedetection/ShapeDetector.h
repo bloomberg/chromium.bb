@@ -13,14 +13,9 @@
 
 namespace blink {
 
-class LocalFrame;
-
 class MODULES_EXPORT ShapeDetector
     : public GarbageCollectedFinalized<ShapeDetector> {
  public:
-  // TODO(mcasas): Implement TextDetector after
-  // https://github.com/WICG/shape-detection-api/issues/6
-  explicit ShapeDetector(LocalFrame&);
   virtual ~ShapeDetector() = default;
 
   ScriptPromise detect(ScriptState*, const ImageBitmapSourceUnion&);

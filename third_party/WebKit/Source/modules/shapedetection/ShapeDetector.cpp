@@ -48,10 +48,6 @@ mojo::ScopedSharedBufferHandle getSharedBufferOnData(
 
 }  // anonymous namespace
 
-ShapeDetector::ShapeDetector(LocalFrame& frame) {
-  DCHECK(frame.interfaceProvider());
-}
-
 ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
                                     const ImageBitmapSourceUnion& imageSource) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);

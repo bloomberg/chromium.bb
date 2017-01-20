@@ -6,7 +6,6 @@
 
 [
     Constructor(optional FaceDetectorOptions faceDetectorOptions),
-    ConstructorCallWith=Document,
     Exposed=(Window,Worker),
     RuntimeEnabled=ShapeDetection,
 ] interface FaceDetector {

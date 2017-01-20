@@ -5,7 +5,7 @@ let mockTextDetectionReady = define(
   ['services/shape_detection/public/interfaces/textdetection.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/core',
-   'content/public/renderer/frame_interfaces',
+   'content/public/renderer/interfaces',
   ], (textDetection, bindings, mojo, interfaces) => {
 
   class MockTextDetection {

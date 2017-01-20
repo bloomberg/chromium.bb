@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.mojo;
 
+import android.content.Context;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.payments.PaymentRequestFactory;
 import org.chromium.chrome.browser.shapedetection.BarcodeDetectionFactory;
@@ -21,8 +23,18 @@ import org.chromium.webshare.mojom.ShareService;
 class ChromeInterfaceRegistrar {
     @CalledByNative
     private static void registerMojoInterfaces() {
+        InterfaceRegistrar.Registry.addContextRegistrar(new ChromeContextInterfaceRegistrar());
         InterfaceRegistrar.Registry.addWebContentsRegistrar(
                 new ChromeWebContentsInterfaceRegistrar());
+    }
+}
+
+class ChromeContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
+    @Override
+    public void registerInterfaces(InterfaceRegistry registry, final Context applicationContext) {
+        registry.addInterface(
+                BarcodeDetection.MANAGER, new BarcodeDetectionFactory(applicationContext));
+        registry.addInterface(TextDetection.MANAGER, new TextDetectionFactory(applicationContext));
     }
 }
 
@@ -32,8 +44,5 @@ class ChromeWebContentsInterfaceRegistrar implements InterfaceRegistrar<WebConte
         registry.addInterface(PaymentRequest.MANAGER, new PaymentRequestFactory(webContents));
         registry.addInterface(
                 ShareService.MANAGER, new ShareServiceImplementationFactory(webContents));
-        registry.addInterface(
-                BarcodeDetection.MANAGER, new BarcodeDetectionFactory(webContents));
-        registry.addInterface(TextDetection.MANAGER, new TextDetectionFactory(webContents));
     }
 }

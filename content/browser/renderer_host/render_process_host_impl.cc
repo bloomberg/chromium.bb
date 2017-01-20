@@ -187,6 +187,9 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
+#include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
+#include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/interfaces/textdetection.mojom.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/WebKit/public/public_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1201,6 +1204,18 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(registry.get(),
                        GetGlobalJavaInterfaces()
                            ->CreateInterfaceFactory<device::BatteryMonitor>());
+  AddUIThreadInterface(
+      registry.get(), GetGlobalJavaInterfaces()
+                          ->CreateInterfaceFactory<
+                              shape_detection::mojom::FaceDetectionProvider>());
+  AddUIThreadInterface(
+      registry.get(),
+      GetGlobalJavaInterfaces()
+          ->CreateInterfaceFactory<shape_detection::mojom::BarcodeDetection>());
+  AddUIThreadInterface(
+      registry.get(),
+      GetGlobalJavaInterfaces()
+          ->CreateInterfaceFactory<shape_detection::mojom::TextDetection>());
 #else
   AddUIThreadInterface(
       registry.get(), base::Bind(&device::BatteryMonitorImpl::Create));

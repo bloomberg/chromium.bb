@@ -6,29 +6,28 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMRect.h"
-#include "core/frame/LocalFrame.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "modules/shapedetection/DetectedFace.h"
 #include "modules/shapedetection/FaceDetectorOptions.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom-blink.h"
 
 namespace blink {
 
-FaceDetector* FaceDetector::create(Document& document,
-                                   const FaceDetectorOptions& options) {
-  return new FaceDetector(*document.frame(), options);
+FaceDetector* FaceDetector::create(const FaceDetectorOptions& options) {
+  return new FaceDetector(options);
 }
 
-FaceDetector::FaceDetector(LocalFrame& frame,
-                           const FaceDetectorOptions& options)
-    : ShapeDetector(frame) {
+FaceDetector::FaceDetector(const FaceDetectorOptions& options)
+    : ShapeDetector() {
   shape_detection::mojom::blink::FaceDetectorOptionsPtr faceDetectorOptions =
       shape_detection::mojom::blink::FaceDetectorOptions::New();
   faceDetectorOptions->max_detected_faces = options.maxDetectedFaces();
   faceDetectorOptions->fast_mode = options.fastMode();
   shape_detection::mojom::blink::FaceDetectionProviderPtr provider;
-  frame.interfaceProvider()->getInterface(mojo::MakeRequest(&provider));
+  Platform::current()->interfaceProvider()->getInterface(
+      mojo::MakeRequest(&provider));
   provider->CreateFaceDetection(mojo::MakeRequest(&m_faceService),
                                 std::move(faceDetectorOptions));
 

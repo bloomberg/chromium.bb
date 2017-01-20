@@ -6,7 +6,7 @@ let mockFaceDetectionProviderReady = define(
    'services/shape_detection/public/interfaces/facedetection_provider.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/core',
-   'content/public/renderer/frame_interfaces',
+   'content/public/renderer/interfaces',
   ], (faceDetection, faceDetectionProvider, bindings, mojo, interfaces) => {
 
   class MockFaceDetectionProvider {
