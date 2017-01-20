@@ -73,6 +73,12 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 
+  // In some cases hasPendingActivity doesn't work correctly, i.e.,
+  // doesn't keep |this| alive. We need to cancel the loader in such cases,
+  // which is why we need this pre-finalizer.
+  // TODO(yhirano): Remove this pre-finalizer when the bug is fixed.
+  USING_PRE_FINALIZER(XMLHttpRequest, dispose);
+
  public:
   static XMLHttpRequest* create(ScriptState*);
   static XMLHttpRequest* create(ExecutionContext*);
@@ -130,6 +136,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
       const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData&,
       ExceptionState&);
   void abort();
+  void dispose();
   void setRequestHeader(const AtomicString& name,
                         const AtomicString& value,
                         ExceptionState&);
