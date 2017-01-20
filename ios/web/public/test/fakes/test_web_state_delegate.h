@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
-#include "ios/web/public/web_state/web_state_delegate.h"
+#import "ios/web/public/web_state/web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_java_script_dialog_presenter.h"
 
 namespace web {

@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #import "base/ios/weak_nsobject.h"
-#include "ios/web/public/web_state/web_state_delegate.h"
+#import "ios/web/public/web_state/web_state_delegate.h"
 
 // Objective-C interface for web::WebStateDelegate.
 @protocol CRWWebStateDelegate<NSObject>
