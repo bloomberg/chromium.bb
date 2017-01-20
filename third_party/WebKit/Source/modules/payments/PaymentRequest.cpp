@@ -15,6 +15,7 @@
 #include "core/EventTypeNames.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/EventQueue.h"
 #include "core/frame/FrameOwner.h"
@@ -791,7 +792,10 @@ PaymentRequest::PaymentRequest(Document& document,
     : ContextLifecycleObserver(&document),
       m_options(options),
       m_clientBinding(this),
-      m_completeTimer(this, &PaymentRequest::onCompleteTimeout) {
+      m_completeTimer(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, document.frame()),
+          this,
+          &PaymentRequest::onCompleteTimeout) {
   Vector<payments::mojom::blink::PaymentMethodDataPtr> validatedMethodData;
   validateAndConvertPaymentMethodData(methodData, validatedMethodData,
                                       exceptionState);

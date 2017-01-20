@@ -123,7 +123,7 @@ class MODULES_EXPORT PaymentRequest final
   Member<ScriptPromiseResolver> m_canMakePaymentResolver;
   payments::mojom::blink::PaymentRequestPtr m_paymentProvider;
   mojo::Binding<payments::mojom::blink::PaymentRequestClient> m_clientBinding;
-  Timer<PaymentRequest> m_completeTimer;
+  TaskRunnerTimer<PaymentRequest> m_completeTimer;
 };
 
 }  // namespace blink
