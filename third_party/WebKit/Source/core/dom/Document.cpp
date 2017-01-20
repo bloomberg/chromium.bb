@@ -2488,7 +2488,6 @@ void Document::shutdown() {
 
   // Signal destruction to mutation observers.
   SynchronousMutationNotifier::notifyContextDestroyed();
-  m_frame->selection().documentDetached(*this);
 
   // If this Document is associated with a live DocumentLoader, the
   // DocumentLoader will take care of clearing the FetchContext. Deferring
@@ -4217,8 +4216,6 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container) {
   }
 
   notifyNodeChildrenWillBeRemoved(container);
-  if (LocalFrame* frame = this->frame())
-    frame->selection().nodeChildrenWillBeRemoved(container);
 
   if (containsV1ShadowTree()) {
     for (Node& n : NodeTraversal::childrenOf(container))
@@ -4234,10 +4231,6 @@ void Document::nodeWillBeRemoved(Node& n) {
     range->nodeWillBeRemoved(n);
 
   notifyNodeWillBeRemoved(n);
-
-  if (LocalFrame* frame = this->frame()) {
-    frame->selection().nodeWillBeRemoved(n);
-  }
 
   if (containsV1ShadowTree())
     n.checkSlotChangeBeforeRemoved();
@@ -4276,8 +4269,6 @@ void Document::didMergeTextNodes(const Text& mergedNode,
   }
 
   notifyMergeTextNodes(mergedNode, nodeToBeRemovedWithIndex, oldLength);
-  if (m_frame)
-    m_frame->selection().didMergeTextNodes(nodeToBeRemoved, oldLength);
 
   // FIXME: This should update markers for spelling and grammar checking.
 }
@@ -4287,8 +4278,6 @@ void Document::didSplitTextNode(const Text& oldNode) {
     range->didSplitTextNode(oldNode);
 
   notifySplitTextNode(oldNode);
-  if (m_frame)
-    m_frame->selection().didSplitTextNode(oldNode);
 
   // FIXME: This should update markers for spelling and grammar checking.
 }

@@ -35,6 +35,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/NodeWithIndex.h"
 #include "core/dom/Text.h"
 #include "core/editing/CaretBase.h"
 #include "core/editing/EditingUtilities.h"
@@ -550,7 +551,11 @@ static Position updatePostionAfterAdoptingTextNodesMerged(
   return position;
 }
 
-void FrameSelection::didMergeTextNodes(const Text& oldNode, unsigned offset) {
+void FrameSelection::didMergeTextNodes(
+    const Text& mergedNode,
+    const NodeWithIndex& nodeToBeRemovedWithIndex,
+    unsigned offset) {
+  const Text& oldNode = toText(nodeToBeRemovedWithIndex.node());
   if (isNone() || !oldNode.isConnected())
     return;
   Position base = updatePostionAfterAdoptingTextNodesMerged(selection().base(),
@@ -710,9 +715,10 @@ void FrameSelection::documentAttached(Document* document) {
   m_useSecureKeyboardEntryWhenActive = false;
   m_selectionEditor->documentAttached(document);
   m_frameCaret->documentAttached(document);
+  setContext(document);
 }
 
-void FrameSelection::documentDetached(const Document& document) {
+void FrameSelection::contextDestroyed(Document* document) {
   DCHECK_EQ(m_document, document);
   m_document = nullptr;
   m_granularity = CharacterGranularity;
@@ -722,7 +728,7 @@ void FrameSelection::documentDetached(const Document& document) {
     view.clearSelection();
 
   clearTypingStyle();
-  m_selectionEditor->documentDetached(document);
+  m_selectionEditor->documentDetached(*document);
 }
 
 LayoutBlock* FrameSelection::caretLayoutObject() const {
@@ -1294,6 +1300,7 @@ DEFINE_TRACE(FrameSelection) {
   visitor->trace(m_selectionEditor);
   visitor->trace(m_typingStyle);
   visitor->trace(m_frameCaret);
+  SynchronousMutationObserver::trace(visitor);
 }
 
 void FrameSelection::scheduleVisualUpdate() const {

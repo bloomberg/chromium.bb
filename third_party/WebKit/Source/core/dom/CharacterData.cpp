@@ -192,10 +192,6 @@ void CharacterData::setDataAndUpdate(const String& newData,
 
     document().notifyUpdateCharacterData(this, offsetOfReplacedData, oldLength,
                                          newLength);
-
-    if (document().frame())
-      document().frame()->selection().didUpdateCharacterData(
-          this, offsetOfReplacedData, oldLength, newLength);
   }
 
   document().incDOMTreeVersion();

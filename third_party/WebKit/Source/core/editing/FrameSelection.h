@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"
@@ -69,8 +70,10 @@ enum class CaretVisibility;
 enum class HandleVisibility { NotVisible, Visible };
 
 class CORE_EXPORT FrameSelection final
-    : public GarbageCollectedFinalized<FrameSelection> {
+    : public GarbageCollectedFinalized<FrameSelection>,
+      public SynchronousMutationObserver {
   WTF_MAKE_NONCOPYABLE(FrameSelection);
+  USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
 
  public:
   static FrameSelection* create(LocalFrame& frame) {
@@ -207,16 +210,7 @@ class CORE_EXPORT FrameSelection final
   Range* firstRange() const;
 
   void documentAttached(Document*);
-  void documentDetached(const Document&);
-  void nodeChildrenWillBeRemoved(ContainerNode&);
-  void nodeWillBeRemoved(Node&);
   void dataWillChange(const CharacterData& node);
-  void didUpdateCharacterData(CharacterData*,
-                              unsigned offset,
-                              unsigned oldLength,
-                              unsigned newLength);
-  void didMergeTextNodes(const Text& oldNode, unsigned offset);
-  void didSplitTextNode(const Text& oldNode);
 
   void didLayout();
   bool isAppearanceDirty() const;
@@ -330,6 +324,19 @@ class CORE_EXPORT FrameSelection final
                                const Position& end);
 
   GranularityStrategy* granularityStrategy();
+
+  // Implementation of |SynchronousMutationObserver| member functions.
+  void contextDestroyed(Document*) final;
+  void nodeChildrenWillBeRemoved(ContainerNode&) final;
+  void nodeWillBeRemoved(Node&) final;
+  void didUpdateCharacterData(CharacterData*,
+                              unsigned offset,
+                              unsigned oldLength,
+                              unsigned newLength) final;
+  void didMergeTextNodes(const Text& mergedNode,
+                         const NodeWithIndex& nodeToBeRemovedWithIndex,
+                         unsigned oldLength) final;
+  void didSplitTextNode(const Text& oldNode) final;
 
   // For unittests
   bool shouldPaintCaretForTesting() const;
