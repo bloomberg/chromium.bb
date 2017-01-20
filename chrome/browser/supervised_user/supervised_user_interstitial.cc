@@ -54,11 +54,10 @@ namespace {
 class TabCloser : public content::WebContentsUserData<TabCloser> {
  public:
   static void MaybeClose(WebContents* web_contents) {
-    // Close the tab if there is no history entry to go back to and there is a
-    // browser for the tab (which is not the case for example in a <webview>).
-    if (!web_contents->GetController().IsInitialBlankNavigation())
-      return;
+    DCHECK(web_contents);
 
+    // Close the tab only if there is a browser for it (which is not the case
+    // for example in a <webview>).
 #if !defined(OS_ANDROID)
     if (!chrome::FindBrowserWithWebContents(web_contents))
       return;
@@ -97,6 +96,8 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
 
   WebContents* web_contents_;
   base::WeakPtrFactory<TabCloser> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabCloser);
 };
 
 }  // namespace
@@ -114,11 +115,11 @@ void SupervisedUserInterstitial::Show(
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool initial_page_load,
     const base::Callback<void(bool)>& callback) {
-  SupervisedUserInterstitial* interstitial =
-      new SupervisedUserInterstitial(web_contents, url, reason, callback);
+  SupervisedUserInterstitial* interstitial = new SupervisedUserInterstitial(
+      web_contents, url, reason, initial_page_load, callback);
 
   // If Init() does not complete fully, immediately delete the interstitial.
-  if (!interstitial->Init(initial_page_load))
+  if (!interstitial->Init())
     delete interstitial;
   // Otherwise |interstitial_page_| is responsible for deleting it.
 }
@@ -127,12 +128,14 @@ SupervisedUserInterstitial::SupervisedUserInterstitial(
     WebContents* web_contents,
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
+    bool initial_page_load,
     const base::Callback<void(bool)>& callback)
     : web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       interstitial_page_(NULL),
       url_(url),
       reason_(reason),
+      initial_page_load_(initial_page_load),
       callback_(callback),
       weak_ptr_factory_(this) {}
 
@@ -140,7 +143,7 @@ SupervisedUserInterstitial::~SupervisedUserInterstitial() {
   DCHECK(!web_contents_);
 }
 
-bool SupervisedUserInterstitial::Init(bool initial_page_load) {
+bool SupervisedUserInterstitial::Init() {
   if (ShouldProceed()) {
     // It can happen that the site was only allowed very recently and the URL
     // filter on the IO thread had not been updated yet. Proceed with the
@@ -180,7 +183,7 @@ bool SupervisedUserInterstitial::Init(bool initial_page_load) {
   supervised_user_service->AddObserver(this);
 
   interstitial_page_ = content::InterstitialPage::Create(
-      web_contents_, initial_page_load, url_, this);
+      web_contents_, initial_page_load_, url_, this);
   interstitial_page_->Show();
 
   return true;
@@ -234,13 +237,8 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
                               BACK,
                               HISTOGRAM_BOUNDING_VALUE);
 
-    // The interstitial's reference to the WebContents will go away after the
-    // DontProceed call.
-    WebContents* web_contents = web_contents_;
-    DCHECK(web_contents->GetController().GetTransientEntry());
+    DCHECK(web_contents_->GetController().GetTransientEntry());
     interstitial_page_->DontProceed();
-
-    TabCloser::MaybeClose(web_contents);
     return;
   }
 
@@ -272,7 +270,7 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
     ReportChildAccountFeedback(web_contents_, message, url_);
 #else
     chrome::ShowFeedbackPage(chrome::FindBrowserWithWebContents(web_contents_),
-                           message, std::string());
+                             message, std::string());
 #endif
     return;
   }
@@ -285,6 +283,7 @@ void SupervisedUserInterstitial::OnProceed() {
 }
 
 void SupervisedUserInterstitial::OnDontProceed() {
+  MoveAwayFromCurrentPage();
   DispatchContinueRequest(false);
 }
 
@@ -322,6 +321,25 @@ bool SupervisedUserInterstitial::ShouldProceed() {
   return behavior != SupervisedUserURLFilter::BLOCK;
 }
 
+void SupervisedUserInterstitial::MoveAwayFromCurrentPage() {
+  // If the interstitial was shown during a page load and there is no history
+  // entry to go back to, attempt to close the tab.
+  if (initial_page_load_) {
+    if (web_contents_->GetController().IsInitialBlankNavigation())
+      TabCloser::MaybeClose(web_contents_);
+    return;
+  }
+
+  // If the interstitial was shown over an existing page, navigate back from
+  // that page. If that is not possible, attempt to close the entire tab.
+  if (web_contents_->GetController().CanGoBack()) {
+    web_contents_->GetController().GoBack();
+    return;
+  }
+
+  TabCloser::MaybeClose(web_contents_);
+}
+
 void SupervisedUserInterstitial::DispatchContinueRequest(
     bool continue_request) {
   SupervisedUserService* supervised_user_service =
@@ -329,10 +347,9 @@ void SupervisedUserInterstitial::DispatchContinueRequest(
   supervised_user_service->RemoveObserver(this);
 
   if (!callback_.is_null())
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback_, continue_request));
+    callback_.Run(continue_request);
 
   // After this, the WebContents may be destroyed. Make sure we don't try to use
   // it again.
-  web_contents_ = NULL;
+  web_contents_ = nullptr;
 }

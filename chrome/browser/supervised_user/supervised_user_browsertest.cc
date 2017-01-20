@@ -294,6 +294,76 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
   EXPECT_FALSE(results[1].blocked_visit());
 }
 
+IN_PROC_BROWSER_TEST_F(SupervisedUserTest, ImmediatelyProceed) {
+  GURL test_url("http://www.example.com/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_FALSE(ShownPageIsInterstitial(web_contents));
+
+  // Manually show an interstitial page for a URL that is allowed. This
+  // simulates the case where a network request was blocked on the IO thread
+  // because a change to the URL filter hadn't been propagated yet.
+  bool proceed = false;
+  SupervisedUserInterstitial::Show(
+      web_contents, test_url, supervised_user_error_page::MANUAL,
+      /* initial_page_load = */ true,
+      base::Bind(
+          [](bool* result_holder, bool result) {
+            *result_holder = result;
+          },
+          &proceed));
+
+  // The interstitial should not appear, and the callback should have been
+  // called immediately.
+  EXPECT_FALSE(ShownPageIsInterstitial(web_contents));
+  EXPECT_TRUE(proceed);
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserTest, GoBackOnDontProceed) {
+  // We start out at the initial navigation.
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(0, web_contents->GetController().GetCurrentEntryIndex());
+
+  GURL test_url("http://www.example.com/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  ASSERT_FALSE(ShownPageIsInterstitial(web_contents));
+
+  // Set the host as blocked and wait for the interstitial to appear.
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetBooleanWithoutPathExpansion(test_url.host(), false);
+  SupervisedUserSettingsService* supervised_user_settings_service =
+      SupervisedUserSettingsServiceFactory::GetForProfile(
+          browser()->profile());
+  auto message_loop_runner = make_scoped_refptr(new content::MessageLoopRunner);
+  InterstitialPageObserver interstitial_observer(
+      web_contents, message_loop_runner->QuitClosure());
+  supervised_user_settings_service->SetLocalSetting(
+      supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+
+  scoped_refptr<SupervisedUserURLFilter> filter =
+      supervised_user_service_->GetURLFilterForUIThread();
+  ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
+            filter->GetFilteringBehaviorForURL(test_url));
+
+  message_loop_runner->Run();
+
+  InterstitialPage* interstitial_page = web_contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  interstitial_page->DontProceed();
+  observer.Wait();
+
+  // We should have gone back to the initial navigation.
+  EXPECT_EQ(0, web_contents->GetController().GetCurrentEntryIndex());
+}
+
 IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockThenUnblock) {
   GURL test_url("http://www.example.com/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -303,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockThenUnblock) {
 
   ASSERT_FALSE(ShownPageIsInterstitial(web_contents));
 
-  // Set the host as blocked.
+  // Set the host as blocked and wait for the interstitial to appear.
   auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetBooleanWithoutPathExpansion(test_url.host(), false);
   SupervisedUserSettingsService* supervised_user_settings_service =

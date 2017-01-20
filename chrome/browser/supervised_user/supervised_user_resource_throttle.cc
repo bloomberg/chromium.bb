@@ -107,6 +107,18 @@ void RecordFilterResultEvent(
     UMA_HISTOGRAM_SPARSE_SLOWLY("ManagedUsers.FilteringResult", value);
 }
 
+// Helper function to wrap a given callback in one that will post it to the
+// IO thread.
+base::Callback<void(bool)> ResultTrampoline(
+    const base::Callback<void(bool)>& callback) {
+  return base::Bind(
+      [](const base::Callback<void(bool)>& callback, bool result) {
+        BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                                base::Bind(callback, result));
+      },
+      callback);
+}
+
 }  // namespace
 
 // static
@@ -158,11 +170,11 @@ void SupervisedUserResourceThrottle::ShowInterstitial(
       content::ResourceRequestInfo::ForRequest(request_);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &SupervisedUserNavigationObserver::OnRequestBlocked,
-          info->GetWebContentsGetterForRequest(), url, reason,
-          base::Bind(&SupervisedUserResourceThrottle::OnInterstitialResult,
-                     weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(&SupervisedUserNavigationObserver::OnRequestBlocked,
+                 info->GetWebContentsGetterForRequest(), url, reason,
+                 ResultTrampoline(base::Bind(
+                     &SupervisedUserResourceThrottle::OnInterstitialResult,
+                     weak_ptr_factory_.GetWeakPtr()))));
 }
 
 void SupervisedUserResourceThrottle::WillStartRequest(bool* defer) {
