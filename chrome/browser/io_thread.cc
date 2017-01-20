@@ -1015,8 +1015,12 @@ void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
   if (command_line.HasSwitch(switches::kEnableUserAlternateProtocolPorts)) {
     params->enable_user_alternate_protocol_ports = true;
   }
-  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
+  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors)) {
     params->ignore_certificate_errors = true;
+  }
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.Certificate.IgnoreErrors",
+      command_line.HasSwitch(switches::kIgnoreCertificateErrors));
   if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
     params->testing_fixed_http_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
