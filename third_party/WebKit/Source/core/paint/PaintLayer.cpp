@@ -917,13 +917,15 @@ LayoutPoint PaintLayer::computeOffsetFromTransformedAncestor() const {
 }
 
 PaintLayer* PaintLayer::compositingContainer() const {
-  // Floats have special painting order, which has complicated semantics.
-  // See the comments around FloatObject::setShouldPaint.
-  if (m_layoutObject->isFloating() && m_layoutObject->parent() &&
-      !m_layoutObject->parent()->isLayoutBlockFlow())
-    return m_layoutObject->containingBlock()->enclosingLayer();
-  if (!stackingNode()->isStacked())
+  if (!stackingNode()->isStacked()) {
+    // Floats have special painting order, which has complicated semantics.
+    // See the comments around FloatObject::setShouldPaint.
+    if (m_layoutObject->isFloating() && m_layoutObject->parent() &&
+        !m_layoutObject->parent()->isLayoutBlockFlow())
+      return m_layoutObject->containingBlock()->enclosingLayer();
+
     return parent();
+  }
   if (PaintLayerStackingNode* ancestorStackingNode =
           stackingNode()->ancestorStackingContextNode())
     return ancestorStackingNode->layer();

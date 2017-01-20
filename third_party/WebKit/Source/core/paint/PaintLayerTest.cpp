@@ -501,7 +501,8 @@ TEST_P(PaintLayerTest, CompositingContainerFloat) {
       "    will-change: transform'>"
       "  <div id='containingBlock' style='position: relative; z-index: 0'>"
       "    <div style='backface-visibility: hidden'></div>"
-      "    <span style='clip-path: polygon(0px 15px, 0px 54px, 100px 0px)'>"
+      "    <span id='span'"
+      "        style='clip-path: polygon(0px 15px, 0px 54px, 100px 0px)'>"
       "      <div id='target' style='float: right; position: relative'></div>"
       "    </span>"
       "  </div>"
@@ -509,6 +510,41 @@ TEST_P(PaintLayerTest, CompositingContainerFloat) {
 
   PaintLayer* target =
       toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  PaintLayer* span =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("span"))->layer();
+  EXPECT_EQ(span, target->compositingContainer());
+  PaintLayer* compositedContainer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("compositedContainer"))
+          ->layer();
+
+  // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
+  // SPv2.
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    EXPECT_EQ(compositedContainer,
+              target->enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
+  }
+}
+
+TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<div id='compositedContainer' style='position: relative;"
+      "    will-change: transform'>"
+      "  <div id='containingBlock' style='position: relative; z-index: 0'>"
+      "    <div style='backface-visibility: hidden'></div>"
+      "    <span id='span'"
+      "        style='clip-path: polygon(0px 15px, 0px 54px, 100px 0px)'>"
+      "      <iframe srcdoc='foo' id='target' style='float: right'></iframe>"
+      "    </span>"
+      "  </div>"
+      "</div>");
+
+  PaintLayer* target =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+
+  // A non-positioned iframe still gets a PaintLayer because PaintLayers are
+  // forced for all LayoutPart objects. However, such PaintLayers are not
+  // stacked.
   PaintLayer* containingBlock =
       toLayoutBoxModelObject(getLayoutObjectByElementId("containingBlock"))
           ->layer();

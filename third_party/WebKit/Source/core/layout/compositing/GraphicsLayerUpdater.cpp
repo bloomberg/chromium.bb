@@ -57,6 +57,7 @@ class GraphicsLayerUpdater::UpdateContext {
     // TODO(chrishtr) this is not very performant for floats, but they should
     // be uncommon enough, and SPv2 will remove this code.
     if (layer.layoutObject()->isFloating() && layer.layoutObject()->parent() &&
+        !layer.stackingNode()->isStacked() &&
         !layer.layoutObject()->parent()->isLayoutBlockFlow()) {
       return layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf);
     }
