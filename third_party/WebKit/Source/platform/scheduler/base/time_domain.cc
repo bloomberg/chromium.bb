@@ -33,14 +33,7 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
     has_incoming_immediate_work_.erase(queue);
   }
 
-  // If no wakeup has been requested then bail out.
-  if (!queue->heap_handle().IsValid())
-    return;
-
-  DCHECK_NE(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
-
-  // O(log n)
-  delayed_wakeup_queue_.erase(queue->heap_handle());
+  CancelDelayedWork(queue);
 }
 
 void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
@@ -115,6 +108,20 @@ void TimeDomain::OnQueueHasIncomingImmediateWork(
 
   if (observer_)
     observer_->OnTimeDomainHasImmediateWork(queue);
+}
+
+void TimeDomain::CancelDelayedWork(internal::TaskQueueImpl* queue) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(queue->GetTimeDomain(), this);
+
+  // If no wakeup has been requested then bail out.
+  if (!queue->heap_handle().IsValid())
+    return;
+
+  DCHECK_NE(queue->scheduled_time_domain_wakeup(), base::TimeTicks());
+
+  // O(log n)
+  delayed_wakeup_queue_.erase(queue->heap_handle());
 }
 
 void TimeDomain::UpdateWorkQueues(LazyNow* lazy_now) {

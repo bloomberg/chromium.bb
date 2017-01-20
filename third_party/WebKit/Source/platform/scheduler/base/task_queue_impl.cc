@@ -823,19 +823,27 @@ void TaskQueueImpl::SweepCanceledDelayedTasks(base::TimeTicks now) {
   base::TimeTicks first_task_runtime =
       main_thread_only().delayed_incoming_queue.top().delayed_run_time;
 
-  // TODO(alexclarke): Let this remove all tasks once the DoWork refactor has
-  // landed.
+  // Remove canceled tasks.
   std::priority_queue<Task> remaining_tasks;
   while (!main_thread_only().delayed_incoming_queue.empty()) {
-    if (!main_thread_only().delayed_incoming_queue.top().task.IsCancelled() ||
-        main_thread_only().delayed_incoming_queue.top().delayed_run_time ==
-            first_task_runtime) {
+    if (!main_thread_only().delayed_incoming_queue.top().task.IsCancelled()) {
       remaining_tasks.push(std::move(
           const_cast<Task&>(main_thread_only().delayed_incoming_queue.top())));
     }
     main_thread_only().delayed_incoming_queue.pop();
   }
+
   main_thread_only().delayed_incoming_queue = std::move(remaining_tasks);
+
+  // Re-schedule delayed call to WakeUpForDelayedWork if needed.
+  if (main_thread_only().delayed_incoming_queue.empty()) {
+    main_thread_only().time_domain->CancelDelayedWork(this);
+  } else if (first_task_runtime !=
+             main_thread_only().delayed_incoming_queue.top().delayed_run_time) {
+    main_thread_only().time_domain->ScheduleDelayedWork(
+        this, main_thread_only().delayed_incoming_queue.top().delayed_run_time,
+        main_thread_only().time_domain->Now());
+  }
 }
 
 void TaskQueueImpl::PushImmediateIncomingTaskForTest(

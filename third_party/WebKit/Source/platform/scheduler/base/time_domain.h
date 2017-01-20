@@ -104,6 +104,10 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
                            base::TimeTicks delayed_run_time,
                            base::TimeTicks now);
 
+  // Cancels any scheduled calls to TaskQueueImpl::WakeUpForDelayedWork for
+  // |queue|.
+  void CancelDelayedWork(internal::TaskQueueImpl* queue);
+
   // Registers the |queue|.
   void RegisterQueue(internal::TaskQueueImpl* queue);
 

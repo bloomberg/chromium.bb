@@ -30,12 +30,13 @@ class MockTimeDomain : public TimeDomain {
 
   ~MockTimeDomain() override {}
 
+  using TimeDomain::CancelDelayedWork;
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::NextScheduledTaskQueue;
+  using TimeDomain::OnQueueHasIncomingImmediateWork;
   using TimeDomain::ScheduleDelayedWork;
   using TimeDomain::UnregisterQueue;
   using TimeDomain::UpdateWorkQueues;
-  using TimeDomain::OnQueueHasIncomingImmediateWork;
 
   // TimeSource implementation:
   LazyNow CreateLazyNow() const override { return LazyNow(now_); }
@@ -214,6 +215,19 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
   lazy_now = time_domain_->CreateLazyNow();
   time_domain_->UpdateWorkQueues(&lazy_now);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
+}
+
+TEST_F(TimeDomainTest, CancelDelayedWork) {
+  base::TimeTicks now = time_domain_->Now();
+  time_domain_->ScheduleDelayedWork(
+      task_queue_.get(), now + base::TimeDelta::FromMilliseconds(20), now);
+
+  TaskQueue* next_task_queue;
+  EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
+  EXPECT_EQ(task_queue_.get(), next_task_queue);
+
+  time_domain_->CancelDelayedWork(task_queue_.get());
+  EXPECT_FALSE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
 }
 
 namespace {

@@ -2204,6 +2204,12 @@ TEST_F(TaskQueueManagerTest, SweepCanceledDelayedTasks) {
 
   manager_->SweepCanceledDelayedTasks();
   EXPECT_EQ(2u, runners_[0]->GetNumberOfPendingTasks());
+
+  task1.weak_factory_.InvalidateWeakPtrs();
+  task4.weak_factory_.InvalidateWeakPtrs();
+
+  manager_->SweepCanceledDelayedTasks();
+  EXPECT_EQ(0u, runners_[0]->GetNumberOfPendingTasks());
 }
 
 TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask) {
