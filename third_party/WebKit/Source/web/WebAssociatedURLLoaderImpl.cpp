@@ -31,6 +31,7 @@
 #include "web/WebAssociatedURLLoaderImpl.h"
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchUtils.h"
 #include "core/loader/DocumentThreadableLoader.h"
@@ -92,7 +93,8 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   static std::unique_ptr<ClientAdapter> create(
       WebAssociatedURLLoaderImpl*,
       WebAssociatedURLLoaderClient*,
-      const WebAssociatedURLLoaderOptions&);
+      const WebAssociatedURLLoaderOptions&,
+      RefPtr<WebTaskRunner>);
 
   // ThreadableLoaderClient
   void didSendData(unsigned long long /*bytesSent*/,
@@ -133,7 +135,8 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
  private:
   ClientAdapter(WebAssociatedURLLoaderImpl*,
                 WebAssociatedURLLoaderClient*,
-                const WebAssociatedURLLoaderOptions&);
+                const WebAssociatedURLLoaderOptions&,
+                RefPtr<WebTaskRunner>);
 
   void notifyError(TimerBase*);
 
@@ -142,7 +145,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WebAssociatedURLLoaderOptions m_options;
   WebURLError m_error;
 
-  Timer<ClientAdapter> m_errorTimer;
+  TaskRunnerTimer<ClientAdapter> m_errorTimer;
   bool m_enableErrorNotifications;
   bool m_didFail;
 };
@@ -151,18 +154,21 @@ std::unique_ptr<WebAssociatedURLLoaderImpl::ClientAdapter>
 WebAssociatedURLLoaderImpl::ClientAdapter::create(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
-    const WebAssociatedURLLoaderOptions& options) {
-  return WTF::wrapUnique(new ClientAdapter(loader, client, options));
+    const WebAssociatedURLLoaderOptions& options,
+    RefPtr<WebTaskRunner> taskRunner) {
+  return WTF::wrapUnique(
+      new ClientAdapter(loader, client, options, taskRunner));
 }
 
 WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
-    const WebAssociatedURLLoaderOptions& options)
+    const WebAssociatedURLLoaderOptions& options,
+    RefPtr<WebTaskRunner> taskRunner)
     : m_loader(loader),
       m_client(client),
       m_options(options),
-      m_errorTimer(this, &ClientAdapter::notifyError),
+      m_errorTimer(std::move(taskRunner), this, &ClientAdapter::notifyError),
       m_enableErrorNotifications(false),
       m_didFail(false) {
   DCHECK(m_loader);
@@ -382,8 +388,12 @@ void WebAssociatedURLLoaderImpl::loadAsynchronously(
     }
   }
 
+  RefPtr<WebTaskRunner> taskRunner = TaskRunnerHelper::get(
+      TaskType::UnspecedLoading,
+      m_observer ? toDocument(m_observer->lifecycleContext()) : nullptr);
   m_client = client;
-  m_clientAdapter = ClientAdapter::create(this, client, m_options);
+  m_clientAdapter =
+      ClientAdapter::create(this, client, m_options, std::move(taskRunner));
 
   if (allowLoad) {
     ThreadableLoaderOptions options;
