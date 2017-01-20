@@ -18,6 +18,8 @@ class Env;
 namespace mash {
 namespace test {
 
+class TestContextFactory;
+
 class MashTestSuite : public base::TestSuite {
  public:
   MashTestSuite(int argc, char** argv);
@@ -31,6 +33,7 @@ class MashTestSuite : public base::TestSuite {
  private:
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
   std::unique_ptr<aura::Env> env_;
+  std::unique_ptr<TestContextFactory> compositor_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MashTestSuite);
 };

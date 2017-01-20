@@ -6,16 +6,54 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "cc/output/context_provider.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/compositor.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace mash {
 namespace test {
+
+class TestContextFactory : public ui::ContextFactory {
+ public:
+  TestContextFactory() {}
+  ~TestContextFactory() override {}
+
+ private:
+  // ui::ContextFactory::
+  void CreateCompositorFrameSink(
+      base::WeakPtr<ui::Compositor> compositor) override {}
+  scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider()
+      override {
+    return nullptr;
+  }
+  void RemoveCompositor(ui::Compositor* compositor) override {}
+  bool DoesCreateTestContexts() override { return true; }
+  uint32_t GetImageTextureTarget(gfx::BufferFormat format,
+                                 gfx::BufferUsage usage) override {
+    return GL_TEXTURE_2D;
+  }
+  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
+    return &gpu_memory_buffer_manager_;
+  }
+  cc::TaskGraphRunner* GetTaskGraphRunner() override {
+    return &task_graph_runner_;
+  }
+  void AddObserver(ui::ContextFactoryObserver* observer) override {}
+  void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
+
+  cc::TestTaskGraphRunner task_graph_runner_;
+  cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestContextFactory);
+};
 
 MashTestSuite::MashTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
 
@@ -35,20 +73,12 @@ void MashTestSuite::Initialize() {
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
-  gl::GLSurfaceTestSupport::InitializeOneOff();
-  const bool enable_pixel_output = false;
 
-  ui::ContextFactory* context_factory = nullptr;
-  ui::ContextFactoryPrivate* context_factory_private = nullptr;
-  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                       &context_factory_private);
-
-  env_->set_context_factory(context_factory);
-  env_->set_context_factory_private(context_factory_private);
+  compositor_context_factory_ = base::MakeUnique<TestContextFactory>();
+  env_->set_context_factory(compositor_context_factory_.get());
 }
 
 void MashTestSuite::Shutdown() {
-  ui::TerminateContextFactoryForTests();
   env_.reset();
   ui::ResourceBundle::CleanupSharedInstance();
   base::TestSuite::Shutdown();
