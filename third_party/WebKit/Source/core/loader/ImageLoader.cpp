@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/EventSender.h"
 #include "core/fetch/FetchRequest.h"
@@ -155,7 +156,10 @@ class ImageLoader::Task {
 
 ImageLoader::ImageLoader(Element* element)
     : m_element(element),
-      m_derefElementTimer(this, &ImageLoader::timerFired),
+      m_derefElementTimer(TaskRunnerHelper::get(TaskType::Networking,
+                                                element->document().frame()),
+                          this,
+                          &ImageLoader::timerFired),
       m_hasPendingLoadEvent(false),
       m_hasPendingErrorEvent(false),
       m_imageComplete(true),
