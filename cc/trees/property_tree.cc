@@ -1206,7 +1206,6 @@ gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
 }
 
 void ScrollTree::OnScrollOffsetAnimated(int layer_id,
-                                        int transform_tree_index,
                                         int scroll_tree_index,
                                         const gfx::ScrollOffset& scroll_offset,
                                         LayerTreeImpl* layer_tree_impl) {

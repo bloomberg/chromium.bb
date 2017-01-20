@@ -3957,18 +3957,12 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
 
   const int layer_id = tree->LayerIdByElementId(element_id);
   PropertyTrees* property_trees = tree->property_trees();
-  DCHECK(property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::SCROLL,
-                                          layer_id));
-  DCHECK_EQ(
-      1u, property_trees->element_id_to_transform_node_index.count(element_id));
-  int transform_node_index =
-      property_trees->element_id_to_transform_node_index[element_id];
   DCHECK_EQ(1u,
             property_trees->element_id_to_scroll_node_index.count(element_id));
   const int scroll_node_index =
       property_trees->element_id_to_scroll_node_index[element_id];
   property_trees->scroll_tree.OnScrollOffsetAnimated(
-      layer_id, transform_node_index, scroll_node_index, scroll_offset, tree);
+      layer_id, scroll_node_index, scroll_offset, tree);
   // Run mutation callbacks to respond to updated scroll offset.
   Mutate(CurrentBeginFrameArgs().frame_time);
 }
