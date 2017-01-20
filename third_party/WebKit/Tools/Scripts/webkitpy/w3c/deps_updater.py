@@ -197,6 +197,7 @@ class DepsUpdater(object):
         if revision is not None:
             _log.info('Checking out %s', revision)
             self.run(['git', 'checkout', revision], cwd=temp_repo_path)
+
         self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=temp_repo_path)
 
         _log.info('Noting the revision we are importing.')
@@ -257,7 +258,7 @@ class DepsUpdater(object):
         _log.debug('Running command: %s', ' '.join(cmd))
 
         cwd = cwd or self.finder.webkit_base()
-        proc = self.executive.popen(cmd, stdout=self.executive.PIPE, stderr=self.executive.PIPE, stdin=self.executive.PIPE)
+        proc = self.executive.popen(cmd, stdout=self.executive.PIPE, stderr=self.executive.PIPE, stdin=self.executive.PIPE, cwd=cwd)
         out, err = proc.communicate(stdin)
         if proc.returncode or self.verbose:
             _log.info('# ret> %d', proc.returncode)
