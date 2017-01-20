@@ -149,8 +149,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<ContextProvider> compositor_context_provider) override;
 
-  bool IsRemoteTest() const;
-
   gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl);
 
  private:
@@ -214,22 +212,12 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }                                                              \
   class MultiThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
-#define REMOTE_TEST_F(TEST_FIXTURE_NAME)                    \
-  TEST_F(TEST_FIXTURE_NAME, RunRemote_DelegatingRenderer) { \
-    RunTest(CompositorMode::REMOTE);                        \
-  }                                                         \
-  class RemoteDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
-
 #define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
   SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME);                \
   MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)
 
 #define REMOTE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
   MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME);                 \
-  REMOTE_TEST_F(TEST_FIXTURE_NAME)
-
-#define SINGLE_MULTI_AND_REMOTE_TEST_F(TEST_FIXTURE_NAME) \
-  SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME);      \
   REMOTE_TEST_F(TEST_FIXTURE_NAME)
 
 // Some tests want to control when notify ready for activation occurs,

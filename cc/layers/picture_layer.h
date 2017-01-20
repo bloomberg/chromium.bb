@@ -37,9 +37,6 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetIsMask(bool is_mask) override;
   sk_sp<SkPicture> GetPicture() const override;
 
-  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
-  void ToLayerPropertiesProto(proto::LayerProperties* proto) override;
-
   bool IsSuitableForGpuRasterization() const override;
 
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;

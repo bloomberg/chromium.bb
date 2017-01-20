@@ -55,11 +55,6 @@ class LayerTreeImpl;
 class MutatorHost;
 class ScrollbarLayerInterface;
 
-namespace proto {
-class LayerNode;
-class LayerProperties;
-}  // namespace proto
-
 // Base class for composited layers. Special layer types are derived from
 // this class.
 class CC_EXPORT Layer : public base::RefCounted<Layer> {
@@ -330,29 +325,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   virtual void PushPropertiesTo(LayerImpl* layer);
 
-  // Sets the type proto::LayerType that should be used for serialization
-  // of the current layer by calling LayerNode::set_type(proto::LayerType).
-  // TODO(nyquist): Start using a forward declared enum class when
-  // https://github.com/google/protobuf/issues/67 has been fixed and rolled in.
-  // This function would preferably instead return a proto::LayerType, but
-  // since that is an enum (the protobuf library does not generate enum
-  // classes), it can't be forward declared. We don't want to include
-  // //cc/proto/layer.pb.h in this header file, as it requires that all
-  // dependent targets would have to be given the config for how to include it.
-  virtual void SetTypeForProtoSerialization(proto::LayerNode* proto) const;
-
-  // Recursively iterate over this layer and all children and write the
-  // hierarchical structure to the given LayerNode proto. In addition to the
-  // structure itself, the Layer id and type is also written to facilitate
-  // construction of the correct layer on the client.
-  virtual void ToLayerNodeProto(proto::LayerNode* proto) const;
-
-  // This method is similar to PushPropertiesTo, but instead of pushing to
-  // a LayerImpl, it pushes the properties to proto::LayerProperties. It is
-  // called only on layers that have changed properties. The properties
-  // themselves are pushed to proto::LayerProperties.
-  virtual void ToLayerPropertiesProto(proto::LayerProperties* proto);
-
   LayerTreeHost* GetLayerTreeHostForTesting() const { return layer_tree_host_; }
   LayerTree* GetLayerTree() const;
 
@@ -464,10 +436,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   MutatorHost* GetMutatorHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
-
-  // Tests in remote mode need to explicitly set the layer id so it matches the
-  // layer id for the corresponding Layer on the engine.
-  void SetLayerIdForTesting(int id);
 
   void SetScrollbarsHiddenFromImplSide(bool hidden);
 

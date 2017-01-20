@@ -10,8 +10,6 @@
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
-#include "cc/proto/gfx_conversions.h"
-#include "cc/proto/layer_tree.pb.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -409,58 +407,6 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl,
   DCHECK(!tree_impl->ViewportSizeInvalid());
 
   tree_impl->set_has_ever_been_drawn(false);
-}
-
-void LayerTree::ToProtobuf(proto::LayerTree* proto) {
-  TRACE_EVENT0("cc.remote", "LayerProtoConverter::SerializeLayerHierarchy");
-
-  // TODO(khushalsagar): Why walk the tree twice? Why not serialize properties
-  // for dirty layers as you serialize the hierarchy?
-  if (inputs_.root_layer)
-    inputs_.root_layer->ToLayerNodeProto(proto->mutable_root_layer());
-
-  // Viewport layers.
-  proto->set_overscroll_elasticity_layer_id(
-      inputs_.overscroll_elasticity_layer
-          ? inputs_.overscroll_elasticity_layer->id()
-          : Layer::INVALID_ID);
-  proto->set_page_scale_layer_id(inputs_.page_scale_layer
-                                     ? inputs_.page_scale_layer->id()
-                                     : Layer::INVALID_ID);
-  proto->set_inner_viewport_scroll_layer_id(
-      inputs_.inner_viewport_scroll_layer
-          ? inputs_.inner_viewport_scroll_layer->id()
-          : Layer::INVALID_ID);
-  proto->set_outer_viewport_scroll_layer_id(
-      inputs_.outer_viewport_scroll_layer
-          ? inputs_.outer_viewport_scroll_layer->id()
-          : Layer::INVALID_ID);
-
-  // Browser Controls ignored. They are not supported.
-  DCHECK(!inputs_.browser_controls_shrink_blink_size);
-
-  proto->set_device_scale_factor(inputs_.device_scale_factor);
-  proto->set_painted_device_scale_factor(inputs_.painted_device_scale_factor);
-  proto->set_page_scale_factor(inputs_.page_scale_factor);
-  proto->set_min_page_scale_factor(inputs_.min_page_scale_factor);
-  proto->set_max_page_scale_factor(inputs_.max_page_scale_factor);
-
-  proto->set_background_color(inputs_.background_color);
-  proto->set_has_transparent_background(inputs_.has_transparent_background);
-
-  LayerSelectionToProtobuf(inputs_.selection, proto->mutable_selection());
-  SizeToProto(inputs_.device_viewport_size,
-              proto->mutable_device_viewport_size());
-
-  proto->set_have_scroll_event_handlers(inputs_.have_scroll_event_handlers);
-  proto->set_wheel_event_listener_properties(static_cast<uint32_t>(
-      event_listener_properties(EventListenerClass::kMouseWheel)));
-  proto->set_touch_start_or_move_event_listener_properties(
-      static_cast<uint32_t>(
-          event_listener_properties(EventListenerClass::kTouchStartOrMove)));
-  proto->set_touch_end_or_cancel_event_listener_properties(
-      static_cast<uint32_t>(
-          event_listener_properties(EventListenerClass::kTouchEndOrCancel)));
 }
 
 Layer* LayerTree::LayerByElementId(ElementId element_id) const {

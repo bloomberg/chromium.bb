@@ -24,10 +24,8 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
   ClipDisplayItem(const gfx::Rect& clip_rect,
                   const std::vector<SkRRect>& rounded_clip_rects,
                   bool antialias);
-  explicit ClipDisplayItem(const proto::DisplayItem& proto);
   ~ClipDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
@@ -51,10 +49,8 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
 class CC_EXPORT EndClipDisplayItem : public DisplayItem {
  public:
   EndClipDisplayItem();
-  explicit EndClipDisplayItem(const proto::DisplayItem& proto);
   ~EndClipDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,

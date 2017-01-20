@@ -22,10 +22,8 @@ namespace cc {
 class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
  public:
   explicit FloatClipDisplayItem(const gfx::RectF& clip_rect);
-  explicit FloatClipDisplayItem(const proto::DisplayItem& proto);
   ~FloatClipDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
@@ -43,14 +41,12 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
 class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
  public:
   EndFloatClipDisplayItem();
-  explicit EndFloatClipDisplayItem(const proto::DisplayItem& proto);
   ~EndFloatClipDisplayItem() override;
 
   static std::unique_ptr<EndFloatClipDisplayItem> Create() {
     return base::MakeUnique<EndFloatClipDisplayItem>();
   }
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,

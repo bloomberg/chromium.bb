@@ -6,14 +6,9 @@
 
 #include "base/auto_reset.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/blimp/client_picture_cache.h"
-#include "cc/blimp/engine_picture_cache.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/recording_source.h"
-#include "cc/proto/cc_conversions.h"
-#include "cc/proto/gfx_conversions.h"
-#include "cc/proto/layer.pb.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -200,35 +195,6 @@ void PictureLayer::SetNearestNeighbor(bool nearest_neighbor) {
 
 bool PictureLayer::HasDrawableContent() const {
   return picture_layer_inputs_.client && Layer::HasDrawableContent();
-}
-
-void PictureLayer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
-  proto->set_type(proto::LayerNode::PICTURE_LAYER);
-}
-
-void PictureLayer::ToLayerPropertiesProto(proto::LayerProperties* proto) {
-  DCHECK(GetLayerTree());
-  DCHECK(GetLayerTree()->engine_picture_cache());
-
-  Layer::ToLayerPropertiesProto(proto);
-  DropRecordingSourceContentIfInvalid();
-  proto::PictureLayerProperties* picture = proto->mutable_picture();
-
-  picture->set_nearest_neighbor(picture_layer_inputs_.nearest_neighbor);
-  RectToProto(picture_layer_inputs_.recorded_viewport,
-              picture->mutable_recorded_viewport());
-  if (picture_layer_inputs_.display_list) {
-    picture_layer_inputs_.display_list->ToProtobuf(
-        picture->mutable_display_list());
-    for (const auto& item : *picture_layer_inputs_.display_list) {
-      sk_sp<const SkPicture> picture = item.GetPicture();
-      // Only DrawingDisplayItems have SkPictures.
-      if (!picture)
-        continue;
-
-      GetLayerTree()->engine_picture_cache()->MarkUsed(picture.get());
-    }
-  }
 }
 
 void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {

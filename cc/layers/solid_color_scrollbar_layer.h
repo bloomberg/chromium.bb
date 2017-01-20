@@ -28,7 +28,6 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   bool OpacityCanAnimateOnImplThread() const override;
   bool AlwaysUseActiveTreeOpacity() const override;
   ScrollbarLayerInterface* ToScrollbarLayer() override;
-  void ToLayerNodeProto(proto::LayerNode* proto) const override;
 
   void SetOpacity(float opacity) override;
   void PushPropertiesTo(LayerImpl* layer) override;
@@ -60,9 +59,6 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                            bool is_left_side_vertical_scrollbar,
                            int scroll_layer_id);
   ~SolidColorScrollbarLayer() override;
-
-  // Layer overrides for proto conversions.
-  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
 
  private:
   friend class LayerSerializationTest;

@@ -8,8 +8,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/proto/display_item.pb.h"
-#include "cc/proto/gfx_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -19,28 +17,11 @@ TransformDisplayItem::TransformDisplayItem(const gfx::Transform& transform)
   SetNew(transform);
 }
 
-TransformDisplayItem::TransformDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(TRANSFORM) {
-  DCHECK_EQ(proto::DisplayItem::Type_Transform, proto.type());
-
-  const proto::TransformDisplayItem& details = proto.transform_item();
-  gfx::Transform transform = ProtoToTransform(details.transform());
-
-  SetNew(transform);
-}
-
 TransformDisplayItem::~TransformDisplayItem() {
 }
 
 void TransformDisplayItem::SetNew(const gfx::Transform& transform) {
   transform_ = transform;
-}
-
-void TransformDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_Transform);
-
-  proto::TransformDisplayItem* details = proto->mutable_transform_item();
-  TransformToProto(transform_, details->mutable_transform());
 }
 
 void TransformDisplayItem::Raster(SkCanvas* canvas,
@@ -61,17 +42,7 @@ void TransformDisplayItem::AsValueInto(
 EndTransformDisplayItem::EndTransformDisplayItem()
     : DisplayItem(END_TRANSFORM) {}
 
-EndTransformDisplayItem::EndTransformDisplayItem(
-    const proto::DisplayItem& proto)
-    : DisplayItem(END_TRANSFORM) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndTransform, proto.type());
-}
-
 EndTransformDisplayItem::~EndTransformDisplayItem() {
-}
-
-void EndTransformDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_EndTransform);
 }
 
 void EndTransformDisplayItem::Raster(

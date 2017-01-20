@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/layers/layer.h"
-#include "cc/proto/layer.pb.h"
 
 namespace cc {
 
@@ -24,8 +23,6 @@ class PushPropertiesCountingLayer : public Layer {
   // Layer implementation.
   void PushPropertiesTo(LayerImpl* layer) override;
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
-  void ToLayerPropertiesProto(proto::LayerProperties* proto) override;
-  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
 
   // Something to make this layer push properties, but no other layer.
   void MakePushProperties();

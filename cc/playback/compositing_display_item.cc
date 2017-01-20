@@ -9,9 +9,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/proto/display_item.pb.h"
-#include "cc/proto/gfx_conversions.h"
-#include "cc/proto/skia_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenable.h"
@@ -33,34 +30,6 @@ CompositingDisplayItem::CompositingDisplayItem(
          lcd_text_requires_opaque_layer);
 }
 
-CompositingDisplayItem::CompositingDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(COMPOSITING) {
-  DCHECK_EQ(proto::DisplayItem::Type_Compositing, proto.type());
-
-  const proto::CompositingDisplayItem& details = proto.compositing_item();
-  uint8_t alpha = static_cast<uint8_t>(details.alpha());
-  SkBlendMode xfermode = SkXfermodeModeFromProto(details.mode());
-  std::unique_ptr<SkRect> bounds;
-  if (details.has_bounds()) {
-    bounds.reset(
-        new SkRect(gfx::RectFToSkRect(ProtoToRectF(details.bounds()))));
-  }
-
-  sk_sp<SkColorFilter> filter;
-  if (details.has_color_filter()) {
-    SkFlattenable* flattenable = SkValidatingDeserializeFlattenable(
-        details.color_filter().c_str(), details.color_filter().size(),
-        SkColorFilter::GetFlattenableType());
-    filter.reset(static_cast<SkColorFilter*>(flattenable));
-  }
-
-  bool lcd_text_requires_opaque_layer =
-      details.lcd_text_requires_opaque_layer();
-
-  SetNew(alpha, xfermode, bounds.get(), std::move(filter),
-         lcd_text_requires_opaque_layer);
-}
-
 CompositingDisplayItem::~CompositingDisplayItem() {
 }
 
@@ -76,24 +45,6 @@ void CompositingDisplayItem::SetNew(uint8_t alpha,
     bounds_ = SkRect(*bounds);
   color_filter_ = std::move(cf);
   lcd_text_requires_opaque_layer_ = lcd_text_requires_opaque_layer;
-}
-
-void CompositingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_Compositing);
-
-  proto::CompositingDisplayItem* details = proto->mutable_compositing_item();
-  details->set_alpha(static_cast<uint32_t>(alpha_));
-  details->set_mode(SkXfermodeModeToProto(xfermode_));
-  if (has_bounds_)
-    RectFToProto(gfx::SkRectToRectF(bounds_), details->mutable_bounds());
-
-  if (color_filter_) {
-    sk_sp<SkData> data(SkValidatingSerializeFlattenable(color_filter_.get()));
-    if (data->size() > 0)
-      details->set_color_filter(data->data(), data->size());
-  }
-
-  details->set_lcd_text_requires_opaque_layer(lcd_text_requires_opaque_layer_);
 }
 
 void CompositingDisplayItem::Raster(
@@ -128,17 +79,7 @@ void CompositingDisplayItem::AsValueInto(
 EndCompositingDisplayItem::EndCompositingDisplayItem()
     : DisplayItem(END_COMPOSITING) {}
 
-EndCompositingDisplayItem::EndCompositingDisplayItem(
-    const proto::DisplayItem& proto)
-    : DisplayItem(END_COMPOSITING) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndCompositing, proto.type());
-}
-
 EndCompositingDisplayItem::~EndCompositingDisplayItem() {
-}
-
-void EndCompositingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_EndCompositing);
 }
 
 void EndCompositingDisplayItem::Raster(

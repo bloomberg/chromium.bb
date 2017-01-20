@@ -8,8 +8,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/proto/display_item.pb.h"
-#include "cc/proto/gfx_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/skia_util.h"
 
@@ -20,28 +18,11 @@ FloatClipDisplayItem::FloatClipDisplayItem(const gfx::RectF& clip_rect)
   SetNew(clip_rect);
 }
 
-FloatClipDisplayItem::FloatClipDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(FLOAT_CLIP) {
-  DCHECK_EQ(proto::DisplayItem::Type_FloatClip, proto.type());
-
-  const proto::FloatClipDisplayItem& details = proto.float_clip_item();
-  gfx::RectF clip_rect = ProtoToRectF(details.clip_rect());
-
-  SetNew(clip_rect);
-}
-
 FloatClipDisplayItem::~FloatClipDisplayItem() {
 }
 
 void FloatClipDisplayItem::SetNew(const gfx::RectF& clip_rect) {
   clip_rect_ = clip_rect;
-}
-
-void FloatClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_FloatClip);
-
-  proto::FloatClipDisplayItem* details = proto->mutable_float_clip_item();
-  RectFToProto(clip_rect_, details->mutable_clip_rect());
 }
 
 void FloatClipDisplayItem::Raster(SkCanvas* canvas,
@@ -61,17 +42,7 @@ void FloatClipDisplayItem::AsValueInto(
 EndFloatClipDisplayItem::EndFloatClipDisplayItem()
     : DisplayItem(END_FLOAT_CLIP) {}
 
-EndFloatClipDisplayItem::EndFloatClipDisplayItem(
-    const proto::DisplayItem& proto)
-    : DisplayItem(END_FLOAT_CLIP) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndFloatClip, proto.type());
-}
-
 EndFloatClipDisplayItem::~EndFloatClipDisplayItem() {
-}
-
-void EndFloatClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_EndFloatClip);
 }
 
 void EndFloatClipDisplayItem::Raster(

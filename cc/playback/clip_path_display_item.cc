@@ -9,8 +9,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/proto/display_item.pb.h"
-#include "cc/proto/skia_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -21,23 +19,6 @@ ClipPathDisplayItem::ClipPathDisplayItem(const SkPath& clip_path,
   SetNew(clip_path, antialias);
 }
 
-ClipPathDisplayItem::ClipPathDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(CLIP_PATH) {
-  DCHECK_EQ(proto::DisplayItem::Type_ClipPath, proto.type());
-
-  const proto::ClipPathDisplayItem& details = proto.clip_path_item();
-  bool antialias = details.antialias();
-
-  SkPath clip_path;
-  if (details.has_clip_path()) {
-    size_t bytes_read = clip_path.readFromMemory(details.clip_path().data(),
-                                                 details.clip_path().size());
-    DCHECK_EQ(details.clip_path().size(), bytes_read);
-  }
-
-  SetNew(clip_path, antialias);
-}
-
 ClipPathDisplayItem::~ClipPathDisplayItem() {
 }
 
@@ -45,21 +26,6 @@ void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
                                  bool antialias) {
   clip_path_ = clip_path;
   antialias_ = antialias;
-}
-
-void ClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_ClipPath);
-
-  proto::ClipPathDisplayItem* details = proto->mutable_clip_path_item();
-  details->set_antialias(antialias_);
-
-  // Just use skia's serialization method for the SkPath for now.
-  size_t path_size = clip_path_.writeToMemory(nullptr);
-  if (path_size > 0) {
-    std::unique_ptr<uint8_t[]> buffer(new uint8_t[path_size]);
-    clip_path_.writeToMemory(buffer.get());
-    details->set_clip_path(buffer.get(), path_size);
-  }
 }
 
 void ClipPathDisplayItem::Raster(SkCanvas* canvas,
@@ -78,16 +44,7 @@ void ClipPathDisplayItem::AsValueInto(
 
 EndClipPathDisplayItem::EndClipPathDisplayItem() : DisplayItem(END_CLIP_PATH) {}
 
-EndClipPathDisplayItem::EndClipPathDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(END_CLIP_PATH) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndClipPath, proto.type());
-}
-
 EndClipPathDisplayItem::~EndClipPathDisplayItem() {
-}
-
-void EndClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_EndClipPath);
 }
 
 void EndClipPathDisplayItem::Raster(

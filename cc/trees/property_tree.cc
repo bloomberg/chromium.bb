@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/proto/gfx_conversions.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"

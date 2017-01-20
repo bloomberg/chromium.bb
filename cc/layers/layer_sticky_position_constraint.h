@@ -11,10 +11,6 @@
 
 namespace cc {
 
-namespace proto {
-class LayerStickyPositionConstraint;
-}
-
 struct CC_EXPORT LayerStickyPositionConstraint {
   LayerStickyPositionConstraint();
   LayerStickyPositionConstraint(const LayerStickyPositionConstraint& other);
@@ -47,9 +43,6 @@ struct CC_EXPORT LayerStickyPositionConstraint {
   // scroll ancestor. The sticky box is only moved as far as its containing
   // block boundary.
   gfx::Rect scroll_container_relative_containing_block_rect;
-
-  void ToProtobuf(proto::LayerStickyPositionConstraint* proto) const;
-  void FromProtobuf(const proto::LayerStickyPositionConstraint& proto);
 
   bool operator==(const LayerStickyPositionConstraint&) const;
   bool operator!=(const LayerStickyPositionConstraint&) const;

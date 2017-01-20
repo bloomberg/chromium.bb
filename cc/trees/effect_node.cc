@@ -4,8 +4,6 @@
 
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer.h"
-#include "cc/proto/gfx_conversions.h"
-#include "cc/proto/skia_conversions.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/property_tree.h"
 

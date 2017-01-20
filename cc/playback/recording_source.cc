@@ -13,7 +13,6 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/raster_source.h"
-#include "cc/proto/gfx_conversions.h"
 #include "skia/ext/analysis_canvas.h"
 
 namespace {

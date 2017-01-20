@@ -27,13 +27,6 @@ class TimeDelta;
 }  // namespace base
 
 namespace cc {
-
-namespace proto {
-class LayerTree;
-}  // namespace proto
-
-class ClientPictureCache;
-class EnginePictureCache;
 class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHost;
@@ -162,19 +155,6 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
     return needs_meta_info_recomputation_;
   }
 
-  void set_engine_picture_cache(EnginePictureCache* cache) {
-    engine_picture_cache_ = cache;
-  }
-  EnginePictureCache* engine_picture_cache() const {
-    return engine_picture_cache_;
-  }
-  void set_client_picture_cache(ClientPictureCache* cache) {
-    client_picture_cache_ = cache;
-  }
-  ClientPictureCache* client_picture_cache() const {
-    return client_picture_cache_;
-  }
-
   void SetPageScaleFromImplSide(float page_scale);
   void SetElasticOverscrollFromImplSide(gfx::Vector2dF elastic_overscroll);
   gfx::Vector2dF elastic_overscroll() const { return elastic_overscroll_; }
@@ -189,8 +169,6 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl,
                         float unapplied_page_scale_delta);
-
-  void ToProtobuf(proto::LayerTree* proto);
 
   MutatorHost* mutator_host() const { return mutator_host_; }
 
@@ -304,11 +282,6 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   MutatorHost* mutator_host_;
   LayerTreeHost* layer_tree_host_;
-
-  // TODO(khushalsagar): Make these go away once we transition blimp to an
-  // external embedder.
-  EnginePictureCache* engine_picture_cache_;
-  ClientPictureCache* client_picture_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTree);
 };

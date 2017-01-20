@@ -6,7 +6,6 @@
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer.h"
-#include "cc/proto/gfx_conversions.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"

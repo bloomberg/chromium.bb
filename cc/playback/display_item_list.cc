@@ -20,14 +20,11 @@
 #include "cc/playback/clip_path_display_item.h"
 #include "cc/playback/compositing_display_item.h"
 #include "cc/playback/display_item_list_settings.h"
-#include "cc/playback/display_item_proto_factory.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/filter_display_item.h"
 #include "cc/playback/float_clip_display_item.h"
 #include "cc/playback/largest_display_item.h"
 #include "cc/playback/transform_display_item.h"
-#include "cc/proto/display_item.pb.h"
-#include "cc/proto/gfx_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
@@ -74,47 +71,10 @@ scoped_refptr<DisplayItemList> DisplayItemList::Create(
   return make_scoped_refptr(new DisplayItemList(settings));
 }
 
-scoped_refptr<DisplayItemList> DisplayItemList::CreateFromProto(
-    const proto::DisplayItemList& proto,
-    ClientPictureCache* client_picture_cache,
-    std::vector<uint32_t>* used_engine_picture_ids) {
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(DisplayItemListSettings(proto.settings()));
-
-  for (int i = 0; i < proto.items_size(); i++) {
-    const proto::DisplayItem& item_proto = proto.items(i);
-    const gfx::Rect visual_rect = ProtoToRect(proto.visual_rects(i));
-    DisplayItemProtoFactory::AllocateAndConstruct(
-        visual_rect, list.get(), item_proto, client_picture_cache,
-        used_engine_picture_ids);
-  }
-
-  list->Finalize();
-
-  return list;
-}
-
 DisplayItemList::DisplayItemList(const DisplayItemListSettings& settings)
     : inputs_(settings) {}
 
 DisplayItemList::~DisplayItemList() {
-}
-
-void DisplayItemList::ToProtobuf(proto::DisplayItemList* proto) {
-  // The flattened SkPicture approach is going away, and the proto
-  // doesn't currently support serializing that flattened picture.
-  inputs_.settings.ToProtobuf(proto->mutable_settings());
-
-  DCHECK_EQ(0, proto->items_size());
-  DCHECK_EQ(0, proto->visual_rects_size());
-  DCHECK(inputs_.items.size() == inputs_.visual_rects.size())
-      << "items.size() " << inputs_.items.size() << " visual_rects.size() "
-      << inputs_.visual_rects.size();
-  int i = 0;
-  for (const auto& item : inputs_.items) {
-    RectToProto(inputs_.visual_rects[i++], proto->add_visual_rects());
-    item.ToProtobuf(proto->add_items());
-  }
 }
 
 void DisplayItemList::Raster(SkCanvas* canvas,
@@ -162,8 +122,6 @@ void DisplayItemList::GrowCurrentBeginItemVisualRect(
 
 void DisplayItemList::Finalize() {
   TRACE_EVENT0("cc", "DisplayItemList::Finalize");
-  // TODO(dtrainor): Need to deal with serializing inputs_.visual_rects.
-  // http://crbug.com/568757.
   DCHECK(inputs_.items.size() == inputs_.visual_rects.size())
       << "items.size() " << inputs_.items.size() << " visual_rects.size() "
       << inputs_.visual_rects.size();

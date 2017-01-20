@@ -47,9 +47,6 @@
 
 namespace cc {
 class MutatorEvents;
-class ClientPictureCache;
-class EnginePictureCache;
-class ImageSerializationProcessor;
 class Layer;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
@@ -73,7 +70,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
     TaskGraphRunner* task_graph_runner = nullptr;
     LayerTreeSettings const* settings = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
-    ImageSerializationProcessor* image_serialization_processor = nullptr;
     MutatorHost* mutator_host = nullptr;
     scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner;
 
@@ -193,18 +189,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   bool IsSingleThreaded() const;
   bool IsThreaded() const;
 
-  ImageSerializationProcessor* image_serialization_processor() const {
-    return image_serialization_processor_;
-  }
-
-  EnginePictureCache* engine_picture_cache() const {
-    return engine_picture_cache_ ? engine_picture_cache_.get() : nullptr;
-  }
-
-  ClientPictureCache* client_picture_cache() const {
-    return client_picture_cache_ ? client_picture_cache_.get() : nullptr;
-  }
-
  protected:
   // Allow tests to inject the LayerTree.
   LayerTreeHostInProcess(InitParams* params,
@@ -221,7 +205,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   void InitializeForTesting(
       std::unique_ptr<TaskRunnerProvider> task_runner_provider,
       std::unique_ptr<Proxy> proxy_for_testing);
-  void InitializePictureCacheForTesting();
   void SetTaskRunnerProviderForTesting(
       std::unique_ptr<TaskRunnerProvider> task_runner_provider);
   void SetUIResourceManagerForTesting(
@@ -304,10 +287,6 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   bool inside_main_frame_ = false;
 
   TaskGraphRunner* task_graph_runner_;
-
-  ImageSerializationProcessor* image_serialization_processor_;
-  std::unique_ptr<EnginePictureCache> engine_picture_cache_;
-  std::unique_ptr<ClientPictureCache> client_picture_cache_;
 
   SurfaceSequenceGenerator surface_sequence_generator_;
   uint32_t num_consecutive_frames_suitable_for_gpu_ = 0;

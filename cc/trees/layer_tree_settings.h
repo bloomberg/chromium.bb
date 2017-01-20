@@ -20,10 +20,6 @@
 
 namespace cc {
 
-namespace proto {
-class LayerTreeSettings;
-}  // namespace proto
-
 class CC_EXPORT LayerTreeSettings {
  public:
   LayerTreeSettings();
@@ -31,9 +27,6 @@ class CC_EXPORT LayerTreeSettings {
   virtual ~LayerTreeSettings();
 
   bool operator==(const LayerTreeSettings& other) const;
-
-  void ToProtobuf(proto::LayerTreeSettings* proto) const;
-  void FromProtobuf(const proto::LayerTreeSettings& proto);
 
   SchedulerSettings ToSchedulerSettings() const;
 

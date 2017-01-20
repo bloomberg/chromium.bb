@@ -30,11 +30,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
-#include "cc/blimp/client_picture_cache.h"
-#include "cc/blimp/engine_picture_cache.h"
-#include "cc/blimp/image_serialization_processor.h"
-#include "cc/blimp/picture_data.h"
-#include "cc/blimp/picture_data_conversions.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -122,11 +117,9 @@ LayerTreeHostInProcess::LayerTreeHostInProcess(
       did_complete_scale_animation_(false),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       task_graph_runner_(params->task_graph_runner),
-      image_serialization_processor_(params->image_serialization_processor),
       image_worker_task_runner_(params->image_worker_task_runner) {
   DCHECK(task_graph_runner_);
   DCHECK(layer_tree_);
-  DCHECK_NE(compositor_mode_, CompositorMode::REMOTE);
 
   rendering_stats_instrumentation_->set_record_rendering_stats(
       debug_state_.RecordRenderingStats());
@@ -154,24 +147,7 @@ void LayerTreeHostInProcess::InitializeForTesting(
     std::unique_ptr<TaskRunnerProvider> task_runner_provider,
     std::unique_ptr<Proxy> proxy_for_testing) {
   task_runner_provider_ = std::move(task_runner_provider);
-
-  InitializePictureCacheForTesting();
-
   InitializeProxy(std::move(proxy_for_testing));
-}
-
-void LayerTreeHostInProcess::InitializePictureCacheForTesting() {
-  if (!image_serialization_processor_)
-    return;
-
-  // Initialize both engine and client cache to ensure serialization tests
-  // with a single LayerTreeHostInProcess can work correctly.
-  engine_picture_cache_ =
-      image_serialization_processor_->CreateEnginePictureCache();
-  layer_tree_->set_engine_picture_cache(engine_picture_cache_.get());
-  client_picture_cache_ =
-      image_serialization_processor_->CreateClientPictureCache();
-  layer_tree_->set_client_picture_cache(client_picture_cache_.get());
 }
 
 void LayerTreeHostInProcess::SetTaskRunnerProviderForTesting(

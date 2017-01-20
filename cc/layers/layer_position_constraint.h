@@ -9,10 +9,6 @@
 
 namespace cc {
 
-namespace proto {
-class LayerPositionConstraint;
-}
-
 class CC_EXPORT LayerPositionConstraint {
  public:
   LayerPositionConstraint();
@@ -27,9 +23,6 @@ class CC_EXPORT LayerPositionConstraint {
     is_fixed_to_bottom_edge_ = fixed;
   }
   bool is_fixed_to_bottom_edge() const { return is_fixed_to_bottom_edge_; }
-
-  void ToProtobuf(proto::LayerPositionConstraint* proto) const;
-  void FromProtobuf(const proto::LayerPositionConstraint& proto);
 
   bool operator==(const LayerPositionConstraint&) const;
   bool operator!=(const LayerPositionConstraint&) const;

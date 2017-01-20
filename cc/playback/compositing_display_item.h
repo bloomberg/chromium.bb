@@ -29,10 +29,8 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
                          SkRect* bounds,
                          sk_sp<SkColorFilter> color_filter,
                          bool lcd_text_requires_opaque_layer);
-  explicit CompositingDisplayItem(const proto::DisplayItem& proto);
   ~CompositingDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
@@ -62,14 +60,12 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
 class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
  public:
   EndCompositingDisplayItem();
-  explicit EndCompositingDisplayItem(const proto::DisplayItem& proto);
   ~EndCompositingDisplayItem() override;
 
   static std::unique_ptr<EndCompositingDisplayItem> Create() {
     return base::MakeUnique<EndCompositingDisplayItem>();
   }
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,

@@ -11,9 +11,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/proto/display_item.pb.h"
-#include "cc/proto/gfx_conversions.h"
-#include "cc/proto/skia_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/skia_util.h"
 
@@ -27,21 +24,6 @@ ClipDisplayItem::ClipDisplayItem(const gfx::Rect& clip_rect,
   SetNew(clip_rect, rounded_clip_rects, antialias);
 }
 
-ClipDisplayItem::ClipDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(CLIP) {
-  DCHECK_EQ(proto::DisplayItem::Type_Clip, proto.type());
-
-  const proto::ClipDisplayItem& details = proto.clip_item();
-  gfx::Rect clip_rect = ProtoToRect(details.clip_rect());
-  std::vector<SkRRect> rounded_clip_rects;
-  rounded_clip_rects.reserve(details.rounded_rects_size());
-  for (int i = 0; i < details.rounded_rects_size(); i++) {
-    rounded_clip_rects.push_back(ProtoToSkRRect(details.rounded_rects(i)));
-  }
-  bool antialias = details.antialias();
-  SetNew(clip_rect, rounded_clip_rects, antialias);
-}
-
 void ClipDisplayItem::SetNew(const gfx::Rect& clip_rect,
                              const std::vector<SkRRect>& rounded_clip_rects,
                              bool antialias) {
@@ -51,18 +33,6 @@ void ClipDisplayItem::SetNew(const gfx::Rect& clip_rect,
 }
 
 ClipDisplayItem::~ClipDisplayItem() {}
-
-void ClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_Clip);
-
-  proto::ClipDisplayItem* details = proto->mutable_clip_item();
-  RectToProto(clip_rect_, details->mutable_clip_rect());
-  DCHECK_EQ(0, details->rounded_rects_size());
-  for (const auto& rrect : rounded_clip_rects_) {
-    SkRRectToProto(rrect, details->add_rounded_rects());
-  }
-  details->set_antialias(antialias_);
-}
 
 void ClipDisplayItem::Raster(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback) const {
@@ -107,16 +77,7 @@ void ClipDisplayItem::AsValueInto(const gfx::Rect& visual_rect,
 
 EndClipDisplayItem::EndClipDisplayItem() : DisplayItem(END_CLIP) {}
 
-EndClipDisplayItem::EndClipDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(END_CLIP) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndClip, proto.type());
-}
-
 EndClipDisplayItem::~EndClipDisplayItem() {
-}
-
-void EndClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_EndClip);
 }
 
 void EndClipDisplayItem::Raster(SkCanvas* canvas,

@@ -21,10 +21,8 @@ namespace cc {
 class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
  public:
   ClipPathDisplayItem(const SkPath& path, bool antialias);
-  explicit ClipPathDisplayItem(const proto::DisplayItem& proto);
   ~ClipPathDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
@@ -47,14 +45,12 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
 class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
  public:
   EndClipPathDisplayItem();
-  explicit EndClipPathDisplayItem(const proto::DisplayItem& proto);
   ~EndClipPathDisplayItem() override;
 
   static std::unique_ptr<EndClipPathDisplayItem> Create() {
     return base::MakeUnique<EndClipPathDisplayItem>();
   }
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,

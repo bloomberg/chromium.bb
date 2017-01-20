@@ -24,10 +24,8 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
   FilterDisplayItem(const FilterOperations& filters,
                     const gfx::RectF& bounds,
                     const gfx::PointF& origin);
-  explicit FilterDisplayItem(const proto::DisplayItem& proto);
   ~FilterDisplayItem() override;
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,
@@ -53,14 +51,12 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
 class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
  public:
   EndFilterDisplayItem();
-  explicit EndFilterDisplayItem(const proto::DisplayItem& proto);
   ~EndFilterDisplayItem() override;
 
   static std::unique_ptr<EndFilterDisplayItem> Create() {
     return base::MakeUnique<EndFilterDisplayItem>();
   }
 
-  void ToProtobuf(proto::DisplayItem* proto) const override;
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(const gfx::Rect& visual_rect,

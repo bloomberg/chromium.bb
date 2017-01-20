@@ -15,7 +15,6 @@
 
 namespace cc {
 
-class ImageSerializationProcessor;
 class MutatorHost;
 class TestTaskGraphRunner;
 
@@ -43,13 +42,6 @@ class FakeLayerTreeHost : public LayerTreeHostInProcess {
       const LayerTreeSettings& settings,
       CompositorMode mode,
       InitParams params);
-  static std::unique_ptr<FakeLayerTreeHost> Create(
-      FakeLayerTreeHostClient* client,
-      TestTaskGraphRunner* task_graph_runner,
-      MutatorHost* mutator_host,
-      const LayerTreeSettings& settings,
-      CompositorMode mode,
-      ImageSerializationProcessor* image_serialization_processor);
   ~FakeLayerTreeHost() override;
 
   void SetNeedsCommit() override;
@@ -77,7 +69,6 @@ class FakeLayerTreeHost : public LayerTreeHostInProcess {
   using LayerTreeHostInProcess::SendMessageToMicroBenchmark;
   using LayerTreeHostInProcess::InitializeSingleThreaded;
   using LayerTreeHostInProcess::InitializeForTesting;
-  using LayerTreeHostInProcess::InitializePictureCacheForTesting;
   using LayerTreeHostInProcess::RecordGpuRasterizationHistogram;
   using LayerTreeHostInProcess::SetUIResourceManagerForTesting;
 

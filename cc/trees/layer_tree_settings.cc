@@ -4,7 +4,6 @@
 
 #include "cc/trees/layer_tree_settings.h"
 
-#include "cc/proto/gfx_conversions.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {

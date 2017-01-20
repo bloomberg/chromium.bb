@@ -12,16 +12,13 @@ namespace cc {
 // 1) Safely cast Proxy to SingleThreadProxy to allow operations only supported
 // in SingleThreaded mode.
 // 2) Make decisions restricted to either browser(SingleThreaded) or renderer
-// compositors(Threaded/Remote).
+// compositors(Threaded).
 enum class CompositorMode {
   // The main and impl components will be run on the same thread.
   SINGLE_THREADED,
 
   // The main and impl components be run on different threads.
   THREADED,
-
-  // The main and impl components will be run across the network.
-  REMOTE,
 };
 
 }  // namespace cc

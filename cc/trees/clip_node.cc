@@ -6,8 +6,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
-#include "cc/proto/cc_conversions.h"
-#include "cc/proto/gfx_conversions.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/property_tree.h"
 

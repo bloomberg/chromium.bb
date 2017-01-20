@@ -28,12 +28,7 @@
 class SkCanvas;
 
 namespace cc {
-class ClientPictureCache;
 class DisplayItem;
-
-namespace proto {
-class DisplayItemList;
-}
 
 class CC_EXPORT DisplayItemList
     : public base::RefCountedThreadSafe<DisplayItemList> {
@@ -41,17 +36,6 @@ class CC_EXPORT DisplayItemList
   // Creates a display item list.
   static scoped_refptr<DisplayItemList> Create(
       const DisplayItemListSettings& settings);
-
-  // Creates a DisplayItemList from a Protobuf.
-  // TODO(dtrainor): Pass in a list of possible DisplayItems to reuse
-  // (crbug.com/548434).
-  static scoped_refptr<DisplayItemList> CreateFromProto(
-      const proto::DisplayItemList& proto,
-      ClientPictureCache* client_picture_cache,
-      std::vector<uint32_t>* used_engine_picture_ids);
-
-  // Creates a Protobuf representing the state of this DisplayItemList.
-  void ToProtobuf(proto::DisplayItemList* proto);
 
   // TODO(trchen): Deprecated. Apply clip and scale on the canvas instead.
   void Raster(SkCanvas* canvas,

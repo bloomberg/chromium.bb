@@ -23,10 +23,6 @@
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/proto/cc_conversions.h"
-#include "cc/proto/gfx_conversions.h"
-#include "cc/proto/layer.pb.h"
-#include "cc/proto/skia_conversions.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
@@ -1226,86 +1222,6 @@ void Layer::TakeCopyRequests(
   inputs_.copy_requests.clear();
 }
 
-void Layer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
-  proto->set_type(proto::LayerNode::LAYER);
-}
-
-void Layer::ToLayerNodeProto(proto::LayerNode* proto) const {
-  proto->set_id(inputs_.layer_id);
-  SetTypeForProtoSerialization(proto);
-
-  if (parent_)
-    proto->set_parent_id(parent_->id());
-
-  DCHECK_EQ(0, proto->children_size());
-  for (const auto& child : inputs_.children) {
-    child->ToLayerNodeProto(proto->add_children());
-  }
-
-  if (inputs_.mask_layer)
-    inputs_.mask_layer->ToLayerNodeProto(proto->mutable_mask_layer());
-}
-
-void Layer::ToLayerPropertiesProto(proto::LayerProperties* proto) {
-  proto->set_id(inputs_.layer_id);
-
-  proto::BaseLayerProperties* base = proto->mutable_base();
-  RectToProto(inputs_.update_rect, base->mutable_update_rect());
-  inputs_.update_rect = gfx::Rect();
-
-  bool use_paint_properties = layer_tree_host_ &&
-                              paint_properties_.source_frame_number ==
-                                  layer_tree_host_->SourceFrameNumber();
-  SizeToProto(use_paint_properties ? paint_properties_.bounds : inputs_.bounds,
-              base->mutable_bounds());
-
-  base->set_masks_to_bounds(inputs_.masks_to_bounds);
-  base->set_opacity(inputs_.opacity);
-  base->set_blend_mode(SkXfermodeModeToProto(inputs_.blend_mode));
-  base->set_is_root_for_isolated_group(inputs_.is_root_for_isolated_group);
-  base->set_contents_opaque(inputs_.contents_opaque);
-  PointFToProto(inputs_.position, base->mutable_position());
-  TransformToProto(inputs_.transform, base->mutable_transform());
-  Point3FToProto(inputs_.transform_origin, base->mutable_transform_origin());
-  base->set_is_drawable(inputs_.is_drawable);
-  base->set_double_sided(inputs_.double_sided);
-  base->set_should_flatten_transform(inputs_.should_flatten_transform);
-  base->set_sorting_context_id(inputs_.sorting_context_id);
-  base->set_use_parent_backface_visibility(
-      inputs_.use_parent_backface_visibility);
-  base->set_background_color(inputs_.background_color);
-  ScrollOffsetToProto(inputs_.scroll_offset, base->mutable_scroll_offset());
-  base->set_scroll_clip_layer_id(inputs_.scroll_clip_layer_id);
-  base->set_user_scrollable_horizontal(inputs_.user_scrollable_horizontal);
-  base->set_user_scrollable_vertical(inputs_.user_scrollable_vertical);
-  base->set_main_thread_scrolling_reasons(
-      inputs_.main_thread_scrolling_reasons);
-  RegionToProto(inputs_.non_fast_scrollable_region,
-                base->mutable_non_fast_scrollable_region());
-  RegionToProto(inputs_.touch_event_handler_region,
-                base->mutable_touch_event_handler_region());
-  base->set_is_container_for_fixed_position_layers(
-      inputs_.is_container_for_fixed_position_layers);
-  inputs_.position_constraint.ToProtobuf(base->mutable_position_constraint());
-  inputs_.sticky_position_constraint.ToProtobuf(
-      base->mutable_sticky_position_constraint());
-
-  int scroll_parent_id =
-      inputs_.scroll_parent ? inputs_.scroll_parent->id() : INVALID_ID;
-  base->set_scroll_parent_id(scroll_parent_id);
-
-  int clip_parent_id =
-      inputs_.clip_parent ? inputs_.clip_parent->id() : INVALID_ID;
-  base->set_clip_parent_id(clip_parent_id);
-
-  base->set_has_will_change_transform_hint(
-      inputs_.has_will_change_transform_hint);
-  base->set_hide_layer_and_subtree(inputs_.hide_layer_and_subtree);
-
-  // TODO(nyquist): Add support for serializing FilterOperations for
-  // |filters_| and |background_filters_|. See crbug.com/541321.
-}
-
 std::unique_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
   return LayerImpl::Create(tree_impl, inputs_.layer_id);
 }
@@ -1666,10 +1582,6 @@ gfx::Transform Layer::screen_space_transform() const {
 
 LayerTree* Layer::GetLayerTree() const {
   return layer_tree_;
-}
-
-void Layer::SetLayerIdForTesting(int id) {
-  inputs_.layer_id = id;
 }
 
 }  // namespace cc

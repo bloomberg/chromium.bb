@@ -18,10 +18,6 @@ class SkCanvas;
 
 namespace cc {
 
-namespace proto {
-class DisplayItem;
-}  // namespace proto
-
 class CC_EXPORT DisplayItem {
  public:
   enum Type {
@@ -42,7 +38,6 @@ class CC_EXPORT DisplayItem {
 
   virtual ~DisplayItem() {}
 
-  virtual void ToProtobuf(proto::DisplayItem* proto) const = 0;
   virtual sk_sp<const SkPicture> GetPicture() const;
   virtual void Raster(SkCanvas* canvas,
                       SkPicture::AbortCallback* callback) const = 0;

@@ -12,10 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "cc/blimp/client_picture_cache.h"
-#include "cc/blimp/image_serialization_processor.h"
 #include "cc/debug/picture_debug_util.h"
-#include "cc/proto/display_item.pb.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -33,27 +30,6 @@ DrawingDisplayItem::DrawingDisplayItem(sk_sp<const SkPicture> picture)
   SetNew(std::move(picture));
 }
 
-DrawingDisplayItem::DrawingDisplayItem(
-    const proto::DisplayItem& proto,
-    ClientPictureCache* client_picture_cache,
-    std::vector<uint32_t>* used_engine_picture_ids)
-    : DisplayItem(DRAWING) {
-  DCHECK_EQ(proto::DisplayItem::Type_Drawing, proto.type());
-  DCHECK(client_picture_cache);
-
-  const proto::DrawingDisplayItem& details = proto.drawing_item();
-  DCHECK(details.has_id());
-  const proto::SkPictureID& sk_picture_id = details.id();
-  DCHECK(sk_picture_id.has_unique_id());
-
-  uint32_t unique_id = sk_picture_id.unique_id();
-  sk_sp<const SkPicture> picture = client_picture_cache->GetPicture(unique_id);
-  DCHECK(picture);
-
-  used_engine_picture_ids->push_back(unique_id);
-  SetNew(std::move(picture));
-}
-
 DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item)
     : DisplayItem(DRAWING) {
   item.CloneTo(this);
@@ -64,17 +40,6 @@ DrawingDisplayItem::~DrawingDisplayItem() {
 
 void DrawingDisplayItem::SetNew(sk_sp<const SkPicture> picture) {
   picture_ = std::move(picture);
-}
-
-void DrawingDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  TRACE_EVENT0("cc.remote", "DrawingDisplayItem::ToProtobuf");
-  proto->set_type(proto::DisplayItem::Type_Drawing);
-
-  if (!picture_)
-    return;
-
-  proto->mutable_drawing_item()->mutable_id()->set_unique_id(
-      picture_->uniqueID());
 }
 
 sk_sp<const SkPicture> DrawingDisplayItem::GetPicture() const {

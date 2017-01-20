@@ -4,7 +4,6 @@
 
 #include "cc/test/fake_picture_layer.h"
 
-#include "cc/proto/layer.pb.h"
 #include "cc/test/fake_picture_layer_impl.h"
 
 namespace cc {
@@ -47,11 +46,6 @@ bool FakePictureLayer::IsSuitableForGpuRasterization() const {
   if (force_unsuitable_for_gpu_rasterization_)
     return false;
   return PictureLayer::IsSuitableForGpuRasterization();
-}
-
-void FakePictureLayer::SetTypeForProtoSerialization(
-    proto::LayerNode* proto) const {
-  proto->set_type(proto::LayerNode::FAKE_PICTURE_LAYER);
 }
 
 }  // namespace cc

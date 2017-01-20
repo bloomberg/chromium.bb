@@ -9,8 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/render_surface_filters.h"
-#include "cc/proto/display_item.pb.h"
-#include "cc/proto/gfx_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -26,19 +24,6 @@ FilterDisplayItem::FilterDisplayItem(const FilterOperations& filters,
   SetNew(filters, bounds, origin);
 }
 
-FilterDisplayItem::FilterDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(FILTER) {
-  DCHECK_EQ(proto::DisplayItem::Type_Filter, proto.type());
-
-  const proto::FilterDisplayItem& details = proto.filter_item();
-  gfx::RectF bounds = ProtoToRectF(details.bounds());
-
-  // TODO(dtrainor): Support deserializing FilterOperations (crbug.com/541321).
-  FilterOperations filters;
-  gfx::PointF origin(.0f, .0f);  // TODO(senorblanco): Support origin.
-  SetNew(filters, bounds, origin);
-}
-
 FilterDisplayItem::~FilterDisplayItem() {}
 
 void FilterDisplayItem::SetNew(const FilterOperations& filters,
@@ -47,15 +32,6 @@ void FilterDisplayItem::SetNew(const FilterOperations& filters,
   filters_ = filters;
   bounds_ = bounds;
   origin_ = origin;
-}
-
-void FilterDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_Filter);
-
-  proto::FilterDisplayItem* details = proto->mutable_filter_item();
-  RectFToProto(bounds_, details->mutable_bounds());
-
-  // TODO(dtrainor): Support serializing FilterOperations (crbug.com/541321).
 }
 
 void FilterDisplayItem::Raster(SkCanvas* canvas,
@@ -86,16 +62,7 @@ void FilterDisplayItem::AsValueInto(
 
 EndFilterDisplayItem::EndFilterDisplayItem() : DisplayItem(END_FILTER) {}
 
-EndFilterDisplayItem::EndFilterDisplayItem(const proto::DisplayItem& proto)
-    : DisplayItem(END_FILTER) {
-  DCHECK_EQ(proto::DisplayItem::Type_EndFilter, proto.type());
-}
-
 EndFilterDisplayItem::~EndFilterDisplayItem() {}
-
-void EndFilterDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
-  proto->set_type(proto::DisplayItem::Type_EndFilter);
-}
 
 void EndFilterDisplayItem::Raster(SkCanvas* canvas,
                                   SkPicture::AbortCallback* callback) const {

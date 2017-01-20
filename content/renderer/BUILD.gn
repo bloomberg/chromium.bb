@@ -411,7 +411,6 @@ target(link_target_type, "renderer") {
     "//cc/animation",
     "//cc/blink",
     "//cc/ipc",
-    "//cc/proto",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//cc/surfaces:surfaces",

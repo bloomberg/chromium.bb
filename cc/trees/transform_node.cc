@@ -5,7 +5,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
-#include "cc/proto/gfx_conversions.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/point3_f.h"

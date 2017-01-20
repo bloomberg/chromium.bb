@@ -8,7 +8,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
-#include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree.h"
 #include "cc/trees/mutator_host.h"
@@ -75,22 +74,6 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
   params.client = client;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
-  params.mutator_host = mutator_host;
-  return base::WrapUnique(new FakeLayerTreeHost(client, &params, mode));
-}
-
-std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
-    FakeLayerTreeHostClient* client,
-    TestTaskGraphRunner* task_graph_runner,
-    MutatorHost* mutator_host,
-    const LayerTreeSettings& settings,
-    CompositorMode mode,
-    ImageSerializationProcessor* image_serialization_processor) {
-  LayerTreeHostInProcess::InitParams params;
-  params.client = client;
-  params.settings = &settings;
-  params.task_graph_runner = task_graph_runner;
-  params.image_serialization_processor = image_serialization_processor;
   params.mutator_host = mutator_host;
   return base::WrapUnique(new FakeLayerTreeHost(client, &params, mode));
 }

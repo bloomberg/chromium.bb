@@ -31,17 +31,6 @@ std::unique_ptr<LayerImpl> PushPropertiesCountingLayer::CreateLayerImpl(
   return PushPropertiesCountingLayerImpl::Create(tree_impl, Layer::id());
 }
 
-void PushPropertiesCountingLayer::ToLayerPropertiesProto(
-    proto::LayerProperties* proto) {
-  Layer::ToLayerPropertiesProto(proto);
-  AddPushPropertiesCount();
-}
-
-void PushPropertiesCountingLayer::SetTypeForProtoSerialization(
-    proto::LayerNode* proto) const {
-  proto->set_type(proto::LayerNode::PUSH_PROPERTIES_COUNTING_LAYER);
-}
-
 void PushPropertiesCountingLayer::MakePushProperties() {
   SetContentsOpaque(!contents_opaque());
 }

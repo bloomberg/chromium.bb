@@ -101,7 +101,7 @@ class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
   bool single_threaded_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestHasImplThreadTest);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestHasImplThreadTest);
 
 class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
  protected:
@@ -120,7 +120,7 @@ class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
   void AfterTest() override {}
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestSetNeedsCommitInsideLayout);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommitInsideLayout);
 
 class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
  protected:
@@ -195,7 +195,7 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
   ImplOrder impl_ = IMPL_START;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestFrameOrdering);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameOrdering);
 
 class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
  protected:
@@ -214,7 +214,7 @@ class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
   void AfterTest() override {}
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestSetNeedsUpdateInsideLayout);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsUpdateInsideLayout);
 
 // Test if the LTHI receives ReadyToActivate notifications from the TileManager
 // when no raster tasks get scheduled.
@@ -258,7 +258,7 @@ class LayerTreeHostTestReadyToActivateEmpty : public LayerTreeHostTest {
   size_t required_for_activation_count_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestReadyToActivateEmpty);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateEmpty);
 
 // Test if the LTHI receives ReadyToActivate notifications from the TileManager
 // when some raster tasks flagged as REQUIRED_FOR_ACTIVATION got scheduled.
@@ -289,7 +289,7 @@ class LayerTreeHostTestReadyToActivateNonEmpty
 
 // No single thread test because the commit goes directly to the active tree in
 // single thread mode, so notify ready to activate is skipped.
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
+MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
 
 // Test if the LTHI receives ReadyToDraw notifications from the TileManager when
 // no raster tasks get scheduled.
@@ -329,7 +329,7 @@ class LayerTreeHostTestReadyToDrawEmpty : public LayerTreeHostTest {
   size_t required_for_draw_count_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestReadyToDrawEmpty);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToDrawEmpty);
 
 // Test if the LTHI receives ReadyToDraw notifications from the TileManager when
 // some raster tasks flagged as REQUIRED_FOR_DRAW got scheduled.
@@ -436,8 +436,6 @@ class LayerTreeHostTestReadyToDrawVisibility : public LayerTreeHostTest {
 // single threaded mode.
 SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawVisibility);
 
-// Since the LayerTreeHostContextCacheTests exclusively tests the behavior of
-// LayerTreeHostImpl, they don't need to run for the remote mode.
 class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
  public:
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
@@ -658,7 +656,7 @@ class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
   int num_draws_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestSetNeedsCommit1);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit1);
 
 // A SetNeedsCommit should lead to 1 commit. Issuing a second commit after that
 // first committed frame draws should lead to another commit.
@@ -694,7 +692,7 @@ class LayerTreeHostTestSetNeedsCommit2 : public LayerTreeHostTest {
   int num_draws_;
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
+MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
 
 // Verify that we pass property values in PushPropertiesTo.
 class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
@@ -789,7 +787,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
   int index_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestPushPropertiesTo);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesTo);
 
 class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
  protected:
@@ -920,11 +918,6 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
   scoped_refptr<Layer> child_;
 };
 
-// This test compares the value of tree indexes from Layers on the engine to the
-// resulting PropertyTrees copied to the pending tree after the commit on the
-// client. This will result in a failure for LTH remote test since while the
-// client side Layers would have the correct values for these indexes, but the
-// engine will never build PropertyTrees in LTH remote. See crbug.com/655795.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushNodeOwnerToNodeIdMap);
 
 class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
@@ -1111,12 +1104,6 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
   scoped_refptr<Layer> grand_child_;
 };
 
-// This test changes properties on the Layer and ensures that the subtree damage
-// is tracked correctly on the resulting RenderSurfaceImpl for the corresponding
-// LayerImpl. Since the remote code path currently synchronizes the hierarchy
-// between the engine and client for every frame, all Layers on the client end
-// up being marked as damaged.
-// Enable this when crbug.com/605170 is fixed.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
 
 // Verify damage status of property trees is preserved after commit.
@@ -1328,9 +1315,6 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
   FilterOperations sepia_filter_;
 };
 
-// This test verifies that correct values are retained on the impl thread in
-// cases where they are animated on that thread. Since remote mode doesn't
-// support threaded animations, we don't need to run this in remote mode.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestEffectTreeSync);
 
 class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
@@ -1408,9 +1392,6 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
   scoped_refptr<Layer> root_;
 };
 
-// This test verifies that correct values are retained on the impl thread in
-// cases where they are animated on that thread. Since remote mode doesn't
-// support threaded animations, we don't need to run this in remote mode.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeSync);
 
 // Verify damage status is updated even when the transform tree doesn't need
@@ -1485,9 +1466,6 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
   scoped_refptr<Layer> grand_child_;
 };
 
-// This test verifies that correct values are retained on the impl thread in
-// cases where they are animated on that thread. Since remote mode doesn't
-// support threaded animations, we don't need to run this in remote mode.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeDamageIsUpdated);
 
 // Test that when mask layers switches layers, this gets pushed onto impl.
@@ -1558,12 +1536,6 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   int index_;
 };
 
-// This test also verifies that the Layers updated in a main frame correspond
-// only to the Layers that need updates computed using
-// draw_property_utils::FindLayersThatNeedUpdates. Since LayerTreeHostRemote
-// currently updates all Layers during the main frame, the test fails for remote
-// mode.
-// TODO(xingliu): Revisit enabling this when crbug.com/650885 is resolved.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSwitchMaskLayer);
 
 // 1 setNeedsRedraw after the first commit has completed should lead to 1
@@ -1600,7 +1572,7 @@ class LayerTreeHostTestSetNeedsRedraw : public LayerTreeHostTest {
   int num_draws_;
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedraw);
+MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedraw);
 
 // After setNeedsRedrawRect(invalid_rect) the final damage_rect
 // must contain invalid_rect.
@@ -1658,7 +1630,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
   scoped_refptr<FakePictureLayer> root_layer_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestSetNeedsRedrawRect);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedrawRect);
 
 // Ensure the texture size of the pending and active trees are identical when a
 // layer is not in the viewport and a resize happens on the viewport
@@ -1737,7 +1709,7 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
 
 // As there's no pending tree in single-threaded case, this test should run
 // only for multi-threaded case.
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
 
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
@@ -1787,7 +1759,7 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
   scoped_refptr<Layer> scaled_layer_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestNoExtraCommitFromInvalidate);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoExtraCommitFromInvalidate);
 
 class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     : public LayerTreeHostTest {
@@ -1844,8 +1816,6 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
   scoped_refptr<FakePaintedScrollbarLayer> scrollbar_;
 };
 
-// No remote test here because PaintedScrollbarLayer is not supported by LTH
-// remote.
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate);
 
@@ -1913,7 +1883,7 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
   scoped_refptr<Layer> child_layer_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
 
 class LayerTreeHostTestDeviceColorSpaceChange : public LayerTreeHostTest {
  public:
@@ -2036,9 +2006,6 @@ class LayerTreeHostTestDeviceColorSpaceChange : public LayerTreeHostTest {
   scoped_refptr<Layer> child_layer_;
 };
 
-// No remote test because LTH remote doesn't serialize device_color_space, so
-// LTH in process will always use the default color space here.
-// see crbug/658786.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceColorSpaceChange);
 
 class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
@@ -2129,7 +2096,6 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
 
 // This test blocks activation which is not supported for single thread mode.
 MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostTestSetNextCommitForcesRedraw);
-REMOTE_TEST_F(LayerTreeHostTestSetNextCommitForcesRedraw);
 
 // Tests that if a layer is not drawn because of some reason in the parent then
 // its damage is preserved until the next time it is drawn.
@@ -2226,7 +2192,7 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
   scoped_refptr<FakePictureLayer> child_layer_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestUndrawnLayersDamageLater);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUndrawnLayersDamageLater);
 
 // Tests that if a layer is not drawn because of some reason in the parent then
 // its damage is preserved until the next time it is drawn.
@@ -2331,7 +2297,7 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
   scoped_refptr<Layer> child_layer_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestDamageWithScale);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDamageWithScale);
 
 // This test verifies that properties on the layer tree host are commited
 // to the impl side.
@@ -2375,7 +2341,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   void AfterTest() override {}
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCommit);
+MULTI_THREAD_TEST_F(LayerTreeHostTestCommit);
 
 // This test verifies that LayerTreeHostImpl's current frame time gets
 // updated in consecutive frames when it doesn't draw due to tree
@@ -2433,7 +2399,6 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
 // This test blocks activation which is not supported for single thread mode.
 MULTI_THREAD_BLOCKNOTIFY_TEST_F(
     LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
-REMOTE_TEST_F(LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
 
 // This test verifies that LayerTreeHostImpl's current frame time gets
 // updated in consecutive frames when it draws in each frame.
@@ -2482,7 +2447,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
   base::TimeTicks first_frame_time_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestFrameTimeUpdatesAfterDraw);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameTimeUpdatesAfterDraw);
 
 // Verifies that StartPageScaleAnimation events propagate correctly
 // from LayerTreeHost to LayerTreeHostImpl in the MT compositor.
@@ -2560,7 +2525,6 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 };
 
 // Single thread proxy does not support impl-side page scale changes.
-// Remote test does not support page scale animation.
 MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
@@ -2591,7 +2555,7 @@ class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
   int num_draws_;
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetVisible);
+MULTI_THREAD_TEST_F(LayerTreeHostTestSetVisible);
 
 class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     : public LayerTreeHostTest {
@@ -2693,8 +2657,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
   scoped_refptr<FakePictureLayer> child_layer_;
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers);
+MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers);
 
 class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
  public:
@@ -2744,7 +2707,7 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
   int num_draw_layers_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestContinuousInvalidate);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousInvalidate);
 
 class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
  public:
@@ -2802,7 +2765,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   int num_send_begin_main_frame_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestDeferCommits);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
 
 class LayerTreeHostTestCompositeImmediatelyStateTransitions
     : public LayerTreeHostTest {
@@ -2961,7 +2924,7 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   int num_tiles_rastered_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestLCDChange);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLCDChange);
 
 class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
@@ -2983,8 +2946,6 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
   void AfterTest() override {}
 };
 
-// No remote test since synchronous renderer compositor is not supported for LTH
-// remote.
 MULTI_THREAD_TEST_F(
     LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled);
 
@@ -3109,8 +3070,6 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
   OnDrawCompositorFrameSink* compositor_frame_sink_ = nullptr;
 };
 
-// No remote test since synchronous renderer compositor is not supported for LTH
-// remote.
 MULTI_THREAD_TEST_F(
     LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor);
 
@@ -3138,7 +3097,7 @@ class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
   FakeContentLayerClient client_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation);
 
 class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
@@ -3187,7 +3146,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
   int frame_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestNumFramesPending);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNumFramesPending);
 
 class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
  protected:
@@ -3293,8 +3252,6 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
 };
 
 // Resourceless is not used for SingleThreadProxy, so it is unimplemented.
-// No remote test since synchronous renderer compositor is not supported for LTH
-// remote.
 MULTI_THREAD_TEST_F(LayerTreeHostTestResourcelessSoftwareDraw);
 
 // Test for UI Resource management.
@@ -3391,8 +3348,6 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   int num_ui_resources_;
 };
 
-// No remote test since LTH remote does not support UIResourceLayers and
-// PaintedScrollbarLayers, which uses UIResourceManager.
 MULTI_THREAD_TEST_F(LayerTreeHostTestUIResource);
 
 class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
@@ -3595,9 +3550,6 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
   size_t expected_push_properties_leaf_layer_;
 };
 
-// No remote test because LTH remote does not build property trees, so layers
-// to push properties are different between engine and client.
-// See crbug/655795.
 MULTI_THREAD_TEST_F(LayerTreeHostTestLayersPushProperties);
 
 class LayerTreeHostTestImplLayersPushProperties
@@ -3794,9 +3746,6 @@ class LayerTreeHostTestImplLayersPushProperties
   size_t expected_push_properties_grandchild2_impl_;
 };
 
-// No remote test because LTH remote does not build property trees, so layers
-// to push properties are different between engine and client.
-// See crbug/655795.
 MULTI_THREAD_TEST_F(LayerTreeHostTestImplLayersPushProperties);
 
 class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
@@ -3854,7 +3803,6 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
   scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer_;
 };
 
-// No remote test since remote LTH does not support PaintedScrollbarLayer.
 MULTI_THREAD_TEST_F(LayerTreeHostTestPropertyChangesDuringUpdateArePushed);
 
 class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
@@ -3915,7 +3863,7 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
   scoped_refptr<PushPropertiesCountingLayer> child_;
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetDrawableCausesCommit);
+MULTI_THREAD_TEST_F(LayerTreeHostTestSetDrawableCausesCommit);
 
 class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
     : public LayerTreeHostTest {
@@ -3988,8 +3936,7 @@ class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
   }
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush);
+MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush);
 
 class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
@@ -4072,8 +4019,7 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
   }
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion);
+MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion);
 
 class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
     : public LayerTreeHostTestCasePushPropertiesThreeGrandChildren {
@@ -4121,7 +4067,7 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
   }
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(
+MULTI_THREAD_TEST_F(
     LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence);
 
 class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
@@ -4190,7 +4136,7 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
   }
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(
+MULTI_THREAD_TEST_F(
     LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree);
 
 class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
@@ -4255,7 +4201,7 @@ class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
   }
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(
+MULTI_THREAD_TEST_F(
     LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild);
 
 class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
@@ -4320,7 +4266,7 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
   }
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(
+MULTI_THREAD_TEST_F(
     LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent);
 
 // This test verifies that the tree activation callback is invoked correctly.
@@ -4379,7 +4325,7 @@ class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
   int callback_count_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestTreeActivationCallback);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTreeActivationCallback);
 
 class LayerInvalidateCausesDraw : public LayerTreeHostTest {
  public:
@@ -4442,7 +4388,6 @@ class LayerTreeHostTestVideoLayerInvalidate : public LayerInvalidateCausesDraw {
   FakeVideoFrameProvider provider_;
 };
 
-// LTH remote does not support VideoLayer.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestVideoLayerInvalidate);
 
 class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
@@ -4510,7 +4455,7 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
   scoped_refptr<SolidColorLayer> child_layer_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestPushHiddenLayer);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushHiddenLayer);
 
 class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
  protected:
@@ -4543,7 +4488,7 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
   scoped_refptr<FakePictureLayer> root_layer_;
 };
 
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
+MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
 
 class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
  public:
@@ -4638,7 +4583,6 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
   int num_draws_;
 };
 
-// Remote test does not support enable_elastic_overscroll.
 MULTI_THREAD_TEST_F(LayerTreeHostTestElasticOverscroll);
 
 struct TestSwapPromiseResult {
@@ -4745,9 +4689,6 @@ class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
   TestSwapPromiseResult pinned_active_swap_promise_result_;
 };
 
-// No remote test because this test compares the swap promises result between
-// LTH in process and LTH impl. LTH remote runs its own swap promise, and we
-// don't send swap promises to the client.
 MULTI_THREAD_TEST_F(PinnedLayerTreeSwapPromise);
 
 class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
@@ -4845,8 +4786,6 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
   TestSwapPromiseResult swap_promise_result_[3];
 };
 
-// No remote test because LTH remote runs its own swap promises, and we
-// don't send swap promises to the LTH in process on the client side.
 MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
 
 class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
@@ -4938,8 +4877,6 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
   TestSwapPromiseResult swap_promise_result_;
 };
 
-// No remote test because LTH remote runs its own swap promises, and we
-// don't send swap promises to the LTH in process on the client side.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestKeepSwapPromise);
 
 class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
@@ -5054,8 +4991,6 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
   TestSwapPromiseResult swap_promise_result_;
 };
 
-// No remote test because LTH remote runs its own swap promises, and we
-// don't send swap promises to the LTH in process on the client side.
 MULTI_THREAD_TEST_F(LayerTreeHostTestKeepSwapPromiseMFBA);
 
 class LayerTreeHostTestBreakSwapPromiseForVisibility
@@ -5098,8 +5033,6 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
   TestSwapPromiseResult swap_promise_result_;
 };
 
-// No remote test because LTH remote runs its own swap promises, and we
-// don't send swap promises to the LTH in process on the client side.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForVisibility);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
@@ -5183,8 +5116,6 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
   void AfterTest() override {}
 };
 
-// No remote test because LTH remote runs its own swap promises, and we
-// don't send swap promises to the LTH in process on the client side.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
 
 class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
@@ -5406,8 +5337,6 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   FakeRecordingSource* recording_source_;
 };
 
-// No remote test since we does not send gpu rasterization flag to the client.
-// See crbug/650431.
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
 
 class LayerTreeHostTestGpuRasterizationReenabled : public LayerTreeHostTest {
@@ -5804,7 +5733,7 @@ class LayerTreeHostTestRenderSurfaceEffectTreeIndex : public LayerTreeHostTest {
   scoped_refptr<Layer> grand_child_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestRenderSurfaceEffectTreeIndex);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRenderSurfaceEffectTreeIndex);
 
 // Do a synchronous composite and assert that the swap promise succeeds.
 class LayerTreeHostTestSynchronousCompositeSwapPromise
@@ -6917,7 +6846,7 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
   FakeContentLayerClient client_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeTestMaskLayerWithDifferentBounds);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMaskLayerWithDifferentBounds);
 
 class LayerTreeTestPageScaleFlags : public LayerTreeTest {
  protected:
@@ -6988,7 +6917,7 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
   std::vector<int> not_affected_by_page_scale_;
 };
 
-SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeTestPageScaleFlags);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestPageScaleFlags);
 
 class LayerTreeHostTestDestroyWhileInitializingOutputSurface
     : public LayerTreeHostTest {
