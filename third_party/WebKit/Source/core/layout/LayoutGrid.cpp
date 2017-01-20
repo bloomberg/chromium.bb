@@ -2607,6 +2607,7 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren,
   for (auto* child : *positionedDescendants) {
     if (isOrthogonalChild(*child)) {
       // FIXME: Properly support orthogonal writing mode.
+      layoutPositionedObject(child, relayoutChildren, info);
       continue;
     }
 
@@ -2628,9 +2629,9 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren,
       childLayer->setStaticInlinePosition(borderStart() + columnOffset);
       childLayer->setStaticBlockPosition(borderBefore() + rowOffset);
     }
-  }
 
-  LayoutBlock::layoutPositionedObjects(relayoutChildren, info);
+    layoutPositionedObject(child, relayoutChildren, info);
+  }
 }
 
 void LayoutGrid::offsetAndBreadthForPositionedChild(

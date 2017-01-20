@@ -755,85 +755,90 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren,
   if (!positionedDescendants)
     return;
 
-  bool isPaginated = view()->layoutState()->isPaginated();
-
   for (auto* positionedObject : *positionedDescendants) {
-    positionedObject->setMayNeedPaintInvalidation();
-
-    SubtreeLayoutScope layoutScope(*positionedObject);
-    // If positionedObject is fixed-positioned and moves with an absolute-
-    // positioned ancestor (other than the LayoutView, which cannot move),
-    // mark it for layout now.
-    markFixedPositionObjectForLayoutIfNeeded(positionedObject, layoutScope);
-    if (info == LayoutOnlyFixedPositionedObjects) {
-      positionedObject->layoutIfNeeded();
-      continue;
-    }
-
-    if (!positionedObject->normalChildNeedsLayout() &&
-        (relayoutChildren || m_heightAvailableToChildrenChanged ||
-         needsLayoutDueToStaticPosition(positionedObject)))
-      layoutScope.setChildNeedsLayout(positionedObject);
-
-    // If relayoutChildren is set and the child has percentage padding or an
-    // embedded content box, we also need to invalidate the childs pref widths.
-    if (relayoutChildren &&
-        positionedObject->needsPreferredWidthsRecalculation())
-      positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
-
-    LayoutUnit logicalTopEstimate;
-    bool needsBlockDirectionLocationSetBeforeLayout =
-        isPaginated &&
-        positionedObject->getPaginationBreakability() != ForbidBreaks;
-    if (needsBlockDirectionLocationSetBeforeLayout) {
-      // Out-of-flow objects are normally positioned after layout (while in-flow
-      // objects are positioned before layout). If the child object is paginated
-      // in the same context as we are, estimate its logical top now. We need to
-      // know this up-front, to correctly evaluate if we need to mark for
-      // relayout, and, if our estimate is correct, we'll even be able to insert
-      // correct pagination struts on the first attempt.
-      LogicalExtentComputedValues computedValues;
-      positionedObject->computeLogicalHeight(positionedObject->logicalHeight(),
-                                             positionedObject->logicalTop(),
-                                             computedValues);
-      logicalTopEstimate = computedValues.m_position;
-      positionedObject->setLogicalTop(logicalTopEstimate);
-    }
-
-    if (!positionedObject->needsLayout())
-      markChildForPaginationRelayoutIfNeeded(*positionedObject, layoutScope);
-
-    // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout()
-    // here instead of a full layout. Need to investigate why it does not
-    // trigger the correct invalidations in that case. crbug.com/350756
-    if (info == ForcedLayoutAfterContainingBlockMoved)
-      positionedObject->setNeedsLayout(LayoutInvalidationReason::AncestorMoved,
-                                       MarkOnlyThis);
-
-    positionedObject->layoutIfNeeded();
-
-    LayoutObject* parent = positionedObject->parent();
-    bool layoutChanged = false;
-    if (parent->isFlexibleBox() &&
-        toLayoutFlexibleBox(parent)->setStaticPositionForPositionedLayout(
-            *positionedObject)) {
-      // The static position of an abspos child of a flexbox depends on its size
-      // (for example, they can be centered). So we may have to reposition the
-      // item after layout.
-      // TODO(cbiesinger): We could probably avoid a layout here and just
-      // reposition?
-      positionedObject->forceChildLayout();
-      layoutChanged = true;
-    }
-
-    // Lay out again if our estimate was wrong.
-    if (!layoutChanged && needsBlockDirectionLocationSetBeforeLayout &&
-        logicalTopEstimate != logicalTopForChild(*positionedObject))
-      positionedObject->forceChildLayout();
-
-    if (isPaginated)
-      updateFragmentationInfoForChild(*positionedObject);
+    layoutPositionedObject(positionedObject, relayoutChildren, info);
   }
+}
+
+void LayoutBlock::layoutPositionedObject(LayoutBox* positionedObject,
+                                         bool relayoutChildren,
+                                         PositionedLayoutBehavior info) {
+  positionedObject->setMayNeedPaintInvalidation();
+
+  SubtreeLayoutScope layoutScope(*positionedObject);
+  // If positionedObject is fixed-positioned and moves with an absolute-
+  // positioned ancestor (other than the LayoutView, which cannot move),
+  // mark it for layout now.
+  markFixedPositionObjectForLayoutIfNeeded(positionedObject, layoutScope);
+  if (info == LayoutOnlyFixedPositionedObjects) {
+    positionedObject->layoutIfNeeded();
+    return;
+  }
+
+  if (!positionedObject->normalChildNeedsLayout() &&
+      (relayoutChildren || m_heightAvailableToChildrenChanged ||
+       needsLayoutDueToStaticPosition(positionedObject)))
+    layoutScope.setChildNeedsLayout(positionedObject);
+
+  // If relayoutChildren is set and the child has percentage padding or an
+  // embedded content box, we also need to invalidate the childs pref widths.
+  if (relayoutChildren && positionedObject->needsPreferredWidthsRecalculation())
+    positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+
+  LayoutUnit logicalTopEstimate;
+  bool isPaginated = view()->layoutState()->isPaginated();
+  bool needsBlockDirectionLocationSetBeforeLayout =
+      isPaginated &&
+      positionedObject->getPaginationBreakability() != ForbidBreaks;
+  if (needsBlockDirectionLocationSetBeforeLayout) {
+    // Out-of-flow objects are normally positioned after layout (while in-flow
+    // objects are positioned before layout). If the child object is paginated
+    // in the same context as we are, estimate its logical top now. We need to
+    // know this up-front, to correctly evaluate if we need to mark for
+    // relayout, and, if our estimate is correct, we'll even be able to insert
+    // correct pagination struts on the first attempt.
+    LogicalExtentComputedValues computedValues;
+    positionedObject->computeLogicalHeight(positionedObject->logicalHeight(),
+                                           positionedObject->logicalTop(),
+                                           computedValues);
+    logicalTopEstimate = computedValues.m_position;
+    positionedObject->setLogicalTop(logicalTopEstimate);
+  }
+
+  if (!positionedObject->needsLayout())
+    markChildForPaginationRelayoutIfNeeded(*positionedObject, layoutScope);
+
+  // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout()
+  // here instead of a full layout. Need to investigate why it does not
+  // trigger the correct invalidations in that case. crbug.com/350756
+  if (info == ForcedLayoutAfterContainingBlockMoved) {
+    positionedObject->setNeedsLayout(LayoutInvalidationReason::AncestorMoved,
+                                     MarkOnlyThis);
+  }
+
+  positionedObject->layoutIfNeeded();
+
+  LayoutObject* parent = positionedObject->parent();
+  bool layoutChanged = false;
+  if (parent->isFlexibleBox() &&
+      toLayoutFlexibleBox(parent)->setStaticPositionForPositionedLayout(
+          *positionedObject)) {
+    // The static position of an abspos child of a flexbox depends on its size
+    // (for example, they can be centered). So we may have to reposition the
+    // item after layout.
+    // TODO(cbiesinger): We could probably avoid a layout here and just
+    // reposition?
+    positionedObject->forceChildLayout();
+    layoutChanged = true;
+  }
+
+  // Lay out again if our estimate was wrong.
+  if (!layoutChanged && needsBlockDirectionLocationSetBeforeLayout &&
+      logicalTopEstimate != logicalTopForChild(*positionedObject))
+    positionedObject->forceChildLayout();
+
+  if (isPaginated)
+    updateFragmentationInfoForChild(*positionedObject);
 }
 
 void LayoutBlock::markPositionedObjectsForLayout() {
