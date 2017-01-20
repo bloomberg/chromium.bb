@@ -287,7 +287,7 @@ static void pvq_decode_partition(aom_reader *r,
  * @param [in]     robust  stream is robust to error in the reference
  * @param [in]     is_keyframe whether we're encoding a keyframe
  * @param [out]    flags   bitmask of the per band skip and noref flags
- * @param [in]     block_skip skip flag for the block (range 0-3)
+ * @param [in]     ac_dc_coded skip flag for the block (range 0-3)
  * @param [in]     qm      QM with magnitude compensation
  * @param [in]     qm_inv  Inverse of QM with magnitude compensation
  */
@@ -301,7 +301,7 @@ void od_pvq_decode(daala_dec_ctx *dec,
                    int robust,
                    int is_keyframe,
                    unsigned int *flags,
-                   int block_skip,
+                   PVQ_SKIP_TYPE ac_dc_coded,
                    const int16_t *qm,
                    const int16_t *qm_inv){
 
@@ -337,9 +337,8 @@ void od_pvq_decode(daala_dec_ctx *dec,
   model = dec->state.adapt.pvq.pvq_param_model;
   nb_bands = OD_BAND_OFFSETS[bs][0];
   off = &OD_BAND_OFFSETS[bs][1];
-  OD_ASSERT(block_skip < 4);
-  out[0] = block_skip & 1;
-  if (!(block_skip >> 1)) {
+  out[0] = ac_dc_coded & DC_CODED;
+  if (ac_dc_coded < AC_CODED) {
     if (is_keyframe) for (i = 1; i < 1 << (2*bs + 4); i++) out[i] = 0;
     else for (i = 1; i < 1 << (2*bs + 4); i++) out[i] = ref[i];
   }

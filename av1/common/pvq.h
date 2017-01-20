@@ -109,6 +109,13 @@ extern const uint16_t LAPLACE_OFFSET[];
 
 # define OD_ADAPT_NO_VALUE (-2147483647-1)
 
+typedef enum {
+  PVQ_SKIP = 0x0,
+  DC_CODED = 0x1,
+  AC_CODED = 0x2,
+  AC_DC_CODED = 0x3,
+} PVQ_SKIP_TYPE;
+
 typedef struct od_pvq_adapt_ctx  od_pvq_adapt_ctx;
 typedef struct od_pvq_codeword_ctx od_pvq_codeword_ctx;
 

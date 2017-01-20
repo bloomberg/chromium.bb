@@ -341,7 +341,7 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
 static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
                                  int16_t *dqcoeff, int16_t *quant, int pli,
                                  int bs, TX_TYPE tx_type, int xdec,
-                                 int ac_dc_coded) {
+                                 PVQ_SKIP_TYPE ac_dc_coded) {
   unsigned int flags;  // used for daala's stream analyzer.
   int off;
   const int is_keyframe = 0;
@@ -405,7 +405,24 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   return eob;
 }
 
-static int av1_pvq_decode_helper2(MACROBLOCKD *const xd,
+static PVQ_SKIP_TYPE read_pvq_skip(AV1_COMMON *cm, MACROBLOCKD *const xd,
+                                   int plane, TX_SIZE tx_size) {
+  // decode ac/dc coded flag. bit0: DC coded, bit1 : AC coded
+  // NOTE : we don't use 5 symbols for luma here in aom codebase,
+  // since block partition is taken care of by aom.
+  // So, only AC/DC skip info is coded
+  const int ac_dc_coded = aom_decode_cdf_adapt(
+      xd->daala_dec.r,
+      xd->daala_dec.state.adapt.skip_cdf[2 * tx_size + (plane != 0)], 4,
+      xd->daala_dec.state.adapt.skip_increment, "skip");
+  if (ac_dc_coded < 0 || ac_dc_coded > 3) {
+    aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
+                       "Invalid PVQ Skip Type");
+  }
+  return ac_dc_coded;
+}
+
+static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                   MB_MODE_INFO *const mbmi, int plane, int row,
                                   int col, TX_SIZE tx_size, TX_TYPE tx_type) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -416,21 +433,13 @@ static int av1_pvq_decode_helper2(MACROBLOCKD *const xd,
   const int diff_stride = tx_blk_size;
   int16_t *pred = pd->pred;
   tran_low_t *const dqcoeff = pd->dqcoeff;
-  int ac_dc_coded;  // bit0: DC coded, bit1 : AC coded
   uint8_t *dst;
   int eob;
+  const PVQ_SKIP_TYPE ac_dc_coded = read_pvq_skip(cm, xd, plane, tx_size);
 
   eob = 0;
   dst = &pd->dst.buf[4 * row * pd->dst.stride + 4 * col];
 
-  // decode ac/dc coded flag. bit0: DC coded, bit1 : AC coded
-  // NOTE : we don't use 5 symbols for luma here in aom codebase,
-  // since block partition is taken care of by aom.
-  // So, only AC/DC skip info is coded
-  ac_dc_coded = aom_decode_cdf_adapt(
-      xd->daala_dec.r,
-      xd->daala_dec.state.adapt.skip_cdf[2 * tx_size + (plane != 0)], 4,
-      xd->daala_dec.state.adapt.skip_increment, "skip");
   if (ac_dc_coded) {
     int xdec = pd->subsampling_x;
     int seg_id = mbmi->segment_id;
@@ -485,7 +494,6 @@ static void predict_and_reconstruct_intra_block(AV1_COMMON *cm,
   uint8_t *dst;
   const int block_idx = (row << 1) + col;
 #if CONFIG_PVQ
-  (void)cm;
   (void)r;
 #endif
   dst = &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
@@ -514,7 +522,7 @@ static void predict_and_reconstruct_intra_block(AV1_COMMON *cm,
       inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                               max_scan_line, eob);
 #else
-    av1_pvq_decode_helper2(xd, mbmi, plane, row, col, tx_size, tx_type);
+    av1_pvq_decode_helper2(cm, xd, mbmi, plane, row, col, tx_size, tx_type);
 #endif
   }
 }
@@ -590,7 +598,6 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
 #if CONFIG_PVQ
   int eob;
-  (void)cm;
   (void)r;
   (void)segment_id;
 #else
@@ -612,8 +619,8 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
     inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                             max_scan_line, eob);
 #else
-  eob = av1_pvq_decode_helper2(xd, &xd->mi[0]->mbmi, plane, row, col, tx_size,
-                               tx_type);
+  eob = av1_pvq_decode_helper2(cm, xd, &xd->mi[0]->mbmi, plane, row, col,
+                               tx_size, tx_type);
 #endif
   return eob;
 }

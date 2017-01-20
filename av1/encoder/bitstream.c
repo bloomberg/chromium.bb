@@ -2163,7 +2163,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                                adapt->skip_increment);
 
           // AC coeffs coded?
-          if (pvq->ac_dc_coded & 0x02) {
+          if (pvq->ac_dc_coded & AC_CODED) {
             assert(pvq->bs <= tx_size);
             for (i = 0; i < pvq->nb_bands; i++) {
               if (i == 0 || (!pvq->skip_rest &&
@@ -2187,12 +2187,12 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
             }
           }
           // Encode residue of DC coeff, if exist.
-          if (!has_dc_skip || (pvq->ac_dc_coded & 1)) {  // DC coded?
+          if (!has_dc_skip || (pvq->ac_dc_coded & DC_CODED)) {
             generic_encode(w, &adapt->model_dc[plane],
                            abs(pvq->dq_dc_residue) - has_dc_skip, -1,
                            &adapt->ex_dc[plane][pvq->bs][0], 2);
           }
-          if ((pvq->ac_dc_coded & 1)) {  // DC coded?
+          if ((pvq->ac_dc_coded & DC_CODED)) {
             aom_write_bit(w, pvq->dq_dc_residue < 0);
           }
           block += step_xy;

@@ -97,10 +97,10 @@ typedef struct PVQ_INFO {
   int size[PVQ_MAX_PARTITIONS];
   int skip_rest;
   int skip_dir;
-  int bs;           // log of the block size minus two,
-                    // i.e. equivalent to aom's TX_SIZE
-  int ac_dc_coded;  // block skip info, indicating whether DC/AC is coded.
-                    // bit0: DC coded, bit1 : AC coded (1 means coded)
+  int bs;  // log of the block size minus two,
+           // i.e. equivalent to aom's TX_SIZE
+  // Block skip info, indicating whether DC/AC, is coded.
+  PVQ_SKIP_TYPE ac_dc_coded;  // bit0: DC coded, bit1 : AC coded (1 means coded)
   tran_low_t dq_dc_residue;
 } PVQ_INFO;
 

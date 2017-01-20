@@ -611,19 +611,20 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   // PVQ for inter mode block
   if (!x->skip_block) {
-    int ac_dc_coded = av1_pvq_encode_helper(&x->daala_enc,
-                                            coeff,  // target original vector
-                                            ref_coeff,    // reference vector
-                                            dqcoeff,      // de-quantized vector
-                                            eob,          // End of Block marker
-                                            pd->dequant,  // aom's quantizers
-                                            plane,        // image plane
-                                            tx_size,  // block size in log_2 - 2
-                                            tx_type,
-                                            &x->rate,  // rate measured
-                                            x->pvq_speed,
-                                            pvq_info);  // PVQ info for a block
-    skip = ac_dc_coded == 0;
+    PVQ_SKIP_TYPE ac_dc_coded =
+        av1_pvq_encode_helper(&x->daala_enc,
+                              coeff,        // target original vector
+                              ref_coeff,    // reference vector
+                              dqcoeff,      // de-quantized vector
+                              eob,          // End of Block marker
+                              pd->dequant,  // aom's quantizers
+                              plane,        // image plane
+                              tx_size,      // block size in log_2 - 2
+                              tx_type,
+                              &x->rate,  // rate measured
+                              x->pvq_speed,
+                              pvq_info);  // PVQ info for a block
+    skip = ac_dc_coded == PVQ_SKIP;
   }
   x->pvq_skip[plane] = skip;
 
@@ -1122,13 +1123,12 @@ void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
 }
 
 #if CONFIG_PVQ
-int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
-                          tran_low_t *ref_coeff, tran_low_t *const dqcoeff,
-                          uint16_t *eob, const int16_t *quant, int plane,
-                          int tx_size, TX_TYPE tx_type, int *rate, int speed,
-                          PVQ_INFO *pvq_info) {
+PVQ_SKIP_TYPE av1_pvq_encode_helper(
+    daala_enc_ctx *daala_enc, tran_low_t *const coeff, tran_low_t *ref_coeff,
+    tran_low_t *const dqcoeff, uint16_t *eob, const int16_t *quant, int plane,
+    int tx_size, TX_TYPE tx_type, int *rate, int speed, PVQ_INFO *pvq_info) {
   const int tx_blk_size = tx_size_wide[tx_size];
-  int ac_dc_coded;
+  PVQ_SKIP_TYPE ac_dc_coded;
   int quant_shift = get_tx_scale(tx_size);
   int pvq_dc_quant;
   int use_activity_masking = daala_enc->use_activity_masking;
