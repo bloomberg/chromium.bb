@@ -553,6 +553,9 @@
     'ios_showcase': {
       'filepath': 'ios/showcase',
     },
+    'ios_web': {
+      'filepath': 'ios/web',
+    },
     'ipc': {
       'filepath': 'ipc/ipc',
     },
@@ -1882,11 +1885,12 @@
     'ios_chrome': ['pkl@chromium.org',
                    'sdefresne+watch@chromium.org',
                    'noyau+watch@chromium.org',
-									 'marq+watch@chromium.org'],
+                   'marq+watch@chromium.org'],
     'ios_clean': ['marq+scrutinize@chromium.org',
                   'lpromero+watch@chromium.org'],
     'ios_showcase': ['marq+watch@chromium.org',
                      'lpromero+watch@chromium.org'],
+    'ios_web': ['eugenebut@chromium.org'],
     'ipc': ['darin-cc@chromium.org',
             'jam@chromium.org'],
     'libwebp': ['jzern@chromium.org',
