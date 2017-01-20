@@ -71,6 +71,15 @@ constexpr SourceOptions kSourceOptions[] = {
   }
 };
 
+void DeleteFileWhenPossible(const base::FilePath& path) {
+  // Open (with delete) and then immediately close the file by going out of
+  // scope. This is the only cross-platform safe way to delete a file that may
+  // be open elsewhere, a distinct possibility given the asynchronous nature
+  // of the delete task.
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                            base::File::FLAG_DELETE_ON_CLOSE);
+}
+
 }  // namespace
 
 // This structure stores all the information about the sources being monitored
@@ -433,9 +442,7 @@ void FileMetricsProvider::RecordSourcesChecked(SourceInfoList* checked) {
 }
 
 void FileMetricsProvider::DeleteFileAsync(const base::FilePath& path) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(base::IgnoreResult(&base::DeleteFile),
-                                    path, /*recursive=*/false));
+  task_runner_->PostTask(FROM_HERE, base::Bind(DeleteFileWhenPossible, path));
 }
 
 void FileMetricsProvider::RecordSourceAsRead(SourceInfo* source) {
