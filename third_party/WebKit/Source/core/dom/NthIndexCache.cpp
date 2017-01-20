@@ -79,9 +79,8 @@ unsigned uncachedNthLastOfTypeIndex(Element& element, unsigned& siblingCount) {
 }  // namespace
 
 unsigned NthIndexCache::nthChildIndex(Element& element) {
-  if (element.isPseudoElement())
+  if (element.isPseudoElement() || !element.parentNode())
     return 1;
-  DCHECK(element.parentNode());
   NthIndexCache* nthIndexCache = element.document().nthIndexCache();
   NthIndexData* nthIndexData = nullptr;
   if (nthIndexCache && nthIndexCache->m_parentMap)
@@ -95,9 +94,8 @@ unsigned NthIndexCache::nthChildIndex(Element& element) {
 }
 
 unsigned NthIndexCache::nthLastChildIndex(Element& element) {
-  if (element.isPseudoElement())
+  if (element.isPseudoElement() && !element.parentNode())
     return 1;
-  DCHECK(element.parentNode());
   NthIndexCache* nthIndexCache = element.document().nthIndexCache();
   NthIndexData* nthIndexData = nullptr;
   if (nthIndexCache && nthIndexCache->m_parentMap)
@@ -120,7 +118,7 @@ NthIndexData* NthIndexCache::nthTypeIndexDataForParent(Element& element) const {
 }
 
 unsigned NthIndexCache::nthOfTypeIndex(Element& element) {
-  if (element.isPseudoElement())
+  if (element.isPseudoElement() || !element.parentNode())
     return 1;
   NthIndexCache* nthIndexCache = element.document().nthIndexCache();
   if (nthIndexCache) {
@@ -136,7 +134,7 @@ unsigned NthIndexCache::nthOfTypeIndex(Element& element) {
 }
 
 unsigned NthIndexCache::nthLastOfTypeIndex(Element& element) {
-  if (element.isPseudoElement())
+  if (element.isPseudoElement() || !element.parentNode())
     return 1;
   NthIndexCache* nthIndexCache = element.document().nthIndexCache();
   if (nthIndexCache) {
