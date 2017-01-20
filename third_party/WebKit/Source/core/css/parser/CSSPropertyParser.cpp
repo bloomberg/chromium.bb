@@ -1420,15 +1420,6 @@ static CSSValue* consumeScrollSnapPoints(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSValue* consumeClipPath(CSSParserTokenRange& range,
-                                 const CSSParserContext* context) {
-  if (range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-  if (CSSURIValue* url = consumeUrl(range, context))
-    return url;
-  return CSSPropertyShapeUtils::consumeBasicShape(range, context);
-}
-
 static CSSValue* consumeContentDistributionOverflowPosition(
     CSSParserTokenRange& range) {
   if (identMatches<CSSValueNormal, CSSValueBaseline, CSSValueLastBaseline>(
@@ -2555,8 +2546,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeScrollSnapPoints(m_range, m_context->mode());
     case CSSPropertyOrder:
       return consumeInteger(m_range);
-    case CSSPropertyClipPath:
-      return consumeClipPath(m_range, m_context);
     case CSSPropertyJustifyContent:
     case CSSPropertyAlignContent:
       ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());

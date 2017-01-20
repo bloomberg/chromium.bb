@@ -240,7 +240,7 @@ caption-side inherited, keyword_only, independent, keywords=[top|bottom|left|rig
 caret-color interpolable, inherited, custom_all, api_class
 clear
 clip interpolable, converter=convertClip, custom_all, api_class
-clip-path interpolable, converter=convertClipPath
+clip-path interpolable, converter=convertClipPath, api_class
 clip-rule inherited, svg, type_name=WindRule
 color-interpolation inherited, svg
 color-interpolation-filters inherited, svg, type_name=EColorInterpolation
