@@ -719,9 +719,6 @@ _waterfall_config_map = {
         'lakitu_next-paladin',
         'poppy-paladin',
 
-        # Flaky Paladins (see TODO below in _paladin_important_boards)
-        'auron-paladin',
-
         # Firmware Builders.
         'link-depthcharge-full-firmware',
 
@@ -2093,12 +2090,7 @@ def CqBuilders(site_config, ge_build_config):
   _paladin_important_boards = frozenset([
       'amd64-generic',
       'arm-generic',
-      # TODO(benchan): update-engine unit tests has been hanging on
-      # 'auron-paradin' more frequently (crbug.com/678643) than other builders.
-      # Temporarily mark 'auron-paladin' not important to reduce CQ failures as
-      # other builders like 'samus-paladin' provide similar coverage. Mark
-      # 'auron-paladin' important once the issue is resolved.
-      # 'auron',
+      'auron',
       'beaglebone',
       'butterfly',
       'cyan',
