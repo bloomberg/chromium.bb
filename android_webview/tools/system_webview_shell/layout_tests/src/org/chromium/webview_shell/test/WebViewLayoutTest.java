@@ -11,6 +11,7 @@ import junit.framework.ComparisonFailure;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.webview_shell.WebViewLayoutTestActivity;
 
@@ -156,6 +157,7 @@ public class WebViewLayoutTest
         assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
     }
 
+    @DisabledTest(message = "crbug.com/683153")
     @MediumTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
