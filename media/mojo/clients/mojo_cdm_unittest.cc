@@ -67,9 +67,10 @@ class MojoCdmTest : public ::testing::Test {
  public:
   enum ExpectedResult {
     SUCCESS,
-    CONNECTION_ERROR_BEFORE,
-    CONNECTION_ERROR_DURING,
-    FAILURE
+    FAILURE,                  // Operation fails immediately.
+    PENDING,                  // Operation never completes.
+    CONNECTION_ERROR_BEFORE,  // Connection error happened before operation.
+    CONNECTION_ERROR_DURING,  // Connection error happens during operation.
   };
 
   MojoCdmTest()
@@ -81,6 +82,9 @@ class MojoCdmTest : public ::testing::Test {
   virtual ~MojoCdmTest() {}
 
   void Initialize(ExpectedResult expected_result) {
+    // TODO(xhwang): Add pending init support.
+    DCHECK_NE(PENDING, expected_result);
+
     mojom::ContentDecryptionModulePtr remote_cdm;
     auto cdm_request = mojo::MakeRequest(&remote_cdm);
 
@@ -187,11 +191,6 @@ class MojoCdmTest : public ::testing::Test {
     if (expected_result == SUCCESS) {
       // Returned session ID must match the session ID provided.
       EXPECT_EQ(session_id, created_session_id);
-
-      // MojoCdm expects the session to be closed, so invoke SessionClosedCB
-      // to "close" it.
-      EXPECT_CALL(cdm_client_, OnSessionClosed(session_id));
-      remote_cdm_->CallSessionClosedCB(session_id);
       base::RunLoop().RunUntilIdle();
     }
   }
@@ -298,6 +297,11 @@ class MojoCdmTest : public ::testing::Test {
                         "Promise rejected");
         break;
 
+      case PENDING:
+        // Store the promise and never fulfill it.
+        pending_simple_cdm_promise_ = std::move(promise);
+        break;
+
       case CONNECTION_ERROR_BEFORE:
         // Connection should be broken before this is called.
         NOTREACHED();
@@ -329,6 +333,11 @@ class MojoCdmTest : public ::testing::Test {
                         "Promise rejected");
         break;
 
+      case PENDING:
+        // Store the promise and never fulfill it.
+        pending_new_session_cdm_promise_ = std::move(promise);
+        break;
+
       case CONNECTION_ERROR_BEFORE:
         // Connection should be broken before this is called.
         NOTREACHED();
@@ -356,6 +365,10 @@ class MojoCdmTest : public ::testing::Test {
 
   MojoCdmServiceContext mojo_cdm_service_context_;
   StrictMock<MockCdmClient> cdm_client_;
+
+  // Declared before |mojo_cdm_| so they are destroyed after it.
+  std::unique_ptr<SimpleCdmPromise> pending_simple_cdm_promise_;
+  std::unique_ptr<NewSessionCdmPromise> pending_new_session_cdm_promise_;
 
   std::unique_ptr<MojoCdmService> mojo_cdm_service_;
   mojo::Binding<mojom::ContentDecryptionModule> cdm_binding_;
@@ -393,6 +406,12 @@ TEST_F(MojoCdmTest, SetServerCertificate_Failure) {
   SetServerCertificateAndExpect(certificate, FAILURE);
 }
 
+TEST_F(MojoCdmTest, SetServerCertificate_Pending) {
+  const std::vector<uint8_t> certificate = {1, 2, 3, 4, 5};
+  Initialize(SUCCESS);
+  SetServerCertificateAndExpect(certificate, PENDING);
+}
+
 TEST_F(MojoCdmTest, SetServerCertificate_ConnectionErrorBefore) {
   const std::vector<uint8_t> certificate = {3, 4};
   Initialize(SUCCESS);
@@ -409,12 +428,21 @@ TEST_F(MojoCdmTest, CreateSession_Success) {
   const std::string session_id = "create1";
   Initialize(SUCCESS);
   CreateSessionAndExpect(session_id, SUCCESS);
+
+  // Created session should always be closed!
+  EXPECT_CALL(cdm_client_, OnSessionClosed(session_id));
 }
 
 TEST_F(MojoCdmTest, CreateSession_Failure) {
   const std::string session_id = "create2";
   Initialize(SUCCESS);
   CreateSessionAndExpect(session_id, FAILURE);
+}
+
+TEST_F(MojoCdmTest, CreateSession_Pending) {
+  const std::string session_id = "create2";
+  Initialize(SUCCESS);
+  CreateSessionAndExpect(session_id, PENDING);
 }
 
 TEST_F(MojoCdmTest, CreateSession_ConnectionErrorBefore) {
@@ -441,6 +469,12 @@ TEST_F(MojoCdmTest, LoadSession_Failure) {
   LoadSessionAndExpect(session_id, FAILURE);
 }
 
+TEST_F(MojoCdmTest, LoadSession_Pending) {
+  const std::string session_id = "load2";
+  Initialize(SUCCESS);
+  LoadSessionAndExpect(session_id, PENDING);
+}
+
 TEST_F(MojoCdmTest, LoadSession_ConnectionErrorBefore) {
   const std::string session_id = "load3";
   Initialize(SUCCESS);
@@ -463,6 +497,12 @@ TEST_F(MojoCdmTest, UpdateSession_Failure) {
   const std::string session_id = "update2";
   Initialize(SUCCESS);
   UpdateSessionAndExpect(session_id, FAILURE);
+}
+
+TEST_F(MojoCdmTest, UpdateSession_Pending) {
+  const std::string session_id = "update2";
+  Initialize(SUCCESS);
+  UpdateSessionAndExpect(session_id, PENDING);
 }
 
 TEST_F(MojoCdmTest, UpdateSession_ConnectionErrorBefore) {
@@ -489,6 +529,12 @@ TEST_F(MojoCdmTest, CloseSession_Failure) {
   CloseSessionAndExpect(session_id, FAILURE);
 }
 
+TEST_F(MojoCdmTest, CloseSession_Pending) {
+  const std::string session_id = "close2";
+  Initialize(SUCCESS);
+  CloseSessionAndExpect(session_id, PENDING);
+}
+
 TEST_F(MojoCdmTest, CloseSession_ConnectionErrorBefore) {
   const std::string session_id = "close3";
   Initialize(SUCCESS);
@@ -511,6 +557,12 @@ TEST_F(MojoCdmTest, RemoveSession_Failure) {
   const std::string session_id = "remove2";
   Initialize(SUCCESS);
   RemoveSessionAndExpect(session_id, FAILURE);
+}
+
+TEST_F(MojoCdmTest, RemoveSession_Pending) {
+  const std::string session_id = "remove2";
+  Initialize(SUCCESS);
+  RemoveSessionAndExpect(session_id, PENDING);
 }
 
 TEST_F(MojoCdmTest, RemoveSession_ConnectionErrorBefore) {

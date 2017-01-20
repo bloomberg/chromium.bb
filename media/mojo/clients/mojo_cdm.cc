@@ -83,6 +83,10 @@ MojoCdm::~MojoCdm() {
       !decryptor_task_runner_->BelongsToCurrentThread() && decryptor_) {
     decryptor_task_runner_->DeleteSoon(FROM_HERE, decryptor_.release());
   }
+
+  // Reject any outstanding promises and close all the existing sessions.
+  cdm_promise_adapter_.Clear();
+  cdm_session_tracker_.CloseRemainingSessions(session_closed_cb_);
 }
 
 // Using base::Unretained(this) below is safe because |this| owns |remote_cdm_|,
