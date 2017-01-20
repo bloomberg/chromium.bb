@@ -8,3 +8,6 @@ dgozman@chromium.org
 pfeldman@chromium.org
 
 per-file modules.gypi=*
+
+# TEAM: platform-architecture-dev@chromium.org
+# COMPONENT: Blink>Internals>Modularization

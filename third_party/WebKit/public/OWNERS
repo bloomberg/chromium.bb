@@ -19,5 +19,5 @@ tkent@chromium.org
 # structural changes, please get a review from a reviewer in this file.
 per-file blink_headers.gypi=*
 
-# TEAM: blink-dev@chromium.org
-# COMPONENT: Blink
+# TEAM: platform-architecture-dev@chromium.org
+# COMPONENT: Blink>Internals>Modularization

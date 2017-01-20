@@ -20,3 +20,6 @@ per-file AssertMatchingEnums.cpp=*
 # Page load metrics
 per-file WebPerformance.cpp=bmcquade@chromium.org
 per-file WebPerformance.cpp=csharrison@chromium.org
+
+# TEAM: platform-architecture-dev@chromium.org
+# COMPONENT: Blink>Internals>Modularization
