@@ -39,6 +39,7 @@ const char kWindowLocationTestURL[] =
 const char kWindowLocationAssignID[] = "location-assign";
 const char kWindowLocationReplaceID[] = "location-replace";
 const char kWindowLocationReloadID[] = "location-reload";
+const char kWindowLocationSetToDOMStringID[] = "set-location-to-dom-string";
 
 // JavaScript functions on the window.location test page.
 NSString* const kUpdateURLScriptFormat = @"updateUrlToLoadText('%s')";
@@ -200,4 +201,31 @@ TEST_F(WindowLocationTest, WindowLocationReload) {
   // NavigationItems are added.
   EXPECT_TRUE(IsOnLoadTextVisible());
   EXPECT_EQ(1, navigation_manager()->GetItemCount());
+}
+
+// Tests that calling window.location.assign() creates a new NavigationItem.
+TEST_F(WindowLocationTest, WindowLocationSetToDOMString) {
+  // Navigate to about:blank so there is a forward entry to prune.
+  GURL about_blank("about:blank");
+  LoadUrl(about_blank);
+  web::NavigationItem* about_blank_item =
+      navigation_manager()->GetLastCommittedItem();
+
+  // Navigate back to the window.location test page.
+  ExecuteBlockAndWaitForLoad(window_location_url(), ^{
+    navigation_manager()->GoBack();
+  });
+
+  // Set the window.location test URL and tap the window.location.assign()
+  // button.
+  GURL sample_url = web::test::HttpServer::MakeUrl(kSampleFileBasedURL);
+  SetWindowLocationUrl(sample_url);
+  ExecuteBlockAndWaitForLoad(sample_url, ^{
+    ASSERT_TRUE(web::test::TapWebViewElementWithId(
+        web_state(), kWindowLocationSetToDOMStringID));
+  });
+
+  // Verify that |sample_url| was loaded and that |about_blank_item| was pruned.
+  EXPECT_EQ(sample_url, navigation_manager()->GetLastCommittedItem()->GetURL());
+  EXPECT_EQ(NSNotFound, GetIndexOfNavigationItem(about_blank_item));
 }
