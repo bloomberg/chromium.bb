@@ -464,6 +464,19 @@ SkColor GetBorderColor(const char* css_selector) {
   gtk_render_frame(context, surface.cairo(), 0, 0, 1, 1);
   return surface.GetPixelValue();
 }
+
+SkColor GetSeparatorColor(const char* css_selector) {
+  if (!GtkVersionCheck(3, 20))
+    return GetFgColor(css_selector);
+
+  // Some themes use borders to render separators, others use a
+  // background color.  Only return the border color if there is one.
+  SkColor border = GetBorderColor(css_selector);
+  if (SkColorGetA(border))
+    return border;
+
+  return GetBgColor(css_selector);
+}
 #endif
 
 }  // namespace libgtkui

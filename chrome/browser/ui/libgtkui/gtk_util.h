@@ -144,6 +144,9 @@ SkColor GetBgColor(const char* css_selector);
 // created by GetStyleContextFromCss(|css_selector|) into a single
 // pixel and returns the color.  Otherwise returns kInvalidColor.
 SkColor GetBorderColor(const char* css_selector);
+
+// Get the color of the GtkSeparator specified by |css_selector|.
+SkColor GetSeparatorColor(const char* css_selector);
 #endif
 
 }  // namespace libgtkui

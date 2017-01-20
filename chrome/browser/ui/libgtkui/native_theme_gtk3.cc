@@ -149,10 +149,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Separator
     case ui::NativeTheme::kColorId_SeparatorColor:
-      if (GtkVersionCheck(3, 20))
-        return GetBgColor("GtkSeparator#separator.horizontal");
-      else
-        return GetFgColor("GtkSeparator#separator.horizontal");
+      return GetSeparatorColor("GtkSeparator#separator.horizontal");
 
     // Button
     case ui::NativeTheme::kColorId_ButtonEnabledColor:
