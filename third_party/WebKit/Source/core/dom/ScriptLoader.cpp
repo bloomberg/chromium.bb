@@ -454,10 +454,12 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
     return true;
 
   LocalFrame* frame = contextDocument->frame();
+  if (!frame)
+    return true;
 
   const ContentSecurityPolicy* csp = elementDocument->contentSecurityPolicy();
   bool shouldBypassMainWorldCSP =
-      (frame && frame->script().shouldBypassMainWorldCSP()) ||
+      (frame->script().shouldBypassMainWorldCSP()) ||
       csp->allowScriptWithHash(sourceCode.source(),
                                ContentSecurityPolicy::InlineType::Block);
 
@@ -509,11 +511,6 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
       logScriptMIMEType(frame, resource, mimeType);
     }
   }
-
-  // FIXME: Can this be moved earlier in the function?
-  // Why are we ever attempting to execute scripts without a frame?
-  if (!frame)
-    return true;
 
   AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
   if (!m_isExternalScript) {
