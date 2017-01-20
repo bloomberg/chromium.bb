@@ -53,7 +53,6 @@ UserActivityDetector::UserActivityDetector() {
 
   ui::PlatformEventSource* platform_event_source =
       ui::PlatformEventSource::GetInstance();
-  // TODO(sad): Need a PES for mus.
   if (platform_event_source)
     platform_event_source->AddPlatformEventObserver(this);
 }
@@ -89,6 +88,10 @@ void UserActivityDetector::OnDisplayPowerChanging() {
       base::TimeDelta::FromMilliseconds(kDisplayPowerChangeIgnoreMouseMs);
 }
 
+void UserActivityDetector::HandleExternalUserActivity() {
+  HandleActivity(nullptr);
+}
+
 void UserActivityDetector::DidProcessEvent(
     const PlatformEvent& platform_event) {
   std::unique_ptr<ui::Event> event(ui::EventFromNative(platform_event));
@@ -117,11 +120,11 @@ void UserActivityDetector::ProcessReceivedEvent(const ui::Event* event) {
 void UserActivityDetector::HandleActivity(const ui::Event* event) {
   base::TimeTicks now = GetCurrentTime();
   last_activity_time_ = now;
-  last_activity_name_ = event->name();
+  last_activity_name_ = event ? event->name() : std::string();
   if (last_observer_notification_time_.is_null() ||
       (now - last_observer_notification_time_).InMillisecondsF() >=
       kNotifyIntervalMs) {
-    if (VLOG_IS_ON(1))
+    if (VLOG_IS_ON(1) && event)
       VLOG(1) << "Reporting user activity: " << GetEventDebugString(event);
     for (UserActivityObserver& observer : observers_)
       observer.OnUserActivity(event);

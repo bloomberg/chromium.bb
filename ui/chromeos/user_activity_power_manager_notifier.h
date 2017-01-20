@@ -15,10 +15,12 @@ namespace ui {
 
 class UserActivityDetector;
 
-// Notifies the power manager when the user is active.
+// Notifies the power manager via D-Bus when the user is active.
 class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
     : public UserActivityObserver {
  public:
+  // Registers and unregisters itself as an observer of |detector| on
+  // construction and destruction.
   explicit UserActivityPowerManagerNotifier(UserActivityDetector* detector);
   ~UserActivityPowerManagerNotifier() override;
 

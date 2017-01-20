@@ -208,4 +208,28 @@ TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
   EXPECT_EQ(0, observer_->num_invocations());
 }
 
+// Checks that observers are notified about externally-reported user activity.
+TEST_F(UserActivityDetectorTest, HandleExternalUserActivity) {
+  detector_->HandleExternalUserActivity();
+  EXPECT_EQ(1, observer_->num_invocations());
+  observer_->reset_stats();
+
+  base::TimeDelta advance_delta = base::TimeDelta::FromMilliseconds(
+      UserActivityDetector::kNotifyIntervalMs);
+  AdvanceTime(advance_delta);
+  detector_->HandleExternalUserActivity();
+  EXPECT_EQ(1, observer_->num_invocations());
+  observer_->reset_stats();
+
+  base::TimeDelta half_advance_delta = base::TimeDelta::FromMilliseconds(
+      UserActivityDetector::kNotifyIntervalMs / 2);
+  AdvanceTime(half_advance_delta);
+  detector_->HandleExternalUserActivity();
+  EXPECT_EQ(0, observer_->num_invocations());
+
+  AdvanceTime(half_advance_delta);
+  detector_->HandleExternalUserActivity();
+  EXPECT_EQ(1, observer_->num_invocations());
+}
+
 }  // namespace ui

@@ -99,9 +99,12 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicemode.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/mus/user_activity_forwarder.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_switches.h"
@@ -733,6 +736,15 @@ void Shell::Init(const ShellInitParams& init_params) {
       display_configurator_->cached_displays());
 
   wm_shell_->AddShellObserver(lock_state_controller_.get());
+
+  // The connector is unavailable in some tests.
+  if (is_mash && wm_shell_->delegate()->GetShellConnector()) {
+    ui::mojom::UserActivityMonitorPtr user_activity_monitor;
+    wm_shell_->delegate()->GetShellConnector()->BindInterface(
+        ui::mojom::kServiceName, &user_activity_monitor);
+    user_activity_forwarder_ = base::MakeUnique<aura::UserActivityForwarder>(
+        std::move(user_activity_monitor), user_activity_detector_.get());
+  }
 
   drag_drop_controller_.reset(new DragDropController);
   // |screenshot_controller_| needs to be created (and prepended as a

@@ -25,6 +25,7 @@
 
 namespace aura {
 class RootWindow;
+class UserActivityForwarder;
 class Window;
 class WindowManagerClient;
 class WindowTreeClient;
@@ -498,6 +499,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<ScreenPinningController> screen_pinning_controller_;
 
+  // Forwards user activity ui::mojom::UserActivityMonitor to
+  // |user_activity_detector_|. Only initialized for mash.
+  std::unique_ptr<aura::UserActivityForwarder> user_activity_forwarder_;
+
   std::unique_ptr<PowerEventObserver> power_event_observer_;
   std::unique_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
   std::unique_ptr<VideoActivityNotifier> video_activity_notifier_;
@@ -520,7 +525,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Listens for shutdown and updates DisplayConfigurator.
   std::unique_ptr<ShutdownObserver> shutdown_observer_;
 
-  // Implements content::ScreenOrientationController for ChromeOS
+  // Implements content::ScreenOrientationController for Chrome OS.
   std::unique_ptr<ScreenOrientationController> screen_orientation_controller_;
   std::unique_ptr<ScreenLayoutObserver> screen_layout_observer_;
 
@@ -536,7 +541,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // pointer to vend to test code.
   AshNativeCursorManager* native_cursor_manager_;
 
-  // Cursor may be hidden on certain key events in ChromeOS, whereas we never
+  // Cursor may be hidden on certain key events in Chrome OS, whereas we never
   // hide the cursor on Windows.
   std::unique_ptr<::wm::CursorManager> cursor_manager_;
 

@@ -45,6 +45,10 @@ class UI_BASE_EXPORT UserActivityDetector : public ui::PlatformEventObserver {
   // Called when displays are about to be turned on or off.
   void OnDisplayPowerChanging();
 
+  // Handles reports of user activity originating from outside of
+  // PlatformEventSource (e.g. the window server).
+  void HandleExternalUserActivity();
+
   // ui::PlatformEventObserver:
   void WillProcessEvent(const PlatformEvent& platform_event) override {}
   void DidProcessEvent(const PlatformEvent& platform_event) override;

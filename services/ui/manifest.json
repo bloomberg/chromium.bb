@@ -48,6 +48,7 @@
           "ui::mojom::Gpu",
           "ui::mojom::IMEServer",
           "ui::mojom::InputDeviceServer",
+          "ui::mojom::UserActivityMonitor",
           "ui::mojom::WindowManagerWindowTreeFactory"
         ],
         "window_tree_host_factory": [
