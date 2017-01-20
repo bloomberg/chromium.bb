@@ -93,9 +93,9 @@ PresentationRequest* PresentationRequest::create(
 
     if (MixedContentChecker::isMixedContent(
             executionContext->getSecurityOrigin(), parsedUrl)) {
-      exceptionState.throwDOMException(
-          SecurityError, "Presentation of an insecure document [" + urls[i] +
-                             "] is prohibited from a secure context.");
+      exceptionState.throwSecurityError(
+          "Presentation of an insecure document [" + urls[i] +
+          "] is prohibited from a secure context.");
       return nullptr;
     }
 
