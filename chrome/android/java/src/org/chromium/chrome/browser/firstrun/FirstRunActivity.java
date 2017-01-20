@@ -100,6 +100,7 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     private String mResultSignInAccountName;
     private boolean mResultShowSignInSettings;
 
+    private boolean mFlowIsKnown;
     private boolean mPostNativePageSequenceCreated;
     private boolean mNativeSideIsInitialized;
     private Set<FirstRunPage> mPagesToNotifyOfNativeInit;
@@ -194,6 +195,7 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         mFirstRunFlowSequencer = new FirstRunFlowSequencer(this, mFreProperties) {
             @Override
             public void onFlowIsKnown(Bundle freProperties) {
+                mFlowIsKnown = true;
                 if (freProperties == null) {
                     completeFirstRunExperience();
                     return;
@@ -201,12 +203,14 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
 
                 mFreProperties = freProperties;
                 mShowWelcomePage = mFreProperties.getBoolean(SHOW_WELCOME_PAGE);
-
-                createPageSequence();
-
                 if (TextUtils.isEmpty(mResultSignInAccountName)) {
                     mResultSignInAccountName = mFreProperties.getString(
                             AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
+                }
+
+                createPageSequence();
+                if (mNativeSideIsInitialized) {
+                    createPostNativePageSequence();
                 }
 
                 if (mPages.size() == 0) {
@@ -218,6 +222,10 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
                         new FirstRunPagerAdapter(getFragmentManager(), mPages, mFreProperties);
                 stopProgressionIfNotAcceptedTermsOfService();
                 mPager.setAdapter(mPagerAdapter);
+
+                if (mNativeSideIsInitialized) {
+                    skipPagesIfNecessary();
+                }
 
                 recordFreProgressHistogram(mFreProgressStates.get(0));
             }
@@ -234,7 +242,9 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         if (mDeferredCompleteFRE) {
             completeFirstRunExperience();
             mDeferredCompleteFRE = false;
-        } else {
+        } else if (mFlowIsKnown) {
+            // Note: If mFlowIsKnown is false, then we're not ready to create the post native page
+            // sequence - in that case this will be done when onFlowIsKnown() gets called.
             createPostNativePageSequence();
             if (mPagesToNotifyOfNativeInit != null) {
                 for (FirstRunPage page : mPagesToNotifyOfNativeInit) {
