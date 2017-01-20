@@ -293,12 +293,7 @@ void PermissionSelectorRow::AddObserver(
 }
 
 void PermissionSelectorRow::ChildPreferredSizeChanged(View* child) {
-  SizeToPreferredSize();
-  // FIXME: The parent is only a plain |View| that is used as a
-  // container/box/panel. The SizeToPreferredSize method of the parent is
-  // called here directly in order not to implement a custom |View| class with
-  // its own implementation of the ChildPreferredSizeChanged method.
-  parent()->SizeToPreferredSize();
+  Layout();
 }
 
 PermissionSelectorRow::~PermissionSelectorRow() {
