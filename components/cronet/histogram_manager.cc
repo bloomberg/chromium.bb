@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "components/metrics/histogram_encoder.h"
