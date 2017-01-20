@@ -19,6 +19,7 @@
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_container_coordinator.h"
+#import "ios/clean/chrome/browser/web/web_mediator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -90,7 +91,8 @@
 
   TabStripContainerCoordinator* tabCoordinator =
       [[TabStripContainerCoordinator alloc] init];
-  tabCoordinator.webState = _placeholderWebState.get();
+  tabCoordinator.webMediator =
+      [[WebMediator alloc] initWithWebState:_placeholderWebState.get()];
   tabCoordinator.presentationKey = indexPath;
   [self addChildCoordinator:tabCoordinator];
   [tabCoordinator start];

@@ -10,6 +10,7 @@
 
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_view_controller.h"
+#import "ios/clean/chrome/browser/web/web_mediator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,7 +20,6 @@
 @interface WebCoordinator ()
 
 @property(nonatomic, strong) WebContentsViewController* viewController;
-@property(nonatomic, readwrite, strong) WebMediator* webMediator;
 
 @end
 
@@ -37,10 +37,6 @@
   [self.rootViewController presentViewController:self.viewController
                                         animated:self.context.animated
                                       completion:nil];
-}
-
-- (void)setWebState:(web::WebState*)webState {
-  self.webMediator = [[WebMediator alloc] initWithWebState:webState];
 }
 
 @end

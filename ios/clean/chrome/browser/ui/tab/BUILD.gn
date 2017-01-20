@@ -20,6 +20,7 @@ source_set("tab") {
     "//ios/clean/chrome/browser/ui/presenters",
     "//ios/clean/chrome/browser/ui/toolbar",
     "//ios/clean/chrome/browser/ui/web_contents",
+    "//ios/clean/chrome/browser/web",
     "//ios/shared/chrome/browser/coordinator_context",
     "//ios/web",
   ]
