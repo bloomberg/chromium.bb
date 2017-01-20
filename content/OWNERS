@@ -25,3 +25,5 @@ per-file *.sb=rsesek@chromium.org
 per-file *.isolate=maruel@chromium.org
 per-file *.isolate=tandrii@chromium.org
 per-file *.isolate=vadimsh@chromium.org
+
+# COMPONENT: Internals>Core

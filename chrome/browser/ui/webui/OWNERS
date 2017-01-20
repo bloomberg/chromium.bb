@@ -30,3 +30,5 @@ per-file snippets_internals*=file://components/ntp_snippets/OWNERS
 
 # Maintaining ownership from this file's original Chrome OS location.
 per-file device_log_ui*=stevenjb@chromium.org
+
+# COMPONENT: UI>Browser>WebUI

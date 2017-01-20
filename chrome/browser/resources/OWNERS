@@ -12,3 +12,5 @@ estade@chromium.org
 per-file component_extension_resources.grd=dgozman@chromium.org
 per-file profile_signin_confirmation*=achuith@chromium.org
 per-file sync_file_system_internals_resources.*=tzik@chromium.org
+
+# COMPONENT: UI
