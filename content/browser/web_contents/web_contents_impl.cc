@@ -2109,6 +2109,8 @@ void WebContentsImpl::CreateNewWindow(
     // Save the created window associated with the route so we can show it
     // later.
     DCHECK_NE(MSG_ROUTING_NONE, main_frame_widget_route_id);
+    CHECK(RenderWidgetHostImpl::FromID(render_process_id,
+                                       main_frame_widget_route_id));
     pending_contents_[std::make_pair(
         render_process_id, main_frame_widget_route_id)] = new_contents;
     AddDestructionObserver(new_contents);
@@ -2209,6 +2211,14 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
   WebContentsImpl* contents =
       GetCreatedWindow(process_id, main_frame_widget_route_id);
   if (contents) {
+    RenderWidgetHostImpl* rwh =
+        RenderWidgetHostImpl::FromID(process_id, main_frame_widget_route_id);
+    if (!rwh) {
+      // TODO(nick): Temporary for https://crbug.com/680876
+      base::debug::DumpWithoutCrashing();
+      return;
+    }
+
     WebContentsDelegate* delegate = GetDelegate();
     contents->is_resume_pending_ = true;
     if (!delegate || delegate->ShouldResumeRequestsForCreatedWindow())
@@ -2219,8 +2229,6 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
                                user_gesture, NULL);
     }
 
-    RenderWidgetHostImpl* rwh = contents->GetMainFrame()->GetRenderWidgetHost();
-    DCHECK_EQ(main_frame_widget_route_id, rwh->GetRoutingID());
     rwh->Send(new ViewMsg_Move_ACK(rwh->GetRoutingID()));
   }
 }
