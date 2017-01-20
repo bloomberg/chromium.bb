@@ -50,7 +50,7 @@ base::Optional<base::TimeDelta> RealTimeDomain::DelayTillNextTask(
     LazyNow* lazy_now) {
   base::TimeTicks next_run_time;
   if (!NextScheduledRunTime(&next_run_time))
-    return base::Optional<base::TimeDelta>();
+    return base::nullopt;
 
   base::TimeTicks now = lazy_now->Now();
   if (now >= next_run_time)

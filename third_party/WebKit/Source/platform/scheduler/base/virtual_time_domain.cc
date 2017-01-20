@@ -43,7 +43,7 @@ void VirtualTimeDomain::RequestWakeup(base::TimeTicks now,
 
 base::Optional<base::TimeDelta> VirtualTimeDomain::DelayTillNextTask(
     LazyNow* lazy_now) {
-  return base::Optional<base::TimeDelta>();
+  return base::nullopt;
 }
 
 void VirtualTimeDomain::AsValueIntoInternal(
