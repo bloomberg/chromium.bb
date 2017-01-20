@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/prerender_types.h"
-#include "chrome/common/render_messages.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -198,6 +198,7 @@ PrerenderContents::PrerenderContents(
     : prerender_mode_(FULL_PRERENDER),
       prerendering_has_started_(false),
       session_storage_namespace_id_(-1),
+      prerender_canceler_binding_(this),
       prerender_manager_(prerender_manager),
       prerender_url_(url),
       referrer_(referrer),
@@ -209,7 +210,8 @@ PrerenderContents::PrerenderContents(
       child_id_(-1),
       route_id_(-1),
       origin_(origin),
-      network_bytes_(0) {
+      network_bytes_(0),
+      weak_factory_(this) {
   DCHECK(prerender_manager);
 }
 
@@ -470,18 +472,6 @@ void PrerenderContents::NotifyPrerenderStop() {
   observer_list_.Clear();
 }
 
-bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  // The following messages we do want to consume.
-  IPC_BEGIN_MESSAGE_MAP(PrerenderContents, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CancelPrerenderForPrinting,
-                        OnCancelPrerenderForPrinting)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
 bool PrerenderContents::CheckURL(const GURL& url) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
@@ -536,6 +526,10 @@ void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {
 
 void PrerenderContents::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+  render_frame_host->GetInterfaceRegistry()->AddInterface(
+      base::Bind(&PrerenderContents::OnPrerenderCancelerRequest,
+                 weak_factory_.GetWeakPtr()));
+
   // When a new RenderFrame is created for a prerendering WebContents, tell the
   // new RenderFrame it's being used for prerendering before any navigations
   // occur.  Note that this is always triggered before the first navigation, so
@@ -739,8 +733,14 @@ void PrerenderContents::PrepareForUse() {
   resource_throttles_.clear();
 }
 
-void PrerenderContents::OnCancelPrerenderForPrinting() {
+void PrerenderContents::CancelPrerenderForPrinting() {
   Destroy(FINAL_STATUS_WINDOW_PRINT);
+}
+
+void PrerenderContents::OnPrerenderCancelerRequest(
+    chrome::mojom::PrerenderCancelerRequest request) {
+  if (!prerender_canceler_binding_.is_bound())
+    prerender_canceler_binding_.Bind(std::move(request));
 }
 
 void PrerenderContents::AddResourceThrottle(

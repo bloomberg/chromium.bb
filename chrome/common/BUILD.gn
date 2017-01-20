@@ -678,6 +678,7 @@ mojom("mojo_bindings") {
     "field_trial_recorder.mojom",
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",
+    "prerender.mojom",
     "renderer_configuration.mojom",
     "resource_usage_reporter.mojom",
     "shell_handler_win.mojom",

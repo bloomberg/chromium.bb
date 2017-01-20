@@ -19,11 +19,13 @@
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
+#include "chrome/common/prerender.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"
 
 class Profile;
@@ -48,7 +50,8 @@ class PrerenderManager;
 class PrerenderResourceThrottle;
 
 class PrerenderContents : public content::NotificationObserver,
-                          public content::WebContentsObserver {
+                          public content::WebContentsObserver,
+                          public chrome::mojom::PrerenderCanceler {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
@@ -178,7 +181,6 @@ class PrerenderContents : public content::NotificationObserver,
       const content::FrameNavigateParams& params) override;
   void DidGetRedirectForResourceRequest(
       const content::ResourceRedirectDetails& details) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   void RenderProcessGone(base::TerminationStatus status) override;
 
@@ -295,8 +297,13 @@ class PrerenderContents : public content::NotificationObserver,
   // Returns the ProcessMetrics for the render process, if it exists.
   base::ProcessMetrics* MaybeGetProcessMetrics();
 
-  // Message handlers.
-  void OnCancelPrerenderForPrinting();
+  // chrome::mojom::PrerenderCanceler:
+  void CancelPrerenderForPrinting() override;
+
+  void OnPrerenderCancelerRequest(
+      chrome::mojom::PrerenderCancelerRequest request);
+
+  mojo::Binding<chrome::mojom::PrerenderCanceler> prerender_canceler_binding_;
 
   base::ObserverList<Observer> observer_list_;
 
@@ -365,6 +372,8 @@ class PrerenderContents : public content::NotificationObserver,
   // A running tally of the number of bytes this prerender has caused to be
   // transferred over the network for resources.  Updated with AddNetworkBytes.
   int64_t network_bytes_;
+
+  base::WeakPtrFactory<PrerenderContents> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
