@@ -49,7 +49,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/debug/leak_annotations.h"
 #include "chrome/app/mash/mash_crash_reporter_client.h"
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/app/breakpad_linux.h" // nogncheck
 #endif
 
 using service_manager::mojom::ServiceFactory;
