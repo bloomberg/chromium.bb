@@ -9,6 +9,7 @@ from __future__ import print_function
 import functools
 import multiprocessing
 import os
+import re
 import sys
 
 from chromite.lib import constants
@@ -17,6 +18,10 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import parallel
+
+
+# Extract a script's shebang.
+SHEBANG_RE = re.compile(r'^#!\s*([^\s]+)(\s+([^\s]+))?')
 
 
 PYTHON_EXTENSIONS = frozenset(['.py'])
@@ -128,6 +133,41 @@ def _PylintFile(path, output_format, debug):
   return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
+def _ShellFile(path, _output_format, debug):
+  """Returns result of running lint checks on |path|."""
+  # TODO: Try using `checkbashisms`.
+  return _LinterRunCommand(['bash', '-n', path], debug)
+
+
+def _BreakoutDataByLinter(map_to_return, path):
+  """Maps a linter method to the content of the |path|."""
+  # Detect by content of the file itself.
+  try:
+    with open(path) as fp:
+      # We read 128 bytes because that's the Linux kernel's current limit.
+      # Look for BINPRM_BUF_SIZE in fs/binfmt_script.c.
+      data = fp.read(128)
+
+      if not data.startswith('#!'):
+        # If the file doesn't have a shebang, nothing to do.
+        return
+
+      m = SHEBANG_RE.match(data)
+      if m:
+        prog = m.group(1)
+        if prog == '/usr/bin/env':
+          prog = m.group(3)
+        basename = os.path.basename(prog)
+        if basename.startswith('python'):
+          pylint_list = map_to_return.setdefault(_PylintFile, [])
+          pylint_list.append(path)
+        elif basename in ('sh', 'dash', 'bash'):
+          shlint_list = map_to_return.setdefault(_ShellFile, [])
+          shlint_list.append(path)
+  except IOError as e:
+    logging.debug('%s: reading initial data failed: %s', path, e)
+
+
 def _BreakoutFilesByLinter(files):
   """Maps a linter method to the list of files to lint."""
   map_to_return = {}
@@ -139,6 +179,8 @@ def _BreakoutFilesByLinter(files):
     elif extension in CPP_EXTENSIONS:
       cpplint_list = map_to_return.setdefault(_CpplintFile, [])
       cpplint_list.append(f)
+    elif os.path.isfile(f):
+      _BreakoutDataByLinter(map_to_return, f)
 
   return map_to_return
 
