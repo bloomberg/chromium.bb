@@ -167,8 +167,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   void SetPropertyTreesNeedRebuild();
 
-  void PushPropertiesTo(LayerTreeImpl* tree_impl,
-                        float unapplied_page_scale_delta);
+  void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
   MutatorHost* mutator_host() const { return mutator_host_; }
 

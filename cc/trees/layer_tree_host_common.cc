@@ -182,10 +182,6 @@ bool LayerTreeHostCommon::ScrollbarsUpdateInfo::operator==(
   return layer_id == other.layer_id && hidden == other.hidden;
 }
 
-ReflectedMainFrameState::ReflectedMainFrameState() : page_scale_delta(1.0f) {}
-
-ReflectedMainFrameState::~ReflectedMainFrameState() = default;
-
 ScrollAndScaleSet::ScrollAndScaleSet()
     : page_scale_delta(1.f), top_controls_delta(0.f) {
 }
