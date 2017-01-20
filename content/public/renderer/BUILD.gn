@@ -44,7 +44,6 @@ target(link_target_type, "renderer_sources") {
     "navigation_state.h",
     "pepper_plugin_instance.h",
     "platform_event_observer.h",
-    "remote_proto_channel.h",
     "render_accessibility.h",
     "render_frame.h",
     "render_frame_observer.cc",

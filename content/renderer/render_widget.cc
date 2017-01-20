@@ -624,7 +624,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(InputMsg_RequestCompositionUpdate,
                         OnRequestCompositionUpdate)
-    IPC_MESSAGE_HANDLER(ViewMsg_HandleCompositorProto, OnHandleCompositorProto)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
@@ -908,10 +907,6 @@ void RenderWidget::DidReceiveCompositorFrameAck() {
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
   next_paint_flags_ = 0;
   need_update_rect_for_auto_resize_ = false;
-}
-
-void RenderWidget::ForwardCompositorProto(const std::vector<uint8_t>& proto) {
-  Send(new ViewHostMsg_ForwardCompositorProto(routing_id_, proto));
 }
 
 bool RenderWidget::IsClosing() const {
@@ -1670,11 +1665,6 @@ void RenderWidget::OnSetViewportIntersection(
     static_cast<WebFrameWidget*>(GetWebWidget())
         ->setRemoteViewportIntersection(viewport_intersection);
   }
-}
-
-void RenderWidget::OnHandleCompositorProto(const std::vector<uint8_t>& proto) {
-  if (compositor_)
-    compositor_->OnHandleCompositorProto(proto);
 }
 
 void RenderWidget::OnDragTargetDragEnter(

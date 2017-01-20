@@ -80,11 +80,6 @@ FakeCompositorDependencies::GetRendererScheduler() {
   return &renderer_scheduler_;
 }
 
-cc::ImageSerializationProcessor*
-FakeCompositorDependencies::GetImageSerializationProcessor() {
-  return nullptr;
-}
-
 cc::TaskGraphRunner* FakeCompositorDependencies::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }

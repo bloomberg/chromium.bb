@@ -70,7 +70,6 @@ class Thread;
 
 namespace cc {
 class BeginFrameSource;
-class ImageSerializationProcessor;
 class CompositorFrameSink;
 class TaskGraphRunner;
 }
@@ -234,7 +233,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() override;
   blink::scheduler::RendererScheduler* GetRendererScheduler() override;
-  cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
   bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;

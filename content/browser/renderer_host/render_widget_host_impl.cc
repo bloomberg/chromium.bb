@@ -547,8 +547,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstPaintAfterLoad,
                         OnFirstPaintAfterLoad)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardCompositorProto,
-                        OnForwardCompositorProto)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames, OnSetNeedsBeginFrames)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
@@ -1343,12 +1341,6 @@ void RenderWidgetHostImpl::GetScreenInfo(ScreenInfo* result) {
     input_router_->SetDeviceScaleFactor(result->device_scale_factor);
 }
 
-void RenderWidgetHostImpl::HandleCompositorProto(
-    const std::vector<uint8_t>& proto) {
-  DCHECK(!proto.empty());
-  Send(new ViewMsg_HandleCompositorProto(GetRoutingID(), proto));
-}
-
 void RenderWidgetHostImpl::DragTargetDragEnter(
     const DropData& drop_data,
     const gfx::Point& client_pt,
@@ -1474,12 +1466,6 @@ void RenderWidgetHostImpl::OnSelectionBoundsChanged(
   if (view_) {
     view_->SelectionBoundsChanged(params);
   }
-}
-
-void RenderWidgetHostImpl::OnForwardCompositorProto(
-    const std::vector<uint8_t>& proto) {
-  if (delegate_)
-    delegate_->ForwardCompositorProto(this, proto);
 }
 
 void RenderWidgetHostImpl::OnSetNeedsBeginFrames(bool needs_begin_frames) {

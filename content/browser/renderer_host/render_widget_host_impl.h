@@ -174,7 +174,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void RemoveInputEventObserver(
       RenderWidgetHost::InputEventObserver* observer) override;
   void GetScreenInfo(content::ScreenInfo* result) override;
-  void HandleCompositorProto(const std::vector<uint8_t>& proto) override;
   // |drop_data| must have been filtered. The embedder should call
   // FilterDropData before passing the drop data to RWHI.
   void DragTargetDragEnter(const DropData& drop_data,
@@ -644,7 +643,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                                  const cc::SharedBitmapId& id);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
-  void OnForwardCompositorProto(const std::vector<uint8_t>& proto);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnHittestData(const FrameHostMsg_HittestData_Params& params);
   void OnFocusedNodeTouched(bool editable);

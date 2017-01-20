@@ -259,9 +259,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Get the screen info corresponding to this render widget.
   virtual void GetScreenInfo(ScreenInfo* result) = 0;
 
-  // Sends a compositor proto to the render widget.
-  virtual void HandleCompositorProto(const std::vector<uint8_t>& proto) = 0;
-
   // Drag-and-drop drop target messages that get sent to Blink.
   virtual void DragTargetDragEnter(
       const DropData& drop_data,

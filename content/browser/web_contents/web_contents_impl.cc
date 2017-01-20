@@ -1984,13 +1984,6 @@ bool WebContentsImpl::HasMouseLock(RenderWidgetHostImpl* render_widget_host) {
          GetTopLevelRenderWidgetHostView()->IsMouseLocked();
 }
 
-void WebContentsImpl::ForwardCompositorProto(
-    RenderWidgetHostImpl* render_widget_host,
-    const std::vector<uint8_t>& proto) {
-  if (delegate_)
-    delegate_->ForwardCompositorProto(render_widget_host, proto);
-}
-
 void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {
   if (visible && !GetOuterWebContents()->IsHidden())
     WasShown();

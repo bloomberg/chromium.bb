@@ -57,10 +57,6 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // will be displayed.
   virtual void DidReceiveCompositorFrameAck() = 0;
 
-  // Called by the compositor to forward a proto that represents serialized
-  // compositor state.
-  virtual void ForwardCompositorProto(const std::vector<uint8_t>& proto) = 0;
-
   // Indicates whether the RenderWidgetCompositor is about to close.
   virtual bool IsClosing() const = 0;
 

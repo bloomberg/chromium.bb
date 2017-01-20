@@ -1162,8 +1162,7 @@ void RenderThreadImpl::InitializeWebKit(
       resource_task_queue2);
   resource_dispatcher()->SetMainThreadTaskRunner(resource_task_queue2);
 
-  if (!command_line.HasSwitch(switches::kDisableThreadedCompositing) &&
-      !command_line.HasSwitch(switches::kUseRemoteCompositing))
+  if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
     InitializeCompositorThread();
 
   if (!input_event_filter_.get()) {
@@ -1573,11 +1572,6 @@ RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
 
   return base::MakeUnique<CompositorExternalBeginFrameSource>(
       compositor_message_filter_.get(), sync_message_filter(), routing_id);
-}
-
-cc::ImageSerializationProcessor*
-RenderThreadImpl::GetImageSerializationProcessor() {
-  return GetContentClient()->renderer()->GetImageSerializationProcessor();
 }
 
 cc::TaskGraphRunner* RenderThreadImpl::GetTaskGraphRunner() {

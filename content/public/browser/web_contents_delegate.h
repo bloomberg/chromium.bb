@@ -546,12 +546,6 @@ class CONTENT_EXPORT WebContentsDelegate {
       WebContents* web_contents,
       scoped_refptr<net::X509Certificate> certificate);
 
-  // Called when the active render widget is forwarding a RemoteChannel
-  // compositor proto.  This is used in Blimp mode.
-  virtual void ForwardCompositorProto(
-      RenderWidgetHost* render_widget_host,
-      const std::vector<uint8_t>& proto) {}
-
   // Requests the app banner. This method is called from the DevTools.
   virtual void RequestAppBannerFromDevTools(content::WebContents* web_contents);
 

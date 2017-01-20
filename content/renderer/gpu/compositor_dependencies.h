@@ -16,7 +16,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
-class ImageSerializationProcessor;
 class TaskGraphRunner;
 }
 
@@ -48,7 +47,6 @@ class CompositorDependencies {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() = 0;
   virtual blink::scheduler::RendererScheduler* GetRendererScheduler() = 0;
-  virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor() = 0;
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual bool AreImageDecodeTasksEnabled() = 0;
   virtual bool IsThreadedAnimationEnabled() = 0;

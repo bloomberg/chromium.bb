@@ -4,7 +4,6 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
-#include "cc/blimp/remote_compositor_bridge.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "media/base/renderer_factory.h"
 #include "ui/gfx/icc_profile.h"
@@ -174,18 +173,6 @@ void ContentRendererClient::AddSupportedKeySystems(
 
 std::unique_ptr<MediaStreamRendererFactory>
 ContentRendererClient::CreateMediaStreamRendererFactory() {
-  return nullptr;
-}
-
-cc::ImageSerializationProcessor*
-ContentRendererClient::GetImageSerializationProcessor() {
-  return nullptr;
-}
-
-std::unique_ptr<cc::RemoteCompositorBridge>
-ContentRendererClient::CreateRemoteCompositorBridge(
-    RemoteProtoChannel* remote_proto_channel,
-    scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner) {
   return nullptr;
 }
 

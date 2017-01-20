@@ -30,10 +30,6 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/base/switches.h"
-#include "cc/blimp/engine_picture_cache.h"
-#include "cc/blimp/image_serialization_processor.h"
-#include "cc/blimp/layer_tree_host_remote.h"
-#include "cc/blimp/remote_compositor_bridge.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark.h"
@@ -44,7 +40,6 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/output/swap_promise.h"
-#include "cc/proto/compositor_message.pb.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
@@ -213,7 +208,6 @@ RenderWidgetCompositor::RenderWidgetCompositor(
       threaded_(!!compositor_deps_->GetCompositorImplThreadTaskRunner()),
       never_visible_(false),
       layout_and_paint_async_callback_(nullptr),
-      remote_proto_channel_receiver_(nullptr),
       weak_factory_(this) {}
 
 void RenderWidgetCompositor::Initialize(float device_scale_factor,
@@ -223,49 +217,28 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor,
       *cmd, compositor_deps_, device_scale_factor, screen_info);
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
-
-  if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
-    DCHECK(!threaded_);
-
-    cc::LayerTreeHostRemote::InitParams params;
-    params.client = this;
-    params.main_task_runner =
-        compositor_deps_->GetCompositorMainThreadTaskRunner();
-    params.mutator_host = animation_host_.get();
-    params.remote_compositor_bridge =
-        GetContentClient()->renderer()->CreateRemoteCompositorBridge(
-            this, params.main_task_runner);
-    params.engine_picture_cache =
-        compositor_deps_->GetImageSerializationProcessor()
-            ->CreateEnginePictureCache();
-    params.settings = &settings;
-    layer_tree_host_ = base::MakeUnique<cc::LayerTreeHostRemote>(&params);
-  } else {
-    cc::LayerTreeHostInProcess::InitParams params;
-    params.client = this;
-    params.settings = &settings;
-    params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
-    params.main_task_runner =
-        compositor_deps_->GetCompositorMainThreadTaskRunner();
-    params.mutator_host = animation_host_.get();
-    if (base::TaskScheduler::GetInstance()) {
-      params.image_worker_task_runner =
-          base::CreateSequencedTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .WithPriority(base::TaskPriority::BACKGROUND)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
-    }
-    if (!threaded_) {
-      // Single-threaded layout tests.
-      layer_tree_host_ =
-          cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
-    } else {
-      layer_tree_host_ = cc::LayerTreeHostInProcess::CreateThreaded(
-          compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
-    }
+  cc::LayerTreeHostInProcess::InitParams params;
+  params.client = this;
+  params.settings = &settings;
+  params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
+  params.main_task_runner =
+      compositor_deps_->GetCompositorMainThreadTaskRunner();
+  params.mutator_host = animation_host_.get();
+  if (base::TaskScheduler::GetInstance()) {
+    params.image_worker_task_runner = base::CreateSequencedTaskRunnerWithTraits(
+        base::TaskTraits()
+            .WithPriority(base::TaskPriority::BACKGROUND)
+            .WithShutdownBehavior(
+                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
   }
-
+  if (!threaded_) {
+    // Single-threaded layout tests.
+    layer_tree_host_ =
+        cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
+  } else {
+    layer_tree_host_ = cc::LayerTreeHostInProcess::CreateThreaded(
+        compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
+  }
   DCHECK(layer_tree_host_);
 }
 
@@ -1099,38 +1072,10 @@ void RenderWidgetCompositor::DidLoseCompositorFrameSink() {
   NOTREACHED();
 }
 
-void RenderWidgetCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
-  remote_proto_channel_receiver_ = receiver;
-}
-
-void RenderWidgetCompositor::SendCompositorProto(
-    const cc::proto::CompositorMessage& proto) {
-  int signed_size = proto.ByteSize();
-  size_t unsigned_size = base::checked_cast<size_t>(signed_size);
-  std::vector<uint8_t> serialized(unsigned_size);
-  proto.SerializeToArray(serialized.data(), signed_size);
-  delegate_->ForwardCompositorProto(serialized);
-}
-
 void RenderWidgetCompositor::SetFrameSinkId(
     const cc::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
   layer_tree_host_->SetFrameSinkId(frame_sink_id);
-}
-
-void RenderWidgetCompositor::OnHandleCompositorProto(
-    const std::vector<uint8_t>& proto) {
-  DCHECK(remote_proto_channel_receiver_);
-
-  std::unique_ptr<cc::proto::CompositorMessage> deserialized(
-      new cc::proto::CompositorMessage);
-  int signed_size = base::checked_cast<int>(proto.size());
-  if (!deserialized->ParseFromArray(proto.data(), signed_size)) {
-    LOG(ERROR) << "Unable to parse compositor proto.";
-    return;
-  }
-
-  remote_proto_channel_receiver_->OnProtoReceived(std::move(deserialized));
 }
 
 void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(

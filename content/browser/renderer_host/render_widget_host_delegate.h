@@ -184,11 +184,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns true if |render_widget_host| holds the mouse lock.
   virtual bool HasMouseLock(RenderWidgetHostImpl* render_widget_host);
 
-  // Called when the widget has sent a compositor proto.  This is used in Btlimp
-  // mode with the RemoteChannel compositor.
-  virtual void ForwardCompositorProto(RenderWidgetHostImpl* render_widget_host,
-                                      const std::vector<uint8_t>& proto) {}
-
   // Called when the visibility of the RenderFrameProxyHost in outer
   // WebContents changes. This method is only called on an inner WebContents and
   // will eventually notify all the RenderWidgetHostViews belonging to that

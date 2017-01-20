@@ -1794,7 +1794,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kUseGL,
     switches::kUseGpuInTests,
     switches::kUseMobileUserAgent,
-    switches::kUseRemoteCompositing,
     switches::kV,
     switches::kV8CacheStrategiesForCacheStorage,
     switches::kVideoThreads,

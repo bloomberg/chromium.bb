@@ -250,7 +250,6 @@ CONTENT_EXPORT extern const char kUseMusInRenderer[];
 CONTENT_EXPORT extern const char kContentImageTextureTarget[];
 CONTENT_EXPORT extern const char kVideoImageTextureTarget[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
-CONTENT_EXPORT extern const char kUseRemoteCompositing[];
 extern const char kUtilityCmdPrefix[];
 CONTENT_EXPORT extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];

@@ -869,10 +869,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
 // See https://crbug.com/537793.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstPaintAfterLoad)
 
-// Sent by the renderer to deliver a compositor proto to the browser.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ForwardCompositorProto,
-                    std::vector<uint8_t> /* proto */)
-
 // Sent in reply to ViewMsg_WaitForNextFrameForTests.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_WaitForNextFrameForTests_ACK)
 

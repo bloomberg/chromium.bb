@@ -30,7 +30,6 @@ class SkBitmap;
 namespace base {
 class FilePath;
 class SchedulerWorkerPoolParams;
-class SingleThreadTaskRunner;
 }
 
 namespace blink {
@@ -57,11 +56,6 @@ struct WebPluginParams;
 struct WebURLError;
 }
 
-namespace cc {
-class ImageSerializationProcessor;
-class RemoteCompositorBridge;
-}
-
 namespace gfx {
 class ICCProfile;
 }
@@ -77,7 +71,6 @@ class InterfaceRegistry;
 namespace content {
 class BrowserPluginDelegate;
 class MediaStreamRendererFactory;
-class RemoteProtoChannel;
 class RenderFrame;
 class RenderView;
 
@@ -268,17 +261,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows an embedder to provide a MediaStreamRendererFactory.
   virtual std::unique_ptr<MediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
-
-  // Allows an embedder to provide a cc::ImageSerializationProcessor.
-  virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor();
-
-  // Allows an embedder to create the cc::RemoteCompositorBridge when using
-  // remote compositing.
-  // The |remote_proto_channel| outlives the RemoteCompositorBridge.
-  virtual std::unique_ptr<cc::RemoteCompositorBridge>
-  CreateRemoteCompositorBridge(
-      RemoteProtoChannel* remote_proto_channel,
-      scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner);
 
   // Allows an embedder to provide a default image decode color space.
   virtual std::unique_ptr<gfx::ICCProfile> GetImageDecodeColorProfile();
