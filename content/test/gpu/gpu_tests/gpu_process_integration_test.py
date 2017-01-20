@@ -85,7 +85,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       cls.StopBrowser()
       cls.CustomizeBrowserArgs(browser_args)
       cls.StartBrowser()
-      cls.tab = cls.browser.tabs[0]
 
   @classmethod
   def _CreateExpectations(cls):

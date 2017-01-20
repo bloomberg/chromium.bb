@@ -28,6 +28,8 @@ class GpuIntegrationTest(
         restart = 'Starting browser, attempt %d of 3' % (x + 1)
         logging.warning(restart)
         super(GpuIntegrationTest, cls).StartBrowser()
+        cls.tab = cls.browser.tabs[0]
+        logging.warning('Started browser successfully.')
         return
       except Exception:
         # If we are on the last try and there is an exception take a screenshot
@@ -41,6 +43,10 @@ class GpuIntegrationTest(
           else:
             logging.warning("GpuIntegrationTest unable to take screenshot")
           raise
+        # Otherwise, stop the browser to make sure it's in an
+        # acceptable state to try restarting it.
+        if cls.browser:
+          cls.StopBrowser()
 
   @classmethod
   def _RestartBrowser(cls, reason):
@@ -48,7 +54,6 @@ class GpuIntegrationTest(
     cls.StopBrowser()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
-    cls.tab = cls.browser.tabs[0]
 
   def _RunGpuTest(self, url, test_name, *args):
     expectations = self.__class__.GetExpectations()

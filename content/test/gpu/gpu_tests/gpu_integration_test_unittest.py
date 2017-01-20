@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import logging
 import mock
 import os
 import tempfile
@@ -16,8 +17,6 @@ import gpu_project_config
 from gpu_tests import gpu_integration_test
 from gpu_tests import gpu_test_expectations
 
-_GLOBAL_TEST_COUNT = 0
-
 class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
   # Must be class-scoped since instances aren't reused across runs.
   _num_flaky_runs_to_fail = 2
@@ -29,13 +28,6 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
     return 'simple_integration_unittest'
 
   def setUp(self):
-    global _GLOBAL_TEST_COUNT
-    _GLOBAL_TEST_COUNT += 1
-    # If this is the first test, fail on setup to ensure that the
-    # gpu_integration_test handles failures in setup and remaining tests
-    # can be executed
-    if _GLOBAL_TEST_COUNT == 1:
-      self.tab.Navigate('chrome://crash')
     super(SimpleIntegrationUnittest, self).setUp()
 
   @classmethod
@@ -45,8 +37,8 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
     finder_options.output_formats = ['none']
     finder_options.suppress_gtest_report = True
     finder_options.output_dir = None
-    finder_options .upload_bucket = 'public'
-    finder_options .upload_results = False
+    finder_options.upload_bucket = 'public'
+    finder_options.upload_results = False
     cls._finder_options = finder_options
     cls.platform = None
     cls.browser = None
@@ -55,7 +47,6 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    yield ('setup', 'failure.html', ())
     yield ('expected_failure', 'failure.html', ())
     yield ('expected_flaky', 'flaky.html', ())
     yield ('expected_skip', 'failure.html', ())
@@ -76,6 +67,7 @@ class SimpleIntegrationUnittest(gpu_integration_test.GpuIntegrationTest):
     cls._num_browser_starts += 1
 
   def RunActualGpuTest(self, file_path, *args):
+    logging.warn('Running ' + file_path)
     if file_path == 'failure.html':
       self.fail('Expected failure')
     elif file_path == 'flaky.html':
@@ -111,11 +103,7 @@ class BrowserStartFailureIntegrationUnittest(
 
   @classmethod
   def _CreateExpectations(cls):
-    expectations = gpu_test_expectations.GpuTestExpectations()
-    expectations.Fail('expected_failure')
-    expectations.Flaky('expected_flaky', max_num_retries=3)
-    expectations.Skip('expected_skip')
-    return expectations
+    return gpu_test_expectations.GpuTestExpectations()
 
   @classmethod
   def CrashOnStart(cls):
@@ -145,10 +133,12 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def testSimpleIntegrationUnittest(self, mockInitDependencyManager):
     self._RunIntegrationTest(
       'simple_integration_unittest', [
-          'expected_failure',
-          'setup',
-          'unexpected_error',
-          'unexpected_failure'], ['expected_flaky'])
+        'unexpected_error',
+        'unexpected_failure'
+      ], [
+        'expected_failure',
+        'expected_flaky',
+      ])
     # It might be nice to be more precise about the order of operations
     # with these browser restarts, but this is at least a start.
     self.assertEquals(SimpleIntegrationUnittest._num_browser_starts, 6)
@@ -162,6 +152,11 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       BrowserStartFailureIntegrationUnittest._num_browser_crashes, 2)
     self.assertEquals( \
       BrowserStartFailureIntegrationUnittest._num_browser_starts, 3)
+
+  # TODO(kbr): write a new test utilizing the
+  # execute_after_browser_creation argument to
+  # fakes.CreateBrowserFinderOptions once that is available.
+  # crbug.com/682819
 
   def _RunIntegrationTest(self, test_name, failures, successes):
     options = browser_test_runner.TestRunOptions()
