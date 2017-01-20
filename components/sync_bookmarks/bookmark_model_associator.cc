@@ -755,13 +755,10 @@ const BookmarkNode* BookmarkModelAssociator::CreateBookmarkNode(
   const std::string& sync_title = sync_child_node->GetTitle();
 
   if (!sync_child_node->GetIsFolder() && !url.is_valid()) {
-    unrecoverable_error_handler_->CreateAndUploadError(
-        FROM_HERE,
-        "Cannot associate sync node " + sync_child_node->GetSyncId().value() +
-            " with invalid url " + url.possibly_invalid_spec() + " and title " +
-            sync_title,
-        model_type());
-    // Don't propagate the error to the model_type in this case.
+    LOG(WARNING) << "Cannot associate sync node "
+                 << sync_child_node->GetSyncId().value() << " with invalid url "
+                 << url.possibly_invalid_spec() << " and title " << sync_title;
+    // Don't propagate an error to the model_type in this case.
     return nullptr;
   }
 
