@@ -59,6 +59,9 @@ class ImeListView : public TrayDetailsView {
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override;
 
+  // views::View:
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+
  private:
   // To allow the test class to access |ime_map_|.
   friend class ImeMenuTrayTest;
@@ -102,6 +105,9 @@ class ImeListView : public TrayDetailsView {
   // True if focus should be requested after switching IMEs with keyboard in
   // order to trigger spoken feedback with ChromeVox enabled.
   bool should_focus_ime_after_selection_with_keyboard_;
+
+  // The item view of the current selected IME.
+  views::View* current_ime_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeListView);
 };

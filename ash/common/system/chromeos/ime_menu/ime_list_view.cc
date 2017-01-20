@@ -262,7 +262,8 @@ ImeListView::ImeListView(SystemTrayItem* owner,
                          SingleImeBehavior single_ime_behavior)
     : TrayDetailsView(owner),
       last_item_selected_with_keyboard_(false),
-      should_focus_ime_after_selection_with_keyboard_(false) {
+      should_focus_ime_after_selection_with_keyboard_(false),
+      current_ime_view_(nullptr) {
   SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   IMEInfoList list;
   delegate->GetAvailableIMEList(&list);
@@ -307,8 +308,11 @@ void ImeListView::Update(const IMEInfoList& list,
   SchedulePaint();
 
   if (should_focus_ime_after_selection_with_keyboard_ &&
-      last_item_selected_with_keyboard_)
+      last_item_selected_with_keyboard_) {
     FocusCurrentImeIfNeeded();
+  } else if (current_ime_view_) {
+    scroll_content()->ScrollRectToVisible(current_ime_view_->bounds());
+  }
 }
 
 void ImeListView::ResetImeListView() {
@@ -316,10 +320,12 @@ void ImeListView::ResetImeListView() {
   Reset();
   material_keyboard_status_view_ = nullptr;
   keyboard_status_ = nullptr;
+  current_ime_view_ = nullptr;
 }
 
 void ImeListView::CloseImeListView() {
   last_selected_item_id_.clear();
+  current_ime_view_ = nullptr;
   last_item_selected_with_keyboard_ = false;
   GetWidget()->Close();
 }
@@ -358,6 +364,9 @@ void ImeListView::AppendImeListAndProperties(
                             list[i].selected, gfx::kGoogleGreen700);
     scroll_content()->AddChildView(ime_view);
     ime_map_[ime_view] = list[i].id;
+
+    if (list[i].selected)
+      current_ime_view_ = ime_view;
 
     // In material design, the property items will be added after the current
     // selected IME item.
@@ -444,6 +453,16 @@ void ImeListView::HandleButtonPressed(views::Button* sender,
     last_selected_item_id_.clear();
     last_item_selected_with_keyboard_ = false;
   }
+}
+
+void ImeListView::VisibilityChanged(View* starting_from, bool is_visible) {
+  if (!is_visible || (should_focus_ime_after_selection_with_keyboard_ &&
+                      last_item_selected_with_keyboard_) ||
+      !current_ime_view_) {
+    return;
+  }
+
+  scroll_content()->ScrollRectToVisible(current_ime_view_->bounds());
 }
 
 void ImeListView::FocusCurrentImeIfNeeded() {
