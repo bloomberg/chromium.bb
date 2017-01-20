@@ -246,7 +246,7 @@ TEST_F(PresentationDispatcherTest, TestStartSessionError) {
   base::RunLoop run_loop;
 
   EXPECT_CALL(presentation_service_, StartSession(gurls_, _))
-      .WillOnce(Invoke([this, &error_message](
+      .WillOnce(Invoke([&error_message](
           const std::vector<GURL>& presentation_urls,
           const PresentationService::StartSessionCallback& callback) {
         PresentationErrorPtr error(PresentationError::New());
