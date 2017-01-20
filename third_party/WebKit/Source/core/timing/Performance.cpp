@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -100,7 +101,9 @@ static double toTimeOrigin(LocalFrame* frame) {
 }
 
 Performance::Performance(LocalFrame* frame)
-    : PerformanceBase(toTimeOrigin(frame)),
+    : PerformanceBase(
+          toTimeOrigin(frame),
+          TaskRunnerHelper::get(TaskType::PerformanceTimeline, frame)),
       ContextLifecycleObserver(frame ? frame->document() : nullptr) {}
 
 Performance::~Performance() {

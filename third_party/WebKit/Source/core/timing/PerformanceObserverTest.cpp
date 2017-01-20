@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/PerformanceObserverCallback.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceMark.h"
@@ -16,7 +17,11 @@ namespace blink {
 
 class MockPerformanceBase : public PerformanceBase {
  public:
-  MockPerformanceBase() : PerformanceBase(0) {}
+  explicit MockPerformanceBase(ScriptState* scriptState)
+      : PerformanceBase(
+            0,
+            TaskRunnerHelper::get(TaskType::PerformanceTimeline, scriptState)) {
+  }
   ~MockPerformanceBase() {}
 
   ExecutionContext* getExecutionContext() const override { return nullptr; }
@@ -27,7 +32,7 @@ class PerformanceObserverTest : public ::testing::Test {
   void initialize(ScriptState* scriptState) {
     v8::Local<v8::Function> callback =
         v8::Function::New(scriptState->context(), nullptr).ToLocalChecked();
-    m_base = new MockPerformanceBase();
+    m_base = new MockPerformanceBase(scriptState);
     m_cb = PerformanceObserverCallback::create(scriptState, callback);
     m_observer = PerformanceObserver::create(scriptState->getExecutionContext(),
                                              m_base, m_cb);

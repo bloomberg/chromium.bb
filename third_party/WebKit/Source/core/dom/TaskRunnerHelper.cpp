@@ -31,6 +31,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     case TaskType::DatabaseAccess:
     case TaskType::Presentation:
     case TaskType::Sensor:
+    case TaskType::PerformanceTimeline:
     case TaskType::Timer:
     case TaskType::UnspecedTimer:
     case TaskType::MiscPlatformAPI:

@@ -155,7 +155,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   void addPaintTiming(PerformancePaintTiming::PaintType, double startTime);
 
  protected:
-  explicit PerformanceBase(double timeOrigin);
+  explicit PerformanceBase(double timeOrigin, RefPtr<WebTaskRunner>);
 
   bool isResourceTimingBufferFull();
   void addResourceTimingBuffer(PerformanceEntry&);
@@ -181,7 +181,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   PerformanceObservers m_observers;
   PerformanceObservers m_activeObservers;
   PerformanceObservers m_suspendedObservers;
-  Timer<PerformanceBase> m_deliverObservationsTimer;
+  TaskRunnerTimer<PerformanceBase> m_deliverObservationsTimer;
 };
 
 }  // namespace blink
