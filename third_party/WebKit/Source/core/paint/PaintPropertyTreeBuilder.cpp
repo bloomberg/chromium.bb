@@ -960,10 +960,12 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
   if (object.isBoxModelObject() || object.isSVG()) {
     updatePaintOffsetTranslation(object, context);
     updateTransform(object, context);
-    updateEffect(object, context);
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+      updateEffect(object, context);
     updateCssClip(object, context);
     updateLocalBorderBoxContext(object, context);
-    updateScrollbarPaintOffset(object, context);
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+      updateScrollbarPaintOffset(object, context);
   }
 
   if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
