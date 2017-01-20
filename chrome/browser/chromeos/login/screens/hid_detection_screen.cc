@@ -49,14 +49,30 @@ bool DeviceIsKeyboard(device::BluetoothDeviceType device_type) {
 
 namespace chromeos {
 
+const char HIDDetectionScreen::kContextKeyKeyboardState[] = "keyboard-state";
+const char HIDDetectionScreen::kContextKeyMouseState[] = "mouse-state";
+const char HIDDetectionScreen::kContextKeyPinCode[] = "keyboard-pincode";
+const char HIDDetectionScreen::kContextKeyNumKeysEnteredExpected[] =
+    "num-keys-entered-expected";
+const char HIDDetectionScreen::kContextKeyNumKeysEnteredPinCode[] =
+    "num-keys-entered-pincode";
+const char HIDDetectionScreen::kContextKeyMouseDeviceName[] =
+    "mouse-device-name";
+const char HIDDetectionScreen::kContextKeyKeyboardDeviceName[] =
+    "keyboard-device-name";
+const char HIDDetectionScreen::kContextKeyKeyboardLabel[] =
+    "keyboard-device-label";
+const char HIDDetectionScreen::kContextKeyContinueButtonEnabled[] =
+    "continue-button-enabled";
+
 HIDDetectionScreen::HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
                                        HIDDetectionView* view)
-    : HIDDetectionModel(base_screen_delegate),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_HID_DETECTION),
       view_(view),
       weak_ptr_factory_(this) {
   DCHECK(view_);
   if (view_)
-    view_->Bind(*this);
+    view_->Bind(this);
 
   device::BluetoothAdapterFactory::GetAdapter(base::Bind(
       &HIDDetectionScreen::InitializeAdapter, weak_ptr_factory_.GetWeakPtr()));
@@ -74,31 +90,7 @@ HIDDetectionScreen::~HIDDetectionScreen() {
     adapter_->RemoveObserver(this);
 }
 
-void HIDDetectionScreen::Show() {
-  showing_ = true;
-  GetContextEditor().SetBoolean(kContextKeyNumKeysEnteredExpected, false);
-  SendPointingDeviceNotification();
-  SendKeyboardDeviceNotification();
-
-  input_service_proxy_.AddObserver(this);
-  UpdateDevices();
-
-  if (view_)
-    view_->Show();
-}
-
-void HIDDetectionScreen::Hide() {
-  showing_ = false;
-  input_service_proxy_.RemoveObserver(this);
-  if (discovery_session_.get())
-    discovery_session_->Stop(base::Bind(&base::DoNothing),
-                             base::Bind(&base::DoNothing));
-  if (view_)
-    view_->Hide();
-}
-
 void HIDDetectionScreen::OnContinueButtonClicked() {
-
   ContinueScenarioType scenario_type;
   if (!pointing_device_id_.empty() && !keyboard_device_id_.empty())
     scenario_type = All_DEVICES_DETECTED;
@@ -127,6 +119,11 @@ void HIDDetectionScreen::OnContinueButtonClicked() {
   Finish(BaseScreenDelegate::HID_DETECTION_COMPLETED);
 }
 
+void HIDDetectionScreen::OnViewDestroyed(HIDDetectionView* view) {
+  if (view_ == view)
+    view_ = nullptr;
+}
+
 void HIDDetectionScreen::CheckIsScreenRequired(
       const base::Callback<void(bool)>& on_check_done) {
   input_service_proxy_.GetDevices(
@@ -135,9 +132,28 @@ void HIDDetectionScreen::CheckIsScreenRequired(
                  on_check_done));
 }
 
-void HIDDetectionScreen::OnViewDestroyed(HIDDetectionView* view) {
-  if (view_ == view)
-    view_ = NULL;
+void HIDDetectionScreen::Show() {
+  showing_ = true;
+  GetContextEditor().SetBoolean(kContextKeyNumKeysEnteredExpected, false);
+  SendPointingDeviceNotification();
+  SendKeyboardDeviceNotification();
+
+  input_service_proxy_.AddObserver(this);
+  UpdateDevices();
+
+  if (view_)
+    view_->Show();
+}
+
+void HIDDetectionScreen::Hide() {
+  showing_ = false;
+  input_service_proxy_.RemoveObserver(this);
+  if (discovery_session_.get()) {
+    discovery_session_->Stop(base::Bind(&base::DoNothing),
+                             base::Bind(&base::DoNothing));
+  }
+  if (view_)
+    view_->Hide();
 }
 
 void HIDDetectionScreen::RequestPinCode(device::BluetoothDevice* device) {

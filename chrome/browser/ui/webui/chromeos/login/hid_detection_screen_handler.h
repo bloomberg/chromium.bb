@@ -31,7 +31,7 @@ class HIDDetectionScreenHandler
   // HIDDetectionView implementation:
   void Show() override;
   void Hide() override;
-  void Bind(HIDDetectionModel& model) override;
+  void Bind(HIDDetectionScreen* screen) override;
   void Unbind() override;
   void CheckIsScreenRequired(
       const base::Callback<void(bool)>& on_check_done) override;
@@ -49,12 +49,12 @@ class HIDDetectionScreenHandler
   // JS messages handlers.
   void HandleOnContinue();
 
-  HIDDetectionModel* model_;
+  HIDDetectionScreen* screen_ = nullptr;
 
-  CoreOobeActor* core_oobe_actor_;
+  CoreOobeActor* core_oobe_actor_ = nullptr;
 
-  // Keeps whether screen should be shown right after initialization.
-  bool show_on_init_;
+  // If true, Initialize() will call Show().
+  bool show_on_init_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HIDDetectionScreenHandler);
 };

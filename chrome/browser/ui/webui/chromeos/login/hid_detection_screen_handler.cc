@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
-#include "chrome/browser/chromeos/login/screens/hid_detection_model.h"
+#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,15 +30,11 @@ namespace chromeos {
 
 HIDDetectionScreenHandler::HIDDetectionScreenHandler(
     CoreOobeActor* core_oobe_actor)
-    : BaseScreenHandler(kJsScreenPath),
-      model_(NULL),
-      core_oobe_actor_(core_oobe_actor),
-      show_on_init_(false) {
-}
+    : BaseScreenHandler(kJsScreenPath), core_oobe_actor_(core_oobe_actor) {}
 
 HIDDetectionScreenHandler::~HIDDetectionScreenHandler() {
-  if (model_)
-    model_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
 void HIDDetectionScreenHandler::Show() {
@@ -60,21 +56,21 @@ void HIDDetectionScreenHandler::Show() {
 void HIDDetectionScreenHandler::Hide() {
 }
 
-void HIDDetectionScreenHandler::Bind(HIDDetectionModel& model) {
-  model_ = &model;
-  BaseScreenHandler::SetBaseScreen(model_);
+void HIDDetectionScreenHandler::Bind(HIDDetectionScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
   if (page_is_ready())
     Initialize();
 }
 
 void HIDDetectionScreenHandler::Unbind() {
-  model_ = nullptr;
+  screen_ = nullptr;
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
 void HIDDetectionScreenHandler::CheckIsScreenRequired(
       const base::Callback<void(bool)>& on_check_done) {
-  model_->CheckIsScreenRequired(on_check_done);
+  screen_->CheckIsScreenRequired(on_check_done);
 }
 
 void HIDDetectionScreenHandler::DeclareLocalizedValues(
@@ -112,8 +108,8 @@ void HIDDetectionScreenHandler::Initialize() {
 void HIDDetectionScreenHandler::HandleOnContinue() {
   // Continue button pressed.
   core_oobe_actor_->StopDemoModeDetection();
-  if (model_)
-    model_->OnContinueButtonClicked();
+  if (screen_)
+    screen_->OnContinueButtonClicked();
 }
 
 // static

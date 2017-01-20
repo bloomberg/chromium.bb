@@ -63,55 +63,55 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, MouseKeyboardStates) {
   // NOTE: State strings match those in hid_detection_screen.cc.
   // No devices added yet
   EXPECT_EQ("searching",
-            context()->GetString(HIDDetectionModel::kContextKeyMouseState));
+            context()->GetString(HIDDetectionScreen::kContextKeyMouseState));
   EXPECT_EQ("searching",
-            context()->GetString(HIDDetectionModel::kContextKeyKeyboardState));
+            context()->GetString(HIDDetectionScreen::kContextKeyKeyboardState));
   EXPECT_FALSE(context()->GetBoolean(
-      HIDDetectionModel::kContextKeyContinueButtonEnabled));
+      HIDDetectionScreen::kContextKeyContinueButtonEnabled));
 
   // Generic connection types. Unlike the pointing device, which may be a tablet
   // or touchscreen, the keyboard only reports usb and bluetooth states.
   helper()->AddDeviceToService(true, InputDeviceInfo::TYPE_SERIO);
   EXPECT_TRUE(context()->GetBoolean(
-      HIDDetectionModel::kContextKeyContinueButtonEnabled));
+      HIDDetectionScreen::kContextKeyContinueButtonEnabled));
 
   helper()->AddDeviceToService(false, InputDeviceInfo::TYPE_SERIO);
   EXPECT_EQ("connected",
-            context()->GetString(HIDDetectionModel::kContextKeyMouseState));
+            context()->GetString(HIDDetectionScreen::kContextKeyMouseState));
   EXPECT_EQ("usb",
-            context()->GetString(HIDDetectionModel::kContextKeyKeyboardState));
+            context()->GetString(HIDDetectionScreen::kContextKeyKeyboardState));
   EXPECT_TRUE(context()->GetBoolean(
-      HIDDetectionModel::kContextKeyContinueButtonEnabled));
+      HIDDetectionScreen::kContextKeyContinueButtonEnabled));
 
   // Remove generic devices, add usb devices.
   helper()->RemoveDeviceFromService(true);
   helper()->RemoveDeviceFromService(false);
   EXPECT_FALSE(context()->GetBoolean(
-      HIDDetectionModel::kContextKeyContinueButtonEnabled));
+      HIDDetectionScreen::kContextKeyContinueButtonEnabled));
 
   helper()->AddDeviceToService(true, InputDeviceInfo::TYPE_USB);
   helper()->AddDeviceToService(false, InputDeviceInfo::TYPE_USB);
   EXPECT_EQ("usb",
-            context()->GetString(HIDDetectionModel::kContextKeyMouseState));
+            context()->GetString(HIDDetectionScreen::kContextKeyMouseState));
   EXPECT_EQ("usb",
-            context()->GetString(HIDDetectionModel::kContextKeyKeyboardState));
+            context()->GetString(HIDDetectionScreen::kContextKeyKeyboardState));
   EXPECT_TRUE(context()->GetBoolean(
-      HIDDetectionModel::kContextKeyContinueButtonEnabled));
+      HIDDetectionScreen::kContextKeyContinueButtonEnabled));
 
   // Remove usb devices, add bluetooth devices.
   helper()->RemoveDeviceFromService(true);
   helper()->RemoveDeviceFromService(false);
   EXPECT_FALSE(context()->GetBoolean(
-      HIDDetectionModel::kContextKeyContinueButtonEnabled));
+      HIDDetectionScreen::kContextKeyContinueButtonEnabled));
 
   helper()->AddDeviceToService(true, InputDeviceInfo::TYPE_BLUETOOTH);
   helper()->AddDeviceToService(false, InputDeviceInfo::TYPE_BLUETOOTH);
   EXPECT_EQ("paired",
-            context()->GetString(HIDDetectionModel::kContextKeyMouseState));
+            context()->GetString(HIDDetectionScreen::kContextKeyMouseState));
   EXPECT_EQ("paired",
-            context()->GetString(HIDDetectionModel::kContextKeyKeyboardState));
+            context()->GetString(HIDDetectionScreen::kContextKeyKeyboardState));
   EXPECT_TRUE(context()->GetBoolean(
-      HIDDetectionModel::kContextKeyContinueButtonEnabled));
+      HIDDetectionScreen::kContextKeyContinueButtonEnabled));
 }
 
 // Test that if there is any Bluetooth device connected on HID screen, the

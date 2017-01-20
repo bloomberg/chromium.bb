@@ -11,7 +11,7 @@
 
 namespace chromeos {
 
-class HIDDetectionModel;
+class HIDDetectionScreen;
 
 // Interface between HID detection screen and its representation, either WebUI
 // or Views one. Note, do not forget to call OnViewDestroyed in the
@@ -22,7 +22,7 @@ class HIDDetectionView {
 
   virtual void Show() = 0;
   virtual void Hide() = 0;
-  virtual void Bind(HIDDetectionModel& model) = 0;
+  virtual void Bind(HIDDetectionScreen* screen) = 0;
   virtual void Unbind() = 0;
   // Checks if we should show the screen or enough devices already present.
   // Calls corresponding set of actions based on the bool result.

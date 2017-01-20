@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/device/input_service_proxy.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/hid_detection_model.h"
 #include "components/login/screens/screen_context.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -30,12 +29,22 @@ class HIDDetectionView;
 
 // Representation independent class that controls screen showing warning about
 // HID absence to users.
-class HIDDetectionScreen : public HIDDetectionModel,
+class HIDDetectionScreen : public BaseScreen,
                            public device::BluetoothAdapter::Observer,
                            public device::BluetoothDevice::PairingDelegate,
                            public InputServiceProxy::Observer {
  public:
-  typedef device::InputServiceLinux::InputDeviceInfo InputDeviceInfo;
+  static const char kContextKeyKeyboardState[];
+  static const char kContextKeyMouseState[];
+  static const char kContextKeyNumKeysEnteredExpected[];
+  static const char kContextKeyNumKeysEnteredPinCode[];
+  static const char kContextKeyPinCode[];
+  static const char kContextKeyMouseDeviceName[];
+  static const char kContextKeyKeyboardDeviceName[];
+  static const char kContextKeyKeyboardLabel[];
+  static const char kContextKeyContinueButtonEnabled[];
+
+  using InputDeviceInfo = device::InputServiceLinux::InputDeviceInfo;
 
   class Delegate {
    public:
@@ -47,13 +56,23 @@ class HIDDetectionScreen : public HIDDetectionModel,
                      HIDDetectionView* view);
   ~HIDDetectionScreen() override;
 
-  // HIDDetectionModel implementation:
+  // Called when continue button was clicked.
+  void OnContinueButtonClicked();
+
+  // This method is called when the view is being destroyed.
+  void OnViewDestroyed(HIDDetectionView* view);
+
+  // Checks if this screen should be displayed. |on_check_done| should be
+  // invoked with the result; true if the screen should be displayed, false
+  // otherwise.
+  void CheckIsScreenRequired(const base::Callback<void(bool)>& on_check_done);
+
+ private:
+  friend class HIDDetectionScreenTest;
+
+  // BaseScreen implementation:
   void Show() override;
   void Hide() override;
-  void OnContinueButtonClicked() override;
-  void OnViewDestroyed(HIDDetectionView* view) override;
-  void CheckIsScreenRequired(
-      const base::Callback<void(bool)>& on_check_done) override;
 
   // device::BluetoothDevice::PairingDelegate implementation:
   void RequestPinCode(device::BluetoothDevice* device) override;
@@ -80,9 +99,6 @@ class HIDDetectionScreen : public HIDDetectionModel,
   // InputServiceProxy::Observer implementation.
   void OnInputDeviceAdded(const InputDeviceInfo& info) override;
   void OnInputDeviceRemoved(const std::string& id) override;
-
- private:
-  friend class HIDDetectionScreenTest;
 
   // Types of dialog leaving scenarios for UMA metric.
   enum ContinueScenarioType {
