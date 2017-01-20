@@ -12,10 +12,10 @@ let define = (function(){
   return function(name, deps, factory) {
     let promise = moduleCache.get(name);
     if (promise === undefined) {
-      // This promise must be cached as mojo.define will only call the factory
+      // This promise must be cached as gin.define will only call the factory
       // function the first time the module is defined.
       promise = new Promise(resolve => {
-        mojo.define(name, deps, (...modules) => {
+        gin.define(name, deps, (...modules) => {
           let result = factory(...modules);
           resolve(result);
           return result;

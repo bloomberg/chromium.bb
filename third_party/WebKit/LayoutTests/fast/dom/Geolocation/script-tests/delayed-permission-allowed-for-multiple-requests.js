@@ -1,8 +1,5 @@
 description("Tests that when multiple requests are waiting for permission, no callbacks are invoked until permission is allowed.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 geolocationServiceMock.then(mock => {
     mock.setGeolocationPosition(51.478, -0.166, 100);
 

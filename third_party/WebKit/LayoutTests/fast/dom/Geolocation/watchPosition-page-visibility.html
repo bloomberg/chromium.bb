@@ -10,8 +10,8 @@
 description("Tests that watchPosition does not report position changes when the page is not visible.");
 window.jsTestIsAsync = true;
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
+if (!window.testRunner)
+    debug('This test can not run without testRunner');
 
 var position;
 var error;

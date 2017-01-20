@@ -4,9 +4,6 @@ var mockLatitude = 51.478;
 var mockLongitude = -0.166;
 var mockAccuracy = 100.0;
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var position;
 
 geolocationServiceMock.then(mock => {

@@ -1,8 +1,5 @@
 description("Tests that when a request is made on a Geolocation object after its frame has been disconnected, no callbacks are made and no crash occurs.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var iframe = document.createElement('iframe');
 
 geolocationServiceMock.then(mock => {

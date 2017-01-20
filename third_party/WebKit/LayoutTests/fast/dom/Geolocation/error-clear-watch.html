@@ -9,9 +9,6 @@
 <script>
 description("This tests removing the watcher from an error callback does not causes assertions.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 geolocationServiceMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPositionUnavailableError("debug");

@@ -1,8 +1,5 @@
 description('Tests that when a cached position is available the callback for getCurrentPosition is called only once. This is a regression test for http://crbug.com/311876 .');
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 // Only one success callback should be reported per call to getCurrentPosition.
 var reportCount = 0;
 var isSuccess;

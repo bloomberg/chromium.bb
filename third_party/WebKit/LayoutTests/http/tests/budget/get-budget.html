@@ -9,9 +9,6 @@
   </head>
   <body>
     <script>
-      if (!window.mojo)
-        debug('This test can not run without mojo');
-
       promise_test(function() {
         return budgetServiceMock.then(mock => {
           assert_own_property(Navigator.prototype, 'budget');

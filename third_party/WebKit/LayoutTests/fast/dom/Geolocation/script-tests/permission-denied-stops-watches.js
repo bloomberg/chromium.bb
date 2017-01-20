@@ -1,8 +1,5 @@
 description("Tests that when Geolocation permission is denied, watches are stopped, as well as one-shots.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

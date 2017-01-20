@@ -1,7 +1,7 @@
 description("Tests that no timers will trigger for navigator.geolocation object after onunload.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
+if (!window.testRunner)
+  debug('This test can not run without testRunner');
 
 geolocationServiceMock.then(mock => {
     mock.setGeolocationPermission(true);

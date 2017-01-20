@@ -9,9 +9,6 @@ shouldBeTrue('now != 0');
 var t = null;
 var then = null;
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 geolocationServiceMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);

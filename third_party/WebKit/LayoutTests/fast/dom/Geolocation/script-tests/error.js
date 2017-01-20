@@ -2,9 +2,6 @@ description("Tests Geolocation error callback using the mock service.");
 
 var mockMessage = "debug";
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

@@ -1,8 +1,5 @@
 description("Tests that when a watch times out and is cleared from the error callback, there is no crash. This a regression test for https://bugs.webkit.org/show_bug.cgi?id=32111.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

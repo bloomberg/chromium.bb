@@ -1,8 +1,5 @@
 description("Tests that reentrant calls to Geolocation methods from the error callback due to a PERMISSION_DENIED error are OK.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

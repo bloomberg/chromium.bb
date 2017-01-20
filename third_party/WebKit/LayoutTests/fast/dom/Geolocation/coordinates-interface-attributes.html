@@ -10,9 +10,6 @@
 description("Test the attribute handling of the Coordinates interface");
 window.jsTestIsAsync = true;
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 // Format: [Input], [Expected]
 // Input: latitude, longitude, accuracy, altitude, altitudeAccuracy, heading, speed.
 // Expected: latitude, longitude, accuracy, altitude, altitudeAccuracy, heading, speed.

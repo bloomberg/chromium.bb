@@ -1,8 +1,5 @@
 description("Tests that when a request is made on a Geolocation object, permission is denied and its Frame is disconnected before a callback is made, no callbacks are made.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 var iframe = document.createElement('iframe');
 

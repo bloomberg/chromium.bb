@@ -122,13 +122,13 @@ MojoContextState::MojoContextState(blink::WebFrame* frame,
       ->EnsureMojoBuiltinsAreAvailable(context_holder->isolate(), context);
   v8::Local<v8::Object> install_target;
   if (bindings_type == MojoBindingsType::FOR_LAYOUT_TESTS) {
-    // In layout tests we install the module system under 'mojo.define'
+    // In layout tests we install the module system under 'gin.define'
     // for now to avoid globally exposing something as generic as 'define'.
     //
     // TODO(rockot): Remove this if/when we can integrate gin + ES6 modules.
     install_target = v8::Object::New(context->GetIsolate());
     gin::SetProperty(context->GetIsolate(), context->Global(),
-                     gin::StringToSymbol(context->GetIsolate(), "mojo"),
+                     gin::StringToSymbol(context->GetIsolate(), "gin"),
                      install_target);
   } else {
     // Otherwise we're fine installing a global 'define'.

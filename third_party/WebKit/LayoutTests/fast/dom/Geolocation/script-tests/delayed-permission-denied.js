@@ -1,8 +1,5 @@
 description("Tests that when a position is available, no callbacks are invoked until permission is denied.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

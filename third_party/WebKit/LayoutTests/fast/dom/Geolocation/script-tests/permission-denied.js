@@ -1,8 +1,5 @@
 description("Tests Geolocation when permission is denied, using the mock service.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

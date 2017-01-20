@@ -1,8 +1,5 @@
 description("Tests Geolocation when the permission service connection fails.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

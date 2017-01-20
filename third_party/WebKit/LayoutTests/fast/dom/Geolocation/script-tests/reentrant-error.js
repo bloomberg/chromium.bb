@@ -2,9 +2,6 @@ description("Tests that reentrant calls to Geolocation methods from the error ca
 
 var mockMessage = 'test';
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

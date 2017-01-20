@@ -24,9 +24,6 @@ function checkError(e) {
     shouldBe('error.message', 'mockMessage');
 }
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 geolocationServiceMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);

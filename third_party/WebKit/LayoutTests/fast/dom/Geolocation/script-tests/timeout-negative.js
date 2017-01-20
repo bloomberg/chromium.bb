@@ -1,8 +1,5 @@
 description("Tests that when timeout is negative (and maximumAge is too), the error callback is called immediately with code TIMEOUT.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
-
 var error;
 
 geolocationServiceMock.then(mock => {

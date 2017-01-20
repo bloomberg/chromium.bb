@@ -1,6 +1,11 @@
+<!DOCTYPE html>
+<script src="../../resources/mojo-helpers.js"></script>
 <script>
-if (window.opener)
-  window.opener.postMessage(!!window.mojo, '*');
-else
-  window.parent.postMessage(!!window.mojo, '*');
+'use strict';
+loadMojoModules('module loading test').then(modules => {
+  if (window.opener)
+    window.opener.postMessage(!!modules.core, '*');
+  else
+    window.parent.postMessage(!!modules.core, '*');
+});
 </script>

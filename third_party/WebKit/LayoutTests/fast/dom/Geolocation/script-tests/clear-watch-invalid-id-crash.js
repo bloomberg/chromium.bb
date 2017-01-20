@@ -1,7 +1,7 @@
 description("Tests for a crash when clearWatch() is called with a zero ID.<br><br>We call clearWatch() with a request in progress then navigate the page. This accesses the watchers map during cleanup and triggers the crash. This page should not be visible when the test completes.");
 
-if (!window.testRunner || !window.mojo)
-    debug('This test can not run without testRunner or mojo');
+if (!window.testRunner)
+  debug('This test can not run without testRunner');
 
 document.body.onload = function() {
     geolocationServiceMock.then(mock => {
