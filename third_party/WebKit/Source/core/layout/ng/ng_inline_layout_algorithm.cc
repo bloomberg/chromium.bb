@@ -36,46 +36,25 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
     NGLayoutAlgorithm**) {
   // TODO(kojii): Implement sizing and child constraint spaces. Share common
   // logic with NGBlockLayoutAlgorithm using composition.
-  switch (state_) {
-    case kStateInit: {
-      builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
-      builder_->SetWritingMode(constraint_space_->WritingMode());
-      builder_->SetDirection(constraint_space_->Direction());
-      current_child_ = first_child_;
-      if (current_child_) {
-        space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
-        line_builder_ =
-            new NGLineBuilder(current_child_, space_for_current_child_);
-      }
+  builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
+  builder_->SetWritingMode(constraint_space_->WritingMode());
+  builder_->SetDirection(constraint_space_->Direction());
+  current_child_ = first_child_;
 
-      state_ = kStateChildLayout;
-      return kNotFinished;
-    }
-    case kStateChildLayout: {
-      if (current_child_) {
-        if (!LayoutCurrentChild())
-          return kNotFinished;
-        current_child_ = current_child_->NextSibling();
-        if (current_child_) {
-          // TODO(kojii): Since line_builder_ is bound to NGLayoutInlineItem
-          // in current_child_, changing current_child_ needs more work.
-          ASSERT_NOT_REACHED();
-          space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
-          return kNotFinished;
-        }
-      }
-      state_ = kStateFinalize;
-      return kNotFinished;
-    }
-    case kStateFinalize:
-      line_builder_->CreateFragments(builder_);
-      *fragment_out = builder_->ToBoxFragment();
-      line_builder_->CopyFragmentDataToLayoutBlockFlow();
-      state_ = kStateInit;
-      return kNewFragment;
-  };
-  NOTREACHED();
-  *fragment_out = nullptr;
+  // TODO(kojii): Since line_builder_ is bound to NGLayoutInlineItem
+  // in current_child_, changing the current_child_ needs more work.
+  if (current_child_) {
+    space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
+    line_builder_ = new NGLineBuilder(current_child_, space_for_current_child_);
+
+    while (!LayoutCurrentChild())
+      continue;
+  }
+
+  line_builder_->CreateFragments(builder_);
+  *fragment_out = builder_->ToBoxFragment();
+  line_builder_->CopyFragmentDataToLayoutBlockFlow();
+  state_ = kStateInit;
   return kNewFragment;
 }
 
