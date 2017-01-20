@@ -4,6 +4,8 @@
 
 #include "media/remoting/remoting_interstitial_ui.h"
 
+#include <algorithm>  // for std::max()
+
 #include "media/base/media_resources.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_renderer_sink.h"
@@ -21,6 +23,12 @@
 namespace media {
 
 namespace {
+
+// The interstitial frame size when |background_image| is empty or has low
+// resolution. The frame height may be adjusted according to the aspect ratio of
+// |natural_size|.
+constexpr int kDefaultFrameWidth = 1280;
+constexpr int kDefaultFrameHeight = 720;
 
 SkBitmap ResizeImage(const SkBitmap& image, const gfx::Size& scaled_size) {
   DCHECK(!scaled_size.IsEmpty());
@@ -61,7 +69,7 @@ void RenderCastMessage(const gfx::Size& canvas_size,
   // Both text and icon are centered horizontally. Together, they are
   // centered vertically.
   SkPaint paint;
-  int text_size = SkIntToScalar(30);
+  int text_size = SkIntToScalar(canvas_size.height() / 18);
   paint.setAntiAlias(true);
   paint.setFilterQuality(kHigh_SkFilterQuality);
   paint.setColor(SK_ColorLTGRAY);
@@ -87,8 +95,8 @@ void RenderCastMessage(const gfx::Size& canvas_size,
       (type == RemotingInterstitialType::IN_SESSION
            ? gfx::VectorIconId::MEDIA_ROUTER_ACTIVE
            : gfx::VectorIconId::MEDIA_ROUTER_WARNING);
-  gfx::ImageSkia icon_image =
-      gfx::CreateVectorIcon(current_icon, 65, SK_ColorLTGRAY);
+  gfx::ImageSkia icon_image = gfx::CreateVectorIcon(
+      current_icon, canvas_size.height() / 6, SK_ColorLTGRAY);
   const SkBitmap* icon_bitmap = icon_image.bitmap();
   SkScalar sk_image_offset_x = (canvas_size.width() - icon_image.width()) / 2.0;
   SkScalar sk_image_offset_y =
@@ -97,10 +105,24 @@ void RenderCastMessage(const gfx::Size& canvas_size,
                      &paint);
 }
 
+gfx::Size GetCanvasSize(const gfx::Size& image_size,
+                        const gfx::Size& natural_size) {
+  int width = std::max(image_size.width(), kDefaultFrameWidth) & ~1;
+  base::CheckedNumeric<int> height = width;
+  height *= natural_size.height();
+  height /= natural_size.width();
+  height &= ~1;
+  gfx::Size result = gfx::Size(width, height.ValueOrDefault(0));
+  return result.IsEmpty() ? gfx::Size(kDefaultFrameWidth, kDefaultFrameHeight)
+                          : result;
+}
+
 scoped_refptr<VideoFrame> RenderInterstitialFrame(
     const SkBitmap& image,
-    const gfx::Size& canvas_size,
+    const gfx::Size& natural_size,
     RemotingInterstitialType type) {
+  gfx::Size canvas_size =
+      GetCanvasSize(gfx::Size(image.width(), image.height()), natural_size);
   SkBitmap canvas_bitmap;
   canvas_bitmap.allocN32Pixels(canvas_size.width(), canvas_size.height());
   canvas_bitmap.eraseColor(SK_ColorBLACK);
@@ -137,17 +159,15 @@ scoped_refptr<VideoFrame> RenderInterstitialFrame(
 }  // namespace
 
 void PaintRemotingInterstitial(const SkBitmap& image,
-                               const gfx::Size& canvas_size,
+                               const gfx::Size& natural_size,
                                RemotingInterstitialType interstitial_type,
                                VideoRendererSink* video_renderer_sink) {
-  if (canvas_size.IsEmpty())
+  if (!video_renderer_sink)
     return;
 
   const scoped_refptr<VideoFrame> interstitial =
-      RenderInterstitialFrame(image, canvas_size, interstitial_type);
+      RenderInterstitialFrame(image, natural_size, interstitial_type);
 
-  if (!interstitial)
-    return;
   video_renderer_sink->PaintSingleFrame(interstitial);
 }
 

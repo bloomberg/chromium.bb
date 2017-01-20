@@ -22,13 +22,13 @@ enum RemotingInterstitialType {
 };
 
 // Paint an interstitial frame and send it to the given VideoRendererSink.
-// |background_image| will be scaled to fit in |canvas_size|, but keep its
-// aspect ratio. When has different aspect ratio with |canvas_size|, scaled
+// |background_image| may be scaled accordingly without changing its aspect
+// ratio. When has different aspect ratio with |natural_size|, scaled
 // |background_image| will be centered in the canvas. When |background_image|
 // is empty, interstitial will be drawn on a blank and black background. When
 // |interstial_type| is BETWEEN_SESSIONS, show background image only.
 void PaintRemotingInterstitial(const SkBitmap& background_image,
-                               const gfx::Size& canvas_size,
+                               const gfx::Size& natural_size,
                                RemotingInterstitialType interstitial_type,
                                VideoRendererSink* video_renderer_sink);
 
