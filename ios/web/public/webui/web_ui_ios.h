@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_H_
 #define IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -38,7 +39,8 @@ class WebUIIOS {
   virtual web::WebState* GetWebState() const = 0;
 
   virtual WebUIIOSController* GetController() const = 0;
-  virtual void SetController(WebUIIOSController* controller) = 0;
+  virtual void SetController(
+      std::unique_ptr<WebUIIOSController> controller) = 0;
 
   // Takes ownership of |handler|, which will be destroyed when the WebUIIOS is.
   virtual void AddMessageHandler(

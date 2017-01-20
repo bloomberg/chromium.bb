@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/navigation_manager.h"
@@ -113,12 +114,12 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
       : ui_handler_(ui_handler) {}
 
   // WebUIIOSControllerFactory overrides.
-  WebUIIOSController* CreateWebUIIOSControllerForURL(
+  std::unique_ptr<WebUIIOSController> CreateWebUIIOSControllerForURL(
       WebUIIOS* web_ui,
       const GURL& url) const override {
     DCHECK_EQ(url.scheme(), kTestWebUIScheme);
     DCHECK_EQ(url.host(), kTestWebUIURLHost);
-    return new TestUI(web_ui, ui_handler_);
+    return base::MakeUnique<TestUI>(web_ui, ui_handler_);
   }
 
  private:

@@ -29,7 +29,7 @@ class WebUIIOSImpl : public web::WebUIIOS,
   // WebUIIOS implementation:
   WebState* GetWebState() const override;
   WebUIIOSController* GetController() const override;
-  void SetController(WebUIIOSController* controller) override;
+  void SetController(std::unique_ptr<WebUIIOSController> controller) override;
   void AddMessageHandler(
       std::unique_ptr<WebUIIOSMessageHandler> handler) override;
   typedef base::Callback<void(const base::ListValue*)> MessageCallback;

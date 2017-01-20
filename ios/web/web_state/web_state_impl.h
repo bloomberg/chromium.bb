@@ -304,7 +304,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
  private:
   // Creates a WebUIIOS object for |url| that is owned by the caller. Returns
   // nullptr if |url| does not correspond to a WebUI page.
-  WebUIIOS* CreateWebUIIOS(const GURL& url);
+  std::unique_ptr<web::WebUIIOS> CreateWebUIIOS(const GURL& url);
 
   // Updates the HTTP response headers for the main page using the headers
   // passed to the OnHttpResponseHeadersReceived() function below.

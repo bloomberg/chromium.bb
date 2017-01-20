@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/webui/about_ui.h"
@@ -27,20 +28,21 @@ using web::WebUIIOSController;
 
 namespace {
 
-// A function for creating a new WebUIIOS. The caller owns the return value,
-// which may be NULL.
-typedef WebUIIOSController* (*WebUIIOSFactoryFunction)(WebUIIOS* web_ui,
-                                                       const GURL& url);
+// A function for creating a new WebUIIOS.
+using WebUIIOSFactoryFunction =
+    std::unique_ptr<WebUIIOSController> (*)(WebUIIOS* web_ui, const GURL& url);
 
 // Template for defining WebUIIOSFactoryFunction.
 template <class T>
-WebUIIOSController* NewWebUIIOS(WebUIIOS* web_ui, const GURL& url) {
-  return new T(web_ui);
+std::unique_ptr<WebUIIOSController> NewWebUIIOS(WebUIIOS* web_ui,
+                                                const GURL& url) {
+  return base::MakeUnique<T>(web_ui);
 }
 
 template <class T>
-WebUIIOSController* NewWebUIIOSWithHost(WebUIIOS* web_ui, const GURL& url) {
-  return new T(web_ui, url.host());
+std::unique_ptr<WebUIIOSController> NewWebUIIOSWithHost(WebUIIOS* web_ui,
+                                                        const GURL& url) {
+  return base::MakeUnique<T>(web_ui, url.host());
 }
 
 // Returns a function that can be used to create the right type of WebUIIOS for
@@ -91,7 +93,7 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
 
 }  // namespace
 
-WebUIIOSController*
+std::unique_ptr<WebUIIOSController>
 ChromeWebUIIOSControllerFactory::CreateWebUIIOSControllerForURL(
     WebUIIOS* web_ui,
     const GURL& url) const {

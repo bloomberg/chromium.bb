@@ -59,8 +59,9 @@ WebUIIOSController* WebUIIOSImpl::GetController() const {
   return controller_.get();
 }
 
-void WebUIIOSImpl::SetController(WebUIIOSController* controller) {
-  controller_.reset(controller);
+void WebUIIOSImpl::SetController(
+    std::unique_ptr<WebUIIOSController> controller) {
+  controller_ = std::move(controller);
 }
 
 void WebUIIOSImpl::CallJavascriptFunction(const std::string& function_name) {

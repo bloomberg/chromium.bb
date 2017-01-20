@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_IOS_CONTROLLER_FACTORY_H_
 #define IOS_CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_IOS_CONTROLLER_FACTORY_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -16,7 +17,7 @@ class GURL;
 
 class ChromeWebUIIOSControllerFactory : public web::WebUIIOSControllerFactory {
  public:
-  web::WebUIIOSController* CreateWebUIIOSControllerForURL(
+  std::unique_ptr<web::WebUIIOSController> CreateWebUIIOSControllerForURL(
       web::WebUIIOS* web_ui,
       const GURL& url) const override;
 

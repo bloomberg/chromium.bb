@@ -5,14 +5,16 @@
 #include "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/lazy_instance.h"
+#include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace web {
 
-base::LazyInstance<std::vector<WebUIIOSControllerFactory*> > g_factories =
+base::LazyInstance<std::vector<WebUIIOSControllerFactory*>> g_factories =
     LAZY_INSTANCE_INITIALIZER;
 
 void WebUIIOSControllerFactory::RegisterFactory(
@@ -25,18 +27,17 @@ WebUIIOSControllerFactoryRegistry::GetInstance() {
   return base::Singleton<WebUIIOSControllerFactoryRegistry>::get();
 }
 
-WebUIIOSController*
+std::unique_ptr<WebUIIOSController>
 WebUIIOSControllerFactoryRegistry::CreateWebUIIOSControllerForURL(
     WebUIIOS* web_ui,
     const GURL& url) const {
   std::vector<WebUIIOSControllerFactory*>* factories = g_factories.Pointer();
-  for (size_t i = 0; i < factories->size(); ++i) {
-    WebUIIOSController* controller =
-        (*factories)[i]->CreateWebUIIOSControllerForURL(web_ui, url);
+  for (WebUIIOSControllerFactory* factory : *factories) {
+    auto controller = factory->CreateWebUIIOSControllerForURL(web_ui, url);
     if (controller)
       return controller;
   }
-  return NULL;
+  return nullptr;
 }
 
 WebUIIOSControllerFactoryRegistry::WebUIIOSControllerFactoryRegistry() {

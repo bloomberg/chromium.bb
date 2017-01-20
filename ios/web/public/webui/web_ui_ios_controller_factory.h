@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_CONTROLLER_FACTORY_H_
 #define IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_CONTROLLER_FACTORY_H_
 
+#include <memory>
+
 #include "ios/web/public/webui/web_ui_ios.h"
 
 class GURL;
@@ -24,7 +26,7 @@ class WebUIIOSControllerFactory {
 
   // Returns a WebUIIOSController instance for the given URL, or NULL if the URL
   // doesn't correspond to a WebUIIOS.
-  virtual WebUIIOSController* CreateWebUIIOSControllerForURL(
+  virtual std::unique_ptr<WebUIIOSController> CreateWebUIIOSControllerForURL(
       WebUIIOS* web_ui,
       const GURL& url) const = 0;
 };
