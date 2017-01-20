@@ -140,12 +140,6 @@ Bug(none) http/tests/navigation/response204.html [ Timeout ]
 Bug(none) virtual/stable/http/tests/navigation/response204.html [ Timeout ]
 Bug(none) virtual/mojo-loading/http/tests/navigation/response204.html [ Timeout ]
 
-# https://crbug.com/673748 Cross frame access should work
-crbug.com/673748 http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
-crbug.com/673748 http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
-crbug.com/673748 virtual/mojo-loading/http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
-crbug.com/673748 virtual/mojo-loading/http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
-
 # This test seems to be partially failing without PlzNavigate as well.
 Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ Failure ]
 

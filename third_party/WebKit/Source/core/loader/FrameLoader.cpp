@@ -1355,7 +1355,12 @@ void FrameLoader::commitProvisionalLoad() {
   }
 
   client()->transitionToCommittedForNewPage();
-  m_frame->navigationScheduler().cancel();
+
+  // PlzNavigate: We need to ensure that script initiated navigations are
+  // honored.
+  if (!m_isNavigationHandledByClient)
+    m_frame->navigationScheduler().cancel();
+
   m_frame->editor().clearLastEditCommand();
 
   // If we are still in the process of initializing an empty document then its
@@ -1684,6 +1689,11 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
   // request.
   recordLatestRequiredCSP();
   modifyRequestForCSP(resourceRequest, nullptr);
+
+  // We remember this flag here because shouldContinueForNavigationPolicy()
+  // resets it.
+  bool navigationWasHandledByClient = m_isNavigationHandledByClient;
+
   if (!shouldContinueForNavigationPolicy(
           resourceRequest, frameLoadRequest.substituteData(), nullptr,
           frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(),
@@ -1711,8 +1721,13 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
   m_provisionalDocumentLoader->setNavigationType(navigationType);
   m_provisionalDocumentLoader->setReplacesCurrentHistoryItem(
       type == FrameLoadTypeReplaceCurrentItem);
-  m_frame->navigationScheduler().cancel();
-  m_checkTimer.stop();
+
+  // PlzNavigate: We need to ensure that script initiated navigations are
+  // honored.
+  if (!navigationWasHandledByClient) {
+    m_frame->navigationScheduler().cancel();
+    m_checkTimer.stop();
+  }
 
   m_loadType = type;
 
