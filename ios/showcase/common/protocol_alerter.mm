@@ -158,13 +158,15 @@ char kAssociatedProtocolNameKey;
   switch (*type) {
     case '@':
       return [self objectDescriptionAtIndex:index];
+    case 'q':
+      return [self longLongDescriptionAtIndex:index];
     // Add cases as needed here.
     default:
       return [NSString stringWithFormat:@"<Unknown Type:%c>", *type];
   }
 }
 
-// Return a string describing an argument at |index| that's known to an
+// Return a string describing an argument at |index| that's known to be an
 // objective-C object.
 - (NSString*)objectDescriptionAtIndex:(NSInteger)index {
   id object;
@@ -196,6 +198,15 @@ char kAssociatedProtocolNameKey;
                                 withString:className
                                    options:NSRegularExpressionSearch
                                      range:range];
+}
+
+// Returns a string describing an argument at |index| that is known to be a long
+// long.
+- (NSString*)longLongDescriptionAtIndex:(NSInteger)index {
+  long long value;
+
+  [self getArgument:&value atIndex:index];
+  return [NSString stringWithFormat:@"%lld", value];
 }
 
 @end

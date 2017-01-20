@@ -6,7 +6,7 @@
 
 #import "ios/chrome/browser/ui/suggestions/suggestions_item_actions.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -56,7 +56,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    MDFRobotoFontLoader* fontLoader = [MDFRobotoFontLoader sharedInstance];
+    id<MDCTypographyFontLoading> fontLoader = [MDCTypography fontLoader];
     _titleButton = [UIButton buttonWithType:UIButtonTypeSystem];
     _titleButton.titleLabel.font = [fontLoader mediumFontOfSize:16];
     _titleButton.titleLabel.textColor = [[MDCPalette greyPalette] tint900];

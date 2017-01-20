@@ -17,6 +17,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeArticle,
   ItemTypeExpand,
   ItemTypeStack,
+  ItemTypeFavicon,
 };
 
 // Updater for a CollectionViewController populating it with some items and

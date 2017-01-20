@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SCSuggestionsCoordinator ()<SuggestionsCommands>
+@interface SCSuggestionsCoordinator ()
 
 @property(nonatomic, strong)
     SuggestionsViewController* suggestionViewController;
@@ -36,27 +36,11 @@
   _suggestionViewController = [[SuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
 
-  _suggestionViewController.suggestionCommandHandler = self;
+  _suggestionViewController.suggestionCommandHandler =
+      reinterpret_cast<id<SuggestionsCommands>>(self.alerter);
 
   [self.baseViewController pushViewController:_suggestionViewController
                                      animated:YES];
-}
-
-#pragma mark - SuggestionsCommands
-
-- (void)addEmptyItem {
-  [self.suggestionViewController addTextItem:@"Button clicked"
-                                    subtitle:@"Item Added!"
-                                   toSection:5];
-}
-
-- (void)openReadingList {
-  [static_cast<id<SuggestionsCommands>>(self.alerter) openReadingList];
-}
-
-- (void)openFirstPageOfReadingList {
-  [static_cast<id<SuggestionsCommands>>(self.alerter)
-      openFirstPageOfReadingList];
 }
 
 @end

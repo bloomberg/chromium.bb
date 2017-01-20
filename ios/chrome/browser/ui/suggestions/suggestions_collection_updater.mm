@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_article_item.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_expandable_item.h"
+#import "ios/chrome/browser/ui/suggestions/suggestions_favicon_item.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_item.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_stack_item.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_view_controller.h"
@@ -30,18 +31,35 @@
   [collectionViewController loadModel];
   CollectionViewModel* model = collectionViewController.collectionViewModel;
   NSInteger sectionIdentifier = kSectionIdentifierEnumZero;
+
+  // Stack Item.
   [model addSectionWithIdentifier:sectionIdentifier];
   [model addItem:[[SuggestionsStackItem alloc] initWithType:ItemTypeStack
                                                       title:@"The title"
                                                    subtitle:@"The subtitle"]
       toSectionWithIdentifier:sectionIdentifier++];
 
+  // Favicon Item.
+  [model addSectionWithIdentifier:sectionIdentifier];
+  SuggestionsFaviconItem* faviconItem =
+      [[SuggestionsFaviconItem alloc] initWithType:ItemTypeFavicon];
+  for (NSInteger i = 0; i < 6; i++) {
+    [faviconItem addFavicon:[UIImage imageNamed:@"bookmark_gray_star"]
+                  withTitle:@"Super website! Incredible!"];
+  }
+  faviconItem.delegate = _collectionViewController;
+  [model addItem:faviconItem toSectionWithIdentifier:sectionIdentifier++];
+
   for (NSInteger i = 0; i < 3; i++) {
     [model addSectionWithIdentifier:sectionIdentifier];
+
+    // Standard Item.
     [model addItem:[[SuggestionsItem alloc] initWithType:ItemTypeText
                                                    title:@"The title"
                                                 subtitle:@"The subtitle"]
         toSectionWithIdentifier:sectionIdentifier];
+
+    // Article Item.
     [model addItem:[[SuggestionsArticleItem alloc]
                        initWithType:ItemTypeArticle
                               title:@"Title of an Article"
@@ -50,6 +68,8 @@
                               image:[UIImage
                                         imageNamed:@"distillation_success"]]
         toSectionWithIdentifier:sectionIdentifier];
+
+    // Expandable Item.
     SuggestionsExpandableItem* expandableItem =
         [[SuggestionsExpandableItem alloc]
             initWithType:ItemTypeExpand
@@ -104,7 +124,7 @@
 }
 
 - (BOOL)shouldUseCustomStyleForSection:(NSInteger)section {
-  return section == 0;
+  return section == 0 || section == 1;
 }
 
 @end

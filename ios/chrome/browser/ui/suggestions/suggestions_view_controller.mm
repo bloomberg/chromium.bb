@@ -74,6 +74,12 @@ const NSTimeInterval kAnimationDuration = 0.35;
   [self expand:YES cell:cell];
 }
 
+#pragma mark - SuggestionsFaviconCellDelegate
+
+- (void)openFaviconAtIndexPath:(NSIndexPath*)innerIndexPath {
+  [self.suggestionCommandHandler openFaviconAtIndex:innerIndexPath.item];
+}
+
 #pragma mark - SuggestionsItemActions
 
 - (void)addNewItem:(id)sender {

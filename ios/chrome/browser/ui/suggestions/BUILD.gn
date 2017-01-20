@@ -13,6 +13,10 @@ source_set("suggestions") {
     "suggestions_commands.h",
     "suggestions_expandable_item.h",
     "suggestions_expandable_item.mm",
+    "suggestions_favicon_internal_cell.h",
+    "suggestions_favicon_internal_cell.mm",
+    "suggestions_favicon_item.h",
+    "suggestions_favicon_item.mm",
     "suggestions_item.h",
     "suggestions_item.mm",
     "suggestions_item_actions.h",
@@ -40,11 +44,13 @@ source_set("unit_tests") {
   sources = [
     "suggestions_article_item_unittest.mm",
     "suggestions_expandable_item_unittest.mm",
+    "suggestions_favicon_item_unittest.mm",
     "suggestions_item_unittest.mm",
     "suggestions_stack_item_unittest.mm",
   ]
   deps = [
     ":suggestions",
+    "//base",
     "//ios/chrome/browser/ui/collection_view",
     "//testing/gtest",
     "//third_party/ocmock",
