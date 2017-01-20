@@ -37,6 +37,7 @@ const char kWindowLocationTestURL[] =
 
 // Button IDs used in the window.location test page.
 const char kWindowLocationAssignID[] = "location-assign";
+const char kWindowLocationReplaceID[] = "location-replace";
 
 // JavaScript functions on the window.location test page.
 NSString* const kUpdateURLScriptFormat = @"updateUrlToLoadText('%s')";
@@ -118,4 +119,36 @@ TEST_F(WindowLocationTest, Assign) {
   // Verify that |sample_url| was loaded and that |about_blank_item| was pruned.
   EXPECT_EQ(sample_url, navigation_manager()->GetLastCommittedItem()->GetURL());
   EXPECT_EQ(NSNotFound, GetIndexOfNavigationItem(about_blank_item));
+}
+
+// Tests that calling window.location.replace() doesn't create a new
+// NavigationItem.
+// TODO(crbug.com/307072): Enable test when location.replace is fixed.
+TEST_F(WindowLocationTest, DISABLED_Replace) {
+  // Navigate to about:blank so there is a forward entry.
+  GURL about_blank("about:blank");
+  LoadUrl(about_blank);
+  web::NavigationItem* about_blank_item =
+      navigation_manager()->GetLastCommittedItem();
+
+  // Navigate back to the window.location test page.
+  ExecuteBlockAndWaitForLoad(window_location_url(), ^{
+    navigation_manager()->GoBack();
+  });
+
+  // Set the window.location test URL and tap the window.location.replace()
+  // button.
+  GURL sample_url = web::test::HttpServer::MakeUrl(kSampleFileBasedURL);
+  SetWindowLocationUrl(sample_url);
+  ExecuteBlockAndWaitForLoad(sample_url, ^{
+    ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(),
+                                                   kWindowLocationReplaceID));
+  });
+
+  // Verify that |sample_url| was loaded and that |about_blank_item| was pruned.
+  web::NavigationItem* current_item =
+      navigation_manager()->GetLastCommittedItem();
+  EXPECT_EQ(sample_url, current_item->GetURL());
+  EXPECT_EQ(GetIndexOfNavigationItem(current_item) + 1,
+            GetIndexOfNavigationItem(about_blank_item));
 }
