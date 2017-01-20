@@ -38,6 +38,7 @@ const char kWindowLocationTestURL[] =
 // Button IDs used in the window.location test page.
 const char kWindowLocationAssignID[] = "location-assign";
 const char kWindowLocationReplaceID[] = "location-replace";
+const char kWindowLocationReloadID[] = "location-reload";
 
 // JavaScript functions on the window.location test page.
 NSString* const kUpdateURLScriptFormat = @"updateUrlToLoadText('%s')";
@@ -185,4 +186,18 @@ TEST_F(WindowLocationTest, WindowLocationReplaceUnresolvable) {
   // Verify that about:blank was actually loaded.
   EXPECT_EQ(about_blank,
             navigation_manager()->GetLastCommittedItem()->GetURL());
+}
+
+// Tests that calling window.location.reload() causes an onload event to occur.
+TEST_F(WindowLocationTest, WindowLocationReload) {
+  // Tap the window.location.reload() button.
+  ExecuteBlockAndWaitForLoad(window_location_url(), ^{
+    ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(),
+                                                   kWindowLocationReloadID));
+  });
+
+  // Verify that |kOnLoadText| is displayed and that no additional
+  // NavigationItems are added.
+  EXPECT_TRUE(IsOnLoadTextVisible());
+  EXPECT_EQ(1, navigation_manager()->GetItemCount());
 }
