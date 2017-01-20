@@ -527,8 +527,6 @@ class TestGitCl(TestCase):
       ((['git', 'config', '--unset-all', 'rietveld.viewvc-url'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.bug-prefix'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-regex'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.force-https-commit-url'],),
-        CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-ignore-regex'],),
         CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.project'],), CERR1),

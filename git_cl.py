@@ -885,12 +885,6 @@ class Settings(object):
       self.project = self._GetRietveldConfig('project', error_ok=True)
     return self.project
 
-  def GetForceHttpsCommitUrl(self):
-    if not self.force_https_commit_url:
-      self.force_https_commit_url = self._GetRietveldConfig(
-          'force-https-commit-url', error_ok=True)
-    return self.force_https_commit_url
-
   def GetPendingRefPrefix(self):
     if not self.pending_ref_prefix:
       self.pending_ref_prefix = self._GetRietveldConfig(
@@ -3282,8 +3276,6 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
   SetProperty('bug-prefix', 'BUG_PREFIX', unset_error_ok=True)
   SetProperty('cpplint-regex', 'LINT_REGEX', unset_error_ok=True)
-  SetProperty('force-https-commit-url', 'FORCE_HTTPS_COMMIT_URL',
-              unset_error_ok=True)
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
   SetProperty('project', 'PROJECT', unset_error_ok=True)
   SetProperty('pending-ref-prefix', 'PENDING_REF_PREFIX', unset_error_ok=True)
