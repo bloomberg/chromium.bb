@@ -50,7 +50,7 @@ void UserDisplayManager::OnFrameDecorationValuesChanged() {
 
   std::vector<mojom::WsDisplayPtr> displays = GetAllDisplays();
   display_manager_observers_.ForAllPtrs(
-      [this, &displays](mojom::DisplayManagerObserver* observer) {
+      [&displays](mojom::DisplayManagerObserver* observer) {
         observer->OnDisplaysChanged(CloneDisplays(displays));
       });
 }

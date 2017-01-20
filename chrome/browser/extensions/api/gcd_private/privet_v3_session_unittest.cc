@@ -304,7 +304,7 @@ TEST_F(PrivetV3SessionTest, Cancel) {
       GURL("http://host:180/privet/v3/pairing/cancel"), kInfoResponse,
       net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(*this, OnPostData(_))
-      .WillOnce(Invoke([this](const base::DictionaryValue& data) {
+      .WillOnce(Invoke([](const base::DictionaryValue& data) {
         std::string session_id;
         EXPECT_TRUE(data.GetString("sessionId", &session_id));
       }));

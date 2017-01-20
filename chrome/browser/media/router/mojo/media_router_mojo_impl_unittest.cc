@@ -626,7 +626,7 @@ TEST_F(MediaRouterMojoImplTest, DetachRoute) {
 TEST_F(MediaRouterMojoImplTest, TerminateRoute) {
   base::RunLoop run_loop;
   EXPECT_CALL(mock_media_route_provider_, TerminateRoute(kRouteId, _))
-      .WillOnce(Invoke([&run_loop](
+      .WillOnce(Invoke([](
           const std::string& route_id,
           const mojom::MediaRouteProvider::TerminateRouteCallback& cb) {
          cb.Run(base::nullopt, mojom::RouteRequestResultCode::OK);
@@ -641,7 +641,7 @@ TEST_F(MediaRouterMojoImplTest, TerminateRoute) {
 TEST_F(MediaRouterMojoImplTest, TerminateRouteFails) {
   base::RunLoop run_loop;
   EXPECT_CALL(mock_media_route_provider_, TerminateRoute(kRouteId, _))
-      .WillOnce(Invoke([&run_loop](
+      .WillOnce(Invoke([](
           const std::string& route_id,
           const mojom::MediaRouteProvider::TerminateRouteCallback& cb) {
         cb.Run(std::string("timed out"),
