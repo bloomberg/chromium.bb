@@ -19,6 +19,8 @@ embedder.setUp_ = function(config) {
   embedder.redirectGuestURLDest =
       embedder.baseGuestURL + '/guest_redirect.html';
   embedder.windowOpenGuestURL = embedder.baseGuestURL + '/guest.html';
+  embedder.samePageNavigationURL =
+      embedder.baseGuestURL + '/guest_same_page_navigation.html';
 };
 
 window.runTest = function(testName) {
@@ -1050,6 +1052,28 @@ function testLoadAbortNonWebSafeScheme() {
   document.body.appendChild(webview);
 };
 
+// This test verifies that the loadStart isn't sent for same page navigations,
+// while loadCommit is (per docs).
+function testLoadEventsSamePageNavigation() {
+  var webview = new WebView();
+  var loadStartCount = 0;
+  var loadCommitCount = 0;
+  webview.addEventListener('loadstart', function(evt) {
+    loadStartCount++;
+  });
+  webview.addEventListener('loadcommit', function(e) {
+    loadCommitCount++;
+  });
+  webview.addEventListener('loadstop', function(evt) {
+    embedder.test.assertEq(1, loadStartCount);
+    embedder.test.assertEq(2, loadCommitCount);
+    embedder.test.succeed();
+  });
+
+  webview.src = embedder.samePageNavigationURL;
+  document.body.appendChild(webview);
+}
+
 // Tests that the 'loadprogress' event is triggered correctly.
 function testLoadProgressEvent() {
   var webview = document.createElement('webview');
@@ -1756,6 +1780,7 @@ embedder.test.testList = {
   'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
   'testLoadAbortInvalidNavigation': testLoadAbortInvalidNavigation,
   'testLoadAbortNonWebSafeScheme': testLoadAbortNonWebSafeScheme,
+  'testLoadEventsSamePageNavigation': testLoadEventsSamePageNavigation,
   'testLoadProgressEvent': testLoadProgressEvent,
   'testLoadStartLoadRedirect': testLoadStartLoadRedirect,
   'testNavigateAfterResize': testNavigateAfterResize,

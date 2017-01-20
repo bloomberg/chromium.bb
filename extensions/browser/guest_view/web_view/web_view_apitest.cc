@@ -738,6 +738,13 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIWithHeaders) {
   StopTestServer();
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadEventsSamePageNavigation) {
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testLoadEventsSamePageNavigation", app_location);
+  StopTestServer();
+}
+
 // Tests the existence of WebRequest API event objects on the request
 // object, on the webview element, and hanging directly off webview.
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIExistence) {
