@@ -42,6 +42,7 @@
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/parser/FontVariantLigaturesParser.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
+#include "core/css/properties/CSSPropertyColumnUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 #include "core/css/properties/CSSPropertyShapeUtils.h"
@@ -637,25 +638,6 @@ static CSSValue* consumeLocale(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueAuto)
     return consumeIdent(range);
   return consumeString(range);
-}
-
-static CSSValue* consumeColumnWidth(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  // Always parse lengths in strict mode here, since it would be ambiguous
-  // otherwise when used in the 'columns' shorthand property.
-  CSSPrimitiveValue* columnWidth =
-      consumeLength(range, HTMLStandardMode, ValueRangeNonNegative);
-  if (!columnWidth ||
-      (!columnWidth->isCalculated() && columnWidth->getDoubleValue() == 0))
-    return nullptr;
-  return columnWidth;
-}
-
-static CSSValue* consumeColumnCount(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  return consumePositiveInteger(range);
 }
 
 static CSSValue* consumeColumnSpan(CSSParserTokenRange& range) {
@@ -2415,9 +2397,9 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitLocale:
       return consumeLocale(m_range);
     case CSSPropertyColumnWidth:
-      return consumeColumnWidth(m_range);
+      return CSSPropertyColumnUtils::consumeColumnWidth(m_range);
     case CSSPropertyColumnCount:
-      return consumeColumnCount(m_range);
+      return CSSPropertyColumnUtils::consumeColumnCount(m_range);
     case CSSPropertyColumnSpan:
       return consumeColumnSpan(m_range);
     case CSSPropertyAnimationDelay:
@@ -3104,29 +3086,14 @@ bool CSSPropertyParser::parseViewportDescriptor(CSSPropertyID propId,
   }
 }
 
-static bool consumeColumnWidthOrCount(CSSParserTokenRange& range,
-                                      CSSValue*& columnWidth,
-                                      CSSValue*& columnCount) {
-  if (range.peek().id() == CSSValueAuto) {
-    consumeIdent(range);
-    return true;
-  }
-  if (!columnWidth) {
-    columnWidth = consumeColumnWidth(range);
-    if (columnWidth)
-      return true;
-  }
-  if (!columnCount)
-    columnCount = consumeColumnCount(range);
-  return columnCount;
-}
-
 bool CSSPropertyParser::consumeColumns(bool important) {
   CSSValue* columnWidth = nullptr;
   CSSValue* columnCount = nullptr;
-  if (!consumeColumnWidthOrCount(m_range, columnWidth, columnCount))
+  if (!CSSPropertyColumnUtils::consumeColumnWidthOrCount(m_range, columnWidth,
+                                                         columnCount))
     return false;
-  consumeColumnWidthOrCount(m_range, columnWidth, columnCount);
+  CSSPropertyColumnUtils::consumeColumnWidthOrCount(m_range, columnWidth,
+                                                    columnCount);
   if (!m_range.atEnd())
     return false;
   if (!columnWidth)
