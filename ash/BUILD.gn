@@ -1248,6 +1248,7 @@ test("ash_unittests") {
     "frame/caption_buttons/frame_size_button_unittest.cc",
     "host/ash_window_tree_host_x11_unittest.cc",
     "laser/laser_pointer_controller_unittest.cc",
+    "laser/laser_pointer_points_unittest.cc",
     "laser/laser_segment_utils_unittest.cc",
     "magnifier/magnification_controller_unittest.cc",
     "magnifier/partial_magnification_controller_unittest.cc",
