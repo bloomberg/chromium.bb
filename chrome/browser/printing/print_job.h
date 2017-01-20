@@ -125,10 +125,10 @@ class PrintJob : public PrintJobWorkerOwner,
   void HoldUntilStopIsCalled();
 
 #if defined(OS_WIN)
-  void OnPdfToEmfStarted(int page_count);
-  void OnPdfToEmfPageConverted(int page_number,
-                               float scale_factor,
-                               std::unique_ptr<MetafilePlayer> emf);
+  void OnPdfConversionStarted(int page_count);
+  void OnPdfPageConverted(int page_number,
+                          float scale_factor,
+                          std::unique_ptr<MetafilePlayer> emf);
 #endif  // defined(OS_WIN)
 
   content::NotificationRegistrar registrar_;
@@ -156,8 +156,8 @@ class PrintJob : public PrintJobWorkerOwner,
   bool is_canceling_;
 
 #if defined(OS_WIN)
-  class PdfToEmfState;
-  std::unique_ptr<PdfToEmfState> pdf_to_emf_state_;
+  class PdfConversionState;
+  std::unique_ptr<PdfConversionState> pdf_conversion_state_;
   std::vector<int> pdf_page_mapping_;
 #endif  // defined(OS_WIN)
 
