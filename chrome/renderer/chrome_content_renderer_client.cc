@@ -1153,7 +1153,7 @@ bool ChromeContentRendererClient::WillSendRequest(
     return false;
 
   SearchBox* search_box =
-      SearchBox::Get(content::RenderFrame::FromWebFrame(frame));
+      SearchBox::Get(content::RenderFrame::FromWebFrame(frame->localRoot()));
   if (search_box) {
     // Note: this GURL copy could be avoided if host() were added to WebURL.
     GURL gurl(url);

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,13 +35,13 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "url/gurl.h"
 
-using testing::_;
-using testing::SetArgPointee;
-
-typedef ChromeRenderViewTest InstantProcessNavigationTest;
+using InstantProcessNavigationTest = ChromeRenderViewTest;
+using ChromeContentRendererClientSearchBoxTest = ChromeRenderViewTest;
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
+
+const char kHtmlWithIframe[] ="<iframe srcdoc=\"Nothing here\"></iframe>";
 
 // Tests that renderer-initiated navigations from an Instant render process get
 // bounced back to the browser to be rebucketed into a non-Instant renderer if
@@ -78,6 +79,38 @@ TEST_F(InstantProcessNavigationTest, ForkForNavigationsToSearchURLs) {
   EXPECT_FALSE(client->ShouldFork(
       GetMainFrame(), GURL("http://example.com/"), "GET", false, false,
       &unused));
+}
+
+TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
+  // Instantiate a SearchBox for the main render frame.
+  content::RenderFrame* render_frame =
+      content::RenderFrame::FromWebFrame(GetMainFrame());
+  new SearchBox(render_frame);
+
+  // Load a page that contains an iframe.
+  LoadHTML(kHtmlWithIframe);
+
+  ChromeContentRendererClient client;
+
+  // Create a thumbnail URL containing the correct render view ID and an
+  // arbitrary instant restricted ID.
+  GURL thumbnail_url(base::StringPrintf(
+      "chrome-search:/thumb/%i/1",
+      render_frame->GetRenderView()->GetRoutingID()));
+
+  GURL result;
+  // Make sure the SearchBox rewrites a thumbnail request from the main frame.
+  EXPECT_TRUE(client.WillSendRequest(GetMainFrame(), ui::PAGE_TRANSITION_LINK,
+                                     blink::WebURL(thumbnail_url), &result));
+
+  // Make sure the SearchBox rewrites a thumbnail request from the iframe.
+  blink::WebFrame* child_frame = GetMainFrame()->firstChild();
+  ASSERT_TRUE(child_frame);
+  ASSERT_TRUE(child_frame->isWebLocalFrame());
+  blink::WebLocalFrame* local_child =
+      static_cast<blink::WebLocalFrame*>(child_frame);
+  EXPECT_TRUE(client.WillSendRequest(local_child, ui::PAGE_TRANSITION_LINK,
+                                     blink::WebURL(thumbnail_url), &result));
 }
 
 // The tests below examine Youtube requests that use the Flash API and ensure
