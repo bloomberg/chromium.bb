@@ -236,13 +236,27 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
 
   m_alreadyStarted = true;
 
+  // FIXME: Eventually we'd like to evaluate scripts which are inserted into a
+  // viewless document but this'll do for now.
+  // See http://bugs.webkit.org/show_bug.cgi?id=5727
   // FIXME: If script is parser inserted, verify it's still in the original
   // document.
   Document& elementDocument = m_element->document();
-  Document* contextDocument = elementDocument.contextDocument();
-
-  if (!contextDocument || !contextDocument->allowExecutingScripts(m_element))
+  // TODO(kouhei): Remove the following check which doesn't make any sense.
+  if (!elementDocument.executingFrame())
     return false;
+
+  Document* contextDocument = elementDocument.contextDocument();
+  if (!contextDocument)
+    return false;
+
+  LocalFrame* contextFrame = contextDocument->executingFrame();
+  if (!contextFrame)
+    return false;
+  if (!contextFrame->script().canExecuteScripts(AboutToExecuteScript))
+    return false;
+
+  LocalFrame* elementFrame = elementDocument.frame();
 
   if (!isScriptForEventSupported())
     return false;
@@ -296,13 +310,16 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   } else if (client->hasSourceAttribute()) {
     m_pendingScript = PendingScript::create(m_element, m_resource.get());
     m_asyncExecType = ScriptRunner::Async;
-    LocalFrame* frame = m_element->document().frame();
-    if (frame) {
-      ScriptState* scriptState = ScriptState::forMainWorld(frame);
-      if (scriptState)
+    if (elementFrame) {
+      // TODO(kouhei): I'm not sure below is correct. I think we should use
+      // contextFrame rather than elementFrame.
+      ScriptState* scriptState = ScriptState::forMainWorld(elementFrame);
+      if (scriptState) {
         ScriptStreamer::startStreaming(
-            m_pendingScript.get(), ScriptStreamer::Async, frame->settings(),
-            scriptState, frame->frameScheduler()->loadingTaskRunner());
+            m_pendingScript.get(), ScriptStreamer::Async,
+            elementFrame->settings(), scriptState,
+            elementFrame->frameScheduler()->loadingTaskRunner());
+      }
     }
     contextDocument->scriptRunner()->queueScriptForExecution(this,
                                                              m_asyncExecType);

@@ -1028,7 +1028,6 @@ class CORE_EXPORT Document : public ContainerNode,
                                EventListener*,
                                const String& contextURL,
                                const WTF::OrdinalNumber& contextLine);
-  bool allowExecutingScripts(Node*);
 
   void enforceSandboxFlags(SandboxFlags mask) override;
 
