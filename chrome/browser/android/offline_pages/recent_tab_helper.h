@@ -22,6 +22,8 @@ class NavigationHandle;
 
 namespace offline_pages {
 
+using PageQuality = SnapshotController::PageQuality;
+
 // Attaches to every WebContent shown in a tab. Waits until the WebContent is
 // loaded to proper degree and then makes a snapshot of the page. Removes the
 // oldest snapshot in the 'ring buffer'. As a result, there is always up to N
@@ -39,6 +41,7 @@ class RecentTabHelper
   void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void WebContentsDestroyed() override;
+  void WasHidden() override;
 
   // SnapshotController::Client
   void StartSnapshot() override;
@@ -94,20 +97,28 @@ class RecentTabHelper
 
     // True if there was at least one snapshot successfully completed.
     bool page_snapshot_completed = false;
+
+    // Expected snapshot quality should the saving succeed. This value is only
+    // valid if |page_snapshot_completed| is true.
+    PageQuality expected_page_quality = PageQuality::POOR;
   };
 
   explicit RecentTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<RecentTabHelper>;
 
-  void EnsureInitialized();
-  void ContinueSnapshotWithIdsToPurge(const std::vector<int64_t>& page_ids);
-  void ContinueSnapshotAfterPurge(OfflinePageModel::DeletePageResult result);
-  void SavePageCallback(OfflinePageModel::SavePageResult result,
+  bool EnsureInitialized();
+  void ContinueSnapshotWithIdsToPurge(SnapshotProgressInfo* snapshot_info,
+                                      const std::vector<int64_t>& page_ids);
+  void ContinueSnapshotAfterPurge(SnapshotProgressInfo* snapshot_info,
+                                  OfflinePageModel::DeletePageResult result);
+  void SavePageCallback(SnapshotProgressInfo* snapshot_info,
+                        OfflinePageModel::SavePageResult result,
                         int64_t offline_id);
-  void ReportSnapshotCompleted();
-  void ReportDownloadStatusToRequestCoordinator();
-  bool IsSamePage() const;
+  void ReportSnapshotCompleted(SnapshotProgressInfo* snapshot_info);
+  void ReportDownloadStatusToRequestCoordinator(
+      SnapshotProgressInfo* snapshot_info);
   ClientId GetRecentPagesClientId() const;
+  void SaveSnapshotForDownloads();
 
   // Page model is a service, no ownership. Can be null - for example, in
   // case when tab is in incognito profile.
@@ -117,13 +128,13 @@ class RecentTabHelper
   // Not page-specific.
   bool snapshots_enabled_ = false;
 
-  // Becomes true during navigation if the page is ready for snapshot as
-  // indicated by at least one callback from SnapshotController.
-  bool is_page_ready_for_snapshot_ = false;
+  // Snapshot progress information for a downloads triggered request. Null if
+  // downloads is not capturing or hasn't captured the current page.
+  std::unique_ptr<SnapshotProgressInfo> downloads_latest_snapshot_info_;
 
-  // Info for the offline page to capture. Null if the tab is not capturing
-  // current page.
-  std::unique_ptr<SnapshotProgressInfo> snapshot_info_;
+  // Snapshot progress information for a last_n triggered request. Null if
+  // last_n is not currently capturing the current page.
+  std::unique_ptr<SnapshotProgressInfo> last_n_ongoing_snapshot_info_;
 
   // If empty, the tab does not have AndroidId and can not capture pages.
   std::string tab_id_;
@@ -131,11 +142,21 @@ class RecentTabHelper
   // The URL of the page that is currently being snapshotted. Used to check,
   // during async operations, that WebContents still contains the same page.
   GURL snapshot_url_;
-  // This starts out null and used as a flag for EnsureInitialized() to do the
-  // initialization only once.
+
+  // Monitors page loads and starts snapshots when a download request exist. It
+  // is also used as an initialization flag for EnsureInitialized() to be run
+  // only once.
   std::unique_ptr<SnapshotController> snapshot_controller_;
 
   std::unique_ptr<Delegate> delegate_;
+
+  // Set at each navigation to control if last_n should save snapshots of the
+  // current page being loaded.
+  bool last_n_listen_to_tab_hidden_ = false;
+
+  // Track the page quality status of the last saved snapshot for the current
+  // page. It is generally reset upon new navigations.
+  PageQuality last_n_latest_saved_quality_ = PageQuality::POOR;
 
   base::WeakPtrFactory<RecentTabHelper> weak_ptr_factory_;
 

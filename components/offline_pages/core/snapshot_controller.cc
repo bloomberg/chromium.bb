@@ -53,6 +53,7 @@ void SnapshotController::Reset() {
   // Cancel potentially delayed tasks that relate to the previous 'session'.
   weak_ptr_factory_.InvalidateWeakPtrs();
   state_ = State::READY;
+  current_page_quality_ = PageQuality::POOR;
 }
 
 void SnapshotController::Stop() {
@@ -68,10 +69,12 @@ void SnapshotController::PendingSnapshotCompleted() {
 }
 
 void SnapshotController::DocumentAvailableInMainFrame() {
+  DCHECK_EQ(PageQuality::POOR, current_page_quality_);
   // Post a delayed task to snapshot.
   task_runner_->PostDelayedTask(
       FROM_HERE, base::Bind(&SnapshotController::MaybeStartSnapshot,
-                            weak_ptr_factory_.GetWeakPtr()),
+                            weak_ptr_factory_.GetWeakPtr(),
+                            PageQuality::FAIR_AND_IMPROVING),
       base::TimeDelta::FromMilliseconds(delay_after_document_available_ms_));
 }
 
@@ -84,15 +87,17 @@ void SnapshotController::DocumentOnLoadCompletedInMainFrame() {
           delay_after_document_on_load_completed_ms_));
 }
 
-void SnapshotController::MaybeStartSnapshot() {
+void SnapshotController::MaybeStartSnapshot(PageQuality updated_page_quality) {
   if (state_ != State::READY)
     return;
+  DCHECK_LT(current_page_quality_, updated_page_quality);
+  current_page_quality_ = updated_page_quality;
   state_ = State::SNAPSHOT_PENDING;
   client_->StartSnapshot();
 }
 
 void SnapshotController::MaybeStartSnapshotThenStop() {
-  MaybeStartSnapshot();
+  MaybeStartSnapshot(PageQuality::HIGH);
   Stop();
 }
 
