@@ -24,12 +24,6 @@ struct SSLStatus;
 // All the methods in this protocol must be sent on the main thread.
 @protocol CRWRequestTrackerDelegate
 
-// Returns |YES| of all the requests are static file requests and returns |NO|
-// if all the requests are network requests. Note it is not allowed for a
-// |CRWRequestTrackerDelegate| to send both static file requests and network
-// requests.
-- (BOOL)isForStaticFileRequests;
-
 // The tracker calls this method every time there is a change in the SSL status
 // of a page. The info is whatever object was passed to TrimToURL().
 - (void)updatedSSLStatus:(const web::SSLStatus&)sslStatus
@@ -39,21 +33,6 @@ struct SSLStatus;
 // The tracker calls this method when it receives response headers.
 - (void)handleResponseHeaders:(net::HttpResponseHeaders*)headers
                    requestUrl:(const GURL&)requestUrl;
-
-// This method is called when a network request has an issue with the SSL
-// connection to present it to the user. The user will decide if the request
-// should continue or not and the callback should be invoked to let the backend
-// know.
-// If the callback is not called the request will be cancelled on the next call
-// to TrimToURL().
-// The callback is safe to call until the requestTracker it originated from
-// is deleted.
-typedef void (^SSLErrorCallback)(BOOL);
-- (void)presentSSLError:(const net::SSLInfo&)info
-           forSSLStatus:(const web::SSLStatus&)status
-                  onUrl:(const GURL&)url
-            recoverable:(BOOL)recoverable
-               callback:(SSLErrorCallback)shouldContinue;
 
 // Update the progress.
 - (void)updatedProgress:(float)progress;

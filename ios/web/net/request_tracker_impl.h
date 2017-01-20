@@ -162,9 +162,6 @@ class RequestTrackerImpl
   static RequestTrackerImpl* GetTrackerForRequestGroupID(
       NSString* request_group_id);
 
-  // Callback from the UI to allow  or deny a particular certificate.
-  void ErrorCallback(CRWSSLCarrier* carrier, bool allow);
-
   // Utility method for clients to post tasks to the IO thread from the UI
   // thread.
   void PostIOTask(const base::Closure& task);
@@ -305,10 +302,6 @@ class RequestTrackerImpl
   // Notifies the delegate of an SSL status update.
   void NotifyUpdatedSSLStatus(base::scoped_nsobject<CRWSSLCarrier> carrier);
 
-  // Calls the delegate method to present an SSL error interstitial.
-  void NotifyPresentSSLError(base::scoped_nsobject<CRWSSLCarrier> carrier,
-                             bool recoverable);
-
 #pragma mark Internal utilities for task posting
   // Posts |task| to |thread|. Must not be called from |thread|. If |thread| is
   // the IO thread, silently returns if |is_closing_| is true.
@@ -345,8 +338,6 @@ class RequestTrackerImpl
   unsigned int estimate_start_index_;
   // How many notifications are currently queued, to avoid notifying too often.
   int notification_depth_;
-  // The tracker containing the error currently presented to the user.
-  TrackerCounts* current_ssl_error_;
   // Set to |YES| if the page has mixed content
   bool has_mixed_content_;
   // Set to true if between TrimToURL and StopPageLoad.
@@ -357,11 +348,6 @@ class RequestTrackerImpl
 
 #pragma mark Other fields.
   scoped_refptr<web::CertificatePolicyCache> policy_cache_;
-  // If |true| all the requests should be static file requests, otherwise all
-  // the requests should be network requests. This is a constant initialized
-  // in the constructor and read in IO and UI threads.
-  const bool is_for_static_file_requests_;
-
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   // Current page URL, as far as we know.
   GURL page_url_;

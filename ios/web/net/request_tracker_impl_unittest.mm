@@ -62,10 +62,6 @@
   return self;
 }
 
-- (BOOL)isForStaticFileRequests {
-  return NO;
-}
-
 - (void)updatedProgress:(float)progress {
   if (progress > 0.0f) {
     if (progress < value_) {
@@ -99,14 +95,6 @@
               forPageUrl:(const GURL&)url
                 userInfo:(id)userInfo {
   // Nothing. yet.
-}
-
-- (void)presentSSLError:(const net::SSLInfo&)info
-           forSSLStatus:(const web::SSLStatus&)status
-                  onUrl:(const GURL&)url
-            recoverable:(BOOL)recoverable
-               callback:(SSLErrorCallback)shouldContinue {
-  // Nothing, yet.
 }
 
 - (void)certificateUsed:(net::X509Certificate*)certificate

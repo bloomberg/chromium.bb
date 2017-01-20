@@ -3500,10 +3500,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark -
 #pragma mark CRWRequestTrackerDelegate
 
-- (BOOL)isForStaticFileRequests {
-  return NO;
-}
-
 - (void)updatedSSLStatus:(const web::SSLStatus&)sslStatus
               forPageUrl:(const GURL&)url
                 userInfo:(id)userInfo {
@@ -3537,15 +3533,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)handleResponseHeaders:(net::HttpResponseHeaders*)headers
                    requestUrl:(const GURL&)requestUrl {
   _webStateImpl->OnHttpResponseHeadersReceived(headers, requestUrl);
-}
-
-- (void)presentSSLError:(const net::SSLInfo&)info
-           forSSLStatus:(const web::SSLStatus&)status
-                  onUrl:(const GURL&)url
-            recoverable:(BOOL)recoverable
-               callback:(SSLErrorCallback)shouldContinue {
-  // This is a UIWebView callback, which is no longer called.
-  NOTREACHED();
 }
 
 - (void)updatedProgress:(float)progress {

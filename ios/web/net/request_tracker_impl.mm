@@ -222,8 +222,6 @@ struct TrackerCounts {
 - (const web::SSLStatus&)sslStatus;
 // Returns a SSLInfo with a reference to the certificate and SSL information.
 - (const net::SSLInfo&)sslInfo;
-// Callback method to allow or deny the request from going through.
-- (void)errorCallback:(BOOL)flag;
 // Internal method used to build the SSLStatus object. Called from the
 // initializer to make sure it is invoked on the network thread.
 - (void)buildSSLStatus;
@@ -253,13 +251,6 @@ struct TrackerCounts {
 
 - (const web::SSLStatus&)sslStatus {
   return status_;
-}
-
-- (void)errorCallback:(BOOL)flag {
-  base::scoped_nsobject<CRWSSLCarrier> scoped(self);
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
-                           base::Bind(&web::RequestTrackerImpl::ErrorCallback,
-                                      tracker_, scoped, flag));
 }
 
 - (void)buildSSLStatus {
@@ -475,7 +466,7 @@ net::URLRequestContext* RequestTrackerImpl::GetRequestContext() {
 void RequestTrackerImpl::StartRequest(net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(!counts_by_request_.count(request));
-  DCHECK_EQ(is_for_static_file_requests_, request->url().SchemeIsFile());
+  DCHECK(!request->url().SchemeIsFile());
 
   if (new_estimate_round_) {
     // Starting a new estimate round. Ignore the previous requests for the
@@ -619,19 +610,6 @@ void RequestTrackerImpl::OnSSLCertificateError(
   }
 }
 
-void RequestTrackerImpl::ErrorCallback(CRWSSLCarrier* carrier, bool allow) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  DCHECK(policy_cache_);
-
-  if (allow) {
-    policy_cache_->AllowCertForHost([carrier sslInfo].cert.get(),
-                                    [carrier url].host(),
-                                    [carrier sslInfo].cert_status);
-    ReevaluateCallbacksForAllCounts();
-  }
-  current_ssl_error_ = NULL;
-}
-
 #pragma mark Client utility methods.
 
 void RequestTrackerImpl::PostUITaskIfOpen(const base::Closure& task) {
@@ -668,11 +646,9 @@ RequestTrackerImpl::RequestTrackerImpl(
       previous_estimate_(0.0f),  // Not active by default.
       estimate_start_index_(0),
       notification_depth_(0),
-      current_ssl_error_(NULL),
       has_mixed_content_(false),
       is_loading_(false),
       new_estimate_round_(true),
-      is_for_static_file_requests_([delegate isForStaticFileRequests]),
       request_context_getter_(context_getter),
       identifier_(++g_next_request_tracker_id),
       request_group_id_([request_group_id copy]),
@@ -828,19 +804,6 @@ void RequestTrackerImpl::NotifyUpdatedSSLStatus(
                      userInfo:user_info_];
 }
 
-void RequestTrackerImpl::NotifyPresentSSLError(
-    base::scoped_nsobject<CRWSSLCarrier> carrier,
-    bool recoverable) {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  [delegate_ presentSSLError:[carrier sslInfo]
-                forSSLStatus:[carrier sslStatus]
-                       onUrl:[carrier url]
-                 recoverable:recoverable
-                    callback:^(BOOL flag) {
-                         [carrier errorCallback:flag && recoverable];
-                    }];
-}
-
 void RequestTrackerImpl::EvaluateSSLCallbackForCounts(TrackerCounts* counts) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(policy_cache_);
@@ -921,28 +884,6 @@ void RequestTrackerImpl::ReevaluateCallbacksForAllCounts() {
     // Check if the value hasn't changed via a user action.
     if (tracker_count->ssl_judgment == CertPolicy::UNKNOWN)
       EvaluateSSLCallbackForCounts(tracker_count.get());
-
-    CertPolicy::Judgment judgment = tracker_count->ssl_judgment;
-    if (judgment == CertPolicy::ALLOWED)
-      continue;
-
-    // SSL errors on subrequests are simply ignored. The call to
-    // EvaluateSSLCallbackForCounts() cancelled the request and nothing will
-    // restart it.
-    if (tracker_count->is_subrequest)
-      continue;
-
-    if (!current_ssl_error_) {
-      // For the UNKNOWN and DENIED state the information should be pushed to
-      // the delegate. But only one at a time.
-      current_ssl_error_ = tracker_count.get();
-      base::scoped_nsobject<CRWSSLCarrier> carrier([[CRWSSLCarrier alloc]
-          initWithTracker:this counts:current_ssl_error_]);
-      web::WebThread::PostTask(
-          web::WebThread::UI, FROM_HERE,
-          base::Bind(&RequestTrackerImpl::NotifyPresentSSLError, this, carrier,
-                     judgment == CertPolicy::UNKNOWN));
-    }
   }
 }
 
