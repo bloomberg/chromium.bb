@@ -375,6 +375,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeAttribute(
   AtomicString attributeName;
   if (!consumeName(block, attributeName, namespacePrefix))
     return nullptr;
+  if (attributeName == starAtom)
+    return nullptr;
   block.consumeWhitespace();
 
   if (m_context->isHTMLDocument())

@@ -20,8 +20,8 @@
         assert_selector_serializes_to("[\\30zonk]", "[\\30 zonk]");
     }, document.title+", escaped character as code point in attribute name");
     test(function() {
-        assert_selector_serializes_to("[\\*]", "[\\*]");
-    }, document.title+", escaped character (*) in attribute");
+        assert_selector_serializes_to("[\\@]", "[\\@]");
+    }, document.title+", escaped character (@) in attribute name");
     test(function() {
         assert_selector_serializes_to("[*|ns\\:foo]", "[*|ns\\:foo]");
     }, document.title+", escaped character in attribute name with any namespace");

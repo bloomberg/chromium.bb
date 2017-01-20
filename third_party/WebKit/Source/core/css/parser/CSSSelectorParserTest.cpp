@@ -331,4 +331,20 @@ TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInStaticProfile) {
   }
 }
 
+TEST(CSSSelectorParserTest, AttributeSelectorUniversalInvalid) {
+  const char* testCases[] = {"[*]", "[*|*]"};
+
+  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
+  StyleSheetContents* sheet = StyleSheetContents::create(context);
+
+  for (auto testCase : testCases) {
+    SCOPED_TRACE(testCase);
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
+    CSSSelectorList list =
+        CSSSelectorParser::parseSelector(range, context, sheet);
+    EXPECT_FALSE(list.isValid());
+  }
+}
+
 }  // namespace blink
