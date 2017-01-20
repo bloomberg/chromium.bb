@@ -1172,7 +1172,9 @@ class CORE_EXPORT Document : public ContainerNode,
   ElementDataCache* elementDataCache() { return m_elementDataCache.get(); }
 
   void didLoadAllScriptBlockingResources();
+  void didAddPendingStylesheetInBody();
   void didRemoveAllPendingStylesheet();
+  void didRemoveAllPendingBodyStylesheets();
 
   bool inStyleRecalc() const {
     return m_lifecycle.state() == DocumentLifecycle::InStyleRecalc;

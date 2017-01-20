@@ -43,7 +43,7 @@ class CORE_EXPORT HTMLTreeBuilderSimulator {
   enum Namespace { HTML, SVG, MathML };
 
  public:
-  enum SimulatedToken { ScriptStart, ScriptEnd, OtherToken };
+  enum SimulatedToken { ScriptStart, ScriptEnd, Link, StyleEnd, OtherToken };
 
   typedef Vector<Namespace, 1> State;
 

@@ -291,6 +291,8 @@ void BackgroundHTMLParser::pumpTokenizer() {
     m_token->clear();
 
     if (simulatedToken == HTMLTreeBuilderSimulator::ScriptEnd ||
+        simulatedToken == HTMLTreeBuilderSimulator::StyleEnd ||
+        simulatedToken == HTMLTreeBuilderSimulator::Link ||
         m_pendingTokens->size() >= m_pendingTokenLimit) {
       shouldNotifyMainThread |= queueChunkForMainThread();
       // If we're far ahead of the main thread, yield for a bit to avoid

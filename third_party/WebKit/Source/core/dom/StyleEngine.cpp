@@ -161,8 +161,12 @@ void StyleEngine::addPendingSheet(StyleEngineContext& context) {
   m_pendingScriptBlockingStylesheets++;
 
   context.addingPendingSheet(document());
-  if (context.addedPendingSheetBeforeBody())
+  if (context.addedPendingSheetBeforeBody()) {
     m_pendingRenderBlockingStylesheets++;
+  } else {
+    m_pendingBodyStylesheets++;
+    document().didAddPendingStylesheetInBody();
+  }
 }
 
 // This method is called whenever a top-level stylesheet has finished loading.
@@ -174,6 +178,11 @@ void StyleEngine::removePendingSheet(Node& styleSheetCandidateNode,
   if (context.addedPendingSheetBeforeBody()) {
     DCHECK_GT(m_pendingRenderBlockingStylesheets, 0);
     m_pendingRenderBlockingStylesheets--;
+  } else {
+    DCHECK_GT(m_pendingBodyStylesheets, 0);
+    m_pendingBodyStylesheets--;
+    if (!m_pendingBodyStylesheets)
+      document().didRemoveAllPendingBodyStylesheets();
   }
 
   // Make sure we knew this sheet was pending, and that our count isn't out of

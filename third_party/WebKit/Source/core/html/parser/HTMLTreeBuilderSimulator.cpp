@@ -151,6 +151,8 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
       } else if (threadSafeMatch(tagName, scriptTag)) {
         tokenizer->setState(HTMLTokenizer::ScriptDataState);
         simulatedToken = ScriptStart;
+      } else if (threadSafeMatch(tagName, linkTag)) {
+        simulatedToken = Link;
       } else if (!m_inSelectInsertionMode) {
         // If we're in the "in select" insertion mode, all of these tags are
         // ignored, so we shouldn't change the tokenizer state:
@@ -205,6 +207,8 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
     } else if (threadSafeMatch(tagName, selectTag)) {
       m_inSelectInsertionMode = false;
     }
+    if (threadSafeMatch(tagName, styleTag))
+      simulatedToken = StyleEnd;
   }
 
   // FIXME: Also setForceNullCharacterReplacement when in text mode.

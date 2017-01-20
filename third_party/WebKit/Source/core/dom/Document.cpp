@@ -3363,6 +3363,11 @@ void Document::didLoadAllImports() {
   didLoadAllScriptBlockingResources();
 }
 
+void Document::didAddPendingStylesheetInBody() {
+  if (ScriptableDocumentParser* parser = scriptableDocumentParser())
+    parser->didAddPendingStylesheetInBody();
+}
+
 void Document::didRemoveAllPendingStylesheet() {
   styleResolverMayHaveChanged();
 
@@ -3372,6 +3377,11 @@ void Document::didRemoveAllPendingStylesheet() {
   if (!haveImportsLoaded())
     return;
   didLoadAllScriptBlockingResources();
+}
+
+void Document::didRemoveAllPendingBodyStylesheets() {
+  if (ScriptableDocumentParser* parser = scriptableDocumentParser())
+    parser->didLoadAllBodyStylesheets();
 }
 
 void Document::didLoadAllScriptBlockingResources() {

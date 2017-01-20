@@ -151,7 +151,9 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       m_pumpSessionNestingLevel(0),
       m_pumpSpeculationsSessionNestingLevel(0),
       m_isParsingAtLineNumber(false),
-      m_triedLoadingLinkHeaders(false) {
+      m_triedLoadingLinkHeaders(false),
+      m_addedPendingStylesheetInBody(false),
+      m_isWaitingForStylesheets(false) {
   ASSERT(shouldUseThreading() || (m_token && m_tokenizer));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.isPrefetchOnly() || !shouldUseThreading());
@@ -256,7 +258,8 @@ bool HTMLDocumentParser::isParsingFragment() const {
 }
 
 void HTMLDocumentParser::pumpTokenizerIfPossible() {
-  if (isStopped() || isWaitingForScripts())
+  checkIfBodyStlyesheetAdded();
+  if (isStopped() || isPaused())
     return;
 
   pumpTokenizer();
@@ -271,6 +274,10 @@ void HTMLDocumentParser::resumeParsingAfterYield() {
   ASSERT(shouldUseThreading());
   ASSERT(m_haveBackgroundParser);
 
+  checkIfBodyStlyesheetAdded();
+  if (isStopped() || isPaused())
+    return;
+
   pumpPendingSpeculations();
 }
 
@@ -283,6 +290,7 @@ void HTMLDocumentParser::runScriptsForPausedTreeBuilder() {
   // We will not have a scriptRunner when parsing a DocumentFragment.
   if (m_scriptRunner)
     m_scriptRunner->processScriptElement(scriptElement, scriptStartPosition);
+  checkIfBodyStlyesheetAdded();
 }
 
 bool HTMLDocumentParser::canTakeNextToken() {
@@ -293,7 +301,7 @@ bool HTMLDocumentParser::canTakeNextToken() {
   // continuing.
   if (m_treeBuilder->hasParserBlockingScript())
     runScriptsForPausedTreeBuilder();
-  if (isStopped() || isWaitingForScripts())
+  if (isStopped() || isPaused())
     return false;
 
   // FIXME: It's wrong for the HTMLDocumentParser to reach back to the
@@ -381,7 +389,7 @@ void HTMLDocumentParser::notifyPendingTokenizedChunks() {
   for (auto& chunk : pendingChunks)
     m_speculations.append(std::move(chunk));
 
-  if (!isWaitingForScripts() && !isScheduledForResume()) {
+  if (!isPaused() && !isScheduledForResume()) {
     if (m_tasksWereSuspended)
       m_parserScheduler->forceResumeAfterYield();
     else
@@ -399,19 +407,20 @@ void HTMLDocumentParser::validateSpeculations(
   ASSERT(chunk);
   // TODO(kouhei): We should simplify codepath here by disallowing
   // validateSpeculations
-  // while isWaitingForScripts, and m_lastChunkBeforeScript can simply be
+  // while isPaused, and m_lastChunkBeforePause can simply be
   // pushed to m_speculations.
-  if (isWaitingForScripts()) {
-    // We're waiting on a network script, just save the chunk, we'll get a
-    // second validateSpeculations call after the script completes. This call
-    // should have been made immediately after runScriptsForPausedTreeBuilder
-    // which may have started a network load and left us waiting.
-    ASSERT(!m_lastChunkBeforeScript);
-    m_lastChunkBeforeScript = std::move(chunk);
+  if (isPaused()) {
+    // We're waiting on a network script or stylesheet, just save the chunk,
+    // we'll get a second validateSpeculations call after the script or
+    // stylesheet completes. This call should have been made immediately after
+    // runScriptsForPausedTreeBuilder in the script case which may have started
+    // a network load and left us waiting.
+    DCHECK(!m_lastChunkBeforePause);
+    m_lastChunkBeforePause = std::move(chunk);
     return;
   }
 
-  ASSERT(!m_lastChunkBeforeScript);
+  DCHECK(!m_lastChunkBeforePause);
   std::unique_ptr<HTMLTokenizer> tokenizer = std::move(m_tokenizer);
   std::unique_ptr<HTMLToken> token = std::move(m_token);
 
@@ -488,12 +497,12 @@ size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
   SECURITY_DCHECK(m_pumpSpeculationsSessionNestingLevel == 1);
   SECURITY_DCHECK(!inPumpSession());
   ASSERT(!isParsingFragment());
-  ASSERT(!isWaitingForScripts());
+  DCHECK(!isPaused());
   ASSERT(!isStopped());
   ASSERT(shouldUseThreading());
   ASSERT(!m_tokenizer);
   ASSERT(!m_token);
-  ASSERT(!m_lastChunkBeforeScript);
+  DCHECK(!m_lastChunkBeforePause);
 
   std::unique_ptr<TokenizedChunk> chunk(std::move(popChunk));
   std::unique_ptr<CompactHTMLTokenStream> tokens = std::move(chunk->tokens);
@@ -550,10 +559,11 @@ size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(
       fetchQueuedPreloads();
     }
 
-    if (isWaitingForScripts()) {
-      // The </script> is assumed to be the last token of this bunch.
+    if (isPaused()) {
+      // The script or stylesheet should be the last token of this bunch.
       ASSERT(it + 1 == tokens->end());
-      runScriptsForPausedTreeBuilder();
+      if (isWaitingForScripts())
+        runScriptsForPausedTreeBuilder();
       validateSpeculations(std::move(chunk));
       break;
     }
@@ -586,8 +596,8 @@ void HTMLDocumentParser::pumpPendingSpeculations() {
   // m_tokenizer and m_token don't have state that invalidates m_speculations.
   ASSERT(!m_tokenizer);
   ASSERT(!m_token);
-  ASSERT(!m_lastChunkBeforeScript);
-  ASSERT(!isWaitingForScripts());
+  DCHECK(!m_lastChunkBeforePause);
+  DCHECK(!isPaused());
   ASSERT(!isStopped());
   ASSERT(!isScheduledForResume());
   ASSERT(!inPumpSession());
@@ -621,7 +631,8 @@ void HTMLDocumentParser::pumpPendingSpeculations() {
     // isScheduledForResume() may be set here as a result of
     // processTokenizedChunkFromBackgroundParser running arbitrary javascript
     // which invokes nested event loops. (e.g. inspector breakpoints)
-    if (!isParsing() || isWaitingForScripts() || isScheduledForResume())
+    checkIfBodyStlyesheetAdded();
+    if (!isParsing() || isPaused() || isScheduledForResume())
       break;
 
     if (m_speculations.isEmpty() ||
@@ -709,7 +720,7 @@ void HTMLDocumentParser::pumpTokenizer() {
   m_treeBuilder->flush(FlushAlways);
   RELEASE_ASSERT(!isStopped());
 
-  if (isWaitingForScripts()) {
+  if (isPaused()) {
     ASSERT(m_tokenizer->getState() == HTMLTokenizer::DataState);
 
     ASSERT(m_preloader);
@@ -747,6 +758,7 @@ void HTMLDocumentParser::constructTreeFromHTMLToken() {
     token().clear();
 
   m_treeBuilder->constructTree(&atomicToken);
+  checkIfBodyStlyesheetAdded();
 
   // FIXME: constructTree may synchronously cause Document to be detached.
   if (!m_token)
@@ -762,6 +774,7 @@ void HTMLDocumentParser::constructTreeFromCompactHTMLToken(
     const CompactHTMLToken& compactToken) {
   AtomicHTMLToken token(compactToken);
   m_treeBuilder->constructTree(&token);
+  checkIfBodyStlyesheetAdded();
 }
 
 bool HTMLDocumentParser::hasInsertionPoint() {
@@ -792,7 +805,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source) {
   m_input.insertAtCurrentInsertionPoint(excludedLineNumberSource);
   pumpTokenizerIfPossible();
 
-  if (isWaitingForScripts()) {
+  if (isPaused()) {
     // Check the document.write() output with a separate preload scanner as
     // the main scanner can't deal with insertions.
     if (!m_insertionPreloadScanner)
@@ -905,14 +918,14 @@ void HTMLDocumentParser::append(const String& inputSource) {
   }
 
   if (m_preloadScanner) {
-    if (m_input.current().isEmpty() && !isWaitingForScripts()) {
+    if (m_input.current().isEmpty() && !isPaused()) {
       // We have parsed until the end of the current input and so are now moving
       // ahead of the preload scanner. Clear the scanner so we know to scan
       // starting from the current input point if we block again.
       m_preloadScanner.reset();
     } else {
       m_preloadScanner->appendToEnd(source);
-      if (isWaitingForScripts())
+      if (isPaused())
         scanAndPreload(m_preloadScanner.get());
     }
   }
@@ -1063,14 +1076,18 @@ bool HTMLDocumentParser::isWaitingForScripts() const {
          m_reentryPermit->parserPauseFlag();
 }
 
-void HTMLDocumentParser::resumeParsingAfterScriptExecution() {
+void HTMLDocumentParser::resumeParsingAfterPause() {
   ASSERT(!isExecutingScript());
-  ASSERT(!isWaitingForScripts());
+  DCHECK(!isPaused());
+
+  checkIfBodyStlyesheetAdded();
+  if (isPaused())
+    return;
 
   if (m_haveBackgroundParser) {
-    if (m_lastChunkBeforeScript) {
-      validateSpeculations(std::move(m_lastChunkBeforeScript));
-      DCHECK(!m_lastChunkBeforeScript);
+    if (m_lastChunkBeforePause) {
+      validateSpeculations(std::move(m_lastChunkBeforePause));
+      DCHECK(!m_lastChunkBeforePause);
       pumpPendingSpeculations();
     }
     return;
@@ -1103,19 +1120,48 @@ void HTMLDocumentParser::notifyScriptLoaded(PendingScript* pendingScript) {
   }
 
   m_scriptRunner->executeScriptsWaitingForLoad(pendingScript);
-  if (!isWaitingForScripts())
-    resumeParsingAfterScriptExecution();
+  if (!isPaused())
+    resumeParsingAfterPause();
 }
 
 void HTMLDocumentParser::executeScriptsWaitingForResources() {
   DCHECK(document()->isScriptExecutionReady());
 
+  if (m_isWaitingForStylesheets)
+    m_isWaitingForStylesheets = false;
+
   // Document only calls this when the Document owns the DocumentParser so this
   // will not be called in the DocumentFragment case.
   DCHECK(m_scriptRunner);
   m_scriptRunner->executeScriptsWaitingForResources();
-  if (!isWaitingForScripts())
-    resumeParsingAfterScriptExecution();
+  if (!isPaused())
+    resumeParsingAfterPause();
+}
+
+void HTMLDocumentParser::didAddPendingStylesheetInBody() {
+  // When in-body CSS doesn't block painting, the parser needs to pause so that
+  // the DOM doesn't include any elements that may depend on the CSS for style.
+  // The stylesheet can be added and removed during the parsing of a single
+  // token so don't actually set the bit to block parsing here, just track
+  // the state of the added sheet in case it does persist beyond a single
+  // token.
+  if (RuntimeEnabledFeatures::cssInBodyDoesNotBlockPaintEnabled())
+    m_addedPendingStylesheetInBody = true;
+}
+
+void HTMLDocumentParser::didLoadAllBodyStylesheets() {
+  // Just toggle the stylesheet flag here (mostly for synchronous sheets).
+  // The document will also call into executeScriptsWaitingForResources
+  // which is when the parser will re-start, otherwise it will attempt to
+  // resume twice which could cause state machine issues.
+  m_addedPendingStylesheetInBody = false;
+}
+
+void HTMLDocumentParser::checkIfBodyStlyesheetAdded() {
+  if (m_addedPendingStylesheetInBody) {
+    m_addedPendingStylesheetInBody = false;
+    m_isWaitingForStylesheets = true;
+  }
 }
 
 void HTMLDocumentParser::parseDocumentFragment(

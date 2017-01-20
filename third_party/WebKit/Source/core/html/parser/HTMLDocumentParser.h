@@ -169,9 +169,15 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool hasInsertionPoint() final;
   void prepareToStopParsing() final;
   void stopParsing() final;
+  bool isPaused() const {
+    return isWaitingForScripts() || m_isWaitingForStylesheets;
+  }
   bool isWaitingForScripts() const final;
   bool isExecutingScript() const final;
   void executeScriptsWaitingForResources() final;
+  void didAddPendingStylesheetInBody() final;
+  void didLoadAllBodyStylesheets() final;
+  void checkIfBodyStlyesheetAdded();
   void documentElementAvailable() override;
 
   // HTMLParserScriptRunnerHost
@@ -200,7 +206,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void constructTreeFromCompactHTMLToken(const CompactHTMLToken&);
 
   void runScriptsForPausedTreeBuilder();
-  void resumeParsingAfterScriptExecution();
+  void resumeParsingAfterPause();
 
   void attemptToEnd();
   void endIfDelayed();
@@ -213,7 +219,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool isScheduledForResume() const;
   bool inPumpSession() const { return m_pumpSessionNestingLevel > 0; }
   bool shouldDelayEnd() const {
-    return inPumpSession() || isWaitingForScripts() || isScheduledForResume() ||
+    return inPumpSession() || isPaused() || isScheduledForResume() ||
            isExecutingScript();
   }
 
@@ -265,10 +271,10 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   XSSAuditor m_xssAuditor;
   XSSAuditorDelegate m_xssAuditorDelegate;
 
-  // FIXME: m_lastChunkBeforeScript, m_tokenizer, m_token, and m_input should be
+  // FIXME: m_lastChunkBeforePause, m_tokenizer, m_token, and m_input should be
   // combined into a single state object so they can be set and cleared together
   // and passed between threads together.
-  std::unique_ptr<TokenizedChunk> m_lastChunkBeforeScript;
+  std::unique_ptr<TokenizedChunk> m_lastChunkBeforePause;
   Deque<std::unique_ptr<TokenizedChunk>> m_speculations;
   WeakPtrFactory<HTMLDocumentParser> m_weakFactory;
   WeakPtr<BackgroundHTMLParser> m_backgroundParser;
@@ -286,6 +292,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // would require keeping track of token positions of preload requests.
   CompactHTMLToken* m_pendingCSPMetaToken;
 
+  TaskHandle m_resumeParsingTaskHandle;
+
   bool m_shouldUseThreading;
   bool m_endWasDelayed;
   bool m_haveBackgroundParser;
@@ -294,6 +302,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   unsigned m_pumpSpeculationsSessionNestingLevel;
   bool m_isParsingAtLineNumber;
   bool m_triedLoadingLinkHeaders;
+  bool m_addedPendingStylesheetInBody;
+  bool m_isWaitingForStylesheets;
 };
 
 }  // namespace blink
