@@ -154,19 +154,12 @@ crbug.com/681369 editing/selection/select-delete-in-event-handler.html [ NeedsRe
 # LayoutNG - is a new layout system for Blink.
 
 #### css2.1/20110323
-#### Passed: 247
-#### Skipped: 162
+#### Passed: 260
+#### Skipped: 149
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-006.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-009.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-003.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-004.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-005.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-006.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-008.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-009.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-010.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-011.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-012.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-017.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-018.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-019.htm [ Skip ]
@@ -183,18 +176,12 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-007.
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-011.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-012.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-014.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-016.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-017.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-018.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-019.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-021.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-023.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-024.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-025.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-026.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-028.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-030.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-031.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-032.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-033.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-replaced-height-035.htm [ Skip ]

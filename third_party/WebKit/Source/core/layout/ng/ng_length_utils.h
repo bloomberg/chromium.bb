@@ -121,6 +121,10 @@ CORE_EXPORT void ApplyAutoMargins(const NGConstraintSpace&,
                                   const NGFragment&,
                                   NGBoxStrut* margins);
 
+CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
+                                         Optional<LayoutUnit> min,
+                                         Optional<LayoutUnit> max);
+
 }  // namespace blink
 
 #endif  // NGLengthUtils_h

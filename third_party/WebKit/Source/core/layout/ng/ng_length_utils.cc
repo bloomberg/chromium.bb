@@ -242,18 +242,16 @@ LayoutUnit ComputeInlineSizeForFragment(
   LayoutUnit extent = ResolveInlineLength(
       space, style, min_and_max, logicalWidth, LengthResolveType::kContentSize);
 
-  Length max_length = style.logicalMaxWidth();
-  if (!max_length.isMaxSizeNone()) {
-    LayoutUnit max = ResolveInlineLength(space, style, min_and_max, max_length,
-                                         LengthResolveType::kMaxSize);
-    extent = std::min(extent, max);
+  Optional<LayoutUnit> max_length;
+  if (!style.logicalMaxWidth().isMaxSizeNone()) {
+    max_length =
+        ResolveInlineLength(space, style, min_and_max, style.logicalMaxWidth(),
+                            LengthResolveType::kMaxSize);
   }
-
-  LayoutUnit min =
+  Optional<LayoutUnit> min_length =
       ResolveInlineLength(space, style, min_and_max, style.logicalMinWidth(),
                           LengthResolveType::kMinSize);
-  extent = std::max(extent, min);
-  return extent;
+  return ConstrainByMinMax(extent, min_length, max_length);
 }
 
 LayoutUnit ComputeBlockSizeForFragment(
@@ -270,20 +268,16 @@ LayoutUnit ComputeBlockSizeForFragment(
     DCHECK_EQ(content_size, NGSizeIndefinite);
     return extent;
   }
-
-  Length max_length = style.logicalMaxHeight();
-  if (!max_length.isMaxSizeNone()) {
-    LayoutUnit max =
-        ResolveBlockLength(constraint_space, style, max_length, content_size,
-                           LengthResolveType::kMaxSize);
-    extent = std::min(extent, max);
+  Optional<LayoutUnit> max_length;
+  if (!style.logicalMaxHeight().isMaxSizeNone()) {
+    max_length =
+        ResolveBlockLength(constraint_space, style, style.logicalMaxHeight(),
+                           content_size, LengthResolveType::kMaxSize);
   }
-
-  LayoutUnit min =
+  Optional<LayoutUnit> min_length =
       ResolveBlockLength(constraint_space, style, style.logicalMinHeight(),
                          content_size, LengthResolveType::kMinSize);
-  extent = std::max(extent, min);
-  return extent;
+  return ConstrainByMinMax(extent, min_length, max_length);
 }
 
 int ResolveUsedColumnCount(int computed_count,
@@ -406,6 +400,16 @@ void ApplyAutoMargins(const NGConstraintSpace& constraint_space,
   } else if (style.marginEnd().isAuto()) {
     margins->inline_end = available_space;
   }
+}
+
+LayoutUnit ConstrainByMinMax(LayoutUnit length,
+                             Optional<LayoutUnit> min,
+                             Optional<LayoutUnit> max) {
+  if (max && length > max.value())
+    length = max.value();
+  if (min && length < min.value())
+    length = min.value();
+  return length;
 }
 
 }  // namespace blink

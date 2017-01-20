@@ -423,5 +423,63 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   EXPECT_EQ(height, p.size.height);
 }
 
+TEST_F(NGAbsoluteUtilsTest, MinMax) {
+  LayoutUnit min{50};
+  LayoutUnit max{150};
+
+  style_->setMinWidth(Length(min.toInt(), LengthType::Fixed));
+  style_->setMaxWidth(Length(max.toInt(), LengthType::Fixed));
+  style_->setMinHeight(Length(min.toInt(), LengthType::Fixed));
+  style_->setMaxHeight(Length(max.toInt(), LengthType::Fixed));
+
+  NGStaticPosition static_position{NGStaticPosition::kTopLeft,
+                                   {LayoutUnit(), LayoutUnit()}};
+  MinAndMaxContentSizes estimated_inline{LayoutUnit(20), LayoutUnit(20)};
+  NGAbsolutePhysicalPosition p;
+
+  // WIDTH TESTS
+
+  // width < min gets set to min.
+  SetHorizontalStyle(NGAuto, NGAuto, LayoutUnit(5), NGAuto, NGAuto);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
+  EXPECT_EQ(min, p.size.width);
+
+  // width > max gets set to max.
+  SetHorizontalStyle(NGAuto, NGAuto, LayoutUnit(200), NGAuto, NGAuto);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
+  EXPECT_EQ(max, p.size.width);
+
+  // Unspecified width becomes minmax, gets clamped to min.
+  SetHorizontalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
+  EXPECT_EQ(min, p.size.width);
+
+  // HEIGHT TESTS
+
+  Optional<LayoutUnit> auto_height;
+
+  // height < min gets set to min.
+  SetVerticalStyle(NGAuto, NGAuto, LayoutUnit(5), NGAuto, NGAuto);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
+  EXPECT_EQ(min, p.size.height);
+
+  // height > max gets set to max.
+  SetVerticalStyle(NGAuto, NGAuto, LayoutUnit(200), NGAuto, NGAuto);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
+  EXPECT_EQ(max, p.size.height);
+
+  // // Unspecified height becomes estimated, gets clamped to min.
+  SetVerticalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
+  auto_height = LayoutUnit(20);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
+  EXPECT_EQ(min, p.size.width);
+}
+
 }  // namespace
 }  // namespace blink
