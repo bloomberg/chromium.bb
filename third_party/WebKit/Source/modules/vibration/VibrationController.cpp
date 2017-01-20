@@ -21,6 +21,7 @@
 
 #include "bindings/modules/v8/UnsignedLongOrUnsignedLongSequence.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
 #include "platform/mojo/MojoHelper.h"
@@ -75,7 +76,10 @@ VibrationController::sanitizeVibrationPattern(
 VibrationController::VibrationController(Document& document)
     : ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.page()),
-      m_timerDoVibrate(this, &VibrationController::doVibrate),
+      m_timerDoVibrate(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, &document),
+          this,
+          &VibrationController::doVibrate),
       m_isRunning(false),
       m_isCallingCancel(false),
       m_isCallingVibrate(false) {
