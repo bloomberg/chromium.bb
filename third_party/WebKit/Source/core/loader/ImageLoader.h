@@ -159,7 +159,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   GC_PLUGIN_IGNORE("http://crbug.com/383741")
   Persistent<Element> m_keepAlive;
 
-  TaskRunnerTimer<ImageLoader> m_derefElementTimer;
+  Timer<ImageLoader> m_derefElementTimer;
   AtomicString m_failedLoadURL;
   WeakPtr<Task> m_pendingTask;  // owned by Microtask
   std::unique_ptr<IncrementLoadEventDelayCount> m_loadDelayCounter;
