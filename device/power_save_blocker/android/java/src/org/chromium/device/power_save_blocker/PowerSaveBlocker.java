@@ -24,21 +24,21 @@ class PowerSaveBlocker {
     private PowerSaveBlocker() {}
 
     @CalledByNative
-    private void applyBlock(View anchorView) {
+    private void applyBlock(View view) {
         assert mKeepScreenOnView == null;
-        mKeepScreenOnView = new WeakReference<>(anchorView);
-        anchorView.setKeepScreenOn(true);
+        mKeepScreenOnView = new WeakReference<>(view);
+        view.setKeepScreenOn(true);
     }
 
     @CalledByNative
     private void removeBlock() {
-        // mKeepScreenOnView may be null since it's possible that |applyBlock()|
-        // was not invoked due to having failed to acquire an anchor view.
+        // mKeepScreenOnView may be null since it's possible that |applyBlock()| was
+        // not invoked due to having failed to get a view to call |setKeepScrenOn| on.
         if (mKeepScreenOnView == null) return;
-        View anchorView = mKeepScreenOnView.get();
+        View view = mKeepScreenOnView.get();
         mKeepScreenOnView = null;
-        if (anchorView == null) return;
+        if (view == null) return;
 
-        anchorView.setKeepScreenOn(false);
+        view.setKeepScreenOn(false);
     }
 }

@@ -94,6 +94,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void SetAnchorRect(const base::android::JavaRef<jobject>& anchor,
                      const gfx::RectF& bounds);
 
+  // This may return null.
+  base::android::ScopedJavaLocalRef<jobject> GetContainerView();
+
  protected:
   ViewAndroid* parent_;
 

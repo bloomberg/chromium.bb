@@ -133,6 +133,15 @@ void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
       bounds.height(), scale, left_margin, top_margin);
 }
 
+ScopedJavaLocalRef<jobject> ViewAndroid::GetContainerView() {
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
+  if (delegate.is_null())
+    return nullptr;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_ViewAndroidDelegate_getContainerView(env, delegate);
+}
+
 void ViewAndroid::RemoveChild(ViewAndroid* child) {
   DCHECK(child);
   DCHECK_EQ(child->parent_, this);

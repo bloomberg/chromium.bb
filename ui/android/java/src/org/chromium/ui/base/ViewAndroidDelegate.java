@@ -107,6 +107,7 @@ public abstract class ViewAndroidDelegate {
     /**
      * @return container view that the anchor views are added to. May be null.
      */
+    @CalledByNative
     public abstract ViewGroup getContainerView();
 
     /**
