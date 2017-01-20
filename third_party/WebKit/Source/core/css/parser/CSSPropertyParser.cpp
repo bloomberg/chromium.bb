@@ -2498,8 +2498,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeNumber(m_range, ValueRangeAll);
     case CSSPropertyBaselineShift:
       return consumeBaselineShift(m_range);
-    case CSSPropertyStrokeMiterlimit:
-      return consumeNumber(m_range, ValueRangeNonNegative);
     case CSSPropertyStrokeWidth:
     case CSSPropertyStrokeDashoffset:
     case CSSPropertyCx:

@@ -368,7 +368,7 @@ stroke-dasharray interpolable, inherited, svg, name_for_methods=StrokeDashArray,
 stroke-dashoffset interpolable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertLength
 stroke-linecap svg, inherited, type_name=LineCap, name_for_methods=CapStyle
 stroke-linejoin svg, inherited, type_name=LineJoin, name_for_methods=JoinStyle
-stroke-miterlimit interpolable, inherited, svg, type_name=float, name_for_methods=StrokeMiterLimit
+stroke-miterlimit interpolable, inherited, svg, type_name=float, name_for_methods=StrokeMiterLimit, api_class
 stroke-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 stroke-width interpolable, inherited, svg, converter=convertUnzoomedLength
 table-layout
