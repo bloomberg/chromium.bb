@@ -46,6 +46,11 @@ void CreateContentFaviconDriverForWebContents(
 }
 
 bool ShouldDisplayFavicon(content::WebContents* web_contents) {
+  // No favicon on interstitials. This check must be done first since
+  // interstitial navigations don't commit and always have a pending entry.
+  if (web_contents->ShowingInterstitialPage())
+    return false;
+
   // Always display a throbber during pending loads.
   const content::NavigationController& controller =
       web_contents->GetController();
