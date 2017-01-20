@@ -1447,26 +1447,6 @@ static CSSValue* consumeClipPath(CSSParserTokenRange& range,
   return CSSPropertyShapeUtils::consumeBasicShape(range, context);
 }
 
-static CSSValue* consumeShapeOutside(CSSParserTokenRange& range,
-                                     const CSSParserContext* context) {
-  if (CSSValue* imageValue = consumeImageOrNone(range, context))
-    return imageValue;
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  if (CSSValue* boxValue = consumeShapeBox(range))
-    list->append(*boxValue);
-  if (CSSValue* shapeValue =
-          CSSPropertyShapeUtils::consumeBasicShape(range, context)) {
-    list->append(*shapeValue);
-    if (list->length() < 2) {
-      if (CSSValue* boxValue = consumeShapeBox(range))
-        list->append(*boxValue);
-    }
-  }
-  if (!list->length())
-    return nullptr;
-  return list;
-}
-
 static CSSValue* consumeContentDistributionOverflowPosition(
     CSSParserTokenRange& range) {
   if (identMatches<CSSValueNormal, CSSValueBaseline, CSSValueLastBaseline>(
@@ -2593,8 +2573,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeScrollSnapPoints(m_range, m_context->mode());
     case CSSPropertyOrder:
       return consumeInteger(m_range);
-    case CSSPropertyShapeOutside:
-      return consumeShapeOutside(m_range, m_context);
     case CSSPropertyClipPath:
       return consumeClipPath(m_range, m_context);
     case CSSPropertyJustifyContent:
