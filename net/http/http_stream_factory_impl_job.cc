@@ -265,6 +265,7 @@ int HttpStreamFactoryImpl::Job::Preconnect(int num_streams) {
   DCHECK_GT(num_streams, 0);
   HttpServerProperties* http_server_properties =
       session_->http_server_properties();
+  // Preconnect one connection if the server supports H2 or QUIC.
   if (http_server_properties &&
       http_server_properties->SupportsRequestPriority(
           url::SchemeHostPort(request_info_.url))) {
