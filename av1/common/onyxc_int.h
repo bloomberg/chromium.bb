@@ -673,7 +673,7 @@ static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
                                                 BLOCK_SIZE bsize,
                                                 PARTITION_TYPE partition) {
   if (bsize >= BLOCK_8X8) {
-    const int bsl = b_width_log2_lookup[bsize], hbs = (1 << bsl) / 4;
+    const int hbs = mi_size_wide[bsize] / 2;
     BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
     switch (partition) {
       case PARTITION_SPLIT:
