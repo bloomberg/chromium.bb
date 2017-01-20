@@ -18,32 +18,19 @@ ModelTypeConnectorProxy::ModelTypeConnectorProxy(
 
 ModelTypeConnectorProxy::~ModelTypeConnectorProxy() {}
 
-void ModelTypeConnectorProxy::ConnectNonBlockingType(
+void ModelTypeConnectorProxy::ConnectType(
     ModelType type,
     std::unique_ptr<ActivationContext> activation_context) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ModelTypeConnector::ConnectNonBlockingType,
-                                    model_type_connector_, type,
-                                    base::Passed(&activation_context)));
-}
-
-void ModelTypeConnectorProxy::DisconnectNonBlockingType(ModelType type) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeConnector::DisconnectNonBlockingType,
-                            model_type_connector_, type));
+      FROM_HERE,
+      base::Bind(&ModelTypeConnector::ConnectType, model_type_connector_, type,
+                 base::Passed(&activation_context)));
 }
 
-void ModelTypeConnectorProxy::RegisterDirectoryType(ModelType type,
-                                                    ModelSafeGroup group) {
+void ModelTypeConnectorProxy::DisconnectType(ModelType type) {
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&ModelTypeConnector::RegisterDirectoryType,
-                                    model_type_connector_, type, group));
-}
-
-void ModelTypeConnectorProxy::UnregisterDirectoryType(ModelType type) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeConnector::UnregisterDirectoryType,
-                            model_type_connector_, type));
+                         base::Bind(&ModelTypeConnector::DisconnectType,
+                                    model_type_connector_, type));
 }
 
 }  // namespace syncer

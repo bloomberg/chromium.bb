@@ -90,17 +90,15 @@ void SyncBackendHostImpl::UpdateCredentials(
                             credentials));
 }
 
-void SyncBackendHostImpl::StartConfiguration() {
-  sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoStartConfiguration, core_));
-}
-
 void SyncBackendHostImpl::StartSyncingWithServer() {
   SDVLOG(1) << "SyncBackendHostImpl::StartSyncingWithServer called.";
 
+  ModelSafeRoutingInfo routing_info;
+  registrar_->GetModelSafeRoutingInfo(&routing_info);
+
   sync_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoStartSyncing, core_,
-                            sync_prefs_->GetLastPollTime()));
+                            routing_info, sync_prefs_->GetLastPollTime()));
 }
 
 void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
@@ -213,15 +211,6 @@ void SyncBackendHostImpl::ConfigureDataTypes(ConfigureParams params) {
                             base::Passed(&params)));
 }
 
-void SyncBackendHostImpl::RegisterDirectoryDataType(ModelType type,
-                                                    ModelSafeGroup group) {
-  model_type_connector_->RegisterDirectoryType(type, group);
-}
-
-void SyncBackendHostImpl::UnregisterDirectoryDataType(ModelType type) {
-  model_type_connector_->UnregisterDirectoryType(type);
-}
-
 void SyncBackendHostImpl::EnableEncryptEverything() {
   sync_task_runner_->PostTask(
       FROM_HERE,
@@ -245,12 +234,11 @@ void SyncBackendHostImpl::ActivateNonBlockingDataType(
   registrar_->RegisterNonBlockingType(type);
   if (activation_context->model_type_state.initial_sync_done())
     registrar_->AddRestoredNonBlockingType(type);
-  model_type_connector_->ConnectNonBlockingType(type,
-                                                std::move(activation_context));
+  model_type_connector_->ConnectType(type, std::move(activation_context));
 }
 
 void SyncBackendHostImpl::DeactivateNonBlockingDataType(ModelType type) {
-  model_type_connector_->DisconnectNonBlockingType(type);
+  model_type_connector_->DisconnectType(type);
 }
 
 UserShare* SyncBackendHostImpl::GetUserShare() const {

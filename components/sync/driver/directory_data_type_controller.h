@@ -23,13 +23,12 @@ class DirectoryDataTypeController : public DataTypeController {
 
   // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
+  void GetAllNodes(const AllNodesCallback& callback) override;
+  void GetStatusCounters(const StatusCountersCallback& callback) override;
 
-  // Directory types need to register with sync engine before LoadModels because
-  // downloading initial data happens in parallel with LoadModels.
-  void BeforeLoadModels(ModelTypeConfigurer* configurer) override;
-
-  // Directory based data types register with backend before LoadModels in
-  // BeforeLoadModels. No need to do anything in RegisterWithBackend.
+  // Directory based data types don't need to register with backend.
+  // ModelTypeRegistry will create all necessary objects in
+  // SetEnabledDirectoryTypes based on routing info.
   void RegisterWithBackend(base::Callback<void(bool)> set_downloaded,
                            ModelTypeConfigurer* configurer) override;
 
@@ -46,9 +45,6 @@ class DirectoryDataTypeController : public DataTypeController {
   // the data type's ChangeProcessor registration with the backend).
   // See ModelTypeConfigurer::DeactivateDataType for more details.
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;
-
-  void GetAllNodes(const AllNodesCallback& callback) override;
-  void GetStatusCounters(const StatusCountersCallback& callback) override;
 
   // Returns a ListValue representing all nodes for a specified type by querying
   // the directory.

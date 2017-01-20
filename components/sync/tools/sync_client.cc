@@ -378,6 +378,10 @@ int SyncClientMain(int argc, char* argv[]) {
   model_types.Put(FAVICON_IMAGES);
   model_types.Put(FAVICON_TRACKING);
 
+  ModelSafeRoutingInfo routing_info;
+  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
+    routing_info[it.Get()] = GROUP_PASSIVE;
+  }
   scoped_refptr<PassiveModelWorker> passive_model_safe_worker =
       new PassiveModelWorker();
   std::vector<scoped_refptr<ModelSafeWorker>> workers;
@@ -438,13 +442,7 @@ int SyncClientMain(int argc, char* argv[]) {
   invalidator->RegisterHandler(shim.get());
   CHECK(invalidator->UpdateRegisteredIds(
       shim.get(), ModelTypeSetToObjectIdSet(model_types)));
-  ModelTypeConnector* model_type_connector =
-      sync_manager->GetModelTypeConnector();
-  for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
-    model_type_connector->RegisterDirectoryType(it.Get(), GROUP_PASSIVE);
-  }
-
-  sync_manager->StartSyncingNormally(base::Time());
+  sync_manager->StartSyncingNormally(routing_info, base::Time());
 
   base::RunLoop().Run();
 

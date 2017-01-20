@@ -17,12 +17,10 @@ class FakeModelTypeConnector : public ModelTypeConnector {
   FakeModelTypeConnector();
   ~FakeModelTypeConnector() override;
 
-  void ConnectNonBlockingType(
+  void ConnectType(
       ModelType type,
       std::unique_ptr<ActivationContext> activation_context) override;
-  void DisconnectNonBlockingType(ModelType type) override;
-  void RegisterDirectoryType(ModelType type, ModelSafeGroup group) override;
-  void UnregisterDirectoryType(ModelType type) override;
+  void DisconnectType(ModelType type) override;
 };
 
 }  // namespace syncer

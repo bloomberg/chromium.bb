@@ -72,10 +72,11 @@ class SyncManagerImpl
                           ModelTypeSet to_journal,
                           ModelTypeSet to_unapply) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
-  void StartSyncingNormally(base::Time last_poll_time) override;
-  void StartConfiguration() override;
+  void StartSyncingNormally(const ModelSafeRoutingInfo& routing_info,
+                            base::Time last_poll_time) override;
   void ConfigureSyncer(ConfigureReason reason,
                        ModelTypeSet to_download,
+                       const ModelSafeRoutingInfo& new_routing_info,
                        const base::Closure& ready_task,
                        const base::Closure& retry_task) override;
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
@@ -88,7 +89,6 @@ class SyncManagerImpl
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
-  ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;

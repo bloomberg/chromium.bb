@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/engine_impl/sync_cycle_event.h"

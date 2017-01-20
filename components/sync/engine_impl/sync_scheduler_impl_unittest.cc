@@ -89,6 +89,14 @@ void PumpLoopFor(base::TimeDelta time) {
   RunLoop();
 }
 
+ModelSafeRoutingInfo TypesToRoutingInfo(ModelTypeSet types) {
+  ModelSafeRoutingInfo routes;
+  for (ModelTypeSet::Iterator iter = types.First(); iter.Good(); iter.Inc()) {
+    routes[iter.Get()] = GROUP_PASSIVE;
+  }
+  return routes;
+}
+
 static const size_t kMinNumSamples = 5;
 
 // Test harness for the SyncScheduler.  Test the delays and backoff timers used
@@ -121,6 +129,11 @@ class SyncSchedulerImplTest : public testing::Test {
     delay_ = nullptr;
     extensions_activity_ = new ExtensionsActivity();
 
+    routing_info_[THEMES] = GROUP_UI;
+    routing_info_[TYPED_URLS] = GROUP_DB;
+    routing_info_[THEMES] = GROUP_UI;
+    routing_info_[NIGORI] = GROUP_PASSIVE;
+
     workers_.clear();
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
@@ -133,9 +146,6 @@ class SyncSchedulerImplTest : public testing::Test {
     model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         UssMigrator());
-    model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);
-    model_type_registry_->RegisterDirectoryType(THEMES, GROUP_UI);
-    model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_DB);
 
     context_ = base::MakeUnique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),
@@ -144,6 +154,7 @@ class SyncSchedulerImplTest : public testing::Test {
         true,   // enable keystore encryption
         false,  // force enable pre-commit GU avoidance
         "fake_invalidator_client_id");
+    context_->SetRoutingInfo(routing_info_);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_ = base::MakeUnique<SyncSchedulerImpl>(
@@ -153,6 +164,7 @@ class SyncSchedulerImplTest : public testing::Test {
   }
 
   SyncSchedulerImpl* scheduler() { return scheduler_.get(); }
+  const ModelSafeRoutingInfo& routing_info() { return routing_info_; }
   MockSyncer* syncer() { return syncer_; }
   MockDelayProvider* delay() { return delay_; }
   MockConnectionManager* connection() { return connection_.get(); }
@@ -297,6 +309,7 @@ class SyncSchedulerImplTest : public testing::Test {
   MockDelayProvider* delay_;
   std::vector<scoped_refptr<ModelSafeWorker>> workers_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
+  ModelSafeRoutingInfo routing_info_;
   base::WeakPtrFactory<SyncSchedulerImplTest> weak_ptr_factory_;
 };
 
@@ -380,6 +393,7 @@ TEST_F(SyncSchedulerImplTest, Config) {
   CallbackCounter retry_counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -408,6 +422,7 @@ TEST_F(SyncSchedulerImplTest, ConfigWithBackingOff) {
   CallbackCounter retry_counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -453,6 +468,7 @@ TEST_F(SyncSchedulerImplTest, ConfigWithStop) {
   CallbackCounter retry_counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -474,6 +490,7 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAuthToken) {
   CallbackCounter retry_counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -501,6 +518,7 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAuthTokenLocalSync) {
   CallbackCounter retry_counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -528,6 +546,7 @@ TEST_F(SyncSchedulerImplTest, NudgeWithConfigWithBackingOff) {
   CallbackCounter retry_counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -788,7 +807,7 @@ TEST_F(SyncSchedulerImplTest, ThrottlingDoesThrottle) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, types,
+      GetUpdatesCallerInfo::RECONFIGURATION, types, TypesToRoutingInfo(types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -872,7 +891,7 @@ TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromConfigure) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, types,
+      GetUpdatesCallerInfo::RECONFIGURATION, types, TypesToRoutingInfo(types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -1193,6 +1212,7 @@ TEST_F(SyncSchedulerImplTest, ConfigurationMode) {
   CallbackCounter retry_counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION, config_types,
+      TypesToRoutingInfo(config_types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -1209,6 +1229,9 @@ TEST_F(SyncSchedulerImplTest, ConfigurationMode) {
       .WillOnce(DoAll(Invoke(test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times2, true)));
 
+  // TODO(tim): Figure out how to remove this dangerous need to reset
+  // routing info between mode switches.
+  context()->SetRoutingInfo(routing_info());
   StartSyncScheduler(base::Time());
 
   RunLoop();
@@ -1284,7 +1307,7 @@ TEST_F(BackoffTriggersSyncSchedulerImplTest, FailGetEncryptionKey) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, types,
+      GetUpdatesCallerInfo::RECONFIGURATION, types, TypesToRoutingInfo(types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -1333,7 +1356,7 @@ TEST_F(SyncSchedulerImplTest, BackoffDropsJobs) {
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
-      GetUpdatesCallerInfo::RECONFIGURATION, types,
+      GetUpdatesCallerInfo::RECONFIGURATION, types, TypesToRoutingInfo(types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);
@@ -1566,6 +1589,7 @@ TEST_F(SyncSchedulerImplTest, DoubleCanaryInConfigure) {
   CallbackCounter retry_counter;
   ConfigurationParams params(
       GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
       base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
   scheduler()->ScheduleConfiguration(params);

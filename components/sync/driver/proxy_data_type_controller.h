@@ -23,7 +23,6 @@ class ProxyDataTypeController : public DataTypeController {
 
   // DataTypeController interface.
   bool ShouldLoadModelBeforeConfigure() const override;
-  void BeforeLoadModels(ModelTypeConfigurer* configurer) override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void RegisterWithBackend(base::Callback<void(bool)> set_downloaded,
                            ModelTypeConfigurer* configurer) override;

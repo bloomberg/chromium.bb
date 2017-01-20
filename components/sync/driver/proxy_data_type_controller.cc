@@ -21,9 +21,6 @@ bool ProxyDataTypeController::ShouldLoadModelBeforeConfigure() const {
   return false;
 }
 
-void ProxyDataTypeController::BeforeLoadModels(
-    ModelTypeConfigurer* configurer) {}
-
 void ProxyDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());

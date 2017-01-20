@@ -95,11 +95,6 @@ class SyncEngine : public ModelTypeConfigurer {
   // Updates the engine's SyncCredentials.
   virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
 
-  // Switches sync engine into configuration mode. In this mode only initial
-  // data for newly enabled types is downloaded from server. No local changes
-  // are committed to server.
-  virtual void StartConfiguration() = 0;
-
   // This starts the sync engine running a Syncer object to communicate with
   // sync servers. Until this is called, no changes will leave or enter this
   // browser from the cloud / sync servers.

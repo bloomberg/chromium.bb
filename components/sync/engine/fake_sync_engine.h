@@ -32,8 +32,6 @@ class FakeSyncEngine : public SyncEngine {
 
   void UpdateCredentials(const SyncCredentials& credentials) override;
 
-  void StartConfiguration() override;
-
   void StartSyncingWithServer() override;
 
   void SetEncryptionPassphrase(const std::string& passphrase,
@@ -46,10 +44,6 @@ class FakeSyncEngine : public SyncEngine {
   void Shutdown(ShutdownReason reason) override;
 
   void ConfigureDataTypes(ConfigureParams params) override;
-
-  void RegisterDirectoryDataType(ModelType type, ModelSafeGroup group) override;
-
-  void UnregisterDirectoryDataType(ModelType type) override;
 
   void EnableEncryptEverything() override;
 

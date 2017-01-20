@@ -141,16 +141,6 @@ void SyncBackendHostCore::OnInitializationComplete(
 
   ModelTypeSet new_control_types =
       registrar_->ConfigureDataTypes(ControlTypes(), ModelTypeSet());
-
-  // Control types don't have DataTypeControllers, but they need to have
-  // update handlers registered in ModelTypeRegistry. Register them here.
-  ModelTypeConnector* model_type_connector =
-      sync_manager_->GetModelTypeConnector();
-  ModelTypeSet control_types = ControlTypes();
-  for (auto it = control_types.First(); it.Good(); it.Inc()) {
-    model_type_connector->RegisterDirectoryType(it.Get(), GROUP_PASSIVE);
-  }
-
   ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
   SDVLOG(1) << "Control Types " << ModelTypeSetToString(new_control_types)
@@ -162,7 +152,7 @@ void SyncBackendHostCore::OnInitializationComplete(
   sync_manager_->PurgeDisabledTypes(types_to_purge, ModelTypeSet(),
                                     ModelTypeSet());
   sync_manager_->ConfigureSyncer(
-      reason, new_control_types,
+      reason, new_control_types, routing_info,
       base::Bind(&SyncBackendHostCore::DoInitialProcessControlTypes,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Closure());
@@ -399,13 +389,11 @@ void SyncBackendHostCore::DoUpdateCredentials(
   }
 }
 
-void SyncBackendHostCore::DoStartConfiguration() {
-  sync_manager_->StartConfiguration();
-}
-
-void SyncBackendHostCore::DoStartSyncing(base::Time last_poll_time) {
+void SyncBackendHostCore::DoStartSyncing(
+    const ModelSafeRoutingInfo& routing_info,
+    base::Time last_poll_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  sync_manager_->StartSyncingNormally(last_poll_time);
+  sync_manager_->StartSyncingNormally(routing_info, last_poll_time);
 }
 
 void SyncBackendHostCore::DoSetEncryptionPassphrase(
@@ -527,6 +515,9 @@ void SyncBackendHostCore::DoConfigureSyncer(
 
   registrar_->ConfigureDataTypes(params.enabled_types, params.disabled_types);
 
+  ModelSafeRoutingInfo routing_info;
+  registrar_->GetModelSafeRoutingInfo(&routing_info);
+
   base::Closure chained_ready_task(base::Bind(
       &SyncBackendHostCore::DoFinishConfigureDataTypes,
       weak_ptr_factory_.GetWeakPtr(), params.to_download, params.ready_task));
@@ -535,7 +526,8 @@ void SyncBackendHostCore::DoConfigureSyncer(
                  weak_ptr_factory_.GetWeakPtr(), params.retry_callback));
 
   sync_manager_->ConfigureSyncer(params.reason, params.to_download,
-                                 chained_ready_task, chained_retry_task);
+                                 routing_info, chained_ready_task,
+                                 chained_retry_task);
 }
 
 void SyncBackendHostCore::DoFinishConfigureDataTypes(

@@ -43,4 +43,9 @@ ModelTypeSet SyncCycleContext::GetEnabledTypes() const {
   return model_type_registry_->GetEnabledTypes();
 }
 
+void SyncCycleContext::SetRoutingInfo(
+    const ModelSafeRoutingInfo& routing_info) {
+  model_type_registry_->SetEnabledDirectoryTypes(routing_info);
+}
+
 }  // namespace syncer

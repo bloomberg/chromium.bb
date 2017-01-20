@@ -9,7 +9,6 @@
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/gtest_util.h"
 #include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -25,29 +24,11 @@ namespace syncer {
 
 class ModelTypeRegistryTest : public ::testing::Test {
  public:
-  void SetUp() override {
-    test_user_share_.SetUp();
-    scoped_refptr<ModelSafeWorker> passive_worker(
-        new FakeModelWorker(GROUP_PASSIVE));
-    scoped_refptr<ModelSafeWorker> ui_worker(new FakeModelWorker(GROUP_UI));
-    scoped_refptr<ModelSafeWorker> db_worker(new FakeModelWorker(GROUP_DB));
-    workers_.push_back(passive_worker);
-    workers_.push_back(ui_worker);
-    workers_.push_back(db_worker);
+  ModelTypeRegistryTest();
+  void SetUp() override;
+  void TearDown() override;
 
-    registry_ = base::MakeUnique<ModelTypeRegistry>(
-        workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        base::Bind(&ModelTypeRegistryTest::MigrateDirectory,
-                   base::Unretained(this)));
-  }
-
-  void TearDown() override {
-    registry_.reset();
-    workers_.clear();
-    test_user_share_.TearDown();
-  }
-
-  ModelTypeRegistry* registry() { return registry_.get(); }
+  ModelTypeRegistry* registry();
 
   static sync_pb::ModelTypeState MakeInitialModelTypeState(ModelType type) {
     sync_pb::ModelTypeState state;
@@ -85,9 +66,7 @@ class ModelTypeRegistryTest : public ::testing::Test {
     return true;
   }
 
-  syncable::Directory* directory() {
-    return test_user_share_.user_share()->directory.get();
-  }
+  syncable::Directory* directory();
 
   base::MessageLoop message_loop_;
 
@@ -98,51 +77,127 @@ class ModelTypeRegistryTest : public ::testing::Test {
   bool migration_attempted_ = false;
 };
 
-// Tests operations with directory types.
-// Registering/unregistering type should affect enabled types and handlers map.
-// Registering/unregistering type twice should trigger DCHECK.
-// Registering type with unknown ModelSafeGroup should trigger DCHECK.
-TEST_F(ModelTypeRegistryTest, DirectoryTypes) {
+ModelTypeRegistryTest::ModelTypeRegistryTest() {}
+
+void ModelTypeRegistryTest::SetUp() {
+  test_user_share_.SetUp();
+  scoped_refptr<ModelSafeWorker> passive_worker(
+      new FakeModelWorker(GROUP_PASSIVE));
+  scoped_refptr<ModelSafeWorker> ui_worker(new FakeModelWorker(GROUP_UI));
+  scoped_refptr<ModelSafeWorker> db_worker(new FakeModelWorker(GROUP_DB));
+  workers_.push_back(passive_worker);
+  workers_.push_back(ui_worker);
+  workers_.push_back(db_worker);
+
+  registry_ = base::MakeUnique<ModelTypeRegistry>(
+      workers_, test_user_share_.user_share(), &mock_nudge_handler_,
+      base::Bind(&ModelTypeRegistryTest::MigrateDirectory,
+                 base::Unretained(this)));
+}
+
+void ModelTypeRegistryTest::TearDown() {
+  registry_.reset();
+  workers_.clear();
+  test_user_share_.TearDown();
+}
+
+ModelTypeRegistry* ModelTypeRegistryTest::registry() {
+  return registry_.get();
+}
+
+syncable::Directory* ModelTypeRegistryTest::directory() {
+  return test_user_share_.user_share()->directory.get();
+}
+
+// Create some directory update handlers and commit contributors.
+//
+// We don't get to inspect any of the state we're modifying.  This test is
+// useful only for detecting crashes or memory leaks.
+TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Once) {
+  ModelSafeRoutingInfo routing_info;
+  routing_info.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
+  routing_info.insert(std::make_pair(BOOKMARKS, GROUP_UI));
+  routing_info.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
+
+  registry()->SetEnabledDirectoryTypes(routing_info);
+
   UpdateHandlerMap* update_handler_map = registry()->update_handler_map();
-  EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
+  // Apps is non-blocking type, SetEnabledDirectoryTypes shouldn't instantiate
+  // update_handler for it.
+  EXPECT_TRUE(update_handler_map->find(APPS) == update_handler_map->end());
+}
 
-  registry()->RegisterDirectoryType(AUTOFILL, GROUP_DB);
-  EXPECT_EQ(ModelTypeSet(AUTOFILL), registry()->GetEnabledTypes());
+// Try two different routing info settings.
+//
+// We don't get to inspect any of the state we're modifying.  This test is
+// useful only for detecting crashes or memory leaks.
+TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Repeatedly) {
+  ModelSafeRoutingInfo routing_info1;
+  routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
+  routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_PASSIVE));
+  routing_info1.insert(std::make_pair(AUTOFILL, GROUP_PASSIVE));
+  routing_info1.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
 
-  registry()->RegisterDirectoryType(BOOKMARKS, GROUP_UI);
-  EXPECT_EQ(ModelTypeSet(AUTOFILL, BOOKMARKS), registry()->GetEnabledTypes());
+  registry()->SetEnabledDirectoryTypes(routing_info1);
 
-  // Try registering already registered type.
-  EXPECT_DCHECK_DEATH(registry()->RegisterDirectoryType(BOOKMARKS, GROUP_UI));
+  ModelSafeRoutingInfo routing_info2;
+  routing_info2.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
+  routing_info2.insert(std::make_pair(BOOKMARKS, GROUP_UI));
+  routing_info2.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info2.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
 
-  EXPECT_TRUE(update_handler_map->find(AUTOFILL) != update_handler_map->end());
-  EXPECT_TRUE(update_handler_map->find(BOOKMARKS) != update_handler_map->end());
+  registry()->SetEnabledDirectoryTypes(routing_info2);
+}
 
-  registry()->UnregisterDirectoryType(AUTOFILL);
-  EXPECT_EQ(ModelTypeSet(BOOKMARKS), registry()->GetEnabledTypes());
-  EXPECT_TRUE(update_handler_map->find(AUTOFILL) == update_handler_map->end());
-  EXPECT_TRUE(update_handler_map->find(BOOKMARKS) != update_handler_map->end());
+// Test removing all types from the list.
+//
+// We don't get to inspect any of the state we're modifying.  This test is
+// useful only for detecting crashes or memory leaks.
+TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_Clear) {
+  ModelSafeRoutingInfo routing_info1;
+  routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
+  routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_UI));
+  routing_info1.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info1.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
 
-  // Try unregistering already unregistered type.
-  EXPECT_DCHECK_DEATH(registry()->UnregisterDirectoryType(AUTOFILL));
+  registry()->SetEnabledDirectoryTypes(routing_info1);
 
-  // Try registering type with unknown worker.
-  EXPECT_DCHECK_DEATH(
-      registry()->RegisterDirectoryType(SESSIONS, GROUP_HISTORY));
+  ModelSafeRoutingInfo routing_info2;
+  registry()->SetEnabledDirectoryTypes(routing_info2);
+}
+
+// Test disabling then re-enabling some directory types.
+//
+// We don't get to inspect any of the state we're modifying.  This test is
+// useful only for detecting crashes or memory leaks.
+TEST_F(ModelTypeRegistryTest, SetEnabledDirectoryTypes_OffAndOn) {
+  ModelSafeRoutingInfo routing_info1;
+  routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
+  routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_UI));
+  routing_info1.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info1.insert(std::make_pair(APPS, GROUP_NON_BLOCKING));
+
+  registry()->SetEnabledDirectoryTypes(routing_info1);
+
+  ModelSafeRoutingInfo routing_info2;
+  registry()->SetEnabledDirectoryTypes(routing_info2);
+
+  registry()->SetEnabledDirectoryTypes(routing_info1);
 }
 
 TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
-  registry()->ConnectNonBlockingType(
+  registry()->ConnectType(
       THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
   EXPECT_EQ(ModelTypeSet(THEMES), registry()->GetEnabledTypes());
 
-  registry()->ConnectNonBlockingType(
+  registry()->ConnectType(
       SESSIONS, MakeActivationContext(MakeInitialModelTypeState(SESSIONS)));
   EXPECT_EQ(ModelTypeSet(THEMES, SESSIONS), registry()->GetEnabledTypes());
 
-  registry()->DisconnectNonBlockingType(THEMES);
+  registry()->DisconnectType(THEMES);
   EXPECT_EQ(ModelTypeSet(SESSIONS), registry()->GetEnabledTypes());
 
   // Allow ModelTypeRegistry destruction to delete the
@@ -150,70 +205,73 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
 }
 
 TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
+  ModelSafeRoutingInfo routing_info1;
+  routing_info1.insert(std::make_pair(NIGORI, GROUP_PASSIVE));
+  routing_info1.insert(std::make_pair(BOOKMARKS, GROUP_UI));
+  routing_info1.insert(std::make_pair(AUTOFILL, GROUP_DB));
+  routing_info1.insert(std::make_pair(THEMES, GROUP_NON_BLOCKING));
+  routing_info1.insert(std::make_pair(SESSIONS, GROUP_NON_BLOCKING));
+
   ModelTypeSet directory_types(NIGORI, BOOKMARKS, AUTOFILL);
 
   ModelTypeSet current_types;
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
   // Add the themes non-blocking type.
-  registry()->ConnectNonBlockingType(
+  registry()->ConnectType(
       THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
   current_types.Put(THEMES);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Add some directory types.
-  for (auto it = directory_types.First(); it.Good(); it.Inc())
-    registry()->RegisterDirectoryType(it.Get(), GROUP_PASSIVE);
+  registry()->SetEnabledDirectoryTypes(routing_info1);
   current_types.PutAll(directory_types);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Add sessions non-blocking type.
-  registry()->ConnectNonBlockingType(
+  registry()->ConnectType(
       SESSIONS, MakeActivationContext(MakeInitialModelTypeState(SESSIONS)));
   current_types.Put(SESSIONS);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Remove themes non-blocking type.
-  registry()->DisconnectNonBlockingType(THEMES);
+  registry()->DisconnectType(THEMES);
   current_types.Remove(THEMES);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Clear all directory types.
-  for (auto it = directory_types.First(); it.Good(); it.Inc())
-    registry()->UnregisterDirectoryType(it.Get());
+  ModelSafeRoutingInfo routing_info2;
+  registry()->SetEnabledDirectoryTypes(routing_info2);
   current_types.RemoveAll(directory_types);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 }
 
 // Tests correct result returned from GetInitialSyncEndedTypes.
 TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
-  // Add two directory types.
-  registry()->RegisterDirectoryType(AUTOFILL, GROUP_PASSIVE);
-  registry()->RegisterDirectoryType(BOOKMARKS, GROUP_PASSIVE);
+  ModelSafeRoutingInfo routing_info;
+  // Add two directory and two non-blocking types.
+  routing_info.insert(std::make_pair(AUTOFILL, GROUP_PASSIVE));
+  routing_info.insert(std::make_pair(BOOKMARKS, GROUP_PASSIVE));
+  routing_info.insert(std::make_pair(THEMES, GROUP_NON_BLOCKING));
+  routing_info.insert(std::make_pair(SESSIONS, GROUP_NON_BLOCKING));
+  registry()->SetEnabledDirectoryTypes(routing_info);
 
   // Only Autofill and Themes types finished initial sync.
   MarkInitialSyncEndedForDirectoryType(AUTOFILL);
 
-  // Add two non-blocking type.
   sync_pb::ModelTypeState model_type_state = MakeInitialModelTypeState(THEMES);
   model_type_state.set_initial_sync_done(true);
-  registry()->ConnectNonBlockingType(THEMES,
-                                     MakeActivationContext(model_type_state));
-
-  registry()->ConnectNonBlockingType(
-      SESSIONS, MakeActivationContext(MakeInitialModelTypeState(SESSIONS)));
+  registry()->ConnectType(THEMES, MakeActivationContext(model_type_state));
 
   EXPECT_EQ(ModelTypeSet(AUTOFILL, THEMES),
             registry()->GetInitialSyncEndedTypes());
 }
 
-// Tests that when directory data is present for type ConnectNonBlockingType
-// triggers USS migration.
 TEST_F(ModelTypeRegistryTest, UssMigrationAttempted) {
   EXPECT_FALSE(migration_attempted());
 
   MarkInitialSyncEndedForDirectoryType(THEMES);
-  registry()->ConnectNonBlockingType(
+  registry()->ConnectType(
       THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
 
   EXPECT_TRUE(migration_attempted());

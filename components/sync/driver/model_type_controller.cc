@@ -127,7 +127,18 @@ void ModelTypeController::LoadModels(
                             std::move(error_handler), std::move(callback)));
 }
 
-void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
+void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
+  model_thread_->PostTask(
+      FROM_HERE, base::Bind(&CallGetAllNodesHelper, sync_client_, type(),
+                            BindToCurrentThread(callback)));
+}
+
+void ModelTypeController::GetStatusCounters(
+    const StatusCountersCallback& callback) {
+  model_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&CallGetStatusCountersHelper, sync_client_, type(), callback));
+}
 
 void ModelTypeController::LoadModelsDone(ConfigureResult result,
                                          const SyncError& error) {
@@ -240,19 +251,6 @@ std::string ModelTypeController::name() const {
 
 DataTypeController::State ModelTypeController::state() const {
   return state_;
-}
-
-void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
-  model_thread_->PostTask(
-      FROM_HERE, base::Bind(&CallGetAllNodesHelper, sync_client_, type(),
-                            BindToCurrentThread(callback)));
-}
-
-void ModelTypeController::GetStatusCounters(
-    const StatusCountersCallback& callback) {
-  model_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&CallGetStatusCountersHelper, sync_client_, type(), callback));
 }
 
 void ModelTypeController::ReportModelError(const ModelError& error) {
