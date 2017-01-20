@@ -4,6 +4,8 @@
 
 #include "ui/app_list/presenter/app_list.h"
 
+#include "ui/app_list/presenter/app_list_delegate.h"
+
 namespace app_list {
 
 AppList::AppList() {}
@@ -49,8 +51,13 @@ void AppList::OnTargetVisibilityChanged(bool visible) {
   target_visible_ = visible;
 }
 
-void AppList::OnVisibilityChanged(bool visible) {
+void AppList::OnVisibilityChanged(bool visible, int64_t display_id) {
+  if (visible_ == visible)
+    return;
+
   visible_ = visible;
+  if (delegate_)
+    delegate_->OnAppListVisibilityChanged(visible, display_id);
 }
 
 }  // namespace app_list

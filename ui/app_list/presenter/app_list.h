@@ -11,6 +11,8 @@
 
 namespace app_list {
 
+class AppListDelegate;
+
 // Stores the app list presenter interface pointer.
 class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
  public:
@@ -35,7 +37,9 @@ class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
   // mojom::AppList:
   void SetAppListPresenter(mojom::AppListPresenterPtr presenter) override;
   void OnTargetVisibilityChanged(bool visible) override;
-  void OnVisibilityChanged(bool visible) override;
+  void OnVisibilityChanged(bool visible, int64_t display_id) override;
+
+  void set_delegate(AppListDelegate* delegate) { delegate_ = delegate; }
 
  private:
   // Bindings for the mojom::AppList interface.
@@ -47,6 +51,8 @@ class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
   // The cached [target] visibility, as reported by the presenter.
   bool target_visible_ = false;
   bool visible_ = false;
+
+  AppListDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppList);
 };

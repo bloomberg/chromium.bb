@@ -12,6 +12,7 @@
 #include "ash/accelerators/accelerator_delegate.h"
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
+#include "ash/app_list/app_list_delegate_impl.h"
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accelerators/accelerator_controller.h"
@@ -533,6 +534,9 @@ Shell::~Shell() {
   ScreenAsh::CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
+  // AppListDelegateImpl depends upon AppList.
+  app_list_delegate_impl_.reset();
+
   wm_shell_->Shutdown();
   // Depends on |focus_client_|, so must be destroyed before.
   window_tree_host_manager_.reset();
@@ -569,6 +573,9 @@ void Shell::Init(const ShellInitParams& init_params) {
   const bool is_mash = wm_shell_->IsRunningInMash();
 
   wm_shell_->Initialize(init_params.blocking_pool);
+
+  if (is_mash)
+    app_list_delegate_impl_ = base::MakeUnique<AppListDelegateImpl>();
 
   // TODO(sky): move creation to WmShell.
   if (!is_mash)

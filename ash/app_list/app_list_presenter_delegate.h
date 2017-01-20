@@ -27,7 +27,7 @@ class LocatedEvent;
 
 namespace ash {
 
-// Non-Mus+ash implementation of AppListPresetnerDelegate.
+// Non-Mus+ash implementation of AppListPresenterDelegate.
 // Responsible for laying out the app list UI as well as updating the Shelf
 // launch icon as the state of the app list changes. Listens to shell events
 // and touches/mouse clicks outside the app list to auto dismiss the UI or

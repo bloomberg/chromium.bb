@@ -17,7 +17,9 @@ interface AppList {
 
   // Notify the app list that the presenter's [target] visibility changed.
   OnTargetVisibilityChanged(bool visible);
-  OnVisibilityChanged(bool visible);
+
+  // |display_id| gives the display containing the app list.
+  OnVisibilityChanged(bool visible, int64 display_id);
 };
 
 // Implemented by chrome. Used by ash to actually show and dismiss the app list.

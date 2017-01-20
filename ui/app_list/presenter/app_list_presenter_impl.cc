@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -120,7 +121,7 @@ void AppListPresenterImpl::SetAppList(mojom::AppListPtr app_list) {
   app_list_ = std::move(app_list);
   // Notify the app list interface of the current [target] visibility.
   app_list_->OnTargetVisibilityChanged(GetTargetVisibility());
-  app_list_->OnVisibilityChanged(IsVisible());
+  app_list_->OnVisibilityChanged(IsVisible(), GetDisplayId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,6 +186,15 @@ void AppListPresenterImpl::ScheduleAnimation() {
   widget->SetBounds(target_bounds);
 }
 
+int64_t AppListPresenterImpl::GetDisplayId() {
+  views::Widget* widget = view_ ? view_->GetWidget() : nullptr;
+  if (!widget)
+    return display::kInvalidDisplayId;
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(widget->GetNativeView())
+      .id();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterImpl,  aura::client::FocusChangeObserver implementation:
 
@@ -234,7 +244,7 @@ void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
                                                      bool visible) {
   DCHECK_EQ(view_->GetWidget(), widget);
   if (app_list_)
-    app_list_->OnVisibilityChanged(visible);
+    app_list_->OnVisibilityChanged(visible, GetDisplayId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

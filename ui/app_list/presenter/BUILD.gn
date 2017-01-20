@@ -25,6 +25,7 @@ component("presenter") {
   sources = [
     "app_list.cc",
     "app_list.h",
+    "app_list_delegate.h",
     "app_list_presenter_delegate.cc",
     "app_list_presenter_delegate.h",
     "app_list_presenter_delegate_factory.h",

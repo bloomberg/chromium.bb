@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
 #define UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "base/compiler_specific.h"
@@ -83,6 +85,10 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // Starts show/hide animation.
   void ScheduleAnimation();
+
+  // Returns the id of the display containing the app list, if visible. If not
+  // visible returns kInvalidDisplayId.
+  int64_t GetDisplayId();
 
   // aura::client::FocusChangeObserver overrides:
   void OnWindowFocused(aura::Window* gained_focus,

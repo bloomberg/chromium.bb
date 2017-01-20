@@ -53,6 +53,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -71,6 +73,13 @@ using testing::IsEmpty;
 
 namespace ash {
 namespace test {
+namespace {
+
+int64_t GetPrimaryDisplayId() {
+  return display::Screen::GetScreen()->GetPrimaryDisplay().id();
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // WmShelfObserver::OnShelfIconPositionsChanged tests.
@@ -1472,7 +1481,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
   // Trigger mock notifications that the app list was shown.
   WmShell::Get()->app_list()->OnTargetVisibilityChanged(true);
-  WmShell::Get()->app_list()->OnVisibilityChanged(true);
+  WmShell::Get()->app_list()->OnVisibilityChanged(true, GetPrimaryDisplayId());
   AppListButton* app_list_button = shelf_view_->GetAppListButton();
   app_list_button->OnAppListShown();
 
@@ -2116,7 +2125,8 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   void FinishAppListVisibilityChange() {
     // Trigger a mock notification that the app list finished animating.
     app_list::AppList* app_list = WmShell::Get()->app_list();
-    app_list->OnVisibilityChanged(app_list->GetTargetVisibility());
+    app_list->OnVisibilityChanged(app_list->GetTargetVisibility(),
+                                  GetPrimaryDisplayId());
   }
 
   AppListButton* app_list_button_ = nullptr;

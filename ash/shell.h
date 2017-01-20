@@ -73,6 +73,7 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorControllerDelegateAura;
+class AppListDelegateImpl;
 class AshNativeCursorManager;
 class AutoclickController;
 class BluetoothNotificationController;
@@ -554,6 +555,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<GPUSupport> gpu_support_;
 
   std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
+
+  std::unique_ptr<AppListDelegateImpl> app_list_delegate_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };
