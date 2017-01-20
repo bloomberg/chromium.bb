@@ -1733,6 +1733,19 @@ bool AXNodeObject::nameFromLabelElement() const {
   return false;
 }
 
+bool AXNodeObject::nameFromContents() const {
+  Node* node = getNode();
+  if (!node || !node->isElementNode())
+    return AXObject::nameFromContents();
+  // AXObject::nameFromContents determines whether an element should take its
+  // name from its descendant contents based on role. However, <select> is a
+  // special case, as unlike a typical pop-up button it contains its own pop-up
+  // menu's contents, which should not be used as the name.
+  if (isHTMLSelectElement(node))
+    return false;
+  return AXObject::nameFromContents();
+}
+
 void AXNodeObject::getRelativeBounds(AXObject** outContainer,
                                      FloatRect& outBoundsInContainer,
                                      SkMatrix44& outContainerTransform) const {
@@ -2298,6 +2311,28 @@ String AXNodeObject::nativeTextAlternative(
         *foundTextAlternative = true;
       } else {
         return textAlternative;
+      }
+    }
+
+    // Get default value if object is not laid out.
+    // If object is laid out, it will have a layout object for the label.
+    if (!getLayoutObject()) {
+      String defaultLabel = inputElement->valueOrDefaultLabel();
+      if (value.isNull() && !defaultLabel.isNull()) {
+        // default label
+        nameFrom = AXNameFromContents;
+        if (nameSources) {
+          nameSources->append(NameSource(*foundTextAlternative));
+          nameSources->back().type = nameFrom;
+        }
+        textAlternative = defaultLabel;
+        if (nameSources) {
+          NameSource& source = nameSources->back();
+          source.text = textAlternative;
+          *foundTextAlternative = true;
+        } else {
+          return textAlternative;
+        }
       }
     }
     return textAlternative;

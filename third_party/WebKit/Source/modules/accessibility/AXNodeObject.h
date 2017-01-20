@@ -177,6 +177,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                      AXRelatedObjectVector*) const override;
   String placeholder(AXNameFrom) const override;
   bool nameFromLabelElement() const override;
+  bool nameFromContents() const override;
 
   // Location
   void getRelativeBounds(AXObject** outContainer,
