@@ -61,6 +61,11 @@ void TranslateController::CheckTranslateStatus() {
   [js_manager_ injectTranslateStatusScript];
 }
 
+void TranslateController::SetJsTranslateManagerForTesting(
+    JsTranslateManager* manager) {
+  js_manager_.reset(manager);
+}
+
 bool TranslateController::OnJavascriptCommandReceived(
     const base::DictionaryValue& command,
     const GURL& url,
