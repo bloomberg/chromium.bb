@@ -566,11 +566,30 @@ ScrollingCoordinator* FrameView::scrollingCoordinator() const {
 }
 
 CompositorAnimationHost* FrameView::compositorAnimationHost() const {
+  // When m_animationHost is not nullptr, this is the FrameView for an OOPIF.
+  if (m_animationHost)
+    return m_animationHost.get();
+
+  if (m_frame->localFrameRoot() != m_frame)
+    return m_frame->localFrameRoot()->view()->compositorAnimationHost();
+
+  if (!m_frame->isMainFrame())
+    return nullptr;
+
   ScrollingCoordinator* c = scrollingCoordinator();
   return c ? c->compositorAnimationHost() : nullptr;
 }
 
 CompositorAnimationTimeline* FrameView::compositorAnimationTimeline() const {
+  if (m_animationTimeline)
+    return m_animationTimeline.get();
+
+  if (m_frame->localFrameRoot() != m_frame)
+    return m_frame->localFrameRoot()->view()->compositorAnimationTimeline();
+
+  if (!m_frame->isMainFrame())
+    return nullptr;
+
   ScrollingCoordinator* c = scrollingCoordinator();
   return c ? c->compositorAnimationTimeline() : nullptr;
 }
@@ -4993,6 +5012,16 @@ void FrameView::applyTransformForTopFrameSpace(TransformState& transformState) {
   LayoutRect viewportIntersectionRect(remoteViewportIntersection());
   transformState.move(
       LayoutSize(-viewportIntersectionRect.x(), -viewportIntersectionRect.y()));
+}
+
+void FrameView::setAnimationTimeline(
+    std::unique_ptr<CompositorAnimationTimeline> timeline) {
+  m_animationTimeline = std::move(timeline);
+}
+
+void FrameView::setAnimationHost(
+    std::unique_ptr<CompositorAnimationHost> host) {
+  m_animationHost = std::move(host);
 }
 
 }  // namespace blink

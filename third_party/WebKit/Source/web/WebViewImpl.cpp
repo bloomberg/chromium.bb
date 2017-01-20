@@ -2515,7 +2515,7 @@ void WebViewImpl::willCloseLayerTreeView() {
   }
 
   if (m_layerTreeView)
-    page()->willCloseLayerTreeView(*m_layerTreeView);
+    page()->willCloseLayerTreeView(*m_layerTreeView, nullptr);
 
   setRootLayer(nullptr);
   m_animationHost = nullptr;
@@ -3956,7 +3956,7 @@ void WebViewImpl::initializeLayerTreeView() {
 
   m_page->settings().setAcceleratedCompositingEnabled(m_layerTreeView);
   if (m_layerTreeView)
-    m_page->layerTreeViewInitialized(*m_layerTreeView);
+    m_page->layerTreeViewInitialized(*m_layerTreeView, nullptr);
 
   // FIXME: only unittests, click to play, Android printing, and printing (for
   // headers and footers) make this assert necessary. We should make them not

@@ -1882,18 +1882,12 @@ void PaintLayerScrollableArea::resetRebuildScrollbarLayerFlags() {
 
 CompositorAnimationHost* PaintLayerScrollableArea::compositorAnimationHost()
     const {
-  if (ScrollingCoordinator* coordinator = getScrollingCoordinator())
-    return coordinator->compositorAnimationHost();
-
-  return nullptr;
+  return m_layer.layoutObject()->frameView()->compositorAnimationHost();
 }
 
 CompositorAnimationTimeline*
 PaintLayerScrollableArea::compositorAnimationTimeline() const {
-  if (ScrollingCoordinator* coordinator = getScrollingCoordinator())
-    return coordinator->compositorAnimationTimeline();
-
-  return nullptr;
+  return m_layer.layoutObject()->frameView()->compositorAnimationTimeline();
 }
 
 PaintLayerScrollableArea*

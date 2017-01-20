@@ -801,12 +801,14 @@ bool VisualViewport::shouldDisableDesktopWorkarounds() const {
 }
 
 CompositorAnimationHost* VisualViewport::compositorAnimationHost() const {
+  DCHECK(frameHost().page().mainFrame()->isLocalFrame());
   ScrollingCoordinator* c = frameHost().page().scrollingCoordinator();
   return c ? c->compositorAnimationHost() : nullptr;
 }
 
 CompositorAnimationTimeline* VisualViewport::compositorAnimationTimeline()
     const {
+  DCHECK(frameHost().page().mainFrame()->isLocalFrame());
   ScrollingCoordinator* c = frameHost().page().scrollingCoordinator();
   return c ? c->compositorAnimationTimeline() : nullptr;
 }

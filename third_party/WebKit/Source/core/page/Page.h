@@ -226,8 +226,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   DECLARE_TRACE();
 
-  void layerTreeViewInitialized(WebLayerTreeView&);
-  void willCloseLayerTreeView(WebLayerTreeView&);
+  void layerTreeViewInitialized(WebLayerTreeView&, FrameView*);
+  void willCloseLayerTreeView(WebLayerTreeView&, FrameView*);
 
   void willBeDestroyed();
 

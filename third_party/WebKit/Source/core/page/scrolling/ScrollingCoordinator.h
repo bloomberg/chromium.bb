@@ -62,8 +62,12 @@ class CORE_EXPORT ScrollingCoordinator final
   ~ScrollingCoordinator();
   DECLARE_TRACE();
 
-  void layerTreeViewInitialized(WebLayerTreeView&);
-  void willCloseLayerTreeView(WebLayerTreeView&);
+  // The FrameView argument is optional, nullptr causes the the scrolling
+  // animation host and timeline to be owned by the ScrollingCoordinator. When
+  // not null, the host and timeline are attached to the specified FrameView.
+  // A FrameView only needs to own them when it is the view for an OOPIF.
+  void layerTreeViewInitialized(WebLayerTreeView&, FrameView*);
+  void willCloseLayerTreeView(WebLayerTreeView&, FrameView*);
 
   void willBeDestroyed();
 

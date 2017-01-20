@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<iframe id="target-iframe1" src="http://localhost:8080/misc/resources/cross-origin-subframe-for-scrolling.html" style="height: 100px; width: 100px; overflow-y: scroll; position: absolute; left: 50px; top: 50px"></iframe>
+<iframe id="target-iframe2" src="http://localhost:8080/misc/resources/cross-origin-subframe-for-scrolling.html" style="height: 100px; width: 100px; overflow-y: scroll; position: absolute; left: 50px; top: 200px"></iframe>
+
+<script>
+description("Verify that two sibling cross-origin iframes both correctly scroll on MouseWheel events, as per https://crbug.com/675695.");
+
+// States:
+//   0 => Scroll sent to iframe1
+//   1 => Fetching scroll offset from iframe1
+//   2 => Scroll sent to iframe2
+//   3 => Fetching scroll offset from iframe2
+var state = 0;
+var iframe1 = document.getElementById("target-iframe1");
+var iframe2 = document.getElementById("target-iframe2");
+setPrintTestResultsLazily();
+self.jsTestIsAsync = true;
+
+function handleMessage(event) {
+  if (state == 0) {
+  	iframe1.contentWindow.postMessage("", "*");
+  	state = 1;
+  } else if (state == 1) {
+    shouldBeEqualToNumber("event.data.scrollTop", 40);
+    state = 2;
+    iframe2.contentWindow.postMessage({scrollBy: -1, left: iframe2.offsetLeft, top: iframe2.offsetTop}, "*");
+    iframe2.contentWindow.postMessage("", "*");
+  } else if (state == 2) {
+  	iframe1.contentWindow.postMessage("", "*");
+  	state = 3;
+  } else if (state == 3) {
+    shouldBeEqualToNumber("event.data.scrollTop", 40);
+    finishJSTest();
+  }
+}
+
+window.addEventListener("message", handleMessage);
+
+iframe1.onload = (() => {
+  iframe1.contentWindow.postMessage({scrollBy: -1, left: iframe1.offsetLeft, top: iframe1.offsetTop}, "*");
+});
+
+</script>

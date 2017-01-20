@@ -508,8 +508,19 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(
       isForRootLayer(scrollableArea))
     m_page->chromeClient().registerViewportLayers();
 
-  scrollableArea->layerForScrollingDidChange(
-      m_programmaticScrollAnimatorTimeline.get());
+  CompositorAnimationTimeline* timeline;
+  // FrameView::compositorAnimationTimeline() can indirectly return
+  // m_programmaticScrollAnimatorTimeline if it does not have its own
+  // timeline.
+  if (scrollableArea->isFrameView()) {
+    timeline = toFrameView(scrollableArea)->compositorAnimationTimeline();
+  } else if (scrollableArea->isPaintLayerScrollableArea()) {
+    timeline = toPaintLayerScrollableArea(scrollableArea)
+                   ->compositorAnimationTimeline();
+  } else {
+    timeline = m_programmaticScrollAnimatorTimeline.get();
+  }
+  scrollableArea->layerForScrollingDidChange(timeline);
 
   return !!webLayer;
 }
@@ -852,20 +863,37 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(
 }
 
 void ScrollingCoordinator::layerTreeViewInitialized(
-    WebLayerTreeView& layerTreeView) {
+    WebLayerTreeView& layerTreeView,
+    FrameView* view) {
   if (Platform::current()->isThreadedAnimationEnabled() &&
       layerTreeView.compositorAnimationHost()) {
-    m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
-        layerTreeView.compositorAnimationHost());
-    m_programmaticScrollAnimatorTimeline =
+    std::unique_ptr<CompositorAnimationTimeline> timeline =
         CompositorAnimationTimeline::create();
-    m_animationHost->addTimeline(*m_programmaticScrollAnimatorTimeline.get());
+    std::unique_ptr<CompositorAnimationHost> host =
+        WTF::makeUnique<CompositorAnimationHost>(
+            layerTreeView.compositorAnimationHost());
+    if (view && view->frame().localFrameRoot() != m_page->mainFrame()) {
+      view->setAnimationHost(std::move(host));
+      view->setAnimationTimeline(std::move(timeline));
+      view->compositorAnimationHost()->addTimeline(
+          *view->compositorAnimationTimeline());
+    } else {
+      m_animationHost = std::move(host);
+      m_programmaticScrollAnimatorTimeline = std::move(timeline);
+      m_animationHost->addTimeline(*m_programmaticScrollAnimatorTimeline.get());
+    }
   }
 }
 
 void ScrollingCoordinator::willCloseLayerTreeView(
-    WebLayerTreeView& layerTreeView) {
-  if (m_programmaticScrollAnimatorTimeline) {
+    WebLayerTreeView& layerTreeView,
+    FrameView* view) {
+  if (view && view->frame().localFrameRoot() != m_page->mainFrame()) {
+    view->compositorAnimationHost()->removeTimeline(
+        *view->compositorAnimationTimeline());
+    view->setAnimationTimeline(nullptr);
+    view->setAnimationHost(nullptr);
+  } else if (m_programmaticScrollAnimatorTimeline) {
     m_animationHost->removeTimeline(
         *m_programmaticScrollAnimatorTimeline.get());
     m_programmaticScrollAnimatorTimeline = nullptr;

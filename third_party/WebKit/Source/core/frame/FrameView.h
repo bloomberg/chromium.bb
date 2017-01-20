@@ -40,6 +40,8 @@
 #include "core/paint/ScrollbarManager.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Widget.h"
+#include "platform/animation/CompositorAnimationHost.h"
+#include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
@@ -819,6 +821,14 @@ class CORE_EXPORT FrameView final
 
   void applyTransformForTopFrameSpace(TransformState&);
 
+  // TODO(kenrb): These are temporary methods pending resolution of
+  // https://crbug.com/680606. Animation timelines and hosts for scrolling
+  // are normally owned by ScrollingCoordinator, but there is only one
+  // of those objects per page. To get around this, we temporarily stash a
+  // unique timeline and host on each OOPIF FrameView.
+  void setAnimationTimeline(std::unique_ptr<CompositorAnimationTimeline>);
+  void setAnimationHost(std::unique_ptr<CompositorAnimationHost>);
+
  protected:
   // Scroll the content via the compositor.
   bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -1190,6 +1200,10 @@ class CORE_EXPORT FrameView final
   // The size of the vector depends on the number of
   // main thread scrolling reasons.
   Vector<int> m_mainThreadScrollingReasonsCounter;
+
+  // TODO(kenrb): Remove these when https://crbug.com/680606 is resolved.
+  std::unique_ptr<CompositorAnimationTimeline> m_animationTimeline;
+  std::unique_ptr<CompositorAnimationHost> m_animationHost;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count) {

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<div style="height: 300px"></div>
+
+<script>
+setPrintTestResultsLazily();
+self.jsTestIsAsync = true;
+
+window.onload = (() => {
+  if (!window.eventSender || !window.internals) {
+  	debug("This test requires window.eventSender.");
+  	return;
+  }
+  internals.settings.setScrollAnimatorEnabled(true);
+});
+
+function handleMessage(event) {
+  if (event.data.hasOwnProperty('scrollBy')) {
+    eventSender.mouseMoveTo(event.data.left + 5, event.data.top + 5);
+    eventSender.mouseScrollBy(0, event.data.scrollBy);
+    requestAnimationFrame(() => {setTimeout(() => {event.source.postMessage("", "*")}, 500)});
+  } else {
+    event.source.postMessage({scrollTop: document.documentElement.scrollTop}, "*");
+  }
+}
+
+window.addEventListener("message", handleMessage);
+</script>
