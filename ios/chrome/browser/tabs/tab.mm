@@ -1172,13 +1172,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                          currentIndex:sessionTab->current_navigation_index];
 }
 
-- (void)openJavascript:(NSString*)javaScript {
-  DCHECK(javaScript);
-  javaScript = [javaScript stringByRemovingPercentEncoding];
-  if (webStateImpl_)
-    webStateImpl_->ExecuteJavaScript(base::SysNSStringToUTF16(javaScript));
-}
-
 - (void)reload {
   // TODO(crbug.com/661671): Convert callers to go through CRWWebController
   // directly and remove this passthrough method.

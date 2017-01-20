@@ -202,9 +202,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Replace the content of the tab with the content described by |SessionTab|.
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab;
 
-// Evaluate JavaScript asynchronously in the tab.
-- (void)openJavascript:(NSString*)javascript;
-
 // Stop the page loading.
 // Equivalent to the user pressing 'stop', or a window.stop() command.
 - (void)stopLoading;

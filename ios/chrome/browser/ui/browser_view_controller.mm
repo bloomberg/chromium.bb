@@ -3798,7 +3798,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)openJavascript:(NSString*)javascript {
-  [[_model currentTab] openJavascript:javascript];
+  DCHECK(javascript);
+  javascript = [javascript stringByRemovingPercentEncoding];
+  web::WebState* webState = [[_model currentTab] webState];
+  if (webState) {
+    webState->ExecuteJavaScript(base::SysNSStringToUTF16(javascript));
+  }
 }
 
 #pragma mark - WebToolbarDelegate methods
