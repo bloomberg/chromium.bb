@@ -596,6 +596,10 @@ DownloadTargetDeterminer::Result
   DCHECK(!virtual_path_.empty());
   next_state_ = STATE_CHECK_VISITED_REFERRER_BEFORE;
 
+  // If user has validated a dangerous download, don't check.
+  if (danger_type_ == content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED)
+    return CONTINUE;
+
   delegate_->CheckDownloadUrl(
       download_,
       virtual_path_,

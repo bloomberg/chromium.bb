@@ -1912,6 +1912,44 @@ TEST_F(DownloadTargetDeterminerTest, MIMETypeDetermination) {
   }
 }
 
+// Test that a user validated download won't be treated as dangerous.
+TEST_F(DownloadTargetDeterminerTest, ResumedWithUserValidatedDownload) {
+  const base::FilePath::CharType kInitialPath[] =
+      FILE_PATH_LITERAL("some_path/bar.txt");
+  const base::FilePath::CharType* kIntermediatePath =
+      FILE_PATH_LITERAL("foo.crx.crdownload");
+
+  const DownloadTestCase kUserValidatedTestCase = {
+      AUTOMATIC,
+      content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
+      DownloadFileType::NOT_DANGEROUS,
+      "http://example.com/foo.crx",
+      "",
+      FILE_PATH_LITERAL(""),
+      FILE_PATH_LITERAL("foo.crx"),
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      EXPECT_CRDOWNLOAD};
+
+  const DownloadTestCase& test_case = kUserValidatedTestCase;
+  std::unique_ptr<content::MockDownloadItem> item(
+      CreateActiveDownloadItem(0, test_case));
+  base::FilePath expected_path =
+      GetPathInDownloadDir(test_case.expected_local_path);
+  ON_CALL(*item.get(), GetDangerType())
+      .WillByDefault(Return(content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED));
+  ON_CALL(*item.get(), GetFullPath())
+      .WillByDefault(ReturnRefOfCopy(GetPathInDownloadDir(kIntermediatePath)));
+  ON_CALL(*item.get(), GetLastReason())
+      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
+  EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _));
+  EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
+  EXPECT_CALL(*delegate(), PromptUserForDownloadPath(_, expected_path, _))
+      .Times(0);
+  EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
+  EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _)).Times(0);
+  RunTestCase(test_case, GetPathInDownloadDir(kInitialPath), item.get());
+}
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 
 void DummyGetPluginsCallback(
