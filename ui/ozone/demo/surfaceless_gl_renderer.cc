@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_snapshot.h"
@@ -96,6 +97,17 @@ bool SurfacelessGlRenderer::Initialize() {
       return false;
   }
 
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch("enable-overlay")) {
+    gfx::Size overlay_size = gfx::Size(size_.width() / 8, size_.height() / 8);
+    overlay_buffer_.reset(new BufferWrapper());
+    overlay_buffer_->Initialize(gfx::kNullAcceleratedWidget, overlay_size);
+
+    glViewport(0, 0, overlay_size.width(), overlay_size.height());
+    glClearColor(1.0, 1.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  }
+
   PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
@@ -115,6 +127,17 @@ void SurfacelessGlRenderer::RenderFrame() {
   surface_->ScheduleOverlayPlane(0, gfx::OVERLAY_TRANSFORM_NONE,
                                  buffers_[back_buffer_]->image(),
                                  gfx::Rect(size_), gfx::RectF(0, 0, 1, 1));
+
+  if (overlay_buffer_) {
+    gfx::Rect overlay_rect(overlay_buffer_->size());
+    gfx::Vector2d offset(fraction * (size_.width() - overlay_rect.width()),
+                         (size_.height() - overlay_rect.height()) / 2);
+    overlay_rect += offset;
+    surface_->ScheduleOverlayPlane(1, gfx::OVERLAY_TRANSFORM_NONE,
+                                   overlay_buffer_->image(), overlay_rect,
+                                   gfx::RectF(0, 0, 1, 1));
+  }
+
   back_buffer_ ^= 1;
   surface_->SwapBuffersAsync(
       base::Bind(&SurfacelessGlRenderer::PostRenderFrameTask,

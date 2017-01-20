@@ -41,6 +41,8 @@ class SurfacelessGlRenderer : public GlRenderer {
     bool Initialize(gfx::AcceleratedWidget widget, const gfx::Size& size);
     void BindFramebuffer();
 
+    const gfx::Size size() const { return size_; }
+
    private:
     gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
     gfx::Size size_;
@@ -51,6 +53,9 @@ class SurfacelessGlRenderer : public GlRenderer {
   };
 
   std::unique_ptr<BufferWrapper> buffers_[2];
+
+  std::unique_ptr<BufferWrapper> overlay_buffer_;
+
   int back_buffer_ = 0;
 
   base::WeakPtrFactory<SurfacelessGlRenderer> weak_ptr_factory_;
