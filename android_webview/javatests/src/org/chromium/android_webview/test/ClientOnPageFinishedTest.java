@@ -11,6 +11,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -450,6 +451,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
      */
     @MediumTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure
     public void testCalledOnCancelingProvisionalLoad() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         final CountDownLatch testDoneLatch = new CountDownLatch(1);
