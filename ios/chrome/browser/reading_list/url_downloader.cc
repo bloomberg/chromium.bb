@@ -250,10 +250,15 @@ std::string URLDownloader::SaveAndReplaceImagesInHTML(
       // Data URI, the data part of the image is empty, no need to store it.
       continue;
     }
-    base::FilePath local_image_path;
     std::string local_image_name;
-    if (!SaveImage(url, images[i].url, images[i].data, &local_image_name)) {
-      return std::string();
+    // Mixed content is HTTP images on HTTPS pages.
+    bool image_is_mixed_content = distilled_url_.SchemeIsCryptographic() &&
+                                  !images[i].url.SchemeIsCryptographic();
+    // Only save images if it is not mixed content.
+    if (!image_is_mixed_content) {
+      if (!SaveImage(url, images[i].url, images[i].data, &local_image_name)) {
+        return std::string();
+      }
     }
     std::string image_url = net::EscapeForHTML(images[i].url.spec());
     size_t image_url_size = image_url.size();

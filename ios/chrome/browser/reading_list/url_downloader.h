@@ -110,6 +110,8 @@ class URLDownloader {
                  std::string* image_name);
   // Saves images in |images| array to disk and replaces references in |html| to
   // local path. Returns updated html.
+  // If some images could not be saved, returns an empty string. It is the
+  // responsibility of the caller to clean the partial processing.
   std::string SaveAndReplaceImagesInHTML(
       const GURL& url,
       const std::string& html,
