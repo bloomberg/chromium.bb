@@ -14,6 +14,7 @@ namespace blink {
 class CharacterData;
 class ContainerNode;
 class Document;
+class Element;
 class NodeWithIndex;
 class Text;
 
@@ -39,6 +40,9 @@ class CORE_EXPORT SynchronousMutationObserver
   //  - didMoveTreeToNewDocument(const Node& root);
   //  - didInsertText(Node*, unsigned offset, unsigned length);
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
+
+  // Called just after attribute is changed.
+  virtual void didChangeAttribute(const Element&);
 
   // Called after child nodes changed.
   virtual void didChangeChildren(const ContainerNode&);

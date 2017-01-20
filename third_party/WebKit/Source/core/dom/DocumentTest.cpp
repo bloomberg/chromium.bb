@@ -123,6 +123,10 @@ class TestSynchronousMutationObserver
     return m_contextDestroyedCalledCounter;
   }
 
+  const HeapVector<Member<const Element>>& attributeChangedElements() const {
+    return m_attributeChangedElements;
+  }
+
   const HeapVector<Member<const ContainerNode>>& childrenChangedNodes() const {
     return m_childrenChangedNodes;
   }
@@ -158,6 +162,7 @@ class TestSynchronousMutationObserver
  private:
   // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed(Document*) final;
+  void didChangeAttribute(const Element&) final;
   void didChangeChildren(const ContainerNode&) final;
   void didMergeTextNodes(const Text&, const NodeWithIndex&, unsigned) final;
   void didMoveTreeToNewDocument(const Node& root) final;
@@ -170,6 +175,7 @@ class TestSynchronousMutationObserver
   void nodeWillBeRemoved(Node&) final;
 
   int m_contextDestroyedCalledCounter = 0;
+  HeapVector<Member<const Element>> m_attributeChangedElements;
   HeapVector<Member<const ContainerNode>> m_childrenChangedNodes;
   HeapVector<Member<MergeTextNodesRecord>> m_mergeTextNodesRecords;
   HeapVector<Member<const Node>> m_moveTreeToNewDocumentNodes;
@@ -188,6 +194,11 @@ TestSynchronousMutationObserver::TestSynchronousMutationObserver(
 
 void TestSynchronousMutationObserver::contextDestroyed(Document*) {
   ++m_contextDestroyedCalledCounter;
+}
+
+void TestSynchronousMutationObserver::didChangeAttribute(
+    const Element& element) {
+  m_attributeChangedElements.push_back(&element);
 }
 
 void TestSynchronousMutationObserver::didChangeChildren(
@@ -231,6 +242,7 @@ void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
 }
 
 DEFINE_TRACE(TestSynchronousMutationObserver) {
+  visitor->trace(m_attributeChangedElements);
   visitor->trace(m_childrenChangedNodes);
   visitor->trace(m_mergeTextNodesRecords);
   visitor->trace(m_moveTreeToNewDocumentNodes);
@@ -503,6 +515,24 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   document().shutdown();
   EXPECT_EQ(nullptr, observer.lifecycleContext());
   EXPECT_EQ(1, observer.countContextDestroyedCalled());
+}
+
+TEST_F(DocumentTest, SynchronousMutationNotifierChangeAttribute) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+  Element* divNode = document().createElement("div");
+  document().body()->appendChild(divNode);
+  divNode->setAttribute(HTMLNames::classAttr, "foo");
+
+  ASSERT_EQ(1u, observer.attributeChangedElements().size());
+  EXPECT_EQ(divNode, observer.attributeChangedElements()[0]);
+
+  divNode->setAttribute(HTMLNames::classAttr, "bar");
+  ASSERT_EQ(2u, observer.attributeChangedElements().size());
+  EXPECT_EQ(divNode, observer.attributeChangedElements()[1]);
+
+  divNode->removeAttribute(HTMLNames::classAttr);
+  ASSERT_EQ(3u, observer.attributeChangedElements().size());
+  EXPECT_EQ(divNode, observer.attributeChangedElements()[2]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieAppendChild) {

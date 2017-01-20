@@ -12,6 +12,7 @@ namespace blink {
 SynchronousMutationObserver::SynchronousMutationObserver()
     : LifecycleObserver(nullptr) {}
 
+void SynchronousMutationObserver::didChangeAttribute(const Element&) {}
 void SynchronousMutationObserver::didChangeChildren(const ContainerNode&) {}
 void SynchronousMutationObserver::didMergeTextNodes(const Text&,
                                                     const NodeWithIndex&,
