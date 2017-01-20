@@ -219,6 +219,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
+    self.Flaky('conformance2/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba16f-rgba-half_float.html',
+        ['mac', ('nvidia', 0xfe9)], bug=682834)
 
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
