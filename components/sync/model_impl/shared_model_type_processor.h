@@ -37,7 +37,9 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
                                  public ModelTypeChangeProcessor,
                                  base::NonThreadSafe {
  public:
-  SharedModelTypeProcessor(ModelType type, ModelTypeSyncBridge* bridge);
+  SharedModelTypeProcessor(ModelType type,
+                           ModelTypeSyncBridge* bridge,
+                           const base::RepeatingClosure& dump_stack);
   ~SharedModelTypeProcessor() override;
 
   // Whether the processor is allowing changes to its model type. If this is
@@ -175,12 +177,17 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // processor instance so the pointer should never become invalid.
   ModelTypeSyncBridge* const bridge_;
 
+  // Function to capture and upload a stack trace when an error occurs.
+  const base::RepeatingClosure dump_stack_;
+
   // The callback used for informing sync of errors; will be non-null after
   // OnSyncStarting has been called.
   ModelErrorHandler error_handler_;
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedModelTypeProcessor);
 };
 
 }  // namespace syncer

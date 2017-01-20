@@ -11,7 +11,7 @@
 namespace syncer {
 
 ProxyDataTypeController::ProxyDataTypeController(ModelType type)
-    : DataTypeController(type, base::Closure()), state_(NOT_RUNNING) {
+    : DataTypeController(type), state_(NOT_RUNNING) {
   DCHECK(ProxyTypes().Has(type));
 }
 

@@ -25,10 +25,8 @@ struct ActivationContext;
 // DataTypeController implementation for Unified Sync and Storage model types.
 class ModelTypeController : public DataTypeController {
  public:
-  // |dump_stack| is called when an unrecoverable error occurs.
   ModelTypeController(
       ModelType type,
-      const base::Closure& dump_stack,
       SyncClient* sync_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& model_thread);
   ~ModelTypeController() override;

@@ -9,9 +9,7 @@
 
 namespace syncer {
 
-DataTypeController::DataTypeController(ModelType type,
-                                       const base::Closure& dump_stack)
-    : dump_stack_(dump_stack), type_(type) {}
+DataTypeController::DataTypeController(ModelType type) : type_(type) {}
 
 DataTypeController::~DataTypeController() {}
 

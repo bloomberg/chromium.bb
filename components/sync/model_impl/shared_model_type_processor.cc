@@ -20,10 +20,13 @@
 
 namespace syncer {
 
-SharedModelTypeProcessor::SharedModelTypeProcessor(ModelType type,
-                                                   ModelTypeSyncBridge* bridge)
+SharedModelTypeProcessor::SharedModelTypeProcessor(
+    ModelType type,
+    ModelTypeSyncBridge* bridge,
+    const base::RepeatingClosure& dump_stack)
     : type_(type),
       bridge_(bridge),
+      dump_stack_(dump_stack),
       weak_ptr_factory_(this) {
   DCHECK(bridge);
 }
@@ -145,6 +148,11 @@ void SharedModelTypeProcessor::ReportError(const ModelError& error) {
     return;
 
   model_error_ = error;
+
+  if (dump_stack_) {
+    // Upload a stack trace if possible.
+    dump_stack_.Run();
+  }
 
   if (start_callback_) {
     // Tell sync about the error instead of connecting.

@@ -133,7 +133,7 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
     model_thread_.Start();
     InitializeModelTypeSyncBridge();
     controller_ = base::MakeUnique<ModelTypeController>(
-        kTestModelType, base::Closure(), this, model_thread_.task_runner());
+        kTestModelType, this, model_thread_.task_runner());
   }
 
   void TearDown() override {

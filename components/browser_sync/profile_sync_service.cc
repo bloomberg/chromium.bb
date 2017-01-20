@@ -287,7 +287,9 @@ void ProfileSyncService::Initialize() {
                    sync_data_folder_.Append(base::FilePath(kLevelDBFolderName))
                        .AsUTF8Unsafe(),
                    blocking_task_runner),
-        base::Bind(&ModelTypeChangeProcessor::Create));
+        base::BindRepeating(
+            &ModelTypeChangeProcessor::Create,
+            base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
   } else {
     device_info_sync_service_ =
         base::MakeUnique<DeviceInfoSyncService>(local_device_.get());

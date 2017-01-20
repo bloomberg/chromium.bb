@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -142,10 +141,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     // Use an error callback that always uploads a stacktrace if it can to help
     // get USS as stable as possible.
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<ModelTypeController>(
-            syncer::DEVICE_INFO,
-            base::Bind(base::IgnoreResult(&base::debug::DumpWithoutCrashing)),
-            sync_client_, ui_thread_));
+        base::MakeUnique<ModelTypeController>(syncer::DEVICE_INFO, sync_client_,
+                                              ui_thread_));
   } else {
     sync_service->RegisterDataTypeController(
         base::MakeUnique<DeviceInfoDataTypeController>(
@@ -158,10 +155,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::AUTOFILL)) {
     if (base::FeatureList::IsEnabled(switches::kSyncUSSAutocomplete)) {
       sync_service->RegisterDataTypeController(
-          base::MakeUnique<ModelTypeController>(
-              syncer::AUTOFILL,
-              base::Bind(base::IgnoreResult(&base::debug::DumpWithoutCrashing)),
-              sync_client_, db_thread_));
+          base::MakeUnique<ModelTypeController>(syncer::AUTOFILL, sync_client_,
+                                                db_thread_));
     } else {
       sync_service->RegisterDataTypeController(
           base::MakeUnique<AutofillDataTypeController>(
@@ -268,8 +263,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
               syncer::GROUP_UI, ui_thread_));
     } else {
       sync_service->RegisterDataTypeController(
-          base::MakeUnique<ModelTypeController>(
-              syncer::PREFERENCES, error_callback, sync_client_, ui_thread_));
+          base::MakeUnique<ModelTypeController>(syncer::PREFERENCES,
+                                                sync_client_, ui_thread_));
     }
   }
 
@@ -293,8 +288,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::READING_LIST) &&
       reading_list::switches::IsReadingListEnabled()) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<ModelTypeController>(
-            syncer::READING_LIST, error_callback, sync_client_, ui_thread_));
+        base::MakeUnique<ModelTypeController>(syncer::READING_LIST,
+                                              sync_client_, ui_thread_));
   }
 }
 

@@ -29,7 +29,8 @@ class TestReadingListStorage : public ReadingListModelStorage {
  public:
   TestReadingListStorage(TestReadingListStorageObserver* observer)
       : ReadingListModelStorage(
-            base::Bind(&syncer::ModelTypeChangeProcessor::Create),
+            base::Bind(&syncer::ModelTypeChangeProcessor::Create,
+                       base::RepeatingClosure()),
             syncer::READING_LIST),
         entries_(new ReadingListStoreDelegate::ReadingListEntries()),
         observer_(observer) {}

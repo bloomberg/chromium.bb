@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/proto/autofill_sync.pb.h"
@@ -25,6 +26,7 @@
 
 using base::Optional;
 using base::Time;
+using base::debug::DumpWithoutCrashing;
 using sync_pb::AutofillSpecifics;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
@@ -274,7 +276,10 @@ void AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
   web_data_service->GetDBUserData()->SetUserData(
       UserDataKey(),
       new AutocompleteSyncBridge(
-          web_data_backend, base::Bind(&ModelTypeChangeProcessor::Create)));
+          web_data_backend,
+          base::BindRepeating(
+              &ModelTypeChangeProcessor::Create,
+              base::BindRepeating(base::IgnoreResult(&DumpWithoutCrashing)))));
 }
 
 // static

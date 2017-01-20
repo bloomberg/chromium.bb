@@ -64,7 +64,8 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   };
 
   TestModelTypeSyncBridge()
-      : FakeModelTypeSyncBridge(base::Bind(&ModelTypeChangeProcessor::Create)) {
+      : FakeModelTypeSyncBridge(base::Bind(&ModelTypeChangeProcessor::Create,
+                                           base::RepeatingClosure())) {
     change_processor()->ModelReadyToSync(db().CreateMetadataBatch());
   }
 

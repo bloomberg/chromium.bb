@@ -62,11 +62,8 @@ void CallGetStatusCountersHelper(
 
 void ReportError(ModelType model_type,
                  scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
-                 const base::Closure& dump_stack,
                  const ModelErrorHandler& error_handler,
                  const ModelError& error) {
-  if (!dump_stack.is_null())
-    dump_stack.Run();
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(model_type),
                             MODEL_TYPE_COUNT);
@@ -77,10 +74,9 @@ void ReportError(ModelType model_type,
 
 ModelTypeController::ModelTypeController(
     ModelType type,
-    const base::Closure& dump_stack,
     SyncClient* sync_client,
     const scoped_refptr<base::SingleThreadTaskRunner>& model_thread)
-    : DataTypeController(type, dump_stack),
+    : DataTypeController(type),
       sync_client_(sync_client),
       model_thread_(model_thread),
       sync_prefs_(sync_client->GetPrefService()),
@@ -117,7 +113,7 @@ void ModelTypeController::LoadModels(
                                      base::AsWeakPtr(this)));
 
   ModelErrorHandler error_handler = base::BindRepeating(
-      &ReportError, type(), base::ThreadTaskRunnerHandle::Get(), dump_stack_,
+      &ReportError, type(), base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&ModelTypeController::ReportModelError,
                  base::AsWeakPtr(this)));
 

@@ -21,7 +21,8 @@ DirectoryDataTypeController::DirectoryDataTypeController(
     const base::Closure& dump_stack,
     SyncClient* sync_client,
     ModelSafeGroup model_safe_group)
-    : DataTypeController(type, dump_stack),
+    : DataTypeController(type),
+      dump_stack_(dump_stack),
       sync_client_(sync_client),
       model_safe_group_(model_safe_group) {}
 

@@ -15,9 +15,11 @@
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "components/reading_list/ios/reading_list_pref_names.h"
 #include "components/reading_list/ios/reading_list_store.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 
 // static
@@ -71,7 +73,9 @@ std::unique_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
   std::unique_ptr<ReadingListStore> store = base::MakeUnique<ReadingListStore>(
       base::Bind(&syncer::ModelTypeStore::CreateStore, syncer::READING_LIST,
                  database_dir.AsUTF8Unsafe(), background_task_runner),
-      base::Bind(&syncer::ModelTypeChangeProcessor::Create));
+      base::Bind(&syncer::ModelTypeChangeProcessor::Create,
+                 base::BindRepeating(&syncer::ReportUnrecoverableError,
+                                     GetChannel())));
 
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);

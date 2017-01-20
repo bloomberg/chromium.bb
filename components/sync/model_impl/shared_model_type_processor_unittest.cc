@@ -61,8 +61,8 @@ std::unique_ptr<EntityData> GenerateEntityData(const std::string& key,
 class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
  public:
   TestModelTypeSyncBridge()
-      : FakeModelTypeSyncBridge(base::Bind(&ModelTypeChangeProcessor::Create)) {
-  }
+      : FakeModelTypeSyncBridge(base::Bind(&ModelTypeChangeProcessor::Create,
+                                           base::RepeatingClosure())) {}
 
   explicit TestModelTypeSyncBridge(
       std::unique_ptr<TestModelTypeSyncBridge> other)

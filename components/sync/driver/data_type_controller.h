@@ -157,13 +157,10 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   virtual void GetStatusCounters(const StatusCountersCallback& callback) = 0;
 
  protected:
-  DataTypeController(ModelType type, const base::Closure& dump_stack);
+  explicit DataTypeController(ModelType type);
 
   // Allows subclasses to DCHECK that they're on the correct thread.
   bool CalledOnValidThread() const;
-
-  // Callback to dump and upload a stack trace when an error occurs.
-  base::Closure dump_stack_;
 
  private:
   // The type this object is responsible for controlling.

@@ -29,6 +29,7 @@ class ModelTypeChangeProcessor {
 
   // A factory function to make an implementation of ModelTypeChangeProcessor.
   static std::unique_ptr<ModelTypeChangeProcessor> Create(
+      const base::RepeatingClosure& dump_stack,
       ModelType type,
       ModelTypeSyncBridge* bridge);
 

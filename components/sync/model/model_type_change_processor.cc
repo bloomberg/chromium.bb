@@ -11,9 +11,10 @@ namespace syncer {
 
 // static
 std::unique_ptr<ModelTypeChangeProcessor> ModelTypeChangeProcessor::Create(
+    const base::RepeatingClosure& dump_stack,
     ModelType type,
     ModelTypeSyncBridge* bridge) {
-  return base::MakeUnique<SharedModelTypeProcessor>(type, bridge);
+  return base::MakeUnique<SharedModelTypeProcessor>(type, bridge, dump_stack);
 }
 
 ModelTypeChangeProcessor::ModelTypeChangeProcessor() {}

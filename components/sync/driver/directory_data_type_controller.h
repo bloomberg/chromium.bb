@@ -66,6 +66,9 @@ class DirectoryDataTypeController : public DataTypeController {
   // Returns null if the ChangeProcessor isn't created or connected.
   virtual ChangeProcessor* GetChangeProcessor() const = 0;
 
+  // Function to capture and upload a stack trace when an error occurs.
+  base::Closure dump_stack_;
+
   SyncClient* const sync_client_;
 
  private:
