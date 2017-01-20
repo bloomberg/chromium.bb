@@ -829,9 +829,11 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
 
       // 4.6.2 - Take pending play promises and reject pending play promises
       // with the result and an "AbortError" DOMException.
-      rejectPlayPromises(
-          AbortError,
-          "The play() request was interrupted by a new load request.");
+      if (!ScriptForbiddenScope::isScriptForbidden()) {
+        rejectPlayPromises(
+            AbortError,
+            "The play() request was interrupted by a new load request.");
+      }
     }
 
     // 4.7 - If seeking is true, set it to false.

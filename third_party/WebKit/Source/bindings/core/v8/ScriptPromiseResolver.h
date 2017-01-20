@@ -126,6 +126,9 @@ class CORE_EXPORT ScriptPromiseResolver
     m_state = newState;
 
     ScriptState::Scope scope(m_scriptState.get());
+    // TODO(aobzhirov): Converting value to the wrapper can trigger assert
+    // if the script is forbidden.
+    // The script check below will be unreachable in this case.
     m_value.set(m_scriptState->isolate(),
                 ToV8(value, m_scriptState->context()->Global(),
                      m_scriptState->isolate()));
