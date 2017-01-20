@@ -1,0 +1,53 @@
+This is a testharness.js-based test.
+PASS Selection interface: existence and properties of interface object 
+PASS Selection interface object length 
+PASS Selection interface object name 
+FAIL Selection interface: existence and properties of interface prototype object assert_equals: class string of Selection.prototype expected "[object SelectionPrototype]" but got "[object Selection]"
+PASS Selection interface: existence and properties of interface prototype object's "constructor" property 
+PASS Selection interface: attribute anchorNode 
+PASS Selection interface: attribute anchorOffset 
+PASS Selection interface: attribute focusNode 
+PASS Selection interface: attribute focusOffset 
+PASS Selection interface: attribute isCollapsed 
+FAIL Selection interface: operation collapse(Node,unsigned long) assert_equals: property has wrong .length expected 2 but got 1
+PASS Selection interface: operation collapseToStart() 
+PASS Selection interface: operation collapseToEnd() 
+FAIL Selection interface: operation extend(Node,unsigned long) assert_equals: property has wrong .length expected 2 but got 1
+PASS Selection interface: operation selectAllChildren(Node) 
+PASS Selection interface: operation deleteFromDocument() 
+PASS Selection interface: attribute rangeCount 
+PASS Selection interface: operation getRangeAt(unsigned long) 
+PASS Selection interface: operation addRange(Range) 
+FAIL Selection interface: operation removeRange(Range) assert_own_property: interface prototype object missing non-static operation expected property "removeRange" missing
+PASS Selection interface: operation removeAllRanges() 
+PASS Selection interface: stringifier 
+PASS Selection must be primary interface of getSelection() 
+PASS Stringification of getSelection() 
+PASS Selection interface: getSelection() must inherit property "anchorNode" with the proper type (0) 
+PASS Selection interface: getSelection() must inherit property "anchorOffset" with the proper type (1) 
+PASS Selection interface: getSelection() must inherit property "focusNode" with the proper type (2) 
+PASS Selection interface: getSelection() must inherit property "focusOffset" with the proper type (3) 
+PASS Selection interface: getSelection() must inherit property "isCollapsed" with the proper type (4) 
+PASS Selection interface: getSelection() must inherit property "collapse" with the proper type (5) 
+FAIL Selection interface: calling collapse(Node,unsigned long) on getSelection() with too few arguments must throw TypeError assert_throws: Called with 1 arguments function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+PASS Selection interface: getSelection() must inherit property "collapseToStart" with the proper type (6) 
+PASS Selection interface: getSelection() must inherit property "collapseToEnd" with the proper type (7) 
+PASS Selection interface: getSelection() must inherit property "extend" with the proper type (8) 
+FAIL Selection interface: calling extend(Node,unsigned long) on getSelection() with too few arguments must throw TypeError assert_throws: Called with 1 arguments function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+PASS Selection interface: getSelection() must inherit property "selectAllChildren" with the proper type (9) 
+PASS Selection interface: calling selectAllChildren(Node) on getSelection() with too few arguments must throw TypeError 
+PASS Selection interface: getSelection() must inherit property "deleteFromDocument" with the proper type (10) 
+PASS Selection interface: getSelection() must inherit property "rangeCount" with the proper type (11) 
+PASS Selection interface: getSelection() must inherit property "getRangeAt" with the proper type (12) 
+PASS Selection interface: calling getRangeAt(unsigned long) on getSelection() with too few arguments must throw TypeError 
+PASS Selection interface: getSelection() must inherit property "addRange" with the proper type (13) 
+PASS Selection interface: calling addRange(Range) on getSelection() with too few arguments must throw TypeError 
+FAIL Selection interface: getSelection() must inherit property "removeRange" with the proper type (14) assert_inherits: property "removeRange" not found in prototype chain
+FAIL Selection interface: calling removeRange(Range) on getSelection() with too few arguments must throw TypeError assert_inherits: property "removeRange" not found in prototype chain
+PASS Selection interface: getSelection() must inherit property "removeAllRanges" with the proper type (15) 
+Harness: the test ran to completion.
+

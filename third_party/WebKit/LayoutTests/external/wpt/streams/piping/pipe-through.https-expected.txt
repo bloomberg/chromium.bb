@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Piping through a duck-typed pass-through transform stream should work sequentialReadableStream(...).pipeThrough is not a function
+Harness: the test ran to completion.
+

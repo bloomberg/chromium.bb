@@ -13,8 +13,8 @@ PASS Invalid value: hour > 23. Value should be empty
 PASS Invalid value: minute > 59. Value should be empty 
 PASS Invalid value: second > 59. Value should be empty 
 PASS Value >= min attribute 
-FAIL Value < min attribute assert_equals: expected "12:00:00.001" but got "12:00:00.000"
+PASS Value < min attribute 
 PASS Value <= max attribute 
-FAIL Value > max attribute assert_equals: expected "12:00:00.000" but got "12:00:00.001"
+PASS Value > max attribute 
 Harness: the test ran to completion.
 

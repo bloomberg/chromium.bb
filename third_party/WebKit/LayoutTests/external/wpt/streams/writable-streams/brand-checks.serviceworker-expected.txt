@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 152: Uncaught TypeError: Cannot read property 'unregister' of undefined
+This is a testharness.js-based test.
+FAIL Service worker test setup assert_unreached: unregister should not fail: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV). Reached unreachable code
+Harness: the test ran to completion.
+

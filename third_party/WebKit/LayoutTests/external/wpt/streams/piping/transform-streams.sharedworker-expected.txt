@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Piping through an identity transform stream should close the destination when the source closes TransformStream is not defined
+Harness: the test ran to completion.
+
