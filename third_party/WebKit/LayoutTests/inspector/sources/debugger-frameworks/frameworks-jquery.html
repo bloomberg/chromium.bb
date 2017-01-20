@@ -11,7 +11,6 @@ function testFunction()
     var scripts = $("script");
     pp.on("testevent", onTestEvent1);
     pp.on("testevent", onTestEvent2);
-    pp.on("testevent", onTestEvent3);
 
     debugger;
 
@@ -27,11 +26,6 @@ function onTestEvent1()
 function onTestEvent2()
 {
     output("onTestEvent2");
-}
-
-function onTestEvent3()
-{
-    output("onTestEvent3");
 }
 
 function onEachScript(index, script)
@@ -58,11 +52,10 @@ function test()
             "StepInto", "StepInto", "Print", // entered onEachScript()
             "StepInto", "StepInto", "Print", // again in onEachScript()
             "StepOver", "StepOver", "Print", // again in onEachScript()
-            "StepOut", "Print",              // last time in onEachScript()
+            "StepOver", "StepOver", "Print", // again in onEachScript()
             "StepOut", "Print",              // about to execute jQuery.trigger()
             "StepInto", "Print",             // onTestEvent1
-            "StepOut", "Print",              // onTestEvent2
-            "StepOver", "StepOver", "Print", // onTestEvent3
+            "StepOver", "StepOver", "Print"  // onTestEvent2
         ];
         InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
     }

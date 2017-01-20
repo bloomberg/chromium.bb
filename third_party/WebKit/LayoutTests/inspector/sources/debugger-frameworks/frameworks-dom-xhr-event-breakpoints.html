@@ -120,7 +120,7 @@ function test()
                 "StepOver", "Print", // should break at the first "remover()"
                 "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
                 "StepOut", "StepOver", "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
-                "StepOver", "StepOver", "Print",
+                "StepOver", "StepOver", "StepOver", "Print",
                 "Resume",
             ], next);
         },
@@ -133,17 +133,6 @@ function test()
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
                 "StepOut", "Print", // should be in testElementClicked()
                 "StepOut", "StepOut", "Print", // again in testElementClicked()
-                "StepOut", "Print",
-                "Resume",
-            ], next);
-        },
-
-        function testSteppingOutOnEventListenerBreakpointAllBlackboxed(next)
-        {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
-            InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(false)");
-            InspectorTest.waitUntilPausedAndPerformSteppingActions([
                 "StepOut", "Print",
                 "Resume",
             ], next);

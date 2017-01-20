@@ -66,6 +66,28 @@ Call stack:
 
 Executing StepInto...
 Call stack:
+    0)  (frameworks-steppings.html:33)
+  * 1) Framework.safeRun (framework.js:8)
+  * 2) Framework.safeRun (framework.js:10)
+    3) callback4 (frameworks-steppings.html:32)
+  * 4) Framework_bound (framework.js:105)
+  * 5) Framework_bound (framework.js:105)
+  * 6) Framework_bound (framework.js:105)
+  * 7) Framework.safeRun (framework.js:8)
+    8) callback3 (frameworks-steppings.html:27)
+  * 9) Framework.safeRun (framework.js:8)
+  * 10) Framework.safeRun (framework.js:13)
+  * 11) Framework.safeRun (framework.js:10)
+    12) callback2 (frameworks-steppings.html:19)
+  * 13) Framework.safeRun (framework.js:8)
+  * 14) Framework.safeRun (framework.js:10)
+    15) callback1 (frameworks-steppings.html:12)
+  * 16) Framework.safeRun (framework.js:8)
+    17) testFunction (frameworks-steppings.html:11)
+
+Executing StepInto...
+Executing StepInto...
+Call stack:
     0) callback4 (frameworks-steppings.html:36)
   * 1) Framework_bound (framework.js:105)
   * 2) Framework_bound (framework.js:105)

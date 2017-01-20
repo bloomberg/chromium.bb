@@ -64,7 +64,7 @@ function test()
         InspectorTest.eventHandler["Debugger.paused"] = runAction;
         InspectorTest.sendCommandOrDie("Debugger.setBlackboxedRanges", {
             scriptId: scriptId,
-            positions: [ { lineNumber: 8, columnNumber: 0 }, { lineNumber: 15, columnNumber: 0 } ] // blackbox ranges for mixed.js
+            positions: [ { lineNumber: 6, columnNumber: 0 }, { lineNumber: 14, columnNumber: 0 } ] // blackbox ranges for mixed.js
         }, runAction);
     }
 
