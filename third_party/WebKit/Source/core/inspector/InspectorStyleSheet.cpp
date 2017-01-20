@@ -58,9 +58,6 @@
 #include <algorithm>
 
 using blink::protocol::Array;
-using blink::RuleSourceDataList;
-using blink::CSSRuleSourceData;
-using blink::CSSStyleSheet;
 
 namespace {
 
@@ -148,17 +145,17 @@ void getClassNamesFromRule(CSSStyleRule* rule, HashSet<String>& uniqueNames) {
   }
 }
 
-class StyleSheetHandler final : public CSSParserObserver {
+class StyleSheetHandler final : public GarbageCollected<StyleSheetHandler>,
+                                public CSSParserObserver {
  public:
   StyleSheetHandler(const String& parsedText,
                     Document* document,
-                    RuleSourceDataList* result)
-      : m_parsedText(parsedText),
-        m_document(document),
-        m_result(result),
-        m_currentRuleData(nullptr) {
+                    CSSRuleSourceDataList* result)
+      : m_parsedText(parsedText), m_document(document), m_result(result) {
     ASSERT(m_result);
   }
+
+  DECLARE_TRACE();
 
  private:
   void startRuleHeader(StyleRule::RuleType, unsigned) override;
@@ -172,17 +169,17 @@ class StyleSheetHandler final : public CSSParserObserver {
                        bool isParsed) override;
   void observeComment(unsigned startOffset, unsigned endOffset) override;
 
-  void addNewRuleToSourceTree(PassRefPtr<CSSRuleSourceData>);
-  PassRefPtr<CSSRuleSourceData> popRuleData();
+  void addNewRuleToSourceTree(CSSRuleSourceData*);
+  CSSRuleSourceData* popRuleData();
   template <typename CharacterType>
   inline void setRuleHeaderEnd(const CharacterType*, unsigned);
   void fixUnparsedPropertyRanges(CSSRuleSourceData*);
 
   const String& m_parsedText;
   Member<Document> m_document;
-  RuleSourceDataList* m_result;
-  RuleSourceDataList m_currentRuleDataStack;
-  CSSRuleSourceData* m_currentRuleData;
+  Member<CSSRuleSourceDataList> m_result;
+  CSSRuleSourceDataList m_currentRuleDataStack;
+  Member<CSSRuleSourceData> m_currentRuleData;
 };
 
 void StyleSheetHandler::startRuleHeader(StyleRule::RuleType type,
@@ -191,10 +188,10 @@ void StyleSheetHandler::startRuleHeader(StyleRule::RuleType type,
   if (m_currentRuleData)
     m_currentRuleDataStack.pop_back();
 
-  RefPtr<CSSRuleSourceData> data = CSSRuleSourceData::create(type);
+  CSSRuleSourceData* data = new CSSRuleSourceData(type);
   data->ruleHeaderRange.start = offset;
-  m_currentRuleData = data.get();
-  m_currentRuleDataStack.push_back(std::move(data));
+  m_currentRuleData = data;
+  m_currentRuleDataStack.push_back(data);
 }
 
 template <typename CharacterType>
@@ -213,7 +210,7 @@ inline void StyleSheetHandler::setRuleHeaderEnd(const CharacterType* dataStart,
 }
 
 void StyleSheetHandler::endRuleHeader(unsigned offset) {
-  ASSERT(!m_currentRuleDataStack.isEmpty());
+  DCHECK(!m_currentRuleDataStack.isEmpty());
 
   if (m_parsedText.is8Bit())
     setRuleHeaderEnd<LChar>(m_parsedText.characters8(), offset);
@@ -223,49 +220,47 @@ void StyleSheetHandler::endRuleHeader(unsigned offset) {
 
 void StyleSheetHandler::observeSelector(unsigned startOffset,
                                         unsigned endOffset) {
-  ASSERT(m_currentRuleDataStack.size());
+  DCHECK(m_currentRuleDataStack.size());
   m_currentRuleDataStack.back()->selectorRanges.push_back(
       SourceRange(startOffset, endOffset));
 }
 
 void StyleSheetHandler::startRuleBody(unsigned offset) {
   m_currentRuleData = nullptr;
-  ASSERT(!m_currentRuleDataStack.isEmpty());
+  DCHECK(!m_currentRuleDataStack.isEmpty());
   if (m_parsedText[offset] == '{')
     ++offset;  // Skip the rule body opening brace.
   m_currentRuleDataStack.back()->ruleBodyRange.start = offset;
 }
 
 void StyleSheetHandler::endRuleBody(unsigned offset) {
-  ASSERT(!m_currentRuleDataStack.isEmpty());
+  DCHECK(!m_currentRuleDataStack.isEmpty());
   m_currentRuleDataStack.back()->ruleBodyRange.end = offset;
-  RefPtr<CSSRuleSourceData> rule = popRuleData();
+  CSSRuleSourceData* rule = popRuleData();
 
-  fixUnparsedPropertyRanges(rule.get());
-  addNewRuleToSourceTree(std::move(rule));
+  fixUnparsedPropertyRanges(rule);
+  addNewRuleToSourceTree(rule);
 }
 
-void StyleSheetHandler::addNewRuleToSourceTree(
-    PassRefPtr<CSSRuleSourceData> rule) {
+void StyleSheetHandler::addNewRuleToSourceTree(CSSRuleSourceData* rule) {
   if (m_currentRuleDataStack.isEmpty())
     m_result->push_back(rule);
   else
     m_currentRuleDataStack.back()->childRules.push_back(rule);
 }
 
-PassRefPtr<CSSRuleSourceData> StyleSheetHandler::popRuleData() {
+CSSRuleSourceData* StyleSheetHandler::popRuleData() {
   ASSERT(!m_currentRuleDataStack.isEmpty());
   m_currentRuleData = nullptr;
-  RefPtr<CSSRuleSourceData> data = m_currentRuleDataStack.back().get();
+  CSSRuleSourceData* data = m_currentRuleDataStack.back().get();
   m_currentRuleDataStack.pop_back();
-  return data.release();
+  return data;
 }
 
 template <typename CharacterType>
 static inline void fixUnparsedProperties(const CharacterType* characters,
                                          CSSRuleSourceData* ruleData) {
-  Vector<CSSPropertySourceData>& propertyData =
-      ruleData->styleSourceData->propertyData;
+  Vector<CSSPropertySourceData>& propertyData = ruleData->propertyData;
   unsigned size = propertyData.size();
   if (!size)
     return;
@@ -313,7 +308,7 @@ static inline void fixUnparsedProperties(const CharacterType* characters,
 }
 
 void StyleSheetHandler::fixUnparsedPropertyRanges(CSSRuleSourceData* ruleData) {
-  if (!ruleData->styleSourceData)
+  if (!ruleData->hasProperties())
     return;
 
   if (m_parsedText.is8Bit()) {
@@ -329,7 +324,7 @@ void StyleSheetHandler::observeProperty(unsigned startOffset,
                                         bool isImportant,
                                         bool isParsed) {
   if (m_currentRuleDataStack.isEmpty() ||
-      !m_currentRuleDataStack.back()->styleSourceData)
+      !m_currentRuleDataStack.back()->hasProperties())
     return;
 
   ASSERT(endOffset <= m_parsedText.length());
@@ -351,7 +346,7 @@ void StyleSheetHandler::observeProperty(unsigned startOffset,
   String value =
       propertyString.substring(colonIndex + 1, propertyString.length())
           .stripWhiteSpace();
-  m_currentRuleDataStack.back()->styleSourceData->propertyData.push_back(
+  m_currentRuleDataStack.back()->propertyData.push_back(
       CSSPropertySourceData(name, value, isImportant, false, isParsed,
                             SourceRange(startOffset, endOffset)));
 }
@@ -362,7 +357,7 @@ void StyleSheetHandler::observeComment(unsigned startOffset,
 
   if (m_currentRuleDataStack.isEmpty() ||
       !m_currentRuleDataStack.back()->ruleHeaderRange.end ||
-      !m_currentRuleDataStack.back()->styleSourceData)
+      !m_currentRuleDataStack.back()->hasProperties())
     return;
 
   // The lexer is not inside a property AND it is scanning a declaration-aware
@@ -382,13 +377,13 @@ void StyleSheetHandler::observeComment(unsigned startOffset,
     return;
 
   // FIXME: Use the actual rule type rather than STYLE_RULE?
-  RuleSourceDataList sourceData;
+  CSSRuleSourceDataList* sourceData = new CSSRuleSourceDataList();
 
-  StyleSheetHandler handler(commentText, m_document, &sourceData);
+  StyleSheetHandler handler(commentText, m_document, sourceData);
   CSSParser::parseDeclarationListForInspector(
       parserContextForDocument(m_document), commentText, handler);
   Vector<CSSPropertySourceData>& commentPropertyData =
-      sourceData.front()->styleSourceData->propertyData;
+      sourceData->front()->propertyData;
   if (commentPropertyData.size() != 1)
     return;
   CSSPropertySourceData& propertyData = commentPropertyData.at(0);
@@ -400,32 +395,38 @@ void StyleSheetHandler::observeComment(unsigned startOffset,
   if (!parsedOk || propertyData.range.length() != commentText.length())
     return;
 
-  m_currentRuleDataStack.back()->styleSourceData->propertyData.push_back(
+  m_currentRuleDataStack.back()->propertyData.push_back(
       CSSPropertySourceData(propertyData.name, propertyData.value, false, true,
                             true, SourceRange(startOffset, endOffset)));
+}
+
+DEFINE_TRACE(StyleSheetHandler) {
+  visitor->trace(m_document);
+  visitor->trace(m_result);
+  visitor->trace(m_currentRuleDataStack);
+  visitor->trace(m_currentRuleData);
 }
 
 bool verifyRuleText(Document* document, const String& ruleText) {
   DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
   StyleSheetContents* styleSheet =
       StyleSheetContents::create(strictCSSParserContext());
-  RuleSourceDataList sourceData;
+  CSSRuleSourceDataList* sourceData = new CSSRuleSourceDataList();
   String text = ruleText + " div { " + bogusPropertyName + ": none; }";
-  StyleSheetHandler handler(text, document, &sourceData);
+  StyleSheetHandler handler(text, document, sourceData);
   CSSParser::parseSheetForInspector(parserContextForDocument(document),
                                     styleSheet, text, handler);
-  unsigned ruleCount = sourceData.size();
+  unsigned ruleCount = sourceData->size();
 
   // Exactly two rules should be parsed.
   if (ruleCount != 2)
     return false;
 
   // Added rule must be style rule.
-  if (!sourceData.at(0)->styleSourceData)
+  if (!sourceData->at(0)->hasProperties())
     return false;
 
-  Vector<CSSPropertySourceData>& propertyData =
-      sourceData.at(1)->styleSourceData->propertyData;
+  Vector<CSSPropertySourceData>& propertyData = sourceData->at(1)->propertyData;
   unsigned propertyCount = propertyData.size();
 
   // Exactly one property should be in rule.
@@ -446,23 +447,21 @@ bool verifyStyleText(Document* document, const String& text) {
 bool verifyKeyframeKeyText(Document* document, const String& keyText) {
   StyleSheetContents* styleSheet =
       StyleSheetContents::create(strictCSSParserContext());
-  RuleSourceDataList sourceData;
+  CSSRuleSourceDataList* sourceData = new CSSRuleSourceDataList();
   String text = "@keyframes boguzAnim { " + keyText +
                 " { -webkit-boguz-propertee : none; } }";
-  StyleSheetHandler handler(text, document, &sourceData);
+  StyleSheetHandler handler(text, document, sourceData);
   CSSParser::parseSheetForInspector(parserContextForDocument(document),
                                     styleSheet, text, handler);
 
   // Exactly two should be parsed.
-  unsigned ruleCount = sourceData.size();
-  if (ruleCount != 2 || sourceData.at(0)->type != StyleRule::Keyframes ||
-      sourceData.at(1)->type != StyleRule::Keyframe)
+  unsigned ruleCount = sourceData->size();
+  if (ruleCount != 2 || sourceData->at(0)->type != StyleRule::Keyframes ||
+      sourceData->at(1)->type != StyleRule::Keyframe)
     return false;
 
   // Exactly one property should be in keyframe rule.
-  Vector<CSSPropertySourceData>& propertyData =
-      sourceData.at(1)->styleSourceData->propertyData;
-  unsigned propertyCount = propertyData.size();
+  unsigned propertyCount = sourceData->at(1)->propertyData.size();
   if (propertyCount != 1)
     return false;
 
@@ -473,20 +472,19 @@ bool verifySelectorText(Document* document, const String& selectorText) {
   DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
   StyleSheetContents* styleSheet =
       StyleSheetContents::create(strictCSSParserContext());
-  RuleSourceDataList sourceData;
+  CSSRuleSourceDataList* sourceData = new CSSRuleSourceDataList();
   String text = selectorText + " { " + bogusPropertyName + ": none; }";
-  StyleSheetHandler handler(text, document, &sourceData);
+  StyleSheetHandler handler(text, document, sourceData);
   CSSParser::parseSheetForInspector(parserContextForDocument(document),
                                     styleSheet, text, handler);
 
   // Exactly one rule should be parsed.
-  unsigned ruleCount = sourceData.size();
-  if (ruleCount != 1 || sourceData.at(0)->type != StyleRule::Style)
+  unsigned ruleCount = sourceData->size();
+  if (ruleCount != 1 || sourceData->at(0)->type != StyleRule::Style)
     return false;
 
   // Exactly one property should be in style rule.
-  Vector<CSSPropertySourceData>& propertyData =
-      sourceData.at(0)->styleSourceData->propertyData;
+  Vector<CSSPropertySourceData>& propertyData = sourceData->at(0)->propertyData;
   unsigned propertyCount = propertyData.size();
   if (propertyCount != 1)
     return false;
@@ -502,27 +500,27 @@ bool verifyMediaText(Document* document, const String& mediaText) {
   DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
   StyleSheetContents* styleSheet =
       StyleSheetContents::create(strictCSSParserContext());
-  RuleSourceDataList sourceData;
+  CSSRuleSourceDataList* sourceData = new CSSRuleSourceDataList();
   String text =
       "@media " + mediaText + " { div { " + bogusPropertyName + ": none; } }";
-  StyleSheetHandler handler(text, document, &sourceData);
+  StyleSheetHandler handler(text, document, sourceData);
   CSSParser::parseSheetForInspector(parserContextForDocument(document),
                                     styleSheet, text, handler);
 
   // Exactly one media rule should be parsed.
-  unsigned ruleCount = sourceData.size();
-  if (ruleCount != 1 || sourceData.at(0)->type != StyleRule::Media)
+  unsigned ruleCount = sourceData->size();
+  if (ruleCount != 1 || sourceData->at(0)->type != StyleRule::Media)
     return false;
 
   // Media rule should have exactly one style rule child.
-  RuleSourceDataList& childSourceData = sourceData.at(0)->childRules;
+  CSSRuleSourceDataList& childSourceData = sourceData->at(0)->childRules;
   ruleCount = childSourceData.size();
-  if (ruleCount != 1 || !childSourceData.at(0)->styleSourceData)
+  if (ruleCount != 1 || !childSourceData.at(0)->hasProperties())
     return false;
 
   // Exactly one property should be in style rule.
   Vector<CSSPropertySourceData>& propertyData =
-      childSourceData.at(0)->styleSourceData->propertyData;
+      childSourceData.at(0)->propertyData;
   unsigned propertyCount = propertyData.size();
   if (propertyCount != 1)
     return false;
@@ -534,11 +532,9 @@ bool verifyMediaText(Document* document, const String& mediaText) {
   return true;
 }
 
-void flattenSourceData(const RuleSourceDataList& dataList,
-                       RuleSourceDataList* result) {
-  for (size_t i = 0; i < dataList.size(); ++i) {
-    const RefPtr<CSSRuleSourceData>& data = dataList.at(i);
-
+void flattenSourceData(const CSSRuleSourceDataList& dataList,
+                       CSSRuleSourceDataList* result) {
+  for (CSSRuleSourceData* data : dataList) {
     // The result->append()'ed types should be exactly the same as in
     // collectFlatRules().
     switch (data->type) {
@@ -548,12 +544,12 @@ void flattenSourceData(const RuleSourceDataList& dataList,
       case StyleRule::FontFace:
       case StyleRule::Viewport:
       case StyleRule::Keyframe:
-        result->push_back(data.get());
+        result->push_back(data);
         break;
       case StyleRule::Media:
       case StyleRule::Supports:
       case StyleRule::Keyframes:
-        result->push_back(data.get());
+        result->push_back(data);
         flattenSourceData(data->childRules, result);
         break;
       default:
@@ -781,16 +777,16 @@ InspectorStyleSheetBase::buildSourceRangeObject(const SourceRange& range) {
 
 InspectorStyle* InspectorStyle::create(
     CSSStyleDeclaration* style,
-    PassRefPtr<CSSRuleSourceData> sourceData,
+    CSSRuleSourceData* sourceData,
     InspectorStyleSheetBase* parentStyleSheet) {
-  return new InspectorStyle(style, std::move(sourceData), parentStyleSheet);
+  return new InspectorStyle(style, sourceData, parentStyleSheet);
 }
 
 InspectorStyle::InspectorStyle(CSSStyleDeclaration* style,
-                               PassRefPtr<CSSRuleSourceData> sourceData,
+                               CSSRuleSourceData* sourceData,
                                InspectorStyleSheetBase* parentStyleSheet)
     : m_style(style),
-      m_sourceData(std::move(sourceData)),
+      m_sourceData(sourceData),
       m_parentStyleSheet(parentStyleSheet) {
   ASSERT(m_style);
 }
@@ -840,9 +836,9 @@ void InspectorStyle::populateAllProperties(
     Vector<CSSPropertySourceData>& result) {
   HashSet<String> sourcePropertyNames;
 
-  if (m_sourceData && m_sourceData->styleSourceData) {
+  if (m_sourceData && m_sourceData->hasProperties()) {
     Vector<CSSPropertySourceData>& sourcePropertyData =
-        m_sourceData->styleSourceData->propertyData;
+        m_sourceData->propertyData;
     for (const auto& data : sourcePropertyData) {
       result.push_back(data);
       sourcePropertyNames.add(data.name.lower());
@@ -963,6 +959,7 @@ String InspectorStyle::shorthandValue(const String& shorthandProperty) {
 DEFINE_TRACE(InspectorStyle) {
   visitor->trace(m_style);
   visitor->trace(m_parentStyleSheet);
+  visitor->trace(m_sourceData);
 }
 
 InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener)
@@ -1049,6 +1046,7 @@ DEFINE_TRACE(InspectorStyleSheet) {
   visitor->trace(m_pageStyleSheet);
   visitor->trace(m_cssomFlatRules);
   visitor->trace(m_parsedFlatRules);
+  visitor->trace(m_sourceData);
   InspectorStyleSheetBase::trace(visitor);
 }
 
@@ -1083,7 +1081,7 @@ CSSStyleRule* InspectorStyleSheet::setRuleSelector(
   }
 
   CSSRuleSourceData* sourceData = findRuleByHeaderRange(range);
-  if (!sourceData || !sourceData->styleSourceData) {
+  if (!sourceData || !sourceData->hasProperties()) {
     exceptionState.throwDOMException(
         NotFoundError, "Source range didn't match existing source range");
     return nullptr;
@@ -1119,7 +1117,7 @@ CSSKeyframeRule* InspectorStyleSheet::setKeyframeKey(
   }
 
   CSSRuleSourceData* sourceData = findRuleByHeaderRange(range);
-  if (!sourceData || !sourceData->styleSourceData) {
+  if (!sourceData || !sourceData->hasProperties()) {
     exceptionState.throwDOMException(
         NotFoundError, "Source range didn't match existing source range");
     return nullptr;
@@ -1153,7 +1151,7 @@ CSSRule* InspectorStyleSheet::setStyleText(const SourceRange& range,
   }
 
   CSSRuleSourceData* sourceData = findRuleByBodyRange(range);
-  if (!sourceData || !sourceData->styleSourceData) {
+  if (!sourceData || !sourceData->hasProperties()) {
     exceptionState.throwDOMException(
         NotFoundError, "Source range didn't match existing style source range");
     return nullptr;
@@ -1194,7 +1192,7 @@ CSSMediaRule* InspectorStyleSheet::setMediaRuleText(
   }
 
   CSSRuleSourceData* sourceData = findRuleByHeaderRange(range);
-  if (!sourceData || !sourceData->mediaSourceData) {
+  if (!sourceData || !sourceData->hasMedia()) {
     exceptionState.throwDOMException(
         NotFoundError, "Source range didn't match existing source range");
     return nullptr;
@@ -1450,25 +1448,26 @@ void InspectorStyleSheet::replaceText(const SourceRange& range,
 
 void InspectorStyleSheet::innerSetText(const String& text,
                                        bool markAsLocallyModified) {
-  RuleSourceDataList ruleTree;
+  CSSRuleSourceDataList* ruleTree = new CSSRuleSourceDataList();
   StyleSheetContents* styleSheet =
       StyleSheetContents::create(m_pageStyleSheet->contents()->parserContext());
-  StyleSheetHandler handler(text, m_pageStyleSheet->ownerDocument(), &ruleTree);
+  StyleSheetHandler handler(text, m_pageStyleSheet->ownerDocument(), ruleTree);
   CSSParser::parseSheetForInspector(
       m_pageStyleSheet->contents()->parserContext(), styleSheet, text, handler);
   CSSStyleSheet* sourceDataSheet = nullptr;
-  if (toCSSImportRule(m_pageStyleSheet->ownerRule()))
+  if (toCSSImportRule(m_pageStyleSheet->ownerRule())) {
     sourceDataSheet = CSSStyleSheet::create(
         styleSheet, toCSSImportRule(m_pageStyleSheet->ownerRule()));
-  else
+  } else {
     sourceDataSheet =
         CSSStyleSheet::create(styleSheet, *m_pageStyleSheet->ownerNode());
+  }
 
   m_parsedFlatRules.clear();
   collectFlatRules(sourceDataSheet, &m_parsedFlatRules);
 
-  m_sourceData = WTF::makeUnique<RuleSourceDataList>();
-  flattenSourceData(ruleTree, m_sourceData.get());
+  m_sourceData = new CSSRuleSourceDataList();
+  flattenSourceData(*ruleTree, m_sourceData.get());
   m_text = text;
 
   if (markAsLocallyModified) {
@@ -1526,7 +1525,7 @@ InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData,
   ScriptRegexp comment("/\\*[^]*?\\*/", TextCaseSensitive, MultilineEnabled);
   std::unique_ptr<protocol::Array<protocol::CSS::Value>> result =
       protocol::Array<protocol::CSS::Value>::create();
-  const SelectorRangeList& ranges = sourceData->selectorRanges;
+  const Vector<SourceRange>& ranges = sourceData->selectorRanges;
   for (size_t i = 0, size = ranges.size(); i < size; ++i) {
     const SourceRange& range = ranges.at(i);
     String selector = sheetText.substring(range.start, range.length());
@@ -1669,15 +1668,14 @@ InspectorStyleSheet::mediaQueryExpValueSourceRange(CSSRule* rule,
   if (!m_sourceData)
     return nullptr;
   CSSRuleSourceData* sourceData = sourceDataForRule(rule);
-  if (!sourceData || !sourceData->mediaSourceData ||
-      mediaQueryIndex >= sourceData->mediaSourceData->queryData.size())
+  if (!sourceData || !sourceData->hasMedia() ||
+      mediaQueryIndex >= sourceData->mediaQueryExpValueRanges.size())
     return nullptr;
-  CSSMediaQuerySourceData* mediaQueryData =
-      sourceData->mediaSourceData->queryData.at(mediaQueryIndex).get();
-  if (mediaQueryExpIndex >= mediaQueryData->expData.size())
+  const Vector<SourceRange>& mediaQueryExpData =
+      sourceData->mediaQueryExpValueRanges[mediaQueryIndex];
+  if (mediaQueryExpIndex >= mediaQueryExpData.size())
     return nullptr;
-  return buildSourceRangeObject(
-      mediaQueryData->expData.at(mediaQueryExpIndex).valueRange);
+  return buildSourceRangeObject(mediaQueryExpData[mediaQueryExpIndex]);
 }
 
 InspectorStyle* InspectorStyleSheet::inspectorStyle(
@@ -1975,23 +1973,22 @@ InspectorStyle* InspectorStyleSheetForInlineStyle::inspectorStyle(
   return m_inspectorStyle;
 }
 
-PassRefPtr<CSSRuleSourceData>
-InspectorStyleSheetForInlineStyle::ruleSourceData() {
+CSSRuleSourceData* InspectorStyleSheetForInlineStyle::ruleSourceData() {
   const String& text = elementStyleText();
-  RefPtr<CSSRuleSourceData> ruleSourceData;
+  CSSRuleSourceData* ruleSourceData = nullptr;
   if (text.isEmpty()) {
-    ruleSourceData = CSSRuleSourceData::create(StyleRule::Style);
+    ruleSourceData = new CSSRuleSourceData(StyleRule::Style);
     ruleSourceData->ruleBodyRange.start = 0;
     ruleSourceData->ruleBodyRange.end = 0;
   } else {
-    RuleSourceDataList ruleSourceDataResult;
+    CSSRuleSourceDataList* ruleSourceDataResult = new CSSRuleSourceDataList();
     StyleSheetHandler handler(text, &m_element->document(),
-                              &ruleSourceDataResult);
+                              ruleSourceDataResult);
     CSSParser::parseDeclarationListForInspector(
         parserContextForDocument(&m_element->document()), text, handler);
-    ruleSourceData = std::move(ruleSourceDataResult.front());
+    ruleSourceData = ruleSourceDataResult->front();
   }
-  return ruleSourceData.release();
+  return ruleSourceData;
 }
 
 CSSStyleDeclaration* InspectorStyleSheetForInlineStyle::inlineStyle() {

@@ -56,7 +56,7 @@ typedef Vector<unsigned> LineEndings;
 class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
  public:
   static InspectorStyle* create(CSSStyleDeclaration*,
-                                PassRefPtr<CSSRuleSourceData>,
+                                CSSRuleSourceData*,
                                 InspectorStyleSheetBase* parentStyleSheet);
   ~InspectorStyle();
 
@@ -69,7 +69,7 @@ class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
 
  private:
   InspectorStyle(CSSStyleDeclaration*,
-                 PassRefPtr<CSSRuleSourceData>,
+                 CSSRuleSourceData*,
                  InspectorStyleSheetBase* parentStyleSheet);
 
   void populateAllProperties(Vector<CSSPropertySourceData>& result);
@@ -77,7 +77,7 @@ class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
   String shorthandValue(const String& shorthandProperty);
 
   Member<CSSStyleDeclaration> m_style;
-  RefPtr<CSSRuleSourceData> m_sourceData;
+  Member<CSSRuleSourceData> m_sourceData;
   Member<InspectorStyleSheetBase> m_parentStyleSheet;
 };
 
@@ -238,7 +238,7 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   Member<CSSStyleSheet> m_pageStyleSheet;
   String m_origin;
   String m_documentURL;
-  std::unique_ptr<RuleSourceDataList> m_sourceData;
+  Member<CSSRuleSourceDataList> m_sourceData;
   String m_text;
   CSSRuleVector m_cssomFlatRules;
   CSSRuleVector m_parsedFlatRules;
@@ -260,7 +260,7 @@ class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
   bool setText(const String&, ExceptionState&) override;
   bool getText(String* result) override;
   CSSStyleDeclaration* inlineStyle();
-  PassRefPtr<CSSRuleSourceData> ruleSourceData();
+  CSSRuleSourceData* ruleSourceData();
 
   DECLARE_VIRTUAL_TRACE();
 

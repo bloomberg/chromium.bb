@@ -2140,7 +2140,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
 
   bool forceImportant = false;
   InspectorStyleSheetBase* inspectorStyleSheet = nullptr;
-  RefPtr<CSSRuleSourceData> sourceData;
+  CSSRuleSourceData* sourceData;
   // An absence of the parent rule means that given style is an inline style.
   if (style->parentRule()) {
     InspectorStyleSheet* styleSheet = bindStyleSheet(style->parentStyleSheet());
@@ -2165,8 +2165,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
   String longhand = getPropertyNameString(propertyId);
 
   int foundIndex = -1;
-  Vector<CSSPropertySourceData> properties =
-      sourceData->styleSourceData->propertyData;
+  Vector<CSSPropertySourceData>& properties = sourceData->propertyData;
   for (unsigned i = 0; i < properties.size(); ++i) {
     CSSPropertySourceData property = properties[properties.size() - i - 1];
     String name = property.name;

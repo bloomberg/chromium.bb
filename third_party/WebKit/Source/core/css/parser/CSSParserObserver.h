@@ -32,8 +32,6 @@ namespace blink {
 
 // This is only for the inspector and shouldn't be used elsewhere.
 class CSSParserObserver {
-  STACK_ALLOCATED();
-
  public:
   virtual void startRuleHeader(StyleRule::RuleType, unsigned offset) = 0;
   virtual void endRuleHeader(unsigned offset) = 0;
