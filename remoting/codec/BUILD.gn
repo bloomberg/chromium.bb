@@ -65,8 +65,9 @@ source_set("encoder") {
   }
 
   # Opus depends on //media, which is not a supported include for iOS.
-  # Removing Opus for iOS builds.
-  if (is_ios) {
+  # Also disabled it on Android, to avoid dependency on //media.
+  # TODO(sergeyu): Cleanup host-only deps in client targets.
+  if (is_ios || is_android) {
     sources -= [
       "audio_encoder_opus.cc",
       "audio_encoder_opus.h",
@@ -146,7 +147,7 @@ source_set("unit_tests") {
     "//ui/gfx:color_space",
   ]
 
-  if (is_ios) {
+  if (is_ios || is_android) {
     sources -= [ "audio_encoder_opus_unittest.cc" ]
   }
 }

@@ -200,6 +200,13 @@ static_library("protocol") {
   ]
 
   if (!is_nacl) {
+    if (!is_android) {
+      sources += [
+        "ice_connection_to_client.cc",
+        "ice_connection_to_client.h",
+      ]
+    }
+
     sources += [
       "capture_scheduler.cc",
       "capture_scheduler.h",
@@ -207,8 +214,6 @@ static_library("protocol") {
       "chromium_port_allocator_factory.h",
       "chromium_socket_factory.cc",
       "chromium_socket_factory.h",
-      "ice_connection_to_client.cc",
-      "ice_connection_to_client.h",
       "video_frame_pump.cc",
       "video_frame_pump.h",
       "webrtc_audio_module.cc",
@@ -304,7 +309,6 @@ source_set("unit_tests") {
     "clipboard_filter_unittest.cc",
     "connection_tester.cc",
     "connection_tester.h",
-    "connection_unittest.cc",
     "content_description_unittest.cc",
     "http_ice_config_request_unittest.cc",
     "ice_transport_unittest.cc",
@@ -333,6 +337,10 @@ source_set("unit_tests") {
     "webrtc_frame_scheduler_unittest.cc",
     "webrtc_transport_unittest.cc",
   ]
+
+  if (!is_android) {
+    sources += [ "connection_unittest.cc" ]
+  }
 
   deps = [
     ":test_support",
