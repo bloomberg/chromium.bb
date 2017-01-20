@@ -31,6 +31,9 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,6 +109,10 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
     if (animator)
       animator->setCurrentOffset(offset);
     ScrollableArea::setScrollOffset(offset, type, behavior);
+  }
+
+  RefPtr<WebTaskRunner> getTimerTaskRunner() const final {
+    return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

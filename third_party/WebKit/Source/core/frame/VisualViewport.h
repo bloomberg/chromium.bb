@@ -200,6 +200,7 @@ class CORE_EXPORT VisualViewport final
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
   IntRect visibleContentRect(
       IncludeScrollbarsInRect = ExcludeScrollbars) const override;
+  RefPtr<WebTaskRunner> getTimerTaskRunner() const final;
 
   // Visual Viewport API implementation.
   double scrollLeft();

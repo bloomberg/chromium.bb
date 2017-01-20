@@ -45,6 +45,8 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -190,6 +192,10 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
   ScrollOffset getScrollOffset() const override { return m_scrollOffset; }
   IntSize scrollOffsetInt() const override {
     return flooredIntSize(m_scrollOffset);
+  }
+
+  RefPtr<WebTaskRunner> getTimerTaskRunner() const final {
+    return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() { ScrollableArea::trace(visitor); }

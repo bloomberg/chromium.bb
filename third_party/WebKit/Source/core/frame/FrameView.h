@@ -445,6 +445,7 @@ class CORE_EXPORT FrameView final
   FloatQuad localToVisibleContentQuad(const FloatQuad&,
                                       const LayoutObject*,
                                       unsigned = 0) const final;
+  RefPtr<WebTaskRunner> getTimerTaskRunner() const final;
 
   LayoutRect scrollIntoView(const LayoutRect& rectInContent,
                             const ScrollAlignment& alignX,

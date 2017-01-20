@@ -48,6 +48,7 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameHost.h"
@@ -880,6 +881,10 @@ FloatQuad PaintLayerScrollableArea::localToVisibleContentQuad(
     return quad;
   DCHECK(localObject);
   return localObject->localToAncestorQuad(quad, box, flags);
+}
+
+RefPtr<WebTaskRunner> PaintLayerScrollableArea::getTimerTaskRunner() const {
+  return TaskRunnerHelper::get(TaskType::UnspecedTimer, box().frame());
 }
 
 ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const {

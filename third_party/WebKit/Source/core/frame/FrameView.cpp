@@ -611,6 +611,10 @@ FloatQuad FrameView::localToVisibleContentQuad(
   return result;
 }
 
+RefPtr<WebTaskRunner> FrameView::getTimerTaskRunner() const {
+  return TaskRunnerHelper::get(TaskType::UnspecedTimer, m_frame.get());
+}
+
 void FrameView::setCanHaveScrollbars(bool canHaveScrollbars) {
   m_canHaveScrollbars = canHaveScrollbars;
 

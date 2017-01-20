@@ -9,6 +9,9 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
+#include "public/platform/WebThread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -60,6 +63,10 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
   bool scrollAnimatorEnabled() const override { return false; }
   int pageStep(ScrollbarOrientation) const override { return 0; }
   void scrollControlWasSetNeedsPaintInvalidation() {}
+
+  RefPtr<WebTaskRunner> getTimerTaskRunner() const final {
+    return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
+  }
 
   using ScrollableArea::horizontalScrollbarNeedsPaintInvalidation;
   using ScrollableArea::verticalScrollbarNeedsPaintInvalidation;

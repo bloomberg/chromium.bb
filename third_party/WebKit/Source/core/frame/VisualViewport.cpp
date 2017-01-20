@@ -31,6 +31,7 @@
 #include "core/frame/VisualViewport.h"
 
 #include "core/dom/DOMNodeIds.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -627,6 +628,10 @@ IntRect VisualViewport::visibleContentRect(
                   rootFrameViewport->horizontalScrollbarHeight() / m_scale);
   }
   return rect;
+}
+
+RefPtr<WebTaskRunner> VisualViewport::getTimerTaskRunner() const {
+  return TaskRunnerHelper::get(TaskType::UnspecedTimer, mainFrame());
 }
 
 void VisualViewport::updateScrollOffset(const ScrollOffset& position,

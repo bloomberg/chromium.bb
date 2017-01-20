@@ -433,6 +433,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
                                       const LayoutObject*,
                                       unsigned = 0) const final;
 
+  RefPtr<WebTaskRunner> getTimerTaskRunner() const final;
+
   bool shouldRebuildHorizontalScrollbarLayer() const {
     return m_rebuildHorizontalScrollbarLayer;
   }
