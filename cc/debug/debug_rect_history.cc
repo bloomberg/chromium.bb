@@ -126,10 +126,9 @@ void DebugRectHistory::SaveSurfaceDamageRects(
     DCHECK(render_surface);
 
     debug_rects_.push_back(DebugRect(
-        SURFACE_DAMAGE_RECT_TYPE,
-        MathUtil::MapEnclosingClippedRect(
-            render_surface->screen_space_transform(),
-            render_surface->damage_tracker()->current_damage_rect())));
+        SURFACE_DAMAGE_RECT_TYPE, MathUtil::MapEnclosingClippedRect(
+                                      render_surface->screen_space_transform(),
+                                      render_surface->GetDamageRect())));
   }
 }
 

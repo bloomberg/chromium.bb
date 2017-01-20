@@ -49,8 +49,9 @@ class LayerTreeHostVideoTestSetNeedsDisplay
                                    DrawResult draw_result) override {
     LayerImpl* root_layer = host_impl->active_tree()->root_layer_for_testing();
     RenderSurfaceImpl* root_surface = root_layer->render_surface();
-    gfx::Rect damage_rect =
-        root_surface->damage_tracker()->current_damage_rect();
+    gfx::Rect damage_rect;
+    EXPECT_TRUE(
+        root_surface->damage_tracker()->GetDamageRectIfValid(&damage_rect));
 
     switch (num_draws_) {
       case 0:

@@ -143,6 +143,7 @@ class CC_EXPORT RenderSurfaceImpl {
   void NoteAncestorPropertyChanged();
 
   DamageTracker* damage_tracker() const { return damage_tracker_.get(); }
+  gfx::Rect GetDamageRect();
 
   int GetRenderPassId();
 

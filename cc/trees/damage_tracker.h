@@ -31,10 +31,8 @@ class CC_EXPORT DamageTracker {
   static std::unique_ptr<DamageTracker> Create();
   ~DamageTracker();
 
-  void DidDrawDamagedArea() { current_damage_rect_ = gfx::Rect(); }
-  void AddDamageNextUpdate(const gfx::Rect& dmg) {
-    current_damage_rect_.Union(dmg);
-  }
+  void DidDrawDamagedArea() { current_damage_ = DamageAccumulator(); }
+  void AddDamageNextUpdate(const gfx::Rect& dmg) { current_damage_.Union(dmg); }
   void UpdateDamageTrackingState(
       const LayerImplList& layer_list,
       const RenderSurfaceImpl* target_surface,
@@ -43,23 +41,64 @@ class CC_EXPORT DamageTracker {
       LayerImpl* target_surface_mask_layer,
       const FilterOperations& filters);
 
-  gfx::Rect current_damage_rect() { return current_damage_rect_; }
+  bool GetDamageRectIfValid(gfx::Rect* rect);
 
  private:
   DamageTracker();
 
-  gfx::Rect TrackDamageFromActiveLayers(
+  class DamageAccumulator {
+   public:
+    template <typename Type>
+    void Union(const Type& rect) {
+      if (!is_valid_rect_)
+        return;
+      if (rect.IsEmpty())
+        return;
+      if (IsEmpty()) {
+        x_ = rect.x();
+        y_ = rect.y();
+        right_ = rect.right();
+        bottom_ = rect.bottom();
+        return;
+      }
+
+      x_ = std::min(x_, rect.x());
+      y_ = std::min(y_, rect.y());
+      right_ = std::max(right_, rect.right());
+      bottom_ = std::max(bottom_, rect.bottom());
+    }
+
+    int x() const { return x_; }
+    int y() const { return y_; }
+    int right() const { return right_; }
+    int bottom() const { return bottom_; }
+    bool IsEmpty() const { return x_ == right_ || y_ == bottom_; }
+
+    bool GetAsRect(gfx::Rect* rect);
+
+   private:
+    bool is_valid_rect_ = true;
+    int x_ = 0;
+    int y_ = 0;
+    int right_ = 0;
+    int bottom_ = 0;
+  };
+
+  DamageAccumulator TrackDamageFromActiveLayers(
       const LayerImplList& layer_list,
       const RenderSurfaceImpl* target_surface);
-  gfx::Rect TrackDamageFromSurfaceMask(LayerImpl* target_surface_mask_layer);
-  gfx::Rect TrackDamageFromLeftoverRects();
-
+  DamageAccumulator TrackDamageFromSurfaceMask(
+      LayerImpl* target_surface_mask_layer);
+  DamageAccumulator TrackDamageFromLeftoverRects();
   void PrepareRectHistoryForUpdate();
 
   // These helper functions are used only in TrackDamageFromActiveLayers().
-  void ExtendDamageForLayer(LayerImpl* layer, gfx::Rect* target_damage_rect);
+  void ExtendDamageForLayer(LayerImpl* layer, DamageAccumulator* target_damage);
   void ExtendDamageForRenderSurface(RenderSurfaceImpl* render_surface,
-                                    gfx::Rect* target_damage_rect);
+                                    DamageAccumulator* target_damage);
+  void ExpandDamageInsideRectWithFilters(const gfx::Rect& pre_filter_rect,
+                                         const FilterOperations& filters,
+                                         DamageAccumulator* damage);
 
   struct LayerRectMapData {
     LayerRectMapData() : layer_id_(0), mailboxId_(0) {}
@@ -106,7 +145,7 @@ class CC_EXPORT DamageTracker {
   SortedRectMapForSurfaces rect_history_for_surfaces_;
 
   unsigned int mailboxId_;
-  gfx::Rect current_damage_rect_;
+  DamageAccumulator current_damage_;
 
   DISALLOW_COPY_AND_ASSIGN(DamageTracker);
 };

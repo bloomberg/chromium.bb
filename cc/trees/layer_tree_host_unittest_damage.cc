@@ -56,8 +56,9 @@ class LayerTreeHostDamageTestSetNeedsRedraw
 
     RenderSurfaceImpl* root_surface =
         impl->active_tree()->root_layer_for_testing()->render_surface();
-    gfx::Rect root_damage =
-        root_surface->damage_tracker()->current_damage_rect();
+    gfx::Rect root_damage;
+    EXPECT_TRUE(
+        root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
 
     switch (draw_count_) {
       case 0:
@@ -118,8 +119,9 @@ class LayerTreeHostDamageTestSetViewportSize
 
     RenderSurfaceImpl* root_surface =
         impl->active_tree()->root_layer_for_testing()->render_surface();
-    gfx::Rect root_damage =
-        root_surface->damage_tracker()->current_damage_rect();
+    gfx::Rect root_damage;
+    EXPECT_TRUE(
+        root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
 
     switch (draw_count_) {
       case 0:
@@ -259,8 +261,9 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
 
     RenderSurfaceImpl* root_surface =
         host_impl->active_tree()->root_layer_for_testing()->render_surface();
-    gfx::Rect root_damage =
-        root_surface->damage_tracker()->current_damage_rect();
+    gfx::Rect root_damage;
+    EXPECT_TRUE(
+        root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
     root_damage.Intersect(root_surface->content_rect());
 
     int source_frame = host_impl->active_tree()->source_frame_number();
@@ -384,8 +387,9 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
         host_impl->active_tree()->root_layer_for_testing()->render_surface();
-    gfx::Rect root_damage =
-        root_surface->damage_tracker()->current_damage_rect();
+    gfx::Rect root_damage;
+    EXPECT_TRUE(
+        root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
     root_damage.Intersect(root_surface->content_rect());
     switch (num_draws_) {
       case 0:
@@ -468,8 +472,9 @@ class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
         host_impl->active_tree()->root_layer_for_testing()->render_surface();
-    gfx::Rect root_damage =
-        root_surface->damage_tracker()->current_damage_rect();
+    gfx::Rect root_damage;
+    EXPECT_TRUE(
+        root_surface->damage_tracker()->GetDamageRectIfValid(&root_damage));
     root_damage.Intersect(root_surface->content_rect());
     int frame = host_impl->active_tree()->source_frame_number();
     switch (num_draws_) {

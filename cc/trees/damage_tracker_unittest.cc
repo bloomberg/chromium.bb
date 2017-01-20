@@ -87,22 +87,24 @@ class DamageTrackerTest : public testing::Test {
   DamageTrackerTest()
       : host_impl_(&task_runner_provider_, &task_graph_runner_) {}
 
-  LayerImpl* CreateTestTreeWithOneSurface() {
+  LayerImpl* CreateTestTreeWithOneSurface(int number_of_children) {
     host_impl_.active_tree()->DetachLayers();
     std::unique_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_.active_tree(), 1);
-    std::unique_ptr<LayerImpl> child =
-        LayerImpl::Create(host_impl_.active_tree(), 2);
 
     root->SetPosition(gfx::PointF());
     root->SetBounds(gfx::Size(500, 500));
     root->SetDrawsContent(true);
     root->test_properties()->force_render_surface = true;
 
-    child->SetPosition(gfx::PointF(100.f, 100.f));
-    child->SetBounds(gfx::Size(30, 30));
-    child->SetDrawsContent(true);
-    root->test_properties()->AddChild(std::move(child));
+    for (int i = 0; i < number_of_children; ++i) {
+      std::unique_ptr<LayerImpl> child =
+          LayerImpl::Create(host_impl_.active_tree(), 2 + i);
+      child->SetPosition(gfx::PointF(100.f, 100.f));
+      child->SetBounds(gfx::Size(30, 30));
+      child->SetDrawsContent(true);
+      root->test_properties()->AddChild(std::move(child));
+    }
     host_impl_.active_tree()->SetRootLayerForTesting(std::move(root));
 
     return host_impl_.active_tree()->root_layer_for_testing();
@@ -159,8 +161,8 @@ class DamageTrackerTest : public testing::Test {
     return host_impl_.active_tree()->root_layer_for_testing();
   }
 
-  LayerImpl* CreateAndSetUpTestTreeWithOneSurface() {
-    LayerImpl* root = CreateTestTreeWithOneSurface();
+  LayerImpl* CreateAndSetUpTestTreeWithOneSurface(int number_of_children = 1) {
+    LayerImpl* root = CreateTestTreeWithOneSurface(number_of_children);
 
     // Setup includes going past the first frame which always damages
     // everything, so that we can actually perform specific tests.
@@ -197,8 +199,9 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithOneSurface) {
   EXPECT_EQ(1, root->render_surface()->layer_list()[0]->id());
   EXPECT_EQ(2, root->render_surface()->layer_list()[1]->id());
 
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
 
   EXPECT_EQ(gfx::Rect(500, 500).ToString(), root_damage_rect.ToString());
 }
@@ -211,10 +214,13 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
 
   LayerImpl* child1 = root->test_properties()->children[0];
   LayerImpl* child2 = root->test_properties()->children[1];
-  gfx::Rect child_damage_rect =
-      child1->render_surface()->damage_tracker()->current_damage_rect();
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+
+  gfx::Rect child_damage_rect;
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
 
   ASSERT_TRUE(child1->render_surface());
   EXPECT_FALSE(child2->render_surface());
@@ -241,8 +247,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
 
   // Damage position on the surface should be: position of update_rect (10, 11)
   // relative to the child (100, 100).
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(110, 111, 12, 13).ToString(),
             root_damage_rect.ToString());
 
@@ -252,8 +259,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
   child->SetUpdateRect(gfx::Rect(10, 11, 12, 13));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(110, 111, 12, 13).ToString(),
             root_damage_rect.ToString());
 
@@ -266,8 +273,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
 
   // Damage position on the surface should be: position of update_rect (20, 25)
   // relative to the child (100, 100).
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(120, 125, 1, 2).ToString(), root_damage_rect.ToString());
 }
 
@@ -284,8 +291,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
 
   // Damage position on the surface should be: position of layer damage_rect
   // (10, 11) relative to the child (100, 100).
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 111, 12, 13)));
 
   // CASE 2: The same layer damage rect twice in a row still produces the same
@@ -294,8 +302,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
   child->AddDamageRect(gfx::Rect(10, 11, 12, 13));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 111, 12, 13)));
 
   // CASE 3: Adding a different layer damage rect should cause damage on the
@@ -307,8 +315,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
 
   // Damage position on the surface should be: position of layer damage_rect
   // (20, 25) relative to the child (100, 100).
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(120, 125, 1, 2)));
 
   // CASE 4: Adding multiple layer damage rects should cause a unified
@@ -321,8 +329,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
 
   // Damage position on the surface should be: position of layer damage_rect
   // (20, 25) relative to the child (100, 100).
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(120, 125, 1, 2)));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 115, 3, 4)));
 }
@@ -342,8 +350,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
   // Damage position on the surface should be: position of unified layer
   // damage_rect and update rect (5, 6)
   // relative to the child (100, 100).
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(105, 106, 24, 20)));
 
   // CASE 2: The same layer damage rect and update rect twice in a row still
@@ -353,8 +362,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
   child->SetUpdateRect(gfx::Rect(10, 11, 14, 15));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 111, 14, 15)));
 
   // CASE 3: Adding a different layer damage rect and update rect should cause
@@ -367,8 +376,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
 
   // Damage position on the surface should be: position of unified layer damage
   // rect and update rect (5, 10) relative to the child (100, 100).
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(105, 110, 17, 18)));
 }
 
@@ -391,8 +400,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
 
   // Damage should be the entire child layer in target_surface space.
   gfx::Rect expected_rect = gfx::Rect(100, 100, 30, 30);
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(expected_rect.ToString(), root_damage_rect.ToString());
 
   // CASE 2: If a layer moves due to property change, it damages both the new
@@ -404,8 +414,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   ClearDamageForAllSurfaces(root);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 
   // Then, test the actual layer movement.
@@ -418,8 +428,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
 
   // Expect damage to be the combination of the previous one and the new one.
   expected_rect.Union(gfx::Rect(200, 230, 30, 30));
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_FLOAT_RECT_EQ(expected_rect, root_damage_rect);
 }
 
@@ -435,8 +445,9 @@ TEST_F(DamageTrackerTest, VerifyDamageWhenSurfaceRemoved) {
   child->SetDrawsContent(false);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(290, 290, 16, 18).ToString(),
             root_damage_rect.ToString());
 }
@@ -462,8 +473,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
 
   // Sanity check that the layer actually moved to (85, 85), damaging its old
   // location and new location.
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(85, 85, 45, 45).ToString(), root_damage_rect.ToString());
 
   // With the anchor on the layer's center, now we can test the rotation more
@@ -481,8 +493,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   float expected_position = 100.f - 0.5f * expected_width;
   gfx::Rect expected_rect = gfx::ToEnclosingRect(gfx::RectF(
       expected_position, expected_position, expected_width, expected_width));
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(expected_rect.ToString(), root_damage_rect.ToString());
 }
 
@@ -534,8 +546,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
   // The expected damage should cover the entire root surface (500x500), but we
   // don't care whether the damage rect was clamped or is larger than the
   // surface for this test.
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   gfx::Rect damage_we_care_about = gfx::Rect(gfx::Size(500, 500));
   EXPECT_TRUE(root_damage_rect.Contains(damage_we_care_about));
 }
@@ -564,8 +577,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
   // Damage position on the surface should be: position of update_rect (1, 2)
   // relative to the child (300, 300), but expanded by the blur outsets
   // (15, since the blur radius is 5).
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(286, 287, 33, 34), root_damage_rect);
 }
 
@@ -589,10 +603,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
       filters, child->effect_tree_index(), child->layer_tree_impl());
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
-  child_damage_rect =
-          child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
 
   // gfx::Rect(100, 100, 30, 30), expanded by 6px for the 2px blur filter.
   EXPECT_EQ(gfx::Rect(94, 94, 42, 42), root_damage_rect);
@@ -605,10 +619,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   child->SetUpdateRect(gfx::Rect(1, 1));
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
-  child_damage_rect =
-          child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
 
   // gfx::Rect(100, 100, 1, 1), expanded by 6px for the 2px blur filter.
   EXPECT_EQ(gfx::Rect(94, 94, 13, 13), root_damage_rect);
@@ -640,10 +654,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
       filters, child->effect_tree_index(), child->layer_tree_impl());
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
-  child_damage_rect =
-      child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
 
   // Blur outset is 6px for a 2px blur.
   int blur_outset = 6;
@@ -662,10 +676,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   child->SetUpdateRect(gfx::Rect(30, 30));
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
-  child_damage_rect =
-      child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
 
   int expect_width = 30 + 2 * blur_outset;
   int expect_height = 30 + 2 * blur_outset;
@@ -696,10 +710,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForHighDPIImageFilter) {
   child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
       filters, child->effect_tree_index(), child->layer_tree_impl());
   EmulateDrawingOneFrame(root, device_scale_factor);
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
-  child_damage_rect =
-      child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
 
   // Blur outset is 9px for a 3px blur, scaled up by DSF.
   int blur_outset = 9 * device_scale_factor;
@@ -719,10 +733,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForHighDPIImageFilter) {
   child->SetUpdateRect(gfx::Rect(30, 30));
   EmulateDrawingOneFrame(root, device_scale_factor);
 
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
-  child_damage_rect =
-      child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
 
   EXPECT_EQ(expected_root_damage_rect, root_damage_rect);
   EXPECT_EQ(expected_child_damage_rect, child_damage_rect);
@@ -755,8 +769,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   // Damage position on the surface should be a composition of the damage on
   // the root and on child2.  Damage on the root should be: position of
   // update_rect (297, 297), but expanded by the blur outsets.
@@ -775,8 +790,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   // Damage position on the surface should be a composition of the damage on
   // the root and on child2.  Damage on the root should be: position of
   // update_rect (297, 297), but expanded on the left/top by the blur outsets.
@@ -793,8 +808,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   // Damage on the root should be: position of update_rect (30, 30), not
   // expanded.
   expected_damage_rect = gfx::Rect(30, 30, 2, 2);
@@ -809,8 +824,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   // Damage on the root should be: the originally damaged rect (99,99 1x1)
   // plus the rect that can influence with a 2px blur (93,93 13x13) intersected
   // with the surface rect (100,100 206x208). So no additional damage occurs
@@ -826,8 +841,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   // Damage on child2 should be: position of update_rect offset by the child's
   // position (11, 11), and not expanded by anything.
   expected_damage_rect = gfx::Rect(11, 11, 1, 1);
@@ -842,8 +857,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   // Damage on child1 should be: position of update_rect offset by the child's
   // position (100, 100), and expanded by the damage.
 
@@ -877,8 +892,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
   // surfaces are tested elsewhere.
   ASSERT_EQ(3u, root->render_surface()->layer_list().size());
 
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(400, 380, 6, 8).ToString(), root_damage_rect.ToString());
 
   // CASE 2: If the layer is removed, its entire old layer becomes exposed, not
@@ -890,8 +906,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 
   // Then, test removing child1.
@@ -900,8 +916,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(100, 100, 30, 30).ToString(),
             root_damage_rect.ToString());
 }
@@ -936,8 +952,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
   // surfaces are tested elsewhere.
   ASSERT_EQ(3u, root->render_surface()->layer_list().size());
 
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(400, 380, 6, 8).ToString(), root_damage_rect.ToString());
 }
 
@@ -968,8 +985,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
   child2->SetUpdateRect(gfx::Rect(3, 4));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(100, 100, 303, 284).ToString(),
             root_damage_rect.ToString());
 }
@@ -993,10 +1011,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
   root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
       0.5f, grand_child1->effect_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child1->render_surface()->damage_tracker()->current_damage_rect();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(200, 200, 6, 8).ToString(), child_damage_rect.ToString());
   EXPECT_EQ(gfx::Rect(300, 300, 6, 8).ToString(), root_damage_rect.ToString());
 
@@ -1012,10 +1030,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
   root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
       0.7f, child2->effect_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child1->render_surface()->damage_tracker()->current_damage_rect();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(200, 200, 6, 8).ToString(), child_damage_rect.ToString());
   EXPECT_EQ(gfx::Rect(11, 11, 295, 297).ToString(),
             root_damage_rect.ToString());
@@ -1040,10 +1058,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromDescendantLayer) {
   grand_child1->SetPosition(gfx::PointF(195.f, 205.f));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child1->render_surface()->damage_tracker()->current_damage_rect();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
 
   // The new surface bounds should be damaged entirely, even though only one of
   // the layers changed.
@@ -1080,10 +1098,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
   root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
       translation, child1->transform_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child1->render_surface()->damage_tracker()->current_damage_rect();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
 
   // The new surface bounds should be damaged entirely.
   EXPECT_EQ(gfx::Rect(190, 190, 16, 18).ToString(),
@@ -1114,8 +1132,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
   ASSERT_FALSE(child1->render_surface());
   ASSERT_EQ(4u, root->render_surface()->layer_list().size());
 
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(290, 290, 16, 18).ToString(),
             root_damage_rect.ToString());
 
@@ -1127,8 +1145,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
   ClearDamageForAllSurfaces(root);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 
   // Then change the tree so that the render surface is added back.
@@ -1143,10 +1161,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
   EXPECT_EQ(3u, root->render_surface()->layer_list().size());
   EXPECT_EQ(2u, child1->render_surface()->layer_list().size());
 
-  child_damage_rect =
-          child1->render_surface()->damage_tracker()->current_damage_rect();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(190, 190, 16, 18).ToString(),
             child_damage_rect.ToString());
   EXPECT_EQ(gfx::Rect(290, 290, 16, 18).ToString(),
@@ -1164,10 +1182,10 @@ TEST_F(DamageTrackerTest, VerifyNoDamageWhenNothingChanged) {
   ClearDamageForAllSurfaces(root);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child1->render_surface()->damage_tracker()->current_damage_rect();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_TRUE(child_damage_rect.IsEmpty());
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 
@@ -1177,10 +1195,10 @@ TEST_F(DamageTrackerTest, VerifyNoDamageWhenNothingChanged) {
   ClearDamageForAllSurfaces(root);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child1->render_surface()->damage_tracker()->current_damage_rect();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_TRUE(child_damage_rect.IsEmpty());
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 }
@@ -1197,10 +1215,10 @@ TEST_F(DamageTrackerTest, VerifyNoDamageForUpdateRectThatDoesNotDrawContent) {
   child1->SetUpdateRect(gfx::Rect(1, 2));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child1->render_surface()->damage_tracker()->current_damage_rect();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_TRUE(child_damage_rect.IsEmpty());
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 }
@@ -1244,8 +1262,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   mask_layer->SetUpdateRect(gfx::Rect(1, 2, 3, 4));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  gfx::Rect child_damage_rect =
-      child->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect child_damage_rect;
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
   EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
 
   // CASE 2: a property change on the mask layer should damage the entire
@@ -1256,8 +1275,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   ClearDamageForAllSurfaces(root);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
   EXPECT_TRUE(child_damage_rect.IsEmpty());
 
   // Then test the property change.
@@ -1266,8 +1285,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
   EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
 
   // CASE 3: removing the mask also damages the entire target surface.
@@ -1278,8 +1297,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   ClearDamageForAllSurfaces(root);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child_damage_rect =
-          child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
   EXPECT_TRUE(child_damage_rect.IsEmpty());
 
   // Then test mask removal.
@@ -1293,8 +1312,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   // Sanity check that a render surface still exists.
   ASSERT_TRUE(child->render_surface());
 
-  child_damage_rect =
-          child->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(child->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &child_damage_rect));
   EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
 }
 
@@ -1311,8 +1330,9 @@ TEST_F(DamageTrackerTest, DamageWhenAddedExternally) {
       gfx::Rect(15, 16, 32, 33));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::UnionRects(gfx::Rect(15, 16, 32, 33),
                             gfx::Rect(100 + 10, 100 + 11, 12, 13)).ToString(),
             root_damage_rect.ToString());
@@ -1325,8 +1345,8 @@ TEST_F(DamageTrackerTest, DamageWhenAddedExternally) {
       gfx::Rect(30, 31, 14, 15));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(30, 31, 14, 15).ToString(), root_damage_rect.ToString());
 }
 
@@ -1349,8 +1369,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
   target_surface->damage_tracker()->UpdateDamageTrackingState(
       empty_list, target_surface, false, gfx::Rect(), NULL, FilterOperations());
 
-  gfx::Rect damage_rect =
-      target_surface->damage_tracker()->current_damage_rect();
+  gfx::Rect damage_rect;
+  EXPECT_TRUE(
+      target_surface->damage_tracker()->GetDamageRectIfValid(&damage_rect));
   EXPECT_TRUE(damage_rect.IsEmpty());
 }
 
@@ -1366,8 +1387,9 @@ TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
   EmulateDrawingOneFrame(root);
 
   // Sanity check damage after the first frame; this isnt the actual test yet.
-  gfx::Rect root_damage_rect =
-      root->render_surface()->damage_tracker()->current_damage_rect();
+  gfx::Rect root_damage_rect;
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(110, 111, 1, 2).ToString(), root_damage_rect.ToString());
 
   // New damage, without having cleared the previous damage, should be unioned
@@ -1375,24 +1397,24 @@ TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
   child->SetUpdateRect(gfx::Rect(20, 25, 1, 2));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_EQ(gfx::Rect(110, 111, 11, 16).ToString(),
             root_damage_rect.ToString());
 
   // If we notify the damage tracker that we drew the damaged area, then damage
   // should be emptied.
   root->render_surface()->damage_tracker()->DidDrawDamagedArea();
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 
   // Damage should remain empty even after one frame, since there's yet no new
   // damage.
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  root_damage_rect =
-          root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &root_damage_rect));
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 }
 
@@ -1426,12 +1448,258 @@ TEST_F(DamageTrackerTest, HugeDamageRect) {
 
     // The expected damage should cover the visible part of the child layer,
     // which is (0, 0, i, i) in the viewport.
-    gfx::Rect root_damage_rect =
-        root->render_surface()->damage_tracker()->current_damage_rect();
+    gfx::Rect root_damage_rect;
+    EXPECT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+        &root_damage_rect));
     gfx::Rect damage_we_care_about = gfx::Rect(i, i);
     EXPECT_LE(damage_we_care_about.right(), root_damage_rect.right());
     EXPECT_LE(damage_we_care_about.bottom(), root_damage_rect.bottom());
   }
+}
+
+TEST_F(DamageTrackerTest, DamageRectTooBig) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface(2);
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* child2 = root->test_properties()->children[1];
+
+  // Really far left.
+  child1->SetPosition(gfx::PointF(std::numeric_limits<int>::min() + 100, 0));
+  child1->SetBounds(gfx::Size(1, 1));
+
+  // Really far right.
+  child2->SetPosition(gfx::PointF(std::numeric_limits<int>::max() - 100, 0));
+  child2->SetBounds(gfx::Size(1, 1));
+
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  float device_scale_factor = 1.f;
+  bool skip_verify_visible_rect_calculations = true;
+  EmulateDrawingOneFrame(root, device_scale_factor,
+                         skip_verify_visible_rect_calculations);
+
+  // The expected damage would be too large to store in a gfx::Rect, so we
+  // should damage everything (ie, we don't have a valid rect).
+  gfx::Rect damage_rect;
+  EXPECT_FALSE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_EQ(root->render_surface()->content_rect(),
+            root->render_surface()->GetDamageRect());
+}
+
+TEST_F(DamageTrackerTest, DamageRectTooBigWithFilter) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface(2);
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* child2 = root->test_properties()->children[1];
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(5.f));
+  root->SetDrawsContent(true);
+  root->test_properties()->background_filters = filters;
+
+  // Really far left.
+  child1->SetPosition(gfx::PointF(std::numeric_limits<int>::min() + 100, 0));
+  child1->SetBounds(gfx::Size(1, 1));
+
+  // Really far right.
+  child2->SetPosition(gfx::PointF(std::numeric_limits<int>::max() - 100, 0));
+  child2->SetBounds(gfx::Size(1, 1));
+
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  float device_scale_factor = 1.f;
+  bool skip_verify_visible_rect_calculations = true;
+  EmulateDrawingOneFrame(root, device_scale_factor,
+                         skip_verify_visible_rect_calculations);
+
+  // The expected damage would be too large to store in a gfx::Rect, so we
+  // should damage everything (ie, we don't have a valid rect).
+  gfx::Rect damage_rect;
+  EXPECT_FALSE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_EQ(root->render_surface()->content_rect(),
+            root->render_surface()->GetDamageRect());
+}
+
+TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* grandchild1 = child1->test_properties()->children[0];
+  LayerImpl* grandchild2 = child1->test_properties()->children[1];
+
+  // Really far left.
+  grandchild1->SetPosition(
+      gfx::PointF(std::numeric_limits<int>::min() + 500, 0));
+  grandchild1->SetBounds(gfx::Size(1, 1));
+  grandchild1->SetDrawsContent(true);
+
+  // Really far right.
+  grandchild2->SetPosition(
+      gfx::PointF(std::numeric_limits<int>::max() - 500, 0));
+  grandchild2->SetBounds(gfx::Size(1, 1));
+  grandchild2->SetDrawsContent(true);
+
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  float device_scale_factor = 1.f;
+  bool skip_verify_visible_rect_calculations = true;
+  LayerImplList render_surface_layer_list;
+  ExecuteCalculateDrawProperties(root, device_scale_factor,
+                                 skip_verify_visible_rect_calculations,
+                                 &render_surface_layer_list);
+
+  auto* surface = child1->render_surface();
+  surface->damage_tracker()->UpdateDamageTrackingState(
+      surface->layer_list(), surface, false, surface->content_rect(),
+      surface->MaskLayer(), surface->Filters());
+  surface = root->render_surface();
+  surface->damage_tracker()->UpdateDamageTrackingState(
+      surface->layer_list(), surface, false, surface->content_rect(),
+      surface->MaskLayer(), surface->Filters());
+
+  // The expected damage would be too large to store in a gfx::Rect, so we
+  // should damage everything on child1.
+  gfx::Rect damage_rect;
+  EXPECT_FALSE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_EQ(child1->render_surface()->content_rect(),
+            child1->render_surface()->GetDamageRect());
+
+  // However, the root should just use the child1 render surface's content rect
+  // as damage.
+  ASSERT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_TRUE(damage_rect.Contains(root->render_surface()->content_rect()));
+  EXPECT_TRUE(damage_rect.Contains(
+      gfx::ToEnclosingRect(child1->render_surface()->DrawableContentRect())));
+  EXPECT_EQ(damage_rect, root->render_surface()->GetDamageRect());
+
+  // Add new damage, without changing properties, which goes down a different
+  // path in the damage tracker.
+  root->layer_tree_impl()->ResetAllChangeTracking();
+  grandchild1->AddDamageRect(gfx::Rect(grandchild1->bounds()));
+  grandchild2->AddDamageRect(gfx::Rect(grandchild1->bounds()));
+
+  // Recompute all damage / properties.
+  render_surface_layer_list.clear();
+  ExecuteCalculateDrawProperties(root, device_scale_factor,
+                                 skip_verify_visible_rect_calculations,
+                                 &render_surface_layer_list);
+  surface = child1->render_surface();
+  surface->damage_tracker()->UpdateDamageTrackingState(
+      surface->layer_list(), surface, false, surface->content_rect(),
+      surface->MaskLayer(), surface->Filters());
+  surface = root->render_surface();
+  surface->damage_tracker()->UpdateDamageTrackingState(
+      surface->layer_list(), surface, false, surface->content_rect(),
+      surface->MaskLayer(), surface->Filters());
+
+  // Child1 should still not have a valid rect, since the union of the damage of
+  // its children is not representable by a single rect.
+  EXPECT_FALSE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_EQ(child1->render_surface()->content_rect(),
+            child1->render_surface()->GetDamageRect());
+
+  // Root should have valid damage and contain both its content rect and the
+  // drawable content rect of child1.
+  ASSERT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_TRUE(damage_rect.Contains(root->render_surface()->content_rect()));
+  EXPECT_TRUE(damage_rect.Contains(
+      gfx::ToEnclosingRect(child1->render_surface()->DrawableContentRect())));
+  EXPECT_EQ(damage_rect, root->render_surface()->GetDamageRect());
+}
+
+TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* grandchild1 = child1->test_properties()->children[0];
+  LayerImpl* grandchild2 = child1->test_properties()->children[1];
+
+  // Set up a moving pixels filter on the child.
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(5.f));
+  child1->SetDrawsContent(true);
+  child1->test_properties()->background_filters = filters;
+
+  // Really far left.
+  grandchild1->SetPosition(
+      gfx::PointF(std::numeric_limits<int>::min() + 500, 0));
+  grandchild1->SetBounds(gfx::Size(1, 1));
+  grandchild1->SetDrawsContent(true);
+
+  // Really far right.
+  grandchild2->SetPosition(
+      gfx::PointF(std::numeric_limits<int>::max() - 500, 0));
+  grandchild2->SetBounds(gfx::Size(1, 1));
+  grandchild2->SetDrawsContent(true);
+
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  float device_scale_factor = 1.f;
+  bool skip_verify_visible_rect_calculations = true;
+  LayerImplList render_surface_layer_list;
+  ExecuteCalculateDrawProperties(root, device_scale_factor,
+                                 skip_verify_visible_rect_calculations,
+                                 &render_surface_layer_list);
+
+  auto* surface = child1->render_surface();
+  surface->damage_tracker()->UpdateDamageTrackingState(
+      surface->layer_list(), surface, false, surface->content_rect(),
+      surface->MaskLayer(), surface->Filters());
+  surface = root->render_surface();
+  surface->damage_tracker()->UpdateDamageTrackingState(
+      surface->layer_list(), surface, false, surface->content_rect(),
+      surface->MaskLayer(), surface->Filters());
+
+  // The expected damage would be too large to store in a gfx::Rect, so we
+  // should damage everything on child1.
+  gfx::Rect damage_rect;
+  EXPECT_FALSE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_EQ(child1->render_surface()->content_rect(),
+            child1->render_surface()->GetDamageRect());
+
+  // However, the root should just use the child1 render surface's content rect
+  // as damage.
+  ASSERT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_TRUE(damage_rect.Contains(root->render_surface()->content_rect()));
+  EXPECT_TRUE(damage_rect.Contains(
+      gfx::ToEnclosingRect(child1->render_surface()->DrawableContentRect())));
+  EXPECT_EQ(damage_rect, root->render_surface()->GetDamageRect());
+
+  // Add new damage, without changing properties, which goes down a different
+  // path in the damage tracker.
+  root->layer_tree_impl()->ResetAllChangeTracking();
+  grandchild1->AddDamageRect(gfx::Rect(grandchild1->bounds()));
+  grandchild2->AddDamageRect(gfx::Rect(grandchild1->bounds()));
+
+  // Recompute all damage / properties.
+  render_surface_layer_list.clear();
+  ExecuteCalculateDrawProperties(root, device_scale_factor,
+                                 skip_verify_visible_rect_calculations,
+                                 &render_surface_layer_list);
+  surface = child1->render_surface();
+  surface->damage_tracker()->UpdateDamageTrackingState(
+      surface->layer_list(), surface, false, surface->content_rect(),
+      surface->MaskLayer(), surface->Filters());
+  surface = root->render_surface();
+  surface->damage_tracker()->UpdateDamageTrackingState(
+      surface->layer_list(), surface, false, surface->content_rect(),
+      surface->MaskLayer(), surface->Filters());
+
+  // Child1 should still not have a valid rect, since the union of the damage of
+  // its children is not representable by a single rect.
+  EXPECT_FALSE(child1->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_EQ(child1->render_surface()->content_rect(),
+            child1->render_surface()->GetDamageRect());
+
+  // Root should have valid damage and contain both its content rect and the
+  // drawable content rect of child1.
+  ASSERT_TRUE(root->render_surface()->damage_tracker()->GetDamageRectIfValid(
+      &damage_rect));
+  EXPECT_TRUE(damage_rect.Contains(root->render_surface()->content_rect()));
+  EXPECT_TRUE(damage_rect.Contains(
+      gfx::ToEnclosingRect(child1->render_surface()->DrawableContentRect())));
+  EXPECT_EQ(damage_rect, root->render_surface()->GetDamageRect());
 }
 
 }  // namespace

@@ -337,6 +337,14 @@ void RenderSurfaceImpl::NoteAncestorPropertyChanged() {
   ancestor_property_changed_ = true;
 }
 
+gfx::Rect RenderSurfaceImpl::GetDamageRect() {
+  gfx::Rect damage_rect;
+  bool is_valid_rect = damage_tracker_->GetDamageRectIfValid(&damage_rect);
+  if (!is_valid_rect)
+    return content_rect();
+  return damage_rect;
+}
+
 void RenderSurfaceImpl::ResetPropertyChangedFlags() {
   surface_property_changed_ = false;
   ancestor_property_changed_ = false;
@@ -352,9 +360,9 @@ int RenderSurfaceImpl::GetRenderPassId() {
 
 void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
   std::unique_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
-  pass->SetNew(id(), content_rect(),
-               gfx::IntersectRects(content_rect(),
-                                   damage_tracker_->current_damage_rect()),
+  gfx::Rect damage_rect = GetDamageRect();
+  damage_rect.Intersect(content_rect());
+  pass->SetNew(id(), content_rect(), damage_rect,
                draw_properties_.screen_space_transform);
   pass->filters = Filters();
   pass->background_filters = BackgroundFilters();
