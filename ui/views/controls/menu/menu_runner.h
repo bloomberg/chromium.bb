@@ -108,6 +108,8 @@ class VIEWS_EXPORT MenuRunner {
   // Creates a new MenuRunner, which may use a native menu if available.
   // |run_types| is a bitmask of RunTypes. If provided,
   // |on_menu_closed_callback| is invoked when the menu is closed.
+  // Note that with a native menu (e.g. on Mac), the ASYNC flag in |run_types|
+  // may be ignored. See http://crbug.com/682544.
   MenuRunner(ui::MenuModel* menu_model,
              int32_t run_types,
              const base::Closure& on_menu_closed_callback = base::Closure());
