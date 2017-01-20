@@ -9,6 +9,16 @@
 #include "media/filters/ivf_parser.h"
 #include "media/filters/vp9_parser.h"
 
+struct Environment {
+  Environment() {
+    // Disable noisy logging as per "libFuzzer in Chrome" documentation:
+    // testing/libfuzzer/getting_started.md#Disable-noisy-error-message-logging.
+    logging::SetMinLogLevel(logging::LOG_FATAL);
+  }
+};
+
+Environment* env = new Environment();
+
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const uint8_t* ivf_payload = nullptr;
