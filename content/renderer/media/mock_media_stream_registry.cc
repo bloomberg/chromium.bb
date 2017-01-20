@@ -67,7 +67,7 @@ void MockMediaStreamRegistry::AddVideoTrack(
       new MockMediaStreamVideoSource(false /* manual get supported formats */);
   blink_source.setExtraData(native_source);
   blink::WebMediaStreamTrack blink_track;
-  blink_track.initialize(base::UTF8ToUTF16(track_id), blink_source);
+  blink_track.initialize(blink::WebString::fromUTF8(track_id), blink_source);
 
   MediaStreamVideoTrack* native_track = new MediaStreamVideoTrack(
       native_source, constraints, MediaStreamVideoSource::ConstraintsCallback(),

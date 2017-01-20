@@ -47,9 +47,9 @@ class MediaStreamRemoteVideoSourceTest
                                   webrtc_video_track_.get())))),
         number_of_successful_constraints_applied_(0),
         number_of_failed_constraints_applied_(0) {
-    webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
+    webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
-                              base::UTF8ToUTF16("dummy_source_name"),
+                              blink::WebString::fromASCII("dummy_source_name"),
                               true /* remote */);
     webkit_source_.setExtraData(remote_source_);
   }

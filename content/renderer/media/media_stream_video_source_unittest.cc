@@ -50,9 +50,9 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     formats.push_back(media::VideoCaptureFormat(
         gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420));
     mock_source_->SetSupportedFormats(formats);
-    webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
+    webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
-                              base::UTF8ToUTF16("dummy_source_name"),
+                              blink::WebString::fromASCII("dummy_source_name"),
                               false /* remote */);
     webkit_source_.setExtraData(mock_source_);
   }

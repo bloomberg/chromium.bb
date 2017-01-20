@@ -61,7 +61,8 @@ class VideoTrackRecorderTest
  public:
   VideoTrackRecorderTest()
       : mock_source_(new MockMediaStreamVideoSource(false)) {
-    const blink::WebString webkit_track_id(base::UTF8ToUTF16("dummy"));
+    const blink::WebString webkit_track_id(
+        blink::WebString::fromASCII("dummy"));
     blink_source_.initialize(webkit_track_id,
                              blink::WebMediaStreamSource::TypeVideo,
                              webkit_track_id);

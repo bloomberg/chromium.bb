@@ -34,9 +34,9 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
       : child_process_(new ChildProcess()),
         mock_source_(new MockMediaStreamVideoSource(false)),
         source_started_(false) {
-    blink_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
+    blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                              blink::WebMediaStreamSource::TypeVideo,
-                             base::UTF8ToUTF16("dummy_source_name"),
+                             blink::WebString::fromASCII("dummy_source_name"),
                              false /* remote */);
     blink_source_.setExtraData(mock_source_);
   }
@@ -85,9 +85,9 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   void UpdateVideoSourceToRespondToRequestRefreshFrame() {
     blink_source_.reset();
     mock_source_ = new MockMediaStreamVideoSource(false, true);
-    blink_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
+    blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
                              blink::WebMediaStreamSource::TypeVideo,
-                             base::UTF8ToUTF16("dummy_source_name"),
+                             blink::WebString::fromASCII("dummy_source_name"),
                              false /* remote */);
     blink_source_.setExtraData(mock_source_);
   }
