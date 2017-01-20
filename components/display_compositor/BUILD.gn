@@ -57,6 +57,13 @@ component("display_compositor") {
 
     deps += [ "//ui/ozone" ]
   }
+
+  if (is_win) {
+    sources += [
+      "compositor_overlay_candidate_validator_win.cc",
+      "compositor_overlay_candidate_validator_win.h",
+    ]
+  }
 }
 
 # These are part of the components_unittests build target.

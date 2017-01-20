@@ -66,6 +66,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "components/display_compositor/compositor_overlay_candidate_validator_win.h"
 #include "content/browser/compositor/software_output_device_win.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #elif defined(USE_OZONE)
@@ -261,6 +262,12 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 #elif defined(OS_ANDROID)
   validator.reset(
       new display_compositor::CompositorOverlayCandidateValidatorAndroid());
+#elif defined(OS_WIN)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
+    validator = base::MakeUnique<
+        display_compositor::CompositorOverlayCandidateValidatorWin>();
+  }
 #endif
 
   return validator;
