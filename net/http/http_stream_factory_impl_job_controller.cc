@@ -628,6 +628,23 @@ void HttpStreamFactoryImpl::JobController::MaybeSetWaitTimeForMainJob(
     main_job_wait_time_ = delay;
 }
 
+bool HttpStreamFactoryImpl::JobController::HasPendingMainJob() const {
+  return main_job_.get() != nullptr;
+}
+
+bool HttpStreamFactoryImpl::JobController::HasPendingAltJob() const {
+  return alternative_job_.get() != nullptr;
+}
+
+size_t HttpStreamFactoryImpl::JobController::EstimateMemoryUsage() const {
+  size_t estimated_size = 0;
+  if (main_job_)
+    estimated_size += main_job_->EstimateMemoryUsage();
+  if (alternative_job_)
+    estimated_size += alternative_job_->EstimateMemoryUsage();
+  return estimated_size;
+}
+
 WebSocketHandshakeStreamBase::CreateHelper* HttpStreamFactoryImpl::
     JobController::websocket_handshake_stream_create_helper() {
   DCHECK(request_);

@@ -169,6 +169,15 @@ class HttpStreamFactoryImpl::JobController
 
   bool is_preconnect() const { return is_preconnect_; }
 
+  // Returns true if |this| has a pending main job that is not completed.
+  bool HasPendingMainJob() const;
+
+  // Returns true if |this| has a pending alternative job that is not completed.
+  bool HasPendingAltJob() const;
+
+  // Returns the estimated memory usage in bytes.
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend class JobControllerPeer;
 

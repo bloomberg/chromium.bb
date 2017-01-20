@@ -68,6 +68,8 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
 
   void PreconnectStreams(int num_streams, const HttpRequestInfo& info) override;
   const HostMappingRules* GetHostMappingRules() const override;
+  void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
+                       const std::string& parent_absolute_name) const override;
 
   enum JobType {
     MAIN,
