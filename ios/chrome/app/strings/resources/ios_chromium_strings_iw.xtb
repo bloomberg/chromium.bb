@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">‏על Chromium</translation>
 <translation id="1472013873724362412">‏החשבון שלך לא פועל ב-Chromium. פנה אל מנהל הדומיין או השתמש בחשבון Google רגיל כדי להיכנס לחשבון.</translation>
 <translation id="1736662517232558588">‏נתוני Chromium נמחקו</translation>
+<translation id="1838412507805038478">‏Chromium אימת ש-<ph name="ISSUER" /> הנפיק את האישור של האתר הזה.</translation>
 <translation id="1843424232666537147">‏Chromium כולל תכונות שעוזרות לך לנהל את נתוני האינטרנט ואת המהירות שבה תוכל לטעון דפים.
 <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">‏גש מכאן אל הכרטיסיות שפתחת במחשב. פתח את Chromium במחשב, עבור אל התפריט ובחר באפשרות 'היכנס אל Chromium…'</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">‏‫Chromium ממשיך להשתפר! קיימת גירסה חדשה.</translation>
 <translation id="6604711459180487467">‏גישה אל המיקום שלך תאפשר לך ליהנות מחוויה משופרת ב-Chromium.</translation>
 <translation id="6989306073720242915">‏אוהב את Chromium? <ph name="BEGIN_LINK" />העבר אותו לשורת המשימות<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">‏Chromium אימת ש-<ph name="ISSUER" /> הנפיק את האישור של אתר זה.</translation>
 <translation id="7099326575020694068">‏Chromium לא יכול להשתמש במצלמה במצב תצוגה מפוצלת</translation>
 <translation id="7144758435978427212">‏גלה דפי אינטרנט שנשלחו על-ידי מכשירים הנמצאים בקרבת מקום. כאשר Bluetooth מופעל, Chromium יכול לאסוף דפי אינטרנט המשויכים למכשירים סביבך ולשלוח אותם באופן אנונימי ל-Google כדי למצוא את השימושיים ביותר. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">‏Chromium מאפשר גישה לחשבונות באינטרנט וכך חוסך לך זמן. ניתן להוסיף או להסיר חשבונות בקטע 'הגדרות'.</translation>

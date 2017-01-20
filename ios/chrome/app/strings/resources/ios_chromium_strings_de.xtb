@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Über Chromium</translation>
 <translation id="1472013873724362412">Dieses Konto funktioniert in Chromium nicht. Wenden Sie sich an Ihren Domainadministrator oder melden Sie sich mit einem Google-Standardkonto an.</translation>
 <translation id="1736662517232558588">Chromium-Daten gelöscht</translation>
+<translation id="1838412507805038478">Chromium hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat.</translation>
 <translation id="1843424232666537147">Chromium bietet Funktionen, mit denen Sie Ihre Internetdaten und die Ladezeit von Webseiten verwalten können. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Greifen Sie hier auf die Tabs zu, die Sie auf Ihrem Computer geöffnet haben. Öffnen Sie dazu Chromium auf Ihrem Computer und wählen Sie im Menü "In Chromium anmelden..." aus.</translation>
 <translation id="2168108852149185974">Einige Add-ons führen zum Ausfall von Chromium. Bitte deinstallieren Sie:</translation>
@@ -31,7 +32,6 @@
 <translation id="6424492062988593837">Chromium ist jetzt noch besser! Es ist eine neue Version verfügbar.</translation>
 <translation id="6604711459180487467">Profitieren Sie von einer besseren Nutzererfahrung in Chromium auf Grundlage Ihres Standorts.</translation>
 <translation id="6989306073720242915">Sie mögen Chromium? <ph name="BEGIN_LINK" />Ziehen Sie es in Ihr Dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat.</translation>
 <translation id="7099326575020694068">Chromium kann die Kamera nicht im Modus "Geteilte Ansicht" nutzen</translation>
 <translation id="7144758435978427212">Entdecken Sie Webseiten, die von Objekten in Ihrer Nähe übermittelt werden. Wenn Bluetooth aktiviert ist, trägt Chromium Webseiten zusammen, die sich auf Objekte in Ihrer Nähe beziehen, und schickt die Webseiten anonym an Google, um die für Sie besonders nützlichen zu finden. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Mit Chromium sparen Sie Zeit, da Sie Ihre Konten im Web verwenden können. In den Einstellungen haben Sie die Möglichkeit, Konten hinzuzufügen oder zu entfernen.</translation>

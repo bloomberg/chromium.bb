@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1472013873724362412">Kontot fungerar inte på Chromium. Kontakta domänadministratören eller logga in med ett vanligt Google-konto.</translation>
 <translation id="1736662517232558588">Chromium-data har rensats</translation>
+<translation id="1838412507805038478">Chromium har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
 <translation id="1843424232666537147">I Chromium finns det funktioner som du kan använda för att hantera dina internetuppgifter och inläsningshastigheten för webbsidor.
 <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Använd flikar som du öppnar på datorn även här. Du behöver bara öppna Chromium på datorn, öppna menyn och välja Logga in i Chromium …</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
 <translation id="6604711459180487467">Ange din plats och få en bättre upplevelse när du använder Chromium.</translation>
 <translation id="6989306073720242915">Gillar du Chromium? <ph name="BEGIN_LINK" />Flytta Chromium till Dock.<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
 <translation id="7099326575020694068">Chromium kan inte använda kameran i delad vy</translation>
 <translation id="7144758435978427212">Upptäck webbsidor som skickats av enheter i närheten. När Bluetooth är aktiverat kan Chromium samla webbsidor som är kopplade till enheter i din omgivning, skicka dem anonymt till Google och sedan välja ut dem som är mest användbara för dig. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Med Chromium sparar du tid genom att dina konton blir tillgängliga på nätet. Du kan lägga till och ta bort konton i inställningarna.</translation>

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Acerca do Chromium</translation>
 <translation id="1472013873724362412">A sua conta não funciona no Chromium. Contacte o administrador do domínio ou utilize uma Conta Google normal para iniciar sessão.</translation>
 <translation id="1736662517232558588">Dados do Chromium apagados</translation>
+<translation id="1838412507805038478">O Chromium confirmou que a <ph name="ISSUER" /> emitiu o certificado deste Website.</translation>
 <translation id="1843424232666537147">O Chromium inclui funcionalidades que o ajudam a gerir os seus dados de Internet e a velocidade com que as páginas Web são carregadas.
 <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Aceda aqui aos separadores abertos no computador. Basta abrir o Chromium no computador, aceder ao menu e selecionar "Iniciar sessão no Chromium..."</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">O Chromium ficou ainda melhor! Está disponível uma nova versão.</translation>
 <translation id="6604711459180487467">Obtenha uma melhor experiência no Chromium com base na sua localização.</translation>
 <translation id="6989306073720242915">Adora o Chromium? <ph name="BEGIN_LINK" />Mova-o para a Dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">O Chromium confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website.</translation>
 <translation id="7099326575020694068">O Chromium não pode utilizar a câmara no modo Vista dividida</translation>
 <translation id="7144758435978427212">Descubra páginas Web enviadas por objetos próximos. Quando o Bluetooth está ativado, o Chromium pode recolher páginas Web associadas a objetos à sua volta e enviá-las anonimamente para o Google para procurar as que lhe são mais úteis. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">O Chromium poupa o seu tempo ao trazer as suas contas para a Web. Pode adicionar ou remover contas nas Definições.</translation>

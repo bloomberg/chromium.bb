@@ -2203,7 +2203,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen ali je onemogočen, <ph name="PRODUCT_NAME" /> upošteva javno najavljen razpored za zastaranje algoritma SHA-1.</translation>
 <translation id="7589150663293249656">Omogoča ustvarjanje kopij podatkov profila izdelka <ph name="PRODUCT_NAME" /> za gostovanje.
 
-      Če omogočite to nastavitev, se podatki, shranjeni v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki samodejnega izpolnjevanja, gesla in drugi, prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
+      Če omogočite to nastavitev, se podatki, shranjeni v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki samodejnega izpolnjevanja, gesla in drugi podatki, prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
 
       Če je ta pravilnik omogočen, je storitev Google Sync samodejno onemogočena.
 
@@ -2752,7 +2752,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="9042911395677044526">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja glede na uporabnika, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisane na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="908115901708809140">Konfigurira imenik, ki ga bo izdelek <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje kopij profilov za gostovanje.
 
-      Če nastavite ta pravilnik, bo izdelek <ph name="PRODUCT_NAME" /> uporabljal naveden imenik za shranjevanje kopije profilov za gostovanje, če je pravilnik <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> omogočen. Če je pravilnik <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> onemogočen ali ni nastavljen, se vrednost, shranjena v tem pravilniku, ne uporabi.
+      Če nastavite ta pravilnik, bo izdelek <ph name="PRODUCT_NAME" /> uporabljal naveden imenik za shranjevanje kopije profilov za gostovanje, kadar je pravilnik <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> omogočen. Če je pravilnik <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> onemogočen ali ni nastavljen, se vrednost, shranjena v tem pravilniku, ne uporabi.
 
       Na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables si lahko ogledate seznam spremenljivk, ki jih je mogoče uporabiti.
 
@@ -2792,7 +2792,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik omogočen, z bližnjimi tipkami ali API-ji razširitev ni mogoče ustvarjati posnetkov zaslona.
 
       Če je onemogočen ali ni določen, je ustvarjanje posnetkov zaslona dovoljeno.</translation>
-<translation id="9213347477683611358">Konfiguriranje slike za ozadje na ravni naprave, ki je prikazana na zaslonu za prijavo, če ni v napravi še prijavljen noben uporabnik. Pravilnik se nastavi z določanjem URL-ja, s katerega lahko naprava OS Chrome prenese sliko za ozadje, in kriptografske razpršilne vrednosti za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti. Slika za ozadje se prenese in shrani v predpomnilnik. Ob vsaki spremembi URL-ja ali razpršilne vrednosti se znova prenese.
+<translation id="9213347477683611358">Konfiguriranje slike za ozadje na ravni naprave, ki je prikazana na zaslonu za prijavo, če ni v napravi prijavljen še noben uporabnik. Pravilnik se nastavi z določanjem URL-ja, s katerega lahko naprava OS Chrome prenese sliko za ozadje, in kriptografske razpršilne vrednosti za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti. Slika za ozadje se prenese in shrani v predpomnilnik. Ob vsaki spremembi URL-ja ali razpršilne vrednosti se znova prenese.
 
       Pravilnik mora biti določen kot niz, ki izraža URL in razpršilno vrednost v obliki JSON, npr.
       {
@@ -2800,9 +2800,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
         "hash": "examplewallpaperhash"
       }
 
-      Če je pravilnik za ozadje v napravi nastavljen, naprava OS Chrome prenese in uporabi sliko za ozadje na zaslonu za prijavo, če ni v napravi prijavljen še noben uporabnik. Ko se prijavi uporabnik, se aktivira pravilnik za ozadje uporabnika.
+      Če je pravilnik za ozadje v napravi nastavljen, naprava OS Chrome prenese in uporabi sliko za ozadje na zaslonu za prijavo, kadar ni v napravi prijavljen še noben uporabnik. Ko se prijavi uporabnik, se aktivira pravilnik za ozadje uporabnika.
 
-      Če pravilnik za ozadje v napravi ni nastavljen, se odloči pravilnik za ozadje uporabnika, kaj prikazati, če je pravilnik za ozadje uporabnika nastavljen.</translation>
+      Če pravilnik za ozadje v napravi ni nastavljen, se odločitev, kaj prikazati, določi na podlagi pravilnika za ozadje uporabnika, kadar je tak pravilnik nastavljen.</translation>
 <translation id="9217154963008402249">Pogostost omrežnih paketov za spremljanje</translation>
 <translation id="922540222991413931">Konfiguriranje virov za namestitev razširitev, aplikacij in uporabniških skriptov</translation>
 <translation id="924557436754151212">Uvoz shranjenih gesel privzetega brskalnika pri prvem zagonu</translation>

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">О Chromium-у</translation>
 <translation id="1472013873724362412">Налог не функционише на Chromium-у. Контактирајте администратора домена или се пријавите помоћу обичног Google налога.</translation>
 <translation id="1736662517232558588">Chromium подаци су обрисани</translation>
+<translation id="1838412507805038478">Chromium је потврдио да је <ph name="ISSUER" /> издао сертификат овог веб-сајта.</translation>
 <translation id="1843424232666537147">Chromium има функције које вам помажу да управљате интернет подацима и брзином учитавања веб-страница.
 <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Овде приступајте картицама које сте отворили на рачунару. Само отворите Chromium на рачунару, идите на мени и изаберите „Пријави ме у Chromium...“</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium је управо постао бољи! Доступна је нова верзија.</translation>
 <translation id="6604711459180487467">Побољшајте доживљај у Chromium-у на основу локације.</translation>
 <translation id="6989306073720242915">Допада вам се Chromium? <ph name="BEGIN_LINK" />Преместите га на док<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium је потврдио да је <ph name="ISSUER" /> издао сертификат овог веб-сајта.</translation>
 <translation id="7099326575020694068">Chromium не може да користи камеру у режиму подељеног приказа</translation>
 <translation id="7144758435978427212">Откривајте веб-странице које шаљу објекти у околини. Када је Bluetooth укључен, Chromium може да прикупља веб-странице повезане са објектима око вас и да их анонимно шаље Google-у како би пронашао најкорисније. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium вам штеди време тако што поставља налоге на веб. Можете да додајете или уклањате налоге у подешавањима.</translation>

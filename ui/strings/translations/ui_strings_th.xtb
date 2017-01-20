@@ -23,7 +23,6 @@
 <translation id="2168039046890040389">เลื่อนหน้าขึ้น</translation>
 <translation id="2190355936436201913">(ว่างเปล่า)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/วินาที</translation>
-<translation id="2336922762358079423">ใส่หมายเหตุใน Google Keep</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2497284189126895209">ไฟล์ทั้งหมด</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -130,10 +129,12 @@
 <translation id="8602707065186045623">ไฟล์ <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/วินาที</translation>
 <translation id="8806053966018712535">โฟลเดอร์ <ph name="FOLDER_NAME" /></translation>
+<translation id="883911313571074303">ใส่หมายเหตุในรูปภาพ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="9002566407876343676">เปิด</translation>
 <translation id="9038489124413477075">โฟลเดอร์ที่ไม่มีชื่อ</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 วินาที}other{# วินาที}}</translation>
+<translation id="9150735707954472829">แท็บ</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="945522503751344254">ส่งความคิดเห็น</translation>

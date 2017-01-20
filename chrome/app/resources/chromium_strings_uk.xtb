@@ -5,7 +5,6 @@
 <translation id="1115445892567829615">Chromium не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="1174473354587728743">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chromium на свій смак.</translation>
 <translation id="1185134272377778587">Про Chromium</translation>
-<translation id="1293235220023151515">У системі знайдено конфліктуючу встановлену версію Chromium. Видаліть її та повторіть спробу.</translation>
 <translation id="1298199220304005244">Отримати довідку щодо користування ОС Chromium</translation>
 <translation id="1396446129537741364">Chromium намагається показати паролі.</translation>
 <translation id="1403254041219632970">Наступні версії Chromium не підтримуватимуть Mac OS X версій 10.6, 10.7 і 10.8.</translation>
@@ -46,14 +45,12 @@
 <translation id="2486653164587200256">Chromium може працювати неналежним чином, оскільки Windows XP та Windows Vista більше не підтримуються.</translation>
 <translation id="2527042973354814951">Перезавантажте Chromium, щоб увімкнути плагін "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="2535480412977113886">ОС Chromium не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
-<translation id="2558641060352364164">Цей сайт використовує Chromium Frame. Ми припиняємо підтримку цього плагіна. Видаліть його та встановіть сучасний веб-переглядач.</translation>
 <translation id="2572494885440352020">Помічник Chromium</translation>
 <translation id="2587578672395088481">Щоб застосувати це оновлення, потрібно перезапустити ОС Chromium.</translation>
 <translation id="2605472041568654097">Допоможіть покращити Chromium, надсилаючи звіти про поточні налаштування.</translation>
 <translation id="2636877269779209383">Chromium потрібен доступ до камери, щоб використовувати її на цьому сайті.</translation>
 <translation id="2648074677641340862">Під час встановлення сталася помилка операційної системи. Завантажте Chromium ще раз.</translation>
 <translation id="2685838254101182273">Оновлення Chromium припинилось. Ця версія вашої операційної системи більше не підтримується.</translation>
-<translation id="2705212601509139398">Цей сайт використовує Chromium Frame. Ми припиняємо підтримку цього плагіна. Видаліть його та встановіть сумісний веб-переглядач.</translation>
 <translation id="2711502716910134313">Вкладка Chromium</translation>
 <translation id="2718390899429598676">Задля підвищення безпеки Chromium шифруватиме ваші дані.</translation>
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
@@ -67,19 +64,16 @@
 <translation id="3068515742935458733">Допоможіть покращити Chromium, надсилаючи звіти про аварійне завершення роботи та <ph name="UMA_LINK" /> в Google</translation>
 <translation id="3103660991484857065">Програмі встановлення не вдалося видобути архів. Завантажте Chromium ще раз.</translation>
 <translation id="3130323860337406239">Chromium використовує ваш мікрофон.</translation>
-<translation id="313551035350905294">Ви входите, використовуючи дані керованого облікового запису, що дає його адміністратору контролювати ваш профіль Chromium. Ваші дані Chromium, як-от програми, закладки, історія, паролі й інші налаштування, буде назавжди пов’язано з обліковим записом <ph name="USER_NAME" />. Ви зможете видалити ці дані на інформаційній панелі облікових записів Google, але не зможете пов’язати їх з іншим обліковим записом.</translation>
 <translation id="3155163173539279776">Перезапустити Chromium</translation>
 <translation id="3190315855212034486">Помилка. Chromium аварійно завершив роботу. Перезапустити зараз?</translation>
 <translation id="3256316712990552818">Скопійовано в Chromium</translation>
 <translation id="3258596308407688501">Chromium не може читати та писати дані у свій каталог даних:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3264279740686075150">Chromium ваш веб-переглядач за умовчанням.</translation>
 <translation id="328888136576916638">Ключі API Google відсутні. Деякі функції Chromium буде вимкнено.</translation>
 <translation id="3296368748942286671">Продовжувати роботу фонових програм, коли Chromium закрито</translation>
 <translation id="3312805357485578561">У Chromium виявлено незвичну активність</translation>
 <translation id="331951419404882060">ОС Chromium не вдалося синхронізувати ваші дані через помилку входу.</translation>
-<translation id="3360567213983886831">Бінарні файли Chromium</translation>
 <translation id="3474745554856756813">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Закрийте всі вікна Chromium і повторіть спробу.</translation>
 <translation id="352783484088404971">Видалити з Chromium…</translation>
@@ -114,7 +108,6 @@
 <translation id="4488554488975128561">Ви можете зробити Chromium безпечнішим і простішим у користуванні, автоматично надсилаючи в Google деяку інформацію про систему та вміст сторінок, щоб допомогти виявляти небезпечні додатки й сайти.</translation>
 <translation id="4549794359424059447">Наступні версії Chromium не підтримуватимуть Windows XP та Windows Vista.</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
-<translation id="457845228957001925">Важлива інформація про ваші дані Chromium</translation>
 <translation id="459535195905078186">Програми Chromium</translation>
 <translation id="4621240073146040695">Майже оновлено. Перезапустіть Chromium, щоб завершити оновлення.</translation>
 <translation id="4677944499843243528">Схоже, профіль використовується іншим процесом Chromium (<ph name="PROCESS_ID" />) на іншому комп’ютері (<ph name="HOST_NAME" />). Chromium заблокував профіль, щоб запобігти його спотворенню. Якщо ви впевнені, що жоден інший процес не використовує цей профіль, розблокуйте профіль і перезапустіть Chromium.</translation>
@@ -190,12 +183,10 @@
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>
 <translation id="6893813176749746474">Chromium оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
-<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Модулі, завантажені в Chromium</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
 <translation id="7027298027173928763">Не вдалось оновити Chromium до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, потрібно вручну перевстановити Chromium.</translation>
 <translation id="705851970750939768">Оновити Chromium</translation>
-<translation id="7064610482057367130">Не вдалося виконати оновлення, оскільки не знайдено встановленої версії Chromium.</translation>
 <translation id="7066436765290594559">ОС Chromium не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="707471633328071618">Google Payments (скопійовано в Chromium)</translation>
 <translation id="7090955637699162649">Chromium може покращувати веб-перегляд за допомогою <ph name="BEGIN_LINK" />веб-служб<ph name="END_LINK" />. Ви можете будь-коли вимкнути ці служби.</translation>
@@ -221,7 +212,6 @@ Chromium не може відновити ваші налаштування.</tr
 <ph name="BEGIN_LINK_2" />Докладніше<ph name="END_LINK_2" />
 
 Подальші вказівки надійдуть на електронну адресу <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7419987137528340081">Якщо ви хочете зберігати існуючі дані Chromium окремо, можна створити нового користувача Chromium для облікового запису <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium потребує ОС Windows XP або новішої версії. Деякі функції можуть не працювати.</translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="7483335560992089831">Неможливо встановити версію Chromium, аналогічну запущеній зараз. Закрийте Chromium і повторіть спробу.</translation>
@@ -257,7 +247,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="872034308864968620">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="8803635938069941624">Умови ОС Chromium</translation>
 <translation id="8821041990367117597">Chromium не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
-<translation id="8823523095753232532">Пов’язати мої дані Chromium із цим обліковим записом</translation>
 <translation id="8851136666856101339">головний</translation>
 <translation id="8862326446509486874">У вас немає відповідних прав для встановлення на рівні системи. Спробуйте запустити програму встановлення, увійшовши з правами адміністратора.</translation>
 <translation id="8897323336392112261">Розширення також змінило сторінку, яка відкривається під час запуску Chromium або натискання кнопки "Домашня сторінка".</translation>

@@ -25,7 +25,6 @@
 
 Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjänster.</translation>
 <translation id="124678866338384709">Stäng den aktuella fliken</translation>
-<translation id="1254090737195733114">Vill du importera data?</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
@@ -242,6 +241,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB tillgängligt</translation>
 <translation id="3549644494707163724">Kryptera alla synkroniserade data med en egen lösenfras</translation>
 <translation id="3549657413697417275">Sök i historik</translation>
+<translation id="3557336313807607643">Lägg till i kontakter</translation>
 <translation id="3582930987043644930">Lägg till namn</translation>
 <translation id="3590487821116122040">Webbplatslagring som Chrome bedömer som oviktig (t.ex. webbplatser utan sparade inställningar eller som du inte besöker ofta)</translation>
 <translation id="360480449234699036">Läs om olika ämnen på webbplatser utan att lämna sidan. När du trycker på Sök skickas ett ord och dess sammanhang till Google Sök och definitioner, bilder, sökresultat och annan information visas.
@@ -258,6 +258,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3714981814255182093">Öppna sökfältet</translation>
 <translation id="3716158070938632480">Det finns webbsidor i närheten</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
+<translation id="3739899004075612870">Bokmärket har lagts till i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB används av övriga appar</translation>
 <translation id="3744111561329211289">Synkronisera i bakgrunden</translation>
 <translation id="3789841737615482174">Installera</translation>
@@ -282,6 +283,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3967822245660637423">Nedladdning slutförd</translation>
 <translation id="397583555483684758">Synkroniseringen har slutat fungera</translation>
 <translation id="3985215325736559418">Vill du ladda ned <ph name="FILE_NAME" /> igen?</translation>
+<translation id="3987993985790029246">Kopiera länk</translation>
 <translation id="3988213473815854515">Platsen är tillåten</translation>
 <translation id="3997476611815694295">Oviktig lagring</translation>
 <translation id="4002066346123236978">Titel</translation>
@@ -319,7 +321,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4384468725000734951">Du söker med Sogou</translation>
 <translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>
-<translation id="4457399174246232812">Physical Web-sidor i närheten visas i aviseringslistan i fortsättningen</translation>
+<translation id="4453340223357552416"><ph name="FILE_NAME" /> har laddats ned i <ph name="PRODUCT_NAME" /></translation>
 <translation id="4479647676395637221">Fråga innan webbplatser tillåts att använda kameran (rekommenderas)</translation>
 <translation id="4508440807153586353">Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenordet skickas inte till och sparas inte av Google. Om du glömmer lösenordet måste du återställa synkroniseringen. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{för # dag sedan}other{för # dagar sedan}}</translation>
@@ -377,7 +379,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Sekretess</translation>
-<translation id="5053110706349648690">Aktivera Bluetooth i <ph name="BEGIN_LINK" />enhetsinställningarna<ph name="END_LINK" /> om du vill tillåta koppling.</translation>
 <translation id="5063480226653192405">Användning</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
@@ -595,12 +596,15 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
 <translation id="7064851114919012435">Kontaktuppgifter</translation>
 <translation id="7094922512924405309">Inga Physical Web-sidor hittades i närheten</translation>
+<translation id="7128222689758636196">Tillåt för den nuvarande sökmotorn</translation>
 <translation id="7138678301420049075">Övrigt</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
+<translation id="7274013316676448362">Blockerad webbplats</translation>
+<translation id="7333031090786104871">Processen pågår fortfarande för den förra webbplatsen</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
 <translation id="7366340029385295517">Castar till <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Typ:</translation>
@@ -625,6 +629,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7562080006725997899">Tar bort webbinformation</translation>
 <translation id="756809126120519699">Data i Chrome har rensats</translation>
 <translation id="7588950540487816470">Physical Web</translation>
+<translation id="7589445247086920869">Blockera för den nuvarande sökmotorn</translation>
 <translation id="7593557518625677601">Återaktivera synkronisering i Android-inställningarna så börjar Chrome synkas</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7605594153474022051">Det går inte att synkronisera</translation>
@@ -773,6 +778,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9070377983101773829">Starta röstsökning</translation>
 <translation id="9078964945751709336">Mer information krävs</translation>
 <translation id="9086455579313502267">Det går inte att ansluta till nätverket</translation>
+<translation id="9094175695478007090">Det gick inte att starta betalningsappen.</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> kB används av nedladdningar</translation>
 <translation id="9099292894781394535">Sparat utrymme</translation>
 <translation id="9100610230175265781">Lösenfras krävs</translation>

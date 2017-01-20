@@ -25,7 +25,6 @@
 
 You must have Bluetooth and Location turned on in order to use the Physical Web.</translation>
 <translation id="124678866338384709">Close current tab</translation>
-<translation id="1254090737195733114">Import data?</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
@@ -242,6 +241,7 @@ You can control the Physical Web in Chrome Settings.
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB available</translation>
 <translation id="3549644494707163724">Encrypt all synced data with your own sync passphrase</translation>
 <translation id="3549657413697417275">Search your history</translation>
+<translation id="3557336313807607643">Add to contacts</translation>
 <translation id="3582930987043644930">Add name</translation>
 <translation id="3590487821116122040">Site storage Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)</translation>
 <translation id="360480449234699036">Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
@@ -258,6 +258,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3714981814255182093">Open the Find Bar</translation>
 <translation id="3716158070938632480">Web pages are nearby</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
+<translation id="3739899004075612870">Bookmarked in <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB other apps</translation>
 <translation id="3744111561329211289">Background sync</translation>
 <translation id="3789841737615482174">Install</translation>
@@ -282,6 +283,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="397583555483684758">Sync has stopped working</translation>
 <translation id="3985215325736559418">Do you want to download <ph name="FILE_NAME" /> again?</translation>
+<translation id="3987993985790029246">Copy link</translation>
 <translation id="3988213473815854515">Location is allowed</translation>
 <translation id="3997476611815694295">Unimportant storage</translation>
 <translation id="4002066346123236978">Title</translation>
@@ -319,7 +321,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4384468725000734951">Using Sogou for search</translation>
 <translation id="4412992751769744546">Allow third-party cookies</translation>
 <translation id="4452548195519783679">Bookmarked to <ph name="FOLDER_NAME" /></translation>
-<translation id="4457399174246232812">Future nearby Physical Web pages will show up in your notifications list</translation>
+<translation id="4453340223357552416"><ph name="FILE_NAME" /> downloaded in <ph name="PRODUCT_NAME" /></translation>
 <translation id="4479647676395637221">Ask first before allowing sites to use your camera (recommended)</translation>
 <translation id="4508440807153586353">Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting you'll need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# day ago}other{# days ago}}</translation>
@@ -377,7 +379,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
-<translation id="5053110706349648690">Turn on Bluetooth in <ph name="BEGIN_LINK" />device settings<ph name="END_LINK" /> to allow pairing</translation>
 <translation id="5063480226653192405">Usage</translation>
 <translation id="5087580092889165836">Add card</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
@@ -595,12 +596,15 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7063006564040364415">Could not connect to the sync server.</translation>
 <translation id="7064851114919012435">Contact info</translation>
 <translation id="7094922512924405309">No nearby Physical Web pages found</translation>
+<translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7138678301420049075">Other</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
+<translation id="7274013316676448362">Blocked site</translation>
+<translation id="7333031090786104871">Still adding previous site</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
 <translation id="7366340029385295517">Casting to <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Type:</translation>
@@ -625,6 +629,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7562080006725997899">Clear browsing data</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>
 <translation id="7588950540487816470">Physical web</translation>
+<translation id="7589445247086920869">Block for current search engine</translation>
 <translation id="7593557518625677601">Open Android settings and re-enable Android system sync to start Chrome sync</translation>
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="7605594153474022051">Sync isn't working</translation>
@@ -770,6 +775,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="9070377983101773829">Start voice search</translation>
 <translation id="9078964945751709336">More information required</translation>
 <translation id="9086455579313502267">Unable to access the network</translation>
+<translation id="9094175695478007090">Unable to launch payment app.</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB downloaded</translation>
 <translation id="9099292894781394535">Data savings</translation>
 <translation id="9100610230175265781">Passphrase required</translation>

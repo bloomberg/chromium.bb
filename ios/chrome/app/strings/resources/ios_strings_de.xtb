@@ -88,6 +88,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2684815431982545828">Neuer Tab</translation>
 <translation id="2690858294534178585">Kamera wird verwendet</translation>
+<translation id="2691653761409724435">Nicht offline verfügbar</translation>
 <translation id="2702801445560668637">Leseliste</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2709516037105925701">AutoFill</translation>
@@ -97,6 +98,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2780046210906776326">Keine E-Mail-Konten vorhanden</translation>
 <translation id="2800683595868705743">Tab-Wechsler beenden</translation>
 <translation id="283291358677939992">Auf Seite suchen...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Übersetzungseinstellungen zurücksetzen</translation>
 <translation id="285960592395650245">Download wiederholen</translation>
 <translation id="2871695793448672541">Ausgeblendetes Passwort</translation>
@@ -117,7 +119,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3210163015918861891">Synchronisierung ist deaktiviert.</translation>
-<translation id="3237561509210981547">Sie können Ihrer Leseliste eine Seite hinzufügen, indem Sie auf <ph name="BEGIN_BOLD_FONT" />Teilen &gt; Später lesen<ph name="END_BOLD_FONT" /> tippen.</translation>
+<translation id="3237561509210981547">Sie können eine Seite zu Ihrer Leseliste hinzufügen, indem Sie auf <ph name="BEGIN_BOLD_FONT" />Teilen &gt; Später lesen<ph name="END_BOLD_FONT" /> tippen.</translation>
 <translation id="3240426699337459095">Link wurde kopiert.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> von <ph name="NUM_SUGGESTIONS" /></translation>
@@ -130,7 +132,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="3414292259312108062">Chrome speichert dieses Passwort in Ihren <ph name="BEGIN_LINK" />in Google gespeicherten Passwörtern<ph name="END_LINK" /> und fügt es automatisch für Sie ein. Sie müssen es sich also nicht merken.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> Min.</translation>
 <translation id="3448016392200048164">Geteilte Ansicht</translation>
-<translation id="3474068797193663261">Sie können Ihrer Leseliste eine Seite hinzufügen, indem Sie auf <ph name="BEGIN_BOLD_FONT" />Menü &gt; Teilen &gt; Später lesen<ph name="END_BOLD_FONT" /> tippen.</translation>
+<translation id="3474068797193663261">Sie können eine Seite zu Ihrer Leseliste hinzufügen, indem Sie auf <ph name="BEGIN_BOLD_FONT" />Menü &gt; Teilen &gt; Später lesen<ph name="END_BOLD_FONT" /> tippen.</translation>
 <translation id="3474649192738347024">Formulare ausgefüllt</translation>
 <translation id="3478058380795961209">Ablaufmonat</translation>
 <translation id="3482959374254649722">Tabs werden synchronisiert...</translation>
@@ -241,6 +243,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5911030830365207728">Google Übersetzer</translation>
 <translation id="5916664084637901428">An</translation>
 <translation id="5953603475187800576">Adressen und Kreditkarten aus Google Payments anzeigen</translation>
+<translation id="5955891643922670672">Offlineversion wird angezeigt</translation>
 <translation id="5964480694698977962">Neuen Inkognito-Tab erstellen.</translation>
 <translation id="5965679971710331625">Sie sind angemeldet</translation>
 <translation id="5982717868370722439">Vorhandene Daten zu <ph name="USER_EMAIL" /> hinzufügen.</translation>
@@ -379,6 +382,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8620640915598389714">Bearbeiten</translation>
 <translation id="8636825310635137004">Aktivieren Sie die Synchronisierung, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="8654802032646794042">Abbrechen</translation>
+<translation id="8668210798914567634">Diese Seite wurde in Ihrer Leseliste gespeichert.</translation>
 <translation id="8680787084697685621">Die Anmeldeinformationen für dieses Konto sind veraltet.</translation>
 <translation id="8699098509676302392">Adresse hinzufügen...</translation>
 <translation id="8721297211384281569">Menü "Tools"</translation>

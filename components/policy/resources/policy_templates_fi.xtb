@@ -2292,7 +2292,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käyttäjä on ottanut synkronoinnin käyttöön, kaikki nämä tiedot säilytetään käyttäjän synkronointiprofiilissa samoin kuin tavallisissa profiileissa. Incognito-tila on myös saatavilla, ellei käytäntö ole erikseen poistanut sitä käytöstä.
 
       Jos käytäntö on poistettu käytöstä tai sitä ei ole asetettu, kirjautuminen avaa tavallisen profiilin.</translation>
-<translation id="8158758865057576716">Salli roaming-kopioiden luomisen <ph name="PRODUCT_NAME" /> ‑profiilitiedoista.</translation>
+<translation id="8158758865057576716">Salli roaming-kopioiden luominen <ph name="PRODUCT_NAME" /> ‑profiilitiedoista.</translation>
 <translation id="8164246350636985940">Mihinkään sisältöpakettiin kuulumattomien sivustojen oletustoiminta.
 
           Tämä käytäntö on tarkoitettu tuotteen <ph name="PRODUCT_NAME" /> sisäiseen käyttöön.</translation>

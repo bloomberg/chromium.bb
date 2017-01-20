@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">เกี่ยวกับ Chromium</translation>
 <translation id="1472013873724362412">บัญชีของคุณไม่ทำงานใน Chromium โปรดติดต่อผู้ดูแลระบบโดเมนหรือใช้บัญชี Google ปกติเพื่อลงชื่อเข้าใช้</translation>
 <translation id="1736662517232558588">ล้างข้อมูล Chromium แล้ว</translation>
+<translation id="1838412507805038478">Chromium ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="1843424232666537147">Chromium มีคุณลักษณะที่ช่วยให้คุณสามารถจัดการข้อมูลอินเทอร์เน็ตและระดับความเร็วที่คุณสามารถใช้ในการโหลดหน้าเว็บ
 <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">เข้าถึงแท็บที่คุณเปิดไว้ในคอมพิวเตอร์ได้ที่นี่ เพียงเปิด Chromium ในคอมพิวเตอร์ของคุณ ไปที่เมนู แล้วเลือก “ลงชื่อเข้าใช้ Chromium…”</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium พัฒนาใหม่! มีรุ่นใหม่ให้ใช้งานแล้ว</translation>
 <translation id="6604711459180487467">รับประสบการณ์ที่ดีขึ้นใน Chromium ตามสถานที่ที่คุณอยู่</translation>
 <translation id="6989306073720242915">หากชอบ Chromium คุณสามารถ<ph name="BEGIN_LINK" />ลากไปไว้ที่ Dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="7099326575020694068">Chromium ไม่สามารถใช้กล้องถ่ายรูปในโหมด Split View</translation>
 <translation id="7144758435978427212">อ่านหน้าเว็บที่ส่งมาจากออบเจ็กต์ที่อยู่ใกล้เคียง เมื่อบลูทูธเปิดอยู่ Chromium สามารถรวบรวมหน้าเว็บที่เชื่อมโยงกับออบเจ็กต์รอบตัวคุณ และส่งหน้าเว็บเหล่านั้นแบบไม่ระบุตัวตนไปยัง Google เพื่อค้นหาหน้าที่มีประโยชน์ต่อคุณมากที่สุด <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium ช่วยคุณประหยัดเวลาโดยนำบัญชีของคุณไปไว้บนเว็บ คุณสามารถเพิ่มหรือนำบัญชีออกได้ในการตั้งค่า</translation>

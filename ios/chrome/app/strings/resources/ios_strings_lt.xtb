@@ -88,6 +88,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2684815431982545828">Naujas skirtukas</translation>
 <translation id="2690858294534178585">Fotoaparatas naudojamas</translation>
+<translation id="2691653761409724435">Nepasiekiama neprisijungus</translation>
 <translation id="2702801445560668637">Skait. sąraš.</translation>
 <translation id="2704606927547763573">Nukopij.</translation>
 <translation id="2709516037105925701">Automatinis pildymas</translation>
@@ -97,6 +98,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2780046210906776326">Nėra el. pašto pask.</translation>
 <translation id="2800683595868705743">Išjungti skirtukų perjungiklį</translation>
 <translation id="283291358677939992">Rasti puslapyje...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Nust. Vert. nust. iš n.</translation>
 <translation id="285960592395650245">Bandyti atsis. iš naujo</translation>
 <translation id="2871695793448672541">Paslėptas slaptažodis</translation>
@@ -241,6 +243,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="5911030830365207728">„Google“ vertėjas</translation>
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="5953603475187800576">Rodyti „Google Payments“ adresus ir kredito korteles</translation>
+<translation id="5955891643922670672">Peržiūros neprisijungus versija</translation>
 <translation id="5964480694698977962">Kurti naują inkognito skirtuką.</translation>
 <translation id="5965679971710331625">Esate prisijungę</translation>
 <translation id="5982717868370722439">Pridėti esamus duomenis prie <ph name="USER_EMAIL" />.</translation>
@@ -379,6 +382,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8620640915598389714">Redaguoti</translation>
 <translation id="8636825310635137004">Jei norite pasiekti skirtukus iš kitų įrenginių, įjunkite sinchronizavimą.</translation>
 <translation id="8654802032646794042">Atšaukti</translation>
+<translation id="8668210798914567634">Puslapis išsaugotas skaitymo sąraše.</translation>
 <translation id="8680787084697685621">Išsami prisijungimo prie paskyros informacija pasenusi.</translation>
 <translation id="8699098509676302392">Pridėti adresą...</translation>
 <translation id="8721297211384281569">Įrankių meniu</translation>

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Tietoja Chromiumista</translation>
 <translation id="1472013873724362412">Tilisi ei toimi Chromiumilla. Ota yhteyttä verkkotunnuksesi järjestelmänvalvojaan tai kirjaudu sisään tavallisella Google-tilillä.</translation>
 <translation id="1736662517232558588">Chromium-tiedot tyhjennettiin</translation>
+<translation id="1838412507805038478">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen.</translation>
 <translation id="1843424232666537147">Chromium sisältää ominaisuuksia, joiden avulla voit hallita datankäyttöäsi ja verkkosivujen latausnopeutta.
 <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Voit käyttää tietokoneella avoinna olevia välilehtiä myös täällä. Avaa Chromium tietokoneella, siirry valikkoon ja valitse ”Kirjaudu sisään Chromiumiin…”.</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromiumista tuli juuri entistä parempi! Uusi versio on saatavilla.</translation>
 <translation id="6604711459180487467">Parannamme Chromium-käyttökokemustasi sijaintisi perusteella.</translation>
 <translation id="6989306073720242915">Käytätkö Chromiumia usein? <ph name="BEGIN_LINK" />Siirrä se Dockiin<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen.</translation>
 <translation id="7099326575020694068">Chromium ei voi käyttää kameraa jaetussa näkymässä.</translation>
 <translation id="7144758435978427212">Katsele lähistöllä olevien esineiden lähettämiä verkkosivuja. Kun Bluetooth on käytössä, Chromium voi kerätä ympärillä oleviin esineisiin liittyviä verkkosivuja, lähettää ne nimettömästi Googlelle tarkistettaviksi ja näyttää käyttäjälle hyödyllisimmät sivut. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium säästää aikaasi tuomalla tilisi verkkoon. Voit lisätä tai poistaa tilejä asetuksissa.</translation>

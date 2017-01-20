@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Tungkol sa Chromium</translation>
 <translation id="1472013873724362412">Hindi gumagana ang iyong account sa Chromium. Mangyaring makipag-ugnayan sa iyong administrator ng domain o gumamit ng regular na Google Account upang mag-sign in.</translation>
 <translation id="1736662517232558588">Na-clear Chromium data</translation>
+<translation id="1838412507805038478">Na-verify ng Chromium na ang <ph name="ISSUER" /> ang nag-isyu ng certificate ng website na ito.</translation>
 <translation id="1843424232666537147">Ang Chromium ay may mga feature na nakakatulong sa iyong pamahalaan ang iyong data sa internet at kung gaano ka kabilis nakakapag-load ng mga webpage.
 <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">I-access ang mga tab na nakabukas sa iyong computer, dito mismo. Buksan lang ang Chromium sa iyong computer, pumunta sa menu, at piliin ang “Mag-sign in sa Chromium…”</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Naging mas mahusay na ang Chromium! Available na ang bagong bersyon.</translation>
 <translation id="6604711459180487467">Magkaroon ng mas mahusay na karanasan sa Chromium batay sa iyong lokasyon.</translation>
 <translation id="6989306073720242915">Gusto mo ba ang Chromium? <ph name="BEGIN_LINK" />Ilipat ito sa iyong dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Na-verify ng Chromium na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito.</translation>
 <translation id="7099326575020694068">Hindi magamit ng Chromium ang iyong camera sa Split View mode</translation>
 <translation id="7144758435978427212">Tumuklas ng mga web page na ipinapadala ng mga bagay sa malapit. Kapag naka-on ang Bluetooth, maaaring mangalap ang Chromium ng mga web page na nauugnay sa mga bagay sa paligid mo at ipadala ang mga ito nang anonymous sa Google upang mahanap ang mga pinakakapaki-pakinabang sa mga ito. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Nakakatipid ka ng oras sa Chromium sa pamamagitan ng pagdadala ng iyong mga account sa web. Maaari kang magdagdag o mag-alis ng mga account sa Mga Setting.</translation>

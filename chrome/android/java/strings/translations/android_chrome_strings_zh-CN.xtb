@@ -25,7 +25,6 @@
 
 您必须开启蓝牙和位置信息功能才能使用实物网。</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
-<translation id="1254090737195733114">要导入数据吗？</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -242,6 +241,7 @@
 <translation id="3542235761944717775">可用空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="3549644494707163724">使用您自己的同步密码加密所有已同步数据</translation>
 <translation id="3549657413697417275">搜索您的历史记录</translation>
+<translation id="3557336313807607643">添加到通讯录</translation>
 <translation id="3582930987043644930">添加名称</translation>
 <translation id="3590487821116122040">Chrome 认为不重要的网站（例如未保存任何设置的网站或您不常访问的网站）存储的数据</translation>
 <translation id="360480449234699036">无需离开所在页面，即可了解网站上的主题。“触摸搜索”功能会将被触摸的字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片、搜索结果及其他详细信息。
@@ -258,6 +258,7 @@
 <translation id="3714981814255182093">打开查找栏</translation>
 <translation id="3716158070938632480">附近有设备在播报网页</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
+<translation id="3739899004075612870">已在 <ph name="PRODUCT_NAME" /> 中添加书签</translation>
 <translation id="3744111309925758534">其他应用已占用的空间：<ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">后台同步</translation>
 <translation id="3789841737615482174">安装</translation>
@@ -282,6 +283,7 @@
 <translation id="3967822245660637423">下载完毕</translation>
 <translation id="397583555483684758">同步功能已停止工作</translation>
 <translation id="3985215325736559418">要重新下载“<ph name="FILE_NAME" />”吗？</translation>
+<translation id="3987993985790029246">复制链接</translation>
 <translation id="3988213473815854515">允许访问位置信息</translation>
 <translation id="3997476611815694295">不重要网站的存储数据</translation>
 <translation id="4002066346123236978">标题</translation>
@@ -319,7 +321,7 @@
 <translation id="4384468725000734951">目前使用的搜索引擎是搜狗</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
-<translation id="4457399174246232812">日后附近的“实物网”网页将会显示在您的通知列表中</translation>
+<translation id="4453340223357552416">已在 <ph name="PRODUCT_NAME" /> 中下载 <ph name="FILE_NAME" /></translation>
 <translation id="4479647676395637221">在允许网站使用您的摄像头前先询问（推荐）</translation>
 <translation id="4508440807153586353">只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
@@ -377,7 +379,6 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
-<translation id="5053110706349648690">请在<ph name="BEGIN_LINK" />设备设置<ph name="END_LINK" />部分开启蓝牙，以允许配对</translation>
 <translation id="5063480226653192405">使用情况</translation>
 <translation id="5087580092889165836">添加新卡</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
@@ -595,12 +596,15 @@
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="7064851114919012435">联系信息</translation>
 <translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
+<translation id="7128222689758636196">适用于当前的搜索引擎</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7189372733857464326">正在等待 Google Play 服务完成更新</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
+<translation id="7274013316676448362">禁止访问的网站</translation>
+<translation id="7333031090786104871">仍在添加先前的网站</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
 <translation id="7366340029385295517">正在投射至<ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">类型：</translation>
@@ -625,6 +629,7 @@
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
 <translation id="7588950540487816470">实物网</translation>
+<translation id="7589445247086920869">不适用于当前的搜索引擎</translation>
 <translation id="7593557518625677601">打开 Android 设置，重新启用 Android 系统同步功能以开始 Chrome 同步</translation>
 <translation id="7596558890252710462">操作系统</translation>
 <translation id="7605594153474022051">同步功能无法正常运行</translation>
@@ -773,6 +778,7 @@
 <translation id="9070377983101773829">开始语音搜索</translation>
 <translation id="9078964945751709336">必须提供更多信息</translation>
 <translation id="9086455579313502267">无法访问网络</translation>
+<translation id="9094175695478007090">无法启动付款应用。</translation>
 <translation id="9099018167121903954">下载内容已占用的空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="9099292894781394535">数据流量节省情况</translation>
 <translation id="9100610230175265781">必须提供密码</translation>

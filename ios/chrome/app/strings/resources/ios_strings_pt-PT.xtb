@@ -88,6 +88,7 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="2653659639078652383">Submeter</translation>
 <translation id="2684815431982545828">Novo separador</translation>
 <translation id="2690858294534178585">A câmara está a ser utilizada</translation>
+<translation id="2691653761409724435">Não disponível offline</translation>
 <translation id="2702801445560668637">Lista de leitura</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
@@ -97,6 +98,7 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="2780046210906776326">Sem Contas de Email</translation>
 <translation id="2800683595868705743">Sair do Comutador de separadores</translation>
 <translation id="283291358677939992">Localizar na Página...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Repor def. de tradutor</translation>
 <translation id="285960592395650245">Repetir transferência</translation>
 <translation id="2871695793448672541">Palavra-passe oculta</translation>
@@ -241,6 +243,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5953603475187800576">Mostrar endereços e cartões de crédito do Google Payments</translation>
+<translation id="5955891643922670672">Ver a versão offline</translation>
 <translation id="5964480694698977962">Criar novo separador de navegação anónima</translation>
 <translation id="5965679971710331625">Tem sessão iniciada</translation>
 <translation id="5982717868370722439">Adicionar dados existentes a <ph name="USER_EMAIL" />.</translation>
@@ -379,6 +382,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Para obter os separadores dos seus outros dispositivos, ative a sincronização.</translation>
 <translation id="8654802032646794042">Cancelar</translation>
+<translation id="8668210798914567634">Esta página foi guardada na sua lista de leitura.</translation>
 <translation id="8680787084697685621">Os detalhes de início de sessão na conta estão desactualizados.</translation>
 <translation id="8699098509676302392">Adicionar endereço…</translation>
 <translation id="8721297211384281569">Menu Ferramentas</translation>

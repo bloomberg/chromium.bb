@@ -27,7 +27,7 @@
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – eine Stimme für Chrome</translation>
-<translation id="1226487719524433143">Wir würden uns freuen, Ihre Meinung zu dieser neuen Version zu hören. Senden Sie uns direktes Feedback, indem Sie auf "Suche + a" und dann auf "i" drücken. Klicken Sie anschließend auf die Schaltfläche "Weiter", um mit dem Tutorial fortzufahren und alles Wichtige für den Einstieg zu erfahren.</translation>
+<translation id="1226487719524433143">Wir würden uns freuen, Ihre Meinung zu dieser neuen Version zu hören. Senden Sie uns direktes Feedback, indem Sie auf "Suche + a" und dann auf "i" drücken. Klicken Sie anschließend auf "Weiter", um mit dem Tutorial fortzufahren und alles Wichtige für den Einstieg zu erfahren.</translation>
 <translation id="1229276918471378188">Vorheriger Sprung</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Nächste Überschrift der Ebene 6</translation>
@@ -231,7 +231,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3321460131042519426">Zeilenumbruch aktivieren</translation>
 <translation id="3322936298410871309">Vorherige Überschrift der Ebene 1</translation>
 <translation id="3323447499041942178">Textfeld</translation>
-<translation id="3329854757664111426">Drücken Sie die Eingabetaste, um zur nächsten Seite zu gelangen.</translation>
 <translation id="3353420241558113817">{"ar": "Arabisch",
         "bg": "Bulgarisch",
         "ca": "Katalanisch",
@@ -698,7 +697,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, Schieberegler "<ph name="NAME" />"</translation>
 <translation id="7552432549459840808">Nützliche Tastenkombinationen in Chrome</translation>
 <translation id="7579911500627256166">Punkt <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Kein Fokus. Drücken Sie Strg + N, um ein neues Fenster zu öffnen.</translation>
 <translation id="7596919493010894443">Auswahl gelöscht</translation>
 <translation id="7604026522577407655">Zum Anfang der aktuellen Spalte gehen</translation>
 <translation id="7604451927827590395">hdng</translation>

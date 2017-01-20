@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Chromium hakkında</translation>
 <translation id="1472013873724362412">Hesabınız Chromium'da kullanılamıyor. Lütfen alan adı yöneticinizle iletişim kurun veya oturum açmak için normal bir Google Hesabı kullanın.</translation>
 <translation id="1736662517232558588">Chromium verileri temizlendi</translation>
+<translation id="1838412507805038478">Chromium, bu web sitesi sertifikasının <ph name="ISSUER" /> tarafından yayınlandığını doğruladı.</translation>
 <translation id="1843424232666537147">Chromium İnternet verilerinizi yönetmenize ve web sayfalarını hızlı yükleyebilmenize yardımcı olacak özelliklere sahiptir.
 <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Bilgisayarınızda açtığınız sekmelere doğrudan buradan erişin. Bunun için bilgisayarınızda Chromium'u açmanız ve menüye gidip "Chromium'da oturum aç…" seçeneğini belirlemeniz yeterlidir.</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium daha da iyi hale geldi! Yeni bir sürüm var.</translation>
 <translation id="6604711459180487467">Chromium'da, konumunuza dayalı olarak daha iyi bir deneyim yaşayın.</translation>
 <translation id="6989306073720242915">Chromium'u seviyor musunuz? <ph name="BEGIN_LINK" />Yuva bölümüne taşıyın<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium, bu web sitesi sertifikasının <ph name="ISSUER" /> tarafından yayınlandığını doğruladı.</translation>
 <translation id="7099326575020694068">Chromium, kameranızı Bölünmüş Görünüm modunda kullanamıyor</translation>
 <translation id="7144758435978427212">Etraftaki nesneler tarafından gönderilen web sayfalarını keşfedin. Bluetooth açıkken Chromium, etrafınızdaki nesnelerle ilişkilendirilen web sayfalarını toplayabilir ve sizin için en faydalı olanlarını bulmak üzere bunları anonim bir şekilde Google'a gönderebilir. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium, hesaplarınızı web'e getirerek size zaman kazandırır. Hesapları Ayarlar'dan ekleyebilir veya kaldırabilirsiniz.</translation>

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1472013873724362412">Kontoen din fungerer ikke i Chromium. Kontakt domeneadministratoren din, eller logg på med en vanlig Google-konto.</translation>
 <translation id="1736662517232558588">Slettet Chromium-data</translation>
+<translation id="1838412507805038478">Chromium har bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />.</translation>
 <translation id="1843424232666537147">Chromium har funksjoner som hjelper deg med å administrere Internett-dataene dine og hvor fort du kan laste inn nettsider.
 <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Få tilgang til fanene du har åpne på datamaskinen, her. Bare åpne Chromium på datamaskinen, gå til menyen og velg «Logg på Chromium».</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="6604711459180487467">Få en bedre Chromium-opplevelse basert på hvor du er.</translation>
 <translation id="6989306073720242915">Liker du Chromium? <ph name="BEGIN_LINK" />Flytt den til dokken<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium har bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />.</translation>
 <translation id="7099326575020694068">Chromium kan ikke bruke kameraet i modus for delt visning</translation>
 <translation id="7144758435978427212">Oppdag nettsider som sendes av objekter i nærheten. Når Bluetooth er slått på, kan Chromium samle nettsider som er tilknyttet objekter rundt deg, og sende dem anonymt til Google for å finne de nyttigste. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Med Chromium kan du spare tid, siden du får tilgang til kontoene dine på nettet. Du kan legge til eller fjerne kontoer i Innstillinger.</translation>

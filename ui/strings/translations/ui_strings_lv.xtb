@@ -23,7 +23,6 @@
 <translation id="2168039046890040389">Augšup</translation>
 <translation id="2190355936436201913">(tukšs)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
-<translation id="2336922762358079423">Pievienot piezīmes pakalpojumā Google Keep</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2497284189126895209">Visi faili</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -130,10 +129,12 @@
 <translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8806053966018712535">Mape <ph name="FOLDER_NAME" /></translation>
+<translation id="883911313571074303">Anotēt attēlu</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="9002566407876343676">atvērt</translation>
 <translation id="9038489124413477075">Mape bez nosaukuma</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}zero{# s}one{# s}other{# s}}</translation>
+<translation id="9150735707954472829">Cilne</translation>
 <translation id="9170848237812810038">&amp;Atsaukt</translation>
 <translation id="932327136139879170">Sākums</translation>
 <translation id="945522503751344254">Sūtīt atsauksmes</translation>

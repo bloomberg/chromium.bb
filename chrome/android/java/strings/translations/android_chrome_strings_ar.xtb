@@ -25,7 +25,6 @@
 
 يتعين عليك تشغيل خدمتى البلوتوث والموقع لاستخدام الشبكة المادية.</translation>
 <translation id="124678866338384709">إغلاق علامة التبويب الحالية</translation>
-<translation id="1254090737195733114">هل تريد استيراد البيانات؟</translation>
 <translation id="1258753120186372309">‏رسم الشعار المبتكر من Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
@@ -242,6 +241,7 @@
 <translation id="3542235761944717775">تتوفر مساحة <ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="3549644494707163724">تشفير جميع البيانات المتزامنة باستخدام عبارة مرور المزامنة</translation>
 <translation id="3549657413697417275">البحث في السجل</translation>
+<translation id="3557336313807607643">إضافة إلى جهات الاتصال</translation>
 <translation id="3582930987043644930">إضافة اسم</translation>
 <translation id="3590487821116122040">‏سعة تخزين الموقع التي لا يعتقد Chrome أنها مهمة (مثل المواقع التي لا تتضمَّن إعدادات محفوظة أو تلك التي لا تزورها مرارًا)</translation>
 <translation id="360480449234699036">‏اعرف مواضيع معنية بمواقع الويب بدون مغادرة الصفحة. تُرسل ميزة "المس للبحث" الكلمة والسياق المحيط بها إلى بحث Google، والتعريفات العائدة، والصور، ونتائج البحث، وتفاصيل أخرى.
@@ -258,6 +258,7 @@
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716158070938632480">صفحات الويب المجاورة</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
+<translation id="3739899004075612870">تمت إضافة إشارة مرجعية في <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">تطبيقات أخرى بحجم <ph name="MEGABYTES" /> ميغابايت</translation>
 <translation id="3744111561329211289">مزامنة الخلفية</translation>
 <translation id="3789841737615482174">تثبيت</translation>
@@ -282,6 +283,7 @@
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397583555483684758">توقفت المزامنة</translation>
 <translation id="3985215325736559418">هل تريد تنزيل <ph name="FILE_NAME" /> مرة أخرى؟</translation>
+<translation id="3987993985790029246">نسخ الرابط</translation>
 <translation id="3988213473815854515">الموقع مسموح به</translation>
 <translation id="3997476611815694295">سعة تخزين غير مهمة</translation>
 <translation id="4002066346123236978">العنوان</translation>
@@ -319,7 +321,7 @@
 <translation id="4384468725000734951">‏استخدام محرك Sogou للبحث</translation>
 <translation id="4412992751769744546">السماح لملفات تعريف ارتباط الجهات الخارجية</translation>
 <translation id="4452548195519783679">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_NAME" /></translation>
-<translation id="4457399174246232812">سيتم عرض صفحات الشبكة المادية المجاورة المستقبلية في قائمة الإشعارات</translation>
+<translation id="4453340223357552416">تم تنزيل <ph name="FILE_NAME" /> في <ph name="PRODUCT_NAME" /></translation>
 <translation id="4479647676395637221">السؤال أولاً قبل السماح للمواقع باستخدام الكاميرا (موصى به)</translation>
 <translation id="4508440807153586353">‏لا يمكن لأحد قراءة بياناتك المشفرة سوى من لديه عبارة المرور التي تستخدمها.
 ولا يتم إرسال عبارة المرور إلى شركة Google أو تخزينها لديها. إذا نسيت عبارة المرور أو رغبت في تغيير هذا الإعداد، ستحتاج إلى إعادة تعيين المزامنة. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
@@ -378,7 +380,6 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
-<translation id="5053110706349648690">‏تشغيل البلوتوث من <ph name="BEGIN_LINK" />إعدادات الجهاز<ph name="END_LINK" />END_LINK للسماح بالإقران</translation>
 <translation id="5063480226653192405">الاستخدام</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
@@ -596,12 +597,15 @@
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
 <translation id="7064851114919012435">معلومات الاتصال</translation>
 <translation id="7094922512924405309">لم يتم العثور على صفحات الشبكة المادية المجاورة</translation>
+<translation id="7128222689758636196">السماح بمحرك البحث الحالي</translation>
 <translation id="7138678301420049075">أخرى</translation>
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7189372733857464326">‏انتظار انتهاء تحديث خدمات Google Play</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
+<translation id="7274013316676448362">الموقع المحظور</translation>
+<translation id="7333031090786104871">لا تزال عملية إضافة موقع الويب السابق جارية</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
 <translation id="7366340029385295517">جارٍ الإرسال إلى <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">النوع:</translation>
@@ -626,6 +630,7 @@
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
 <translation id="7588950540487816470">الشبكة المادية</translation>
+<translation id="7589445247086920869">حظر محرك البحث الحالي</translation>
 <translation id="7593557518625677601">‏فتح إعدادات Android وإعادة تمكين مزامنة نظام Android لبدء مزامنة Chrome</translation>
 <translation id="7596558890252710462">نظام التشغيل</translation>
 <translation id="7605594153474022051">المزامنة لا تعمل</translation>
@@ -774,6 +779,7 @@
 <translation id="9070377983101773829">بدء البحث الصوتي</translation>
 <translation id="9078964945751709336">مطلوب مزيد من المعلومات</translation>
 <translation id="9086455579313502267">تعذر الدخول إلى الشبكة</translation>
+<translation id="9094175695478007090">يتعذَّر إطلاق تطبيق الدفع.</translation>
 <translation id="9099018167121903954">تم تنزيل <ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="9099292894781394535">توفير البيانات</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>

@@ -177,7 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{1个左大括号}other{#个左大括号}}</translation>
 <translation id="2911433807131383493">打开ChromeVox教程</translation>
 <translation id="2932083475399492303">在结构线或布局线类型之间切换</translation>
-<translation id="2944762337049891859">网页加载完成后自动读取网页内容。</translation>
+<translation id="2944762337049891859">网页加载完成后自动朗读网页内容。</translation>
 <translation id="2964026537669811554">标题组</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{1个制表符}other{#个制表符}}</translation>
 <translation id="2972078295414139404">不存在上一个访问过的链接。</translation>
@@ -231,7 +231,6 @@
 <translation id="3321460131042519426">启用自动换行</translation>
 <translation id="3322936298410871309">上一个1级标题</translation>
 <translation id="3323447499041942178">文本框</translation>
-<translation id="3329854757664111426">要前往下一页，请按 Enter。</translation>
 <translation id="3353420241558113817">{"ar": "阿拉伯语",
         "bg": "保加利亚语",
         "ca": "加泰罗尼亚语",
@@ -698,7 +697,6 @@
 <translation id="7540083713905917247"><ph name="VALUE" />，<ph name="NAME" />，滑块</translation>
 <translation id="7552432549459840808">实用的 Chrome 快捷键</translation>
 <translation id="7579911500627256166">点 <ph name="DOT" /></translation>
-<translation id="7591126877589047423">未聚焦任何内容。按 Ctrl+N 即可打开新窗口。</translation>
 <translation id="7596919493010894443">已清除所选内容</translation>
 <translation id="7604026522577407655">转到当前列的开头</translation>
 <translation id="7604451927827590395">hdng</translation>

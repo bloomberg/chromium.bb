@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Sobre o Chromium</translation>
 <translation id="1472013873724362412">Sua conta não funciona com o Chromium. Entre em contato com o administrador do domínio ou use uma Conta do Google normal para fazer login.</translation>
 <translation id="1736662517232558588">Dados do Chromium apagados</translation>
+<translation id="1838412507805038478">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website.</translation>
 <translation id="1843424232666537147">O Google Chrome possui recursos que ajudam a gerenciar seus dados de Internet e a velocidade de carregamento de páginas da Web.
 <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Acesse aqui as guias abertas no computador. Basta abrir o Chromium no computador, ir para o menu e selecionar "Fazer login no Chromium…”</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">O Chromium ficou ainda melhor! Uma nova versão está disponível.</translation>
 <translation id="6604711459180487467">Tenha uma experiência melhor no Chromium com base na sua localização.</translation>
 <translation id="6989306073720242915">Você adora o Chromium? <ph name="BEGIN_LINK" />Mova-o para a dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website.</translation>
 <translation id="7099326575020694068">O Chromium não pode usar a câmera no modo Visualização dividida</translation>
 <translation id="7144758435978427212">Descubra páginas da Web enviadas por objetos nas proximidades. Quando o Bluetooth está ativado, o Chromium pode reunir páginas da Web associadas a objetos ao seu redor e enviá-las anonimamente ao Google para encontrar as mais úteis. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">O Chromium permite que você otimize seu tempo trazendo suas contas para a Web. É possível adicionar ou remover contas nas configurações.</translation>

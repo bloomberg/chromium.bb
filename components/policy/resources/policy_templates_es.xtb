@@ -1921,7 +1921,7 @@ Si no se establece esta política, las opciones de accesibilidad no aparecerán 
 <translation id="6770454900105963262">Informar sobre sesiones del kiosco activas</translation>
 <translation id="6774533686631353488">Permitir hosts de mensajes nativos en nivel de usuario (instalados sin permisos de administrador).</translation>
 <translation id="6786747875388722282">Extensiones</translation>
-<translation id="6786967369487349613">Establecer el directorio de perfiles móviles</translation>
+<translation id="6786967369487349613">Especificar el directorio de perfiles de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
 <translation id="6828905844648501476">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción Añadir persona del administrador de usuarios.
@@ -2182,9 +2182,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Ten en cuenta que esta política depende de la pila de verificación de certificados del sistema operativo que permite las firmas SHA-1. Si una actualización del sistema operativo cambia la forma en que este gestiona los certificados SHA-1, es posible que la política deje de estar efectiva. Además, el objetivo de esta política es proporcionar a las empresas una solución temporal para que tengan más tiempo para abandonar los certificados SHA-1. Esta política se retirará sobre el 1 de enero de 2019.
 
       Si esta política no se configura o si se le asigna el valor false, <ph name="PRODUCT_NAME" /> seguirá la programación de desactivación de SHA-1 anunciada públicamente.</translation>
-<translation id="7589150663293249656">Habilita la creación de copias móviles de los datos de perfil de <ph name="PRODUCT_NAME" />.
+<translation id="7589150663293249656">Habilita la creación de copias de itinerancia de los datos de perfil de <ph name="PRODUCT_NAME" />.
 
-      Si habilita esta opción, la configuración almacenada en los perfiles de <ph name="PRODUCT_NAME" /> (como los marcadores, los datos de Autocompletar y las contraseñas) también se escribirá en un archivo almacenado en la carpeta Itinerancia del perfil de usuario o en una ubicación especificada por el administrador en la política <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
+      Si habilitas esta opción, la configuración almacenada en los perfiles de <ph name="PRODUCT_NAME" /> (como los marcadores, los datos de Autocompletar y las contraseñas) también se escribirá en un archivo almacenado en la carpeta Itinerancia del perfil de usuario o en una ubicación especificada por el administrador en la política <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
 
       Google Sync se inhabilita automáticamente al habilitar está política.
 
@@ -2436,7 +2436,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
       Si el usuario habilita la sincronización, todos estos datos se conservan en su perfil de sincronización, al igual que ocurre con los perfiles normales. El modo incógnito también está disponible (a menos que se inhabilite expresamente mediante esta política).
 
       Si esta política no se establece o no se habilita, se accederá a los perfiles normales al iniciar sesión.</translation>
-<translation id="8158758865057576716">Habilitar la creación de copias móviles de los datos de perfil de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8158758865057576716">Habilitar la creación de copias de itinerancia de los datos del perfil de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Es el comportamiento predeterminado para los sitios no incluidos en paquetes de contenido.
 
           Esta polí­tica solo está destinada a uso interno de <ph name="PRODUCT_NAME" />.</translation>
@@ -2730,13 +2730,13 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
 <translation id="8992176907758534924">No permitir que todos los sitios muestren imágenes</translation>
 <translation id="9035964157729712237">ID de extensiones que no deben estar incluidas en la lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Permite configurar el directorio que <ph name="PRODUCT_NAME" /> utilizará para almacenar la copia móvil de los perfiles.
+<translation id="908115901708809140">Permite configurar el directorio que <ph name="PRODUCT_NAME" /> utilizará para almacenar la copia de itinerancia de los perfiles.
 
-      Si se define esta política, <ph name="PRODUCT_NAME" /> utilizará el directorio proporcionado para almacenar la copia móvil de los perfiles si se ha habilitado la política <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" />. Si la política <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> se inhabilita o no se establece, no se utiliza el valor almacenado en esta política.
+      Si se define esta política, <ph name="PRODUCT_NAME" /> utilizará el directorio proporcionado para almacenar la copia de itinerancia de los perfiles si se ha habilitado la política <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" />. Si la política <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> se inhabilita o no se establece, no se utiliza el valor almacenado en esta política.
 
       Accede a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para consultar una lista de variables que se pueden utilizar.
 
-      Si no se establece esta política, se utilizará la ruta de perfil móvil predeterminada.</translation>
+      Si no se establece esta política, se utilizará la ruta de perfil de itinerancia predeterminada.</translation>
 <translation id="9084985621503260744">Especificar si la actividad de vídeo afecta a la administración de energía</translation>
 <translation id="9088433379343318874">Habilitar el proveedor de contenido de usuarios supervisados</translation>
 <translation id="9088444059179765143">Configura el método de detección automática de la zona horaria</translation>
@@ -2771,7 +2771,7 @@ Los controladores de protocolos registrados por la política se combinan con los
       Si se habilita esta opción, no se podrán hacer capturas de pantalla utilizando las combinaciones de teclas ni las API de extensiones.
 
       Si se inhabilita o no se especifica esta opción, se podrán hacer capturas de pantalla.</translation>
-<translation id="9213347477683611358">Permite configurar la imagen de fondo de pantalla del dispositivo que se muestra en la pantalla de inicio de sesión si ningún usuario ha iniciado sesión en el dispositivo. La política se define especificando la URL desde la que el dispositivo Chrome OS puede descargar la imagen de fondo de pantalla y un hash criptográfico que se utiliza para verificar la integridad de la descarga. La imagen debe tener formato JPEG y un tamaño no superior a 16 MB. Se debe poder acceder a la URL sin autenticación. La imagen de fondo de pantalla se descarga, se almacena en caché y se vuelve a descargar cada vez que se produce un cambio en la URL o en el hash
+<translation id="9213347477683611358">Permite configurar la imagen de fondo de pantalla del dispositivo que se muestra en la pantalla de inicio de sesión si ningún usuario ha iniciado sesión en el dispositivo. La política se define especificando la URL desde la que el dispositivo Chrome OS puede descargar la imagen de fondo de pantalla y un hash criptográfico que se utiliza para verificar la integridad de la descarga. La imagen debe tener formato JPEG y un tamaño no superior a 16 MB. Se debe poder acceder a la URL sin autenticación. La imagen de fondo de pantalla se descarga, se almacena en caché y se vuelve a descargar cada vez que se produce un cambio en la URL o en el hash.
 
       La política se debe especificar como una cadena que represente la URL y el hash en formato JSON, p.ej.,
       {
@@ -2779,7 +2779,7 @@ Los controladores de protocolos registrados por la política se combinan con los
         "hash": "ejemplodehashdefondo"
       }
 
-      Si establece la política de fondo de pantalla del dispositivo, el dispositivo Chrome OS descargará y utilizará la imagen de fondo de pantalla en la pantalla de inicio de sesión si ningún usuario ha iniciado sesión en el dispositivo. Una vez que el usuario inicie sesión, se aplicará la política de fondo de pantalla del usuario.
+      Si se establece la política de fondo de pantalla del dispositivo, el dispositivo Chrome OS descargará y utilizará la imagen de fondo de pantalla en la pantalla de inicio de sesión si ningún usuario ha iniciado sesión en el dispositivo. Una vez que el usuario inicie sesión, se aplicará la política de fondo de pantalla del usuario.
 
       Si no se establece la política de fondo de pantalla del dispositivo y está definida la política de fondo de pantalla del usuario, esta es la que decide qué contenido mostrar.</translation>
 <translation id="9217154963008402249">Frecuencia de los paquetes de red de supervisión</translation>

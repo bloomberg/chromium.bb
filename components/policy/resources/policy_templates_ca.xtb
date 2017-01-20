@@ -2039,7 +2039,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Google Sync es desactiva automàticament quan s'activa aquesta política.
 
-      Perquè no es filtrin dades accidentalment, es recomana establir la política <ph name="SIGNINALLOWED_POLICY_NAME" /> també com a falsa.
+      Perquè no es filtrin dades accidentalment, es recomana establir la política <ph name="SIGNINALLOWED_POLICY_NAME" /> també com a "false".
 
       Si aquesta política es desactiva o no s'estableix, només s'utilitzaran els perfils locals habituals.</translation>
 <translation id="7593523670408385997">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers de la memòria cau al disc.
@@ -2562,7 +2562,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si activeu aquest paràmetre, les captures de pantalla no es poden fer amb les tecles de drecera ni amb les API de l'extensió.
 
       Si desactiveu o no especifiqueu aquest paràmetre, es permetran les captures de pantalla.</translation>
-<translation id="9213347477683611358">Configura la imatge de fons de la pantalla d'inici de sessió d'un dispositiu si ningú no hi ha iniciat la sessió. Per establir la política, cal especificar l'URL que pot fer servir el dispositiu de Chrome OS per baixar la imatge i un resum criptogràfic per verificar la integritat de la baixada.
+<translation id="9213347477683611358">Configura la imatge de fons de la pantalla d'inici de sessió d'un dispositiu si ningú no hi ha iniciat la sessió. Per establir la política, cal especificar l'URL que pot fer servir el dispositiu de Chrome OS per baixar la imatge i un resum criptogràfic per verificar la integritat de la baixada. La imatge ha de ser en format JPEG i no ha de superar els 16 MB. S'ha de poder accedir a l'URL sense cap tipus d'autenticació. La imatge de fons de pantalla es baixa i es desa a la memòria cau, i es tornarà a baixar si es modifica l'URL o el resum.
 
       La política s'ha d'especificar en forma de cadena amb l'URL i el resum en format JSON. Per exemple:
       {

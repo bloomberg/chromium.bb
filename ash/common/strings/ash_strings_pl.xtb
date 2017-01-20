@@ -208,7 +208,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
 <translation id="683971173229319003">Szukaj+L</translation>
-<translation id="6857811139397017780">Aktywuj usługę <ph name="NETWORKSERVICE" /></translation>
+<translation id="6857811139397017780">Aktywuj sieć <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
@@ -258,7 +258,6 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
 <translation id="8206859287963243715">Komórka</translation>
 <translation id="8308637677604853869">Poprzednie menu</translation>
-<translation id="8356164830168736643">Zamknij <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8454013096329229812">Wi-Fi włączone.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
@@ -277,7 +276,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon jest używany.</translation>
 <translation id="9089416786594320554">Wprowadzanie tekstu</translation>
-<translation id="9151726767154816831">Uruchom ponownie i użyj funkcji Powerwash, by zaktualizować</translation>
+<translation id="9151726767154816831">Uruchom ponownie i wykonaj Powerwash, by zaktualizować</translation>
 <translation id="9194617393863864469">Zaloguj innego użytkownika...</translation>
 <translation id="9201131092683066720">Naładowanie baterii: <ph name="PERCENTAGE" />%.</translation>
 <translation id="923686485342484400">Naciśnij dwukrotnie Control Shift Q, by się wylogować.</translation>

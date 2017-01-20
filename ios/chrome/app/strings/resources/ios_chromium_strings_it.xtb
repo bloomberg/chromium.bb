@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Informazioni su Chromium</translation>
 <translation id="1472013873724362412">Il tuo account non funziona su Chromium. Contatta l'amministratore di dominio o utilizza un normale account Google per accedere.</translation>
 <translation id="1736662517232558588">Dati di Chromium cancellati</translation>
+<translation id="1838412507805038478">Chromium ha verificato che il certificato del sito web è stato emesso da <ph name="ISSUER" />.</translation>
 <translation id="1843424232666537147">Chromium offre funzioni che consentono di gestire i dati Internet e la velocità di caricamento delle pagine web.
 <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Accedi alle schede che hai aperto sul computer direttamente qui. Apri Chromium sul computer, apri il menu e seleziona "Accedi a Chromium…"</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium è stato migliorato. È disponibile una nuova versione.</translation>
 <translation id="6604711459180487467">Migliora la tua esperienza in Chromium tramite l'accesso alla tua posizione.</translation>
 <translation id="6989306073720242915">Ti piace Chromium? <ph name="BEGIN_LINK" />Spostalo nel dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium ha verificato che <ph name="ISSUER" /> ha emesso il certificato del sito web.</translation>
 <translation id="7099326575020694068">Chromium non può utilizzare la videocamera in modalità Visualizzazione divisa</translation>
 <translation id="7144758435978427212">Consente di trovare le pagine web inviate da dispositivi vicini. Quando il Bluetooth è attivo, Chromium può raccogliere le pagine web associate ai dispositivi nelle vicinanze e inviarle in forma anonima a Google per individuare le pagine più utili. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium ti fa risparmiare tempo portando i tuoi account sul Web. Puoi aggiungere o rimuovere account nelle impostazioni.</translation>

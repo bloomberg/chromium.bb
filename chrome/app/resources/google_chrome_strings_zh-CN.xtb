@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome。</translation>
-<translation id="103396972844768118">与您的 Chrome 数据相关的重要信息</translation>
 <translation id="1035334672863811645">登录 Chrome</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
@@ -61,9 +60,7 @@
 <translation id="2588322182880276190">Chrome 徽标</translation>
 <translation id="2664962310688259219">Chrome操作系统开放源代码许可</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
-<translation id="2681064822612051220">在系统中安装“Google 酷容浏览器”时发现已存在其他版本，请先卸载然后重试。</translation>
 <translation id="2689103672227170538">此扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
-<translation id="2704356438731803243">如果您希望单独保存现有的 Chrome 数据，可以为 <ph name="USER_NAME" /> 新建一个 Chrome 用户。</translation>
 <translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="2769762047821873045">Google Chrome 浏览器不是您的默认浏览器。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
@@ -135,7 +132,6 @@
 <translation id="4771048833395599659">此文件可能存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="4891791193823137474">让 Google Chrome 浏览器在后台运行</translation>
-<translation id="4901390485477164536">太棒了！Google Chrome 现已成为您的默认浏览器。</translation>
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
 <translation id="4953650215774548573">将Google Chrome设为默认浏览器</translation>
 <translation id="495931528404527476">在 Chrome 中</translation>
@@ -153,7 +149,6 @@
 <translation id="5251420635869119124">访客使用Chrome不会留下任何痕迹。</translation>
 <translation id="5253588388888612165">如果您与<ph name="PROFILE_NAME" />共用这台计算机，将您的帐号添加到Chrome，即可在单独的环境中浏览。或者，您也可以取消与其Google帐号的关联。</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome 将在 1 秒后重新启动。}other{Google Chrome 将在 # 秒后重新启动。}}</translation>
-<translation id="5328989068199000832">Google Chrome 二进制文件</translation>
 <translation id="5334545119300433702">已知此模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="5386244825306882791">它还能够控制您启动Chrome后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="5430073640787465221">您的偏好设置文件已损坏或无效。Google Chrome 浏览器无法恢复您的设置。</translation>
@@ -202,13 +197,9 @@
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="686561893457936865">随时随地使用 Chrome</translation>
 <translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
-<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> 要求您必须先阅读并接受以下服务条款，才能使用此设备。这些条款不会扩大、修改或限制 Google Chrome 操作系统条款。</translation>
 <translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
-<translation id="699076943483372849">此网站使用的 Chrome 内嵌框架插件已停用，并且不再接收安全性和稳定性更新。请将其卸载，然后升级到新型浏览器。</translation>
-<translation id="6991142834212251086">将我的 Chrome 数据与此帐号关联</translation>
-<translation id="7060865993964054389">Google Chrome 应用启动器</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
 <translation id="7106741999175697885">任务管理器 - Google Chrome</translation>
 <translation id="7125719106133729027">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要手动重新安装Chrome。</translation>
@@ -252,7 +243,6 @@
 <translation id="8008534537613507642">重新安装Chrome</translation>
 <translation id="8030318113982266900">正在将您的设备更新至“<ph name="CHANNEL_NAME" />”版…</translation>
 <translation id="8032142183999901390">从Chrome移除您的帐号后，您可能需要重新加载已打开的标签页才能使其正常显示。</translation>
-<translation id="8037887340639533879">未找到要更新的Google Chrome安装实例。</translation>
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
 <translation id="8183957050892517584">Chrome 将妥善存储您的个人详细信息，这样您日后就不必重复输入了。</translation>
 <translation id="8211929904040702368">这会将至少 <ph name="TOTAL_COUNT" /> 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chrome。</translation>
@@ -262,7 +252,6 @@
 <translation id="8342675569599923794">此文件存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="8406086379114794905">帮助我们改进Chrome</translation>
 <translation id="8455999171311319804">可选：将诊断数据和使用情况数据自动发送给 Google，协助我们改进 Chrome 操作系统。</translation>
-<translation id="853189717709780425">您目前是以托管帐号登录，该帐号的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永久绑定到 <ph name="USER_NAME" />。您可以通过 Google 帐号信息中心删除这些数据，但无法将这些数据关联到其他帐号。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome 应用启动器 Canary</translation>
 <translation id="8556340503434111824">Google Chrome 浏览器现已推出速度更快的新版本。</translation>

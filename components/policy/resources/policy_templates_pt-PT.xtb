@@ -2069,7 +2069,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       O Google Sync é desativado automaticamente quando esta política estiver ativada.
 
-      Para evitar fugas de dados acidentais, é aconselhável definir também a política <ph name="SIGNINALLOWED_POLICY_NAME" /> como False.
+      Para evitar fugas de dados acidentais, é aconselhável definir também a política <ph name="SIGNINALLOWED_POLICY_NAME" /> como falsa.
 
       Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.</translation>
 <translation id="7593523670408385997">Configura o tamanho da cache que o <ph name="PRODUCT_NAME" /> utilizará para armazenar ficheiros em cache no disco.

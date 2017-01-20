@@ -89,6 +89,7 @@
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2684815431982545828">برگه جدید</translation>
 <translation id="2690858294534178585">دوربین درحال استفاده است</translation>
+<translation id="2691653761409724435">به‌صورت آفلاین در دسترس نیست</translation>
 <translation id="2702801445560668637">فهرست خواندن</translation>
 <translation id="2704606927547763573">کپی شد</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
@@ -98,6 +99,7 @@
 <translation id="2780046210906776326">حساب ایمیلی وجود ندارد</translation>
 <translation id="2800683595868705743">از تعویض‌کننده برگه خارج شوید</translation>
 <translation id="283291358677939992">یافتن در صفحه...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />، <ph name="STATE" />، <ph name="URL" /></translation>
 <translation id="2843803966603263712">‏بازنشانی تنظیم Translate</translation>
 <translation id="285960592395650245">تلاش مجدد برای بارگیری</translation>
 <translation id="2871695793448672541">گذرواژه پنهان</translation>
@@ -242,6 +244,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5911030830365207728">‏‫مترجم Google‬</translation>
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5953603475187800576">‏نمایش آدرس‌ها و کارت‌های اعتباری از Google Payments</translation>
+<translation id="5955891643922670672">درحال مشاهده نسخه آفلاین</translation>
 <translation id="5964480694698977962">ایجاد برگه ناشناس جدید</translation>
 <translation id="5965679971710331625">در سیستم هستید</translation>
 <translation id="5982717868370722439">افزودن داده‌های موجود به <ph name="USER_EMAIL" />.</translation>
@@ -380,6 +383,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8620640915598389714">ویرایش</translation>
 <translation id="8636825310635137004">برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، همگام‌سازی را روشن کنید.</translation>
 <translation id="8654802032646794042">لغو</translation>
+<translation id="8668210798914567634">این صفحه در «فهرست خواندن» شما ذخیره شده است.</translation>
 <translation id="8680787084697685621">جزئیات ورود به سیستم حساب قدیمی است.</translation>
 <translation id="8699098509676302392">افزودن نشانی…</translation>
 <translation id="8721297211384281569">منوی ابزارها</translation>

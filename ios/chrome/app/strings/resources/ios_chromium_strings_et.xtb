@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Teave Chromiumi kohta</translation>
 <translation id="1472013873724362412">Teie konto ei tööta Chromiumis. Võtke ühendust domeeni administraatoriga või kasutage sisselogimiseks tavalist Google'i kontot.</translation>
 <translation id="1736662517232558588">Chromiumi andmed kustutati</translation>
+<translation id="1838412507805038478">Chromium kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
 <translation id="1843424232666537147">Chromiumil on funktsioonid, mis aitavad teil hallata oma Interneti-andmeid ja seda, kui kiiresti saate veebilehti laadida.
 <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Hankige juurdepääs arvutis avatud vahelehtedele siit. Lihtsalt avage arvutis Chromium, minge menüüsse ja valige käsk „Logi Chromiumisse sisse …”</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
 <translation id="6604711459180487467">Täiustage Chromiumis oma kasutuskogemust asukohateabe abil.</translation>
 <translation id="6989306073720242915">Kas teile meeldib Chromium? <ph name="BEGIN_LINK" />Lisage see dokki<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
 <translation id="7099326575020694068">Chromium ei saa poolitatud vaate režiimis kaamerat kasutada</translation>
 <translation id="7144758435978427212">Avastage lähedalasuvate objektide saadetud veebilehti. Kui Bluetooth on sisse lülitatud, kogub Chromium teie ümbruses olevate objektidega seotud veebilehed kokku ja saadab need anonüümselt Google'ile, et leida teie jaoks kõige kasulikumad lehed. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium säästab aega, tuues teie kontod veebi. Kontosid saate lisada või eemaldada menüüs Seaded.</translation>

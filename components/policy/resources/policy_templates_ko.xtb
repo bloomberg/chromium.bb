@@ -2732,7 +2732,7 @@
 <translation id="9042911395677044526"><ph name="PRODUCT_OS_NAME" /> 기기에 사용자별로 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL" />에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다. </translation>
 <translation id="908115901708809140"><ph name="PRODUCT_NAME" />이(가) 프로필의 로밍 사본을 저장하는 데 사용할 디렉토리를 구성합니다.
 
-      이 정책을 설정하면 <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 정책이 사용 설정된 경우 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉토리를 사용하여 프로필의 로밍 사본을 저장합니다. <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 정책이 사용 중지되었거나 설정되지 않은 경우 이 정책에 저장된 값은 사용되지 않습니다.
+      이 정책을 설정하면 <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 정책이 사용 설정된 경우 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉토리에 프로필의 로밍 사본을 저장합니다. <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 정책이 사용 중지되었거나 설정되지 않은 경우 이 정책에 저장된 값은 사용되지 않습니다.
 
       https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 확인하세요.
 
@@ -2772,7 +2772,7 @@
       이 설정을 사용하면 키보드 단축키나 확장 프로그램 API를 사용하여 화면을 캡쳐할 수 없습니다.
 
       이 설정을 사용 중지하거나 지정하지 않으면 화면을 캡쳐할 수 있습니다.</translation>
-<translation id="9213347477683611358">기기에 로그인한 사용자가 없을 때 로그인 화면에 표시되는 기기 수준의 배경화면 이미지를 설정합니다. 이 정책은 Chrome OS 기기에서 배경화면 이미지와 다운로드의 무결성을 확인하는 데 사용되는 암호화 해시를 다운로드할 URL을 지정하여 설정할 수 있습니다. 이미지는 JPEG 형식이어야 하며 파일 크기는 16MB를 넘지 않아야 합니다. URL은 어떠한 인증도 없이 액세스할 수 있어야 합니다. 배경화면 이미지는 다운로드 및 캐시됩니다. URL이나 해시가 변경될 때마다 배경화면 이미지도 다시 다운로드됩니다.
+<translation id="9213347477683611358">기기에 로그인한 사용자가 없을 때 로그인 화면에 표시되는 기기 수준의 배경화면 이미지를 설정합니다. 이 정책은 Chrome OS 기기에서 배경화면 이미지를 다운로드할 URL과 다운로드의 무결성을 확인하는 데 사용되는 암호화 해시를 지정하여 설정할 수 있습니다. 이미지는 JPEG 형식이어야 하며 파일 크기는 16MB를 넘지 않아야 합니다. URL은 어떠한 인증도 없이 액세스할 수 있어야 합니다. 배경화면 이미지는 다운로드 및 캐시됩니다. URL이나 해시가 변경될 때마다 배경화면 이미지도 다시 다운로드됩니다.
 
       이 정책은 JSON 형식으로 URL과 해시를 표현하는 문자열로 지정되어야 합니다. 예:
       {

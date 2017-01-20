@@ -1572,9 +1572,9 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
       Hvis du deaktiverer denne indstilling eller ikke konfigurerer en værdi, håndhæves Beskyttet søgning i Google Søgning ikke.</translation>
 <translation id="5937539742111853215">Denne politik styrer kun udviklertilstanden for <ph name="PRODUCT_OS_NAME" />. Hvis du vil forhindre adgang til Indstillinger for udviklere i Android, skal du angive politikken <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
 <translation id="5946082169633555022">Betakanal</translation>
-<translation id="5950205771952201658">Set i lyset af, at ikke-omfattende tilbagekaldskontrollér på nettet ikke giver nogen effektiv form for sikkerhed, er disse deaktiveret som standard i <ph name="PRODUCT_NAME" /> version 19 og nyere. Ved at angive denne politik til Sand gendannes de tidligere indstillinger, så der udføres OCSP/CRL-kontrollér på nettet.
+<translation id="5950205771952201658">Set i lyset af, at ikke-omfattende tilbagekaldskontroller på nettet ikke giver nogen effektiv form for sikkerhed, er disse deaktiveret som standard i <ph name="PRODUCT_NAME" /> version 19 og nyere. Ved at angive denne politik til Sand gendannes de tidligere indstillinger, så der udføres OCSP/CRL-kontroller på nettet.
 
-      Hvis politikken ikke er angivet eller er angivet til Falsk, udfører <ph name="PRODUCT_NAME" /> ikke tilbagekaldskontrollér på nettet i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
+      Hvis politikken ikke er angivet eller er angivet til Falsk, udfører <ph name="PRODUCT_NAME" /> ikke tilbagekaldskontroller på nettet i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
 <translation id="5966615072639944554">Udvidelser har tilladelse til at bruge Remote Attestation API.</translation>
 <translation id="5983708779415553259">Standardadfærd for websites, der ikke findes i en indholdspakke</translation>
 <translation id="5997543603646547632">Brug 24-timers ur som standard</translation>
@@ -1817,7 +1817,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6770454900105963262">Rapportér oplysninger om aktive terminalsessioner</translation>
 <translation id="6774533686631353488">Tillad indbyggede beskedhosts, der er installeret på brugerniveau (installeret uden administratortilladelser).</translation>
 <translation id="6786747875388722282">Udvidelser</translation>
-<translation id="6786967369487349613">Angiv roamingprofilmappen</translation>
+<translation id="6786967369487349613">Angiv placeringen af roamingprofilen</translation>
 <translation id="6810445994095397827">Bloker JavaScript på disse websites</translation>
 <translation id="681446116407619279">Understøttede godkendelsesskemaer</translation>
 <translation id="6828905844648501476">Hvis denne politik er angivet til sand eller ikke konfigureres, tillader <ph name="PRODUCT_NAME" /> Tilføj person fra brugeradministration.
@@ -1965,7 +1965,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Hvis politikken "RestoreOnStartup" er indstillet til at gendanne webadresser fra tidligere sessioner, overholdes denne politik ikke, og cookies gemmes permanent for disse websites.</translation>
 <translation id="7207095846245296855">Gennemtving Google Beskyttet søgning</translation>
-<translation id="7216442368414164495">Giv brugerne tilladelse til at vælge udvidet rapportering af Beskyttet browsing</translation>
+<translation id="7216442368414164495">Giv brugerne tilladelse til at tilvælge udvidet rapportering af Beskyttet browsing</translation>
 <translation id="7227967227357489766">Definerer en liste over brugere, der kan logge på enheden. Indtastningerne er i formatet <ph name="USER_WHITELIST_ENTRY_FORMAT" /> som f.eks. <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Hvis du vil tillade vilkårlige brugere på et domæne, skal du bruge indtastninger med formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Hvis denne politik ikke konfigureres, er der ingen begrænsninger for, hvilke brugere der må logge ind. Bemærk, at hvis du opretter nye brugere, skal politikken <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME" /> stadig konfigureres korrekt.</translation>
@@ -2070,7 +2070,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik ikke er angivet, eller hvis den er angivet til Falsk, følger <ph name="PRODUCT_NAME" /> den officielle plan for udfasning af SHA-1.</translation>
 <translation id="7589150663293249656">Aktiverer oprettelse af roamingkopier til <ph name="PRODUCT_NAME" />-profildata.
 
-      Hvis du aktiverer denne indstilling, skrives indstillingerne, der er gemt i <ph name="PRODUCT_NAME" />-profiler, f.eks. bogmærker, autofylddata og adgangskoder, også i en fil, der er gemt i roamingmappen for brugerprofilen eller en anden placering som angivet af administratoren via <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />-politikken.
+      Hvis du aktiverer denne indstilling, skrives indstillingerne, der er gemt i <ph name="PRODUCT_NAME" />-profiler, f.eks. bogmærker, autofylddata og adgangskoder, også i en fil, der er gemt i roamingmappen for brugerprofilen eller et andet sted som angivet af administratoren via <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />-politikken.
 
       Google Sync deaktiveres automatisk, når denne politik aktiveres.
 
@@ -2621,7 +2621,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
       Hvis baggrundsbilledepolitikken for enheden er angivet, downloader og bruger Chrome OS baggrundsbilledet på loginskærmen, hvis der ikke er nogen bruger, der er logget ind på enheden endnu. Når brugeren logger ind, starter brugerens baggrundsbilledepolitik.
 
-      Hvis enhedens baggrundsbilledepolitik ikke angives, bestemmer brugerens baggrundsbilledepolitik, hvad der skal vises, hvis brugerens bagrundsbilledepolitik er angivet.</translation>
+      Hvis enhedens baggrundsbilledepolitik ikke angives, bestemmer brugerens baggrundsbilledepolitik, hvad der skal vises, hvis brugerens baggrundsbilledepolitik er angivet.</translation>
 <translation id="9217154963008402249">Hyppighed for netværkspakker til overvågning</translation>
 <translation id="922540222991413931">Konfigurer udvidelser, apps og installationskilder til brugerscripts</translation>
 <translation id="924557436754151212">Importer gemte adgangskoder fra standardbrowser på første visning</translation>

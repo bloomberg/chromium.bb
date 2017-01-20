@@ -209,10 +209,10 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6803622936009808957">Zaslonov ni bilo mogoče zrcaliti, ker ni bilo najdene nobene podprte ločljivosti. Uporabljeno je razširjeno namizje.</translation>
 <translation id="683971173229319003">Iskanje + L</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
-<translation id="6911468394164995108">Pridružite se drugemu ...</translation>
+<translation id="6911468394164995108">Pridružitev drugemu omrežju ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6981982820502123353">Pripomočki za osebe s posebnimi potrebami</translation>
+<translation id="6981982820502123353">Dostopnost</translation>
 <translation id="7029814467594812963">Zapusti sejo</translation>
 <translation id="703171847531699602">Ni naprav za predvajanje</translation>
 <translation id="7034339000180558234">Predvajanje zavihka v <ph name="TAB_NAME" /> sprejemniku <ph name="RECEIVER_NAME" /></translation>
@@ -258,7 +258,6 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
 <translation id="8206859287963243715">Prenosni</translation>
 <translation id="8308637677604853869">Prejšnji meni</translation>
-<translation id="8356164830168736643">Zapri <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8454013096329229812">Wi-Fi je vklopljen.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Vnovično vzpostavljanje povezave ...</translation>

@@ -23,7 +23,6 @@
 <translation id="2168039046890040389">Klávesa PageUp</translation>
 <translation id="2190355936436201913">(prázdné)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
-<translation id="2336922762358079423">Přidat poznámku v aplikaci Google Keep</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2497284189126895209">Všechny soubory</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -130,10 +129,12 @@
 <translation id="8602707065186045623">Soubor <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
 <translation id="8806053966018712535">Složka <ph name="FOLDER_NAME" /></translation>
+<translation id="883911313571074303">Přidat k obrázku poznámku</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="9002566407876343676">otevřít</translation>
 <translation id="9038489124413477075">Nepojmenovaná složka</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>
+<translation id="9150735707954472829">Karta</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="932327136139879170">Domovská stránka</translation>
 <translation id="945522503751344254">Odeslat zpětnou vazbu</translation>

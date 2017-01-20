@@ -231,7 +231,6 @@
 <translation id="3321460131042519426">ワードラップを有効にする</translation>
 <translation id="3322936298410871309">前のレベル 1 見出し</translation>
 <translation id="3323447499041942178">テキスト ボックス</translation>
-<translation id="3329854757664111426">次に進むには Enter キーを押します。</translation>
 <translation id="3353420241558113817">{"ar": "アラビア語",
         "bg": "ブルガリア語",
         "ca": "カタロニア語",
@@ -698,7 +697,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7540083713905917247"><ph name="VALUE" />、<ph name="NAME" />、スライダ</translation>
 <translation id="7552432549459840808">Chrome の便利なショートカット</translation>
 <translation id="7579911500627256166">点 <ph name="DOT" /></translation>
-<translation id="7591126877589047423">対象がありません。Control+N キーを押して新しいウィンドウを開いてください。</translation>
 <translation id="7596919493010894443">選択をクリアしました</translation>
 <translation id="7604026522577407655">現在の列の先頭に移動</translation>
 <translation id="7604451927827590395">見出し</translation>

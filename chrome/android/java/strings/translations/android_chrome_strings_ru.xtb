@@ -25,7 +25,6 @@
 
 Чтобы использовать эту функцию, необходимо включить Bluetooth и доступ к геоданным.</translation>
 <translation id="124678866338384709">Закрыть вкладку</translation>
-<translation id="1254090737195733114">Импорт данных</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Остановить</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
@@ -242,6 +241,7 @@
 <translation id="3542235761944717775">Доступно <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549644494707163724">Шифровать все синхронизированные данные с помощью кодовой фразы</translation>
 <translation id="3549657413697417275">Поиск в истории</translation>
+<translation id="3557336313807607643">Добавить в контакты</translation>
 <translation id="3582930987043644930">Добавьте имя</translation>
 <translation id="3590487821116122040">Маловажные данные сайтов (например, сайты, которые вы редко посещаете или на которых не сохранили настройки)</translation>
 <translation id="360480449234699036">Ищите картинки, определения и другую информацию, не покидая выбранную страницу. Просто выберите слово, и оно будет отправлено в Google Поиск вместе с контекстом.
@@ -258,6 +258,7 @@
 <translation id="3714981814255182093">Открыть панель поиска</translation>
 <translation id="3716158070938632480">Интернет вокруг нас нашел веб-страницы.</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
+<translation id="3739899004075612870"><ph name="PRODUCT_NAME" />: добавлена закладка</translation>
 <translation id="3744111309925758534">Другие приложения: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3789841737615482174">Установить</translation>
@@ -282,6 +283,7 @@
 <translation id="3967822245660637423">Скачивание завершено</translation>
 <translation id="397583555483684758">Ошибка синхронизации</translation>
 <translation id="3985215325736559418">Скачать файл <ph name="FILE_NAME" /> ещё раз?</translation>
+<translation id="3987993985790029246">Копировать ссылку</translation>
 <translation id="3988213473815854515">Доступ к геоданным разрешен</translation>
 <translation id="3997476611815694295">Маловажные данные</translation>
 <translation id="4002066346123236978">Название</translation>
@@ -319,7 +321,7 @@
 <translation id="4384468725000734951">Sogou используется как поисковая система по умолчанию</translation>
 <translation id="4412992751769744546">Разрешить сторонним сайтам сохранять файлы cookie</translation>
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
-<translation id="4457399174246232812">Страницы из Интернета вокруг нас будут показываться в списке оповещений.</translation>
+<translation id="4453340223357552416"><ph name="PRODUCT_NAME" />: скачан файл <ph name="FILE_NAME" /></translation>
 <translation id="4479647676395637221">Запрашивать разрешение на доступ к камере (рекомендуется)</translation>
 <translation id="4508440807153586353">Ваши зашифрованные данные может прочитать только тот, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете фразу или решите изменить эту настройку, вам придется сбросить параметры синхронизации. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
@@ -377,7 +379,6 @@
 <translation id="5016205925109358554">С засечками</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
-<translation id="5053110706349648690">Чтобы разрешить соединение, включите Bluetooth в <ph name="BEGIN_LINK" />настройках устройства<ph name="END_LINK" /></translation>
 <translation id="5063480226653192405">Использование</translation>
 <translation id="5087580092889165836">Добавить карту</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
@@ -595,12 +596,15 @@
 <translation id="7063006564040364415">Не удалось связаться с сервером синхронизации</translation>
 <translation id="7064851114919012435">Контактные данные</translation>
 <translation id="7094922512924405309">Ничего не найдено</translation>
+<translation id="7128222689758636196">Открыть доступ текущей поисковой системе</translation>
 <translation id="7138678301420049075">Другое</translation>
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7189372733857464326">Обновление сервисов Google Play…</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
+<translation id="7274013316676448362">Заблокированный сайт</translation>
+<translation id="7333031090786104871">Предыдущий сайт ещё не добавлен</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поделиться 1 выбранным объектом}one{Поделиться # выбранным объектом}few{Поделиться # выбранными объектами}many{Поделиться # выбранными объектами}other{Поделиться # выбранного объекта}}</translation>
 <translation id="7366340029385295517">Транслируется на экран устройства "<ph name="SCREEN_NAME" />"</translation>
 <translation id="7375125077091615385">Тип:</translation>
@@ -625,6 +629,7 @@
 <translation id="7562080006725997899">Очистить историю</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
 <translation id="7588950540487816470">Интернет вокруг нас</translation>
+<translation id="7589445247086920869">Закрыть доступ текущей поисковой системе</translation>
 <translation id="7593557518625677601">Откройте настройки Android и снова включите синхронизацию системы</translation>
 <translation id="7596558890252710462">Операционная система</translation>
 <translation id="7605594153474022051">Ошибка синхронизации</translation>
@@ -772,6 +777,7 @@
 <translation id="9070377983101773829">Голосовой поиск</translation>
 <translation id="9078964945751709336">Информации недостаточно</translation>
 <translation id="9086455579313502267">Нет доступа к сети</translation>
+<translation id="9094175695478007090">Не удалось запустить платежное приложение.</translation>
 <translation id="9099018167121903954">Скачанные файлы: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="9099292894781394535">Экономия трафика</translation>
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>

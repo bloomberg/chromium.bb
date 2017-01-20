@@ -23,7 +23,6 @@
 <translation id="2168039046890040389">పేజీ పైకి</translation>
 <translation id="2190355936436201913">(ఖాళీ)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
-<translation id="2336922762358079423">Google Keepలో ఉల్లేఖించు</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="2497284189126895209">మొత్తం ఫైళ్లు</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -130,10 +129,12 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ఫైల్ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/సె</translation>
 <translation id="8806053966018712535">ఫోల్డర్ <ph name="FOLDER_NAME" /></translation>
+<translation id="883911313571074303">చిత్రాన్ని అనులేఖించు</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="9002566407876343676">తెరువు</translation>
 <translation id="9038489124413477075">పేరులేని ఫోల్డర్</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 సెక.}other{# సెక.}}</translation>
+<translation id="9150735707954472829">ట్యాబ్</translation>
 <translation id="9170848237812810038">&amp;అన్డు</translation>
 <translation id="932327136139879170">హోమ్</translation>
 <translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>

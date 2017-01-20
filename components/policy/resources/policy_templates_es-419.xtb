@@ -2048,7 +2048,7 @@ desactivarlo).</translation>
       Si esta política no se establece o se establece en "false", <ph name="PRODUCT_NAME" /> seguirá el programa de baja de las firmas SHA-1 anunciado públicamente.</translation>
 <translation id="7589150663293249656">Permite la creación de copias de itinerancia para los datos de perfil de <ph name="PRODUCT_NAME" />.
 
-      Si se habilita esta opción, la configuración almacenada en los perfiles de <ph name="PRODUCT_NAME" />, como marcadores, datos de Autocompletar, contraseñas, etc., también se escribirán en un archivo almacenado en la carpeta de perfil de usuario de itinerancia o una ubicación que especifique el administrador a través de la política <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
+      Si se habilita esta opción, la configuración almacenada en los perfiles de <ph name="PRODUCT_NAME" />, como los favoritos, los datos de Autocompletar, las contraseñas, etc., también se escribirán en un archivo almacenado en la carpeta de perfil de usuario de itinerancia o en una ubicación que especifique el administrador a través de la política <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
 
       Google Sync se inhabilita automáticamente cuando esta política está habilitada.
 
@@ -2587,7 +2587,7 @@ desactivarlo).</translation>
       Si se habilita esta opción, no se podrán utilizar las combinaciones de teclas ni las API de extensiones para tomar capturas de pantallas.
 
       Si se inhabilita o no se especifica, se permite tomar capturas de pantalla.</translation>
-<translation id="9213347477683611358">Si aún ningún usuario accedió a su cuenta en el dispositivo, configura una imagen de fondo de pantalla en el dispositivo que se muestre en la pantalla de acceso. Para establecer la política, especifica la URL correspondiente a la imagen de fondo de pantalla para que el dispositivo con el Sistema operativo Chrome pueda descargarla y un hash criptográfico para verificar la integridad de la descarga. La imagen debe estar en formato JPEG y el tamaño debe ser inferior a 16 MB. El acceso a la URL no debe requerir autenticación. La imagen de fondo de pantalla se descarga y almacena en caché. Si la URL o el hash cambian, la imagen se volverá a descargar.
+<translation id="9213347477683611358">Si aún ningún usuario accedió a su cuenta en el dispositivo, configura una imagen de fondo de pantalla en el dispositivo que se muestre en la pantalla de acceso. Para establecer la política, especifica la URL correspondiente a la imagen de fondo de pantalla para que el dispositivo con el Sistema operativo Chrome pueda descargarla y un hash criptográfico para verificar la integridad de la descarga. La imagen debe estar en formato JPEG y el tamaño no debe superar los 16 MB. El acceso a la URL no debe requerir autenticación. La imagen de fondo de pantalla se descarga y almacena en caché. Si la URL o el hash cambian, la imagen se volverá a descargar.
 
       La política debe especificarse como una string que contenga la URL y el hash en formato JSON, p. ej.,
       {

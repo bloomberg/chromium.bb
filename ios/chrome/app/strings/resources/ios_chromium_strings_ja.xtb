@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Chromium について</translation>
 <translation id="1472013873724362412">このアカウントは Chromium では使用できません。ドメイン管理者に問い合わせるか、通常の Google アカウントでログインしてください。</translation>
 <translation id="1736662517232558588">Chromium データを削除しました</translation>
+<translation id="1838412507805038478">このウェブサイトの証明書が <ph name="ISSUER" /> 発行のものであることが Chromium で確認されました。</translation>
 <translation id="1843424232666537147">Chromium には、インターネットのデータやウェブページの読み込み速度を管理できる機能があります。
 <ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">パソコンで開いたタブにこちらからアクセスできます。パソコンで Chromium を開き、メニューから [Chromium にログイン] を選択してください。</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium のアップデートが見つかりました。新しいバージョンが利用可能です。</translation>
 <translation id="6604711459180487467">ユーザーの場所に応じて Chromium を使いやすくします。</translation>
 <translation id="6989306073720242915">Chromium を <ph name="BEGIN_LINK" />Dock に移動<ph name="END_LINK" />すると、アクセスしやすくなります</translation>
-<translation id="7022368070219581493">このウェブサイトの証明書が <ph name="ISSUER" /> 発行のものであると確認されました。</translation>
 <translation id="7099326575020694068">Chromium では、分割表示モードでカメラを使用することはできません</translation>
 <translation id="7144758435978427212">周囲のオブジェクトから送信されているウェブページを検出します。Bluetooth がオンになっている場合、Chromium は周囲のオブジェクトに関連付けられたウェブページを収集して、匿名で Google に送信し、最も役立つと判断されたウェブページを表示します。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium ではアカウントがウェブで管理されるので、さまざまな手間を省くことができます。[設定] でアカウントの追加と削除を行うことができます。</translation>

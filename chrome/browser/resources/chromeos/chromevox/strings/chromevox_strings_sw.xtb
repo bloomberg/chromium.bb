@@ -177,7 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{parandesi ya kushoto}other{parandesi # za kushoto}}</translation>
 <translation id="2911433807131383493">Fungua mafunzo ya ChromeVox</translation>
 <translation id="2932083475399492303">Geuza aina ya mstari kati ya muundo au mpangilio</translation>
-<translation id="2944762337049891859">Soma ukurasa kiotomatiki baada ya kukamilika kupakia.</translation>
+<translation id="2944762337049891859">Soma ukurasa kiotomatiki baada ya kupakiwa.</translation>
 <translation id="2964026537669811554">Kichwa cha kikundi</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{kichupo}other{vichupo #}}</translation>
 <translation id="2972078295414139404">Hakuna kiungo kilichotembelewa kilichotangulia.</translation>
@@ -230,7 +230,6 @@
 <translation id="3321460131042519426">Washa kipengee cha kufunga neno</translation>
 <translation id="3322936298410871309">Kichwa cha ngazi ya 1 kilichotangulia</translation>
 <translation id="3323447499041942178">Kikasha maandishi</translation>
-<translation id="3329854757664111426">Ili uendelee, bonyeza kitufe cha Enter.</translation>
 <translation id="3353420241558113817">{"ar": "Kiarabu",
         "bg": "Kibulgaria",
         "ca": "Kikatalani",
@@ -697,7 +696,6 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, kitelezi</translation>
 <translation id="7552432549459840808">Njia Muhimu za Mikato kwenye Chrome</translation>
 <translation id="7579911500627256166">nukta ya <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Hakuna uangaziaji. Bonyeza Control N ili ufungue dirisha jipya.</translation>
 <translation id="7596919493010894443">uchaguzi umefutwa</translation>
 <translation id="7604026522577407655">Nenda hadi mwanzo wa safu wima ya sasa</translation>
 <translation id="7604451927827590395">hdng</translation>

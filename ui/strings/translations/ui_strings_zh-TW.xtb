@@ -23,7 +23,6 @@
 <translation id="2168039046890040389">向上翻頁</translation>
 <translation id="2190355936436201913">(空白)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/秒</translation>
-<translation id="2336922762358079423">在 Google Keep 中加註</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2497284189126895209">所有檔案</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -130,10 +129,12 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 檔案 (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/秒</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" />資料夾</translation>
+<translation id="883911313571074303">為圖片加註</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="9002566407876343676">開啟</translation>
 <translation id="9038489124413477075">未命名的資料夾</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
+<translation id="9150735707954472829">分頁</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="945522503751344254">提供意見</translation>

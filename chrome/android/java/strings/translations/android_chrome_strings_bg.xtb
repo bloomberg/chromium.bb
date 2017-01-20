@@ -25,7 +25,6 @@
 
 Функциите за Bluetooth и местоположението трябва да са включени, за да използвате Физическата мрежа.</translation>
 <translation id="124678866338384709">Затваряне на текущия раздел</translation>
-<translation id="1254090737195733114">Ще импорт. ли данните?</translation>
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
@@ -242,6 +241,7 @@
 <translation id="3542235761944717775">Свободно място: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549644494707163724">Всички синхронизирани данни да се шифроват със собствения ви пропуск за синхронизиране</translation>
 <translation id="3549657413697417275">Търсене в историята ви</translation>
+<translation id="3557336313807607643">Добавяне към контактите</translation>
 <translation id="3582930987043644930">Добавете име</translation>
 <translation id="3590487821116122040">Съхранявани данни от сайтове, които Chrome не счита за важни (напр. рядко посещавани или сайтове без запазени настройки)</translation>
 <translation id="360480449234699036">Научавайте за темите в уебсайтовете, без да напускате страницата. Функцията за търсене с докосване изпраща до Google Търсене определени думи и заобикалящия ги текст и така извежда определения, снимки, резултати и други подробности.
@@ -258,6 +258,7 @@
 <translation id="3714981814255182093">Отваряне на лентата за търсене</translation>
 <translation id="3716158070938632480">В близост има уеб страници</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
+<translation id="3739899004075612870">Отметката бе запазена в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Други приложения: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
 <translation id="3789841737615482174">Инсталиране</translation>
@@ -282,6 +283,7 @@
 <translation id="3967822245660637423">Изтеглянето завърши</translation>
 <translation id="397583555483684758">Синхронизирането спря да работи</translation>
 <translation id="3985215325736559418">Искате ли отново да изтеглите „<ph name="FILE_NAME" />“?</translation>
+<translation id="3987993985790029246">Връзка: Коп.</translation>
 <translation id="3988213473815854515">Местоположението е разрешено</translation>
 <translation id="3997476611815694295">Маловажни данни в хранилището</translation>
 <translation id="4002066346123236978">Заглавие</translation>
@@ -319,7 +321,7 @@
 <translation id="4384468725000734951">За търсене ще се използва Sogou</translation>
 <translation id="4412992751769744546">Разрешаване на „бисквитките“ на трети страни</translation>
 <translation id="4452548195519783679">Отметката бе запазена в/ъв „<ph name="FOLDER_NAME" />“</translation>
-<translation id="4457399174246232812">В бъдеще намиращите се в близост страници във Физическата мрежа ще се показват в списъка с известията ви</translation>
+<translation id="4453340223357552416">Файлът „<ph name="FILE_NAME" />“ бе изтеглен в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="4479647676395637221">Извеждане на запитване, преди да се разреши на сайтовете да използват камерата (препоръчително)</translation>
 <translation id="4508440807153586353">Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи да нулирате синхронизирането. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{преди # ден}other{преди # дни}}</translation>
@@ -377,7 +379,6 @@
 <translation id="5016205925109358554">Серифен</translation>
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="5040262127954254034">Поверителност</translation>
-<translation id="5053110706349648690">Включете Bluetooth от <ph name="BEGIN_LINK" />настройките на устройството<ph name="END_LINK" />, за да разрешите сдвояването</translation>
 <translation id="5063480226653192405">Употреба</translation>
 <translation id="5087580092889165836">Добавяне на карта</translation>
 <translation id="5100237604440890931">Свито – кликнете за разгъване.</translation>
@@ -595,12 +596,15 @@
 <translation id="7063006564040364415">Не можа да се установи връзка със синхронизиращия сървър.</translation>
 <translation id="7064851114919012435">Информация за връзка</translation>
 <translation id="7094922512924405309">Няма намиращи се в близост страници във Физическата мрежа</translation>
+<translation id="7128222689758636196">Разрешаване за текущата търсеща машина</translation>
 <translation id="7138678301420049075">Друго</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7189372733857464326">Изчаква се актуализирането на услугите за Google Play да приключи</translation>
 <translation id="7191430249889272776">Разделът е отворен на заден план.</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> използва местоположението ви, за да показва резултати от местното търсене</translation>
+<translation id="7274013316676448362">Блокиран сайт</translation>
+<translation id="7333031090786104871">Още се добавя предишният сайт</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделяне на 1 избран елемент}other{Споделяне на # избрани елемента}}</translation>
 <translation id="7366340029385295517">Предава се към „<ph name="SCREEN_NAME" />“</translation>
 <translation id="7375125077091615385">Тип:</translation>
@@ -625,6 +629,7 @@
 <translation id="7562080006725997899">Данните за сърфирането се изчистват</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
 <translation id="7588950540487816470">Физическа мрежа</translation>
+<translation id="7589445247086920869">Блокиране за текущата търсеща машина</translation>
 <translation id="7593557518625677601">За старт на синхронизирането активирайте системното синхронизиране на Android</translation>
 <translation id="7596558890252710462">Операционна система</translation>
 <translation id="7605594153474022051">Синхронизирането не работи</translation>
@@ -772,6 +777,7 @@
 <translation id="9070377983101773829">Стартиране на гласово търсене</translation>
 <translation id="9078964945751709336">Изисква се още информация</translation>
 <translation id="9086455579313502267">Няма достъп до мрежата</translation>
+<translation id="9094175695478007090">Приложението за плащане не може да се стартира.</translation>
 <translation id="9099018167121903954">Изтеглени файлове: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="9099292894781394535">Икономия на данни</translation>
 <translation id="9100610230175265781">Изисква се пропуск</translation>

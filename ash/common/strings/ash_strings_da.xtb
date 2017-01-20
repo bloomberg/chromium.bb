@@ -208,7 +208,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % opladet og oplades nu.</translation>
 <translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
 <translation id="683971173229319003">Søg+L</translation>
-<translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE" /></translation>
+<translation id="6857811139397017780">Aktivér <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Vælg et andet...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drev</translation>
@@ -258,7 +258,6 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
-<translation id="8356164830168736643">Luk <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Genopretter forbindelsen...</translation>

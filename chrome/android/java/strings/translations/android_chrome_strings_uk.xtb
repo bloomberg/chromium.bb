@@ -25,7 +25,6 @@
 
 Увімкніть Bluetooth і службу локації, щоб користуватися сервісом "Інтернет навколо нас".</translation>
 <translation id="124678866338384709">Закрити поточну вкладку</translation>
-<translation id="1254090737195733114">Імпортувати дані?</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
@@ -242,6 +241,7 @@
 <translation id="3542235761944717775">Доступно <ph name="KILOBYTES" /> Кб</translation>
 <translation id="3549644494707163724">Шифрувати всі синхронізовані дані за допомогою власної парольної фрази для синхронізації</translation>
 <translation id="3549657413697417275">Пошук в історії</translation>
+<translation id="3557336313807607643">Додати до контактів</translation>
 <translation id="3582930987043644930">Додати ім’я</translation>
 <translation id="3590487821116122040">Дані сайтів, які Chrome визначив як неважливі, зокрема сайтів із незбереженими налаштуваннями або тих, які ви рідко відвідуєте</translation>
 <translation id="360480449234699036">Дізнавайтеся більше про теми на веб-сайтах, не залишаючи сторінку. Функція пошуку дотиком надсилає слово та його контекст у Пошук Google і повертає визначення, зображення, результати пошуку й інші дані.
@@ -258,6 +258,7 @@
 <translation id="3714981814255182093">Відкрити рядок пошуку</translation>
 <translation id="3716158070938632480">Поруч є веб-сторінки</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
+<translation id="3739899004075612870">Створено закладку в продукті <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Мб використовується іншими додатками</translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
 <translation id="3789841737615482174">Встановити</translation>
@@ -282,6 +283,7 @@
 <translation id="3967822245660637423">Завантажено</translation>
 <translation id="397583555483684758">Синхронізація перестала працювати</translation>
 <translation id="3985215325736559418">Завантажити файл "<ph name="FILE_NAME" />" повторно?</translation>
+<translation id="3987993985790029246">Копіювати</translation>
 <translation id="3988213473815854515">Доступ до геоданих надано</translation>
 <translation id="3997476611815694295">Неважливі дані</translation>
 <translation id="4002066346123236978">Назва</translation>
@@ -319,7 +321,7 @@
 <translation id="4384468725000734951">Пошук за допомогою Sogou</translation>
 <translation id="4412992751769744546">Дозволити сторонні файли cookie</translation>
 <translation id="4452548195519783679">Закладку збережено в папці "<ph name="FOLDER_NAME" />"</translation>
-<translation id="4457399174246232812">Сторінки поблизу із сервісу "Інтернет навколо нас" з’являтимуться в списку сповіщень</translation>
+<translation id="4453340223357552416">Файл <ph name="FILE_NAME" /> завантажено в продукті <ph name="PRODUCT_NAME" /></translation>
 <translation id="4479647676395637221">Запитувати, перш ніж дозволити сайтам використовувати камеру (рекомендується)</translation>
 <translation id="4508440807153586353">Ваші зашифровані дані можуть переглядати лише користувачі, які знають вашу парольну фразу. Парольна фраза не надсилається й не зберігається в Google. Якщо ви забули її або хочете змінити це налаштування, скиньте синхронізацію. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# день тому}one{# день тому}few{# дні тому}many{# днів тому}other{# дня тому}}</translation>
@@ -377,7 +379,6 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5040262127954254034">Конфіденційність</translation>
-<translation id="5053110706349648690">Щоб створити пару, увімкніть Bluetooth у <ph name="BEGIN_LINK" />налаштуваннях пристрою<ph name="END_LINK" /></translation>
 <translation id="5063480226653192405">Використання</translation>
 <translation id="5087580092889165836">Додати картку</translation>
 <translation id="5100237604440890931">Згорнуто – натисніть, щоб розгорнути.</translation>
@@ -595,12 +596,15 @@
 <translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
 <translation id="7064851114919012435">Контактна інформація</translation>
 <translation id="7094922512924405309">Немає сторінок із сервісу "Інтернет навколо нас"</translation>
+<translation id="7128222689758636196">Дозволити поточній пошуковій системі</translation>
 <translation id="7138678301420049075">Інше</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="7189372733857464326">Сервіси Google Play оновлюються</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> використовує ваші геодані, щоб показувати результати місцевого пошуку</translation>
+<translation id="7274013316676448362">Заблокований сайт</translation>
+<translation id="7333031090786104871">Попередній сайт ще додається</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поділитись 1 вибраним елементом}one{Поділитися # вибраним елементом}few{Поділитися # вибраними елементами}many{Поділитися # вибраними елементами}other{Поділитися # вибраного елемента}}</translation>
 <translation id="7366340029385295517">Трансляція на екран "<ph name="SCREEN_NAME" />"</translation>
 <translation id="7375125077091615385">Тип:</translation>
@@ -625,6 +629,7 @@
 <translation id="7562080006725997899">Очищення даних веб-перегляду</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>
 <translation id="7588950540487816470">Інтернет навколо нас</translation>
+<translation id="7589445247086920869">Заблокувати для поточної пошукової системи</translation>
 <translation id="7593557518625677601">Щоб почати синхронізацію Chrome, відкрийте параметри Android і знову ввімкніть синхронізацію системи</translation>
 <translation id="7596558890252710462">Операційна система</translation>
 <translation id="7605594153474022051">Синхронізація не працює</translation>
@@ -773,6 +778,7 @@
 <translation id="9070377983101773829">Почати голосовий пошук</translation>
 <translation id="9078964945751709336">Потрібно більше інформації</translation>
 <translation id="9086455579313502267">Неможливо отримати доступ до мережі</translation>
+<translation id="9094175695478007090">Не вдалося запустити додаток для платежів.</translation>
 <translation id="9099018167121903954">Завантажено <ph name="KILOBYTES" /> Кб</translation>
 <translation id="9099292894781394535">Заощадження даних</translation>
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">O pregledniku Chromium</translation>
 <translation id="1472013873724362412">Vaš račun ne funkcionira na Chromiumu. Obratite se administratoru domene ili se prijavite običnim Google računom.</translation>
 <translation id="1736662517232558588">Podaci Chromiuma izbrisani su</translation>
+<translation id="1838412507805038478">Chromium je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
 <translation id="1843424232666537147">Chromium ima značajke koje vam pomažu u upravljanju internetskim podacima i brzinom kojom se učitavaju web-stranice.
 <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Karticama koje ste otvorili na računalu možete pristupiti i ovdje. Samo otvorite Chromium na računalu, otvorite izbornik i odaberite "Prijava na Chromium…"</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium je postao još bolji! Dostupna je nova verzija.</translation>
 <translation id="6604711459180487467">Chromium će vam pružiti više ako mu omogućite pristup lokaciji.</translation>
 <translation id="6989306073720242915">Sviđa vam se Chromium? <ph name="BEGIN_LINK" />Premjestite ga na priključnu stanicu<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromiums je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
 <translation id="7099326575020694068">Chromium ne može upotrebljavati vaš fotoaparat u načinu podijeljenog prikaza</translation>
 <translation id="7144758435978427212">Otkrijte web-stranice koje šalju objekti u blizini. Kada je Bluetooth uključen, Chromium može prikupljati web-stranice koje su povezane s objektima oko vas i anonimno ih slati Googleu kako bi pronašao najkorisnije. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium vam štedi vrijeme sinkronizacijom vaših računa na webu. Račune možete dodavati i uklanjati u postavkama.</translation>

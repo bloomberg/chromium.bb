@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">‏درباره Chromium</translation>
 <translation id="1472013873724362412">‏حساب شما در Chromium کار نمی‌کند. لطفاً با سرپرست دامنه‌تان تماس بگیرید یا از یک حساب Google معمولی برای ثبت ورود استفاده کنید.</translation>
 <translation id="1736662517232558588">‏داده‌های Chromium پاک شد</translation>
+<translation id="1838412507805038478">‏Chromium تأیید کرد که <ph name="ISSUER" /> گواهینامه این وب‌سایت را صادر کرده است.</translation>
 <translation id="1843424232666537147">‏Chromium دارای قابلیت‌هایی است که به شما کمک می‌کند داده‌های اینترنت و سرعت بارگیری صفحه‌های‌ وبتان را مدیریت کنید.
 <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">‏از اینجا، به برگه‌هایی که دررایانه‌تان باز کرده‌اید دسترسی داشته باشید. کافیست Chromium را در رایانه‌تان باز کنید، به منو بروید و «...Sign in to Chromium» (ورود به سیستم Chromium) را انتخاب کنید.</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">‏Chromium بهتر شده است! نسخه جدید آن در دسترس است.</translation>
 <translation id="6604711459180487467">‏تجربه بهتری از Chromium بر مبنای مکانتان کسب کنید.</translation>
 <translation id="6989306073720242915">‏Chromium را دوست دارید؟ <ph name="BEGIN_LINK" />آن را به لنگرگاهتان انتقال دهید<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">‏Chromium تأیید کرد که <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است.</translation>
 <translation id="7099326575020694068">‏Chromium نمی‌تواند از دوربین درحالت Split View (نمای تقسیم) استفاده کند</translation>
 <translation id="7144758435978427212">‏صفحه‌های وبی را که توسط اشیای اطراف ارسال می‌شوند کشف کنید. وقتی بلوتوث روشن است، Chromium می‌تواند صفحه‌های وب مرتبط با اشیای اطراف شما را جمع‌آوری کند و برای پیدا کردن مفیدترینشان، آن صفحه‌ها را به‌صورت ناشناس به Google ارسال کند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">‏Chromium با آوردن حساب‌هایتان به وب، در وقت شما صرفه‌جویی می‌کند. در «تنظیمات» می‌توانید حساب‌ها را اضافه یا حذف کنید.</translation>

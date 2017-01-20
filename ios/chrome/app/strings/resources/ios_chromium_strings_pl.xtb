@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Chromium – informacje</translation>
 <translation id="1472013873724362412">Twoje konto nie działa w Chromium. Skontaktuj się z administratorem domeny lub zaloguj się przy użyciu zwykłego konta Google.</translation>
 <translation id="1736662517232558588">Wyczyszczono dane Chromium</translation>
+<translation id="1838412507805038478">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />.</translation>
 <translation id="1843424232666537147">W Chromium są funkcje, które pomogą Ci zarządzać szybkością wczytywania stron internetowych oraz danymi przesyłanymi przez sieć.
 <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Tutaj możesz korzystać z kart otwartych na komputerze. Wystarczy uruchomić Chromium na komputerze i w menu wybrać „Zaloguj się w Chromium”.</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium jest teraz jeszcze lepsze! Dostępna jest nowa wersja.</translation>
 <translation id="6604711459180487467">Dzięki dostępowi do Twojej lokalizacji Chromium będzie działać lepiej.</translation>
 <translation id="6989306073720242915">Podoba Ci się Chromium? <ph name="BEGIN_LINK" />Przenieś go do Docka<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />.</translation>
 <translation id="7099326575020694068">Chromium nie może używać aparatu w trybie widoku dzielonego</translation>
 <translation id="7144758435978427212">Odkrywaj strony internetowe wysyłane przez obiekty w pobliżu. Gdy włączysz Bluetooth, Chromium może gromadzić strony internetowe powiązane z obiektami wokół Ciebie i wysyłać je anonimowo do Google, by wybrać te najbardziej przydatne. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium oszczędza Twój czas, zapisując konta w internecie. Konta możesz dodawać i usuwać w Ustawieniach.</translation>

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Quant a Chromium</translation>
 <translation id="1472013873724362412">El vostre compte no funciona a Chromium. Contacteu amb l'administrador del domini o utilitzeu un compte de Google estàndard per iniciar la sessió.</translation>
 <translation id="1736662517232558588">Dades de Chromium esborrades</translation>
+<translation id="1838412507805038478">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>
 <translation id="1843424232666537147">Chromium té funcions que t'ajuden a gestionar les teves dades d'Internet i la rapidesa amb què es carreguen les pàgines web.
 <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Accedeix a les pestanyes que tens obertes a l'ordinador des d'aquí mateix. Per fer-ho, obre Chromium a l'ordinador, vés al menú i selecciona Inicia la sessió a Chromium.</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chrome ara és millor. Hi ha una versió nova disponible.</translation>
 <translation id="6604711459180487467">Comparteix la teva ubicació per gaudir dels avantatges de Chromium.</translation>
 <translation id="6989306073720242915">T'agrada Chromium? <ph name="BEGIN_LINK" />Mou-lo al Dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>
 <translation id="7099326575020694068">Chromium no pot utilitzar la càmera en mode de visualització dividida</translation>
 <translation id="7144758435978427212">Descobreix les pàgines web enviades pels objectes propers. Quan el Bluetooth està activat, Chromium pot recopilar les pàgines web associades als objectes que t'envolten i enviar-les de manera anònima a Google per trobar les més útils. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Per ajudar-te a estalviar temps, Chromium connecta els teus comptes al web. Pots afegir o suprimir comptes a Configuració.</translation>

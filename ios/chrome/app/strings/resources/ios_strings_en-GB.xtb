@@ -88,6 +88,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2684815431982545828">New Tab</translation>
 <translation id="2690858294534178585">Camera is in use</translation>
+<translation id="2691653761409724435">Not available offline</translation>
 <translation id="2702801445560668637">Reading List</translation>
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
@@ -97,6 +98,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2780046210906776326">No Email Accounts</translation>
 <translation id="2800683595868705743">Leave Tab Switcher</translation>
 <translation id="283291358677939992">Find in Page...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Reset Translate Settings</translation>
 <translation id="285960592395650245">Retry Download</translation>
 <translation id="2871695793448672541">Hidden Password</translation>
@@ -241,6 +243,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5953603475187800576">Show addresses and credit cards from Google Payments</translation>
+<translation id="5955891643922670672">Viewing Offline Version</translation>
 <translation id="5964480694698977962">Create new incognito tab.</translation>
 <translation id="5965679971710331625">You're signed in</translation>
 <translation id="5982717868370722439">Add existing data to <ph name="USER_EMAIL" />.</translation>
@@ -379,6 +382,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8654802032646794042">cancel</translation>
+<translation id="8668210798914567634">This page has been saved to your Reading List.</translation>
 <translation id="8680787084697685621">Account sign-in details are out of date.</translation>
 <translation id="8699098509676302392">Add Address...</translation>
 <translation id="8721297211384281569">Tools Menu</translation>

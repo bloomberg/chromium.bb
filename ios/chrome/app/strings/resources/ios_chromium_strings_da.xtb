@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1472013873724362412">Din konto fungerer ikke sammen med Chromium. Kontakt din domæneadministrator, eller brug en almindelig Google-konto til at logge ind.</translation>
 <translation id="1736662517232558588">Chromium-data blev ryddet</translation>
+<translation id="1838412507805038478">Chromium har bekræftet, at <ph name="ISSUER" /> har udstedt certifikatet for dette website.</translation>
 <translation id="1843424232666537147">Chromium har funktioner, der hjælper dig med at administrere internetdata og hastigheden, som websider indlæses med.
 <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Få adgang til de faner, som er åbne på din computer, lige her. Du åbner blot Chromium på din computer, går til menuen og vælger "Log ind på Chromium…"</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium er lige blevet bedre! Der er en ny tilgængelig version.</translation>
 <translation id="6604711459180487467">Angiv din placering, og få en bedre oplevelse, når du bruger Chromium.</translation>
 <translation id="6989306073720242915">Er du vild med Chromium? <ph name="BEGIN_LINK" />Flyt den til din dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium har bekræftet, at <ph name="ISSUER" /> har udstedt certifikatet for dette website.</translation>
 <translation id="7099326575020694068">Chromium kan ikke bruge dit kamera i tilstanden Opdelt visning</translation>
 <translation id="7144758435978427212">Find websider, som du får tilsendt af genstande i nærheden. Når Bluetooth er slået til, kan Chromium samle websider, der er tilknyttet genstande omkring dig, og sende dem anonymt til Google for at finde de mest nyttige. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Med Chromium sparer du tid ved at gøre alle dine konti tilgængelige online. Du kan tilføje eller fjerne konti under Indstillinger.</translation>

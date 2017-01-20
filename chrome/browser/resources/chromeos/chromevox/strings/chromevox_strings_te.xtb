@@ -177,7 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{ఎడమ ధనుర్బంధ గుర్తు}other{# ఎడమ ధనుర్బంధ గుర్తులు}}</translation>
 <translation id="2911433807131383493">ChromeVox ట్యుటోరియల్‌ను తెరవండి</translation>
 <translation id="2932083475399492303">ఆకృతీకరణ లేదా లేఅవుట్ మధ్య పంక్తి రకాన్ని టోగుల్ చేయండి</translation>
-<translation id="2944762337049891859">పేజీ లోడింగ్ పూర్తయిన తర్వాత స్వయంచాలకంగా చదువుతుంది.</translation>
+<translation id="2944762337049891859">పేజీ పూర్తిగా లోడ్ అయిన తర్వాత స్వయంచాలకంగా చదువుతుంది.</translation>
 <translation id="2964026537669811554">శీర్షిక సమూహం</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{ట్యాబ్}other{# ట్యాబ్‌లు}}</translation>
 <translation id="2972078295414139404">మునుపు సందర్శించిన లింక్ లేదు.</translation>
@@ -231,7 +231,6 @@
 <translation id="3321460131042519426">పదాల సర్దుబాటుని ప్రారంభించు</translation>
 <translation id="3322936298410871309">మునుపటి స్థాయి 1 శీర్షిక</translation>
 <translation id="3323447499041942178">టెక్స్ట్ బాక్స్</translation>
-<translation id="3329854757664111426">ముందుకు వెళ్లడానికి, Enter నొక్కండి.</translation>
 <translation id="3353420241558113817">{"ar": "అరబిక్",
         "bg": "బల్గేరియన్",
         "ca": "క్యాటలాన్",
@@ -698,7 +697,6 @@ Chrome బ్రౌజర్ మెనును తెరవడానికి, 
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, స్లయిడర్</translation>
 <translation id="7552432549459840808">సహాయకరమైన Chrome సత్వరమార్గాలు</translation>
 <translation id="7579911500627256166">చుక్క <ph name="DOT" /></translation>
-<translation id="7591126877589047423">ఎటువంటి దృష్టి కేంద్రీకరణ లేదు. కొత్త విండోను తెరవడానికి Control N నొక్కండి.</translation>
 <translation id="7596919493010894443">ఎంపిక క్లియర్ చేయబడింది</translation>
 <translation id="7604026522577407655">ప్రస్తుత నిలువు వరుస ప్రారంభానికి వెళ్లండి</translation>
 <translation id="7604451927827590395">hdng</translation>

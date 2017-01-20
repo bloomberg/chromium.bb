@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Giới thiệu về Chromium</translation>
 <translation id="1472013873724362412">Tài khoản của bạn không hoạt động trên Chromium. Vui lòng liên hệ với quản trị viên miền của bạn hoặc sử dụng Tài khoản Google thông thường để đăng nhập.</translation>
 <translation id="1736662517232558588">Đã xóa dữ liệu Chromium</translation>
+<translation id="1838412507805038478">Chromium xác minh rằng <ph name="ISSUER" /> đã cấp chứng chỉ của trang web này.</translation>
 <translation id="1843424232666537147">Chromium có tính năng giúp bạn quản lý dữ liệu Internet của mình và tốc độ mà bạn có thể tải trang web.
 <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Truy cập các tab bạn đã mở trên máy tính của mình, ngay tại đây. Bạn chỉ cần mở Chromium trên máy tính, chuyển tới menu và chọn “Đăng nhập vào Chromium…”</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium được cải tiến hơn! Đã có phiên bản mới.</translation>
 <translation id="6604711459180487467">Có được trải nghiệm tốt hơn trong Chromium dựa trên vị trí của bạn.</translation>
 <translation id="6989306073720242915">Bạn yêu thích Chromium? <ph name="BEGIN_LINK" />Di chuyển Chromium sang thanh dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium xác minh <ph name="ISSUER" /> đã cấp chứng chỉ của trang web này.</translation>
 <translation id="7099326575020694068">Chromium không thể sử dụng máy ảnh của bạn ở Chế độ xem phân tách</translation>
 <translation id="7144758435978427212">Khám phá trang web do các đối tượng ở gần bạn gửi. Khi bật Bluetooth, Chromium có thể thu thập các trang web được liên kết với đối tượng xung quanh bạn và gửi chúng một cách ẩn danh tới Google để tìm các trang web hữu ích nhất. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium giúp bạn tiết kiệm thời gian bằng cách đưa tài khoản của bạn lên web. Bạn có thể thêm hoặc xóa tài khoản trong Cài đặt.</translation>

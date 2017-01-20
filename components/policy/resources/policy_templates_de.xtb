@@ -2034,13 +2034,13 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Diese Richtlinie setzt voraus, dass vom Zertifikatüberprüfungsstapel des Betriebssystems SHA-1-Signaturen zugelassen werden. Wenn sich durch ein Update des Betriebssystems die Handhabung von SHA-1-Zertifikaten ändert, ist diese Richtlinie nicht mehr wirksam. Diese Richtlinie dient zur vorübergehenden Problemumgehung, um Unternehmen mehr Zeit zu geben, SHA-1 zu ersetzen. Diese Richtlinie wird ab dem 1. Januar 2019 entfernt.
 
       Wenn diese Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, wird für <ph name="PRODUCT_NAME" /> der offizielle Beendigungszeitplan für SHA-1 herangezogen.</translation>
-<translation id="7589150663293249656">Hiermit wir die Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktiviert.
+<translation id="7589150663293249656">Hiermit wird die Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktiviert.
 
-      Wenn Sie diese Einstellung aktivieren, werden die in <ph name="PRODUCT_NAME" />-Profilen gespeicherten Einstellungen, etwa Lesezeichen, AutoFill-Daten und Passwörter, auch in eine Datei geschrieben, die sich im Roaming-Nutzerprofilordner oder an einem vom Administrator über die Richtlinie <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" /> festgelegten Ort befindet.
+      Wenn Sie diese Einstellung aktivieren, werden die in <ph name="PRODUCT_NAME" />-Profilen gespeicherten Einstellungen, etwa Lesezeichen, AutoFill-Daten und Passwörter auch in eine Datei geschrieben, die sich im Roaming-Nutzerprofilordner oder an einem vom Administrator über die Richtlinie <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" /> festgelegten Ort befindet.
 
       Google Sync wird automatisch deaktiviert, wenn diese Richtlinie aktiviert ist.
 
-      Zur Vermeidung eines unbeabsichtigten Datenlecks sollte die Richtlinie <ph name="SIGNINALLOWED_POLICY_NAME" /> ebenfalls deaktiviert werden.
+      Zum Schutz vor unbeabsichtigten Datenverlusten sollte die Richtlinie <ph name="SIGNINALLOWED_POLICY_NAME" /> ebenfalls deaktiviert werden.
 
       Wenn diese Richtlinie deaktiviert oder nicht konfiguriert wird, kommen nur die regulären lokalen Profile zum Einsatz.</translation>
 <translation id="7593523670408385997">Konfiguriert die Cache-Größe, die <ph name="PRODUCT_NAME" /> zum Speichern von Dateien im Cache auf dem Datenträger verwendet.
@@ -2573,7 +2573,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       Wenn die Richtlinie aktiviert ist, können keine Screenshots über Tastenkombinationen oder Erweiterungs-APIs aufgenommen werden.
 
       Ist die Richtlinie deaktiviert oder nicht konfiguriert, ist die Aufnahme von Screenshots möglich.</translation>
-<translation id="9213347477683611358">Hiermit kann das Hintergrundbild auf Geräteebene konfiguriert werden, das auf dem Anmeldebildschirm angezeigt wird, wenn sich noch kein Nutzer im Gerät angemeldet hat. Die Richtlinie wird konfiguriert, indem die URL, über die das Chrome OS-Gerät das Hintergrundbild herunterladen kann, und ein kryptografischer Hash, mit dem die Integrität des Downloads überprüft wird, festgelegt werden. Das Bild muss das JPEG-Format aufweisen und darf eine Dateigröße von 16 MB nicht überschreiten. Die URL muss ohne Authentifizierung zugänglich sein. Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Es wird jedes Mal neu heruntergeladen, wenn sich die URL oder der Hash ändert.
+<translation id="9213347477683611358">Hiermit kann das Hintergrundbild auf Geräteebene konfiguriert werden, das auf dem Anmeldebildschirm angezeigt wird, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Die Richtlinie wird konfiguriert, indem die URL, über die das Chrome OS-Gerät das Hintergrundbild herunterladen kann, und ein kryptografischer Hash, mit dem die Integrität des Downloads überprüft wird, festgelegt werden. Das Bild muss das JPEG-Format aufweisen und darf eine Dateigröße von 16 MB nicht überschreiten. Die URL muss ohne Authentifizierung zugänglich sein. Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Es wird jedes Mal neu heruntergeladen, wenn sich die URL oder der Hash ändert.
 
       Die Richtlinie sollte als String angegeben werden, der die URL und den Hash im JSON-Format ausgibt, z. B.:
       {
@@ -2583,7 +2583,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 
       Wenn die Gerätehintergrundrichtlinie konfiguriert ist, lädt das Chrome OS-Gerät das Hintergrundbild herunter und verwendet es für den Anmeldebildschirm, sofern sich noch kein Nutzer auf dem Gerät angemeldet hat. Sobald sich der Nutzer anmeldet, wird die Hintergrundrichtlinie des Nutzers aktiviert.
 
-      Wenn die Gerätehintergrundrichtlinie nicht konfiguriert ist, wird über die Hintergrundrichtlinie des Nutzers festgelegt, was angezeigt wird, sofern die Hintergrundrichtlinie des Nutzers nicht konfiguriert ist.</translation>
+      Wenn die Gerätehintergrundrichtlinie nicht konfiguriert ist, wird über die Hintergrundrichtlinie des Nutzers festgelegt, was angezeigt wird, sofern die Hintergrundrichtlinie des Nutzers konfiguriert ist.</translation>
 <translation id="9217154963008402249">Häufigkeit von Kontrollnetzwerkpaketen</translation>
 <translation id="922540222991413931">Installationsquellen für Erweiterungen, Apps und Nutzerskripte konfigurieren</translation>
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>

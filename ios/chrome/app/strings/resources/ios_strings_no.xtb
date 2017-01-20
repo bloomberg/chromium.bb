@@ -88,6 +88,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2653659639078652383">Send</translation>
 <translation id="2684815431982545828">Ny fane</translation>
 <translation id="2690858294534178585">Kameraet er i bruk</translation>
+<translation id="2691653761409724435">Ikke tilgjengelig uten nett</translation>
 <translation id="2702801445560668637">Leseliste</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2709516037105925701">Autofyll</translation>
@@ -97,6 +98,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2780046210906776326">Ingen e-postkontoer</translation>
 <translation id="2800683595868705743">Avslutt fanevelgeren</translation>
 <translation id="283291358677939992">Finn på siden</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Tilbakestill innstillingene for Oversetter</translation>
 <translation id="285960592395650245">Prøv å laste ned på nytt</translation>
 <translation id="2871695793448672541">Skjult passord</translation>
@@ -241,6 +243,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5911030830365207728">Google Oversetter</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5953603475187800576">Vis adresser og kredittkort fra Google Payments</translation>
+<translation id="5955891643922670672">Du ser en versjon uten nett</translation>
 <translation id="5964480694698977962">Åpne en ny inkognitofane.</translation>
 <translation id="5965679971710331625">Du er pålogget</translation>
 <translation id="5982717868370722439">Legg til eksisterende data i <ph name="USER_EMAIL" />.</translation>
@@ -379,6 +382,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8620640915598389714">Endre</translation>
 <translation id="8636825310635137004">For å få fanene dine fra de andre enhetene du bruker, slå på synkronisering.</translation>
 <translation id="8654802032646794042">Avbryt</translation>
+<translation id="8668210798914567634">Denne siden er lagret i leselisten din.</translation>
 <translation id="8680787084697685621">Kontoens påloggingsdetaljer er utdaterte.</translation>
 <translation id="8699098509676302392">Legg til adresse…</translation>
 <translation id="8721297211384281569">Verktøy-menyen</translation>

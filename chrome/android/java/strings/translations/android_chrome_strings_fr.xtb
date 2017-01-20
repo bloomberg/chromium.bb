@@ -25,7 +25,6 @@
 
 Vous devez activer le Bluetooth et les services de localisation pour utiliser le Web physique.</translation>
 <translation id="124678866338384709">Fermer l'onglet actuel</translation>
-<translation id="1254090737195733114">Importer les données ?</translation>
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
@@ -242,6 +241,7 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> Ko disponibles</translation>
 <translation id="3549644494707163724">Chiffrer toutes les données synchronisées avec votre propre phrase secrète de synchronisation</translation>
 <translation id="3549657413697417275">Chercher dans l'historique</translation>
+<translation id="3557336313807607643">Ajouter aux contacts</translation>
 <translation id="3582930987043644930">Ajouter un nom</translation>
 <translation id="3590487821116122040">Données de site stockées, que Chrome ne considère pas comme importantes (par exemple, pour des sites sans paramètres enregistrés ou que vous ne consultez pas souvent)</translation>
 <translation id="360480449234699036">Découvrez les thèmes abordés sur les sites Web sans quitter la page. La fonctionnalité Appuyer pour rechercher envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des images, des résultats de recherche et d'autres informations.
@@ -258,6 +258,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3714981814255182093">Ouvrir la barre de recherche</translation>
 <translation id="3716158070938632480">Pages Web à proximité</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
+<translation id="3739899004075612870">Favori ajouté dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Mo par d'autres applis</translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -282,6 +283,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="397583555483684758">La synchronisation s'est arrêtée.</translation>
 <translation id="3985215325736559418">Voulez-vous télécharger <ph name="FILE_NAME" /> de nouveau ?</translation>
+<translation id="3987993985790029246">Copier lien</translation>
 <translation id="3988213473815854515">Position autorisée</translation>
 <translation id="3997476611815694295">Stockage non important</translation>
 <translation id="4002066346123236978">Titre</translation>
@@ -319,7 +321,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4384468725000734951">Utilisation de Sogou pour les recherches</translation>
 <translation id="4412992751769744546">Autoriser les cookies tiers</translation>
 <translation id="4452548195519783679">Ajouté aux favoris dans "<ph name="FOLDER_NAME" />"</translation>
-<translation id="4457399174246232812">À l'avenir, les pages Web physique à proximité s'afficheront dans votre liste de notifications.</translation>
+<translation id="4453340223357552416">Le fichier <ph name="FILE_NAME" /> a bien été téléchargé dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="4479647676395637221">Demander avant d'autoriser des sites à utiliser ma caméra (recommandé)</translation>
 <translation id="4508440807153586353">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Il y a # jour}one{Il y a # jour}other{Il y a # jours}}</translation>
@@ -377,7 +379,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
-<translation id="5053110706349648690">Pour permettre l'association, activez le Bluetooth dans les <ph name="BEGIN_LINK" />paramètres de l'appareil<ph name="END_LINK" /></translation>
 <translation id="5063480226653192405">Utilisation</translation>
 <translation id="5087580092889165836">Ajouter une carte</translation>
 <translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
@@ -595,12 +596,15 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7063006564040364415">Impossible de se connecter au serveur de synchronisation.</translation>
 <translation id="7064851114919012435">Coordonnées</translation>
 <translation id="7094922512924405309">Aucune page Web physique n'a été trouvée.</translation>
+<translation id="7128222689758636196">Autoriser l'accès pour le moteur de recherche actuel</translation>
 <translation id="7138678301420049075">Autre</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7189372733857464326">En attente de la fin de la mise à jour des services Google Play</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
+<translation id="7274013316676448362">Site bloqué</translation>
+<translation id="7333031090786104871">L'ajout du site précédent est toujours en cours</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partager 1 élément sélectionné}one{Partager # élément sélectionné}other{Partager # éléments sélectionnés}}</translation>
 <translation id="7366340029385295517">Diffusion sur "<ph name="SCREEN_NAME" />" en cours…</translation>
 <translation id="7375125077091615385">Type :</translation>
@@ -625,6 +629,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
 <translation id="7588950540487816470">Web physique</translation>
+<translation id="7589445247086920869">Bloquer l'accès pour le moteur de recherche actuel</translation>
 <translation id="7593557518625677601">Ouvrez paramètres Android et réactivez synchro système Android pour démarrer synchro Chrome.</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
 <translation id="7605594153474022051">La synchronisation ne fonctionne pas</translation>
@@ -772,6 +777,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="9070377983101773829">Démarrer la recherche vocale</translation>
 <translation id="9078964945751709336">Veuillez fournir d'autres informations</translation>
 <translation id="9086455579313502267">Impossible d'accéder au réseau.</translation>
+<translation id="9094175695478007090">Impossible de lancer l'application de paiement.</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> Ko téléchargé(s)</translation>
 <translation id="9099292894781394535">Économies de données</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>

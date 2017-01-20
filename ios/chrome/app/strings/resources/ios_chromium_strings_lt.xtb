@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Apie „Chromium“</translation>
 <translation id="1472013873724362412">Paskyra neveikia sistemoje „Chromium“. Susisiekite su domeno administratoriumi arba prisijungdami naudokite įprastą „Google“ paskyrą.</translation>
 <translation id="1736662517232558588">Išvalyti „Chromium“ duomenys</translation>
+<translation id="1838412507805038478">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šios svetainės sertifikatą.</translation>
 <translation id="1843424232666537147">„Chromium“ yra funkcijų, kurias naudojant lengva tvarkyti internetinius duomenis ir tinklalapių įkėlimo spartą.
 <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Čia galite pasiekti skirtukus, kuriuos esate atidarę kompiuteryje. Tiesiog atidarykite „Chromium“ kompiuteryje, eikite į meniu ir pasirinkite „Prisijungti prie „Chromium“...“</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">„Chromium“ patobulėjo! Galima nauja versija.</translation>
 <translation id="6604711459180487467">Gaukite geresnių funkcijų naudodami vietove pagrįstą „Chromium“.</translation>
 <translation id="6989306073720242915">Patinka naudoti „Chromium“? <ph name="BEGIN_LINK" />Perkelkite ją į doką<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šios svetainės sertifikatą.</translation>
 <translation id="7099326575020694068">„Chromium“ negali naudoti fotoaparato padalyto rodinio režimu</translation>
 <translation id="7144758435978427212">Atraskite netoliese esančių objektų siunčiamus tinklalapius. Kai „Bluetooth“ įjungta, „Chromium“ gali rinkti tinklalapius, susijusius su netoli jūsų esančiais objektais, ir anonimiškai siųsti juos „Google“, kad būtų rasti naudingiausi tinklalapiai. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">„Chromium“ taupo laiką naudodama paskyras žiniatinklyje. Paskyras galite pridėti arba pašalinti nustatymuose.</translation>

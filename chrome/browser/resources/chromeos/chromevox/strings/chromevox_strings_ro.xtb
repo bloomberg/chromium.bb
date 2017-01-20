@@ -231,7 +231,6 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="3321460131042519426">Activează încadrarea cuvintelor</translation>
 <translation id="3322936298410871309">Titlul de nivel 1 anterior</translation>
 <translation id="3323447499041942178">Casetă de text</translation>
-<translation id="3329854757664111426">Pentru a avansa, apasă pe tasta Enter.</translation>
 <translation id="3353420241558113817">{"ar": "Arabă",
         "bg": "Bulgară",
         "ca": "Catalană",
@@ -542,7 +541,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="5826479389509458994">rândul <ph name="ROW" />, coloana <ph name="COL" /></translation>
 <translation id="5850707923114094062">Deplasează înapoi</translation>
 <translation id="5851548754964597211">Listă de file</translation>
-<translation id="5859752971144398932">S-a ieșit din Găsiți în pagină.</translation>
+<translation id="5859752971144398932">S-a ieșit din Găsește în pagină.</translation>
 <translation id="5866042630553435010">Verificat parțial</translation>
 <translation id="5867591286054666064">În timpul acestui tutorial, apasă pe orice tastă pentru a-i auzi numele.</translation>
 <translation id="5869546221129391014">Grilă</translation>
@@ -609,7 +608,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="6561818612645211875">Accesați începutul rândului curent</translation>
 <translation id="6587021927234520429">Nu există un titlu de nivel 4 următor.</translation>
 <translation id="6601344353291556895">Activați descrierile detaliate.</translation>
-<translation id="6615602925644411249">Găsiți în pagină.</translation>
+<translation id="6615602925644411249">Găsește în pagină</translation>
 <translation id="6633350132811819843">Nu există un tabel următor.</translation>
 <translation id="6637586476836377253">jurnal</translation>
 <translation id="6657128831881431364">Bara de progres</translation>
@@ -698,7 +697,6 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, glisor</translation>
 <translation id="7552432549459840808">Comenzi rapide utile pentru Chrome</translation>
 <translation id="7579911500627256166">punctul <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Niciun element focalizat. Pentru a deschide o fereastră nouă, apasă pe Ctrl + N.</translation>
 <translation id="7596919493010894443">secțiune eliminată</translation>
 <translation id="7604026522577407655">Accesați începutul coloanei curente</translation>
 <translation id="7604451927827590395">titlu</translation>

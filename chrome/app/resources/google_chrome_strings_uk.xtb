@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1001534784610492198">Архів програми встановлення недійсний або пошкоджений. Завантажте Google Chrome знову.</translation>
-<translation id="103396972844768118">Важлива інформація про ваші дані Chrome</translation>
 <translation id="1035334672863811645">увійдіть в обліковий запис Chrome</translation>
 <translation id="1061441684050139317">Chrome потрібен доступ до мікрофона, щоб дозволити цьому сайту використовувати його.</translation>
 <translation id="1065672644894730302">Не вдається розпізнати налаштування. Деякі функції можуть бути не доступні, а зміни в налаштуваннях не зберігатимуться.</translation>
@@ -61,9 +60,7 @@
 <translation id="2588322182880276190">Логотип Chrome</translation>
 <translation id="2664962310688259219">Ліцензії ОС Chrome із відкритим кодом</translation>
 <translation id="2665296953892887393">Допоможіть покращити Google Chrome, надсилаючи звіти про аварійне завершення роботи та <ph name="UMA_LINK" /> в Google</translation>
-<translation id="2681064822612051220">У системі виявлено конфліктуюче встановлення Google Chrome. Видаліть його та повторіть спробу.</translation>
 <translation id="2689103672227170538">Це розширення змінило сторінку, яка відкривається під час запуску Chrome.</translation>
-<translation id="2704356438731803243">Якщо ви хочете зберігати існуючі дані Chrome окремо, можна створити нового користувача Chrome для облікового запису <ph name="USER_NAME" />.</translation>
 <translation id="2748463065602559597">Ви переглядаєте безпечну сторінку Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome не є веб-переглядачем за умовчанням.</translation>
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
@@ -134,7 +131,6 @@
 <translation id="4771048833395599659">Цей файл може бути небезпечним, тому Chrome заблокував його.</translation>
 <translation id="4794050651896644714">Зберігати дані в Chrome</translation>
 <translation id="4891791193823137474">Дозволити Google Chrome працювати у фоновому режимі</translation>
-<translation id="4901390485477164536">Google Chrome ваш веб-переглядач за умовчанням.</translation>
 <translation id="4921569541910214635">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chrome на свій смак.</translation>
 <translation id="4953650215774548573">Зробити Google Chrome веб-переглядачем за умовчанням</translation>
 <translation id="495931528404527476">У Chrome</translation>
@@ -152,7 +148,6 @@
 <translation id="5251420635869119124">Гості можуть анонімно користуватися Chrome.</translation>
 <translation id="5253588388888612165">Якщо ви користуєтеся цим комп’ютером спільно з користувачем <ph name="PROFILE_NAME" />, додайте себе в Chrome, щоб переглядати веб-сайти окремо. Також можна від’єднати обліковий запис Google цього користувача.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome перезапуститься через 1 секунду.}one{Google Chrome перезапуститься через # секунду.}few{Google Chrome перезапуститься через # секунди.}many{Google Chrome перезапуститься через # секунд.}other{Google Chrome перезапуститься через # секунди.}}</translation>
-<translation id="5328989068199000832">Бінарні файли Google Chrome</translation>
 <translation id="5334545119300433702">Відомо, що цей модуль конфліктує з Google Chrome.</translation>
 <translation id="5386244825306882791">Розширення також змінило сторінку, яка відкривається під час запуску Chrome або пошуку в універсальному вікні пошуку.</translation>
 <translation id="5430073640787465221">Ваш файл налаштувань пошкоджений або недійсний. Google Chrome не може відновити ваші налаштування.</translation>
@@ -201,13 +196,9 @@
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
 <translation id="686561893457936865">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>
-<translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
 <translation id="6982337800632491844">Перш ніж використовувати цей пристрій, потрібно прочитати й прийняти наведені нижче Загальні положення та умови для <ph name="DOMAIN" />. Ці умови не розширюють, не змінюють і не обмежують Умови використання ОС Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
-<translation id="699076943483372849">Цей сайт використовує застарілий плагін Chrome Frame. Він більше не підтримується й не оновлюється. Видаліть його та встановіть сучасний веб-переглядач.</translation>
-<translation id="6991142834212251086">Пов’язати мої дані Chrome із цим обліковим записом</translation>
-<translation id="7060865993964054389">Панель запуску програм Google Chrome</translation>
 <translation id="7098166902387133879">Google Chrome використовує ваш мікрофон.</translation>
 <translation id="7106741999175697885">Диспетчер завдань - Google Chrome</translation>
 <translation id="7125719106133729027">Не вдалось оновити Chrome до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, перевстановіть Chrome вручну.</translation>
@@ -251,7 +242,6 @@
 <translation id="8008534537613507642">Перевстановити Chrome</translation>
 <translation id="8030318113982266900">Оновлення пристрою до каналу <ph name="CHANNEL_NAME" />…</translation>
 <translation id="8032142183999901390">Якщо видалити обліковий запис із Chrome, можливо, потрібно оновити відкриті вкладки, щоб зміни почали діяти.</translation>
-<translation id="8037887340639533879">Неможливо виконати оновлення, оскільки не знайдено встановленої версії Google Chrome.</translation>
 <translation id="8129812357326543296">Про &amp;Google Chrome</translation>
 <translation id="8183957050892517584">Chrome надійно зберігатиме ваші особисті дані, тож вам не потрібно буде вводити їх знову.</translation>
 <translation id="8211929904040702368">З цього пристрою буде назавжди видалено принаймні стільки елементів: <ph name="TOTAL_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як $2.</translation>
@@ -261,7 +251,6 @@
 <translation id="8342675569599923794">Цей файл небезпечний, тому Chrome заблокував його.</translation>
 <translation id="8406086379114794905">Допоможіть покращити Chrome</translation>
 <translation id="8455999171311319804">Додатково. Допоможіть покращити ОС Chrome, автоматично надсилаючи в Google дані про діагностику та використання.</translation>
-<translation id="853189717709780425">Ви входите, використовуючи дані керованого облікового запису, що дає його адміністратору можливість контролювати ваш профіль Google Chrome. Ваші дані Chrome, як-от програми, закладки, історія, паролі й інші налаштування, буде назавжди пов’язано з обліковим записом <ph name="USER_NAME" />. Ви зможете видалити ці дані на інформаційній панелі облікових записів Google, але не зможете пов’язати їх з іншим обліковим записом.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Панель запуску програм Chrome для версії Canary</translation>
 <translation id="8556340503434111824">Доступна нова версія Google Chrome – швидша, ніж будь-коли.</translation>

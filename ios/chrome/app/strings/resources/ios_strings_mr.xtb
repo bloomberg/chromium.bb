@@ -88,6 +88,7 @@
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2684815431982545828">नवीन टॅब</translation>
 <translation id="2690858294534178585">कॅमेरा वापरात आहे</translation>
+<translation id="2691653761409724435">ऑफलाइन उपलब्ध नाही</translation>
 <translation id="2702801445560668637">वाचन सूची</translation>
 <translation id="2704606927547763573">कॉपी केले</translation>
 <translation id="2709516037105925701">ऑटोफिल</translation>
@@ -97,6 +98,7 @@
 <translation id="2780046210906776326">ईमेल खाती नाहीत</translation>
 <translation id="2800683595868705743">टॅब स्विचर सोडा</translation>
 <translation id="283291358677939992">पृष्ठामध्ये शोधा...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">भाषांतर सेटिंग्‍ज रीसेट करा</translation>
 <translation id="285960592395650245">डाउनलोड करण्याचा पुन्हा प्रयत्न करा</translation>
 <translation id="2871695793448672541">लपलेला, संकेतशब्द</translation>
@@ -242,6 +244,7 @@
 <translation id="5911030830365207728">Google भाषांतर</translation>
 <translation id="5916664084637901428">चालू</translation>
 <translation id="5953603475187800576">Google Payments वरील पत्ते आणि क्रेडिट कार्ड दर्शवा</translation>
+<translation id="5955891643922670672">ऑफलाइन आवृत्ती पाहत आहे</translation>
 <translation id="5964480694698977962">नवीन गुप्त टॅब तयार करा.</translation>
 <translation id="5965679971710331625">आपण साइन इन केले आहे</translation>
 <translation id="5982717868370722439">विद्यमान डेटा <ph name="USER_EMAIL" /> मध्ये जोडा.</translation>
@@ -299,7 +302,7 @@
 <translation id="6797885426782475225">व्हॉइस शोध</translation>
 <translation id="681368974849482173">तयार केलेला आयटम</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
-<translation id="6903907808598579934">सिंक चालू करा</translation>
+<translation id="6903907808598579934">संकालन चालू करा</translation>
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6973630695168034713">फोल्डर</translation>
 <translation id="7004499039102548441">अलीकडील टॅब</translation>
@@ -359,7 +362,7 @@
 <translation id="8108697784695284144">आपला संकेतशब्द कॉपी केला होता.</translation>
 <translation id="8137558756159375272">शोधण्यासाठी स्पर्श करा हे Google शोध कडे संदर्भ म्हणून निवडलेला शब्द आणि वर्तमान पृष्ठ पाठविते. आपण हे <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये बंद करू शकता.</translation>
 <translation id="8205564605687841303">रद्द करा</translation>
-<translation id="8225985093977202398">कॅशे प्रतिमा आणि फायली</translation>
+<translation id="8225985093977202398">कॅश   प्रतिमा आणि फायली</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8272194309885535896">प्रतिमा डाउनलोड करा</translation>
 <translation id="8272426682713568063">क्रेडिट कार्ड</translation>
@@ -380,6 +383,7 @@
 <translation id="8620640915598389714">संपादित करा</translation>
 <translation id="8636825310635137004">आपल्या इतर डिव्हाइसेस मधून आपले टॅब प्राप्त करण्यासाठी, संकालन चालू करा</translation>
 <translation id="8654802032646794042">रद्द करा</translation>
+<translation id="8668210798914567634">हे पृष्‍ठ आपल्या वाचन सूचीमध्ये जतन केले गेले आहे.</translation>
 <translation id="8680787084697685621">खाते साइन-इन तपशील कालबाह्य झाला.</translation>
 <translation id="8699098509676302392">पत्ता जोडा...</translation>
 <translation id="8721297211384281569">साधने मेनू</translation>

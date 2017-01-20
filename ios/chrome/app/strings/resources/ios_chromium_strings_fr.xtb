@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">À propos de Chromium</translation>
 <translation id="1472013873724362412">Votre compte n'est pas compatible avec Chromium. Veuillez contacter l'administrateur de votre domaine ou utiliser un compte Google standard pour vous connecter.</translation>
 <translation id="1736662517232558588">Données de Chromium effacées</translation>
+<translation id="1838412507805038478">Chromium a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="1843424232666537147">Chromium dispose de fonctionnalités qui vous permettent de gérer vos données Internet et la vitesse de chargement des pages Web.
 <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Accédez ici aux onglets ouverts sur votre ordinateur. Il vous suffit d'ouvrir Chromium sur votre ordinateur, d'accéder au menu, puis de sélectionner "Se connecter à Chromium".</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium a été amélioré ! Une nouvelle version est désormais disponible.</translation>
 <translation id="6604711459180487467">Améliorez votre expérience dans Chromium grâce à votre position.</translation>
 <translation id="6989306073720242915">Vous aimez Chromium ? <ph name="BEGIN_LINK" />Placez-le dans le dock.<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="7099326575020694068">Chromium ne peut pas utiliser votre appareil photo en mode Vue fractionnée.</translation>
 <translation id="7144758435978427212">Découvrez des pages Web envoyées par des objets à proximité. Lorsque le Bluetooth est activé, Chromium peut réunir les pages Web associées aux objets qui vous entourent et les envoyer de manière anonyme à Google pour déterminer celles qui vous sont les plus utiles. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium vous permet de gagner du temps en connectant vos comptes au Web. Vous pouvez ajouter ou supprimer des comptes dans la section "Paramètres".</translation>

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Kuhusu Chromium</translation>
 <translation id="1472013873724362412">Akaunti yako haifanyi kazi kwenye Chromium. Tafadhali wasiliana na msimamizi wako wa kikoa au utumie Akaunti ya kawaida ya Google kuingia.</translation>
 <translation id="1736662517232558588">Imefuta data ya Chromium</translation>
+<translation id="1838412507805038478">Chromium imethibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii.</translation>
 <translation id="1843424232666537147">Chromium ina vipengele vinavyokusaidia kudhibiti data yako ya intaneti na kasi unayoweza kupakia nayo kurasa za wavuti.
 <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Fikia vichupo ambavyo viko wazi kwenye kompyuta yako, papa hapa. Fungua Chromium kwenye kompyuta yako, nenda kwenye menyu, na uchague “Ingia katika Chromium…”</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium imekuwa bora! Toleo jipya linapatikana.</translation>
 <translation id="6604711459180487467">Pata hali bora ya utumiaji katika Chromium kulingana na mahali uliko.</translation>
 <translation id="6989306073720242915">Unaipenda Chromium? <ph name="BEGIN_LINK" />Ihamishie kwenye orodha ya vipengee vinavyoibuka upande wa chini wa skrini yako<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium imethibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii.</translation>
 <translation id="7099326575020694068">Chromium imeshindwa kutumia kamera yako katika hali ya Mwonekano wa Madirisha Mawili</translation>
 <translation id="7144758435978427212">Gundua kurasa za wavuti zinazotumwa na vifaa vilivyo karibu. Bluetooth inapowashwa, Chromium inaweza kukusanya kurasa za wavuti zinazohusishwa na vifaa vilivyo karibu na kuzituma bila maelezo yanayoweza kukutambulisha kwenye Google ili kupata kurasa muhimu zaidi. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium inaokoa muda wako kwa kuleta akaunti zako kwenye wavuti. Unaweza kuongeza au kuondoa akaunti katika Mipangilio.</translation>

@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">O Chromiumu</translation>
 <translation id="1472013873724362412">Vaš račun ne deluje v Chromiumu. Obrnite se na skrbnika domene ali za prijavo uporabite običajen Google Račun.</translation>
 <translation id="1736662517232558588">Podatki Chromiuma so izbrisani</translation>
+<translation id="1838412507805038478">Chromium je preveril, ali je izdajatelj <ph name="ISSUER" /> izdal potrdilo tega spletnega mesta.</translation>
 <translation id="1843424232666537147">Chromium ima funkcije, s katerimi lažje upravljate internetne podatke in hitrost nalaganja spletnih strani.
 <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Do zavihkov, odprtih v računalniku, lahko dostopate tukaj. V računalniku odprite Chromium, nato meni in izberite »Prijava v Chromium …«</translation>
@@ -33,7 +34,6 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="6424492062988593837">Chromium je izboljšan! Na voljo je nova različica.</translation>
 <translation id="6604711459180487467">Zagotovite si boljšo izkušnjo uporabe Chromiuma na podlagi lokacije.</translation>
 <translation id="6989306073720242915">Vam je Chromium všeč? <ph name="BEGIN_LINK" />Premaknite ga v vrstico z aplikacijami<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium je preveril, da je izdajatelj <ph name="ISSUER" /> izdal potrdilo tega spletnega mesta.</translation>
 <translation id="7099326575020694068">Chromium ne more uporabljati fotoaparata v načinu razdeljenega pogleda</translation>
 <translation id="7144758435978427212">Odkrivanje spletnih strani, ki jih pošljejo predmeti v bližini. Ko je Bluetooth vklopljen, lahko Chromium zbira spletne strani, povezane s predmeti okoli vas, in jih anonimno pošlje Googlu, ki poišče tiste, ki so za vas najuporabnejše. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium poskrbi, da so vaši računi v spletu, in vam tako prihrani čas. Račune lahko dodajate ali odstranjujete v nastavitvah.</translation>

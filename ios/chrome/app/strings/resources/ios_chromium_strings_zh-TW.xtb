@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">關於 Chromium</translation>
 <translation id="1472013873724362412">無法使用您的帳戶登入 Chromium，請洽詢您的網域管理員或使用一般 Google 帳戶登入。</translation>
 <translation id="1736662517232558588">已清除 Chromium 資料</translation>
+<translation id="1838412507805038478">Chromium 已驗證這個網站的憑證是由「<ph name="ISSUER" />」所核發。</translation>
 <translation id="1843424232666537147">Chromium 的功能可讓你輕鬆管理網際網路數據傳輸和網頁載入速度。
 <ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">只要在電腦上開啟 Chromium 並前往選單中選取 [登入 Chromium...]，即可直接從這裡存取你在電腦上開啟的分頁。</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium 現在變得更進步了！歡迎您升級使用新版本。</translation>
 <translation id="6604711459180487467">Chromium 可根據你的位置資訊提供更優質的體驗。</translation>
 <translation id="6989306073720242915">喜歡 Chromium 嗎？建議你<ph name="BEGIN_LINK" />將 Chromium 移至 Dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromiums 已驗證這個網站的憑證是由「<ph name="ISSUER" />」所核發。</translation>
 <translation id="7099326575020694068">Chromium 無法在分割模式中使用你的相機</translation>
 <translation id="7144758435978427212">探索附近實體傳送的網頁。藍牙開啟時，Chromium 會收集與你附近實體相關聯的網頁，並以匿名方式將這些資訊傳送給 Google，藉此找出對你最實用的網頁。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium 會將你的所有帳戶同步到網路上，為你節省時間。你可以在「設定」中新增或移除帳戶。</translation>

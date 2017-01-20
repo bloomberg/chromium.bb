@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Par Chromium</translation>
 <translation id="1472013873724362412">Jūsu konts nedarbojas pārlūkā Chromium. Sazinieties ar savu domēna administratoru vai pierakstieties, izmantojot parastu Google kontu.</translation>
 <translation id="1736662517232558588">Chromium dati dzēsti</translation>
+<translation id="1838412507805038478">Chromium apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
 <translation id="1843424232666537147">Pārlūkā Chromium ir funkcijas, ko varat izmantot, lai pārvaldītu interneta datus un tīmekļa lapu ielādes ātrumu.
 <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="2075400798887076382">Šeit varat piekļūt cilnēm, kas ir atvērtas jūsu datorā. Vienkārši atveriet pārlūku Chromium savā datorā, pārejiet uz izvēlni un atlasiet “Pierakstīties pakalpojumā Chromium…”</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Lietojumprogramma Chromium ir uzlabota! Ir pieejama jauna versija.</translation>
 <translation id="6604711459180487467">Uzlabojiet savu pieredzi pārlūkā Chromium, sūtot informāciju par savu atrašanās vietu.</translation>
 <translation id="6989306073720242915">Vai jums patīk pārlūks Chromium? <ph name="BEGIN_LINK" />Pārvietojiet to uz savu doku<ph name="END_LINK" />!</translation>
-<translation id="7022368070219581493">Chromium apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
 <translation id="7099326575020694068">Chromium nevar izmantot kameru dalītā skata režīmā.</translation>
 <translation id="7144758435978427212">Atklājiet tīmekļa lapas, ko nosūtījuši tuvumā esoši objekti. Ja ir ieslēgts Bluetooth savienojums, Chromium var apkopot tīmekļa lapas, kas ir saistītas ar jums apkārt esošajiem objektiem, un anonīmi nosūtīt tās Google serveriem, lai atrastu visnoderīgākās lapas. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="7208566199746267865">Chromium ietaupa jūsu laiku, pievienojot jūsu kontus tīmeklim. Kontus varat pievienot vai noņemt sadaļā Iestatījumi.</translation>

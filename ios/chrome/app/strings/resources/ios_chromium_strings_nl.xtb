@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">Over Chromium</translation>
 <translation id="1472013873724362412">Je account werkt niet in Chromium. Neem contact op met je domeinbeheerder of gebruik een gewoon Google-account om je aan te melden.</translation>
 <translation id="1736662517232558588">Chromium-gegevens gewist</translation>
+<translation id="1838412507805038478">Chromium heeft bevestigd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
 <translation id="1843424232666537147">Chromium bevat functies waarmee je je internetgegevens kunt beheren en kunt bepalen hoe snel je webpagina's kunt laden.
 <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Bekijk hier de tabbladen die je op je computer hebt geopend. Open Chromium op je computer, ga naar het menu en selecteer 'Inloggen bij Chromium'.</translation>
@@ -32,7 +33,6 @@
 <translation id="6424492062988593837">Chromium is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
 <translation id="6604711459180487467">Een betere ervaring in Chromium op basis van je locatie.</translation>
 <translation id="6989306073720242915">Gebruik je Chromium graag? <ph name="BEGIN_LINK" />Verplaats het naar je dock<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Chromium heeft bevestigd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
 <translation id="7099326575020694068">Chromium kan je camera niet gebruiken in de modus 'Gesplitste weergave'</translation>
 <translation id="7144758435978427212">Ontdek webpagina's die worden verzonden door objecten in de buurt. Wanneer Bluetooth is ingeschakeld, kan Chromium webpagina's verzamelen die zijn gekoppeld aan objecten om je heen en ze anoniem verzenden naar Google om de relevantste pagina's te vinden. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium bespaart je tijd door je accounts beschikbaar te maken op internet. Je kunt accounts toevoegen of verwijderen bij Instellingen.</translation>

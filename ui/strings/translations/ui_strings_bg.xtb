@@ -23,7 +23,6 @@
 <translation id="2168039046890040389">Страница нагоре</translation>
 <translation id="2190355936436201913">(празно)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/сек</translation>
-<translation id="2336922762358079423">Пояснения в Google Keep</translation>
 <translation id="2482878487686419369">Известия</translation>
 <translation id="2497284189126895209">Всички файлове</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -130,10 +129,12 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> файл (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> КБ/сек</translation>
 <translation id="8806053966018712535">Папка „<ph name="FOLDER_NAME" />“</translation>
+<translation id="883911313571074303">Добавяне на пояснение към изображението</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KБ</translation>
 <translation id="9002566407876343676">отварям</translation>
 <translation id="9038489124413477075">Папка без име</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек}other{# сек}}</translation>
+<translation id="9150735707954472829">Раздел</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="932327136139879170">Начална страница</translation>
 <translation id="945522503751344254">Изпращане на отзиви</translation>

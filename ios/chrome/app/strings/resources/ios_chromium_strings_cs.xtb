@@ -5,6 +5,7 @@
 <translation id="1185134272377778587">O prohlížeči Chromium</translation>
 <translation id="1472013873724362412">Váš účet v prohlížeči Chromium nefunguje. Kontaktujte administrátora domény nebo se přihlaste pomocí běžného účtu Google.</translation>
 <translation id="1736662517232558588">Data prohlížeče Chromium byla vymazána</translation>
+<translation id="1838412507805038478">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />.</translation>
 <translation id="1843424232666537147">Chromium obsahuje funkce, které pomáhají spravovat přenosy dat z internetu a umožňují zrychlit načítání webových stránek. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">Karty, které máte otevřené v počítači, můžete používat přímo tady. Stačí v počítači otevřít Chromium, přejít do nabídky a vybrat možnost Přihlásit se do prohlížeče Chromium…</translation>
 <translation id="2168108852149185974">Některé doplňky způsobují selhání prohlížeče Chromium. Prosím odinstalujte:</translation>
@@ -31,7 +32,6 @@
 <translation id="6424492062988593837">Chromium je opět o něco lepší. K dispozici je nová verze.</translation>
 <translation id="6604711459180487467">Získejte v prohlížeči Chromium lepší funkce založené na poloze.</translation>
 <translation id="6989306073720242915">Líbí se vám prohlížeč Chromium? <ph name="BEGIN_LINK" />Přesuňte si jej do doku<ph name="END_LINK" /></translation>
-<translation id="7022368070219581493">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />.</translation>
 <translation id="7099326575020694068">Prohlížeč Chromium nemůže používat fotoaparát v režimu Split View.</translation>
 <translation id="7144758435978427212">Objevujte webové stránky odesílané objekty v okolí. Když zapnete Bluetooth, prohlížeč Chromium bude moci načítat webové stránky přidružené k objektům v okolí a odesílat je do Googlu, aby vybral ty nejužitečnější. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="7208566199746267865">Chromium vám šetří čas tím, že vaše účty přenáší na web. Účty můžete přidat nebo odstranit v Nastavení.</translation>

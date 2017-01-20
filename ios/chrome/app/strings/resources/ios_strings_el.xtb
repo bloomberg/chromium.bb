@@ -88,6 +88,7 @@
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2684815431982545828">Νέα καρτέλα</translation>
 <translation id="2690858294534178585">Η κάμερα χρησιμοποιείται</translation>
+<translation id="2691653761409724435">Μη διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="2702801445560668637">Λίστα ανάγνωσης</translation>
 <translation id="2704606927547763573">Αντιγράφ.</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
@@ -97,6 +98,7 @@
 <translation id="2780046210906776326">Κανένας Λογαρ. Email</translation>
 <translation id="2800683595868705743">Αποχώρηση από την εναλλαγή καρτελών</translation>
 <translation id="283291358677939992">Εύρεση στη σελίδα...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Επαν.ρυθ.μετάφ.</translation>
 <translation id="285960592395650245">Επανάληψη λήψης</translation>
 <translation id="2871695793448672541">Κρυφός κωδικός</translation>
@@ -241,6 +243,7 @@
 <translation id="5911030830365207728">Μετάφραση Google</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5953603475187800576">Εμφάνιση διευθύνσεων και πιστωτικών καρτών από το Google Payments</translation>
+<translation id="5955891643922670672">Προβολή έκδοσης εκτός σύνδεσης</translation>
 <translation id="5964480694698977962">Δημιουργία νέας καρτέλας ανώνυμης περιήγησης.</translation>
 <translation id="5965679971710331625">Είστε συνδεδεμένοι</translation>
 <translation id="5982717868370722439">Προσθήκη υπαρχόντων δεδομένων στη διεύθυνση <ph name="USER_EMAIL" />.</translation>
@@ -379,6 +382,7 @@
 <translation id="8620640915598389714">Επεξεργασία</translation>
 <translation id="8636825310635137004">Για να εμφανίζονται οι καρτέλες από τις άλλες συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="8654802032646794042">Ακύρωση</translation>
+<translation id="8668210798914567634">Αυτή η σελίδα αποθηκεύτηκε στη λίστα ανάγνωσης</translation>
 <translation id="8680787084697685621">Τα στοιχεία σύνδεσης λογαριασμού έχουν λήξει.</translation>
 <translation id="8699098509676302392">Προσθήκη διεύθυνσης…</translation>
 <translation id="8721297211384281569">Μενού εργαλείων</translation>

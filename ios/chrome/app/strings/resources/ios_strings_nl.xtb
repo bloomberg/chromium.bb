@@ -64,7 +64,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2068952045031577364">De afgelopen week</translation>
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="209018056901015185">Desktopsite opvragen</translation>
-<translation id="2100215774115172756">Je leeslijst is offline beschikbaar.</translation>
+<translation id="2100215774115172756">De pagina's die aan je leeslijst zijn toegevoegd, zijn offline beschikbaar.</translation>
 <translation id="2103075008456228677">history.google.com openen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items verplaatst</translation>
 <translation id="2149973817440762519">Bladwijzer bewerken</translation>
@@ -84,10 +84,11 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2572712655377361602">Een apparaatbeleid blokkeert toegang tot je foto's</translation>
 <translation id="2584132361465095047">Account toevoegen…</translation>
 <translation id="2593774076813182497">Kan pagina niet afdrukken.</translation>
-<translation id="2648803196158606475">Gelezen verwijderen</translation>
+<translation id="2648803196158606475">Gelezen items verwijderen</translation>
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="2684815431982545828">Nieuw tabblad</translation>
 <translation id="2690858294534178585">Camera wordt gebruikt</translation>
+<translation id="2691653761409724435">Niet offline beschikbaar</translation>
 <translation id="2702801445560668637">Leeslijst</translation>
 <translation id="2704606927547763573">Gekopieerd</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
@@ -97,6 +98,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2780046210906776326">Geen e-mailaccounts</translation>
 <translation id="2800683595868705743">Tabbladschakelaar verlaten</translation>
 <translation id="283291358677939992">Zoeken op deze pagina...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Vertaalinstellingen opnieuw instellen</translation>
 <translation id="285960592395650245">Download opnieuw proberen</translation>
 <translation id="2871695793448672541">Verborgen, wachtwoord</translation>
@@ -241,6 +243,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5953603475187800576">Adressen en creditcards uit Google Payments weergeven</translation>
+<translation id="5955891643922670672">Offline versie bekijken</translation>
 <translation id="5964480694698977962">Nieuw incognitotabblad maken.</translation>
 <translation id="5965679971710331625">Je bent ingelogd</translation>
 <translation id="5982717868370722439">Bestaande gegevens toevoegen aan <ph name="USER_EMAIL" />.</translation>
@@ -379,6 +382,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8620640915598389714">Bewerken</translation>
 <translation id="8636825310635137004">Schakel synchronisatie in om de tabbladen op je andere apparaten te bekijken</translation>
 <translation id="8654802032646794042">Annuleren</translation>
+<translation id="8668210798914567634">Deze pagina is opgeslagen in je leeslijst.</translation>
 <translation id="8680787084697685621">De inloggegevens voor het account zijn verouderd.</translation>
 <translation id="8699098509676302392">Adres toevoegen...</translation>
 <translation id="8721297211384281569">Menu Extra</translation>

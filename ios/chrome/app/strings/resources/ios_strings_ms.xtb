@@ -88,6 +88,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2684815431982545828">Tab Baharu</translation>
 <translation id="2690858294534178585">Kamera sedang digunakan</translation>
+<translation id="2691653761409724435">Tidak tersedia di luar talian</translation>
 <translation id="2702801445560668637">Senarai Bacaan</translation>
 <translation id="2704606927547763573">Disalin</translation>
 <translation id="2709516037105925701">Autoisi</translation>
@@ -97,6 +98,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2780046210906776326">Tiada Akaun E-mel</translation>
 <translation id="2800683595868705743">Tinggalkan Penukar Tab</translation>
 <translation id="283291358677939992">Cari dalam Halaman...</translation>
+<translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Tetapkan semula tetapan terjemahan</translation>
 <translation id="285960592395650245">Cuba Semula Muat Turun</translation>
 <translation id="2871695793448672541">Disembunyikan, Kata Laluan</translation>
@@ -241,6 +243,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5911030830365207728">Google Terjemah</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5953603475187800576">Tunjukkan alamat dan kad kredit daripada Google Payments</translation>
+<translation id="5955891643922670672">Melihat Versi Luar Talian</translation>
 <translation id="5964480694698977962">Buat tab inkognito baharu.</translation>
 <translation id="5965679971710331625">Anda sudah log masuk</translation>
 <translation id="5982717868370722439">Tambahkan data sedia ada pada <ph name="USER_EMAIL" />.</translation>
@@ -379,6 +382,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">Hidupkan penyegerakan untuk mendapatkan tab daripada peranti anda yang lain.</translation>
 <translation id="8654802032646794042">Batal</translation>
+<translation id="8668210798914567634">Halaman ini telah disimpan pada Senarai Bacaan anda.</translation>
 <translation id="8680787084697685621">Butiran log masuk akaun sudah lapuk.</translation>
 <translation id="8699098509676302392">Tambahkan Alamat...</translation>
 <translation id="8721297211384281569">Menu Alat</translation>
