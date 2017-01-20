@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.09",
+  "version": "12.10",
   "entries": [
     {
       "id": 1,
@@ -1441,6 +1441,24 @@ LONG_STRING_CONST(
       },
       "vendor_id": "0x10de",
       "device_id": ["0x0407", "0x0647", "0x0863"],
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 131,
+      "description": "Mesa drivers older than 10.4.3 is crash prone on Linux Intel i965gm",
+      "cr_bugs": [462426],
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": "<",
+        "value": "10.4.3"
+      },
+      "vendor_id": "8086",
+      "device_id": ["0x2a02"],
       "features": [
         "all"
       ]
