@@ -466,7 +466,6 @@ vs-chromium-project.txt
 /third_party/v8-i18n
 /third_party/valgrind
 /third_party/vulkan-validation-layers/src
-/third_party/v4l2capture
 /third_party/visualmetrics
 /third_party/wayland/src
 /third_party/wayland-protocols/src
