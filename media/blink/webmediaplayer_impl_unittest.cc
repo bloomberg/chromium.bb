@@ -738,12 +738,25 @@ TEST_F(WebMediaPlayerImplTest, BackgroundOptimizationsFeatureDisabled) {
   // Video only (pausing is enabled on Android).
   SetMetadata(false, true);
   EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 #if defined(OS_ANDROID)
   EXPECT_TRUE(ShouldPauseVideoWhenHidden());
+
+  // On Android, the duration and keyframe distance don't matter for video-only.
+  SetDuration(base::TimeDelta::FromSeconds(5));
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  EXPECT_TRUE(ShouldPauseVideoWhenHidden());
+
+  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(100));
+  SetDuration(base::TimeDelta::FromSeconds(300));
+  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  EXPECT_TRUE(ShouldPauseVideoWhenHidden());
+
+  // Restore average keyframe distance.
+  SetVideoKeyframeDistanceAverage(base::TimeDelta::FromSeconds(5));
 #else
   EXPECT_FALSE(ShouldPauseVideoWhenHidden());
 #endif
-  EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 
   // Audio only.
   SetMetadata(true, false);

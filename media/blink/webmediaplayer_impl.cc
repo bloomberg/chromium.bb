@@ -2156,10 +2156,15 @@ bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
 bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-// Don't optimize players being Cast (Android only).
 #if defined(OS_ANDROID)  // WMPI_CAST
+  // Don't optimize players being Cast.
   if (isRemote())
     return false;
+
+  // Video-only players are always optimized (paused) on Android.
+  // Don't check the keyframe distance and duration.
+  if (!hasAudio() && hasVideo())
+    return true;
 #endif  // defined(OS_ANDROID)
 
   // Don't optimize audio-only or streaming players.
