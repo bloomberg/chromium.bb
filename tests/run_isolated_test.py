@@ -446,6 +446,32 @@ class RunIsolatedTest(RunIsolatedTestBase):
         echo_cmd[0])
     self.assertEqual(echo_cmd[1:], ['hello', 'world'])
 
+  def test_main_naked_with_cipd_client_no_packages(self):
+    cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
+    cmd = [
+      '--no-log',
+      '--cache', os.path.join(self.tempdir, 'cache'),
+      '--cipd-enabled',
+      '--cipd-client-version', 'git:wowza',
+      '--cipd-server', self.cipd_server.url,
+      '--cipd-cache', cipd_cache,
+      '--named-cache-root', os.path.join(self.tempdir, 'c'),
+      'bin/echo${EXECUTABLE_SUFFIX}',
+      'hello',
+      'world',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(0, ret)
+
+    # The CIPD client was bootstrapped.
+    client_binary_file = unicode(os.path.join(
+        cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
+    self.assertTrue(fs.isfile(client_binary_file))
+
+    # 'cipd ensure' was NOT called (only 'echo hello world' was).
+    self.assertEqual(1, len(self.popen_calls))
+    self.assertEqual(self.popen_calls[0][0][1:], ['hello', 'world'])
+
   def test_main_naked_with_caches(self):
     cmd = [
       '--no-log',

@@ -4,9 +4,6 @@
 
 """Fetches CIPD client and installs packages."""
 
-__version__ = '0.4'
-
-import collections
 import contextlib
 import hashlib
 import json
@@ -39,19 +36,25 @@ class Error(Exception):
 def add_cipd_options(parser):
   group = optparse.OptionGroup(parser, 'CIPD')
   group.add_option(
+      '--cipd-enabled',
+      help='Enable CIPD client bootstrap. Implied by --cipd-package.',
+      action='store_true',
+      default=False)
+  group.add_option(
       '--cipd-server',
-      help='URL of the CIPD server. Only relevant with --cipd-package.')
+      help='URL of the CIPD server. '
+           'Only relevant with --cipd-enabled or --cipd-package.')
   group.add_option(
       '--cipd-client-package',
       help='Package name of CIPD client with optional parameters described in '
            '--cipd-package help. '
-           'Only relevant with --cipd-package. '
+           'Only relevant with --cipd-enabled or --cipd-package. '
            'Default: "%default"',
       default='infra/tools/cipd/${platform}')
   group.add_option(
       '--cipd-client-version',
       help='Version of CIPD client. '
-           'Only relevant with --cipd-package. '
+           'Only relevant with --cipd-enabled or --cipd-package. '
            'Default: "%default"',
       default='latest')
   group.add_option(
@@ -70,7 +73,7 @@ def add_cipd_options(parser):
   group.add_option(
       '--cipd-cache',
       help='CIPD cache directory, separate from isolate cache. '
-           'Only relevant with --cipd-package. '
+           'Only relevant with --cipd-enabled or --cipd-package. '
            'Default: "%default".',
       default='')
   parser.add_option_group(group)
@@ -78,7 +81,10 @@ def add_cipd_options(parser):
 
 def validate_cipd_options(parser, options):
   """Calls parser.error on first found error among cipd options."""
-  if not options.cipd_packages:
+  if options.cipd_packages:
+    options.cipd_enabled = True
+
+  if not options.cipd_enabled:
     return
 
   for pkg in options.cipd_packages:
@@ -92,14 +98,14 @@ def validate_cipd_options(parser, options):
       parser.error('invalid package "%s": version is not specified' % pkg)
 
   if not options.cipd_server:
-    parser.error('--cipd-package requires non-empty --cipd-server')
+    parser.error('cipd is enabled, --cipd-server is required')
 
   if not options.cipd_client_package:
     parser.error(
-        '--cipd-package requires non-empty --cipd-client-package')
+        'cipd is enabled, --cipd-client-package is required')
   if not options.cipd_client_version:
     parser.error(
-        '--cipd-package requires non-empty --cipd-client-version')
+        'cipd is enabled, --cipd-client-version is required')
 
 
 class CipdClient(object):

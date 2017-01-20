@@ -645,24 +645,31 @@ def run_tha_test(
 def install_packages(
     run_dir, packages, service_url, client_package_name,
     client_version, cache_dir=None, timeout=None):
-  """Installs packages. Returns stats, cipd client info and pins.
+  """Bootstraps CIPD client and installs CIPD packages.
 
-  pins and the cipd client info are in the form of:
+  Returns stats, cipd client info and pins. Pins and the CIPD client info are in
+  the form of:
     [
       {
         "path": path, "package_name": package_name, "version": version,
       },
       ...
     ]
-  (the cipd client info is a single dictionary instead of a list)
+  (the CIPD client info is a single dictionary instead of a list)
 
   such that they correspond 1:1 to all input package arguments from the command
   line. These dictionaries make their all the way back to swarming, where they
   become the arguments of CipdPackage.
 
+  If 'packages' list is empty, will bootstrap CIPD client, but won't install
+  any packages.
+
+  The bootstrapped client (regardless whether 'packages' list is empty or not),
+  will be made available to the task via $PATH. TODO(vadimsh): Implement this.
+
   Args:
     run_dir (str): root of installation.
-    packages: packages to install, list [(path, package_name, version), ...]
+    packages: packages to install, list [(path, package_name, version), ...].
     service_url (str): CIPD server url, e.g.
       "https://chrome-infra-packages.appspot.com."
     client_package_name (str): CIPD package name of CIPD client.
@@ -671,14 +678,13 @@ def install_packages(
     timeout: max duration in seconds that this function can take.
   """
   assert cache_dir
-  if not packages:
-    return None
 
   timeoutfn = tools.sliding_timeout(timeout)
   start = time.time()
-  cache_dir = os.path.abspath(cache_dir)
 
+  cache_dir = os.path.abspath(cache_dir)
   run_dir = os.path.abspath(run_dir)
+  packages = packages or []
 
   package_pins = [None]*len(packages)
   def insert_pin(path, name, version, idx):
@@ -907,10 +913,12 @@ def main(args):
 
   cipd.validate_cipd_options(parser, options)
 
-  install_packages_fn = lambda run_dir: install_packages(
-      run_dir, cipd.parse_package_args(options.cipd_packages),
-      options.cipd_server, options.cipd_client_package,
-      options.cipd_client_version, cache_dir=options.cipd_cache)
+  install_packages_fn = lambda _run_dir: None
+  if options.cipd_enabled:
+    install_packages_fn = lambda run_dir: install_packages(
+        run_dir, cipd.parse_package_args(options.cipd_packages),
+        options.cipd_server, options.cipd_client_package,
+        options.cipd_client_version, cache_dir=options.cipd_cache)
 
   def init_named_caches(run_dir):
     with named_cache_manager.open():
