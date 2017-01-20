@@ -11,6 +11,7 @@
 #include "gin/test/gtest.h"
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/support.h"
+#include "mojo/edk/js/threading.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -23,6 +24,7 @@ class TestRunnerDelegate : public gin::FileRunnerDelegate {
   TestRunnerDelegate() {
     AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
     AddBuiltinModule(Core::kModuleName, Core::GetModule);
+    AddBuiltinModule(Threading::kModuleName, Threading::GetModule);
     AddBuiltinModule(Support::kModuleName, Support::GetModule);
   }
 
@@ -36,30 +38,47 @@ void RunTest(std::string test, bool run_until_idle) {
   path = path.AppendASCII("mojo")
              .AppendASCII("public")
              .AppendASCII("js")
+             .AppendASCII("tests")
              .AppendASCII(test);
   TestRunnerDelegate delegate;
   gin::RunTestFromFile(path, &delegate, run_until_idle);
 }
 
 // TODO(abarth): Should we autogenerate these stubs from GYP?
-TEST(JSTest, core) {
-  RunTest("core_unittests.js", true);
+TEST(JSTest, Binding) {
+  RunTest("binding_unittest.js", false);
 }
 
-TEST(JSTest, codec) {
-  RunTest("codec_unittests.js", true);
+TEST(JSTest, Codec) {
+  RunTest("codec_unittest.js", true);
 }
 
-TEST(JSTest, struct) {
-  RunTest("struct_unittests.js", true);
+TEST(JSTest, Connection) {
+  RunTest("connection_unittest.js", false);
 }
 
-TEST(JSTest, union) {
-  RunTest("union_unittests.js", true);
+TEST(JSTest, Core) {
+  RunTest("core_unittest.js", true);
 }
 
-TEST(JSTest, validation) {
-  RunTest("validation_unittests.js", true);
+TEST(JSTest, InterfacePtr) {
+  RunTest("interface_ptr_unittest.js", false);
+}
+
+TEST(JSTest, SampleService) {
+  RunTest("sample_service_unittest.js", false);
+}
+
+TEST(JSTest, Struct) {
+  RunTest("struct_unittest.js", true);
+}
+
+TEST(JSTest, Union) {
+  RunTest("union_unittest.js", true);
+}
+
+TEST(JSTest, Validation) {
+  RunTest("validation_unittest.js", true);
 }
 
 }  // namespace

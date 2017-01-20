@@ -28,8 +28,7 @@ group("tests") {
   deps = [
     "//ipc:ipc_tests",
     "//mojo/common:mojo_common_unittests",
-    "//mojo/edk/js/test:js_integration_tests",
-    "//mojo/edk/js/test:js_unittests",
+    "//mojo/edk/js/tests",
     "//mojo/edk/system:mojo_message_pipe_perftests",
     "//mojo/edk/system:mojo_system_unittests",
     "//mojo/edk/test:mojo_public_bindings_perftests",

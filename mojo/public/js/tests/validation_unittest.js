@@ -11,7 +11,7 @@ define([
     "mojo/public/js/buffer",
     "mojo/public/js/codec",
     "mojo/public/js/core",
-    "mojo/public/js/test/validation_test_input_parser",
+    "mojo/public/js/tests/validation_test_input_parser",
     "mojo/public/js/validator",
 ], function(console,
             file,
