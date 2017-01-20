@@ -170,7 +170,13 @@ void NEVER_INLINE crashWithWorkerScriptLoader() {
   CRASH();
 }
 
-void NEVER_INLINE crashWithXHR() {
+void NEVER_INLINE crashWithSyncXHR() {
+  const char* name = __func__;
+  WTF::debug::alias(&name);
+  CRASH();
+}
+
+void NEVER_INLINE crashWithAsyncXHR() {
   const char* name = __func__;
   WTF::debug::alias(&name);
   CRASH();
@@ -510,7 +516,10 @@ DocumentThreadableLoader::~DocumentThreadableLoader() {
         crashWithWorkerScriptLoader();
         break;
       case ClientSpec::kXHR:
-        crashWithXHR();
+        if (m_async)
+          crashWithAsyncXHR();
+        else
+          crashWithSyncXHR();
         break;
       case ClientSpec::kTesting:
         crashWithTesting();
