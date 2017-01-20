@@ -2269,10 +2269,12 @@ String AXNodeObject::nativeTextAlternative(
            ++labelIndex) {
         Element* label = labels->item(labelIndex);
         if (nameSources) {
-          if (label->getAttribute(forAttr) == htmlElement->getIdAttribute())
+          if (!label->getAttribute(forAttr).isEmpty() &&
+              label->getAttribute(forAttr) == htmlElement->getIdAttribute()) {
             nameSources->back().nativeSource = AXTextFromNativeHTMLLabelFor;
-          else
+          } else {
             nameSources->back().nativeSource = AXTextFromNativeHTMLLabelWrapped;
+          }
         }
         labelElements.push_back(label);
       }
