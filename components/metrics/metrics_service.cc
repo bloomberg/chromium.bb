@@ -178,6 +178,11 @@ namespace {
 const base::Feature kUploadSchedulerFeature{"UMAUploadScheduler",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// This drops records if the number of events (user action and omnibox) exceeds
+// the kEventLimit.
+const base::Feature kUMAThrottleEvents{"UMAThrottleEvents",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 bool HasUploadScheduler() {
   return base::FeatureList::IsEnabled(kUploadSchedulerFeature);
 }
@@ -803,13 +808,14 @@ void MetricsService::CloseCurrentLog() {
   if (!log_manager_.current_log())
     return;
 
-  // TODO(jar): Integrate bounds on log recording more consistently, so that we
-  // can stop recording logs that are too big much sooner.
+  // TODO(rkaplow): Evaluate if this is needed.
   if (log_manager_.current_log()->num_events() > kEventLimit) {
     UMA_HISTOGRAM_COUNTS("UMA.Discarded Log Events",
                          log_manager_.current_log()->num_events());
-    log_manager_.DiscardCurrentLog();
-    OpenNewLog();  // Start trivial log to hold our histograms.
+    if (base::FeatureList::IsEnabled(kUMAThrottleEvents)) {
+      log_manager_.DiscardCurrentLog();
+      OpenNewLog();  // Start trivial log to hold our histograms.
+    }
   }
 
   // If a persistent allocator is in use, update its internal histograms (such
