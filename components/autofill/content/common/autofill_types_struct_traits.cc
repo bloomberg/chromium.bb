@@ -295,6 +295,8 @@ bool StructTraits<mojom::FormFieldDataDataView, FormFieldData>::Read(
     return false;
   if (!data.ReadName(&out->name))
     return false;
+  if (!data.ReadId(&out->id))
+    return false;
   if (!data.ReadValue(&out->value))
     return false;
 

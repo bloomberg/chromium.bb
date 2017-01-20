@@ -64,6 +64,7 @@ enum PasswordFormFieldPredictionType {
 struct FormFieldData {
   string label;
   string name;
+  string id;
   string value;
   string form_control_type;
   string autocomplete_attribute;

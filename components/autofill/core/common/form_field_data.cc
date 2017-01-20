@@ -15,7 +15,7 @@ namespace {
 
 // Increment this anytime pickle format is modified as well as provide
 // deserialization routine from previous kPickleVersion format.
-const int kPickleVersion = 6;
+const int kPickleVersion = 7;
 
 void AddVectorToPickle(std::vector<base::string16> strings,
                        base::Pickle* pickle) {
@@ -114,6 +114,11 @@ bool DeserializeSection9(base::PickleIterator* iter,
   return iter->ReadUInt32(&field_data->properties_mask);
 }
 
+bool DeserializeSection10(base::PickleIterator* iter,
+                          FormFieldData* field_data) {
+  return iter->ReadString16(&field_data->id);
+}
+
 }  // namespace
 
 FormFieldData::FormFieldData()
@@ -134,7 +139,7 @@ FormFieldData::~FormFieldData() {
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // A FormFieldData stores a value, but the value is not part of the identity
   // of the field, so we don't want to compare the values.
-  return label == field.label && name == field.name &&
+  return label == field.label && name == field.name && id == field.id &&
          form_control_type == field.form_control_type &&
          autocomplete_attribute == field.autocomplete_attribute &&
          placeholder == field.placeholder && max_length == field.max_length &&
@@ -177,6 +182,8 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (label > field.label) return false;
   if (name < field.name) return true;
   if (name > field.name) return false;
+  if (id < field.id) return true;
+  if (id > field.id) return false;
   if (form_control_type < field.form_control_type) return true;
   if (form_control_type > field.form_control_type) return false;
   if (autocomplete_attribute < field.autocomplete_attribute) return true;
@@ -222,6 +229,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteString16(field_data.placeholder);
   pickle->WriteString16(field_data.css_classes);
   pickle->WriteUInt32(field_data.properties_mask);
+  pickle->WriteString16(field_data.id);
 }
 
 bool DeserializeFormFieldData(base::PickleIterator* iter,
@@ -306,6 +314,21 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
       }
       break;
     }
+    case 7: {
+      if (!DeserializeSection1(iter, &temp_form_field_data) ||
+          !DeserializeSection6(iter, &temp_form_field_data) ||
+          !DeserializeSection7(iter, &temp_form_field_data) ||
+          !DeserializeSection2(iter, &temp_form_field_data) ||
+          !DeserializeSection3(iter, &temp_form_field_data) ||
+          !DeserializeSection4(iter, &temp_form_field_data) ||
+          !DeserializeSection8(iter, &temp_form_field_data) ||
+          !DeserializeSection9(iter, &temp_form_field_data) ||
+          !DeserializeSection10(iter, &temp_form_field_data)) {
+        LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
+        return false;
+      }
+      break;
+    }
     default: {
       LOG(ERROR) << "Unknown FormFieldData pickle version " << version;
       return false;
@@ -341,6 +364,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
 
   return os << base::UTF16ToUTF8(field.label) << " "
             << base::UTF16ToUTF8(field.name) << " "
+            << base::UTF16ToUTF8(field.id) << " "
             << base::UTF16ToUTF8(field.value) << " " << field.form_control_type
             << " " << field.autocomplete_attribute << " " << field.placeholder
             << " " << field.max_length << " " << field.css_classes << " "

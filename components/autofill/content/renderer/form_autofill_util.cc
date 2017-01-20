@@ -1366,14 +1366,18 @@ void WebFormControlElementToFormField(
   DCHECK(field);
   DCHECK(!element.isNull());
   CR_DEFINE_STATIC_LOCAL(WebString, kAutocomplete, ("autocomplete"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kId, ("id"));
   CR_DEFINE_STATIC_LOCAL(WebString, kRole, ("role"));
   CR_DEFINE_STATIC_LOCAL(WebString, kPlaceholder, ("placeholder"));
   CR_DEFINE_STATIC_LOCAL(WebString, kClass, ("class"));
 
-  // The label is not officially part of a WebFormControlElement; however, the
-  // labels for all form control elements are scraped from the DOM and set in
-  // WebFormElementToFormData.
+  // Save both id and name attributes, if present. If there is only one of them,
+  // it will be saved to |name|. See HTMLFormControlElement::nameForAutofill.
   field->name = element.nameForAutofill();
+  base::string16 id = element.getAttribute(kId);
+  if (id != field->name)
+    field->id = id;
+
   field->form_control_type = element.formControlType().utf8();
   field->autocomplete_attribute = element.getAttribute(kAutocomplete).utf8();
   if (field->autocomplete_attribute.size() > kMaxDataLength) {

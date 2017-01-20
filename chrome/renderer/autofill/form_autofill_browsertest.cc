@@ -2385,6 +2385,38 @@ TEST_F(FormAutofillTest, WebFormElementToFormData_CssClasses) {
   EXPECT_EQ(base::string16(), form.fields[2].css_classes);
 }
 
+// Tests id attributes are set.
+TEST_F(FormAutofillTest, WebFormElementToFormData_IdAttributes) {
+  LoadHTML(
+      "<FORM name='TestForm' id='form' action='http://cnn.com' method='post' "
+      "autocomplete='off'>"
+      "    <INPUT type='text' name='name1' id='firstname' />"
+      "    <INPUT type='text' name='name2' id='lastname' />"
+      "    <INPUT type='text' name='same' id='same' />"
+      "    <INPUT type='text' id='addressline1' />"
+      "</FORM>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormElement web_form =
+      frame->document().getElementById("form").to<WebFormElement>();
+  ASSERT_FALSE(web_form.isNull());
+
+  FormData form;
+  EXPECT_TRUE(WebFormElementToFormData(web_form, WebFormControlElement(),
+                                       nullptr, EXTRACT_NONE, &form, nullptr));
+
+  EXPECT_EQ(4U, form.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("firstname"), form.fields[0].id);
+  EXPECT_EQ(ASCIIToUTF16("lastname"), form.fields[1].id);
+  // Don't save the id attribute if its value coincides with the name attribute.
+  EXPECT_TRUE(form.fields[2].id.empty());
+  // Don't save the id attribute because it has been saved in the |name| field.
+  EXPECT_TRUE(form.fields[3].id.empty());
+  EXPECT_EQ(base::string16(), form.fields[2].css_classes);
+}
+
 TEST_F(FormAutofillTest, ExtractForms) {
   ExpectJohnSmithLabels(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"

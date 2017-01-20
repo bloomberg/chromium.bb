@@ -1159,6 +1159,9 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
         if (!field->name.empty())
           added_field->set_name(base::UTF16ToUTF8(field->name));
 
+        if (!field->id.empty())
+          added_field->set_id(base::UTF16ToUTF8(field->id));
+
         if (!field->autocomplete_attribute.empty())
           added_field->set_autocomplete(field->autocomplete_attribute);
 

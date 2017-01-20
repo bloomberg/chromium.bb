@@ -159,13 +159,13 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   upload.set_form_name("test_form");
 
   test::FillUploadField(upload.add_field(), 2594484045U, "one", "text", nullptr,
-                        2U, nullptr);
+                        2U);
   test::FillUploadField(upload.add_field(), 2750915947U, "two", "text", "off",
-                        2U, nullptr);
+                        2U);
   test::FillUploadField(upload.add_field(), 3494787134U, "three", "text",
-                        nullptr, 2U, nullptr);
+                        nullptr, 2U);
   test::FillUploadField(upload.add_field(), 1236501728U, "four", "text", "off",
-                        2U, nullptr);
+                        2U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));

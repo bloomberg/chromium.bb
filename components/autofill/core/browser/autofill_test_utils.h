@@ -132,8 +132,7 @@ void FillUploadField(AutofillUploadContents::Field* field,
                      const char* name,
                      const char* control_type,
                      const char* autocomplete,
-                     unsigned autofill_type,
-                     const char* css_classes);
+                     unsigned autofill_type);
 
 // Fills the query form |field| with the information passed by parameter. If the
 // value of a const char* parameter is NULL, the corresponding attribute won't

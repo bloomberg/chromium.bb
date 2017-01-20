@@ -69,6 +69,7 @@ struct FormFieldData {
   // serializing functions (in the .cc file) and the constructor.
   base::string16 label;
   base::string16 name;
+  base::string16 id;
   base::string16 value;
   std::string form_control_type;
   std::string autocomplete_attribute;
@@ -118,6 +119,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.is_autofilled, actual.is_autofilled);                   \
     EXPECT_EQ(expected.check_status, actual.check_status);                     \
     EXPECT_EQ(expected.properties_mask, actual.properties_mask);               \
+    EXPECT_EQ(expected.id, actual.id);                                         \
   } while (0)
 
 }  // namespace autofill

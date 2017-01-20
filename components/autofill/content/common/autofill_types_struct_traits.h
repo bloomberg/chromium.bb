@@ -96,6 +96,10 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.name;
   }
 
+  static const base::string16& id(const autofill::FormFieldData& r) {
+    return r.id;
+  }
+
   static const base::string16& value(const autofill::FormFieldData& r) {
     return r.value;
   }

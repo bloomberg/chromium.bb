@@ -2191,15 +2191,15 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   upload.set_action_signature(15724779818122431245U);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
-                        nullptr, 3U, nullptr);
+                        nullptr, 3U);
   test::FillUploadField(upload.add_field(), 3494530716U, "lastname", "text",
-                        nullptr, 5U, nullptr);
+                        nullptr, 5U);
   test::FillUploadField(upload.add_field(), 1029417091U, "email", "email",
-                        nullptr, 9U, nullptr);
+                        nullptr, 9U);
   test::FillUploadField(upload.add_field(), 466116101U, "phone", "number",
-                        nullptr, 14U, nullptr);
+                        nullptr, 14U);
   test::FillUploadField(upload.add_field(), 2799270304U, "country",
-                        "select-one", nullptr, 36U, nullptr);
+                        "select-one", nullptr, 36U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -2247,7 +2247,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   // Create an additonal 8 fields (total of 13).
   for (int i = 0; i < 8; ++i) {
     test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
-                          nullptr, 30U, nullptr);
+                          nullptr, 30U);
   }
   // Put the appropriate autofill type on the different address fields.
   upload.mutable_field(6)->set_autofill_type(31U);
@@ -2375,14 +2375,14 @@ TEST_F(FormStructureTest,
 
   AutofillUploadContents::Field* upload_firstname_field = upload.add_field();
   test::FillUploadField(upload_firstname_field, 4224610201U, "firstname", "",
-                        "given-name", 3U, nullptr);
+                        "given-name", 3U);
   upload_firstname_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
   upload_firstname_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS);
 
   AutofillUploadContents::Field* upload_lastname_field = upload.add_field();
   test::FillUploadField(upload_lastname_field, 2786066110U, "lastname", "",
-                        "family-name", 5U, nullptr);
+                        "family-name", 5U);
   upload_lastname_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
   upload_lastname_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
@@ -2390,7 +2390,7 @@ TEST_F(FormStructureTest,
 
   AutofillUploadContents::Field* upload_email_field = upload.add_field();
   test::FillUploadField(upload_email_field, 1029417091U, "email", "email",
-                        "email", 9U, nullptr);
+                        "email", 9U);
   upload_email_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
   upload_email_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
@@ -2398,7 +2398,7 @@ TEST_F(FormStructureTest,
 
   AutofillUploadContents::Field* upload_username_field = upload.add_field();
   test::FillUploadField(upload_username_field, 239111655U, "username", "text",
-                        "email", 86U, nullptr);
+                        "email", 86U);
   upload_username_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
   upload_username_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
@@ -2406,7 +2406,7 @@ TEST_F(FormStructureTest,
 
   AutofillUploadContents::Field* upload_password_field = upload.add_field();
   test::FillUploadField(upload_password_field, 2051817934U, "password",
-                        "password", "email", 76U, nullptr);
+                        "password", "email", 76U);
   upload_password_field->set_form_classifier_outcome(
       AutofillUploadContents::Field::GENERATION_ELEMENT);
   upload_password_field->set_generation_type(
@@ -2480,11 +2480,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   upload.set_action_signature(15724779818122431245U);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
-                        "given-name", 3U, nullptr);
+                        "given-name", 3U);
   test::FillUploadField(upload.add_field(), 3494530716U, "lastname", "text",
-                        "family-name", 5U, nullptr);
+                        "family-name", 5U);
   test::FillUploadField(upload.add_field(), 1029417091U, "email", "email",
-                        "email", 9U, nullptr);
+                        "email", 9U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -2548,11 +2548,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
   upload.set_action_signature(15724779818122431245U);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
-                        nullptr, 3U, nullptr);
+                        nullptr, 3U);
   test::FillUploadField(upload.add_field(), 3494530716U, "lastname", "text",
-                        nullptr, 5U, nullptr);
+                        nullptr, 5U);
   test::FillUploadField(upload.add_field(), 1029417091U, "email", "email",
-                        nullptr, 9U, nullptr);
+                        nullptr, 9U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -2613,11 +2613,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
   upload.set_action_signature(15724779818122431245U);
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 3U, nullptr);
+                        nullptr, 3U);
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 5U, nullptr);
+                        nullptr, 5U);
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 9U, nullptr);
+                        nullptr, 9U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -2631,7 +2631,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
 }
 
-TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClasses) {
+TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
   std::vector<ServerFieldTypeSet> possible_field_types;
   FormData form;
 
@@ -2643,11 +2643,13 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClasses) {
   possible_field_types.back().insert(NAME_FIRST);
 
   field.css_classes = ASCIIToUTF16("last_name_field");
+  field.id = ASCIIToUTF16("lastname_id");
   form.fields.push_back(field);
   possible_field_types.push_back(ServerFieldTypeSet());
   possible_field_types.back().insert(NAME_LAST);
 
   field.css_classes = ASCIIToUTF16("email_field required_field");
+  field.id = ASCIIToUTF16("email_id");
   form.fields.push_back(field);
   possible_field_types.push_back(ServerFieldTypeSet());
   possible_field_types.back().insert(EMAIL_ADDRESS);
@@ -2672,12 +2674,20 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClasses) {
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
 
-  test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 3U, nullptr);
-  test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 5U, "last_name_field");
-  test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 9U, "email_field required_field");
+  AutofillUploadContents::Field* firstname_field = upload.add_field();
+  test::FillUploadField(firstname_field, 1318412689U, nullptr, "text", nullptr,
+                        3U);
+
+  AutofillUploadContents::Field* lastname_field = upload.add_field();
+  test::FillUploadField(lastname_field, 1318412689U, nullptr, "text", nullptr,
+                        5U);
+  lastname_field->set_id("lastname_id");
+  lastname_field->set_css_classes("last_name_field");
+
+  AutofillUploadContents::Field* email_field = upload.add_field();
+  test::FillUploadField(email_field, 1318412689U, nullptr, "text", nullptr, 9U);
+  email_field->set_id("email_id");
+  email_field->set_css_classes("email_field required_field");
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -2738,11 +2748,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   upload.set_form_name("myform");
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 3U, nullptr);
+                        nullptr, 3U);
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 5U, nullptr);
+                        nullptr, 5U);
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 9U, nullptr);
+                        nullptr, 9U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -2808,11 +2818,11 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   upload.set_action_signature(15724779818122431245U);
 
   test::FillUploadField(upload.add_field(), 1318412689U, nullptr, "text",
-                        nullptr, 3U, nullptr);
+                        nullptr, 3U);
   test::FillUploadField(upload.add_field(), 3494530716U, "lastname", "text",
-                        "family-name", 5U, nullptr);
+                        "family-name", 5U);
   test::FillUploadField(upload.add_field(), 1545468175U, "lastname", "email",
-                        "email", 9U, nullptr);
+                        "email", 9U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -2841,6 +2851,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("firstname");
+  field.id = ASCIIToUTF16("first_name");
   field.autocomplete_attribute = "given-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   form.fields.push_back(field);
@@ -2849,6 +2860,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
+  field.id = ASCIIToUTF16("last_name");
   field.autocomplete_attribute = "family-name";
   field.css_classes = ASCIIToUTF16("class1 class2");
   form.fields.push_back(field);
@@ -2857,6 +2869,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
 
   field.label = ASCIIToUTF16("Email");
   field.name = ASCIIToUTF16("email");
+  field.id = ASCIIToUTF16("e-mail");
   field.form_control_type = "email";
   field.autocomplete_attribute = "email";
   field.css_classes = ASCIIToUTF16("class1 class2");
@@ -2884,11 +2897,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   upload.set_data_present("1440");
 
   test::FillUploadField(upload.add_field(), 3763331450U, nullptr, nullptr,
-                        nullptr, 3U, nullptr);
+                        nullptr, 3U);
   test::FillUploadField(upload.add_field(), 3494530716U, nullptr, nullptr,
-                        nullptr, 5U, nullptr);
+                        nullptr, 5U);
   test::FillUploadField(upload.add_field(), 1029417091U, nullptr, nullptr,
-                        nullptr, 9U, nullptr);
+                        nullptr, 9U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -2944,11 +2957,11 @@ TEST_F(FormStructureTest, CheckDataPresence) {
   upload.set_action_signature(15724779818122431245U);
 
   test::FillUploadField(upload.add_field(), 1089846351U, "first", "text",
-                        nullptr, 1U, nullptr);
+                        nullptr, 1U);
   test::FillUploadField(upload.add_field(), 2404144663U, "last", "text",
-                        nullptr, 1U, nullptr);
+                        nullptr, 1U);
   test::FillUploadField(upload.add_field(), 420638584U, "email", "text",
-                        nullptr, 1U, nullptr);
+                        nullptr, 1U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -3212,13 +3225,13 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   upload.set_action_signature(15724779818122431245U);
 
   test::FillUploadField(upload.add_field(), 420638584U, "email", "text",
-                        nullptr, 9U, nullptr);
+                        nullptr, 9U);
   test::FillUploadField(upload.add_field(), 1089846351U, "first", "text",
-                        nullptr, 3U, nullptr);
+                        nullptr, 3U);
   test::FillUploadField(upload.add_field(), 2404144663U, "last", "text",
-                        nullptr, 5U, nullptr);
+                        nullptr, 5U);
   test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
-                        nullptr, 30U, nullptr);
+                        nullptr, 30U);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -3240,10 +3253,10 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   upload.mutable_field(2)->set_autofill_type(3);
   // Replace the fourth field by the old third field.
   test::FillUploadField(upload.mutable_field(3), 2404144663U, "last", "text",
-                        nullptr, 5U, nullptr);
+                        nullptr, 5U);
   // Re-add the old fourth field.
   test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
-                        nullptr, 30U, nullptr);
+                        nullptr, 30U);
 
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
@@ -3261,7 +3274,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
   // Adjust the expected upload proto.
   test::FillUploadField(upload.add_field(), 509334676U, "address", "text",
-                        nullptr, 31U, nullptr);
+                        nullptr, 31U);
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   AutofillUploadContents encoded_upload3;
