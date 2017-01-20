@@ -39,6 +39,8 @@
 #include "modules/compositorworker/AbstractAnimationWorkletThread.h"
 #include "platform/InstanceCounters.h"
 #include "platform/Timer.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include "public/web/WebFrame.h"
 #include "web/WebLocalFrameImpl.h"
 
@@ -52,9 +54,14 @@ class WebLeakDetectorImpl final : public WebLeakDetector {
  public:
   explicit WebLeakDetectorImpl(WebLeakDetectorClient* client)
       : m_client(client),
-        m_delayedGCAndReportTimer(this,
-                                  &WebLeakDetectorImpl::delayedGCAndReport),
-        m_delayedReportTimer(this, &WebLeakDetectorImpl::delayedReport),
+        m_delayedGCAndReportTimer(
+            Platform::current()->currentThread()->getWebTaskRunner(),
+            this,
+            &WebLeakDetectorImpl::delayedGCAndReport),
+        m_delayedReportTimer(
+            Platform::current()->currentThread()->getWebTaskRunner(),
+            this,
+            &WebLeakDetectorImpl::delayedReport),
         m_numberOfGCNeeded(0) {
     DCHECK(m_client);
   }
@@ -69,8 +76,8 @@ class WebLeakDetectorImpl final : public WebLeakDetector {
   void delayedReport(TimerBase*);
 
   WebLeakDetectorClient* m_client;
-  Timer<WebLeakDetectorImpl> m_delayedGCAndReportTimer;
-  Timer<WebLeakDetectorImpl> m_delayedReportTimer;
+  TaskRunnerTimer<WebLeakDetectorImpl> m_delayedGCAndReportTimer;
+  TaskRunnerTimer<WebLeakDetectorImpl> m_delayedReportTimer;
   int m_numberOfGCNeeded;
 };
 
