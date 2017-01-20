@@ -79,6 +79,10 @@ class CONTENT_EXPORT AsyncResourceHandler : public ResourceHandler,
 
   int allocation_size_;
 
+  // Size of received body. Used for comparison with expected content size,
+  // which is reported to UMA.
+  int64_t total_read_body_bytes_;
+
   bool first_chunk_read_ = false;
 
   bool did_defer_;

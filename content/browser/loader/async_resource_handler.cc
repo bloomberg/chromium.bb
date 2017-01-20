@@ -73,6 +73,17 @@ void InitializeResourceBufferConstants() {
   GetNumericArg("resource-buffer-max-allocation-size", &kMaxAllocationSize);
 }
 
+// This enum is used for logging a histogram and should not be reordered.
+enum ExpectedContentSizeResult {
+  EQ_RESPONSE_BODY = 0,
+  EQ_RESPONSE_BODY_GT_EQ_BUFFER_SIZE = 1,
+  GT_EQ_BUFFER_SIZE = 2,
+  LT_RESPONSE_BODY = 3,
+  GT_RESPONSE_BODY = 4,
+  UNKNOWN = 5,
+  EXPECTED_CONTENT_MAX,
+};
+
 }  // namespace
 
 // Used when kOptimizeLoadingIPCForSmallResources is enabled.
@@ -192,14 +203,14 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
   scoped_refptr<ResourceBuffer> backing_;
 };
 
-AsyncResourceHandler::AsyncResourceHandler(
-    net::URLRequest* request,
-    ResourceDispatcherHostImpl* rdh)
+AsyncResourceHandler::AsyncResourceHandler(net::URLRequest* request,
+                                           ResourceDispatcherHostImpl* rdh)
     : ResourceHandler(request),
       ResourceMessageDelegate(request),
       rdh_(rdh),
       pending_data_count_(0),
       allocation_size_(0),
+      total_read_body_bytes_(0),
       did_defer_(false),
       has_checked_for_sufficient_resources_(false),
       sent_received_response_msg_(false),
@@ -396,6 +407,8 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
   buffer_->ShrinkLastAllocation(bytes_read);
 
+  total_read_body_bytes_ += bytes_read;
+
   if (!sent_data_buffer_msg_) {
     base::SharedMemoryHandle handle = base::SharedMemory::DuplicateHandle(
         buffer_->GetSharedMemory().handle());
@@ -552,6 +565,34 @@ void AsyncResourceHandler::RecordHistogram() {
   }
 
   inlining_helper_->RecordHistogram(elapsed_time);
+
+  // Record if content size was known in advance.
+  int64_t expected_content_size = request()->GetExpectedContentSize();
+  ExpectedContentSizeResult expected_content_size_result =
+      ExpectedContentSizeResult::UNKNOWN;
+  if (expected_content_size >= 0) {
+    // Compare response body size to expected content size.
+    if (expected_content_size == total_read_body_bytes_ &&
+        expected_content_size >= kBufferSize) {
+      expected_content_size_result =
+          ExpectedContentSizeResult::EQ_RESPONSE_BODY_GT_EQ_BUFFER_SIZE;
+    } else if (expected_content_size >= kBufferSize) {
+      expected_content_size_result =
+          ExpectedContentSizeResult::GT_EQ_BUFFER_SIZE;
+    } else if (expected_content_size == total_read_body_bytes_) {
+      expected_content_size_result =
+          ExpectedContentSizeResult::EQ_RESPONSE_BODY;
+    } else if (expected_content_size < total_read_body_bytes_) {
+      expected_content_size_result =
+          ExpectedContentSizeResult::LT_RESPONSE_BODY;
+    } else {
+      expected_content_size_result =
+          ExpectedContentSizeResult::GT_RESPONSE_BODY;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.ResourceLoader.ExpectedContentSizeResult",
+                            expected_content_size_result,
+                            ExpectedContentSizeResult::EXPECTED_CONTENT_MAX);
 }
 
 void AsyncResourceHandler::SendUploadProgress(
