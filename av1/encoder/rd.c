@@ -663,6 +663,7 @@ static void get_entropy_contexts_plane(
             !!(*(const uint64_t *)&above[i] | *(const uint64_t *)&above[i + 8]);
       for (i = 0; i < num_4x4_h; i += 8)
         t_left[i] = !!*(const uint64_t *)&left[i];
+      break;
 
     default: assert(0 && "Invalid transform size."); break;
   }
