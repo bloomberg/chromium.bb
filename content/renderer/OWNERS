@@ -11,8 +11,3 @@ per-file *.sb=rsesek@chromium.org
 # DirectWrite specific changes.
 per-file renderer_font_platform_win.*=scottmg@chromium.org
 per-file renderer_font_platform_win.*=cpu@chromium.org
-
-# WebSocket
-per-file *websocket*=ricea@chromium.org
-per-file *websocket*=tyoshino@chromium.org
-per-file *websocket*=yhirano@chromium.org
