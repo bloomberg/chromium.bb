@@ -15,6 +15,8 @@
 
 namespace content {
 
+constexpr uint32_t URLResponseBodyConsumer::kMaxNumConsumedBytesInTask;
+
 class URLResponseBodyConsumer::ReceivedData final
     : public RequestPeer::ReceivedData {
  public:
@@ -98,6 +100,7 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     return;
 
   DCHECK(!is_in_on_readable_);
+  uint32_t num_bytes_consumed = 0;
 
   // Protect |this| as RequestPeer::OnReceivedData may call deref.
   scoped_refptr<URLResponseBodyConsumer> protect(this);
@@ -122,6 +125,20 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
       NotifyCompletionIfAppropriate();
       return;
     }
+    DCHECK_LE(num_bytes_consumed, kMaxNumConsumedBytesInTask);
+    available =
+        std::min(available, kMaxNumConsumedBytesInTask - num_bytes_consumed);
+    if (available == 0) {
+      // We've already consumed many bytes in this task. Defer the remaining
+      // to the next task.
+      result = mojo::EndReadDataRaw(handle_.get(), 0);
+      DCHECK_EQ(result, MOJO_RESULT_OK);
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&URLResponseBodyConsumer::OnReadable,
+                                        AsWeakPtr(), MOJO_RESULT_OK));
+      return;
+    }
+    num_bytes_consumed += available;
     ResourceDispatcher::PendingRequestInfo* request_info =
         resource_dispatcher_->GetPendingRequestInfo(request_id_);
     DCHECK(request_info);

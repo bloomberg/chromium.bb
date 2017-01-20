@@ -265,6 +265,45 @@ TEST_F(URLResponseBodyConsumerTest, CloseThenOnComplete) {
   EXPECT_EQ("", context.data);
 }
 
+TEST_F(URLResponseBodyConsumerTest, TooBigChunkShouldBeSplit) {
+  constexpr auto kMaxNumConsumedBytesInTask =
+      URLResponseBodyConsumer::kMaxNumConsumedBytesInTask;
+  TestRequestPeer::Context context;
+  std::unique_ptr<ResourceRequest> request(CreateResourceRequest());
+  int request_id = SetUpRequestPeer(std::move(request), &context);
+  auto options = CreateDataPipeOptions();
+  options.capacity_num_bytes = 2 * kMaxNumConsumedBytesInTask;
+  mojo::DataPipe data_pipe(options);
+
+  mojo::ScopedDataPipeProducerHandle writer =
+      std::move(data_pipe.producer_handle);
+  void* buffer = nullptr;
+  uint32_t size = 0;
+  MojoResult result =
+      mojo::BeginWriteDataRaw(writer.get(), &buffer, &size, kNone);
+
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+  ASSERT_EQ(options.capacity_num_bytes, size);
+
+  memset(buffer, 'a', kMaxNumConsumedBytesInTask);
+  memset(static_cast<char*>(buffer) + kMaxNumConsumedBytesInTask, 'b',
+         kMaxNumConsumedBytesInTask);
+
+  result = mojo::EndWriteDataRaw(writer.get(), size);
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+
+  scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
+      request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
+      message_loop_.task_runner()));
+
+  Run(&context);
+  EXPECT_EQ(std::string(kMaxNumConsumedBytesInTask, 'a'), context.data);
+  context.data.clear();
+
+  Run(&context);
+  EXPECT_EQ(std::string(kMaxNumConsumedBytesInTask, 'b'), context.data);
+}
+
 }  // namespace
 
 }  // namespace content
