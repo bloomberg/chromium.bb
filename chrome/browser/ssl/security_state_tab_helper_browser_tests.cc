@@ -1053,39 +1053,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithPasswordCcSwitch,
               content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
 }
 
-// Tests that when a visible password field is detected on an HTTP page
-// load, and when the command-line flag is *not* set, the security level is
-// *not* downgraded to HTTP_SHOW_WARNING.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
-                       PasswordSecurityLevelNotDowngradedWithoutSwitch) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-
-  ui_test_utils::NavigateToURL(
-      browser(), GetURLWithNonLocalHostname(embedded_test_server(),
-                                            "/password/simple_password.html"));
-  InjectScript(contents);
-  // The security level should not be HTTP_SHOW_WARNING, because the
-  // command-line switch was not set.
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
-
-  // The appropriate SSLStatus flags should be set, however.
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  ASSERT_TRUE(entry);
-  EXPECT_TRUE(entry->GetSSL().content_status &
-              content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
-}
-
 // Tests that when a visible password field is detected on an HTTPS page
 // load, and when the command-line flag is set, the security level is
 // *not* downgraded to HTTP_SHOW_WARNING.

@@ -274,24 +274,6 @@ TEST(SecurityStateTest, CreditCardFieldWarning) {
   EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
 }
 
-// Tests that neither password nor credit fields cause the security
-// level to be downgraded to HTTP_SHOW_WARNING when the command-line switch
-// is NOT set.
-TEST(SecurityStateTest, HttpWarningNotSetWithoutSwitch) {
-  TestSecurityStateHelper helper;
-  helper.UseHttpUrl();
-  helper.set_displayed_password_field_on_http(true);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.displayed_password_field_on_http);
-  EXPECT_EQ(NONE, security_info.security_level);
-
-  helper.set_displayed_credit_card_field_on_http(true);
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.displayed_credit_card_field_on_http);
-  EXPECT_EQ(NONE, security_info.security_level);
-}
-
 // Tests that neither |displayed_password_field_on_http| nor
 // |displayed_credit_card_field_on_http| is set when the corresponding
 // VisibleSecurityState flags are not set.

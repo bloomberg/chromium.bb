@@ -74,9 +74,17 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
     if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
             group, displayed_sensitive_input_on_http, &level, &status)) {
       // If neither the command-line switch nor field trial group is set, then
-      // nonsecure defaults to neutral.
+      // nonsecure defaults to neutral for iOS and HTTP_SHOW_WARNING on other
+      // platforms.
+#if defined(OS_IOS)
       status = NEUTRAL;
       level = NONE;
+#else
+      status = HTTP_SHOW_WARNING;
+      level = displayed_sensitive_input_on_http
+                  ? security_state::HTTP_SHOW_WARNING
+                  : NONE;
+#endif
     }
   }
 
