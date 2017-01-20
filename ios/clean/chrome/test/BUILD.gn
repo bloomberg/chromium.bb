@@ -15,5 +15,6 @@ test("ios_clean_chrome_unittests") {
   deps = [
     "//ios/chrome/test:run_all_unittests",
     "//ios/clean/chrome/browser:unit_tests",
+    "//ios/clean/chrome/browser/tab_model:unit_tests",
   ]
 }

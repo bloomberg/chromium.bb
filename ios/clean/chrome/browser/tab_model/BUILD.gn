@@ -2,39 +2,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("browser") {
+source_set("tab_model") {
   sources = [
-    "browser_coordinator+internal.h",
-    "browser_coordinator.h",
-    "browser_coordinator.mm",
-    "url_opening.h",
+    "tab_group.h",
+    "tab_group.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     "//base",
-    "//ios/chrome/app:tests_fake_hook",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/tabs:tabs_internal",
-    "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/clean/chrome/browser/web",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "browser_coordinator_unittest.mm",
+    "tab_group_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":browser",
+    ":tab_model",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/test/base",
+    "//ios/clean/chrome/browser/web",
     "//testing/gtest",
   ]
 }

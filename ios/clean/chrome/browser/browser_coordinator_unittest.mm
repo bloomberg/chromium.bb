@@ -5,10 +5,8 @@
 #import "ios/clean/chrome/browser/browser_coordinator.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
 
-#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,6 +46,8 @@
 }
 
 @end
+
+namespace {
 
 TEST(BrowserCoordinatorTest, TestStopOnDealloc) {
   __block BOOL called = NO;
@@ -135,3 +135,5 @@ TEST(BrowserCoordinatorTest, TestOverlay) {
   [noOverlays addOverlayCoordinator:thirdOverlay];
   EXPECT_FALSE(thirdOverlay.overlaying);
 }
+
+}  // namespace

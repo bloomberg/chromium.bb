@@ -13,6 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/clean/chrome/browser/browser_coordinator+internal.h"
+#import "ios/clean/chrome/browser/tab_model/tab_group.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
@@ -34,16 +35,24 @@
                                  SettingsCommands,
                                  TabCommands,
                                  TabGridCommands>
+@property(nonatomic, strong) TabGroup* tabGroup;
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
 @end
 
-@implementation TabGridCoordinator {
-  std::unique_ptr<web::WebState> _placeholderWebState;
-}
-
+@implementation TabGridCoordinator
+@synthesize tabGroup = _tabGroup;
 @synthesize viewController = _viewController;
 @synthesize settingsCoordinator = _settingsCoordinator;
+
+#pragma mark - Properties
+
+- (void)setBrowserState:(ios::ChromeBrowserState*)browserState {
+  [super setBrowserState:browserState];
+  // PLACEHOLDER: Generate a tab group with four empty tabs.
+  self.tabGroup =
+      [TabGroup tabGroupWithEmptyTabCount:4 forBrowserState:self.browserState];
+}
 
 #pragma mark - BrowserCoordinator
 
@@ -65,18 +74,12 @@
 #pragma mark - TabGridDataSource
 
 - (NSUInteger)numberOfTabsInTabGrid {
-  return 1;
+  return self.tabGroup.count;
 }
 
 - (NSString*)titleAtIndex:(NSInteger)index {
-  // Placeholder implementation: ignore |index| and return the placeholder
-  // web state, lazily creating it if needed.
-  if (!_placeholderWebState.get()) {
-    web::WebState::CreateParams webStateCreateParams(self.browserState);
-    _placeholderWebState = web::WebState::Create(webStateCreateParams);
-    _placeholderWebState->SetWebUsageEnabled(true);
-  }
-  GURL url = _placeholderWebState.get()->GetVisibleURL();
+  WebMediator* tab = [self.tabGroup tabAtIndex:index];
+  GURL url = tab.webState->GetVisibleURL();
   NSString* urlText = @"<New Tab>";
   if (!url.is_valid()) {
     urlText = base::SysUTF8ToNSString(url.spec());
@@ -87,12 +90,9 @@
 #pragma mark - TabCommands
 
 - (void)showTabAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK(_placeholderWebState);
-
   TabStripContainerCoordinator* tabCoordinator =
       [[TabStripContainerCoordinator alloc] init];
-  tabCoordinator.webMediator =
-      [[WebMediator alloc] initWithWebState:_placeholderWebState.get()];
+  tabCoordinator.webMediator = [self.tabGroup tabAtIndex:indexPath.item];
   tabCoordinator.presentationKey = indexPath;
   [self addChildCoordinator:tabCoordinator];
   [tabCoordinator start];
@@ -130,13 +130,15 @@
 - (void)openURL:(NSURL*)URL {
   [self.overlayCoordinator stop];
   [self removeOverlayCoordinator];
+  WebMediator* activeTab = [self.tabGroup activeTab];
   web::NavigationManager::WebLoadParams params(net::GURLWithNSURL(URL));
   params.transition_type = ui::PAGE_TRANSITION_LINK;
-  _placeholderWebState->GetNavigationManager()->LoadURLWithParams(params);
+  activeTab.webState->GetNavigationManager()->LoadURLWithParams(params);
   if (!self.children.count) {
     // Placeholder — since there's only one tab in the grid, just open
     // the tab at index path (0,0).
-    [self showTabAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
+    NSUInteger index = [self.tabGroup indexOfTab:activeTab];
+    [self showTabAtIndexPath:[NSIndexPath indexPathForItem:index inSection:0]];
   }
 }
 

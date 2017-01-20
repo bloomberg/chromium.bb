@@ -15,6 +15,7 @@ source_set("tab_grid") {
     "//base",
     "//ios/chrome/browser/browser_state",
     "//ios/clean/chrome/browser",
+    "//ios/clean/chrome/browser/tab_model",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/settings",
     "//ios/clean/chrome/browser/ui/tab_strip",

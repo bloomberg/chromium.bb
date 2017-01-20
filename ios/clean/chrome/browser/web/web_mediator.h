@@ -10,6 +10,11 @@
 #define IOS_CLEAN_CHROME_BROWSER_WEB_WEB_MEDIATOR_H_
 
 #import <Foundation/Foundation.h>
+#include <memory>
+
+namespace ios {
+class ChromeBrowserState;
+}
 
 namespace web {
 class WebState;
@@ -24,10 +29,18 @@ class WebState;
 // access internal APIs for this class.
 @interface WebMediator : NSObject
 
-- (instancetype)initWithWebState:(web::WebState*)webState
+// Creates a new, empty webState object for |browserState| and returns a
+// WebMediator instance for it.
++ (instancetype)webMediatorForBrowserState:
+    (ios::ChromeBrowserState*)browserState;
+
+// Creates a new mediator for |webState|, taking ownership of it.
+- (instancetype)initWithWebState:(std::unique_ptr<web::WebState>)webState
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)init NS_UNAVAILABLE;
+// Creates a mediator with no webState, for use in testing classes that operate
+// on WebMediators.
+- (instancetype)init;
 
 @property(nonatomic, readonly) web::WebState* webState;
 
