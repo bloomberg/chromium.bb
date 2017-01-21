@@ -12,6 +12,8 @@ source_set("tools_menu") {
     "tools_menu_view_controller.mm",
     "tools_menu_view_item.h",
     "tools_menu_view_item.mm",
+    "tools_menu_view_tools_cell.h",
+    "tools_menu_view_tools_cell.mm",
     "tools_popup_controller.h",
     "tools_popup_controller.mm",
   ]
