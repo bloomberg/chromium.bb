@@ -57,11 +57,25 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                         const InitCB& init_cb,
                                         const OutputCB& output_cb) {
   DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
-  DCHECK_EQ(state_, STATE_UNINITIALIZED);
+  DCHECK_NE(state_, STATE_WAITING_FOR_MEDIA_CRYPTO);
+
+  // Initialization and reinitialization should not be called during pending
+  // decode.
+  DCHECK(input_queue_.empty());
+  ClearInputQueue(DecodeStatus::ABORTED);
 
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
 
+  if (state_ == STATE_ERROR) {
+    DVLOG(1) << "Decoder is in error state.";
+    bound_init_cb.Run(false);
+    return;
+  }
+
   // We can support only the codecs that AudioCodecBridge can decode.
+  // TODO(xhwang): Get this list from AudioCodecBridge or just rely on
+  // AudioCodecBridge::ConfigureAndStart() to determine whether the codec is
+  // supported.
   const bool is_codec_supported = config.codec() == kCodecVorbis ||
                                   config.codec() == kCodecAAC ||
                                   config.codec() == kCodecOpus;
@@ -82,11 +96,11 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   SetInitialConfiguration();
 
-  if (config_.is_encrypted()) {
+  if (config_.is_encrypted() && !media_crypto_) {
     // Postpone initialization after MediaCrypto is available.
     // SetCdm uses init_cb in a method that's already bound to the current loop.
-    SetCdm(cdm_context, init_cb);
     SetState(STATE_WAITING_FOR_MEDIA_CRYPTO);
+    SetCdm(cdm_context, init_cb);
     return;
   }
 
