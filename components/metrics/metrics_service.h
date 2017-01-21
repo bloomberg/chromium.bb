@@ -24,6 +24,7 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/clean_exit_beacon.h"
@@ -483,6 +484,8 @@ class MetricsService : public base::HistogramFlattener {
 
   // Pointer used for obtaining data use pref updater callback on above layers.
   std::unique_ptr<DataUseTracker> data_use_tracker_;
+
+  base::ThreadChecker thread_checker_;
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as MetricsService.

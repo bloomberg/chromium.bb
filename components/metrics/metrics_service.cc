@@ -143,9 +143,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
@@ -185,14 +182,6 @@ const base::Feature kUMAThrottleEvents{"UMAThrottleEvents",
 
 bool HasUploadScheduler() {
   return base::FeatureList::IsEnabled(kUploadSchedulerFeature);
-}
-
-// Check to see that we're being called on only one thread.
-bool IsSingleThreaded() {
-  static base::PlatformThreadId thread_id = 0;
-  if (!thread_id)
-    thread_id = base::PlatformThread::CurrentId();
-  return base::PlatformThread::CurrentId() == thread_id;
 }
 
 // The delay, in seconds, after starting recording before doing expensive
@@ -263,7 +252,6 @@ MetricsService::ExecutionPhase MetricsService::execution_phase_ =
 
 // static
 void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
-  DCHECK(IsSingleThreaded());
   MetricsStateManager::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
   DataUseTracker::RegisterPrefs(registry);
@@ -306,7 +294,7 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       data_use_tracker_(DataUseTracker::Create(local_state_)),
       self_ptr_factory_(this),
       state_saver_factory_(this) {
-  DCHECK(IsSingleThreaded());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_manager_);
   DCHECK(client_);
   DCHECK(local_state_);
@@ -397,7 +385,7 @@ bool MetricsService::WasLastShutdownClean() const {
 }
 
 void MetricsService::EnableRecording() {
-  DCHECK(IsSingleThreaded());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (recording_state_ == ACTIVE)
     return;
@@ -418,7 +406,7 @@ void MetricsService::EnableRecording() {
 }
 
 void MetricsService::DisableRecording() {
-  DCHECK(IsSingleThreaded());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (recording_state_ == INACTIVE)
     return;
@@ -433,12 +421,12 @@ void MetricsService::DisableRecording() {
 }
 
 bool MetricsService::recording_active() const {
-  DCHECK(IsSingleThreaded());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return recording_state_ == ACTIVE;
 }
 
 bool MetricsService::reporting_active() const {
-  DCHECK(IsSingleThreaded());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return reporting_active_;
 }
 
@@ -580,7 +568,7 @@ void MetricsService::PushExternalLog(const std::string& log) {
 void MetricsService::UpdateMetricsUsagePrefs(const std::string& service_name,
                                              int message_size,
                                              bool is_cellular) {
-  DCHECK(IsSingleThreaded());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (data_use_tracker_) {
     data_use_tracker_->UpdateMetricsUsagePrefs(service_name,
                                                message_size,
@@ -754,7 +742,7 @@ void MetricsService::GetUptimes(PrefService* pref,
 }
 
 void MetricsService::NotifyOnDidCreateMetricsLog() {
-  DCHECK(IsSingleThreaded());
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (MetricsProvider* provider : metrics_providers_)
     provider->OnDidCreateMetricsLog();
 }
@@ -1301,7 +1289,7 @@ void MetricsService::RecordCurrentStabilityHistograms() {
 }
 
 void MetricsService::LogCleanShutdown(bool end_completed) {
-  DCHECK(IsSingleThreaded());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Redundant setting to assure that we always reset this value at shutdown
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
