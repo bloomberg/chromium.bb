@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -110,6 +111,9 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
   (*it)->url_fetcher = URLFetcher::Create((*it)->url_fetcher_id, GURL(kApiUrl),
                                           URLFetcher::POST, this);
 
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      (*it)->url_fetcher.get(),
+      data_use_measurement::DataUseUserData::SUPERVISED_USER);
   (*it)->url_fetcher->SetRequestContext(context_);
   (*it)->url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                    net::LOAD_DO_NOT_SAVE_COOKIES);

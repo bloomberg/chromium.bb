@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
@@ -175,6 +176,9 @@ void FamilyInfoFetcher::OnGetTokenSuccess(
   const int id = 0;
   url_fetcher_ = net::URLFetcher::Create(id, url, request_type_, this);
 
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(),
+      data_use_measurement::DataUseUserData::SUPERVISED_USER);
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);

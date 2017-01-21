@@ -106,6 +106,8 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "WebHistoryService";
     case NETWORK_TIME_TRACKER:
       return "NetworkTimeTracker";
+    case SUPERVISED_USER:
+      return "SupervisedUser";
   }
   return "INVALID";
 }
