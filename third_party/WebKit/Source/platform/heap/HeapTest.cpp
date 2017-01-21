@@ -349,12 +349,6 @@ class CountingVisitor : public Visitor {
     return true;
   }
 
-  void registerMovingObjectReference(MovableReference*) override {}
-
-  void registerMovingObjectCallback(MovableReference,
-                                    MovingObjectCallback,
-                                    void*) override {}
-
   size_t count() { return m_count; }
   void reset() { m_count = 0; }
 

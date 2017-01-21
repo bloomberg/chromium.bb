@@ -283,7 +283,7 @@ class VisitorHelper {
   void registerBackingStoreReference(void* slot) {
     if (getMarkingMode() != VisitorMarkingMode::GlobalMarkingWithCompaction)
       return;
-    Derived::fromHelper(this)->registerMovingObjectReference(
+    heap().registerMovingObjectReference(
         reinterpret_cast<MovableReference*>(slot));
   }
 
@@ -292,7 +292,7 @@ class VisitorHelper {
                                     void* callbackData) {
     if (getMarkingMode() != VisitorMarkingMode::GlobalMarkingWithCompaction)
       return;
-    Derived::fromHelper(this)->registerMovingObjectCallback(
+    heap().registerMovingObjectCallback(
         reinterpret_cast<MovableReference>(backingStore), callback,
         callbackData);
   }
@@ -386,12 +386,6 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
 #endif
 
   virtual bool ensureMarked(const void*) = 0;
-
-  virtual void registerMovingObjectReference(MovableReference*) = 0;
-
-  virtual void registerMovingObjectCallback(MovableReference,
-                                            MovingObjectCallback,
-                                            void*) = 0;
 
   virtual void registerWeakCellWithCallback(void**, WeakCallback) = 0;
 
