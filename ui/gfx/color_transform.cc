@@ -29,17 +29,8 @@ Transform Invert(const Transform& t) {
   return ret;
 }
 
-ColorTransform::TriStim Map(const Transform& t, ColorTransform::TriStim color) {
-  t.TransformPoint(&color);
-  return color;
-}
-
-ColorTransform::TriStim Xy2xyz(float x, float y) {
-  return ColorTransform::TriStim(x, y, 1.0f - x - y);
-}
-
-void GetPrimaries(ColorSpace::PrimaryID id,
-                  ColorTransform::TriStim primaries[4]) {
+GFX_EXPORT Transform GetPrimaryMatrix(ColorSpace::PrimaryID id) {
+  SkColorSpacePrimaries primaries = {0};
   switch (id) {
     case ColorSpace::PrimaryID::CUSTOM:
       NOTREACHED();
@@ -53,150 +44,120 @@ void GetPrimaries(ColorSpace::PrimaryID id,
       // in case we somehow get an id which is not listed in the switch.
       // (We don't want to use "default", because we want the compiler
       //  to tell us if we forgot some enum values.)
+      primaries.fRX = 0.640f;
+      primaries.fRY = 0.330f;
+      primaries.fGX = 0.300f;
+      primaries.fGY = 0.600f;
+      primaries.fBX = 0.150f;
+      primaries.fBY = 0.060f;
+      primaries.fWX = 0.3127f;
+      primaries.fWY = 0.3290f;
       break;
 
     case ColorSpace::PrimaryID::BT470M:
-      // Red
-      primaries[0] = Xy2xyz(0.67f, 0.33f);
-      // Green
-      primaries[1] = Xy2xyz(0.21f, 0.71f);
-      // Blue
-      primaries[2] = Xy2xyz(0.14f, 0.08f);
-      // Whitepoint
-      primaries[3] = Xy2xyz(0.31f, 0.316f);
-      return;
+      primaries.fRX = 0.67f;
+      primaries.fRY = 0.33f;
+      primaries.fGX = 0.21f;
+      primaries.fGY = 0.71f;
+      primaries.fBX = 0.14f;
+      primaries.fBY = 0.08f;
+      primaries.fWX = 0.31f;
+      primaries.fWY = 0.316f;
+      break;
 
     case ColorSpace::PrimaryID::BT470BG:
-      // Red
-      primaries[0] = Xy2xyz(0.64f, 0.33f);
-      // Green
-      primaries[1] = Xy2xyz(0.29f, 0.60f);
-      // Blue
-      primaries[2] = Xy2xyz(0.15f, 0.06f);
-      // Whitepoint (D65f)
-      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-      return;
+      primaries.fRX = 0.64f;
+      primaries.fRY = 0.33f;
+      primaries.fGX = 0.29f;
+      primaries.fGY = 0.60f;
+      primaries.fBX = 0.15f;
+      primaries.fBY = 0.06f;
+      primaries.fWX = 0.3127f;
+      primaries.fWY = 0.3290f;
+      break;
 
     case ColorSpace::PrimaryID::SMPTE170M:
     case ColorSpace::PrimaryID::SMPTE240M:
-      // Red
-      primaries[0] = Xy2xyz(0.630f, 0.340f);
-      // Green
-      primaries[1] = Xy2xyz(0.310f, 0.595f);
-      // Blue
-      primaries[2] = Xy2xyz(0.155f, 0.070f);
-      // Whitepoint (D65f)
-      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-      return;
+      primaries.fRX = 0.630f;
+      primaries.fRY = 0.340f;
+      primaries.fGX = 0.310f;
+      primaries.fGY = 0.595f;
+      primaries.fBX = 0.155f;
+      primaries.fBY = 0.070f;
+      primaries.fWX = 0.3127f;
+      primaries.fWY = 0.3290f;
+      break;
 
     case ColorSpace::PrimaryID::FILM:
-      // Red
-      primaries[0] = Xy2xyz(0.681f, 0.319f);
-      // Green
-      primaries[1] = Xy2xyz(0.243f, 0.692f);
-      // Blue
-      primaries[2] = Xy2xyz(0.145f, 0.049f);
-      // Whitepoint (Cf)
-      primaries[3] = Xy2xyz(0.310f, 0.136f);
-      return;
+      primaries.fRX = 0.681f;
+      primaries.fRY = 0.319f;
+      primaries.fGX = 0.243f;
+      primaries.fGY = 0.692f;
+      primaries.fBX = 0.145f;
+      primaries.fBY = 0.049f;
+      primaries.fWX = 0.310f;
+      primaries.fWY = 0.136f;
+      break;
 
     case ColorSpace::PrimaryID::BT2020:
-      // Red
-      primaries[0] = Xy2xyz(0.708f, 0.292f);
-      // Green
-      primaries[1] = Xy2xyz(0.170f, 0.797f);
-      // Blue
-      primaries[2] = Xy2xyz(0.131f, 0.046f);
-      // Whitepoint (D65f)
-      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-      return;
+      primaries.fRX = 0.708f;
+      primaries.fRY = 0.292f;
+      primaries.fGX = 0.170f;
+      primaries.fGY = 0.797f;
+      primaries.fBX = 0.131f;
+      primaries.fBY = 0.046f;
+      primaries.fWX = 0.3127f;
+      primaries.fWY = 0.3290f;
+      break;
 
     case ColorSpace::PrimaryID::SMPTEST428_1:
-      // X
-      primaries[0] = Xy2xyz(1.0f, 0.0f);
-      // Y
-      primaries[1] = Xy2xyz(0.0f, 1.0f);
-      // Z
-      primaries[2] = Xy2xyz(0.0f, 0.0f);
-      // Whitepoint (Ef)
-      primaries[3] = Xy2xyz(1.0f / 3.0f, 1.0f / 3.0f);
-      return;
+      primaries.fRX = 1.0f;
+      primaries.fRY = 0.0f;
+      primaries.fGX = 0.0f;
+      primaries.fGY = 1.0f;
+      primaries.fBX = 0.0f;
+      primaries.fBY = 0.0f;
+      primaries.fWX = 1.0f / 3.0f;
+      primaries.fWY = 1.0f / 3.0f;
+      break;
 
     case ColorSpace::PrimaryID::SMPTEST431_2:
-      // Red
-      primaries[0] = Xy2xyz(0.680f, 0.320f);
-      // Green
-      primaries[1] = Xy2xyz(0.265f, 0.690f);
-      // Blue
-      primaries[2] = Xy2xyz(0.150f, 0.060f);
-      // Whitepoint
-      primaries[3] = Xy2xyz(0.314f, 0.351f);
-      return;
+      primaries.fRX = 0.680f;
+      primaries.fRY = 0.320f;
+      primaries.fGX = 0.265f;
+      primaries.fGY = 0.690f;
+      primaries.fBX = 0.150f;
+      primaries.fBY = 0.060f;
+      primaries.fWX = 0.314f;
+      primaries.fWY = 0.351f;
+      break;
 
     case ColorSpace::PrimaryID::SMPTEST432_1:
-      // Red
-      primaries[0] = Xy2xyz(0.680f, 0.320f);
-      // Green
-      primaries[1] = Xy2xyz(0.265f, 0.690f);
-      // Blue
-      primaries[2] = Xy2xyz(0.150f, 0.060f);
-      // Whitepoint (D65f)
-      primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-      return;
+      primaries.fRX = 0.680f;
+      primaries.fRY = 0.320f;
+      primaries.fGX = 0.265f;
+      primaries.fGY = 0.690f;
+      primaries.fBX = 0.150f;
+      primaries.fBY = 0.060f;
+      primaries.fWX = 0.3127f;
+      primaries.fWY = 0.3290f;
+      break;
 
     case ColorSpace::PrimaryID::XYZ_D50:
-      // X
-      primaries[0] = Xy2xyz(1.0f, 0.0f);
-      // Y
-      primaries[1] = Xy2xyz(0.0f, 1.0f);
-      // Z
-      primaries[2] = Xy2xyz(0.0f, 0.0f);
-      // D50
-      primaries[3] = Xy2xyz(0.34567f, 0.35850f);
-      return;
+      primaries.fRX = 1.0f;
+      primaries.fRY = 0.0f;
+      primaries.fGX = 0.0f;
+      primaries.fGY = 1.0f;
+      primaries.fBX = 0.0f;
+      primaries.fBY = 0.0f;
+      primaries.fWX = 0.34567f;
+      primaries.fWY = 0.35850f;
+      break;
   }
 
-  // Red
-  primaries[0] = Xy2xyz(0.640f, 0.330f);
-  // Green
-  primaries[1] = Xy2xyz(0.300f, 0.600f);
-  // Blue
-  primaries[2] = Xy2xyz(0.150f, 0.060f);
-  // Whitepoint (D65f)
-  primaries[3] = Xy2xyz(0.3127f, 0.3290f);
-}
-
-GFX_EXPORT Transform GetPrimaryMatrix(ColorSpace::PrimaryID id) {
-  ColorTransform::TriStim primaries[4];
-  GetPrimaries(id, primaries);
-  ColorTransform::TriStim WXYZ(primaries[3].x() / primaries[3].y(), 1.0f,
-                               primaries[3].z() / primaries[3].y());
-
-  Transform ret(
-      primaries[0].x(), primaries[1].x(), primaries[2].x(), 0.0f,  // 1
-      primaries[0].y(), primaries[1].y(), primaries[2].y(), 0.0f,  // 2
-      primaries[0].z(), primaries[1].z(), primaries[2].z(), 0.0f,  // 3
-      0.0f, 0.0f, 0.0f, 1.0f);                                     // 4
-
-  ColorTransform::TriStim conv = Map(Invert(ret), WXYZ);
-  ret.Scale3d(conv.x(), conv.y(), conv.z());
-
-  // Chromatic adaptation.
-  Transform bradford(0.8951000f, 0.2664000f, -0.1614000f, 0.0f,  // 1
-                     -0.7502000f, 1.7135000f, 0.0367000f, 0.0f,  // 2
-                     0.0389000f, -0.0685000f, 1.0296000f, 0.0f,  // 3
-                     0.0f, 0.0f, 0.0f, 1.0f);                    // 4
-
-  ColorTransform::TriStim D50(0.9642f, 1.0f, 0.8249f);
-  ColorTransform::TriStim source_response = Map(bradford, WXYZ);
-  ColorTransform::TriStim dest_response = Map(bradford, D50);
-
-  Transform adapter;
-  adapter.Scale3d(dest_response.x() / source_response.x(),
-                  dest_response.y() / source_response.y(),
-                  dest_response.z() / source_response.z());
-
-  return Invert(bradford) * adapter * bradford * ret;
+  SkMatrix44 matrix;
+  primaries.toXYZD50(&matrix);
+  return Transform(matrix);
 }
 
 GFX_EXPORT float FromLinear(ColorSpace::TransferID id, float v) {
