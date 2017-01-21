@@ -81,7 +81,7 @@ const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
 // Histogram name which counts the number of milliseconds a user takes
 // between focusing and opening an omnibox match.
 const char kFocusToOpenTimeHistogram[] =
-    "Omnibox.FocusToOpenTimeAnyPopupState2";
+    "Omnibox.FocusToOpenTimeAnyPopupState3";
 
 }  // namespace
 
@@ -619,7 +619,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   if (!last_omnibox_focus_.is_null()) {
     // Only record focus to open time when a focus actually happened (as
     // opposed to, say, dragging a link onto the omnibox).
-    UMA_HISTOGRAM_TIMES(kFocusToOpenTimeHistogram, now - last_omnibox_focus_);
+    UMA_HISTOGRAM_MEDIUM_TIMES(kFocusToOpenTimeHistogram,
+                               now - last_omnibox_focus_);
   }
 
   TemplateURLService* service = client_->GetTemplateURLService();
