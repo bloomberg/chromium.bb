@@ -100,9 +100,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!base::FeatureList::IsEnabled(features::kNotificationContentImage))
     WebRuntimeFeatures::enableNotificationContentImage(false);
 
-  // For the time being, enable wasm serialization when wasm is enabled,
-  // since the whole wasm space is experimental. We have the flexibility
-  // to decouple the two.
+  // For the time being, wasm serialization is separately controlled
+  // by this flag. WebAssembly APIs and compilation is now enabled
+  // unconditionally in V8.
   if (base::FeatureList::IsEnabled(features::kWebAssembly))
     WebRuntimeFeatures::enableWebAssemblySerialization(true);
 

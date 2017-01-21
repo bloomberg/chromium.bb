@@ -69,6 +69,12 @@ void SetV8FlagIfFeature(const base::Feature& feature, const char* v8_flag) {
   }
 }
 
+void SetV8FlagIfNotFeature(const base::Feature& feature, const char* v8_flag) {
+  if (!base::FeatureList::IsEnabled(feature)) {
+    v8::V8::SetFlagsFromString(v8_flag, strlen(v8_flag));
+  }
+}
+
 void SetV8FlagIfHasSwitch(const char* switch_name, const char* v8_flag) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switch_name)) {
     v8::V8::SetFlagsFromString(v8_flag, strlen(v8_flag));
@@ -171,7 +177,8 @@ RenderProcessImpl::RenderProcessImpl()
                        "--noharmony-shipping");
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
   SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
-  SetV8FlagIfFeature(features::kWebAssembly, "--expose-wasm");
+  SetV8FlagIfNotFeature(features::kWebAssembly,
+                        "--wasm-disable-structured-cloning");
   SetV8FlagIfFeature(features::kSharedArrayBuffer,
                      "--harmony-sharedarraybuffer");
 
