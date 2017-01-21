@@ -16,6 +16,7 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -137,6 +138,13 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             }
 
             downloadItem.setEnabled(DownloadUtils.isAllowedToDownloadPage(currentTab));
+
+            String url = currentTab.getUrl();
+            boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_SCHEME)
+                    || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+            if (isChromeScheme) {
+                addToHomeScreenItem.setVisible(false);
+            }
 
             // Add custom menu items. Make sure they are only added once.
             if (!mIsCustomEntryAdded) {
