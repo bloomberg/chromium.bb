@@ -965,8 +965,13 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
     }
 
 #if CONVOLVE_POST_ROUNDING
-    // TODO(angiebird): This part needs optimization
+// TODO(angiebird): This part needs optimization
+#if CONFIG_AOM_HIGHBITDEPTH
+    if (!(xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH))
+      av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h);
+#else
     av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h);
+#endif
 #endif  // CONVOLVE_POST_ROUNDING
   }
 }
