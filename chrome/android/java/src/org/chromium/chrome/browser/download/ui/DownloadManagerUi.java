@@ -179,6 +179,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     private DownloadManagerToolbar mToolbar;
     private SelectableListLayout<DownloadHistoryItemWrapper> mSelectableListLayout;
 
+    @SuppressWarnings("unchecked")  // mSelectableListLayout
     public DownloadManagerUi(
             Activity activity, boolean isOffTheRecord, ComponentName parentComponent) {
         mActivity = activity;

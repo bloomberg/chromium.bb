@@ -74,6 +74,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      * Creates a new HistoryManager.
      * @param activity The Activity associated with the HistoryManager.
      */
+    @SuppressWarnings("unchecked")  // mSelectableListLayout
     public HistoryManager(Activity activity) {
         mActivity = activity;
 
