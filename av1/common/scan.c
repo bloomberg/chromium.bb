@@ -6500,6 +6500,14 @@ static uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
     case TX_8X8: return fc->non_zero_prob_8X8[tx_type];
     case TX_16X16: return fc->non_zero_prob_16X16[tx_type];
     case TX_32X32: return fc->non_zero_prob_32X32[tx_type];
+#if CONFIG_VAR_TX || CONFIG_RECT_TX
+    case TX_4X8: return fc->non_zero_prob_4X8[tx_type];
+    case TX_8X4: return fc->non_zero_prob_8X4[tx_type];
+    case TX_8X16: return fc->non_zero_prob_8X16[tx_type];
+    case TX_16X8: return fc->non_zero_prob_16X8[tx_type];
+    case TX_16X32: return fc->non_zero_prob_16X32[tx_type];
+    case TX_32X16: return fc->non_zero_prob_32X16[tx_type];
+#endif
     default: assert(0); return NULL;
   }
 }
@@ -6514,6 +6522,14 @@ static int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
     case TX_8X8: return fc->scan_8X8[tx_type];
     case TX_16X16: return fc->scan_16X16[tx_type];
     case TX_32X32: return fc->scan_32X32[tx_type];
+#if CONFIG_VAR_TX || CONFIG_RECT_TX
+    case TX_4X8: return fc->scan_4X8[tx_type];
+    case TX_8X4: return fc->scan_8X4[tx_type];
+    case TX_8X16: return fc->scan_8X16[tx_type];
+    case TX_16X8: return fc->scan_16X8[tx_type];
+    case TX_16X32: return fc->scan_16X32[tx_type];
+    case TX_32X16: return fc->scan_32X16[tx_type];
+#endif
     default: assert(0); return NULL;
   }
 }
@@ -6528,6 +6544,14 @@ static int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
     case TX_8X8: return fc->iscan_8X8[tx_type];
     case TX_16X16: return fc->iscan_16X16[tx_type];
     case TX_32X32: return fc->iscan_32X32[tx_type];
+#if CONFIG_VAR_TX || CONFIG_RECT_TX
+    case TX_4X8: return fc->iscan_4X8[tx_type];
+    case TX_8X4: return fc->iscan_8X4[tx_type];
+    case TX_8X16: return fc->iscan_8X16[tx_type];
+    case TX_16X8: return fc->iscan_16X8[tx_type];
+    case TX_16X32: return fc->iscan_16X32[tx_type];
+    case TX_32X16: return fc->iscan_32X16[tx_type];
+#endif
     default: assert(0); return NULL;
   }
 }
@@ -6542,6 +6566,14 @@ static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
     case TX_8X8: return fc->nb_8X8[tx_type];
     case TX_16X16: return fc->nb_16X16[tx_type];
     case TX_32X32: return fc->nb_32X32[tx_type];
+#if CONFIG_VAR_TX || CONFIG_RECT_TX
+    case TX_4X8: return fc->nb_4X8[tx_type];
+    case TX_8X4: return fc->nb_8X4[tx_type];
+    case TX_8X16: return fc->nb_8X16[tx_type];
+    case TX_16X8: return fc->nb_16X8[tx_type];
+    case TX_16X32: return fc->nb_16X32[tx_type];
+    case TX_32X16: return fc->nb_32X16[tx_type];
+#endif
     default: assert(0); return NULL;
   }
 }
@@ -6556,6 +6588,14 @@ static uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
     case TX_8X8: return counts->non_zero_count_8X8[tx_type];
     case TX_16X16: return counts->non_zero_count_16X16[tx_type];
     case TX_32X32: return counts->non_zero_count_32X32[tx_type];
+#if CONFIG_VAR_TX || CONFIG_RECT_TX
+    case TX_4X8: return counts->non_zero_count_4x8[tx_type];
+    case TX_8X4: return counts->non_zero_count_8x4[tx_type];
+    case TX_8X16: return counts->non_zero_count_8x16[tx_type];
+    case TX_16X8: return counts->non_zero_count_16x8[tx_type];
+    case TX_16X32: return counts->non_zero_count_16x32[tx_type];
+    case TX_32X16: return counts->non_zero_count_32x16[tx_type];
+#endif
     default: assert(0); return NULL;
   }
 }
@@ -6605,11 +6645,12 @@ static int cmp_prob(const void *a, const void *b) {
 void av1_augment_prob(TX_SIZE tx_size, TX_TYPE tx_type, uint32_t *prob) {
   // TODO(angiebird): check if we need is_inter here
   const SCAN_ORDER *sc = get_default_scan(tx_size, tx_type, 0);
-  const int tx1d_size = tx_size_wide[tx_size];
+  const int tx1d_wide = tx_size_wide[tx_size];
+  const int tx1d_high = tx_size_high[tx_size];
   int r, c;
-  for (r = 0; r < tx1d_size; r++) {
-    for (c = 0; c < tx1d_size; c++) {
-      const int idx = r * tx1d_size + c;
+  for (r = 0; r < tx1d_high; r++) {
+    for (c = 0; c < tx1d_wide; c++) {
+      const int idx = r * tx1d_wide + c;
       const uint32_t mask_16 = ((1 << 16) - 1);
       const uint32_t tie_breaker = ~((uint32_t)sc->iscan[idx]);
       // prob[idx]: 16 bits  dummy: 6 bits  scan_idx: 10 bits
@@ -6637,13 +6678,14 @@ static void dfs_scan(int tx1d_size, int *scan_idx, int coeff_idx, int16_t *scan,
 
 void av1_update_neighbors(int tx_size, const int16_t *scan,
                           const int16_t *iscan, int16_t *neighbors) {
-  const int tx1d_size = tx_size_wide[tx_size];
+  const int tx1d_wide = tx_size_wide[tx_size];
+  const int tx1d_high = tx_size_high[tx_size];
   const int tx2d_size = tx_size_2d[tx_size];
   int scan_idx;
   for (scan_idx = 0; scan_idx < tx2d_size; ++scan_idx) {
     const int coeff_idx = scan[scan_idx];
-    const int r = coeff_idx / tx1d_size;
-    const int c = coeff_idx % tx1d_size;
+    const int r = coeff_idx / tx1d_wide;
+    const int c = coeff_idx % tx1d_wide;
     const int nb_offset_r[5] = { -1, 0, -1, -1, 1 };
     const int nb_offset_c[5] = { 0, -1, -1, 1, -1 };
     const int nb_num = 5;
@@ -6654,9 +6696,9 @@ void av1_update_neighbors(int tx_size, const int16_t *scan,
       if (nb_count < 2) {
         int nb_r = r + nb_offset_r[nb_idx];
         int nb_c = c + nb_offset_c[nb_idx];
-        int nb_coeff_idx = nb_r * tx1d_size + nb_c;
+        int nb_coeff_idx = nb_r * tx1d_wide + nb_c;
         int valid_pos =
-            nb_r >= 0 && nb_r < tx1d_size && nb_c >= 0 && nb_c < tx1d_size;
+            nb_r >= 0 && nb_r < tx1d_high && nb_c >= 0 && nb_c < tx1d_wide;
         if (valid_pos && iscan[nb_coeff_idx] < scan_idx) {
           neighbors[scan_idx * MAX_NEIGHBORS + nb_count] = nb_coeff_idx;
           ++nb_count;
@@ -6731,7 +6773,12 @@ void av1_update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
 void av1_init_scan_order(AV1_COMMON *cm) {
   TX_SIZE tx_size;
   TX_TYPE tx_type;
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+  for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
+#if !(CONFIG_VAR_TX || CONFIG_RECT_TX)
+    if (tx_size >= TX_SIZES) continue;
+#else
+    if (tx_size > TX_32X16) continue;
+#endif
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
       uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
       const int tx2d_size = tx_size_2d[tx_size];
@@ -6747,5 +6794,4 @@ void av1_init_scan_order(AV1_COMMON *cm) {
     }
   }
 }
-
 #endif  // CONFIG_ADAPT_SCAN

@@ -546,6 +546,9 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     const int eob =
         av1_decode_block_tokens(xd, plane, sc, blk_col, blk_row, plane_tx_size,
                                 tx_type, &max_scan_line, r, mbmi->segment_id);
+#if CONFIG_ADAPT_SCAN
+    av1_update_scan_count_facade(cm, tx_size, tx_type, pd->dqcoeff, eob);
+#endif
     inverse_transform_block(xd, plane, tx_type, plane_tx_size,
                             &pd->dst.buf[(blk_row * pd->dst.stride + blk_col)
                                          << tx_size_wide_log2[0]],

@@ -3588,11 +3588,17 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
     adapt_coef_probs(cm, tx_size, count_sat, update_factor);
 
 #if CONFIG_ADAPT_SCAN
-  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size)
+  for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
+#if !(CONFIG_VAR_TX || CONFIG_RECT_TX)
+    if (tx_size >= TX_SIZES) continue;
+#else
+    if (tx_size > TX_32X16) continue;
+#endif
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
       av1_update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);
       av1_update_scan_order_facade(cm, tx_size, tx_type);
     }
+  }
 #endif
 }
 

@@ -77,6 +77,13 @@ typedef struct frame_contexts {
   uint32_t non_zero_prob_16X16[TX_TYPES][256];
   uint32_t non_zero_prob_32X32[TX_TYPES][1024];
 
+  uint32_t non_zero_prob_4X8[TX_TYPES][32];
+  uint32_t non_zero_prob_8X4[TX_TYPES][32];
+  uint32_t non_zero_prob_16X8[TX_TYPES][128];
+  uint32_t non_zero_prob_8X16[TX_TYPES][128];
+  uint32_t non_zero_prob_32X16[TX_TYPES][512];
+  uint32_t non_zero_prob_16X32[TX_TYPES][512];
+
 #if CONFIG_CB4X4
   DECLARE_ALIGNED(16, int16_t, scan_2x2[TX_TYPES][4]);
 #endif
@@ -84,6 +91,13 @@ typedef struct frame_contexts {
   DECLARE_ALIGNED(16, int16_t, scan_8X8[TX_TYPES][64]);
   DECLARE_ALIGNED(16, int16_t, scan_16X16[TX_TYPES][256]);
   DECLARE_ALIGNED(16, int16_t, scan_32X32[TX_TYPES][1024]);
+
+  DECLARE_ALIGNED(16, int16_t, scan_4X8[TX_TYPES][32]);
+  DECLARE_ALIGNED(16, int16_t, scan_8X4[TX_TYPES][32]);
+  DECLARE_ALIGNED(16, int16_t, scan_8X16[TX_TYPES][128]);
+  DECLARE_ALIGNED(16, int16_t, scan_16X8[TX_TYPES][128]);
+  DECLARE_ALIGNED(16, int16_t, scan_16X32[TX_TYPES][512]);
+  DECLARE_ALIGNED(16, int16_t, scan_32X16[TX_TYPES][512]);
 
 #if CONFIG_CB4X4
   DECLARE_ALIGNED(16, int16_t, iscan_2x2[TX_TYPES][4]);
@@ -93,6 +107,13 @@ typedef struct frame_contexts {
   DECLARE_ALIGNED(16, int16_t, iscan_16X16[TX_TYPES][256]);
   DECLARE_ALIGNED(16, int16_t, iscan_32X32[TX_TYPES][1024]);
 
+  DECLARE_ALIGNED(16, int16_t, iscan_4X8[TX_TYPES][32]);
+  DECLARE_ALIGNED(16, int16_t, iscan_8X4[TX_TYPES][32]);
+  DECLARE_ALIGNED(16, int16_t, iscan_8X16[TX_TYPES][128]);
+  DECLARE_ALIGNED(16, int16_t, iscan_16X8[TX_TYPES][128]);
+  DECLARE_ALIGNED(16, int16_t, iscan_16X32[TX_TYPES][512]);
+  DECLARE_ALIGNED(16, int16_t, iscan_32X16[TX_TYPES][512]);
+
 #if CONFIG_CB4X4
   int16_t nb_2x2[TX_TYPES][(4 + 1) * 2];
 #endif
@@ -101,7 +122,14 @@ typedef struct frame_contexts {
   int16_t nb_16X16[TX_TYPES][(256 + 1) * 2];
   int16_t nb_32X32[TX_TYPES][(1024 + 1) * 2];
 
-  SCAN_ORDER sc[TX_SIZES][TX_TYPES];
+  int16_t nb_4X8[TX_TYPES][(32 + 1) * 2];
+  int16_t nb_8X4[TX_TYPES][(32 + 1) * 2];
+  int16_t nb_8X16[TX_TYPES][(128 + 1) * 2];
+  int16_t nb_16X8[TX_TYPES][(128 + 1) * 2];
+  int16_t nb_16X32[TX_TYPES][(512 + 1) * 2];
+  int16_t nb_32X16[TX_TYPES][(512 + 1) * 2];
+
+  SCAN_ORDER sc[TX_SIZES_ALL][TX_TYPES];
 #endif  // CONFIG_ADAPT_SCAN
 
 #if CONFIG_REF_MV
@@ -221,7 +249,15 @@ typedef struct FRAME_COUNTS {
   unsigned int non_zero_count_8X8[TX_TYPES][64];
   unsigned int non_zero_count_16X16[TX_TYPES][256];
   unsigned int non_zero_count_32X32[TX_TYPES][1024];
-  unsigned int txb_count[TX_SIZES][TX_TYPES];
+
+  unsigned int non_zero_count_4x8[TX_TYPES][32];
+  unsigned int non_zero_count_8x4[TX_TYPES][32];
+  unsigned int non_zero_count_8x16[TX_TYPES][128];
+  unsigned int non_zero_count_16x8[TX_TYPES][128];
+  unsigned int non_zero_count_16x32[TX_TYPES][512];
+  unsigned int non_zero_count_32x16[TX_TYPES][512];
+
+  unsigned int txb_count[TX_SIZES_ALL][TX_TYPES];
 #endif  // CONFIG_ADAPT_SCAN
 
 #if CONFIG_REF_MV
