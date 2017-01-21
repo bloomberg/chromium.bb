@@ -63,6 +63,7 @@ static EDisplay equivalentBlockDisplay(EDisplay display) {
     case EDisplay::Flex:
     case EDisplay::Grid:
     case EDisplay::ListItem:
+    case EDisplay::FlowRoot:
       return display;
     case EDisplay::InlineTable:
       return EDisplay::Table;

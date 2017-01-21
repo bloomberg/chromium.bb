@@ -1263,6 +1263,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(EDisplay e)
     case EDisplay::Contents:
       m_valueID = CSSValueContents;
       break;
+    case EDisplay::FlowRoot:
+      m_valueID = CSSValueFlowRoot;
+      break;
     case EDisplay::None:
       m_valueID = CSSValueNone;
       break;
@@ -1316,6 +1319,8 @@ inline EDisplay CSSIdentifierValue::convertTo() const {
       return EDisplay::InlineGrid;
     case CSSValueContents:
       return EDisplay::Contents;
+    case CSSValueFlowRoot:
+      return EDisplay::FlowRoot;
     case CSSValueNone:
       return EDisplay::None;
       break;

@@ -402,6 +402,7 @@ enum class EDisplay : unsigned {
   Grid,
   InlineGrid,
   Contents,
+  FlowRoot,
   None
 };
 

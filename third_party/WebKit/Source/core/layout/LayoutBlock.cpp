@@ -535,7 +535,7 @@ bool LayoutBlock::createsNewFormattingContext() const {
          isTableCaption() || isFieldset() || isWritingModeRoot() ||
          isDocumentElement() || isColumnSpanAll() || isGridItem() ||
          style()->containsPaint() || style()->containsLayout() ||
-         isSVGForeignObject();
+         isSVGForeignObject() || style()->display() == EDisplay::FlowRoot;
 }
 
 static inline bool changeInAvailableLogicalHeightAffectsChild(

@@ -346,6 +346,7 @@ data: [
   //
   "inline",
   "block",
+	"flow-root",
   "list-item",
   "inline-block",
   "table",

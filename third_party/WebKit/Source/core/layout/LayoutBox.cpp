@@ -4709,9 +4709,11 @@ bool LayoutBox::shouldBeConsideredAsReplaced() const {
 
 DISABLE_CFI_PERF
 bool LayoutBox::avoidsFloats() const {
+  // crbug.com/460704: This should be merged with createsNewFormattingContext().
   return shouldBeConsideredAsReplaced() || hasOverflowClip() || isHR() ||
          isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated() ||
-         style()->containsPaint() || style()->containsLayout();
+         style()->containsPaint() || style()->containsLayout() ||
+         style()->display() == EDisplay::FlowRoot;
 }
 
 bool LayoutBox::hasNonCompositedScrollbars() const {

@@ -183,6 +183,7 @@ LayoutObject* LayoutObject::createObject(Element* element,
     case EDisplay::Inline:
       return new LayoutInline(element);
     case EDisplay::Block:
+    case EDisplay::FlowRoot:
     case EDisplay::InlineBlock:
       if (RuntimeEnabledFeatures::layoutNGEnabled())
         return new LayoutNGBlockFlow(element);
