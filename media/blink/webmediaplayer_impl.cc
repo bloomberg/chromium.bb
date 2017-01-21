@@ -1121,6 +1121,10 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   // Reset underflow count upon seek; this prevents looping videos and user
   // actions from artificially inflating the underflow count.
   underflow_count_ = 0;
+
+  // Background video optimizations are delayed when shown/hidden if pipeline
+  // is seeking.
+  UpdateBackgroundVideoOptimizationState();
 }
 
 void WebMediaPlayerImpl::OnPipelineSuspended() {
@@ -1160,11 +1164,7 @@ void WebMediaPlayerImpl::OnBeforePipelineResume() {
 void WebMediaPlayerImpl::OnPipelineResumed() {
   is_pipeline_resuming_ = false;
 
-  if (IsHidden()) {
-    DisableVideoTrackIfNeeded();
-  } else {
-    EnableVideoTrackIfNeeded();
-  }
+  UpdateBackgroundVideoOptimizationState();
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
@@ -1411,13 +1411,8 @@ void WebMediaPlayerImpl::OnFrameHidden() {
     watch_time_reporter_->OnHidden();
 
   if (ShouldPauseVideoWhenHidden()) {
-    if (!paused_when_hidden_) {
-      // OnPause() will set |paused_when_hidden_| to false and call
-      // UpdatePlayState(), so set the flag to true after and then return.
-      OnPause();
-      paused_when_hidden_ = true;
-      return;
-    }
+    PauseVideoIfNeeded();
+    return;
   } else {
     DisableVideoTrackIfNeeded();
   }
@@ -2182,9 +2177,35 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
          max_keyframe_distance_to_disable_background_video_;
 }
 
+void WebMediaPlayerImpl::UpdateBackgroundVideoOptimizationState() {
+  if (IsHidden()) {
+    if (ShouldPauseVideoWhenHidden())
+      PauseVideoIfNeeded();
+    else
+      DisableVideoTrackIfNeeded();
+  } else {
+    EnableVideoTrackIfNeeded();
+  }
+}
+
+void WebMediaPlayerImpl::PauseVideoIfNeeded() {
+  DCHECK(IsHidden());
+
+  // Don't pause video while the pipeline is stopped, resuming or seeking.
+  // Also if the video is paused already.
+  if (!pipeline_.IsRunning() || is_pipeline_resuming_ || seeking_ || paused_)
+    return;
+
+  // OnPause() will set |paused_when_hidden_| to false and call
+  // UpdatePlayState(), so set the flag to true after and then return.
+  OnPause();
+  paused_when_hidden_ = true;
+}
+
 void WebMediaPlayerImpl::EnableVideoTrackIfNeeded() {
-  // Don't change video track while the pipeline is resuming or seeking.
-  if (is_pipeline_resuming_ || seeking_)
+  // Don't change video track while the pipeline is stopped, resuming or
+  // seeking.
+  if (!pipeline_.IsRunning() || is_pipeline_resuming_ || seeking_)
     return;
 
   if (video_track_disabled_) {
