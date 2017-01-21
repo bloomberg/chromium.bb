@@ -123,17 +123,15 @@ namespace {
 MessageLevel MessageLevelFromNonFatalErrorLevel(int errorLevel) {
   MessageLevel level = ErrorMessageLevel;
   switch (errorLevel) {
+    case v8::Isolate::kMessageDebug:
+      level = VerboseMessageLevel;
+      break;
     case v8::Isolate::kMessageLog:
-      level = LogMessageLevel;
+    case v8::Isolate::kMessageInfo:
+      level = InfoMessageLevel;
       break;
     case v8::Isolate::kMessageWarning:
       level = WarningMessageLevel;
-      break;
-    case v8::Isolate::kMessageDebug:
-      level = DebugMessageLevel;
-      break;
-    case v8::Isolate::kMessageInfo:
-      level = InfoMessageLevel;
       break;
     case v8::Isolate::kMessageError:
       level = InfoMessageLevel;

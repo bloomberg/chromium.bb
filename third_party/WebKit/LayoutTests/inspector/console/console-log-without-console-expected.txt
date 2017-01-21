@@ -1,5 +1,5 @@
 CONSOLE MESSAGE: line 7: 1
-CONSOLE INFO: line 9: 2
+CONSOLE MESSAGE: line 9: 2
 CONSOLE ERROR: line 11: 3
 CONSOLE WARNING: line 13: 4
 Test that console.log can be called without console receiver.

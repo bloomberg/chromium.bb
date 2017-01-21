@@ -49,9 +49,8 @@ MessageLevel ThreadDebugger::consoleAPITypeToMessageLevel(
     v8_inspector::V8ConsoleAPIType type) {
   switch (type) {
     case v8_inspector::V8ConsoleAPIType::kDebug:
-      return DebugMessageLevel;
+      return VerboseMessageLevel;
     case v8_inspector::V8ConsoleAPIType::kLog:
-      return LogMessageLevel;
     case v8_inspector::V8ConsoleAPIType::kInfo:
       return InfoMessageLevel;
     case v8_inspector::V8ConsoleAPIType::kWarning:
@@ -59,7 +58,7 @@ MessageLevel ThreadDebugger::consoleAPITypeToMessageLevel(
     case v8_inspector::V8ConsoleAPIType::kError:
       return ErrorMessageLevel;
     default:
-      return LogMessageLevel;
+      return InfoMessageLevel;
   }
 }
 

@@ -92,7 +92,7 @@ void LogErrorToConsole(content::WebContents* web_contents,
       break;
     case RENDERER_CANCELLED:
       pattern = kRendererCancelledMessage;
-      severity = content::CONSOLE_MESSAGE_LEVEL_LOG;
+      severity = content::CONSOLE_MESSAGE_LEVEL_INFO;
       break;
     case USER_NAVIGATED:
       pattern = kUserNavigatedMessage;

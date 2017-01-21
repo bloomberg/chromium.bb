@@ -90,11 +90,11 @@ void BindLogMethod(v8::Isolate* isolate,
 }  // namespace
 
 void Debug(content::RenderFrame* render_frame, const std::string& message) {
-  AddMessage(render_frame, content::CONSOLE_MESSAGE_LEVEL_DEBUG, message);
+  AddMessage(render_frame, content::CONSOLE_MESSAGE_LEVEL_VERBOSE, message);
 }
 
 void Log(content::RenderFrame* render_frame, const std::string& message) {
-  AddMessage(render_frame, content::CONSOLE_MESSAGE_LEVEL_LOG, message);
+  AddMessage(render_frame, content::CONSOLE_MESSAGE_LEVEL_INFO, message);
 }
 
 void Warn(content::RenderFrame* render_frame, const std::string& message) {

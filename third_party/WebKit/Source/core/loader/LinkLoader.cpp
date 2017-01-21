@@ -144,7 +144,7 @@ static void dnsPrefetchIfNeeded(
         !href.isEmpty()) {
       if (settings->getLogDnsPrefetchAndPreconnect()) {
         document.addConsoleMessage(ConsoleMessage::create(
-            OtherMessageSource, DebugMessageLevel,
+            OtherMessageSource, VerboseMessageLevel,
             String("DNS prefetch triggered for " + href.host())));
       }
       networkHintsInterface.dnsPrefetchHost(href.host());
@@ -167,11 +167,11 @@ static void preconnectIfNeeded(
     Settings* settings = document.settings();
     if (settings && settings->getLogDnsPrefetchAndPreconnect()) {
       document.addConsoleMessage(ConsoleMessage::create(
-          OtherMessageSource, DebugMessageLevel,
+          OtherMessageSource, VerboseMessageLevel,
           String("Preconnect triggered for ") + href.getString()));
       if (crossOrigin != CrossOriginAttributeNotSet) {
         document.addConsoleMessage(ConsoleMessage::create(
-            OtherMessageSource, DebugMessageLevel,
+            OtherMessageSource, VerboseMessageLevel,
             String("Preconnect CORS setting is ") +
                 String((crossOrigin == CrossOriginAttributeAnonymous)
                            ? "anonymous"
@@ -333,7 +333,7 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
   Settings* settings = document.settings();
   if (settings && settings->getLogPreload()) {
     document.addConsoleMessage(ConsoleMessage::create(
-        OtherMessageSource, DebugMessageLevel,
+        OtherMessageSource, VerboseMessageLevel,
         String("Preload triggered for " + href.host() + href.path())));
   }
   linkRequest.setForPreload(true, monotonicallyIncreasingTime());

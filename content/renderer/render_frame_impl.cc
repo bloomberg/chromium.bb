@@ -2644,13 +2644,13 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
 void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
                                           const std::string& message) {
   blink::WebConsoleMessage::Level target_level =
-      blink::WebConsoleMessage::LevelLog;
+      blink::WebConsoleMessage::LevelInfo;
   switch (level) {
-    case CONSOLE_MESSAGE_LEVEL_DEBUG:
-      target_level = blink::WebConsoleMessage::LevelDebug;
+    case CONSOLE_MESSAGE_LEVEL_VERBOSE:
+      target_level = blink::WebConsoleMessage::LevelVerbose;
       break;
-    case CONSOLE_MESSAGE_LEVEL_LOG:
-      target_level = blink::WebConsoleMessage::LevelLog;
+    case CONSOLE_MESSAGE_LEVEL_INFO:
+      target_level = blink::WebConsoleMessage::LevelInfo;
       break;
     case CONSOLE_MESSAGE_LEVEL_WARNING:
       target_level = blink::WebConsoleMessage::LevelWarning;
@@ -3243,10 +3243,9 @@ void RenderFrameImpl::didAddMessageToConsole(
     const blink::WebString& stack_trace) {
   logging::LogSeverity log_severity = logging::LOG_VERBOSE;
   switch (message.level) {
-    case blink::WebConsoleMessage::LevelDebug:
+    case blink::WebConsoleMessage::LevelVerbose:
       log_severity = logging::LOG_VERBOSE;
       break;
-    case blink::WebConsoleMessage::LevelLog:
     case blink::WebConsoleMessage::LevelInfo:
       log_severity = logging::LOG_INFO;
       break;

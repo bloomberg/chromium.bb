@@ -1721,7 +1721,7 @@ void ServiceWorkerVersion::OnPingTimeout() {
   DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
          running_status() == EmbeddedWorkerStatus::RUNNING);
   // TODO(falken): Change the error code to SERVICE_WORKER_ERROR_TIMEOUT.
-  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::LevelDebug,
+  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::LevelVerbose,
                                         kNotRespondingErrorMesage);
   StopWorkerIfIdle();
 }

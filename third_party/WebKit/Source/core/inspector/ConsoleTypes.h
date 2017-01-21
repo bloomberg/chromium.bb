@@ -24,11 +24,10 @@ enum MessageSource {
 };
 
 enum MessageLevel {
-  DebugMessageLevel = 4,
-  LogMessageLevel = 1,
-  InfoMessageLevel = 5,
-  WarningMessageLevel = 2,
-  ErrorMessageLevel = 3
+  VerboseMessageLevel,
+  InfoMessageLevel,
+  WarningMessageLevel,
+  ErrorMessageLevel
 };
 }
 

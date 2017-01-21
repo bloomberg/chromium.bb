@@ -53,18 +53,16 @@ String messageSourceValue(MessageSource source) {
 
 String messageLevelValue(MessageLevel level) {
   switch (level) {
-    case DebugMessageLevel:
-      return protocol::Log::LogEntry::LevelEnum::Debug;
-    case LogMessageLevel:
-      return protocol::Log::LogEntry::LevelEnum::Log;
+    case VerboseMessageLevel:
+      return protocol::Log::LogEntry::LevelEnum::Verbose;
+    case InfoMessageLevel:
+      return protocol::Log::LogEntry::LevelEnum::Info;
     case WarningMessageLevel:
       return protocol::Log::LogEntry::LevelEnum::Warning;
     case ErrorMessageLevel:
       return protocol::Log::LogEntry::LevelEnum::Error;
-    case InfoMessageLevel:
-      return protocol::Log::LogEntry::LevelEnum::Info;
   }
-  return protocol::Log::LogEntry::LevelEnum::Log;
+  return protocol::Log::LogEntry::LevelEnum::Info;
 }
 
 }  // namespace

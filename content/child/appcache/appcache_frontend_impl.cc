@@ -132,8 +132,8 @@ STATIC_ASSERT_ENUM(WebApplicationCacheHost::PolicyError, APPCACHE_POLICY_ERROR);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::UnknownError,
                    APPCACHE_UNKNOWN_ERROR);
 
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelDebug, APPCACHE_LOG_DEBUG);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelLog, APPCACHE_LOG_INFO);
+STATIC_ASSERT_ENUM(WebConsoleMessage::LevelVerbose, APPCACHE_LOG_VERBOSE);
+STATIC_ASSERT_ENUM(WebConsoleMessage::LevelInfo, APPCACHE_LOG_INFO);
 STATIC_ASSERT_ENUM(WebConsoleMessage::LevelWarning, APPCACHE_LOG_WARNING);
 STATIC_ASSERT_ENUM(WebConsoleMessage::LevelError, APPCACHE_LOG_ERROR);
 

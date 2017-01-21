@@ -617,14 +617,11 @@ void WebFrameTestClient::didAddMessageToConsole(
     return;
   std::string level;
   switch (message.level) {
-    case blink::WebConsoleMessage::LevelDebug:
+    case blink::WebConsoleMessage::LevelVerbose:
       level = "DEBUG";
       break;
-    case blink::WebConsoleMessage::LevelLog:
-      level = "MESSAGE";
-      break;
     case blink::WebConsoleMessage::LevelInfo:
-      level = "INFO";
+      level = "MESSAGE";
       break;
     case blink::WebConsoleMessage::LevelWarning:
       level = "WARNING";

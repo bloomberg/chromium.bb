@@ -774,11 +774,10 @@ STATIC_ASSERT_ENUM(WebHistoryDifferentDocumentLoad,
 STATIC_ASSERT_ENUM(WebHistoryScrollRestorationManual, ScrollRestorationManual);
 STATIC_ASSERT_ENUM(WebHistoryScrollRestorationAuto, ScrollRestorationAuto);
 
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelDebug, DebugMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelLog, LogMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::LevelVerbose, VerboseMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::LevelInfo, InfoMessageLevel);
 STATIC_ASSERT_ENUM(WebConsoleMessage::LevelWarning, WarningMessageLevel);
 STATIC_ASSERT_ENUM(WebConsoleMessage::LevelError, ErrorMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelInfo, InfoMessageLevel);
 
 STATIC_ASSERT_ENUM(WebCustomHandlersNew,
                    NavigatorContentUtilsClient::CustomHandlersNew);

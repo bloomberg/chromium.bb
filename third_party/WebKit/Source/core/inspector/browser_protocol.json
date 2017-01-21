@@ -4381,7 +4381,7 @@
                 "description": "Log entry.",
                 "properties": [
                     { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "storage", "appcache", "rendering", "security", "deprecation", "worker", "violation", "intervention", "other"], "description": "Log entry source." },
-                    { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info"], "description": "Log entry severity." },
+                    { "name": "level", "type": "string", "enum": ["verbose", "info", "warning", "error"], "description": "Log entry severity." },
                     { "name": "text", "type": "string", "description": "Logged text." },
                     { "name": "timestamp", "$ref": "Runtime.Timestamp", "description": "Timestamp when this entry was added." },
                     { "name": "url", "type": "string", "optional": true, "description": "URL of the resource if known." },

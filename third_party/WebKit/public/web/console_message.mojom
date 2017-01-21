@@ -7,9 +7,8 @@ module blink.mojom;
 // Mojom representation of blink::WebConsoleMessage.
 // The values and the order are the same with blink::WebConsoleMessage::Level.
 enum ConsoleMessageLevel {
-  Debug = 4,
-  Log = 1,
-  Info = 5,
-  Warning = 2,
-  Error = 3,
+  Verbose,
+  Info,
+  Warning,
+  Error
 };

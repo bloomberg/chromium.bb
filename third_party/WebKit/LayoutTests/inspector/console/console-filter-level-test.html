@@ -50,9 +50,9 @@ function test()
             next();
         },
         
-        function onlyLog(next)
+        function onlyInfo(next)
         {
-            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("log");
+            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("info");
             dumpVisibleMessages();
             next();
         },
@@ -60,7 +60,7 @@ function test()
         function onlyErrorDebug(next)
         {
             Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("error");
-            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("debug", true);
+            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("verbose", true);
             dumpVisibleMessages();
             next();
         },

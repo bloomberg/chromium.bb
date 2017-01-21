@@ -107,7 +107,7 @@ class CommonNameMismatchRedirectObserver
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& /* load_details */) override {
     web_contents_->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_LOG,
+        content::CONSOLE_MESSAGE_LEVEL_INFO,
         base::StringPrintf(
             "Redirecting navigation %s -> %s because the server presented a "
             "certificate valid for %s but not for %s. To disable such "

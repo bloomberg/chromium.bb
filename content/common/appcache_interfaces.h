@@ -35,10 +35,10 @@ enum AppCacheEventID {
 
 // Temporarily renumber them in wierd way, to help remove LOG_TIP from WebKit
 enum AppCacheLogLevel {
-  APPCACHE_LOG_DEBUG = 4,
-  APPCACHE_LOG_INFO = 1,
-  APPCACHE_LOG_WARNING = 2,
-  APPCACHE_LOG_ERROR = 3,
+  APPCACHE_LOG_VERBOSE,
+  APPCACHE_LOG_INFO,
+  APPCACHE_LOG_WARNING,
+  APPCACHE_LOG_ERROR
 };
 
 enum AppCacheNamespaceType {

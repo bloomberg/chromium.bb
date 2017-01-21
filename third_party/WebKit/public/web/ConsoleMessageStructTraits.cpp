@@ -14,10 +14,8 @@ namespace mojo {
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum : " #a)
 
-STATIC_ASSERT_ENUM(::blink::WebConsoleMessage::Level::LevelDebug,
-                   ::blink::mojom::ConsoleMessageLevel::Debug);
-STATIC_ASSERT_ENUM(::blink::WebConsoleMessage::Level::LevelLog,
-                   ::blink::mojom::ConsoleMessageLevel::Log);
+STATIC_ASSERT_ENUM(::blink::WebConsoleMessage::Level::LevelVerbose,
+                   ::blink::mojom::ConsoleMessageLevel::Verbose);
 STATIC_ASSERT_ENUM(::blink::WebConsoleMessage::Level::LevelInfo,
                    ::blink::mojom::ConsoleMessageLevel::Info);
 STATIC_ASSERT_ENUM(::blink::WebConsoleMessage::Level::LevelWarning,

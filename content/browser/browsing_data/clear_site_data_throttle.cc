@@ -262,7 +262,7 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
     default:
       NOTREACHED();
   }
-  ConsoleLog(messages, current_url_, output, CONSOLE_MESSAGE_LEVEL_LOG);
+  ConsoleLog(messages, current_url_, output, CONSOLE_MESSAGE_LEVEL_INFO);
 
   return true;
 }

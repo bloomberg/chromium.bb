@@ -233,11 +233,11 @@ void WebEmbeddedWorkerImpl::addMessageToConsole(
     const WebConsoleMessage& message) {
   MessageLevel webCoreMessageLevel;
   switch (message.level) {
-    case WebConsoleMessage::LevelDebug:
-      webCoreMessageLevel = DebugMessageLevel;
+    case WebConsoleMessage::LevelVerbose:
+      webCoreMessageLevel = VerboseMessageLevel;
       break;
-    case WebConsoleMessage::LevelLog:
-      webCoreMessageLevel = LogMessageLevel;
+    case WebConsoleMessage::LevelInfo:
+      webCoreMessageLevel = InfoMessageLevel;
       break;
     case WebConsoleMessage::LevelWarning:
       webCoreMessageLevel = WarningMessageLevel;

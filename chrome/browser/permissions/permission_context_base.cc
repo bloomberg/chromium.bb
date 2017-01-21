@@ -86,7 +86,7 @@ void PermissionContextBase::RequestPermission(
   if (IsPermissionKillSwitchOn()) {
     // Log to the developer console.
     web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_LOG,
+        content::CONSOLE_MESSAGE_LEVEL_INFO,
         base::StringPrintf(
             "%s permission has been blocked.",
             PermissionUtil::GetPermissionString(permission_type_).c_str()));
@@ -161,7 +161,7 @@ void PermissionContextBase::ContinueRequestPermission(
   if (permission_blocked) {
     // TODO(meredithl): Add UMA metrics here.
     web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_LOG,
+        content::CONSOLE_MESSAGE_LEVEL_INFO,
         base::StringPrintf(
             "%s permission has been auto-blocked.",
             PermissionUtil::GetPermissionString(permission_type_).c_str()));

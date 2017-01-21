@@ -37,12 +37,11 @@ namespace blink {
 
 struct WebConsoleMessage {
   enum Level {
-    LevelDebug = 4,
-    LevelLog = 1,
-    LevelInfo = 5,
-    LevelWarning = 2,
-    LevelError = 3,
-    LevelLast = LevelInfo
+    LevelVerbose,
+    LevelInfo,
+    LevelWarning,
+    LevelError,
+    LevelLast = LevelError
   };
 
   Level level;
@@ -51,7 +50,7 @@ struct WebConsoleMessage {
   unsigned lineNumber;
   unsigned columnNumber;
 
-  WebConsoleMessage() : level(LevelLog), lineNumber(0), columnNumber(0) {}
+  WebConsoleMessage() : level(LevelInfo), lineNumber(0), columnNumber(0) {}
   WebConsoleMessage(Level level, const WebString& text)
       : level(level), text(text), lineNumber(0), columnNumber(0) {}
 };

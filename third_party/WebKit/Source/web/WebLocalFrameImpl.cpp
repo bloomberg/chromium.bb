@@ -701,22 +701,19 @@ void WebLocalFrameImpl::setIsolatedWorldHumanReadableName(
 void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message) {
   DCHECK(frame());
 
-  MessageLevel webCoreMessageLevel = LogMessageLevel;
+  MessageLevel webCoreMessageLevel = InfoMessageLevel;
   switch (message.level) {
-    case WebConsoleMessage::LevelDebug:
-      webCoreMessageLevel = DebugMessageLevel;
+    case WebConsoleMessage::LevelVerbose:
+      webCoreMessageLevel = VerboseMessageLevel;
       break;
-    case WebConsoleMessage::LevelLog:
-      webCoreMessageLevel = LogMessageLevel;
+    case WebConsoleMessage::LevelInfo:
+      webCoreMessageLevel = InfoMessageLevel;
       break;
     case WebConsoleMessage::LevelWarning:
       webCoreMessageLevel = WarningMessageLevel;
       break;
     case WebConsoleMessage::LevelError:
       webCoreMessageLevel = ErrorMessageLevel;
-      break;
-    // Unsupported values.
-    case WebConsoleMessage::LevelInfo:
       break;
   }
 
