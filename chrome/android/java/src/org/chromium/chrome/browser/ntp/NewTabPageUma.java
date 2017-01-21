@@ -97,29 +97,21 @@ public final class NewTabPageUma {
     /** Possible results when updating content suggestions list in the UI. Keep in sync with the
      * ContentSuggestionsUIUpdateResult enum in histograms.xml. Do not remove or change existing
      * values other than NUM_UI_UPDATE_RESULTS. */
-    @IntDef({UI_UPDATE_SUCCESS_APPENDED, UI_UPDATE_SUCCESS_NONE_SEEN, UI_UPDATE_SUCCESS_1_SEEN,
-            UI_UPDATE_SUCCESS_2_SEEN, UI_UPDATE_SUCCESS_3_SEEN, UI_UPDATE_SUCCESS_MORE_THAN_3_SEEN,
-            UI_UPDATE_FAIL_ALL_SEEN, UI_UPDATE_FAIL_DISABLED})
+    @IntDef({UI_UPDATE_SUCCESS_APPENDED, UI_UPDATE_SUCCESS_REPLACED, UI_UPDATE_FAIL_ALL_SEEN,
+            UI_UPDATE_FAIL_DISABLED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ContentSuggestionsUIUpdateResult {}
     /** The content suggestions are successfully appended (because they are set for the first time
      * or explicitly marked to be appended). */
     public static final int UI_UPDATE_SUCCESS_APPENDED = 0;
-    /** Update successful, none of the previous content suggestions have been seen. */
-    public static final int UI_UPDATE_SUCCESS_NONE_SEEN = 1;
-    /** Update successful, 1 previous content suggestion have been seen (and kept). */
-    public static final int UI_UPDATE_SUCCESS_1_SEEN = 2;
-    /** Update successful, 2 previous content suggestions have been seen (and kept). */
-    public static final int UI_UPDATE_SUCCESS_2_SEEN = 3;
-    /** Update successful, 2 previous content suggestions have been seen (and kept). */
-    public static final int UI_UPDATE_SUCCESS_3_SEEN = 4;
-    /** Update successful, more than 2 previous content suggestions have been seen (and kept). */
-    public static final int UI_UPDATE_SUCCESS_MORE_THAN_3_SEEN = 5;
+    /** Update successful, suggestions were replaced (some of them possibly seen, the exact number
+     * reported in a separate histogram). */
+    public static final int UI_UPDATE_SUCCESS_REPLACED = 1;
     /** Update failed, all previous content suggestions have been seen (and kept). */
-    public static final int UI_UPDATE_FAIL_ALL_SEEN = 6;
-    /** Update failed, all previous content suggestions have been seen (and kept). */
-    public static final int UI_UPDATE_FAIL_DISABLED = 7;
-    public static final int NUM_UI_UPDATE_RESULTS = 8;
+    public static final int UI_UPDATE_FAIL_ALL_SEEN = 2;
+    /** Update failed, because it is disabled by a variation parameter. */
+    public static final int UI_UPDATE_FAIL_DISABLED = 3;
+    public static final int NUM_UI_UPDATE_RESULTS = 4;
 
     // The NTP was loaded in a cold startup.
     private static final int LOAD_TYPE_COLD_START = 0;
@@ -193,7 +185,20 @@ public final class NewTabPageUma {
     public static void recordUIUpdateResult(
             @ContentSuggestionsUIUpdateResult int result) {
         RecordHistogram.recordEnumeratedHistogram(
-                "NewTabPage.ContentSuggestions.UIUpdateResult", result, NUM_UI_UPDATE_RESULTS);
+                "NewTabPage.ContentSuggestions.UIUpdateResult2", result, NUM_UI_UPDATE_RESULTS);
+    }
+
+    /**
+     * Record how many content suggestions have been seen by the user in the UI section before the
+     * section was successfully updated.
+     * @param numberOfSuggestionsSeen The number of content suggestions seen so far in the section.
+     */
+    public static void recordNumberOfSuggestionsSeenBeforeUIUpdateSuccess(
+            int numberOfSuggestionsSeen) {
+        assert numberOfSuggestionsSeen >= 0;
+        RecordHistogram.recordCount100Histogram(
+                "NewTabPage.ContentSuggestions.UIUpdateSuccessNumberOfSuggestionsSeen",
+                numberOfSuggestionsSeen);
     }
 
     /**

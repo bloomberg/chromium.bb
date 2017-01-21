@@ -357,20 +357,10 @@ public class SuggestionsSection extends InnerNode {
                             suggestions.size() - targetCountToAppend);
                     suggestions.subList(targetCountToAppend, suggestions.size()).clear();
                 }
-
-                if (mNumberOfSuggestionsSeen == 1) {
-                    NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_1_SEEN);
-                } else if (mNumberOfSuggestionsSeen == 2) {
-                    NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_2_SEEN);
-                } else if (mNumberOfSuggestionsSeen == 3) {
-                    NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_3_SEEN);
-                } else {
-                    NewTabPageUma.recordUIUpdateResult(
-                            NewTabPageUma.UI_UPDATE_SUCCESS_MORE_THAN_3_SEEN);
-                }
-            } else {
-                NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_NONE_SEEN);
             }
+            NewTabPageUma.recordNumberOfSuggestionsSeenBeforeUIUpdateSuccess(
+                    mNumberOfSuggestionsSeen);
+            NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_REPLACED);
         } else {
             NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_APPENDED);
         }
