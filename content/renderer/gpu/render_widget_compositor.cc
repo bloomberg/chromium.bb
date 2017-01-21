@@ -190,12 +190,9 @@ static cc::BrowserControlsState ConvertBrowserControlsState(
 // static
 std::unique_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     RenderWidgetCompositorDelegate* delegate,
-    float device_scale_factor,
-    const ScreenInfo& screen_info,
     CompositorDependencies* compositor_deps) {
   std::unique_ptr<RenderWidgetCompositor> compositor(
       new RenderWidgetCompositor(delegate, compositor_deps));
-  compositor->Initialize(device_scale_factor, screen_info);
   return compositor;
 }
 
@@ -210,20 +207,39 @@ RenderWidgetCompositor::RenderWidgetCompositor(
       layout_and_paint_async_callback_(nullptr),
       weak_factory_(this) {}
 
-void RenderWidgetCompositor::Initialize(float device_scale_factor,
-                                        const ScreenInfo& screen_info) {
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  cc::LayerTreeSettings settings = GenerateLayerTreeSettings(
-      *cmd, compositor_deps_, device_scale_factor, screen_info);
+void RenderWidgetCompositor::Initialize(
+    std::unique_ptr<cc::LayerTreeHost> layer_tree_host,
+    std::unique_ptr<cc::AnimationHost> animation_host) {
+  DCHECK(layer_tree_host);
+  DCHECK(animation_host);
+  animation_host_ = std::move(animation_host);
+  layer_tree_host_ = std::move(layer_tree_host);
+}
 
-  animation_host_ = cc::AnimationHost::CreateMainInstance();
+RenderWidgetCompositor::~RenderWidgetCompositor() = default;
+
+// static
+std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
+    LayerTreeHostClient* client,
+    cc::LayerTreeHostSingleThreadClient* single_thread_client,
+    cc::MutatorHost* mutator_host,
+    CompositorDependencies* deps,
+    float device_scale_factor,
+    const ScreenInfo& screen_info) {
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  cc::LayerTreeSettings settings =
+      GenerateLayerTreeSettings(*cmd, deps, device_scale_factor, screen_info);
+
+  const bool is_threaded = !!deps->GetCompositorImplThreadTaskRunner();
+
+  std::unique_ptr<cc::LayerTreeHost> layer_tree_host;
+
   cc::LayerTreeHostInProcess::InitParams params;
-  params.client = this;
+  params.client = client;
   params.settings = &settings;
-  params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
-  params.main_task_runner =
-      compositor_deps_->GetCompositorMainThreadTaskRunner();
-  params.mutator_host = animation_host_.get();
+  params.task_graph_runner = deps->GetTaskGraphRunner();
+  params.main_task_runner = deps->GetCompositorMainThreadTaskRunner();
+  params.mutator_host = mutator_host;
   if (base::TaskScheduler::GetInstance()) {
     params.image_worker_task_runner = base::CreateSequencedTaskRunnerWithTraits(
         base::TaskTraits()
@@ -231,18 +247,17 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor,
             .WithShutdownBehavior(
                 base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
   }
-  if (!threaded_) {
+  if (!is_threaded) {
     // Single-threaded layout tests.
-    layer_tree_host_ =
-        cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
+    layer_tree_host = cc::LayerTreeHostInProcess::CreateSingleThreaded(
+        single_thread_client, &params);
   } else {
-    layer_tree_host_ = cc::LayerTreeHostInProcess::CreateThreaded(
-        compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
+    layer_tree_host = cc::LayerTreeHostInProcess::CreateThreaded(
+        deps->GetCompositorImplThreadTaskRunner(), &params);
   }
-  DCHECK(layer_tree_host_);
-}
 
-RenderWidgetCompositor::~RenderWidgetCompositor() = default;
+  return layer_tree_host;
+}
 
 // static
 cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(

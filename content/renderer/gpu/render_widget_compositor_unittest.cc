@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/animation/animation_host.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/test/fake_compositor_frame_sink.h"
@@ -219,9 +220,17 @@ class RenderWidgetCompositorFrameSinkTest : public testing::Test {
  public:
   RenderWidgetCompositorFrameSinkTest()
       : render_widget_compositor_(&compositor_delegate_, &compositor_deps_) {
+    auto animation_host = cc::AnimationHost::CreateMainInstance();
+
     ScreenInfo dummy_screen_info;
-    render_widget_compositor_.Initialize(1.f /* initial_device_scale_factor */,
-                                         dummy_screen_info);
+    const float initial_device_scale_factor = 1.f;
+
+    auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
+        &render_widget_compositor_, &render_widget_compositor_,
+        animation_host.get(), &compositor_deps_, initial_device_scale_factor,
+        dummy_screen_info);
+    render_widget_compositor_.Initialize(std::move(layer_tree_host),
+                                         std::move(animation_host));
   }
 
   void RunTest(bool use_null_compositor_frame_sink,

@@ -24,9 +24,11 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
+#include "cc/animation/animation_host.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/drag_messages.h"
@@ -1230,8 +1232,15 @@ void RenderWidget::AutoResizeCompositor()  {
 blink::WebLayerTreeView* RenderWidget::initializeLayerTreeView() {
   DCHECK(!host_closing_);
 
-  compositor_ = RenderWidgetCompositor::Create(this, device_scale_factor_,
-                                               screen_info_, compositor_deps_);
+  compositor_ = RenderWidgetCompositor::Create(this, compositor_deps_);
+  auto animation_host = cc::AnimationHost::CreateMainInstance();
+
+  auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
+      compositor_.get(), compositor_.get(), animation_host.get(),
+      compositor_deps_, device_scale_factor_, screen_info_);
+  compositor_->Initialize(std::move(layer_tree_host),
+                          std::move(animation_host));
+
   compositor_->setViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
   compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());

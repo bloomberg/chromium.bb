@@ -33,6 +33,7 @@ class AnimationHost;
 class InputHandler;
 class Layer;
 class LayerTreeHost;
+class MutatorHost;
 }
 
 namespace gfx {
@@ -57,8 +58,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // with the given settings. Returns NULL if initialization fails.
   static std::unique_ptr<RenderWidgetCompositor> Create(
       RenderWidgetCompositorDelegate* delegate,
-      float device_scale_factor,
-      const ScreenInfo& screen_info,
       CompositorDependencies* compositor_deps);
 
   ~RenderWidgetCompositor() override;
@@ -68,6 +67,17 @@ class CONTENT_EXPORT RenderWidgetCompositor
       CompositorDependencies* compositor_deps,
       float device_scale_factor,
       const ScreenInfo& screen_info);
+  static std::unique_ptr<cc::LayerTreeHost> CreateLayerTreeHost(
+      cc::LayerTreeHostClient* client,
+      cc::LayerTreeHostSingleThreadClient* single_thread_client,
+      cc::MutatorHost* mutator_host,
+      CompositorDependencies* deps,
+      float device_scale_factor,
+      const ScreenInfo& screen_info);
+
+  void Initialize(std::unique_ptr<cc::LayerTreeHost> layer_tree_host,
+                  std::unique_ptr<cc::AnimationHost> animation_host);
+
   static cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
       const cc::ManagedMemoryPolicy& policy);
 
@@ -202,7 +212,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   RenderWidgetCompositor(RenderWidgetCompositorDelegate* delegate,
                          CompositorDependencies* compositor_deps);
 
-  void Initialize(float device_scale_factor, const ScreenInfo& screen_info);
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
  private:
