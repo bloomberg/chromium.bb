@@ -39,6 +39,22 @@ class WeakMember;
 template <typename T>
 class WeakPersistent;
 
+// "g++ -Os" reasonably considers the mark() eager-tracing specialization
+// as an inlinable method. Its optimization pipeline will however trigger
+// unconditional uses of that inlining inside trace() methods, i.e., without
+// consideration for resulting code size, so one for each use of
+// "visitor->trace(..)". This results in an unwanted amount of extra code
+// across all trace methods. Address the issue indirectly by turning off
+// inlining for the method. See crbug.com/681991 for further details.
+//
+// TODO(sof): revisit with later g++ versions, or when g++ is no
+// longer used for production builds.
+#if !defined(__clang__) && defined(__GNUC__)
+#define NOINLINE_GXX_ONLY NOINLINE
+#else
+#define NOINLINE_GXX_ONLY
+#endif
+
 template <typename T, bool = NeedsAdjustAndMark<T>::value>
 class AdjustAndMarkTrait;
 
@@ -48,7 +64,7 @@ class AdjustAndMarkTrait<T, false> {
 
  public:
   template <typename VisitorDispatcher>
-  static void mark(VisitorDispatcher visitor, const T* t) {
+  static NOINLINE_GXX_ONLY void mark(VisitorDispatcher visitor, const T* t) {
 #if DCHECK_IS_ON()
     assertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::index());
 #endif
