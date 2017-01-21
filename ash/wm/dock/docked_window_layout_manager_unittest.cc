@@ -683,7 +683,7 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsMinimize) {
   EXPECT_EQ(ui::SHOW_STATE_MINIMIZED,
             w1->GetProperty(aura::client::kShowStateKey));
   EXPECT_EQ(ui::SHOW_STATE_DOCKED,
-            w1->GetProperty(aura::client::kRestoreShowStateKey));
+            w1->GetProperty(aura::client::kPreMinimizedShowStateKey));
   // The other two windows should be still docked.
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(w2.get())->IsDocked());

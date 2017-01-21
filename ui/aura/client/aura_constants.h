@@ -77,10 +77,17 @@ AURA_EXPORT extern const WindowProperty<int32_t>* const kResizeBehaviorKey;
 // A property key to store the restore bounds for a window.
 AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;
 
-// A property key to store ui::WindowShowState for restoring a window.
+// A property key to store ui::WindowShowState for restoring a window from
+// minimized show state.
 // Used in Ash to remember the show state before the window was minimized.
 AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
-    kRestoreShowStateKey;
+    kPreMinimizedShowStateKey;
+
+// A property key to store ui::WindowShowState for restoring a window from
+// fullscreen show state.
+// Used in Ash to remember the show state before the window was fullscreen.
+AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
+    kPreFullscreenShowStateKey;
 
 // A property key to store ui::WindowShowState for a window.
 // See ui/base/ui_base_types.h for its definition.

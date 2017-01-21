@@ -45,7 +45,9 @@ DEFINE_WINDOW_PROPERTY_KEY(int32_t,
                            ui::mojom::kResizeBehaviorCanResize);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(
-    ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
+    ui::WindowShowState, kPreMinimizedShowStateKey, ui::SHOW_STATE_DEFAULT);
+DEFINE_WINDOW_PROPERTY_KEY(
+    ui::WindowShowState, kPreFullscreenShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(base::string16, kTitleKey, nullptr);

@@ -21,13 +21,7 @@ void ToggleFullScreen(wm::WindowState* window_state,
 
   if (delegate && delegate->ToggleFullscreen(window_state))
     return;
-
-  if (is_fullscreen) {
-    window_state->Restore();
-  } else {
-    // Set the property to activate full screen.
-    window_state->window()->SetFullscreen();
-  }
+  window_state->window()->SetFullscreen(!is_fullscreen);
 }
 
 }  // namespace wm

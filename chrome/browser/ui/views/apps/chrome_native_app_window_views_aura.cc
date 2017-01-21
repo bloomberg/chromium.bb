@@ -93,10 +93,6 @@ ChromeNativeAppWindowViewsAura::CreateNonStandardAppFrame() {
 }
 
 ui::WindowShowState ChromeNativeAppWindowViewsAura::GetRestoredState() const {
-  // Use kRestoreShowStateKey in case a window is minimized/hidden.
-  ui::WindowShowState restore_state = widget()->GetNativeWindow()->GetProperty(
-      aura::client::kRestoreShowStateKey);
-
   // First normal states are checked.
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;
@@ -104,10 +100,12 @@ ui::WindowShowState ChromeNativeAppWindowViewsAura::GetRestoredState() const {
     return ui::SHOW_STATE_FULLSCREEN;
   }
 
-  if (widget()->GetNativeWindow()->GetProperty(
-          aura::client::kShowStateKey) == ui::SHOW_STATE_DOCKED ||
-      widget()->GetNativeWindow()->GetProperty(
-          aura::client::kRestoreShowStateKey) == ui::SHOW_STATE_DOCKED) {
+  // Use kPreMinimizedShowStateKey in case a window is minimized/hidden.
+  ui::WindowShowState restore_state = widget()->GetNativeWindow()->GetProperty(
+      aura::client::kPreMinimizedShowStateKey);
+  if (widget()->GetNativeWindow()->GetProperty(aura::client::kShowStateKey) ==
+          ui::SHOW_STATE_DOCKED ||
+      restore_state == ui::SHOW_STATE_DOCKED) {
     return ui::SHOW_STATE_DOCKED;
   }
 

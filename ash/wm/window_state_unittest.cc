@@ -8,6 +8,7 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/window_state_util.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/wm/window_state_aura.h"
@@ -419,6 +420,56 @@ TEST_P(WindowStateTest, AllowSetBoundsInMaximized) {
   EXPECT_EQ(work_area, window->bounds());
   window->SetBounds(new_bounds);
   EXPECT_EQ(work_area, window->bounds());
+}
+
+TEST_P(WindowStateTest, FullscreenMinimizedSwitching) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  WindowState* window_state = GetWindowState(window.get());
+
+  ash::wm::ToggleFullScreen(window_state, nullptr);
+  ASSERT_TRUE(window_state->IsFullscreen());
+
+  // Toggling the fullscreen window should restore to normal.
+  ash::wm::ToggleFullScreen(window_state, nullptr);
+  ASSERT_TRUE(window_state->IsNormalStateType());
+
+  window_state->Maximize();
+  ASSERT_TRUE(window_state->IsMaximized());
+
+  ash::wm::ToggleFullScreen(window_state, nullptr);
+  ASSERT_TRUE(window_state->IsFullscreen());
+
+  // Toggling the fullscreen window should restore to maximized.
+  ash::wm::ToggleFullScreen(window_state, nullptr);
+  ASSERT_TRUE(window_state->IsMaximized());
+
+  ash::wm::ToggleFullScreen(window_state, nullptr);
+  ASSERT_TRUE(window_state->IsFullscreen());
+
+  // Minimize from fullscreen.
+  window_state->Minimize();
+  ASSERT_TRUE(window_state->IsMinimized());
+
+  // Unminimize should restore to fullscreen.
+  window_state->Unminimize();
+  ASSERT_TRUE(window_state->IsFullscreen());
+
+  // Toggling the fullscreen window should restore to maximized.
+  ash::wm::ToggleFullScreen(window_state, nullptr);
+  ASSERT_TRUE(window_state->IsMaximized());
+
+  // Minimize from fullscreen.
+  window_state->Minimize();
+  ASSERT_TRUE(window_state->IsMinimized());
+
+  // Fullscreen a minimized window.
+  ash::wm::ToggleFullScreen(window_state, nullptr);
+  ASSERT_TRUE(window_state->IsFullscreen());
+
+  // Toggling the fullscreen window should not return to minimized. It should
+  // return to the state before minimizing and fullscreen.
+  ash::wm::ToggleFullScreen(window_state, nullptr);
+  ASSERT_TRUE(window_state->IsMaximized());
 }
 
 // TODO(skuhne): Add more unit test to verify the correctness for the restore

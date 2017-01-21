@@ -273,7 +273,7 @@ WmWindow* ScreenPinningController::CreateWindowDimmer(WmWindow* container) {
   std::unique_ptr<WindowDimmer> window_dimmer =
       base::MakeUnique<WindowDimmer>(container);
   window_dimmer->SetDimOpacity(1);  // Fully opaque.
-  window_dimmer->window()->SetFullscreen();
+  window_dimmer->window()->SetFullscreen(true);
   window_dimmer->window()->Show();
   WmWindow* window = window_dimmer->window();
   window_dimmers_->Set(container, std::move(window_dimmer));

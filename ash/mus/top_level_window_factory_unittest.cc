@@ -24,7 +24,7 @@ using TopLevelWindowFactoryTest = AshTest;
 TEST_F(TopLevelWindowFactoryTest, CreateFullscreenWindow) {
   std::unique_ptr<WindowOwner> window_owner = CreateToplevelTestWindow();
   WmWindow* window = window_owner->window();
-  window->SetFullscreen();
+  window->SetFullscreen(true);
   WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
   EXPECT_EQ(root_window->GetBounds(), window->GetBounds());
 }

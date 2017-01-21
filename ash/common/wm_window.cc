@@ -609,8 +609,19 @@ ui::WindowShowState WmWindow::GetShowState() const {
   return window_->GetProperty(aura::client::kShowStateKey);
 }
 
-void WmWindow::SetRestoreShowState(ui::WindowShowState show_state) {
-  window_->SetProperty(aura::client::kRestoreShowStateKey, show_state);
+void WmWindow::SetPreMinimizedShowState(ui::WindowShowState show_state) {
+  window_->SetProperty(aura::client::kPreMinimizedShowStateKey, show_state);
+}
+
+ui::WindowShowState WmWindow::GetPreMinimizedShowState() const {
+  return window_->GetProperty(aura::client::kPreMinimizedShowStateKey);
+}
+
+void WmWindow::SetPreFullscreenShowState(ui::WindowShowState show_state) {
+  // We should never store the ui::SHOW_STATE_MINIMIZED as the show state before
+  // fullscreen.
+  DCHECK_NE(show_state, ui::SHOW_STATE_MINIMIZED);
+  window_->SetProperty(aura::client::kPreFullscreenShowStateKey, show_state);
 }
 
 void WmWindow::SetRestoreOverrides(const gfx::Rect& bounds_override,
@@ -754,8 +765,16 @@ void WmWindow::Deactivate() {
   wm::DeactivateWindow(window_);
 }
 
-void WmWindow::SetFullscreen() {
-  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+void WmWindow::SetFullscreen(bool fullscreen) {
+  if (fullscreen) {
+    window_->SetProperty(aura::client::kShowStateKey,
+                         ui::SHOW_STATE_FULLSCREEN);
+  } else {
+    auto state = window_->GetProperty(aura::client::kPreFullscreenShowStateKey);
+    DCHECK_NE(state, ui::SHOW_STATE_MINIMIZED);
+    window_->SetProperty(aura::client::kShowStateKey, state);
+    window_->ClearProperty(aura::client::kPreFullscreenShowStateKey);
+  }
 }
 
 void WmWindow::Maximize() {
@@ -769,8 +788,8 @@ void WmWindow::Minimize() {
 void WmWindow::Unminimize() {
   window_->SetProperty(
       aura::client::kShowStateKey,
-      window_->GetProperty(aura::client::kRestoreShowStateKey));
-  window_->ClearProperty(aura::client::kRestoreShowStateKey);
+      window_->GetProperty(aura::client::kPreMinimizedShowStateKey));
+  window_->ClearProperty(aura::client::kPreMinimizedShowStateKey);
 }
 
 std::vector<WmWindow*> WmWindow::GetChildren() {
