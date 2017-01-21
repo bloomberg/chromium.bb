@@ -39,9 +39,92 @@
         top: 16px;
         width: 20px;
       }
+
+      /* Images */
+      #icon.ethernet {
+        background: url(ethernet.svg);
+      }
+
+      #icon.vpn {
+        background: url(vpn.svg);
+      }
+
+      /* Wi-Fi images */
+      #icon.wifi-0 {
+        background: url(wifi_0.svg);
+      }
+
+      #icon.wifi-1 {
+        background: url(wifi_1.svg);
+      }
+
+      #icon.wifi-2 {
+        background: url(wifi_2.svg);
+      }
+
+      #icon.wifi-3 {
+        background: url(wifi_3.svg);
+      }
+
+      #icon.wifi-4 {
+        background: url(wifi_4.svg);
+      }
+
+      #icon.wifi-off {
+        background: url(wifi_off.svg);
+      }
+
+      #icon.wifi-connecting {
+        animation: wifi-levels 750ms infinite;
+        animation-direction: alternate;
+        animation-timing-function: steps(4, end);
+      }
+
+      @keyframes wifi-levels {
+        0% { background: url(wifi_0.svg); }
+        25% { background: url(wifi_1.svg); }
+        50% { background: url(wifi_2.svg); }
+        75% { background: url(wifi_3.svg); }
+        100% { background: url(wifi_4.svg); }
+      }
+
+      /* Cellular images */
+      #icon.cellular-0 {
+        background: url(cellular_0.svg);
+      }
+
+      #icon.cellular-1 {
+        background: url(cellular_1.svg);
+      }
+
+      #icon.cellular-2 {
+        background: url(cellular_2.svg);
+      }
+
+      #icon.cellular-3 {
+        background: url(cellular_3.svg);
+      }
+
+      #icon.cellular-4 {
+        background: url(cellular_4.svg);
+      }
+
+      #icon.cellular-connecting {
+        animation: cellular-levels 750ms infinite;
+        animation-direction: alternate;
+        animation-timing-function: steps(4, end);
+      }
+
+      @keyframes cellular-levels {
+        0% { background: url(cellular_0.svg); }
+        25% { background: url(cellular_1.svg); }
+        50% { background: url(cellular_2.svg); }
+        75% { background: url(cellular_3.svg); }
+        100% { background: url(cellular_4.svg); }
+      }
     </style>
-    <iron-icon id="icon" icon="[[getIcon_(networkState, isListItem)]]">
-    </iron-icon>
+    <div id="icon" class$="[[getIconClass_(networkState, isListItem)]]">
+    </div>
     <iron-icon id="technology" hidden ="[[!showTechnology_(networkState)]]"
         icon="[[getTechnology_(networkState)]]">
     </iron-icon>

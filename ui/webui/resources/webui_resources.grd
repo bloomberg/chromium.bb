@@ -196,6 +196,10 @@ without changes to the corresponding grd file. -->
                file="images/throbber_small.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_TRASH"
                file="images/trash.png" type="BINDATA" />
+
+      <if expr="not is_android">
+        <part file="cr_elements_images.grdp" />
+      </if>
     </includes>
     <structures>
       <structure name="IDR_WEBUI_CSS_ACTION_LINK"

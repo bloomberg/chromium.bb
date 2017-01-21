@@ -34,39 +34,30 @@ Polymer({
    * @return {string} The name of the svg icon image to show.
    * @private
    */
-  getIcon_: function() {
+  getIconClass_: function() {
     if (!this.networkState)
       return '';
-    let showDisconnected =
-        !this.isListItem && (!this.networkState.ConnectionState ||
-                             this.networkState.ConnectionState ==
-                                 CrOnc.ConnectionState.NOT_CONNECTED);
+    var type = this.networkState.Type;
+    if (type == CrOnc.Type.ETHERNET)
+      return 'ethernet';
+    if (type == CrOnc.Type.VPN)
+      return 'vpn';
 
-    switch (this.networkState.Type) {
-      case CrOnc.Type.ETHERNET: {
-        return 'network:settings-ethernet';
-      }
-      case CrOnc.Type.VPN: {
-        return 'network:vpn-key';
-      }
-      case CrOnc.Type.CELLULAR: {
-        let strength =
-            showDisconnected ? 0 : CrOnc.getSignalStrength(this.networkState);
-        let index = this.strengthToIndex_(strength);
-        return 'network:signal-cellular-' + index.toString(10) + '-bar';
-      }
-      case CrOnc.Type.WI_FI:
-      case CrOnc.Type.WI_MAX: {
-        if (showDisconnected)
-          return 'network:signal-wifi-off';
-        let strength = CrOnc.getSignalStrength(this.networkState);
-        let index = this.strengthToIndex_(strength);
-        return 'network:signal-wifi-' + index.toString(10) + '-bar';
-      }
-      default:
-        assertNotReached();
+    var prefix = type == CrOnc.Type.CELLULAR ? 'cellular-' : 'wifi-';
+    var connectionState = this.networkState.ConnectionState;
+    if (connectionState == CrOnc.ConnectionState.CONNECTING)
+      return prefix + 'connecting';
+    var strength;
+    if (!this.isListItem &&
+        (!connectionState ||
+         connectionState == CrOnc.ConnectionState.NOT_CONNECTED)) {
+      if (type != CrOnc.Type.CELLULAR)
+        return prefix + 'off';
+      strength = 0;
+    } else {
+      strength = CrOnc.getSignalStrength(this.networkState);
     }
-    return '';
+    return prefix + this.strengthToIndex_(strength).toString(10);
   },
 
   /**

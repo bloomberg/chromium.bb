@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <if expr="chromeos">
+    <include name="IDR_CR_ELEMENTS_CELLULAR_0_SVG"
+             file="cr_elements/network/cellular_0.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CELLULAR_1_SVG"
+             file="cr_elements/network/cellular_1.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CELLULAR_2_SVG"
+             file="cr_elements/network/cellular_2.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CELLULAR_3_SVG"
+             file="cr_elements/network/cellular_3.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CELLULAR_4_SVG"
+             file="cr_elements/network/cellular_4.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_ETHERNET_SVG"
+             file="cr_elements/network/ethernet.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_VPN_SVG"
+             file="cr_elements/network/vpn.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_WIFI_0_SVG"
+             file="cr_elements/network/wifi_0.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_WIFI_1_SVG"
+             file="cr_elements/network/wifi_1.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_WIFI_2_SVG"
+             file="cr_elements/network/wifi_2.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_WIFI_3_SVG"
+             file="cr_elements/network/wifi_3.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_WIFI_4_SVG"
+             file="cr_elements/network/wifi_4.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_WIFI_OFF_SVG"
+             file="cr_elements/network/wifi_off.svg" type="BINDATA" />
+  </if>
+</grit-part>
