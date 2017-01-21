@@ -855,7 +855,9 @@ void FocusController::setFocused(bool focused) {
   if (!m_isFocused && focusedOrMainFrame()->isLocalFrame())
     toLocalFrame(focusedOrMainFrame())->eventHandler().stopAutoscroll();
 
-  if (!m_focusedFrame)
+  // Do not set a focused frame when being unfocused. This might reset
+  // m_isFocused to true.
+  if (!m_focusedFrame && m_isFocused)
     setFocusedFrame(m_page->mainFrame());
 
   // setFocusedFrame above might reject to update m_focusedFrame, or

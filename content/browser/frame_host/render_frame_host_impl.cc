@@ -2559,6 +2559,17 @@ void RenderFrameHostImpl::SetFocusedFrame() {
   Send(new FrameMsg_SetFocusedFrame(routing_id_));
 }
 
+void RenderFrameHostImpl::AdvanceFocus(blink::WebFocusType type,
+                                       RenderFrameProxyHost* source_proxy) {
+  DCHECK(!source_proxy ||
+         (source_proxy->GetProcess()->GetID() == GetProcess()->GetID()));
+  int32_t source_proxy_routing_id = MSG_ROUTING_NONE;
+  if (source_proxy)
+    source_proxy_routing_id = source_proxy->GetRoutingID();
+  Send(
+      new FrameMsg_AdvanceFocus(GetRoutingID(), type, source_proxy_routing_id));
+}
+
 void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
                                                    size_t after) {
   Send(new InputMsg_ExtendSelectionAndDelete(routing_id_, before, after));

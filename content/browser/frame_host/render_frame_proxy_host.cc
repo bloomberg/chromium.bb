@@ -357,18 +357,14 @@ void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
   // child frames finishes its traversal.
   RenderFrameHostImpl* source_rfh =
       RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
-  int32_t source_proxy_routing_id = MSG_ROUTING_NONE;
-  if (source_rfh) {
-    RenderFrameProxyHost* source_proxy =
-        source_rfh->frame_tree_node()
-            ->render_manager()
-            ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance());
-    if (source_proxy)
-      source_proxy_routing_id = source_proxy->GetRoutingID();
-  }
+  RenderFrameProxyHost* source_proxy =
+      source_rfh
+          ? source_rfh->frame_tree_node()
+                ->render_manager()
+                ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance())
+          : nullptr;
 
-  target_rfh->Send(new FrameMsg_AdvanceFocus(target_rfh->GetRoutingID(), type,
-                                             source_proxy_routing_id));
+  target_rfh->AdvanceFocus(type, source_proxy);
 }
 
 void RenderFrameProxyHost::OnFrameFocused() {

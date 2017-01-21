@@ -4738,6 +4738,13 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
   // and focus this contents to activate it.
   if (old_contents)
     old_contents->GetMainFrame()->GetRenderWidgetHost()->SetPageFocus(false);
+
+  // Make sure the outer web contents knows our frame is focused. Otherwise, the
+  // outer renderer could have the element before or after the frame element
+  // focused which would return early without actually advancing focus.
+  if (GetRenderManager()->GetProxyToOuterDelegate())
+    GetRenderManager()->GetProxyToOuterDelegate()->SetFocusedFrame();
+
   GetMainFrame()->GetRenderWidgetHost()->SetPageFocus(true);
   GetOutermostWebContents()->node_->SetFocusedWebContents(this);
 }

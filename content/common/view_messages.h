@@ -767,8 +767,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_EnumerateDirectory,
                     int /* request_id */,
                     base::FilePath /* file_path */)
 
-// Tells the browser to move the focus to the next (previous if reverse is
-// true) focusable element.
+// When the renderer needs the browser to transfer focus cross-process on its
+// behalf in the focus hierarchy. This may focus an element in the browser ui or
+// a cross-process frame, as appropriate.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
                     bool /* reverse */)
 
