@@ -32,7 +32,6 @@
 #include "core/dom/AXObjectCache.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
-#include "platform/Timer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -242,7 +241,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
   // aria-owns relationship.
   HashMap<String, std::unique_ptr<HashSet<AXID>>> m_idToAriaOwnersMapping;
 
-  Timer<AXObjectCacheImpl> m_notificationPostTimer;
+  TaskRunnerTimer<AXObjectCacheImpl> m_notificationPostTimer;
   HeapVector<std::pair<Member<AXObject>, AXNotification>> m_notificationsToPost;
   void notificationPostTimerFired(TimerBase*);
 

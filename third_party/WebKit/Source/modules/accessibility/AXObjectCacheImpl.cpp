@@ -31,6 +31,7 @@
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -93,9 +94,10 @@ AXObjectCache* AXObjectCacheImpl::create(Document& document) {
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     : m_document(document),
       m_modificationCount(0),
-      m_notificationPostTimer(this,
-                              &AXObjectCacheImpl::notificationPostTimerFired) {
-}
+      m_notificationPostTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
+          this,
+          &AXObjectCacheImpl::notificationPostTimerFired) {}
 
 AXObjectCacheImpl::~AXObjectCacheImpl() {
   ASSERT(m_hasBeenDisposed);
