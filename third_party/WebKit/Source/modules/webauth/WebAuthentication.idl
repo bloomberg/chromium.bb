@@ -1,0 +1,13 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/webauthn/#webauthentication
+
+[
+    RuntimeEnabled=WebAuth,
+    SecureContext
+] interface WebAuthentication {
+    [CallWith=ScriptState] Promise<sequence<ScopedCredentialInfo>> makeCredential(RelyingPartyAccount accountInformation, sequence<ScopedCredentialParameters> cryptoParameters, BufferSource attestationChallenge, optional ScopedCredentialOptions options);
+    [CallWith=ScriptState] Promise<sequence<WebAuthnAssertion>> getAssertion(BufferSource assertionChallenge, optional AuthenticationAssertionOptions options);
+};
