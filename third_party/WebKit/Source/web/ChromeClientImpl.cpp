@@ -929,58 +929,24 @@ bool ChromeClientImpl::shouldOpenModalDialogDuringPageDismissal(
 }
 
 void ChromeClientImpl::setEventListenerProperties(
-    LocalFrame* frame,
     WebEventListenerClass eventClass,
     WebEventListenerProperties properties) {
-  // |frame| might be null if called via TreeScopeAdopter::
-  // moveNodeToNewDocument() and the new document has no frame attached.
-  // Since a document without a frame cannot attach one later, it is safe to
-  // exit early.
-  if (!frame)
-    return;
-
-  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-  WebFrameWidgetBase* widget = webFrame->localRoot()->frameWidget();
-  // The widget may be nullptr if the frame is provisional.
-  // TODO(dcheng): This needs to be cleaned up at some point.
-  // https://crbug.com/578349
-  if (!widget) {
-    // If we hit a provisional frame, we expect it to be during initialization
-    // in which case the |properties| should be 'nothing'.
-    DCHECK(properties == WebEventListenerProperties::Nothing);
-    return;
-  }
-
-  // This relies on widget always pointing to a WebFrameWidgetImpl when
-  // |frame| points to an OOPIF frame, i.e. |frame|'s mainFrame() is
-  // remote.
-  WebWidgetClient* client = widget->client();
-  if (WebLayerTreeView* treeView = widget->getLayerTreeView()) {
+  if (WebLayerTreeView* treeView = m_webView->layerTreeView()) {
     treeView->setEventListenerProperties(eventClass, properties);
     if (eventClass == WebEventListenerClass::TouchStartOrMove) {
-      client->hasTouchEventHandlers(
+      m_webView->hasTouchEventHandlers(
           properties != WebEventListenerProperties::Nothing ||
-          treeView->eventListenerProperties(
-              WebEventListenerClass::TouchEndOrCancel) !=
+          eventListenerProperties(WebEventListenerClass::TouchEndOrCancel) !=
               WebEventListenerProperties::Nothing);
     } else if (eventClass == WebEventListenerClass::TouchEndOrCancel) {
-      client->hasTouchEventHandlers(
+      m_webView->hasTouchEventHandlers(
           properties != WebEventListenerProperties::Nothing ||
-          treeView->eventListenerProperties(
-              WebEventListenerClass::TouchStartOrMove) !=
+          eventListenerProperties(WebEventListenerClass::TouchStartOrMove) !=
               WebEventListenerProperties::Nothing);
     }
   } else {
-    client->hasTouchEventHandlers(true);
+    m_webView->hasTouchEventHandlers(true);
   }
-}
-
-void ChromeClientImpl::updateTouchRectsForSubframeIfNecessary(
-    LocalFrame* frame) {
-  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-  WebFrameWidgetBase* widget = webFrame->localRoot()->frameWidget();
-  if (WebLayerTreeView* treeView = widget->getLayerTreeView())
-    treeView->updateTouchRectsForSubframeIfNecessary();
 }
 
 void ChromeClientImpl::beginLifecycleUpdates() {
@@ -991,35 +957,21 @@ void ChromeClientImpl::beginLifecycleUpdates() {
 }
 
 WebEventListenerProperties ChromeClientImpl::eventListenerProperties(
-    LocalFrame* frame,
     WebEventListenerClass eventClass) const {
-  if (!frame)
-    return WebEventListenerProperties::Nothing;
-
-  WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::fromFrame(frame)->localRoot()->frameWidget();
-
-  if (!widget || !widget->getLayerTreeView())
-    return WebEventListenerProperties::Nothing;
-  return widget->getLayerTreeView()->eventListenerProperties(eventClass);
+  if (WebLayerTreeView* treeView = m_webView->layerTreeView())
+    return treeView->eventListenerProperties(eventClass);
+  return WebEventListenerProperties::Nothing;
 }
 
-void ChromeClientImpl::setHasScrollEventHandlers(LocalFrame* frame,
-                                                 bool hasEventHandlers) {
-  // |frame| might be null if called via TreeScopeAdopter::
-  // moveNodeToNewDocument() and the new document has no frame attached.
-  // Since a document without a frame cannot attach one later, it is safe to
-  // exit early.
-  if (!frame)
-    return;
+void ChromeClientImpl::setHasScrollEventHandlers(bool hasEventHandlers) {
+  if (WebLayerTreeView* treeView = m_webView->layerTreeView())
+    treeView->setHaveScrollEventHandlers(hasEventHandlers);
+}
 
-  WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::fromFrame(frame)->localRoot()->frameWidget();
-  // While a frame is shutting down, we may get called after the layerTreeView
-  // is gone: in this case we always expect |hasEventHandlers| to be false.
-  DCHECK(!widget || widget->getLayerTreeView() || !hasEventHandlers);
-  if (widget && widget->getLayerTreeView())
-    widget->getLayerTreeView()->setHaveScrollEventHandlers(hasEventHandlers);
+bool ChromeClientImpl::hasScrollEventHandlers() const {
+  if (WebLayerTreeView* treeView = m_webView->layerTreeView())
+    return treeView->haveScrollEventHandlers();
+  return false;
 }
 
 void ChromeClientImpl::setTouchAction(LocalFrame* frame,

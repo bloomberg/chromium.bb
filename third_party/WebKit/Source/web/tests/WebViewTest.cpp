@@ -3354,8 +3354,8 @@ TEST_P(WebViewTest, AddFrameInChildInNavigateUnload) {
   m_webViewHelper.reset();
 }
 
-class TouchEventHandlerWebWidgetClient
-    : public FrameTestHelpers::TestWebWidgetClient {
+class TouchEventHandlerWebViewClient
+    : public FrameTestHelpers::TestWebViewClient {
  public:
   // WebWidgetClient methods
   void hasTouchEventHandlers(bool state) override {
@@ -3363,7 +3363,7 @@ class TouchEventHandlerWebWidgetClient
   }
 
   // Local methods
-  TouchEventHandlerWebWidgetClient() : m_hasTouchEventHandlerCount() {}
+  TouchEventHandlerWebViewClient() : m_hasTouchEventHandlerCount() {}
 
   int getAndResetHasTouchEventHandlerCallCount(bool state) {
     int value = m_hasTouchEventHandlerCount[state];
@@ -3380,24 +3380,20 @@ class TouchEventHandlerWebWidgetClient
 // RemoveAll}EventHandler(..., TouchEvent). Verifying that those calls are made
 // correctly is the job of LayoutTests/fast/events/event-handler-count.html.
 TEST_P(WebViewTest, HasTouchEventHandlers) {
-  TouchEventHandlerWebWidgetClient client;
-  // We need to create a LayerTreeView for the client before loading the page,
-  // otherwise ChromeClient will default to assuming there are touch handlers.
-  WebLayerTreeView* layerTreeView = client.initializeLayerTreeView();
+  TouchEventHandlerWebViewClient client;
   std::string url = m_baseURL + "has_touch_event_handlers.html";
   URLTestHelpers::registerMockedURLLoad(toKURL(url),
                                         "has_touch_event_handlers.html");
   WebViewImpl* webViewImpl =
-      m_webViewHelper.initializeAndLoad(url, true, 0, 0, &client);
-  ASSERT_TRUE(layerTreeView);
+      m_webViewHelper.initializeAndLoad(url, true, 0, &client);
   const EventHandlerRegistry::EventHandlerClass touchEvent =
       EventHandlerRegistry::TouchStartOrMoveEventBlocking;
 
   // The page is initialized with at least one no-handlers call.
   // In practice we get two such calls because WebViewHelper::initializeAndLoad
-  // first initializes an empty frame, and then loads a document into it, so
+  // first initializes and empty frame, and then loads a document into it, so
   // there are two FrameLoader::commitProvisionalLoad calls.
-  EXPECT_LT(0, client.getAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_GE(client.getAndResetHasTouchEventHandlerCallCount(false), 1);
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding the first document handler results in a has-handlers call.

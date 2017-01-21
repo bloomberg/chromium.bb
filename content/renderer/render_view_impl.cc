@@ -570,7 +570,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 #endif
       enumeration_completion_id_(0),
       session_storage_namespace_id_(params.session_storage_namespace_id),
-      weak_ptr_factory_(this) {
+      has_added_input_handler_(false) {
   GetWidget()->set_owner_delegate(this);
 }
 
@@ -1836,18 +1836,22 @@ void RenderViewImpl::didHandleGestureEvent(
 }
 
 blink::WebLayerTreeView* RenderViewImpl::initializeLayerTreeView() {
-  // TODO(!wjmaclean): We should be able to just remove this function, and
-  // expect the RenderWidget version of the function to be called instead.
-  // However, we have a diamond inheritance pattern going on:
-  //       WebWidgetClient
-  //         |          |
-  //  RenderWidget    WebViewClient
-  //           |        |
-  //        RenderViewImpl
-  //
-  // and this seems to prefer calling the empty version in WebWidgetClient
-  // or WebViewClient over the non-empty one in RenderWidget.
-  return RenderWidget::initializeLayerTreeView();
+  blink::WebLayerTreeView* ltv = RenderWidget::initializeLayerTreeView();
+  RenderWidgetCompositor* rwc = compositor();
+  if (!rwc)
+    return ltv;
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  // render_thread may be NULL in tests.
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager) {
+    input_handler_manager->AddInputHandler(
+        GetRoutingID(), rwc->GetInputHandler(), AsWeakPtr(),
+        webkit_preferences_.enable_scroll_animator);
+    has_added_input_handler_ = true;
+  }
+  return ltv;
 }
 
 void RenderViewImpl::closeWidgetSoon() {
@@ -2469,9 +2473,9 @@ void RenderViewImpl::scheduleContentIntent(const WebURL& intent,
                                            bool is_main_frame) {
   // Introduce a short delay so that the user can notice the content.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&RenderViewImpl::LaunchAndroidContentIntent,
-                            weak_ptr_factory_.GetWeakPtr(), intent,
-                            expected_content_intent_id_, is_main_frame),
+      FROM_HERE,
+      base::Bind(&RenderViewImpl::LaunchAndroidContentIntent, AsWeakPtr(),
+                 intent, expected_content_intent_id_, is_main_frame),
       base::TimeDelta::FromMilliseconds(kContentIntentDelayMilliseconds));
 }
 

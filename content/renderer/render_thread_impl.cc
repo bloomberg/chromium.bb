@@ -594,7 +594,6 @@ RenderThreadImpl::RenderThreadImpl(
       renderer_scheduler_(std::move(scheduler)),
       main_message_loop_(std::move(main_message_loop)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
-      is_scroll_animator_enabled_(false),
       renderer_binding_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1588,10 +1587,6 @@ bool RenderThreadImpl::IsThreadedAnimationEnabled() {
   return is_threaded_animation_enabled_;
 }
 
-bool RenderThreadImpl::IsScrollAnimatorEnabled() {
-  return is_scroll_animator_enabled_;
-}
-
 void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {
   blink::mainThreadIsolate()->SetRAILMode(rail_mode);
   blink::setRAILModeOnWorkerThreadIsolates(rail_mode);
@@ -2067,7 +2062,6 @@ gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
 
 void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
-  is_scroll_animator_enabled_ = params->web_preferences.enable_scroll_animator;
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderViewImpl::Create(compositor_deps, *params,
                          RenderWidget::ShowCallback());

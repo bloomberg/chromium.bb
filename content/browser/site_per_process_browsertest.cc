@@ -5399,22 +5399,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   gfx::Point child_center(150, 150);
   auto* rwhv = static_cast<RenderWidgetHostViewAura*>(
       contents->GetRenderWidgetHostView());
-
-  // Wait until renderer's compositor thread is synced.
-  {
-    MainThreadFrameObserver observer(child_render_widget_host);
-    observer.Wait();
-  }
-
   ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, child_center, 0, 0,
                              ui::EventTimeForNow(), 30.f, 30.f, 0.f, 0.f);
   rwhv->OnTouchEvent(&touch_event);
-  {
-    MainThreadFrameObserver observer(child_render_widget_host);
-    observer.Wait();
-  }
 
-  // Verify touch handler in subframe was invoked.
+  // Verify touch handler in subframe was invoked
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       root->child_at(0),
@@ -5425,74 +5414,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // propagates touch-action:none information back to the child's input router.
   EXPECT_EQ(TOUCH_ACTION_NONE,
             child_input_router->touch_action_filter_.allowed_touch_action());
-}
-
-// This test verifies that the test in
-// SitePerProcessBrowserTest.SubframeTouchEventRouting also works properly for
-// the main frame. Prior to the CL in which this test is introduced, use of
-// MainThreadFrameObserver in SubframeTouchEventRouting was not necessary since
-// the touch events were handled on the main thread. Now they are handled on the
-// compositor thread, hence the need to synchronize.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MainframeTouchEventRouting) {
-  GURL main_url(embedded_test_server()->GetURL(
-      "/page_with_touch_handler.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-  WebContentsImpl* contents = web_contents();
-  FrameTreeNode* root = contents->GetFrameTree()->root();
-
-  // Synchronize with the renderers to guarantee that the
-  // surface information required for event hit testing is ready.
-  auto* rwhv = static_cast<RenderWidgetHostViewAura*>(
-      contents->GetRenderWidgetHostView());
-
-  // There's no intrinsic reason the following values can't be equal, but they
-  // aren't at present, and if they become the same this test will need to be
-  // updated to accommodate.
-  EXPECT_NE(TOUCH_ACTION_AUTO, TOUCH_ACTION_NONE);
-
-  // Verify the main frame's input router is initially set for
-  // TOUCH_ACTION_AUTO. The
-  // TouchStart event will trigger TOUCH_ACTION_NONE being sent back to the
-  // browser.
-  RenderWidgetHostImpl* render_widget_host =
-      root->current_frame_host()->GetRenderWidgetHost();
-  InputRouterImpl* input_router =
-      static_cast<InputRouterImpl*>(render_widget_host->input_router());
-  EXPECT_EQ(TOUCH_ACTION_AUTO,
-            input_router->touch_action_filter_.allowed_touch_action());
-
-  // Simulate touch event to sub-frame.
-  gfx::Point frame_center(150, 150);
-
-  // Wait until renderer's compositor thread is synced.
-  {
-    auto observer =
-        base::MakeUnique<MainThreadFrameObserver>(render_widget_host);
-    observer->Wait();
-  }
-
-  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, frame_center, 0, 0,
-                             ui::EventTimeForNow(), 30.f, 30.f, 0.f, 0.f);
-  rwhv->OnTouchEvent(&touch_event);
-  {
-    auto observer =
-        base::MakeUnique<MainThreadFrameObserver>(render_widget_host);
-    observer->Wait();
-  }
-
-  // Verify touch handler in subframe was invoked.
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      root, "window.domAutomationController.send(getLastTouchEvent());",
-      &result));
-  EXPECT_EQ("touchstart", result);
-
-  // Verify the presence of the touch handler in the child frame correctly
-  // propagates touch-action:none information back to the child's input router.
-  EXPECT_EQ(TOUCH_ACTION_NONE,
-            input_router->touch_action_filter_.allowed_touch_action());
 }
 
 namespace {

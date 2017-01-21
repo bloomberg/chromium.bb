@@ -2952,14 +2952,6 @@ void FrameView::updateLifecyclePhasesInternal(
             scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
         }
 
-        if (LocalFrame* localFrame = m_frame->localFrameRoot()) {
-          // This is needed since, at present, the ScrollingCoordinator doesn't
-          // send rects for oopif sub-frames.
-          // TODO(wjmaclean): Remove this pathway when ScrollingCoordinator
-          // operates on a per-frame basis. https://crbug.com/680606
-          frame().page()->chromeClient().updateTouchRectsForSubframeIfNecessary(
-              localFrame);
-        }
         updateCompositedSelectionIfNeeded();
       }
 

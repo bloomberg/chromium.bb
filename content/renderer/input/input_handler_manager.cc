@@ -69,19 +69,19 @@ InputHandlerManager::~InputHandlerManager() {
 void InputHandlerManager::AddInputHandler(
     int routing_id,
     const base::WeakPtr<cc::InputHandler>& input_handler,
-    const base::WeakPtr<RenderWidget>& render_widget,
+    const base::WeakPtr<RenderViewImpl>& render_view_impl,
     bool enable_smooth_scrolling) {
   if (task_runner_->BelongsToCurrentThread()) {
     AddInputHandlerOnCompositorThread(
         routing_id, base::ThreadTaskRunnerHandle::Get(), input_handler,
-        render_widget, enable_smooth_scrolling);
+        render_view_impl, enable_smooth_scrolling);
   } else {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&InputHandlerManager::AddInputHandlerOnCompositorThread,
                    base::Unretained(this), routing_id,
                    base::ThreadTaskRunnerHandle::Get(), input_handler,
-                   render_widget, enable_smooth_scrolling));
+                   render_view_impl, enable_smooth_scrolling));
   }
 }
 
@@ -89,7 +89,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
     int routing_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const base::WeakPtr<cc::InputHandler>& input_handler,
-    const base::WeakPtr<RenderWidget>& render_widget,
+    const base::WeakPtr<RenderViewImpl>& render_view_impl,
     bool enable_smooth_scrolling) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -106,7 +106,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
       "result", "AddingRoute");
   std::unique_ptr<InputHandlerWrapper> wrapper(
       new InputHandlerWrapper(this, routing_id, main_task_runner, input_handler,
-                              render_widget, enable_smooth_scrolling));
+                              render_view_impl, enable_smooth_scrolling));
   client_->RegisterRoutingID(routing_id);
   if (synchronous_handler_proxy_client_) {
     synchronous_handler_proxy_client_->DidAddSynchronousHandlerProxy(

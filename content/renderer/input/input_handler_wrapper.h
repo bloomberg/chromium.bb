@@ -27,7 +27,7 @@ class InputHandlerWrapper : public ui::InputHandlerProxyClient {
       int routing_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
       const base::WeakPtr<cc::InputHandler>& input_handler,
-      const base::WeakPtr<RenderWidget>& render_widget,
+      const base::WeakPtr<RenderViewImpl>& render_view_impl,
       bool enable_smooth_scrolling);
   ~InputHandlerWrapper() override;
 
@@ -63,7 +63,7 @@ class InputHandlerWrapper : public ui::InputHandlerProxyClient {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // Can only be accessed on the main thread.
-  base::WeakPtr<RenderWidget> render_widget_;
+  base::WeakPtr<RenderViewImpl> render_view_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerWrapper);
 };

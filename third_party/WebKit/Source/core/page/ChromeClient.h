@@ -258,14 +258,12 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual void updateCompositedSelection(LocalFrame*,
                                          const CompositedSelection&) {}
 
-  virtual void setEventListenerProperties(LocalFrame*,
-                                          WebEventListenerClass,
+  virtual void setEventListenerProperties(WebEventListenerClass,
                                           WebEventListenerProperties) = 0;
   virtual WebEventListenerProperties eventListenerProperties(
-      LocalFrame*,
       WebEventListenerClass) const = 0;
-  virtual void updateTouchRectsForSubframeIfNecessary(LocalFrame*) = 0;
-  virtual void setHasScrollEventHandlers(LocalFrame*, bool) = 0;
+  virtual void setHasScrollEventHandlers(bool) = 0;
+  virtual bool hasScrollEventHandlers() const = 0;
 
   virtual void setTouchAction(LocalFrame*, TouchAction) = 0;
 

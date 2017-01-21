@@ -62,7 +62,7 @@ class CONTENT_EXPORT InputHandlerManager {
   // Callable from the main thread only.
   void AddInputHandler(int routing_id,
                        const base::WeakPtr<cc::InputHandler>& input_handler,
-                       const base::WeakPtr<RenderWidget>& render_widget,
+                       const base::WeakPtr<RenderViewImpl>& render_view_impl,
                        bool enable_smooth_scrolling);
 
   void RegisterRoutingID(int routing_id);
@@ -116,7 +116,7 @@ class CONTENT_EXPORT InputHandlerManager {
       int routing_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
       const base::WeakPtr<cc::InputHandler>& input_handler,
-      const base::WeakPtr<RenderWidget>& render_widget,
+      const base::WeakPtr<RenderViewImpl>& render_view_impl,
       bool enable_smooth_scrolling);
 
   void RegisterRoutingIDOnCompositorThread(int routing_id);

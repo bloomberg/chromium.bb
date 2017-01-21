@@ -92,8 +92,4 @@ bool FakeCompositorDependencies::IsThreadedAnimationEnabled() {
   return true;
 }
 
-bool FakeCompositorDependencies::IsScrollAnimatorEnabled() {
-  return false;
-}
-
 }  // namespace content

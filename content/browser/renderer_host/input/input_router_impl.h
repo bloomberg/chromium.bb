@@ -84,8 +84,6 @@ class CONTENT_EXPORT InputRouterImpl
   friend class InputRouterImplTest;
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            SubframeTouchEventRouting);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           MainframeTouchEventRouting);
 
   // TouchpadTapSuppressionControllerClient
   void SendMouseEventImmediately(

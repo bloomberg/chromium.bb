@@ -1589,6 +1589,11 @@ bool WebViewImpl::zoomToMultipleTargetsRect(const WebRect& rectInRootFrame) {
   return true;
 }
 
+void WebViewImpl::hasTouchEventHandlers(bool hasTouchHandlers) {
+  if (m_client)
+    m_client->hasTouchEventHandlers(hasTouchHandlers);
+}
+
 bool WebViewImpl::hasTouchEventHandlersAt(const WebPoint& point) {
   // FIXME: Implement this. Note that the point must be divided by
   // pageScaleFactor.

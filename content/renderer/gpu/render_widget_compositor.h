@@ -103,7 +103,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetFrameSinkId(const cc::FrameSinkId& frame_sink_id);
   void SetPaintedDeviceScaleFactor(float device_scale);
   void SetDeviceColorSpace(const gfx::ColorSpace& color_space);
-  void SetIsForOopif(bool is_for_oopif);
 
   // WebLayerTreeView implementation.
   void setRootLayer(const blink::WebLayer& layer) override;
@@ -148,7 +147,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void setEventListenerProperties(
       blink::WebEventListenerClass eventClass,
       blink::WebEventListenerProperties properties) override;
-  void updateTouchRectsForSubframeIfNecessary() override;
   blink::WebEventListenerProperties eventListenerProperties(
       blink::WebEventListenerClass eventClass) const override;
   void setHaveScrollEventHandlers(bool) override;
@@ -220,7 +218,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
   bool never_visible_;
-  bool is_for_oopif_;
 
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
 
