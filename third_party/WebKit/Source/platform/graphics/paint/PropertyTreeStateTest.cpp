@@ -10,7 +10,7 @@ namespace blink {
 
 class PropertyTreeStateTest : public ::testing::Test {};
 
-TEST_F(PropertyTreeStateTest, TrasformOnEffectOnClip) {
+TEST_F(PropertyTreeStateTest, TransformOnEffectOnClip) {
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
                                          TransformationMatrix(),
@@ -151,6 +151,70 @@ TEST_F(PropertyTreeStateTest, EffectDescendantOfTransform) {
   EXPECT_EQ(PropertyTreeState::Transform, iterator.next()->innermostNode());
   EXPECT_EQ(PropertyTreeState::Clip, iterator.next()->innermostNode());
   EXPECT_EQ(PropertyTreeState::None, iterator.next()->innermostNode());
+}
+
+TEST_F(PropertyTreeStateTest, CompositorElementIdNoElementIdOnAnyNode) {
+  PropertyTreeState state(
+      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+  EXPECT_EQ(CompositorElementId(), state.compositorElementId());
+}
+
+TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnScrollNode) {
+  CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
+  RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
+      ScrollPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      IntSize(), IntSize(), true, false, 0, expectedCompositorElementId);
+  PropertyTreeState state(TransformPaintPropertyNode::root(),
+                          ClipPaintPropertyNode::root(),
+                          EffectPaintPropertyNode::root(), scroll.get());
+  EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
+}
+
+TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnTransformNode) {
+  CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
+                                         TransformationMatrix(), FloatPoint3D(),
+                                         false, 0, CompositingReasonNone,
+                                         expectedCompositorElementId);
+  PropertyTreeState state(transform.get(), ClipPaintPropertyNode::root(),
+                          EffectPaintPropertyNode::root(),
+                          ScrollPaintPropertyNode::root());
+  EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
+}
+
+TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnEffectNode) {
+  CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
+  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
+      SkBlendMode::kSrcOver, CompositingReasonNone,
+      expectedCompositorElementId);
+  PropertyTreeState state(TransformPaintPropertyNode::root(),
+                          ClipPaintPropertyNode::root(), effect.get(),
+                          ScrollPaintPropertyNode::root());
+  EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
+}
+
+TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
+  CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
+  RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
+      ScrollPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      IntSize(), IntSize(), true, false, 0, expectedCompositorElementId);
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
+                                         TransformationMatrix(), FloatPoint3D(),
+                                         false, 0, CompositingReasonNone,
+                                         expectedCompositorElementId);
+  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
+      SkBlendMode::kSrcOver, CompositingReasonNone,
+      expectedCompositorElementId);
+  PropertyTreeState state(transform.get(), ClipPaintPropertyNode::root(),
+                          effect.get(), scroll.get());
+  EXPECT_EQ(expectedCompositorElementId, state.compositorElementId());
 }
 
 }  // namespace blink

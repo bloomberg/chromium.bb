@@ -69,6 +69,11 @@ class PLATFORM_EXPORT PropertyTreeState {
     m_scroll = std::move(node);
   }
 
+  // Returns the compositor element id, if any, for this property state. If none
+  // of the scroll, effect or transform nodes for this state have a compositor
+  // element id then a default instance is returned.
+  const CompositorElementId compositorElementId() const;
+
   enum InnermostNode {
     None,  // None means that all nodes are their root values
     Transform,

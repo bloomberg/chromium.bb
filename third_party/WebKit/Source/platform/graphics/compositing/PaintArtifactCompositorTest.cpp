@@ -686,6 +686,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   EXPECT_EQ(expectedCompositorElementId, scrollNode.element_id);
   EXPECT_EQ(scrollNode.id,
             elementIdToScrollNodeIndex(expectedCompositorElementId));
+  EXPECT_EQ(expectedCompositorElementId, contentLayerAt(0)->element_id());
 
   const cc::TransformTree& transformTree = propertyTrees().transform_tree;
   const cc::TransformNode& transformNode =
@@ -751,6 +752,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   EXPECT_EQ(expectedCompositorElementIdB, scrollNodeB.element_id);
   EXPECT_EQ(scrollNodeB.id,
             elementIdToScrollNodeIndex(expectedCompositorElementIdB));
+  EXPECT_EQ(expectedCompositorElementIdA, contentLayerAt(0)->element_id());
+  EXPECT_EQ(expectedCompositorElementIdB, contentLayerAt(1)->element_id());
 
   const cc::TransformTree& transformTree = propertyTrees().transform_tree;
   const cc::TransformNode& transformNodeA =
