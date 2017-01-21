@@ -57,6 +57,7 @@ LayoutUnit ResolveHeight(const Length& height,
 void ComputeAbsoluteHorizontal(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
+    const Optional<LayoutUnit>& incoming_width,
     const NGStaticPosition& static_position,
     const Optional<MinAndMaxContentSizes>& child_minmax,
     NGAbsolutePhysicalPosition* position) {
@@ -85,20 +86,7 @@ void ComputeAbsoluteHorizontal(
     right = valueForLength(style.right(), percentage_physical.width);
   LayoutUnit border_padding =
       border_left + border_right + padding_left + padding_right;
-  Optional<LayoutUnit> min_width;
-  if (!style.minWidth().isAuto())
-    min_width = ResolveWidth(style.minWidth(), space, style, child_minmax,
-                             LengthResolveType::kMinSize);
-  Optional<LayoutUnit> max_width;
-  if (!style.maxWidth().isMaxSizeNone())
-    max_width = ResolveWidth(style.maxWidth(), space, style, child_minmax,
-                             LengthResolveType::kMaxSize);
-  Optional<LayoutUnit> width;
-  if (!style.width().isAuto()) {
-    width = ResolveWidth(style.width(), space, style, child_minmax,
-                         LengthResolveType::kContentSize);
-    width = ConstrainByMinMax(*width, min_width, max_width);
-  }
+  Optional<LayoutUnit> width = incoming_width;
   NGPhysicalSize container_size =
       space.AvailableSize().ConvertToPhysical(space.WritingMode());
   DCHECK(container_size.width != NGSizeIndefinite);
@@ -113,7 +101,6 @@ void ComputeAbsoluteHorizontal(
       margin_right = LayoutUnit();
     DCHECK(child_minmax.has_value());
     width = child_minmax->ShrinkToFit(container_size.width);
-    width = ConstrainByMinMax(*width, min_width, max_width);
     if (space.Direction() == TextDirection::kLtr) {
       left = static_position.LeftPosition(container_size.width, *width,
                                           *margin_left, *margin_right);
@@ -169,7 +156,6 @@ void ComputeAbsoluteHorizontal(
     DCHECK(right.has_value());
     DCHECK(child_minmax.has_value());
     width = child_minmax->ShrinkToFit(container_size.width);
-    width = ConstrainByMinMax(*width, min_width, max_width);
   } else if (!left && !right) {
     // Rule 2.
     DCHECK(width.has_value());
@@ -183,7 +169,6 @@ void ComputeAbsoluteHorizontal(
     // Rule 3.
     DCHECK(child_minmax.has_value());
     width = child_minmax->ShrinkToFit(container_size.width);
-    width = ConstrainByMinMax(*width, min_width, max_width);
   }
 
   // Rules 4 through 6, 1 out of 3 are unknown.
@@ -200,7 +185,26 @@ void ComputeAbsoluteHorizontal(
   DCHECK_EQ(container_size.width,
             *left + *right + *margin_left + *margin_right + *width);
 
-  width = ConstrainByMinMax(*width, min_width, max_width);
+  // If calculated width is outside of min/max constraints,
+  // rerun the algorithm with constrained width.
+  Optional<LayoutUnit> min_width;
+  if (!style.minWidth().isAuto())
+    min_width = ResolveWidth(style.minWidth(), space, style, child_minmax,
+                             LengthResolveType::kMinSize);
+  Optional<LayoutUnit> max_width;
+  if (!style.maxWidth().isMaxSizeNone())
+    max_width = ResolveWidth(style.maxWidth(), space, style, child_minmax,
+                             LengthResolveType::kMaxSize);
+  if (width != ConstrainByMinMax(*width, min_width, max_width)) {
+    width = ConstrainByMinMax(*width, min_width, max_width);
+    // Because this function only changes "width" when it's not already
+    // set, it is safe to recursively call ourselves here because on the
+    // second call it is guaranteed to be within min..max.
+    ComputeAbsoluteHorizontal(space, style, width, static_position,
+                              child_minmax, position);
+    return;
+  }
+
   // Negative widths are not allowed.
   width = std::max(*width, border_padding);
 
@@ -214,6 +218,7 @@ void ComputeAbsoluteHorizontal(
 void ComputeAbsoluteVertical(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
+    const Optional<LayoutUnit>& incoming_height,
     const NGStaticPosition& static_position,
     const Optional<MinAndMaxContentSizes>& child_minmax,
     NGAbsolutePhysicalPosition* position) {
@@ -243,21 +248,7 @@ void ComputeAbsoluteVertical(
     bottom = valueForLength(style.bottom(), percentage_physical.height);
   LayoutUnit border_padding =
       border_top + border_bottom + padding_top + padding_bottom;
-
-  Optional<LayoutUnit> min_height;
-  if (!style.minHeight().isAuto())
-    min_height = ResolveHeight(style.minHeight(), space, style, child_minmax,
-                               LengthResolveType::kMinSize);
-  Optional<LayoutUnit> max_height;
-  if (!style.maxHeight().isMaxSizeNone())
-    max_height = ResolveHeight(style.maxHeight(), space, style, child_minmax,
-                               LengthResolveType::kMaxSize);
-  Optional<LayoutUnit> height;
-  if (!style.height().isAuto()) {
-    height = ResolveHeight(style.height(), space, style, child_minmax,
-                           LengthResolveType::kContentSize);
-    height = ConstrainByMinMax(*height, min_height, max_height);
-  }
+  Optional<LayoutUnit> height = incoming_height;
 
   NGPhysicalSize container_size =
       space.AvailableSize().ConvertToPhysical(space.WritingMode());
@@ -274,7 +265,6 @@ void ComputeAbsoluteVertical(
       margin_bottom = LayoutUnit();
     DCHECK(child_minmax.has_value());
     height = child_minmax->ShrinkToFit(container_size.height);
-    height = ConstrainByMinMax(*height, min_height, max_height);
     top = static_position.TopPosition(container_size.height, *height,
                                       *margin_top, *margin_bottom);
   } else if (top && bottom && height) {
@@ -314,7 +304,6 @@ void ComputeAbsoluteVertical(
     DCHECK(bottom.has_value());
     DCHECK(child_minmax.has_value());
     height = child_minmax->ShrinkToFit(container_size.height);
-    height = ConstrainByMinMax(*height, min_height, max_height);
   } else if (!top && !bottom) {
     // Rule 2.
     DCHECK(height.has_value());
@@ -324,7 +313,6 @@ void ComputeAbsoluteVertical(
     // Rule 3.
     DCHECK(child_minmax.has_value());
     height = child_minmax->ShrinkToFit(container_size.height);
-    height = ConstrainByMinMax(*height, min_height, max_height);
   }
 
   // Rules 4 through 6, 1 out of 3 are unknown.
@@ -341,7 +329,25 @@ void ComputeAbsoluteVertical(
   DCHECK_EQ(container_size.height,
             *top + *bottom + *margin_top + *margin_bottom + *height);
 
-  height = ConstrainByMinMax(*height, min_height, max_height);
+  // If calculated height is outside of min/max constraints,
+  // rerun the algorithm with constrained width.
+  Optional<LayoutUnit> min_height;
+  if (!style.minHeight().isAuto())
+    min_height = ResolveHeight(style.minHeight(), space, style, child_minmax,
+                               LengthResolveType::kMinSize);
+  Optional<LayoutUnit> max_height;
+  if (!style.maxHeight().isMaxSizeNone())
+    max_height = ResolveHeight(style.maxHeight(), space, style, child_minmax,
+                               LengthResolveType::kMaxSize);
+  if (height != ConstrainByMinMax(*height, min_height, max_height)) {
+    height = ConstrainByMinMax(*height, min_height, max_height);
+    // Because this function only changes "height" when it's not already
+    // set, it is safe to recursively call ourselves here because on the
+    // second call it is guaranteed to be within min..max.
+    ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
+                            position);
+    return;
+  }
   // Negative heights are not allowed.
   height = std::max(*height, border_padding);
 
@@ -390,11 +396,21 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGStaticPosition& static_position,
     const Optional<MinAndMaxContentSizes>& child_minmax) {
   NGAbsolutePhysicalPosition position;
-  if (style.isHorizontalWritingMode())
-    ComputeAbsoluteHorizontal(space, style, static_position, child_minmax,
-                              &position);
-  else {
-    ComputeAbsoluteVertical(space, style, static_position, child_minmax,
+  if (style.isHorizontalWritingMode()) {
+    Optional<LayoutUnit> width;
+    if (!style.width().isAuto()) {
+      width = ResolveWidth(style.width(), space, style, child_minmax,
+                           LengthResolveType::kContentSize);
+    }
+    ComputeAbsoluteHorizontal(space, style, width, static_position,
+                              child_minmax, &position);
+  } else {
+    Optional<LayoutUnit> height;
+    if (!style.height().isAuto()) {
+      height = ResolveHeight(style.height(), space, style, child_minmax,
+                             LengthResolveType::kContentSize);
+    }
+    ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
                             &position);
   }
   return position;
@@ -414,12 +430,22 @@ void ComputeFullAbsoluteWithChildBlockSize(
   if (child_block_size.has_value()) {
     child_minmax = MinAndMaxContentSizes{*child_block_size, *child_block_size};
   }
-  if (style.isHorizontalWritingMode())
-    ComputeAbsoluteVertical(space, style, static_position, child_minmax,
+  if (style.isHorizontalWritingMode()) {
+    Optional<LayoutUnit> height;
+    if (!style.height().isAuto()) {
+      height = ResolveHeight(style.height(), space, style, child_minmax,
+                             LengthResolveType::kContentSize);
+    }
+    ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
                             position);
-  else {
-    ComputeAbsoluteHorizontal(space, style, static_position, child_minmax,
-                              position);
+  } else {
+    Optional<LayoutUnit> width;
+    if (!style.width().isAuto()) {
+      width = ResolveWidth(style.width(), space, style, child_minmax,
+                           LengthResolveType::kContentSize);
+    }
+    ComputeAbsoluteHorizontal(space, style, width, static_position,
+                              child_minmax, position);
   }
 }
 

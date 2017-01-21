@@ -154,12 +154,11 @@ crbug.com/681369 editing/selection/select-delete-in-event-handler.html [ NeedsRe
 # LayoutNG - is a new layout system for Blink.
 
 #### css2.1/20110323
-#### Passed: 260
-#### Skipped: 149
+#### Passed: 262
+#### Skipped: 147
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-006.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-009.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-009.htm [ Skip ]
-crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-max-height-011.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-017.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-018.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-019.htm [ Skip ]
