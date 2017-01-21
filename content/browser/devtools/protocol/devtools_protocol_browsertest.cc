@@ -119,7 +119,6 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
   }
 
   void CancelDialogs(WebContents* web_contents,
-                     bool suppress_callbacks,
                      bool reset_state) override {}
 
  private:

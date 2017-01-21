@@ -53,7 +53,6 @@ void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
 
 void AwJavaScriptDialogManager::CancelDialogs(
     content::WebContents* web_contents,
-    bool suppress_callbacks,
     bool reset_state) {}
 
 }  // namespace android_webview

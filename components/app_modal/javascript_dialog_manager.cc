@@ -268,7 +268,6 @@ bool JavaScriptDialogManager::HandleJavaScriptDialog(
 }
 
 void JavaScriptDialogManager::CancelDialogs(content::WebContents* web_contents,
-                                            bool suppress_callbacks,
                                             bool reset_state) {
   AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
   AppModalDialog* active_dialog = queue->active_dialog();
@@ -279,10 +278,10 @@ void JavaScriptDialogManager::CancelDialogs(content::WebContents* web_contents,
     if ((*i) == active_dialog)
       continue;
     if ((*i)->web_contents() == web_contents)
-      (*i)->Invalidate(suppress_callbacks);
+      (*i)->Invalidate();
   }
   if (active_dialog && active_dialog->web_contents() == web_contents)
-    active_dialog->Invalidate(suppress_callbacks);
+    active_dialog->Invalidate();
 
   if (reset_state)
     javascript_dialog_extra_data_.erase(web_contents);

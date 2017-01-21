@@ -242,15 +242,13 @@ bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(
 
 void JavaScriptDialogTabHelper::CancelDialogs(
     content::WebContents* web_contents,
-    bool suppress_callbacks,
     bool reset_state) {
   if (dialog_) {
     CloseDialog(false, base::string16(), DismissalCause::CANCEL_DIALOGS_CALLED);
   }
 
   // Cancel any app-modal dialogs being run by the app-modal dialog system.
-  return AppModalDialogManager()->CancelDialogs(
-      web_contents, suppress_callbacks, reset_state);
+  return AppModalDialogManager()->CancelDialogs(web_contents, reset_state);
 }
 
 void JavaScriptDialogTabHelper::WasHidden() {

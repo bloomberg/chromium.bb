@@ -514,10 +514,7 @@ WebContentsImpl::~WebContentsImpl() {
 
   // Clear out any JavaScript state.
   if (dialog_manager_) {
-    // This object is being destructed, so make sure that no callbacks happen.
-    dialog_manager_->CancelDialogs(this,
-                                   true,   // suppress_callbacks,
-                                   true);  // reset_state
+    dialog_manager_->CancelDialogs(this, /*reset_state=*/true);
   }
 
   if (color_chooser_info_.get())
@@ -898,9 +895,7 @@ RenderViewHostImpl* WebContentsImpl::GetRenderViewHost() const {
 
 void WebContentsImpl::CancelActiveAndPendingDialogs() {
   if (dialog_manager_) {
-    dialog_manager_->CancelDialogs(this,
-                                   false,   // suppress_callbacks,
-                                   false);  // reset_state
+    dialog_manager_->CancelDialogs(this, /*reset_state=*/false);
   }
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->CancelGuestDialogs();
@@ -3471,9 +3466,7 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
   // If this is a user-initiated navigation, start allowing JavaScript dialogs
   // again.
   if (params.gesture == NavigationGestureUser && dialog_manager_) {
-    dialog_manager_->CancelDialogs(this,
-                                   false,  // suppress_callbacks,
-                                   true);  // reset_state
+    dialog_manager_->CancelDialogs(this, /*reset_state=*/true);
   }
 
   // Notify observers about navigation.
@@ -4950,9 +4943,7 @@ void WebContentsImpl::CancelModalDialogsForRenderManager() {
   // cross-process navigation will either destroy the browser plugins or not
   // require their dialogs to close.
   if (dialog_manager_) {
-    dialog_manager_->CancelDialogs(this,
-                                   false,  // suppress_callbacks,
-                                   true);  // reset_state
+    dialog_manager_->CancelDialogs(this, /*reset_state=*/true);
   }
 }
 

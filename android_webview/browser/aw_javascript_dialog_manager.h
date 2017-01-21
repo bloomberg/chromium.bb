@@ -27,7 +27,6 @@ class AwJavaScriptDialogManager : public content::JavaScriptDialogManager {
                              bool is_reload,
                              const DialogClosedCallback& callback) override;
   void CancelDialogs(content::WebContents* web_contents,
-                     bool suppress_callbacks,
                      bool reset_state) override;
 
  private:

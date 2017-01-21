@@ -51,11 +51,8 @@ class CONTENT_EXPORT JavaScriptDialogManager {
                                       const base::string16* prompt_override);
 
   // Cancels all active and pending dialogs for the given WebContents. If
-  // |suppress_callbacks| is true, suppresses the calls to callbacks while
-  // canceling those dialogs. If |reset_state| is true, resets any saved state
-  // tied to |web_contents|.
+  // |reset_state| is true, resets any saved state tied to |web_contents|.
   virtual void CancelDialogs(WebContents* web_contents,
-                             bool suppress_callbacks,
                              bool reset_state) = 0;
 
   virtual ~JavaScriptDialogManager() {}

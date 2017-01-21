@@ -86,7 +86,6 @@ bool JavaScriptDialogHelper::HandleJavaScriptDialog(
 }
 
 void JavaScriptDialogHelper::CancelDialogs(content::WebContents* web_contents,
-                                           bool suppress_callbacks,
                                            bool reset_state) {}
 
 void JavaScriptDialogHelper::OnPermissionResponse(

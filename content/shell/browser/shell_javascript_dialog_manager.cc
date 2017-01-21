@@ -105,7 +105,6 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
 }
 
 void ShellJavaScriptDialogManager::CancelDialogs(WebContents* web_contents,
-                                                 bool suppress_callbacks,
                                                  bool reset_state) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   if (dialog_) {
