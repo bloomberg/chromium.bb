@@ -14,4 +14,4 @@ Use update_node_binaries to update Node binaries and update_npm_deps to
 update NPM dependencies.
 
 Local Modifications:
-No modifications.
+See patch_vulcanize.diff

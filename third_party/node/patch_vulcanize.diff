@@ -1,0 +1,62 @@
+diff --git a/bin/vulcanize b/bin/vulcanize
+index 956b2bc..ad8b29d 100755
+--- a/bin/vulcanize
++++ b/bin/vulcanize
+@@ -35,6 +35,7 @@ var help = [
+   '  --redirect <uri>|<path>: Takes an argument in the form of URI|PATH where url is a URI composed of a protocol, hostname, and path and PATH is a local filesystem path to replace the matched URI part with. Multiple redirects may be specified; the earliest ones have the highest priority.',
+   '  --no-implicit-strip: DANGEROUS! Avoid stripping imports of the transitive dependencies of imports specified with `--exclude`. May result in duplicate javascript inlining.',
+   '  --out-html <path>: If specified, output will be written to <path> instead of stdout.',
++  '  --out-request-list <path>: Writes a list of request URLs required to vulcanize <html file> to <path> on success.',
+   'Examples:',
+   '  The command',
+   '',
+@@ -82,7 +83,8 @@ var args = nopt(
+     'no-implicit-strip': Boolean,
+     'inline-scripts': Boolean,
+     'inline-css': Boolean,
+-    'out-html': String
++    'out-html': String,
++    'out-request-list': String
+   },
+   {
+     'h': ['--help'],
+@@ -126,15 +128,23 @@ args.implicitStrip = !args['no-implicit-strip'];
+ args.inlineScripts = args['inline-scripts'];
+ args.inlineCss = args['inline-css'];
+ 
+-(new vulcan(args)).process(target, function(err, content) {
++var vulcanize = new vulcan(args);
++vulcanize.process(target, function(err, content) {
+   if (err) {
+     process.stderr.write(require('util').inspect(err));
+     process.exit(1);
+   }
++
++  if (args['out-request-list']) {
++    var urls = Object.keys(vulcanize.loader.requests).filter(function(request) {
++      // Filter out excluded URLs.
++      return !vulcanize.isExcludedHref(request);
++    });
++    fs.writeFileSync(args['out-request-list'], urls.join('\n') + '\n');
++  }
++
+   if (args['out-html']) {
+-      var fd = fs.openSync(args['out-html'], 'w');
+-      fs.writeSync(fd, content + "\n");
+-      fs.closeSync(fd);
++    fs.writeFileSync(args['out-html'], content + '\n');
+   } else {
+     process.stdout.write(content);
+   }
+diff --git a/lib/constants.js b/lib/constants.js
+index 21e1380..b6a353a 100644
+--- a/lib/constants.js
++++ b/lib/constants.js
+@@ -13,6 +13,6 @@ module.exports = {
+   ABS_URL: /(^\/)|(^#)|(^[\w-\d]*:)/,
+   URL: /url\([^)]*\)/g,
+   URL_ATTR: ['href', 'src', 'action', 'style', 'assetpath'],
+-  URL_TEMPLATE: '{{.*}}|\\[\\[.*\\]\\]',
++  URL_TEMPLATE: '{{.*}}|\\[\\[.*\\]\\]|\\$i18n[^{]*{[^}]*}',
+   OLD_POLYMER: 'This version of vulcanize is not compatible with Polymer < 0.8. Please use vulcanize 0.7.x.'
+ };

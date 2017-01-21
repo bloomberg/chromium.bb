@@ -17,6 +17,10 @@ cd "$(dirname "$0")"
 rm -rf node_modules
 
 npm install --no-bin-links --only=prod
+
+# Apply local patch to vulacanize.
+patch -d node_modules/vulcanize/ -p1 < patch_vulcanize.diff
+
 rsync -c --delete -r -q --exclude-from="npm_exclude.txt" \
       --prune-empty-dirs "node_modules/" "node_modules_filtered/"
 
