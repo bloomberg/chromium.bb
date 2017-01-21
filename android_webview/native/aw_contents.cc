@@ -186,6 +186,12 @@ AwSafeBrowsingUIManager::UIManagerClient::FromWebContents(
   return AwContents::FromWebContents(web_contents);
 }
 
+// static
+AwRenderProcessGoneDelegate* AwRenderProcessGoneDelegate::FromWebContents(
+    content::WebContents* web_contents) {
+  return AwContents::FromWebContents(web_contents);
+}
+
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : content::WebContentsObserver(web_contents.get()),
       functor_(nullptr),
@@ -1313,6 +1319,28 @@ bool AwContents::CanShowInterstitial() {
   if (obj.is_null())
     return false;
   return Java_AwContents_canShowInterstitial(env, obj);
+}
+
+void AwContents::OnRenderProcessGone(int child_process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_AwContents_onRenderProcessGone(env, obj, child_process_id);
+}
+
+bool AwContents::OnRenderProcessGoneDetail(int child_process_id,
+                                           bool crashed) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return false;
+
+  return Java_AwContents_onRenderProcessGoneDetail(env, obj,
+      child_process_id, crashed);
 }
 
 }  // namespace android_webview

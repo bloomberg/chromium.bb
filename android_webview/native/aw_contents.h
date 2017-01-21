@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "android_webview/browser/aw_browser_permission_request_delegate.h"
+#include "android_webview/browser/aw_render_process_gone_delegate.h"
 #include "android_webview/browser/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/browser_view_renderer_client.h"
@@ -64,6 +65,7 @@ class AwContents : public FindHelper::Listener,
                    public BrowserViewRendererClient,
                    public PermissionRequestHandlerClient,
                    public AwBrowserPermissionRequestDelegate,
+                   public AwRenderProcessGoneDelegate,
                    public content::WebContentsObserver,
                    public AwSafeBrowsingUIManager::UIManagerClient {
  public:
@@ -343,6 +345,10 @@ class AwContents : public FindHelper::Listener,
 
   // AwSafeBrowsingUIManager::UIManagerClient implementation
   bool CanShowInterstitial() override;
+
+  // AwRenderProcessGoneDelegate overrides
+  void OnRenderProcessGone(int child_process_id) override;
+  bool OnRenderProcessGoneDetail(int child_process_id, bool crashed) override;
 
  private:
   void InitAutofillIfNecessary(bool enabled);

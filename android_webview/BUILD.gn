@@ -350,6 +350,7 @@ source_set("common") {
     "browser/aw_quota_manager_bridge.h",
     "browser/aw_quota_permission_context.cc",
     "browser/aw_quota_permission_context.h",
+    "browser/aw_render_process_gone_delegate.h",
     "browser/aw_render_thread_context_provider.cc",
     "browser/aw_render_thread_context_provider.h",
     "browser/aw_resource_context.cc",

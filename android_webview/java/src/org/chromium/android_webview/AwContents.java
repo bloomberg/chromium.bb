@@ -1157,6 +1157,16 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         }
     }
 
+    @CalledByNative
+    private void onRenderProcessGone(int childProcessID) {
+    }
+
+    @CalledByNative
+    private boolean onRenderProcessGoneDetail(int childProcessID, boolean crashed) {
+        if (isDestroyed(NO_WARN)) return false;
+        return mContentsClient.onRenderProcessGone(new AwRenderProcessGoneDetail(crashed));
+    }
+
     /**
      * Destroys this object and deletes its native counterpart.
      */

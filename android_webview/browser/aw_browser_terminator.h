@@ -39,7 +39,8 @@ class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
                    base::android::ApplicationState app_state) override;
 
  private:
-  static void ProcessTerminationStatus(std::unique_ptr<base::SyncSocket> pipe);
+  static void ProcessTerminationStatus(int child_process_id,
+                                       std::unique_ptr<base::SyncSocket> pipe);
 
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER, FILE, and UI threads.
