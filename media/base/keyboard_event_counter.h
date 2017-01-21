@@ -26,10 +26,6 @@ class MEDIA_EXPORT KeyboardEventCounter {
   KeyboardEventCounter();
   ~KeyboardEventCounter();
 
-  // Resets the count to 0. Must be called on the same thread as
-  // OnKeyboardEvent.
-  void Reset();
-
   // Returns the total number of keypresses since its creation or last Reset()
   // call. Can be called on any thread.
   size_t GetKeyPressCount() const;

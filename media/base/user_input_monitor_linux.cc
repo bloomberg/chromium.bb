@@ -41,34 +41,25 @@ class UserInputMonitorLinuxCore
     : public base::SupportsWeakPtr<UserInputMonitorLinuxCore>,
       public base::MessageLoop::DestructionObserver {
  public:
-  enum EventType {
-    MOUSE_EVENT,
-    KEYBOARD_EVENT
-  };
-
   explicit UserInputMonitorLinuxCore(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const scoped_refptr<UserInputMonitor::MouseListenerList>&
-          mouse_listeners);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~UserInputMonitorLinuxCore() override;
 
   // DestructionObserver overrides.
   void WillDestroyCurrentMessageLoop() override;
 
   size_t GetKeyPressCount() const;
-  void StartMonitor(EventType type);
-  void StopMonitor(EventType type);
+  void StartMonitor();
+  void StopMonitor();
 
  private:
   void OnXEvent();
 
-  // Processes key and mouse events.
+  // Processes key events.
   void ProcessXEvent(xEvent* event);
   static void ProcessReply(XPointer self, XRecordInterceptData* data);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_refptr<base::ObserverListThreadSafe<
-      UserInputMonitor::MouseEventListener>> mouse_listeners_;
 
   //
   // The following members should only be accessed on the IO thread.
@@ -76,7 +67,7 @@ class UserInputMonitorLinuxCore
   std::unique_ptr<base::FileDescriptorWatcher::Controller> watch_controller_;
   Display* x_control_display_;
   Display* x_record_display_;
-  XRecordRange* x_record_range_[2];
+  XRecordRange* x_record_range_;
   XRecordContext x_record_context_;
   KeyboardEventCounter counter_;
 
@@ -96,8 +87,6 @@ class UserInputMonitorLinux : public UserInputMonitor {
   // Private UserInputMonitor overrides.
   void StartKeyboardMonitoring() override;
   void StopKeyboardMonitoring() override;
-  void StartMouseMonitoring() override;
-  void StopMouseMonitoring() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   UserInputMonitorLinuxCore* core_;
@@ -106,40 +95,32 @@ class UserInputMonitorLinux : public UserInputMonitor {
 };
 
 UserInputMonitorLinuxCore::UserInputMonitorLinuxCore(
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const scoped_refptr<UserInputMonitor::MouseListenerList>& mouse_listeners)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : io_task_runner_(io_task_runner),
-      mouse_listeners_(mouse_listeners),
       x_control_display_(NULL),
       x_record_display_(NULL),
-      x_record_context_(0) {
-  x_record_range_[0] = NULL;
-  x_record_range_[1] = NULL;
-}
+      x_record_range_(NULL),
+      x_record_context_(0) {}
 
 UserInputMonitorLinuxCore::~UserInputMonitorLinuxCore() {
   DCHECK(!x_control_display_);
   DCHECK(!x_record_display_);
-  DCHECK(!x_record_range_[0]);
-  DCHECK(!x_record_range_[1]);
+  DCHECK(!x_record_range_);
   DCHECK(!x_record_context_);
 }
 
 void UserInputMonitorLinuxCore::WillDestroyCurrentMessageLoop() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  StopMonitor(MOUSE_EVENT);
-  StopMonitor(KEYBOARD_EVENT);
+  StopMonitor();
+  StopMonitor();
 }
 
 size_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
   return counter_.GetKeyPressCount();
 }
 
-void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
+void UserInputMonitorLinuxCore::StartMonitor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-  if (type == KEYBOARD_EVENT)
-    counter_.Reset();
 
   // TODO(jamiewalch): We should pass the display in. At that point, since
   // XRecord needs a private connection to the X Server for its data channel
@@ -154,7 +135,7 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
 
   if (!x_control_display_ || !x_record_display_) {
     LOG(ERROR) << "Couldn't open X display";
-    StopMonitor(type);
+    StopMonitor();
     return;
   }
 
@@ -162,27 +143,21 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
   if (!XQueryExtension(
            x_control_display_, "RECORD", &xr_opcode, &xr_event, &xr_error)) {
     LOG(ERROR) << "X Record extension not available.";
-    StopMonitor(type);
+    StopMonitor();
     return;
   }
 
-  if (!x_record_range_[type])
-    x_record_range_[type] = XRecordAllocRange();
+  if (!x_record_range_)
+    x_record_range_ = XRecordAllocRange();
 
-  if (!x_record_range_[type]) {
+  if (!x_record_range_) {
     LOG(ERROR) << "XRecordAllocRange failed.";
-    StopMonitor(type);
+    StopMonitor();
     return;
   }
 
-  if (type == MOUSE_EVENT) {
-    x_record_range_[type]->device_events.first = MotionNotify;
-    x_record_range_[type]->device_events.last = MotionNotify;
-  } else {
-    DCHECK_EQ(KEYBOARD_EVENT, type);
-    x_record_range_[type]->device_events.first = KeyPress;
-    x_record_range_[type]->device_events.last = KeyRelease;
-  }
+  x_record_range_->device_events.first = KeyPress;
+  x_record_range_->device_events.last = KeyRelease;
 
   if (x_record_context_) {
     XRecordDisableContext(x_control_display_, x_record_context_);
@@ -190,21 +165,15 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
     XRecordFreeContext(x_record_display_, x_record_context_);
     x_record_context_ = 0;
   }
-  XRecordRange** record_range_to_use =
-      (x_record_range_[0] && x_record_range_[1]) ? x_record_range_
-                                                 : &x_record_range_[type];
-  int number_of_ranges = (x_record_range_[0] && x_record_range_[1]) ? 2 : 1;
+  int number_of_ranges = 1;
 
   XRecordClientSpec client_spec = XRecordAllClients;
-  x_record_context_ = XRecordCreateContext(x_record_display_,
-                                           0,
-                                           &client_spec,
-                                           1,
-                                           record_range_to_use,
-                                           number_of_ranges);
+  x_record_context_ =
+      XRecordCreateContext(x_record_display_, 0, &client_spec, 1,
+                           &x_record_range_, number_of_ranges);
   if (!x_record_context_) {
     LOG(ERROR) << "XRecordCreateContext failed.";
-    StopMonitor(type);
+    StopMonitor();
     return;
   }
 
@@ -213,35 +182,32 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
                                  &UserInputMonitorLinuxCore::ProcessReply,
                                  reinterpret_cast<XPointer>(this))) {
     LOG(ERROR) << "XRecordEnableContextAsync failed.";
-    StopMonitor(type);
+    StopMonitor();
     return;
   }
 
-  if (!x_record_range_[0] || !x_record_range_[1]) {
-    // Register OnXEvent() to be called every time there is something to read
-    // from |x_record_display_|.
-    watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
-        ConnectionNumber(x_record_display_),
-        base::Bind(&UserInputMonitorLinuxCore::OnXEvent,
-                   base::Unretained(this)));
+  // Register OnXEvent() to be called every time there is something to read
+  // from |x_record_display_|.
+  watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
+      ConnectionNumber(x_record_display_),
+      base::Bind(&UserInputMonitorLinuxCore::OnXEvent, base::Unretained(this)));
 
-    // Start observing message loop destruction if we start monitoring the first
-    // event.
-    base::MessageLoop::current()->AddDestructionObserver(this);
-  }
+  // Start observing message loop destruction if we start monitoring the first
+  // event.
+  base::MessageLoop::current()->AddDestructionObserver(this);
 
   // Fetch pending events if any.
   OnXEvent();
 }
 
-void UserInputMonitorLinuxCore::StopMonitor(EventType type) {
+void UserInputMonitorLinuxCore::StopMonitor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (x_record_range_[type]) {
-    XFree(x_record_range_[type]);
-    x_record_range_[type] = NULL;
+  if (x_record_range_) {
+    XFree(x_record_range_);
+    x_record_range_ = NULL;
   }
-  if (x_record_range_[0] || x_record_range_[1])
+  if (x_record_range_)
     return;
 
   // Context must be disabled via the control channel because we can't send
@@ -277,28 +243,15 @@ void UserInputMonitorLinuxCore::OnXEvent() {
 
 void UserInputMonitorLinuxCore::ProcessXEvent(xEvent* event) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (event->u.u.type == MotionNotify) {
-    SkIPoint position(SkIPoint::Make(event->u.keyButtonPointer.rootX,
-                                     event->u.keyButtonPointer.rootY));
-    mouse_listeners_->Notify(
-        FROM_HERE, &UserInputMonitor::MouseEventListener::OnMouseMoved,
-        position);
-  } else {
-    ui::EventType type;
-    if (event->u.u.type == KeyPress) {
-      type = ui::ET_KEY_PRESSED;
-    } else if (event->u.u.type == KeyRelease) {
-      type = ui::ET_KEY_RELEASED;
-    } else {
-      NOTREACHED();
-      return;
-    }
+  DCHECK(event->u.u.type == KeyRelease || event->u.u.type == KeyPress);
 
-    KeySym key_sym =
-        XkbKeycodeToKeysym(x_control_display_, event->u.u.detail, 0, 0);
-    ui::KeyboardCode key_code = ui::KeyboardCodeFromXKeysym(key_sym);
-    counter_.OnKeyboardEvent(type, key_code);
-  }
+  ui::EventType type =
+      (event->u.u.type == KeyPress) ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
+
+  KeySym key_sym =
+      XkbKeycodeToKeysym(x_control_display_, event->u.u.detail, 0, 0);
+  ui::KeyboardCode key_code = ui::KeyboardCodeFromXKeysym(key_sym);
+  counter_.OnKeyboardEvent(type, key_code);
 }
 
 // static
@@ -318,7 +271,7 @@ void UserInputMonitorLinuxCore::ProcessReply(XPointer self,
 UserInputMonitorLinux::UserInputMonitorLinux(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : io_task_runner_(io_task_runner),
-      core_(new UserInputMonitorLinuxCore(io_task_runner, mouse_listeners())) {}
+      core_(new UserInputMonitorLinuxCore(io_task_runner)) {}
 
 UserInputMonitorLinux::~UserInputMonitorLinux() {
   if (!io_task_runner_->DeleteSoon(FROM_HERE, core_))
@@ -332,31 +285,13 @@ size_t UserInputMonitorLinux::GetKeyPressCount() const {
 void UserInputMonitorLinux::StartKeyboardMonitoring() {
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UserInputMonitorLinuxCore::StartMonitor,
-                 core_->AsWeakPtr(),
-                 UserInputMonitorLinuxCore::KEYBOARD_EVENT));
+      base::Bind(&UserInputMonitorLinuxCore::StartMonitor, core_->AsWeakPtr()));
 }
 
 void UserInputMonitorLinux::StopKeyboardMonitoring() {
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UserInputMonitorLinuxCore::StopMonitor,
-                 core_->AsWeakPtr(),
-                 UserInputMonitorLinuxCore::KEYBOARD_EVENT));
-}
-
-void UserInputMonitorLinux::StartMouseMonitoring() {
-  io_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&UserInputMonitorLinuxCore::StartMonitor,
-                                       core_->AsWeakPtr(),
-                                       UserInputMonitorLinuxCore::MOUSE_EVENT));
-}
-
-void UserInputMonitorLinux::StopMouseMonitoring() {
-  io_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&UserInputMonitorLinuxCore::StopMonitor,
-                                       core_->AsWeakPtr(),
-                                       UserInputMonitorLinuxCore::MOUSE_EVENT));
+      base::Bind(&UserInputMonitorLinuxCore::StopMonitor, core_->AsWeakPtr()));
 }
 
 }  // namespace
@@ -364,7 +299,7 @@ void UserInputMonitorLinux::StopMouseMonitoring() {
 std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  return base::WrapUnique(new UserInputMonitorLinux(io_task_runner));
+  return base::MakeUnique<UserInputMonitorLinux>(io_task_runner);
 }
 
 }  // namespace media

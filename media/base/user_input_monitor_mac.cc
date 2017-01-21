@@ -23,8 +23,6 @@ class UserInputMonitorMac : public UserInputMonitor {
  private:
   void StartKeyboardMonitoring() override;
   void StopKeyboardMonitoring() override;
-  void StartMouseMonitoring() override;
-  void StopMouseMonitoring() override;
 
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitorMac);
 };
@@ -44,18 +42,12 @@ void UserInputMonitorMac::StartKeyboardMonitoring() {}
 
 void UserInputMonitorMac::StopKeyboardMonitoring() {}
 
-// TODO(jiayl): add the impl.
-void UserInputMonitorMac::StartMouseMonitoring() { NOTIMPLEMENTED(); }
-
-// TODO(jiayl): add the impl.
-void UserInputMonitorMac::StopMouseMonitoring() { NOTIMPLEMENTED(); }
-
 }  // namespace
 
 std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& input_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  return base::WrapUnique(new UserInputMonitorMac);
+  return base::MakeUnique<UserInputMonitorMac>();
 }
 
 }  // namespace media
