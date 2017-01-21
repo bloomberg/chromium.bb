@@ -64,6 +64,8 @@ class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
 
 class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
   """Test cases related to repository initialization."""
+  def setUp(self):
+    self.PatchObject(time, 'sleep')
 
   def _Initialize(self, branch='master'):
     repo = repository.RepoRepository(site_config.params.MANIFEST_URL,
@@ -78,9 +80,35 @@ class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
 
     # Test that a failed re-init due to bad branch doesn't leave repo in bad
     # state.
+    # repo init on 'monkey' will retry on failures.
     self.assertRaises(Exception, self._Initialize, 'monkey')
     self._Initialize('release-R20-2268.B')
 
+  def testInitializationWithRepoInitRetry(self):
+    """Test Initialization with repo init retry."""
+    self.PatchObject(repository.RepoRepository, '_RepoSelfupdate')
+    mock_cleanup = self.PatchObject(repository.RepoRepository,
+                                    '_CleanUpRepoManifest')
+    error_result = cros_build_lib.CommandResult(cmd=['cmd'], returncode=1)
+    ex = cros_build_lib.RunCommandError('error_msg', error_result)
+    mock_init = self.PatchObject(cros_build_lib, 'RunCommand', side_effect=ex)
+
+    self.assertRaises(Exception, self._Initialize)
+    self.assertEqual(mock_cleanup.call_count,
+                     repository.REPO_INIT_RETRY_LIMIT + 1)
+    self.assertEqual(mock_init.call_count,
+                     repository.REPO_INIT_RETRY_LIMIT + 1)
+
+  def testInitializationWithoutRepoInitRetry(self):
+    """Test Initialization without repo init retry."""
+    self.PatchObject(repository.RepoRepository, '_RepoSelfupdate')
+    mock_cleanup = self.PatchObject(repository.RepoRepository,
+                                    '_CleanUpRepoManifest')
+    mock_init = self.PatchObject(cros_build_lib, 'RunCommand')
+
+    self._Initialize()
+    self.assertEqual(mock_cleanup.call_count, 0)
+    self.assertEqual(mock_init.call_count, 1)
 
 class RepoInitChromeBotTests(RepoInitTests):
   """Test that Re-init works with the chrome-bot account.
