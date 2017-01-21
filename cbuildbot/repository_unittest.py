@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import os
 import time
+import mock
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib
@@ -202,3 +203,41 @@ class RepoSyncTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
 """
     m.return_value = cros_build_lib.CommandResult(output=help_fragment)
     self.assertTrue(self.repo._ForceSyncSupported())
+
+  def test_RepoSelfupdateRaisesWarning(self):
+    """Test _RepoSelfupdate when repo version warning is raised."""
+    warnning_stderr = """
+info: A new version of repo is available
+
+...
+
+gpg: Can't check signature: public key not found
+
+...
+
+warning: Skipped upgrade to unverified version
+"""
+    mock_rm = self.PatchObject(osutils, 'RmDir')
+    cmd_result = cros_build_lib.CommandResult(error=warnning_stderr)
+    self.PatchObject(cros_build_lib, 'RunCommand', return_value=cmd_result)
+    self.repo._RepoSelfupdate()
+
+    mock_rm.assert_called_once_with(mock.ANY, ignore_missing=True)
+
+  def test_RepoSelfupdateRaisesException(self):
+    """Test _RepoSelfupdate when exception is raised."""
+    mock_rm = self.PatchObject(osutils, 'RmDir')
+    ex = cros_build_lib.RunCommandError(
+        'msg', cros_build_lib.CommandResult())
+    self.PatchObject(cros_build_lib, 'RunCommand', side_effect=ex)
+    self.repo._RepoSelfupdate()
+
+    mock_rm.assert_called_once_with(mock.ANY, ignore_missing=True)
+
+  def test_RepoSelfupdateSucceeds(self):
+    mock_rm = self.PatchObject(osutils, 'RmDir')
+    cmd_result = cros_build_lib.CommandResult()
+    self.PatchObject(cros_build_lib, 'RunCommand', return_value=cmd_result)
+    self.repo._RepoSelfupdate()
+
+    mock_rm.assert_not_called()

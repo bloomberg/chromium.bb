@@ -35,6 +35,9 @@ _TRYBOT_MARKER = '.trybot'
 # Default sleep time(second) between retries
 DEFAULT_SLEEP_TIME = 5
 
+SELFUPDATE_WARNING = r'Skipped upgrade to unverified version'
+
+SELFUPDATE_WARNING_RE = re.compile(SELFUPDATE_WARNING, re.IGNORECASE)
 
 class SrcCheckOutException(Exception):
   """Exception gets thrown for failure to sync sources"""
@@ -283,6 +286,34 @@ class RepoRepository(object):
     os.unlink(manifest_path)
     shutil.copyfile(local_manifest, manifest_path)
 
+  def _RepoSelfupdate(self):
+    """Execute repo selfupdate command.
+
+    'repo selfupdate' would clean up the .repo/repo dir on certain exceptions
+    and warnings, it must be followed by the 'repo init' command, which would
+    recover .repo/repo in this circumstance.
+    """
+    cmd = [self.repo_cmd, 'selfupdate']
+    failed_to_selfupdate = False
+    try:
+      cmd_result = cros_build_lib.RunCommand(
+          cmd, cwd=self.directory, capture_output=True, log_output=True)
+
+      if (cmd_result.error is not None and
+          SELFUPDATE_WARNING_RE.search(cmd_result.error)):
+        logging.warning('Unable to selfupdate because of warning "%s"',
+                        SELFUPDATE_WARNING)
+        failed_to_selfupdate = True
+    except cros_build_lib.RunCommandError as e:
+      logging.warning('repo selfupdate failed with exception: %s', e)
+      failed_to_selfupdate = True
+
+    if failed_to_selfupdate:
+      logging.warning('Failed to selfupdate repo, cleaning .repo/repo in %s',
+                      self.directory)
+      osutils.RmDir(os.path.join(self.directory, '.repo', 'repo'),
+                    ignore_missing=True)
+
   def Initialize(self, local_manifest=None, manifest_repo_url=None,
                  extra_args=()):
     """Initializes a repository.  Optionally forces a local manifest.
@@ -326,12 +357,7 @@ class RepoRepository(object):
     # Additionally, note that this method may be called multiple times;
     # thus code appropriately.
     if self._repo_update_needed:
-      cmd = [self.repo_cmd, 'selfupdate']
-      try:
-        cros_build_lib.RunCommand(cmd, cwd=self.directory)
-      except cros_build_lib.RunCommandError:
-        osutils.RmDir(os.path.join(self.directory, '.repo', 'repo'),
-                      ignore_missing=True)
+      self._RepoSelfupdate()
       self._repo_update_needed = False
 
     # Use our own repo, in case android.kernel.org (the default location) is
