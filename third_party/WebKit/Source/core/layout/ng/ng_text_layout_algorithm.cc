@@ -26,12 +26,9 @@ NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
   DCHECK(inline_box_);
 }
 
-NGLayoutStatus NGTextLayoutAlgorithm::Layout(NGPhysicalFragment*,
-                                             NGPhysicalFragment** fragment_out,
-                                             NGLayoutAlgorithm**) {
+NGPhysicalFragment* NGTextLayoutAlgorithm::Layout() {
   ASSERT_NOT_REACHED();
-  *fragment_out = nullptr;
-  return kNewFragment;
+  return nullptr;
 }
 
 bool NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {

@@ -14,7 +14,6 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
-#include "core/layout/ng/ng_layout_coordinator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "core/paint/PaintLayer.h"
@@ -40,48 +39,21 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
 // included from a compilation unit that lacks the ComputedStyle definition.
 NGBlockNode::~NGBlockNode() {}
 
-void NGBlockNode::LayoutSync(NGConstraintSpace* constraint_space,
-                             NGFragment** out) {
-  while (!Layout(constraint_space, out))
-    continue;
-}
-
-bool NGBlockNode::Layout(NGConstraintSpace* constraint_space,
-                         NGFragment** out) {
+NGPhysicalFragment* NGBlockNode::Layout(NGConstraintSpace* constraint_space) {
   // We can either use the new layout code to do the layout and then copy the
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
   if (CanUseNewLayout()) {
-    NGPhysicalFragment* fragment;
-
-    // Store a coordinator so Layout can preserve its existing semantic
-    // of returning false until completed.
-    if (!layout_coordinator_)
-      layout_coordinator_ = new NGLayoutCoordinator(this, constraint_space);
-
-    if (!layout_coordinator_->Tick(&fragment))
-      return false;
-
-    fragment_ = toNGPhysicalBoxFragment(fragment);
-
-    UpdateLayoutBox(fragment_, constraint_space);
+    NGLayoutAlgorithm* algorithm =
+        NGLayoutInputNode::AlgorithmForInputNode(this, constraint_space);
+    fragment_ = toNGPhysicalBoxFragment(algorithm->Layout());
+    CopyFragmentDataToLayoutBox(*constraint_space);
   } else {
     DCHECK(layout_box_);
     fragment_ = RunOldLayout(*constraint_space);
   }
-  *out = new NGBoxFragment(FromPlatformWritingMode(Style()->getWritingMode()),
-                           Style()->direction(), fragment_.get());
-  // Reset coordinator for future use
-  layout_coordinator_ = nullptr;
-  return true;
-}
 
-void NGBlockNode::UpdateLayoutBox(NGPhysicalBoxFragment* fragment,
-                                  const NGConstraintSpace* constraint_space) {
-  fragment_ = fragment;
-  if (layout_box_) {
-    CopyFragmentDataToLayoutBox(*constraint_space);
-  }
+  return fragment_;
 }
 
 MinAndMaxContentSizes NGBlockNode::ComputeMinAndMaxContentSizesSync() {
@@ -108,8 +80,6 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
                          borderAndPadding;
     return true;
   }
-  DCHECK(!layout_coordinator_)
-      << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
 
   NGConstraintSpace* constraint_space =
       NGConstraintSpaceBuilder(
@@ -123,13 +93,8 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   if (minmax_algorithm.ComputeMinAndMaxContentSizes(sizes))
     return true;
 
-  NGLayoutCoordinator* minmax_coordinator =
-      new NGLayoutCoordinator(this, constraint_space);
-
   // Have to synthesize this value.
-  NGPhysicalFragment* physical_fragment;
-  while (!minmax_coordinator->Tick(&physical_fragment))
-    continue;
+  NGPhysicalFragment* physical_fragment = Layout(constraint_space);
   NGBoxFragment* fragment = new NGBoxFragment(
       FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
       toNGPhysicalBoxFragment(physical_fragment));
@@ -145,10 +110,7 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace();
 
-  minmax_coordinator = new NGLayoutCoordinator(this, constraint_space);
-  while (!minmax_coordinator->Tick(&physical_fragment))
-    continue;
-
+  physical_fragment = Layout(constraint_space);
   fragment = new NGBoxFragment(
       FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
       toNGPhysicalBoxFragment(physical_fragment));
@@ -207,7 +169,6 @@ NGBreakToken* NGBlockNode::CurrentBreakToken() const {
 }
 
 DEFINE_TRACE(NGBlockNode) {
-  visitor->trace(layout_coordinator_);
   visitor->trace(fragment_);
   visitor->trace(next_sibling_);
   visitor->trace(first_child_);
@@ -259,7 +220,10 @@ bool NGBlockNode::HasInlineChildren() {
 
 void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space) {
-  DCHECK(layout_box_);
+  // We may not have a layout_box_ during unit tests.
+  if (!layout_box_)
+    return;
+
   layout_box_->setWidth(fragment_->Width());
   layout_box_->setHeight(fragment_->Height());
   NGBoxStrut border_and_padding =

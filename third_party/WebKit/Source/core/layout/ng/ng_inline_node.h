@@ -22,12 +22,12 @@ class LayoutBlockFlow;
 class LayoutObject;
 class LayoutUnit;
 class NGConstraintSpace;
-class NGFragment;
 class NGLayoutAlgorithm;
 class NGLayoutInlineItem;
 class NGLayoutInlineItemRange;
 class NGLayoutInlineItemsBuilder;
 class NGLineBuilder;
+class NGPhysicalFragment;
 
 // Represents an inline node to be laid out.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
@@ -35,7 +35,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineNode(LayoutObject* start_inline, ComputedStyle* block_style);
   ~NGInlineNode() override;
 
-  bool Layout(NGConstraintSpace*, NGFragment**) override;
+  NGPhysicalFragment* Layout(NGConstraintSpace*) override;
   bool LayoutInline(NGConstraintSpace*, NGLineBuilder*);
   NGInlineNode* NextSibling() override;
 

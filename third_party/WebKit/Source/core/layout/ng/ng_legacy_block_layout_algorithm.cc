@@ -15,12 +15,8 @@ NGLegacyBlockLayoutAlgorithm::NGLegacyBlockLayoutAlgorithm(
       block_(block),
       constraint_space_(constraint_space) {}
 
-NGLayoutStatus NGLegacyBlockLayoutAlgorithm::Layout(
-    NGPhysicalFragment*,
-    NGPhysicalFragment** fragment_out,
-    NGLayoutAlgorithm**) {
-  *fragment_out = block_->RunOldLayout(*constraint_space_);
-  return kNewFragment;
+NGPhysicalFragment* NGLegacyBlockLayoutAlgorithm::Layout() {
+  return block_->RunOldLayout(*constraint_space_);
 }
 
 DEFINE_TRACE(NGLegacyBlockLayoutAlgorithm) {

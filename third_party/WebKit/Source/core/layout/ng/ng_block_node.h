@@ -17,9 +17,8 @@ class LayoutBox;
 class LayoutObject;
 class NGBreakToken;
 class NGConstraintSpace;
-class NGFragment;
-class NGLayoutCoordinator;
 struct NGLogicalOffset;
+class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
 
 // Represents a node to be laid out.
@@ -34,8 +33,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   ~NGBlockNode() override;
 
-  bool Layout(NGConstraintSpace*, NGFragment**) override;
-  void LayoutSync(NGConstraintSpace*, NGFragment**);
+  NGPhysicalFragment* Layout(NGConstraintSpace* constraint_space) override;
 
   NGBlockNode* NextSibling() override;
 
@@ -78,8 +76,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // Save static position for legacy AbsPos layout.
   void SaveStaticOffsetForLegacy(const NGLogicalOffset&);
 
-  void UpdateLayoutBox(NGPhysicalBoxFragment* fragment,
-                       const NGConstraintSpace* constraint_space);
   // This is necessary for interop between old and new trees -- after our parent
   // positions us, it calls this function so we can store the position on the
   // underlying LayoutBox.
@@ -99,7 +95,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   RefPtr<ComputedStyle> style_;
   Member<NGBlockNode> next_sibling_;
   Member<NGLayoutInputNode> first_child_;
-  Member<NGLayoutCoordinator> layout_coordinator_;
   // TODO(mstensho): An input node may produce multiple fragments, so this
   // should probably be renamed to last_fragment_ or something like that, since
   // the last fragment is all we care about when resuming layout.

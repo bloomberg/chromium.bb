@@ -20,6 +20,7 @@ class NGColumnMapper;
 class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
 class NGBoxFragment;
+class NGFragment;
 class NGFragmentBuilder;
 class NGPhysicalFragment;
 
@@ -39,9 +40,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGBreakToken* break_token = nullptr);
 
   bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) override;
-  NGLayoutStatus Layout(NGPhysicalFragment*,
-                        NGPhysicalFragment**,
-                        NGLayoutAlgorithm**) override;
+  NGPhysicalFragment* Layout() override;
 
   DECLARE_VIRTUAL_TRACE();
 

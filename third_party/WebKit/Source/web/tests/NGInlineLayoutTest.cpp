@@ -48,13 +48,10 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
 
   NGInlineNode* inlineBox =
       new NGInlineNode(blockFlow->firstChild(), blockFlow->mutableStyle());
-  NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
-      blockFlow->style(), inlineBox, constraintSpace);
-
-  NGPhysicalFragment* fragment;
-  while (layoutAlgorithm->Layout(nullptr, &fragment, nullptr) != kNewFragment) {
-    // Repeat until layout completes.
-  }
+  NGPhysicalFragment* fragment =
+      NGInlineLayoutAlgorithm(blockFlow->style(), inlineBox, constraintSpace)
+          .Layout();
+  EXPECT_TRUE(fragment);
 
   String expectedText("Hello World!");
   EXPECT_EQ(expectedText, inlineBox->Text(0, 12));
@@ -77,13 +74,10 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
 
   NGInlineNode* inlineBox =
       new NGInlineNode(blockFlow->firstChild(), blockFlow->mutableStyle());
-  NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
-      blockFlow->style(), inlineBox, constraintSpace);
-
-  NGPhysicalFragment* fragment;
-  while (layoutAlgorithm->Layout(nullptr, &fragment, nullptr) != kNewFragment) {
-    // Repeat until layout completes.
-  }
+  NGPhysicalFragment* fragment =
+      NGInlineLayoutAlgorithm(blockFlow->style(), inlineBox, constraintSpace)
+          .Layout();
+  EXPECT_TRUE(fragment);
 
   String expectedText("Hello ");
   expectedText.append(objectReplacementCharacter);

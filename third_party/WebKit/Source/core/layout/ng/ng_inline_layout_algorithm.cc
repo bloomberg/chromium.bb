@@ -30,10 +30,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
   DCHECK(style_);
 }
 
-NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
-    NGPhysicalFragment*,
-    NGPhysicalFragment** fragment_out,
-    NGLayoutAlgorithm**) {
+NGPhysicalFragment* NGInlineLayoutAlgorithm::Layout() {
   // TODO(kojii): Implement sizing and child constraint spaces. Share common
   // logic with NGBlockLayoutAlgorithm using composition.
   builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
@@ -52,10 +49,9 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
   }
 
   line_builder_->CreateFragments(builder_);
-  *fragment_out = builder_->ToBoxFragment();
+  NGPhysicalFragment* fragment = builder_->ToBoxFragment();
   line_builder_->CopyFragmentDataToLayoutBlockFlow();
-  state_ = kStateInit;
-  return kNewFragment;
+  return fragment;
 }
 
 bool NGInlineLayoutAlgorithm::LayoutCurrentChild() {

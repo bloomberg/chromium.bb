@@ -219,10 +219,7 @@ bool NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
   return true;
 }
 
-NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
-    NGPhysicalFragment* child_fragment,
-    NGPhysicalFragment** fragment_out,
-    NGLayoutAlgorithm** algorithm_out) {
+NGPhysicalFragment* NGBlockLayoutAlgorithm::Layout() {
   WTF::Optional<MinAndMaxContentSizes> sizes;
   if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
     // TODO(ikilpatrick): Change ComputeMinAndMaxContentSizes to return
@@ -291,13 +288,8 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
            SpaceAvailableForCurrentChild() > LayoutUnit());
     space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
 
-    NGFragment* fragment;
-    current_child_->LayoutSync(space_for_current_child_, &fragment);
-    NGPhysicalFragment* child_fragment = fragment->PhysicalFragment();
-
-    // TODO(layout_ng): Seems like a giant hack to call this here.
-    current_child_->UpdateLayoutBox(toNGPhysicalBoxFragment(child_fragment),
-                                    space_for_current_child_);
+    NGPhysicalFragment* child_fragment =
+        current_child_->Layout(space_for_current_child_);
 
     FinishCurrentChildLayout(new NGBoxFragment(
         ConstraintSpace().WritingMode(), ConstraintSpace().Direction(),
@@ -322,12 +314,12 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
   if (ConstraintSpace().HasBlockFragmentation())
     FinalizeForFragmentation();
 
-  *fragment_out = builder_->ToBoxFragment();
+  NGPhysicalFragment* fragment = builder_->ToBoxFragment();
 
   for (auto& node : positioned_out_of_flow_children)
     node->PositionUpdated();
 
-  return kNewFragment;
+  return fragment;
 }
 
 void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(NGFragment* fragment) {

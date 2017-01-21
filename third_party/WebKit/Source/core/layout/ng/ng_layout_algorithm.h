@@ -13,7 +13,6 @@
 namespace blink {
 
 struct MinAndMaxContentSizes;
-class NGBlockNode;
 class NGConstraintSpace;
 class NGPhysicalFragment;
 
@@ -38,16 +37,8 @@ class CORE_EXPORT NGLayoutAlgorithm
   // Actual layout function. Lays out the children and descendents within the
   // constraints given by the NGConstraintSpace. Returns a fragment with the
   // resulting layout information.
-  // This function can not be const because for interruptible layout, we have
-  // to be able to store state information.
-  // If this function returns NotFinished, it has to be called again.
-  // If it returns ChildAlgorithmRequired, the NGBlockNode out parameter will
-  // be set with the NGBlockNode that needs to be layed out next.
-  // If it returns NewFragment, the NGPhysicalFragmentBase out parameter
-  // will contain the new fragment.
-  virtual NGLayoutStatus Layout(NGPhysicalFragment*,
-                                NGPhysicalFragment**,
-                                NGLayoutAlgorithm**) = 0;
+  // TODO(layout-dev): attempt to make this function const.
+  virtual NGPhysicalFragment* Layout() = 0;
 
   enum MinAndMaxState { kSuccess, kPending, kNotImplemented };
 

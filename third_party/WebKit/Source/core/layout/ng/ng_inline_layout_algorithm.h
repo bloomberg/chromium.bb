@@ -37,9 +37,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
                           NGConstraintSpace* space,
                           NGBreakToken* break_token = nullptr);
 
-  NGLayoutStatus Layout(NGPhysicalFragment*,
-                        NGPhysicalFragment**,
-                        NGLayoutAlgorithm**) override;
+  NGPhysicalFragment* Layout() override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -49,9 +47,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
 
   bool LayoutCurrentChild();
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild() const;
-
-  enum State { kStateInit, kStateChildLayout, kStateFinalize };
-  State state_ = kStateInit;
 
   RefPtr<const ComputedStyle> style_;
   Member<NGInlineNode> first_child_;

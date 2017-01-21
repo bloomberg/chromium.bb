@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/ng_absolute_utils.h"
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"
@@ -116,9 +117,12 @@ NGFragment* NGOutOfFlowLayoutPart::GenerateFragment(
   builder.SetIsNewFormattingContext(true);
   NGConstraintSpace* space = builder.ToConstraintSpace();
 
-  NGFragment* fragment;
-  node.LayoutSync(space, &fragment);
-  return fragment;
+  NGPhysicalFragment* fragment = node.Layout(space);
+
+  // TODO(ikilpatrick): the writing mode switching here looks wrong.
+  return new NGBoxFragment(parent_space_->WritingMode(),
+                           parent_space_->Direction(),
+                           toNGPhysicalBoxFragment(fragment));
 }
 
 DEFINE_TRACE(NGOutOfFlowLayoutPart) {

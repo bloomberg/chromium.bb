@@ -27,9 +27,7 @@ void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
   // passes (probably FirstChild(), etc).
   m_box = new NGBlockNode(this);
 
-  NGFragment* fragment;
-  while (!m_box->Layout(constraint_space, &fragment))
-    ;
+  NGPhysicalFragment* fragment = m_box->Layout(constraint_space);
 
   if (isOutOfFlowPositioned()) {
     // In legacy layout, abspos differs from regular blocks in that abspos
@@ -46,7 +44,7 @@ void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
     setLogicalTop(computedValues.m_position);
   }
 
-  for (auto& descendant : fragment->PhysicalFragment()->OutOfFlowDescendants())
+  for (auto& descendant : fragment->OutOfFlowDescendants())
     descendant->UseOldOutOfFlowPositioning();
   clearNeedsLayout();
 }
