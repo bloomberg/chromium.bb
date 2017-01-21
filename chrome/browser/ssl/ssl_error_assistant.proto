@@ -16,7 +16,7 @@ message CaptivePortalCert {
   optional string sha256_hash = 1;
 }
 
-message TLSErrorAssistantConfig {
+message SSLErrorAssistantConfig {
   optional uint32 version_id = 1;
   repeated CaptivePortalCert captive_portal_cert = 2;
 }
