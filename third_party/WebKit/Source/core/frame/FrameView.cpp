@@ -3213,7 +3213,11 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
 
 void FrameView::invalidateTreeIfNeededRecursive() {
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PaintInvalidation.UpdateTime");
-  invalidateTreeIfNeededRecursiveInternal();
+  {
+    // For comparison to SlimmingPaintInvalidation.
+    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
+    invalidateTreeIfNeededRecursiveInternal();
+  }
 }
 
 void FrameView::invalidateTreeIfNeededRecursiveInternal() {
