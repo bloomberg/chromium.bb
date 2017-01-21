@@ -95,7 +95,9 @@ Polymer({
         markers: {
           type: Array,
           readOnly: true,
-          value: []
+          value: function() {
+              return [];
+          }
         },
       },
 
@@ -206,12 +208,12 @@ Polymer({
         this._setDragging(true);
       },
 
-      _trackX: function(e) {
+      _trackX: function(event) {
         if (!this.dragging) {
-          this._trackStart(e);
+          this._trackStart(event);
         }
 
-        var dx = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
+        var dx = Math.min(this._maxx, Math.max(this._minx, event.detail.dx));
         this._x = this._startx + dx;
 
         var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
@@ -321,6 +323,7 @@ Polymer({
             this.increment();
           }
           this.fire('change');
+          event.preventDefault();
         }
       },
 
@@ -332,6 +335,7 @@ Polymer({
             this.decrement();
           }
           this.fire('change');
+          event.preventDefault();
         }
       },
 
@@ -379,7 +383,7 @@ Polymer({
      * Fired when the slider's immediateValue changes. Only occurs while the
      * user is dragging.
      *
-     * To detect changes to immediateValue that happen for any input (i.e.                                                          
+     * To detect changes to immediateValue that happen for any input (i.e.
      * dragging, tapping, clicking, etc.) listen for immediate-value-changed
      * instead.
      *
