@@ -5429,6 +5429,11 @@
      {}
     ]
    ],
+   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_2-expected.txt": [
     [
      {}
@@ -12339,6 +12344,11 @@
      {}
     ]
    ],
+   "html/semantics/embedded-content/image-maps/image-map-processing-model/hash-name-reference-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/embedded-content/image-maps/image-map-processing-model/hash-name-reference-test-data.html": [
     [
      {}
@@ -12794,11 +12804,6 @@
      {}
     ]
    ],
-   "html/semantics/forms/form-control-infrastructure/form-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/forms/form-submission-0/contains.json": [
     [
      {}
@@ -12815,11 +12820,6 @@
     ]
    ],
    "html/semantics/forms/textfieldselection/original-id.json": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/forms/textfieldselection/textfieldselection-setRangeText-expected.txt": [
     [
      {}
     ]
@@ -12885,11 +12885,6 @@
     ]
    ],
    "html/semantics/forms/the-input-element/date-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/forms/the-input-element/datetime-expected.txt": [
     [
      {}
     ]
@@ -14654,7 +14649,97 @@
      {}
     ]
    ],
+   "selection/Document-open-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-00-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-04-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-08-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-12-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-16-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-20-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-24-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-28-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-32-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-36-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-40-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-44-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-48-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-52-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/addRange-56-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "selection/addRange.js": [
+    [
+     {}
+    ]
+   ],
+   "selection/collapse-00-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/collapse-30-expected.txt": [
     [
      {}
     ]
@@ -14664,12 +14749,62 @@
      {}
     ]
    ],
+   "selection/collapseToStartEnd-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "selection/common.js": [
     [
      {}
     ]
    ],
+   "selection/deleteFromDocument-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/extend-00-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/extend-20-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/extend-40-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "selection/extend.js": [
+    [
+     {}
+    ]
+   ],
+   "selection/interfaces-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/isCollapsed-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/removeAllRanges-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/selectAllChildren-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "selection/setBaseAndExtent-expected.txt": [
     [
      {}
     ]
@@ -15744,7 +15879,17 @@
      {}
     ]
    ],
+   "streams/byte-length-queuing-strategy.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/count-queuing-strategy.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/count-queuing-strategy.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15754,7 +15899,37 @@
      {}
     ]
    ],
+   "streams/piping/close-propagation-backward.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/close-propagation-backward.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/piping/close-propagation-backward.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/close-propagation-backward.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/close-propagation-backward.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/close-propagation-forward.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/close-propagation-forward.https-expected.txt": [
     [
      {}
     ]
@@ -15764,7 +15939,47 @@
      {}
     ]
    ],
+   "streams/piping/close-propagation-forward.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/close-propagation-forward.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/error-propagation-backward.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/error-propagation-backward.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/piping/error-propagation-backward.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/error-propagation-backward.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/error-propagation-backward.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/error-propagation-forward.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/error-propagation-forward.https-expected.txt": [
     [
      {}
     ]
@@ -15774,7 +15989,47 @@
      {}
     ]
    ],
+   "streams/piping/error-propagation-forward.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/error-propagation-forward.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/flow-control.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/flow-control.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/piping/flow-control.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/flow-control.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/flow-control.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/general.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/general.https-expected.txt": [
     [
      {}
     ]
@@ -15784,7 +16039,47 @@
      {}
     ]
    ],
+   "streams/piping/general.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/general.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/multiple-propagation.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/multiple-propagation.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/piping/multiple-propagation.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/multiple-propagation.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/multiple-propagation.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/pipe-through.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/pipe-through.https-expected.txt": [
     [
      {}
     ]
@@ -15794,7 +16089,47 @@
      {}
     ]
    ],
+   "streams/piping/pipe-through.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/pipe-through.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/transform-streams.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/transform-streams.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/piping/transform-streams.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/transform-streams.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/piping/transform-streams.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-byte-streams/general.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-byte-streams/general.https-expected.txt": [
     [
      {}
     ]
@@ -15804,7 +16139,22 @@
      {}
     ]
    ],
+   "streams/readable-byte-streams/general.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-byte-streams/general.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/readable-streams/bad-strategies.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/bad-strategies.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15814,7 +16164,17 @@
      {}
     ]
    ],
+   "streams/readable-streams/bad-underlying-sources.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/readable-streams/brand-checks.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/brand-checks.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15824,7 +16184,17 @@
      {}
     ]
    ],
+   "streams/readable-streams/cancel.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/readable-streams/count-queuing-strategy-integration.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/count-queuing-strategy-integration.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15834,7 +16204,32 @@
      {}
     ]
    ],
+   "streams/readable-streams/garbage-collection.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/general.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/readable-streams/general.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/general.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/general.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/pipe-through.dedicatedworker-expected.txt": [
     [
      {}
     ]
@@ -15844,7 +16239,22 @@
      {}
     ]
    ],
+   "streams/readable-streams/pipe-through.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/pipe-through.sharedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/readable-streams/readable-stream-reader.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/readable-stream-reader.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15854,7 +16264,27 @@
      {}
     ]
    ],
+   "streams/readable-streams/tee.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/templated.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/readable-streams/templated.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/templated.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/readable-streams/templated.sharedworker-expected.txt": [
     [
      {}
     ]
@@ -15884,7 +16314,17 @@
      {}
     ]
    ],
+   "streams/writable-streams/aborting.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/bad-strategies.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/bad-strategies.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15894,7 +16334,17 @@
      {}
     ]
    ],
+   "streams/writable-streams/bad-underlying-sinks.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/brand-checks.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/brand-checks.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15904,7 +16354,17 @@
      {}
     ]
    ],
+   "streams/writable-streams/byte-length-queuing-strategy.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/close.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/close.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15914,7 +16374,17 @@
      {}
     ]
    ],
+   "streams/writable-streams/constructor.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/count-queuing-strategy.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/count-queuing-strategy.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -15924,12 +16394,27 @@
      {}
     ]
    ],
+   "streams/writable-streams/general.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/start.js": [
     [
      {}
     ]
    ],
+   "streams/writable-streams/start.serviceworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/write.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/write.serviceworker-expected.txt": [
     [
      {}
     ]
@@ -38611,12 +39096,16 @@
    "81bbf80abda0f3445c4d87e0e1c11e3219d2edce",
    "testharness"
   ],
+  "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin-expected.txt": [
+   "9762c240f4c9c44cdb9d71d2d9d07c9866b61af4",
+   "support"
+  ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin.html": [
    "7455a083f29518418a3508b8fd3ade74cb747666",
    "testharness"
   ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_2-expected.txt": [
-   "3eca9fa68dced45dc55f4fe129a2fa90b6d84483",
+   "fea1e4bfc25dc99160e4b56d8c09930f67f0d097",
    "support"
   ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_2.html": [
@@ -46751,6 +47240,10 @@
    "12454ffe5ff971f78cd38232d04fdf6486db4994",
    "support"
   ],
+  "html/semantics/embedded-content/image-maps/image-map-processing-model/hash-name-reference-expected.txt": [
+   "ea9c8663f79e6019fcd291be5e66ed6b25dd64ec",
+   "support"
+  ],
   "html/semantics/embedded-content/image-maps/image-map-processing-model/hash-name-reference-test-data.html": [
    "28ef3ec0d689c3a10deee2f9c500ea6a10dfecf1",
    "support"
@@ -47731,10 +48224,6 @@
    "465d87952b71ff3ac6c3fe7b13c880028c53b3de",
    "support"
   ],
-  "html/semantics/forms/form-control-infrastructure/form-expected.txt": [
-   "be0ac035245e3fc36109d4e226ccc8b23a6b0956",
-   "support"
-  ],
   "html/semantics/forms/form-control-infrastructure/form.html": [
    "bfd11561a2e568668b6aaf94bc6da9e42fccdf55",
    "testharness"
@@ -47791,10 +48280,6 @@
    "d869799718137671a2eacc323aa26ea4364e845f",
    "testharness"
   ],
-  "html/semantics/forms/textfieldselection/textfieldselection-setRangeText-expected.txt": [
-   "ccc0c5d27ffd3a838f5d78facfc061a98515e364",
-   "support"
-  ],
   "html/semantics/forms/textfieldselection/textfieldselection-setRangeText.html": [
    "0caf2b08ccc5a35578291af8f5adaf7de9537d66",
    "testharness"
@@ -47844,7 +48329,7 @@
    "support"
   ],
   "html/semantics/forms/the-fieldset-element/disabled-001.html": [
-   "b4652013072de7ef5c035564cc5d71fc97811465",
+   "f8c2eeac272c802f70ee5e520eab3212c016604f",
    "testharness"
   ],
   "html/semantics/forms/the-fieldset-element/disabled-002.xhtml": [
@@ -47946,10 +48431,6 @@
   "html/semantics/forms/the-input-element/date.html": [
    "e8ea33c1a5d1b009d2a0639ed37760801f1f57d6",
    "testharness"
-  ],
-  "html/semantics/forms/the-input-element/datetime-expected.txt": [
-   "9e0de1fcb55bed369ff0dd60c605cac21738be9d",
-   "support"
   ],
   "html/semantics/forms/the-input-element/datetime-local-expected.txt": [
    "290fed25ec5d7c5e0c439e76526582c2b2939ae4",
@@ -48076,7 +48557,7 @@
    "testharness"
   ],
   "html/semantics/forms/the-input-element/time-2-expected.txt": [
-   "6e7bbea6d676d76d80af88ec2a1ea177f7b0577a",
+   "c927616a4c7b06f019d162eaaf6c51e8543fb2b8",
    "support"
   ],
   "html/semantics/forms/the-input-element/time-2.html": [
@@ -51439,65 +51920,129 @@
    "1e896cad5c89bfe1756af5db60b61bc9fa93f61b",
    "testharness"
   ],
+  "selection/Document-open-expected.txt": [
+   "4450a2a693582cf892a9e1b1877250402fbf0ea7",
+   "support"
+  ],
   "selection/Document-open.html": [
    "31a5ee7a3619c62dbd35eafb66725bf4192639a0",
    "testharness"
+  ],
+  "selection/addRange-00-expected.txt": [
+   "67edff8d9542d5b9961bae7435b960d98ca5a64e",
+   "support"
   ],
   "selection/addRange-00.html": [
    "e99b95a6bdcba9f4945fb9b03de34ff54469012a",
    "testharness"
   ],
+  "selection/addRange-04-expected.txt": [
+   "f05966bba89babc8a150804e4a754566522b6826",
+   "support"
+  ],
   "selection/addRange-04.html": [
    "c241e1c3a82f09c14bbf217350b2ee0b58c17178",
    "testharness"
+  ],
+  "selection/addRange-08-expected.txt": [
+   "83db5e9f0c6e61e61505811edde31ead87431307",
+   "support"
   ],
   "selection/addRange-08.html": [
    "6d51d9f4042e5590483fae60d19351602d6b0aa2",
    "testharness"
   ],
+  "selection/addRange-12-expected.txt": [
+   "c014d12e814743f36947486526fbb4e4ac9f29ec",
+   "support"
+  ],
   "selection/addRange-12.html": [
    "add2e904651f3564741742dc5e1dcb7e3debc50c",
    "testharness"
+  ],
+  "selection/addRange-16-expected.txt": [
+   "daeb1430f615d79d7fd537197b66bdd53e5b0ff0",
+   "support"
   ],
   "selection/addRange-16.html": [
    "b8357b81e8cff46960b158f2eff40950aba04158",
    "testharness"
   ],
+  "selection/addRange-20-expected.txt": [
+   "1ee92b07655fcaaf8e57ce470a1195d2dbfcd40e",
+   "support"
+  ],
   "selection/addRange-20.html": [
    "88fb182b058eae495b92c10a1ddc2bd7768e96cd",
    "testharness"
+  ],
+  "selection/addRange-24-expected.txt": [
+   "8b76b5cd328cc38982e877dd4148ecede0349aec",
+   "support"
   ],
   "selection/addRange-24.html": [
    "d6c0ce809239b2bafda14dab540bda45e3e89752",
    "testharness"
   ],
+  "selection/addRange-28-expected.txt": [
+   "f5f25b0400d554dfce01e4ee270ac70c1c5be8a0",
+   "support"
+  ],
   "selection/addRange-28.html": [
    "a2583e4f46561f8b09183186aed7ca137fab26dd",
    "testharness"
+  ],
+  "selection/addRange-32-expected.txt": [
+   "f449692cb0e4247a11ba29d7d33bad80acb03598",
+   "support"
   ],
   "selection/addRange-32.html": [
    "431ec670ebbcd0d0032fc416bd0910507fa76680",
    "testharness"
   ],
+  "selection/addRange-36-expected.txt": [
+   "e4159c7c0b991d97fde7e8aaef5b5cb3de496c30",
+   "support"
+  ],
   "selection/addRange-36.html": [
    "9572f7b20ee6891157025e576cf837e496a61669",
    "testharness"
+  ],
+  "selection/addRange-40-expected.txt": [
+   "826a8b3910aaeef3d7842e7f65d77797454c62c5",
+   "support"
   ],
   "selection/addRange-40.html": [
    "a58732345d1fdc0b833bf0b9062e44247e0a9592",
    "testharness"
   ],
+  "selection/addRange-44-expected.txt": [
+   "62e794c2aee0b0d29fdfdbc468a611fc394dbdaf",
+   "support"
+  ],
   "selection/addRange-44.html": [
    "7119f750a423fcfed1ddd1b92a48ae28cdaa0f02",
    "testharness"
+  ],
+  "selection/addRange-48-expected.txt": [
+   "e484b6301e9c22c9ff488b262396f58cb364d036",
+   "support"
   ],
   "selection/addRange-48.html": [
    "c9fdeebfd75735480d07500faf217aae98ec12f1",
    "testharness"
   ],
+  "selection/addRange-52-expected.txt": [
+   "a693d009fbbe9dd1efb366df08621a061ac1d077",
+   "support"
+  ],
   "selection/addRange-52.html": [
    "682150b475f15c8cef9e80a0a48e4a80a3a15a48",
    "testharness"
+  ],
+  "selection/addRange-56-expected.txt": [
+   "b07be14d773735a2eb57be8b1af607afacea15fd",
+   "support"
   ],
   "selection/addRange-56.html": [
    "adcc65d54d59715ee740b2436486058ec578b63a",
@@ -51507,9 +52052,17 @@
    "df6dcd50618466c323d4343a8a2a55b2443e4498",
    "support"
   ],
+  "selection/collapse-00-expected.txt": [
+   "8b4e75041f2b19203d0a8e91bd1ce664d1306c0f",
+   "support"
+  ],
   "selection/collapse-00.html": [
    "6c06617a84c3d4e5f121e4ccf8f7761ba1be1ceb",
    "testharness"
+  ],
+  "selection/collapse-30-expected.txt": [
+   "4de9bf6f3c50957f3c336b57534ac82deaf84767",
+   "support"
   ],
   "selection/collapse-30.html": [
    "943e7d8960212bc5d5eadb45ff641b9d9525a44a",
@@ -51517,6 +52070,10 @@
   ],
   "selection/collapse.js": [
    "41ae670c54b9141b065659a751f8495ded80ac1b",
+   "support"
+  ],
+  "selection/collapseToStartEnd-expected.txt": [
+   "424a34f194b7649464b4d271206142df7da3bf4d",
    "support"
   ],
   "selection/collapseToStartEnd.html": [
@@ -51527,6 +52084,10 @@
    "ffb4fe96df8ae290cb35574f751bafcc00805b4d",
    "support"
   ],
+  "selection/deleteFromDocument-expected.txt": [
+   "4ae16b5599bfb4c8592786e6c79ec466dc18acd1",
+   "support"
+  ],
   "selection/deleteFromDocument.html": [
    "8a20f9940fd3bb79abe7ce09829796952af1716f",
    "testharness"
@@ -51535,13 +52096,25 @@
    "d20aba9b9ef8654b553f1adb1eb4f16e642fe649",
    "manual"
   ],
+  "selection/extend-00-expected.txt": [
+   "d718f8593a75a89942cb2c0c0084839c0f5dc5df",
+   "support"
+  ],
   "selection/extend-00.html": [
    "189e4939230b1a0540e326640f6390e64708efed",
    "testharness"
   ],
+  "selection/extend-20-expected.txt": [
+   "68a7eb924d2a5307934461fc8bde8f1912766c45",
+   "support"
+  ],
   "selection/extend-20.html": [
    "23664c8f1957d8491526ba9f53e03242f3f3042f",
    "testharness"
+  ],
+  "selection/extend-40-expected.txt": [
+   "bff22969d6b2a6a57dc72e6367532ed0e7a33bc9",
+   "support"
   ],
   "selection/extend-40.html": [
    "5e3ce84e8a060b0de0a5468faeec433b67c5aea7",
@@ -51559,21 +52132,41 @@
    "4b5b638ae5cdaab02fbe9cca255a119134238a7d",
    "testharness"
   ],
+  "selection/interfaces-expected.txt": [
+   "ccb4664f886a9f11a3c48eb4d99ca2fe854b0e23",
+   "support"
+  ],
   "selection/interfaces.html": [
    "9ec3001efd5e443a533d261a51c94c3f60e273ed",
    "testharness"
+  ],
+  "selection/isCollapsed-expected.txt": [
+   "974f7afa75b46f45697d93d73b2c356fc5ebaf50",
+   "support"
   ],
   "selection/isCollapsed.html": [
    "9304191778ec0fb6b5d613efde19d1574b867dac",
    "testharness"
   ],
+  "selection/removeAllRanges-expected.txt": [
+   "3907bae41f9f68bdf29d1f2c5baba3716fd96f7f",
+   "support"
+  ],
   "selection/removeAllRanges.html": [
    "23385a72a586db288b282eb251f9384048532666",
    "testharness"
   ],
+  "selection/selectAllChildren-expected.txt": [
+   "1c0847ea872435a156964497a533eca4d1dad076",
+   "support"
+  ],
   "selection/selectAllChildren.html": [
    "dab92b0a124b9be2b1c2c26f022b8933e09f1d66",
    "testharness"
+  ],
+  "selection/setBaseAndExtent-expected.txt": [
+   "dacbe98c0b6760d76739a5c90b7403ffe0bf7652",
+   "support"
   ],
   "selection/setBaseAndExtent.html": [
    "e94649b448dc998b8c353ca8e28814c1e13e11ae",
@@ -53503,6 +54096,10 @@
    "e4b248c7de8b85df9ed01d707cf2dfcfd9a5bcb0",
    "support"
   ],
+  "streams/byte-length-queuing-strategy.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/byte-length-queuing-strategy.serviceworker.html": [
    "83c7631272f9c04011e179a1d5f2c6744ab09e2d",
    "testharness"
@@ -53523,6 +54120,10 @@
    "33f8db7addcc8e01d798b9199b6d78ad35d8a243",
    "support"
   ],
+  "streams/count-queuing-strategy.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/count-queuing-strategy.serviceworker.html": [
    "7f59d0e37562a6adfb2972b61928375047266ac7",
    "testharness"
@@ -53535,9 +54136,17 @@
    "5d7ad85aacba724570c88d7f0d31bb347e07451e",
    "support"
   ],
+  "streams/piping/close-propagation-backward.dedicatedworker-expected.txt": [
+   "2c78c276cdbf8f7b60303f7cae9323203f08336a",
+   "support"
+  ],
   "streams/piping/close-propagation-backward.dedicatedworker.html": [
    "17e143af0bd875f6097c2314ea9861e4b19ff91a",
    "testharness"
+  ],
+  "streams/piping/close-propagation-backward.https-expected.txt": [
+   "2c78c276cdbf8f7b60303f7cae9323203f08336a",
+   "support"
   ],
   "streams/piping/close-propagation-backward.https.html": [
    "12e087aed62dfde8130ad241c261e6863147e3d1",
@@ -53547,17 +54156,33 @@
    "e51b3ceee3c58aa83bcbea276270fa40b98d16fa",
    "support"
   ],
+  "streams/piping/close-propagation-backward.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/piping/close-propagation-backward.serviceworker.html": [
    "29ce859faa5a374d86c4f10e2c638061ce378a01",
    "testharness"
+  ],
+  "streams/piping/close-propagation-backward.sharedworker-expected.txt": [
+   "2c78c276cdbf8f7b60303f7cae9323203f08336a",
+   "support"
   ],
   "streams/piping/close-propagation-backward.sharedworker.html": [
    "7ef2ba0b429b2032e099f62cf2bc17d606ad1c64",
    "testharness"
   ],
+  "streams/piping/close-propagation-forward.dedicatedworker-expected.txt": [
+   "4ab6fa412936f3290fec500ed4766d2331e86150",
+   "support"
+  ],
   "streams/piping/close-propagation-forward.dedicatedworker.html": [
    "d227631adae0611f7920d33343d148f19c13f833",
    "testharness"
+  ],
+  "streams/piping/close-propagation-forward.https-expected.txt": [
+   "4ab6fa412936f3290fec500ed4766d2331e86150",
+   "support"
   ],
   "streams/piping/close-propagation-forward.https.html": [
    "705a73f3cb1cf7334456070a00b7525defb26840",
@@ -53567,17 +54192,33 @@
    "0846ba92abb8ace6c5438d918b2db23badc090b2",
    "support"
   ],
+  "streams/piping/close-propagation-forward.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/piping/close-propagation-forward.serviceworker.html": [
    "759ca4e212311a001d0abae2b2f21d1dca42736b",
    "testharness"
+  ],
+  "streams/piping/close-propagation-forward.sharedworker-expected.txt": [
+   "4ab6fa412936f3290fec500ed4766d2331e86150",
+   "support"
   ],
   "streams/piping/close-propagation-forward.sharedworker.html": [
    "277a94372fc8359b631b46ea79778ce2ec0e928c",
    "testharness"
   ],
+  "streams/piping/error-propagation-backward.dedicatedworker-expected.txt": [
+   "bbe079c575b2d825134e679e61566da325745fee",
+   "support"
+  ],
   "streams/piping/error-propagation-backward.dedicatedworker.html": [
    "2f7ad2bf616e612f8cae9c61264d1ea012be2561",
    "testharness"
+  ],
+  "streams/piping/error-propagation-backward.https-expected.txt": [
+   "bbe079c575b2d825134e679e61566da325745fee",
+   "support"
   ],
   "streams/piping/error-propagation-backward.https.html": [
    "3fa70d5f0b864846b699ffd94b10a19a331fa65c",
@@ -53587,17 +54228,33 @@
    "e7f1bdd524056017264ba1f0d2f569c5a5bbece5",
    "support"
   ],
+  "streams/piping/error-propagation-backward.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/piping/error-propagation-backward.serviceworker.html": [
    "3502f6514992dab5662a5088c518d3a775863770",
    "testharness"
+  ],
+  "streams/piping/error-propagation-backward.sharedworker-expected.txt": [
+   "bbe079c575b2d825134e679e61566da325745fee",
+   "support"
   ],
   "streams/piping/error-propagation-backward.sharedworker.html": [
    "464dbfc87804e207057de70b2dcbb0aacf03b92e",
    "testharness"
   ],
+  "streams/piping/error-propagation-forward.dedicatedworker-expected.txt": [
+   "5244bd0323cc4426671f43de90f3f4e8ca0cf0db",
+   "support"
+  ],
   "streams/piping/error-propagation-forward.dedicatedworker.html": [
    "a2520ea68491b9e0987a63c9d5653a19ffff440d",
    "testharness"
+  ],
+  "streams/piping/error-propagation-forward.https-expected.txt": [
+   "5244bd0323cc4426671f43de90f3f4e8ca0cf0db",
+   "support"
   ],
   "streams/piping/error-propagation-forward.https.html": [
    "ed2d748eaec992b2c930a923d3288883e8d3e9dc",
@@ -53607,17 +54264,33 @@
    "a6c993b47a0aa820a3c763eb64ab902551bbcd91",
    "support"
   ],
+  "streams/piping/error-propagation-forward.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/piping/error-propagation-forward.serviceworker.html": [
    "44db4461afd113439e349a05a08410ff58655850",
    "testharness"
+  ],
+  "streams/piping/error-propagation-forward.sharedworker-expected.txt": [
+   "5244bd0323cc4426671f43de90f3f4e8ca0cf0db",
+   "support"
   ],
   "streams/piping/error-propagation-forward.sharedworker.html": [
    "c19cba806d0c806452464b7ede268458c65556a9",
    "testharness"
   ],
+  "streams/piping/flow-control.dedicatedworker-expected.txt": [
+   "f87be7d24d09906c86bc5e7ae4847b5b8fc8122c",
+   "support"
+  ],
   "streams/piping/flow-control.dedicatedworker.html": [
    "3936fceee569de910a7e3e4d5e3af9e7c4d1e942",
    "testharness"
+  ],
+  "streams/piping/flow-control.https-expected.txt": [
+   "f87be7d24d09906c86bc5e7ae4847b5b8fc8122c",
+   "support"
   ],
   "streams/piping/flow-control.https.html": [
    "0b60c58f59b5a58f366bb29e05e0a36fc3ab2da7",
@@ -53627,37 +54300,69 @@
    "7d0c16676332ce06b1466f30f4cd89aeffb54610",
    "support"
   ],
+  "streams/piping/flow-control.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/piping/flow-control.serviceworker.html": [
    "c6962c1f0358867289e1e9b36dac492059f4f9fe",
    "testharness"
+  ],
+  "streams/piping/flow-control.sharedworker-expected.txt": [
+   "f87be7d24d09906c86bc5e7ae4847b5b8fc8122c",
+   "support"
   ],
   "streams/piping/flow-control.sharedworker.html": [
    "74e67f2ad62720eb3314a1cdec5b4c28ca3ea5f6",
    "testharness"
   ],
+  "streams/piping/general.dedicatedworker-expected.txt": [
+   "c2e502278e3c290e0f4fed85c4ee7e21a741e13e",
+   "support"
+  ],
   "streams/piping/general.dedicatedworker.html": [
    "8583d80450b090c16ed0795170340d040449bbc1",
    "testharness"
+  ],
+  "streams/piping/general.https-expected.txt": [
+   "c2e502278e3c290e0f4fed85c4ee7e21a741e13e",
+   "support"
   ],
   "streams/piping/general.https.html": [
    "d7f2a0e97922ba446f7c3cfd245706dc5a6beb65",
    "testharness"
   ],
   "streams/piping/general.js": [
-   "2b78961bee45b77271afe5a4615d7324aa7d7abd",
+   "dc53c5a5d9757095ffafd01eec4248af1a79b785",
+   "support"
+  ],
+  "streams/piping/general.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/piping/general.serviceworker.html": [
    "1792d6c45a5687777291a4dab031a954aa053752",
    "testharness"
   ],
+  "streams/piping/general.sharedworker-expected.txt": [
+   "c2e502278e3c290e0f4fed85c4ee7e21a741e13e",
+   "support"
+  ],
   "streams/piping/general.sharedworker.html": [
    "44f9ceaa3bfc9d8b92885997d322486bd0f237a6",
    "testharness"
   ],
+  "streams/piping/multiple-propagation.dedicatedworker-expected.txt": [
+   "350ef7e6627b4cbf1558f31304d834becc3161ce",
+   "support"
+  ],
   "streams/piping/multiple-propagation.dedicatedworker.html": [
    "ef3d8a0ab031c3e25c6fcd083e7361a449ed671d",
    "testharness"
+  ],
+  "streams/piping/multiple-propagation.https-expected.txt": [
+   "350ef7e6627b4cbf1558f31304d834becc3161ce",
+   "support"
   ],
   "streams/piping/multiple-propagation.https.html": [
    "a0c329fc93126deca9a1fa354ae536fdbe20d5a7",
@@ -53667,37 +54372,69 @@
    "c2a5c855e9abbacfe500a9339ff586a16bb8ae7a",
    "support"
   ],
+  "streams/piping/multiple-propagation.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/piping/multiple-propagation.serviceworker.html": [
    "b1ec8a36de6b683fcfc9b3af35f7544d4806bdb6",
    "testharness"
+  ],
+  "streams/piping/multiple-propagation.sharedworker-expected.txt": [
+   "350ef7e6627b4cbf1558f31304d834becc3161ce",
+   "support"
   ],
   "streams/piping/multiple-propagation.sharedworker.html": [
    "a2aaf43f0d2eb831bd9f8e379fbf0076eee76633",
    "testharness"
   ],
+  "streams/piping/pipe-through.dedicatedworker-expected.txt": [
+   "b1e36e9438f5afd1093f58ef115d9f497811e45e",
+   "support"
+  ],
   "streams/piping/pipe-through.dedicatedworker.html": [
    "ed05dd7416cc07e178e481375c2372ce1094905e",
    "testharness"
   ],
+  "streams/piping/pipe-through.https-expected.txt": [
+   "b1e36e9438f5afd1093f58ef115d9f497811e45e",
+   "support"
+  ],
   "streams/piping/pipe-through.https.html": [
-   "f1a4d8c45c41de6dcd3e323288d8304e9d4d7e28",
+   "ef036e94d09d47d1dc160a38ee6be2499431bf5f",
    "testharness"
   ],
   "streams/piping/pipe-through.js": [
-   "0ec8fff36dda5420dfbc06fd419d96d9bbcbfae7",
+   "7506ed68f5b64d7339af19cacd5d1d1201e1e5f7",
+   "support"
+  ],
+  "streams/piping/pipe-through.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/piping/pipe-through.serviceworker.html": [
    "e6604dc4e7f4404ee9dea5ab237fb4636bf9e85a",
    "testharness"
   ],
+  "streams/piping/pipe-through.sharedworker-expected.txt": [
+   "b1e36e9438f5afd1093f58ef115d9f497811e45e",
+   "support"
+  ],
   "streams/piping/pipe-through.sharedworker.html": [
    "8ecb019e754fd4239cb35c27787897efc2dacccb",
    "testharness"
   ],
+  "streams/piping/transform-streams.dedicatedworker-expected.txt": [
+   "bf4796f48fee73c9f766ab40e9c498db7d8a8af2",
+   "support"
+  ],
   "streams/piping/transform-streams.dedicatedworker.html": [
    "bd73374617b11acfcaecbf478ad050ab8621754a",
    "testharness"
+  ],
+  "streams/piping/transform-streams.https-expected.txt": [
+   "bf4796f48fee73c9f766ab40e9c498db7d8a8af2",
+   "support"
   ],
   "streams/piping/transform-streams.https.html": [
    "b440ca628c12437ab81141960a0ce45c348d4a54",
@@ -53707,17 +54444,33 @@
    "959fba02af575535546fe94c685902dcf39f36bf",
    "support"
   ],
+  "streams/piping/transform-streams.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/piping/transform-streams.serviceworker.html": [
    "2aa56e69ebdceb784921a6486bffce43e43a99a9",
    "testharness"
+  ],
+  "streams/piping/transform-streams.sharedworker-expected.txt": [
+   "bf4796f48fee73c9f766ab40e9c498db7d8a8af2",
+   "support"
   ],
   "streams/piping/transform-streams.sharedworker.html": [
    "005490d4fc62797e432b03c33c349d9136815625",
    "testharness"
   ],
+  "streams/readable-byte-streams/general.dedicatedworker-expected.txt": [
+   "2733ed7714db628e3d92947717d41e2f50f7aabd",
+   "support"
+  ],
   "streams/readable-byte-streams/general.dedicatedworker.html": [
    "8583d80450b090c16ed0795170340d040449bbc1",
    "testharness"
+  ],
+  "streams/readable-byte-streams/general.https-expected.txt": [
+   "2733ed7714db628e3d92947717d41e2f50f7aabd",
+   "support"
   ],
   "streams/readable-byte-streams/general.https.html": [
    "9e349695974543b322e5c1447352e0ab4dc490e6",
@@ -53727,9 +54480,17 @@
    "dd559f461e21ba39f5d66a6a8f84d501f12cdb07",
    "support"
   ],
+  "streams/readable-byte-streams/general.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/readable-byte-streams/general.serviceworker.html": [
    "1792d6c45a5687777291a4dab031a954aa053752",
    "testharness"
+  ],
+  "streams/readable-byte-streams/general.sharedworker-expected.txt": [
+   "2733ed7714db628e3d92947717d41e2f50f7aabd",
+   "support"
   ],
   "streams/readable-byte-streams/general.sharedworker.html": [
    "44f9ceaa3bfc9d8b92885997d322486bd0f237a6",
@@ -53745,6 +54506,10 @@
   ],
   "streams/readable-streams/bad-strategies.js": [
    "9db83c2d08b8439042472c9760691531df14281d",
+   "support"
+  ],
+  "streams/readable-streams/bad-strategies.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/readable-streams/bad-strategies.serviceworker.html": [
@@ -53767,6 +54532,10 @@
    "514eba2a237991d057014da7defc613714d5273e",
    "support"
   ],
+  "streams/readable-streams/bad-underlying-sources.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/readable-streams/bad-underlying-sources.serviceworker.html": [
    "2e8501ec4c83340149486ea1f19d35a3c90d85e9",
    "testharness"
@@ -53785,6 +54554,10 @@
   ],
   "streams/readable-streams/brand-checks.js": [
    "b3d64fa1a34d38a56451722efdc1d66b2227503d",
+   "support"
+  ],
+  "streams/readable-streams/brand-checks.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/readable-streams/brand-checks.serviceworker.html": [
@@ -53807,6 +54580,10 @@
    "de3fc5a6a025a8ae42cb4870200af196d844e818",
    "support"
   ],
+  "streams/readable-streams/cancel.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/readable-streams/cancel.serviceworker.html": [
    "815c9b14a88bb84526e3ea0b93ba8d74bb57838a",
    "testharness"
@@ -53825,6 +54602,10 @@
   ],
   "streams/readable-streams/count-queuing-strategy-integration.js": [
    "3d86d9fa09d8f8615d1e6af182e9649675bc6e12",
+   "support"
+  ],
+  "streams/readable-streams/count-queuing-strategy-integration.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/readable-streams/count-queuing-strategy-integration.serviceworker.html": [
@@ -53847,6 +54628,10 @@
    "1f6fdea9689eb6a21d3fd6a0be362aaed642fda9",
    "support"
   ],
+  "streams/readable-streams/garbage-collection.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/readable-streams/garbage-collection.serviceworker.html": [
    "c35eb996cbf796eadbb52f4a3288c8452765b952",
    "testharness"
@@ -53854,6 +54639,10 @@
   "streams/readable-streams/garbage-collection.sharedworker.html": [
    "d22e9b8bc231b3c00be2de557c0f91dbb76dcd81",
    "testharness"
+  ],
+  "streams/readable-streams/general.dedicatedworker-expected.txt": [
+   "9cf94a3ca917ad6cf576f91fb73965fabd7ad83e",
+   "support"
   ],
   "streams/readable-streams/general.dedicatedworker.html": [
    "8583d80450b090c16ed0795170340d040449bbc1",
@@ -53867,13 +54656,25 @@
    "21bc74e707c6faa045ffee6211065e3f8d32b211",
    "support"
   ],
+  "streams/readable-streams/general.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/readable-streams/general.serviceworker.html": [
    "1792d6c45a5687777291a4dab031a954aa053752",
    "testharness"
   ],
+  "streams/readable-streams/general.sharedworker-expected.txt": [
+   "9cf94a3ca917ad6cf576f91fb73965fabd7ad83e",
+   "support"
+  ],
   "streams/readable-streams/general.sharedworker.html": [
    "44f9ceaa3bfc9d8b92885997d322486bd0f237a6",
    "testharness"
+  ],
+  "streams/readable-streams/pipe-through.dedicatedworker-expected.txt": [
+   "c16e012b228fa7423e443954c95c36a33a5adfaf",
+   "support"
   ],
   "streams/readable-streams/pipe-through.dedicatedworker.html": [
    "ed05dd7416cc07e178e481375c2372ce1094905e",
@@ -53887,9 +54688,17 @@
    "1fdceec0fdec41293e411e7263fec1bf8f397853",
    "support"
   ],
+  "streams/readable-streams/pipe-through.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/readable-streams/pipe-through.serviceworker.html": [
    "e6604dc4e7f4404ee9dea5ab237fb4636bf9e85a",
    "testharness"
+  ],
+  "streams/readable-streams/pipe-through.sharedworker-expected.txt": [
+   "c16e012b228fa7423e443954c95c36a33a5adfaf",
+   "support"
   ],
   "streams/readable-streams/pipe-through.sharedworker.html": [
    "8ecb019e754fd4239cb35c27787897efc2dacccb",
@@ -53905,6 +54714,10 @@
   ],
   "streams/readable-streams/readable-stream-reader.js": [
    "76fbfc44284d6197edbcb3b54d1dba93fa142858",
+   "support"
+  ],
+  "streams/readable-streams/readable-stream-reader.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/readable-streams/readable-stream-reader.serviceworker.html": [
@@ -53927,6 +54740,10 @@
    "2753f823f65c3c536c203fe60a8cd2319b54f427",
    "support"
   ],
+  "streams/readable-streams/tee.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/readable-streams/tee.serviceworker.html": [
    "d99b0e2bf22cbf2ed0ba27f51e3d944c34ca6ae5",
    "testharness"
@@ -53934,6 +54751,10 @@
   "streams/readable-streams/tee.sharedworker.html": [
    "d766db1743ba40112c561f69072c096036c34179",
    "testharness"
+  ],
+  "streams/readable-streams/templated.dedicatedworker-expected.txt": [
+   "b92097406b4a55566ceff5caddf981f244fc3fe1",
+   "support"
   ],
   "streams/readable-streams/templated.dedicatedworker.html": [
    "261d2d62a136be25be0c60c85ac301f2ec0c910e",
@@ -53947,9 +54768,17 @@
    "23a2d98735c9630f56ba0f12dbec6f145c655b6a",
    "support"
   ],
+  "streams/readable-streams/templated.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/readable-streams/templated.serviceworker.html": [
    "82dcb18ef90fb8a957cd2a991cafc598e918e35b",
    "testharness"
+  ],
+  "streams/readable-streams/templated.sharedworker-expected.txt": [
+   "b92097406b4a55566ceff5caddf981f244fc3fe1",
+   "support"
   ],
   "streams/readable-streams/templated.sharedworker.html": [
    "e21d57a0dd02a13b9b93ace6ab2f292f29bd4f93",
@@ -53983,6 +54812,10 @@
    "8b386bb36284d1cd342f29f6b90816584b8a3a60",
    "support"
   ],
+  "streams/writable-streams/aborting.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/writable-streams/aborting.serviceworker.html": [
    "b69530ebf51ccaf781ff78172be2f4607ee22c86",
    "testharness"
@@ -54001,6 +54834,10 @@
   ],
   "streams/writable-streams/bad-strategies.js": [
    "58cf46e9e07c61e2a7d170cb93837b9e16aa66e3",
+   "support"
+  ],
+  "streams/writable-streams/bad-strategies.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/bad-strategies.serviceworker.html": [
@@ -54023,6 +54860,10 @@
    "d031fddb5a84f15c60e09416cd8d45609828691e",
    "support"
   ],
+  "streams/writable-streams/bad-underlying-sinks.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/writable-streams/bad-underlying-sinks.serviceworker.html": [
    "fbddba953d4b50ed43b1e03cab6eb8931db71ffe",
    "testharness"
@@ -54041,6 +54882,10 @@
   ],
   "streams/writable-streams/brand-checks.js": [
    "a9889b29e8265b8d236e54182df9c9052d9ae38d",
+   "support"
+  ],
+  "streams/writable-streams/brand-checks.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/brand-checks.serviceworker.html": [
@@ -54063,6 +54908,10 @@
    "403911220a6f8a0b7f1427f3f1603df55913824d",
    "support"
   ],
+  "streams/writable-streams/byte-length-queuing-strategy.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/writable-streams/byte-length-queuing-strategy.serviceworker.html": [
    "83c7631272f9c04011e179a1d5f2c6744ab09e2d",
    "testharness"
@@ -54081,6 +54930,10 @@
   ],
   "streams/writable-streams/close.js": [
    "36c84563a396556bc3c8515cd7666ef6cc243822",
+   "support"
+  ],
+  "streams/writable-streams/close.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/close.serviceworker.html": [
@@ -54103,6 +54956,10 @@
    "cc69b69308c1c51832488909cf962e580ff1dc3c",
    "support"
   ],
+  "streams/writable-streams/constructor.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/writable-streams/constructor.serviceworker.html": [
    "025f934a714ce8c52df953ba570a527cbcb88399",
    "testharness"
@@ -54121,6 +54978,10 @@
   ],
   "streams/writable-streams/count-queuing-strategy.js": [
    "8b7e7be4fa446e212d4f17180b5bdf3a05c8333c",
+   "support"
+  ],
+  "streams/writable-streams/count-queuing-strategy.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/count-queuing-strategy.serviceworker.html": [
@@ -54143,6 +55004,10 @@
    "b3c2f3296f0b2e37b906027f53a0ce394ad89a20",
    "support"
   ],
+  "streams/writable-streams/general.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/writable-streams/general.serviceworker.html": [
    "1792d6c45a5687777291a4dab031a954aa053752",
    "testharness"
@@ -54163,6 +55028,10 @@
    "936967320da8644a4e6f6fbc903c775249af6710",
    "support"
   ],
+  "streams/writable-streams/start.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
+   "support"
+  ],
   "streams/writable-streams/start.serviceworker.html": [
    "3d8b4b8eb8e1b7dcc6629e82fc0c5eb5e3be8633",
    "testharness"
@@ -54180,7 +55049,11 @@
    "testharness"
   ],
   "streams/writable-streams/write.js": [
-   "0803be92da5943f5956db2cb0ec3edb4a6f53a3e",
+   "6fd8ce8a637f54bfbd6ebbf5f318e613dee6cb13",
+   "support"
+  ],
+  "streams/writable-streams/write.serviceworker-expected.txt": [
+   "04408971a1d82a7d3c990774456381313f1584bb",
    "support"
   ],
   "streams/writable-streams/write.serviceworker.html": [

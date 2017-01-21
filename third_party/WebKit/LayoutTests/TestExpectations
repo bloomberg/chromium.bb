@@ -1646,6 +1646,9 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
+crbug.com/626703 [ Win10 ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-001.xht [ Failure ]
+crbug.com/626703 [ Win10 ] external/csswg-test/css-flexbox-1/flex-minimum-width-flex-items-003.xht [ Failure ]
+crbug.com/626703 [ Win10 ] external/csswg-test/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/selection/dir-manual.html [ Timeout ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-email-add-manual.html [ Timeout ]
 crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] external/wpt/html/semantics/forms/constraints/tooShort-input-search-add-manual.html [ Timeout ]
@@ -1717,7 +1720,6 @@ crbug.com/626703 external/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner.html [ Failure ]
-crbug.com/626703 external/wpt/streams/byte-length-queuing-strategy.https.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/streams/count-queuing-strategy.https.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/streams/readable-streams/bad-strategies.https.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/streams/readable-streams/bad-underlying-sources.https.html [ Timeout Failure ]
