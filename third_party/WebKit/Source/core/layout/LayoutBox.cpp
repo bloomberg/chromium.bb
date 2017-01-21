@@ -1504,7 +1504,7 @@ bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const {
   // TODO(jchaffraix): This function should be rethought as it's called during
   // and outside of the paint phase. Potentially returning different results at
   // different phases.
-  geometry.calculate(*this, nullptr, GlobalPaintNormalPhase,
+  geometry.calculate(*this, nullptr, nullptr, GlobalPaintNormalPhase,
                      style()->backgroundLayers(), backgroundRect);
   if (geometry.hasNonLocalGeometry())
     return false;

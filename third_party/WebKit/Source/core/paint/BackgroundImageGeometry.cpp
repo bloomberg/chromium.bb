@@ -7,6 +7,8 @@
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
+#include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintLayer.h"
@@ -213,13 +215,16 @@ void BackgroundImageGeometry::setRepeatX(const FillLayer& fillLayer,
                                          LayoutUnit unsnappedTileWidth,
                                          LayoutUnit snappedAvailableWidth,
                                          LayoutUnit unsnappedAvailableWidth,
-                                         LayoutUnit extraOffset) {
+                                         LayoutUnit extraOffset,
+                                         LayoutUnit offsetForCell) {
   // We would like to identify the phase as a fraction of the image size in the
   // absence of snapping, then re-apply it to the snapped values. This is to
   // handle large positions.
   if (unsnappedTileWidth) {
-    LayoutUnit computedXPosition = roundedMinimumValueForLength(
-        fillLayer.xPosition(), unsnappedAvailableWidth);
+    LayoutUnit computedXPosition =
+        roundedMinimumValueForLength(fillLayer.xPosition(),
+                                     unsnappedAvailableWidth) -
+        offsetForCell;
     if (fillLayer.backgroundXOrigin() == RightEdge) {
       float numberOfTilesInPosition =
           (snappedAvailableWidth - computedXPosition + extraOffset).toFloat() /
@@ -247,13 +252,16 @@ void BackgroundImageGeometry::setRepeatY(const FillLayer& fillLayer,
                                          LayoutUnit unsnappedTileHeight,
                                          LayoutUnit snappedAvailableHeight,
                                          LayoutUnit unsnappedAvailableHeight,
-                                         LayoutUnit extraOffset) {
+                                         LayoutUnit extraOffset,
+                                         LayoutUnit offsetForCell) {
   // We would like to identify the phase as a fraction of the image size in the
   // absence of snapping, then re-apply it to the snapped values. This is to
   // handle large positions.
   if (unsnappedTileHeight) {
-    LayoutUnit computedYPosition = roundedMinimumValueForLength(
-        fillLayer.yPosition(), unsnappedAvailableHeight);
+    LayoutUnit computedYPosition =
+        roundedMinimumValueForLength(fillLayer.yPosition(),
+                                     unsnappedAvailableHeight) -
+        offsetForCell;
     if (fillLayer.backgroundYOrigin() == BottomEdge) {
       float numberOfTilesInPosition =
           (snappedAvailableHeight - computedYPosition + extraOffset).toFloat() /
@@ -313,8 +321,97 @@ void BackgroundImageGeometry::useFixedAttachment(
   setPhase(LayoutPoint(roundedIntPoint(m_phase)));
 }
 
+enum ColumnGroupDirection { ColumnGroupStart, ColumnGroupEnd };
+
+static void expandToTableColumnGroup(const LayoutTableCell& cell,
+                                     const LayoutTableCol& columnGroup,
+                                     LayoutUnit& value,
+                                     ColumnGroupDirection columnDirection) {
+  auto siblingCell = columnDirection == ColumnGroupStart
+                         ? &LayoutTableCell::previousCell
+                         : &LayoutTableCell::nextCell;
+  for (const auto* sibling = (cell.*siblingCell)(); sibling;
+       sibling = (sibling->*siblingCell)()) {
+    if (cell.table()
+            ->colElementAtAbsoluteColumn(sibling->absoluteColumnIndex())
+            .innermostColOrColGroup()
+            ->enclosingColumnGroup() != columnGroup)
+      break;
+    value += sibling->size().width();
+  }
+}
+
+LayoutPoint BackgroundImageGeometry::getOffsetForCell(
+    const LayoutTableCell& cell,
+    const LayoutBox& positioningBox) {
+  LayoutSize borderSpacing = LayoutSize(cell.table()->hBorderSpacing(),
+                                        cell.table()->vBorderSpacing());
+  if (positioningBox.isTableSection())
+    return cell.location() - borderSpacing;
+  if (positioningBox.isTableRow()) {
+    return LayoutPoint(cell.location().x(), LayoutUnit()) -
+           LayoutSize(borderSpacing.width(), LayoutUnit());
+  }
+
+  LayoutRect sectionsRect(LayoutPoint(), cell.table()->size());
+  cell.table()->subtractCaptionRect(sectionsRect);
+  LayoutUnit heightOfCaptions =
+      cell.table()->size().height() - sectionsRect.height();
+  LayoutPoint offsetInBackground = LayoutPoint(
+      LayoutUnit(), (cell.section()->location().y() -
+                     cell.table()->borderBefore() - heightOfCaptions) +
+                        cell.location().y());
+
+  DCHECK(positioningBox.isLayoutTableCol());
+  if (toLayoutTableCol(positioningBox).isTableColumn()) {
+    return offsetInBackground -
+           LayoutSize(LayoutUnit(), borderSpacing.height());
+  }
+
+  DCHECK(toLayoutTableCol(positioningBox).isTableColumnGroup());
+  LayoutUnit offset = offsetInBackground.x();
+  expandToTableColumnGroup(cell, toLayoutTableCol(positioningBox), offset,
+                           ColumnGroupStart);
+  offsetInBackground.move(offset, LayoutUnit());
+  return offsetInBackground - LayoutSize(LayoutUnit(), borderSpacing.height());
+}
+
+LayoutSize BackgroundImageGeometry::getBackgroundObjectDimensions(
+    const LayoutTableCell& cell,
+    const LayoutBox& positioningBox) {
+  LayoutSize borderSpacing = LayoutSize(cell.table()->hBorderSpacing(),
+                                        cell.table()->vBorderSpacing());
+  if (positioningBox.isTableSection())
+    return positioningBox.size() - borderSpacing - borderSpacing;
+
+  if (positioningBox.isTableRow()) {
+    return positioningBox.size() -
+           LayoutSize(borderSpacing.width(), LayoutUnit()) -
+           LayoutSize(borderSpacing.width(), LayoutUnit());
+  }
+
+  DCHECK(positioningBox.isLayoutTableCol());
+  LayoutRect sectionsRect(LayoutPoint(), cell.table()->size());
+  cell.table()->subtractCaptionRect(sectionsRect);
+  LayoutUnit columnHeight = sectionsRect.height() -
+                            cell.table()->borderBefore() -
+                            borderSpacing.height() - borderSpacing.height();
+  if (toLayoutTableCol(positioningBox).isTableColumn())
+    return LayoutSize(cell.size().width(), columnHeight);
+
+  DCHECK(toLayoutTableCol(positioningBox).isTableColumnGroup());
+  LayoutUnit width = cell.size().width();
+  expandToTableColumnGroup(cell, toLayoutTableCol(positioningBox), width,
+                           ColumnGroupStart);
+  expandToTableColumnGroup(cell, toLayoutTableCol(positioningBox), width,
+                           ColumnGroupEnd);
+
+  return LayoutSize(width, columnHeight);
+}
+
 void BackgroundImageGeometry::calculate(
     const LayoutBoxModelObject& obj,
+    const LayoutObject* backgroundObject,
     const LayoutBoxModelObject* paintContainer,
     const GlobalPaintFlags globalPaintFlags,
     const FillLayer& fillLayer,
@@ -332,9 +429,19 @@ void BackgroundImageGeometry::calculate(
     DCHECK(documentElement->layoutObject()->isBox());
     rootBox = toLayoutBox(documentElement->layoutObject());
   }
-  const LayoutBoxModelObject& positioningBox =
-      isLayoutView ? static_cast<const LayoutBoxModelObject&>(*rootBox) : obj;
 
+  bool cellUsingContainerBackground =
+      obj.isTableCell() && backgroundObject && !backgroundObject->isTableCell();
+  const LayoutBoxModelObject& positioningBox =
+      isLayoutView ? *rootBox
+                   : cellUsingContainerBackground
+                         ? toLayoutBoxModelObject(*backgroundObject)
+                         : obj;
+  LayoutPoint offsetInBackground =
+      cellUsingContainerBackground
+          ? getOffsetForCell(toLayoutTableCell(obj),
+                             toLayoutBox(positioningBox))
+          : LayoutPoint();
   // Determine the background positioning area and set destRect to the
   // background painting area.  destRect will be adjusted later if the
   // background is non-repeating.
@@ -374,8 +481,7 @@ void BackgroundImageGeometry::calculate(
       // entire canvas and will be painted by the view object, but the we should
       // still use the root element box for positioning.
       positioningAreaSize =
-          rootBox->size() - LayoutSize(left + right, top + bottom),
-      rootBox->location();
+          rootBox->size() - LayoutSize(left + right, top + bottom);
       // The input paint rect is specified in root element local coordinate
       // (i.e. a transform is applied on the context for painting), and is
       // expanded to cover the whole canvas.  Since left/top is relative to the
@@ -384,7 +490,11 @@ void BackgroundImageGeometry::calculate(
       top -= paintRect.y();
     } else {
       positioningAreaSize =
-          paintRect.size() - LayoutSize(left + right, top + bottom);
+          (cellUsingContainerBackground
+               ? getBackgroundObjectDimensions(toLayoutTableCell(obj),
+                                               toLayoutBox(positioningBox))
+               : paintRect.size()) -
+          LayoutSize(left + right, top + bottom);
     }
   } else {
     setHasNonLocalGeometry();
@@ -430,7 +540,8 @@ void BackgroundImageGeometry::calculate(
       positioningAreaSize.height() - tileSize().height();
 
   LayoutUnit computedXPosition =
-      roundedMinimumValueForLength(fillLayer.xPosition(), availableWidth);
+      roundedMinimumValueForLength(fillLayer.xPosition(), availableWidth) -
+      offsetInBackground.x();
   if (backgroundRepeatX == RoundFill &&
       positioningAreaSize.width() > LayoutUnit() &&
       fillTileSize.width() > LayoutUnit()) {
@@ -456,7 +567,8 @@ void BackgroundImageGeometry::calculate(
   }
 
   LayoutUnit computedYPosition =
-      roundedMinimumValueForLength(fillLayer.yPosition(), availableHeight);
+      roundedMinimumValueForLength(fillLayer.yPosition(), availableHeight) -
+      offsetInBackground.y();
   if (backgroundRepeatY == RoundFill &&
       positioningAreaSize.height() > LayoutUnit() &&
       fillTileSize.height() > LayoutUnit()) {
@@ -482,7 +594,7 @@ void BackgroundImageGeometry::calculate(
 
   if (backgroundRepeatX == RepeatFill) {
     setRepeatX(fillLayer, fillTileSize.width(), availableWidth,
-               unsnappedAvailableWidth, left);
+               unsnappedAvailableWidth, left, offsetInBackground.x());
   } else if (backgroundRepeatX == SpaceFill &&
              tileSize().width() > LayoutUnit()) {
     LayoutUnit space = getSpaceBetweenImageTiles(positioningAreaSize.width(),
@@ -497,11 +609,13 @@ void BackgroundImageGeometry::calculate(
                              ? availableWidth - computedXPosition
                              : computedXPosition;
     setNoRepeatX(left + xOffset);
+    if (offsetInBackground.x() > tileSize().width())
+      setDestRect(LayoutRect());
   }
 
   if (backgroundRepeatY == RepeatFill) {
     setRepeatY(fillLayer, fillTileSize.height(), availableHeight,
-               unsnappedAvailableHeight, top);
+               unsnappedAvailableHeight, top, offsetInBackground.y());
   } else if (backgroundRepeatY == SpaceFill &&
              tileSize().height() > LayoutUnit()) {
     LayoutUnit space = getSpaceBetweenImageTiles(positioningAreaSize.height(),
@@ -516,6 +630,8 @@ void BackgroundImageGeometry::calculate(
                              ? availableHeight - computedYPosition
                              : computedYPosition;
     setNoRepeatY(top + yOffset);
+    if (offsetInBackground.y() > tileSize().height())
+      setDestRect(LayoutRect());
   }
 
   if (fixedAttachment)

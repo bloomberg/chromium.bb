@@ -14,8 +14,11 @@
 namespace blink {
 
 class FillLayer;
+class LayoutBox;
 class LayoutBoxModelObject;
+class LayoutObject;
 class LayoutRect;
+class LayoutTableCell;
 
 class BackgroundImageGeometry {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -24,6 +27,7 @@ class BackgroundImageGeometry {
   BackgroundImageGeometry() : m_hasNonLocalGeometry(false) {}
 
   void calculate(const LayoutBoxModelObject&,
+                 const LayoutObject* backgroundObject,
                  const LayoutBoxModelObject* paintContainer,
                  const GlobalPaintFlags,
                  const FillLayer&,
@@ -66,8 +70,10 @@ class BackgroundImageGeometry {
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit,
+                  LayoutUnit,
                   LayoutUnit);
   void setRepeatY(const FillLayer&,
+                  LayoutUnit,
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit,
@@ -77,6 +83,9 @@ class BackgroundImageGeometry {
 
   void useFixedAttachment(const LayoutPoint& attachmentPoint);
   void setHasNonLocalGeometry() { m_hasNonLocalGeometry = true; }
+  LayoutPoint getOffsetForCell(const LayoutTableCell&, const LayoutBox&);
+  LayoutSize getBackgroundObjectDimensions(const LayoutTableCell&,
+                                           const LayoutBox&);
 
   // TODO(schenney): Convert these to IntPoints for values that we snap
   LayoutRect m_destRect;

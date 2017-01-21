@@ -518,6 +518,9 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
                                  SkBlendMode op,
                                  const LayoutObject* backgroundObject,
                                  Optional<BackgroundImageGeometry>& geometry) {
+  // Painting a background image from an ancestor onto a cell is a complex case.
+  if (obj.isTableCell() && backgroundObject && !backgroundObject->isTableCell())
+    return false;
   // Complex cases not handled on the fast path.
   if (!info.isBottomLayer || !info.isBorderFill ||
       info.isClippedWithLocalScrolling)
@@ -533,7 +536,7 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
   if (info.shouldPaintImage) {
     DCHECK(!geometry);
     geometry.emplace();
-    geometry->calculate(obj, paintInfo.paintContainer(),
+    geometry->calculate(obj, backgroundObject, paintInfo.paintContainer(),
                         paintInfo.getGlobalPaintFlags(), layer, rect);
 
     if (!geometry->destRect().isEmpty()) {
@@ -743,7 +746,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
   if (info.shouldPaintImage) {
     if (!geometry) {
       geometry.emplace();
-      geometry->calculate(obj, paintInfo.paintContainer(),
+      geometry->calculate(obj, backgroundObject, paintInfo.paintContainer(),
                           paintInfo.getGlobalPaintFlags(), bgLayer,
                           scrolledPaintRect);
     } else {
