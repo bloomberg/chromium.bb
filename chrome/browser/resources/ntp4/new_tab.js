@@ -90,9 +90,6 @@ cr.define('ntp', function() {
     }
     measureNavDots();
 
-    // Load the current theme colors.
-    themeChanged();
-
     newTabView = new NewTabView();
 
     if (!loadTimeData.getBoolean('showWebStoreIcon')) {
