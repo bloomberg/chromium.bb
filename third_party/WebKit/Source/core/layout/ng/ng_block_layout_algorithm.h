@@ -21,7 +21,6 @@ class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
 class NGBoxFragment;
 class NGFragmentBuilder;
-class NGOutOfFlowLayoutPart;
 class NGPhysicalFragment;
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -50,7 +49,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Creates a new constraint space for the current child.
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild() const;
   void FinishCurrentChildLayout(NGFragment* fragment);
-  bool LayoutOutOfFlowChild();
+  HeapLinkedHashSet<WeakMember<NGBlockNode>> LayoutOutOfFlowChildren();
 
   // Proceed to the next sibling that still needs layout.
   //
@@ -158,11 +157,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   Member<NGConstraintSpaceBuilder> space_builder_;
   Member<NGConstraintSpace> space_for_current_child_;
   Member<NGBlockNode> current_child_;
-
-  Member<NGOutOfFlowLayoutPart> out_of_flow_layout_;
-  HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_candidates_;
-  Vector<NGStaticPosition> out_of_flow_candidate_positions_;
-  size_t out_of_flow_candidate_positions_index_;
 
   // Mapper from the fragmented flow coordinate space coordinates to visual
   // coordinates. Only set on fragmentation context roots, such as multicol

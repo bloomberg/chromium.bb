@@ -80,13 +80,12 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   void UpdateLayoutBox(NGPhysicalBoxFragment* fragment,
                        const NGConstraintSpace* constraint_space);
-
- private:
   // This is necessary for interop between old and new trees -- after our parent
   // positions us, it calls this function so we can store the position on the
   // underlying LayoutBox.
   void PositionUpdated();
 
+ private:
   bool CanUseNewLayout();
   bool HasInlineChildren();
 
