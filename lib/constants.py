@@ -967,6 +967,7 @@ PFQ_MASTER = 'master-chromium-pfq'
 BINHOST_PRE_CQ = 'binhost-pre-cq'
 WIFICELL_PRE_CQ = 'wificell-pre-cq'
 ANDROID_PFQ_MASTER = 'master-android-pfq'
+TOOLCHAIN_MASTTER = 'master-toolchain'
 
 
 # Email validation regex. Not quite fully compliant with RFC 2822, but good
