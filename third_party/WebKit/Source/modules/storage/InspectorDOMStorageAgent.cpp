@@ -94,6 +94,20 @@ Response InspectorDOMStorageAgent::disable() {
   return Response::OK();
 }
 
+Response InspectorDOMStorageAgent::clear(
+    std::unique_ptr<protocol::DOMStorage::StorageId> storageId) {
+  LocalFrame* frame = nullptr;
+  StorageArea* storageArea = nullptr;
+  Response response = findStorageArea(std::move(storageId), frame, storageArea);
+  if (!response.isSuccess())
+    return response;
+  DummyExceptionStateForTesting exceptionState;
+  storageArea->clear(exceptionState, frame);
+  if (exceptionState.hadException())
+    return Response::Error("Could not clear the storage");
+  return Response::OK();
+}
+
 Response InspectorDOMStorageAgent::getDOMStorageItems(
     std::unique_ptr<protocol::DOMStorage::StorageId> storageId,
     std::unique_ptr<protocol::Array<protocol::Array<String>>>* items) {
