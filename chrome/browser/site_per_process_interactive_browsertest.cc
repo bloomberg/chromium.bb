@@ -149,6 +149,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::RenderFrameHost* child =
       ChildFrameAt(web_contents->GetMainFrame(), 0);
   std::string result;
+  std::string script =
+      "function onInput(e) {"
+      "  domAutomationController.setAutomationId(0);"
+      "  domAutomationController.send(getInputFieldText());"
+      "}"
+      "inputField = document.getElementById('text-field');"
+      "inputField.addEventListener('input', onInput, false);";
+  EXPECT_TRUE(ExecuteScript(child, script));
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       child, "window.focus(); focusInputField();", &result));
   EXPECT_EQ("input-focus", result);
@@ -157,18 +165,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ(child, web_contents->GetFocusedFrame());
 
   // Generate a few keyboard events and route them to currently focused frame.
+  // We wait for replies to be sent back from the page, since keystrokes may
+  // take time to propagate to the renderer's main thread.
+  content::DOMMessageQueue msg_queue;
+  std::string reply;
   SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('f'),
                    ui::DomCode::US_F, ui::VKEY_F, false, false, false, false);
-  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
-                   ui::DomCode::US_O, ui::VKEY_O, false, false, false, false);
-  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
-                   ui::DomCode::US_O, ui::VKEY_O, false, false, false, false);
+  EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+  EXPECT_EQ("\"F\"", reply);
 
-  // Verify that the input field in the subframe received the keystrokes.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      child,
-      "window.domAutomationController.send(getInputFieldText());", &result));
-  EXPECT_EQ("FOO", result);
+  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
+                   ui::DomCode::US_O, ui::VKEY_O, false, false, false, false);
+  EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+  EXPECT_EQ("\"FO\"", reply);
+
+  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
+                   ui::DomCode::US_O, ui::VKEY_O, false, false, false, false);
+  EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+  EXPECT_EQ("\"FOO\"", reply);
 }
 
 // Ensure that sequential focus navigation (advancing focused elements with

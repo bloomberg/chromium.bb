@@ -18,7 +18,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -122,8 +121,7 @@ class CONTENT_EXPORT RenderViewImpl
     : public RenderWidget,
       NON_EXPORTED_BASE(public blink::WebViewClient),
       public RenderWidgetOwnerDelegate,
-      public RenderView,
-      public base::SupportsWeakPtr<RenderViewImpl> {
+      public RenderView {
  public:
   // Creates a new RenderView. Note that if the original opener has been closed,
   // |params.window_was_created_with_opener| will be true and
@@ -213,7 +211,7 @@ class CONTENT_EXPORT RenderViewImpl
   void AttachWebFrameWidget(blink::WebFrameWidget* frame_widget);
 
   void TransferActiveWheelFlingAnimation(
-      const blink::WebActiveWheelFlingParameters& params);
+      const blink::WebActiveWheelFlingParameters& params) override;
 
   // Starts a timer to send an UpdateState message on behalf of |frame|, if the
   // timer isn't already running. This allows multiple state changing events to
@@ -393,6 +391,10 @@ class CONTENT_EXPORT RenderViewImpl
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
   // nearer to the top you can add it to.
+
+  base::WeakPtr<RenderViewImpl> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  protected:
   // RenderWidget overrides:
@@ -833,8 +835,6 @@ class CONTENT_EXPORT RenderViewImpl
   typedef std::map<cc::SharedBitmapId, cc::SharedBitmap*> BitmapMap;
   BitmapMap disambiguation_bitmaps_;
 
-  bool has_added_input_handler_;
-
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above
   // sections rather than throwing it randomly at the end. If you're adding a
@@ -843,6 +843,8 @@ class CONTENT_EXPORT RenderViewImpl
   // use the Observer interface to filter IPC messages and receive frame change
   // notifications.
   // ---------------------------------------------------------------------------
+
+  base::WeakPtrFactory<RenderViewImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewImpl);
 };

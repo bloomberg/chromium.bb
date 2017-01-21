@@ -1343,14 +1343,20 @@ void FrameLoader::commitProvisionalLoad() {
   if (!prepareForCommit())
     return;
 
-  if (isLoadingMainFrame()) {
+  // If we are loading the mainframe, or a frame that is a local root, it is
+  // important to explicitly set the event listenener properties to Nothing as
+  // this triggers notifications to the client. Clients may assume the presence
+  // of handlers for touch and wheel events, so these notifications tell it
+  // there are (presently) no handlers.
+  if (m_frame->isLocalRoot()) {
     m_frame->page()->chromeClient().setEventListenerProperties(
-        WebEventListenerClass::TouchStartOrMove,
+        m_frame, WebEventListenerClass::TouchStartOrMove,
         WebEventListenerProperties::Nothing);
     m_frame->page()->chromeClient().setEventListenerProperties(
-        WebEventListenerClass::MouseWheel, WebEventListenerProperties::Nothing);
+        m_frame, WebEventListenerClass::MouseWheel,
+        WebEventListenerProperties::Nothing);
     m_frame->page()->chromeClient().setEventListenerProperties(
-        WebEventListenerClass::TouchEndOrCancel,
+        m_frame, WebEventListenerClass::TouchEndOrCancel,
         WebEventListenerProperties::Nothing);
   }
 

@@ -200,14 +200,16 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
   void attachRootLayer(WebLayer*, LocalFrame* localRoot) override {}
 
-  void setEventListenerProperties(WebEventListenerClass,
+  void setEventListenerProperties(LocalFrame*,
+                                  WebEventListenerClass,
                                   WebEventListenerProperties) override {}
   WebEventListenerProperties eventListenerProperties(
-      WebEventListenerClass) const override {
+      LocalFrame*,
+      WebEventListenerClass eventClass) const override {
     return WebEventListenerProperties::Nothing;
   }
-  void setHasScrollEventHandlers(bool) override {}
-  bool hasScrollEventHandlers() const override { return false; }
+  void updateTouchRectsForSubframeIfNecessary(LocalFrame* frame) override {}
+  void setHasScrollEventHandlers(LocalFrame*, bool) override {}
 
   void setTouchAction(LocalFrame*, TouchAction) override {}
 

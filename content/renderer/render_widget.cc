@@ -97,6 +97,7 @@
 
 #if defined(OS_ANDROID)
 #include <android/keycodes.h>
+#include "base/time/time.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -381,11 +382,13 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       frame_swap_message_queue_(new FrameSwapMessageQueue()),
       resizing_mode_selector_(new ResizingModeSelector()),
       has_host_context_menu_location_(false),
+      has_added_input_handler_(false),
       has_focus_(false),
 #if defined(OS_MACOSX)
       text_input_client_observer_(new TextInputClientObserver(this)),
 #endif
-      focused_pepper_plugin_(nullptr) {
+      focused_pepper_plugin_(nullptr),
+      weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
@@ -434,7 +437,7 @@ RenderWidget* RenderWidget::CreateForPopup(
       new RenderWidget(routing_id, compositor_deps, popup_type, screen_info,
                        false, false, false));
   ShowCallback opener_callback =
-      base::Bind(&RenderViewImpl::ShowCreatedPopupWidget, opener->AsWeakPtr());
+      base::Bind(&RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
   widget->Init(opener_callback, RenderWidget::CreateWebWidget(widget.get()));
   DCHECK(!widget->HasOneRef());  // RenderWidget::Init() adds a reference.
   return widget.get();
@@ -1241,6 +1244,7 @@ blink::WebLayerTreeView* RenderWidget::initializeLayerTreeView() {
   compositor_->Initialize(std::move(layer_tree_host),
                           std::move(animation_host));
 
+  compositor_->SetIsForOopif(for_oopif_);
   compositor_->setViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
   compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());
@@ -1253,6 +1257,18 @@ blink::WebLayerTreeView* RenderWidget::initializeLayerTreeView() {
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
   compositor_->SetFrameSinkId(
       cc::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  // render_thread may be NULL in tests.
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager) {
+    input_handler_manager->AddInputHandler(
+        routing_id_, compositor()->GetInputHandler(),
+        weak_ptr_factory_.GetWeakPtr(),
+        compositor_deps_->IsScrollAnimatorEnabled());
+    has_added_input_handler_ = true;
+  }
 
   return compositor_.get();
 }
@@ -2185,7 +2201,6 @@ void RenderWidget::hasTouchEventHandlers(bool has_handlers) {
 
 void RenderWidget::setTouchAction(
     blink::WebTouchAction web_touch_action) {
-
   // Ignore setTouchAction calls that result from synthetic touch events (eg.
   // when blink is emulating touch with mouse).
   if (input_handler_->handling_event_type() != WebInputEvent::TouchStart)

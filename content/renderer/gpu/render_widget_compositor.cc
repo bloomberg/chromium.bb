@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
+#include "cc/base/region.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/debug/layer_tree_debug_state.h"
@@ -204,6 +205,7 @@ RenderWidgetCompositor::RenderWidgetCompositor(
       compositor_deps_(compositor_deps),
       threaded_(!!compositor_deps_->GetCompositorImplThreadTaskRunner()),
       never_visible_(false),
+      is_for_oopif_(false),
       layout_and_paint_async_callback_(nullptr),
       weak_factory_(this) {}
 
@@ -832,6 +834,37 @@ void RenderWidgetCompositor::setEventListenerProperties(
       static_cast<cc::EventListenerProperties>(properties));
 }
 
+void RenderWidgetCompositor::updateTouchRectsForSubframeIfNecessary() {
+  if (!is_for_oopif_)
+    return;
+
+  // If this is an oopif sub-frame compositor, we won't be getting TouchRects
+  // from ScrollingCoordinator, so to make sure touch events are handled
+  // properly, mark the entire root layer as a TouchRect.
+  // TODO(wjmaclean): remove this when ScrollingCoordinator is made per-frame,
+  // as opposed to per-page.
+  using blink::WebEventListenerProperties;
+  using blink::WebEventListenerClass;
+
+  blink::WebEventListenerProperties touch_start_properties =
+      eventListenerProperties(WebEventListenerClass::TouchStartOrMove);
+  blink::WebEventListenerProperties touch_end_cancel_properties =
+      eventListenerProperties(WebEventListenerClass::TouchEndOrCancel);
+  bool has_touch_handlers =
+      touch_start_properties == WebEventListenerProperties::Blocking ||
+      touch_start_properties ==
+          WebEventListenerProperties::BlockingAndPassive ||
+      touch_end_cancel_properties == WebEventListenerProperties::Blocking ||
+      touch_end_cancel_properties ==
+          WebEventListenerProperties::BlockingAndPassive;
+
+  cc::Layer* root_layer = layer_tree_host_->GetLayerTree()->root_layer();
+  cc::Region touch_handler_region;
+  if (has_touch_handlers)
+    touch_handler_region = gfx::Rect(gfx::Point(), root_layer->bounds());
+  root_layer->SetTouchEventHandlerRegion(touch_handler_region);
+}
+
 blink::WebEventListenerProperties
 RenderWidgetCompositor::eventListenerProperties(
     blink::WebEventListenerClass event_class) const {
@@ -1101,6 +1134,10 @@ void RenderWidgetCompositor::SetPaintedDeviceScaleFactor(
 void RenderWidgetCompositor::SetDeviceColorSpace(
     const gfx::ColorSpace& color_space) {
   layer_tree_host_->GetLayerTree()->SetDeviceColorSpace(color_space);
+}
+
+void RenderWidgetCompositor::SetIsForOopif(bool is_for_oopif) {
+  is_for_oopif_ = is_for_oopif;
 }
 
 }  // namespace content

@@ -350,6 +350,11 @@ WebLayerTreeView* TestWebViewWidgetClient::initializeLayerTreeView() {
   return m_testWebViewClient->initializeLayerTreeView();
 }
 
+WebLayerTreeView* TestWebWidgetClient::initializeLayerTreeView() {
+  m_layerTreeView = WTF::makeUnique<WebLayerTreeViewImplForTesting>();
+  return m_layerTreeView.get();
+}
+
 void TestWebViewWidgetClient::scheduleAnimation() {
   m_testWebViewClient->scheduleAnimation();
 }

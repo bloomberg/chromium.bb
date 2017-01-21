@@ -50,6 +50,7 @@ class CompositorDependencies {
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual bool AreImageDecodeTasksEnabled() = 0;
   virtual bool IsThreadedAnimationEnabled() = 0;
+  virtual bool IsScrollAnimatorEnabled() = 0;
 
   virtual ~CompositorDependencies() {}
 };

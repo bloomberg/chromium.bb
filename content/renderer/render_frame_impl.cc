@@ -1349,8 +1349,9 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
                                     &fullscreen_widget_routing_id)) {
     return nullptr;
   }
-  RenderWidget::ShowCallback show_callback = base::Bind(
-      &RenderViewImpl::ShowCreatedFullscreenWidget, render_view()->AsWeakPtr());
+  RenderWidget::ShowCallback show_callback =
+      base::Bind(&RenderViewImpl::ShowCreatedFullscreenWidget,
+                 render_view()->GetWeakPtr());
 
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, show_callback,
