@@ -96,6 +96,13 @@ class PaintArtifactCompositorTestWithPropertyTrees
                 ->property_trees();
   }
 
+  int elementIdToScrollNodeIndex(CompositorElementId elementId) {
+    return m_webLayerTreeView->layerTreeHost()
+        ->GetLayerTree()
+        ->property_trees()
+        ->element_id_to_scroll_node_index[elementId];
+  }
+
   const cc::TransformNode& transformNode(const cc::Layer* layer) {
     return *propertyTrees().transform_tree.Node(layer->transform_tree_index());
   }
@@ -654,9 +661,11 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
       TransformPaintPropertyNode::create(TransformPaintPropertyNode::root(),
                                          TransformationMatrix().translate(7, 9),
                                          FloatPoint3D());
+  CompositorElementId expectedCompositorElementId = CompositorElementId(2, 0);
   RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::create(
       ScrollPaintPropertyNode::root(), scrollTranslation, IntSize(11, 13),
-      IntSize(27, 31), true, false, 0);
+      IntSize(27, 31), true, false, 0 /* mainThreadScrollingReasons */,
+      expectedCompositorElementId);
 
   TestPaintArtifact artifact;
   artifact
@@ -674,6 +683,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   EXPECT_TRUE(scrollNode.user_scrollable_horizontal);
   EXPECT_FALSE(scrollNode.user_scrollable_vertical);
   EXPECT_EQ(1, scrollNode.parent_id);
+  EXPECT_EQ(expectedCompositorElementId, scrollNode.element_id);
+  EXPECT_EQ(scrollNode.id,
+            elementIdToScrollNodeIndex(expectedCompositorElementId));
 
   const cc::TransformTree& transformTree = propertyTrees().transform_tree;
   const cc::TransformNode& transformNode =
@@ -691,6 +703,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   RefPtr<EffectPaintPropertyNode> effect =
       createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
 
+  CompositorElementId expectedCompositorElementIdA = CompositorElementId(2, 0);
+  CompositorElementId expectedCompositorElementIdB = CompositorElementId(3, 0);
   RefPtr<TransformPaintPropertyNode> scrollTranslationA =
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
@@ -698,14 +712,15 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   RefPtr<ScrollPaintPropertyNode> scrollA = ScrollPaintPropertyNode::create(
       ScrollPaintPropertyNode::root(), scrollTranslationA, IntSize(2, 3),
       IntSize(5, 7), false, true,
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
+      expectedCompositorElementIdA);
   RefPtr<TransformPaintPropertyNode> scrollTranslationB =
       TransformPaintPropertyNode::create(
           scrollTranslationA, TransformationMatrix().translate(37, 41),
           FloatPoint3D());
   RefPtr<ScrollPaintPropertyNode> scrollB = ScrollPaintPropertyNode::create(
       scrollA, scrollTranslationB, IntSize(19, 23), IntSize(29, 31), true,
-      false, 0);
+      false, 0 /* mainThreadScrollingReasons */, expectedCompositorElementIdB);
   TestPaintArtifact artifact;
   artifact
       .chunk(scrollTranslationA, ClipPaintPropertyNode::root(), effect, scrollA)
@@ -730,6 +745,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   EXPECT_TRUE(scrollNodeB.user_scrollable_horizontal);
   EXPECT_FALSE(scrollNodeB.user_scrollable_vertical);
   EXPECT_EQ(scrollNodeA.id, scrollNodeB.parent_id);
+  EXPECT_EQ(expectedCompositorElementIdA, scrollNodeA.element_id);
+  EXPECT_EQ(scrollNodeA.id,
+            elementIdToScrollNodeIndex(expectedCompositorElementIdA));
+  EXPECT_EQ(expectedCompositorElementIdB, scrollNodeB.element_id);
+  EXPECT_EQ(scrollNodeB.id,
+            elementIdToScrollNodeIndex(expectedCompositorElementIdB));
 
   const cc::TransformTree& transformTree = propertyTrees().transform_tree;
   const cc::TransformNode& transformNodeA =

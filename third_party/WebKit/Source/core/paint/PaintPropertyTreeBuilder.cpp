@@ -86,6 +86,12 @@ static bool updateScrollTranslation(
   return true;
 }
 
+static CompositorElementId createDomNodeBasedCompositorElementId(
+    const LayoutObject& object) {
+  return createCompositorElementId(DOMNodeIds::idForNode(object.node()),
+                                   CompositorSubElementId::Primary);
+}
+
 // True if a new property was created or a main thread scrolling reason changed
 // (which can affect descendants), false if an existing one was updated.
 static bool updateScroll(
@@ -98,17 +104,21 @@ static bool updateScroll(
     bool userScrollableVertical,
     MainThreadScrollingReasons mainThreadScrollingReasons) {
   DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+
+  CompositorElementId compositorElementId =
+      createDomNodeBasedCompositorElementId(*frameView.layoutView());
   if (auto* existingScroll = frameView.scroll()) {
     auto existingReasons = existingScroll->mainThreadScrollingReasons();
     existingScroll->update(std::move(parent), std::move(scrollOffset), clip,
                            bounds, userScrollableHorizontal,
-                           userScrollableVertical, mainThreadScrollingReasons);
+                           userScrollableVertical, mainThreadScrollingReasons,
+                           compositorElementId);
     return existingReasons != mainThreadScrollingReasons;
   }
   frameView.setScroll(ScrollPaintPropertyNode::create(
       std::move(parent), std::move(scrollOffset), clip, bounds,
       userScrollableHorizontal, userScrollableVertical,
-      mainThreadScrollingReasons));
+      mainThreadScrollingReasons, compositorElementId));
   return true;
 }
 
@@ -347,12 +357,6 @@ static FloatPoint3D transformOrigin(const LayoutBox& box) {
       floatValueForLength(style.transformOriginX(), borderBoxSize.width()),
       floatValueForLength(style.transformOriginY(), borderBoxSize.height()),
       style.transformOriginZ());
-}
-
-static CompositorElementId createDomNodeBasedCompositorElementId(
-    const LayoutObject& object) {
-  return createCompositorElementId(DOMNodeIds::idForNode(object.node()),
-                                   CompositorSubElementId::Primary);
 }
 
 void PaintPropertyTreeBuilder::updateTransform(
@@ -794,10 +798,13 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
             context.forceSubtreeUpdate = true;
         }
 
+        CompositorElementId compositorElementId =
+            createDomNodeBasedCompositorElementId(object);
+
         context.forceSubtreeUpdate |= properties.updateScroll(
             context.current.scroll, properties.scrollTranslation(), scrollClip,
             scrollBounds, userScrollableHorizontal, userScrollableVertical,
-            reasons);
+            reasons, compositorElementId);
       }
     }
 

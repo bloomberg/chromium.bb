@@ -3147,4 +3147,15 @@ TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
   EXPECT_EQ(effect, localBorderBoxProperties->effect());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ScrollNodeHasCompositorElementId) {
+  setBodyInnerHTML(
+      "<div id='target' style='overflow: auto; width: 100px; height: 100px'>"
+      "  <div style='width: 200px; height: 200px'></div>"
+      "</div>");
+
+  const ObjectPaintProperties* properties = paintPropertiesForElement("target");
+  EXPECT_TRUE(properties->scroll());
+  EXPECT_NE(CompositorElementId(), properties->scroll()->compositorElementId());
+}
+
 }  // namespace blink

@@ -134,6 +134,7 @@ void PropertyTreeManager::setupRootScrollNode() {
   cc::ScrollTree& scrollTree = m_propertyTrees.scroll_tree;
   scrollTree.clear();
   m_propertyTrees.layer_id_to_scroll_node_index.clear();
+  m_propertyTrees.element_id_to_scroll_node_index.clear();
   cc::ScrollNode& scrollNode =
       *scrollTree.Node(scrollTree.Insert(cc::ScrollNode(), kRealRootNodeId));
   DCHECK_EQ(scrollNode.id, kSecondaryRootNodeId);
@@ -267,6 +268,11 @@ int PropertyTreeManager::ensureCompositorScrollNode(
       ensureCompositorTransformNode(scrollNode->scrollOffsetTranslation());
   compositorNode.main_thread_scrolling_reasons =
       scrollNode->mainThreadScrollingReasons();
+  CompositorElementId compositorElementId = scrollNode->compositorElementId();
+  if (compositorElementId) {
+    compositorNode.element_id = compositorElementId;
+    m_propertyTrees.element_id_to_scroll_node_index[compositorElementId] = id;
+  }
 
   auto result = m_scrollNodeMap.set(scrollNode, id);
   DCHECK(result.isNewEntry);

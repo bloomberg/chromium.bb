@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "wtf/PassRefPtr.h"
@@ -40,11 +41,12 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       const IntSize& bounds,
       bool userScrollableHorizontal,
       bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons) {
+      MainThreadScrollingReasons mainThreadScrollingReasons,
+      const CompositorElementId& compositorElementId = CompositorElementId()) {
     return adoptRef(new ScrollPaintPropertyNode(
         std::move(parent), std::move(scrollOffsetTranslation), clip, bounds,
         userScrollableHorizontal, userScrollableVertical,
-        mainThreadScrollingReasons));
+        mainThreadScrollingReasons, compositorElementId));
   }
 
   void update(
@@ -54,7 +56,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       const IntSize& bounds,
       bool userScrollableHorizontal,
       bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons) {
+      MainThreadScrollingReasons mainThreadScrollingReasons,
+      CompositorElementId compositorElementId = CompositorElementId()) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
     m_parent = parent;
@@ -65,6 +68,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     m_userScrollableHorizontal = userScrollableHorizontal;
     m_userScrollableVertical = userScrollableVertical;
     m_mainThreadScrollingReasons = mainThreadScrollingReasons;
+    m_compositorElementId = compositorElementId;
   }
 
   const ScrollPaintPropertyNode* parent() const { return m_parent.get(); }
@@ -89,6 +93,10 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return m_mainThreadScrollingReasons;
   }
 
+  const CompositorElementId& compositorElementId() const {
+    return m_compositorElementId;
+  }
+
   // Main thread scrolling reason for the threaded scrolling disabled setting.
   bool threadedScrollingDisabled() const {
     return m_mainThreadScrollingReasons &
@@ -109,7 +117,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         adoptRef(new ScrollPaintPropertyNode(
             m_parent, m_scrollOffsetTranslation, m_clip, m_bounds,
             m_userScrollableHorizontal, m_userScrollableVertical,
-            m_mainThreadScrollingReasons));
+            m_mainThreadScrollingReasons, m_compositorElementId));
     return cloned;
   }
 
@@ -121,7 +129,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
            m_clip == o.m_clip && m_bounds == o.m_bounds &&
            m_userScrollableHorizontal == o.m_userScrollableHorizontal &&
            m_userScrollableVertical == o.m_userScrollableVertical &&
-           m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons;
+           m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons &&
+           m_compositorElementId == o.m_compositorElementId;
   }
 
   String toTreeString() const;
@@ -137,14 +146,16 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       IntSize bounds,
       bool userScrollableHorizontal,
       bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons)
+      MainThreadScrollingReasons mainThreadScrollingReasons,
+      CompositorElementId compositorElementId)
       : m_parent(parent),
         m_scrollOffsetTranslation(scrollOffsetTranslation),
         m_clip(clip),
         m_bounds(bounds),
         m_userScrollableHorizontal(userScrollableHorizontal),
         m_userScrollableVertical(userScrollableVertical),
-        m_mainThreadScrollingReasons(mainThreadScrollingReasons) {
+        m_mainThreadScrollingReasons(mainThreadScrollingReasons),
+        m_compositorElementId(compositorElementId) {
     DCHECK(m_scrollOffsetTranslation->matrix().isIdentityOr2DTranslation());
   }
 
@@ -155,6 +166,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   bool m_userScrollableHorizontal : 1;
   bool m_userScrollableVertical : 1;
   MainThreadScrollingReasons m_mainThreadScrollingReasons;
+  CompositorElementId m_compositorElementId;
 };
 
 // Redeclared here to avoid ODR issues.
