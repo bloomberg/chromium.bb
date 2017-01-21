@@ -170,6 +170,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            Merge2DTransform);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
+                           Merge2DTransformDirectAncestor);
+  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            MergeTransformOrigin);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            MergeClip);

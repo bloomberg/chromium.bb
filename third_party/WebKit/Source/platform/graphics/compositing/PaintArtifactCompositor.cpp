@@ -585,10 +585,10 @@ bool PaintArtifactCompositor::canMergeInto(
   for (const PropertyTreeState* currentState =
            &newChunk.properties.propertyTreeState;
        currentState; currentState = iterator.next()) {
-    if (currentState->hasDirectCompositingReasons())
-      return false;
     if (*currentState == candidatePendingLayer.propertyTreeState)
       return true;
+    if (currentState->hasDirectCompositingReasons())
+      return false;
   }
   return false;
 }
