@@ -145,6 +145,11 @@ bool HttpServer::IsRunning() const {
   return [gcd_web_server_ isRunning];
 }
 
+NSUInteger HttpServer::GetPort() const {
+  base::AutoLock autolock(port_lock_);
+  return port_;
+}
+
 // static
 GURL HttpServer::MakeUrl(const std::string &url) {
   return HttpServer::GetSharedInstance().MakeUrlForHttpServer(url);
@@ -227,11 +232,6 @@ void HttpServer::RemoveAllResponseProviders() {
 void HttpServer::SetPort(NSUInteger port) {
   base::AutoLock autolock(port_lock_);
   port_ = port;
-}
-
-NSUInteger HttpServer::GetPort() const {
-  base::AutoLock autolock(port_lock_);
-  return port_;
 }
 
 } // namespace test

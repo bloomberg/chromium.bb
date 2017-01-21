@@ -422,6 +422,8 @@ source_set("test_support") {
     "public/test/response_providers/html_response_provider.mm",
     "public/test/response_providers/html_response_provider_impl.h",
     "public/test/response_providers/html_response_provider_impl.mm",
+    "public/test/response_providers/http_auth_response_provider.h",
+    "public/test/response_providers/http_auth_response_provider.mm",
     "public/test/response_providers/response_provider.h",
     "public/test/response_providers/response_provider.mm",
     "public/test/response_providers/string_response_provider.h",
@@ -581,6 +583,7 @@ test("ios_web_inttests") {
     "navigation/window_location_inttest.mm",
     "public/test/http_server_inttest.mm",
     "test/run_all_unittests.cc",
+    "web_state/http_auth_inttest.mm",
     "webui/web_ui_mojo_inttest.mm",
   ]
 

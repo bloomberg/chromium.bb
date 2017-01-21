@@ -9,6 +9,7 @@
 
 #import "base/ios/block_types.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -54,6 +55,8 @@ class WebIntTest : public WebTest {
   // Returns the index of |item| in the |navigation_manager|'s session history,
   // or NSNotFound if it is not present.
   NSInteger GetIndexOfNavigationItem(const web::NavigationItem* item);
+
+  web::TestWebStateDelegate web_state_delegate_;
 
  private:
   // WebState used to load pages.

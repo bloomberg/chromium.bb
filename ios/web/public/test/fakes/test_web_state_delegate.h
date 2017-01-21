@@ -65,6 +65,11 @@ class TestWebStateDelegate : public WebStateDelegate {
     return last_authentication_request_.get();
   }
 
+  // Clears the last HTTP Authentication request passed to |OnAuthRequired|.
+  void ClearLastAuthenticationRequest() {
+    last_authentication_request_.reset();
+  }
+
  private:
   bool load_progress_changed_called_ = false;
   bool handle_context_menu_called_ = false;

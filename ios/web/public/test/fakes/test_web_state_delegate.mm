@@ -12,6 +12,9 @@ TestAuthenticationRequest::TestAuthenticationRequest() {}
 
 TestAuthenticationRequest::~TestAuthenticationRequest() = default;
 
+TestAuthenticationRequest::TestAuthenticationRequest(
+    const TestAuthenticationRequest&) = default;
+
 TestWebStateDelegate::TestWebStateDelegate() {}
 
 TestWebStateDelegate::~TestWebStateDelegate() = default;

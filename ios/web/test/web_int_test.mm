@@ -61,10 +61,9 @@ void WebIntTest::SetUp() {
   RemoveWKWebViewCreatedData([WKWebsiteDataStore defaultDataStore],
                              [WKWebsiteDataStore allWebsiteDataTypes]);
 
-  // Create the WebState and its WebStateObserver.
+  // Create the WebState.
   web::WebState::CreateParams web_state_create_params(GetBrowserState());
   web_state_ = web::WebState::Create(web_state_create_params);
-  observer_ = base::WrapUnique(new IntTestWebStateObserver(web_state()));
 
   // Resize the webview so that pages can be properly rendered.
   web_state()->GetView().frame =
@@ -72,6 +71,8 @@ void WebIntTest::SetUp() {
 
   // Enable web usage for the WebState.
   web_state()->SetWebUsageEnabled(true);
+
+  web_state()->SetDelegate(&web_state_delegate_);
 }
 
 void WebIntTest::TearDown() {
@@ -92,6 +93,7 @@ id WebIntTest::ExecuteJavaScript(NSString* script) {
 void WebIntTest::ExecuteBlockAndWaitForLoad(const GURL& url,
                                             ProceduralBlock block) {
   DCHECK(block);
+  observer_ = base::MakeUnique<IntTestWebStateObserver>(web_state());
   observer_->ExpectPageLoad(url);
   block();
   base::test::ios::WaitUntilCondition(^bool {
