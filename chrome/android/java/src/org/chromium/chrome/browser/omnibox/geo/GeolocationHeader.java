@@ -401,6 +401,8 @@ public class GeolocationHeader {
 
     /** Returns the location source. */
     @LocationSource
+    // We should replace our usage of LOCATION_PROVIDERS_ALLOWED when the min API is 19.
+    @SuppressWarnings("deprecation")
     private static int getLocationSource() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             int locationMode;
