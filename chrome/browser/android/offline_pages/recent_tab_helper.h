@@ -22,8 +22,6 @@ class NavigationHandle;
 
 namespace offline_pages {
 
-using PageQuality = SnapshotController::PageQuality;
-
 // Attaches to every WebContent shown in a tab. Waits until the WebContent is
 // loaded to proper degree and then makes a snapshot of the page. Removes the
 // oldest snapshot in the 'ring buffer'. As a result, there is always up to N
@@ -100,7 +98,8 @@ class RecentTabHelper
 
     // Expected snapshot quality should the saving succeed. This value is only
     // valid if |page_snapshot_completed| is true.
-    PageQuality expected_page_quality = PageQuality::POOR;
+    SnapshotController::PageQuality expected_page_quality =
+        SnapshotController::PageQuality::POOR;
   };
 
   explicit RecentTabHelper(content::WebContents* web_contents);
@@ -156,7 +155,8 @@ class RecentTabHelper
 
   // Track the page quality status of the last saved snapshot for the current
   // page. It is generally reset upon new navigations.
-  PageQuality last_n_latest_saved_quality_ = PageQuality::POOR;
+  SnapshotController::PageQuality last_n_latest_saved_quality_ =
+      SnapshotController::PageQuality::POOR;
 
   base::WeakPtrFactory<RecentTabHelper> weak_ptr_factory_;
 

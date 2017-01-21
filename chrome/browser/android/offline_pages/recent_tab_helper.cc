@@ -54,6 +54,8 @@ class DefaultDelegate: public offline_pages::RecentTabHelper::Delegate {
 
 namespace offline_pages {
 
+using PageQuality = SnapshotController::PageQuality;
+
 bool RecentTabHelper::SnapshotProgressInfo::IsForLastN() {
   // A last_n snapshot always has an invalid request id.
   return request_id == OfflinePageModel::kInvalidOfflineId;
@@ -135,7 +137,7 @@ bool RecentTabHelper::EnsureInitialized() {
 
 void RecentTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsSamePage() ||
+  if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted()) {
     return;
   }
