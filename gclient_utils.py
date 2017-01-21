@@ -5,6 +5,7 @@
 """Generic utils."""
 
 import codecs
+import contextlib
 import cStringIO
 import datetime
 import logging
@@ -141,6 +142,16 @@ def FileRead(filename, mode='rU'):
 def FileWrite(filename, content, mode='w'):
   with codecs.open(filename, mode=mode, encoding='utf-8') as f:
     f.write(content)
+
+
+@contextlib.contextmanager
+def temporary_directory(**kwargs):
+  tdir = tempfile.mkdtemp(**kwargs)
+  try:
+    yield tdir
+  finally:
+    if tdir:
+      rmtree(tdir)
 
 
 def safe_rename(old, new):

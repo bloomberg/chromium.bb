@@ -1102,13 +1102,15 @@ class TestGitCl(TestCase):
     self.assertEqual(res.should_add_git_number, False)
 
   def test_GitNumbererState_valid_configs(self):
-    class NamedTempFileStab(StringIO.StringIO):
-      @classmethod
+    with git_cl.gclient_utils.temporary_directory() as tempdir:
       @contextlib.contextmanager
-      def create(cls, *_, **__):
-        yield cls()
-      name = 'tempfile'
-    self.mock(git_cl.tempfile, 'NamedTemporaryFile', NamedTempFileStab.create)
+      def fake_temporary_directory(**kwargs):
+        yield tempdir
+      self.mock(git_cl.gclient_utils, 'temporary_directory',
+                fake_temporary_directory)
+      self._test_GitNumbererState_valid_configs_inner(tempdir)
+
+  def _test_GitNumbererState_valid_configs_inner(self, tempdir):
     self.calls = [
         ((['git', 'fetch', 'https://chromium.googlesource.com/chromium/src',
            '+refs/meta/config:refs/git_cl/meta/config',
@@ -1130,12 +1132,12 @@ class TestGitCl(TestCase):
             validate-disabled-refglob = refs/heads/disabled
             validate-disabled-refglob = refs/branch-heads/*
          '''),
-        ((['git', 'config', '-f', 'tempfile', '--get-all',
-           'plugin.git-numberer.validate-enabled-refglob'],),
+        ((['git', 'config', '-f', os.path.join(tempdir, 'project.config') ,
+           '--get-all', 'plugin.git-numberer.validate-enabled-refglob'],),
          'refs/else/*\n'
          'refs/heads/*\n'),
-        ((['git', 'config', '-f', 'tempfile', '--get-all',
-           'plugin.git-numberer.validate-disabled-refglob'],),
+        ((['git', 'config', '-f', os.path.join(tempdir, 'project.config') ,
+           '--get-all', 'plugin.git-numberer.validate-disabled-refglob'],),
          'refs/heads/disabled\n'
          'refs/branch-heads/*\n'),
     ] * 4  # 4 tests below have exactly same IO.

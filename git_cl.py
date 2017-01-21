@@ -23,7 +23,6 @@ import os
 import re
 import stat
 import sys
-import tempfile
 import textwrap
 import traceback
 import urllib
@@ -973,20 +972,19 @@ class _GitNumbererState(object):
       return False
     # Gerrit's project.config is really a git config file.
     # So, parse it as such.
-    with tempfile.NamedTemporaryFile(prefix='git_cl_proj_config') as f:
-      f.write(project_config_data)
-      # Make sure OS sees this, but don't close the file just yet,
-      # as NamedTemporaryFile deletes it on closing.
-      f.flush()
+    with gclient_utils.temporary_directory() as tempdir:
+      project_config_file = os.path.join(tempdir, 'project.config')
+      gclient_utils.FileWrite(project_config_file, project_config_data)
 
       def get_opts(x):
         code, out = cls._run_git_with_code(
-            ['config', '-f', f.name, '--get-all',
+            ['config', '-f', project_config_file, '--get-all',
              'plugin.git-numberer.validate-%s-refglob' % x])
         if code == 0:
           return out.strip().splitlines()
         return []
       enabled, disabled = map(get_opts, ['enabled', 'disabled'])
+
     logging.info('validator config enabled %s disabled %s refglobs for '
                  '(this ref: %s)', enabled, disabled, ref)
 
