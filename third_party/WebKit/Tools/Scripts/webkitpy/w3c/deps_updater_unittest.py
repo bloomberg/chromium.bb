@@ -75,7 +75,9 @@ class DepsUpdaterTest(unittest.TestCase):
         updater = DepsUpdater(MockHost())
         self.assertEqual(
             updater._commit_message('aaaa', '1111'),
-            'Import 1111\n\nUsing update-w3c-deps in Chromium aaaa.\n\n')
+            'Import 1111\n\n'
+            'Using update-w3c-deps in Chromium aaaa.\n\n'
+            'NOEXPORT=true')
 
     def test_cl_description_with_empty_environ(self):
         host = MockHost()
@@ -104,6 +106,17 @@ class DepsUpdaterTest(unittest.TestCase):
              'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
+
+    def test_cl_description_moves_noexport_tag(self):
+        host = MockHost()
+        host.executive = MockExecutive(output='Summary\n\nNOEXPORT=true')
+        updater = DepsUpdater(host)
+        description = updater._cl_description()
+        self.assertEqual(
+            description,
+            ('Summary\n\n'
+             'TBR=qyearsley@chromium.org\n'
+             'NOEXPORT=true'))
 
     def test_generate_manifest_command_not_found(self):
         # If we're updating csswg-test, then the manifest file won't be found.

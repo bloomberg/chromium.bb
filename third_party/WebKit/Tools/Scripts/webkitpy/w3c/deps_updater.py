@@ -224,7 +224,9 @@ class DepsUpdater(object):
         return return_code == 1
 
     def _commit_message(self, chromium_commit, import_commit):
-        return ('Import %s\n\nUsing update-w3c-deps in Chromium %s.\n\n' %
+        return ('Import %s\n\n'
+                'Using update-w3c-deps in Chromium %s.\n\n'
+                'NOEXPORT=true' %
                 (import_commit, chromium_commit))
 
     @staticmethod
@@ -336,6 +338,8 @@ class DepsUpdater(object):
         if build_link:
             description += 'Build: %s\n\n' % build_link
         description += 'TBR=qyearsley@chromium.org\n'
+        # Move any NOEXPORT tag to the end of the description.
+        description = description.replace('NOEXPORT=true', '')
         description += 'NOEXPORT=true'
         return description
 
