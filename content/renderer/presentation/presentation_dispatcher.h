@@ -50,6 +50,7 @@ class CONTENT_EXPORT PresentationDispatcher
 
  private:
   friend class TestPresentationDispatcher;
+  friend class PresentationDispatcherTest;
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestStartSession);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestStartSessionError);
   FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestJoinSession);
@@ -111,7 +112,7 @@ class CONTENT_EXPORT PresentationDispatcher
   void terminateSession(const blink::WebURL& presentationUrl,
                         const blink::WebString& presentationId) override;
   void getAvailability(
-      const blink::WebVector<blink::WebURL>& availabilityUrl,
+      const blink::WebVector<blink::WebURL>& availabilityUrls,
       std::unique_ptr<blink::WebPresentationAvailabilityCallbacks> callbacks)
       override;
   void startListening(blink::WebPresentationAvailabilityObserver*) override;
@@ -177,30 +178,73 @@ class CONTENT_EXPORT PresentationDispatcher
     ACTIVE,
   };
 
+  // Do not change order or add new enum values. |GetScreenAvailability| impl
+  // depends on the order of the enum values.
+  enum class ScreenAvailability {
+    UNKNOWN = 0,
+    UNAVAILABLE,
+    UNSUPPORTED,
+    AVAILABLE
+  };
+
   using AvailabilityCallbacksMap =
       IDMap<std::unique_ptr<blink::WebPresentationAvailabilityCallbacks>>;
   using AvailabilityObserversSet =
       std::set<blink::WebPresentationAvailabilityObserver*>;
 
-  // Tracks status of presentation displays availability for |availability_url|.
-  struct AvailabilityStatus {
-    explicit AvailabilityStatus(const GURL& availability_url);
-    ~AvailabilityStatus();
+  // Tracks listeners of presentation displays availability for
+  // |availability_urls|.
+  struct AvailabilityListener {
+    explicit AvailabilityListener(const std::vector<GURL>& availability_urls);
+    ~AvailabilityListener();
 
-    const GURL url;
-    bool last_known_availability;
-    ListeningState listening_state;
+    const std::vector<GURL> urls;
     AvailabilityCallbacksMap availability_callbacks;
     AvailabilityObserversSet availability_observers;
   };
 
-  // Map of AvailabilityStatus for known URLs.
-  std::map<GURL, std::unique_ptr<AvailabilityStatus>>
-      availability_status_;
+  // Tracks listening status of |availability_url|.
+  struct ListeningStatus {
+    explicit ListeningStatus(const GURL& availability_url);
+    ~ListeningStatus();
 
-  // Updates the listening state of availability for |status| and notifies the
-  // client.
-  void UpdateListeningState(AvailabilityStatus* status);
+    const GURL url;
+    ScreenAvailability last_known_availability;
+    ListeningState listening_state;
+  };
+
+  // Map of ListeningStatus for known URLs.
+  std::map<GURL, std::unique_ptr<ListeningStatus>> listening_status_;
+
+  // Set of AvailabilityListener for known PresentationRequest.
+  std::set<std::unique_ptr<AvailabilityListener>> availability_set_;
+
+  // Starts listening to |url|.
+  void StartListeningToURL(const GURL& url);
+
+  // Stops listening to |url| if no PresentationAvailability is observing |url|.
+  // StartListening() must have been called first.
+  void MaybeStopListeningToURL(const GURL& url);
+
+  // Returns nullptr if there is no status for |url|.
+  ListeningStatus* GetListeningStatus(const GURL& url) const;
+
+  // Returns nullptr if there is no availability listener for |urls|.
+  AvailabilityListener* GetAvailabilityListener(
+      const std::vector<GURL>& urls) const;
+
+  // Removes |listener| from |availability_set_| if |listener| has no callbacks
+  // and no observers.
+  void TryRemoveAvailabilityListener(AvailabilityListener* listener);
+
+  // Returns AVAILABLE if any url in |urls| has screen availability AVAILABLE;
+  // Returns UNSUPPORTED if any url in |urls| have screen availability
+  // UNSUPPORTED, and no url has screen availability AVAILABLE;
+  // Returns UNAVAILABLE if at least one url in |urls| has screen availability
+  // UNAVAILABLE, and no url has screen availability AVAILABLE or UNSUPPORTED;
+  // Returns UNKNOWN if all urls in |urls| have screen availability
+  // UNKNOWN.
+  ScreenAvailability GetScreenAvailability(const std::vector<GURL>& urls) const;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationDispatcher);
 };
