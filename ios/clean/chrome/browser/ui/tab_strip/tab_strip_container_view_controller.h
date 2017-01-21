@@ -11,10 +11,14 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
+#import "ios/clean/chrome/browser/ui/presenters/menu_presentation_delegate.h"
+
 // Base class for a view controller that contains a content view (generally a
 // web view with toolbar, but nothing in this class assumes that) and a strip
 // view, each managed by their own view controllers.
-@interface TabStripContainerViewController : UIViewController
+@interface TabStripContainerViewController
+    : UIViewController<MenuPresentationDelegate, ZoomTransitionDelegate>
 
 // View controller showing the main content. If there is no strip view
 // controller set, the contents of this view controller will fill all of the

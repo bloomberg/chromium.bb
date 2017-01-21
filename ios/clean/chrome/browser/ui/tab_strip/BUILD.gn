@@ -25,8 +25,11 @@ source_set("tab_strip_ui") {
     "tab_strip_container_view_controller.mm",
   ]
   deps = [
+    "//base",
     "//ios/clean/chrome/browser/ui",
     "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/animators",
+    "//ios/clean/chrome/browser/ui/presenters",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]

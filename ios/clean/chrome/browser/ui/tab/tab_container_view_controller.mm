@@ -163,11 +163,12 @@ CGFloat kToolbarHeight = 56.0;
 #pragma mark - ZoomTransitionDelegate
 
 - (CGRect)rectForZoomWithKey:(NSObject*)key inView:(UIView*)view {
-  UIViewController<ZoomTransitionDelegate>* delegate =
-      base::mac::ObjCCast<UIViewController<ZoomTransitionDelegate>>(
-          self.toolbarViewController);
-  if (delegate)
-    return [delegate rectForZoomWithKey:key inView:view];
+  if ([self.toolbarViewController
+          conformsToProtocol:@protocol(ZoomTransitionDelegate)]) {
+    return [reinterpret_cast<id<ZoomTransitionDelegate>>(
+        self.toolbarViewController) rectForZoomWithKey:key
+                                                inView:view];
+  }
   return CGRectNull;
 }
 
