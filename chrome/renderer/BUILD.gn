@@ -124,6 +124,7 @@ static_library("renderer") {
     "//content/public/renderer",
     "//extensions/features",
     "//media",
+    "//media:media_features",
     "//media/capture",
     "//net",
     "//ppapi/features",

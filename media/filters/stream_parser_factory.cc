@@ -25,7 +25,7 @@
 #include "media/base/android/media_codec_util.h"
 #endif
 
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 #include "media/formats/mp2t/mp2t_stream_parser.h"
 #endif
@@ -107,7 +107,7 @@ static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs,
   return new WebMStreamParser();
 }
 
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 bool CheckIfMp4Vp9DemuxingEnabled(const std::string& codec_id,
                                   const scoped_refptr<MediaLog>& media_log) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -310,7 +310,7 @@ static StreamParser* BuildMP2TParser(const std::vector<std::string>& codecs,
 static const SupportedTypeInfo kSupportedTypeInfo[] = {
     {"video/webm", &BuildWebMParser, kVideoWebMCodecs},
     {"audio/webm", &BuildWebMParser, kAudioWebMCodecs},
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {"audio/aac", &BuildADTSParser, kAudioADTSCodecs},
     {"audio/mpeg", &BuildMP3Parser, kAudioMP3Codecs},
     {"video/mp4", &BuildMP4Parser, kVideoMP4Codecs},

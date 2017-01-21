@@ -14,6 +14,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_switches.h"
+#include "media/media_features.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -48,11 +49,11 @@ class AndroidPlatformKeySystemProperties : public KeySystemProperties {
       case EmeInitDataType::WEBM:
         return (supported_codecs_ & media::EME_CODEC_WEBM_ALL) != 0;
       case EmeInitDataType::CENC:
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
         return (supported_codecs_ & media::EME_CODEC_MP4_ALL) != 0;
 #else
         return false;
-#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
       case EmeInitDataType::KEYIDS:
       case EmeInitDataType::UNKNOWN:
         return false;

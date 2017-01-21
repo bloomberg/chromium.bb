@@ -2,5 +2,6 @@ include_rules = [
   "+ipc",
   "+media/base",
   "+media/cdm",
+  "+media/media_features.h",
   "+ppapi/features",
 ]

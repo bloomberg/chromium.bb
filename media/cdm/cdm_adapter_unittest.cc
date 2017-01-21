@@ -18,6 +18,7 @@
 #include "media/cdm/cdm_file_io.h"
 #include "media/cdm/external_clear_key_test_helper.h"
 #include "media/cdm/simple_cdm_allocator.h"
+#include "media/media_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -268,7 +269,7 @@ TEST_F(CdmAdapterTest, CreateCencSession) {
 
   std::vector<uint8_t> key_id(kKeyIdAsPssh,
                               kKeyIdAsPssh + arraysize(kKeyIdAsPssh));
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   CreateSessionAndExpect(EmeInitDataType::CENC, key_id, SUCCESS);
 #else
   CreateSessionAndExpect(EmeInitDataType::CENC, key_id, FAILURE);

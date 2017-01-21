@@ -18,6 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/grit/theme_resources.h"
+#include "media/media_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -70,7 +71,7 @@ const IdrBySize kImageIdrs = {
   IDR_FILETYPE_IMAGE,
   IDR_FILETYPE_IMAGE
 };
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const IdrBySize kPdfIdrs = {
   IDR_FILETYPE_PDF,
   IDR_FILETYPE_PDF,
@@ -95,7 +96,7 @@ IconMapper::IconMapper() {
   // 'video': /\.(mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
 
   const ExtensionIconMap::value_type kExtensionIdrBySizeData[] = {
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     std::make_pair(".m4a", kAudioIdrs),
     std::make_pair(".mp3", kAudioIdrs),
     std::make_pair(".pdf", kPdfIdrs),

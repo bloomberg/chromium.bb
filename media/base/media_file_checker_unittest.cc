@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "media/base/test_data_util.h"
+#include "media/media_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -37,7 +38,7 @@ TEST(MediaFileCheckerTest, Audio) {
   RunMediaFileChecker("sfx.ogg", true);
 }
 
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 TEST(MediaFileCheckerTest, MP3) {
   RunMediaFileChecker("sfx.mp3", true);
 }
