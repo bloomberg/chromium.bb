@@ -119,11 +119,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # non-None is taken as the retcode for the mocked Popen call.
     self.popen_mocks = []
     self.popen_calls = []
+
+    self.capture_popen_env = False
+
     # pylint: disable=no-self-argument
     class Popen(object):
       def __init__(self2, args, **kwargs):
         kwargs.pop('cwd', None)
-        kwargs.pop('env', None)
+        if not self.capture_popen_env:
+          kwargs.pop('env', None)
         self2.returncode = None
         self2.args = args
         self2.kwargs = kwargs
@@ -221,7 +225,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         None,
         None,
         None,
-        lambda run_dir: None,
+        run_isolated.noop_install_packages,
         False)
     self.assertEqual(0, ret)
     return make_tree_call
@@ -419,13 +423,13 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # Test cipd-ensure command for installing packages.
     for cipd_ensure_cmd, _ in self.popen_calls[0:2]:
       self.assertEqual(cipd_ensure_cmd[:2], [
-        os.path.join(cipd_cache, 'cipd' + cipd.EXECUTABLE_SUFFIX),
+        os.path.join(cipd_cache, 'bin', 'cipd' + cipd.EXECUTABLE_SUFFIX),
         'ensure',
       ])
       cache_dir_index = cipd_ensure_cmd.index('-cache-dir')
       self.assertEqual(
           cipd_ensure_cmd[cache_dir_index+1],
-          os.path.join(cipd_cache, 'cipd_internal'))
+          os.path.join(cipd_cache, 'cache'))
 
     # Test cipd client cache. `git:wowza` was a tag and so is cacheable.
     self.assertEqual(len(os.listdir(os.path.join(cipd_cache, 'versions'))), 2)
@@ -460,17 +464,31 @@ class RunIsolatedTest(RunIsolatedTestBase):
       'hello',
       'world',
     ]
+
+    self.capture_popen_env = True
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
 
-    # The CIPD client was bootstrapped.
+    # The CIPD client was bootstrapped and hardlinked (or copied on Win).
     client_binary_file = unicode(os.path.join(
         cipd_cache, 'clients', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'))
     self.assertTrue(fs.isfile(client_binary_file))
+    client_binary_link = unicode(os.path.join(
+        cipd_cache, 'bin', 'cipd' + cipd.EXECUTABLE_SUFFIX))
+    self.assertTrue(fs.isfile(client_binary_link))
 
     # 'cipd ensure' was NOT called (only 'echo hello world' was).
     self.assertEqual(1, len(self.popen_calls))
-    self.assertEqual(self.popen_calls[0][0][1:], ['hello', 'world'])
+    cmd, kwargs = self.popen_calls[0]
+    env = kwargs['env']
+    self.assertEqual(cmd[1:], ['hello', 'world'])
+
+    # Directory with cipd client is in front of PATH.
+    path = env['PATH'].split(os.pathsep)
+    self.assertEqual(os.path.join(cipd_cache, 'bin'), path[0])
+
+    # CIPD_CACHE_DIR is set.
+    self.assertEqual(os.path.join(cipd_cache, 'cache'), env['CIPD_CACHE_DIR'])
 
   def test_main_naked_with_caches(self):
     cmd = [
@@ -577,7 +595,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           None,
           None,
           None,
-          lambda run_dir: None,
+          run_isolated.noop_install_packages,
           False)
       self.assertEqual(0, ret)
 
@@ -663,7 +681,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           None,
           None,
           None,
-          lambda run_dir: None,
+          run_isolated.noop_install_packages,
           False)
       self.assertEqual(0, ret)
 

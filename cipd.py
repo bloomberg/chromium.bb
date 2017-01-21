@@ -353,17 +353,19 @@ def _fetch_cipd_client(disk_cache, instance_id, fetch_url, timeoutfn):
 
 
 @contextlib.contextmanager
-def get_client(
-      service_url, package_name, version, cache_dir, timeout=None):
+def get_client(service_url, package_name, version, cache_dir, timeout=None):
   """Returns a context manager that yields a CipdClient. A blocking call.
 
+  Upon exit from the context manager, the client binary may be deleted
+  (if the internal cache is full).
+
   Args:
-      service_url (str): URL of the CIPD backend.
-      package_name (str): package name template of the CIPD client.
-      version (str): version of CIPD client package.
-      cache_dir: directory to store instance cache, version cache
-        and a hardlink to the client binary.
-      timeout (int): if not None, timeout in seconds for this function.
+    service_url (str): URL of the CIPD backend.
+    package_name (str): package name template of the CIPD client.
+    version (str): version of CIPD client package.
+    cache_dir: directory to store instance cache, version cache
+      and a hardlink to the client binary.
+    timeout (int): if not None, timeout in seconds for this function.
 
   Yields:
     CipdClient.
@@ -419,15 +421,21 @@ def get_client(
     # A single host can run multiple swarming bots, but ATM they do not share
     # same root bot directory. Thus, it is safe to use the same name for the
     # binary.
-    binary_path = unicode(os.path.join(cache_dir, 'cipd' + EXECUTABLE_SUFFIX))
+    cipd_bin_dir = unicode(os.path.join(cache_dir, 'bin'))
+    binary_path = os.path.join(cipd_bin_dir, 'cipd' + EXECUTABLE_SUFFIX)
     if fs.isfile(binary_path):
       file_path.remove(binary_path)
+    else:
+      file_path.ensure_tree(cipd_bin_dir)
 
     with instance_cache.getfileobj(instance_id) as f:
       isolateserver.putfile(f, binary_path, 0511)  # -r-x--x--x
 
-    yield CipdClient(binary_path, package_name=package_name,
-                     instance_id=instance_id, service_url=service_url)
+    yield CipdClient(
+        binary_path,
+        package_name=package_name,
+        instance_id=instance_id,
+        service_url=service_url)
 
 
 def parse_package_args(packages):
