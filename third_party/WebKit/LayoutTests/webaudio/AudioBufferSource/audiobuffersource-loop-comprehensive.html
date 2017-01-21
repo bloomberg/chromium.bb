@@ -2,21 +2,22 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 <script src="../resources/audiobuffersource-testing.js"></script>
 </head>
 
 <body>
 <script>
-description("Tests AudioBufferSourceNode looping with a variety of loop points.");
+let audit = Audit.createTaskRunner();
 
 // The following test cases assume an AudioBuffer of length 8 whose PCM data is a linear ramp, 0, 1, 2, 3,...
 // |description| is optional and will be computed from the other parameters. |offsetFrame| is
 // optional and defaults to 0.
 
-var tests = [
+let tests = [
 
 { description: "loop whole buffer by default with loopStart == loopEnd == 0",
   loopStartFrame: 0,
@@ -166,15 +167,15 @@ var tests = [
       
 ];
 
-var sampleRate = 44100;
-var buffer;
-var bufferFrameLength = 8;
-var testSpacingFrames = 32;
-var testSpacingSeconds = testSpacingFrames / sampleRate;
-var totalRenderLengthFrames = tests.length * testSpacingFrames;
+let sampleRate = 44100;
+let buffer;
+let bufferFrameLength = 8;
+let testSpacingFrames = 32;
+let testSpacingSeconds = testSpacingFrames / sampleRate;
+let totalRenderLengthFrames = tests.length * testSpacingFrames;
 
-function runLoopTest(context, testNumber, test) {
-    var source = context.createBufferSource();
+function runLoopTest(context, testNumber, test, should) {
+    let source = context.createBufferSource();
 
     source.buffer = buffer;
     source.playbackRate.value = test.playbackRate;
@@ -182,56 +183,57 @@ function runLoopTest(context, testNumber, test) {
     source.loopStart = test.loopStartFrame / context.sampleRate;
     source.loopEnd = test.loopEndFrame / context.sampleRate;
 
-    var offset = test.offsetFrame ? test.offsetFrame / context.sampleRate : 0;
+    let offset = test.offsetFrame ? test.offsetFrame / context.sampleRate : 0;
 
     source.connect(context.destination);
 
     // Render each test one after the other, spaced apart by testSpacingSeconds.
-    var startTime = testNumber * testSpacingSeconds;
+    let startTime = testNumber * testSpacingSeconds;
 
     // If durationFrames is given, run the test for the specified duration.
     if (test.durationFrames) {
         if (!test.renderFrames) {
-            testFailed("renderFrames is required for test " + testNumber + ": " + test.description);
+            throw("renderFrames is required for test " + testNumber + ": " + test.description);
         } else {
             if (test.durationFrames > testSpacingFrames || test.durationFrames < 0) {
-                testFailed("Test " + testNumber
+                throw("Test " + testNumber
                     + ": durationFrames (" + test.durationFrames + ") outside the range [0, "
                     + testSpacingFrames + "]");
             }
             source.start(startTime, offset, test.durationFrames / context.sampleRate);
         }
     } else if (test.renderFrames) {    
-        var duration = test.renderFrames / context.sampleRate;
+        let duration = test.renderFrames / context.sampleRate;
         if (test.renderFrames > testSpacingFrames || test.renderFrames < 0) {
-            testFailed("Test " + testNumber
+            throw("Test " + testNumber
                 + ": renderFrames (" + test.renderFrames + ") outside the range [0, "
                 + testSpacingFrames + "]");
         }
         source.start(startTime, offset);
         source.stop(startTime + duration);
     } else {
-        testFailed("Test " + testNumber + " must specify renderFrames and possibly durationFrames");
+        throw("Test " + testNumber + " must specify renderFrames and possibly durationFrames");
     }
 }
 
-function runTest() {
-    window.jsTestIsAsync = true;
-
+audit.define("AudioBufferSource looping test", function (task, should) {
     // Create offline audio context.
-    var context = new OfflineAudioContext(1, totalRenderLengthFrames, sampleRate);
+    let context = new OfflineAudioContext(1, totalRenderLengthFrames, sampleRate);
     buffer = createTestBuffer(context, bufferFrameLength);
 
-    for (var i = 0; i < tests.length; ++i)
-        runLoopTest(context, i, tests[i]);
+    should(function () {
+      for (let i = 0; i < tests.length; ++i)
+        runLoopTest(context, i, tests[i], should);
+    }, "Generate " + tests.length + " test cases").notThrow();
 
-    context.oncomplete = checkAllTests;
-    context.startRendering();
-}
+    context.startRendering()
+      .then(function (audioBuffer) {
+        checkAllTests(audioBuffer, should);
+        task.done();
+      });
+});
 
-runTest();
-successfullyParsed = true;
-
+audit.run();
 </script>
 
 </body>

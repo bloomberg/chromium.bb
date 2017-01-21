@@ -1,83 +1,62 @@
 function createTestBuffer(context, sampleFrameLength) {
-    var audioBuffer = context.createBuffer(1, sampleFrameLength, context.sampleRate);
-    var channelData = audioBuffer.getChannelData(0);
+  let audioBuffer =
+      context.createBuffer(1, sampleFrameLength, context.sampleRate);
+  let channelData = audioBuffer.getChannelData(0);
 
-    // Create a simple linear ramp starting at zero, with each value in the buffer equal to its index position.
-    for (var i = 0; i < sampleFrameLength; ++i)
-        channelData[i] = i;
+  // Create a simple linear ramp starting at zero, with each value in the buffer
+  // equal to its index position.
+  for (let i = 0; i < sampleFrameLength; ++i)
+    channelData[i] = i;
 
-    return audioBuffer;
+  return audioBuffer;
 }
 
-function checkSingleTest(renderedBuffer, i) {
-    var renderedData = renderedBuffer.getChannelData(0);
-    var offsetFrame = i * testSpacingFrames;
+function checkSingleTest(renderedBuffer, i, should) {
+  let renderedData = renderedBuffer.getChannelData(0);
+  let offsetFrame = i * testSpacingFrames;
 
-    var test = tests[i];
-    var expected = test.expected;
-    var success = true;
-    var description;
+  let test = tests[i];
+  let expected = test.expected;
+  let description;
 
-    if (test.description) {
-        description = test.description;
-    } else {
-        // No description given, so create a basic one from the given test parameters.
-        description = "loop from " + test.loopStartFrame + " -> " + test.loopEndFrame;
-        if (test.offsetFrame)
-            description += " with offset " + test.offsetFrame;
-        if (test.playbackRate && test.playbackRate != 1)
-            description += " with playbackRate of " + test.playbackRate;
-    }
+  if (test.description) {
+    description = test.description;
+  } else {
+    // No description given, so create a basic one from the given test
+    // parameters.
+    description =
+        'loop from ' + test.loopStartFrame + ' -> ' + test.loopEndFrame;
+    if (test.offsetFrame)
+      description += ' with offset ' + test.offsetFrame;
+    if (test.playbackRate && test.playbackRate != 1)
+      description += ' with playbackRate of ' + test.playbackRate;
+  }
 
-    var framesToTest;
+  let framesToTest;
 
-    if (test.renderFrames)
-        framesToTest = test.renderFrames;
-    else if (test.durationFrames)
-        framesToTest = test.durationFrames;
+  if (test.renderFrames)
+    framesToTest = test.renderFrames;
+  else if (test.durationFrames)
+    framesToTest = test.durationFrames;
 
-    // Verify that the output matches
-    for (var j = 0; j < framesToTest; ++j) {
-        if (expected[j] != renderedData[offsetFrame + j]) {
-            // Copy from Float32Array to regular JavaScript array for error message.
-            var renderedArray = new Array();
-            for (var j = 0; j < test.renderFrames; ++j)
-                renderedArray[j] = renderedData[offsetFrame + j];
+  // Verify that the output matches
+  let prefix = 'Case ' + i + ': ';
+  should(
+      renderedData.slice(offsetFrame, offsetFrame + framesToTest),
+      prefix + description)
+      .beEqualToArray(expected);
 
-            var s = description + ": expected: " + expected + " actual: " + renderedArray;
-            success = false;
-            Should(s, success).beEqualTo(true);
-            break;
-        }
-    }
-
-    // Verify that we get all zeroes after the buffer (or duration) has passed.
-    for (var j = framesToTest; j < testSpacingFrames; ++j) {
-        if (renderedData[offsetFrame + j]) {
-            // Copy from Float32Array to regular JavaScript array for error message.
-            var renderedArray = new Array();
-            for (var j = framesToTest; j < testSpacingFrames; ++j)
-                renderedArray[j - framesToTest] = renderedData[offsetFrame + j];
-
-            var s = description + ": expected: all zeroes actual: " + renderedArray;
-            success = false;
-            Should(s, success).beEqualTo(true);
-            break;
-        }
-    }
-
-    Should("", success)
-        .summarize(description, description);
-
-    return success;
+  // Verify that we get all zeroes after the buffer (or duration) has passed.
+  should(
+      renderedData.slice(
+          offsetFrame + framesToTest, offsetFrame + testSpacingFrames),
+      prefix + description + ': tail')
+      .beConstantValueOf(0);
 }
 
-function checkAllTests(event) {
-    var renderedBuffer = event.renderedBuffer;
-    for (var i = 0; i < tests.length; ++i)
-        checkSingleTest(renderedBuffer, i);
-
-    finishJSTest();
+function checkAllTests(renderedBuffer, should) {
+  for (let i = 0; i < tests.length; ++i)
+    checkSingleTest(renderedBuffer, i, should);
 }
 
 
@@ -90,15 +69,15 @@ function checkAllTests(event) {
 // The above will perform a modulation on detune within the range of
 // [1200, -1200] around the sawtooth waveform on 440Hz.
 function createSawtoothWithModulation(context, modTarget, modOffset, modRange) {
-  var lfo = context.createOscillator();
-  var amp = context.createGain();
+  let lfo = context.createOscillator();
+  let amp = context.createGain();
 
   // Create a sawtooth generator with the signal range of [0, 1].
-  var phasor = context.createBufferSource();
-  var phasorBuffer = context.createBuffer(1, sampleRate, sampleRate);
-  var phasorArray = phasorBuffer.getChannelData(0);
-  var phase = 0, phaseStep = 1 / sampleRate;
-  for (var i = 0; i < phasorArray.length; i++) {
+  let phasor = context.createBufferSource();
+  let phasorBuffer = context.createBuffer(1, sampleRate, sampleRate);
+  let phasorArray = phasorBuffer.getChannelData(0);
+  let phase = 0, phaseStep = 1 / sampleRate;
+  for (let i = 0; i < phasorArray.length; i++) {
     phasorArray[i] = phase % 1.0;
     phase += phaseStep;
   }
