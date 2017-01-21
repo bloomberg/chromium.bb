@@ -7,127 +7,106 @@ We use an impulse so we can tell exactly where the rendering is happening.
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
-<script type="text/javascript" src="../resources/buffer-loader.js"></script>
+<script src="../resources/audit.js"></script>
+<script src="../resources/buffer-loader.js"></script>
 </head>
 
 <body>
 
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Tests sample-accurate scheduling.");
+let audit = Audit.createTaskRunner();
 
-var sampleRate = 44100.0;
-var lengthInSeconds = 4;
+let sampleRate = 44100.0;
+let lengthInSeconds = 4;
 
-var context = 0;
-var bufferLoader = 0;
-var impulse;
+let context = 0;
+let bufferLoader = 0;
+let impulse;
 
 // See if we can render at exactly these sample offsets.
-var sampleOffsets = [0, 3, 512, 517, 1000, 1005, 20000, 21234, 37590];
+let sampleOffsets = [0, 3, 512, 517, 1000, 1005, 20000, 21234, 37590];
 
 function createImpulse() {
     // An impulse has a value of 1 at time 0, and is otherwise 0.
     impulse = context.createBuffer(2, 512, sampleRate);
-    var sampleDataL = impulse.getChannelData(0);
-    var sampleDataR = impulse.getChannelData(1);
+    let sampleDataL = impulse.getChannelData(0);
+    let sampleDataR = impulse.getChannelData(1);
     sampleDataL[0] = 1.0;
     sampleDataR[0] = 1.0;
 }
 
 function playNote(time) {
-    var bufferSource = context.createBufferSource();
+    let bufferSource = context.createBufferSource();
     bufferSource.buffer = impulse;
     bufferSource.connect(context.destination);
     bufferSource.start(time);
 }
 
-function checkSampleAccuracy(event) {
-    var buffer = event.renderedBuffer;
+function checkSampleAccuracy(buffer, should) {
+    let bufferDataL = buffer.getChannelData(0);
+    let bufferDataR = buffer.getChannelData(1);
 
-    var bufferDataL = buffer.getChannelData(0);
-    var bufferDataR = buffer.getChannelData(1);
+    let impulseCount = 0;
+    let badOffsetCount = 0;
 
-    var success = true;
-    var impulseCount = 0;
-    var badOffsetCount = false;
-    
-    // Go through every sample and make sure it's 0, except at positions in sampleOffsets.
-    for (var i = 0; i < buffer.length; ++i) {
-        // Make sure left == right
-        if (bufferDataL[i] != bufferDataR[i]) {
-            testFailed("Rendered buffer left and right channels are not identical.");
-            success = false;
-            break;
-        }
-        
+    // Left and right channels must be the same.
+    should(bufferDataL, "Content of left and right channels match and")
+        .beEqualToArray(bufferDataR);
+
+    // Go through every sample and make sure it's 0, except at positions in
+    // sampleOffsets.
+    for (let i = 0; i < buffer.length; ++i) {
         if (bufferDataL[i] != 0) {
             // Make sure this index is  in sampleOffsets
-            var found = false;
-            for (var j = 0; j < sampleOffsets.length; ++j) {
+            let found = false;
+            for (let j = 0; j < sampleOffsets.length; ++j) {
                 if (sampleOffsets[j] == i) {
                     found = true;
                     break;
                 }
             }
             ++impulseCount;
+            should(found, "Non-zero sample found at sample offset " + i)
+                .beTrue();
             if (!found) {
-                testFailed("Non-zero sample found at sample offset " + i);
-                success = false;
                 ++badOffsetCount;
             }
         }
     }
 
+    should(impulseCount, "Number of impulses found")
+        .beEqualTo(sampleOffsets.length);
+
     if (impulseCount == sampleOffsets.length) {
-        if (badOffsetCount == 0) {
-            testPassed("Expected number of events found.");
-        } else {
-            testFailed("Expected number of events found, but " + badOffsetCount + " are at incorrect offsets.");
-            success = false;
-        }
-    } else {
-        testFailed("Expected " + sampleOffsets.length + " impulses but only found " + impulseCount);
-        success = false;
+        should(badOffsetCount, "bad offset")
+            .beEqualTo(0);
     }
-
-    if (success) {
-        testPassed("All events rendered with sample-accuracy.");
-    } else {
-        testFailed("Events NOT rendered with sample-accuracy.");
-    }
-
-    finishJSTest();
 }
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    
-    window.jsTestIsAsync = true;
-        
-    // Create offline audio context.
-    context = new OfflineAudioContext(2, sampleRate * lengthInSeconds, sampleRate);
-    createImpulse();    
+audit.define("test", function (task, should) {
+    task.describe("Test sample-accurate scheduling");
 
-    for (var i = 0; i < sampleOffsets.length; ++i) {
-        var timeInSeconds = sampleOffsets[i] / sampleRate;
+    // Create offline audio context.
+    context = new OfflineAudioContext(2, sampleRate * lengthInSeconds,
+        sampleRate);
+    createImpulse();
+
+    for (let i = 0; i < sampleOffsets.length; ++i) {
+        let timeInSeconds = sampleOffsets[i] / sampleRate;
         playNote(timeInSeconds);
     }
     
-    context.oncomplete = checkSampleAccuracy;
-    context.startRendering();
-}
+    context.startRendering()
+      .then(function (buffer) {
+         checkSampleAccuracy(buffer, should);
+         task.done();
+       });
+});
 
-runTest();
-
+audit.run();
 </script>
 
 </body>
