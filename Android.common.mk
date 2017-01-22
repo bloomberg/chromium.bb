@@ -1,4 +1,5 @@
 LOCAL_CFLAGS += \
+	-DHAVE_VISIBILITY=1 \
 	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
 
 # Quiet down the build system and remove any .h files from the sources
