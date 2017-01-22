@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_ANDROID_SEARCH_GEOLOCATION_SEARCH_GEOLOCATION_SERVICE_H_
 #define CHROME_BROWSER_ANDROID_SEARCH_GEOLOCATION_SEARCH_GEOLOCATION_SERVICE_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/singleton.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/search_engines/template_url_service_observer.h"
 #include "url/origin.h"
 
 namespace content{
@@ -23,7 +23,6 @@ class PrefRegistrySyncable;
 class HostContentSettingsMap;
 class PrefService;
 class Profile;
-class TemplateURLService;
 
 // Helper class to manage the DSE Geolocation setting. It keeps the setting
 // valid by watching change to the CCTLD and DSE, and also provides logic for
@@ -31,10 +30,25 @@ class TemplateURLService;
 // Glossary:
 //     DSE: Default Search Engine
 //     CCTLD: Country Code Top Level Domain (e.g. google.com.au)
-class SearchGeolocationService
-    : public TemplateURLServiceObserver,
-      public KeyedService {
+class SearchGeolocationService : public KeyedService {
  public:
+  // Delegate for search engine related functionality. Can be overridden for
+  // testing.
+  class SearchEngineDelegate {
+   public:
+    // Returns true if the current DSE is Google (Google is the only search
+    // engine to currently support DSE geolocation).
+    virtual bool IsDSEGoogle() = 0;
+
+    // Returns the origin of the current Google CCTLD if Google is the default
+    // search engine. Otherwise returns a unique Origin.
+    virtual url::Origin GetGoogleDSECCTLD() = 0;
+
+    // Set a callback that will be called if the DSE or CCTLD changes for any
+    // reason.
+    virtual void SetDSEChangedCallback(const base::Closure& callback) = 0;
+  };
+
   // Factory implementation will not create a service in incognito.
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -77,7 +91,6 @@ class SearchGeolocationService
 
   ~SearchGeolocationService() override;
 
-  // TemplateURLServiceObserver
   // When the DSE CCTLD changes (either by changing their DSE or by changing
   // their CCTLD, and their DSE supports geolocation:
   // * If the DSE CCTLD origin permission is BLOCK, but the DSE geolocation
@@ -87,7 +100,7 @@ class SearchGeolocationService
   // Also, if the previous DSE did not support geolocation, and the new one
   // does, and the geolocation setting is on, reset whether the DSE geolocation
   // disclosure has been shown.
-  void OnTemplateURLServiceChanged() override;
+  void OnDSEChanged();
 
   // Initialize the DSE geolocation setting if it hasn't already been
   // initialized. Also, if it hasn't been initialized, reset whether the DSE
@@ -109,14 +122,6 @@ class SearchGeolocationService
   // been updated in a way that makes the setting invalid.
   void EnsureDSEGeolocationSettingIsValid();
 
-  // Returns true if the current DSE is Google (Google is the only search engine
-  // to currently support DSE geolocation).
-  bool IsGoogleSearchEngine();
-
-  // Returns the origin of the current CCTLD of the default search engine. If
-  // the default search engine is not Google, will return a unique Origin.
-  url::Origin GetDSECCTLD();
-
   PrefValue GetDSEGeolocationPref();
   void SetDSEGeolocationPref(const PrefValue& pref);
 
@@ -135,10 +140,13 @@ class SearchGeolocationService
   // geolocation system.
   bool UseConsistentSearchGeolocation();
 
+  void SetSearchEngineDelegateForTest(
+      std::unique_ptr<SearchEngineDelegate> delegate);
+
   Profile* profile_;
   PrefService* pref_service_;
   HostContentSettingsMap* host_content_settings_map_;
-  TemplateURLService* template_url_service_;
+  std::unique_ptr<SearchEngineDelegate> delegate_;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SEARCH_GEOLOCATION_SEARCH_GEOLOCATION_SERVICE_H_
