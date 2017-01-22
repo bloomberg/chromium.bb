@@ -33,6 +33,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -950,8 +951,9 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         }
 
         @Override
-        public void invokePaymentApp(String merchantName, String origin, PaymentItem total,
-                List<PaymentItem> cart, Map<String, PaymentMethodData> methodData,
+        public void invokePaymentApp(String merchantName, String origin,
+                Map<String, PaymentMethodData> methodData, PaymentItem total,
+                List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentDetailsCallback detailsCallback) {
             detailsCallback.onInstrumentDetailsReady(
                     mMethodName, "{\"transaction\": 1337}");

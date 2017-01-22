@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.FullCardRequestDelegate;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -79,8 +80,9 @@ public class AutofillPaymentInstrument extends PaymentInstrument
 
     @Override
     public void invokePaymentApp(String unusedMerchantName, String unusedOrigin,
-            PaymentItem unusedTotal, List<PaymentItem> unusedCart,
-            Map<String, PaymentMethodData> unusedMethodDataMap,
+            Map<String, PaymentMethodData> unusedMethodDataMap, PaymentItem unusedTotal,
+            List<PaymentItem> unusedDisplayItems,
+            Map<String, PaymentDetailsModifier> unusedModifiers,
             InstrumentDetailsCallback callback) {
         // The billing address should never be null for a credit card at this point.
         assert mBillingAddress != null;

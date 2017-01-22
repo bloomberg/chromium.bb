@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -55,11 +56,13 @@ public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
     }
 
     @Override
-    public void invokePaymentApp(String merchantName, String origin, PaymentItem total,
-            List<PaymentItem> cart, Map<String, PaymentMethodData> methodDataMap,
+    public void invokePaymentApp(String merchantName, String origin,
+            Map<String, PaymentMethodData> methodData, PaymentItem total,
+            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
             InstrumentDetailsCallback callback) {
         ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mAppRegistrationId, mOption.id,
-                new HashSet<>(methodDataMap.values()));
+                origin, new HashSet<>(methodData.values()), total, displayItems,
+                new HashSet<>(modifiers.values()));
     }
 
     @Override

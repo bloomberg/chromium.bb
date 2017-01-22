@@ -671,7 +671,7 @@ public class PaymentRequestImpl
 
     /** @return The first modifier that matches the given instrument, or null. */
     @Nullable private PaymentDetailsModifier getModifier(@Nullable PaymentInstrument instrument) {
-        if (instrument == null) return null;
+        if (mModifiers == null || instrument == null) return null;
         Set<String> methodNames = instrument.getInstrumentMethodNames();
         methodNames.retainAll(mModifiers.keySet());
         return methodNames.isEmpty() ? null : mModifiers.get(methodNames.iterator().next());
@@ -1034,19 +1034,25 @@ public class PaymentRequestImpl
         mPaymentResponseHelper = new PaymentResponseHelper(
                 selectedShippingAddress, selectedShippingOption, selectedContact, this);
 
-        // Create a map that is the subset of mMethodData that contains the
-        // payment methods supported by the selected payment instrument. If this
-        // intersection contains more than one payment method, the payment app is
-        // at liberty to choose (or have the user choose) one of the methods.
+        // Create maps that are subsets of mMethodData and mModifiers, that contain
+        // the payment methods supported by the selected payment instrument. If the
+        // intersection of method data contains more than one payment method, the
+        // payment app is at liberty to choose (or have the user choose) one of the
+        // methods.
         Map<String, PaymentMethodData> methodData = new HashMap<>();
+        Map<String, PaymentDetailsModifier> modifiers = new HashMap<>();
         for (String instrumentMethodName : instrument.getInstrumentMethodNames()) {
             if (mMethodData.containsKey(instrumentMethodName)) {
                 methodData.put(instrumentMethodName, mMethodData.get(instrumentMethodName));
             }
+            if (mModifiers != null && mModifiers.containsKey(instrumentMethodName)) {
+                modifiers.put(instrumentMethodName, mModifiers.get(instrumentMethodName));
+            }
         }
 
-        instrument.invokePaymentApp(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
-                Collections.unmodifiableMap(methodData), this);
+        instrument.invokePaymentApp(mMerchantName, mOrigin, Collections.unmodifiableMap(methodData),
+                mRawTotal, mRawLineItems, Collections.unmodifiableMap(modifiers), this);
+
         recordSuccessFunnelHistograms("PayClicked");
         return !(instrument instanceof AutofillPaymentInstrument);
     }

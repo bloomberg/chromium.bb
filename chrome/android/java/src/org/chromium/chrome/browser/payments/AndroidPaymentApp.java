@@ -21,6 +21,7 @@ import org.chromium.IsReadyToPayServiceCallback;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.ui.base.WindowAndroid;
@@ -201,8 +202,9 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
     }
 
     @Override
-    public void invokePaymentApp(String merchantName, String origin, PaymentItem total,
-            List<PaymentItem> cart, Map<String, PaymentMethodData> methodDataMap,
+    public void invokePaymentApp(String merchantName, String origin,
+            Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
+            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
             InstrumentDetailsCallback callback) {
         assert !mMethodNames.isEmpty();
         Bundle extras = new Bundle();
@@ -215,7 +217,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         extras.putString(
                 EXTRA_DATA, methodData == null ? EMPTY_JSON_DATA : methodData.stringifiedData);
 
-        String details = serializeDetails(total, cart);
+        String details = serializeDetails(total, displayItems);
         extras.putString(EXTRA_DETAILS, details == null ? EMPTY_JSON_DATA : details);
         mPayIntent.putExtras(extras);
 
@@ -247,7 +249,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         });
     }
 
-    private static String serializeDetails(PaymentItem total, List<PaymentItem> cart) {
+    private static String serializeDetails(PaymentItem total, List<PaymentItem> displayItems) {
         StringWriter stringWriter = new StringWriter();
         JsonWriter json = new JsonWriter(stringWriter);
         try {
@@ -260,10 +262,10 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
             // }}} total
 
             // displayitems {{{
-            if (cart != null) {
+            if (displayItems != null) {
                 json.name("displayItems").beginArray();
-                for (int i = 0; i < cart.size(); i++) {
-                    serializePaymentItem(json, cart.get(i));
+                for (int i = 0; i < displayItems.size(); i++) {
+                    serializePaymentItem(json, displayItems.get(i));
                 }
                 json.endArray();
             }
