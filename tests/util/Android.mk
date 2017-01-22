@@ -27,7 +27,6 @@ include $(CLEAR_VARS)
 include $(LOCAL_PATH)/Makefile.sources
 
 LOCAL_MODULE := libdrm_util
-LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := libdrm
 

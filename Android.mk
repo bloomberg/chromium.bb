@@ -30,7 +30,6 @@ include $(LOCAL_PATH)/Makefile.sources
 #static library for the device (recovery)
 include $(CLEAR_VARS)
 LOCAL_MODULE := libdrm
-LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBDRM_FILES))
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
@@ -48,7 +47,6 @@ include $(BUILD_STATIC_LIBRARY)
 # Shared library for the device
 include $(CLEAR_VARS)
 LOCAL_MODULE := libdrm
-LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBDRM_FILES))
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
