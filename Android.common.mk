@@ -1,3 +1,4 @@
+# XXX: Consider moving these to config.h analogous to autoconf.
 LOCAL_CFLAGS += \
 	-DHAVE_VISIBILITY=1 \
 	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
