@@ -21,6 +21,8 @@
 # IN THE SOFTWARE.
 #
 
+LIBDRM_COMMON_MK := $(call my-dir)/Android.common.mk
+
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -31,7 +33,7 @@ include $(LOCAL_PATH)/Makefile.sources
 include $(CLEAR_VARS)
 LOCAL_MODULE := libdrm
 
-LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBDRM_FILES))
+LOCAL_SRC_FILES := $(LIBDRM_FILES)
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
 	$(LOCAL_PATH) \
 	$(LOCAL_PATH)/include/drm
@@ -40,25 +42,26 @@ LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/include/drm
 
 LOCAL_CFLAGS := \
-	-DHAVE_VISIBILITY=1 \
-	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
+	-DHAVE_VISIBILITY=1
+
+include $(LIBDRM_COMMON_MK)
 include $(BUILD_STATIC_LIBRARY)
 
 # Shared library for the device
 include $(CLEAR_VARS)
 LOCAL_MODULE := libdrm
 
-LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBDRM_FILES))
+LOCAL_SRC_FILES := $(LIBDRM_FILES)
 LOCAL_EXPORT_C_INCLUDE_DIRS := \
-        $(LOCAL_PATH) \
         $(LOCAL_PATH)/include/drm
 
 LOCAL_C_INCLUDES := \
         $(LOCAL_PATH)/include/drm
 
 LOCAL_CFLAGS := \
-        -DHAVE_VISIBILITY=1 \
-        -DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
+	-DHAVE_VISIBILITY=1
+
+include $(LIBDRM_COMMON_MK)
 include $(BUILD_SHARED_LIBRARY)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))

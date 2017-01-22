@@ -26,7 +26,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 include $(LOCAL_PATH)/Makefile.sources
 
-LOCAL_SRC_FILES := $(patsubst %.h, , $(LIBKMS_FILES))
+LOCAL_SRC_FILES := $(LIBKMS_FILES)
 
 ifneq ($(filter $(vmwgfx_drivers), $(DRM_GPU_DRIVERS)),)
 LOCAL_SRC_FILES += $(LIBKMS_VMWGFX_FILES)
@@ -47,6 +47,5 @@ endif
 LOCAL_MODULE := libkms
 LOCAL_SHARED_LIBRARIES := libdrm
 
-LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
-
+include $(LIBDRM_COMMON_MK)
 include $(BUILD_SHARED_LIBRARY)
