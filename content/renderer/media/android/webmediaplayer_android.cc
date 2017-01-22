@@ -612,9 +612,8 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   // Make sure to only copy the natural size to avoid putting garbage
   // into the bottom of the destination texture.
   const gfx::Size& natural_size = video_frame->natural_size();
-  gl->CopySubTextureCHROMIUM(src_texture, 0, texture, 0,
-                             0, 0, 0, 0,
-                             natural_size.width(), natural_size.height(),
+  gl->CopySubTextureCHROMIUM(src_texture, 0, GL_TEXTURE_2D, texture, 0, 0, 0, 0,
+                             0, natural_size.width(), natural_size.height(),
                              flip_y, premultiply_alpha, false);
   gl->DeleteTextures(1, &src_texture);
   gl->Flush();

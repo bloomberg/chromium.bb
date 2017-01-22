@@ -350,9 +350,10 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
       int rows_to_copy = std::min(chunk_size_in_rows, height - y);
       DCHECK_GT(rows_to_copy, 0);
 
-      gl->CopySubTextureCHROMIUM(
-          staging_buffer->texture_id, 0, resource_texture_id, 0, 0, y, 0, y,
-          resource_lock->size().width(), rows_to_copy, false, false, false);
+      gl->CopySubTextureCHROMIUM(staging_buffer->texture_id, 0, GL_TEXTURE_2D,
+                                 resource_texture_id, 0, 0, y, 0, y,
+                                 resource_lock->size().width(), rows_to_copy,
+                                 false, false, false);
       y += rows_to_copy;
 
       // Increment |bytes_scheduled_since_last_flush_| by the amount of memory

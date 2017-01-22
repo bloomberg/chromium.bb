@@ -253,12 +253,12 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(
   GLuint imageTexture =
       skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))
           ->fID;
-  gl->CopySubTextureCHROMIUM(imageTexture, 0, imageInfo->m_textureId, 0, 0, 0,
-                             0, 0, m_size.width(), m_size.height(), GL_FALSE,
-                             GL_FALSE, GL_FALSE);
+  GLenum textureTarget = GC3D_TEXTURE_RECTANGLE_ARB;
+  gl->CopySubTextureCHROMIUM(
+      imageTexture, 0, textureTarget, imageInfo->m_textureId, 0, 0, 0, 0, 0,
+      m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
 
   MailboxInfo& info = m_mailboxes.first();
-  uint32_t textureTarget = GC3D_TEXTURE_RECTANGLE_ARB;
   gpu::Mailbox mailbox;
   gl->GenMailboxCHROMIUM(mailbox.name);
   gl->ProduceTextureDirectCHROMIUM(imageInfo->m_textureId, textureTarget,

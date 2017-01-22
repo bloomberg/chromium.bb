@@ -2506,6 +2506,7 @@ void PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
 
 void CopyTextureCHROMIUM(GLenum source_id,
                          GLint source_level,
+                         GLenum dest_target,
                          GLenum dest_id,
                          GLint dest_level,
                          GLint internalformat,
@@ -2516,14 +2517,15 @@ void CopyTextureCHROMIUM(GLenum source_id,
   gles2::cmds::CopyTextureCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CopyTextureCHROMIUM>();
   if (c) {
-    c->Init(source_id, source_level, dest_id, dest_level, internalformat,
-            dest_type, unpack_flip_y, unpack_premultiply_alpha,
+    c->Init(source_id, source_level, dest_target, dest_id, dest_level,
+            internalformat, dest_type, unpack_flip_y, unpack_premultiply_alpha,
             unpack_unmultiply_alpha);
   }
 }
 
 void CopySubTextureCHROMIUM(GLenum source_id,
                             GLint source_level,
+                            GLenum dest_target,
                             GLenum dest_id,
                             GLint dest_level,
                             GLint xoffset,
@@ -2538,9 +2540,9 @@ void CopySubTextureCHROMIUM(GLenum source_id,
   gles2::cmds::CopySubTextureCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CopySubTextureCHROMIUM>();
   if (c) {
-    c->Init(source_id, source_level, dest_id, dest_level, xoffset, yoffset, x,
-            y, width, height, unpack_flip_y, unpack_premultiply_alpha,
-            unpack_unmultiply_alpha);
+    c->Init(source_id, source_level, dest_target, dest_id, dest_level, xoffset,
+            yoffset, x, y, width, height, unpack_flip_y,
+            unpack_premultiply_alpha, unpack_unmultiply_alpha);
   }
 }
 

@@ -351,7 +351,7 @@ class GLCopyTextureCHROMIUMTest
     EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
     if (copy_type == TexImage) {
-      glCopyTextureCHROMIUM(textures_[0], source_level, textures_[1],
+      glCopyTextureCHROMIUM(textures_[0], source_level, target, textures_[1],
                             dest_level, dest_format_type.internal_format,
                             dest_format_type.type, false, false, false);
     } else {
@@ -360,7 +360,7 @@ class GLCopyTextureCHROMIUMTest
                    height_, 0, dest_format_type.format, dest_format_type.type,
                    nullptr);
 
-      glCopySubTextureCHROMIUM(textures_[0], source_level, textures_[1],
+      glCopySubTextureCHROMIUM(textures_[0], source_level, target, textures_[1],
                                dest_level, 0, 0, 0, 0, width_, height_, false,
                                false, false);
     }
@@ -481,15 +481,15 @@ TEST_P(GLCopyTextureCHROMIUMTest, Basic) {
                pixels);
 
   if (copy_type == TexImage) {
-    glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
+    glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                          GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
   } else {
     glBindTexture(GL_TEXTURE_2D, textures_[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  nullptr);
 
-    glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0, 1, 1,
-                             false, false, false);
+    glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 0,
+                             0, 0, 0, 1, 1, false, false, false);
   }
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
@@ -621,13 +621,13 @@ TEST_P(GLCopyTextureCHROMIUMTest, ImmutableTexture) {
       EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
       if (copy_type == TexImage) {
-        glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0,
+        glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
                               ExtractFormatFrom(dest_internal_format),
                               GL_UNSIGNED_BYTE, false, false, false);
         EXPECT_TRUE(glGetError() == GL_INVALID_OPERATION);
       } else {
-        glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0,
-                                 1, 1, false, false, false);
+        glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1],
+                                 0, 0, 0, 0, 0, 1, 1, false, false, false);
         EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
         // Check the FB is still bound.
@@ -665,7 +665,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormat) {
       EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
       if (copy_type == TexImage) {
-        glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0,
+        glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
                               dest_formats[dest_index], GL_UNSIGNED_BYTE, false,
                               false, false);
       } else {
@@ -674,8 +674,8 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormat) {
                      dest_formats[dest_index], GL_UNSIGNED_BYTE, nullptr);
         EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
-        glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0,
-                                 1, 1, false, false, false);
+        glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1],
+                                 0, 0, 0, 0, 0, 1, 1, false, false, false);
       }
 
       EXPECT_TRUE(GL_NO_ERROR == glGetError()) << "src_index:" << src_index
@@ -699,7 +699,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
   for (size_t dest_index = 0; dest_index < arraysize(unsupported_dest_formats);
        dest_index++) {
     if (copy_type == TexImage) {
-      glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0,
+      glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
                             unsupported_dest_formats[dest_index],
                             GL_UNSIGNED_BYTE, false, false, false);
     } else {
@@ -707,8 +707,8 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
       glTexImage2D(GL_TEXTURE_2D, 0, unsupported_dest_formats[dest_index], 1, 1,
                    0, unsupported_dest_formats[dest_index], GL_UNSIGNED_BYTE,
                    nullptr);
-      glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0, 1,
-                               1, false, false, false);
+      glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                               0, 0, 0, 0, 1, 1, false, false, false);
     }
     EXPECT_TRUE(GL_INVALID_OPERATION == glGetError())
         << "dest_index:" << dest_index;
@@ -733,7 +733,7 @@ TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatTypeCombinationNotSupported) {
   };
   for (size_t dest_index = 0; dest_index < arraysize(unsupported_format_types);
        dest_index++) {
-    glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0,
+    glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
                           unsupported_format_types[dest_index].format,
                           unsupported_format_types[dest_index].type, false,
                           false, false);
@@ -828,8 +828,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, RedefineDestinationTexture) {
 
   // If the dest texture has different properties, glCopyTextureCHROMIUM()
   // redefines them.
-  glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE, false, false, false);
+  glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                        GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   // glTexSubImage2D() succeeds because textures_[1] is redefined into 2x2
@@ -901,11 +901,11 @@ TEST_P(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
     glActiveTexture(GL_TEXTURE1 + x);
 
     if (copy_type == TexImage) {
-      glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0, GL_RGBA,
-                            GL_UNSIGNED_BYTE, false, false, false);
+      glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                            GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
     } else {
-      glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0, 1,
-                               1, false, false, false);
+      glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                               0, 0, 0, 0, 1, 1, false, false, false);
     }
     EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
@@ -964,11 +964,11 @@ TEST_P(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {
   glBindTexture(GL_TEXTURE_2D, texture_ids[1]);
 
   if (copy_type == TexImage) {
-    glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
+    glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                          GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
   } else {
-    glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0, 1, 1,
-                             false, false, false);
+    glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 0,
+                             0, 0, 0, 1, 1, false, false, false);
   }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
@@ -1039,11 +1039,11 @@ TEST_P(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
   GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color, nullptr);
 
   if (copy_type == TexImage) {
-    glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
+    glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                          GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
   } else {
-    glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0, 1, 1,
-                             false, false, false);
+    glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 0,
+                             0, 0, 0, 1, 1, false, false, false);
   }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
@@ -1154,14 +1154,14 @@ TEST_P(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
   if (copy_type == TexImage) {
-    glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
+    glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                          GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
   } else {
     glBindTexture(GL_TEXTURE_2D, textures_[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  nullptr);
-    glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0, 1, 1,
-                             false, false, false);
+    glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 0,
+                             0, 0, 0, 1, 1, false, false, false);
   }
 
   // test using program after
@@ -1190,14 +1190,14 @@ TEST_P(GLCopyTextureCHROMIUMTest, UninitializedSource) {
                GL_UNSIGNED_BYTE, nullptr);
 
   if (copy_type == TexImage) {
-    glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
+    glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                          GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
   } else {
     glBindTexture(GL_TEXTURE_2D, textures_[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, nullptr);
-    glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 0, 0,
-                             kWidth, kHeight, false, false, false);
+    glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 0,
+                             0, 0, 0, kWidth, kHeight, false, false, false);
   }
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
@@ -1228,28 +1228,28 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureDimension) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
 
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 1, 1, 0, 0, 1, 1,
-                           false, false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 1,
+                           1, 0, 0, 1, 1, false, false, false);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   // xoffset < 0
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, -1, 1, 0, 0, 1, 1,
-                           false, false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, -1,
+                           1, 0, 0, 1, 1, false, false, false);
   EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
 
   // x < 0
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 1, 1, -1, 0, 1, 1,
-                           false, false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 1,
+                           1, -1, 0, 1, 1, false, false, false);
   EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
 
   // xoffset + width > dest_width
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 2, 2, 0, 0, 2, 2,
-                           false, false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 2,
+                           2, 0, 0, 2, 2, false, false, false);
   EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
 
   // x + width > source_width
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 0, 1, 1, 2, 2,
-                           false, false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 0,
+                           0, 1, 1, 2, 2, false, false, false);
   EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
 
   glDeleteTextures(2, textures_);
@@ -1266,20 +1266,20 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureInvalidTextureIds) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
 
-  glCopyTextureCHROMIUM(textures_[0], 0, 99993, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                        false, false, false);
-  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
-
-  glCopyTextureCHROMIUM(99994, 0, textures_[1], 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                        false, false, false);
-  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
-
-  glCopyTextureCHROMIUM(99995, 0, 99996, 0, GL_RGBA, GL_UNSIGNED_BYTE, false,
-                        false, false);
-  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
-
-  glCopyTextureCHROMIUM(textures_[0], 0, textures_[1], 0, GL_RGBA,
+  glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, 99993, 0, GL_RGBA,
                         GL_UNSIGNED_BYTE, false, false, false);
+  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
+
+  glCopyTextureCHROMIUM(99994, 0, GL_TEXTURE_2D, textures_[1], 0, GL_RGBA,
+                        GL_UNSIGNED_BYTE, false, false, false);
+  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
+
+  glCopyTextureCHROMIUM(99995, 0, GL_TEXTURE_2D, 99996, 0, GL_RGBA,
+                        GL_UNSIGNED_BYTE, false, false, false);
+  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
+
+  glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                        GL_RGBA, GL_UNSIGNED_BYTE, false, false, false);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   glDeleteTextures(2, textures_);
@@ -1296,20 +1296,20 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureInvalidTextureIds) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
 
-  glCopySubTextureCHROMIUM(textures_[0], 0, 99993, 0, 1, 1, 0, 0, 1, 1, false,
-                           false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, 99993, 0, 1, 1, 0, 0,
+                           1, 1, false, false, false);
   EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
 
-  glCopySubTextureCHROMIUM(99994, 0, textures_[1], 0, 1, 1, 0, 0, 1, 1, false,
-                           false, false);
+  glCopySubTextureCHROMIUM(99994, 0, GL_TEXTURE_2D, textures_[1], 0, 1, 1, 0, 0,
+                           1, 1, false, false, false);
   EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
 
-  glCopySubTextureCHROMIUM(99995, 0, 99996, 0, 1, 1, 0, 0, 1, 1, false, false,
-                           false);
-  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
-
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 1, 1, 0, 0, 1, 1,
+  glCopySubTextureCHROMIUM(99995, 0, GL_TEXTURE_2D, 99996, 0, 1, 1, 0, 0, 1, 1,
                            false, false, false);
+  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
+
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 1,
+                           1, 0, 0, 1, 1, false, false, false);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   glDeleteTextures(2, textures_);
@@ -1330,14 +1330,14 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureOffset) {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                transparent_pixels);
 
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 1, 1, 0, 0, 1, 1,
-                           false, false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 1,
+                           1, 0, 0, 1, 1, false, false, false);
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 1, 0, 1, 0, 1, 1,
-                           false, false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 1,
+                           0, 1, 0, 1, 1, false, false, false);
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
-  glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, 0, 1, 0, 1, 1, 1,
-                           false, false, false);
+  glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 0,
+                           1, 0, 1, 1, 1, false, false, false);
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Check the FB is still bound.
@@ -1427,9 +1427,10 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureBetweenTexture2DAndRectangleArb) {
       // Copy the subtexture x=[13,18) y=[6,9) to the destination.
       glClearColor(grey[0] / 255.f, grey[1] / 255.f, grey[2] / 255.f, 1.0);
       glClear(GL_COLOR_BUFFER_BIT);
-      glCopySubTextureCHROMIUM(textures_[0], 0, textures_[1], 0, copy_region_x,
-                               copy_region_y, 13, 6, copy_region_width,
-                               copy_region_height, false, false, false);
+      glCopySubTextureCHROMIUM(textures_[0], 0, dest_target, textures_[1], 0,
+                               copy_region_x, copy_region_y, 13, 6,
+                               copy_region_width, copy_region_height, false,
+                               false, false);
       EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
       for (GLint x = 0; x < dest_width; ++x) {

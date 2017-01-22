@@ -259,12 +259,12 @@ bool ImageBuffer::copyToPlatformTexture(SnapshotReason reason,
   // semantics are reversed.
   // It is expected that callers of this method have already allocated
   // the platform texture with the appropriate size.
-  gl->CopySubTextureCHROMIUM(sourceTexture, 0, texture, 0, destPoint.x(),
-                             destPoint.y(), sourceSubRectangle.x(),
-                             sourceSubRectangle.y(), sourceSubRectangle.width(),
-                             sourceSubRectangle.height(),
-                             flipY ? GL_FALSE : GL_TRUE, GL_FALSE,
-                             premultiplyAlpha ? GL_FALSE : GL_TRUE);
+  gl->CopySubTextureCHROMIUM(
+      sourceTexture, 0, GL_TEXTURE_2D, texture, 0, destPoint.x(), destPoint.y(),
+      sourceSubRectangle.x(), sourceSubRectangle.y(),
+      sourceSubRectangle.width(), sourceSubRectangle.height(),
+      flipY ? GL_FALSE : GL_TRUE, GL_FALSE,
+      premultiplyAlpha ? GL_FALSE : GL_TRUE);
 
   gl->DeleteTextures(1, &sourceTexture);
 

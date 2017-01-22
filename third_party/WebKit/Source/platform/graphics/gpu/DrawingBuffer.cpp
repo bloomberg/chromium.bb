@@ -355,9 +355,11 @@ bool DrawingBuffer::finishPrepareTextureMailboxGpu(
     // If we can't discard the backbuffer, create (or recycle) a buffer to put
     // in the mailbox, and copy backbuffer's contents there.
     colorBufferForMailbox = createOrRecycleColorBuffer();
-    m_gl->CopySubTextureCHROMIUM(
-        m_backColorBuffer->textureId, 0, colorBufferForMailbox->textureId, 0, 0,
-        0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
+    m_gl->CopySubTextureCHROMIUM(m_backColorBuffer->textureId, 0,
+                                 colorBufferForMailbox->parameters.target,
+                                 colorBufferForMailbox->textureId, 0, 0, 0, 0,
+                                 0, m_size.width(), m_size.height(), GL_FALSE,
+                                 GL_FALSE, GL_FALSE);
   }
 
   // Put colorBufferForMailbox into its mailbox, and populate its
@@ -730,7 +732,7 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
     unpackPremultiplyAlphaNeeded = GL_TRUE;
 
   gl->CopySubTextureCHROMIUM(
-      sourceTexture, 0, texture, 0, destTextureOffset.x(),
+      sourceTexture, 0, GL_TEXTURE_2D, texture, 0, destTextureOffset.x(),
       destTextureOffset.y(), sourceSubRectangle.x(), sourceSubRectangle.y(),
       sourceSubRectangle.width(), sourceSubRectangle.height(), flipY,
       unpackPremultiplyAlphaNeeded, unpackUnpremultiplyAlphaNeeded);

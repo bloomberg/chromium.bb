@@ -917,6 +917,7 @@ void GLES2InterfaceStub::PostSubBufferCHROMIUM(GLint /* x */,
 void GLES2InterfaceStub::CopyTextureCHROMIUM(
     GLenum /* source_id */,
     GLint /* source_level */,
+    GLenum /* dest_target */,
     GLenum /* dest_id */,
     GLint /* dest_level */,
     GLint /* internalformat */,
@@ -927,6 +928,7 @@ void GLES2InterfaceStub::CopyTextureCHROMIUM(
 void GLES2InterfaceStub::CopySubTextureCHROMIUM(
     GLenum /* source_id */,
     GLint /* source_level */,
+    GLenum /* dest_target */,
     GLenum /* dest_id */,
     GLint /* dest_level */,
     GLint /* xoffset */,

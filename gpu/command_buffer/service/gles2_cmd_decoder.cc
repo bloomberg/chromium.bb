@@ -953,6 +953,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoCopyTextureCHROMIUM(GLuint source_id,
                              GLint source_level,
+                             GLenum dest_target,
                              GLuint dest_id,
                              GLint dest_level,
                              GLenum internal_format,
@@ -963,6 +964,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoCopySubTextureCHROMIUM(GLuint source_id,
                                 GLint source_level,
+                                GLenum dest_target,
                                 GLuint dest_id,
                                 GLint dest_level,
                                 GLint xoffset,
@@ -2019,6 +2021,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     GLsizei width, GLsizei height, GLsizei depth, GLenum format,
     Texture* texture);
   bool ValidateCopyTextureCHROMIUMTextures(const char* function_name,
+                                           GLenum dest_target,
                                            TextureRef* source_texture_ref,
                                            TextureRef* dest_texture_ref);
   CopyTextureMethod ValidateCopyTextureCHROMIUMInternalFormats(
@@ -16145,6 +16148,7 @@ bool GLES2DecoderImpl::DoIsSync(GLuint client_id) {
 
 bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMTextures(
     const char* function_name,
+    GLenum dest_target,
     TextureRef* source_texture_ref,
     TextureRef* dest_texture_ref) {
   if (!source_texture_ref || !dest_texture_ref) {
@@ -16160,8 +16164,15 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMTextures(
     return false;
   }
 
+  if (dest_texture->target() !=
+      GLES2Util::GLFaceTargetToTextureTarget(dest_target)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "target should be aligned with dest target");
+    return false;
+  }
   switch (dest_texture->target()) {
     case GL_TEXTURE_2D:
+    case GL_TEXTURE_CUBE_MAP:
     case GL_TEXTURE_RECTANGLE_ARB:
       break;
     default:
@@ -16346,6 +16357,7 @@ bool GLES2DecoderImpl::ValidateCompressedCopyTextureCHROMIUM(
 void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     GLuint source_id,
     GLint source_level,
+    GLenum dest_target,
     GLuint dest_id,
     GLint dest_level,
     GLenum internal_format,
@@ -16359,8 +16371,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   TextureRef* source_texture_ref = GetTexture(source_id);
   TextureRef* dest_texture_ref = GetTexture(dest_id);
 
-  if (!ValidateCopyTextureCHROMIUMTextures(kFunctionName, source_texture_ref,
-                                           dest_texture_ref)) {
+  if (!ValidateCopyTextureCHROMIUMTextures(
+          kFunctionName, dest_target, source_texture_ref, dest_texture_ref)) {
     return;
   }
 
@@ -16374,7 +16386,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   Texture* source_texture = source_texture_ref->texture();
   Texture* dest_texture = dest_texture_ref->texture();
   GLenum source_target = source_texture->target();
-  GLenum dest_target = dest_texture->target();
+  GLenum dest_binding_target = dest_texture->target();
 
   GLenum source_type = 0;
   GLenum source_internal_format = 0;
@@ -16481,7 +16493,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       dest_type_previous != dest_type) {
     // Ensure that the glTexImage2D succeeds.
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(kFunctionName);
-    glBindTexture(dest_target, dest_texture->service_id());
+    glBindTexture(dest_binding_target, dest_texture->service_id());
     glTexImage2D(dest_target, dest_level,
                  TextureManager::AdjustTexInternalFormat(feature_info_.get(),
                                                          internal_format),
@@ -16490,7 +16502,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
                  dest_type, nullptr);
     GLenum error = LOCAL_PEEK_GL_ERROR(kFunctionName);
     if (error != GL_NO_ERROR) {
-      RestoreCurrentTextureBindings(&state_, dest_target);
+      RestoreCurrentTextureBindings(&state_, dest_binding_target);
       return;
     }
 
@@ -16510,7 +16522,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexImage.
   if (image && dest_level == 0 && !unpack_flip_y &&
       !unpack_premultiply_alpha_change) {
-    glBindTexture(dest_target, dest_texture->service_id());
+    glBindTexture(dest_binding_target, dest_texture->service_id());
     if (image->CopyTexImage(dest_target))
       return;
   }
@@ -16546,6 +16558,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
     GLuint source_id,
     GLint source_level,
+    GLenum dest_target,
     GLuint dest_id,
     GLint dest_level,
     GLint xoffset,
@@ -16563,8 +16576,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   TextureRef* source_texture_ref = GetTexture(source_id);
   TextureRef* dest_texture_ref = GetTexture(dest_id);
 
-  if (!ValidateCopyTextureCHROMIUMTextures(kFunctionName, source_texture_ref,
-                                           dest_texture_ref)) {
+  if (!ValidateCopyTextureCHROMIUMTextures(
+          kFunctionName, dest_target, source_texture_ref, dest_texture_ref)) {
     return;
   }
 
@@ -16578,7 +16591,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   Texture* source_texture = source_texture_ref->texture();
   Texture* dest_texture = dest_texture_ref->texture();
   GLenum source_target = source_texture->target();
-  GLenum dest_target = dest_texture->target();
+  GLenum dest_binding_target = dest_texture->target();
   int source_width = 0;
   int source_height = 0;
   gl::GLImage* image =
@@ -16729,8 +16742,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexSubImage.
   if (image && dest_level == 0 && !unpack_flip_y &&
       !unpack_premultiply_alpha_change) {
-    ScopedTextureBinder binder(
-        &state_, dest_texture->service_id(), dest_target);
+    ScopedTextureBinder binder(&state_, dest_texture->service_id(),
+                               dest_binding_target);
     if (image->CopyTexSubImage(dest_target, gfx::Point(xoffset, yoffset),
                                gfx::Rect(x, y, width, height))) {
       return;

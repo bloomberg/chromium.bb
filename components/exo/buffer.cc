@@ -286,9 +286,9 @@ gpu::SyncToken Buffer::Texture::CopyTexImage(Texture* destination,
     gles2->BindTexture(texture_target_, texture_id_);
     DCHECK_NE(image_id_, 0u);
     gles2->BindTexImage2DCHROMIUM(texture_target_, image_id_);
-    gles2->CopyTextureCHROMIUM(texture_id_, 0, destination->texture_id_, 0,
-                               internalformat_, GL_UNSIGNED_BYTE, false, false,
-                               false);
+    gles2->CopyTextureCHROMIUM(texture_id_, 0, destination->texture_target_,
+                               destination->texture_id_, 0, internalformat_,
+                               GL_UNSIGNED_BYTE, false, false, false);
     DCHECK_NE(query_id_, 0u);
     gles2->BeginQueryEXT(query_type_, query_id_);
     gles2->ReleaseTexImage2DCHROMIUM(texture_target_, image_id_);

@@ -120,8 +120,9 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
       gl->GenTextures(1, &texture_copy);
       DCHECK(texture_copy);
       gl->BindTexture(GL_TEXTURE_2D, texture_copy);
-      gl->CopyTextureCHROMIUM(source_textures[i].fID, 0, texture_copy, 0,
-                              GL_RGB, GL_UNSIGNED_BYTE, false, true, false);
+      gl->CopyTextureCHROMIUM(source_textures[i].fID, 0, GL_TEXTURE_2D,
+                              texture_copy, 0, GL_RGB, GL_UNSIGNED_BYTE, false,
+                              true, false);
 
       gl->DeleteTextures(1, &source_textures[i].fID);
       source_textures[i].fID = texture_copy;
@@ -783,8 +784,8 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   // Make sure to only copy the natural size to avoid putting garbage
   // into the bottom of the destination texture.
   const gfx::Size& natural_size = video_frame->natural_size();
-  gl->CopySubTextureCHROMIUM(source_texture, 0, texture, 0, 0, 0, 0, 0,
-                             natural_size.width(), natural_size.height(),
+  gl->CopySubTextureCHROMIUM(source_texture, 0, GL_TEXTURE_2D, texture, 0, 0, 0,
+                             0, 0, natural_size.width(), natural_size.height(),
                              flip_y, premultiply_alpha, false);
   gl->DeleteTextures(1, &source_texture);
   gl->Flush();
@@ -840,8 +841,9 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     // into the bottom of the destination texture.
     const gfx::Size& natural_size = video_frame->natural_size();
     destination_gl->CopySubTextureCHROMIUM(
-        intermediate_texture, 0, texture, 0, 0, 0, 0, 0, natural_size.width(),
-        natural_size.height(), flip_y, premultiply_alpha, false);
+        intermediate_texture, 0, GL_TEXTURE_2D, texture, 0, 0, 0, 0, 0,
+        natural_size.width(), natural_size.height(), flip_y, premultiply_alpha,
+        false);
     destination_gl->DeleteTextures(1, &intermediate_texture);
 
     // Wait for destination context to consume mailbox before deleting it in

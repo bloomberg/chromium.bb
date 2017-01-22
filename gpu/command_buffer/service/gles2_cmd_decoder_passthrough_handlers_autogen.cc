@@ -3678,6 +3678,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCopyTextureCHROMIUM(
       *static_cast<const volatile gles2::cmds::CopyTextureCHROMIUM*>(cmd_data);
   GLenum source_id = static_cast<GLenum>(c.source_id);
   GLint source_level = static_cast<GLint>(c.source_level);
+  GLenum dest_target = static_cast<GLenum>(c.dest_target);
   GLenum dest_id = static_cast<GLenum>(c.dest_id);
   GLint dest_level = static_cast<GLint>(c.dest_level);
   GLint internalformat = static_cast<GLint>(c.internalformat);
@@ -3688,8 +3689,9 @@ error::Error GLES2DecoderPassthroughImpl::HandleCopyTextureCHROMIUM(
   GLboolean unpack_unmultiply_alpha =
       static_cast<GLboolean>(c.unpack_unmultiply_alpha);
   error::Error error = DoCopyTextureCHROMIUM(
-      source_id, source_level, dest_id, dest_level, internalformat, dest_type,
-      unpack_flip_y, unpack_premultiply_alpha, unpack_unmultiply_alpha);
+      source_id, source_level, dest_target, dest_id, dest_level, internalformat,
+      dest_type, unpack_flip_y, unpack_premultiply_alpha,
+      unpack_unmultiply_alpha);
   if (error != error::kNoError) {
     return error;
   }
@@ -3704,6 +3706,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCopySubTextureCHROMIUM(
           cmd_data);
   GLenum source_id = static_cast<GLenum>(c.source_id);
   GLint source_level = static_cast<GLint>(c.source_level);
+  GLenum dest_target = static_cast<GLenum>(c.dest_target);
   GLenum dest_id = static_cast<GLenum>(c.dest_id);
   GLint dest_level = static_cast<GLint>(c.dest_level);
   GLint xoffset = static_cast<GLint>(c.xoffset);
@@ -3718,8 +3721,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleCopySubTextureCHROMIUM(
   GLboolean unpack_unmultiply_alpha =
       static_cast<GLboolean>(c.unpack_unmultiply_alpha);
   error::Error error = DoCopySubTextureCHROMIUM(
-      source_id, source_level, dest_id, dest_level, xoffset, yoffset, x, y,
-      width, height, unpack_flip_y, unpack_premultiply_alpha,
+      source_id, source_level, dest_target, dest_id, dest_level, xoffset,
+      yoffset, x, y, width, height, unpack_flip_y, unpack_premultiply_alpha,
       unpack_unmultiply_alpha);
   if (error != error::kNoError) {
     return error;
