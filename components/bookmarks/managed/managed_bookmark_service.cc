@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -66,10 +66,10 @@ class BookmarkPermanentNodeLoader {
 // start assigning id. |next_node_id| is updated as a side effect of calling
 // this method.
 BookmarkPermanentNodeList LoadExtraNodes(
-    ScopedVector<BookmarkPermanentNodeLoader> loaders,
+    std::vector<std::unique_ptr<BookmarkPermanentNodeLoader>> loaders,
     int64_t* next_node_id) {
   BookmarkPermanentNodeList extra_nodes;
-  for (auto* loader : loaders)
+  for (auto& loader : loaders)
     extra_nodes.push_back(loader->Load(next_node_id));
   return extra_nodes;
 }
@@ -116,12 +116,12 @@ LoadExtraCallback ManagedBookmarkService::GetLoadExtraNodesCallback() {
   managed_node_ = managed.get();
   supervised_node_ = supervised.get();
 
-  ScopedVector<BookmarkPermanentNodeLoader> loaders;
-  loaders.push_back(new BookmarkPermanentNodeLoader(
+  std::vector<std::unique_ptr<BookmarkPermanentNodeLoader>> loaders;
+  loaders.push_back(base::MakeUnique<BookmarkPermanentNodeLoader>(
       std::move(managed),
       managed_bookmarks_tracker_->GetInitialManagedBookmarks(),
       IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
-  loaders.push_back(new BookmarkPermanentNodeLoader(
+  loaders.push_back(base::MakeUnique<BookmarkPermanentNodeLoader>(
       std::move(supervised),
       supervised_bookmarks_tracker_->GetInitialManagedBookmarks(),
       IDS_BOOKMARK_BAR_SUPERVISED_FOLDER_DEFAULT_NAME));
