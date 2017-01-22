@@ -5,12 +5,12 @@
 #include "components/cryptauth/device_to_device_authenticator.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/timer/mock_timer.h"
 #include "components/cryptauth/authenticator.h"
@@ -80,7 +80,7 @@ class FakeConnection : public Connection {
 
   void ClearMessageBuffer() { message_buffer_.clear(); }
 
-  const ScopedVector<WireMessage>& message_buffer() {
+  const std::vector<std::unique_ptr<WireMessage>>& message_buffer() {
     return message_buffer_;
   }
 
@@ -100,7 +100,7 @@ class FakeConnection : public Connection {
   }
 
  private:
-  ScopedVector<WireMessage> message_buffer_;
+  std::vector<std::unique_ptr<WireMessage>> message_buffer_;
 
   bool connection_blocked_;
 
@@ -349,10 +349,10 @@ TEST_F(ProximityAuthDeviceToDeviceAuthenticatorTest,
   // completes.
   WireMessage wire_message(base::RandBytesAsString(300u),
                            Authenticator::kAuthenticationFeature);
-  connection_.SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+  connection_.SendMessage(base::MakeUnique<WireMessage>(
       base::RandBytesAsString(300u), Authenticator::kAuthenticationFeature));
   connection_.OnBytesReceived(wire_message.Serialize());
-  connection_.SendMessage(base::MakeUnique<cryptauth::WireMessage>(
+  connection_.SendMessage(base::MakeUnique<WireMessage>(
       base::RandBytesAsString(300u), Authenticator::kAuthenticationFeature));
   connection_.OnBytesReceived(wire_message.Serialize());
 }
