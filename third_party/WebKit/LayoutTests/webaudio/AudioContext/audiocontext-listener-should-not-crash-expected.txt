@@ -1,5 +1,0 @@
-PASS document.addEventListener should not crash.
-PASS successfullyParsed is true
-
-TEST COMPLETE
-

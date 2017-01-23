@@ -1,8 +1,27 @@
-<script src="../../resources/js-test.js"></script>
+<!doctype html>
+<html>
+<head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/audit.js"></script>
+</head>
+<body>
 <script>
-var context = new AudioContext();
-context.listener;
-document.addEventListener(0, context);
-testPassed("document.addEventListener should not crash.");
-</script>
+let audit = new Audit.createTaskRunner();
 
+audit.define("test", function (task, should) {
+  let context = new AudioContext();
+  should(context.listener instanceof AudioListener,
+      "context.listener is AudioListener")
+    .beTrue();
+  should(function () {
+      document.addEventListener(0, context);
+    }, "document.addEventListener(0, context) should not crash")
+    .notThrow();
+  task.done();
+});
+
+audit.run();
+</script>
+</body>
+</html>
