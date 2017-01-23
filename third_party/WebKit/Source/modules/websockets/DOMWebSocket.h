@@ -188,7 +188,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
     State m_state;
     Member<EventTarget> m_target;
     HeapDeque<Member<Event>> m_events;
-    Timer<EventQueue> m_resumeTimer;
+    TaskRunnerTimer<EventQueue> m_resumeTimer;
   };
 
   enum WebSocketSendType {
@@ -253,7 +253,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   String m_extensions;
 
   Member<EventQueue> m_eventQueue;
-  Timer<DOMWebSocket> m_bufferedAmountConsumeTimer;
+  TaskRunnerTimer<DOMWebSocket> m_bufferedAmountConsumeTimer;
 };
 
 }  // namespace blink

@@ -40,6 +40,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -70,7 +71,10 @@ namespace blink {
 DOMWebSocket::EventQueue::EventQueue(EventTarget* target)
     : m_state(Active),
       m_target(target),
-      m_resumeTimer(this, &EventQueue::resumeTimerFired) {}
+      m_resumeTimer(TaskRunnerHelper::get(TaskType::WebSocket,
+                                          target->getExecutionContext()),
+                    this,
+                    &EventQueue::resumeTimerFired) {}
 
 DOMWebSocket::EventQueue::~EventQueue() {
   contextDestroyed();
@@ -229,6 +233,7 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
       m_extensions(""),
       m_eventQueue(EventQueue::create(this)),
       m_bufferedAmountConsumeTimer(
+          TaskRunnerHelper::get(TaskType::WebSocket, context),
           this,
           &DOMWebSocket::reflectBufferedAmountConsumption) {}
 
