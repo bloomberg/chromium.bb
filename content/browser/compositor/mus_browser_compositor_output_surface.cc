@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
-#include "ui/aura/mus/window_compositor_frame_sink.h"
+#include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"

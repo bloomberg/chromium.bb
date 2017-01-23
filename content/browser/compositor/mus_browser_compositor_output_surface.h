@@ -16,11 +16,14 @@
 
 namespace aura {
 class Window;
-class WindowCompositorFrameSink;
 }
 
 namespace gpu {
 class GpuMemoryBufferManager;
+}
+
+namespace ui {
+class WindowCompositorFrameSink;
 }
 
 namespace content {
@@ -68,7 +71,7 @@ class MusBrowserCompositorOutputSurface
   const gpu::Mailbox& GetMailboxFromResourceId(uint32_t id);
 
   aura::Window* window_;
-  std::unique_ptr<aura::WindowCompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<ui::WindowCompositorFrameSink> compositor_frame_sink_;
   std::vector<uint32_t> free_resource_ids_;
   std::vector<gpu::Mailbox> mailboxes_;
   cc::BeginFrameSource* begin_frame_source_;

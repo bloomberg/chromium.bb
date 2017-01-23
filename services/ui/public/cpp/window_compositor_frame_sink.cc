@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
-#include "gpu/ipc/client/gpu_channel_host.h"
 
 namespace ui {
 
@@ -84,8 +83,7 @@ WindowCompositorFrameSink::WindowCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    mojo::InterfacePtrInfo<cc::mojom::MojoCompositorFrameSink>
-        compositor_frame_sink_info,
+    cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
     cc::mojom::MojoCompositorFrameSinkClientRequest client_request)
     : cc::CompositorFrameSink(std::move(context_provider),
                               nullptr,
@@ -129,9 +127,19 @@ WindowCompositorFrameSinkBinding::~WindowCompositorFrameSinkBinding() {}
 
 WindowCompositorFrameSinkBinding::WindowCompositorFrameSinkBinding(
     cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink_request,
-    mojo::InterfacePtrInfo<cc::mojom::MojoCompositorFrameSinkClient>
+    cc::mojom::MojoCompositorFrameSinkClientPtrInfo
         compositor_frame_sink_client)
     : compositor_frame_sink_request_(std::move(compositor_frame_sink_request)),
       compositor_frame_sink_client_(std::move(compositor_frame_sink_client)) {}
+
+cc::mojom::MojoCompositorFrameSinkRequest
+WindowCompositorFrameSinkBinding::TakeFrameSinkRequest() {
+  return std::move(compositor_frame_sink_request_);
+}
+
+cc::mojom::MojoCompositorFrameSinkClientPtrInfo
+WindowCompositorFrameSinkBinding::TakeFrameSinkClient() {
+  return std::move(compositor_frame_sink_client_);
+}
 
 }  // namespace ui

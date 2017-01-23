@@ -39,8 +39,6 @@ class WindowCompositorFrameSink
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
 
  private:
-  friend class Window;
-
   WindowCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       scoped_refptr<cc::ContextProvider> context_provider,
@@ -74,7 +72,7 @@ class WindowCompositorFrameSink
 
 // A WindowCompositorFrameSinkBinding is a bundle of mojo interfaces that is
 // created by WindowCompositorFrameSink::Create and is used by or implemented by
-// Mus when passed into Window::AttachCompositorFrameSink.
+// Mus when a window is attached to a frame-sink..
 // WindowCompositorFrameSinkBinding has no standalone functionality. Its purpose
 // is to allow safely creating and attaching a CompositorFrameSink on one
 // thread and using it on another.
@@ -82,8 +80,10 @@ class WindowCompositorFrameSinkBinding {
  public:
   ~WindowCompositorFrameSinkBinding();
 
+  cc::mojom::MojoCompositorFrameSinkRequest TakeFrameSinkRequest();
+  cc::mojom::MojoCompositorFrameSinkClientPtrInfo TakeFrameSinkClient();
+
  private:
-  friend class Window;
   friend class WindowCompositorFrameSink;
 
   WindowCompositorFrameSinkBinding(

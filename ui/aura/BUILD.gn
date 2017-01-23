@@ -98,8 +98,6 @@ component("aura") {
     "mus/text_input_client_impl.h",
     "mus/user_activity_forwarder.cc",
     "mus/user_activity_forwarder.h",
-    "mus/window_compositor_frame_sink.cc",
-    "mus/window_compositor_frame_sink.h",
     "mus/window_manager_delegate.cc",
     "mus/window_manager_delegate.h",
     "mus/window_mus.h",

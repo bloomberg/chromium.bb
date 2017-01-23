@@ -16,5 +16,6 @@ include_rules = [
   "+services/ui/public/cpp/gpu",
   "+services/ui/public/cpp/property_type_converters.h",
   "+services/ui/public/cpp/raster_thread_helper.h",
+  "+services/ui/public/cpp/window_compositor_frame_sink.h",
   "+ui/gl/gl_bindings.h",
 ]
