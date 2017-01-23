@@ -120,7 +120,7 @@ wet_module_init(struct weston_compositor *compositor,
 {
 	char *watchdog_time_env;
 	struct wl_event_loop *loop;
-	long watchdog_time_conv;
+	int32_t watchdog_time_conv;
 	struct systemd_notifier *notifier;
 
 	notifier = zalloc(sizeof *notifier);
