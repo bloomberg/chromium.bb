@@ -82,7 +82,7 @@ class WebMediaPlayerAndroid
       blink::WebFrame* frame,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-      base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
+      media::WebMediaPlayerDelegate* delegate,
       RendererMediaPlayerManager* player_manager,
       scoped_refptr<StreamTextureFactory> factory,
       int frame_id,
@@ -277,7 +277,13 @@ class WebMediaPlayerAndroid
   // |delegate_id_|; an id provided after registering with the delegate.  The
   // WebMediaPlayer may also receive directives (play, pause) from the delegate
   // via the WebMediaPlayerDelegate::Observer interface after registration.
-  base::WeakPtr<media::WebMediaPlayerDelegate> delegate_;
+  //
+  // NOTE: HTMLMediaElement is a Blink::SuspendableObject, and will receive a
+  // call to contextDestroyed() when Blink::Document::shutdown() is called.
+  // Document::shutdown() is called before the frame detaches (and before the
+  // frame is destroyed). RenderFrameImpl owns |delegate_| and is guaranteed
+  // to outlive |this|; thus it is safe to store |delegate_| as a raw pointer.
+  media::WebMediaPlayerDelegate* delegate_;
   int delegate_id_;
 
   // Callback responsible for determining if loading of media should be deferred

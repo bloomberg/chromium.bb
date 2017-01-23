@@ -133,7 +133,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-    base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
+    media::WebMediaPlayerDelegate* delegate,
     RendererMediaPlayerManager* player_manager,
     scoped_refptr<StreamTextureFactory> factory,
     int frame_id,
@@ -179,13 +179,12 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       volume_multiplier_(1.0),
       weak_factory_(this) {
   DCHECK(player_manager_);
+  DCHECK(delegate_);
 
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  if (delegate_) {
-    delegate_id_ = delegate_->AddObserver(this);
-    delegate_->SetIdle(delegate_id_, true);
-  }
+  delegate_id_ = delegate_->AddObserver(this);
+  delegate_->SetIdle(delegate_id_, true);
 
   player_id_ = player_manager_->RegisterMediaPlayer(this);
 
@@ -217,10 +216,8 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     current_frame_ = NULL;
   }
 
-  if (delegate_) {
-    delegate_->PlayerGone(delegate_id_);
-    delegate_->RemoveObserver(delegate_id_);
-  }
+  delegate_->PlayerGone(delegate_id_);
+  delegate_->RemoveObserver(delegate_id_);
 }
 
 void WebMediaPlayerAndroid::load(LoadType load_type,
@@ -297,7 +294,7 @@ void WebMediaPlayerAndroid::play() {
     bool can_video_play_in_background =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMediaSuspend) ||
-        (IsBackgroundVideoCandidate() && delegate_ &&
+        (IsBackgroundVideoCandidate() &&
          delegate_->IsBackgroundVideoPlaybackUnlocked());
     if (!can_video_play_in_background) {
       is_play_pending_ = true;
@@ -829,7 +826,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     // If we're paused after we receive metadata for the first time, tell the
     // delegate we can now be safely suspended due to inactivity if a subsequent
     // play event does not occur.
-    if (paused() && delegate_) {
+    if (paused()) {
       delegate_->DidPause(delegate_id_);
       delegate_->SetIdle(delegate_id_, true);
     }
@@ -957,8 +954,7 @@ void WebMediaPlayerAndroid::OnPlayerReleased() {
   if (is_playing_)
     OnMediaPlayerPause();
 
-  if (delegate_)
-    delegate_->PlayerGone(delegate_id_);
+  delegate_->PlayerGone(delegate_id_);
 }
 
 void WebMediaPlayerAndroid::SuspendAndReleaseResources() {
@@ -970,8 +966,7 @@ void WebMediaPlayerAndroid::SuspendAndReleaseResources() {
     case WebMediaPlayer::NetworkStateLoaded:
       Pause(false);
       client_->playbackStateChanged();
-      if (delegate_)
-        delegate_->PlayerGone(delegate_id_);
+      delegate_->PlayerGone(delegate_id_);
       break;
     // If a WebMediaPlayer instance has entered into one of these states,
     // the internal network state in HTMLMediaElement could be set to empty.
@@ -1201,30 +1196,28 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
   else
     interpolator_.StopInterpolating();
 
-  if (delegate_) {
-    if (is_playing) {
-      // We must specify either video or audio to the delegate, but neither may
-      // be known at this point -- there are no video only containers, so only
-      // send audio if we know for sure its audio.  The browser side player will
-      // fill in the correct value later for media sessions.
-      if (isRemote()) {
-        delegate_->PlayerGone(delegate_id_);
-      } else {
-        delegate_->DidPlay(delegate_id_, hasVideo(), !hasVideo(),
-                           media::DurationToMediaContentType(duration_));
-      }
-      delegate_->SetIdle(delegate_id_, false);
+  if (is_playing) {
+    // We must specify either video or audio to the delegate, but neither may
+    // be known at this point -- there are no video only containers, so only
+    // send audio if we know for sure its audio.  The browser side player will
+    // fill in the correct value later for media sessions.
+    if (isRemote()) {
+      delegate_->PlayerGone(delegate_id_);
     } else {
-      // Even if OnPlaybackComplete() has not been called yet, Blink may have
-      // already fired the ended event based on current time relative to
-      // duration -- so we need to check both possibilities here.
-      if (playback_completed_ || currentTime() >= duration()) {
-        delegate_->PlayerGone(delegate_id_);
-      } else {
-        delegate_->DidPause(delegate_id_);
-      }
-      delegate_->SetIdle(delegate_id_, true);
+      delegate_->DidPlay(delegate_id_, hasVideo(), !hasVideo(),
+                         media::DurationToMediaContentType(duration_));
     }
+    delegate_->SetIdle(delegate_id_, false);
+  } else {
+    // Even if OnPlaybackComplete() has not been called yet, Blink may have
+    // already fired the ended event based on current time relative to
+    // duration -- so we need to check both possibilities here.
+    if (playback_completed_ || currentTime() >= duration()) {
+      delegate_->PlayerGone(delegate_id_);
+    } else {
+      delegate_->DidPause(delegate_id_);
+    }
+    delegate_->SetIdle(delegate_id_, true);
   }
 }
 

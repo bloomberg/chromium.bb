@@ -176,7 +176,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-    base::WeakPtr<WebMediaPlayerDelegate> delegate,
+    WebMediaPlayerDelegate* delegate,
     std::unique_ptr<RendererFactory> renderer_factory,
     linked_ptr<UrlIndex> url_index,
     const WebMediaPlayerParams& params)
@@ -249,6 +249,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
+  DCHECK(delegate_);
 
   tick_clock_.reset(new base::DefaultTickClock());
 
@@ -258,10 +259,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   enable_fullscreen_video_overlays_ =
       base::FeatureList::IsEnabled(media::kOverlayFullscreenVideo);
 
-  if (delegate_) {
-    delegate_id_ = delegate_->AddObserver(this);
-    delegate_->SetIdle(delegate_id_, true);
-  }
+  delegate_id_ = delegate_->AddObserver(this);
+  delegate_->SetIdle(delegate_id_, true);
 
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
@@ -279,10 +278,9 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   suppress_destruction_errors_ = true;
-  if (delegate_) {
-    delegate_->PlayerGone(delegate_id_);
-    delegate_->RemoveObserver(delegate_id_);
-  }
+
+  delegate_->PlayerGone(delegate_id_);
+  delegate_->RemoveObserver(delegate_id_);
 
   // Finalize any watch time metrics before destroying the pipeline.
   watch_time_reporter_.reset();
@@ -429,8 +427,7 @@ void WebMediaPlayerImpl::play() {
   }
 #endif
   // TODO(sandersd): Do we want to reset the idle timer here?
-  if (delegate_)
-    delegate_->SetIdle(delegate_id_, false);
+  delegate_->SetIdle(delegate_id_, false);
   paused_ = false;
   pipeline_.SetPlaybackRate(playback_rate_);
   background_pause_timer_.Stop();
@@ -537,8 +534,7 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
 
   // TODO(sandersd): Move |seeking_| to PipelineController.
   // TODO(sandersd): Do we want to reset the idle timer here?
-  if (delegate_)
-    delegate_->SetIdle(delegate_id_, false);
+  delegate_->SetIdle(delegate_id_, false);
   ended_ = false;
   seeking_ = true;
   seek_time_ = time;
@@ -858,8 +854,7 @@ bool WebMediaPlayerImpl::didLoadingProgress() {
     // set.
     // TODO(sandersd): Should this be on the same stack? It might be surprising
     // that didLoadingProgress() can synchronously change state.
-    if (delegate_)
-      delegate_->ClearStaleFlag(delegate_id_);
+    delegate_->ClearStaleFlag(delegate_id_);
     UpdatePlayState();
   }
 
@@ -1467,8 +1462,7 @@ void WebMediaPlayerImpl::OnIdleTimeout() {
 
   // If we are attempting preroll, clear the stale flag.
   if (IsPrerollAttemptNeeded()) {
-    if (delegate_)
-      delegate_->ClearStaleFlag(delegate_id_);
+    delegate_->ClearStaleFlag(delegate_id_);
     return;
   }
 
@@ -1816,8 +1810,7 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 
 void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
                                           bool is_idle) {
-  if (!delegate_)
-    return;
+  DCHECK(delegate_);
 
   // Prevent duplicate delegate calls.
   // TODO(sandersd): Move this deduplication into the delegate itself.
@@ -1919,8 +1912,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
                                                      bool is_backgrounded) {
   PlayState result;
 
-  bool must_suspend = delegate_ && delegate_->IsFrameClosed();
-  bool is_stale = delegate_ && delegate_->IsStale(delegate_id_);
+  bool must_suspend = delegate_->IsFrameClosed();
+  bool is_stale = delegate_->IsStale(delegate_id_);
 
   // This includes both data source (before pipeline startup) and pipeline
   // errors.
@@ -1941,8 +1934,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   bool is_backgrounded_video = is_backgrounded && have_metadata && hasVideo();
   bool can_play_backgrounded = is_backgrounded_video && !is_remote &&
                                hasAudio() && IsResumeBackgroundVideosEnabled();
-  bool is_background_playing =
-      delegate_ && delegate_->IsBackgroundVideoPlaybackUnlocked();
+  bool is_background_playing = delegate_->IsBackgroundVideoPlaybackUnlocked();
   bool background_suspended = !is_streaming && is_backgrounded_video &&
                               !(can_play_backgrounded && is_background_playing);
   bool background_pause_suspended =
@@ -2000,7 +1992,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
 
   if (!has_session) {
     result.delegate_state = DelegateState::GONE;
-    result.is_idle = delegate_ && delegate_->IsIdle(delegate_id_);
+    result.is_idle = delegate_->IsIdle(delegate_id_);
   } else if (paused_ || has_session_suspended) {
     // TODO(sandersd): Is it possible to have a suspended session, be ended,
     // and not be paused? If so we should be in a PLAYING state.
@@ -2101,7 +2093,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
       pipeline_metadata_.natural_size,
       base::Bind(&GetCurrentTimeInternal, this)));
   watch_time_reporter_->OnVolumeChange(volume_);
-  if (delegate_ && delegate_->IsFrameHidden())
+  if (delegate_->IsFrameHidden())
     watch_time_reporter_->OnHidden();
   else
     watch_time_reporter_->OnShown();
@@ -2110,7 +2102,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
 bool WebMediaPlayerImpl::IsHidden() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  return delegate_ && delegate_->IsFrameHidden() && !delegate_->IsFrameClosed();
+  return delegate_->IsFrameHidden() && !delegate_->IsFrameClosed();
 }
 
 bool WebMediaPlayerImpl::IsStreaming() const {

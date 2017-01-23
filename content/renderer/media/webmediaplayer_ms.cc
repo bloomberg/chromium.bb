@@ -143,7 +143,7 @@ class WebMediaPlayerMS::FrameDeliverer {
 WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
-    base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
+    media::WebMediaPlayerDelegate* delegate,
     media::MediaLog* media_log,
     std::unique_ptr<MediaStreamRendererFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -178,8 +178,8 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       should_play_upon_shown_(false) {
   DVLOG(1) << __func__;
   DCHECK(client);
-  if (delegate_)
-    delegate_id_ = delegate_->AddObserver(this);
+  DCHECK(delegate_);
+  delegate_id_ = delegate_->AddObserver(this);
 
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
@@ -209,10 +209,8 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
-  if (delegate_) {
-    delegate_->PlayerGone(delegate_id_);
-    delegate_->RemoveObserver(delegate_id_);
-  }
+  delegate_->PlayerGone(delegate_id_);
+  delegate_->RemoveObserver(delegate_id_);
 }
 
 void WebMediaPlayerMS::load(LoadType load_type,
@@ -291,14 +289,12 @@ void WebMediaPlayerMS::play() {
   if (audio_renderer_)
     audio_renderer_->Play();
 
-  if (delegate_) {
-    // TODO(perkj, magjed): We use OneShot focus type here so that it takes
-    // audio focus once it starts, and then will not respond to further audio
-    // focus changes. See http://crbug.com/596516 for more details.
-    delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(),
-                       media::MediaContentType::OneShot);
-    delegate_->SetIdle(delegate_id_, false);
-  }
+  // TODO(perkj, magjed): We use OneShot focus type here so that it takes
+  // audio focus once it starts, and then will not respond to further audio
+  // focus changes. See http://crbug.com/596516 for more details.
+  delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(),
+                     media::MediaContentType::OneShot);
+  delegate_->SetIdle(delegate_id_, false);
 
   paused_ = false;
 }
@@ -321,10 +317,8 @@ void WebMediaPlayerMS::pause() {
   if (audio_renderer_)
     audio_renderer_->Pause();
 
-  if (delegate_) {
-    delegate_->DidPause(delegate_id_);
-    delegate_->SetIdle(delegate_id_, true);
-  }
+  delegate_->DidPause(delegate_id_);
+  delegate_->SetIdle(delegate_id_, true);
 
   paused_ = true;
 }
@@ -534,8 +528,7 @@ void WebMediaPlayerMS::OnFrameClosed() {
     should_play_upon_shown_ = true;
   }
 
-  if (delegate_)
-    delegate_->PlayerGone(delegate_id_);
+  delegate_->PlayerGone(delegate_id_);
 
   if (frame_deliverer_) {
     io_task_runner_->PostTask(

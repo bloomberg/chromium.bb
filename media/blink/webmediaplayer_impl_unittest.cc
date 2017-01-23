@@ -103,9 +103,7 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   DISALLOW_COPY_AND_ASSIGN(DummyWebMediaPlayerClient);
 };
 
-class MockWebMediaPlayerDelegate
-    : public WebMediaPlayerDelegate,
-      public base::SupportsWeakPtr<MockWebMediaPlayerDelegate> {
+class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
  public:
   MockWebMediaPlayerDelegate() = default;
   ~MockWebMediaPlayerDelegate() = default;
@@ -199,7 +197,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   void InitializeWebMediaPlayerImpl() {
     wmpi_.reset(new WebMediaPlayerImpl(
-        web_local_frame_, &client_, nullptr, delegate_.AsWeakPtr(),
+        web_local_frame_, &client_, nullptr, &delegate_,
         base::MakeUnique<DefaultRendererFactory>(
             media_log_, nullptr, DefaultRendererFactory::GetGpuFactoriesCB()),
         url_index_,

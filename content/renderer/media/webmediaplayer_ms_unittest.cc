@@ -398,7 +398,7 @@ class WebMediaPlayerMSTest
         player_(new WebMediaPlayerMS(
             nullptr,
             this,
-            delegate_.AsWeakPtr(),
+            &delegate_,
             new media::MediaLog(),
             std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
             message_loop_.task_runner(),

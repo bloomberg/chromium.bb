@@ -90,12 +90,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
-  // |delegate| may be null. |renderer_factory| must not be null.
+  // |delegate| and |renderer_factory| must not be null.
   WebMediaPlayerImpl(
       blink::WebLocalFrame* frame,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-      base::WeakPtr<WebMediaPlayerDelegate> delegate,
+      WebMediaPlayerDelegate* delegate,
       std::unique_ptr<RendererFactory> renderer_factory,
       linked_ptr<UrlIndex> url_index,
       const WebMediaPlayerParams& params);
@@ -535,7 +535,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // |delegate_id_|; an id provided after registering with the delegate.  The
   // WebMediaPlayer may also receive directives (play, pause) from the delegate
   // via the WebMediaPlayerDelegate::Observer interface after registration.
-  base::WeakPtr<WebMediaPlayerDelegate> delegate_;
+  //
+  // NOTE: HTMLMediaElement is a Blink::SuspendableObject, and will receive a
+  // call to contextDestroyed() when Blink::Document::shutdown() is called.
+  // Document::shutdown() is called before the frame detaches (and before the
+  // frame is destroyed). RenderFrameImpl owns |delegate_| and is guaranteed
+  // to outlive |this|; thus it is safe to store |delegate_| as a raw pointer.
+  media::WebMediaPlayerDelegate* delegate_;
   int delegate_id_;
 
   WebMediaPlayerParams::DeferLoadCB defer_load_cb_;
