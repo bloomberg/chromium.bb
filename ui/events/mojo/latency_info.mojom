@@ -56,21 +56,9 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL,
   // ---------------------------TERMINAL COMPONENT-----------------------------
   // TERMINAL COMPONENT is when we show the latency end in chrome://tracing.
-  // Timestamp when the mouse event is acked from renderer and it does not
-  // cause any rendering scheduled.
-  INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT,
-  // Timestamp when the mouse wheel event is acked from renderer and it does not
-  // cause any rendering scheduled.
-  INPUT_EVENT_LATENCY_TERMINATED_MOUSE_WHEEL_COMPONENT,
-  // Timestamp when the keyboard event is acked from renderer and it does not
-  // cause any rendering scheduled.
-  INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT,
-  // Timestamp when the touch event is acked from renderer and it does not
-  // cause any rendering scheduled and does not generate any gesture event.
-  INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT,
-  // Timestamp when the gesture event is acked from renderer, and it does not
-  // cause any rendering scheduled.
-  INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT,
+  // Timestamp when the event is acked from renderer when it does not
+  // cause any rendering to be scheduled.
+  INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT,
   // Timestamp when the frame is swapped (i.e. when the rendering caused by
   // input event actually takes effect).
   INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,

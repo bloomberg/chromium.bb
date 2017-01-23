@@ -631,7 +631,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEventAck(scroll, &scroll_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(scroll_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT, 0, nullptr));
+        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(scroll_latency.terminated());
   }
 
@@ -644,7 +644,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEventAck(wheel, &wheel_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(wheel_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_WHEEL_COMPONENT, 0, nullptr));
+        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(wheel_latency.terminated());
   }
 
@@ -657,7 +657,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEventAck(touch, &touch_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(touch_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, nullptr));
+        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(touch_latency.terminated());
     tracker()->OnFrameSwapped(touch_latency, false);
   }
@@ -671,7 +671,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEventAck(mouse_move, &mouse_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(mouse_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, nullptr));
+        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(mouse_latency.terminated());
   }
 
@@ -684,7 +684,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEventAck(key_event, &key_latency,
                                INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(key_latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT, 0, nullptr));
+        ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(key_latency.terminated());
   }
 
@@ -864,7 +864,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
           blocking);
 
       tracker()->OnInputEventAck(event, &latency,
-                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+                                 blocking);
     }
 
     {
