@@ -433,8 +433,10 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 mOMADownloadHandler.onDownloadFailed(
                         mDownloadInfo, downloadId, mFailureReason, mInstallNotifyURI);
                 removeOMADownloadFromSharedPrefs(downloadId);
-                String fileName = mDownloadInfo.getFileName();
-                onDownloadFailed(fileName, mFailureReason);
+                if (mDownloadInfo != null) {
+                    String fileName = mDownloadInfo.getFileName();
+                    onDownloadFailed(fileName, mFailureReason);
+                }
             }
         }
     }
