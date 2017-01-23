@@ -124,7 +124,7 @@ class MutatorHost {
       base::TimeTicks frame_monotonic_time,
       base::TimeDelta delayed_by) = 0;
 
-  virtual void ScrollAnimationAbort(bool needs_completion) = 0;
+  virtual void ScrollAnimationAbort() = 0;
 };
 
 class MutatorEvents {

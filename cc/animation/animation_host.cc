@@ -551,9 +551,10 @@ ScrollOffsetAnimations& AnimationHost::scroll_offset_animations() const {
   return *scroll_offset_animations_.get();
 }
 
-void AnimationHost::ScrollAnimationAbort(bool needs_completion) {
+void AnimationHost::ScrollAnimationAbort() {
   DCHECK(scroll_offset_animations_impl_);
-  return scroll_offset_animations_impl_->ScrollAnimationAbort(needs_completion);
+  scroll_offset_animations_impl_->ScrollAnimationAbort(
+      false /* needs_completion */);
 }
 
 void AnimationHost::AddToTicking(scoped_refptr<AnimationPlayer> player) {

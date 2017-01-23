@@ -429,8 +429,6 @@ class CC_EXPORT LayerTreeImpl {
   void DidUpdateScrollOffset(int layer_id);
   void DidUpdateScrollState(int layer_id);
 
-  void ScrollAnimationAbort(bool needs_completion);
-
   bool have_scroll_event_handlers() const {
     return have_scroll_event_handlers_;
   }

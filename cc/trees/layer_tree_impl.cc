@@ -2100,10 +2100,6 @@ LayerTreeImpl::TakePendingPageScaleAnimation() {
   return std::move(pending_page_scale_animation_);
 }
 
-void LayerTreeImpl::ScrollAnimationAbort(bool needs_completion) {
-  layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort(needs_completion);
-}
-
 void LayerTreeImpl::ResetAllChangeTracking() {
   layers_that_should_push_properties_.clear();
   // Iterate over all layers, including masks.

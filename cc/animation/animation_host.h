@@ -166,7 +166,7 @@ class CC_ANIMATION_EXPORT AnimationHost
       base::TimeTicks frame_monotonic_time,
       base::TimeDelta delayed_by) override;
 
-  void ScrollAnimationAbort(bool needs_completion) override;
+  void ScrollAnimationAbort() override;
 
   // This should only be called from the main thread.
   ScrollOffsetAnimations& scroll_offset_animations() const;

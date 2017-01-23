@@ -676,8 +676,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void UpdateRootLayerStateForSynchronousInputHandler();
 
-  void ScrollAnimationAbort(LayerImpl* layer_impl);
-
   bool ScrollAnimationUpdateTarget(ScrollNode* scroll_node,
                                    const gfx::Vector2dF& scroll_delta,
                                    base::TimeDelta delayed_by);

@@ -2620,7 +2620,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
     return scroll_status;
   }
   scroll_status.thread = SCROLL_ON_IMPL_THREAD;
-  ScrollAnimationAbort(scrolling_layer_impl);
+  mutator_host_->ScrollAnimationAbort();
 
   browser_controls_offset_manager_->ScrollBegin();
 
@@ -3857,10 +3857,6 @@ void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {
       active_tree_->ScrollableSize(), active_tree_->current_page_scale_factor(),
       active_tree_->min_page_scale_factor(),
       active_tree_->max_page_scale_factor());
-}
-
-void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
-  return mutator_host_->ScrollAnimationAbort(false /* needs_completion */);
 }
 
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
