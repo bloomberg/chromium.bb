@@ -234,7 +234,7 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
   v8::HeapProfiler::RetainerChildren findV8WrappersDirectlyReachableFrom(
       Node* traceable) {
     CHECK(m_foundV8Wrappers.empty());
-    WTF::AutoReset<bool>(&m_onlyTraceSingleLevel, true);
+    WTF::AutoReset<bool> scope(&m_onlyTraceSingleLevel, true);
     m_firstScriptWrappableTraced = false;
     m_currentParent =
         &v8::Persistent<v8::Value>::Cast(*traceable->rawMainWorldWrapper());
@@ -273,11 +273,12 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
 // for the provided information itself.
 v8::HeapProfiler::RetainerInfos V8GCController::getRetainerInfos(
     v8::Isolate* isolate) {
-  std::unique_ptr<HeapSnaphotWrapperVisitor> tracer(
-      new HeapSnaphotWrapperVisitor(isolate));
   V8PerIsolateData::TemporaryScriptWrappableVisitorScope scope(
-      isolate, std::move(tracer));
+      isolate, std::unique_ptr<HeapSnaphotWrapperVisitor>(
+                   new HeapSnaphotWrapperVisitor(isolate)));
 
+  HeapSnaphotWrapperVisitor* tracer =
+      reinterpret_cast<HeapSnaphotWrapperVisitor*>(scope.currentVisitor());
   tracer->collectV8Roots();
   tracer->traceV8Roots();
   tracer->tracePendingActivities();

@@ -409,12 +409,13 @@ void V8PerIsolateData::addActiveScriptWrappable(
 void V8PerIsolateData::TemporaryScriptWrappableVisitorScope::
     swapWithV8PerIsolateDataVisitor(
         std::unique_ptr<ScriptWrappableVisitor>& visitor) {
-  ScriptWrappableVisitor* current = currentVisitor(m_isolate);
+  ScriptWrappableVisitor* current = currentVisitor();
   if (current)
     current->performCleanup();
 
-  V8PerIsolateData::from(m_isolate)->m_scriptWrappableVisitor.swap(visitor);
-  m_isolate->SetEmbedderHeapTracer(visitor.get());
+  V8PerIsolateData::from(m_isolate)->m_scriptWrappableVisitor.swap(
+      m_savedVisitor);
+  m_isolate->SetEmbedderHeapTracer(currentVisitor());
 }
 
 }  // namespace blink

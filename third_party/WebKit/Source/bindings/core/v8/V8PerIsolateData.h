@@ -175,18 +175,18 @@ class CORE_EXPORT V8PerIsolateData {
     TemporaryScriptWrappableVisitorScope(
         v8::Isolate* isolate,
         std::unique_ptr<ScriptWrappableVisitor> visitor)
-        : m_isolate(isolate) {
-      swapWithV8PerIsolateDataVisitor(visitor);
+        : m_isolate(isolate), m_savedVisitor(std::move(visitor)) {
+      swapWithV8PerIsolateDataVisitor(m_savedVisitor);
     }
     ~TemporaryScriptWrappableVisitorScope() {
       swapWithV8PerIsolateDataVisitor(m_savedVisitor);
     }
 
-   private:
-    inline ScriptWrappableVisitor* currentVisitor(v8::Isolate* isolate) {
+    inline ScriptWrappableVisitor* currentVisitor() {
       return V8PerIsolateData::from(m_isolate)->scriptWrappableVisitor();
     }
 
+   private:
     void swapWithV8PerIsolateDataVisitor(
         std::unique_ptr<ScriptWrappableVisitor>&);
 
