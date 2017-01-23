@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_inline_node.h"
+#include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "platform/heap/Handle.h"
 
@@ -22,12 +23,16 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
       NGPhysicalSize size,
       NGPhysicalSize overflow,
       HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
-      Vector<NGStaticPosition> out_of_flow_positions)
+      Vector<NGStaticPosition> out_of_flow_positions,
+      HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
+      HeapVector<Member<NGFloatingObject>>& positioned_floats)
       : NGPhysicalFragment(size,
                            overflow,
                            kFragmentText,
                            out_of_flow_descendants,
-                           out_of_flow_positions),
+                           out_of_flow_positions,
+                           unpositioned_floats,
+                           positioned_floats),
         node_(node),
         start_index_(start_index),
         end_index_(end_index) {}

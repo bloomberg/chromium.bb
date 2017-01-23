@@ -182,10 +182,16 @@ void NGBlockNode::PositionUpdated() {
 
   layout_box_->setX(fragment_->LeftOffset());
   layout_box_->setY(fragment_->TopOffset());
+}
 
-  if (layout_box_->isFloating() && layout_box_->parent()->isLayoutBlockFlow()) {
-    FloatingObject* floating_object = toLayoutBlockFlow(layout_box_->parent())
-                                          ->insertFloatingObject(*layout_box_);
+void NGBlockNode::FloatPositionUpdated(LayoutObject* parent) {
+  PositionUpdated();
+
+  if (layout_box_->isFloating() && parent && parent->isLayoutBlockFlow()) {
+    FloatingObject* floating_object =
+        toLayoutBlockFlow(parent)->insertFloatingObject(*layout_box_);
+    // TODO(glebl): Fix floating_object's inline offset if it's attached to
+    // parent != layout_box_->parent
     floating_object->setX(fragment_->LeftOffset());
     floating_object->setY(fragment_->TopOffset());
     floating_object->setIsPlaced(true);
@@ -251,8 +257,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   } else {
     for (NGBlockNode* box = toNGBlockNode(FirstChild()); box;
          box = box->NextSibling()) {
-      if (box->fragment_)
+      if (box->fragment_ && box->fragment_->IsPlaced())
         box->PositionUpdated();
+
+      for (const auto& floating_object : box->fragment_->PositionedFloats()) {
+        floating_object->node->FloatPositionUpdated(box->layout_box_);
+      }
     }
   }
 

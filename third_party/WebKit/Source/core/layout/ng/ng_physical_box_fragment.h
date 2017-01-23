@@ -13,6 +13,7 @@
 namespace blink {
 
 class NGBlockNode;
+struct NGFloatingObject;
 
 class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
  public:
@@ -24,6 +25,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
       Vector<NGStaticPosition>& out_of_flow_positions,
       NGMarginStrut margin_strut,
+      HeapVector<Member<NGFloatingObject>>& unpositioned_floats,
+      HeapVector<Member<NGFloatingObject>>& positioned_floats,
       NGBreakToken* break_token = nullptr);
 
   const HeapVector<Member<const NGPhysicalFragment>>& Children() const {

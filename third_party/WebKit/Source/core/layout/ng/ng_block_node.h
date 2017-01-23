@@ -82,6 +82,11 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void PositionUpdated();
 
  private:
+  // Similar to PositionUpdated but for floats.
+  // - Updates layout object's geometric information.
+  // - Creates legacy FloatingObject and attached it to the provided parent.
+  void FloatPositionUpdated(LayoutObject* parent);
+
   bool CanUseNewLayout();
   bool HasInlineChildren();
 

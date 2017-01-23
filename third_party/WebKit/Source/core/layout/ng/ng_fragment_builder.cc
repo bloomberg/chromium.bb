@@ -69,6 +69,14 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   return *this;
 }
 
+NGFragmentBuilder& NGFragmentBuilder::AddFloatingObject(
+    NGFloatingObject* floating_object,
+    const NGLogicalOffset& floating_object_offset) {
+  positioned_floats_.append(floating_object);
+  floating_object_offsets_.append(floating_object_offset);
+  return *this;
+}
+
 NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode* child,
     NGLogicalOffset child_offset) {
@@ -78,6 +86,12 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
   out_of_flow_candidate_placements_.push_back(
       OutOfFlowPlacement{child_offset, child_position});
   child->SaveStaticOffsetForLegacy(child_offset);
+  return *this;
+}
+
+NGFragmentBuilder& NGFragmentBuilder::AddUnpositionedFloat(
+    NGFloatingObject* floating_object) {
+  unpositioned_floats_.append(floating_object);
   return *this;
 }
 
@@ -151,10 +165,22 @@ NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
         writing_mode_, direction_, physical_size, child->Size()));
     children.push_back(child);
   }
+
+  HeapVector<Member<NGFloatingObject>> positioned_floats;
+  positioned_floats.reserveCapacity(positioned_floats_.size());
+
+  for (size_t i = 0; i < positioned_floats_.size(); ++i) {
+    Member<NGFloatingObject>& floating_object = positioned_floats_[i];
+    NGPhysicalFragment* floating_fragment = floating_object->fragment;
+    floating_fragment->SetOffset(floating_object_offsets_[i].ConvertToPhysical(
+        writing_mode_, direction_, physical_size, floating_fragment->Size()));
+    positioned_floats.append(floating_object);
+  }
+
   return new NGPhysicalBoxFragment(
       physical_size, overflow_.ConvertToPhysical(writing_mode_), children,
       out_of_flow_descendants_, out_of_flow_positions_, margin_strut_,
-      break_token);
+      unpositioned_floats_, positioned_floats_, break_token);
 }
 
 NGPhysicalTextFragment* NGFragmentBuilder::ToTextFragment(NGInlineNode* node,
@@ -163,16 +189,23 @@ NGPhysicalTextFragment* NGFragmentBuilder::ToTextFragment(NGInlineNode* node,
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentText);
   DCHECK(children_.isEmpty());
   DCHECK(offsets_.isEmpty());
+
+  HeapVector<Member<NGFloatingObject>> empty_unpositioned_floats;
+  HeapVector<Member<NGFloatingObject>> empty_positioned_floats;
+
   return new NGPhysicalTextFragment(
       node, start_index, end_index, size_.ConvertToPhysical(writing_mode_),
       overflow_.ConvertToPhysical(writing_mode_), out_of_flow_descendants_,
-      out_of_flow_positions_);
+      out_of_flow_positions_, empty_unpositioned_floats,
+      empty_positioned_floats);
 }
 
 DEFINE_TRACE(NGFragmentBuilder) {
   visitor->trace(children_);
   visitor->trace(out_of_flow_descendant_candidates_);
   visitor->trace(out_of_flow_descendants_);
+  visitor->trace(positioned_floats_);
+  visitor->trace(unpositioned_floats_);
   visitor->trace(break_token_);
 }
 
