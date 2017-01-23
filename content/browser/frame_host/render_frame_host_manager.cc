@@ -1327,6 +1327,21 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     return SiteInstanceDescriptor(current_instance_impl);
   }
 
+  // If the parent frame is a chrome:// page and the subframe is as well, keep
+  // the subframe in the parent's process even if they would be considered
+  // different sites. This avoids unnecessary OOPIFs on pages like
+  // chrome://settings, which currently has multiple "cross-site" subframes that
+  // don't need isolation.
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible() &&
+      !frame_tree_node_->IsMainFrame()) {
+    SiteInstance* parent_site_instance =
+        frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
+    if (parent_site_instance->GetSiteURL().SchemeIs(kChromeUIScheme) &&
+        dest_url.SchemeIs(kChromeUIScheme)) {
+      return SiteInstanceDescriptor(parent_site_instance);
+    }
+  }
+
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
   // for this entry.  We won't commit the SiteInstance to this site until the
   // navigation commits (in DidNavigate), unless the navigation entry was
