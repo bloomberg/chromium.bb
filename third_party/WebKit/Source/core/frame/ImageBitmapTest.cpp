@@ -37,6 +37,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html/ImageData.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/skia/SkiaUtils.h"
@@ -48,8 +49,11 @@
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkSwizzle.h"
 
 namespace blink {
+
+class ExceptionState;
 
 class ImageBitmapTest : public ::testing::Test {
  protected:
@@ -522,6 +526,83 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
     colorSpaceXform->apply(colorFormat, transformedPixel.get(), colorFormat32,
                            srcPixel.get(), 1, SkAlphaType::kPremul_SkAlphaType);
 
+    int compare = std::memcmp(convertedPixel.get(), transformedPixel.get(),
+                              imageInfo.bytesPerPixel());
+    ASSERT_EQ(compare, 0);
+  }
+}
+
+TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
+  unsigned char dataBuffer[4] = {255, 0, 0, 255};
+  DOMUint8ClampedArray* data = DOMUint8ClampedArray::create(dataBuffer, 4);
+  ImageData* imageData =
+      ImageData::create(IntSize(1, 1), data, kLegacyImageDataColorSpaceName);
+  std::unique_ptr<uint8_t[]> srcPixel(new uint8_t[4]());
+  memcpy(srcPixel.get(), imageData->data()->data(), 4);
+
+  Optional<IntRect> cropRect = IntRect(0, 0, 1, 1);
+  sk_sp<SkColorSpace> colorSpace = nullptr;
+  SkColorSpaceXform::ColorFormat colorFormat32 =
+      (SkColorType::kN32_SkColorType == kBGRA_8888_SkColorType)
+          ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
+          : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
+  SkColorType colorType = SkColorType::kN32_SkColorType;
+  SkColorSpaceXform::ColorFormat colorFormat = colorFormat32;
+
+  for (uint8_t i =
+           static_cast<uint8_t>(ColorSpaceConversion::DEFAULT_COLOR_CORRECTED);
+       i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
+    ColorSpaceConversion colorSpaceConversion =
+        static_cast<ColorSpaceConversion>(i);
+    ImageBitmapOptions options =
+        prepareBitmapOptionsAndSetRuntimeFlags(colorSpaceConversion);
+    ImageBitmap* imageBitmap =
+        ImageBitmap::create(imageData, cropRect, options);
+
+    // ColorBehavior::ignore() is used instead of
+    // ColorBehavior::transformToTargetForTesting() to avoid color conversion to
+    // display color profile, as we want to solely rely on the color correction
+    // that happens in ImageBitmap create method.
+    SkImage* convertedImage =
+        imageBitmap->bitmapImage()
+            ->imageForCurrentFrame(ColorBehavior::ignore())
+            .get();
+
+    switch (colorSpaceConversion) {
+      case ColorSpaceConversion::NONE:
+        NOTREACHED();
+        break;
+      case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
+      case ColorSpaceConversion::SRGB:
+        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorFormat = colorFormat32;
+        break;
+      case ColorSpaceConversion::LINEAR_RGB:
+        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+        colorType = SkColorType::kRGBA_F16_SkColorType;
+        colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    SkImageInfo imageInfo = SkImageInfo::Make(
+        1, 1, colorType, SkAlphaType::kUnpremul_SkAlphaType, colorSpace);
+    std::unique_ptr<uint8_t[]> convertedPixel(
+        new uint8_t[imageInfo.bytesPerPixel()]());
+    convertedImage->readPixels(
+        imageInfo, convertedPixel.get(),
+        convertedImage->width() * imageInfo.bytesPerPixel(), 0, 0);
+
+    // Transform the source pixel and check if the pixel from image bitmap has
+    // the same color information.
+    std::unique_ptr<SkColorSpaceXform> colorSpaceXform = SkColorSpaceXform::New(
+        imageData->getSkColorSpace().get(), colorSpace.get());
+    std::unique_ptr<uint8_t[]> transformedPixel(
+        new uint8_t[imageInfo.bytesPerPixel()]());
+    colorSpaceXform->apply(colorFormat, transformedPixel.get(), colorFormat32,
+                           srcPixel.get(), 1,
+                           SkAlphaType::kUnpremul_SkAlphaType);
     int compare = std::memcmp(convertedPixel.get(), transformedPixel.get(),
                               imageInfo.bytesPerPixel());
     ASSERT_EQ(compare, 0);

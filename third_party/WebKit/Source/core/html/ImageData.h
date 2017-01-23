@@ -37,6 +37,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/Compiler.h"
 #include "wtf/text/WTFString.h"
@@ -77,6 +78,9 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
  public:
   static ImageData* create(const IntSize&);
   static ImageData* create(const IntSize&, DOMUint8ClampedArray*);
+  static ImageData* create(const IntSize&,
+                           DOMUint8ClampedArray*,
+                           const String&);
   static ImageData* create(unsigned width, unsigned height, ExceptionState&);
   static ImageData* create(DOMUint8ClampedArray*,
                            unsigned width,
@@ -104,6 +108,8 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
 
   static ImageDataColorSpace getImageDataColorSpace(String);
   static String getImageDataColorSpaceName(ImageDataColorSpace);
+  static sk_sp<SkColorSpace> imageDataColorSpaceToSkColorSpace(
+      ImageDataColorSpace);
 
   IntSize size() const { return m_size; }
   int width() const { return m_size.width(); }
@@ -112,6 +118,8 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   ImageDataColorSpace imageDataColorSpace() { return m_colorSpace; }
   const DOMUint8ClampedArray* data() const { return m_data.get(); }
   DOMUint8ClampedArray* data() { return m_data.get(); }
+
+  sk_sp<SkColorSpace> getSkColorSpace();
 
   // ImageBitmapSource implementation
   IntSize bitmapSourceSize() const override { return m_size; }

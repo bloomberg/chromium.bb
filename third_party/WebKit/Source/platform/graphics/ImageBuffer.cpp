@@ -80,9 +80,17 @@ std::unique_ptr<ImageBuffer> ImageBuffer::create(
     OpacityMode opacityMode,
     ImageInitializationMode initializationMode,
     sk_sp<SkColorSpace> colorSpace) {
-  std::unique_ptr<ImageBufferSurface> surface(
-      WTF::wrapUnique(new UnacceleratedImageBufferSurface(
-          size, opacityMode, initializationMode, std::move(colorSpace))));
+  SkColorType colorType = kN32_SkColorType;
+  if (colorSpace &&
+      SkColorSpace::Equals(
+          colorSpace.get(),
+          SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named).get()))
+    colorType = kRGBA_F16_SkColorType;
+
+  std::unique_ptr<ImageBufferSurface> surface(WTF::wrapUnique(
+      new UnacceleratedImageBufferSurface(size, opacityMode, initializationMode,
+                                          std::move(colorSpace), colorType)));
+
   if (!surface->isValid())
     return nullptr;
   return WTF::wrapUnique(new ImageBuffer(std::move(surface)));
@@ -335,14 +343,17 @@ void ImageBuffer::flushGpu(FlushReason reason) {
 bool ImageBuffer::getImageData(Multiply multiplied,
                                const IntRect& rect,
                                WTF::ArrayBufferContents& contents) const {
-  CheckedNumeric<int> dataSize = 4;
+  uint8_t bytesPerPixel = 4;
+  if (m_surface->colorSpace())
+    bytesPerPixel = SkColorTypeBytesPerPixel(m_surface->colorType());
+  CheckedNumeric<int> dataSize = bytesPerPixel;
   dataSize *= rect.width();
   dataSize *= rect.height();
   if (!dataSize.IsValid())
     return false;
 
   if (!isSurfaceValid()) {
-    size_t allocSizeInBytes = rect.width() * rect.height() * 4;
+    size_t allocSizeInBytes = rect.width() * rect.height() * bytesPerPixel;
     void* data;
     WTF::ArrayBufferContents::allocateMemoryOrNull(
         allocSizeInBytes, WTF::ArrayBufferContents::ZeroInitialize, data);
@@ -371,7 +382,7 @@ bool ImageBuffer::getImageData(Multiply multiplied,
       || rect.x() < 0 || rect.y() < 0 ||
       rect.maxX() > m_surface->size().width() ||
       rect.maxY() > m_surface->size().height();
-  size_t allocSizeInBytes = rect.width() * rect.height() * 4;
+  size_t allocSizeInBytes = rect.width() * rect.height() * bytesPerPixel;
   void* data;
   WTF::ArrayBufferContents::InitializationPolicy initializationPolicy =
       mayHaveStrayArea ? WTF::ArrayBufferContents::ZeroInitialize
@@ -397,8 +408,8 @@ bool ImageBuffer::getImageData(Multiply multiplied,
       SkImageInfo::Make(rect.width(), rect.height(), colorType, alphaType,
                         SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named));
 
-  snapshot->readPixels(info, result.data(), 4 * rect.width(), rect.x(),
-                       rect.y());
+  snapshot->readPixels(info, result.data(), bytesPerPixel * rect.width(),
+                       rect.x(), rect.y());
 
   if (useF16Workaround) {
     uint32_t* pixel = (uint32_t*)result.data();
@@ -432,6 +443,9 @@ void ImageBuffer::putByteArray(Multiply multiplied,
                                const IntPoint& destPoint) {
   if (!isSurfaceValid())
     return;
+  uint8_t bytesPerPixel = 4;
+  if (m_surface->colorSpace())
+    bytesPerPixel = SkColorTypeBytesPerPixel(m_surface->colorType());
 
   DCHECK_GT(sourceRect.width(), 0);
   DCHECK_GT(sourceRect.height(), 0);
@@ -450,14 +464,21 @@ void ImageBuffer::putByteArray(Multiply multiplied,
   DCHECK_GE(originY, 0);
   DCHECK_LT(originY, sourceRect.maxY());
 
-  const size_t srcBytesPerRow = 4 * sourceSize.width();
-  const void* srcAddr = source + originY * srcBytesPerRow + originX * 4;
+  const size_t srcBytesPerRow = bytesPerPixel * sourceSize.width();
+  const void* srcAddr =
+      source + originY * srcBytesPerRow + originX * bytesPerPixel;
   SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType
                                                         : kUnpremul_SkAlphaType;
-  SkImageInfo info = SkImageInfo::Make(
-      sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType,
-      alphaType, SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named));
-
+  SkImageInfo info;
+  if (m_surface->colorSpace()) {
+    info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(),
+                             m_surface->colorType(), alphaType,
+                             m_surface->colorSpace());
+  } else {
+    info = SkImageInfo::Make(
+        sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType,
+        alphaType, SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named));
+  }
   m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
@@ -465,7 +486,8 @@ void ImageBuffer::updateGPUMemoryUsage() const {
   if (this->isAccelerated()) {
     // If image buffer is accelerated, we should keep track of GPU memory usage.
     int gpuBufferCount = 2;
-    CheckedNumeric<intptr_t> checkedGPUUsage = 4 * gpuBufferCount;
+    CheckedNumeric<intptr_t> checkedGPUUsage =
+        SkColorTypeBytesPerPixel(m_surface->colorType()) * gpuBufferCount;
     checkedGPUUsage *= this->size().width();
     checkedGPUUsage *= this->size().height();
     intptr_t gpuMemoryUsage =
@@ -519,7 +541,8 @@ void ImageBuffer::disableAcceleration() {
   std::unique_ptr<ImageBufferSurface> surface =
       WTF::wrapUnique(new RecordingImageBufferSurface(
           m_surface->size(), std::move(surfaceFactory),
-          m_surface->getOpacityMode(), m_surface->colorSpace()));
+          m_surface->getOpacityMode(), m_surface->colorSpace(),
+          m_surface->colorType()));
   setSurface(std::move(surface));
 }
 

@@ -213,6 +213,16 @@ ImageData* ImageData::create(const IntSize& size,
   return new ImageData(size, byteArray);
 }
 
+ImageData* ImageData::create(const IntSize& size,
+                             DOMUint8ClampedArray* byteArray,
+                             const String& colorSpace) {
+  if (!ImageData::validateConstructorArguments(
+          kParamSize | kParamData | kParamColorSpace, &size, 0, 0, byteArray,
+          &colorSpace))
+    return nullptr;
+  return new ImageData(size, byteArray, colorSpace);
+}
+
 ImageData* ImageData::create(unsigned width,
                              unsigned height,
                              ExceptionState& exceptionState) {
@@ -246,30 +256,6 @@ ImageData* ImageData::create(DOMUint8ClampedArray* data,
           nullptr, &exceptionState))
     return nullptr;
   return new ImageData(IntSize(width, height), data);
-}
-
-ImageDataColorSpace ImageData::getImageDataColorSpace(String colorSpaceName) {
-  if (colorSpaceName == kLegacyImageDataColorSpaceName)
-    return kLegacyImageDataColorSpace;
-  if (colorSpaceName == kSRGBImageDataColorSpaceName)
-    return kSRGBImageDataColorSpace;
-  if (colorSpaceName == kLinearRGBImageDataColorSpaceName)
-    return kLinearRGBImageDataColorSpace;
-  NOTREACHED();
-  return kLegacyImageDataColorSpace;
-}
-
-String ImageData::getImageDataColorSpaceName(ImageDataColorSpace colorSpace) {
-  switch (colorSpace) {
-    case kLegacyImageDataColorSpace:
-      return kLegacyImageDataColorSpaceName;
-    case kSRGBImageDataColorSpace:
-      return kSRGBImageDataColorSpaceName;
-    case kLinearRGBImageDataColorSpace:
-      return kLinearRGBImageDataColorSpaceName;
-  }
-  NOTREACHED();
-  return String();
 }
 
 ImageData* ImageData::createImageData(unsigned width,
@@ -313,9 +299,6 @@ ImageData* ImageData::createImageData(DOMUint8ClampedArray* data,
   return new ImageData(IntSize(width, height), data, colorSpace);
 }
 
-// TODO(zakerinasab): Fix this when ImageBitmap color correction code is landed.
-// Tip: If the source Image Data has a color space, createImageBitmap must
-// respect this color space even when no color space tag is passed to it.
 ScriptPromise ImageData::createImageBitmap(ScriptState* scriptState,
                                            EventTarget& eventTarget,
                                            Optional<IntRect> cropRect,
@@ -358,6 +341,51 @@ v8::Local<v8::Object> ImageData::associateWithWrapper(
       return v8::Local<v8::Object>();
   }
   return wrapper;
+}
+
+ImageDataColorSpace ImageData::getImageDataColorSpace(String colorSpaceName) {
+  if (colorSpaceName == kLegacyImageDataColorSpaceName)
+    return kLegacyImageDataColorSpace;
+  if (colorSpaceName == kSRGBImageDataColorSpaceName)
+    return kSRGBImageDataColorSpace;
+  if (colorSpaceName == kLinearRGBImageDataColorSpaceName)
+    return kLinearRGBImageDataColorSpace;
+  NOTREACHED();
+  return kLegacyImageDataColorSpace;
+}
+
+String ImageData::getImageDataColorSpaceName(ImageDataColorSpace colorSpace) {
+  switch (colorSpace) {
+    case kLegacyImageDataColorSpace:
+      return kLegacyImageDataColorSpaceName;
+    case kSRGBImageDataColorSpace:
+      return kSRGBImageDataColorSpaceName;
+    case kLinearRGBImageDataColorSpace:
+      return kLinearRGBImageDataColorSpaceName;
+  }
+  NOTREACHED();
+  return String();
+}
+
+sk_sp<SkColorSpace> ImageData::imageDataColorSpaceToSkColorSpace(
+    ImageDataColorSpace colorSpace) {
+  switch (colorSpace) {
+    case kLegacyImageDataColorSpace:
+      return ColorBehavior::globalTargetColorSpace();
+    case kSRGBImageDataColorSpace:
+      return SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+    case kLinearRGBImageDataColorSpace:
+      return SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+sk_sp<SkColorSpace> ImageData::getSkColorSpace() {
+  if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
+      !RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+    return nullptr;
+  return ImageData::imageDataColorSpaceToSkColorSpace(m_colorSpace);
 }
 
 ImageData::ImageData(const IntSize& size,
