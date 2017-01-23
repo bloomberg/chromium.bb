@@ -247,9 +247,25 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // the main thread and other threads.
   std::set<base::TimeTicks> main_thread_pending_wakeups_;
 
-  // Protects |other_thread_pending_wakeup_|.
-  mutable base::Lock other_thread_lock_;
-  bool other_thread_pending_wakeup_;
+  struct AnyThread {
+    AnyThread();
+
+    bool other_thread_pending_wakeup;
+  };
+
+  // TODO(alexclarke): Add a MainThreadOnly struct too.
+
+  mutable base::Lock any_thread_lock_;
+  AnyThread any_thread_;
+
+  struct AnyThread& any_thread() {
+    any_thread_lock_.AssertAcquired();
+    return any_thread_;
+  }
+  const struct AnyThread& any_thread() const {
+    any_thread_lock_.AssertAcquired();
+    return any_thread_;
+  }
 
   bool record_task_delay_histograms_;
 

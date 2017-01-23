@@ -58,7 +58,6 @@ TaskQueueManager::TaskQueueManager(
     : real_time_domain_(new RealTimeDomain(tracing_category)),
       delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
-      other_thread_pending_wakeup_(false),
       record_task_delay_histograms_(true),
       work_batch_size_(1),
       task_count_(0),
@@ -100,6 +99,8 @@ TaskQueueManager::~TaskQueueManager() {
 
   delegate_->RemoveNestingObserver(this);
 }
+
+TaskQueueManager::AnyThread::AnyThread() : other_thread_pending_wakeup(false) {}
 
 void TaskQueueManager::RegisterTimeDomain(TimeDomain* time_domain) {
   time_domains_.insert(time_domain);
@@ -179,10 +180,10 @@ void TaskQueueManager::MaybeScheduleImmediateWork(
     delegate_->PostTask(from_here, from_main_thread_immediate_do_work_closure_);
   } else {
     {
-      base::AutoLock lock(other_thread_lock_);
-      if (other_thread_pending_wakeup_)
+      base::AutoLock lock(any_thread_lock_);
+      if (any_thread().other_thread_pending_wakeup)
         return;
-      other_thread_pending_wakeup_ = true;
+      any_thread().other_thread_pending_wakeup = true;
     }
     delegate_->PostTask(from_here,
                         from_other_thread_immediate_do_work_closure_);
@@ -224,8 +225,8 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   if (from_main_thread) {
     main_thread_pending_wakeups_.erase(run_time);
   } else {
-    base::AutoLock lock(other_thread_lock_);
-    other_thread_pending_wakeup_ = false;
+    base::AutoLock lock(any_thread_lock_);
+    any_thread().other_thread_pending_wakeup = false;
   }
 
   // Posting a DoWork while a DoWork is running leads to spurious DoWorks.
