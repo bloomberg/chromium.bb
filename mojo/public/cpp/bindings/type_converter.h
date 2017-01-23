@@ -11,6 +11,11 @@
 
 namespace mojo {
 
+// NOTE: TypeConverter is deprecated. Please consider StructTraits /
+// UnionTraits / EnumTraits / ArrayTraits / MapTraits / StringTraits if you
+// would like to convert between custom types and the wire format of mojom
+// types.
+//
 // Specialize the following class:
 //   template <typename T, typename U> struct TypeConverter;
 // to perform type conversion for Mojom-defined structs and arrays. Here, T is
