@@ -88,6 +88,13 @@ AST_MATCHER_P(clang::FunctionTemplateDecl,
   return InnerMatcher.matches(*Node.getTemplatedDecl(), Finder, Builder);
 }
 
+AST_MATCHER_P(clang::Decl,
+              hasCanonicalDecl,
+              clang::ast_matchers::internal::Matcher<clang::Decl>,
+              InnerMatcher) {
+  return InnerMatcher.matches(*Node.getCanonicalDecl(), Finder, Builder);
+}
+
 // Matches a CXXMethodDecl of a method declared via MOCK_METHODx macro if such
 // method mocks a method matched by the InnerMatcher.  For example if "foo"
 // matcher matches "interfaceMethod", then mocksMethod(foo()) will match
@@ -1440,7 +1447,7 @@ int main(int argc, const char* argv[]) {
   auto in_blink_namespace = decl(
       anyOf(decl_under_blink_namespace, decl_has_qualifier_to_blink_namespace,
             hasAncestor(decl_has_qualifier_to_blink_namespace)),
-      unless(isExpansionInFileMatching(kGeneratedFileRegex)));
+      unless(hasCanonicalDecl(isExpansionInFileMatching(kGeneratedFileRegex))));
 
   // Field, variable, and enum declarations ========
   // Given
