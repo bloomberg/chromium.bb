@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
@@ -228,6 +229,9 @@
             <div class="list-item">
               <span>$i18nRaw{passphraseExplanationText}</span>
             </div>
+            <iron-a11y-keys id="keys" keys="enter"
+                on-keys-pressed="onSaveNewPassphraseTap_">
+            </iron-a11y-keys>
             <paper-input id="passphraseInput" type="password"
                 value="{{passphrase_}}"
                 placeholder="$i18n{passphrasePlaceholder}"
@@ -263,6 +267,9 @@
                 value="{{existingPassphrase_}}"
                 placeholder="$i18n{passphrasePlaceholder}"
                 error-message="$i18n{incorrectPassphraseError}">
+              <iron-a11y-keys id="keys" keys="enter"
+                  on-keys-pressed="onSubmitExistingPassphraseTap_">
+              </iron-a11y-keys>
             </paper-input>
             <paper-button id="submitExistingPassphrase"
                 on-tap="onSubmitExistingPassphraseTap_" class="action-button"
