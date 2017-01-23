@@ -5386,7 +5386,10 @@ class OptionParser(optparse.OptionParser):
   def parse_args(self, args=None, values=None):
     options, args = optparse.OptionParser.parse_args(self, args, values)
     levels = [logging.WARNING, logging.INFO, logging.DEBUG]
-    logging.basicConfig(level=levels[min(options.verbose, len(levels) - 1)])
+    logging.basicConfig(
+        level=levels[min(options.verbose, len(levels) - 1)],
+        format='[%(levelname).1s%(asctime)s %(process)d %(thread)d '
+               '%(filename)s] %(message)s')
     return options, args
 
 

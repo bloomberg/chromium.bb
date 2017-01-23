@@ -183,7 +183,7 @@ class CookiesAuthenticator(Authenticator):
             login, secret_token = value.split('=', 1)
             gitcookies[domain] = (login, secret_token)
         except (IndexError, ValueError, TypeError) as exc:
-          logging.warning(exc)
+          LOGGER.warning(exc)
 
     return gitcookies
 
@@ -346,17 +346,18 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
 
     # If response.status < 500 then the result is final; break retry loop.
     if response.status < 500:
+      LOGGER.debug('got response %d for %s %s', response.status,
+                   conn.req_params['method'], conn.req_params['url'])
       break
     # A status >=500 is assumed to be a possible transient error; retry.
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-    msg = (
-        'A transient error occurred while querying %s:\n'
-        '%s %s %s\n'
-        '%s %d %s' % (
-            conn.host, conn.req_params['method'], conn.req_params['url'],
-            http_version, http_version, response.status, response.reason))
+    LOGGER.warn('A transient error occurred while querying %s:\n'
+                '%s %s %s\n'
+                '%s %d %s',
+                conn.host, conn.req_params['method'], conn.req_params['url'],
+                http_version, http_version, response.status, response.reason)
     if TRY_LIMIT - idx > 1:
-      msg += '\n... will retry %d more times.' % (TRY_LIMIT - idx - 1)
+      LOGGER.warn('... will retry %d more times.', TRY_LIMIT - idx - 1)
       time.sleep(sleep_time)
       sleep_time = sleep_time * 2
       req_host = conn.req_host
@@ -365,7 +366,6 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
       conn.req_host = req_host
       conn.req_params = req_params
       conn.request(**req_params)
-    LOGGER.warn(msg)
   if ignore_404 and response.status == 404:
     return StringIO()
   if response.status != expect_status:
