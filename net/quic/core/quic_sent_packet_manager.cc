@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/stl_util.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/quic/core/congestion_control/general_loss_algorithm.h"
 #include "net/quic/core/congestion_control/pacing_sender.h"
@@ -18,6 +17,7 @@
 #include "net/quic/core/quic_pending_retransmission.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_map_util.h"
 
 namespace net {
 
@@ -397,8 +397,8 @@ void QuicSentPacketManager::MarkForRetransmission(
   }
     // TODO(ianswett): Currently the RTO can fire while there are pending NACK
     // retransmissions for the same data, which is not ideal.
-    if (base::ContainsKey(pending_retransmissions_, packet_number)) {
-      return;
+  if (QuicContainsKey(pending_retransmissions_, packet_number)) {
+    return;
     }
 
     pending_retransmissions_[packet_number] = transmission_type;

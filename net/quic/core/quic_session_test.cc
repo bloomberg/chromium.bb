@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/crypto/null_encrypter.h"
@@ -17,6 +16,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -262,7 +262,7 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
 
   void CheckClosedStreams() {
     for (QuicStreamId i = kCryptoStreamId; i < 100; i++) {
-      if (!base::ContainsKey(closed_streams_, i)) {
+      if (!QuicContainsKey(closed_streams_, i)) {
         EXPECT_FALSE(session_.IsClosedStream(i)) << " stream id: " << i;
       } else {
         EXPECT_TRUE(session_.IsClosedStream(i)) << " stream id: " << i;

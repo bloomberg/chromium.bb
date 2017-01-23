@@ -17,7 +17,6 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -33,6 +32,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
@@ -393,7 +393,7 @@ bool QuicConnection::SelectMutualVersion(
   const QuicVersionVector& supported_versions = framer_.supported_versions();
   for (size_t i = 0; i < supported_versions.size(); ++i) {
     const QuicVersion& version = supported_versions[i];
-    if (base::ContainsValue(available_versions, version)) {
+    if (QuicContainsValue(available_versions, version)) {
       framer_.set_version(version);
       return true;
     }
@@ -511,7 +511,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     return;
   }
 
-  if (base::ContainsValue(packet.versions, version())) {
+  if (QuicContainsValue(packet.versions, version())) {
     const string error_details =
         "Server already supports client's version and should have accepted the "
         "connection.";

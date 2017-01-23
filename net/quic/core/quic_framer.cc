@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/stl_util.h"
 #include "net/quic/core/crypto/crypto_framer.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
@@ -24,9 +23,9 @@
 #include "net/quic/platform/api/quic_aligned.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 
-using base::ContainsKey;
 using base::StringPiece;
 using std::string;
 #define PREDICT_FALSE(x) (x)
@@ -747,7 +746,7 @@ const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
 
 bool QuicFramer::IsValidPath(QuicPathId path_id,
                              QuicPacketNumber* base_packet_number) {
-  if (ContainsKey(closed_paths_, path_id)) {
+  if (QuicContainsKey(closed_paths_, path_id)) {
     // Path is closed.
     return false;
   }
@@ -757,7 +756,7 @@ bool QuicFramer::IsValidPath(QuicPathId path_id,
     return true;
   }
 
-  if (ContainsKey(largest_packet_numbers_, path_id)) {
+  if (QuicContainsKey(largest_packet_numbers_, path_id)) {
     *base_packet_number = largest_packet_numbers_[path_id];
   } else {
     *base_packet_number = 0;
