@@ -518,7 +518,9 @@ def RunBuild(options, base, target, queue):
     result = cros_build_lib.RunCommand(base + [target], capture_output=True,
                                        combine_stdout_stderr=True, **kwargs)
     if result.returncode:
-      print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output))
+      # The build failed, so output the results to stderr.
+      print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output),
+            file=sys.stderr)
       sys.exit(result.returncode)
 
   files = ['%s/u-boot' % outdir]
