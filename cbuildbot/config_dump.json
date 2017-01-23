@@ -12092,6 +12092,7 @@
     },
     "kevin-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "kevin"
         ],
