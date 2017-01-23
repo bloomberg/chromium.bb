@@ -14,8 +14,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "ui/aura/mus/window_compositor_frame_sink.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
@@ -23,25 +21,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace content {
-
-MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
-    ui::Window* window,
-    scoped_refptr<ui::ContextProviderCommandBuffer> context,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
-    std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
-        overlay_candidate_validator)
-    : GpuBrowserCompositorOutputSurface(std::move(context),
-                                        update_vsync_parameters_callback,
-                                        std::move(overlay_candidate_validator),
-                                        false /* support_stencil */),
-      ui_window_(window),
-      window_(nullptr),
-      begin_frame_source_(nullptr) {
-  ui_compositor_frame_sink_ = ui_window_->RequestCompositorFrameSink(
-      context, gpu_memory_buffer_manager);
-  ui_compositor_frame_sink_->BindToClient(this);
-}
 
 MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
     aura::Window* window,
@@ -54,7 +33,6 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
                                         update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator),
                                         false  /* support_stencil */),
-      ui_window_(nullptr),
       window_(window),
       begin_frame_source_(nullptr) {
   aura::WindowPortMus* window_port = aura::WindowPortMus::Get(window_);
@@ -80,9 +58,7 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
   // Reset latency_info to known empty state after moving contents.
   frame.latency_info.clear();
   const int render_pass_id = 1;
-  const gfx::Rect bounds_in_dip = ui_window_
-                                      ? gfx::Rect(ui_window_->bounds().size())
-                                      : gfx::Rect(window_->bounds().size());
+  const gfx::Rect bounds_in_dip = gfx::Rect(window_->bounds().size());
   const gfx::Rect bounds_in_pixels = gfx::ConvertRectToPixel(
       ui_frame.metadata.device_scale_factor, bounds_in_dip);
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
@@ -144,13 +120,7 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
 
   ui_frame.render_pass_list.push_back(std::move(pass));
 
-  // TODO(mfomitchev): Remove ui_compositor_frame_sink_ once we complete the
-  // switch to Aura-Mus.
-  if (ui_compositor_frame_sink_)
-    ui_compositor_frame_sink_->SubmitCompositorFrame(std::move(ui_frame));
-  else
-    compositor_frame_sink_->SubmitCompositorFrame(std::move(ui_frame));
-  return;
+  compositor_frame_sink_->SubmitCompositorFrame(std::move(ui_frame));
 }
 
 void MusBrowserCompositorOutputSurface::SetBeginFrameSource(

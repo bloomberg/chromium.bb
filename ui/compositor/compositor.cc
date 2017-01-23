@@ -80,9 +80,6 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
       context_factory_private_(context_factory_private),
       root_layer_(NULL),
       widget_(gfx::kNullAcceleratedWidget),
-#if defined(USE_AURA)
-      window_(nullptr),
-#endif
       widget_valid_(false),
       compositor_frame_sink_requested_(false),
       frame_sink_id_(frame_sink_id),
@@ -434,16 +431,6 @@ gfx::AcceleratedWidget Compositor::widget() const {
   DCHECK(widget_valid_);
   return widget_;
 }
-
-#if defined(USE_AURA)
-void Compositor::SetWindow(ui::Window* window) {
-  window_ = window;
-}
-
-ui::Window* Compositor::window() const {
-  return window_;
-}
-#endif
 
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
   return vsync_manager_;

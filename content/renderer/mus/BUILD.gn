@@ -7,8 +7,6 @@ static_library("mus") {
   visibility = [ "//content/renderer/*" ]
 
   sources = [
-    "compositor_mus_connection.cc",
-    "compositor_mus_connection.h",
     "render_widget_mus_connection.cc",
     "render_widget_mus_connection.h",
     "render_widget_window_tree_client_factory.cc",

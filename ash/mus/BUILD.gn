@@ -230,7 +230,6 @@ source_set("unittests") {
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
-    "//services/ui/public/cpp/tests:unittest_support",
     "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",

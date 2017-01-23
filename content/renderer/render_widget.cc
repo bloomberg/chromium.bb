@@ -181,22 +181,6 @@ bool IsDateTimeInput(ui::TextInputType type) {
          type == ui::TEXT_INPUT_TYPE_TIME || type == ui::TEXT_INPUT_TYPE_WEEK;
 }
 
-content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
-    content::RenderWidget* widget) {
-#if defined(USE_AURA)
-  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
-  if (content::ServiceManagerConnection::GetForProcess() &&
-      cmdline.HasSwitch(switches::kUseMusInRenderer)) {
-    return content::RenderWidgetMusConnection::GetOrCreate(
-        widget->routing_id());
-  }
-#endif
-  // If we don't have a connection to the Service Manager, then we want to route
-  // IPCs back to the browser process rather than Mus so we use the |widget| as
-  // the RenderWidgetInputHandlerDelegate.
-  return widget;
-}
-
 WebDragData DropMetaDataToWebDragData(
     const std::vector<DropData::Metadata>& drop_meta_data) {
   std::vector<WebDragData::Item> item_list;
@@ -527,8 +511,7 @@ void RenderWidget::Init(const ShowCallback& show_callback,
   DCHECK(!webwidget_internal_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
-  input_handler_.reset(new RenderWidgetInputHandler(
-      GetRenderWidgetInputHandlerDelegate(this), this));
+  input_handler_ = base::MakeUnique<RenderWidgetInputHandler>(this, this);
 
   show_callback_ = show_callback;
 

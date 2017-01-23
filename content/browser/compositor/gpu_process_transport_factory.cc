@@ -539,24 +539,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         } else {
 #if defined(USE_AURA)
           std::unique_ptr<MusBrowserCompositorOutputSurface> mus_output_surface;
-          if (compositor->window()) {
-            // TODO(mfomitchev): Remove this clause once we complete the switch
-            // to Aura-Mus.
-            mus_output_surface =
-                base::MakeUnique<MusBrowserCompositorOutputSurface>(
-                    compositor->window(), context_provider,
-                    GetGpuMemoryBufferManager(), vsync_callback,
-                    std::move(validator));
-          } else {
-            aura::WindowTreeHost* host =
-                aura::WindowTreeHost::GetForAcceleratedWidget(
-                    compositor->widget());
-            mus_output_surface =
-                base::MakeUnique<MusBrowserCompositorOutputSurface>(
-                    host->window(), context_provider,
-                    GetGpuMemoryBufferManager(), vsync_callback,
-                    std::move(validator));
-          }
+          aura::WindowTreeHost* host =
+              aura::WindowTreeHost::GetForAcceleratedWidget(
+                  compositor->widget());
+          mus_output_surface =
+              base::MakeUnique<MusBrowserCompositorOutputSurface>(
+                  host->window(), context_provider, GetGpuMemoryBufferManager(),
+                  vsync_callback, std::move(validator));
           // We use the ExternalBeginFrameSource provided by the output surface
           // instead of our own synthetic one.
           synthetic_begin_frame_source.reset();

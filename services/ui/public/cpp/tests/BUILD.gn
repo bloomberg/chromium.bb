@@ -5,55 +5,23 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-static_library("unittest_support") {
-  testonly = true
-
-  sources = [
-    "test_window.h",
-    "test_window_tree.cc",
-    "test_window_tree.h",
-    "test_window_tree_client_setup.cc",
-    "test_window_tree_client_setup.h",
-    "window_tree_client_private.cc",
-    "window_tree_client_private.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/ui/public/cpp",
-    "//services/ui/public/cpp:internal_or_test",
-    "//services/ui/public/interfaces",
-    "//testing/gtest",
-    "//ui/display",
-    "//ui/gfx/geometry/mojo",
-  ]
-}
-
 test("mus_public_unittests") {
   sources = [
     "property_type_converters_unittest.cc",
     "run_all_unittests.cc",
     "window_server_test_suite.cc",
     "window_server_test_suite.h",
-    "window_tree_client_unittest.cc",
-    "window_unittest.cc",
   ]
 
   deps = [
-    ":unittest_support",
     "//base",
     "//base/test:test_support",
     "//mojo/common:common_base",
     "//mojo/edk/system",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
-    "//services/ui/public/cpp:internal_or_test",
     "//testing/gtest",
-    "//ui/display:test_support",
-    "//ui/events",
-    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
   ]

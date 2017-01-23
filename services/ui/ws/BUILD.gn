@@ -243,7 +243,6 @@ test("mus_ws_unittests") {
     "//services/ui/common:mus_common",
     "//services/ui/common:task_runner_test_base",
     "//services/ui/public/cpp",
-    "//services/ui/public/cpp:internal_or_test",
     "//services/ui/public/interfaces",
     "//testing/gtest",
     "//third_party/mesa:osmesa",

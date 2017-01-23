@@ -8,20 +8,9 @@ import("//build/config/ui.gni")
 # implementation (and private haders) are in 'internal'.
 source_set("cpp") {
   sources = [
-    "input_event_handler.h",
     "property_type_converters.h",
     "raster_thread_helper.h",
-    "scoped_window_ptr.h",
-    "window.h",
     "window_compositor_frame_sink.h",
-    "window_manager_delegate.h",
-    "window_observer.h",
-    "window_property.h",
-    "window_tracker.h",
-    "window_tree_client.h",
-    "window_tree_client_delegate.h",
-    "window_tree_client_observer.h",
-    "window_tree_host_factory.h",
   ]
 
   public_deps = [
@@ -38,7 +27,6 @@ source_set("cpp") {
 
   deps = [
     ":internal",
-    ":internal_or_test",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_interface",
     "//services/service_manager/public/cpp",
@@ -54,28 +42,7 @@ source_set("cpp") {
 
   defines = [ "GL_GLEXT_PROTOTYPES" ]
 
-  allow_circular_includes_from = [
-    ":internal",
-    ":internal_or_test",
-  ]
-}
-
-# This target is for use internally and by tests.
-source_set("internal_or_test") {
-  visibility = [
-    "./*",
-    "//services/ui/ws:mus_ws_unittests",
-    "//ui/views/mus:views_mus_unittests",
-  ]
-
-  sources = [
-    "window_private.h",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/public/cpp/bindings",
-  ]
+  allow_circular_includes_from = [ ":internal" ]
 }
 
 source_set("internal") {
@@ -87,23 +54,12 @@ source_set("internal") {
   ]
 
   sources = [
-    "in_flight_change.cc",
-    "in_flight_change.h",
     "property_type_converters.cc",
     "raster_thread_helper.cc",
-    "scoped_window_ptr.cc",
-    "window.cc",
     "window_compositor_frame_sink.cc",
-    "window_manager_delegate.cc",
-    "window_observer.cc",
-    "window_private.cc",
-    "window_tree_client.cc",
-    "window_tree_client_delegate.cc",
-    "window_tree_host_factory.cc",
   ]
 
   deps = [
-    ":internal_or_test",
     "//base",
     "//cc",
     "//cc/surfaces",

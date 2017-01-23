@@ -67,10 +67,6 @@ class Layer;
 class Reflector;
 class ScopedAnimationDurationScaleMode;
 
-#if defined(USE_AURA)
-class Window;
-#endif
-
 const int kCompositorLockTimeoutMs = 67;
 
 class COMPOSITOR_EXPORT ContextFactoryObserver {
@@ -305,12 +301,6 @@ class COMPOSITOR_EXPORT Compositor
   gfx::AcceleratedWidget ReleaseAcceleratedWidget();
   gfx::AcceleratedWidget widget() const;
 
-#if defined(USE_AURA)
-  // Sets the window for the compositor to render into on mus+ash.
-  void SetWindow(ui::Window* window);
-  ui::Window* window() const;
-#endif
-
   // Returns the vsync manager for this compositor.
   scoped_refptr<CompositorVSyncManager> vsync_manager() const;
 
@@ -413,9 +403,6 @@ class COMPOSITOR_EXPORT Compositor
   base::ObserverList<CompositorAnimationObserver> animation_observer_list_;
 
   gfx::AcceleratedWidget widget_;
-#if defined(USE_AURA)
-  ui::Window* window_;
-#endif
   // A map from child id to parent id.
   std::unordered_set<cc::FrameSinkId, cc::FrameSinkIdHash> child_frame_sinks_;
   bool widget_valid_;
