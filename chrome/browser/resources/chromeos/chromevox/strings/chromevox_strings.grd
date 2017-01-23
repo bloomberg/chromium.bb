@@ -643,7 +643,7 @@
         <ph name="name">$1</ph>, tab
       </message>
       <message desc="Describes a slider with name 'name' and value 'value'." name="IDS_CHROMEVOX_DESCRIBE_SLIDER">
-        <ph name="value">$1</ph>, <ph name="name">$2</ph>, slider
+        <ph name="value">$1</ph> <ph name="name">$2</ph> slider
       </message>
       <message desc="Spoken through the a11y api after describing an element if it is selected." name="IDS_CHROMEVOX_DESCRIBE_SELECTED">
         , selected
@@ -1113,6 +1113,12 @@
       <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'progress bar' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_PROGRESSBAR_BRL">
         pgbar
       </message>
+      <message desc="Describes a progress indicator widget." name="IDS_CHROMEVOX_ROLE_PROGRESS_INDICATOR">
+        Progress indicator
+      </message>
+      <message desc="This is an abbreviated widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'progress indicator' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_PROGRESS_INDICATOR_BRL">
+        pgbar
+      </message>
       <message desc="Describes an element with the ARIA role radio." name="IDS_CHROMEVOX_ROLE_RADIO">
         Radio button
       </message>
@@ -1346,6 +1352,12 @@
       </message>
       <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'separator' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_SEPARATOR_BRL">
         seprtr
+      </message>
+      <message desc="Describes an element with the ARIA role meter." name="IDS_CHROMEVOX_ROLE_METER">
+        Meter
+      </message>
+      <message desc="This is the name of an ARIA meter role shown on a braille display. When translating, try to find a contracted form of the translation for meter according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_METER_BRL">
+        meter
       </message>
       <message desc="Describes an element with the ARIA attribute aria-autocomplete=inline." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_INLINE">
         Autocompletion inline

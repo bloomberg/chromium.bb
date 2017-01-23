@@ -254,6 +254,10 @@ Output.ROLE_INFO_ = {
   menuListPopup: {
     msgId: 'role_menu'
   },
+  meter: {
+    msgId: 'role_meter',
+    inherits: 'abstractRange'
+  },
   navigation: {
     msgId: 'role_navigation',
     inherits: 'abstractContainer'
@@ -261,6 +265,10 @@ Output.ROLE_INFO_ = {
   note: {
     msgId: 'role_note',
     inherits: 'abstractContainer'
+  },
+  progressIndicator: {
+    msgId: 'role_progress_indicator',
+    inherits: 'abstractRange'
   },
   popUpButton: {
     msgId: 'role_button',
@@ -285,6 +293,7 @@ Output.ROLE_INFO_ = {
   },
   scrollBar: {
     msgId: 'role_scrollbar',
+    inherits: 'abstractRange'
   },
   search: {
     msgId: 'role_search',
@@ -294,8 +303,14 @@ Output.ROLE_INFO_ = {
     msgId: 'role_separator',
     inherits: 'abstractContainer'
   },
+  slider: {
+    msgId: 'role_slider',
+    inherits: 'abstractRange',
+    earconId: 'SLIDER'
+  },
   spinButton: {
     msgId: 'role_spinbutton',
+    inherits: 'abstractRange',
     earconId: 'LISTBOX'
   },
   status: {
@@ -395,6 +410,13 @@ Output.RULES = {
     abstractContainer: {
       enter: '$nameFromNode $role $state $description',
       leave: '@exited_container($role)'
+    },
+    abstractRange: {
+      speak:
+          '$if($valueForRange, $valueForRange, $value) ' +
+          '$if($minValueForRange, @aria_value_min($minValueForRange)) ' +
+          '$if($maxValueForRange, @aria_value_max($maxValueForRange)) ' +
+          '$name $role $description $state'
     },
     alert: {
       enter: '$name $role $state',
@@ -526,10 +548,6 @@ Output.RULES = {
     },
     rowHeader: {
       speak: '$nameOrTextContent $state'
-    },
-    slider: {
-      speak: '$earcon(SLIDER) @describe_slider($value, $name) $description ' +
-          '$state'
     },
     staticText: {
       speak: '$name='
@@ -1078,7 +1096,13 @@ Output.prototype = {
           var earcon = node ? this.findEarcon_(node, opt_prevNode) : null;
           if (earcon)
             options.annotation.push(earcon);
-          this.append_(buff, node.name, options);
+          this.append_(buff, node.name || '', options);
+        } else if (token == 'description') {
+          if (node.name == node.description)
+            return;
+
+          options.annotation.push(token);
+          this.append_(buff, node.description || '', options);
         } else if (token == 'urlFilename') {
           options.annotation.push('name');
           var url = node.url;
@@ -1273,7 +1297,7 @@ Output.prototype = {
           if (token == 'if') {
             var cond = tree.firstChild;
             var attrib = cond.value.slice(1);
-            if (node[attrib] || node.state[attrib])
+            if (node[attrib] !== undefined || node.state[attrib])
               this.format_(node, cond.nextSibling, buff);
             else
               this.format_(node, cond.nextSibling.nextSibling, buff);

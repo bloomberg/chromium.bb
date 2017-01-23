@@ -423,7 +423,7 @@ TEST_F('BackgroundTest', 'EarconsForControls', function() {
           .expectSpeech('Button', 'has pop up')
           .expectEarcon(cvox.Earcon.POP_UP_BUTTON)
           .call(doCmd('nextObject'))
-          .expectSpeech(/slider/)
+          .expectSpeech(/Slider/)
           .expectEarcon(cvox.Earcon.SLIDER);
 
       mockFeedback.replay();
