@@ -22,6 +22,7 @@ source_set("tabs") {
     "//components/signin/ios/browser",
     "//components/sync_sessions",
     "//ios/net",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/web",
     "//ui/base",
   ]

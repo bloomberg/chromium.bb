@@ -12,6 +12,7 @@
 
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #include "ios/net/request_tracker.h"
+#import "ios/shared/chrome/browser/tabs/web_state_handle.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ui/base/page_transition_types.h"
 
@@ -63,7 +64,6 @@ namespace web {
 class NavigationManagerImpl;
 struct Referrer;
 class WebState;
-class WebStateImpl;
 }
 
 // Notification sent by a Tab when it starts to load a new URL. This
@@ -98,7 +98,8 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // desktop Chrome's TabContents in that it encapsulates rendering. Acts as the
 // delegate for the CRWWebController in order to process info about pages having
 // loaded.
-@interface Tab : NSObject<CRWWebDelegate, ManageAccountsDelegate>
+@interface Tab
+    : NSObject<CRWWebDelegate, ManageAccountsDelegate, WebStateHandle>
 
 // Browser state associated with this Tab.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
@@ -125,10 +126,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // |YES| if snapshot overlay should load from the grey image cache.
 @property(nonatomic, assign) BOOL useGreyImageCache;
-
-// webStateImpl is deprecated: use webState instead.
-@property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
-@property(nonatomic, readonly) web::WebState* webState;
 
 @property(nonatomic, readonly) CRWWebController* webController;
 @property(nonatomic, readonly) PasswordController* passwordController;

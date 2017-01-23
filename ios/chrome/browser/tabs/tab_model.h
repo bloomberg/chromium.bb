@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#import "ios/chrome/browser/tabs/tab.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 
@@ -17,7 +19,6 @@ class GURL;
 class SessionID;
 @class SessionServiceIOS;
 @class SessionWindowIOS;
-@class Tab;
 @protocol TabModelObserver;
 class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
@@ -81,7 +82,7 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // The model knows about the currently selected tab in order to maintain
 // consistency between multiple views that need the current tab to be
 // synchronized.
-@interface TabModel : NSObject<NSFastEnumeration>
+@interface TabModel : WebStateList<Tab*>
 
 // Currently active tab.
 @property(nonatomic, weak) Tab* currentTab;
@@ -111,9 +112,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 
 // NO if the model has at least one tab.
 @property(nonatomic, readonly, getter=isEmpty) BOOL empty;
-
-// Determines the number of tabs in the model.
-@property(nonatomic, readonly) NSUInteger count;
 
 // Initializes tabs from a restored session. |-setCurrentTab| needs to be called
 // in order to display the views associated with the tabs. Waits until the views
