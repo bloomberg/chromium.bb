@@ -5,6 +5,7 @@
 #include "android_webview/native/aw_contents_statics.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
@@ -76,6 +77,13 @@ ScopedJavaLocalRef<jstring> GetProductVersion(JNIEnv* env,
 }
 
 // static
+void SetSafeBrowsingEnabled(JNIEnv* env,
+                            const JavaParamRef<jclass>&,
+                            jboolean enable) {
+  AwSafeBrowsingConfigHelper::SetSafeBrowsingEnabled(enable);
+}
+
+// static
 void SetServiceWorkerIoThreadClient(
     JNIEnv* env,
     const JavaParamRef<jclass>&,
@@ -84,7 +92,6 @@ void SetServiceWorkerIoThreadClient(
   AwContentsIoThreadClientImpl::SetServiceWorkerIoThreadClient(
       io_thread_client, browser_context);
 }
-
 
 bool RegisterAwContentsStatics(JNIEnv* env) {
   return RegisterNativesImpl(env);

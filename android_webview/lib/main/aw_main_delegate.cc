@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "android_webview/browser/aw_content_browser_client.h"
+#include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/command_line_helper.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
@@ -156,8 +157,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   android_webview::RegisterPathProvider();
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebViewEnableSafeBrowsingSupport)) {
+  if (AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled()) {
     safe_browsing_api_handler_.reset(
         new safe_browsing::SafeBrowsingApiHandlerBridge());
     safe_browsing::SafeBrowsingApiHandler::SetInstance(

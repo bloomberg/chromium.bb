@@ -79,6 +79,10 @@ public class AwContentsStatics {
         nativeSetServiceWorkerIoThreadClient(ioThreadClient, browserContext);
     }
 
+    public static void setSafeBrowsingEnabled(boolean enable) {
+        nativeSetSafeBrowsingEnabled(enable);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
@@ -88,4 +92,5 @@ public class AwContentsStatics {
     private static native String nativeGetProductVersion();
     private static native void nativeSetServiceWorkerIoThreadClient(
             AwContentsIoThreadClient ioThreadClient, AwBrowserContext browserContext);
+    private static native void nativeSetSafeBrowsingEnabled(boolean enable);
 }

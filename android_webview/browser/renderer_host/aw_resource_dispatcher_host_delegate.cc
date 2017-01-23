@@ -13,6 +13,7 @@
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_resource_throttle.h"
+#include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
@@ -271,7 +272,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
-  if (safe_browsing::SafeBrowsingApiHandler::GetInstance()) {
+  if (AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled()) {
     content::ResourceThrottle* throttle =
         AwSafeBrowsingResourceThrottle::MaybeCreate(
             request, resource_type,

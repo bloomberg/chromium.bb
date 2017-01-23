@@ -111,6 +111,9 @@ public abstract class AwBrowserProcess {
                 // and doesn't need the native library.
                 CombinedPolicyProvider.get().registerProvider(new AwPolicyProvider(appContext));
 
+                // Check android settings but only when safebrowsing is enabled.
+                AwSafeBrowsingConfigHelper.maybeInitSafeBrowsingFromSettings(appContext);
+
                 try {
                     BrowserStartupController.get(appContext, LibraryProcessType.PROCESS_WEBVIEW)
                             .startBrowserProcessesSync(!multiProcess);
