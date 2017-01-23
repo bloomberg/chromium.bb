@@ -142,6 +142,7 @@ class PLATFORM_EXPORT KURL {
   bool protocolIsData() const { return protocolIs("data"); }
   // This includes at least about:blank and about:srcdoc.
   bool protocolIsAbout() const { return protocolIs("about"); }
+  bool protocolIsJavaScript() const;
   bool protocolIsInHTTPFamily() const;
   bool isLocalFile() const;
   bool isAboutBlankURL() const;   // Is exactly about:blank.

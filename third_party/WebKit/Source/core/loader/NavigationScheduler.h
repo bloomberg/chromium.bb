@@ -35,6 +35,7 @@
 #include "core/CoreExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -64,9 +65,9 @@ class CORE_EXPORT NavigationScheduler final
   bool locationChangePending();
   bool isNavigationScheduledWithin(double intervalInSeconds) const;
 
-  void scheduleRedirect(double delay, const String& url);
+  void scheduleRedirect(double delay, const KURL&);
   void scheduleLocationChange(Document*,
-                              const String& url,
+                              const KURL&,
                               bool replacesCurrentItem = true);
   void schedulePageBlock(Document*, int reason);
   void scheduleFormSubmission(Document*, FormSubmission*);
@@ -81,7 +82,7 @@ class CORE_EXPORT NavigationScheduler final
   explicit NavigationScheduler(LocalFrame*);
 
   bool shouldScheduleReload() const;
-  bool shouldScheduleNavigation(const String& url) const;
+  bool shouldScheduleNavigation(const KURL&) const;
 
   void navigateTask();
   void schedule(ScheduledNavigation*);

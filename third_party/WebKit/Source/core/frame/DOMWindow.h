@@ -224,8 +224,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
       const LocalDOMWindow* callingWindow) const;
   String crossDomainAccessErrorMessage(
       const LocalDOMWindow* callingWindow) const;
-  bool isInsecureScriptAccess(LocalDOMWindow& callingWindow,
-                              const String& urlString);
+  bool isInsecureScriptAccess(LocalDOMWindow& callingWindow, const KURL&);
 
   // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
   // when its document is no longer the document that is displayed in its

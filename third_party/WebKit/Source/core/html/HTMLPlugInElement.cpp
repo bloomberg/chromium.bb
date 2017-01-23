@@ -465,7 +465,7 @@ LayoutEmbeddedItem HTMLPlugInElement::layoutEmbeddedItem() const {
 // depending on <param> values.
 bool HTMLPlugInElement::allowedToLoadFrameURL(const String& url) {
   KURL completeURL = document().completeURL(url);
-  if (contentFrame() && protocolIsJavaScript(completeURL) &&
+  if (contentFrame() && completeURL.protocolIsJavaScript() &&
       !document().getSecurityOrigin()->canAccess(
           contentFrame()->securityContext()->getSecurityOrigin()))
     return false;

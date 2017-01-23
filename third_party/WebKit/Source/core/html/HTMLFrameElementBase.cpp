@@ -57,7 +57,7 @@ bool HTMLFrameElementBase::isURLAllowed() const {
 
   const KURL& completeURL = document().completeURL(m_URL);
 
-  if (contentFrame() && protocolIsJavaScript(completeURL)) {
+  if (contentFrame() && completeURL.protocolIsJavaScript()) {
     // Check if the caller can execute script in the context of the content
     // frame. NB: This check can be invoked without any JS on the stack for some
     // parser operations. In such case, we use the origin of the frame element's
@@ -93,7 +93,7 @@ void HTMLFrameElementBase::openURL(bool replaceCurrentItem) {
   // Support for <frame src="javascript:string">
   KURL scriptURL;
   KURL url = document().completeURL(m_URL);
-  if (protocolIsJavaScript(m_URL)) {
+  if (url.protocolIsJavaScript()) {
     // We'll set/execute |scriptURL| iff CSP allows us to execute inline
     // JavaScript. If CSP blocks inline JavaScript, then exit early if
     // we're trying to execute script in an existing document. If we're

@@ -255,7 +255,7 @@ void Location::replace(LocalDOMWindow* currentWindow,
 void Location::reload(LocalDOMWindow* currentWindow) {
   if (!m_frame)
     return;
-  if (protocolIsJavaScript(toLocalFrame(m_frame)->document()->url()))
+  if (toLocalFrame(m_frame)->document()->url().protocolIsJavaScript())
     return;
   FrameLoadType reloadType =
       RuntimeEnabledFeatures::fasterLocationReloadEnabled()

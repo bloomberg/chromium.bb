@@ -304,6 +304,10 @@ bool KURL::hasPort() const {
   return hostEnd() < pathStart();
 }
 
+bool KURL::protocolIsJavaScript() const {
+  return componentStringView(m_parsed.scheme) == "javascript";
+}
+
 bool KURL::protocolIsInHTTPFamily() const {
   return m_protocolIsInHTTPFamily;
 }
@@ -779,6 +783,7 @@ void KURL::init(const KURL& base,
 
   initProtocolMetadata();
   initInnerURL();
+  DCHECK(!::blink::protocolIsJavaScript(m_string) || protocolIsJavaScript());
 }
 
 void KURL::initInnerURL() {
@@ -831,7 +836,7 @@ bool KURL::protocolIs(const StringView protocol) const {
 }
 
 StringView KURL::stringViewForInvalidComponent() const {
-  return m_string.isNull() ? StringView() : StringView("", 0);
+  return m_string.isNull() ? StringView() : StringView(StringImpl::empty());
 }
 
 StringView KURL::componentStringView(const url::Component& component) const {

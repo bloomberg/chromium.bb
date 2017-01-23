@@ -433,7 +433,7 @@ void HTMLFormElement::scheduleFormSubmission(FormSubmission* submission) {
     return;
   }
 
-  if (protocolIsJavaScript(submission->action())) {
+  if (submission->action().protocolIsJavaScript()) {
     document().frame()->script().executeScriptIfJavaScriptURL(
         submission->action(), this);
     return;

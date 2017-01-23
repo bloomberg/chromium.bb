@@ -370,8 +370,8 @@ void LocalFrame::navigate(Document& originDocument,
                           const KURL& url,
                           bool replaceCurrentItem,
                           UserGestureStatus userGestureStatus) {
-  m_navigationScheduler->scheduleLocationChange(
-      &originDocument, url.getString(), replaceCurrentItem);
+  m_navigationScheduler->scheduleLocationChange(&originDocument, url,
+                                                replaceCurrentItem);
 }
 
 void LocalFrame::navigate(const FrameLoadRequest& request) {

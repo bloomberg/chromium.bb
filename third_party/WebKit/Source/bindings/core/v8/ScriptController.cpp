@@ -281,7 +281,7 @@ bool ScriptController::canExecuteScripts(
 
 bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,
                                                     Element* element) {
-  if (!protocolIsJavaScript(url))
+  if (!url.protocolIsJavaScript())
     return false;
 
   bool shouldBypassMainWorldContentSecurityPolicy =

@@ -132,8 +132,8 @@ bool DOMWindow::isCurrentlyDisplayedInFrame() const {
 }
 
 bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow,
-                                       const String& urlString) {
-  if (!protocolIsJavaScript(urlString))
+                                       const KURL& url) {
+  if (!url.protocolIsJavaScript())
     return false;
 
   // If this DOMWindow isn't currently active in the Frame, then there's no
