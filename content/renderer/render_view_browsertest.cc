@@ -846,12 +846,11 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
       web_frame->firstChild()->nextSibling()->getSecurityOrigin().isUnique());
 }
 
-// Test for https://crbug.com/568676, where a parent detaches a remote child
-// while the browser navigates it to the parent's site in parallel, with the
-// detach happening after the provisional RenderFrame is created but before
-// FrameMsg_Navigate is received.  This is a variant of
-// https://crbug.com/526304.
-TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
+// Test that when a parent detaches a remote child after the provisional
+// RenderFrame is created but before it is navigated, the RenderFrame is
+// destroyed along with the proxy.  This protects against races in
+// https://crbug.com/526304 and https://crbug.com/568676.
+TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   // This test should only run with --site-per-process.
   if (!AreAllSitesIsolatedForTesting())
     return;
@@ -877,9 +876,11 @@ TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
                                frame()->GetRoutingID(), MSG_ROUTING_NONE,
                                replication_state, nullptr, widget_params,
                                FrameOwnerProperties());
-  TestRenderFrame* provisional_frame =
-      static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
-  EXPECT_TRUE(provisional_frame);
+  {
+    TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
+        RenderFrameImpl::FromRoutingID(routing_id));
+    EXPECT_TRUE(provisional_frame);
+  }
 
   // Detach the child frame (currently remote) in the main frame.
   ExecuteJavaScriptForTests(
@@ -888,25 +889,14 @@ TEST_F(RenderViewImplTest, NavigateProxyAndDetachBeforeOnNavigate) {
       RenderFrameProxy::FromRoutingID(kProxyRoutingId);
   EXPECT_FALSE(child_proxy);
 
-  // Attempt to start a navigation on the RenderFrame that was created to
-  // replace the now-detached RenderFrameProxy.   This shouldn't crash and
-  // should abort the navigation, since the frame no longer exists.
-  CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
-  common_params.url = GURL(url::kAboutBlankURL);
-  provisional_frame->Navigate(common_params, StartNavigationParams(),
-                              RequestNavigationParams());
-  ProcessPendingMessages();
-
-  // Check that there was no DidCommitProvisionalLoad.
-  const IPC::Message* frame_navigate_msg =
-      render_thread_->sink().GetUniqueMessageMatching(
-          FrameHostMsg_DidCommitProvisionalLoad::ID);
-  EXPECT_FALSE(frame_navigate_msg);
-
-  // Detach the provisional frame to clean it up.  Normally, the browser
-  // process would trigger this via FrameMsg_Delete.
-  provisional_frame->GetWebFrame()->detach();
+  // The provisional frame should have been deleted along with the proxy, and
+  // thus any subsequent messages (such as OnNavigate) already in flight for it
+  // should be dropped.
+  {
+    TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
+        RenderFrameImpl::FromRoutingID(routing_id));
+    EXPECT_FALSE(provisional_frame);
+  }
 }
 
 // Verify that the renderer process doesn't crash when device scale factor

@@ -74,8 +74,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
     blink::WebTreeScopeType scope) {
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
 
-  std::unique_ptr<RenderFrameProxy> proxy(
-      new RenderFrameProxy(routing_id, frame_to_replace->GetRoutingID()));
+  std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
 
   // When a RenderFrame is replaced by a RenderProxy, the WebRemoteFrame should
   // always come from WebRemoteFrame::create and a call to WebFrame::swap must
@@ -113,8 +112,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
       return nullptr;
   }
 
-  std::unique_ptr<RenderFrameProxy> proxy(
-      new RenderFrameProxy(routing_id, MSG_ROUTING_NONE));
+  std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
   RenderViewImpl* render_view = nullptr;
   RenderWidget* render_widget = nullptr;
   blink::WebRemoteFrame* web_frame = nullptr;
@@ -180,9 +178,9 @@ RenderFrameProxy* RenderFrameProxy::FromWebFrame(blink::WebFrame* web_frame) {
   return NULL;
 }
 
-RenderFrameProxy::RenderFrameProxy(int routing_id, int frame_routing_id)
+RenderFrameProxy::RenderFrameProxy(int routing_id)
     : routing_id_(routing_id),
-      frame_routing_id_(frame_routing_id),
+      provisional_frame_routing_id_(MSG_ROUTING_NONE),
       web_frame_(nullptr),
       render_view_(nullptr),
       render_widget_(nullptr) {
@@ -427,6 +425,20 @@ void RenderFrameProxy::frameDetached(DetachType type) {
   }
 
   web_frame_->close();
+
+  // If this proxy was associated with a provisional RenderFrame, and we're not
+  // in the process of swapping with it, clean it up as well.
+  if (type == DetachType::Remove &&
+      provisional_frame_routing_id_ != MSG_ROUTING_NONE) {
+    RenderFrameImpl* provisional_frame =
+        RenderFrameImpl::FromRoutingID(provisional_frame_routing_id_);
+    // |provisional_frame| should always exist.  If it was deleted via
+    // FrameMsg_Delete right before this proxy was removed,
+    // RenderFrameImpl::frameDetached would've cleared this proxy's
+    // |provisional_frame_routing_id_| and we wouldn't get here.
+    CHECK(provisional_frame);
+    provisional_frame->GetWebFrame()->detach();
+  }
 
   // Remove the entry in the WebFrame->RenderFrameProxy map, as the |web_frame_|
   // is no longer valid.

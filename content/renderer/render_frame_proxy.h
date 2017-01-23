@@ -118,6 +118,12 @@ class CONTENT_EXPORT RenderFrameProxy
   RenderViewImpl* render_view() { return render_view_; }
   blink::WebRemoteFrame* web_frame() { return web_frame_; }
 
+  void set_provisional_frame_routing_id(int routing_id) {
+    provisional_frame_routing_id_ = routing_id;
+  }
+
+  int provisional_frame_routing_id() { return provisional_frame_routing_id_; }
+
   // Returns the widget used for the local frame root.
   RenderWidget* render_widget() { return render_widget_; }
 
@@ -143,7 +149,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnDidStartLoading();
 
  private:
-  RenderFrameProxy(int routing_id, int frame_routing_id);
+  RenderFrameProxy(int routing_id);
 
   void Init(blink::WebRemoteFrame* frame,
             RenderViewImpl* render_view,
@@ -179,9 +185,9 @@ class CONTENT_EXPORT RenderFrameProxy
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;
 
-  // The routing ID of the local RenderFrame (if any) which this
-  // RenderFrameProxy is meant to replace in the frame tree.
-  const int frame_routing_id_;
+  // The routing ID of the provisional RenderFrame (if any) that is meant to
+  // replace this RenderFrameProxy in the frame tree.
+  int provisional_frame_routing_id_;
 
   // Stores the WebRemoteFrame we are associated with.
   blink::WebRemoteFrame* web_frame_;

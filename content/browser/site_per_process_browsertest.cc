@@ -6320,16 +6320,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(1, child_count);
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_NavigateAboutBlankAndDetach DISABLED_NavigateAboutBlankAndDetach
-#else
-#define MAYBE_NavigateAboutBlankAndDetach NavigateAboutBlankAndDetach
-#endif
 // Similar to NavigateProxyAndDetachBeforeCommit, but uses a synchronous
 // navigation to about:blank and the parent removes the child frame in a load
 // event handler for the subframe.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_NavigateAboutBlankAndDetach) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateAboutBlankAndDetach) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/remove_frame_on_load.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6342,8 +6336,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
             child->current_frame_host()->GetSiteInstance());
 
-  // Navigate the child frame to "about:blank" from the parent document.
-  TestNavigationObserver observer(shell()->web_contents());
+  // Navigate the child frame to "about:blank" from the parent document and
+  // wait for it to be removed.
+  FrameDeletedObserver observer(child);
   EXPECT_TRUE(ExecuteScript(
       root, base::StringPrintf("f.src = '%s'", url::kAboutBlankURL)));
   observer.Wait();

@@ -1004,6 +1004,7 @@ void RenderFrameImpl::CreateFrame(
     render_frame = RenderFrameImpl::Create(proxy->render_view(), routing_id);
     render_frame->InitializeBlameContext(nullptr);
     render_frame->proxy_routing_id_ = proxy_routing_id;
+    proxy->set_provisional_frame_routing_id(routing_id);
     web_frame = blink::WebLocalFrame::createProvisional(
         render_frame, proxy->web_frame(), replicated_state.sandbox_flags);
   }
@@ -1609,19 +1610,6 @@ void RenderFrameImpl::OnNavigate(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params) {
-  // If this RenderFrame is going to replace a RenderFrameProxy, it is possible
-  // that the proxy was detached before this navigation request was received.
-  // In that case, abort the navigation.  See https://crbug.com/526304 and
-  // https://crbug.com/568676.
-  // TODO(nasko, alexmos): Eventually, the browser process will send an IPC to
-  // clean this frame up after https://crbug.com/548275 is fixed.
-  if (proxy_routing_id_ != MSG_ROUTING_NONE) {
-    RenderFrameProxy* proxy =
-        RenderFrameProxy::FromRoutingID(proxy_routing_id_);
-    if (!proxy)
-      return;
-  }
-
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
   // Can be NULL in tests.
   if (render_thread_impl)
@@ -3134,6 +3122,21 @@ void RenderFrameImpl::frameDetached(blink::WebLocalFrame* frame,
   // it.
   frame->close();
   frame_ = nullptr;
+
+  // If this was a provisional frame with an associated proxy, tell the proxy
+  // that it's no longer associated with this frame.
+  if (proxy_routing_id_ != MSG_ROUTING_NONE) {
+    RenderFrameProxy* proxy =
+        RenderFrameProxy::FromRoutingID(proxy_routing_id_);
+
+    // |proxy| should always exist.  Detaching the proxy would've also detached
+    // this provisional frame.  The proxy should also not be associated with
+    // another provisional frame at this point.
+    CHECK(proxy);
+    CHECK_EQ(routing_id_, proxy->provisional_frame_routing_id());
+
+    proxy->set_provisional_frame_routing_id(MSG_ROUTING_NONE);
+  }
 
   delete this;
   // Object is invalid after this point.
@@ -5056,14 +5059,13 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 bool RenderFrameImpl::SwapIn() {
   CHECK_NE(proxy_routing_id_, MSG_ROUTING_NONE);
   CHECK(!in_frame_tree_);
-  RenderFrameProxy* proxy = RenderFrameProxy::FromRoutingID(proxy_routing_id_);
 
-  // The proxy might have been detached while the provisional LocalFrame was
-  // being navigated.  In that case, don't swap the frame back in the tree
-  // and return early (to avoid sending confusing IPCs to the browser
-  // process).  See https://crbug.com/526304 and https://crbug.com/568676.
-  if (!proxy)
-    return false;
+  // The proxy should always exist.  If it was detached while the provisional
+  // LocalFrame was being navigated, the provisional frame would've been
+  // cleaned up by RenderFrameProxy::frameDetached.  See
+  // https://crbug.com/526304 and https://crbug.com/568676 for context.
+  RenderFrameProxy* proxy = RenderFrameProxy::FromRoutingID(proxy_routing_id_);
+  CHECK(proxy);
 
   int proxy_routing_id = proxy_routing_id_;
   if (!proxy->web_frame()->swap(frame_))
