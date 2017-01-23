@@ -1,19 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/audit-util.js"></script>
+<script src="../resources/audit.js"></script>
 </head>
 <body>
 <script>
-description("Check that the AudioContext constructor throws when the limit on hardware contexts is reached.");
+let audit = Audit.createTaskRunner();
+
+let contextsToCreate = 10;
 
 function reachHardwareContextsLimit() {
-    var context = [];
-    for (var i=0; i<10; ++i)
-        context[i] = new AudioContext();
+  let context = [];
+  for (let i = 0; i < contextsToCreate; ++i)
+    context[i] = new AudioContext();
 }
 
-shouldThrow("reachHardwareContextsLimit()");
+
+audit.define("test-limit", function (task, should) {
+  task.describe(
+    "Check that the AudioContext constructor throws when the limit on hardware contexts is reached."
+  );
+  should(function () {
+      reachHardwareContextsLimit();
+    }, "Create " + contextsToCreate + " concurrent AudioContext's")
+    .throw("NotSupportedError");
+
+  task.done();
+});
+
+audit.run();
 </script>
 </body>
 </html>
