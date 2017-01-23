@@ -609,6 +609,27 @@ strtouint(const char *str)
 	return (int)ret;
 }
 
+static int
+version_from_since(struct parse_context *ctx, const char *since)
+{
+	int version;
+
+	if (since != NULL) {
+		version = strtouint(since);
+		if (version == -1) {
+			fail(&ctx->loc, "invalid integer (%s)\n", since);
+		} else if (version > ctx->interface->version) {
+			fail(&ctx->loc, "since (%u) larger than version (%u)\n",
+			     version, ctx->interface->version);
+		}
+	} else {
+		version = 1;
+	}
+
+
+	return version;
+}
+
 static void
 start_element(void *data, const char *element_name, const char **atts)
 {
@@ -694,17 +715,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (type != NULL && strcmp(type, "destructor") == 0)
 			message->destructor = 1;
 
-		if (since != NULL) {
-			version = strtouint(since);
-			if (version == -1) {
-				fail(&ctx->loc, "invalid integer (%s)\n", since);
-			} else if (version > ctx->interface->version) {
-				fail(&ctx->loc, "since (%u) larger than version (%u)\n",
-				     version, ctx->interface->version);
-			}
-		} else {
-			version = 1;
-		}
+		version = version_from_since(ctx, since);
 
 		if (version < ctx->interface->since)
 			warn(&ctx->loc, "since version not increasing\n");
