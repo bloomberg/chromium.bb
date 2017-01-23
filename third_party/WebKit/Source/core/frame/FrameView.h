@@ -144,6 +144,7 @@ class CORE_EXPORT FrameView final
   void removeOrthogonalWritingModeRoot(LayoutBox&);
   bool hasOrthogonalWritingModeRoots() const;
   void layoutOrthogonalWritingModeRoots();
+  void scheduleOrthogonalWritingModeRootsForLayout();
   int layoutCount() const { return m_layoutCount; }
 
   void countObjectsNeedingLayout(unsigned& needsLayoutObjects,

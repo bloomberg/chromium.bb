@@ -1055,6 +1055,16 @@ void FrameView::performLayout(bool inSubtreeLayout) {
 
   ScriptForbiddenScope forbidScript;
 
+  if (inSubtreeLayout && hasOrthogonalWritingModeRoots()) {
+    // If we're going to lay out from each subtree root, rather than once from
+    // LayoutView, we need to merge the depth-ordered orthogonal writing mode
+    // root list into the depth-ordered list of subtrees scheduled for
+    // layout. Otherwise, during layout of one such subtree, we'd risk skipping
+    // over a subtree of objects needing layout.
+    DCHECK(!m_layoutSubtreeRootList.isEmpty());
+    scheduleOrthogonalWritingModeRootsForLayout();
+  }
+
   ASSERT(!isInPerformLayout());
   lifecycle().advanceTo(DocumentLifecycle::InPerformLayout);
 
@@ -1064,9 +1074,6 @@ void FrameView::performLayout(bool inSubtreeLayout) {
   // doing.
 
   forceLayoutParentViewIfNeeded();
-
-  if (hasOrthogonalWritingModeRoots())
-    layoutOrthogonalWritingModeRoots();
 
   if (inSubtreeLayout) {
     if (m_analyzer)
@@ -1085,6 +1092,8 @@ void FrameView::performLayout(bool inSubtreeLayout) {
     }
     m_layoutSubtreeRootList.clear();
   } else {
+    if (hasOrthogonalWritingModeRoots())
+      layoutOrthogonalWritingModeRoots();
     layoutFromRootObject(*layoutView());
   }
 
@@ -2138,17 +2147,28 @@ static inline void removeFloatingObjectsForSubtreeRoot(LayoutObject& root) {
   }
 }
 
+static bool prepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
+  DCHECK(root.isBox() && toLayoutBox(root).isOrthogonalWritingModeRoot());
+  if (!root.needsLayout() || root.isOutOfFlowPositioned() ||
+      root.isColumnSpanAll() ||
+      !root.styleRef().logicalHeight().isIntrinsicOrAuto())
+    return false;
+
+  removeFloatingObjectsForSubtreeRoot(root);
+  return true;
+}
+
 void FrameView::layoutOrthogonalWritingModeRoots() {
   for (auto& root : m_orthogonalWritingModeRootList.ordered()) {
-    ASSERT(root->isBox() && toLayoutBox(*root).isOrthogonalWritingModeRoot());
-    if (!root->needsLayout() || root->isOutOfFlowPositioned() ||
-        root->isColumnSpanAll() ||
-        !root->styleRef().logicalHeight().isIntrinsicOrAuto()) {
-      continue;
-    }
+    if (prepareOrthogonalWritingModeRootForLayout(*root))
+      layoutFromRootObject(*root);
+  }
+}
 
-    removeFloatingObjectsForSubtreeRoot(*root);
-    layoutFromRootObject(*root);
+void FrameView::scheduleOrthogonalWritingModeRootsForLayout() {
+  for (auto& root : m_orthogonalWritingModeRootList.ordered()) {
+    if (prepareOrthogonalWritingModeRootForLayout(*root))
+      m_layoutSubtreeRootList.add(*root);
   }
 }
 
