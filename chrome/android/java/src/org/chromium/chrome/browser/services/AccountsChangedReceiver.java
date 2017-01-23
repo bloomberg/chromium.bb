@@ -145,7 +145,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
         };
         // If the browser process has already been loaded, a task will be posted immediately to
         // call the |notifyAccountsChangedCallback| passed in as a parameter.
-        BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
+        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                 .addStartupCompletedObserver(notifyAccountsChangedCallback);
     }
 }

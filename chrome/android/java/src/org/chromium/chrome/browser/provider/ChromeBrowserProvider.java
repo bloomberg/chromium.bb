@@ -245,7 +245,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     public boolean onCreate() {
         ContentApplication.initCommandLine(getContext());
 
-        BrowserStartupController.get(getContext(), LibraryProcessType.PROCESS_BROWSER)
+        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                 .addStartupCompletedObserver(
                         new BrowserStartupController.StartupCallback() {
                             @Override

@@ -688,8 +688,7 @@ class UrlManager {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Context appContext = ContextUtils.getApplicationContext();
-                BrowserStartupController.get(appContext, LibraryProcessType.PROCESS_BROWSER)
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .addStartupCompletedObserver(new StartupCallback() {
                             @Override
                             public void onSuccess(boolean alreadyStarted) {

@@ -4,10 +4,10 @@
 
 package org.chromium.content.browser;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.StrictMode;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -95,11 +95,6 @@ public class BrowserStartupController {
     // complete.
     private final List<StartupCallback> mAsyncStartupCallbacks;
 
-    // The context is set on creation, but the reference is cleared after the browser process
-    // initialization has been started, since it is not needed anymore. This is to ensure the
-    // context is not leaked.
-    private final Context mContext;
-
     // Whether the async startup of the browser process has started.
     private boolean mHasStartedInitializingBrowserProcess;
 
@@ -116,8 +111,7 @@ public class BrowserStartupController {
 
     private int mLibraryProcessType;
 
-    BrowserStartupController(Context context, int libraryProcessType) {
-        mContext = context.getApplicationContext();
+    BrowserStartupController(int libraryProcessType) {
         mAsyncStartupCallbacks = new ArrayList<>();
         mLibraryProcessType = libraryProcessType;
     }
@@ -125,19 +119,18 @@ public class BrowserStartupController {
     /**
      * Get BrowserStartupController instance, create a new one if no existing.
      *
-     * @param context the application context.
      * @param libraryProcessType the type of process the shared library is loaded. it must be
      *                           LibraryProcessType.PROCESS_BROWSER or
      *                           LibraryProcessType.PROCESS_WEBVIEW.
      * @return BrowserStartupController instance.
      */
-    public static BrowserStartupController get(Context context, int libraryProcessType) {
+    public static BrowserStartupController get(int libraryProcessType) {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
             assert LibraryProcessType.PROCESS_BROWSER == libraryProcessType
                     || LibraryProcessType.PROCESS_WEBVIEW == libraryProcessType;
-            sInstance = new BrowserStartupController(context, libraryProcessType);
+            sInstance = new BrowserStartupController(libraryProcessType);
         }
         assert sInstance.mLibraryProcessType == libraryProcessType : "Wrong process type";
         return sInstance;
@@ -312,7 +305,8 @@ public class BrowserStartupController {
             public void run() {
                 if (!mPostResourceExtractionTasksCompleted) {
                     // TODO(yfriedman): Remove dependency on a command line flag for this.
-                    DeviceUtils.addDeviceSpecificUserAgentSwitch(mContext);
+                    DeviceUtils.addDeviceSpecificUserAgentSwitch(
+                            ContextUtils.getApplicationContext());
                     nativeSetCommandLineFlags(
                             singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);
                     mPostResourceExtractionTasksCompleted = true;
@@ -343,7 +337,7 @@ public class BrowserStartupController {
     }
 
     private String getPlugins() {
-        return PepperPluginManager.getPlugins(mContext);
+        return PepperPluginManager.getPlugins(ContextUtils.getApplicationContext());
     }
 
     private static native void nativeSetCommandLineFlags(

@@ -62,7 +62,7 @@ public class GcmUma {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .addStartupCompletedObserver(
                                 new StartupCallback() {
                                     @Override

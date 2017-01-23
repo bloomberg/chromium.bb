@@ -41,7 +41,7 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
             Log.e(TAG, "Cannot load content_browsertests.", e);
             System.exit(-1);
         }
-        BrowserStartupController.get(getApplicationContext(), LibraryProcessType.PROCESS_BROWSER)
+        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                 .initChromiumBrowserProcessForTests();
 
         setContentView(getTestActivityViewId());

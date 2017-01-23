@@ -66,7 +66,7 @@ public class CastBrowserHelper {
             LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
 
             Log.d(TAG, "Loading BrowserStartupController...");
-            BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
+            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                     .startBrowserProcessesSync(false);
             NetworkChangeNotifier.init(context);
             // Cast shell always expects to receive notifications to track network state.

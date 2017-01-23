@@ -1792,7 +1792,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .addStartupCompletedObserver(new StartupCallback() {
                             @Override
                             public void onSuccess(boolean alreadyStarted) {

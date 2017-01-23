@@ -115,7 +115,7 @@ public abstract class AwBrowserProcess {
                 AwSafeBrowsingConfigHelper.maybeInitSafeBrowsingFromSettings(appContext);
 
                 try {
-                    BrowserStartupController.get(appContext, LibraryProcessType.PROCESS_WEBVIEW)
+                    BrowserStartupController.get(LibraryProcessType.PROCESS_WEBVIEW)
                             .startBrowserProcessesSync(!multiProcess);
                 } catch (ProcessInitException e) {
                     throw new RuntimeException("Cannot initialize WebView", e);

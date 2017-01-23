@@ -89,7 +89,7 @@ public class ContentShellActivity extends Activity {
 
         if (CommandLine.getInstance().hasSwitch(ContentSwitches.RUN_LAYOUT_TEST)) {
             try {
-                BrowserStartupController.get(this, LibraryProcessType.PROCESS_BROWSER)
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .startBrowserProcessesSync(false);
             } catch (ProcessInitException e) {
                 Log.e(TAG, "Failed to load native library.", e);
@@ -97,7 +97,7 @@ public class ContentShellActivity extends Activity {
             }
         } else {
             try {
-                BrowserStartupController.get(this, LibraryProcessType.PROCESS_BROWSER)
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .startBrowserProcessesAsync(
                                 true,
                                 new BrowserStartupController.StartupCallback() {

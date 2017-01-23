@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.content.Context;
 import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
@@ -12,7 +11,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.test.util.AdvancedMockContext;
 
 /**
  * Test of BrowserStartupController
@@ -38,8 +36,8 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             }
         }
 
-        private TestBrowserStartupController(Context context) {
-            super(context, LibraryProcessType.PROCESS_BROWSER);
+        private TestBrowserStartupController() {
+            super(LibraryProcessType.PROCESS_BROWSER);
         }
 
         @Override
@@ -89,8 +87,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Context context = new AdvancedMockContext(getInstrumentation().getTargetContext());
-        mController = new TestBrowserStartupController(context);
+        mController = new TestBrowserStartupController();
         // Setting the static singleton instance field enables more correct testing, since it is
         // is possible to call {@link BrowserStartupController#browserStartupComplete(int)} instead
         // of {@link BrowserStartupController#executeEnqueuedCallbacks(int, boolean)} directly.
