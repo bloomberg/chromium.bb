@@ -308,8 +308,9 @@ void TaskGraphWorkQueue::CompleteTask(PrioritizedTask completed_task) {
 
     DCHECK_LT(0u, dependent_node.dependencies);
     dependent_node.dependencies--;
-    // Task is ready if it has no dependencies. Add it to |ready_to_run_tasks_|.
-    if (!dependent_node.dependencies) {
+    // Task is ready if it has no dependencies and is in the new state, Add it
+    // to |ready_to_run_tasks_|.
+    if (!dependent_node.dependencies && dependent_node.task->state().IsNew()) {
       PrioritizedTask::Vector& ready_to_run_tasks =
           task_namespace->ready_to_run_tasks[dependent_node.category];
 
