@@ -168,16 +168,3 @@ TEST(Logging, GetFirstErrorMessage) {
   entry = log.GetFirstErrorMessage();
   ASSERT_EQ("first error message", entry);
 }
-
-TEST(Logging, GetLotsOfLogs) {
-  WebDriverLog log(WebDriverLog::kBrowserType, Log::kAll);
-  std::string entry;
-  for (size_t i = 0; i < WebDriverLog::kMaxReturnedEntries + 1; i++)
-    log.AddEntry(Log::kError, "info message");
-  std::unique_ptr<base::ListValue> entries = log.GetAndClearEntries();
-  ASSERT_EQ(WebDriverLog::kMaxReturnedEntries, entries->GetSize());
-  entries = log.GetAndClearEntries();
-  ASSERT_EQ(1u, entries->GetSize());
-  entries = log.GetAndClearEntries();
-  ASSERT_EQ(0u, entries->GetSize());
-}

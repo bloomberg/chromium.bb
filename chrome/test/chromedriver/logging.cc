@@ -130,7 +130,6 @@ bool HandleLogMessage(int severity,
 const char WebDriverLog::kBrowserType[] = "browser";
 const char WebDriverLog::kDriverType[] = "driver";
 const char WebDriverLog::kPerformanceType[] = "performance";
-const size_t WebDriverLog::kMaxReturnedEntries = 100000;
 
 bool WebDriverLog::NameToLevel(const std::string& name, Log::Level* out_level) {
   for (size_t i = 0; i < arraysize(kNameToLevel); ++i) {
@@ -152,25 +151,8 @@ WebDriverLog::~WebDriverLog() {
 }
 
 std::unique_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
-  std::unique_ptr<base::ListValue> ret(new base::ListValue());
-  if (entries_->GetSize() <= WebDriverLog::kMaxReturnedEntries) {
-    std::swap(entries_, ret);
-  } else {
-    // net::HttpServer has a maximum buffer size of 100MB. If there are too many
-    // log entries, we'll fail to send them all back in one go. So we only
-    // return |kMaxReturnedEntries| entries at a time.
-    // TODO(crbug.com/681892): Add streaming support to net::HttpServer, so that
-    // we don't have to worry about its buffer size.
-    for (size_t i = 0; i < kMaxReturnedEntries; i++) {
-      // base::ListValue doesn't provide a method to split lists in constant
-      // time, so construct a new list for the return value. This should be
-      // revisited if users run into performance problems with large traces.
-      std::unique_ptr<base::Value> entry;
-      if (!entries_->Remove(0, &entry))
-        break;
-      ret->Append(std::move(entry));
-    }
-  }
+  std::unique_ptr<base::ListValue> ret(entries_.release());
+  entries_.reset(new base::ListValue());
   return ret;
 }
 
