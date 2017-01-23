@@ -701,7 +701,7 @@
       'id': 187,
       'caption': '''Enable deleting browser and download history''',
       'tags': ['local-data-access', 'admin-sharing'],
-      'desc': '''Enables deleting browser history and download history in <ph name="PRODUCT_NAME">$<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''Enables deleting browser history and download history in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       Note that even with this policy disabled, the browsing and download history are not guaranteed to be retained: users may be able to edit or delete the history database files directly, and the browser itself may expire or archive any or all history items at any time.
 
@@ -2274,8 +2274,7 @@
           This policy takes precedence over a potentially conflicting
           ExtensionsInstallBlacklist policy. If an app or extension that
           previously had been force-installed is removed from this list, it is
-          automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google
-          Chrome</ex></ph>.
+          automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           For Windows instances that are not joined to an Active Directory
           domain, forced installation is limited to apps and extensions listed
@@ -7860,9 +7859,9 @@
 
       The policy consists of a list of bookmarks whereas each bookmark is a
       dictionary containing the keys <ph name="NAME">"name"</ph> and <ph
-      name="URL">"url"</ph> which hold the bookmark's name and its target. A
+      name="URL_LABEL">"url"</ph> which hold the bookmark's name and its target. A
       subfolder may be configured by defining a bookmark without an <ph
-      name="URL">"url"</ph> key but with an additional <ph
+      name="URL_LABEL">"url"</ph> key but with an additional <ph
       name="CHILDREN">"children"</ph> key which itself contains a list of
       bookmarks as defined above (some of which may be folders again). <ph
       name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> amends incomplete URLs
