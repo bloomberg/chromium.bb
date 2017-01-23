@@ -66,9 +66,9 @@ class SearchGeolocationService : public KeyedService {
     bool ServiceIsCreatedWithBrowserContext() const override;
     KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* profile) const override;
+    void RegisterProfilePrefs(
+        user_prefs::PrefRegistrySyncable* registry) override;
   };
-
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   explicit SearchGeolocationService(Profile* profile);
 
@@ -87,6 +87,7 @@ class SearchGeolocationService : public KeyedService {
   void Shutdown() override;
 
  private:
+  friend class SearchGeolocationServiceTest;
   struct PrefValue;
 
   ~SearchGeolocationService() override;

@@ -15,7 +15,6 @@ namespace android {
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   NotificationPlatformBridgeAndroid::RegisterProfilePrefs(registry);
   SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(registry);
-  SearchGeolocationService::RegisterProfilePrefs(registry);
 }
 
 }  // namespace android

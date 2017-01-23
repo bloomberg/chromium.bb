@@ -125,8 +125,7 @@ KeyedService* SearchGeolocationService::Factory::BuildServiceInstanceFor(
   return new SearchGeolocationService(Profile::FromBrowserContext(context));
 }
 
-// static
-void SearchGeolocationService::RegisterProfilePrefs(
+void SearchGeolocationService::Factory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kGoogleDSEGeolocationSetting);
 }
