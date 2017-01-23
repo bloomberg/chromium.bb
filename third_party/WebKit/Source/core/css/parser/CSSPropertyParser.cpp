@@ -2332,9 +2332,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyObjectPosition:
     case CSSPropertyPerspectiveOrigin:
       return consumePosition(m_range, m_context->mode(), UnitlessQuirk::Forbid);
-    case CSSPropertyWebkitFontSizeDelta:
-      return consumeLength(m_range, m_context->mode(), ValueRangeAll,
-                           UnitlessQuirk::Allow);
     case CSSPropertyWebkitHyphenateCharacter:
     case CSSPropertyWebkitLocale:
       return consumeLocale(m_range);
