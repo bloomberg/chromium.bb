@@ -19,6 +19,7 @@ TelemetryLogWriter::TelemetryLogWriter(
     std::unique_ptr<UrlRequestFactory> request_factory)
     : telemetry_base_url_(telemetry_base_url),
       request_factory_(std::move(request_factory)) {}
+
 TelemetryLogWriter::~TelemetryLogWriter() {}
 
 void TelemetryLogWriter::SetAuthToken(const std::string& auth_token) {

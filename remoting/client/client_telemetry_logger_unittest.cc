@@ -97,16 +97,14 @@ class ClientTelemetryLoggerTest : public testing::Test {
   void SetUp() override;
 
  protected:
-  // |log_writer_| will be owned by |logger_| and freed when |logger_|
-  // destructs. Feel free to use this reference in the test.
-  FakeLogWriter* log_writer_ = nullptr;
+  std::unique_ptr<FakeLogWriter> log_writer_;
   std::unique_ptr<ClientTelemetryLogger> logger_;
 };
 
 void ClientTelemetryLoggerTest::SetUp() {
-  log_writer_ = new FakeLogWriter();
-  logger_.reset(new ClientTelemetryLogger(ChromotingEvent::Mode::ME2ME));
-  logger_->StartForTest(base::WrapUnique(log_writer_));
+  log_writer_.reset(new FakeLogWriter());
+  logger_.reset(new ClientTelemetryLogger(log_writer_.get(),
+                                          ChromotingEvent::Mode::ME2ME));
 }
 
 TEST_F(ClientTelemetryLoggerTest, LogSessionStateChange) {
@@ -172,15 +170,6 @@ TEST_F(ClientTelemetryLoggerTest, SessionIdExpiration) {
   protocol::PerformanceTracker perf_tracker;
   logger_->LogStatistics(&perf_tracker);
   EXPECT_NE(last_id, logger_->session_id());
-}
-
-TEST_F(ClientTelemetryLoggerTest, PassesThroughAuthTokenAndClosure) {
-  std::string token("some token");
-  base::Closure closure = base::Bind(&base::DoNothing);
-  logger_->SetAuthToken(token);
-  logger_->SetAuthClosure(closure);
-  EXPECT_EQ(token, log_writer_->auth_token());
-  EXPECT_TRUE(closure.Equals(log_writer_->auth_closure()));
 }
 
 }  // namespace remoting

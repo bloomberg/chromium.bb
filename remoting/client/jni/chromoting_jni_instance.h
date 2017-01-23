@@ -14,7 +14,9 @@
 #include "base/message_loop/message_loop.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_context.h"
+#include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/client_user_interface.h"
+#include "remoting/client/jni/connect_to_host_info.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -50,18 +52,7 @@ class ChromotingJniInstance
                         base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
                         std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
                         std::unique_ptr<protocol::VideoRenderer> video_renderer,
-                        const std::string& username,
-                        const std::string& auth_token,
-                        const std::string& host_jid,
-                        const std::string& host_id,
-                        const std::string& host_pubkey,
-                        const std::string& pairing_id,
-                        const std::string& pairing_secret,
-                        const std::string& capabilities,
-                        const std::string& flags,
-                        const std::string& host_version,
-                        const std::string& host_os,
-                        const std::string& host_os_version);
+                        const ConnectToHostInfo& info);
 
   ~ChromotingJniInstance() override;
 
@@ -158,12 +149,9 @@ class ChromotingJniInstance
 
   base::WeakPtr<JniPairingSecretFetcher> secret_fetcher_;
 
-  // ID of the host we are connecting to.
-  std::string host_jid_;
+  ConnectToHostInfo connection_info_;
 
   protocol::ClientAuthenticationConfig client_auth_config_;
-
-  std::string flags_;
 
   // This group of variables is to be used on the network thread.
   std::unique_ptr<ClientContext> client_context_;
@@ -200,10 +188,7 @@ class ChromotingJniInstance
   // thread.
   bool connected_ = false;
 
-  // TODO(BUG 680752): Remove these.
-  std::string host_version_;
-  std::string host_os_;
-  std::string host_os_version_;
+  std::unique_ptr<ClientTelemetryLogger> logger_;
 
   base::WeakPtr<ChromotingJniInstance> weak_ptr_;
   base::WeakPtrFactory<ChromotingJniInstance> weak_factory_;

@@ -38,6 +38,8 @@ shared_library("remoting_client_jni") {
     "//remoting/client/jni/chromoting_jni_instance.h",
     "//remoting/client/jni/chromoting_jni_runtime.cc",
     "//remoting/client/jni/chromoting_jni_runtime.h",
+    "//remoting/client/jni/connect_to_host_info.cc",
+    "//remoting/client/jni/connect_to_host_info.h",
     "//remoting/client/jni/display_updater_factory.h",
     "//remoting/client/jni/egl_thread_context.cc",
     "//remoting/client/jni/egl_thread_context.h",

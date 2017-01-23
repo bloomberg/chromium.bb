@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
+#include "remoting/base/telemetry_log_writer.h"
 #include "remoting/client/chromoting_client_runtime.h"
-#include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/protocol/connection_to_host.h"
 
@@ -51,13 +51,11 @@ class ChromotingJniRuntime {
     return runtime_->url_requester();
   }
 
-  // The runtime handles authentication and the caller should not call SetAuth*.
-  // The runtime itself will not send out any logs. Used on the network thread.
-  ClientTelemetryLogger* logger() {
-    DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
-    DCHECK(logger_);
-    return logger_.get();
-  }
+  // Returns the log writer that can be used by ClientTelemetryLogger to send
+  // out logs.
+  // Method must be called and returned object must be used on the network
+  // thread.
+  TelemetryLogWriter* GetLogWriter();
 
   // Fetch OAuth token for the telemetry logger. Call on UI thread.
   void FetchAuthToken();
@@ -87,7 +85,7 @@ class ChromotingJniRuntime {
   std::unique_ptr<ChromotingClientRuntime> runtime_;
 
   // For logging session stage changes and stats.
-  std::unique_ptr<ClientTelemetryLogger> logger_;
+  std::unique_ptr<TelemetryLogWriter> log_writer_;
 
   friend struct base::DefaultSingletonTraits<ChromotingJniRuntime>;
 

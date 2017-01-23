@@ -22,10 +22,11 @@ namespace remoting {
 // ClientTelemetryLogger sends client log entries to the telemetry server.
 // The logger should be run entirely on one single thread.
 // TODO(yuweih): Implement new features that session_logger.js provides.
-// TODO(BUG 680752): Refactor this so that it's bound to only one session.
 class ClientTelemetryLogger {
  public:
-  explicit ClientTelemetryLogger(ChromotingEvent::Mode mode);
+  // |log_writer| must outlive ClientTelemetryLogger.
+  ClientTelemetryLogger(ChromotingEventLogWriter* log_writer,
+                        ChromotingEvent::Mode mode);
   ~ClientTelemetryLogger();
 
   // Sets the host info to be posted along with other log data. By default
@@ -34,36 +35,15 @@ class ClientTelemetryLogger {
                    ChromotingEvent::Os host_os,
                    const std::string& host_os_version);
 
-  // Start must be called before posting logs or setting auth token or closure.
-  void Start(std::unique_ptr<UrlRequestFactory> request_factory,
-             const std::string& telemetry_base_url);
-
   void LogSessionStateChange(ChromotingEvent::SessionState state,
                              ChromotingEvent::ConnectionError error);
 
   // TODO(yuweih): Investigate possibility of making PerformanceTracker const.
   void LogStatistics(protocol::PerformanceTracker* perf_tracker);
 
-  // Authorization: The caller can either
-  // 1. have its own fetching schedule and manually call |SetAuthToken| when the
-  //    token is fetched or renewed
-  // 2. or call |SetAuthClosure| and expect the logger to run the closure when
-  //    it needs new token. See comments below.
-
-  // Sets the auth token immediately.
-  void SetAuthToken(const std::string& token);
-
-  // Sets the authorization closure. The closure should call |SetAuthToken| to
-  // set the token. The closure will be run when the logger needs authorization
-  // to send out the logs.
-  void SetAuthClosure(const base::Closure& closure);
-
   const std::string& session_id() const { return session_id_; }
 
   void SetSessionIdGenerationTimeForTest(base::TimeTicks gen_time);
-  // Start the logger with a given log writer. Do not call Start before or
-  // after calling this function.
-  void StartForTest(std::unique_ptr<ChromotingEventLogWriter> writer);
 
   static ChromotingEvent::SessionState TranslateState(
       protocol::ConnectionToHost::State state);
@@ -79,9 +59,11 @@ class ClientTelemetryLogger {
   // Generates a new random session ID.
   void GenerateSessionId();
 
-  // Expire the session ID if the maximum duration has been exceeded.
-  // Sends SessionIdOld and SessionIdNew events describing the change of id.
-  void ExpireSessionIdIfOutdated();
+  // If not session ID has been set, simply generates a new one without sending
+  // any logs, otherwise expire the session ID if the maximum duration has been
+  // exceeded, and sends SessionIdOld and SessionIdNew events describing the
+  // change of id.
+  void RefreshSessionIdIfOutdated();
 
   ChromotingEvent MakeStatsEvent(protocol::PerformanceTracker* perf_tracker);
   ChromotingEvent MakeSessionStateChangeEvent(
@@ -103,7 +85,7 @@ class ClientTelemetryLogger {
   std::unique_ptr<HostInfo> host_info_;
 
   // The log writer that actually sends log to the server.
-  std::unique_ptr<ChromotingEventLogWriter> log_writer_;
+  ChromotingEventLogWriter* log_writer_;
 
   base::ThreadChecker thread_checker_;
 
