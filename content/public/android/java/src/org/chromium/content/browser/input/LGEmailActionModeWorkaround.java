@@ -9,8 +9,6 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.view.ActionMode;
 import android.view.ActionMode.Callback2;
@@ -21,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.PopupWindow;
 
 import org.chromium.base.Log;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
@@ -38,6 +37,9 @@ import java.lang.reflect.Method;
 public final class LGEmailActionModeWorkaround {
     private static final String TAG = "cr_Ime";
 
+    // This is the last broken version shipped on LG V20/NRD90M.
+    public static final int LGEmailWorkaroundMaxVersion = 67502100;
+
     /**
      * Run this workaround only when it's applicable and absolutely necessary.
      * @param context The context
@@ -50,27 +52,24 @@ public final class LGEmailActionModeWorkaround {
     }
 
     private static boolean shouldAllowActionModeDestroyOnNonUiThread(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                || Build.VERSION.SDK_INT > Build.VERSION_CODES.M + 1) {
+        String appName = context.getPackageName();
+        int versionCode = PackageUtils.getPackageVersion(context, appName);
+        int appTargetSdkVersion = context.getApplicationInfo().targetSdkVersion;
+        if (versionCode == -1) return false;
+
+        if (appTargetSdkVersion < Build.VERSION_CODES.M
+                || appTargetSdkVersion > Build.VERSION_CODES.N) {
             return false;
         }
-        final String lgeMailPackageId = "com.lge.email";
-        if (!lgeMailPackageId.equals(context.getPackageName())) return false;
-        try {
-            PackageInfo packageInfo =
-                    context.getPackageManager().getPackageInfo(lgeMailPackageId, 0);
-            if (packageInfo == null) return false;
-            // This is provided by LGE.
-            if (packageInfo.versionCode >= 67700000) return false;
 
-            Log.w(TAG, "Working around thread check in WebView (http://crbug.com/651706). "
-                    + "APK name: " + lgeMailPackageId + ", versionCode: "
-                    + packageInfo.versionCode);
-            return true;
-        } catch (NameNotFoundException e) {
-            // Ignore this exception and return false.
-        }
-        return false;
+        final String lgeMailPackageId = "com.lge.email";
+        if (!lgeMailPackageId.equals(appName)) return false;
+        if (versionCode > LGEmailWorkaroundMaxVersion) return false;
+
+        Log.w(TAG, "Working around action mode LG Email bug in WebView (http://crbug.com/651706). "
+                + "APK name: " + lgeMailPackageId + ", versionCode: "
+                + versionCode);
+        return true;
     }
 
     @TargetApi(Build.VERSION_CODES.M)

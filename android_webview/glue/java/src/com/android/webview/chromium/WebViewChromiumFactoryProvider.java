@@ -64,6 +64,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ContentViewStatics;
+import org.chromium.content.browser.input.LGEmailActionModeWorkaround;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.File;
@@ -556,14 +557,16 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         String appName = context.getPackageName();
         int versionCode = PackageUtils.getPackageVersion(context, appName);
         int appTargetSdkVersion = context.getApplicationInfo().targetSdkVersion;
+        if (versionCode == -1) return false;
 
         boolean shouldDisable = false;
 
         // crbug.com/651706
         final String lgeMailPackageId = "com.lge.email";
         if (lgeMailPackageId.equals(appName)) {
-            // The version code is provided by LGE.
-            if (versionCode == -1 || versionCode >= 67700000) return false;
+            if (appTargetSdkVersion > Build.VERSION_CODES.N) return false;
+            // This is the last broken version shipped on LG V20/NRD90M.
+            if (versionCode > LGEmailActionModeWorkaround.LGEmailWorkaroundMaxVersion) return false;
             shouldDisable = true;
         }
 
@@ -572,7 +575,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         final String yahooMailPackageId = "com.yahoo.mobile.client.android.mail";
         if (appName.startsWith(yahooMailPackageId)) {
             if (appTargetSdkVersion > Build.VERSION_CODES.M) return false;
-            if (versionCode == -1 || versionCode > 1315849) return false;
+            if (versionCode > 1315849) return false;
             shouldDisable = true;
         }
 
@@ -580,7 +583,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         final String htcMailPackageId = "com.htc.android.mail";
         if (htcMailPackageId.equals(appName)) {
             if (appTargetSdkVersion > Build.VERSION_CODES.M) return false;
-            if (versionCode == -1) return false;
             // This value is provided by HTC.
             if (versionCode >= 866001861) return false;
             shouldDisable = true;
