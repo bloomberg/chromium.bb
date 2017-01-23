@@ -6,6 +6,7 @@
 #define SERVICES_UI_PUBLIC_CPP_GPU_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -29,11 +30,16 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  private:
   void InitThread(mojom::GpuPtrInfo gpu_info);
   void TearDownThread();
+  void DisconnectGpuOnThread();
   void AllocateGpuMemoryBufferOnThread(const gfx::Size& size,
                                        gfx::BufferFormat format,
                                        gfx::BufferUsage usage,
                                        gfx::GpuMemoryBufferHandle* handle,
                                        base::WaitableEvent* wait);
+  void OnGpuMemoryBufferAllocatedOnThread(
+      gfx::GpuMemoryBufferHandle* ret_handle,
+      base::WaitableEvent* wait,
+      const gfx::GpuMemoryBufferHandle& handle);
   void DeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token);
 
@@ -45,11 +51,13 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
       gpu::SurfaceHandle surface_handle) override;
   void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
                                const gpu::SyncToken& sync_token) override;
+
   int counter_ = 0;
   // TODO(sad): Explore the option of doing this from an existing thread.
   base::Thread thread_;
   mojom::GpuPtr gpu_;
   base::WeakPtr<ClientGpuMemoryBufferManager> weak_ptr_;
+  std::set<base::WaitableEvent*> pending_allocation_waiters_;
   base::WeakPtrFactory<ClientGpuMemoryBufferManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientGpuMemoryBufferManager);
