@@ -233,12 +233,19 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
           : KURL(KURL(),
                  frame()->securityContext()->getSecurityOrigin()->toString());
   if (MixedContentChecker::isMixedContent(sourceDocument->getSecurityOrigin(),
-                                          targetUrl))
+                                          targetUrl)) {
     UseCounter::count(frame(), UseCounter::PostMessageFromSecureToInsecure);
-  else if (MixedContentChecker::isMixedContent(
-               frame()->securityContext()->getSecurityOrigin(),
-               sourceDocument->url()))
+  } else if (MixedContentChecker::isMixedContent(
+                 frame()->securityContext()->getSecurityOrigin(),
+                 sourceDocument->url())) {
     UseCounter::count(frame(), UseCounter::PostMessageFromInsecureToSecure);
+    if (MixedContentChecker::isMixedContent(
+            frame()->tree().top()->securityContext()->getSecurityOrigin(),
+            sourceDocument->url())) {
+      UseCounter::count(frame(),
+                        UseCounter::PostMessageFromInsecureToSecureToplevel);
+    }
+  }
 
   MessageEvent* event =
       MessageEvent::create(std::move(channels), std::move(message),
