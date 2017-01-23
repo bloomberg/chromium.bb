@@ -43,13 +43,14 @@ class WTF_EXPORT StaticLocalVerifier {
  public:
   StaticLocalVerifier()
       : m_safelyInitialized(WTF::isBeforeThreadCreated()),
-        m_thread(WTF::currentThread()) {}
+        m_thread(WTF::internal::currentThreadSyscall()) {}
 
   bool isNotRacy() {
     // Make sure that this 1) is safely initialized, 2) keeps being called
     // on the same thread, or 3) is called within
     // AtomicallyInitializedStatic (i.e. with a lock held).
-    return m_safelyInitialized || m_thread == WTF::currentThread() ||
+    return m_safelyInitialized ||
+           m_thread == WTF::internal::currentThreadSyscall() ||
            WTF::isAtomicallyInitializedStaticMutexLockHeld();
   }
 

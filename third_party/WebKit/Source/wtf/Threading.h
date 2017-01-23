@@ -63,7 +63,7 @@ typedef intptr_t ThreadIdentifier;
 #endif
 
 namespace internal {
-ThreadIdentifier currentThreadSyscall();
+WTF_EXPORT ThreadIdentifier currentThreadSyscall();
 }  // namespace internal
 
 WTF_EXPORT ThreadIdentifier currentThread();
