@@ -2354,8 +2354,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyGridRowGap:
       return consumeLengthOrPercent(m_range, m_context->mode(),
                                     ValueRangeNonNegative);
-    case CSSPropertyShapeImageThreshold:
-      return consumeNumber(m_range, ValueRangeAll);
     case CSSPropertyWebkitBoxOrdinalGroup:
     case CSSPropertyOrphans:
     case CSSPropertyWidows:

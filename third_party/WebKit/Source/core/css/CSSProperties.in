@@ -354,7 +354,7 @@ scroll-snap-points-x runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoin
 scroll-snap-points-y runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoints
 scroll-snap-destination runtime_flag=CSSScrollSnapPoints, converter=convertPosition
 scroll-snap-coordinate runtime_flag=CSSScrollSnapPoints, converter=convertSnapCoordinates, api_class
-shape-image-threshold interpolable, type_name=float
+shape-image-threshold interpolable, type_name=float, api_class
 shape-margin interpolable, converter=convertLength, api_class
 shape-outside interpolable, converter=convertShapeValue, typedom_types=[Image], api_class
 shape-rendering inherited, svg
