@@ -118,6 +118,9 @@ bool WorkQueueSets::GetOldestQueueAndEnqueueOrderInSet(
   const OldestTaskEnqueueOrder& oldest = work_queue_heaps_[set_index].min();
   *out_work_queue = oldest.value;
   *out_enqueue_order = oldest.key;
+  EnqueueOrder enqueue_order;
+  DCHECK(oldest.value->GetFrontTaskEnqueueOrder(&enqueue_order) &&
+         oldest.key == enqueue_order);
   return true;
 }
 
