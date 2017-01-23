@@ -205,17 +205,18 @@ class XMLHttpRequest::BlobLoader final
 XMLHttpRequest* XMLHttpRequest::create(ScriptState* scriptState) {
   ExecutionContext* context = scriptState->getExecutionContext();
   DOMWrapperWorld& world = scriptState->world();
-  RefPtr<SecurityOrigin> isolatedWorldSecurityOrigin =
-      world.isIsolatedWorld() ? world.isolatedWorldSecurityOrigin() : nullptr;
+  if (!world.isIsolatedWorld())
+    return create(context);
+
   XMLHttpRequest* xmlHttpRequest =
-      new XMLHttpRequest(context, isolatedWorldSecurityOrigin);
+      new XMLHttpRequest(context, true, world.isolatedWorldSecurityOrigin());
   xmlHttpRequest->suspendIfNeeded();
 
   return xmlHttpRequest;
 }
 
 XMLHttpRequest* XMLHttpRequest::create(ExecutionContext* context) {
-  XMLHttpRequest* xmlHttpRequest = new XMLHttpRequest(context, nullptr);
+  XMLHttpRequest* xmlHttpRequest = new XMLHttpRequest(context, false, nullptr);
   xmlHttpRequest->suspendIfNeeded();
 
   return xmlHttpRequest;
@@ -223,6 +224,7 @@ XMLHttpRequest* XMLHttpRequest::create(ExecutionContext* context) {
 
 XMLHttpRequest::XMLHttpRequest(
     ExecutionContext* context,
+    bool isIsolatedWorld,
     PassRefPtr<SecurityOrigin> isolatedWorldSecurityOrigin)
     : SuspendableObject(context),
       m_timeoutMilliseconds(0),
@@ -236,6 +238,7 @@ XMLHttpRequest::XMLHttpRequest(
       m_progressEventThrottle(
           XMLHttpRequestProgressEventThrottle::create(this)),
       m_responseTypeCode(ResponseTypeDefault),
+      m_isIsolatedWorld(isIsolatedWorld),
       m_isolatedWorldSecurityOrigin(isolatedWorldSecurityOrigin),
       m_eventDispatchRecursionLevel(0),
       m_async(true),
@@ -987,7 +990,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   request.setFetchCredentialsMode(
       includeCredentials ? WebURLRequest::FetchCredentialsModeInclude
                          : WebURLRequest::FetchCredentialsModeSameOrigin);
-  request.setSkipServiceWorker(m_isolatedWorldSecurityOrigin.get()
+  request.setSkipServiceWorker(m_isIsolatedWorld
                                    ? WebURLRequest::SkipServiceWorker::All
                                    : WebURLRequest::SkipServiceWorker::None);
   request.setExternalRequestStateFromRequestorAddressSpace(
