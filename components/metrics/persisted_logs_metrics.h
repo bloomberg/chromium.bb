@@ -14,7 +14,7 @@ namespace metrics {
 class PersistedLogsMetrics {
  public:
   PersistedLogsMetrics() {}
-  ~PersistedLogsMetrics() {}
+  virtual ~PersistedLogsMetrics() {}
 
   virtual PersistedLogs::LogReadStatus RecordLogReadStatus(
       PersistedLogs::LogReadStatus status) = 0;

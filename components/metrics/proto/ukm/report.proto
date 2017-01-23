@@ -1,0 +1,26 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package ukm;
+
+option optimize_for = LITE_RUNTIME;
+
+import "ukm/source.proto";
+import "system_profile.proto";
+
+// This is the message type sent from Chrome to the UKM collector.
+// Next tag: 4
+message Report {
+  // A unique identifier for a Chrome install. This ID should be used only
+  // in UKM reports, and not linked to any other data sources.
+  optional fixed64 client_id = 1;
+
+  // Information about the user's browser and system configuration.
+  optional metrics.SystemProfileProto system_profile = 2;
+
+  // A list of the top-level navigations that data was collected for.
+  repeated Source sources = 3;
+}

@@ -109,6 +109,14 @@ void PersistedLogs::DiscardStagedLog() {
   staged_log_index_ = -1;
 }
 
+void PersistedLogs::Purge() {
+  if (has_staged_log()) {
+    DiscardStagedLog();
+  }
+  list_.clear();
+  local_state_->ClearPref(pref_name_);
+}
+
 PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
     const base::ListValue& list_value) {
   if (list_value.empty())

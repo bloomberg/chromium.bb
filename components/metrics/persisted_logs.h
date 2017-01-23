@@ -76,6 +76,9 @@ class PersistedLogs {
   // Remove the staged log.
   void DiscardStagedLog();
 
+  // Delete all logs, in memory and on disk.
+  void Purge();
+
   // True if a log has been staged.
   bool has_staged_log() const { return staged_log_index_ != -1; }
 

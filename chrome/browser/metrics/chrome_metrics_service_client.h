@@ -22,6 +22,7 @@
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
+#include "components/ukm/observers/history_delete_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ppapi/features/features.h"
@@ -30,6 +31,7 @@ class AntiVirusMetricsProvider;
 class ChromeOSMetricsProvider;
 class GoogleUpdateMetricsProviderWin;
 class PluginMetricsProvider;
+class Profile;
 class PrefRegistrySimple;
 
 namespace browser_watcher {
@@ -45,10 +47,10 @@ class ProfilerMetricsProvider;
 
 // ChromeMetricsServiceClient provides an implementation of MetricsServiceClient
 // that depends on chrome/.
-class ChromeMetricsServiceClient
-    : public metrics::MetricsServiceClient,
-      public metrics::TrackingSynchronizerObserver,
-      public content::NotificationObserver {
+class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
+                                   public metrics::TrackingSynchronizerObserver,
+                                   public content::NotificationObserver,
+                                   public ukm::HistoryDeleteObserver {
  public:
   ~ChromeMetricsServiceClient() override;
 
@@ -61,6 +63,7 @@ class ChromeMetricsServiceClient
 
   // metrics::MetricsServiceClient:
   metrics::MetricsService* GetMetricsService() override;
+  ukm::UkmService* GetUkmService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   int32_t GetProduct() override;
   std::string GetApplicationLocale() override;
@@ -82,6 +85,9 @@ class ChromeMetricsServiceClient
   bool IsReportingPolicyManaged() override;
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
+
+  // ukm::HistoryDeleteObserver
+  void OnHistoryDeleted() override;
 
   // Persistent browser metrics need to be persisted somewhere. This constant
   // provides a known string to be used for both the allocator's internal name
@@ -129,6 +135,9 @@ class ChromeMetricsServiceClient
   // there was recent activity.
   void RegisterForNotifications();
 
+  // Call to listen for history deletions by the selected profile.
+  void RegisterForHistoryDeletions(Profile* profile);
+
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -150,6 +159,9 @@ class ChromeMetricsServiceClient
 
   // The MetricsService that |this| is a client of.
   std::unique_ptr<metrics::MetricsService> metrics_service_;
+
+  // The UkmService that |this| is a client of.
+  std::unique_ptr<ukm::UkmService> ukm_service_;
 
   content::NotificationRegistrar registrar_;
 

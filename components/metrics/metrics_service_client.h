@@ -20,6 +20,10 @@ namespace base {
 class FilePath;
 }
 
+namespace ukm {
+class UkmService;
+}
+
 namespace metrics {
 
 class MetricsLogUploader;
@@ -36,6 +40,9 @@ class MetricsServiceClient {
   // for the lifetime of this object (typically, the embedder's client
   // implementation will own the MetricsService instance being returned).
   virtual MetricsService* GetMetricsService() = 0;
+
+  // Returns the UkmService instance that this client is associated with.
+  virtual ukm::UkmService* GetUkmService();
 
   // Registers the client id with other services (e.g. crash reporting), called
   // when metrics recording gets enabled.

@@ -1,0 +1,29 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package ukm;
+
+option optimize_for = LITE_RUNTIME;
+
+// Source contains data related to a top-level navigation.
+// Next tag: 5
+message Source {
+  // A identifier for the source. This should be unique even across sessions.
+  optional int32 id = 1;
+
+  // The url of the source, as recorded in history.  If this URL has not been
+  // discovered by Google's crawler, it must be stripped to the security origin
+  // before recording to logs.  If the security origin has not been discovered
+  // by the crawler, the security origin must not be logged.
+  optional string url = 2;
+
+  // Timestamp of navigation to this Source, as seen by the client. Time of
+  // events related to this Source will generally be relative to this timestamp.
+  optional int64 navigation_time_msec = 3;
+
+  // Time between navigation and the first meaningful paint, in milliseconds.
+  optional int64 first_meaningful_paint_msec = 4;
+}

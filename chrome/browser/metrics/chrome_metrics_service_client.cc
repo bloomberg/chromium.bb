@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -28,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/https_engagement_metrics_provider.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
 #include "chrome/browser/metrics/sampling_metrics_provider.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -47,6 +50,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/browser_watcher/stability_debugging.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/file_metrics_provider.h"
@@ -70,6 +74,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/device_info/device_count_metrics_provider.h"
 #include "components/translate/core/browser/translate_ranker_metrics_provider.h"
+#include "components/ukm/ukm_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -318,6 +323,7 @@ std::unique_ptr<ChromeMetricsServiceClient> ChromeMetricsServiceClient::Create(
 // static
 void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   metrics::MetricsService::RegisterPrefs(registry);
+  ukm::UkmService::RegisterPrefs(registry);
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
 
   RegisterFileMetricsPreferences(registry);
@@ -335,6 +341,10 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 
 metrics::MetricsService* ChromeMetricsServiceClient::GetMetricsService() {
   return metrics_service_.get();
+}
+
+ukm::UkmService* ChromeMetricsServiceClient::GetUkmService() {
+  return ukm_service_.get();
 }
 
 void ChromeMetricsServiceClient::SetMetricsClientId(
@@ -552,6 +562,9 @@ void ChromeMetricsServiceClient::Initialize() {
 
   metrics_service_.reset(
       new metrics::MetricsService(metrics_state_manager_, this, local_state));
+
+  if (base::FeatureList::IsEnabled(ukm::kUkmFeature))
+    ukm_service_.reset(new ukm::UkmService(local_state, this));
 
   // Gets access to persistent metrics shared by sub-processes.
   metrics_service_->RegisterMetricsProvider(
@@ -864,6 +877,21 @@ void ChromeMetricsServiceClient::RegisterForNotifications() {
       OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
           base::Bind(&ChromeMetricsServiceClient::OnURLOpenedFromOmnibox,
                      base::Unretained(this)));
+
+  // Observe history deletions for all profiles.
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  for (Profile* profile :
+       g_browser_process->profile_manager()->GetLoadedProfiles()) {
+    RegisterForHistoryDeletions(profile);
+  }
+}
+
+void ChromeMetricsServiceClient::RegisterForHistoryDeletions(Profile* profile) {
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::IMPLICIT_ACCESS);
+  ObserveServiceForDeletions(history_service);
 }
 
 void ChromeMetricsServiceClient::Observe(
@@ -884,6 +912,10 @@ void ChromeMetricsServiceClient::Observe(
       metrics_service_->OnApplicationNotIdle();
       break;
 
+    case chrome::NOTIFICATION_PROFILE_ADDED:
+      RegisterForHistoryDeletions(content::Source<Profile>(source).ptr());
+      break;
+
     default:
       NOTREACHED();
   }
@@ -895,4 +927,9 @@ void ChromeMetricsServiceClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 
 bool ChromeMetricsServiceClient::IsUMACellularUploadLogicEnabled() {
   return metrics::IsCellularLogicEnabled();
+}
+
+void ChromeMetricsServiceClient::OnHistoryDeleted() {
+  if (ukm_service_)
+    ukm_service_->Purge();
 }

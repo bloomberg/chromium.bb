@@ -14,7 +14,7 @@ namespace metrics {
 class PersistedLogsMetricsImpl : public PersistedLogsMetrics {
  public:
   PersistedLogsMetricsImpl() {}
-  ~PersistedLogsMetricsImpl() {}
+  ~PersistedLogsMetricsImpl() override {}
 
   PersistedLogs::LogReadStatus RecordLogReadStatus(
       PersistedLogs::LogReadStatus status) override;

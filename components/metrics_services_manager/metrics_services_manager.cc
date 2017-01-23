@@ -12,6 +12,7 @@
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/ukm/ukm_service.h"
 #include "components/variations/service/variations_service.h"
 
 namespace metrics_services_manager {
@@ -41,6 +42,11 @@ rappor::RapporServiceImpl* MetricsServicesManager::GetRapporServiceImpl() {
     rappor_service_->Initialize(client_->GetURLRequestContext());
   }
   return rappor_service_.get();
+}
+
+ukm::UkmService* MetricsServicesManager::GetUkmService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return GetMetricsServiceClient()->GetUkmService();
 }
 
 variations::VariationsService* MetricsServicesManager::GetVariationsService() {
@@ -82,6 +88,7 @@ void MetricsServicesManager::UpdatePermissions(bool may_record,
 void MetricsServicesManager::UpdateRunningServices() {
   DCHECK(thread_checker_.CalledOnValidThread());
   metrics::MetricsService* metrics = GetMetricsService();
+  ukm::UkmService* ukm = GetUkmService();
 
   if (client_->OnlyDoMetricsRecording()) {
     metrics->StartRecordingForTests();
@@ -96,10 +103,18 @@ void MetricsServicesManager::UpdateRunningServices() {
     if (!metrics->recording_active())
       metrics->Start();
 
-    if (may_upload_)
+    if (may_upload_) {
       metrics->EnableReporting();
-    else
+#if !defined(OFFICIAL_BUILD)
+      // TODO(holte): Make UKM check sync state instead of official build.
+      if (ukm)
+        ukm->EnableReporting();
+#endif
+    } else {
       metrics->DisableReporting();
+      if (ukm)
+        ukm->DisableReporting();
+    }
   } else {
     metrics->Stop();
   }

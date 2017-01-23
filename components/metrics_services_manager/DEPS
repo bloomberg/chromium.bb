@@ -3,5 +3,6 @@ include_rules = [
   "+components/metrics",
   "+components/metrics_services_manager",
   "+components/rappor",
+  "+components/ukm",
   "+components/variations",
 ]

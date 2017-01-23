@@ -25,6 +25,10 @@ namespace rappor {
 class RapporServiceImpl;
 }
 
+namespace ukm {
+class UkmService;
+}
+
 namespace variations {
 class VariationsService;
 }
@@ -59,6 +63,9 @@ class MetricsServicesManager {
 
   // Returns the RapporServiceImpl, creating it if it hasn't been created yet.
   rappor::RapporServiceImpl* GetRapporServiceImpl();
+
+  // Returns the UkmService, creating it if it hasn't been created yet.
+  ukm::UkmService* GetUkmService();
 
   // Returns the VariationsService, creating it if it hasn't been created yet.
   variations::VariationsService* GetVariationsService();

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -17,10 +18,15 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
+#include "components/ukm/observers/history_delete_observer.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 
 class IOSChromeStabilityMetricsProvider;
 class PrefRegistrySimple;
+
+namespace ios {
+class ChromeBrowserState;
+}
 
 namespace metrics {
 class DriveMetricsProvider;
@@ -29,11 +35,16 @@ class MetricsStateManager;
 class ProfilerMetricsProvider;
 }  // namespace metrics
 
+namespace ukm {
+class UkmService;
+}
+
 // IOSChromeMetricsServiceClient provides an implementation of
 // MetricsServiceClient that depends on //ios/chrome/.
 class IOSChromeMetricsServiceClient
     : public metrics::MetricsServiceClient,
       public metrics::TrackingSynchronizerObserver,
+      public ukm::HistoryDeleteObserver,
       public web::GlobalWebStateObserver {
  public:
   ~IOSChromeMetricsServiceClient() override;
@@ -47,6 +58,7 @@ class IOSChromeMetricsServiceClient
 
   // metrics::MetricsServiceClient:
   metrics::MetricsService* GetMetricsService() override;
+  ukm::UkmService* GetUkmService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   int32_t GetProduct() override;
   std::string GetApplicationLocale() override;
@@ -63,6 +75,9 @@ class IOSChromeMetricsServiceClient
   base::TimeDelta GetStandardUploadInterval() override;
   base::string16 GetRegistryBackupKey() override;
   void OnRendererProcessCrash() override;
+
+  // ukm::HistoryDeleteObserver
+  void OnHistoryDeleted() override;
 
   // web::GlobalWebStateObserver:
   void WebStateDidStartLoading(web::WebState* web_state) override;
@@ -103,6 +118,9 @@ class IOSChromeMetricsServiceClient
   // there was recent activity.
   void RegisterForNotifications();
 
+  // Register to observe history delete events on a browser state.
+  void RegisterForHistoryDeletions(ios::ChromeBrowserState* browser_state);
+
   // Called when a tab is parented.
   void OnTabParented(web::WebState* web_state);
 
@@ -116,6 +134,9 @@ class IOSChromeMetricsServiceClient
 
   // The MetricsService that |this| is a client of.
   std::unique_ptr<metrics::MetricsService> metrics_service_;
+
+  // The UkmService that |this| is a client of.
+  std::unique_ptr<ukm::UkmService> ukm_service_;
 
   // The IOSChromeStabilityMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
