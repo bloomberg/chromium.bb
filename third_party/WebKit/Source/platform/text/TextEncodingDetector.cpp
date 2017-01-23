@@ -38,13 +38,17 @@ namespace blink {
 bool detectTextEncoding(const char* data,
                         size_t length,
                         const char* hintEncodingName,
+                        const char* hintUrl,
+                        const char* hintUserLanguage,
                         WTF::TextEncoding* detectedEncoding) {
   *detectedEncoding = WTF::TextEncoding();
+  Language language;
+  LanguageFromCode(hintUserLanguage, &language);
   int consumedBytes;
   bool isReliable;
   Encoding encoding = CompactEncDet::DetectEncoding(
-      data, length, nullptr, nullptr, nullptr,
-      EncodingNameAliasToEncoding(hintEncodingName), UNKNOWN_LANGUAGE,
+      data, length, hintUrl, nullptr, nullptr,
+      EncodingNameAliasToEncoding(hintEncodingName), language,
       CompactEncDet::WEB_CORPUS,
       false,  // Include 7-bit encodings to detect ISO-2022-JP
       &consumedBytes, &isReliable);

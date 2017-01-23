@@ -101,13 +101,15 @@ TextResourceDecoderBuilder::createDecoderInstance(Document* document) {
       getEncodingFromDomain(document->url());
   if (LocalFrame* frame = document->frame()) {
     if (Settings* settings = frame->settings()) {
+      const WTF::TextEncoding hintEncoding =
+          encodingFromDomain.isValid() ? encodingFromDomain
+                                       : settings->getDefaultTextEncodingName();
       // Disable autodetection for XML to honor the default encoding (UTF-8) for
       // unlabelled documents.
-      return TextResourceDecoder::create(
-          m_mimeType,
-          encodingFromDomain.isValid() ? encodingFromDomain
-                                       : settings->getDefaultTextEncodingName(),
-          !DOMImplementation::isXMLMIMEType(m_mimeType));
+      if (DOMImplementation::isXMLMIMEType(m_mimeType))
+        return TextResourceDecoder::create(m_mimeType, hintEncoding);
+      return TextResourceDecoder::createWithAutoDetection(
+          m_mimeType, hintEncoding, document->url());
     }
   }
 

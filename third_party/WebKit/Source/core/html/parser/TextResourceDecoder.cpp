@@ -25,6 +25,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/html/parser/HTMLMetaCharsetParser.h"
+#include "platform/Language.h"
 #include "platform/text/TextEncodingDetector.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/TextCodec.h"
@@ -142,11 +143,13 @@ const WTF::TextEncoding& TextResourceDecoder::defaultEncoding(
 TextResourceDecoder::TextResourceDecoder(
     const String& mimeType,
     const WTF::TextEncoding& specifiedDefaultEncoding,
-    EncodingDetectionOption encodingDetectionOption)
+    EncodingDetectionOption encodingDetectionOption,
+    const String& url)
     : m_contentType(determineContentType(mimeType)),
       m_encoding(defaultEncoding(m_contentType, specifiedDefaultEncoding)),
       m_source(DefaultEncoding),
       m_hintEncoding(0),
+      m_hintUrl(url.utf8()),
       m_checkedForBOM(false),
       m_checkedForCSSCharset(false),
       m_checkedForXMLCharset(false),
@@ -154,8 +157,24 @@ TextResourceDecoder::TextResourceDecoder(
       m_useLenientXMLDecoding(false),
       m_sawError(false),
       m_encodingDetectionOption(encodingDetectionOption) {
-  if (m_encodingDetectionOption == AlwaysUseUTF8ForText)
+  m_hintLanguage[0] = 0;
+  if (m_encodingDetectionOption == AlwaysUseUTF8ForText) {
     ASSERT(m_contentType == PlainTextContent && m_encoding == UTF8Encoding());
+  } else if (m_encodingDetectionOption == UseAllAutoDetection) {
+    // Checking empty URL helps unit testing. Providing defaultLanguage() is
+    // sometimes difficult in tests.
+    if (!url.isEmpty()) {
+      // This object is created in the main thread, but used in another thread.
+      // We should not share an AtomicString.
+      AtomicString locale = defaultLanguage();
+      if (locale.length() >= 2) {
+        // defaultLanguage() is always an ASCII string.
+        m_hintLanguage[0] = static_cast<char>(locale[0]);
+        m_hintLanguage[1] = static_cast<char>(locale[1]);
+        m_hintLanguage[2] = 0;
+      }
+    }
+  }
 }
 
 TextResourceDecoder::~TextResourceDecoder() {}
@@ -455,7 +474,8 @@ String TextResourceDecoder::decode(const char* data, size_t len) {
 
   if (shouldAutoDetect()) {
     WTF::TextEncoding detectedEncoding;
-    if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
+    if (detectTextEncoding(data, len, m_hintEncoding, m_hintUrl.data(),
+                           m_hintLanguage, &detectedEncoding))
       setEncoding(detectedEncoding, EncodingFromContentSniffing);
   }
 
@@ -482,7 +502,7 @@ String TextResourceDecoder::flush() {
        (!m_checkedForCSSCharset && (m_contentType == CSSContent)))) {
     WTF::TextEncoding detectedEncoding;
     if (detectTextEncoding(m_buffer.data(), m_buffer.size(), m_hintEncoding,
-                           &detectedEncoding))
+                           m_hintUrl.data(), m_hintLanguage, &detectedEncoding))
       setEncoding(detectedEncoding, EncodingFromContentSniffing);
   }
 

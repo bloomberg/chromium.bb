@@ -50,18 +50,24 @@ class CORE_EXPORT TextResourceDecoder {
 
   static std::unique_ptr<TextResourceDecoder> create(
       const String& mimeType,
-      const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(),
-      bool usesEncodingDetector = false) {
+      const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding()) {
     return WTF::wrapUnique(new TextResourceDecoder(
-        mimeType, defaultEncoding, usesEncodingDetector
-                                       ? UseAllAutoDetection
-                                       : UseContentAndBOMBasedDetection));
+        mimeType, defaultEncoding, UseContentAndBOMBasedDetection, String()));
   }
+
+  static std::unique_ptr<TextResourceDecoder> createWithAutoDetection(
+      const String& mimeType,
+      const WTF::TextEncoding& defaultEncoding,
+      const String& url) {
+    return WTF::wrapUnique(new TextResourceDecoder(mimeType, defaultEncoding,
+                                                   UseAllAutoDetection, url));
+  }
+
   // Corresponds to utf-8 decode in Encoding spec:
   // https://encoding.spec.whatwg.org/#utf-8-decode.
   static std::unique_ptr<TextResourceDecoder> createAlwaysUseUTF8ForText() {
-    return WTF::wrapUnique(new TextResourceDecoder("plain/text", UTF8Encoding(),
-                                                   AlwaysUseUTF8ForText));
+    return WTF::wrapUnique(new TextResourceDecoder(
+        "plain/text", UTF8Encoding(), AlwaysUseUTF8ForText, String()));
   }
   ~TextResourceDecoder();
 
@@ -106,7 +112,8 @@ class CORE_EXPORT TextResourceDecoder {
 
   TextResourceDecoder(const String& mimeType,
                       const WTF::TextEncoding& defaultEncoding,
-                      EncodingDetectionOption);
+                      EncodingDetectionOption,
+                      const String& url);
 
  private:
   enum ContentType {
@@ -130,7 +137,9 @@ class CORE_EXPORT TextResourceDecoder {
   std::unique_ptr<TextCodec> m_codec;
   EncodingSource m_source;
   const char* m_hintEncoding;
+  const CString m_hintUrl;
   Vector<char> m_buffer;
+  char m_hintLanguage[3];
   bool m_checkedForBOM;
   bool m_checkedForCSSCharset;
   bool m_checkedForXMLCharset;

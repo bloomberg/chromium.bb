@@ -26,7 +26,8 @@ class TextResourceDecoderForFuzzing : public TextResourceDecoder {
       : TextResourceDecoder(
             String::fromUTF8(fuzzedData.ConsumeBytesInRange(0, 32)),
             String::fromUTF8(fuzzedData.ConsumeBytesInRange(0, 32)),
-            FuzzedOption(fuzzedData)) {}
+            FuzzedOption(fuzzedData),
+            String()) {}
 
  private:
   static TextResourceDecoder::EncodingDetectionOption FuzzedOption(
