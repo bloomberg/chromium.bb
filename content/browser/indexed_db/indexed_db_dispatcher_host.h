@@ -77,7 +77,8 @@ class IndexedDBDispatcherHost
   void DeleteDatabase(
       ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
       const url::Origin& origin,
-      const base::string16& name) override;
+      const base::string16& name,
+      bool force_close) override;
 
   void GetDatabaseNamesOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
                                    const url::Origin& origin);
@@ -90,7 +91,8 @@ class IndexedDBDispatcherHost
       int64_t transaction_id);
   void DeleteDatabaseOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
                                  const url::Origin& origin,
-                                 const base::string16& name);
+                                 const base::string16& name,
+                                 bool force_close);
 
   void ResetDispatcherHosts();
 

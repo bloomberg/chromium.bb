@@ -329,5 +329,5 @@ interface Factory {
        associated DatabaseCallbacks database_callbacks, url.mojom.Origin origin,
        mojo.common.mojom.String16 name, int64 version, int64 transaction_id);
   DeleteDatabase(associated Callbacks callbacks, url.mojom.Origin origin,
-                 mojo.common.mojom.String16 name);
+                 mojo.common.mojom.String16 name, bool force_close);
 };

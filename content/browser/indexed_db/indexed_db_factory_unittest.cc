@@ -344,7 +344,8 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
   scoped_refptr<MockIndexedDBCallbacks> callbacks(
       new MockIndexedDBCallbacks(expect_connection));
   factory()->DeleteDatabase(ASCIIToUTF16("db"), nullptr /* request_context */,
-                            callbacks, origin, temp_directory.GetPath());
+                            callbacks, origin, temp_directory.GetPath(),
+                            false /* force_close */);
 
   EXPECT_TRUE(factory()->IsBackingStoreOpen(origin));
   EXPECT_TRUE(factory()->IsBackingStorePendingClose(origin));

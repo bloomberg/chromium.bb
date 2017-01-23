@@ -79,7 +79,8 @@ class CONTENT_EXPORT IndexedDBDatabase
                     const base::string16& name);
 
   void OpenConnection(std::unique_ptr<IndexedDBPendingConnection> connection);
-  void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks);
+  void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks,
+                      bool force_close);
   const IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 
   void CreateObjectStore(IndexedDBTransaction* transaction,

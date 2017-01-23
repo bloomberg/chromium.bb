@@ -142,7 +142,8 @@ void IndexedDBDispatcherHost::Open(
 void IndexedDBDispatcherHost::DeleteDatabase(
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
     const url::Origin& origin,
-    const base::string16& name) {
+    const base::string16& name,
+    bool force_close) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!IsValidOrigin(origin)) {
@@ -154,7 +155,8 @@ void IndexedDBDispatcherHost::DeleteDatabase(
       new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE, base::Bind(&IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread,
-                            this, base::Passed(&callbacks), origin, name));
+                            this, base::Passed(&callbacks), origin, name,
+                            force_close));
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNamesOnIDBThread(
@@ -195,13 +197,15 @@ void IndexedDBDispatcherHost::OpenOnIDBThread(
 void IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const url::Origin& origin,
-    const base::string16& name) {
+    const base::string16& name,
+    bool force_close) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   DCHECK(request_context_getter_);
   context()->GetIDBFactory()->DeleteDatabase(
-      name, request_context_getter_, callbacks, origin, indexed_db_path);
+      name, request_context_getter_, callbacks, origin, indexed_db_path,
+      force_close);
 }
 
 }  // namespace content

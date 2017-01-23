@@ -152,6 +152,23 @@ IDBOpenDBRequest* IDBFactory::open(ScriptState* scriptState,
 IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState,
                                              const String& name,
                                              ExceptionState& exceptionState) {
+  return deleteDatabaseInternal(scriptState, name, exceptionState,
+                                false /* force_close */);
+}
+
+IDBOpenDBRequest* IDBFactory::closeConnectionsAndDeleteDatabase(
+    ScriptState* scriptState,
+    const String& name,
+    ExceptionState& exceptionState) {
+  return deleteDatabaseInternal(scriptState, name, exceptionState,
+                                true /* force_close */);
+}
+
+IDBOpenDBRequest* IDBFactory::deleteDatabaseInternal(
+    ScriptState* scriptState,
+    const String& name,
+    ExceptionState& exceptionState,
+    bool forceClose) {
   IDB_TRACE("IDBFactory::deleteDatabase");
   IDBDatabase::recordApiCallsHistogram(IDBDeleteDatabaseCall);
   if (!isContextValid(scriptState->getExecutionContext()))
@@ -177,7 +194,8 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState,
   Platform::current()->idbFactory()->deleteDatabase(
       name, request->createWebCallbacks().release(),
       WebSecurityOrigin(
-          scriptState->getExecutionContext()->getSecurityOrigin()));
+          scriptState->getExecutionContext()->getSecurityOrigin()),
+      forceClose);
   return request;
 }
 

@@ -57,6 +57,12 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
                                    const String& name,
                                    ExceptionState&);
 
+  // This is currently not exposed to the web applications and is only used by
+  // the DevTools.
+  IDBOpenDBRequest* closeConnectionsAndDeleteDatabase(ScriptState*,
+                                                      const String& name,
+                                                      ExceptionState&);
+
   short cmp(ScriptState*,
             const ScriptValue& first,
             const ScriptValue& second,
@@ -69,6 +75,11 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
                                  const String& name,
                                  int64_t version,
                                  ExceptionState&);
+
+  IDBOpenDBRequest* deleteDatabaseInternal(ScriptState*,
+                                           const String& name,
+                                           ExceptionState&,
+                                           bool);
 };
 
 }  // namespace blink

@@ -61,7 +61,8 @@ class CONTENT_EXPORT IndexedDBFactory
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<IndexedDBCallbacks> callbacks,
       const url::Origin& origin,
-      const base::FilePath& data_directory) = 0;
+      const base::FilePath& data_directory,
+      bool force_close) = 0;
 
   virtual void HandleBackingStoreFailure(const url::Origin& origin) = 0;
   virtual void HandleBackingStoreCorruption(

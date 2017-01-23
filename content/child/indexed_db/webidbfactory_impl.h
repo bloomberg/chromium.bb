@@ -40,7 +40,8 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
             const blink::WebSecurityOrigin& origin) override;
   void deleteDatabase(const blink::WebString& name,
                       blink::WebIDBCallbacks* callbacks,
-                      const blink::WebSecurityOrigin& origin) override;
+                      const blink::WebSecurityOrigin& origin,
+                      bool force_close) override;
 
  private:
   class IOThreadHelper;

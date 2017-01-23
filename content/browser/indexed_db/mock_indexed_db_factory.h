@@ -45,13 +45,14 @@ class MockIndexedDBFactory : public IndexedDBFactory {
     OpenProxy(name, connection.get(), request_context_getter, origin,
               data_directory);
   }
-  MOCK_METHOD5(
+  MOCK_METHOD6(
       DeleteDatabase,
       void(const base::string16& name,
            scoped_refptr<net::URLRequestContextGetter> request_context_getter,
            scoped_refptr<IndexedDBCallbacks> callbacks,
            const url::Origin& origin,
-           const base::FilePath& data_directory));
+           const base::FilePath& data_directory,
+           bool force_close));
   MOCK_METHOD1(HandleBackingStoreFailure, void(const url::Origin& origin));
   MOCK_METHOD2(HandleBackingStoreCorruption,
                void(const url::Origin& origin,

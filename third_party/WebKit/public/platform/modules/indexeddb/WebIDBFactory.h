@@ -51,7 +51,8 @@ class WebIDBFactory {
                     const WebSecurityOrigin&) = 0;
   virtual void deleteDatabase(const WebString& name,
                               WebIDBCallbacks*,
-                              const WebSecurityOrigin&) = 0;
+                              const WebSecurityOrigin&,
+                              bool forceClose) = 0;
 };
 
 }  // namespace blink

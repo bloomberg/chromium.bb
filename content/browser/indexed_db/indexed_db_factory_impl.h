@@ -48,7 +48,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<IndexedDBCallbacks> callbacks,
       const url::Origin& origin,
-      const base::FilePath& data_directory) override;
+      const base::FilePath& data_directory,
+      bool force_close) override;
 
   void HandleBackingStoreFailure(const url::Origin& origin) override;
   void HandleBackingStoreCorruption(

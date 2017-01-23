@@ -213,14 +213,15 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const Origin& origin,
-    const base::FilePath& data_directory) {
+    const base::FilePath& data_directory,
+    bool force_close) {
   IDB_TRACE("IndexedDBFactoryImpl::DeleteDatabase");
   IndexedDBDatabase::Identifier unique_identifier(origin, name);
   const auto& it = database_map_.find(unique_identifier);
   if (it != database_map_.end()) {
     // If there are any connections to the database, directly delete the
     // database.
-    it->second->DeleteDatabase(callbacks);
+    it->second->DeleteDatabase(callbacks, force_close);
     return;
   }
 
@@ -282,7 +283,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
 
   database_map_[unique_identifier] = database.get();
   origin_dbs_.insert(std::make_pair(origin, database.get()));
-  database->DeleteDatabase(callbacks);
+  database->DeleteDatabase(callbacks, force_close);
   RemoveDatabaseFromMaps(unique_identifier);
   database = NULL;
   backing_store = NULL;
