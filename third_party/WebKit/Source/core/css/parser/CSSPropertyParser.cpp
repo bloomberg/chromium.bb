@@ -581,60 +581,6 @@ static CSSValue* consumeMarginOrOffset(CSSParserTokenRange& range,
   return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, unitless);
 }
 
-static bool consumePan(CSSParserTokenRange& range,
-                       CSSValue*& panX,
-                       CSSValue*& panY,
-                       CSSValue*& pinchZoom) {
-  CSSValueID id = range.peek().id();
-  if ((id == CSSValuePanX || id == CSSValuePanRight || id == CSSValuePanLeft) &&
-      !panX) {
-    if (id != CSSValuePanX &&
-        !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
-      return false;
-    panX = consumeIdent(range);
-  } else if ((id == CSSValuePanY || id == CSSValuePanDown ||
-              id == CSSValuePanUp) &&
-             !panY) {
-    if (id != CSSValuePanY &&
-        !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
-      return false;
-    panY = consumeIdent(range);
-  } else if (id == CSSValuePinchZoom && !pinchZoom &&
-             RuntimeEnabledFeatures::cssTouchActionPinchZoomEnabled()) {
-    pinchZoom = consumeIdent(range);
-  } else {
-    return false;
-  }
-  return true;
-}
-
-static CSSValue* consumeTouchAction(CSSParserTokenRange& range) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueAuto || id == CSSValueNone || id == CSSValueManipulation) {
-    list->append(*consumeIdent(range));
-    return list;
-  }
-
-  CSSValue* panX = nullptr;
-  CSSValue* panY = nullptr;
-  CSSValue* pinchZoom = nullptr;
-  if (!consumePan(range, panX, panY, pinchZoom))
-    return nullptr;
-  if (!range.atEnd() && !consumePan(range, panX, panY, pinchZoom))
-    return nullptr;
-  if (!range.atEnd() && !consumePan(range, panX, panY, pinchZoom))
-    return nullptr;
-
-  if (panX)
-    list->append(*panX);
-  if (panY)
-    list->append(*panY);
-  if (pinchZoom)
-    list->append(*pinchZoom);
-  return list;
-}
-
 static CSSValue* consumeLocale(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueAuto)
     return consumeIdent(range);
@@ -2322,8 +2268,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitMarginAfter:
       return consumeMarginOrOffset(m_range, m_context->mode(),
                                    UnitlessQuirk::Forbid);
-    case CSSPropertyTouchAction:
-      return consumeTouchAction(m_range);
     case CSSPropertyScrollSnapDestination:
     case CSSPropertyObjectPosition:
     case CSSPropertyPerspectiveOrigin:

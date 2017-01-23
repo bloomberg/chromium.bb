@@ -391,7 +391,7 @@ text-size-adjust inherited, converter=convertTextSizeAdjust, type_name=TextSizeA
 text-transform inherited, independent, keyword_only, keywords=[capitalize|uppercase|lowercase|none], initial_keyword=none
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition, api_class
 top typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
-touch-action converter=convertFlags<TouchAction>, type_name=TouchAction
+touch-action converter=convertFlags<TouchAction>, type_name=TouchAction, api_class
 transform typedom_types=[Transform], keywords=[none], interpolable, converter=convertTransformOperations
 transform-origin interpolable, converter=convertTransformOrigin, api_class
 transform-style name_for_methods=TransformStyle3D
