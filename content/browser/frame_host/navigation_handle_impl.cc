@@ -16,6 +16,8 @@
 #include "content/browser/frame_host/ancestor_throttle.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -100,12 +102,30 @@ NavigationHandleImpl::NavigationHandleImpl(
       is_download_(false),
       is_stream_(false),
       started_from_context_menu_(started_from_context_menu),
+      reload_type_(ReloadType::NONE),
       weak_factory_(this) {
   DCHECK(!navigation_start.is_null());
   redirect_chain_.push_back(url);
 
   starting_site_instance_ =
       frame_tree_node_->current_frame_host()->GetSiteInstance();
+
+  if (pending_nav_entry_id_) {
+    NavigationControllerImpl* nav_controller =
+        static_cast<NavigationControllerImpl*>(
+            frame_tree_node_->navigator()->GetController());
+    NavigationEntryImpl* nav_entry =
+        nav_controller->GetEntryWithUniqueID(pending_nav_entry_id_);
+    if (!nav_entry &&
+        nav_controller->GetPendingEntry() &&
+        nav_controller->GetPendingEntry()->GetUniqueID() ==
+            pending_nav_entry_id_) {
+      nav_entry = nav_controller->GetPendingEntry();
+    }
+
+    if (nav_entry)
+      reload_type_ = nav_entry->reload_type();
+  }
 
   if (!IsRendererDebugURL(url_))
     GetDelegate()->DidStartNavigation(this);
@@ -394,6 +414,10 @@ const GURL& NavigationHandleImpl::GetSearchableFormURL() {
 
 const std::string& NavigationHandleImpl::GetSearchableFormEncoding() {
   return searchable_form_encoding_;
+}
+
+ReloadType NavigationHandleImpl::GetReloadType() {
+  return reload_type_;
 }
 
 NavigationData* NavigationHandleImpl::GetNavigationData() {

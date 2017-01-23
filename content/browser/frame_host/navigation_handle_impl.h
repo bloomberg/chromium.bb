@@ -135,6 +135,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool WasStartedFromContextMenu() const override;
   const GURL& GetSearchableFormURL() override;
   const std::string& GetSearchableFormEncoding() override;
+  ReloadType GetReloadType() override;
   const GlobalRequestID& GetGlobalRequestID() override;
 
   NavigationData* GetNavigationData() override;
@@ -449,6 +450,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // False by default unless the navigation started within a context menu.
   bool started_from_context_menu_;
+
+  // Stores the reload type, or NONE if it's not a reload.
+  ReloadType reload_type_;
 
   GURL searchable_form_url_;
   std::string searchable_form_encoding_;

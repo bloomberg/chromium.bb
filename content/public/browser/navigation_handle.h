@@ -10,6 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/common/referrer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_info.h"
@@ -97,6 +98,11 @@ class CONTENT_EXPORT NavigationHandle {
   // searchable form request.
   virtual const GURL& GetSearchableFormURL() = 0;
   virtual const std::string& GetSearchableFormEncoding() = 0;
+
+  // Returns the reload type for this navigation. Note that renderer-initiated
+  // reloads (via location.reload()) won't count as a reload and do return
+  // ReloadType::NONE.
+  virtual ReloadType GetReloadType() = 0;
 
   // Parameters available at network request start time ------------------------
   //

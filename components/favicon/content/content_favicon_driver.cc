@@ -14,6 +14,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/common/favicon_url.h"
 #include "ui/gfx/image/image.h"
 
@@ -162,20 +163,29 @@ void ContentFaviconDriver::DidUpdateFaviconURL(
                      FaviconURLsFromContentFaviconURLs(candidates));
 }
 
-void ContentFaviconDriver::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    content::ReloadType reload_type) {
+void ContentFaviconDriver::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  content::ReloadType reload_type = navigation_handle->GetReloadType();
   if (reload_type == content::ReloadType::NONE || IsOffTheRecord())
     return;
 
-  bypass_cache_page_url_ = url;
+  bypass_cache_page_url_ = navigation_handle->GetURL();
   SetFaviconOutOfDateForPage(
-      url, reload_type == content::ReloadType::BYPASSING_CACHE);
+      navigation_handle->GetURL(),
+      reload_type == content::ReloadType::BYPASSING_CACHE);
 }
 
-void ContentFaviconDriver::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
+void ContentFaviconDriver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsErrorPage()) {
+    return;
+  }
+
   favicon_urls_.clear();
 
   // Wait till the user navigates to a new URL to start checking the cache
@@ -185,7 +195,7 @@ void ContentFaviconDriver::DidNavigateMainFrame(
   // favicon. In particular, a page may do an in-page navigation before
   // FaviconHandler has the time to determine that the favicon needs to be
   // redownloaded.
-  GURL url = details.entry->GetURL();
+  GURL url = navigation_handle->GetURL();
   if (url != bypass_cache_page_url_)
     bypass_cache_page_url_ = GURL();
 
