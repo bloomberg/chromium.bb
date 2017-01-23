@@ -12,14 +12,20 @@
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_property.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/platform_window/stub/stub_window.h"
 
+DECLARE_WINDOW_PROPERTY_TYPE(aura::WindowTreeHostMus*);
+
 namespace aura {
 
 namespace {
+
+DEFINE_WINDOW_PROPERTY_KEY(WindowTreeHostMus*, kWindowTreeHostMusKey, nullptr);
+
 static uint32_t accelerated_widget_count = 1;
 
 bool IsUsingTestContext() {
@@ -39,6 +45,7 @@ WindowTreeHostMus::WindowTreeHostMus(
     : WindowTreeHostPlatform(std::move(window_port)),
       display_id_(display_id),
       delegate_(window_tree_client) {
+  window()->SetProperty(kWindowTreeHostMusKey, this);
   // TODO(sky): find a cleaner way to set this! Better solution is to likely
   // have constructor take aura::Window.
   WindowPortMus::Get(window())->window_ = window();
@@ -104,6 +111,22 @@ WindowTreeHostMus::WindowTreeHostMus(
 WindowTreeHostMus::~WindowTreeHostMus() {
   DestroyCompositor();
   DestroyDispatcher();
+}
+
+// static
+WindowTreeHostMus* WindowTreeHostMus::ForWindow(aura::Window* window) {
+  if (!window)
+    return nullptr;
+
+  aura::Window* root = window->GetRootWindow();
+  if (!root) {
+    // During initial setup this function is called for the root, before the
+    // WindowTreeHost has been registered so that GetRootWindow() returns null.
+    // Fallback to checking window, in case it really is the root.
+    return window->GetProperty(kWindowTreeHostMusKey);
+  }
+
+  return root->GetProperty(kWindowTreeHostMusKey);
 }
 
 void WindowTreeHostMus::SetBoundsFromServer(const gfx::Rect& bounds_in_pixels) {

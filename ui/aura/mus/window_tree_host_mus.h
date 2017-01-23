@@ -51,6 +51,10 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
 
   ~WindowTreeHostMus() override;
 
+  // Returns the WindowTreeHostMus for |window|. This returns null if |window|
+  // is null, or not in a WindowTreeHostMus.
+  static WindowTreeHostMus* ForWindow(aura::Window* window);
+
   // Sets the bounds in pixels.
   void SetBoundsFromServer(const gfx::Rect& bounds_in_pixels);
 
