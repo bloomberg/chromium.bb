@@ -101,6 +101,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       verify_context_(verify_context),
       proof_verify_callback_(nullptr),
       proof_handler_(proof_handler),
+      verify_ok_(false),
       stateless_reject_received_(false),
       num_scup_messages_received_(0) {
   DCHECK_EQ(Perspective::IS_CLIENT, session->connection()->perspective());

@@ -533,12 +533,13 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
 }
 
 TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
-  static_assert(arraysize(kSupportedQuicVersions) == 4u,
+  static_assert(arraysize(kSupportedQuicVersions) == 5u,
                 "Supported versions out of sync");
   FLAGS_quic_reloadable_flag_quic_fix_version_manager = true;
   FLAGS_quic_reloadable_flag_quic_disable_version_34 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_36_v3 = true;
   FLAGS_quic_reloadable_flag_quic_enable_version_37 = true;
+  FLAGS_quic_enable_version_38 = true;
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
   QuicConnectionId connection_id = 1;

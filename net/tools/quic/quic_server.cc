@@ -67,6 +67,7 @@ QuicServer::QuicServer(
       fd_(-1),
       packets_dropped_(0),
       overflow_supported_(false),
+      silent_close_(false),
       config_(config),
       crypto_config_(kSourceAddressTokenSecret,
                      QuicRandom::GetInstance(),
@@ -161,9 +162,11 @@ void QuicServer::WaitForEvents() {
 }
 
 void QuicServer::Shutdown() {
-  // Before we shut down the epoll server, give all active sessions a chance to
-  // notify clients that they're closing.
-  dispatcher_->Shutdown();
+  if (!silent_close_) {
+    // Before we shut down the epoll server, give all active sessions a chance
+    // to notify clients that they're closing.
+    dispatcher_->Shutdown();
+  }
 
   close(fd_);
   fd_ = -1;
