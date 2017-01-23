@@ -4426,8 +4426,14 @@ Event* Document::createEvent(ExecutionContext* executionContext,
   Event* event = nullptr;
   for (const auto& factory : eventFactories()) {
     event = factory->create(executionContext, eventType);
-    if (event)
+    if (event) {
+      // createEvent for TouchEvent should throw DOM exception if touch event
+      // feature detection is not enabled. See crbug.com/392584#c22
+      if (equalIgnoringCase(eventType, "TouchEvent") &&
+          !RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled())
+        break;
       return event;
+    }
   }
   exceptionState.throwDOMException(
       NotSupportedError,
