@@ -120,11 +120,8 @@ void NotificationImageLoader::start(
   resourceRequest.setPriority(ResourceLoadPriorityMedium);
   resourceRequest.setRequestorOrigin(executionContext->getSecurityOrigin());
 
-  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
-  CHECK(!m_threadableLoader);
   m_threadableLoader = ThreadableLoader::create(
-      *executionContext, this, threadableLoaderOptions, resourceLoaderOptions,
-      ThreadableLoader::ClientSpec::kNotificationImageLoader);
+      *executionContext, this, threadableLoaderOptions, resourceLoaderOptions);
   m_threadableLoader->start(resourceRequest);
 }
 

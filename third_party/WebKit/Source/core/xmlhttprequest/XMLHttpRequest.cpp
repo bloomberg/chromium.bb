@@ -1041,33 +1041,25 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   m_exceptionCode = 0;
   m_error = false;
 
-  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
-  CHECK(getExecutionContext());
   if (m_async) {
     UseCounter::count(&executionContext,
                       UseCounter::XMLHttpRequestAsynchronous);
     if (m_upload)
       request.setReportUploadProgress(true);
 
-    // TODO(yhirano): Turn this CHECK into DCHECK once https://crbug.com/667254
-    // is fixed.
-    CHECK(!m_loader);
+    DCHECK(!m_loader);
     DCHECK(m_sendFlag);
     m_loader = ThreadableLoader::create(executionContext, this, options,
-                                        resourceLoaderOptions,
-                                        ThreadableLoader::ClientSpec::kXHR);
+                                        resourceLoaderOptions);
     m_loader->start(request);
 
     return;
   }
 
-  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
-  CHECK(!m_loader);
   // Use count for XHR synchronous requests.
   UseCounter::count(&executionContext, UseCounter::XMLHttpRequestSynchronous);
-  ThreadableLoader::loadResourceSynchronously(
-      executionContext, request, *this, options, resourceLoaderOptions,
-      ThreadableLoader::ClientSpec::kXHR);
+  ThreadableLoader::loadResourceSynchronously(executionContext, request, *this,
+                                              options, resourceLoaderOptions);
 
   throwForLoadFailureIfNeeded(exceptionState, String());
 }
@@ -1826,9 +1818,6 @@ void XMLHttpRequest::contextDestroyed(ExecutionContext*) {
 }
 
 bool XMLHttpRequest::hasPendingActivity() const {
-  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
-  CHECK(getExecutionContext() || !m_loader);
-
   // Neither this object nor the JavaScript wrapper should be deleted while
   // a request is in progress because we need to keep the listeners alive,
   // and they are referenced by the JavaScript wrapper.

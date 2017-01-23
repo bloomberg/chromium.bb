@@ -129,9 +129,8 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     ThreadableLoaderOptions options;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
     ResourceLoaderOptions resourceLoaderOptions;
-    m_loader = DocumentThreadableLoader::create(
-        document(), client, options, resourceLoaderOptions,
-        ThreadableLoader::ClientSpec::kTesting);
+    m_loader = DocumentThreadableLoader::create(document(), client, options,
+                                                resourceLoaderOptions);
   }
 
   void startLoader(const ResourceRequest& request) override {
@@ -300,8 +299,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     DCHECK(m_workerThread->globalScope()->isWorkerGlobalScope());
 
     m_loader = ThreadableLoader::create(*m_workerThread->globalScope(), client,
-                                        options, resourceLoaderOptions,
-                                        ThreadableLoader::ClientSpec::kTesting);
+                                        options, resourceLoaderOptions);
     DCHECK(m_loader);
     event->signal();
   }

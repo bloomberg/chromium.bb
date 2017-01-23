@@ -59,7 +59,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/WeakPtr.h"
-#include "wtf/debug/Alias.h"
 #include <memory>
 
 namespace blink {
@@ -121,73 +120,6 @@ bool IsNoCORSAllowedContext(
   }
 }
 
-// TODO(yhirano): Remove these when https://crbug.com/667254 is fixed.
-void NEVER_INLINE crashWithBlobBytesConsumer() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithEventSource() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithFetchManager() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithFileReaderLoader() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithMainThreadLoaderHolder() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithNotificationImageLoader() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithWebAssociatedURLLoader() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithWorkerScriptLoader() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithSyncXHR() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithAsyncXHR() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
-void NEVER_INLINE crashWithTesting() {
-  const char* name = __func__;
-  WTF::debug::alias(&name);
-  CRASH();
-}
-
 }  // namespace
 
 // Max number of CORS redirects handled in DocumentThreadableLoader. Same number
@@ -202,10 +134,9 @@ void DocumentThreadableLoader::loadResourceSynchronously(
     const ResourceRequest& request,
     ThreadableLoaderClient& client,
     const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resourceLoaderOptions,
-    ClientSpec clientSpec) {
+    const ResourceLoaderOptions& resourceLoaderOptions) {
   (new DocumentThreadableLoader(document, &client, LoadSynchronously, options,
-                                resourceLoaderOptions, clientSpec))
+                                resourceLoaderOptions))
       ->start(request);
 }
 
@@ -213,11 +144,9 @@ DocumentThreadableLoader* DocumentThreadableLoader::create(
     Document& document,
     ThreadableLoaderClient* client,
     const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resourceLoaderOptions,
-    ClientSpec clientSpec) {
+    const ResourceLoaderOptions& resourceLoaderOptions) {
   return new DocumentThreadableLoader(document, client, LoadAsynchronously,
-                                      options, resourceLoaderOptions,
-                                      clientSpec);
+                                      options, resourceLoaderOptions);
 }
 
 DocumentThreadableLoader::DocumentThreadableLoader(
@@ -225,10 +154,8 @@ DocumentThreadableLoader::DocumentThreadableLoader(
     ThreadableLoaderClient* client,
     BlockingBehavior blockingBehavior,
     const ThreadableLoaderOptions& options,
-    const ResourceLoaderOptions& resourceLoaderOptions,
-    ClientSpec clientSpec)
+    const ResourceLoaderOptions& resourceLoaderOptions)
     : m_client(client),
-      m_clientSpec(clientSpec),
       m_document(&document),
       m_options(options),
       m_resourceLoaderOptions(resourceLoaderOptions),
@@ -487,45 +414,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
 }
 
 DocumentThreadableLoader::~DocumentThreadableLoader() {
-  if (m_client) {
-    auto clientSpec = m_clientSpec;
-    WTF::debug::alias(&clientSpec);
-    switch (m_clientSpec) {
-      case ClientSpec::kBlobBytesConsumer:
-        crashWithBlobBytesConsumer();
-        break;
-      case ClientSpec::kEventSource:
-        crashWithEventSource();
-        break;
-      case ClientSpec::kFetchManager:
-        crashWithFetchManager();
-        break;
-      case ClientSpec::kFileReaderLoader:
-        crashWithFileReaderLoader();
-        break;
-      case ClientSpec::kMainThreadLoaderHolder:
-        crashWithMainThreadLoaderHolder();
-        break;
-      case ClientSpec::kNotificationImageLoader:
-        crashWithNotificationImageLoader();
-        break;
-      case ClientSpec::kWebAssociatedURLLoader:
-        crashWithWebAssociatedURLLoader();
-        break;
-      case ClientSpec::kWorkerScriptLoader:
-        crashWithWorkerScriptLoader();
-        break;
-      case ClientSpec::kXHR:
-        if (m_async)
-          crashWithAsyncXHR();
-        else
-          crashWithSyncXHR();
-        break;
-      case ClientSpec::kTesting:
-        crashWithTesting();
-        break;
-    }
-  }
+  CHECK(!m_client);
   DCHECK(!m_resource);
 }
 

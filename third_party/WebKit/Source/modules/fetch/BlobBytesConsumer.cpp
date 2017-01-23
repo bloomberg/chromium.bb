@@ -278,9 +278,8 @@ ThreadableLoader* BlobBytesConsumer::createLoader() {
   ResourceLoaderOptions resourceLoaderOptions;
   resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
 
-  return ThreadableLoader::create(
-      *getExecutionContext(), this, options, resourceLoaderOptions,
-      ThreadableLoader::ClientSpec::kBlobBytesConsumer);
+  return ThreadableLoader::create(*getExecutionContext(), this, options,
+                                  resourceLoaderOptions);
 }
 
 void BlobBytesConsumer::close() {

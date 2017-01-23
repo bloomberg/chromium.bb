@@ -176,13 +176,10 @@ void EventSource::connect() {
   resourceLoaderOptions.securityOrigin = origin;
 
   InspectorInstrumentation::willSendEventSourceRequest(&executionContext, this);
-  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
-  CHECK(!m_loader);
   // InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient
   // will be called synchronously.
-  m_loader = ThreadableLoader::create(
-      executionContext, this, options, resourceLoaderOptions,
-      ThreadableLoader::ClientSpec::kEventSource);
+  m_loader = ThreadableLoader::create(executionContext, this, options,
+                                      resourceLoaderOptions);
   m_loader->start(request);
 }
 
