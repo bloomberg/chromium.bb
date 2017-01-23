@@ -121,6 +121,8 @@ void Geolocation::contextDestroyed(ExecutionContext*) {
   m_geolocationPermission = PermissionDenied;
   m_pendingForPermissionNotifiers.clear();
   m_lastPosition = nullptr;
+  m_oneShots.clear();
+  m_watchers.clear();
 }
 
 void Geolocation::recordOriginTypeAccess() const {
