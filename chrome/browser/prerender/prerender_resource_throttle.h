@@ -84,7 +84,7 @@ class PrerenderResourceThrottle
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter);
 
-  // Sets the prerender mode. Must be called befor ResumeHandler().
+  // Sets the prerender mode. Must be called before |ResumeHandler()|.
   void SetPrerenderMode(PrerenderMode mode);
 
   net::URLRequest* request_;
