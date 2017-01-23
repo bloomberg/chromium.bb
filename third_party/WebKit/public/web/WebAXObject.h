@@ -55,6 +55,18 @@ struct WebPoint;
 struct WebRect;
 struct WebSize;
 
+class BLINK_EXPORT WebAXSparseAttributeClient {
+ public:
+  WebAXSparseAttributeClient() {}
+  virtual ~WebAXSparseAttributeClient() {}
+
+  virtual void addBoolAttribute(WebAXBoolAttribute, bool) = 0;
+  virtual void addStringAttribute(WebAXStringAttribute, const WebString&) = 0;
+  virtual void addObjectAttribute(WebAXObjectAttribute, const WebAXObject&) = 0;
+  virtual void addObjectVectorAttribute(WebAXObjectVectorAttribute,
+                                        const WebVector<WebAXObject>&) = 0;
+};
+
 // An instance of this class, while kept alive, indicates that accessibility
 // should be temporarily enabled. If accessibility was enabled globally
 // (WebSettings::setAccessibilityEnabled), this will have no effect.
@@ -107,6 +119,12 @@ class WebAXObject {
   BLINK_EXPORT WebAXObject childAt(unsigned) const;
   BLINK_EXPORT WebAXObject parentObject() const;
 
+  // Retrieve accessibility attributes that apply to only a small
+  // fraction of WebAXObjects by passing an implementation of
+  // WebAXSparseAttributeClient, which will be called with only the attributes
+  // that apply to this object.
+  BLINK_EXPORT void getSparseAXAttributes(WebAXSparseAttributeClient&) const;
+
   BLINK_EXPORT bool isAnchor() const;
   BLINK_EXPORT bool isAriaReadOnly() const;
   BLINK_EXPORT bool isButtonStateMixed() const;
@@ -139,10 +157,7 @@ class WebAXObject {
   BLINK_EXPORT unsigned colorValue() const;
   BLINK_EXPORT WebAXObject ariaActiveDescendant() const;
   BLINK_EXPORT WebString ariaAutoComplete() const;
-  BLINK_EXPORT bool ariaControls(
-      WebVector<WebAXObject>& controlsElements) const;
   BLINK_EXPORT WebAXAriaCurrentState ariaCurrentState() const;
-  BLINK_EXPORT bool ariaFlowTo(WebVector<WebAXObject>& flowToElements) const;
   BLINK_EXPORT bool ariaHasPopup() const;
   BLINK_EXPORT bool isEditable() const;
   BLINK_EXPORT bool isMultiline() const;

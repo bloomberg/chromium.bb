@@ -96,6 +96,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool isDetached() const override { return !m_node; }
   bool isAXNodeObject() const final { return true; }
 
+  void getSparseAXAttributes(AXSparseAttributeClient&) const override;
+
   // Check object role or purpose.
   bool isAnchor() const final;
   bool isControl() const override;

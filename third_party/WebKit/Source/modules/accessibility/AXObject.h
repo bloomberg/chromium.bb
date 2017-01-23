@@ -326,6 +326,28 @@ enum TextUnderElementMode {
                        // present
 };
 
+enum class AXBoolAttribute {};
+
+enum class AXStringAttribute {};
+
+enum class AXObjectAttribute {
+  AriaActiveDescendant,
+};
+
+enum class AXObjectVectorAttribute {
+  AriaControls,
+  AriaFlowTo,
+};
+
+class AXSparseAttributeClient {
+ public:
+  virtual void addBoolAttribute(AXBoolAttribute, bool) = 0;
+  virtual void addStringAttribute(AXStringAttribute, const String&) = 0;
+  virtual void addObjectAttribute(AXObjectAttribute, AXObject&) = 0;
+  virtual void addObjectVectorAttribute(AXObjectVectorAttribute,
+                                        HeapVector<Member<AXObject>>&) = 0;
+};
+
 // The source of the accessible name of an element. This is needed
 // because on some platforms this determines how the accessible name
 // is exposed.
@@ -571,6 +593,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   }
 
   AXID axObjectID() const { return m_id; }
+
+  virtual void getSparseAXAttributes(AXSparseAttributeClient&) const {}
 
   // Determine subclass type.
   virtual bool isAXNodeObject() const { return false; }
@@ -826,8 +850,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // ARIA attributes.
   virtual AXObject* activeDescendant() { return nullptr; }
   virtual String ariaAutoComplete() const { return String(); }
-  virtual void ariaFlowToElements(AXObjectVector&) const {}
-  virtual void ariaControlsElements(AXObjectVector&) const {}
   virtual void ariaOwnsElements(AXObjectVector& owns) const {}
   virtual void ariaDescribedbyElements(AXObjectVector&) const {}
   virtual void ariaLabelledbyElements(AXObjectVector&) const {}

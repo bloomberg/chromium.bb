@@ -202,7 +202,7 @@ inline unsigned hashComponents(const QualifiedNameComponents& buf) {
   return StringHasher::hashMemory<sizeof(QualifiedNameComponents)>(&buf);
 }
 
-struct QualifiedNameHash {
+struct CORE_EXPORT QualifiedNameHash {
   STATIC_ONLY(QualifiedNameHash);
   static unsigned hash(const QualifiedName& name) { return hash(name.impl()); }
 

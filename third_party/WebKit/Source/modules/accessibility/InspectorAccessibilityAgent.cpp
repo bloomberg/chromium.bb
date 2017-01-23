@@ -327,29 +327,54 @@ std::unique_ptr<AXProperty> createRelatedNodeListProperty(
   return createProperty(key, std::move(nodeListValue));
 }
 
-void fillRelationships(AXObject& axObject,
-                       protocol::Array<AXProperty>& properties) {
-  if (AXObject* activeDescendant = axObject.activeDescendant()) {
-    properties.addItem(
-        createProperty(AXRelationshipAttributesEnum::Activedescendant,
-                       createRelatedNodeListValue(*activeDescendant)));
+class SparseAttributeAXPropertyAdapter
+    : public GarbageCollected<SparseAttributeAXPropertyAdapter>,
+      public AXSparseAttributeClient {
+ public:
+  SparseAttributeAXPropertyAdapter(AXObject& axObject,
+                                   protocol::Array<AXProperty>& properties)
+      : m_axObject(&axObject), m_properties(properties) {}
+
+  DEFINE_INLINE_TRACE() { visitor->trace(m_axObject); }
+
+ private:
+  Member<AXObject> m_axObject;
+  protocol::Array<AXProperty>& m_properties;
+
+  void addBoolAttribute(AXBoolAttribute attribute, bool value) {}
+
+  void addStringAttribute(AXStringAttribute attribute, const String& value) {}
+
+  void addObjectAttribute(AXObjectAttribute attribute, AXObject& object) {
+    switch (attribute) {
+      case AXObjectAttribute::AriaActiveDescendant:
+        m_properties.addItem(
+            createProperty(AXRelationshipAttributesEnum::Activedescendant,
+                           createRelatedNodeListValue(object)));
+        break;
+    }
   }
 
+  void addObjectVectorAttribute(AXObjectVectorAttribute attribute,
+                                HeapVector<Member<AXObject>>& objects) {
+    switch (attribute) {
+      case AXObjectVectorAttribute::AriaControls:
+        m_properties.addItem(createRelatedNodeListProperty(
+            AXRelationshipAttributesEnum::Controls, objects, aria_controlsAttr,
+            *m_axObject));
+        break;
+      case AXObjectVectorAttribute::AriaFlowTo:
+        m_properties.addItem(createRelatedNodeListProperty(
+            AXRelationshipAttributesEnum::Flowto, objects, aria_flowtoAttr,
+            *m_axObject));
+        break;
+    }
+  }
+};
+
+void fillRelationships(AXObject& axObject,
+                       protocol::Array<AXProperty>& properties) {
   AXObject::AXObjectVector results;
-  axObject.ariaFlowToElements(results);
-  if (!results.isEmpty())
-    properties.addItem(
-        createRelatedNodeListProperty(AXRelationshipAttributesEnum::Flowto,
-                                      results, aria_flowtoAttr, axObject));
-  results.clear();
-
-  axObject.ariaControlsElements(results);
-  if (!results.isEmpty())
-    properties.addItem(
-        createRelatedNodeListProperty(AXRelationshipAttributesEnum::Controls,
-                                      results, aria_controlsAttr, axObject));
-  results.clear();
-
   axObject.ariaDescribedbyElements(results);
   if (!results.isEmpty())
     properties.addItem(
@@ -544,6 +569,9 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildProtocolAXObject(
   fillWidgetProperties(axObject, *(properties.get()));
   fillWidgetStates(axObject, *(properties.get()));
   fillRelationships(axObject, *(properties.get()));
+
+  SparseAttributeAXPropertyAdapter adapter(axObject, *properties);
+  axObject.getSparseAXAttributes(adapter);
 
   AXObject::NameSources nameSources;
   String computedName = axObject.name(&nameSources);

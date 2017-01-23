@@ -62,6 +62,42 @@
 
 namespace blink {
 
+class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
+ public:
+  WebAXSparseAttributeClientAdapter(WebAXSparseAttributeClient& attributeMap)
+      : m_attributeMap(attributeMap) {}
+  virtual ~WebAXSparseAttributeClientAdapter() {}
+
+ private:
+  WebAXSparseAttributeClient& m_attributeMap;
+
+  void addBoolAttribute(AXBoolAttribute attribute, bool value) override {
+    m_attributeMap.addBoolAttribute(static_cast<WebAXBoolAttribute>(attribute),
+                                    value);
+  }
+
+  void addStringAttribute(AXStringAttribute attribute,
+                          const String& value) override {
+    m_attributeMap.addStringAttribute(
+        static_cast<WebAXStringAttribute>(attribute), value);
+  }
+
+  void addObjectAttribute(AXObjectAttribute attribute,
+                          AXObject& value) override {
+    m_attributeMap.addObjectAttribute(
+        static_cast<WebAXObjectAttribute>(attribute), WebAXObject(&value));
+  }
+
+  void addObjectVectorAttribute(AXObjectVectorAttribute attribute,
+                                HeapVector<Member<AXObject>>& value) override {
+    WebVector<WebAXObject> result(value.size());
+    for (size_t i = 0; i < value.size(); i++)
+      result[i] = WebAXObject(value[i]);
+    m_attributeMap.addObjectVectorAttribute(
+        static_cast<WebAXObjectVectorAttribute>(attribute), result);
+  }
+};
+
 #if DCHECK_IS_ON()
 // It's not safe to call some WebAXObject APIs if a layout is pending.
 // Clients should call updateLayoutAndCheckValidity first.
@@ -198,6 +234,15 @@ WebAXObject WebAXObject::parentObject() const {
     return WebAXObject();
 
   return WebAXObject(m_private->parentObject());
+}
+
+void WebAXObject::getSparseAXAttributes(
+    WebAXSparseAttributeClient& client) const {
+  if (isDetached())
+    return;
+
+  WebAXSparseAttributeClientAdapter adapter(client);
+  m_private->getSparseAXAttributes(adapter);
 }
 
 bool WebAXObject::canSetSelectedAttribute() const {
@@ -432,41 +477,11 @@ WebAXObject WebAXObject::ariaActiveDescendant() const {
   return WebAXObject(m_private->activeDescendant());
 }
 
-bool WebAXObject::ariaControls(WebVector<WebAXObject>& controlsElements) const {
-  if (isDetached())
-    return false;
-
-  AXObject::AXObjectVector controls;
-  m_private->ariaControlsElements(controls);
-
-  WebVector<WebAXObject> result(controls.size());
-  for (size_t i = 0; i < controls.size(); i++)
-    result[i] = WebAXObject(controls[i]);
-  controlsElements.swap(result);
-
-  return true;
-}
-
 bool WebAXObject::ariaHasPopup() const {
   if (isDetached())
     return false;
 
   return m_private->ariaHasPopup();
-}
-
-bool WebAXObject::ariaFlowTo(WebVector<WebAXObject>& flowToElements) const {
-  if (isDetached())
-    return false;
-
-  AXObject::AXObjectVector flowTo;
-  m_private->ariaFlowToElements(flowTo);
-
-  WebVector<WebAXObject> result(flowTo.size());
-  for (size_t i = 0; i < flowTo.size(); i++)
-    result[i] = WebAXObject(flowTo[i]);
-  flowToElements.swap(result);
-
-  return true;
 }
 
 bool WebAXObject::isEditable() const {

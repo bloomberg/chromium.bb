@@ -1238,14 +1238,6 @@ String AXLayoutObject::textAlternative(bool recursive,
 // ARIA attributes.
 //
 
-void AXLayoutObject::ariaFlowToElements(AXObjectVector& flowTo) const {
-  accessibilityChildrenFromAttribute(aria_flowtoAttr, flowTo);
-}
-
-void AXLayoutObject::ariaControlsElements(AXObjectVector& controls) const {
-  accessibilityChildrenFromAttribute(aria_controlsAttr, controls);
-}
-
 void AXLayoutObject::ariaOwnsElements(AXObjectVector& owns) const {
   accessibilityChildrenFromAttribute(aria_ownsAttr, owns);
 }

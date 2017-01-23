@@ -512,6 +512,41 @@ class AttributesCollector {
   DISALLOW_COPY_AND_ASSIGN(AttributesCollector);
 };
 
+class SparseAttributeAdapter : public blink::WebAXSparseAttributeClient {
+ public:
+  SparseAttributeAdapter() {}
+  ~SparseAttributeAdapter() override {}
+
+  std::map<blink::WebAXBoolAttribute, bool> bool_attributes;
+  std::map<blink::WebAXStringAttribute, blink::WebString> string_attributes;
+  std::map<blink::WebAXObjectAttribute, blink::WebAXObject> object_attributes;
+  std::map<blink::WebAXObjectVectorAttribute,
+           blink::WebVector<blink::WebAXObject>>
+      object_vector_attributes;
+
+ private:
+  void addBoolAttribute(blink::WebAXBoolAttribute attribute,
+                        bool value) override {
+    bool_attributes[attribute] = value;
+  }
+
+  void addStringAttribute(blink::WebAXStringAttribute attribute,
+                          const blink::WebString& value) override {
+    string_attributes[attribute] = value;
+  }
+
+  void addObjectAttribute(blink::WebAXObjectAttribute attribute,
+                          const blink::WebAXObject& value) override {
+    object_attributes[attribute] = value;
+  }
+
+  void addObjectVectorAttribute(
+      blink::WebAXObjectVectorAttribute attribute,
+      const blink::WebVector<blink::WebAXObject>& value) override {
+    object_vector_attributes[attribute] = value;
+  }
+};
+
 }  // namespace
 
 gin::WrapperInfo WebAXObjectProxy::kWrapperInfo = {
@@ -1100,11 +1135,13 @@ bool WebAXObjectProxy::IsButtonStateMixed() {
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
-                                                                unsigned index)
-{
+    unsigned index) {
   accessibility_object_.updateLayoutAndCheckValidity();
-  blink::WebVector<blink::WebAXObject> elements;
-  accessibility_object_.ariaControls(elements);
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.getSparseAXAttributes(attribute_adapter);
+  blink::WebVector<blink::WebAXObject> elements =
+      attribute_adapter.object_vector_attributes
+          [blink::WebAXObjectVectorAttribute::AriaControls];
   size_t elementCount = elements.size();
   if (index >= elementCount)
     return v8::Local<v8::Object>();
@@ -1113,11 +1150,13 @@ v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaFlowToElementAtIndex(
-                                                                unsigned index)
-{
+    unsigned index) {
   accessibility_object_.updateLayoutAndCheckValidity();
-  blink::WebVector<blink::WebAXObject> elements;
-  accessibility_object_.ariaFlowTo(elements);
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.getSparseAXAttributes(attribute_adapter);
+  blink::WebVector<blink::WebAXObject> elements =
+      attribute_adapter.object_vector_attributes
+          [blink::WebAXObjectVectorAttribute::AriaFlowTo];
   size_t elementCount = elements.size();
   if (index >= elementCount)
     return v8::Local<v8::Object>();

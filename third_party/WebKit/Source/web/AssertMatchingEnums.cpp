@@ -413,6 +413,13 @@ STATIC_ASSERT_ENUM(WebAXDescriptionFromRelatedElement,
 STATIC_ASSERT_ENUM(WebAXTextAffinityUpstream, TextAffinity::Upstream);
 STATIC_ASSERT_ENUM(WebAXTextAffinityDownstream, TextAffinity::Downstream);
 
+STATIC_ASSERT_ENUM(WebAXObjectAttribute::AriaActiveDescendant,
+                   AXObjectAttribute::AriaActiveDescendant);
+STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::AriaControls,
+                   AXObjectVectorAttribute::AriaControls);
+STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::AriaFlowTo,
+                   AXObjectVectorAttribute::AriaFlowTo);
+
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::Uncached,
                    ApplicationCacheHost::kUncached);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::Idle, ApplicationCacheHost::kIdle);

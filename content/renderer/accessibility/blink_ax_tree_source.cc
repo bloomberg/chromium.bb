@@ -55,6 +55,65 @@ namespace content {
 
 namespace {
 
+void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
+                                       const WebVector<WebAXObject>& objects,
+                                       AXContentNodeData* dst) {
+  std::vector<int32_t> ids;
+  for (size_t i = 0; i < objects.size(); i++)
+    ids.push_back(objects[i].axID());
+  if (!ids.empty())
+    dst->AddIntListAttribute(attr, ids);
+}
+
+class AXContentNodeDataSparseAttributeAdapter
+    : public blink::WebAXSparseAttributeClient {
+ public:
+  AXContentNodeDataSparseAttributeAdapter(AXContentNodeData* dst) : dst_(dst) {
+    DCHECK(dst_);
+  }
+  ~AXContentNodeDataSparseAttributeAdapter() override {}
+
+ private:
+  AXContentNodeData* dst_;
+
+  void addBoolAttribute(blink::WebAXBoolAttribute attribute,
+                        bool value) override {
+    NOTREACHED();
+  }
+
+  void addStringAttribute(blink::WebAXStringAttribute attribute,
+                          const blink::WebString& value) override {
+    NOTREACHED();
+  }
+
+  void addObjectAttribute(blink::WebAXObjectAttribute attribute,
+                          const blink::WebAXObject& value) override {
+    switch (attribute) {
+      case blink::WebAXObjectAttribute::AriaActiveDescendant:
+        dst_->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, value.axID());
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void addObjectVectorAttribute(
+      blink::WebAXObjectVectorAttribute attribute,
+      const blink::WebVector<WebAXObject>& value) override {
+    switch (attribute) {
+      case blink::WebAXObjectVectorAttribute::AriaControls:
+        AddIntListAttributeFromWebObjects(ui::AX_ATTR_CONTROLS_IDS, value,
+                                          dst_);
+        break;
+      case blink::WebAXObjectVectorAttribute::AriaFlowTo:
+        AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, value, dst_);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+};
+
 WebAXObject ParentObjectUnignored(WebAXObject child) {
   WebAXObject parent = child.parentObject();
   while (!parent.isDetached() && parent.accessibilityIsIgnored())
@@ -107,16 +166,6 @@ std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
   }
 
   return std::string();
-}
-
-void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
-                                       WebVector<WebAXObject> objects,
-                                       AXContentNodeData* dst) {
-  std::vector<int32_t> ids;
-  for(size_t i = 0; i < objects.size(); i++)
-    ids.push_back(objects[i].axID());
-  if (ids.size() > 0)
-    dst->AddIntListAttribute(attr, ids);
 }
 
 }  // namespace
@@ -323,6 +372,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->transform = base::WrapUnique(new gfx::Transform(container_transform));
   if (!offset_container.isDetached())
     dst->offset_container_id = offset_container.axID();
+
+  AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
+  src.getSparseAXAttributes(sparse_attribute_adapter);
 
   blink::WebAXNameFrom nameFrom;
   blink::WebVector<blink::WebAXObject> nameObjects;
@@ -754,14 +806,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
           ui::AX_ATTR_INDIRECT_CHILD_IDS, indirect_child_ids);
     }
   }
-
-  WebVector<WebAXObject> controls;
-  if (src.ariaControls(controls))
-    AddIntListAttributeFromWebObjects(ui::AX_ATTR_CONTROLS_IDS, controls, dst);
-
-  WebVector<WebAXObject> flowTo;
-  if (src.ariaFlowTo(flowTo))
-    AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, flowTo, dst);
 
   if (src.isScrollableContainer()) {
     const gfx::Point& scrollOffset = src.getScrollOffset();

@@ -118,8 +118,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   String stringValue() const override;
 
   // ARIA attributes.
-  void ariaFlowToElements(AXObjectVector&) const override;
-  void ariaControlsElements(AXObjectVector&) const override;
   void ariaDescribedbyElements(AXObjectVector&) const override;
   void ariaLabelledbyElements(AXObjectVector&) const override;
   void ariaOwnsElements(AXObjectVector&) const override;

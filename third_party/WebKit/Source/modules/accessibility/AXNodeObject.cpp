@@ -32,6 +32,7 @@
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/QualifiedName.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/editing/EditingUtilities.h"
@@ -69,6 +70,132 @@
 namespace blink {
 
 using namespace HTMLNames;
+
+class SparseAttributeSetter {
+  USING_FAST_MALLOC(SparseAttributeSetter);
+
+ public:
+  virtual void run(const AXObject&,
+                   AXSparseAttributeClient&,
+                   const AtomicString& value) = 0;
+};
+
+class BoolAttributeSetter : public SparseAttributeSetter {
+ public:
+  BoolAttributeSetter(AXBoolAttribute attribute) : m_attribute(attribute) {}
+
+ private:
+  AXBoolAttribute m_attribute;
+
+  void run(const AXObject& obj,
+           AXSparseAttributeClient& attributeMap,
+           const AtomicString& value) override {
+    attributeMap.addBoolAttribute(m_attribute,
+                                  equalIgnoringCase(value, "true"));
+  }
+};
+
+class StringAttributeSetter : public SparseAttributeSetter {
+ public:
+  StringAttributeSetter(AXStringAttribute attribute) : m_attribute(attribute) {}
+
+ private:
+  AXStringAttribute m_attribute;
+
+  void run(const AXObject& obj,
+           AXSparseAttributeClient& attributeMap,
+           const AtomicString& value) override {
+    attributeMap.addStringAttribute(m_attribute, value);
+  }
+};
+
+class ObjectAttributeSetter : public SparseAttributeSetter {
+ public:
+  ObjectAttributeSetter(AXObjectAttribute attribute) : m_attribute(attribute) {}
+
+ private:
+  AXObjectAttribute m_attribute;
+
+  void run(const AXObject& obj,
+           AXSparseAttributeClient& attributeMap,
+           const AtomicString& value) override {
+    if (value.isNull() || value.isEmpty())
+      return;
+
+    Node* node = obj.getNode();
+    if (!node || !node->isElementNode())
+      return;
+    Element* target = toElement(node)->treeScope().getElementById(value);
+    if (!target)
+      return;
+    AXObject* axTarget = obj.axObjectCache().getOrCreate(target);
+    if (axTarget)
+      attributeMap.addObjectAttribute(m_attribute, *axTarget);
+  }
+};
+
+class ObjectVectorAttributeSetter : public SparseAttributeSetter {
+ public:
+  ObjectVectorAttributeSetter(AXObjectVectorAttribute attribute)
+      : m_attribute(attribute) {}
+
+ private:
+  AXObjectVectorAttribute m_attribute;
+
+  void run(const AXObject& obj,
+           AXSparseAttributeClient& attributeMap,
+           const AtomicString& value) override {
+    Node* node = obj.getNode();
+    if (!node || !node->isElementNode())
+      return;
+
+    String attributeValue = value.getString();
+    if (attributeValue.isEmpty())
+      return;
+
+    attributeValue.simplifyWhiteSpace();
+    Vector<String> ids;
+    attributeValue.split(' ', ids);
+    if (ids.isEmpty())
+      return;
+
+    HeapVector<Member<AXObject>> objects;
+    TreeScope& scope = node->treeScope();
+    for (const auto& id : ids) {
+      if (Element* idElement = scope.getElementById(AtomicString(id))) {
+        AXObject* axIdElement = obj.axObjectCache().getOrCreate(idElement);
+        if (axIdElement && !axIdElement->accessibilityIsIgnored())
+          objects.append(axIdElement);
+      }
+    }
+
+    attributeMap.addObjectVectorAttribute(m_attribute, objects);
+  }
+};
+
+using AXSparseAttributeSetterMap =
+    HashMap<QualifiedName, SparseAttributeSetter*>;
+
+static AXSparseAttributeSetterMap& getSparseAttributeSetterMap() {
+  // Use a map from attribute name to properties of that attribute.
+  // That way we only need to iterate over the list of attributes once,
+  // rather than calling getAttribute() once for each possible obscure
+  // accessibility attribute.
+  DEFINE_STATIC_LOCAL(AXSparseAttributeSetterMap, axSparseAttributeSetterMap,
+                      ());
+  if (axSparseAttributeSetterMap.isEmpty()) {
+    axSparseAttributeSetterMap.set(
+        aria_activedescendantAttr,
+        new ObjectAttributeSetter(AXObjectAttribute::AriaActiveDescendant));
+    axSparseAttributeSetterMap.set(
+        aria_controlsAttr,
+        new ObjectVectorAttributeSetter(AXObjectVectorAttribute::AriaControls));
+    axSparseAttributeSetterMap.set(
+        aria_flowtoAttr,
+        new ObjectVectorAttributeSetter(AXObjectVectorAttribute::AriaFlowTo));
+  }
+  return axSparseAttributeSetterMap;
+}
 
 AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& axObjectCache)
     : AXObject(axObjectCache),
@@ -748,6 +875,22 @@ void AXNodeObject::init() {
 void AXNodeObject::detach() {
   AXObject::detach();
   m_node = nullptr;
+}
+
+void AXNodeObject::getSparseAXAttributes(
+    AXSparseAttributeClient& sparseAttributeClient) const {
+  Node* node = this->getNode();
+  if (!node || !node->isElementNode())
+    return;
+
+  AXSparseAttributeSetterMap& axSparseAttributeSetterMap =
+      getSparseAttributeSetterMap();
+  AttributeCollection attributes = toElement(node)->attributesWithoutUpdate();
+  for (const Attribute& attr : attributes) {
+    SparseAttributeSetter* setter = axSparseAttributeSetterMap.get(attr.name());
+    if (setter)
+      setter->run(*this, sparseAttributeClient, attr.value());
+  }
 }
 
 bool AXNodeObject::isAnchor() const {
