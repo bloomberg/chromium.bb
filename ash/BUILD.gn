@@ -856,10 +856,6 @@ component("ash") {
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/shared:app_types",
-
-    # This is a tiny dependency that just defines some service name strings & is
-    # not equivalent to depending on content in a more substantial manner.
-    "//content/public/common:service_names",
   ]
   deps = [
     "//ash/autoclick/common:autoclick",

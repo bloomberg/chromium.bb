@@ -7,10 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
-#include "content/public/common/service_names.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-
 namespace ash {
 
 CastConfigController::CastConfigController() {}
