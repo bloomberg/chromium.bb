@@ -366,8 +366,8 @@ external/wpt/webvtt [ Skip ]
 
 # wpt.config.json overrides the following files with LayoutTests/resources
 # files. Having unused files would be confusing.
-imported/wpt/resources/testharnessreport.js [ Skip ]
-imported/wpt/common/vendor-prefix.js [ Skip ]
+external/wpt/resources/testharnessreport.js [ Skip ]
+external/wpt/common/vendor-prefix.js [ Skip ]
 
 # crbug.com/490694: Needs to support *.headers.
 external/wpt/html/dom/documents/resource-metadata-management/document-lastModified.html [ Skip ]

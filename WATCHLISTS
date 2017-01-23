@@ -1404,7 +1404,7 @@
                   '|third_party/WebKit/Source/core/page/scrolling'
     },
     'blink_w3ctests': {
-      'filepath': 'third_party/WebKit/LayoutTests/imported/' \
+      'filepath': 'third_party/WebKit/LayoutTests/external/' \
                   '|third_party/WebKit/Tools/Scripts/webkitpy/w3c/'
     },
     'blink_web': {
