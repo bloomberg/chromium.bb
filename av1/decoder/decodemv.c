@@ -908,7 +908,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
-  if (bsize >= BLOCK_8X8) read_filter_intra_mode_info(cm, xd, r);
+  if (bsize >= BLOCK_8X8 || CONFIG_CB4X4)
+    read_filter_intra_mode_info(cm, xd, r);
 #endif  // CONFIG_FILTER_INTRA
 
   read_tx_type(cm, xd, mbmi,
@@ -1209,7 +1210,8 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
-  if (bsize >= BLOCK_8X8) read_filter_intra_mode_info(cm, xd, r);
+  if (bsize >= BLOCK_8X8 || CONFIG_CB4X4)
+    read_filter_intra_mode_info(cm, xd, r);
 #endif  // CONFIG_FILTER_INTRA
 }
 

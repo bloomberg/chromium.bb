@@ -1410,7 +1410,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       write_palette_mode_info(cm, xd, mi, w);
 #endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
-    if (bsize >= BLOCK_8X8) write_filter_intra_mode_info(cm, mbmi, w);
+    if (bsize >= BLOCK_8X8 || unify_bsize)
+      write_filter_intra_mode_info(cm, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
   } else {
     int16_t mode_ctx;
@@ -1755,7 +1756,8 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
     write_palette_mode_info(cm, xd, mi, w);
 #endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
-  if (bsize >= BLOCK_8X8) write_filter_intra_mode_info(cm, mbmi, w);
+  if (bsize >= BLOCK_8X8 || unify_bsize)
+    write_filter_intra_mode_info(cm, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
 
   write_tx_type(cm, xd, mbmi,
