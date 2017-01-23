@@ -23,8 +23,8 @@ namespace safe_browsing {
 
 namespace {
 
-const char kSettingsResetPromptFeatureName[] = "SettingsResetPrompt";
-const char kDomainHashesParamName[] = "domain_hashes";
+constexpr char kSettingsResetPromptFeatureName[] = "SettingsResetPrompt";
+constexpr char kDomainHashesParamName[] = "domain_hashes";
 
 }  // namespace.
 
