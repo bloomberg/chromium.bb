@@ -2002,9 +2002,8 @@ fuzzer_test("mhtml_parser_fuzzer") {
     "mhtml/MHTMLFuzzer.cpp",
   ]
   deps = [
-    ":blink_common",
+    ":blink_fuzzer_test_support",
     ":platform",
-    ":test_support",
   ]
   dict = "//testing/libfuzzer/fuzzers/dicts/mhtml.dict"
   seed_corpus = "//third_party/WebKit/LayoutTests/mhtml"

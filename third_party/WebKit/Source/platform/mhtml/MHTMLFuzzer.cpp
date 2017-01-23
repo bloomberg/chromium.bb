@@ -6,10 +6,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/MHTMLParser.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "wtf/Assertions.h"
-#include "wtf/Compiler.h"
-#include <memory>
+#include "platform/testing/BlinkFuzzerTestSupport.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -33,11 +30,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 }
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  // Intentional leak - no need to do cleanup as explained in
-  // "Initialization/Cleanup" section of testing/libfuzzer/efficient_fuzzer.md
-  DEFINE_STATIC_LOCAL(blink::ScopedUnittestsEnvironmentSetup, testSetup,
-                      (*argc, *argv));
-  ALLOW_UNUSED_LOCAL(testSetup);
-
+  blink::InitializeBlinkFuzzTest(argc, argv);
   return 0;
 }
