@@ -161,6 +161,11 @@ void BrowserMessageFilter::ShutdownForBadMessage() {
   if (command_line->HasSwitch(switches::kDisableKillAfterBadIPC))
     return;
 
+  if (base::Process::Current().Handle() == peer_process_.Handle()) {
+    // Just crash in single process. Matches RenderProcessHostImpl behavior.
+    CHECK(false);
+  }
+
   ChildProcessLauncher::TerminateProcess(
       peer_process_, content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
 
