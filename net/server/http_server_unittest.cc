@@ -468,6 +468,20 @@ TEST_F(WebSocketTest, RequestWebSocket) {
   ASSERT_TRUE(RunUntilRequestsReceived(1));
 }
 
+TEST_F(WebSocketTest, RequestWebSocketTrailingJunk) {
+  TestHttpClient client;
+  ASSERT_THAT(client.ConnectAndWait(server_address_), IsOk());
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "Sec-WebSocket-Version: 8\r\n"
+      "Sec-WebSocket-Key: key\r\n"
+      "\r\nHello? Anyone");
+  ASSERT_TRUE(RunUntilConnectionIdClosed(1));
+  client.ExpectUsedThenDisconnectedWithNoData();
+}
+
 TEST_F(HttpServerTest, RequestWithTooLargeBody) {
   class TestURLFetcherDelegate : public URLFetcherDelegate {
    public:
