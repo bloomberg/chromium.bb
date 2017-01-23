@@ -38,6 +38,10 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'router',
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'sidebar',
       'dependencies': [
         'folder_node',
@@ -47,7 +51,8 @@
     {
       'target_name': 'store',
       'dependencies': [
-        '<(EXTERNS_GYP):chrome_extensions'
+        '<(EXTERNS_GYP):chrome_extensions',
+        'router',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },

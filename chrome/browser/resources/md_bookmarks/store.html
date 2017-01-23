@@ -1,2 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://bookmarks/router.html">
 <script src="chrome://bookmarks/store.js"></script>
+
+<dom-module id="bookmarks-store">
+  <template>
+    <bookmarks-router id="router" search-term="[[searchTerm]]"
+        selected-id="[[selectedId]]"></bookmarks-router>
+  </template>
+</dom-module>

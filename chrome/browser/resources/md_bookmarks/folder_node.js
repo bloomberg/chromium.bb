@@ -29,8 +29,7 @@ Polymer({
    * @return {string}
    */
   getArrowIcon_: function() {
-    return this.item.isOpen ? 'cr:arrow-drop-up' :
-                              'cr:arrow-drop-down';
+    return this.item.isOpen ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
   },
 
   /** @private */

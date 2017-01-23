@@ -69,7 +69,6 @@ Polymer({
 
   /** @private */
   onSearchTermChanged_: function() {
-    if (!this.searchTerm)
-      this.searchField.setValue('');
+    this.searchField.setValue(this.searchTerm || '');
   },
 });
