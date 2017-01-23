@@ -9,7 +9,6 @@ import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.util.DisabledTest
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
@@ -225,11 +224,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
         assertEquals(0, mMockNotificationManagerProxy.getNotifications().size());
     }
 
-    /*
-     * @SmallTest
-     * Bug=crbug.com/683923
-     */
-    @DisabledTest
+    @SmallTest
+    @RetryOnFailure
     public void testAddUrlGarbageCollectsForSize() throws Exception {
         // Add and remove 101 URLs, making sure one is clearly slightly older than the others.
         addEmptyPwsResult();
