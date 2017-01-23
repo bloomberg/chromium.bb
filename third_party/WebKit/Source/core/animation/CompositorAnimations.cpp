@@ -444,15 +444,18 @@ void CompositorAnimations::attachCompositedLayers(Element& element,
   if (!element.layoutObject() || !element.layoutObject()->isBoxModelObject())
     return;
 
-  PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
+  // Composited animations do not depend on a composited layer mapping for SPv2.
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    PaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
 
-  if (!layer || !layer->isAllowedToQueryCompositingState() ||
-      !layer->compositedLayerMapping() ||
-      !layer->compositedLayerMapping()->mainGraphicsLayer())
-    return;
+    if (!layer || !layer->isAllowedToQueryCompositingState() ||
+        !layer->compositedLayerMapping() ||
+        !layer->compositedLayerMapping()->mainGraphicsLayer())
+      return;
 
-  if (!layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer())
-    return;
+    if (!layer->compositedLayerMapping()->mainGraphicsLayer()->platformLayer())
+      return;
+  }
 
   CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
   compositorPlayer->attachElement(createCompositorElementId(
