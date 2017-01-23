@@ -89,8 +89,6 @@ weston-tablet-shell
 weston-terminal
 weston-multi-resource
 weston-simple-im
-git-version.h
-version.h
 weston
 weston-launch
 spring-tool
@@ -104,6 +102,9 @@ setbacklight
 weston.1
 weston-drm.7
 weston.ini.5
+
+/libweston/git-version.h
+/libweston/version.h
 
 /tests/weston-ivi.ini
 internal-screenshot-00.png
