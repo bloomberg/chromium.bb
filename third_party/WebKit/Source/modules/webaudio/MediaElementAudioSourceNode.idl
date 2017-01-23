@@ -30,6 +30,6 @@
     RaisesException=Constructor,
     Measure
 ]
-interface MediaElementAudioSourceNode : AudioSourceNode {
+interface MediaElementAudioSourceNode : AudioNode {
     readonly attribute HTMLMediaElement mediaElement;
 };

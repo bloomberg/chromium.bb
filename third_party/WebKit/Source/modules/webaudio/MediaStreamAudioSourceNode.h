@@ -27,7 +27,7 @@
 #define MediaStreamAudioSourceNode_h
 
 #include "modules/mediastream/MediaStream.h"
-#include "modules/webaudio/AudioSourceNode.h"
+#include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioSourceProvider.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "wtf/PassRefPtr.h"
@@ -80,7 +80,7 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
   unsigned m_sourceNumberOfChannels;
 };
 
-class MediaStreamAudioSourceNode final : public AudioSourceNode,
+class MediaStreamAudioSourceNode final : public AudioNode,
                                          public AudioSourceProviderClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);

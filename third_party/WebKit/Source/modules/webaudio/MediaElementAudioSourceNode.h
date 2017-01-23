@@ -26,7 +26,7 @@
 #ifndef MediaElementAudioSourceNode_h
 #define MediaElementAudioSourceNode_h
 
-#include "modules/webaudio/AudioSourceNode.h"
+#include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/audio/MultiChannelResampler.h"
 #include "wtf/PassRefPtr.h"
@@ -101,7 +101,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
   String m_currentSrcString;
 };
 
-class MediaElementAudioSourceNode final : public AudioSourceNode,
+class MediaElementAudioSourceNode final : public AudioNode,
                                           public AudioSourceProviderClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);

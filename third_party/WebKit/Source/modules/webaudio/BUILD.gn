@@ -39,7 +39,6 @@ blink_modules_sources("webaudio") {
     "AudioProcessingEvent.h",
     "AudioScheduledSourceNode.cpp",
     "AudioScheduledSourceNode.h",
-    "AudioSourceNode.h",
     "AudioSummingJunction.cpp",
     "AudioSummingJunction.h",
     "AudioWorklet.cpp",

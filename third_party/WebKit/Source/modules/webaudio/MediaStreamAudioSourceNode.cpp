@@ -129,7 +129,7 @@ MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(
     MediaStream& mediaStream,
     MediaStreamTrack* audioTrack,
     std::unique_ptr<AudioSourceProvider> audioSourceProvider)
-    : AudioSourceNode(context) {
+    : AudioNode(context) {
   setHandler(MediaStreamAudioSourceHandler::create(
       *this, mediaStream, audioTrack, std::move(audioSourceProvider)));
 }
@@ -181,7 +181,7 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(
 
 DEFINE_TRACE(MediaStreamAudioSourceNode) {
   AudioSourceProviderClient::trace(visitor);
-  AudioSourceNode::trace(visitor);
+  AudioNode::trace(visitor);
 }
 
 MediaStreamAudioSourceHandler&

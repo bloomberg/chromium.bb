@@ -3852,7 +3852,7 @@ interface MediaDevices : EventTarget
     method getSupportedConstraints
     method getUserMedia
     setter ondevicechange
-interface MediaElementAudioSourceNode : AudioSourceNode
+interface MediaElementAudioSourceNode : AudioNode
     attribute @@toStringTag
     getter mediaElement
     method constructor
@@ -4032,7 +4032,7 @@ interface MediaStreamAudioDestinationNode : AudioNode
     attribute @@toStringTag
     getter stream
     method constructor
-interface MediaStreamAudioSourceNode : AudioSourceNode
+interface MediaStreamAudioSourceNode : AudioNode
     attribute @@toStringTag
     getter mediaStream
     method constructor

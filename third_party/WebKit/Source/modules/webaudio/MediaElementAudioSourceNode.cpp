@@ -221,7 +221,7 @@ void MediaElementAudioSourceHandler::unlock() {
 MediaElementAudioSourceNode::MediaElementAudioSourceNode(
     BaseAudioContext& context,
     HTMLMediaElement& mediaElement)
-    : AudioSourceNode(context) {
+    : AudioNode(context) {
   setHandler(MediaElementAudioSourceHandler::create(*this, mediaElement));
 }
 
@@ -272,7 +272,7 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(
 
 DEFINE_TRACE(MediaElementAudioSourceNode) {
   AudioSourceProviderClient::trace(visitor);
-  AudioSourceNode::trace(visitor);
+  AudioNode::trace(visitor);
 }
 
 MediaElementAudioSourceHandler&
