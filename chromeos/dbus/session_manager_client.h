@@ -16,6 +16,7 @@
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "third_party/cros_system_api/dbus/login_manager/dbus-constants.h"
 
 namespace cryptohome {
 class Identification;
@@ -253,12 +254,24 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // reached).
   virtual void StopArcInstance(const ArcCallback& callback) = 0;
 
+  // Deprecated. Use SetArcCpuRestriction() instead.
+  // TODO(yusukes): Remove the interface.
   // Prioritizes the ARC instance by removing cgroups restrictions that
   // session_manager applies to the instance by default. Upon completion,
   // invokes |callback| with the result; true on success, false on failure.
-  // Calling this multiple times is okay. Such calls except the first one
-  // will be ignored.
+  // All calls after the first one will have no effect.
   virtual void PrioritizeArcInstance(const ArcCallback& callback) = 0;
+
+  // Adjusts the amount of CPU the ARC instance is allowed to use. When
+  // |restriction_state| is CONTAINER_CPU_RESTRICTION_FOREGROUND the limit is
+  // adjusted so ARC can use all the system's CPU if needed. When it is
+  // CONTAINER_CPU_RESTRICTION_BACKGROUND, ARC can only use tightly restricted
+  // CPU resources. The ARC instance is started in a state that is more
+  // restricted than CONTAINER_CPU_RESTRICTION_BACKGROUND. When ARC is not
+  // supported, the function asynchronously runs the |callback| with false.
+  virtual void SetArcCpuRestriction(
+      login_manager::ContainerCpuRestrictionState restriction_state,
+      const ArcCallback& callback) = 0;
 
   // Emits the "arc-booted" upstart signal.
   virtual void EmitArcBooted() = 0;

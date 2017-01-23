@@ -184,6 +184,13 @@ void FakeSessionManagerClient::PrioritizeArcInstance(
       FROM_HERE, base::Bind(callback, arc_available_));
 }
 
+void FakeSessionManagerClient::SetArcCpuRestriction(
+    login_manager::ContainerCpuRestrictionState restriction_state,
+    const ArcCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, arc_available_));
+}
+
 void FakeSessionManagerClient::EmitArcBooted() {}
 
 void FakeSessionManagerClient::GetArcStartTime(
