@@ -74,10 +74,7 @@ std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
     base::WeakPtr<DownloadManagerImpl> download_manager,
     std::unique_ptr<net::URLRequest> request,
     const Referrer& referrer) {
-  if (!referrer.url.is_valid())
-    request->SetReferrer(std::string());
-  else
-    request->SetReferrer(referrer.url.spec());
+  Referrer::SetReferrerForRequest(request.get(), referrer);
 
   if (request->url().SchemeIs(url::kBlobScheme))
     return nullptr;

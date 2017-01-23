@@ -100,6 +100,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/feature_switch.h"
 #include "net/base/filename_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -1719,12 +1720,17 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
 // EmbeddedTestServer::HandleRequestCallback function that responds with a
 // redirect to the URL specified via a query string.
 // E.g.:
-//   C -> S: GET /dummy?http://example.com
+//   C -> S: GET /redirect?http://example.com
 //   S -> C: HTTP/1.1 301 Moved Permanently
 //           Location: http://example.com
 //           ...
 static std::unique_ptr<net::test_server::HttpResponse>
 ServerRedirectRequestHandler(const net::test_server::HttpRequest& request) {
+  if (!base::StartsWith(request.relative_url, "/redirect",
+                        base::CompareCase::SENSITIVE)) {
+    return std::unique_ptr<net::test_server::HttpResponse>();
+  }
+
   std::unique_ptr<net::test_server::BasicHttpResponse> response(
       new net::test_server::BasicHttpResponse());
   size_t query_position = request.relative_url.find('?');
@@ -1761,7 +1767,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
       base::Bind(&ServerRedirectRequestHandler));
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL redirect_url =
-      embedded_test_server()->GetURL("/a?" + download_url.spec());
+      embedded_test_server()->GetURL("/redirect?" + download_url.spec());
 
   // Download the url and wait until the object has been stored.
   base::Time start(base::Time::Now());
@@ -2750,6 +2756,63 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveImageAsReferrerPolicyDefault) {
   // The contents of the file is the value of the Referer header if there was
   // one.
   EXPECT_TRUE(VerifyFile(file, "", 0));
+}
+
+// This test ensures that a cross-domain download correctly sets the referrer
+// according to the referrer policy.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCrossDomainReferrerPolicy) {
+  host_resolver()->AddRule("www.a.com", "127.0.0.1");
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&ServerRedirectRequestHandler));
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&EchoReferrerRequestHandler));
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableFileChooser(true);
+  std::vector<DownloadItem*> download_items;
+  GetDownloads(browser(), &download_items);
+  ASSERT_TRUE(download_items.empty());
+
+  // Navigate to a page with a referrer policy and a link on it. The link points
+  // to /echoreferrer.
+  GURL url = embedded_test_server()->GetURL(
+      "/downloads/download_cross_referrer_policy.html");
+  ASSERT_TRUE(url.is_valid());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  std::unique_ptr<content::DownloadTestObserver> waiter(
+      new content::DownloadTestObserverTerminal(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  // Click on the link with the alt key pressed. This will download the link
+  // target.
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
+                                   blink::WebInputEvent::AltKey,
+                                   blink::WebInputEvent::TimeStampForTesting);
+  mouse_event.button = blink::WebMouseEvent::Button::Left;
+  mouse_event.x = 15;
+  mouse_event.y = 15;
+  mouse_event.clickCount = 1;
+  tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
+  mouse_event.setType(blink::WebInputEvent::MouseUp);
+  tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
+
+  waiter->WaitForFinished();
+  EXPECT_EQ(1u, waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+
+  // Validate that the correct file was downloaded.
+  GetDownloads(browser(), &download_items);
+  ASSERT_EQ(1u, download_items.size());
+  ASSERT_EQ(embedded_test_server()->GetURL("www.a.com", "/echoreferrer"),
+            download_items[0]->GetURL());
+
+  // Check that the file contains the expected referrer.
+  base::FilePath file(download_items[0]->GetTargetFilePath());
+  std::string expected_contents = embedded_test_server()->GetURL("/").spec();
+  ASSERT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
 }
 
 // On mobile, the multiple downloads UI is an infobar. On desktop, it's a

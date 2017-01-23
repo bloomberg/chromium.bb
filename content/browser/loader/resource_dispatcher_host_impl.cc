@@ -257,51 +257,6 @@ void AbortRequestBeforeItStarts(
   }
 }
 
-void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!referrer.url.is_valid() ||
-      command_line->HasSwitch(switches::kNoReferrers)) {
-    request->SetReferrer(std::string());
-  } else {
-    request->SetReferrer(referrer.url.spec());
-  }
-
-  net::URLRequest::ReferrerPolicy net_referrer_policy =
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-  switch (referrer.policy) {
-    case blink::WebReferrerPolicyAlways:
-      net_referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
-      break;
-    case blink::WebReferrerPolicyNever:
-      net_referrer_policy = net::URLRequest::NO_REFERRER;
-      break;
-    case blink::WebReferrerPolicyOrigin:
-      net_referrer_policy = net::URLRequest::ORIGIN;
-      break;
-    case blink::WebReferrerPolicyNoReferrerWhenDowngrade:
-      net_referrer_policy =
-          net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-      break;
-    case blink::WebReferrerPolicyOriginWhenCrossOrigin:
-      net_referrer_policy =
-          net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
-      break;
-    case blink::WebReferrerPolicyDefault:
-      net_referrer_policy =
-          command_line->HasSwitch(switches::kReducedReferrerGranularity)
-              ? net::URLRequest::
-                    REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN
-              : net::URLRequest::
-                    CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-      break;
-    case blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-      net_referrer_policy = net::URLRequest::
-          REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
-      break;
-  }
-  request->set_referrer_policy(net_referrer_policy);
-}
-
 void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
                                                const base::FilePath& path) {
   ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
@@ -1465,7 +1420,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   if (!is_navigation_stream_request) {
     const Referrer referrer(
         request_data.referrer, request_data.referrer_policy);
-    SetReferrerForRequest(new_request.get(), referrer);
+    Referrer::SetReferrerForRequest(new_request.get(), referrer);
   }
 
   new_request->SetExtraRequestHeaders(headers);
@@ -2190,7 +2145,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
   }
 
-  SetReferrerForRequest(new_request.get(), info.common_params.referrer);
+  Referrer::SetReferrerForRequest(new_request.get(),
+                                  info.common_params.referrer);
 
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(info.begin_params.headers);
@@ -2423,7 +2379,7 @@ void ResourceDispatcherHostImpl::InitializeURLRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!request->is_pending());
 
-  SetReferrerForRequest(request, referrer);
+  Referrer::SetReferrerForRequest(request, referrer);
 
   ResourceRequestInfoImpl* info = CreateRequestInfo(
       render_process_host_id, render_view_routing_id, render_frame_routing_id,

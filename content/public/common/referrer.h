@@ -10,6 +10,10 @@
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
 
+namespace net {
+class URLRequest;
+}
+
 namespace content {
 
 // This struct holds a referrer URL, as well as the referrer policy to be
@@ -25,6 +29,9 @@ struct CONTENT_EXPORT Referrer {
 
   static Referrer SanitizeForRequest(const GURL& request,
                                      const Referrer& referrer);
+
+  static void SetReferrerForRequest(net::URLRequest* request,
+                                    const Referrer& referrer);
 };
 
 }  // namespace content
