@@ -85,7 +85,7 @@
 #define DEFAULT_AXIS_STEP_DISTANCE 10
 #define RDP_MODE_FREQ 60 * 1000
 
-#if FREERDP_VERSION_MAJOR >= 2 && defined(PIXEL_FORMAT_BGRA32) && !defined(RDP_PIXEL_FORMAT_B8G8R8A8)
+#if FREERDP_VERSION_MAJOR >= 2 && defined(PIXEL_FORMAT_BGRA32) && !defined(PIXEL_FORMAT_B8G8R8A8)
 	/* The RDP API is truly wonderful: the pixel format definition changed
 	 * from BGRA32 to B8G8R8A8, but some versions ship with a definition of
 	 * PIXEL_FORMAT_BGRA32 which doesn't actually build. Try really, really,
