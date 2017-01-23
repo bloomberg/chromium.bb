@@ -202,8 +202,10 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
   if (enrollment_step_ == STEP_REGISTRATION && client_->is_registered()) {
     SetStep(STEP_POLICY_FETCH);
     device_mode_ = client_->device_mode();
-    if (device_mode_ != DEVICE_MODE_ENTERPRISE &&
-        device_mode_ != DEVICE_MODE_ENTERPRISE_AD) {
+    if (!((device_mode_ == DEVICE_MODE_ENTERPRISE &&
+           enrollment_config_.management_realm.empty()) ||
+          (device_mode_ == DEVICE_MODE_ENTERPRISE_AD &&
+           !enrollment_config_.management_realm.empty()))) {
       LOG(ERROR) << "Bad device mode " << device_mode_;
       ReportResult(
           EnrollmentStatus::ForStatus(EnrollmentStatus::REGISTRATION_BAD_MODE));
