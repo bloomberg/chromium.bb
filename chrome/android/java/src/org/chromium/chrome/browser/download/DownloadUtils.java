@@ -85,6 +85,9 @@ public class DownloadUtils {
     private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
     private static final long BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
 
+    @VisibleForTesting
+    static final String ELLIPSIS = "\u2026";
+
     /**
      * @return Whether or not the Download Home is enabled.
      */
@@ -650,5 +653,31 @@ public class DownloadUtils {
         }
 
         return context.getResources().getString(resourceId, bytesInCorrectUnits);
+    }
+
+    /**
+     * Abbreviate a file name into a given number of characters with ellipses.
+     * e.g. thisisaverylongfilename.txt => thisisave....txt
+     * @param fileName File name to abbreviate
+     * @param limit Character limit
+     * @return Abbreviated file name
+     */
+    public static String getAbbreviatedFileName(String fileName, int limit) {
+        assert limit >= 1;  // Abbreviated file name should at least be 1 characters (a...)
+
+        if (TextUtils.isEmpty(fileName)) return fileName;
+
+        if (fileName.length() <= limit) return fileName;
+
+        // Find the file name extension
+        int index = fileName.lastIndexOf(".");
+        int extensionLength = fileName.length() - index;
+
+        // If the extension is too long, just use truncate the string from beginning.
+        if (extensionLength >= limit) {
+            return fileName.substring(0, limit) + ELLIPSIS;
+        }
+        int remainingLength = limit - extensionLength;
+        return fileName.substring(0, remainingLength) + ELLIPSIS + fileName.substring(index);
     }
 }

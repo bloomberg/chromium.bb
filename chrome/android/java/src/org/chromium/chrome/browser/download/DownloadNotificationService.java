@@ -73,6 +73,8 @@ public class DownloadNotificationService extends Service {
 
     static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
     private static final String TAG = "DownloadNotification";
+    // Limit file name to 25 characters. TODO(qinmin): use different limit for different devices?
+    private static final int MAX_FILE_NAME_LENGTH = 25;
 
     /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */
     private static final int STARTING_NOTIFICATION_ID = 1000000;
@@ -569,7 +571,7 @@ public class DownloadNotificationService extends Service {
     private NotificationCompat.Builder buildNotification(
             int iconId, String title, String contentText) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext)
-                .setContentTitle(title)
+                .setContentTitle(DownloadUtils.getAbbreviatedFileName(title, MAX_FILE_NAME_LENGTH))
                 .setSmallIcon(iconId)
                 .setLocalOnly(true)
                 .setAutoCancel(true)
