@@ -111,8 +111,8 @@ extern const struct wl_interface wl_display_interface;
  * @page page_iface_wl_registry wl_registry
  * @section page_iface_wl_registry_desc Description
  *
- * The global registry object.  The server has a number of global
- * objects that are available to all clients.  These objects
+ * The singleton global registry object.  The server has a number of
+ * global objects that are available to all clients.  These objects
  * typically represent an actual object in the server (for example,
  * an input device) or they are singleton objects that provide
  * extension functionality.
@@ -137,8 +137,8 @@ extern const struct wl_interface wl_display_interface;
 /**
  * @defgroup iface_wl_registry The wl_registry interface
  *
- * The global registry object.  The server has a number of global
- * objects that are available to all clients.  These objects
+ * The singleton global registry object.  The server has a number of
+ * global objects that are available to all clients.  These objects
  * typically represent an actual object in the server (for example,
  * an input device) or they are singleton objects that provide
  * extension functionality.
@@ -223,7 +223,7 @@ extern const struct wl_interface wl_shm_pool_interface;
  * @page page_iface_wl_shm wl_shm
  * @section page_iface_wl_shm_desc Description
  *
- * A global singleton object that provides support for shared
+ * A singleton global object that provides support for shared
  * memory.
  *
  * Clients can create wl_shm_pool objects using the create_pool
@@ -238,7 +238,7 @@ extern const struct wl_interface wl_shm_pool_interface;
 /**
  * @defgroup iface_wl_shm The wl_shm interface
  *
- * A global singleton object that provides support for shared
+ * A singleton global object that provides support for shared
  * memory.
  *
  * Clients can create wl_shm_pool objects using the create_pool
@@ -3247,7 +3247,7 @@ enum wl_pointer_axis {
  */
 enum wl_pointer_axis_source {
 	/**
-	 * a physical wheel
+	 * a physical wheel rotation
 	 */
 	WL_POINTER_AXIS_SOURCE_WHEEL = 0,
 	/**
@@ -3699,6 +3699,8 @@ struct wl_touch_interface {
 #define WL_TOUCH_MOTION 2
 #define WL_TOUCH_FRAME 3
 #define WL_TOUCH_CANCEL 4
+#define WL_TOUCH_SHAPE 5
+#define WL_TOUCH_ORIENTATION 6
 
 /**
  * @ingroup iface_wl_touch
@@ -3720,6 +3722,14 @@ struct wl_touch_interface {
  * @ingroup iface_wl_touch
  */
 #define WL_TOUCH_CANCEL_SINCE_VERSION 1
+/**
+ * @ingroup iface_wl_touch
+ */
+#define WL_TOUCH_SHAPE_SINCE_VERSION 6
+/**
+ * @ingroup iface_wl_touch
+ */
+#define WL_TOUCH_ORIENTATION_SINCE_VERSION 6
 
 /**
  * @ingroup iface_wl_touch
@@ -3792,6 +3802,33 @@ static inline void
 wl_touch_send_cancel(struct wl_resource *resource_)
 {
 	wl_resource_post_event(resource_, WL_TOUCH_CANCEL);
+}
+
+/**
+ * @ingroup iface_wl_touch
+ * Sends an shape event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param id the unique ID of this touch point
+ * @param major length of the major axis in surface-local coordinates
+ * @param minor length of the minor axis in surface-local coordinates
+ */
+static inline void
+wl_touch_send_shape(struct wl_resource *resource_, int32_t id, wl_fixed_t major, wl_fixed_t minor)
+{
+	wl_resource_post_event(resource_, WL_TOUCH_SHAPE, id, major, minor);
+}
+
+/**
+ * @ingroup iface_wl_touch
+ * Sends an orientation event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param id the unique ID of this touch point
+ * @param orientation angle between major axis and positive surface y-axis in degrees
+ */
+static inline void
+wl_touch_send_orientation(struct wl_resource *resource_, int32_t id, wl_fixed_t orientation)
+{
+	wl_resource_post_event(resource_, WL_TOUCH_ORIENTATION, id, orientation);
 }
 
 #ifndef WL_OUTPUT_SUBPIXEL_ENUM

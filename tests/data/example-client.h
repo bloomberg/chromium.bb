@@ -108,8 +108,8 @@ extern const struct wl_interface wl_display_interface;
  * @page page_iface_wl_registry wl_registry
  * @section page_iface_wl_registry_desc Description
  *
- * The global registry object.  The server has a number of global
- * objects that are available to all clients.  These objects
+ * The singleton global registry object.  The server has a number of
+ * global objects that are available to all clients.  These objects
  * typically represent an actual object in the server (for example,
  * an input device) or they are singleton objects that provide
  * extension functionality.
@@ -134,8 +134,8 @@ extern const struct wl_interface wl_display_interface;
 /**
  * @defgroup iface_wl_registry The wl_registry interface
  *
- * The global registry object.  The server has a number of global
- * objects that are available to all clients.  These objects
+ * The singleton global registry object.  The server has a number of
+ * global objects that are available to all clients.  These objects
  * typically represent an actual object in the server (for example,
  * an input device) or they are singleton objects that provide
  * extension functionality.
@@ -220,7 +220,7 @@ extern const struct wl_interface wl_shm_pool_interface;
  * @page page_iface_wl_shm wl_shm
  * @section page_iface_wl_shm_desc Description
  *
- * A global singleton object that provides support for shared
+ * A singleton global object that provides support for shared
  * memory.
  *
  * Clients can create wl_shm_pool objects using the create_pool
@@ -235,7 +235,7 @@ extern const struct wl_interface wl_shm_pool_interface;
 /**
  * @defgroup iface_wl_shm The wl_shm interface
  *
- * A global singleton object that provides support for shared
+ * A singleton global object that provides support for shared
  * memory.
  *
  * Clients can create wl_shm_pool objects using the create_pool
@@ -4038,7 +4038,7 @@ enum wl_pointer_axis {
  */
 enum wl_pointer_axis_source {
 	/**
-	 * a physical wheel
+	 * a physical wheel rotation
 	 */
 	WL_POINTER_AXIS_SOURCE_WHEEL = 0,
 	/**
@@ -4115,6 +4115,14 @@ struct wl_pointer_listener {
 	 * The location of the click is given by the last motion or enter
 	 * event. The time argument is a timestamp with millisecond
 	 * granularity, with an undefined base.
+	 *
+	 * The button is a button code as defined in the Linux kernel's
+	 * linux/input-event-codes.h header file, e.g. BTN_LEFT.
+	 *
+	 * Any 16-bit button code value is reserved for future additions to
+	 * the kernel's event code list. All other button codes above
+	 * 0xFFFF are currently undefined but may be used in future
+	 * versions of this protocol.
 	 * @param serial serial number of the button event
 	 * @param time timestamp with millisecond granularity
 	 * @param button button that produced the event
@@ -4731,7 +4739,14 @@ struct wl_touch_listener {
 	/**
 	 * end of touch frame event
 	 *
-	 * Indicates the end of a contact point list.
+	 * Indicates the end of a set of events that logically belong
+	 * together. A client is expected to accumulate the data in all
+	 * events within the frame before proceeding.
+	 *
+	 * A wl_touch.frame terminates at least one event but otherwise no
+	 * guarantee is provided about the set of events within a frame. A
+	 * client must assume that any state not updated in a frame is
+	 * unchanged from the previously known state.
 	 */
 	void (*frame)(void *data,
 		      struct wl_touch *wl_touch);
@@ -4747,6 +4762,79 @@ struct wl_touch_listener {
 	 */
 	void (*cancel)(void *data,
 		       struct wl_touch *wl_touch);
+	/**
+	 * update shape of touch point
+	 *
+	 * Sent when a touchpoint has changed its shape.
+	 *
+	 * This event does not occur on its own. It is sent before a
+	 * wl_touch.frame event and carries the new shape information for
+	 * any previously reported, or new touch points of that frame.
+	 *
+	 * Other events describing the touch point such as wl_touch.down,
+	 * wl_touch.motion or wl_touch.orientation may be sent within the
+	 * same wl_touch.frame. A client should treat these events as a
+	 * single logical touch point update. The order of wl_touch.shape,
+	 * wl_touch.orientation and wl_touch.motion is not guaranteed. A
+	 * wl_touch.down event is guaranteed to occur before the first
+	 * wl_touch.shape event for this touch ID but both events may occur
+	 * within the same wl_touch.frame.
+	 *
+	 * A touchpoint shape is approximated by an ellipse through the
+	 * major and minor axis length. The major axis length describes the
+	 * longer diameter of the ellipse, while the minor axis length
+	 * describes the shorter diameter. Major and minor are orthogonal
+	 * and both are specified in surface-local coordinates. The center
+	 * of the ellipse is always at the touchpoint location as reported
+	 * by wl_touch.down or wl_touch.move.
+	 *
+	 * This event is only sent by the compositor if the touch device
+	 * supports shape reports. The client has to make reasonable
+	 * assumptions about the shape if it did not receive this event.
+	 * @param id the unique ID of this touch point
+	 * @param major length of the major axis in surface-local coordinates
+	 * @param minor length of the minor axis in surface-local coordinates
+	 * @since 6
+	 */
+	void (*shape)(void *data,
+		      struct wl_touch *wl_touch,
+		      int32_t id,
+		      wl_fixed_t major,
+		      wl_fixed_t minor);
+	/**
+	 * update orientation of touch point
+	 *
+	 * Sent when a touchpoint has changed its orientation.
+	 *
+	 * This event does not occur on its own. It is sent before a
+	 * wl_touch.frame event and carries the new shape information for
+	 * any previously reported, or new touch points of that frame.
+	 *
+	 * Other events describing the touch point such as wl_touch.down,
+	 * wl_touch.motion or wl_touch.shape may be sent within the same
+	 * wl_touch.frame. A client should treat these events as a single
+	 * logical touch point update. The order of wl_touch.shape,
+	 * wl_touch.orientation and wl_touch.motion is not guaranteed. A
+	 * wl_touch.down event is guaranteed to occur before the first
+	 * wl_touch.orientation event for this touch ID but both events may
+	 * occur within the same wl_touch.frame.
+	 *
+	 * The orientation describes the clockwise angle of a touchpoint's
+	 * major axis to the positive surface y-axis and is normalized to
+	 * the -180 to +180 degree range. The granularity of orientation
+	 * depends on the touch device, some devices only support binary
+	 * rotation values between 0 and 90 degrees.
+	 *
+	 * This event is only sent by the compositor if the touch device
+	 * supports orientation reports.
+	 * @param id the unique ID of this touch point
+	 * @param orientation angle between major axis and positive surface y-axis in degrees
+	 * @since 6
+	 */
+	void (*orientation)(void *data,
+			    struct wl_touch *wl_touch,
+			    int32_t id,
+			    wl_fixed_t orientation);
 };
 
 /**
@@ -4782,6 +4870,14 @@ wl_touch_add_listener(struct wl_touch *wl_touch,
  * @ingroup iface_wl_touch
  */
 #define WL_TOUCH_CANCEL_SINCE_VERSION 1
+/**
+ * @ingroup iface_wl_touch
+ */
+#define WL_TOUCH_SHAPE_SINCE_VERSION 6
+/**
+ * @ingroup iface_wl_touch
+ */
+#define WL_TOUCH_ORIENTATION_SINCE_VERSION 6
 
 /**
  * @ingroup iface_wl_touch
