@@ -1195,6 +1195,12 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   CHECK(!stream_.get());
 
+  SpdySessionKey spdy_session_key = GetSpdySessionKey();
+  if (!existing_spdy_session_) {
+    existing_spdy_session_ =
+        session_->spdy_session_pool()->FindAvailableSession(
+            spdy_session_key, origin_url_, net_log_);
+  }
   bool direct = !IsHttpsProxyAndHttpUrl();
   if (existing_spdy_session_.get()) {
     // We picked up an existing session, so we don't need our socket.
@@ -1208,15 +1214,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     return set_result;
   }
 
-  SpdySessionKey spdy_session_key = GetSpdySessionKey();
   base::WeakPtr<SpdySession> spdy_session =
-      session_->spdy_session_pool()->FindAvailableSession(
-          spdy_session_key, origin_url_, net_log_);
-  if (spdy_session) {
-    return SetSpdyHttpStreamOrBidirectionalStreamImpl(spdy_session, direct);
-  }
-
-  spdy_session =
       session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
           spdy_session_key, std::move(connection_), net_log_, using_ssl_);
 
