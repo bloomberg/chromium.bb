@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<script src="/js-test-resources/js-test.js"></script>
 <div style="height: 300px"></div>
 
 <script>
-setPrintTestResultsLazily();
-self.jsTestIsAsync = true;
+var port;
+var frame_id;
 
 window.onload = (() => {
   if (!window.eventSender || !window.internals) {
@@ -16,13 +15,18 @@ window.onload = (() => {
 
 function handleMessage(event) {
   if (event.data.hasOwnProperty('scrollBy')) {
+    port = event.source;
+    frame_id = event.data.frame_id;
     eventSender.mouseMoveTo(event.data.left + 5, event.data.top + 5);
     eventSender.mouseScrollBy(0, event.data.scrollBy);
-    requestAnimationFrame(() => {setTimeout(() => {event.source.postMessage("", "*")}, 500)});
-  } else {
-    event.source.postMessage({scrollTop: document.documentElement.scrollTop}, "*");
   }
 }
+
+window.onscroll = (() => {
+  if (port) {
+    port.postMessage({scrolled: frame_id, scrollTop: document.documentElement.scrollTop}, "*");
+  }
+});
 
 window.addEventListener("message", handleMessage);
 </script>
