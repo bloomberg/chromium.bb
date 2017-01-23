@@ -17,16 +17,14 @@ const base::Feature kAndroidSpellChecker{
 
 // Enables/disables Android spellchecker on non low-end Android devices.
 const base::Feature kAndroidSpellCheckerNonLowEnd{
-    "AndroidSpellCheckerNonLowEnd", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AndroidSpellCheckerNonLowEnd", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAndroidSpellCheckFeatureEnabled() {
-  if (base::FeatureList::IsEnabled(
-          spellcheck::kAndroidSpellCheckerNonLowEnd)) {
+  if (base::FeatureList::IsEnabled(spellcheck::kAndroidSpellCheckerNonLowEnd)) {
     return !base::SysInfo::IsLowEndDevice();
   }
 
-  if (base::FeatureList::IsEnabled(
-          spellcheck::kAndroidSpellChecker)) {
+  if (base::FeatureList::IsEnabled(spellcheck::kAndroidSpellChecker)) {
     return true;
   }
 
