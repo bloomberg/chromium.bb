@@ -535,7 +535,7 @@ struct DrawTransformData {
 };
 
 struct PropertyTreesCachedData {
-  int property_tree_update_number;
+  int transform_tree_update_number;
   std::vector<AnimationScaleData> animation_scales;
   mutable std::vector<std::vector<DrawTransformData>> draw_transforms;
 
@@ -635,7 +635,7 @@ class CC_EXPORT PropertyTrees final {
                      gfx::Transform* from_target) const;
 
   void ResetCachedData();
-  void UpdateCachedNumber();
+  void UpdateTransformTreeUpdateNumber();
   gfx::Transform ToScreenSpaceTransformWithoutSurfaceContentsScale(
       int transform_id,
       int effect_id) const;

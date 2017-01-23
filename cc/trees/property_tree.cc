@@ -131,7 +131,7 @@ void TransformTree::clear() {
 
 void TransformTree::set_needs_update(bool needs_update) {
   if (needs_update && !needs_update_)
-    property_trees()->UpdateCachedNumber();
+    property_trees()->UpdateTransformTreeUpdateNumber();
   needs_update_ = needs_update;
 }
 
@@ -1537,7 +1537,7 @@ gfx::ScrollOffset ScrollTree::ClampScrollOffsetToLimits(
 }
 
 PropertyTreesCachedData::PropertyTreesCachedData()
-    : property_tree_update_number(0) {
+    : transform_tree_update_number(0) {
   animation_scales.clear();
 }
 
@@ -1796,11 +1796,11 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
     int transform_node_id,
     LayerTreeImpl* layer_tree_impl) {
   if (cached_data_.animation_scales[transform_node_id].update_number !=
-      cached_data_.property_tree_update_number) {
+      cached_data_.transform_tree_update_number) {
     if (!layer_tree_impl->settings()
              .layer_transforms_should_scale_layer_contents) {
       cached_data_.animation_scales[transform_node_id].update_number =
-          cached_data_.property_tree_update_number;
+          cached_data_.transform_tree_update_number;
       cached_data_.animation_scales[transform_node_id]
           .combined_maximum_animation_target_scale = 0.f;
       cached_data_.animation_scales[transform_node_id]
@@ -1926,7 +1926,7 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
       }
     }
     cached_data_.animation_scales[transform_node_id].update_number =
-        cached_data_.property_tree_update_number;
+        cached_data_.transform_tree_update_number;
   }
   return CombinedAnimationScale(cached_data_.animation_scales[transform_node_id]
                                     .combined_maximum_animation_target_scale,
@@ -1943,7 +1943,7 @@ void PropertyTrees::SetAnimationScalesForTesting(
   cached_data_.animation_scales[transform_id]
       .combined_starting_animation_scale = starting_animation_scale;
   cached_data_.animation_scales[transform_id].update_number =
-      cached_data_.property_tree_update_number;
+      cached_data_.transform_tree_update_number;
 }
 
 bool PropertyTrees::GetToTarget(int transform_id,
@@ -2010,9 +2010,9 @@ DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
   DrawTransformData& data =
       FetchDrawTransformsDataFromCache(transform_id, dest_id);
 
-  DCHECK(data.update_number != cached_data_.property_tree_update_number ||
+  DCHECK(data.update_number != cached_data_.transform_tree_update_number ||
          data.target_id != EffectTree::kInvalidNodeId);
-  if (data.update_number == cached_data_.property_tree_update_number)
+  if (data.update_number == cached_data_.transform_tree_update_number)
     return data.transforms;
 
   // Cache miss.
@@ -2051,7 +2051,7 @@ DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
 
   if (!already_computed_inverse)
     data.transforms.to_valid = true;
-  data.update_number = cached_data_.property_tree_update_number;
+  data.update_number = cached_data_.transform_tree_update_number;
   data.target_id = dest_id;
   data.transforms.from_target = from_target;
   data.transforms.to_target = target_space_transform;
@@ -2059,15 +2059,15 @@ DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
 }
 
 void PropertyTrees::ResetCachedData() {
-  cached_data_.property_tree_update_number = 0;
+  cached_data_.transform_tree_update_number = 0;
   cached_data_.animation_scales = std::vector<AnimationScaleData>(
       transform_tree.nodes().size(), AnimationScaleData());
   cached_data_.draw_transforms = std::vector<std::vector<DrawTransformData>>(
       transform_tree.nodes().size(), std::vector<DrawTransformData>(1));
 }
 
-void PropertyTrees::UpdateCachedNumber() {
-  cached_data_.property_tree_update_number++;
+void PropertyTrees::UpdateTransformTreeUpdateNumber() {
+  cached_data_.transform_tree_update_number++;
 }
 
 gfx::Transform PropertyTrees::ToScreenSpaceTransformWithoutSurfaceContentsScale(
