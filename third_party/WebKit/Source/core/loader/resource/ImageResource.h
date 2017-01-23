@@ -25,6 +25,7 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceInfo.h"
 #include "core/loader/resource/MultipartImageResourceParser.h"
 #include "platform/Timer.h"
@@ -123,6 +124,9 @@ class CORE_EXPORT ImageResource final
   bool hasClientsOrObservers() const override;
 
   void updateImageAndClearBuffer();
+  void updateImage(PassRefPtr<SharedBuffer>,
+                   ImageResourceContent::UpdateImageOption,
+                   bool allDataReceived);
 
   void checkNotify() override;
 
