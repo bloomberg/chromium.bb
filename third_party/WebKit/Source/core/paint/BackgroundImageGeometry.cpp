@@ -332,10 +332,11 @@ static void expandToTableColumnGroup(const LayoutTableCell& cell,
                          : &LayoutTableCell::nextCell;
   for (const auto* sibling = (cell.*siblingCell)(); sibling;
        sibling = (sibling->*siblingCell)()) {
-    if (cell.table()
+    LayoutTableCol* innermostCol =
+        cell.table()
             ->colElementAtAbsoluteColumn(sibling->absoluteColumnIndex())
-            .innermostColOrColGroup()
-            ->enclosingColumnGroup() != columnGroup)
+            .innermostColOrColGroup();
+    if (!innermostCol || innermostCol->enclosingColumnGroup() != columnGroup)
       break;
     value += sibling->size().width();
   }
