@@ -83,7 +83,7 @@ class PropertyTreeManager {
   }
 
   // Scroll offset has special treatment in the transform and scroll trees.
-  void updateScrollOffset(int layerId, int scrollId);
+  void updateScrollOffset(const ScrollPaintPropertyNode*);
 
  private:
   void buildEffectNodesRecursively(const EffectPaintPropertyNode* nextEffect);

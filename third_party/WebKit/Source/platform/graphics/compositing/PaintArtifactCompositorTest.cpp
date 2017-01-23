@@ -689,9 +689,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   const cc::TransformNode& transformNode =
       *transformTree.Node(scrollNode.transform_id);
   EXPECT_TRUE(transformNode.local.IsIdentity());
-
-  EXPECT_EQ(gfx::ScrollOffset(-7, -9),
-            scrollTree.current_scroll_offset(contentLayerAt(0)->id()));
+  EXPECT_EQ(gfx::ScrollOffset(-7, -9), transformNode.scroll_offset);
 
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             scrollNode.main_thread_scrolling_reasons);
@@ -756,14 +754,11 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   const cc::TransformNode& transformNodeA =
       *transformTree.Node(scrollNodeA.transform_id);
   EXPECT_TRUE(transformNodeA.local.IsIdentity());
+  EXPECT_EQ(gfx::ScrollOffset(-11, -13), transformNodeA.scroll_offset);
+
   const cc::TransformNode& transformNodeB =
       *transformTree.Node(scrollNodeB.transform_id);
-  EXPECT_TRUE(transformNodeB.local.IsIdentity());
-
-  EXPECT_EQ(gfx::ScrollOffset(-11, -13),
-            scrollTree.current_scroll_offset(contentLayerAt(0)->id()));
-  EXPECT_EQ(gfx::ScrollOffset(-37, -41),
-            scrollTree.current_scroll_offset(contentLayerAt(1)->id()));
+  EXPECT_EQ(gfx::ScrollOffset(-37, -41), transformNodeB.scroll_offset);
 
   EXPECT_TRUE(scrollNodeA.main_thread_scrolling_reasons &
               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);

@@ -717,7 +717,8 @@ void PaintArtifactCompositor::update(
     int effectId = propertyTreeManager.switchToEffectNode(
         *pendingLayer.propertyTreeState.effect());
 
-    propertyTreeManager.updateScrollOffset(layer->id(), scrollId);
+    propertyTreeManager.updateScrollOffset(
+        pendingLayer.propertyTreeState.scroll());
 
     layer->set_offset_to_transform_parent(layerOffset);
     layer->SetElementId(pendingLayer.propertyTreeState.compositorElementId());

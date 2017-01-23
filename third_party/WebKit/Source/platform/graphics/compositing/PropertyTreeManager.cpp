@@ -281,23 +281,27 @@ int PropertyTreeManager::ensureCompositorScrollNode(
   return id;
 }
 
-void PropertyTreeManager::updateScrollOffset(int layerId, int scrollId) {
-  cc::ScrollNode& scrollNode = *scrollTree().Node(scrollId);
-  cc::TransformNode& transformNode =
-      *transformTree().Node(scrollNode.transform_id);
-
-  transformNode.scrolls = true;
+void PropertyTreeManager::updateScrollOffset(
+    const ScrollPaintPropertyNode* scrollNode) {
+  int scrollNodeId = ensureCompositorScrollNode(scrollNode);
+  cc::ScrollNode& compositorScrollNode = *scrollTree().Node(scrollNodeId);
+  cc::TransformNode& compositorTransformNode =
+      *transformTree().Node(compositorScrollNode.transform_id);
 
   // Blink creates a 2d transform node just for scroll offset whereas cc's
-  // transform node has a special scroll offset field. To handle this we
-  // adjust cc's transform node to remove the 2d scroll translation and
-  // let the cc scroll tree update the cc scroll offset.
-  DCHECK(transformNode.local.IsIdentityOr2DTranslation());
-  auto offset = transformNode.local.To2dTranslation();
-  transformNode.local.MakeIdentity();
-  scrollTree().SetScrollOffset(layerId,
-                               gfx::ScrollOffset(-offset.x(), -offset.y()));
-  scrollTree().set_needs_update(true);
+  // transform node has a special scroll offset field. To handle this we adjust
+  // cc's transform node to remove the 2d scroll translation and instead set the
+  // scroll_offset field.
+  auto* scrollOffsetTransform = scrollNode->scrollOffsetTranslation();
+  auto scrollOffsetSize = scrollOffsetTransform->matrix().to2DTranslation();
+  auto scrollOffset =
+      gfx::ScrollOffset(-scrollOffsetSize.width(), -scrollOffsetSize.height());
+  DCHECK(compositorTransformNode.local.IsIdentityOr2DTranslation());
+  compositorTransformNode.scroll_offset = scrollOffset;
+  compositorTransformNode.local.MakeIdentity();
+  compositorTransformNode.scrolls = true;
+  transformTree().set_needs_update(true);
+  // TODO(pdr): The scroll tree's scroll offset will need to be set here.
 }
 
 int PropertyTreeManager::switchToEffectNode(
