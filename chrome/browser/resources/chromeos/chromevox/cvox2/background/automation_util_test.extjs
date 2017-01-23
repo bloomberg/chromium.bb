@@ -26,7 +26,7 @@ AutomationUtilE2ETest.prototype = {
 
     /** Filters nodes not rooted by desktop. */
     function filterNonDesktopRoot(node) {
-      return node.root.role != RoleType.DESKTOP;
+      return node.root.role != RoleType.desktop;
     }
 
     window.getNonDesktopAncestors = function(node) {
@@ -83,8 +83,8 @@ TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
 
     var leftAncestors = getNonDesktopAncestors(leftmost);
     var rightAncestors = getNonDesktopAncestors(rightmost);
-    assertEquals(RoleType.LINK, leftmost.role);
-    assertEquals(RoleType.BUTTON, rightmost.role);
+    assertEquals(RoleType.link, leftmost.role);
+    assertEquals(RoleType.button, rightmost.role);
     assertEquals(
         1, AutomationUtil.getDivergence(leftAncestors, rightAncestors));
 
@@ -97,17 +97,17 @@ TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
         getNonDesktopUniqueAncestors(leftmost, rightmost);
 
     assertEquals(2, uniqueAncestorsLeft.length);
-    assertEquals(RoleType.PARAGRAPH,
+    assertEquals(RoleType.paragraph,
         uniqueAncestorsLeft[0].role);
-    assertEquals(RoleType.LINK,
+    assertEquals(RoleType.link,
         uniqueAncestorsLeft[1].role);
 
     assertEquals(3, uniqueAncestorsRight.length);
-    assertEquals(RoleType.HEADING,
+    assertEquals(RoleType.heading,
         uniqueAncestorsRight[0].role);
-    assertEquals(RoleType.GROUP,
+    assertEquals(RoleType.group,
         uniqueAncestorsRight[1].role);
-    assertEquals(RoleType.BUTTON,
+    assertEquals(RoleType.button,
         uniqueAncestorsRight[2].role);
 
     assertEquals(

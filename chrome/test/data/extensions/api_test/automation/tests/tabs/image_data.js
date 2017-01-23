@@ -4,8 +4,8 @@
 
 var allTests = [
   function testGetImageData() {
-    var image = rootNode.find({ role: RoleType.IMAGE });
-    image.addEventListener(EventType.IMAGE_FRAME_UPDATED, function() {
+    var image = rootNode.find({ role: RoleType.image });
+    image.addEventListener(EventType.imageFrameUpdated, function() {
       assertEq(image.imageDataUrl.substr(0, 22), 'data:image/png;base64,');
       var imgElement = document.createElement('img');
       imgElement.src = image.imageDataUrl;

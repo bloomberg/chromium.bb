@@ -6,7 +6,7 @@ var html = '<button>alpha</button><input type="text">hello</input>';
 
 function getAllWebViews() {
   function findAllWebViews(node, nodes) {
-    if (node.role == chrome.automation.RoleType.WEB_VIEW)
+    if (node.role == chrome.automation.RoleType.webView)
       nodes.push(node);
 
     var children = node.children;
@@ -29,9 +29,9 @@ var allTests = [
       assertEq(webViews[1], subroot.parent);
       assertEq(subroot, subroot.parent.children[0]);
       var button = subroot.firstChild.firstChild;
-      assertEq(chrome.automation.RoleType.BUTTON, button.role);
+      assertEq(chrome.automation.RoleType.button, button.role);
       var input = subroot.firstChild.lastChild.previousSibling;
-      assertEq(chrome.automation.RoleType.TEXT_FIELD, input.role);
+      assertEq(chrome.automation.RoleType.textField, input.role);
       chrome.test.succeed();
     });
   },
@@ -40,7 +40,7 @@ var allTests = [
     runWithDocument(html, function(subroot) {
       var button = null;
 
-      rootNode.addEventListener(chrome.automation.EventType.FOCUS,
+      rootNode.addEventListener(chrome.automation.EventType.focus,
           function(evt) {
             assertEq(button, evt.target);
             chrome.test.succeed();

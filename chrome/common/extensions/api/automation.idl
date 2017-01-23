@@ -263,16 +263,6 @@
     nodeRemoved
   };
 
-  // Where the node's name is from.
-  enum NameFromType {
-    uninitialized,
-    attribute,
-    contents,
-    placeholder,
-    related_element,
-    value
-  };
-
   dictionary Rect {
     long left;
     long top;
@@ -368,113 +358,108 @@
   // A single node in an Automation tree.
   [nocompile, noinline_doc] dictionary AutomationNode {
     // The root node of the tree containing this AutomationNode.
-    AutomationNode? root;
+    AutomationNode root;
 
     // Whether this AutomationNode is a root node.
     boolean isRootNode;
 
     // The role of this node.
-    RoleType? role;
+    automation.RoleType role;
 
     // The $(ref:automation.StateType)s describing this node.
-    // <jsexterns>@type {Object<chrome.automation.StateType, boolean>}
-    // </jsexterns>
-    object? state;
+    object state;
 
     // The rendered location (as a bounding box) of this node in global
     // screen coordinates.
-    Rect? location;
+    automation.Rect location;
 
     // Computes the bounding box of a subrange of this node in global screen
     // coordinates. Returns the same as |location| if range information
     // is not available. The start and end indices are zero-based offsets
     // into the node's "name" string attribute.
-    static Rect boundsForRange(long startIndex, long endIndex);
+    static automation.Rect boundsForRange(long startIndex, long endIndex);
 
     // The purpose of the node, other than the role, if any.
-    DOMString? description;
+    DOMString description;
 
-    // The placeholder for this text field, if any.
-    DOMString? placeholder;
+    // The help text for the node, if any.
+    DOMString help;
 
     // The accessible name for this node, via the
     // <a href="http://www.w3.org/TR/wai-aria/roles#namecalculation">
     // Accessible Name Calculation</a> process.
-    DOMString? name;
-
-    // The source of the name.
-    NameFromType? nameFrom;
+    DOMString name;
 
     // The value for this node: for example the <code>value</code> attribute of
     // an <code>&lt;input&gt; element.
-    DOMString? value;
+    DOMString value;
 
     // The HTML tag for this element, if this node is an HTML element.
-    DOMString? htmlTag;
+    DOMString htmlTag;
 
     // The level of a heading or tree item.
-    long? hierarchicalLevel;
+    long hierarchicalLevel;
 
     // The start and end index of each word in an inline text box.
-    long[]? wordStarts;
-    long[]? wordEnds;
+    long[] wordStarts;
+    long[] wordEnds;
 
     // The nodes, if any, which this node is specified to control via
     // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls">
     // <code>aria-controls</code></a>.
-    AutomationNode[]? controls;
+    AutomationNode[] controls;
 
     // The nodes, if any, which form a description for this node.
-    AutomationNode[]? describedBy;
+    AutomationNode[] describedBy;
 
     // The nodes, if any, which may optionally be navigated to after this
     // one. See
     // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-flowto">
     // <code>aria-flowto</code></a>.
-    AutomationNode[]? flowTo;
+    AutomationNode[] flowTo;
 
     // The nodes, if any, which form a label for this element. Generally, the
     // text from these elements will also be exposed as the element's accessible
     // name, via the $(ref:automation.AutomationNode.name) attribute.
-    AutomationNode[]? labelledBy;
+    AutomationNode[] labelledBy;
 
     // The node referred to by <code>aria-activedescendant</code>, where
     // applicable
-    AutomationNode? activeDescendant;
+    AutomationNode activedescendant;
 
     //
     // Link attributes.
     //
 
     // The URL that this link will navigate to.
-    DOMString? url;
+    DOMString url;
 
     //
     // Document attributes.
     //
 
     // The URL of this document.
-    DOMString? docUrl;
+    DOMString docUrl;
 
     // The title of this document.
-    DOMString? docTitle;
+    DOMString docTitle;
 
     // Whether this document has finished loading.
-    boolean? docLoaded;
+    boolean docLoaded;
 
     // The proportion (out of 1.0) that this doc has completed loading.
-    double? docLoadingProgress;
+    double docLoadingProgress;
 
     //
     // Scrollable container attributes.
     //
 
-    long? scrollX;
-    long? scrollXMin;
-    long? scrollXMax;
-    long? scrollY;
-    long? scrollYMin;
-    long? scrollYMax;
+    long scrollX;
+    long scrollXMin;
+    long scrollXMax;
+    long scrollY;
+    long scrollYMin;
+    long scrollYMax;
 
     //
     // Editable text field attributes.
@@ -482,27 +467,14 @@
 
     // The character index of the start of the selection within this editable
     // text element; -1 if no selection.
-    long? textSelStart;
+    long textSelStart;
 
     // The character index of the end of the selection within this editable
     // text element; -1 if no selection.
-    long? textSelEnd;
+    long textSelEnd;
 
     // The input type, like email or number.
-    DOMString? textInputType;
-
-    // An array of indexes of the break between lines in editable text.
-    long[] lineBreaks;
-
-    // An array of indexes of the start position of each text marker.
-    long[] markerStarts;
-
-    // An array of indexes of the end position of each text marker.
-    long[] markerEnds;
-
-    // An array of numerical types indicating the type of each text marker,
-    // such as a spelling error.
-    long[] markerTypes;
+    DOMString textInputType;
 
     //
     // Tree selection attributes (available on root nodes only)
@@ -512,69 +484,49 @@
     AutomationNode? anchorObject;
     // The anchor offset of the tree selection, if any.
     long? anchorOffset;
-    // The affinity of the tree selection anchor, if any.
-    DOMString? anchorAffinity;
     // The focus node of the tree selection, if any.
     AutomationNode? focusObject;
     // The focus offset of the tree selection, if any.
     long? focusOffset;
-    // The affinity of the tree selection focus, if any.
-    DOMString? focusAffinity;
 
     //
     // Range attributes.
     //
 
     // The current value for this range.
-    double? valueForRange;
+    double valueForRange;
 
     // The minimum possible value for this range.
-    double? minValueForRange;
+    double minValueForRange;
 
     // The maximum possible value for this range.
-    double? maxValueForRange;
-
-    //
-    // List attributes.
-    //
-
-    // The 1-based index of an item in a set.
-    long? posInSet;
-
-    // The number of items in a set;
-    long? setSize;
+    double maxValueForRange;
 
     //
     // Table attributes.
     //
 
     // The number of rows in this table.
-    long? tableRowCount;
+    long tableRowCount;
 
     // The number of columns in this table.
-    long? tableColumnCount;
+    long tableColumnCount;
 
     //
     // Table cell attributes.
     //
 
     // The zero-based index of the column that this cell is in.
-    long? tableCellColumnIndex;
+    long tableCellColumnIndex;
 
     // The number of columns that this cell spans (default is 1).
-    long? tableCellColumnSpan;
+    long tableCellColumnSpan;
 
     // The zero-based index of the row that this cell is in.
-    long? tableCellRowIndex;
+    long tableCellRowIndex;
 
     // The number of rows that this cell spans (default is 1).
-    long? tableCellRowSpan;
-
-    // The corresponding column header for this cell.
-    AutomationNode? tableColumnHeader;
-
-    // The corresponding row header for this cell.
-    AutomationNode? tableRowHeader;
+    long tableCellRowSpan;
 
     //
     // Live region attributes.
@@ -582,82 +534,39 @@
 
     // The type of region if this is the root of a live region.
     // Possible values are 'polite' and 'assertive'.
-    DOMString? liveStatus;
+    DOMString liveStatus;
 
     // The value of aria-relevant for a live region.
-    DOMString? liveRelevant;
+    DOMString liveRelevant;
 
     // The value of aria-atomic for a live region.
-    boolean? liveAtomic;
+    boolean liveAtomic;
 
     // The value of aria-busy for a live region.
-    boolean? liveBusy;
+    boolean liveBusy;
 
     // The type of live region if this node is inside a live region.
-    DOMString? containerLiveStatus;
+    DOMString containerLiveStatus;
 
     // The value of aria-relevant if this node is inside a live region.
-    DOMString? containerLiveRelevant;
+    DOMString containerLiveRelevant;
 
     // The value of aria-atomic if this node is inside a live region.
-    boolean? containerLiveAtomic;
+    boolean containerLiveAtomic;
 
     // The value of aria-busy if this node is inside a live region.
-    boolean? containerLiveBusy;
-
-    //
-    // Miscellaneous attributes.
-    //
-
-    // A map containing all HTML attributes and their values
-    // <jsexterns>@type {Object<string>}</jsexterns>
-    object? htmlAttributes;
-
-    // The input type of a text field, such as "text" or "email".
-    DOMString? inputType;
-
-    // The key that activates this widget.
-    DOMString? accessKey;
-
-    // The value of the aria-invalid attribute, indicating the error type.
-    DOMString? ariaInvalidValue;
-
-    // The value of the aria-readonly attribute, if applicable.
-    boolean? ariaReadonly;
-
-    // The CSS display attribute for this node, if applicable.
-    DOMString? display;
-
-    // A data url with the contents of this object's image or thumbnail.
-    DOMString? imageDataUrl;
-
-    // The language code for this subtree.
-    DOMString? language;
-
-    // If a checkbox or toggle button is in the mixed state.
-    boolean? buttonMixed;
-
-    // The RGBA foreground color of this subtree, as an integer.
-    long? color;
-
-    // The RGBA background color of this subtree, as an integer.
-    long? backgroundColor;
-
-    // The RGBA color of an input element whose value is a color.
-    long? colorValue;
+    boolean containerLiveBusy;
 
     //
     // Walking the tree.
     //
 
     AutomationNode[] children;
-    AutomationNode? parent;
-    AutomationNode? firstChild;
-    AutomationNode? lastChild;
-    AutomationNode? previousSibling;
-    AutomationNode? nextSibling;
-    AutomationNode? nextOnLine;
-    AutomationNode? previousOnLine;
+    AutomationNode parent;
+    AutomationNode firstChild;
+    AutomationNode lastChild;
+    AutomationNode previousSibling;
+    AutomationNode nextSibling;
 
     // The index of this node in its parent node's list of children. If this is
     // the root node, this will be undefined.
@@ -690,21 +599,6 @@
     // Clears focus and sets this node as the starting point for the next
     // time the user presses Tab or Shift+Tab.
     static void setSequentialFocusNavigationStartingPoint();
-
-    // Show the context menu for this element, as if the user right-clicked.
-    static void showContextMenu();
-
-    // Resume playing any media within this tree.
-    static void resumeMedia();
-
-    // Start ducking any media within this tree.
-    static void startDuckingMedia();
-
-    // Stop ducking any media within this tree.
-    static void stopDuckingMedia();
-
-    // Suspend any media playing within this tree.
-    static void suspendMedia();
 
     // Adds a listener for the given event type and event phase.
     static void addEventListener(

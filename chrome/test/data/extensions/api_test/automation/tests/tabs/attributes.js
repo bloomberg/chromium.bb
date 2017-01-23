@@ -249,15 +249,7 @@ var allTests = [
     assertTrue(editable !== undefined);
     assertEq('text', editable.htmlAttributes.type);
     chrome.test.succeed();
-  },
-
-  function testNameFrom() {
-    var link = rootNode.find({ role: 'link' });
-    assertEq(chrome.automation.NameFromType.CONTENTS, link.nameFrom);
-    var textarea = rootNode.find({ attributes: { name: 'textarea' } });
-    assertEq(chrome.automation.NameFromType.ATTRIBUTE, textarea.nameFrom);
-    chrome.test.succeed();
-  },
+  }
 ];
 
 setUpAndRunTests(allTests, 'attributes.html');

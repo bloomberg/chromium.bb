@@ -8,13 +8,11 @@
 
 goog.provide('TabsAutomationHandler');
 
-goog.require('CustomAutomationEvent');
 goog.require('DesktopAutomationHandler');
 
 goog.scope(function() {
 var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
-var StateType = chrome.automation.StateType;
 
 /**
  * @param {!chrome.automation.AutomationNode} tabRoot
@@ -24,14 +22,14 @@ var StateType = chrome.automation.StateType;
 TabsAutomationHandler = function(tabRoot) {
   DesktopAutomationHandler.call(this, tabRoot);
 
-  if (tabRoot.role != RoleType.ROOT_WEB_AREA)
+  if (tabRoot.role != RoleType.rootWebArea)
     throw new Error('Expected rootWebArea node but got ' + tabRoot.role);
 
   // When the root is focused, simulate what happens on a load complete.
-  if (tabRoot.state[StateType.FOCUSED]) {
-    var event = new CustomAutomationEvent(
-        EventType.LOAD_COMPLETE, tabRoot, 'page');
-    this.onLoadComplete(event);
+  if (tabRoot.state.focused) {
+    this.onLoadComplete(
+        new chrome.automation.AutomationEvent(EventType.loadComplete, tabRoot,
+                                              'page'));
   }
 };
 
@@ -46,9 +44,8 @@ TabsAutomationHandler.prototype = {
   /** @override */
   onLoadComplete: function(evt) {
     var focused = evt.target.find({state: {focused: true}}) || evt.target;
-    var event = new CustomAutomationEvent(
-        EventType.FOCUS, focused, evt.eventFrom);
-    this.onFocus(event);
+    this.onFocus(new chrome.automation.AutomationEvent(
+        EventType.focus, focused, evt.eventFrom));
   }
 };
 

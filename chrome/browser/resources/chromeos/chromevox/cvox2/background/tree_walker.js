@@ -88,7 +88,7 @@ AutomationTreeWalker = function(node, dir, opt_restrictions) {
    * backward.
    * @type {chrome.automation.AutomationNode} @private
    */
-  this.backwardAncestor_ = node.parent || null;
+  this.backwardAncestor_ = node.parent;
   var restrictions = opt_restrictions || {};
 
   this.visitPred_ = function(node) {
@@ -221,8 +221,8 @@ AutomationTreeWalker.prototype = {
     }
     if (node.parent && this.backwardAncestor_ == node.parent) {
       this.phase_ = AutomationTreeWalkerPhase.ANCESTOR;
-      this.backwardAncestor_ = node.parent.parent || null;
+      this.backwardAncestor_ = node.parent.parent;
     }
-    this.node_ = node.parent || null;
+    this.node_ = node.parent;
   }
 };

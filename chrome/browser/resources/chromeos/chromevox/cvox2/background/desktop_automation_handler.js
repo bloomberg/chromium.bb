@@ -8,9 +8,9 @@
 
 goog.provide('DesktopAutomationHandler');
 
+goog.require('AutomationObjectConstructorInstaller');
 goog.require('BaseAutomationHandler');
 goog.require('ChromeVoxState');
-goog.require('CustomAutomationEvent');
 goog.require('Stubs');
 goog.require('editing.TextEditHandler');
 
@@ -43,58 +43,41 @@ DesktopAutomationHandler = function(node) {
    */
   this.lastValueChanged_ = new Date(0);
 
-  this.addListener_(EventType.ACTIVEDESCENDANTCHANGED,
-                    this.onActiveDescendantChanged);
-  this.addListener_(EventType.ALERT,
-                    this.onAlert);
-  this.addListener_(EventType.ARIA_ATTRIBUTE_CHANGED,
-                    this.onAriaAttributeChanged);
-  this.addListener_(EventType.AUTOCORRECTION_OCCURED,
-                    this.onEventIfInRange);
-  this.addListener_(EventType.CHECKED_STATE_CHANGED,
-                    this.onCheckedStateChanged);
-  this.addListener_(EventType.CHILDREN_CHANGED,
-                    this.onActiveDescendantChanged);
-  this.addListener_(EventType.EXPANDED_CHANGED,
-                    this.onEventIfInRange);
-  this.addListener_(EventType.FOCUS,
-                    this.onFocus);
-  this.addListener_(EventType.HOVER,
-                    this.onHover);
-  this.addListener_(EventType.INVALID_STATUS_CHANGED,
-                    this.onEventIfInRange);
-  this.addListener_(EventType.LOAD_COMPLETE,
-                    this.onLoadComplete);
-  this.addListener_(EventType.MENU_END,
-                    this.onMenuEnd);
-  this.addListener_(EventType.MENU_LIST_ITEM_SELECTED,
-                    this.onEventIfSelected);
-  this.addListener_(EventType.MENU_START,
-                    this.onMenuStart);
-  this.addListener_(EventType.ROW_COLLAPSED,
-                    this.onEventIfInRange);
-  this.addListener_(EventType.ROW_EXPANDED,
-                    this.onEventIfInRange);
-  this.addListener_(EventType.SCROLL_POSITION_CHANGED,
-                    this.onScrollPositionChanged);
-  this.addListener_(EventType.SELECTION,
-                    this.onSelection);
-  this.addListener_(EventType.TEXT_CHANGED,
-                    this.onTextChanged);
-  this.addListener_(EventType.TEXT_SELECTION_CHANGED,
-                    this.onTextSelectionChanged);
-  this.addListener_(EventType.VALUE_CHANGED,
-                    this.onValueChanged);
+  var e = EventType;
+  this.addListener_(e.activedescendantchanged, this.onActiveDescendantChanged);
+  this.addListener_(e.alert, this.onAlert);
+  this.addListener_(e.ariaAttributeChanged, this.onAriaAttributeChanged);
+  this.addListener_(e.autocorrectionOccured, this.onEventIfInRange);
+  this.addListener_(e.checkedStateChanged, this.onCheckedStateChanged);
+  this.addListener_(e.childrenChanged, this.onActiveDescendantChanged);
+  this.addListener_(e.expandedChanged, this.onEventIfInRange);
+  this.addListener_(e.focus, this.onFocus);
+  this.addListener_(e.hover, this.onHover);
+  this.addListener_(e.invalidStatusChanged, this.onEventIfInRange);
+  this.addListener_(e.loadComplete, this.onLoadComplete);
+  this.addListener_(e.menuEnd, this.onMenuEnd);
+  this.addListener_(e.menuListItemSelected, this.onEventIfSelected);
+  this.addListener_(e.menuStart, this.onMenuStart);
+  this.addListener_(e.rowCollapsed, this.onEventIfInRange);
+  this.addListener_(e.rowExpanded, this.onEventIfInRange);
+  this.addListener_(e.scrollPositionChanged, this.onScrollPositionChanged);
+  this.addListener_(e.selection, this.onSelection);
+  this.addListener_(e.textChanged, this.onTextChanged);
+  this.addListener_(e.textSelectionChanged, this.onTextSelectionChanged);
+  this.addListener_(e.valueChanged, this.onValueChanged);
 
-  chrome.automation.getFocus((function(focus) {
-    if (ChromeVoxState.instance.mode != ChromeVoxMode.FORCE_NEXT)
-    return;
+  AutomationObjectConstructorInstaller.init(node, function() {
+    chrome.automation.getFocus((function(focus) {
+      if (ChromeVoxState.instance.mode != ChromeVoxMode.FORCE_NEXT)
+        return;
 
-    if (focus) {
-      var event = new CustomAutomationEvent(EventType.FOCUS, focus, 'page');
-      this.onFocus(event);
-    }
-  }).bind(this));
+      if (focus) {
+        this.onFocus(
+            new chrome.automation.AutomationEvent(
+                EventType.focus, focus, 'page'));
+      }
+    }).bind(this));
+  }.bind(this));
 };
 
 /**
@@ -222,9 +205,8 @@ DesktopAutomationHandler.prototype = {
   onActiveDescendantChanged: function(evt) {
     if (!evt.target.activeDescendant || !evt.target.state.focused)
       return;
-    var event = new CustomAutomationEvent(
-        EventType.FOCUS, evt.target.activeDescendant, evt.eventFrom);
-    this.onEventDefault(event);
+    this.onEventDefault(new chrome.automation.AutomationEvent(
+        EventType.focus, evt.target.activeDescendant, evt.eventFrom));
   },
 
   /**
@@ -250,9 +232,9 @@ DesktopAutomationHandler.prototype = {
       return;
 
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
-    var event = new CustomAutomationEvent(
-        EventType.CHECKED_STATE_CHANGED, evt.target, evt.eventFrom);
-    this.onEventIfInRange(event);
+    this.onEventIfInRange(
+        new chrome.automation.AutomationEvent(
+            EventType.checkedStateChanged, evt.target, evt.eventFrom));
   },
 
   /**
@@ -266,7 +248,7 @@ DesktopAutomationHandler.prototype = {
     var node = evt.target;
 
     // Discard focus events on embeddedObject.
-    if (node.role == RoleType.EMBEDDED_OBJECT)
+    if (node.role == RoleType.embeddedObject)
       return;
 
     this.createTextEditHandlerIfNeeded_(evt.target);
@@ -279,6 +261,7 @@ DesktopAutomationHandler.prototype = {
       return;
 
     var root = AutomationUtil.getTopLevelRoot(node.root);
+
     // If we're crossing out of a root, save it in case it needs recovering.
     var prevRange = ChromeVoxState.instance.currentRange;
     var prevNode = prevRange ? prevRange.start.node : null;
@@ -287,6 +270,7 @@ DesktopAutomationHandler.prototype = {
       if (prevRoot && prevRoot !== root)
       ChromeVoxState.instance.focusRecoveryMap.set(prevRoot, prevRange);
     }
+
     // If a previous node was saved for this focus, restore it.
     var savedRange = ChromeVoxState.instance.focusRecoveryMap.get(root);
     ChromeVoxState.instance.focusRecoveryMap.delete(root);
@@ -294,8 +278,9 @@ DesktopAutomationHandler.prototype = {
       ChromeVoxState.instance.navigateToRange(savedRange, false);
       return;
     }
-    var event = new CustomAutomationEvent(EventType.FOCUS, node, evt.eventFrom);
-    this.onEventDefault(event);
+
+    this.onEventDefault(new chrome.automation.AutomationEvent(
+        EventType.focus, node, evt.eventFrom));
   },
 
   /**
@@ -329,7 +314,7 @@ DesktopAutomationHandler.prototype = {
         return;
 
       var o = new Output();
-      if (focus.role == RoleType.ROOT_WEB_AREA) {
+      if (focus.role == RoleType.rootWebArea) {
         // Restore to previous position.
         var url = focus.docUrl;
         url = url.substring(0, url.indexOf('#')) || url;
@@ -391,9 +376,9 @@ DesktopAutomationHandler.prototype = {
 
     // Sync the ChromeVox range to the editable, if a selection exists.
     var anchorObject = evt.target.root.anchorObject;
-    var anchorOffset = evt.target.root.anchorOffset || 0;
+    var anchorOffset = evt.target.root.anchorOffset;
     var focusObject = evt.target.root.focusObject;
-    var focusOffset = evt.target.root.focusOffset || 0;
+    var focusOffset = evt.target.root.focusOffset;
     if (anchorObject && focusObject) {
       var selectedRange = new cursors.Range(
           new cursors.WrappingCursor(anchorObject, anchorOffset),
@@ -425,7 +410,7 @@ DesktopAutomationHandler.prototype = {
 
     var t = evt.target;
     if (t.state.focused ||
-        t.root.role == RoleType.DESKTOP ||
+        t.root.role == RoleType.desktop ||
         AutomationUtil.isDescendantOf(
             ChromeVoxState.instance.currentRange.start.node, t)) {
       if (new Date() - this.lastValueChanged_ <=
@@ -436,7 +421,7 @@ DesktopAutomationHandler.prototype = {
 
       var output = new Output();
 
-      if (t.root.role == RoleType.DESKTOP)
+      if (t.root.role == RoleType.desktop)
         output.withQueueMode(cvox.QueueMode.FLUSH);
 
       output.format('$value', evt.target).go();
@@ -465,7 +450,7 @@ DesktopAutomationHandler.prototype = {
     chrome.automation.getFocus(function(focus) {
       // Desktop tabs get "selection" when there's a focused webview during tab
       // switching.
-      if (focus.role == RoleType.WEB_VIEW && evt.target.role == RoleType.TAB) {
+      if (focus.role == RoleType.webView && evt.target.role == RoleType.tab) {
         ChromeVoxState.instance.setCurrentRange(
             cursors.Range.fromNode(focus.firstChild));
         return;
@@ -473,9 +458,9 @@ DesktopAutomationHandler.prototype = {
 
       // Some cases (e.g. in overview mode), require overriding the assumption
       // that focus is an ancestor of a selection target.
-      var override = evt.target.role == RoleType.MENU_ITEM ||
+      var override = evt.target.role == RoleType.menuItem ||
           (evt.target.root == focus.root &&
-              focus.root.role == RoleType.DESKTOP);
+              focus.root.role == RoleType.desktop);
       Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
       if (override || AutomationUtil.isDescendantOf(evt.target, focus))
         this.onEventDefault(evt);
@@ -502,8 +487,9 @@ DesktopAutomationHandler.prototype = {
     // after you close them.
     chrome.automation.getFocus(function(focus) {
       if (focus) {
-        var event = new CustomAutomationEvent(EventType.FOCUS, focus, 'page');
-        this.onFocus(event);
+        this.onFocus(
+            new chrome.automation.AutomationEvent(
+                EventType.focus, focus, 'page'));
       }
     }.bind(this));
   },
@@ -527,7 +513,7 @@ DesktopAutomationHandler.prototype = {
   shouldOutput_: function(evt) {
     var mode = ChromeVoxState.instance.mode;
     // Only output desktop rooted nodes or web nodes for next engine modes.
-    return evt.target.root.role == RoleType.DESKTOP ||
+    return evt.target.root.role == RoleType.desktop ||
         (mode == ChromeVoxMode.NEXT ||
          mode == ChromeVoxMode.FORCE_NEXT ||
          mode == ChromeVoxMode.CLASSIC_COMPAT);

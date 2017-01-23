@@ -237,7 +237,7 @@ AutomationUtil.isInSameTree = function(a, b) {
 
   // Given two non-desktop roots, consider them in the "same" tree.
   return a.root === b.root ||
-      (a.root.role == b.root.role && a.root.role == RoleType.ROOT_WEB_AREA);
+      (a.root.role == b.root.role && a.root.role == RoleType.rootWebArea);
 };
 
 /**
@@ -285,13 +285,13 @@ AutomationUtil.hitTest = function(node, point) {
  */
 AutomationUtil.getTopLevelRoot = function(node) {
   var root = node.root;
-  if (!root || root.role == RoleType.DESKTOP)
+  if (!root || root.role == RoleType.desktop)
     return null;
 
   while (root &&
       root.parent &&
       root.parent.root &&
-      root.parent.root.role != RoleType.DESKTOP) {
+      root.parent.root.role != RoleType.desktop) {
     root = root.parent.root;
   }
   return root;
@@ -322,8 +322,8 @@ AutomationUtil.getText = function(node) {
   if (!node)
     return '';
 
-  if (node.role === RoleType.TEXT_FIELD)
-    return node.value || '';
+  if (node.role === RoleType.textField)
+    return node.value;
   return node.name || '';
 };
 

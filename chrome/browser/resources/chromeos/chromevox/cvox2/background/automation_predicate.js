@@ -16,7 +16,6 @@ goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
 var Role = chrome.automation.RoleType;
-var State = chrome.automation.StateType;
 
 /**
  * @constructor
@@ -59,21 +58,21 @@ AutomationPredicate.match = function(params) {
 
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.checkBox =
-    AutomationPredicate.roles([Role.CHECK_BOX, Role.SWITCH]);
+    AutomationPredicate.roles([Role.checkBox, Role.switch]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.comboBox = AutomationPredicate.roles(
-    [Role.COMBO_BOX, Role.POP_UP_BUTTON, Role.MENU_LIST_POPUP]);
+    [Role.comboBox, Role.popUpButton, Role.menuListPopup]);
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.heading = AutomationPredicate.roles([Role.HEADING]);
+AutomationPredicate.heading = AutomationPredicate.roles([Role.heading]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.inlineTextBox =
-    AutomationPredicate.roles([Role.INLINE_TEXT_BOX]);
+    AutomationPredicate.roles([Role.inlineTextBox]);
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.link = AutomationPredicate.roles([Role.LINK]);
+AutomationPredicate.link = AutomationPredicate.roles([Role.link]);
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.row = AutomationPredicate.roles([Role.ROW]);
+AutomationPredicate.row = AutomationPredicate.roles([Role.row]);
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.table = AutomationPredicate.roles([Role.GRID, Role.TABLE]);
+AutomationPredicate.table = AutomationPredicate.roles([Role.grid, Role.table]);
 
 /**
  * @param {!AutomationNode} node
@@ -101,13 +100,13 @@ AutomationPredicate.formField = AutomationPredicate.match({
     AutomationPredicate.editText
   ],
   anyRole: [
-    Role.CHECK_BOX,
-    Role.COLOR_WELL,
-    Role.LIST_BOX,
-    Role.SLIDER,
-    Role.SWITCH,
-    Role.TAB,
-    Role.TREE
+    Role.checkBox,
+    Role.colorWell,
+    Role.listBox,
+    Role.slider,
+    Role.switch,
+    Role.tab,
+    Role.tree
   ]
 });
 
@@ -117,12 +116,12 @@ AutomationPredicate.control = AutomationPredicate.match({
     AutomationPredicate.formField,
   ],
   anyRole: [
-    Role.DISCLOSURE_TRIANGLE,
-    Role.MENU_ITEM,
-    Role.MENU_ITEM_CHECK_BOX,
-    Role.MENU_ITEM_RADIO,
-    Role.MENU_LIST_OPTION,
-    Role.SCROLL_BAR
+    Role.disclosureTriangle,
+    Role.menuItem,
+    Role.menuItemCheckBox,
+    Role.menuItemRadio,
+    Role.menuListOption,
+    Role.scrollBar
   ]
 });
 
@@ -131,7 +130,7 @@ AutomationPredicate.control = AutomationPredicate.match({
  * @return {boolean}
  */
 AutomationPredicate.image = function(node) {
-  return node.role == Role.IMAGE && !!(node.name || node.url);
+  return node.role == Role.image && !!(node.name || node.url);
 };
 
 /** @type {AutomationPredicate.Unary} */
@@ -140,21 +139,21 @@ AutomationPredicate.linkOrControl = AutomationPredicate.match({
     AutomationPredicate.control
   ],
   anyRole: [
-    Role.LINK
+    Role.link
   ]
 });
 
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.landmark = AutomationPredicate.roles([
-    Role.APPLICATION,
-    Role.BANNER,
-    Role.COMPLEMENTARY,
-    Role.CONTENT_INFO,
-    Role.FORM,
-    Role.MAIN,
-    Role.NAVIGATION,
-    Role.REGION,
-    Role.SEARCH]);
+    Role.application,
+    Role.banner,
+    Role.complementary,
+    Role.contentInfo,
+    Role.form,
+    Role.main,
+    Role.navigation,
+    Role.region,
+    Role.search]);
 
 /**
  * @param {!AutomationNode} node
@@ -178,14 +177,14 @@ AutomationPredicate.focused = function(node) {
  */
 AutomationPredicate.leaf = function(node) {
   return !node.firstChild ||
-      node.role == Role.BUTTON ||
-      node.role == Role.BUTTON_DROP_DOWN ||
-      node.role == Role.POP_UP_BUTTON ||
-      node.role == Role.SLIDER ||
-      node.role == Role.TEXT_FIELD ||
-      node.state[State.INVISIBLE] ||
+      node.role == Role.button ||
+      node.role == Role.buttonDropDown ||
+      node.role == Role.popUpButton ||
+      node.role == Role.slider ||
+      node.role == Role.textField ||
+      node.state.invisible ||
       node.children.every(function(n) {
-        return n.state[State.INVISIBLE];
+        return n.state.invisible;
       });
 };
 
@@ -207,7 +206,7 @@ AutomationPredicate.leafWithText = function(node) {
  */
 AutomationPredicate.leafOrStaticText = function(node) {
   return AutomationPredicate.leaf(node) ||
-      node.role == Role.STATIC_TEXT;
+      node.role == Role.staticText;
 };
 
 /**
@@ -232,9 +231,9 @@ AutomationPredicate.object = function(node) {
   return node.state.focusable ||
       (AutomationPredicate.leafOrStaticText(node) &&
        (/\S+/.test(node.name) ||
-        (node.role != Role.LINE_BREAK &&
-         node.role != Role.STATIC_TEXT &&
-         node.role != Role.INLINE_TEXT_BOX)));
+        (node.role != Role.lineBreak &&
+         node.role != Role.staticText &&
+         node.role != Role.inlineTextBox)));
 };
 
 /**
@@ -244,9 +243,9 @@ AutomationPredicate.object = function(node) {
  */
 AutomationPredicate.group = AutomationPredicate.match({
   anyRole: [
-    Role.HEADING,
-    Role.LIST,
-    Role.PARAGRAPH
+    Role.heading,
+    Role.list,
+    Role.paragraph
   ],
   anyPredicate: [
     AutomationPredicate.editText,
@@ -278,18 +277,18 @@ AutomationPredicate.linebreak = function(first, second) {
 AutomationPredicate.container = function(node) {
   return AutomationPredicate.match({
     anyRole: [
-      Role.DIV,
-      Role.DOCUMENT,
-      Role.GROUP,
-      Role.LIST_ITEM,
-      Role.TOOLBAR,
-      Role.WINDOW],
+      Role.div,
+      Role.document,
+      Role.group,
+      Role.listItem,
+      Role.toolbar,
+      Role.window],
     anyPredicate: [
       AutomationPredicate.landmark,
       AutomationPredicate.structuralContainer,
       function(node) {
         // For example, crosh.
-        return (node.role == Role.TEXT_FIELD && node.state.readOnly);
+        return (node.role == Role.textField && node.state.readOnly);
       },
       function(node) {
         return (node.state.editable &&
@@ -306,14 +305,14 @@ AutomationPredicate.container = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.structuralContainer = AutomationPredicate.roles([
-    Role.ALERT_DIALOG,
-    Role.DIALOG,
-    Role.ROOT_WEB_AREA,
-    Role.WEB_VIEW,
-    Role.WINDOW,
-    Role.EMBEDDED_OBJECT,
-    Role.IFRAME,
-    Role.IFRAME_PRESENTATIONAL]);
+    Role.alertDialog,
+    Role.dialog,
+    Role.rootWebArea,
+    Role.webView,
+    Role.window,
+    Role.embeddedObject,
+    Role.iframe,
+    Role.iframePresentational]);
 
 /**
  * Returns whether the given node should not be crossed when performing
@@ -323,21 +322,21 @@ AutomationPredicate.structuralContainer = AutomationPredicate.roles([
  */
 AutomationPredicate.root = function(node) {
   switch (node.role) {
-    case Role.WINDOW:
+    case Role.window:
       return true;
-    case Role.DIALOG:
+    case Role.dialog:
       // The below logic handles nested dialogs properly in the desktop tree
       // like that found in a bubble view.
-      return node.root.role != Role.DESKTOP ||
+      return node.root.role != Role.desktop ||
           (!!node.parent &&
-           node.parent.role == Role.WINDOW &&
+           node.parent.role == Role.window &&
            node.parent.children.every(function(child) {
-             return node.role == Role.WINDOW || node.role == Role.DIALOG;
+             return node.role == Role.window || node.role == Role.dialog;
            }));
-    case Role.TOOLBAR:
-      return node.root.role == Role.DESKTOP;
-    case Role.ROOT_WEB_AREA:
-      return !node.parent || node.parent.root.role == Role.DESKTOP;
+    case Role.toolbar:
+      return node.root.role == Role.desktop;
+    case Role.rootWebArea:
+      return !node.parent || node.parent.root.role == Role.desktop;
     default:
       return false;
   }
@@ -360,7 +359,7 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
     return true;
 
   // Ignore list markers since we already announce listitem role.
-  if (node.role == Role.LIST_MARKER)
+  if (node.role == Role.listMarker)
     return true;
 
   // Don't ignore nodes with names or name-like attribute.
@@ -369,15 +368,15 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
 
   // Ignore some roles.
   return AutomationPredicate.leaf(node) &&
-      (AutomationPredicate.roles([Role.CLIENT,
-                                  Role.COLUMN,
-                                  Role.DIV,
-                                  Role.GROUP,
-                                  Role.IMAGE,
-                                  Role.STATIC_TEXT,
-                                  Role.SVG_ROOT,
-                                  Role.TABLE_HEADER_CONTAINER,
-                                  Role.UNKNOWN
+      (AutomationPredicate.roles([Role.client,
+                                  Role.column,
+                                  Role.div,
+                                  Role.group,
+                                  Role.image,
+                                  Role.staticText,
+                                  Role.svgRoot,
+                                  Role.tableHeaderContainer,
+                                  Role.unknown
                                  ])(node));
 };
 
@@ -387,11 +386,11 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.checkable = AutomationPredicate.roles([
-  Role.CHECK_BOX,
-  Role.RADIO_BUTTON,
-  Role.MENU_ITEM_CHECK_BOX,
-  Role.MENU_ITEM_RADIO,
-  Role.TREE_ITEM]);
+  Role.checkBox,
+  Role.radioButton,
+  Role.menuItemCheckBox,
+  Role.menuItemRadio,
+  Role.treeItem]);
 
 // Table related predicates.
 /**
@@ -400,9 +399,9 @@ AutomationPredicate.checkable = AutomationPredicate.roles([
  * @return {boolean}
  */
 AutomationPredicate.cellLike = AutomationPredicate.roles([
-  Role.CELL,
-  Role.ROW_HEADER,
-  Role.COLUMN_HEADER]);
+  Role.cell,
+  Role.rowHeader,
+  Role.columnHeader]);
 
 /**
  * Returns a predicate that will match against the directed next cell taking
@@ -482,7 +481,7 @@ AutomationPredicate.makeTableCellPredicate = function(start, opts) {
  */
 AutomationPredicate.makeHeadingPredicate = function(level) {
   return function(node) {
-    return node.role == Role.HEADING && node.hierarchicalLevel == level;
+    return node.role == Role.heading && node.hierarchicalLevel == level;
   };
 };
 

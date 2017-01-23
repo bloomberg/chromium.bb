@@ -60,13 +60,13 @@ var SelectToSpeak = function() {
 
   chrome.automation.getDesktop(function(desktop) {
     desktop.addEventListener(
-        EventType.MOUSE_PRESSED, this.onMousePressed_.bind(this), true);
+        EventType.mousePressed, this.onMousePressed_.bind(this), true);
     desktop.addEventListener(
-        EventType.MOUSE_DRAGGED, this.onMouseDragged_.bind(this), true);
+        EventType.mouseDragged, this.onMouseDragged_.bind(this), true);
     desktop.addEventListener(
-        EventType.MOUSE_RELEASED, this.onMouseReleased_.bind(this), true);
+        EventType.mouseReleased, this.onMouseReleased_.bind(this), true);
     desktop.addEventListener(
-        EventType.MOUSE_CANCELED, this.onMouseCanceled_.bind(this), true);
+        EventType.mouseCanceled, this.onMouseCanceled_.bind(this), true);
   }.bind(this));
 };
 
@@ -122,10 +122,10 @@ SelectToSpeak.prototype = {
     // roles here.
     var root = this.startNode_;
     while (root.parent &&
-        root.role != RoleType.WINDOW &&
-        root.role != RoleType.ROOT_WEB_AREA &&
-        root.role != RoleType.DESKTOP &&
-        root.role != RoleType.DIALOG) {
+        root.role != RoleType.window &&
+        root.role != RoleType.rootWebArea &&
+        root.role != RoleType.desktop &&
+        root.role != RoleType.dialog) {
       root = root.parent;
     }
 
@@ -189,7 +189,7 @@ SelectToSpeak.prototype = {
     for (var i = 0; i < nodes.length; i++) {
       var node = nodes[i];
       var isLast = (i == nodes.length - 1);
-      chrome.tts.speak(node.name || '', {
+      chrome.tts.speak(node.name, {
         lang: 'en-US',
         'enqueue': true,
         onEvent: (function(node, isLast, event) {

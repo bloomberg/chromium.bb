@@ -263,7 +263,7 @@ TEST_F('BackgroundTest', 'AriaLabel', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<a aria-label="foo" href="a">a</a>',
     function(rootNode) {
-      rootNode.find({role: RoleType.LINK}).focus();
+      rootNode.find({role: RoleType.link}).focus();
       mockFeedback.expectSpeech('foo')
           .expectSpeech('Link')
           .expectBraille('foo lnk');
@@ -276,7 +276,7 @@ TEST_F('BackgroundTest', 'ShowContextMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<p>before</p><a href="a">a</a>',
     function(rootNode) {
-      var go = rootNode.find({ role: RoleType.LINK });
+      var go = rootNode.find({ role: RoleType.link });
       // Menus no longer nest a message loop, so we can launch menu and confirm
       // expected speech. The menu will not block test shutdown.
       mockFeedback.call(go.focus.bind(go))
@@ -310,10 +310,10 @@ TEST_F('BackgroundTest', 'BrailleRouting', function() {
         </script>
       */},
       function(rootNode) {
-        var button1 = rootNode.find({role: RoleType.BUTTON,
+        var button1 = rootNode.find({role: RoleType.button,
                                      attributes: { name: 'Click me' }});
         var textField = rootNode.find(
-            {role: RoleType.TEXT_FIELD});
+            {role: RoleType.textField});
         mockFeedback.expectBraille('start')
             .call(button1.focus.bind(button1))
             .expectBraille(/^Click me btn/)
@@ -376,8 +376,8 @@ TEST_F('BackgroundTest', 'DISABLED_UseEditableState', function() {
         editable.focus();
       });
 
-      var editable = rootNode.find({ role: RoleType.TEXT_FIELD });
-      var nonEditable = rootNode.find({ role: RoleType.PARAGRAPH });
+      var editable = rootNode.find({ role: RoleType.textField });
+      var nonEditable = rootNode.find({ role: RoleType.paragraph });
 
       this.listenOnce(nonEditable, 'focus', assertDoesntExist);
       this.listenOnce(editable, 'focus', assertExists);
@@ -472,7 +472,7 @@ TEST_F('BackgroundTest', 'DISABLED_ActiveOrInactive', function() {
     */},
     function(rootNode) {
       var focusButton = function() {
-        rootNode.find({role: RoleType.BUTTON}).focus();
+        rootNode.find({role: RoleType.button}).focus();
       };
       var on = function() { cvox.ChromeVox.isActive = true; };
       var off = function() { cvox.ChromeVox.isActive = false; };
@@ -491,9 +491,9 @@ TEST_F('BackgroundTest', 'DISABLED_ActiveOrInactive', function() {
           .expectSpeech('b').expectSpeech('Button')
           .call(off)
           .call(focusThen.bind(this, rootNode.find(
-              { role: RoleType.LINK }), on))
+              { role: RoleType.link }), on))
           .call(focusThen.bind(this, rootNode.find(
-              { role: RoleType.TEXT_FIELD })))
+              { role: RoleType.textField })))
           .expectNextSpeechUtteranceIsNot('a')
           .expectSpeech('Edit text');
 
@@ -510,13 +510,13 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
     var fakeWebRoot = {};
     fakeWebRoot.root = fakeWebRoot;
     fakeWebRoot.parent = fakeDesktop;
-    fakeWebRoot.role = RoleType.ROOT_WEB_AREA;
+    fakeWebRoot.role = RoleType.rootWebArea;
     fakeWebRoot.makeVisible = function() {};
     fakeWebRoot.location = {left: 1, top: 1, width: 1, height: 1};
     var fakeSubRoot = {};
     fakeSubRoot.root = fakeSubRoot;
     fakeSubRoot.parent = fakeWebRoot;
-    fakeSubRoot.role = RoleType.ROOT_WEB_AREA;
+    fakeSubRoot.role = RoleType.rootWebArea;
     fakeSubRoot.makeVisible = function() {};
     fakeSubRoot.location = {left: 1, top: 1, width: 1, height: 1};
     var bk = ChromeVoxState.instance;
@@ -578,8 +578,8 @@ TEST_F('BackgroundTest', 'ShouldNotFocusIframe', function() {
     <iframe tabindex=0 src="data:text/html,<p>Inside</p>"></iframe>
     <button>outside</button>
   */}, function(root) {
-    var iframe = root.find({role: RoleType.IFRAME});
-    var button = root.find({role: RoleType.BUTTON});
+    var iframe = root.find({role: RoleType.iframe});
+    var button = root.find({role: RoleType.button});
 
     assertEquals('iframe', iframe.role);
     assertEquals('button', button.role);
@@ -600,8 +600,8 @@ TEST_F('BackgroundTest', 'ShouldFocusLink', function() {
     <div><a href="#">mylink</a></div>
     <button>after</button>
   */}, function(root) {
-    var link = root.find({role: RoleType.LINK});
-    var button = root.find({role: RoleType.BUTTON});
+    var link = root.find({role: RoleType.link});
+    var button = root.find({role: RoleType.button});
 
     assertEquals('link', link.role);
     assertEquals('button', button.role);
@@ -630,8 +630,8 @@ TEST_F('BackgroundTest', 'NoisySlider', function() {
       update();
     </script>
   */}, function(root) {
-    var go = root.find({role: RoleType.BUTTON});
-    var slider = root.find({role: RoleType.SLIDER});
+    var go = root.find({role: RoleType.button});
+    var slider = root.find({role: RoleType.slider});
     var focusButton = go.focus.bind(go);
     var focusSlider = slider.focus.bind(slider);
     mockFeedback.call(focusButton)
@@ -659,7 +659,7 @@ TEST_F('BackgroundTest', 'Checkbox', function() {
       });
     </script>
   */}, function(root) {
-    var cbx = root.find({role: RoleType.CHECK_BOX});
+    var cbx = root.find({role: RoleType.checkBox});
     var click = cbx.doDefault.bind(cbx);
     var focus = cbx.focus.bind(cbx);
     mockFeedback.call(focus)
@@ -697,13 +697,13 @@ TEST_F('BackgroundTest', 'ForwardNavigationThroughIframeButtons', function() {
       return;
 
     // Return if the iframe hasn't loaded yet.
-    var iframe = rootNode.find({role: RoleType.IFRAME});
+    var iframe = rootNode.find({role: RoleType.iframe});
     var childDoc = iframe.firstChild;
     if (!childDoc || childDoc.children.length == 0)
       return;
 
     running = true;
-    var beforeButton = rootNode.find({role: RoleType.BUTTON,
+    var beforeButton = rootNode.find({role: RoleType.button,
                                       name: 'Before'});
     beforeButton.focus();
     mockFeedback.expectSpeech('Before', 'Button');
@@ -745,7 +745,7 @@ TEST_F('BackgroundTest', 'ForwardObjectNavigationThroughIframes', function() {
       return;
 
     running = true;
-    var beforeButton = rootNode.find({role: RoleType.BUTTON,
+    var beforeButton = rootNode.find({role: RoleType.button,
                                       name: 'Before'});
     beforeButton.focus();
     mockFeedback.expectSpeech('Before', 'Button');
@@ -784,7 +784,7 @@ TEST_F('BackgroundTest', 'SelectOptionSelected', function() {
       <option>grapefruit
     </select>
   */}, function(root) {
-    var select = root.find({role: RoleType.POP_UP_BUTTON});
+    var select = root.find({role: RoleType.popUpButton});
     var clickSelect = select.doDefault.bind(select);
     var lastOption = select.lastChild.lastChild;
     var selectLastOption = lastOption.doDefault.bind(lastOption);
@@ -854,7 +854,7 @@ TEST_F('BackgroundTest', 'BackwardForwardSync', function() {
       </li>
     </ul>
   */}, function(root) {
-    var listItem = root.find({role: RoleType.LIST_ITEM});
+    var listItem = root.find({role: RoleType.listItem});
 
     mockFeedback.call(listItem.focus.bind(listItem))
         .expectSpeech('List item')
@@ -874,7 +874,7 @@ TEST_F('BackgroundTest', 'BackwardForwardSync', function() {
 TEST_F('BackgroundTest', 'DisappearingObject', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.disappearingObjectDoc, function(rootNode) {
-    var deleteButton = rootNode.find({role: RoleType.BUTTON,
+    var deleteButton = rootNode.find({role: RoleType.button,
                                       attributes: { name: 'Delete' }});
     var pressDelete = deleteButton.doDefault.bind(deleteButton);
     mockFeedback.expectSpeech('start').expectBraille('start');
@@ -907,7 +907,7 @@ TEST_F('BackgroundTest', 'ButtonNameValueDescription', function() {
   this.runWithLoadedTree(function(root) {/*!
     <input type="submit" aria-label="foo" value="foo"></input>
   */}, function(root) {
-    var btn = root.find({role: RoleType.BUTTON});
+    var btn = root.find({role: RoleType.button});
     mockFeedback.call(btn.focus.bind(btn))
         .expectSpeech('foo')
         .expectSpeech('Button')
@@ -921,7 +921,7 @@ TEST_F('BackgroundTest', 'NameFromHeadingLink', function() {
     <p>before</p>
     <h1><a href="google.com">go</a><p>here</p></h1>
   */}, function(root) {
-    var link = root.find({role: RoleType.LINK});
+    var link = root.find({role: RoleType.link});
     mockFeedback.call(link.focus.bind(link))
         .expectSpeech('go')
         .expectSpeech('Link')
@@ -1200,7 +1200,7 @@ TEST_F('BackgroundTest', 'NavigationMovesFocus', function() {
   */}, function(root) {
     this.listenOnce(root, 'focus', function(e) {
       var focus = ChromeVoxState.instance.currentRange.start.node;
-      assertEquals(RoleType.TEXT_FIELD, focus.role);
+      assertEquals(RoleType.textField, focus.role);
       assertTrue(focus.state.focused);
     });
     doCmd('nextEditText')();

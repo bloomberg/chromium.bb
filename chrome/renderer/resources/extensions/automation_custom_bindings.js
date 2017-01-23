@@ -16,6 +16,7 @@ var lastError = require('lastError');
 var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
 var GetRoutingID = nativeAutomationInternal.GetRoutingID;
+var GetSchemaAdditions = nativeAutomationInternal.GetSchemaAdditions;
 var DestroyAccessibilityTree =
     nativeAutomationInternal.DestroyAccessibilityTree;
 var GetIntAttribute = nativeAutomationInternal.GetIntAttribute;
@@ -25,6 +26,7 @@ var AddTreeChangeObserver = nativeAutomationInternal.AddTreeChangeObserver;
 var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
 var GetFocusNative = nativeAutomationInternal.GetFocus;
+var schema = GetSchemaAdditions();
 
 /**
  * A namespace to export utility functions to other files in automation.
@@ -218,7 +220,7 @@ automationInternal.onChildTreeID.addListener(function(treeID,
     return;
 
   var subroot = AutomationRootNode.get(childTreeID);
-  if (!subroot || subroot.role == 'unknown') {
+  if (!subroot || subroot.role == schema.EventType.unknown) {
     automationUtil.storeTreeCallback(childTreeID, function(root) {
       // Return early if the root has already been attached.
       if (root.parent)
@@ -227,10 +229,12 @@ automationInternal.onChildTreeID.addListener(function(treeID,
       privates(root).impl.setHostNode(node);
 
       if (root.docLoaded) {
-        privates(root).impl.dispatchEvent('loadComplete', 'page');
+        privates(root).impl.dispatchEvent(
+            schema.EventType.loadComplete, 'page');
       }
 
-      privates(node).impl.dispatchEvent('childrenChanged', 'none');
+      privates(node).impl.dispatchEvent(
+          schema.EventType.childrenChanged, 'none');
     });
 
     automationInternal.enableFrame(childTreeID);
@@ -283,17 +287,17 @@ automationInternal.onAccessibilityEvent.addListener(function(eventParams) {
   var targetTree = AutomationRootNode.getOrCreate(id);
 
   var isFocusEvent = false;
-  if (eventParams.eventType == 'focus') {
+  if (eventParams.eventType == schema.EventType.focus) {
     isFocusEvent = true;
-  } else if (eventParams.eventType == 'blur') {
+  } else if (eventParams.eventType == schema.EventType.blur) {
     // Work around an issue where Chrome sends us 'blur' events on the
     // root node when nothing has focus, we need to treat those as focus
     // events but otherwise not handle blur events specially.
     var node = privates(targetTree).impl.get(eventParams.targetID);
     if (node == node.root)
       automationUtil.updateFocusedNodeOnBlur();
-  } else if (eventParams.eventType == 'mediaStartedPlaying' ||
-      eventParams.eventType == 'mediaStoppedPlaying') {
+  } else if (eventParams.eventType == schema.EventType.mediaStartedPlaying ||
+      eventParams.eventType == schema.EventType.mediaStoppedPlaying) {
     // These events are global to the tree.
     eventParams.targetID = privates(targetTree).impl.id;
   }
@@ -361,4 +365,11 @@ automationInternal.onAccessibilityTreeSerializationError.addListener(
 });
 
 var binding = automation.generate();
+// Add additional accessibility bindings not specified in the automation IDL.
+// Accessibility and automation share some APIs (see
+// ui/accessibility/ax_enums.idl).
+forEach(schema, function(k, v) {
+  binding[k] = v;
+});
+
 exports.$set('binding', binding);

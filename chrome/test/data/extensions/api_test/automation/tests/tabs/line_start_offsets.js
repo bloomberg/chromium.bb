@@ -4,7 +4,7 @@
 
 var allTests = [
   function testInput() {
-    var textFields = rootNode.findAll({ role: RoleType.TEXT_FIELD });
+    var textFields = rootNode.findAll({ role: RoleType.textField });
     assertEq(2, textFields.length);
     var input = textFields[0];
     assertTrue(!!input);
@@ -15,7 +15,7 @@ var allTests = [
   },
 
   function testTextarea() {
-    var textFields = rootNode.findAll({ role: RoleType.TEXT_FIELD });
+    var textFields = rootNode.findAll({ role: RoleType.textField });
     assertEq(2, textFields.length);
     var textarea = textFields[1];
     assertTrue(!!textarea);

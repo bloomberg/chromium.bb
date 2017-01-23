@@ -121,11 +121,11 @@ cursors.Cursor.prototype = {
     // node.
     var lNode = this.node;
     var rNode = rhs.node;
-    while (lNode && (lNode.role == RoleType.INLINE_TEXT_BOX ||
-        lNode.role == RoleType.STATIC_TEXT))
+    while (lNode && (lNode.role == RoleType.inlineTextBox ||
+        lNode.role == RoleType.staticText))
       lNode = lNode.parent;
-    while (rNode && (rNode.role == RoleType.INLINE_TEXT_BOX ||
-        rNode.role == RoleType.STATIC_TEXT))
+    while (rNode && (rNode.role == RoleType.inlineTextBox ||
+        rNode.role == RoleType.staticText))
       rNode = rNode.parent;
 
     // Ignore indicies for now.
@@ -176,22 +176,22 @@ cursors.Cursor.prototype = {
     // Selections over line break nodes are broken.
     var parent = adjustedNode.parent;
     var grandparent = parent && parent.parent;
-    if (parent.role == RoleType.LINE_BREAK) {
+    if (parent.role == RoleType.lineBreak) {
       adjustedNode = grandparent;
-    } else if (grandparent.role == RoleType.LINE_BREAK) {
+    } else if (grandparent.role == RoleType.lineBreak) {
       adjustedNode = grandparent.parent;
     } else if (this.index_ == cursors.NODE_INDEX ||
-        adjustedNode.role == RoleType.INLINE_TEXT_BOX ||
-        adjustedNode.nameFrom != chrome.automation.NameFromType.CONTENTS) {
+        adjustedNode.role == RoleType.inlineTextBox ||
+        chrome.automation.NameFromType[adjustedNode.nameFrom] != 'contents') {
       // A node offset or unselectable character offset.
       adjustedNode = parent;
     } else {
       // A character offset into content.
       adjustedNode =
-          adjustedNode.find({role: RoleType.STATIC_TEXT}) || adjustedNode;
+          adjustedNode.find({role: RoleType.staticText}) || adjustedNode;
     }
 
-    return adjustedNode || null;
+    return adjustedNode;
   },
 
   /**
@@ -209,9 +209,9 @@ cursors.Cursor.prototype = {
 
     if (this.node.state.editable) {
       return this.index_ == cursors.NODE_INDEX ? 0 : this.index_;
-    } else if (this.node.role == RoleType.INLINE_TEXT_BOX &&
+    } else if (this.node.role == RoleType.inlineTextBox &&
     // Selections under a line break are broken.
-        this.node.parent && this.node.parent.role != RoleType.LINE_BREAK) {
+        this.node.parent && this.node.parent.role != RoleType.lineBreak) {
       if (adjustedIndex == cursors.NODE_INDEX)
         adjustedIndex = 0;
 
@@ -221,13 +221,13 @@ cursors.Cursor.prototype = {
         sibling = sibling.previousSibling;
       }
     } else if (this.index_ == cursors.NODE_INDEX ||
-        this.node.nameFrom != chrome.automation.NameFromType.CONTENTS) {
+        chrome.automation.NameFromType[this.node.nameFrom] != 'contents') {
       // A node offset or unselectable character offset.
 
       // The selected node could have been adjusted upwards in the tree.
       var childOfSelection = this.node;
       do {
-        adjustedIndex = childOfSelection.indexInParent || 0;
+        adjustedIndex = childOfSelection.indexInParent;
         childOfSelection = childOfSelection.parent;
       } while (childOfSelection && childOfSelection != this.selectionNode_);
     }
@@ -286,7 +286,7 @@ cursors.Cursor.prototype = {
         }
         break;
       case Unit.WORD:
-        if (newNode.role != RoleType.INLINE_TEXT_BOX) {
+        if (newNode.role != RoleType.inlineTextBox) {
           newNode = AutomationUtil.findNextNode(newNode,
               Dir.FORWARD,
               AutomationPredicate.inlineTextBox,
@@ -294,7 +294,7 @@ cursors.Cursor.prototype = {
         }
         switch (movement) {
           case Movement.BOUND:
-            if (newNode.role == RoleType.INLINE_TEXT_BOX) {
+            if (newNode.role == RoleType.inlineTextBox) {
               var start, end;
               for (var i = 0; i < newNode.wordStarts.length; i++) {
                 if (newIndex >= newNode.wordStarts[i] &&
@@ -311,7 +311,7 @@ cursors.Cursor.prototype = {
             }
             break;
           case Movement.DIRECTIONAL:
-            if (newNode.role == RoleType.INLINE_TEXT_BOX) {
+            if (newNode.role == RoleType.inlineTextBox) {
               var start, end;
               for (var i = 0; i < newNode.wordStarts.length; i++) {
                 if (newIndex >= newNode.wordStarts[i] &&
@@ -334,7 +334,7 @@ cursors.Cursor.prototype = {
                   if (newNode) {
                     newIndex = 0;
                     if (dir == Dir.BACKWARD &&
-                        newNode.role == RoleType.INLINE_TEXT_BOX) {
+                        newNode.role == RoleType.inlineTextBox) {
                       var starts = newNode.wordStarts;
                       newIndex = starts[starts.length - 1] || 0;
                     } else {
@@ -605,7 +605,7 @@ cursors.Range.prototype = {
     return this.start.node &&
         this.end.node &&
         this.start.node.role == this.end.node.role &&
-        this.start.node.role == RoleType.INLINE_TEXT_BOX;
+        this.start.node.role == RoleType.inlineTextBox;
   },
 
   /**
@@ -657,7 +657,7 @@ cursors.Range.prototype = {
 
     // Only allow selections within the same web tree.
     if (startNode.root &&
-        startNode.root.role == RoleType.ROOT_WEB_AREA &&
+        startNode.root.role == RoleType.rootWebArea &&
         startNode.root == endNode.root) {
       // We want to adjust to select the entire node for node offsets;
       // otherwise, use the plain character offset.
@@ -680,8 +680,8 @@ cursors.Range.prototype = {
   */
   isWebRange: function() {
     return this.isValid() &&
-        (this.start.node.root.role != RoleType.DESKTOP ||
-        this.end.node.root.role != RoleType.DESKTOP);
+        (this.start.node.root.role != RoleType.desktop ||
+        this.end.node.root.role != RoleType.desktop);
   },
 
   /**

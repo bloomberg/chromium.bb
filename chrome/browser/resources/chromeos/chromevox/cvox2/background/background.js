@@ -38,7 +38,6 @@ var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
 var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
-var StateType = chrome.automation.StateType;
 
 /**
  * ChromeVox2 background page.
@@ -253,12 +252,11 @@ Background.prototype = {
       return useNext ? ChromeVoxMode.FORCE_NEXT :
           ChromeVoxMode.CLASSIC_COMPAT;
 
-    var docUrl = topLevelRoot.docUrl || '';
-    var nextSite = this.isWhitelistedForNext_(docUrl);
-    var nextCompat = this.nextCompatRegExp_.test(docUrl) &&
+    var nextSite = this.isWhitelistedForNext_(topLevelRoot.docUrl);
+    var nextCompat = this.nextCompatRegExp_.test(topLevelRoot.docUrl) &&
         this.chromeChannel_ != 'dev';
     var classicCompat =
-        this.isWhitelistedForClassicCompat_(docUrl);
+        this.isWhitelistedForClassicCompat_(topLevelRoot.docUrl);
     if (nextCompat && useNext)
       return ChromeVoxMode.NEXT_COMPAT;
     else if (classicCompat && !useNext)
@@ -413,7 +411,7 @@ Background.prototype = {
       start.makeVisible();
 
       var root = start.root;
-      if (!root || root.role == RoleType.DESKTOP)
+      if (!root || root.role == RoleType.desktop)
         return;
 
       var position = {};
@@ -496,8 +494,7 @@ Background.prototype = {
         lca = AutomationUtil.getLeastCommonAncestor(prevRange.start.node,
                                                     range.start.node);
       }
-      if (!lca || lca.state[StateType.EDITABLE] ||
-          !range.start.node.state[StateType.EDITABLE])
+      if (!lca || lca.state.editable || !range.start.node.state.editable)
         range.select();
     }
 
@@ -591,9 +588,9 @@ Background.prototype = {
    * @return {boolean}
    */
   isWhitelistedForClassicCompat_: function(url) {
-    return (this.isBlacklistedForClassic_(url) || (this.getCurrentRange() &&
+    return this.isBlacklistedForClassic_(url) || (this.getCurrentRange() &&
         !this.getCurrentRange().isWebRange() &&
-        this.getCurrentRange().start.node.state[StateType.FOCUSED])) || false;
+        this.getCurrentRange().start.node.state.focused);
   },
 
   /**
@@ -670,7 +667,7 @@ Background.prototype = {
     if (!actionNodeSpan)
       return;
     var actionNode = actionNodeSpan.node;
-    if (actionNode.role === RoleType.INLINE_TEXT_BOX)
+    if (actionNode.role === RoleType.inlineTextBox)
       actionNode = actionNode.parent;
     actionNode.doDefault();
     if (selectionSpan) {
@@ -790,28 +787,28 @@ Background.prototype = {
       var entered = AutomationUtil.getUniqueAncestors(
           prevRange.start.node, start);
       var embeddedObject = entered.find(function(f) {
-        return f.role == RoleType.EMBEDDED_OBJECT; });
-      if (embeddedObject && !embeddedObject.state[StateType.FOCUSED])
+        return f.role == RoleType.embeddedObject; });
+      if (embeddedObject && !embeddedObject.state.focused)
         embeddedObject.focus();
     }
 
-    if (start.state[StateType.FOCUSED] || end.state[StateType.FOCUSED])
+    if (start.state.focused || end.state.focused)
       return;
 
     var isFocusableLinkOrControl = function(node) {
-      return node.state[StateType.FOCUSABLE] &&
+      return node.state.focusable &&
           AutomationPredicate.linkOrControl(node);
     };
 
     // Next, try to focus the start or end node.
     if (!AutomationPredicate.structuralContainer(start) &&
-        start.state[StateType.FOCUSABLE]) {
-      if (!start.state[StateType.FOCUSED])
+        start.state.focusable) {
+      if (!start.state.focused)
         start.focus();
       return;
     } else if (!AutomationPredicate.structuralContainer(end) &&
-        end.state[StateType.FOCUSABLE]) {
-      if (!end.state[StateType.FOCUSED])
+        end.state.focusable) {
+      if (!end.state.focused)
         end.focus();
       return;
     }
@@ -820,7 +817,7 @@ Background.prototype = {
     var ancestor = AutomationUtil.getLeastCommonAncestor(start, end);
     while (ancestor && ancestor.root == start.root) {
       if (isFocusableLinkOrControl(ancestor)) {
-        if (!ancestor.state[StateType.FOCUSED])
+        if (!ancestor.state.focused)
           ancestor.focus();
         return;
       }
@@ -830,7 +827,7 @@ Background.prototype = {
     // If nothing is focusable, set the sequential focus navigation starting
     // point, which ensures that the next time you press Tab, you'll reach
     // the next or previous focusable node from |start|.
-    if (!start.state[StateType.OFFSCREEN])
+    if (!start.state.offscreen)
       start.setSequentialFocusNavigationStartingPoint();
   }
 };
