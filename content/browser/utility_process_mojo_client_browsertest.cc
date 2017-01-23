@@ -20,23 +20,25 @@ namespace content {
 // Test fixture used to make different Mojo calls to the utility process.
 class UtilityProcessMojoClientBrowserTest : public ContentBrowserTest {
  public:
-  void StartMojoService(bool disable_sandbox, bool run_elevated = false) {
+  enum RunOption {
+    SANDBOXED, UNSANDBOXED, ELEVATED
+  };
+
+  void StartMojoService(RunOption option = SANDBOXED) {
     mojo_client_.reset(new UtilityProcessMojoClient<mojom::TestService>(
-        base::ASCIIToUTF16("TestMojoProcess")));
+        base::ASCIIToUTF16("TestUtilityProcessMojoClient")));
 
     mojo_client_->set_error_callback(
         base::Bind(&UtilityProcessMojoClientBrowserTest::OnConnectionError,
                    base::Unretained(this)));
 
     // This test case needs to have the sandbox disabled.
-    if (disable_sandbox)
+    if (option == UNSANDBOXED)
       mojo_client_->set_disable_sandbox();
 #if defined(OS_WIN)
-    // This test case needs utility process privilege elevation.
-    if (run_elevated) {
-      CHECK(disable_sandbox);
+    // This test case needs utility process UAC privilege elevation.
+    if (option == ELEVATED)
       mojo_client_->set_run_elevated();
-    }
 #endif  // defined(OS_WIN)
 
     mojo_client_->Start();
@@ -79,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, CallService) {
   base::RunLoop run_loop;
   done_closure_ = run_loop.QuitClosure();
 
-  StartMojoService(false);
+  StartMojoService();
 
   mojo_client_->service()->DoSomething(
       base::Bind(&UtilityProcessMojoClientBrowserTest::OnResponseReceived,
@@ -96,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, ConnectionError) {
   base::RunLoop run_loop;
   done_closure_ = run_loop.QuitClosure();
 
-  StartMojoService(false);
+  StartMojoService();
 
   mojo_client_->service()->DoTerminateProcess(
       base::Bind(&UtilityProcessMojoClientBrowserTest::OnResponseReceived,
@@ -114,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, SandboxFailure) {
   base::RunLoop run_loop;
   done_closure_ = run_loop.QuitClosure();
 
-  StartMojoService(false);
+  StartMojoService();
 
   mojo_client_->service()->CreateFolder(
       base::Bind(&UtilityProcessMojoClientBrowserTest::OnCreateFolderFinished,
@@ -133,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, SandboxSuccess) {
   base::RunLoop run_loop;
   done_closure_ = run_loop.QuitClosure();
 
-  StartMojoService(true);
+  StartMojoService(UNSANDBOXED);
 
   mojo_client_->service()->CreateFolder(
       base::Bind(&UtilityProcessMojoClientBrowserTest::OnCreateFolderFinished,
@@ -154,8 +156,7 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, ElevatedSuccess) {
   base::RunLoop run_loop;
   done_closure_ = run_loop.QuitClosure();
 
-  bool elevated_utility_process = true;
-  StartMojoService(true, elevated_utility_process);
+  StartMojoService(ELEVATED);
 
   mojo_client_->service()->CreateFolder(
       base::Bind(&UtilityProcessMojoClientBrowserTest::OnCreateFolderFinished,
