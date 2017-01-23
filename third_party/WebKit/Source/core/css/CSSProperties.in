@@ -426,7 +426,7 @@ column-gap interpolable, converter=convertComputedLength<float>, custom_all, api
 column-rule-color interpolable, custom_all
 column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
 column-rule-width interpolable, converter=convertLineWidth<unsigned short>
-column-span type_name=ColumnSpan
+column-span type_name=ColumnSpan, api_class
 column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-highlight inherited, converter=convertString<CSSValueNone>, api_class
 -webkit-hyphenate-character inherited, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>

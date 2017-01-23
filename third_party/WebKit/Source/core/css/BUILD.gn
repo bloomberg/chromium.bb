@@ -349,6 +349,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIClip.cpp",
     "properties/CSSPropertyAPIClipPath.cpp",
     "properties/CSSPropertyAPIColumnGap.cpp",
+    "properties/CSSPropertyAPIColumnSpan.cpp",
     "properties/CSSPropertyAPIContain.cpp",
     "properties/CSSPropertyAPIContent.cpp",
     "properties/CSSPropertyAPICursor.cpp",

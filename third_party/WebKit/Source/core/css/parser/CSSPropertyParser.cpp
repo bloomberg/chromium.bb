@@ -641,10 +641,6 @@ static CSSValue* consumeLocale(CSSParserTokenRange& range) {
   return consumeString(range);
 }
 
-static CSSValue* consumeColumnSpan(CSSParserTokenRange& range) {
-  return consumeIdent<CSSValueAll, CSSValueNone>(range);
-}
-
 static CSSValue* consumeAnimationIterationCount(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueInfinite)
     return consumeIdent(range);
@@ -2339,8 +2335,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return CSSPropertyColumnUtils::consumeColumnWidth(m_range);
     case CSSPropertyColumnCount:
       return CSSPropertyColumnUtils::consumeColumnCount(m_range);
-    case CSSPropertyColumnSpan:
-      return consumeColumnSpan(m_range);
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
     case CSSPropertyAnimationDirection:
