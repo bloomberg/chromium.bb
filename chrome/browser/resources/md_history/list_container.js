@@ -13,7 +13,10 @@ Polymer({
     },
 
     // The path of the currently selected page.
-    selectedPage_: String,
+    selectedPage_: {
+      type: String,
+      computed: 'computeSelectedPage_(groupedRange)',
+    },
 
     // Whether domain-grouped history is enabled.
     grouped: Boolean,
@@ -36,12 +39,10 @@ Polymer({
   },
 
   observers: [
-    'searchTermChanged_(queryState.searchTerm)',
-    'groupedOffsetChanged_(queryState.groupedOffset)',
+    'groupedRangeChanged_(queryState.range)',
   ],
 
   listeners: {
-    'load-more-history': 'loadMoreHistory_',
     'open-menu': 'openMenu_',
   },
 
@@ -66,51 +67,13 @@ Polymer({
     list.addNewResults(results, this.queryState.incremental, info.finished);
   },
 
-  /**
-   * Queries the history backend for results based on queryState.
-   * @param {boolean} incremental Whether the new query should continue where
-   *    the previous query stopped.
-   */
-  queryHistory: function(incremental) {
-    var queryState = this.queryState;
-    // Disable querying until the first set of results have been returned. If
-    // there is a search, query immediately to support search query params from
-    // the URL.
-    var noResults = !this.queryResult || this.queryResult.results == null;
-    if (queryState.queryingDisabled ||
-        (!this.queryState.searchTerm && noResults)) {
-      return;
-    }
-
-    // Close any open dialog if a new query is initiated.
-    var dialog = this.$.dialog.getIfExists();
-    if (!incremental && dialog && dialog.open)
-      dialog.close();
-
-    this.set('queryState.querying', true);
-    this.set('queryState.incremental', incremental);
-
-    var lastVisitTime = 0;
-    if (incremental) {
-      var lastVisit = this.queryResult.results.slice(-1)[0];
-      lastVisitTime = lastVisit ? Math.floor(lastVisit.time) : 0;
-    }
-
-    var maxResults =
-        this.groupedRange == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
-    chrome.send('queryHistory', [
-      queryState.searchTerm, queryState.groupedOffset, queryState.range,
-      lastVisitTime, maxResults
-    ]);
-  },
-
   historyDeleted: function() {
     // Do not reload the list when there are items checked.
     if (this.getSelectedItemCount() > 0)
       return;
 
     // Reload the list with current search state.
-    this.queryHistory(false);
+    this.fire('query-history', false);
   },
 
   /** @return {Element} */
@@ -149,44 +112,24 @@ Polymer({
 
   /**
    * @param {HistoryRange} range
+   * @return {string}
    * @private
    */
-  groupedRangeChanged_: function(range, oldRange) {
-    this.selectedPage_ =
-        range == HistoryRange.ALL_TIME ? 'infinite-list' : 'grouped-list';
+  computeSelectedPage_: function(range) {
+    return range == HistoryRange.ALL_TIME ? 'infinite-list' : 'grouped-list';
+  },
 
-    if (oldRange == undefined)
-      return;
-
-    this.set('queryState.groupedOffset', 0);
-
+  /**
+   * @param {HistoryRange} range
+   * @private
+   */
+  groupedRangeChanged_: function(range) {
     // Reset the results on range change to prevent stale results from being
     // processed into the incoming range's UI.
-    if (this.queryResult.info) {
+    if (range != HistoryRange.ALL_TIME && this.queryResult.info) {
       this.set('queryResult.results', []);
       this.historyResult(this.queryResult.info, []);
     }
-
-    this.queryHistory(false);
-    this.fire('history-view-changed');
-  },
-
-  /** @private */
-  searchTermChanged_: function() {
-    this.queryHistory(false);
-    // TODO(tsergeant): Ignore incremental searches in this metric.
-    if (this.queryState.searchTerm)
-      md_history.BrowserService.getInstance().recordAction('Search');
-  },
-
-  /** @private */
-  groupedOffsetChanged_: function() {
-    this.queryHistory(false);
-  },
-
-  /** @private */
-  loadMoreHistory_: function() {
-    this.queryHistory(true);
   },
 
   /**

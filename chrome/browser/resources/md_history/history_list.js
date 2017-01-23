@@ -102,7 +102,7 @@ Polymer({
     if (this.resultLoadingDisabled_ || this.querying)
       return;
 
-    this.fire('load-more-history');
+    this.fire('query-history', true);
   },
 
   /**

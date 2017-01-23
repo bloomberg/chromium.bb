@@ -103,7 +103,6 @@
         'grouped_list',
         'history_list',
         'history_list_behavior',
-        '<(EXTERNS_GYP):chrome_send',
         '../history/compiled_resources2.gyp:externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -125,7 +124,19 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'query_manager',
+      'dependencies': [
+        'browser_service',
+        'externs',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'router',
+      'dependencies': [
+        'constants',
+        'externs',
+      ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

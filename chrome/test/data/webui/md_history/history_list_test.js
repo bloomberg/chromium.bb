@@ -440,12 +440,17 @@ suite('<history-list>', function() {
     });
   });
 
-  test('delete dialog closed on url change', function() {
+  test('delete dialog closed on back navigation', function(done) {
+    // Ensure that state changes are always mirrored to the URL.
+    app.$$('history-router').$$('iron-location').dwellTime = 0;
     app.queryState_.queryingDisabled = false;
-    var listContainer = app.$.history;
+    // Navigate from chrome://history/ to chrome://history/?q=something else.
+    app.set('queryState_.searchTerm', 'something else');
     app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
     app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
-    return PolymerTest.flushTasks().then(function() {
+
+    var listContainer = app.$.history;
+    PolymerTest.flushTasks().then(function() {
       items = Polymer.dom(element.root).querySelectorAll('history-item');
 
       MockInteractions.tap(items[2].$.checkbox);
@@ -456,9 +461,15 @@ suite('<history-list>', function() {
     }).then(function() {
       // Confirmation dialog should appear.
       assertTrue(listContainer.$.dialog.getIfExists().open);
+      // Navigate back to chrome://history.
+      window.history.back();
 
-      app.set('queryState_.searchTerm', 'something else');
-      assertFalse(listContainer.$.dialog.getIfExists().open);
+      listenOnce(window, 'popstate', function() {
+        PolymerTest.flushTasks().then(function() {
+          assertFalse(listContainer.$.dialog.getIfExists().open);
+          done();
+        });
+      });
     });
   });
 

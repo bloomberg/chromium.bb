@@ -3316,7 +3316,6 @@ dialog .body {
     </template>
   </template>
   </dom-module>
-
 <dom-module id="history-router" assetpath="chrome://history/" css-build="shadow">
   <template>
     <iron-location path="{{path_}}" query="{{query_}}"></iron-location>
@@ -3725,6 +3724,8 @@ history-toolbar {
 }
 
 </style>
+    <history-query-manager query-state="{{queryState_}}" query-result="[[queryResult_]]">
+    </history-query-manager>
     <history-router selected-page="{{selectedPage_}}" query-state="{{queryState_}}">
     </history-router>
     <history-toolbar id="toolbar" grouped-offset="{{queryState_.groupedOffset}}" grouped-range="{{queryState_.range}}" has-drawer="[[hasDrawer_]]" has-more-results="[[!queryResult_.info.finished]]" is-grouped-mode="{{grouped_}}" query-info="[[queryResult_.info]]" querying="[[queryState_.querying]]" search-term="{{queryState_.searchTerm}}" show-menu-promo="[[showMenuPromo_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]" spinner-active="[[shouldShowSpinner_(queryState_.querying,

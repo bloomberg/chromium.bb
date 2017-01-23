@@ -12,9 +12,30 @@ Polymer({
       notify: true,
     },
 
+    /** @type {QueryState} */
     queryState: {
       type: Object,
       notify: true,
+      value: function() {
+        // TODO(tsergeant: Move this initialization into query-manager.
+        return {
+          // Whether the most recent query was incremental.
+          incremental: false,
+          // A query is initiated by page load.
+          querying: true,
+          queryingDisabled: false,
+          _range: HistoryRange.ALL_TIME,
+          searchTerm: '',
+          groupedOffset: 0,
+
+          set range(val) {
+            this._range = Number(val);
+          },
+          get range() {
+            return this._range;
+          },
+        };
+      },
     },
 
     path_: {
