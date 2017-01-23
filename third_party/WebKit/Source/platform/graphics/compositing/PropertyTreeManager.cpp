@@ -62,6 +62,7 @@ void PropertyTreeManager::setupRootTransformNode() {
   // transform.
   cc::TransformTree& transformTree = m_propertyTrees.transform_tree;
   transformTree.clear();
+  m_propertyTrees.element_id_to_transform_node_index.clear();
   cc::TransformNode& transformNode = *transformTree.Node(
       transformTree.Insert(cc::TransformNode(), kRealRootNodeId));
   DCHECK_EQ(transformNode.id, kSecondaryRootNodeId);
@@ -115,6 +116,7 @@ void PropertyTreeManager::setupRootEffectNode() {
   cc::EffectTree& effectTree = m_propertyTrees.effect_tree;
   effectTree.clear();
   m_propertyTrees.layer_id_to_effect_node_index.clear();
+  m_propertyTrees.element_id_to_effect_node_index.clear();
   cc::EffectNode& effectNode =
       *effectTree.Node(effectTree.Insert(cc::EffectNode(), kInvalidNodeId));
   DCHECK_EQ(effectNode.id, kSecondaryRootNodeId);
@@ -185,6 +187,12 @@ int PropertyTreeManager::ensureCompositorTransformNode(
   dummyLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
   dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
   dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+  CompositorElementId compositorElementId =
+      transformNode->compositorElementId();
+  if (compositorElementId) {
+    m_propertyTrees.element_id_to_transform_node_index[compositorElementId] =
+        id;
+  }
 
   auto result = m_transformNodeMap.set(transformNode, id);
   DCHECK(result.isNewEntry);
@@ -250,6 +258,8 @@ int PropertyTreeManager::ensureCompositorScrollNode(
   int id = scrollTree().Insert(cc::ScrollNode(), parentId);
 
   cc::ScrollNode& compositorNode = *scrollTree().Node(id);
+  // TODO(wkorman): Fix owning layer id to reference a layer id rather than a
+  // scroll node index.
   compositorNode.owning_layer_id = parentId;
   m_propertyTrees
       .layer_id_to_scroll_node_index[compositorNode.owning_layer_id] = id;
@@ -386,6 +396,11 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   effectNode.blend_mode = nextEffect->blendMode();
   m_propertyTrees.layer_id_to_effect_node_index[effectNode.owning_layer_id] =
       effectNode.id;
+  CompositorElementId compositorElementId = nextEffect->compositorElementId();
+  if (compositorElementId) {
+    m_propertyTrees.element_id_to_effect_node_index[compositorElementId] =
+        effectNode.id;
+  }
   m_effectStack.push_back(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 
   dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
