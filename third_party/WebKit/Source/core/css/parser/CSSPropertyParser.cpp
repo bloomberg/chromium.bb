@@ -2351,9 +2351,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyOffsetRotate:
     case CSSPropertyOffsetRotation:
       return consumeOffsetRotate(m_range);
-    case CSSPropertyOutlineWidth:
-      return consumeLineWidth(m_range, m_context->mode(),
-                              UnitlessQuirk::Forbid);
     case CSSPropertyTransform:
       return consumeTransform(
           m_range, m_context,

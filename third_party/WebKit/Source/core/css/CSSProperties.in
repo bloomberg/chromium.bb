@@ -328,7 +328,7 @@ orphans interpolable, inherited, type_name=short
 outline-color interpolable, custom_all, api_class
 outline-offset interpolable, converter=convertComputedLength<int>, api_class
 outline-style custom_all
-outline-width interpolable, converter=convertLineWidth<unsigned short>
+outline-width interpolable, converter=convertLineWidth<unsigned short>, api_class
 overflow-anchor runtime_flag=ScrollAnchoring, type_name=EOverflowAnchor
 overflow-wrap inherited
 overflow-x type_name=EOverflow
