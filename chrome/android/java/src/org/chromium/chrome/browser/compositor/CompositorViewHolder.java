@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -87,7 +88,7 @@ public class CompositorViewHolder extends FrameLayout
     private int mPendingSwapBuffersCount;
 
     private final ArrayList<Invalidator.Client> mPendingInvalidations =
-            new ArrayList<Invalidator.Client>();
+            new ArrayList<>();
     private boolean mSkipInvalidation;
 
     /**
@@ -110,6 +111,7 @@ public class CompositorViewHolder extends FrameLayout
     /** The currently attached View. */
     private View mView;
 
+    private TabModelSelectorObserver mTabModelSelectorObserver;
     private TabObserver mTabObserver;
     private boolean mEnableCompositorTabStrip;
 
@@ -132,7 +134,7 @@ public class CompositorViewHolder extends FrameLayout
      * This view is created on demand to display debugging information.
      */
     private static class DebugOverlay extends View {
-        private final List<Pair<Rect, Integer>> mRectangles = new ArrayList<Pair<Rect, Integer>>();
+        private final List<Pair<Rect, Integer>> mRectangles = new ArrayList<>();
         private final Paint mPaint = new Paint();
         private boolean mFirstPush = true;
 
@@ -154,7 +156,7 @@ public class CompositorViewHolder extends FrameLayout
                 mRectangles.clear();
                 mFirstPush = false;
             }
-            mRectangles.add(new Pair<Rect, Integer>(rect, color));
+            mRectangles.add(new Pair<>(rect, color));
             invalidate();
         }
 
@@ -199,6 +201,18 @@ public class CompositorViewHolder extends FrameLayout
             @Override
             public void onContentChanged(Tab tab) {
                 CompositorViewHolder.this.onContentChanged();
+            }
+        };
+
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onChange() {
+                onContentChanged();
+            }
+
+            @Override
+            public void onNewTabCreated(Tab tab) {
+                initializeTab(tab);
             }
         };
 
@@ -781,20 +795,8 @@ public class CompositorViewHolder extends FrameLayout
         mLayoutManager.init(tabModelSelector, tabCreatorManager, tabContentManager,
                 androidContentContainer, contextualSearchManager, readerModeManager,
                 mCompositorView.getResourceManager().getDynamicResourceLoader());
-        mTabModelSelector = tabModelSelector;
-        tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
-            @Override
-            public void onChange() {
-                onContentChanged();
-            }
 
-            @Override
-            public void onNewTabCreated(Tab tab) {
-                initializeTab(tab);
-            }
-        });
-
-        mLayerTitleCache.setTabModelSelector(mTabModelSelector);
+        attachToTabModelSelector(tabModelSelector);
 
         onContentChanged();
     }
@@ -851,7 +853,7 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onContentViewCoreAdded(ContentViewCore content) {
+    public void onOverlayPanelContentViewCoreAdded(ContentViewCore content) {
         // TODO(dtrainor): Look into rolling this into onContentChanged().
         initializeContentViewCore(content);
         setSizeOfUnattachedView(content.getContainerView());
@@ -969,6 +971,38 @@ public class CompositorViewHolder extends FrameLayout
         mPendingInvalidations.clear();
     }
 
+    /**
+     * Detach and return the {@link TabModelSelector} in order to disconnect this
+     * {@link CompositorViewHolder} so that VR can take ownership of Chrome's rendering.
+     * @return The detached {@link TabModelSelector}.
+     */
+    public TabModelSelector detachForVR() {
+        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        TabModelSelector selector = mTabModelSelector;
+        mTabModelSelector = null;
+        mLayerTitleCache.setTabModelSelector(null);
+        setTab(null);
+        return selector;
+    }
+
+    /**
+     * Restores the {@link TabModelSelector} to this {@link CompositorViewHolder} after exiting VR
+     * so that it can take back ownership of Chrome's rendering.
+     * @param tabModelSelector
+     */
+    public void onExitVR(TabModelSelector tabModelSelector) {
+        attachToTabModelSelector(tabModelSelector);
+    }
+
+    private void attachToTabModelSelector(TabModelSelector tabModelSelector) {
+        assert mTabModelSelector == null;
+        mTabModelSelector = tabModelSelector;
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
+
+        mLayerTitleCache.setTabModelSelector(mTabModelSelector);
+        onContentChanged();
+    }
+
     @Override
     public void invalidateAccessibilityProvider() {
         if (mNodeProvider != null) {
@@ -1006,7 +1040,7 @@ public class CompositorViewHolder extends FrameLayout
      */
     private class CompositorAccessibilityProvider extends ExploreByTouchHelper {
         private final float mDpToPx;
-        List<VirtualView> mVirtualViews = new ArrayList<VirtualView>();
+        List<VirtualView> mVirtualViews = new ArrayList<>();
         private final Rect mPlaceHolderRect = new Rect(0, 0, 1, 1);
         private static final String PLACE_HOLDER_STRING = "";
         private final RectF mTouchTarget = new RectF();

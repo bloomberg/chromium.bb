@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+
 /**
  * Abstracts away the VrClassesWrapperImpl class, which may or may not be present at runtime
  * depending on compile flags.
@@ -17,7 +19,7 @@ public interface VrClassesWrapper {
     /**
      * Creates a VrShellImpl instance.
      */
-    public VrShell createVrShell();
+    public VrShell createVrShell(CompositorViewHolder compositorViewHolder);
 
     /**
      * Creates a VrDaydreamApImpl instance.

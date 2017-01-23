@@ -141,7 +141,7 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     public void invalidateAccessibilityProvider() { }
 
     @Override
-    public void onContentViewCoreAdded(ContentViewCore content) { }
+    public void onOverlayPanelContentViewCoreAdded(ContentViewCore content) { }
 
     @Override
     public void onContentChanged() { }

@@ -312,7 +312,7 @@ public class LayoutManagerDocument extends LayoutManager
 
     @Override
     public void setOverlayPanelContentViewCore(ContentViewCore contentViewCore) {
-        mHost.onContentViewCoreAdded(contentViewCore);
+        mHost.onOverlayPanelContentViewCoreAdded(contentViewCore);
     }
 
     @Override

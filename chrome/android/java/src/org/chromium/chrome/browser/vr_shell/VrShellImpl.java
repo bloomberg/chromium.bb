@@ -26,8 +26,10 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -60,6 +62,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private static final float DEFAULT_UI_HEIGHT = 1080f;
 
     private final Activity mActivity;
+    private final CompositorViewHolder mCompositorViewHolder;
     private final VirtualDisplayAndroid mContentVirtualDisplay;
     private final VirtualDisplayAndroid mUiVirtualDisplay;
 
@@ -83,10 +86,13 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private boolean mReprojectedRendering;
 
     private TabRedirectHandler mNonVrTabRedirectHandler;
+    private TabModelSelector mTabModelSelector;
 
-    public VrShellImpl(Activity activity) {
+    public VrShellImpl(Activity activity, CompositorViewHolder compositorViewHolder) {
         super(activity);
         mActivity = activity;
+        mCompositorViewHolder = compositorViewHolder;
+        mTabModelSelector = mCompositorViewHolder.detachForVR();
         mUiCVCContainer = new FrameLayout(getContext()) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent event) {
@@ -183,6 +189,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
         mOriginalWindowAndroid = mContentCVC.getWindowAndroid();
         mTab.updateWindowAndroid(mContentVrWindowAndroid);
+        mContentCVC.onAttachedToWindow();
     }
 
     @CalledByNative
@@ -263,6 +270,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             nativeDestroy(mNativeVrShell);
             mNativeVrShell = 0;
         }
+        mCompositorViewHolder.onExitVR(mTabModelSelector);
         mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
         mTab.updateWindowAndroid(mOriginalWindowAndroid);
         mContentCVC.onSizeChanged(mContentCVC.getContainerView().getWidth(),

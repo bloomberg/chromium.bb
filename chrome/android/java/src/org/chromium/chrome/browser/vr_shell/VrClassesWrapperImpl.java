@@ -11,6 +11,7 @@ import com.google.vr.ndk.base.AndroidCompat;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 
 /**
  * Builder class to create all VR related classes. These VR classes are behind the same build time
@@ -40,10 +41,10 @@ public class VrClassesWrapperImpl implements VrClassesWrapper {
     }
 
     @Override
-    public VrShell createVrShell() {
+    public VrShell createVrShell(CompositorViewHolder compositorViewHolder) {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            return new VrShellImpl(mActivity);
+            return new VrShellImpl(mActivity, compositorViewHolder);
         } catch (Exception ex) {
             Log.e(TAG, "Unable to instantiate VrShellImpl", ex);
             return null;

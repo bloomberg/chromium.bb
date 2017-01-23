@@ -91,13 +91,10 @@ public interface LayoutManagerHost {
     ChromeFullscreenManager getFullscreenManager();
 
     /**
-     * Called when a new {@link ContentViewCore} has been added to the list of current visible
-     * {@link ContentViewCore}s.  While this {@link ContentViewCore} might not be drawing its
-     * contents at this time, it needs to be sized appropriately.
-     * @param content The {@link ContentViewCore} that was added to the current list of visible
-     *                {@link ContentViewCore}s.
+     * Called when a new {@link ContentViewCore} has been added for an OverlayPanel.
+     * @param content The {@link ContentViewCore} that was added for the OverlayPanel.
      */
-    void onContentViewCoreAdded(ContentViewCore content);
+    void onOverlayPanelContentViewCoreAdded(ContentViewCore content);
 
     /**
      * Called when the currently visible content has been changed.

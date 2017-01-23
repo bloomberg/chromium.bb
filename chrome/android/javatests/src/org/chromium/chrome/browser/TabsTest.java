@@ -185,7 +185,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         });
 
         final AtomicReference<JavascriptAppModalDialog> dialog =
-                new AtomicReference<JavascriptAppModalDialog>();
+                new AtomicReference<>();
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
