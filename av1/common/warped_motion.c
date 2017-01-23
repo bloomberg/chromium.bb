@@ -713,7 +713,7 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
     uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
 
     if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
-        (4 * abs(gamma) + 7 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
+        (4 * abs(gamma) + 4 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
       // assert(0 &&
       //   "Warped motion model is incompatible with new warp filter");
       highbd_warp_plane_old(wm, ref8, width, height, stride, pred8, p_col,
@@ -972,7 +972,7 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
           }
         } else if (ix4 >= width + 6) {
           // In this case, the leftmost pixel sampled is in column
-          // ix4 - 3 + 0 - 3 = ix4 - 6 >= width, ie. the entire block
+          // ix4 - 4 + 0 - 3 = ix4 - 7 >= width - 1, ie. the entire block
           // will sample only from the rightmost column
           // (once border extension is taken into account)
           for (l = 0; l < 8; ++l) {
@@ -1062,7 +1062,7 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
             (1 << WARPEDMODEL_PREC_BITS);
 
     if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
-        (4 * abs(gamma) + 7 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
+        (4 * abs(gamma) + 4 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
       // assert(0 &&
       //   "Warped motion model is incompatible with new warp filter");
       warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row,
@@ -1827,7 +1827,7 @@ int find_projection(const int np, double *pts1, double *pts2,
             (1 << WARPEDMODEL_PREC_BITS);
 
     if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
-        (4 * abs(gamma) + 7 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
+        (4 * abs(gamma) + 4 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
       return 1;
     }
   }

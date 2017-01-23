@@ -85,24 +85,33 @@ class AV1WarpFilterTest : public ::testing::TestWithParam<WarpTestParam> {
 
   void RunCheckOutput() {
     const int w = 128, h = 128;
+    const int border = 16;
+    const int stride = w + 2 * border;
     const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
     const int num_iters = GET_PARAM(2);
     int i, j;
-    uint8_t *input = new uint8_t[w * h];
+
+    uint8_t *input_ = new uint8_t[h * stride];
+    uint8_t *input = input_ + border;
     uint8_t *output = new uint8_t[out_w * out_h];
     uint8_t *output2 = new uint8_t[out_w * out_h];
     int32_t mat[8], alpha, beta, gamma, delta;
 
+    // Generate an input block and extend its borders horizontally
     for (i = 0; i < h; ++i)
-      for (j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand8();
+      for (j = 0; j < w; ++j) input[i * stride + j] = rnd_.Rand8();
+    for (i = 0; i < h; ++i) {
+      memset(input + i * stride - border, input[i * stride], border);
+      memset(input + i * stride + w, input[i * stride + (w - 1)], border);
+    }
 
     /* Try different sizes of prediction block */
     for (i = 0; i < num_iters; ++i) {
       generate_model(mat, &alpha, &beta, &gamma, &delta);
-      av1_warp_affine_c(mat, input, w, h, w, output, 32, 32, out_w, out_h,
+      av1_warp_affine_c(mat, input, w, h, stride, output, 32, 32, out_w, out_h,
                         out_w, 0, 0, 0, alpha, beta, gamma, delta);
-      av1_warp_affine_sse2(mat, input, w, h, w, output2, 32, 32, out_w, out_h,
-                           out_w, 0, 0, 0, alpha, beta, gamma, delta);
+      av1_warp_affine_sse2(mat, input, w, h, stride, output2, 32, 32, out_w,
+                           out_h, out_w, 0, 0, 0, alpha, beta, gamma, delta);
 
       for (j = 0; j < out_w * out_h; ++j)
         ASSERT_EQ(output[j], output2[j])
@@ -110,7 +119,7 @@ class AV1WarpFilterTest : public ::testing::TestWithParam<WarpTestParam> {
             << (j / out_w) << ") on iteration " << i;
     }
 
-    delete[] input;
+    delete[] input_;
     delete[] output;
     delete[] output2;
   }
