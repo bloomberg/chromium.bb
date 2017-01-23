@@ -718,7 +718,6 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'chell-paladin',
         'gale-paladin',
-        'gru-paladin',
         'lakitu_next-paladin',
         'poppy-paladin',
 
