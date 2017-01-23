@@ -213,6 +213,7 @@ struct enumeration {
 	struct wl_list link;
 	struct description *description;
 	bool bitfield;
+	int since;
 };
 
 struct entry {
@@ -220,6 +221,7 @@ struct entry {
 	char *uppercase_name;
 	char *value;
 	char *summary;
+	int since;
 	struct wl_list link;
 };
 
@@ -494,6 +496,7 @@ create_enumeration(const char *name)
 	enumeration = xzalloc(sizeof *enumeration);
 	enumeration->name = xstrdup(name);
 	enumeration->uppercase_name = uppercase_dup(name);
+	enumeration->since = 1;
 
 	wl_list_init(&enumeration->entry_list);
 
@@ -797,6 +800,12 @@ start_element(void *data, const char *element_name, const char **atts)
 			fail(&ctx->loc, "no entry name given");
 
 		entry = create_entry(name, value);
+		version = version_from_since(ctx, since);
+
+		if (version < ctx->enumeration->since)
+			warn(&ctx->loc, "since version not increasing\n");
+		ctx->enumeration->since = version;
+		entry->since = version;
 
 		if (summary)
 			entry->summary = xstrdup(summary);
@@ -1278,16 +1287,33 @@ emit_enumerations(struct interface *interface)
 		}
 		printf("enum %s_%s {\n", interface->name, e->name);
 		wl_list_for_each(entry, &e->entry_list, link) {
-			if (entry->summary)
-				printf("\t/**\n"
-				       "\t * %s\n"
-				       "\t */\n", entry->summary);
+			if (entry->summary || entry->since > 1) {
+				printf("\t/**\n");
+				if (entry->summary)
+					printf("\t * %s\n", entry->summary);
+				if (entry->since > 1)
+					printf("\t * @since %d\n", entry->since);
+				printf("\t */\n");
+			}
 			printf("\t%s_%s_%s = %s,\n",
 			       interface->uppercase_name,
 			       e->uppercase_name,
 			       entry->uppercase_name, entry->value);
 		}
 		printf("};\n");
+
+		wl_list_for_each(entry, &e->entry_list, link) {
+			if (entry->since == 1)
+                            continue;
+
+                        printf("/**\n * @ingroup iface_%s\n */\n", interface->name);
+                        printf("#define %s_%s_%s_SINCE_VERSION %d\n",
+                               interface->uppercase_name,
+                               e->uppercase_name, entry->uppercase_name,
+                               entry->since);
+
+		}
+
 		printf("#endif /* %s_%s_ENUM */\n\n",
 		       interface->uppercase_name, e->uppercase_name);
 	}

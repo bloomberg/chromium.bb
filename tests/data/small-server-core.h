@@ -64,6 +64,29 @@ struct intf_not_here;
  */
 extern const struct wl_interface intf_A_interface;
 
+#ifndef INTF_A_FOO_ENUM
+#define INTF_A_FOO_ENUM
+enum intf_A_foo {
+	/**
+	 * this is the first
+	 */
+	INTF_A_FOO_FIRST = 0,
+	/**
+	 * this is the second
+	 */
+	INTF_A_FOO_SECOND = 1,
+	/**
+	 * this is the third
+	 * @since 2
+	 */
+	INTF_A_FOO_THIRD = 2,
+};
+/**
+ * @ingroup iface_intf_A
+ */
+#define INTF_A_FOO_THIRD_SINCE_VERSION 2
+#endif /* INTF_A_FOO_ENUM */
+
 /**
  * @ingroup iface_intf_A
  * @struct intf_A_interface

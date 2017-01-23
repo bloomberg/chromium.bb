@@ -54,7 +54,7 @@ static const struct wl_message intf_A_events[] = {
 };
 
 WL_EXPORT const struct wl_interface intf_A_interface = {
-	"intf_A", 1,
+	"intf_A", 3,
 	3, intf_A_requests,
 	1, intf_A_events,
 };
