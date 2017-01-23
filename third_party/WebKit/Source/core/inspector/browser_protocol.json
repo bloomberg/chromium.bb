@@ -1229,6 +1229,9 @@
             },
             {
                 "name": "getCookies",
+                "parameters": [
+                    { "name": "urls", "type": "array", "items": { "type": "string" }, "optional": true, "description": "The list of URLs for which applicable cookies will be fetched" }
+                ],
                 "returns": [
                     { "name": "cookies", "type": "array", "items": { "$ref": "Cookie" }, "description": "Array of cookie objects." }
                 ],
