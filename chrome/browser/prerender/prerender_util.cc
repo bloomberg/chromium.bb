@@ -4,17 +4,9 @@
 
 #include "chrome/browser/prerender/prerender_util.h"
 
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
-#include "base/strings/string_util.h"
-#include "content/public/browser/resource_request_info.h"
-#include "content/public/common/resource_type.h"
-#include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
-#include "url/third_party/mozilla/url_parse.h"
-#include "url/url_canon.h"
-#include "url/url_util.h"
+#include "components/google/core/browser/google_util.h"
+#include "url/gurl.h"
 
 namespace prerender {
 
@@ -43,46 +35,16 @@ void ReportPrerenderSchemeCancelReason(PrerenderSchemeCancelReason reason) {
 
 }  // namespace
 
-bool MaybeGetQueryStringBasedAliasURL(
-    const GURL& url, GURL* alias_url) {
-  DCHECK(alias_url);
-  url::Parsed parsed;
-  url::ParseStandardURL(url.spec().c_str(), url.spec().length(), &parsed);
-  url::Component query = parsed.query;
-  url::Component key, value;
-  while (url::ExtractQueryKeyValue(url.spec().c_str(), &query, &key, &value)) {
-    if (key.len != 3 || strncmp(url.spec().c_str() + key.begin, "url", key.len))
-      continue;
-    // We found a url= query string component.
-    if (value.len < 1)
-      continue;
-    url::RawCanonOutputW<1024> decoded_url;
-    url::DecodeURLEscapeSequences(url.spec().c_str() + value.begin, value.len,
-                                  &decoded_url);
-    GURL new_url(base::string16(decoded_url.data(), decoded_url.length()));
-    if (!new_url.is_empty() && new_url.is_valid()) {
-      *alias_url = new_url;
-      return true;
-    }
+bool IsGoogleOriginURL(const GURL& origin_url) {
+  // ALLOW_NON_STANDARD_PORTS for integration tests with the embedded server.
+  if (!google_util::IsGoogleDomainUrl(origin_url,
+                                      google_util::DISALLOW_SUBDOMAIN,
+                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
     return false;
   }
-  return false;
-}
 
-bool IsGoogleDomain(const GURL& url) {
-  return base::StartsWith(url.host_piece(), "www.google.",
-                          base::CompareCase::SENSITIVE);
-}
-
-bool IsGoogleSearchResultURL(const GURL& url) {
-  if (!IsGoogleDomain(url))
-    return false;
-  return (url.path_piece().empty() ||
-          base::StartsWith(url.path_piece(), "/search",
-                           base::CompareCase::SENSITIVE) ||
-          (url.path_piece() == "/") ||
-          base::StartsWith(url.path_piece(), "/webhp",
-                           base::CompareCase::SENSITIVE));
+  return (origin_url.path_piece() == "/") ||
+         google_util::IsGoogleSearchUrl(origin_url);
 }
 
 void ReportPrerenderExternalURL() {

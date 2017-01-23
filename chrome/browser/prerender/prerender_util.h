@@ -5,20 +5,12 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_
 
-#include "url/gurl.h"
+class GURL;
 
 namespace prerender {
 
-// Extracts a urlencoded URL stored in a url= query parameter from a URL
-// supplied, if available, and stores it in alias_url.  Returns whether or not
-// the operation succeeded (i.e. a valid URL was found).
-bool MaybeGetQueryStringBasedAliasURL(const GURL& url, GURL* alias_url);
-
-// Indicates whether the URL provided has a Google domain
-bool IsGoogleDomain(const GURL& url);
-
-// Indicates whether the URL provided could be a Google search result page.
-bool IsGoogleSearchResultURL(const GURL& url);
+// Indicates whether the URL provided is a GWS origin.
+bool IsGoogleOriginURL(const GURL& origin_url);
 
 // Report a URL was canceled due to trying to handle an external URL.
 void ReportPrerenderExternalURL();

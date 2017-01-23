@@ -911,7 +911,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
 
   if ((origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN ||
        origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) &&
-      IsGoogleSearchResultURL(referrer.url)) {
+      IsGoogleOriginURL(referrer.url)) {
     origin = ORIGIN_GWS_PRERENDER;
   }
 

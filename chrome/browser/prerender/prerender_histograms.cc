@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_util.h"
+#include "components/google/core/browser/google_util.h"
 #include "net/http/http_cache.h"
 
 namespace prerender {
@@ -266,7 +266,9 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
   bool within_window = WithinWindow();
-  bool is_google_url = IsGoogleDomain(url);
+  bool is_google_url =
+      google_util::IsGoogleDomainUrl(url, google_util::DISALLOW_SUBDOMAIN,
+                                     google_util::ALLOW_NON_STANDARD_PORTS);
   RECORD_PLT("PerceivedPLT", perceived_page_load_time);
   if (within_window)
     RECORD_PLT("PerceivedPLTWindowed", perceived_page_load_time);
@@ -322,8 +324,11 @@ void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
     const GURL& url) const {
   // If the URL to be prerendered is not a http[s] URL, or is a Google URL,
   // do not record.
-  if (!url.SchemeIsHTTPOrHTTPS() || IsGoogleDomain(url))
+  if (!url.SchemeIsHTTPOrHTTPS() ||
+      google_util::IsGoogleDomainUrl(url, google_util::DISALLOW_SUBDOMAIN,
+                                     google_util::ALLOW_NON_STANDARD_PORTS)) {
     return;
+  }
   RECORD_PLT("PrerenderNotSwappedInPLT", page_load_time);
 }
 
