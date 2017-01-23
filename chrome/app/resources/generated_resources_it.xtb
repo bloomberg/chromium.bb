@@ -1214,7 +1214,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2562743677925229011">Non connesso a <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Complimenti, il tuo servizio dati "<ph name="NAME" />" è stato attivato ed è pronto all'uso.</translation>
 <translation id="2565670301826831948">Velocità touchpad:</translation>
-<translation id="2565828445440744174">WebAssembly sperimentale</translation>
 <translation id="2566124945717127842">Esegui il powerwash per ripristinare il tuo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> e farlo tornare come nuovo.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
 <translation id="2570000010887652771">Dati salvati.</translation>
@@ -2927,7 +2926,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4801512016965057443">Consenti roaming dati mobile</translation>
 <translation id="4801956050125744859">Conserva entrambe</translation>
 <translation id="4803121606678474433">Abilita cambio modalità di rendering dinamico di canvas 2D.</translation>
-<translation id="480319080797177742">connesso</translation>
 <translation id="4803909571878637176">Disinstallazione</translation>
 <translation id="4804331037112292643">File Open/Save Dialog</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
@@ -3016,7 +3014,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4890773143211625964">Mostra impostazioni avanzate della stampante</translation>
 <translation id="4893336867552636863">I tuoi dati di navigazione verranno eliminati definitivamente da questo dispositivo.</translation>
 <translation id="4899376560703610051">Il tuo dispositivo <ph name="DEVICE_TYPE" /> è stato bloccato manualmente. Devi digitare la password per accedere.</translation>
-<translation id="4899816749097347786">Attiva l'utilizzo di WebAssembly sperimentale per le pagine web.</translation>
 <translation id="490074449735753175">Utilizza un servizio web per correggere gli errori ortografici</translation>
 <translation id="49027928311173603">Il criterio scaricato dal server non è valido. <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Consente di configurare il tempo di completamento della barra di avanzamento del caricamento delle pagine sui telefoni Android.</translation>

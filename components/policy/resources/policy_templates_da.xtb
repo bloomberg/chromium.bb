@@ -2175,6 +2175,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Du kan finde flere valgmuligheder og detaljerede eksempler på:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7781069478569868053">Siden Ny fane</translation>
 <translation id="7788511847830146438">Pr. profil</translation>
 <translation id="7796141075993499320">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som må køre plugins. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPluginsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="7801886189430766248">Når denne politik angives som sand, uploades Android-appdata til alternative servere for Android, hvorfra de gendannes, efter kompatible apps er installeret igen.

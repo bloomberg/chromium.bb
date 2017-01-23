@@ -2157,6 +2157,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Löydät lisäasetuksia ja yksityiskohtaisia esimerkkejä seuraavasta osoitteesta:
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7781069478569868053">Uusi välilehti -sivu</translation>
 <translation id="7788511847830146438">Profiilikohtainen</translation>
 <translation id="7796141075993499320">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat suorittaa laajennuksia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPluginsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7801886189430766248">Jos tämän käytännön arvo on Tosi, Android-sovellusten tiedot varmuuskopioidaan Android Backup ‑palvelimille ja voidaan palauttaa yhteensopivien sovellusten uudelleenasentamisen yhteydessä.

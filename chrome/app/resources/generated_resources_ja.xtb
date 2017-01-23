@@ -1215,7 +1215,6 @@
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> にログインしていません</translation>
 <translation id="2563856802393254086">「<ph name="NAME" />」データ サービスが有効になり、使用できるようになりました。</translation>
 <translation id="2565670301826831948">タッチパッドの速度:</translation>
-<translation id="2565828445440744174">試験運用版 WebAssembly</translation>
 <translation id="2566124945717127842">お使いの <ph name="IDS_SHORT_PRODUCT_NAME" /> 搭載デバイスを出荷時の状態にリセットするために、Powerwash を実行します。</translation>
 <translation id="2568774940984945469">情報バー コンテナ</translation>
 <translation id="2570000010887652771">データ消費を削減しました。</translation>
@@ -2934,7 +2933,6 @@
 <translation id="4801512016965057443">モバイル データ ローミングを許可する</translation>
 <translation id="4801956050125744859">両方を保持</translation>
 <translation id="4803121606678474433">2D キャンバスでの動的レンダリング モードの切り替えを有効にする。</translation>
-<translation id="480319080797177742">接続済み</translation>
 <translation id="4803909571878637176">アンインストール中:</translation>
 <translation id="4804331037112292643">ファイルを開く / 保存するダイアログ</translation>
 <translation id="4804818685124855865">切断</translation>
@@ -3023,7 +3021,6 @@
 <translation id="4890773143211625964">プリンタの詳細オプションを表示</translation>
 <translation id="4893336867552636863">このデバイスから閲覧データが完全に削除されます。</translation>
 <translation id="4899376560703610051">お使いの <ph name="DEVICE_TYPE" /> は手動でロックされています。ログインするにはパスワードを入力する必要があります。</translation>
-<translation id="4899816749097347786">試験運用版 WebAssembly を使用するにはウェブページを有効にします。</translation>
 <translation id="490074449735753175">ウェブ サービスを使用してスペル ミスの解決を支援する</translation>
 <translation id="49027928311173603">サーバーからダウンロードされたポリシーが無効です: <ph name="VALIDATION_ERROR" />。</translation>
 <translation id="490305855972338124">Android スマートフォンのページ読み込み状況バーの完了時間を設定します。</translation>

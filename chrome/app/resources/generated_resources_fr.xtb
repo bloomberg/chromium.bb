@@ -1214,7 +1214,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2562743677925229011">Vous n'êtes pas connecté à <ph name="SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2563856802393254086">Félicitations ! Votre service de données "<ph name="NAME" />" a été activé et est prêt à être utilisé.</translation>
 <translation id="2565670301826831948">Vitesse du pavé tactile :</translation>
-<translation id="2565828445440744174">Fonctionnalité WebAssembly expérimentale</translation>
 <translation id="2566124945717127842">Effectuez un Powerwash pour rétablir la configuration d'usine de votre appareil <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2568774940984945469">Conteneur de barres d'infos</translation>
 <translation id="2570000010887652771">Données enregistrées.</translation>
@@ -2932,7 +2931,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="4801512016965057443">Autoriser l'itinérance des données mobiles</translation>
 <translation id="4801956050125744859">Garder les deux</translation>
 <translation id="4803121606678474433">Activer le basculement en mode de rendu dynamique dans Canvas 2D.</translation>
-<translation id="480319080797177742">connecté</translation>
 <translation id="4803909571878637176">Désinstallation</translation>
 <translation id="4804331037112292643">Boîte de dialogue d'ouverture/d'enregistrement de fichier</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
@@ -3021,7 +3019,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="4890773143211625964">Afficher les paramètres d'imprimante avancés</translation>
 <translation id="4893336867552636863">Cette action aura pour effet de supprimer définitivement vos données de navigation de cet appareil.</translation>
 <translation id="4899376560703610051">Votre <ph name="DEVICE_TYPE" /> a été verrouillé manuellement. Pour accéder à l'appareil, vous devez saisir votre mot de passe.</translation>
-<translation id="4899816749097347786">Permettre aux pages Web d'utiliser la fonctionnalité WebAssembly expérimentale</translation>
 <translation id="490074449735753175">Utiliser un service Web pour corriger les erreurs d'orthographe</translation>
 <translation id="49027928311173603">La règle téléchargée depuis le serveur n'est pas valide : <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Configure le temps d'exécution de la barre de progression correspondant au chargement de page sur un téléphone Android.</translation>

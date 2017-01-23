@@ -1215,7 +1215,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2562743677925229011">No heu iniciat la sessió a <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Enhorabona. El servei de dades "<ph name="NAME" />" s'ha activat i ja es pot fer servir.</translation>
 <translation id="2565670301826831948">Velocitat del ratolí tàctil:</translation>
-<translation id="2565828445440744174">WebAssembly experimental</translation>
 <translation id="2566124945717127842">Utilitzeu una operació Powerwash per restablir el dispositiu <ph name="IDS_SHORT_PRODUCT_NAME" /> i deixar-lo com si fos nou.</translation>
 <translation id="2568774940984945469">Contenidor de la barra d'informació</translation>
 <translation id="2570000010887652771">Les dades s'han desat.</translation>
@@ -2929,7 +2928,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4801512016965057443">Permet la itinerància de dades de telefonia mòbil</translation>
 <translation id="4801956050125744859">Mantén-les totes dues</translation>
 <translation id="4803121606678474433">Activa el canvi de mode de renderització dinàmica del llenç 2D.</translation>
-<translation id="480319080797177742">connectat</translation>
 <translation id="4803909571878637176">Desinstal·lació</translation>
 <translation id="4804331037112292643">Quadre de diàleg per obrir o desar un fitxer</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
@@ -3018,7 +3016,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4890773143211625964">Mostra les opcions avançades de la impressora</translation>
 <translation id="4893336867552636863">Amb aquesta acció, se suprimiran les vostres dades de navegació d'aquest dispositiu de manera permanent.</translation>
 <translation id="4899376560703610051">El dispositiu <ph name="DEVICE_TYPE" /> s'ha bloquejat de manera manual. Per accedir-hi, heu d'escriure la contrasenya.</translation>
-<translation id="4899816749097347786">Permet que les pàgines web facin servir WebAssembly experimental.</translation>
 <translation id="490074449735753175">Utilitza un servei web per revisar l'ortografia</translation>
 <translation id="49027928311173603">La política que s'ha baixat del servidor no és vàlida: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Configura el temps de compleció de la barra de progrés de càrrega de les pàgines en telèfons Android.</translation>

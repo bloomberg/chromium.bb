@@ -1214,7 +1214,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2562743677925229011">Nu sunteți conectat(ă) la <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Felicitări! Serviciul de date „<ph name="NAME" />” a fost activat și este gata de utilizare.</translation>
 <translation id="2565670301826831948">Viteză touchpad:</translation>
-<translation id="2565828445440744174">Limbaj WebAssembly experimental</translation>
 <translation id="2566124945717127842">Folosiți Powerwash pentru a reseta dispozitivul <ph name="IDS_SHORT_PRODUCT_NAME" /> la configurația din fabrică.</translation>
 <translation id="2568774940984945469">Container bară de informații</translation>
 <translation id="2570000010887652771">Date salvate.</translation>
@@ -2933,7 +2932,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4801512016965057443">Permite roaming de date mobile</translation>
 <translation id="4801956050125744859">Păstrați-le pe amândouă</translation>
 <translation id="4803121606678474433">Activează comutarea modului de redare dinamică a obiectelor Canvas 2D.</translation>
-<translation id="480319080797177742">conectat</translation>
 <translation id="4803909571878637176">Se dezinstalează</translation>
 <translation id="4804331037112292643">Caseta de dialog pentru deschiderea/salvarea fișierelor</translation>
 <translation id="4804818685124855865">Deconectează-te</translation>
@@ -3022,7 +3020,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4890773143211625964">Afișează opțiunile avansate pentru imprimantă</translation>
 <translation id="4893336867552636863">Astfel, vor fi șterse definitiv datele de navigare de pe acest dispozitiv.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> a fost blocat manual. Pentru acces, va trebui să introduci parola.</translation>
-<translation id="4899816749097347786">Permite paginilor web să folosească limbajul WebAssembly experimental.</translation>
 <translation id="490074449735753175">Utilizează un serviciu web pentru a corecta greșelile de scriere</translation>
 <translation id="49027928311173603">Politica descărcată de pe server este nevalidă: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Configurează timpul de finalizare din bara de progres a încărcării paginii pe telefonul Android.</translation>

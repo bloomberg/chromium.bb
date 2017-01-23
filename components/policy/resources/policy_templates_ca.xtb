@@ -2138,6 +2138,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Per obtenir més opcions i exemples detallats, aneu a:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7781069478569868053">Pàgina Pestanya nova</translation>
 <translation id="7788511847830146438">Per perfil</translation>
 <translation id="7796141075993499320">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès executar connectors. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPluginsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7801886189430766248">Quan aquesta política s'estableix en "true", les dades de les aplicacions d'Android es pengen als servidors d'Android Backup per poder restaurar-les en tornar a instal·lar aplicacions compatibles.

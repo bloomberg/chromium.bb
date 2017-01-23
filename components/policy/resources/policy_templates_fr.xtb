@@ -2328,6 +2328,7 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
 
           Pour plus d'informations sur les autres options et pour consulter des exemples détaillés, rendez-vous sur :
            <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7781069478569868053">Page Nouvel onglet</translation>
 <translation id="7788511847830146438">Par profil</translation>
 <translation id="7796141075993499320">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter des plug-ins. 
 

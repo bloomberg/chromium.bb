@@ -1214,7 +1214,6 @@
 <translation id="2562743677925229011">Ви не ввійшли в <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Вітаємо! Вашу службу передавання даних "<ph name="NAME" />" активовано. Нею можна користуватися.</translation>
 <translation id="2565670301826831948">Швидкість сенсорної панелі:</translation>
-<translation id="2565828445440744174">Експериментальна мова WebAssembly</translation>
 <translation id="2566124945717127842">Виконайте Powerwash, щоб відновити заводські налаштування пристрою <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2568774940984945469">Контейнер інформаційної панелі</translation>
 <translation id="2570000010887652771">Дані збережено.</translation>
@@ -2933,7 +2932,6 @@
 <translation id="4801512016965057443">Дозволити роумінг мобільних даних</translation>
 <translation id="4801956050125744859">Залишити обидві версії</translation>
 <translation id="4803121606678474433">Увімкнути перехід у режим динамічної обробки Canvas 2D.</translation>
-<translation id="480319080797177742">під’єднано</translation>
 <translation id="4803909571878637176">Видалення</translation>
 <translation id="4804331037112292643">Діалогове вікно "Відкрити/зберегти файл"</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
@@ -3022,7 +3020,6 @@
 <translation id="4890773143211625964">Показати розширені налаштування принтера</translation>
 <translation id="4893336867552636863">Дані веб-перегляду буде видалено з цього пристрою назавжди.</translation>
 <translation id="4899376560703610051">Пристрій <ph name="DEVICE_TYPE" /> заблоковано вручну. Щоб увійти, введіть пароль.</translation>
-<translation id="4899816749097347786">Дозволити веб-сторінкам використовувати експериментальну мову WebAssembly.</translation>
 <translation id="490074449735753175">Використовувати веб-послугу для виправлення помилок правопису</translation>
 <translation id="49027928311173603">Завантажене із сервера правило недійсне: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Налаштувати смугу перебігу завантаження сторінок на телефоні Android.</translation>

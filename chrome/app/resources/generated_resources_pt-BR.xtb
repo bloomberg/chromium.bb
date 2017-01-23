@@ -1214,7 +1214,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2562743677925229011">Não conectado a <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Parabéns! Seu serviço de dados "<ph name="NAME" />" foi ativado e está pronto para ser usado.</translation>
 <translation id="2565670301826831948">Velocidade do touchpad:</translation>
-<translation id="2565828445440744174">WebAssembly experimental</translation>
 <translation id="2566124945717127842">Use a função "Powerwash" para redefinir seu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para as condições de fábrica.</translation>
 <translation id="2568774940984945469">Recipiente da barra de informações</translation>
 <translation id="2570000010887652771">Dados salvos.</translation>
@@ -2931,7 +2930,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4801512016965057443">Permitir roaming de dados móveis</translation>
 <translation id="4801956050125744859">Manter ambas</translation>
 <translation id="4803121606678474433">Ativar troca do modo de renderização dinâmica de tema 2D.</translation>
-<translation id="480319080797177742">conectado</translation>
 <translation id="4803909571878637176">Desinstalação</translation>
 <translation id="4804331037112292643">Caixa de diálogo "Abrir/Salvar arquivo"</translation>
 <translation id="4804818685124855865">Desconectar</translation>
@@ -3019,7 +3017,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4890773143211625964">Mostrar opções avançadas de impressora</translation>
 <translation id="4893336867552636863">Isso excluirá permanentemente os dados de navegação deste dispositivo.</translation>
 <translation id="4899376560703610051">Seu <ph name="DEVICE_TYPE" /> foi bloqueado manualmente. É necessário digitar sua senha para entrar.</translation>
-<translation id="4899816749097347786">Permite que as páginas da Web usem o WebAssembly experimental.</translation>
 <translation id="490074449735753175">Utilizar um serviço da web para ajudar a solucionar erros de ortografia</translation>
 <translation id="49027928311173603">A política baixada do servidor é inválida: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Configura o tempo de conclusão da barra de progresso do carregamento de página em um smartphone Android.</translation>

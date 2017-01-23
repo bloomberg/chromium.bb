@@ -1214,7 +1214,6 @@
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" />-এ প্রবেশ করুন করেননি</translation>
 <translation id="2563856802393254086">অভিনন্দন! আপনার '<ph name="NAME" />' ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং ব্যবহার করার জন্য প্রস্তুত৷</translation>
 <translation id="2565670301826831948">Touchpadএর গতি:</translation>
-<translation id="2565828445440744174">পরীক্ষামূলক WebAssembly</translation>
 <translation id="2566124945717127842">আপনার <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইস নতুনের মত পুনরায় সেট করতে পাওয়ারওয়াশ করুন।</translation>
 <translation id="2568774940984945469">তথ্যবার ধারক</translation>
 <translation id="2570000010887652771">তথ্য সংরক্ষিত হয়েছে।</translation>
@@ -2926,7 +2925,6 @@
 <translation id="4801512016965057443">মোবাইল ডেটা রোমিংয়ের অনুমতি দিন</translation>
 <translation id="4801956050125744859">উভয়ই রাখুন</translation>
 <translation id="4803121606678474433">2D ক্যানভাস গতিশীল রেন্ডারিং মোড স্যুইচিং সক্ষম করুন।</translation>
-<translation id="480319080797177742">সংযুক্ত হয়েছে</translation>
 <translation id="4803909571878637176">আনইনস্টল হচ্ছে</translation>
 <translation id="4804331037112292643">ফাইল খোলা/সংরক্ষিত ডায়লগ</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
@@ -3015,7 +3013,6 @@
 <translation id="4890773143211625964">উন্নত মুদ্রণ বিকল্পগুলি দেখান</translation>
 <translation id="4893336867552636863">এটি স্থায়ীভাবে এই ডিভাইস থেকে আপনার ব্রাউজিং ডেটা মুছে ফেলবে।</translation>
 <translation id="4899376560703610051">আপনার <ph name="DEVICE_TYPE" /> নিজ হাতে লক করা হয়েছে৷ প্রবেশ করতে আপনাকে আপনার পাসওয়ার্ড লিখতে হবে৷</translation>
-<translation id="4899816749097347786">পরীক্ষামূলক WebAssembly ব্যবহার করার জন্য ওয়েব পৃষ্ঠাগুলিকে সক্ষম করে।</translation>
 <translation id="490074449735753175">বানান ত্রুটিগুলি সমাধানে সহায়তা করতে একটি ওয়েব পরিষেবা ব্যবহার করুন</translation>
 <translation id="49027928311173603">সার্ভার থেকে ডাউনলোড করা নীতিটি বৈধ নয়: <ph name="VALIDATION_ERROR" />৷</translation>
 <translation id="490305855972338124">Android ফোনের পৃষ্ঠা লোড হওয়ার অগ্রগতি দণ্ডের সমাপ্তি সময় কনফিগার করে।</translation>

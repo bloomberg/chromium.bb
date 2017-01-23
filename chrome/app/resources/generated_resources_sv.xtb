@@ -1214,7 +1214,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2562743677925229011">Inte inloggad i <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Grattis! Datatjänsten <ph name="NAME" /> har aktiverats och är klar att använda.</translation>
 <translation id="2565670301826831948">Hastighet för styrplatta:</translation>
-<translation id="2565828445440744174">Experimentell WebAssembly</translation>
 <translation id="2566124945717127842">Gör en Powerwash för att återställa <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten så att den blir som ny.</translation>
 <translation id="2568774940984945469">Infobar-behållare</translation>
 <translation id="2570000010887652771">Data sparas.</translation>
@@ -2933,7 +2932,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4801512016965057443">Tillåt mobil dataroaming</translation>
 <translation id="4801956050125744859">Behåll båda</translation>
 <translation id="4803121606678474433">Aktivera lägesbyte för dynamisk rendering av 2D-kanvas.</translation>
-<translation id="480319080797177742">ansluten</translation>
 <translation id="4803909571878637176">Avinstallera</translation>
 <translation id="4804331037112292643">Dialogruta för att öppna och spara filer</translation>
 <translation id="4804818685124855865">Koppla från</translation>
@@ -3022,7 +3020,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4890773143211625964">Visa avancerade utskriftsalternativ</translation>
 <translation id="4893336867552636863">All webbinformation raderas permanent från den här enheten.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> har låsts manuellt. Du måste ange lösenordet för att öppna den.</translation>
-<translation id="4899816749097347786">Aktivera experimentell WebAssembly för webbsidor.</translation>
 <translation id="490074449735753175">Åtgärda stavfel med hjälp av en webbtjänst</translation>
 <translation id="49027928311173603">Policyn som laddades ned från servern är ogiltig: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Konfigurerar slutförandetid för förloppsindikatorn för inläsning av sidor på Android-mobiler.</translation>

@@ -1211,7 +1211,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2562743677925229011">Nicht in <ph name="SHORT_PRODUCT_NAME" /> angemeldet</translation>
 <translation id="2563856802393254086">Herzlichen Glückwunsch! Ihr Datendienst "<ph name="NAME" />" wurde aktiviert und ist einsatzbereit.</translation>
 <translation id="2565670301826831948">Touchpad-Geschwindigkeit:</translation>
-<translation id="2565828445440744174">Experimentelle WebAssembly</translation>
 <translation id="2566124945717127842">Durch einen Powerwash wird Ihr <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät auf den Werkszustand zurückgesetzt.</translation>
 <translation id="2568774940984945469">Infoleisten-Container</translation>
 <translation id="2570000010887652771">Daten gespeichert.</translation>
@@ -2926,7 +2925,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4801512016965057443">Mobilfunk-Roaming zulassen</translation>
 <translation id="4801956050125744859">Beide behalten</translation>
 <translation id="4803121606678474433">Wechseln zwischen dynamischem 2D-Canvas-Renderingmodus aktivieren.</translation>
-<translation id="480319080797177742">verbunden</translation>
 <translation id="4803909571878637176">Deinstallieren</translation>
 <translation id="4804331037112292643">Dialogfeld "Datei öffnen/speichern"</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
@@ -3015,7 +3013,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4890773143211625964">Erweiterte Druckereinstellungen anzeigen</translation>
 <translation id="4893336867552636863">Dadurch werden die Browserdaten dauerhaft von diesem Gerät gelöscht.</translation>
 <translation id="4899376560703610051">Ihr <ph name="DEVICE_TYPE" /> wurde manuell gesperrt. Geben Sie zum Fortfahren Ihr Passwort ein.</translation>
-<translation id="4899816749097347786">Webseiten können experimentelle WebAssembly-Funktionen nutzen.</translation>
 <translation id="490074449735753175">Rechtschreibfehler mithilfe eines Webdienstes korrigieren</translation>
 <translation id="49027928311173603">Die vom Server heruntergeladene Richtlinie ist ungültig: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Konfiguriert die Abschlusszeit der Statusanzeige für den Seitenaufbau auf dem Android-Smartphone.</translation>

@@ -1214,7 +1214,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2562743677925229011">Nie jesteś zalogowany(a) do <ph name="SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2563856802393254086">Gratulacje! Usługa transmisji danych „<ph name="NAME" />” została aktywowana i można z niej korzystać.</translation>
 <translation id="2565670301826831948">Szybkość touchpada:</translation>
-<translation id="2565828445440744174">Eksperymentalna funkcja WebAssembly</translation>
 <translation id="2566124945717127842">Wykonaj Powerwash, by zresetować urządzenie z <ph name="IDS_SHORT_PRODUCT_NAME" /> do ustawień fabrycznych.</translation>
 <translation id="2568774940984945469">Kontener paska informacji</translation>
 <translation id="2570000010887652771">Zapisano dane.</translation>
@@ -2930,7 +2929,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4801512016965057443">Zezwól na przesył danych w roamingu</translation>
 <translation id="4801956050125744859">Zachowaj obie pozycje</translation>
 <translation id="4803121606678474433">Włącz dynamiczne przełączanie trybu renderowania kanwy 2D.</translation>
-<translation id="480319080797177742">połączono</translation>
 <translation id="4803909571878637176">Odinstalowywanie</translation>
 <translation id="4804331037112292643">Okno dialogowe otwierania/zapisywania pliku</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
@@ -3019,7 +3017,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4890773143211625964">Pokaż zaawansowane opcje drukarki</translation>
 <translation id="4893336867552636863">Spowoduje to trwałe usunięcie danych przeglądania z tego urządzenia.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> został zablokowany ręcznie. Aby go odblokować, musisz wpisać hasło.</translation>
-<translation id="4899816749097347786">Włącz eksperymentalną funkcję WebAssembly na stronach internetowych.</translation>
 <translation id="490074449735753175">Używaj usługi internetowej, aby poprawiać błędy ortograficzne</translation>
 <translation id="49027928311173603">Polityka pobrana z serwera jest nieprawidłowa: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Konfiguruje czas ukończenia paska postępu wczytywania strony na telefonie z Androidem.</translation>

@@ -571,6 +571,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="6132506484792346370">A list box or combo box</translation>
 <translation id="6138576064440631958">$1 chord</translation>
 <translation id="6142308968191113180">Heading 4</translation>
+<translation id="6164829606128959761">meter</translation>
 <translation id="6169420925157477918">Image with long description</translation>
 <translation id="6186305613600865047">Jump to the bottom of the page</translation>
 <translation id="6193330012414963395">a.m. p.m.</translation>
@@ -694,7 +695,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7492049978501397201">Entered dialogue</translation>
 <translation id="7518543783849163354">To temporarily stop ChromeVox from speaking, press the Control key.</translation>
 <translation id="7532613204005497612">June</translation>
-<translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, slider</translation>
 <translation id="7552432549459840808">Helpful Chrome Shortcuts</translation>
 <translation id="7579911500627256166">dot <ph name="DOT" /></translation>
 <translation id="7596919493010894443">cleared selection</translation>

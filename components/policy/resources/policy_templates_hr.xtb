@@ -2159,6 +2159,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
           Dodatne opcije i detaljne primjere možete pronaći ovdje:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7781069478569868053">Web-stranica nove kartice</translation>
 <translation id="7788511847830146438">Po profilu</translation>
 <translation id="7796141075993499320">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju pokretati dodatke. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPluginsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="7801886189430766248">Kada se to pravilo postavi na True, podaci Android aplikacija prenose se na Androidove poslužitelje za sigurnosne kopije i vraćaju s njih nakon ponovnog instaliranja kompatibilnih aplikacija.

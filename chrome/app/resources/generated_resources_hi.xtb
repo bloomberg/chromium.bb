@@ -1214,7 +1214,6 @@
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> में प्रवेश नहीं है</translation>
 <translation id="2563856802393254086">बधाई हो! आपकी '<ph name="NAME" />' डेटा सेवा सक्रिय हो गई है और अब वह चलने के लिए तैयार है.</translation>
 <translation id="2565670301826831948">टचपैड गति:</translation>
-<translation id="2565828445440744174">प्रयोगात्मक WebAssembly</translation>
 <translation id="2566124945717127842">अपने <ph name="IDS_SHORT_PRODUCT_NAME" /> डिवाइस को बिल्कुल नए जैसा रीसेट करने के लिए पावरवॉश करें.</translation>
 <translation id="2568774940984945469">जानकारी बार कंटेनर</translation>
 <translation id="2570000010887652771">सहेजा गया डेटा.</translation>
@@ -2932,7 +2931,6 @@
 <translation id="4801512016965057443">मोबाइल डेटा रोमिंग की अनुमति दें</translation>
 <translation id="4801956050125744859">दोनों रखें</translation>
 <translation id="4803121606678474433">2D कैनवस गतिशील रेंडरिंग मोड स्विचिंग सक्षम करें.</translation>
-<translation id="480319080797177742">कनेक्ट है</translation>
 <translation id="4803909571878637176">विस्थापित कर रहा है</translation>
 <translation id="4804331037112292643">फ़ाइल खोलें/सहेजें संवाद</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
@@ -3021,7 +3019,6 @@
 <translation id="4890773143211625964">उन्नत प्रिंटर विकल्प दिखाएं</translation>
 <translation id="4893336867552636863">इससे इस डिवाइस से आपका संपूर्ण ब्राउज़िंग डेटा स्थायी रूप से हट जाएगा.</translation>
 <translation id="4899376560703610051">आपका <ph name="DEVICE_TYPE" /> मैन्‍युअल रूप से लॉक कर दिया गया है. प्रवेश करने के लिए आपको अपने पासवर्ड की आवश्‍यकता होगी.</translation>
-<translation id="4899816749097347786">प्रयोगात्मक WebAssembly का उपयोग करने के लिए वेबपेज सक्षम करें.</translation>
 <translation id="490074449735753175">वर्तनी त्रुटियों के समाधान में सहायता के लिए किसी वेब सेवा का उपयोग करें</translation>
 <translation id="49027928311173603">सर्वर से डाउनलोड की गई नीति अमान्य है: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Android फ़ोन के पेज लोड प्रगति बार के पूरा होने के समय को कॉन्फ़िगर करता है.</translation>

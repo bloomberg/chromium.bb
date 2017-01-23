@@ -2157,6 +2157,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           További beállítások és részletes példák megtekintéséhez keresse fel a következő oldalt:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7781069478569868053">Új lap oldal</translation>
 <translation id="7788511847830146438">Profilonként</translation>
 <translation id="7796141075993499320">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek futtathatnak bővítményeket. Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a "DefaultPluginsSetting" házirendből (ha az be van állítva), vagy egyéb esetben a felhasználó saját személyes beállításából.</translation>
 <translation id="7801886189430766248">Ha ezt az irányelvet igazra állítja, a rendszer feltölti az Android-alkalmazásadatokat az Android Backup-szerverekre, ahonnan újratelepítéskor letölti őket a megfelelő alkalmazás.

@@ -1214,7 +1214,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2562743677925229011">Ei kirjautunut tuotteeseen <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Onnittelut! Tiedonsiirtopalvelusi <ph name="NAME" /> on aktivoitu ja käyttövalmis.</translation>
 <translation id="2565670301826831948">Kosketuslevyn nopeus:</translation>
-<translation id="2565828445440744174">Kokeellinen WebAssembly</translation>
 <translation id="2566124945717127842">Palauta <ph name="IDS_SHORT_PRODUCT_NAME" />-laitteesi alkuperäiseen tilaan suorittamalla Powerwash.</translation>
 <translation id="2568774940984945469">Tietopalkki</translation>
 <translation id="2570000010887652771">Tiedot tallennettu</translation>
@@ -2926,7 +2925,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4801512016965057443">Salli mobiilitiedonsiirto roaming-tilassa</translation>
 <translation id="4801956050125744859">Pidä molemmat</translation>
 <translation id="4803121606678474433">Ota käyttöön siirtyminen dynaamiseen 2D Canvas ‑piirtotilaan.</translation>
-<translation id="480319080797177742">yhdistetty</translation>
 <translation id="4803909571878637176">Asennuksen poistaminen</translation>
 <translation id="4804331037112292643">Tiedoston avaaminen/tallennus -ikkuna</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
@@ -3015,7 +3013,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4890773143211625964">Näytä tulostimen lisäasetukset</translation>
 <translation id="4893336867552636863">Tämä poistaa pysyvästi selaustietosi tältä laitteelta.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> on lukittu manuaalisesti. Voit avata lukituksen antamalla salasanasi.</translation>
-<translation id="4899816749097347786">Anna verkkosivujen käyttää kokeellista WebAssemblya.</translation>
 <translation id="490074449735753175">Käytä verkkopalvelua kirjoitusvirheiden korjaamiseen</translation>
 <translation id="49027928311173603">Palvelimelta ladattu käytäntö on virheellinen: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Määrittää Android-puhelimen sivun lataamisen etenemispalkin valmistumisajan.</translation>

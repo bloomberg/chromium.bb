@@ -1214,7 +1214,6 @@
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> இல் உள்நுழைந்திருக்கவில்லை</translation>
 <translation id="2563856802393254086">வாழ்த்துகள்! உங்கள் '<ph name="NAME" />' தரவு சேவை செயல்படுத்தப்பட்டது, அது பயன்படுத்துவதற்கு தயாராக உள்ளது.</translation>
 <translation id="2565670301826831948">டச்பேட் வேகம்:</translation>
-<translation id="2565828445440744174">பரிசோதனைக்குரிய WebAssembly</translation>
 <translation id="2566124945717127842">பவர்வாஷ், உங்கள் <ph name="IDS_SHORT_PRODUCT_NAME" /> சாதனத்தைப் புதியதைப் போன்று மீட்டமைக்கும்.</translation>
 <translation id="2568774940984945469">தகவல்பட்டி கொள்கலன்</translation>
 <translation id="2570000010887652771">சேமித்த தரவு.</translation>
@@ -2931,7 +2930,6 @@
 <translation id="4801512016965057443">மொபைல் தரவு ரோமிங்கை அனுமதி</translation>
 <translation id="4801956050125744859">இரண்டையும் வைத்திரு</translation>
 <translation id="4803121606678474433">2D கேன்வாஸ் டைனமிக் ரெண்டரிங் பயன்முறையை மாற்றுவதை இயக்கு.</translation>
-<translation id="480319080797177742">இணைக்கப்பட்டது</translation>
 <translation id="4803909571878637176">நிறுவல்நீக்கம்</translation>
 <translation id="4804331037112292643">ஃபைல் ஓப்பன்/சேவ் டயலாக்</translation>
 <translation id="4804818685124855865">தொடர்பைத் துண்டி</translation>
@@ -3020,7 +3018,6 @@
 <translation id="4890773143211625964">மேம்பட்ட பிரிண்டர் விருப்பங்களைக் காட்டு</translation>
 <translation id="4893336867552636863">இது, இந்தச் சாதனத்திலிருந்து உலாவல் தரவை நிரந்தரமாக நீக்கும்.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" />, கைமுறையாக பூட்டப்பட்டுள்ளது. நுழைய கடவுச்சொல்லை உள்ளிட வேண்டியிருக்கும்.</translation>
-<translation id="4899816749097347786">பரிசோதனைக்குரிய WebAssemblyஐப் பயன்படுத்த இணையப் பக்கங்களை இயக்கு.</translation>
 <translation id="490074449735753175">உச்சரிப்பு பிழைகளைத் தீர்க்க வலை சேவையைப் பயன்படுத்துக</translation>
 <translation id="49027928311173603">சேவையகத்திலிருந்து பதிவிறக்கிய கொள்கை தவறானது: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Android ஃபோன் பக்க ஏற்றத்திற்கான செயல்நிலைப் பட்டி நிறைவடையும் நேரத்தை உள்ளமைக்கும்.</translation>

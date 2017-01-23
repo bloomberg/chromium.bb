@@ -1214,7 +1214,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2562743677925229011">Niste prijavljeni na uslugu <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Čestitamo! Podatkovna usluga "<ph name="NAME" />" aktivirana je i spremna za pokret.</translation>
 <translation id="2565670301826831948">Brzina dodirne podloge:</translation>
-<translation id="2565828445440744174">Eksperimentalni WebAssembly</translation>
 <translation id="2566124945717127842">Pokrenite Powerwash da biste vratili uređaj <ph name="IDS_SHORT_PRODUCT_NAME" /> na tvorničke postavke.</translation>
 <translation id="2568774940984945469">Spremnik infotrake</translation>
 <translation id="2570000010887652771">Spremljeni podaci.</translation>
@@ -2933,7 +2932,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4801512016965057443">Omogući roaming mobilnih podataka</translation>
 <translation id="4801956050125744859">Zadrži oba</translation>
 <translation id="4803121606678474433">Omogući prebacivanje načina dinamičnog generiranja 2D platna.</translation>
-<translation id="480319080797177742">povezan</translation>
 <translation id="4803909571878637176">Deinstaliranje</translation>
 <translation id="4804331037112292643">Dijaloški okvir otvaranja/spremanja datoteke</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
@@ -3022,7 +3020,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4890773143211625964">Prikaži napredne opcije pisača</translation>
 <translation id="4893336867552636863">Time će se trajno izbrisati podaci o pregledavanju s ovog uređaja.</translation>
 <translation id="4899376560703610051">Vaš je uređaj <ph name="DEVICE_TYPE" /> ručno zaključan. Morat ćete unijeti zaporku da biste mu mogli pristupiti.</translation>
-<translation id="4899816749097347786">Omogućivanje web-stranicama da upotrebljavaju eksperimentalni WebAssembly.</translation>
 <translation id="490074449735753175">Upotrijebi web-uslugu za rješavanje pravopisnih pogrešaka</translation>
 <translation id="49027928311173603">Pravilo preuzeto s poslužitelja nije važeće: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Konfigurira vrijeme završetka trake napretka učitavanja stranice na telefonu Android.</translation>

@@ -2308,6 +2308,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           For more options and detailed examples, visit:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7788511847830146438">Per Profile</translation>
 <translation id="7796141075993499320">Allows you to set a list of url patterns that specify sites which are allowed to run plug-ins.
 

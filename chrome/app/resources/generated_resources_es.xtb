@@ -1215,7 +1215,6 @@ No creo que este sitio deba bloquearse</translation>
 <translation id="2562743677925229011">No has iniciado sesión en <ph name="SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2563856802393254086">¡Enhorabuena! Tu servicio de datos <ph name="NAME" /> se ha activado y está listo para que lo uses.</translation>
 <translation id="2565670301826831948">Velocidad del panel táctil:</translation>
-<translation id="2565828445440744174">Versión experimental de WebAssembly</translation>
 <translation id="2566124945717127842">Haz un Powerwash y restablece los datos de fábrica de tu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para que quede como nuevo.</translation>
 <translation id="2568774940984945469">Contenedor de barra de información</translation>
 <translation id="2570000010887652771">Se han guardado los datos.</translation>
@@ -2933,7 +2932,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4801512016965057443">Permitir la itinerancia de datos móviles</translation>
 <translation id="4801956050125744859">Conservar las dos versiones</translation>
 <translation id="4803121606678474433">Habilitar cambio de modo de procesamiento dinámico de lienzos 2D.</translation>
-<translation id="480319080797177742">conectado</translation>
 <translation id="4803909571878637176">Desinstalación</translation>
 <translation id="4804331037112292643">Cuadro de diálogo de abrir/guardar archivos</translation>
 <translation id="4804818685124855865">Desvincular</translation>
@@ -3022,7 +3020,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4890773143211625964">Mostrar opciones avanzadas de la impresora</translation>
 <translation id="4893336867552636863">Se eliminarán de forma permanente los datos de navegación del dispositivo.</translation>
 <translation id="4899376560703610051">Tu <ph name="DEVICE_TYPE" /> se ha bloqueado manualmente. Deberás escribir tu contraseña para acceder.</translation>
-<translation id="4899816749097347786">Permitir que las páginas web utilicen la versión experimental de WebAssembly.</translation>
 <translation id="490074449735753175">Utilizar un servicio web para revisar la ortografía</translation>
 <translation id="49027928311173603">La política que has descargado del servidor no es válida (<ph name="VALIDATION_ERROR" />).</translation>
 <translation id="490305855972338124">Configura el tiempo que tarda en completarse la barra de progreso de carga de página de un teléfono Android.</translation>

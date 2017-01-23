@@ -1214,7 +1214,6 @@
 <translation id="2562743677925229011">未登入「<ph name="SHORT_PRODUCT_NAME" />」</translation>
 <translation id="2563856802393254086">恭喜您！您的「<ph name="NAME" />」數據服務已啟用，隨時可供使用。</translation>
 <translation id="2565670301826831948">觸控板速度：</translation>
-<translation id="2565828445440744174">實驗性 WebAssembly</translation>
 <translation id="2566124945717127842">Powerwash 會將您的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置重設並恢復為原廠設定。</translation>
 <translation id="2568774940984945469">資訊列容器</translation>
 <translation id="2570000010887652771">數據用量更少。</translation>
@@ -2930,7 +2929,6 @@
 <translation id="4801512016965057443">允許行動數據漫遊</translation>
 <translation id="4801956050125744859">兩個版本都保留</translation>
 <translation id="4803121606678474433">啟用 2D 畫布動態轉譯模式切換功能。</translation>
-<translation id="480319080797177742">已連線</translation>
 <translation id="4803909571878637176">解除安裝</translation>
 <translation id="4804331037112292643">檔案開啟/儲存對話方塊</translation>
 <translation id="4804818685124855865">中斷連線</translation>
@@ -3019,7 +3017,6 @@
 <translation id="4890773143211625964">顯示進階印表機選項</translation>
 <translation id="4893336867552636863">這會將您的瀏覽資料從這個裝置上永久刪除。</translation>
 <translation id="4899376560703610051">您的 <ph name="DEVICE_TYPE" /> 遭到人工鎖定，您必須輸入密碼才能解鎖。</translation>
-<translation id="4899816749097347786">允許網頁使用實驗性 WebAssembly。</translation>
 <translation id="490074449735753175">使用網路服務來協助解決拼字錯誤</translation>
 <translation id="49027928311173603">從伺服器下載的政策無效：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="490305855972338124">設定 Android 手機的網頁載入進度列完成時間。</translation>

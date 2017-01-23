@@ -1213,7 +1213,6 @@
 <translation id="2562743677925229011">به سیستم <ph name="SHORT_PRODUCT_NAME" /> وارد نشدید</translation>
 <translation id="2563856802393254086">تبریک می‌گوییم! خدمات داده «<ph name="NAME" />» شما فعال شده است و آماده استفاده است.</translation>
 <translation id="2565670301826831948">سرعت پد لمسی:</translation>
-<translation id="2565828445440744174">‏WebAssembly آزمایشی</translation>
 <translation id="2566124945717127842">‏Powerwash، دستگاه <ph name="IDS_SHORT_PRODUCT_NAME" /> شما را بازنشانی می‌کند، به نحوی که مانند یک دستگاه جدید به نظر می‌رسد.</translation>
 <translation id="2568774940984945469">قسمت نوار اطلاعات</translation>
 <translation id="2570000010887652771">داده‌ها ذخیره‌ شد.</translation>
@@ -2929,7 +2928,6 @@
 <translation id="4801512016965057443">اجازه دادن رومینگ داده تلفن همراه</translation>
 <translation id="4801956050125744859">حفظ هر دو</translation>
 <translation id="4803121606678474433">جا‌به‌جایی حالت پردازش پویای کانواس دو بعدی فعال شود.</translation>
-<translation id="480319080797177742">متصل</translation>
 <translation id="4803909571878637176">در حال حذف نصب</translation>
 <translation id="4804331037112292643">پنجره باز کردن/ذخیره فایل</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
@@ -3018,7 +3016,6 @@
 <translation id="4890773143211625964">نمایش گزینه‌های چاپگر پیشرفته</translation>
 <translation id="4893336867552636863">این کار داده مرور شما را برای همیشه از روی این دستگاه حذف می‌کند.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> شما به صورت دستی قفل شد. برای وارد شدن باید گذرواژه‌تان را تایپ کنید.</translation>
-<translation id="4899816749097347786">‏به صفحات وب امکان می‌دهد از ویژگی‌های آزمایشی WebAssembly استفاده کنند.</translation>
 <translation id="490074449735753175">استفاده از سرویس وب برای برطرف کردن خطاهای املایی</translation>
 <translation id="49027928311173603">خط‌مشی دانلودشده از سرور نامعتبر است: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">‏زمان تکمیل نوار پیشرفت بار شدن صفحه تلفن Android را پیکربندی می‌کند.</translation>

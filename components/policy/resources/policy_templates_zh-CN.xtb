@@ -1884,7 +1884,7 @@
 
           如果“RestoreOnStartup”政策设为恢复先前会话中的网址，系统将忽略此政策，并且将永久存储这些网站的 Cookie。</translation>
 <translation id="7207095846245296855">强制启用 Google 安全搜索功能</translation>
-<translation id="7216442368414164495">允许用户启用安全浏览扩展报告功能</translation>
+<translation id="7216442368414164495">允许用户启用安全浏览延期报告功能</translation>
 <translation id="7227967227357489766">定义可以登录此设备的用户名单。条目格式为 <ph name="USER_WHITELIST_ENTRY_FORMAT" />，例如 <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />。要允许某个域上的任意用户，请使用以下条目格式：<ph name="USER_WHITELIST_ENTRY_WILDCARD" />。
 
       如果未配置此策略，则不限制哪些用户可以登录此设备。请注意，创建新用户时仍需适当配置 <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME" /> 策略。</translation>
@@ -2090,6 +2090,7 @@
 
           要查看更多选项和详细示例，请访问以下网址：
           <ph name="PROXY_HELP_URL" />。</translation>
+<translation id="7781069478569868053">新标签页</translation>
 <translation id="7788511847830146438">根据个人资料</translation>
 <translation id="7796141075993499320">可让您设置网址格式的列表，这些网址格式用于指定允许运行插件的网站。在未设置此政策的情况下，如果设置了“DefaultPluginsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7801886189430766248">当此政策设为 true 时，系统会将 Android 应用数据上传到 Android 备份服务器，并且当用户重新安装兼容的应用时，系统会从这些服务器恢复 Android 应用数据。

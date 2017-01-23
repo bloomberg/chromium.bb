@@ -1209,7 +1209,6 @@
 <translation id="2562743677925229011">לא נכנסת לחשבון <ph name="SHORT_PRODUCT_NAME" /> שלך</translation>
 <translation id="2563856802393254086">ברכותינו! שירות הנתונים שלך, '<ph name="NAME" />', הופעל ומוכן לשימוש.</translation>
 <translation id="2565670301826831948">מהירות לוח מגע:</translation>
-<translation id="2565828445440744174">‏WebAssembly ניסיוני</translation>
 <translation id="2566124945717127842">‏בצע פעולת Powerwash כדי לאפס את מכשיר <ph name="IDS_SHORT_PRODUCT_NAME" /> שלך כך שיהיה כמו חדש.</translation>
 <translation id="2568774940984945469">גורם מכיל של סרגל המידע</translation>
 <translation id="2570000010887652771">נתונים שנשמרו.</translation>
@@ -2927,7 +2926,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4801512016965057443">אפשר נדידת נתונים לנייד </translation>
 <translation id="4801956050125744859">שמור את שתיהן</translation>
 <translation id="4803121606678474433">אפשר החלפת מצב עיבוד דינמי של בד ציור דו-מימדי.</translation>
-<translation id="480319080797177742">מחובר</translation>
 <translation id="4803909571878637176">מסיר התקנה</translation>
 <translation id="4804331037112292643">פתיחת קובץ/תיבת דו-שיח לשמירה</translation>
 <translation id="4804818685124855865">נתק</translation>
@@ -3016,7 +3014,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4890773143211625964">הצג אפשרויות מדפסת מתקדמות</translation>
 <translation id="4893336867552636863">הפעולה הזו תמחק לצמיתות את נתוני הגלישה שלך במכשיר הזה.</translation>
 <translation id="4899376560703610051">מכשיר <ph name="DEVICE_TYPE" /> שלך ננעל באופן ידני. עליך להזין את הסיסמה כדי להיכנס.</translation>
-<translation id="4899816749097347786">‏אפשר לדפי אינטרנט להשתמש ב-WebAssembly ניסיוני.</translation>
 <translation id="490074449735753175">השתמש בשירות אינטרנט כדי לסייע בפתרון שגיאות איות</translation>
 <translation id="49027928311173603">המדיניות שהורדה מהשרת אינה חוקית: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">‏מגדיר את זמן ההשלמה של סרגל ההתקדמות לטעינת דף בטלפון Android.</translation>

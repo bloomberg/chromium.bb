@@ -1215,7 +1215,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2562743677925229011">Niet ingelogd bij <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Gefeliciteerd! Je gegevensservice '<ph name="NAME" />' is geactiveerd en kan worden gebruikt.</translation>
 <translation id="2565670301826831948">Snelheid touchpad:</translation>
-<translation id="2565828445440744174">Experimentele WebAssembly</translation>
 <translation id="2566124945717127842">Voer de Powerwash-functie uit om je <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat opnieuw in te stellen.</translation>
 <translation id="2568774940984945469">Container voor infobalk</translation>
 <translation id="2570000010887652771">Gegevens opgeslagen.</translation>
@@ -2934,7 +2933,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4801512016965057443">Mobiele dataroaming toestaan</translation>
 <translation id="4801956050125744859">Beide behouden</translation>
 <translation id="4803121606678474433">Het wijzigen van de dynamische weergavemodus voor het 2D-canvas inschakelen.</translation>
-<translation id="480319080797177742">verbonden</translation>
 <translation id="4803909571878637176">Verwijderen</translation>
 <translation id="4804331037112292643">Dialoogvenster 'Bestand openen/opslaan'</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
@@ -3023,7 +3021,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4890773143211625964">Geavanceerde printeropties weergeven</translation>
 <translation id="4893336867552636863">Hiermee worden je browsegegevens op dit apparaat definitief verwijderd.</translation>
 <translation id="4899376560703610051">Je <ph name="DEVICE_TYPE" /> is handmatig vergrendeld. Je moet je wachtwoord typen om door te gaan.</translation>
-<translation id="4899816749097347786">Het gebruik van experimentele WebAssembly inschakelen voor webpagina's.</translation>
 <translation id="490074449735753175">Een webservice gebruiken voor het oplossen van spelfouten</translation>
 <translation id="49027928311173603">Het beleid dat van de server is gedownload, is ongeldig: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Hiermee configureer je de voltooiingstijd van de voortgangsbalk voor het laden van een pagina op een Android-telefoon.</translation>

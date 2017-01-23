@@ -2090,6 +2090,7 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 
           Per ulteriori opzioni ed esempi dettagliati, visita la pagina:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7781069478569868053">Pagina Nuova scheda</translation>
 <translation id="7788511847830146438">Per profilo</translation>
 <translation id="7796141075993499320">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'esecuzione dei plug-in. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="7801886189430766248">Se questa norma viene impostata su true, i dati delle app Android vengono caricati sui server di Android Backup e ripristinati dai server in fase di reinstallazione delle app compatibili.

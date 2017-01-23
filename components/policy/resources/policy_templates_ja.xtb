@@ -2153,6 +2153,7 @@ Active Directory ドメインに参加していない Windows インスタンス
 
           詳しい例については、次の URL をご覧ください。
           <ph name="PROXY_HELP_URL" /></translation>
+<translation id="7781069478569868053">新しいタブページ</translation>
 <translation id="7788511847830146438">プロフィール単位</translation>
 <translation id="7796141075993499320">プラグインの実行を許可するサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultPluginsSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="7801886189430766248">このポリシーを True に設定した場合、Android アプリのデータは Android バックアップ サーバーにアップロードされ、互換性のあるアプリ用にアプリの再インストールが行われたときにサーバーから復元されます。

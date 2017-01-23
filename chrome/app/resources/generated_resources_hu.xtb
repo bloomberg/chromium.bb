@@ -1214,7 +1214,6 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2562743677925229011">Nem jelentkezett be ide: <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Gratulálunk! „<ph name="NAME" />” adatszolgáltatása aktív, és készen áll a használatra.</translation>
 <translation id="2565670301826831948">Érintőpad sebessége:</translation>
-<translation id="2565828445440744174">Kísérleti WebAssembly</translation>
 <translation id="2566124945717127842">Végezze el a powerwash műveletet a(z) <ph name="IDS_SHORT_PRODUCT_NAME" /> eszköz visszaállításához, hogy az olyan legyen, mint új korában.</translation>
 <translation id="2568774940984945469">Infósáv tárolója</translation>
 <translation id="2570000010887652771">Megspórolt adatforgalom.</translation>
@@ -2932,7 +2931,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4801512016965057443">Mobil adatbarangolás engedélyezése</translation>
 <translation id="4801956050125744859">Mindkettő megtartása</translation>
 <translation id="4803121606678474433">2D vászon dinamikus megjelenítési módra kapcsolás engedélyezése.</translation>
-<translation id="480319080797177742">csatlakozva</translation>
 <translation id="4803909571878637176">Eltávolítás</translation>
 <translation id="4804331037112292643">Fájl megnyitása/mentése párbeszédpanel</translation>
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
@@ -3021,7 +3019,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4890773143211625964">Speciális nyomtatóbeállítások megjelenítése</translation>
 <translation id="4893336867552636863">Ezzel az eszközön lévő összes böngészési adat véglegesen törlődik.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> eszközét manuális zárolás védi. A belépéshez be kell írnia a jelszavát.</translation>
-<translation id="4899816749097347786">Kísérleti WebAssembly-funkciók használatának engedélyezése a weboldalak számára.</translation>
 <translation id="490074449735753175">Internetes szolgáltatás használata a helyesírási hibák kijavítására</translation>
 <translation id="49027928311173603">A szerverről letöltött irányelv érvénytelen: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Az androidos telefon oldalbetöltő folyamatjelző sávján konfigurálja a betöltési időt.</translation>

@@ -1213,7 +1213,6 @@
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> मध्‍ये साइन इन नाही</translation>
 <translation id="2563856802393254086">अभिनंदन! आपली '<ph name="NAME" />' डेटा सेवा सक्रिय केली गेली आहे आणि वापरण्यास  तयार आहे.</translation>
 <translation id="2565670301826831948">टचपॅड वेग:</translation>
-<translation id="2565828445440744174">प्रायोगिक WebAssembly</translation>
 <translation id="2566124945717127842">आपला <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस अगदी नवीन सारखे रीसेट करण्यासाठी Powerwash करा.</translation>
 <translation id="2568774940984945469">इंफोबार कंटेनर</translation>
 <translation id="2570000010887652771">जतन केलेला डेटा.</translation>
@@ -2925,7 +2924,6 @@
 <translation id="4801512016965057443">मोबाइल डेटा रोमिंगची अनुमती द्या</translation>
 <translation id="4801956050125744859">दोन्ही ठेवा</translation>
 <translation id="4803121606678474433">2D कॅनव्हास डायनॅमिक रेंडरिंग मोड स्विच करणे सक्षम करा.</translation>
-<translation id="480319080797177742">कनेक्ट केला</translation>
 <translation id="4803909571878637176">विस्थापित करणे</translation>
 <translation id="4804331037112292643">फाईल उघडा/जतन करा संवाद</translation>
 <translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
@@ -3014,7 +3012,6 @@
 <translation id="4890773143211625964">प्रगत प्रिंटर पर्याय दर्शवा</translation>
 <translation id="4893336867552636863">हे या डिव्‍हाइस वरून आपला ब्राउझिंग डेटा कायमचा हटवेल.</translation>
 <translation id="4899376560703610051">आपले <ph name="DEVICE_TYPE" /> व्‍यक्तीचलितरित्‍या लॉक केले गेले आहे. प्रविष्‍ट करण्‍यासाठी आपल्‍याला आपला संकेतशब्द टाइप करण्‍याची आवश्‍यकता आहे.</translation>
-<translation id="4899816749097347786">प्रायोगिक WebAssembly वापरण्यासाठी वेब पृष्ठे सक्षम करा.</translation>
 <translation id="490074449735753175">शब्दलेखन त्रुटींच्या निराकरणात मदतीसाठी वेब सेवा वापरा</translation>
 <translation id="49027928311173603">सर्व्हरवरून डाउनलोड केलेले धोरण अवैध आहे: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Android फोन पृष्ठाच्या लोड होण्याच्या प्रगती बारची पूर्ण होण्याची वेळ कॉन्फिगर करते.</translation>

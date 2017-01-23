@@ -2151,6 +2151,7 @@ desactivarlo).</translation>
 
           Para obtener ejemplos detallados, visita:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7781069478569868053">Página Nueva pestaña</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7796141075993499320">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a ejecutar complementos. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultPluginsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="7801886189430766248">Cuando esta política se establece como verdadera, los datos de la app de Android se cargan en los servidores de Android Backup y se restauran desde ellos cuando se vuelven a instalar apps compatibles.

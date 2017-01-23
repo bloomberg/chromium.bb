@@ -1215,7 +1215,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2562743677925229011">Nejste v prohlížeči <ph name="SHORT_PRODUCT_NAME" /> přihlášeni</translation>
 <translation id="2563856802393254086">Blahopřejeme! Datová služba <ph name="NAME" /> byla aktivována a je připravena k použití.</translation>
 <translation id="2565670301826831948">Rychlost touchpadu:</translation>
-<translation id="2565828445440744174">Experimentální jazyk WebAssembly</translation>
 <translation id="2566124945717127842">Funkce Powerwash zařízení <ph name="IDS_SHORT_PRODUCT_NAME" /> resetuje na tovární nastavení.</translation>
 <translation id="2568774940984945469">Kontejner informačního panelu</translation>
 <translation id="2570000010887652771">Data byla uložena.</translation>
@@ -2930,7 +2929,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4801512016965057443">Povolit roaming pro mobilní data</translation>
 <translation id="4801956050125744859">Ponechat obojí</translation>
 <translation id="4803121606678474433">Aktivovat přepínání režimu dynamického vykreslování v prvcích canvas 2D</translation>
-<translation id="480319080797177742">připojeno</translation>
 <translation id="4803909571878637176">Odinstalace</translation>
 <translation id="4804331037112292643">Dialog otevření a uložení souboru</translation>
 <translation id="4804818685124855865">Odpojit</translation>
@@ -3019,7 +3017,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4890773143211625964">Zobrazit rozšířené možnosti tiskárny</translation>
 <translation id="4893336867552636863">Tímto z tohoto zařízení trvale smažete své údaje o prohlížení.</translation>
 <translation id="4899376560703610051">Zařízení <ph name="DEVICE_TYPE" /> bylo ručně uzamčeno. Před vstupem budete muset zadat heslo.</translation>
-<translation id="4899816749097347786">Umožňuje na webových stránkách používat experimentální skriptovací jazyk WebAssembly.</translation>
 <translation id="490074449735753175">Vyřešit pravopisné chyby pomocí webové služby</translation>
 <translation id="49027928311173603">Zásada stažená ze serveru je neplatná: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Umožňuje nakonfigurovat dobu dokončení ukazatele průběhu načítání stránky v telefonu Android.</translation>

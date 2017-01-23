@@ -20,7 +20,7 @@
 <translation id="1254117744268754948">Choose Folder</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="129553762522093515">Recently closed</translation>
-<translation id="1323735185997015385">delete</translation>
+<translation id="1323735185997015385">Delete</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
 <translation id="1340643665687018190">Close menu</translation>
 <translation id="1375321115329958930">Saved Passwords</translation>
@@ -381,7 +381,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8605219856220328675">Close tab.</translation>
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
-<translation id="8654802032646794042">cancel</translation>
+<translation id="8654802032646794042">Cancel</translation>
 <translation id="8668210798914567634">This page has been saved to your Reading List.</translation>
 <translation id="8680787084697685621">Account sign-in details are out of date.</translation>
 <translation id="8699098509676302392">Add Address...</translation>

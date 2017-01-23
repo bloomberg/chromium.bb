@@ -1216,7 +1216,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2562743677925229011">Chưa được đăng nhập vào <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Xin chúc mừng! Dịch vụ dữ liệu '<ph name="NAME" />' của bạn đã được kích hoạt và sẵn sàng sử dụng.</translation>
 <translation id="2565670301826831948">Tốc độ bàn di chuột cảm ứng:</translation>
-<translation id="2565828445440744174">WebAssembly thử nghiệm</translation>
 <translation id="2566124945717127842">Powerwash để đặt lại thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> của bạn giống như mới.</translation>
 <translation id="2568774940984945469">Bộ chứa Thanh thông tin</translation>
 <translation id="2570000010887652771">Dữ liệu đã lưu.</translation>
@@ -2935,7 +2934,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4801512016965057443">Cho phép chuyển vùng dữ liệu di động</translation>
 <translation id="4801956050125744859">Giữ cả hai</translation>
 <translation id="4803121606678474433">Bật chuyển đổi chế độ hiển thị động canvas 2D.</translation>
-<translation id="480319080797177742">đã kết nối</translation>
 <translation id="4803909571878637176">Gỡ cài đặt</translation>
 <translation id="4804331037112292643">Hộp thoại mở/lưu tệp</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
@@ -3024,7 +3022,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4890773143211625964">Hiển thị tùy chọn máy in nâng cao</translation>
 <translation id="4893336867552636863">Thao tác này sẽ xóa vĩnh viễn dữ liệu duyệt web của bạn khỏi thiết bị này.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> của bạn đã được khóa theo cách thủ công. Bạn cần nhập mật khẩu của mình để truy cập.</translation>
-<translation id="4899816749097347786">Cho phép trang web sử dụng WebAssembly thử nghiệm.</translation>
 <translation id="490074449735753175">Sử dụng dịch vụ web để giúp giải quyết lỗi chính tả</translation>
 <translation id="49027928311173603">Chính sách được tải xuống từ máy chủ không hợp lệ: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Định cấu hình thời gian hoàn tất trên thanh tiến trình tải trang của điện thoại Android.</translation>

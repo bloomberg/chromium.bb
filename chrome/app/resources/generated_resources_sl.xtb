@@ -1216,7 +1216,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2562743677925229011">Niste prijavljeni v <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Čestitamo. Podatkovna storitev omrežja »<ph name="NAME" />« je aktivirana in lahko jo začnete uporabljati.</translation>
 <translation id="2565670301826831948">Hitrost sledilne ploščice:</translation>
-<translation id="2565828445440744174">Preskusni WebAssembly</translation>
 <translation id="2566124945717127842">Uporabite Powerwash za ponastavitev naprave <ph name="IDS_SHORT_PRODUCT_NAME" />, da bo kot nova.</translation>
 <translation id="2568774940984945469">Vsebnik informacijske vrstice</translation>
 <translation id="2570000010887652771">Shranjeni podatki.</translation>
@@ -2935,7 +2934,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4801512016965057443">Dovoli mobilno podatkovno gostovanje</translation>
 <translation id="4801956050125744859">Obdrži obe</translation>
 <translation id="4803121606678474433">Omogočanje preklapljanja načina dinamičnega upodabljanja 2D-platna.</translation>
-<translation id="480319080797177742">povezava je vzpostavljena</translation>
 <translation id="4803909571878637176">Odstranitev</translation>
 <translation id="4804331037112292643">Pogovorno okno za odpiranje/shranjevanje datotek</translation>
 <translation id="4804818685124855865">Prekini povezavo</translation>
@@ -3024,7 +3022,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4890773143211625964">Pokaži dodatne možnosti tiskalnika</translation>
 <translation id="4893336867552636863">S tem boste iz te naprave trajno izbrisali podatke o brskanju.</translation>
 <translation id="4899376560703610051">Naprava <ph name="DEVICE_TYPE" /> je ročno zaklenjena. Če jo želite odkleniti, morate vnesti geslo.</translation>
-<translation id="4899816749097347786">Omogoči uporabo preskusnega WebAssembly na spletnih straneh.</translation>
 <translation id="490074449735753175">Uporabi spletno storitev za odpravljanje napak pri črkovanju</translation>
 <translation id="49027928311173603">Pravilnik, prenesen iz strežnika, ni veljaven: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Konfigurira čas dokončanja za vrstico z napredkom nalaganja strani v telefonu Android.</translation>

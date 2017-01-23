@@ -1215,7 +1215,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="2562743677925229011">Neprisijungta prie „<ph name="SHORT_PRODUCT_NAME" />“</translation>
 <translation id="2563856802393254086">Sveikiname! Jūsų „<ph name="NAME" />“ duomenų paslauga buvo suaktyvinta ir yra paruošta naudoti.</translation>
 <translation id="2565670301826831948">Jutiklinės dalies greitis:</translation>
-<translation id="2565828445440744174">Eksperimentinis „WebAssembly“</translation>
 <translation id="2566124945717127842">Atlikite „Powewash“, kad „<ph name="IDS_SHORT_PRODUCT_NAME" />“ įrenginys būtų nustatytas tarsi naujas.</translation>
 <translation id="2568774940984945469">Informacinės juostos sudėtinis rodinys</translation>
 <translation id="2570000010887652771">Išsaugoti duomenys.</translation>
@@ -2934,7 +2933,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="4801512016965057443">Leisti mobiliųjų duomenų tarptinklinį ryšį</translation>
 <translation id="4801956050125744859">Palikti abu</translation>
 <translation id="4803121606678474433">Įgalintas 2D matomosios tinklalapio srities dinaminės pateikties režimo perjungimas.</translation>
-<translation id="480319080797177742">prisijungta</translation>
 <translation id="4803909571878637176">Pašalinimas</translation>
 <translation id="4804331037112292643">Failo atidarymo ir išsaugojimo dialogo langas</translation>
 <translation id="4804818685124855865">Atsijungti</translation>
@@ -3023,7 +3021,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="4890773143211625964">Rodyti išplėstines spausdintuvo parinktis</translation>
 <translation id="4893336867552636863">Atlikus šį veiksmą bus visam laikui ištrinti naršymo duomenys iš šio įrenginio.</translation>
 <translation id="4899376560703610051">Įrenginys „<ph name="DEVICE_TYPE" />“ užrakintas neautomatiškai. Norėdami įeiti turėsite įvesti slaptažodį.</translation>
-<translation id="4899816749097347786">Įgalinti eksperimentinio „WebAssembly“ naudojimą tinklalapiuose.</translation>
 <translation id="490074449735753175">Naudoti žiniatinklio paslaugą, kad būtų lengviau panaikinti rašybos klaidas</translation>
 <translation id="49027928311173603">Iš serverio atsisiųsta politika netinkama: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Konfigūruojamas „Android“ telefono puslapio įkėlimo eigos juostos užbaigimo laikas.</translation>

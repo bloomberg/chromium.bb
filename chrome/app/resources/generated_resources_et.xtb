@@ -1215,7 +1215,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2562743677925229011">Pole teenusesse <ph name="SHORT_PRODUCT_NAME" /> sisse logitud</translation>
 <translation id="2563856802393254086">Õnnitleme! Teie võrgu „<ph name="NAME" />” andmeteenus on aktiveeritud ja kasutamiseks valmis.</translation>
 <translation id="2565670301826831948">Puuteplaadi kiirus:</translation>
-<translation id="2565828445440744174">Katseline funktsioon WebAssembly</translation>
 <translation id="2566124945717127842">Pärast Powerwashiga lähtestamist on teie toote <ph name="IDS_SHORT_PRODUCT_NAME" /> seade just nagu uus.</translation>
 <translation id="2568774940984945469">Teaberiba ümbris</translation>
 <translation id="2570000010887652771">Salvestatud andmed.</translation>
@@ -2933,7 +2932,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="4801512016965057443">Luba mobiiliandmete rändlus</translation>
 <translation id="4801956050125744859">Säilita mõlemad</translation>
 <translation id="4803121606678474433">Luba 2D-lõuendi dünaamilise renderdusrežiimi vahetamine.</translation>
-<translation id="480319080797177742">ühendatud</translation>
 <translation id="4803909571878637176">Desinstallimine</translation>
 <translation id="4804331037112292643">Faili avamise/salvestamise dialoog</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
@@ -3022,7 +3020,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="4890773143211625964">Kuva printeri täpsemad valikud</translation>
 <translation id="4893336867552636863">See kustutab teie sirvimisandmed sellest seadmest jäädavalt.</translation>
 <translation id="4899376560703610051">Teie seade <ph name="DEVICE_TYPE" /> on käsitsi lukustatud. Peate avamiseks sisestama oma parooli.</translation>
-<translation id="4899816749097347786">Veebilehtedel lubatakse kasutada katselist funktsiooni WebAssembly.</translation>
 <translation id="490074449735753175">Kasuta veebiteenust õigekirjavigade parandamisele kaasaaitamiseks</translation>
 <translation id="49027928311173603">Serverist alla laaditud reegel on kehtetu: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Seadistab Android-telefoni lehe laadimise edenemisriba lõpulejõudmise aja.</translation>

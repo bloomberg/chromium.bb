@@ -1216,7 +1216,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2562743677925229011">Not signed in to <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Congratulations! Your '<ph name="NAME" />' data service has been activated and is ready to go.</translation>
 <translation id="2565670301826831948">Touchpad speed:</translation>
-<translation id="2565828445440744174">Experimental WebAssembly</translation>
 <translation id="2566124945717127842">Powerwash to reset your <ph name="IDS_SHORT_PRODUCT_NAME" /> device to be just like new.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
 <translation id="2570000010887652771">Saved data.</translation>
@@ -2934,7 +2933,6 @@ Press any key to continue exploring.</translation>
 <translation id="4801512016965057443">Allow mobile data roaming</translation>
 <translation id="4801956050125744859">Keep both</translation>
 <translation id="4803121606678474433">Enable 2D canvas dynamic rendering mode switching.</translation>
-<translation id="480319080797177742">connected</translation>
 <translation id="4803909571878637176">Uninstalling</translation>
 <translation id="4804331037112292643">File Open/Save Dialogue</translation>
 <translation id="4804818685124855865">Disconnect</translation>
@@ -3023,7 +3021,6 @@ Press any key to continue exploring.</translation>
 <translation id="4890773143211625964">Show advanced printer options</translation>
 <translation id="4893336867552636863">This will permanently delete your browsing data from this device.</translation>
 <translation id="4899376560703610051">Your <ph name="DEVICE_TYPE" /> has been manually locked. You'll need to type your password to enter.</translation>
-<translation id="4899816749097347786">Enable web pages to use experimental WebAssembly.</translation>
 <translation id="490074449735753175">Use a web service to help resolve spelling errors</translation>
 <translation id="49027928311173603">The policy downloaded from the server is invalid: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Configures Android phone page loading progress bar completion time.</translation>

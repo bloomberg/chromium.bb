@@ -348,7 +348,6 @@
 <translation id="4372948949327679948">Inaasahang <ph name="VALUE_TYPE" /> na halaga.</translation>
 <translation id="4381091992796011497">User Name:</translation>
 <translation id="4394049700291259645">Huwag paganahin</translation>
-<translation id="4395129973926795186"><ph name="START_DATE" /> hanggang <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">mga resulta ng paghahanap</translation>
 <translation id="4432688616882109544">Hindi tinanggap ng <ph name="HOST_NAME" /> ang iyong certificate sa pag-log in o maaaring walang ibinigay.</translation>
 <translation id="443673843213245140">Hindi pinagana ang paggamit ng isang proxy ngunit tinutukoy ang isang tahasang configuration ng proxy.</translation>

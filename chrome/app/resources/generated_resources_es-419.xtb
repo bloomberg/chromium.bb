@@ -1211,7 +1211,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2562743677925229011">No accediste a <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Se activó tu servicio de datos "<ph name="NAME" />" y está listo para que lo uses.</translation>
 <translation id="2565670301826831948">Velocidad del panel táctil:</translation>
-<translation id="2565828445440744174">WebAssembly experimental</translation>
 <translation id="2566124945717127842">Usa la función Powerwash para restablecer el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> y que quede como nuevo.</translation>
 <translation id="2568774940984945469">Contenedor de la barra de información</translation>
 <translation id="2570000010887652771">Datos guardados.</translation>
@@ -1856,7 +1855,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3323235640813116393">Permite guardar páginas como MHTML (un único archivo de texto que contiene una página HTML y todos los recursos secundarios).</translation>
 <translation id="3323447499041942178">Cuadro de texto</translation>
 <translation id="3324301154597925148">¿Esta es la página de búsqueda que esperabas ver?</translation>
-<translation id="3326615081745501548">Aplicación Fondos de pantalla para Android</translation>
+<translation id="3326615081745501548">Aplicación de Fondos de pantalla para Android</translation>
 <translation id="3326821416087822643">Comprimiendo <ph name="FILE_NAME" />…</translation>
 <translation id="3330686263988132416">Encabezado de origen de WebRTC Stun</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
@@ -2930,7 +2929,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="4801512016965057443">Permitir itinerancia de datos móviles</translation>
 <translation id="4801956050125744859">Conservar ambas versiones</translation>
 <translation id="4803121606678474433">Habilitar el cambio al modo de procesamiento dinámico en lienzo 2D</translation>
-<translation id="480319080797177742">conectado</translation>
 <translation id="4803909571878637176">Desinstalando</translation>
 <translation id="4804331037112292643">Cuadro de diálogo para abrir/guardar archivo</translation>
 <translation id="4804818685124855865">Desconectar</translation>
@@ -3019,7 +3017,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="4890773143211625964">Mostrar opciones de impresión avanzadas</translation>
 <translation id="4893336867552636863">Esta acción borrará permanentemente los datos de navegación de este dispositivo.</translation>
 <translation id="4899376560703610051">El dispositivo <ph name="DEVICE_TYPE" /> se bloqueó manualmente. Deberás escribir la contraseña para ingresar.</translation>
-<translation id="4899816749097347786">Habilita el uso de WebAssembly experimental en páginas web.</translation>
 <translation id="490074449735753175">Utilizar un servicio web para ayudar a solucionar errores de ortografía</translation>
 <translation id="49027928311173603">La política descargada del servidor no es válida: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Configura el tiempo de finalización en la barra de progreso de carga de la página del teléfono Android.</translation>

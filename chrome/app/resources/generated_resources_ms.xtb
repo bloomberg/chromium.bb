@@ -1214,7 +1214,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2562743677925229011">Tidak log masuk ke <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Tahniah! Perkhidmatan data '<ph name="NAME" />' anda telah diaktifkan dan sedia untuk digunakan.</translation>
 <translation id="2565670301826831948">Kelajuan pad sentuh:</translation>
-<translation id="2565828445440744174">WebAssembly Percubaan</translation>
 <translation id="2566124945717127842">Powerwash untuk menetapkan semula peranti <ph name="IDS_SHORT_PRODUCT_NAME" /> anda supaya seperti baharu.</translation>
 <translation id="2568774940984945469">Bekas Bar Maklumat</translation>
 <translation id="2570000010887652771">Data disimpan.</translation>
@@ -2934,7 +2933,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4801512016965057443">Membenarkan perayauan data mudah alih</translation>
 <translation id="4801956050125744859">Simpan kedua-duanya</translation>
 <translation id="4803121606678474433">Dayakan peralihan mod pemaparan dinamik kanvas 2D.</translation>
-<translation id="480319080797177742">bersambung</translation>
 <translation id="4803909571878637176">Menyahpasang</translation>
 <translation id="4804331037112292643">Dialog Buka/Simpan Fail</translation>
 <translation id="4804818685124855865">Putuskan sambungan</translation>
@@ -3023,7 +3021,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4890773143211625964">Tunjukkan pilihan terperinci pencetak</translation>
 <translation id="4893336867552636863">Tindakan ini akan memadamkan data penyemakan imbas anda daripada peranti ini selama-lamanya.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> telah dikunci secara manual. Anda perlu menaip kata laluan anda untuk masuk.</translation>
-<translation id="4899816749097347786">Dayakan halaman web untuk menggunakan WebAssembly percubaan.</translation>
 <translation id="490074449735753175">Gunakan perkhidmatan web untuk membantu menyelesaikan ralat ejaan</translation>
 <translation id="49027928311173603">Dasar yang dimuat turun dari pelayan tidak sah: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Mengkonfigurasikan masa lengkapnya bar kemajuan pemuatan halaman telefon Android.</translation>

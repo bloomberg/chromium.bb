@@ -1211,7 +1211,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2562743677925229011">Ikke logget ind på <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Datatjenesten "<ph name="NAME" />" er blevet aktiveret og er klar til brug.</translation>
 <translation id="2565670301826831948">Hastighed for touchpad:</translation>
-<translation id="2565828445440744174">Eksperimentel WebAssembly</translation>
 <translation id="2566124945717127842">Powerwash for at nulstille din <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed til fabriksindstillingerne.</translation>
 <translation id="2568774940984945469">Container til oplysningsbjælke</translation>
 <translation id="2570000010887652771">Gemte data.</translation>
@@ -2932,7 +2931,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4801512016965057443">Tillad dataroaming for mobil</translation>
 <translation id="4801956050125744859">Behold begge</translation>
 <translation id="4803121606678474433">Aktivér skift i dynamisk gengivelse af 2D-lærreder.</translation>
-<translation id="480319080797177742">tilsluttet</translation>
 <translation id="4803909571878637176">Afinstallation</translation>
 <translation id="4804331037112292643">Dialogboksen Åbn/Gem fil</translation>
 <translation id="4804818685124855865">Afbryd</translation>
@@ -3021,7 +3019,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4890773143211625964">Vis avancerede printerindstillinger</translation>
 <translation id="4893336867552636863">Denne handling sletter dine browserdata permanent fra denne enhed.</translation>
 <translation id="4899376560703610051">Din <ph name="DEVICE_TYPE" /> er blevet låst manuelt. Du skal indtaste din adgangskode for at få adgang.</translation>
-<translation id="4899816749097347786">Aktivér websider for at anvende eksperimentel WebAssembly.</translation>
 <translation id="490074449735753175">Brug en webtjeneste til at hjælpe med at rette stavefejl</translation>
 <translation id="49027928311173603">Den politik, der er downloadet fra serveren, er ugyldig: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Konfigurerer indlæsningstiden for statuslinjen for sideindlæsning på Android-telefoner.</translation>

@@ -1216,7 +1216,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2562743677925229011">Hindi naka-sign in sa <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Binabati kita! Na-activate ang iyong serbisyo ng data ng '<ph name="NAME" />' at handa nang gamitin.</translation>
 <translation id="2565670301826831948">Bilis ng touchpad:</translation>
-<translation id="2565828445440744174">Pang-eksperimentong WebAssembly</translation>
 <translation id="2566124945717127842">Mag-powerwash upang i-reset ang iyong <ph name="IDS_SHORT_PRODUCT_NAME" /> device upang maging parang bago.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
 <translation id="2570000010887652771">Na-save ang data.</translation>
@@ -2936,7 +2935,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4801512016965057443">Payagan ang pag-roam ng mobile data</translation>
 <translation id="4801956050125744859">Panatilihin pareho</translation>
 <translation id="4803121606678474433">I-enable ang paglipat sa 2D canvas dynamic rendering mode.</translation>
-<translation id="480319080797177742">nakakonekta</translation>
 <translation id="4803909571878637176">Pag-uninstall</translation>
 <translation id="4804331037112292643">Dialog para sa Pagbukas/Pag-save ng File</translation>
 <translation id="4804818685124855865">I-disconnect</translation>
@@ -3025,7 +3023,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4890773143211625964">Ipakita ang mga advanced na opsyon sa printer</translation>
 <translation id="4893336867552636863">Permanente nitong ide-delete ang iyong data mula sa pagba-browse sa device na ito.</translation>
 <translation id="4899376560703610051">Manu-manong na-lock ang iyong <ph name="DEVICE_TYPE" />. Kakailanganin mong i-type ang iyong password upang makapasok.</translation>
-<translation id="4899816749097347786">I-enable ang mga web page na gamitin ang pang-eksperimentong WebAssembly.</translation>
 <translation id="490074449735753175">Gumamit ng serbisyo sa web upang makatulong na lutasin ang mga error sa spelling</translation>
 <translation id="49027928311173603">Di-wasto ang patakaran na-download mula sa server: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Kino-configure ang oras ng pagkumpleto ng bar ng pag-usad para sa pag-load ng page sa Android phone.</translation>

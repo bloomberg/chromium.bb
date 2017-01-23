@@ -2141,6 +2141,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Para ver mais opções e exemplos detalhados, visite:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7781069478569868053">Página "Nova guia"</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7796141075993499320">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar plug-ins. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7801886189430766248">Quando essa política é definida como true, é feito upload dos dados de apps do Android para os servidores do Android Backup. Esses dados são restaurados a partir desses servidores após reinstalações de apps compatíveis.

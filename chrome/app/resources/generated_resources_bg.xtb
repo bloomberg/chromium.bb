@@ -1211,7 +1211,6 @@
 <translation id="2562743677925229011">Не сте влезли в <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Поздравления! Услугата ви за данни „<ph name="NAME" />“ е активирана и е готова за работа.</translation>
 <translation id="2565670301826831948">Скорост на сензорния панел:</translation>
-<translation id="2565828445440744174">Експериментална технология WebAssembly</translation>
 <translation id="2566124945717127842">Извършете Powerwash, за да възстановите устройството си с <ph name="IDS_SHORT_PRODUCT_NAME" />, така че да бъде като ново.</translation>
 <translation id="2568774940984945469">Контейнер на инфолента</translation>
 <translation id="2570000010887652771">Спестени са данни.</translation>
@@ -2929,7 +2928,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4801512016965057443">Разрешаване на роуминг за данни</translation>
 <translation id="4801956050125744859">Запазванe на двете версии</translation>
 <translation id="4803121606678474433">Активиране на превключването на режима за динамично изобразяване в двуизмерното платно.</translation>
-<translation id="480319080797177742">установена е връзка</translation>
 <translation id="4803909571878637176">Деинсталира се</translation>
 <translation id="4804331037112292643">Диалогов прозорец за отваряне/запазване на файлове</translation>
 <translation id="4804818685124855865">Изключване</translation>
@@ -3018,7 +3016,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4890773143211625964">Показване на разширените опции за принтера</translation>
 <translation id="4893336867552636863">Данните за сърфирането ви ще се изтрият за постоянно от това устройство.</translation>
 <translation id="4899376560703610051">Вашият <ph name="DEVICE_TYPE" /> бе заключен ръчно. За да влезете, ще трябва да въведете паролата си.</translation>
-<translation id="4899816749097347786">Активиране на използването на експерименталната технология WebAssembly от уеб страниците.</translation>
 <translation id="490074449735753175">Използване на услуга в мрежата за помощ при поправянето на правописни грешки</translation>
 <translation id="49027928311173603">Изтегленото от сървъра правило е невалидно: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Конфигурира времето за изпълнение на лентата за хода при зареждане на страници на телефони с Android.</translation>

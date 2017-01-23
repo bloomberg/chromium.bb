@@ -1211,7 +1211,6 @@
 <translation id="2562743677925229011">尚未登录 <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">恭喜！“<ph name="NAME" />”数据服务已激活，您可以开始使用了。</translation>
 <translation id="2565670301826831948">触控板速度：</translation>
-<translation id="2565828445440744174">实验性 WebAssembly</translation>
 <translation id="2566124945717127842">Powerwash会将您的<ph name="IDS_SHORT_PRODUCT_NAME" />设备重置为初始状态。</translation>
 <translation id="2568774940984945469">信息栏容器</translation>
 <translation id="2570000010887652771">节省数据流量。</translation>
@@ -2923,7 +2922,6 @@
 <translation id="4801512016965057443">允许移动数据漫游</translation>
 <translation id="4801956050125744859">保留两种版本</translation>
 <translation id="4803121606678474433">启用 2D 画布动态渲染模式切换功能。</translation>
-<translation id="480319080797177742">已连接</translation>
 <translation id="4803909571878637176">卸载</translation>
 <translation id="4804331037112292643">文件打开/保存对话框</translation>
 <translation id="4804818685124855865">断开连接</translation>
@@ -3012,7 +3010,6 @@
 <translation id="4890773143211625964">显示高级打印机选项</translation>
 <translation id="4893336867552636863">这会将您的浏览数据从这台设备上永久删除。</translation>
 <translation id="4899376560703610051">您的<ph name="DEVICE_TYPE" />已被手动锁定。您需要输入密码才能进入。</translation>
-<translation id="4899816749097347786">允许网页使用实验性 WebAssembly。</translation>
 <translation id="490074449735753175">使用网络服务帮助解决拼写错误</translation>
 <translation id="49027928311173603">从服务器下载的策略无效：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="490305855972338124">配置 Android 手机的网页加载进度条完成时间。</translation>

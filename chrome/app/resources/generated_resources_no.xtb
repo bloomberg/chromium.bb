@@ -1010,7 +1010,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst – og fr
 <translation id="2286950485307333924">Nå er du logget på Chrome</translation>
 <translation id="2287590536030307392">Slå av alle trådløse tilkoblinger.</translation>
 <translation id="2291643155573394834">Neste fane</translation>
-<translation id="2292848386125228270">Start <ph name="PRODUCT_NAME" /> som en vanlig bruker. Hvis du på grunn av utvikling har behov for kjøring på rotnivå, må du kjøre appen på nytt med -no sandbox-flagget.</translation>
+<translation id="2292848386125228270">Start <ph name="PRODUCT_NAME" /> som en vanlig bruker. Hvis du har behov for å kjøre som rot i forbindelse med utvikling, må du kjøre appen på nytt med flagget --no-sandbox.</translation>
 <translation id="2294358108254308676">Ønsker du å installere <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">EAP-metode:</translation>
 <translation id="2301382460326681002">Utvidelsens rotkatalog er ugyldig.</translation>
@@ -1211,7 +1211,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2562743677925229011">Ikke logget på <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">Gratulerer! <ph name="NAME" />-datatjenesten din er aktivert og klar til bruk.</translation>
 <translation id="2565670301826831948">Styreflatehastighet:</translation>
-<translation id="2565828445440744174">Eksperimentell WebAssembly</translation>
 <translation id="2566124945717127842">Kjør Powerwash for å tilbakestille <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten så den blir som ny.</translation>
 <translation id="2568774940984945469">Beholder for inforad</translation>
 <translation id="2570000010887652771">Lagrede data.</translation>
@@ -2309,7 +2308,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3899879303189199559">Frakoblet i over ett år</translation>
 <translation id="3899968422636198696"><ph name="ORGNAME" /> <ph name="HOSTNAME" /></translation>
 <translation id="3901991538546252627">Kobler til <ph name="NAME" /></translation>
-<translation id="3902365939851986963">Definer grensene for berøringsskjermen over skjermen</translation>
+<translation id="3902365939851986963">Definer grensene for berøringsskjermen på skjermen</translation>
 <translation id="3902799646152133632">Hopper over «no-store»-merkede hovedsider.</translation>
 <translation id="3904196543277238487">Høyeste TLS-versjon er slått på.</translation>
 <translation id="3904709815599435085">Velger Bakgrunner-appen for Android som standard bakgrunnsapp i Chrome OS.</translation>
@@ -2926,7 +2925,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4801512016965057443">Tillat mobildatabruk på andre nettverk</translation>
 <translation id="4801956050125744859">Behold begge</translation>
 <translation id="4803121606678474433">Slå på bytting av dynamisk gjengivelse for 2D-lerret.</translation>
-<translation id="480319080797177742">tilkoblet</translation>
 <translation id="4803909571878637176">Avinstallering</translation>
 <translation id="4804331037112292643">File Open/Save Dialog</translation>
 <translation id="4804818685124855865">Koble fra</translation>
@@ -3015,7 +3013,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4890773143211625964">Vis avanserte skriveralternativer</translation>
 <translation id="4893336867552636863">Dette sletter nettlesingsdataene dine permanent fra denne enheten.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" />-enheten er låst manuelt. Du må skrive inn passordet ditt for å komme inn.</translation>
-<translation id="4899816749097347786">Gi nettsider tillatelse til å bruke eksperimentell WebAssembly.</translation>
 <translation id="490074449735753175">Bruk en nettjeneste til å luke ut stavefeil</translation>
 <translation id="49027928311173603">Innstillingene som ble lastet ned fra tjeneren er ugyldige: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="490305855972338124">Konfigurerer fullføringstiden for fremdriftslinjen for sideinnlasting på Android-telefoner.</translation>
