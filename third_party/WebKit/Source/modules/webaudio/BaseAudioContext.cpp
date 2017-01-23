@@ -633,7 +633,19 @@ void BaseAudioContext::notifySourceNodeFinishedProcessing(
   m_finishedSourceHandlers.push_back(handler);
 }
 
-void BaseAudioContext::removeFinishedSourceNodes() {
+void BaseAudioContext::removeFinishedSourceNodes(bool needsRemoval) {
+  DCHECK(isAudioThread());
+
+  if (needsRemoval) {
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        crossThreadBind(
+            &BaseAudioContext::removeFinishedSourceNodesOnMainThread,
+            wrapCrossThreadPersistent(this)));
+  }
+}
+
+void BaseAudioContext::removeFinishedSourceNodesOnMainThread() {
   DCHECK(isMainThread());
   AutoLocker locker(this);
   // Quadratic worst case, but sizes of both vectors are considered
@@ -646,7 +658,7 @@ void BaseAudioContext::removeFinishedSourceNodes() {
   m_finishedSourceNodes.clear();
 }
 
-void BaseAudioContext::releaseFinishedSourceNodes() {
+bool BaseAudioContext::releaseFinishedSourceNodes() {
   ASSERT(isGraphOwner());
   DCHECK(isAudioThread());
   bool didRemove = false;
@@ -662,13 +674,8 @@ void BaseAudioContext::releaseFinishedSourceNodes() {
       }
     }
   }
-  if (didRemove)
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE,
-        crossThreadBind(&BaseAudioContext::removeFinishedSourceNodes,
-                        wrapCrossThreadPersistent(this)));
-
   m_finishedSourceHandlers.clear();
+  return didRemove;
 }
 
 void BaseAudioContext::notifySourceNodeStartedProcessing(AudioNode* node) {
@@ -741,18 +748,21 @@ void BaseAudioContext::handlePostRenderTasks() {
   // is that there will be some nodes which will take slightly longer than usual
   // to be deleted or removed from the render graph (in which case they'll
   // render silence).
+  bool didRemove = false;
   if (tryLock()) {
     // Take care of AudioNode tasks where the tryLock() failed previously.
     deferredTaskHandler().breakConnections();
 
     // Dynamically clean up nodes which are no longer needed.
-    releaseFinishedSourceNodes();
+    didRemove = releaseFinishedSourceNodes();
 
     deferredTaskHandler().handleDeferredTasks();
     deferredTaskHandler().requestToDeleteHandlersOnMainThread();
 
     unlock();
   }
+
+  removeFinishedSourceNodes(didRemove);
 }
 
 void BaseAudioContext::resolvePromisesForResumeOnMainThread() {

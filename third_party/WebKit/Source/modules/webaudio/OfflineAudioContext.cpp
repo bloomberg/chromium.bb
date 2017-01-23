@@ -36,8 +36,10 @@
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -374,12 +376,17 @@ void OfflineAudioContext::handlePostOfflineRenderTasks() {
 
   // OfflineGraphAutoLocker here locks the audio graph for the same reason
   // above in |handlePreOfflineRenderTasks|.
-  OfflineGraphAutoLocker locker(this);
+  bool didRemove = false;
+  {
+    OfflineGraphAutoLocker locker(this);
 
-  deferredTaskHandler().breakConnections();
-  releaseFinishedSourceNodes();
-  deferredTaskHandler().handleDeferredTasks();
-  deferredTaskHandler().requestToDeleteHandlersOnMainThread();
+    deferredTaskHandler().breakConnections();
+    didRemove = releaseFinishedSourceNodes();
+    deferredTaskHandler().handleDeferredTasks();
+    deferredTaskHandler().requestToDeleteHandlersOnMainThread();
+  }
+
+  removeFinishedSourceNodes(didRemove);
 }
 
 OfflineAudioDestinationHandler& OfflineAudioContext::destinationHandler() {

@@ -249,9 +249,15 @@ class MODULES_EXPORT BaseAudioContext
   // Called at the end of each render quantum.
   void handlePostRenderTasks();
 
-  // Called periodically at the end of each render quantum to release finished
-  // source nodes.
-  void releaseFinishedSourceNodes();
+  // Called periodically at the end of each render quantum to release
+  // finished source nodes.  Updates m_finishedSourceNodes with nodes
+  // to be deleted.  Returns true if any node needs deletion.  Must be
+  // run from the audio thread.
+  bool releaseFinishedSourceNodes();
+
+  // The finished source nodes found by |releaseFinishedSourceNodes|
+  // will be removed on the main thread, which is done here.
+  void removeFinishedSourceNodes(bool needsRemoval);
 
   // Keeps track of the number of connections made.
   void incrementConnectionCount() {
@@ -379,7 +385,10 @@ class MODULES_EXPORT BaseAudioContext
   // haven't finished playing.  Make sure to release them here.
   void releaseActiveSourceNodes();
 
-  void removeFinishedSourceNodes();
+  // Actually remove the nodes noted for deletion by
+  // releaseFinishedSourceNodes.  Must be run from the main thread,
+  // and must not be run with the context lock.
+  void removeFinishedSourceNodesOnMainThread();
 
   // Listener for the PannerNodes
   Member<AudioListener> m_listener;
