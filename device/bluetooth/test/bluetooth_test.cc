@@ -25,11 +25,16 @@ const std::string BluetoothTestBase::kTestDeviceAddress1 = "01:00:00:90:1E:BE";
 const std::string BluetoothTestBase::kTestDeviceAddress2 = "02:00:00:8B:74:63";
 const std::string BluetoothTestBase::kTestDeviceAddress3 = "03:00:00:17:C0:57";
 
-const std::string BluetoothTestBase::kTestUUIDGenericAccess = "1800";
-const std::string BluetoothTestBase::kTestUUIDGenericAttribute = "1801";
-const std::string BluetoothTestBase::kTestUUIDImmediateAlert = "1802";
-const std::string BluetoothTestBase::kTestUUIDLinkLoss = "1803";
-const std::string BluetoothTestBase::kTestUUIDHeartRate = "180d";
+const std::string BluetoothTestBase::kTestUUIDGenericAccess =
+    "00001800-0000-1000-8000-00805f9b34fb";
+const std::string BluetoothTestBase::kTestUUIDGenericAttribute =
+    "00001801-0000-1000-8000-00805f9b34fb";
+const std::string BluetoothTestBase::kTestUUIDImmediateAlert =
+    "00001802-0000-1000-8000-00805f9b34fb";
+const std::string BluetoothTestBase::kTestUUIDLinkLoss =
+    "00001803-0000-1000-8000-00805f9b34fb";
+const std::string BluetoothTestBase::kTestUUIDHeartRate =
+    "0000180d-0000-1000-8000-00805f9b34fb";
 
 BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 

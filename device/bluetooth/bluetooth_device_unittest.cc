@@ -346,7 +346,7 @@ TEST_F(BluetoothTest, GetUUIDs_Connection) {
   // Discover services, should notify of device changed.
   //  - GetUUIDs: Should return the device's services' UUIDs.
   std::vector<std::string> services;
-  services.push_back(BluetoothUUID(kTestUUIDGenericAccess).canonical_value());
+  services.push_back(kTestUUIDGenericAccess);
   SimulateGattServicesDiscovered(device, services);
 
   EXPECT_EQ(1, observer.device_changed_count());
@@ -457,7 +457,7 @@ TEST_F(BluetoothTest, AdvertisementData_DiscoveryDuringConnection) {
   // Discover services, should notify of device changed.
   //  - GetUUIDs: Should return both Advertised UUIDs and Service UUIDs.
   std::vector<std::string> services;
-  services.push_back(BluetoothUUID(kTestUUIDHeartRate).canonical_value());
+  services.push_back(kTestUUIDHeartRate);
   SimulateGattServicesDiscovered(device, services);
 
   EXPECT_EQ(2, observer.device_changed_count());
@@ -596,7 +596,7 @@ TEST_F(BluetoothTest, AdvertisementData_ConnectionDuringDiscovery) {
   // Discover Services, should notify of device changed.
   //  - GetUUIDs: Should return Advertised UUIDs and Service UUIDs.
   std::vector<std::string> services;
-  services.push_back(BluetoothUUID(kTestUUIDHeartRate).canonical_value());
+  services.push_back(kTestUUIDHeartRate);
   SimulateGattServicesDiscovered(device, services);
 
   EXPECT_EQ(2, observer.device_changed_count());
