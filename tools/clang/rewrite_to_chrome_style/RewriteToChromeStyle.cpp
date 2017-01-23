@@ -687,6 +687,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "thread",
       "timing",
       "topLevelBlameContext",
+      "type",
       "vector",
       "visibleSelection",
       "webFrame",
