@@ -110,6 +110,7 @@ class V4DatabaseTest : public PlatformTest {
   }
 
   void DatabaseUpdated() {}
+
   void NewDatabaseReadyWithExpectedStorePathsAndIds(
       std::unique_ptr<V4Database> v4_database) {
     ASSERT_TRUE(v4_database);
@@ -474,6 +475,44 @@ TEST_F(V4DatabaseTest, TestStoresAvailable) {
       StoresToCheck({linux_malware_id_, bogus_id})));
 
   EXPECT_FALSE(v4_database_->AreStoresAvailable(StoresToCheck({bogus_id})));
+}
+
+// Test to ensure that the callback to the database is dropped when the database
+// gets destroyed. See http://crbug.com/683147#c5 for more details.
+TEST_F(V4DatabaseTest, UsingWeakPtrDropsCallback) {
+  RegisterFactory();
+
+  // Step 1: Create the database.
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
+                     callback_db_ready_);
+  created_but_not_called_back_ = true;
+  WaitForTasksOnTaskRunner();
+
+  // Step 2: Try to update the database. This posts V4Store::ApplyUpdate on the
+  // task runner.
+  std::unique_ptr<ParsedServerResponse> parsed_server_response(
+      new ParsedServerResponse);
+  auto lur = base::MakeUnique<ListUpdateResponse>();
+  lur->set_platform_type(linux_malware_id_.platform_type());
+  lur->set_threat_entry_type(linux_malware_id_.threat_entry_type());
+  lur->set_threat_type(linux_malware_id_.threat_type());
+  lur->set_new_client_state("new_state");
+  lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
+  parsed_server_response->push_back(std::move(lur));
+
+  // We pass |null_callback| as the second argument to |ApplyUpdate| since we
+  // expect it to not get called. This callback method is called from
+  // V4Database::UpdatedStoreReady but we expect that call to get dropped.
+  base::Callback<void()> null_callback;
+  v4_database_->ApplyUpdate(std::move(parsed_server_response), null_callback);
+
+  // Step 3: Before V4Store::ApplyUpdate gets executed on the task runner,
+  // destroy the database. This posts ~V4Database() on the task runner.
+  V4Database::Destroy(std::move(v4_database_));
+
+  // Step 4: Wait for the task runner to go to completion. The test should
+  // finish to completion and the |null_callback| should not get called.
+  WaitForTasksOnTaskRunner();
 }
 
 }  // namespace safe_browsing

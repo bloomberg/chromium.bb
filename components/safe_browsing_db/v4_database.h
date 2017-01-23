@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
@@ -204,6 +205,10 @@ class V4Database {
   // that needed updating and is ready for the next update. It should only be
   // accessed on the IO thread.
   int pending_store_updates_;
+
+  // Only meant to be dereferenced and invalidated on the IO thread and hence
+  // named. For details, see the comment at the top of weak_ptr.h
+  base::WeakPtrFactory<V4Database> weak_factory_on_io_;
 
   DISALLOW_COPY_AND_ASSIGN(V4Database);
 };
