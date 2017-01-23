@@ -28,7 +28,7 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
   DECLARE_TRACE();
 
  private:
-  NavigatorBattery();
+  explicit NavigatorBattery(Navigator&);
   static const char* supplementName();
 
   Member<BatteryManager> m_batteryManager;

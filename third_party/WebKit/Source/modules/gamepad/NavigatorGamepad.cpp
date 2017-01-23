@@ -82,7 +82,7 @@ NavigatorGamepad& NavigatorGamepad::from(Navigator& navigator) {
   NavigatorGamepad* supplement = static_cast<NavigatorGamepad*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new NavigatorGamepad(navigator.frame());
+    supplement = new NavigatorGamepad(navigator);
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;
@@ -166,14 +166,17 @@ void NavigatorGamepad::dispatchOneEvent() {
     m_dispatchOneEventRunner->runAsync();
 }
 
-NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
-    : ContextLifecycleObserver(frame->document()),
-      PlatformEventController(frame ? frame->page() : 0),
+NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
+    : Supplement<Navigator>(navigator),
+      ContextLifecycleObserver(navigator.frame() ? navigator.frame()->document()
+                                                 : nullptr),
+      PlatformEventController(navigator.frame() ? navigator.frame()->page()
+                                                : nullptr),
       m_dispatchOneEventRunner(AsyncMethodRunner<NavigatorGamepad>::create(
           this,
           &NavigatorGamepad::dispatchOneEvent)) {
-  if (frame)
-    frame->domWindow()->registerEventListenerObserver(this);
+  if (navigator.frame())
+    navigator.frame()->domWindow()->registerEventListenerObserver(this);
 }
 
 NavigatorGamepad::~NavigatorGamepad() {}

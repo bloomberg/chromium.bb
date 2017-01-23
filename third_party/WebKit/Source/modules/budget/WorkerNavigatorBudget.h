@@ -31,7 +31,7 @@ class WorkerNavigatorBudget final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  WorkerNavigatorBudget();
+  explicit WorkerNavigatorBudget(WorkerNavigator&);
   static const char* supplementName();
 
   Member<BudgetService> m_budget;

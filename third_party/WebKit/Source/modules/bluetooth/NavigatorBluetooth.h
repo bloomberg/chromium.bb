@@ -29,7 +29,7 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
   DECLARE_TRACE();
 
  private:
-  NavigatorBluetooth();
+  explicit NavigatorBluetooth(Navigator&);
   static const char* supplementName();
 
   Member<Bluetooth> m_bluetooth;

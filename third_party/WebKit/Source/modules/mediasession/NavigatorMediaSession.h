@@ -27,7 +27,7 @@ class NavigatorMediaSession final
   DECLARE_TRACE();
 
  private:
-  NavigatorMediaSession(Navigator&);
+  explicit NavigatorMediaSession(Navigator&);
   static const char* supplementName();
 
   // The MediaSession instance of this Navigator.

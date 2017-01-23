@@ -13,7 +13,7 @@ NavigatorBluetooth& NavigatorBluetooth::from(Navigator& navigator) {
   NavigatorBluetooth* supplement = static_cast<NavigatorBluetooth*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new NavigatorBluetooth();
+    supplement = new NavigatorBluetooth(navigator);
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;
@@ -34,7 +34,8 @@ DEFINE_TRACE(NavigatorBluetooth) {
   Supplement<Navigator>::trace(visitor);
 }
 
-NavigatorBluetooth::NavigatorBluetooth() {}
+NavigatorBluetooth::NavigatorBluetooth(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {}
 
 const char* NavigatorBluetooth::supplementName() {
   return "NavigatorBluetooth";

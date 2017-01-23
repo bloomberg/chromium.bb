@@ -9,7 +9,8 @@
 
 namespace blink {
 
-NavigatorBudget::NavigatorBudget() {}
+NavigatorBudget::NavigatorBudget(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {}
 
 // static
 const char* NavigatorBudget::supplementName() {
@@ -23,7 +24,7 @@ NavigatorBudget& NavigatorBudget::from(Navigator& navigator) {
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!navigatorBudget) {
     // If there isn't one already, create it now and associate it.
-    navigatorBudget = new NavigatorBudget();
+    navigatorBudget = new NavigatorBudget(navigator);
     Supplement<Navigator>::provideTo(navigator, supplementName(),
                                      navigatorBudget);
   }

@@ -9,7 +9,8 @@
 
 namespace blink {
 
-NavigatorBattery::NavigatorBattery() {}
+NavigatorBattery::NavigatorBattery(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {}
 
 ScriptPromise NavigatorBattery::getBattery(ScriptState* scriptState,
                                            Navigator& navigator) {
@@ -32,7 +33,7 @@ NavigatorBattery& NavigatorBattery::from(Navigator& navigator) {
   NavigatorBattery* supplement = static_cast<NavigatorBattery*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new NavigatorBattery();
+    supplement = new NavigatorBattery(navigator);
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;

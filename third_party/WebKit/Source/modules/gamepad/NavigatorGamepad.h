@@ -66,7 +66,7 @@ class MODULES_EXPORT NavigatorGamepad final
                                      bool connected);
 
  private:
-  explicit NavigatorGamepad(LocalFrame*);
+  explicit NavigatorGamepad(Navigator&);
 
   static const char* supplementName();
 

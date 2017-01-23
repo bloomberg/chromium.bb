@@ -12,8 +12,10 @@
 
 namespace blink {
 
-NavigatorUserMedia::NavigatorUserMedia(ExecutionContext* context)
-    : m_mediaDevices(MediaDevices::create(context)) {}
+NavigatorUserMedia::NavigatorUserMedia(Navigator& navigator)
+    : Supplement<Navigator>(navigator),
+      m_mediaDevices(MediaDevices::create(
+          navigator.frame() ? navigator.frame()->document() : nullptr)) {}
 
 const char* NavigatorUserMedia::supplementName() {
   return "NavigatorUserMedia";
@@ -23,9 +25,7 @@ NavigatorUserMedia& NavigatorUserMedia::from(Navigator& navigator) {
   NavigatorUserMedia* supplement = static_cast<NavigatorUserMedia*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    ExecutionContext* context =
-        navigator.frame() ? navigator.frame()->document() : nullptr;
-    supplement = new NavigatorUserMedia(context);
+    supplement = new NavigatorUserMedia(navigator);
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;

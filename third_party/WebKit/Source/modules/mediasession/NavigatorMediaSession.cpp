@@ -10,7 +10,8 @@
 
 namespace blink {
 
-NavigatorMediaSession::NavigatorMediaSession(Navigator&) {}
+NavigatorMediaSession::NavigatorMediaSession(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {}
 
 DEFINE_TRACE(NavigatorMediaSession) {
   visitor->trace(m_session);

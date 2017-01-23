@@ -27,7 +27,7 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
   DECLARE_TRACE();
 
  private:
-  NavigatorNFC();
+  explicit NavigatorNFC(Navigator&);
   static const char* supplementName();
 
   Member<NFC> m_nfc;

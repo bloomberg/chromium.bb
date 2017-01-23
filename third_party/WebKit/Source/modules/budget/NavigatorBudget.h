@@ -28,7 +28,7 @@ class NavigatorBudget final : public GarbageCollected<NavigatorBudget>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  NavigatorBudget();
+  explicit NavigatorBudget(Navigator&);
   static const char* supplementName();
 
   Member<BudgetService> m_budget;

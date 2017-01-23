@@ -11,7 +11,8 @@ namespace blink {
 
 WorkerNavigatorNetworkInformation::WorkerNavigatorNetworkInformation(
     WorkerNavigator& navigator,
-    ExecutionContext* context) {}
+    ExecutionContext* context)
+    : Supplement<WorkerNavigator>(navigator) {}
 
 WorkerNavigatorNetworkInformation& WorkerNavigatorNetworkInformation::from(
     WorkerNavigator& navigator,
