@@ -2700,6 +2700,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   child_process_launcher_.reset();
   is_dead_ = true;
+  if (route_provider_binding_.is_bound())
+    route_provider_binding_.Close();
   ResetChannelProxy();
 
   UpdateProcessPriority();
