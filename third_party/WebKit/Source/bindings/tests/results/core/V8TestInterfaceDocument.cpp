@@ -96,7 +96,7 @@ CORE_EXPORT void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<
 } // namespace TestInterfaceDocumentV8Internal
 
 const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceDocumentAccessors[] = {
-    {"location", TestInterfaceDocumentV8Internal::locationAttributeGetterCallback, TestInterfaceDocumentV8Internal::locationAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"location", TestInterfaceDocumentV8Internal::locationAttributeGetterCallback, TestInterfaceDocumentV8Internal::locationAttributeSetterCallback, 0, 0, nullptr, 0, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestInterfaceDocumentTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

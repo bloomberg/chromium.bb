@@ -279,9 +279,9 @@ CORE_EXPORT  void customElementCallbacksMethodMethodCallback(const v8::FunctionC
 } // namespace TestCallbackFunctionsV8Internal
 
 const V8DOMConfiguration::AccessorConfiguration V8TestCallbackFunctionsAccessors[] = {
-    {"voidCallbackFunctionAttribute", TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeGetterCallback, TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"anyCallbackFunctionOptionalAnyArgAttribute", TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback, TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customElementsCallbacksReadonlyAttribute", TestCallbackFunctionsV8Internal::customElementsCallbacksReadonlyAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidCallbackFunctionAttribute", TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeGetterCallback, TestCallbackFunctionsV8Internal::voidCallbackFunctionAttributeAttributeSetterCallback, 0, 0, nullptr, 0, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"anyCallbackFunctionOptionalAnyArgAttribute", TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback, TestCallbackFunctionsV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback, 0, 0, nullptr, 0, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customElementsCallbacksReadonlyAttribute", TestCallbackFunctionsV8Internal::customElementsCallbacksReadonlyAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestCallbackFunctionsMethods[] = {

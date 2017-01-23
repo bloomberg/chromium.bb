@@ -119,7 +119,6 @@ def attribute_context(interface, attribute, interfaces):
         includes.add('bindings/core/v8/V8PrivateProperty.h')
 
     context = {
-        'access_control_list': access_control_list(interface, attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'activity_logging_world_check': v8_utilities.activity_logging_world_check(attribute),  # [ActivityLogging]
@@ -517,15 +516,6 @@ def has_setter(interface, attribute):
         return False
 
     return is_writable(attribute)
-
-
-# [Unforgeable]
-def access_control_list(interface, attribute):
-    extended_attributes = attribute.extended_attributes
-    access_control = []
-    if is_unforgeable(interface, attribute):
-        access_control.append('v8::PROHIBITS_OVERWRITING')
-    return access_control or ['v8::DEFAULT']
 
 
 # [NotEnumerable], [Unforgeable]

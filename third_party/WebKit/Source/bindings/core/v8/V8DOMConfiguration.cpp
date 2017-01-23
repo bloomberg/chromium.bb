@@ -56,18 +56,20 @@ void installAttributeInternal(
       v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
 
   DCHECK(attribute.propertyLocationConfiguration);
-  if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
+  if (attribute.propertyLocationConfiguration &
+      V8DOMConfiguration::OnInstance) {
     instanceTemplate->SetNativeDataProperty(
         name, getter, setter, data,
         static_cast<v8::PropertyAttribute>(attribute.attribute),
-        v8::Local<v8::AccessorSignature>(),
-        static_cast<v8::AccessControl>(attribute.settings));
-  if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnPrototype)
+        v8::Local<v8::AccessorSignature>(), v8::DEFAULT);
+  }
+  if (attribute.propertyLocationConfiguration &
+      V8DOMConfiguration::OnPrototype) {
     prototypeTemplate->SetNativeDataProperty(
         name, getter, setter, data,
         static_cast<v8::PropertyAttribute>(attribute.attribute),
-        v8::Local<v8::AccessorSignature>(),
-        static_cast<v8::AccessControl>(attribute.settings));
+        v8::Local<v8::AccessorSignature>(), v8::DEFAULT);
+  }
   if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInterface)
     NOTREACHED();
 }
@@ -122,7 +124,6 @@ void installLazyDataAttributeInternal(
   DCHECK(!attribute.setterForMainWorld);
   v8::Local<v8::Value> data =
       v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
-  DCHECK(static_cast<v8::AccessControl>(attribute.settings) == v8::DEFAULT);
 
   DCHECK(attribute.propertyLocationConfiguration);
   if (attribute.propertyLocationConfiguration &
@@ -241,17 +242,18 @@ void installAccessorInternal(
     v8::Local<FunctionOrTemplate> setter =
         createAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, setterCallback, nullptr, data, signature, 1);
-    if (accessor.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
+    if (accessor.propertyLocationConfiguration &
+        V8DOMConfiguration::OnInstance) {
       instanceOrTemplate->SetAccessorProperty(
           name, getter, setter,
-          static_cast<v8::PropertyAttribute>(accessor.attribute),
-          static_cast<v8::AccessControl>(accessor.settings));
+          static_cast<v8::PropertyAttribute>(accessor.attribute), v8::DEFAULT);
+    }
     if (accessor.propertyLocationConfiguration &
-        V8DOMConfiguration::OnPrototype)
+        V8DOMConfiguration::OnPrototype) {
       prototypeOrTemplate->SetAccessorProperty(
           name, getter, setter,
-          static_cast<v8::PropertyAttribute>(accessor.attribute),
-          static_cast<v8::AccessControl>(accessor.settings));
+          static_cast<v8::PropertyAttribute>(accessor.attribute), v8::DEFAULT);
+    }
   }
   if (accessor.propertyLocationConfiguration &
       V8DOMConfiguration::OnInterface) {
@@ -268,8 +270,7 @@ void installAccessorInternal(
             1);
     interfaceOrTemplate->SetAccessorProperty(
         name, getter, setter,
-        static_cast<v8::PropertyAttribute>(accessor.attribute),
-        static_cast<v8::AccessControl>(accessor.settings));
+        static_cast<v8::PropertyAttribute>(accessor.attribute), v8::DEFAULT);
   }
 }
 

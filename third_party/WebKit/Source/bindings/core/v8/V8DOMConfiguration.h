@@ -76,7 +76,6 @@ class CORE_EXPORT V8DOMConfiguration final {
     // The accessor's 'result' is stored in a private property.
     CachedAccessorCallback cachedAccessorCallback;
     const WrapperTypeInfo* data;
-    unsigned settings : 8;   // v8::AccessControl
     unsigned attribute : 8;  // v8::PropertyAttribute
     unsigned
         propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
@@ -107,7 +106,7 @@ class CORE_EXPORT V8DOMConfiguration final {
   // returned by the getter callback, turning it into a real data value.
   //
   // This also means that the AttributeConfiguration must not specify a setter,
-  // nor any non-default attributes or access control settings.
+  // nor any non-default attributes.
   static void installLazyDataAttributes(
       v8::Isolate*,
       const DOMWrapperWorld&,
@@ -129,7 +128,6 @@ class CORE_EXPORT V8DOMConfiguration final {
     // The accessor's 'result' is stored in a private property.
     CachedAccessorCallback cachedAccessorCallback;
     const WrapperTypeInfo* data;
-    unsigned settings : 8;   // v8::AccessControl
     unsigned attribute : 8;  // v8::PropertyAttribute
     unsigned
         propertyLocationConfiguration : 3;  // PropertyLocationConfiguration

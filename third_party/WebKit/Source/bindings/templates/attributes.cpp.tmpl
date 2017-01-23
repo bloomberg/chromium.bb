@@ -445,12 +445,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
        'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
            attribute.constructor_type
        if attribute.constructor_type else '0' %}
-{% if attribute.is_data_type_property %}
-{% set access_control = 'static_cast<v8::AccessControl>(%s)' %
-                        ' | '.join(attribute.access_control_list) %}
-{% else %}
-{% set access_control = 'v8::DEFAULT' %}
-{% endif %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
 {% set cached_accessor_callback =
@@ -467,7 +461,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
        setter_callback_for_main_world,
        cached_accessor_callback,
        wrapper_type_info,
-       access_control,
        property_attribute,
        property_location(attribute),
        holder_check,

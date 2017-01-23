@@ -263,7 +263,7 @@ void V8TestInterface3::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* sc
 }
 
 const V8DOMConfiguration::AccessorConfiguration V8TestInterface3Accessors[] = {
-    {"readonlyStringifierAttribute", TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyStringifierAttribute", TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterface3Methods[] = {

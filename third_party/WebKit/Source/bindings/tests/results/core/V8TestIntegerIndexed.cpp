@@ -160,7 +160,7 @@ CORE_EXPORT void indexedPropertyDeleterCallback(uint32_t index, const v8::Proper
 } // namespace TestIntegerIndexedV8Internal
 
 const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedAccessors[] = {
-    {"length", TestIntegerIndexedV8Internal::lengthAttributeGetterCallback, TestIntegerIndexedV8Internal::lengthAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"length", TestIntegerIndexedV8Internal::lengthAttributeGetterCallback, TestIntegerIndexedV8Internal::lengthAttributeSetterCallback, 0, 0, nullptr, 0, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedMethods[] = {
