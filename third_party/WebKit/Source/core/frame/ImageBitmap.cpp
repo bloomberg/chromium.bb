@@ -364,7 +364,6 @@ static void applyColorSpaceConversion(sk_sp<SkImage>& image,
     }
     return;
   }
-
   // Skia does not support drawing to unpremul surfaces/canvases.
   sk_sp<SkImage> unPremulImage = nullptr;
   if (image->alphaType() == kUnpremul_SkAlphaType)
@@ -1130,7 +1129,16 @@ PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(
     SnapshotReason,
     const FloatSize&) const {
   *status = NormalSourceImageStatus;
-  return m_image ? m_image : nullptr;
+  if (!m_image)
+    return nullptr;
+  if (m_image->isPremultiplied())
+    return m_image;
+  // Skia does not support drawing unpremul SkImage on SkCanvas.
+  // Premultiply and return.
+  sk_sp<SkImage> premulSkImage = unPremulSkImageToPremul(
+      m_image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget())
+          .get());
+  return StaticBitmapImage::create(premulSkImage);
 }
 
 void ImageBitmap::adjustDrawRects(FloatRect* srcRect,
