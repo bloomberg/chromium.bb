@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_flags.h"
@@ -14,6 +13,7 @@
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_stack_trace.h"
 #include "net/tools/quic/chlo_extractor.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
 #include "net/tools/quic/quic_simple_server_session.h"
@@ -497,7 +497,7 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
     QUIC_BUG << "ConnectionId " << connection_id
              << " does not exist in the session map.  Error: "
              << QuicErrorCodeToString(error);
-    QUIC_BUG << base::debug::StackTrace().ToString();
+    QUIC_BUG << QuicStackTrace();
     return;
   }
 
