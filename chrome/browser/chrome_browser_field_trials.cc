@@ -54,17 +54,16 @@ void InstantiatePersistentHistograms() {
   if (!base::ReplaceFile(active_file, metrics_file, nullptr))
     base::DeleteFile(metrics_file, /*recursive=*/false);
 
-  // This is used to report results to an UMA histogram. It's an int because
-  // arithmetic is done on the value. The corresponding "failed" case must
-  // always appear directly after the "success" case.
-  enum : int {
+  // This is used to report results to an UMA histogram.
+  enum InitResult {
     LOCAL_MEMORY_SUCCESS,
     LOCAL_MEMORY_FAILED,
     MAPPED_FILE_SUCCESS,
     MAPPED_FILE_FAILED,
-    CREATE_ALLOCATOR_RESULTS
+    MAPPED_FILE_EXISTS,
+    INIT_RESULT_MAX
   };
-  int result;
+  InitResult result;
 
   // Create persistent/shared memory and allow histograms to be stored in
   // it. Memory that is not actualy used won't be physically mapped by the
@@ -75,11 +74,30 @@ void InstantiatePersistentHistograms() {
   std::string storage = variations::GetVariationParamValueByFeature(
       base::kPersistentHistogramsFeature, "storage");
   if (storage == "MappedFile") {
-    // Create global allocator with the "active" file.
-    base::GlobalHistogramAllocator::CreateWithFile(
-        active_file, kAllocSize, kAllocId,
-        ChromeMetricsServiceClient::kBrowserMetricsName);
-    result = MAPPED_FILE_SUCCESS;
+    // If for some reason the existing "active" file could not be moved above
+    // then it is essential it be scheduled for deletion when possible and the
+    // contents ignored. Because this shouldn't happen but can on an OS like
+    // Windows where another process reading the file (backup, AV, etc.) can
+    // prevent its alteration, it's necessary to handle this case by switching
+    // to the equivalent of "LocalMemory" for this run.
+    if (base::PathExists(active_file)) {
+      base::File file(active_file, base::File::FLAG_OPEN |
+                                       base::File::FLAG_READ |
+                                       base::File::FLAG_DELETE_ON_CLOSE);
+      result = MAPPED_FILE_EXISTS;
+      base::GlobalHistogramAllocator::CreateWithLocalMemory(
+          kAllocSize, kAllocId,
+          ChromeMetricsServiceClient::kBrowserMetricsName);
+    } else {
+      // Create global allocator with the "active" file.
+      if (base::GlobalHistogramAllocator::CreateWithFile(
+              active_file, kAllocSize, kAllocId,
+              ChromeMetricsServiceClient::kBrowserMetricsName)) {
+        result = MAPPED_FILE_SUCCESS;
+      } else {
+        result = MAPPED_FILE_FAILED;
+      }
+    }
   } else if (storage == "LocalMemory") {
     // Use local memory for storage even though it will not persist across
     // an unclean shutdown.
@@ -93,11 +111,11 @@ void InstantiatePersistentHistograms() {
 
   // Get the allocator that was just created and report result. Exit if the
   // allocator could not be created.
+  UMA_HISTOGRAM_ENUMERATION("UMA.PersistentHistograms.InitResult", result,
+                            INIT_RESULT_MAX);
+
   base::GlobalHistogramAllocator* allocator =
       base::GlobalHistogramAllocator::Get();
-  UMA_HISTOGRAM_ENUMERATION("UMA.PersistentHistograms.InitResult",
-                            result + (allocator ? 0 : 1),
-                            CREATE_ALLOCATOR_RESULTS);
   if (!allocator)
     return;
 
