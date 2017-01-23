@@ -20,7 +20,7 @@ bool MockGrammarCheck::CheckGrammarOfString(
     const blink::WebString& text,
     std::vector<blink::WebTextCheckingResult>* results) {
   DCHECK(results);
-  base::string16 string_text = text;
+  base::string16 string_text = text.utf16();
   if (std::find_if(string_text.begin(), string_text.end(), IsASCIIAlpha) ==
       string_text.end())
     return true;

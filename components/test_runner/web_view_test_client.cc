@@ -99,8 +99,8 @@ void WebViewTestClient::showValidationMessage(
   if (test_runner()->is_web_platform_tests_mode())
     return;
 
-  base::string16 wrapped_main_text = main_message;
-  base::string16 wrapped_sub_text = sub_message;
+  base::string16 wrapped_main_text = main_message.utf16();
+  base::string16 wrapped_sub_text = sub_message.utf16();
 
   if (main_message_hint == blink::WebTextDirectionLeftToRight) {
     wrapped_main_text =

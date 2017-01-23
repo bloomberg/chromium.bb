@@ -100,18 +100,20 @@ void SpellCheckClient::FinishLastTextCheck() {
     return;
   std::vector<blink::WebTextCheckingResult> results;
   int offset = 0;
-  base::string16 text = last_requested_text_check_string_;
-  if (!spell_check_.IsMultiWordMisspelling(blink::WebString(text), &results)) {
+  if (!spell_check_.IsMultiWordMisspelling(last_requested_text_check_string_,
+                                           &results)) {
+    base::string16 text = last_requested_text_check_string_.utf16();
     while (text.length()) {
       int misspelled_position = 0;
       int misspelled_length = 0;
-      spell_check_.SpellCheckWord(
-          blink::WebString(text), &misspelled_position, &misspelled_length);
+      spell_check_.SpellCheckWord(blink::WebString::fromUTF16(text),
+                                  &misspelled_position, &misspelled_length);
       if (!misspelled_length)
         break;
       blink::WebVector<blink::WebString> suggestions;
       spell_check_.FillSuggestionList(
-          blink::WebString(text.substr(misspelled_position, misspelled_length)),
+          blink::WebString::fromUTF16(
+              text.substr(misspelled_position, misspelled_length)),
           &suggestions);
       results.push_back(blink::WebTextCheckingResult(
           blink::WebTextDecorationTypeSpelling,

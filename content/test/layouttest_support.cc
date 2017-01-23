@@ -541,8 +541,8 @@ void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
 // Returns True if node1 < node2.
 bool HistoryEntryCompareLess(HistoryEntry::HistoryNode* node1,
                              HistoryEntry::HistoryNode* node2) {
-  base::string16 target1 = node1->item().target();
-  base::string16 target2 = node2->item().target();
+  base::string16 target1 = node1->item().target().utf16();
+  base::string16 target2 = node2->item().target().utf16();
   return base::CompareCaseInsensitiveASCII(target1, target2) < 0;
 }
 

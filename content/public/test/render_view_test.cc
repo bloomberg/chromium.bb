@@ -175,8 +175,8 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
     const base::string16& script,
     int* int_result) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Local<v8::Value> result =
-      GetMainFrame()->executeScriptAndReturnValue(WebScriptSource(script));
+  v8::Local<v8::Value> result = GetMainFrame()->executeScriptAndReturnValue(
+      WebScriptSource(blink::WebString::fromUTF16(script)));
   if (result.IsEmpty() || !result->IsInt32())
     return false;
 

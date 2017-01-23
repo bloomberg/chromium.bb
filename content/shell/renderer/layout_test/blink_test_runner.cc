@@ -336,7 +336,7 @@ WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
             FILE_PATH_LITERAL("foo")));
     net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
   }
-  return path.AsUTF16Unsafe();
+  return blink::FilePathToWebString(path);
 }
 
 WebURL BlinkTestRunner::LocalFileToDataURL(const WebURL& file_url) {
@@ -373,12 +373,7 @@ WebURL BlinkTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url,
   base::FilePath replace_path =
       LayoutTestRenderThreadObserver::GetInstance()->webkit_source_dir()
           .Append(FILE_PATH_LITERAL("LayoutTests/"));
-#if defined(OS_WIN)
-  std::string utf8_path = base::WideToUTF8(replace_path.value());
-#else
-  std::string utf8_path =
-      base::WideToUTF8(base::SysNativeMBToWide(replace_path.value()));
-#endif
+  std::string utf8_path = replace_path.AsUTF8Unsafe();
   std::string new_url =
       std::string("file://") + utf8_path + utf8_url.substr(kPrefixLen);
   return WebURL(GURL(new_url));

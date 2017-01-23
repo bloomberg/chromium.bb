@@ -48,7 +48,7 @@ bool MockSpellCheck::SpellCheckWord(const blink::WebString& text,
 
   // Convert to a base::string16 because we store base::string16 instances in
   // misspelled_words_ and blink::WebString has no find().
-  base::string16 string_text = text;
+  base::string16 string_text = text.utf16();
   int skipped_length = 0;
 
   while (!string_text.empty()) {

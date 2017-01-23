@@ -75,16 +75,16 @@ WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(
   for (std::map<base::string16, base::string16>::const_iterator it =
            m_customData.begin();
        it != m_customData.end(); ++it) {
-    CHECK(std::find(results.begin(), results.end(), it->first) ==
-          results.end());
-    results.push_back(it->first);
+    CHECK(std::find(results.begin(), results.end(),
+                    WebString::fromUTF16(it->first)) == results.end());
+    results.push_back(WebString::fromUTF16(it->first));
   }
   return results;
 }
 
 blink::WebString MockWebClipboardImpl::readPlainText(
     blink::WebClipboard::Buffer buffer) {
-  return m_plainText;
+  return WebString::fromUTF16(m_plainText);
 }
 
 // TODO(wtc): set output argument *url.
@@ -95,7 +95,7 @@ blink::WebString MockWebClipboardImpl::readHTML(
     unsigned* fragmentEnd) {
   *fragmentStart = 0;
   *fragmentEnd = static_cast<unsigned>(m_htmlText.string().length());
-  return m_htmlText;
+  return WebString::fromUTF16(m_htmlText);
 }
 
 blink::WebBlobInfo MockWebClipboardImpl::readImage(
@@ -106,7 +106,7 @@ blink::WebBlobInfo MockWebClipboardImpl::readImage(
           bitmap, false /* discard_transparency */, &output)) {
     return blink::WebBlobInfo();
   }
-  const WebString& uuid = base::ASCIIToUTF16(base::GenerateGUID());
+  const WebString& uuid = WebString::fromASCII(base::GenerateGUID());
   std::unique_ptr<blink::WebBlobRegistry::Builder> blob_builder(
       blink::Platform::current()->getBlobRegistry()->createBuilder(
           uuid, blink::WebString()));
@@ -114,7 +114,7 @@ blink::WebBlobInfo MockWebClipboardImpl::readImage(
       reinterpret_cast<char*>(output.data()), output.size()));
   blob_builder->build();
   return blink::WebBlobInfo(
-      uuid, base::ASCIIToUTF16(ui::Clipboard::kMimeTypePNG), output.size());
+      uuid, WebString::fromASCII(ui::Clipboard::kMimeTypePNG), output.size());
 }
 
 blink::WebImage MockWebClipboardImpl::readRawImage(
@@ -126,9 +126,9 @@ blink::WebString MockWebClipboardImpl::readCustomData(
     blink::WebClipboard::Buffer buffer,
     const blink::WebString& type) {
   std::map<base::string16, base::string16>::const_iterator it =
-      m_customData.find(type);
+      m_customData.find(type.utf16());
   if (it != m_customData.end())
-    return it->second;
+    return WebString::fromUTF16(it->second);
   return blink::WebString();
 }
 
@@ -138,8 +138,8 @@ void MockWebClipboardImpl::writeHTML(const blink::WebString& htmlText,
                                      bool writeSmartPaste) {
   clear();
 
-  m_htmlText = htmlText;
-  m_plainText = plainText;
+  m_htmlText = WebString::toNullableString16(htmlText);
+  m_plainText = WebString::toNullableString16(plainText);
   m_writeSmartPaste = writeSmartPaste;
   ++m_sequenceNumber;
 }
@@ -147,7 +147,7 @@ void MockWebClipboardImpl::writeHTML(const blink::WebString& htmlText,
 void MockWebClipboardImpl::writePlainText(const blink::WebString& plain_text) {
   clear();
 
-  m_plainText = plain_text;
+  m_plainText = WebString::toNullableString16(plain_text);
   ++m_sequenceNumber;
 }
 
@@ -155,8 +155,9 @@ void MockWebClipboardImpl::writeURL(const blink::WebURL& url,
                                     const blink::WebString& title) {
   clear();
 
-  m_htmlText = WebString::fromUTF8(URLToMarkup(url, title));
-  m_plainText = url.string();
+  m_htmlText = base::NullableString16(
+      base::UTF8ToUTF16(URLToMarkup(url, title)), false /* is_null */);
+  m_plainText = WebString::toNullableString16(url.string());
   ++m_sequenceNumber;
 }
 
@@ -167,7 +168,8 @@ void MockWebClipboardImpl::writeImage(const blink::WebImage& image,
     clear();
 
     m_plainText = m_htmlText;
-    m_htmlText = WebString::fromUTF8(URLToImageMarkup(url, title));
+    m_htmlText = base::NullableString16(
+        base::UTF8ToUTF16(URLToImageMarkup(url, title)), false /* is_null */);
     m_image = image;
     ++m_sequenceNumber;
   }
@@ -182,16 +184,16 @@ void MockWebClipboardImpl::writeDataObject(const WebDragData& data) {
     switch (item.storageType) {
       case WebDragData::Item::StorageTypeString: {
         ++m_sequenceNumber;
-        base::string16 type(item.stringType);
+        base::string16 type(item.stringType.utf16());
         if (base::EqualsASCII(type, ui::Clipboard::kMimeTypeText)) {
-          m_plainText = item.stringData;
+          m_plainText = WebString::toNullableString16(item.stringData);
           continue;
         }
         if (base::EqualsASCII(type, ui::Clipboard::kMimeTypeHTML)) {
-          m_htmlText = item.stringData;
+          m_htmlText = WebString::toNullableString16(item.stringData);
           continue;
         }
-        m_customData.insert(std::make_pair(type, item.stringData));
+        m_customData.insert(std::make_pair(type, item.stringData.utf16()));
         continue;
       }
       default:
