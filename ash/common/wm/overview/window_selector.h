@@ -61,8 +61,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Called when the last window selector item from a grid is deleted.
   void OnGridEmpty(WindowGrid* grid);
 
-  // Activates |window|.
-  void SelectWindow(WmWindow* window);
+  // Activates |item's| window.
+  void SelectWindow(WindowSelectorItem* item);
 
   // Called when |window| is about to get closed.
   void WindowClosing(WindowSelectorItem* window);

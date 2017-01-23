@@ -446,8 +446,13 @@ WmWindow* ScopedTransformOverviewWindow::GetOverviewWindow() const {
   return window_;
 }
 
+void ScopedTransformOverviewWindow::EnsureVisible() {
+  original_opacity_ = 1.f;
+}
+
 void ScopedTransformOverviewWindow::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
+    EnsureVisible();
     window_->Show();
     window_->Activate();
   }
@@ -455,6 +460,7 @@ void ScopedTransformOverviewWindow::OnGestureEvent(ui::GestureEvent* event) {
 
 void ScopedTransformOverviewWindow::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED && event->IsOnlyLeftMouseButton()) {
+    EnsureVisible();
     window_->Show();
     window_->Activate();
   }

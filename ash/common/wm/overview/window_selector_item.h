@@ -66,6 +66,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Restores and animates the managed window to its non overview mode state.
   void RestoreWindow();
 
+  // Ensures that a possibly minimized window becomes visible after restore.
+  void EnsureVisible();
+
   // Restores stacking of window captions above the windows, then fades out.
   void Shutdown();
 

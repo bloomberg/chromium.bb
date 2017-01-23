@@ -407,7 +407,8 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
     CancelSelection();
 }
 
-void WindowSelector::SelectWindow(WmWindow* window) {
+void WindowSelector::SelectWindow(WindowSelectorItem* item) {
+  WmWindow* window = item->GetWindow();
   std::vector<WmWindow*> window_list =
       WmShell::Get()->mru_window_tracker()->BuildMruWindowList();
   if (!window_list.empty()) {
@@ -425,7 +426,7 @@ void WindowSelector::SelectWindow(WmWindow* window) {
                                1 + it - window_list.begin());
     }
   }
-
+  item->EnsureVisible();
   window->GetWindowState()->Activate();
 }
 
@@ -481,8 +482,7 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
                                   (num_key_presses_ * 100) / num_items_, 1, 300,
                                   30);
       WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_ENTER_KEY);
-      SelectWindow(
-          grid_list_[selected_grid_index_]->SelectedWindow()->GetWindow());
+      SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
       break;
     default:
       // Not a key we are interested in, allow the textfield to handle it.

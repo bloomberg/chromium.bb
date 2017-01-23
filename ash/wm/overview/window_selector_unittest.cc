@@ -469,12 +469,14 @@ TEST_F(WindowSelectorTest, ActivateMinimized) {
   wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
   window_state->OnWMEvent(&minimize_event);
   EXPECT_FALSE(window->IsVisible());
+  EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_MINIMIZED,
             wm::GetWindowState(window.get())->GetStateType());
 
   ToggleOverview();
 
   EXPECT_FALSE(window->IsVisible());
+  EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_MINIMIZED,
             wm::GetWindowState(window.get())->GetStateType());
   aura::Window* window_for_minimized_window =
@@ -490,6 +492,7 @@ TEST_F(WindowSelectorTest, ActivateMinimized) {
   EXPECT_FALSE(IsSelecting());
 
   EXPECT_TRUE(window->IsVisible());
+  EXPECT_EQ(1.f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_NORMAL,
             wm::GetWindowState(window.get())->GetStateType());
 }
