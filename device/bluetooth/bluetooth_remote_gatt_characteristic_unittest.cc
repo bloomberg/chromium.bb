@@ -1514,6 +1514,32 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+// Tests that cancelling StopNotifySession works.
+// TODO(crbug.com/633191): Enable on macOS when SubscribeToNotifications is
+// implemented.
+// TODO(crbug.com/636270): Enable on Windows when SubscribeToNotifications is
+// implemented.
+TEST_F(BluetoothRemoteGattCharacteristicTest, StopNotifySession_Cancelled) {
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10,
+      /* expected_config_descriptor_value: NOTIFY */ 1));
+
+  // Check that the session is correctly setup.
+  std::string characteristic_identifier = characteristic1_->GetIdentifier();
+  EXPECT_EQ(characteristic_identifier,
+            notify_sessions_[0]->GetCharacteristicIdentifier());
+  EXPECT_EQ(characteristic1_, notify_sessions_[0]->GetCharacteristic());
+  EXPECT_TRUE(notify_sessions_[0]->IsActive());
+
+  // Queue a Stop request.
+  notify_sessions_[0]->Stop(GetStopNotifyCallback(Call::EXPECTED));
+
+  // Cancel Stop by deleting the device before Stop finishes.
+  DeleteDevice(device_);  // TODO(576906) delete only the characteristic.
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
 // Tests that deleted sessions are stopped.
 TEST_F(BluetoothRemoteGattCharacteristicTest, StopNotifySession_AfterDeleted) {
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
