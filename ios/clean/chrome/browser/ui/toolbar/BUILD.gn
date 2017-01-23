@@ -6,22 +6,35 @@ source_set("toolbar") {
   sources = [
     "toolbar_coordinator.h",
     "toolbar_coordinator.mm",
-    "toolbar_view_controller.h",
-    "toolbar_view_controller.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":toolbar_ui",
     "//base",
-    "//ios/chrome/app/theme",
-    "//ios/chrome/browser/ui",
     "//ios/clean/chrome/browser",
-    "//ios/clean/chrome/browser/ui/actions",
-    "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/tools",
     "//ios/shared/chrome/browser/coordinator_context",
     "//ios/web",
   ]
+}
+
+source_set("toolbar_ui") {
+  sources = [
+    "toolbar_view_controller.h",
+    "toolbar_view_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/theme",
+    "//ios/chrome/browser/ui",
+    "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/animators",
+    "//ios/clean/chrome/browser/ui/commands",
+    "//ios/clean/chrome/browser/ui/tools",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

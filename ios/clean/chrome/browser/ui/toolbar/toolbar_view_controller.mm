@@ -84,7 +84,7 @@
   toolsMenu.translatesAutoresizingMaskIntoConstraints = NO;
   [toolsMenu setImageEdgeInsets:UIEdgeInsetsMakeDirected(0, -3, 0, 0)];
   [toolsMenu
-      setImage:[[UIImage imageNamed:@"toolbar_tools"]
+      setImage:[[UIImage imageNamed:@"tabswitcher_menu"]
                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
       forState:UIControlStateNormal];
   [toolsMenu addTarget:nil
