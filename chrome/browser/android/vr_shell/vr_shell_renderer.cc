@@ -51,6 +51,11 @@ static constexpr float kLaserColor[] = {1.0f, 1.0f, 1.0f, 0.5f};
 static constexpr int kLaserDataWidth = 48;
 static constexpr int kLaserDataHeight = 1;
 
+// Background constants.
+static constexpr float kGroundTileSize = 2.5f;
+static constexpr float kGroundMaxSize = 50.0f;
+static constexpr float kGroundYPosition = -2.0f;
+
 // Laser texture data, 48x1 RGBA.
 // TODO(mthiesse): As we add more resources for VR Shell, we should put them
 // in Chrome's resource files.
@@ -80,8 +85,19 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                     attribute vec4 a_Position;
                     attribute vec2 a_TexCoordinate;
                     varying vec2 v_TexCoordinate;
+
                     void main() {
                       v_TexCoordinate = a_TexCoordinate;
+                      gl_Position = u_CombinedMatrix * a_Position;
+                    });
+    case vr_shell::ShaderID::BACKGROUND_VERTEX_SHADER:
+      return SHADER(uniform mat4 u_CombinedMatrix;
+                    uniform float u_GridSize;
+                    attribute vec4 a_Position;
+                    varying vec2 v_GridPosition;
+
+                    void main() {
+                      v_GridPosition = a_Position.xz / (u_GridSize / 2.0);
                       gl_Position = u_CombinedMatrix * a_Position;
                     });
     case vr_shell::ShaderID::TEXTURE_QUAD_FRAGMENT_SHADER:
@@ -171,6 +187,15 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             lowp vec4 final_color = color * texture_color;
             gl_FragColor = vec4(final_color.xyz, final_color.w * total_fade);
           });
+    case vr_shell::ShaderID::BACKGROUND_FRAGMENT_SHADER:
+      return SHADER(
+                precision highp float;
+                varying vec2 v_GridPosition;
+
+                void main() {
+                  float luminance = 1.0 - length(v_GridPosition);
+                  gl_FragColor = vec4(0.8, 0.8, 0.8, luminance);
+                });
     default:
       LOG(ERROR) << "Shader source requested for unknown shader";
       return "";
@@ -402,11 +427,75 @@ void LaserRenderer::Draw(const gvr::Mat4f& combined_matrix) {
 
 LaserRenderer::~LaserRenderer() = default;
 
+BackgroundRenderer::BackgroundRenderer()
+    : BaseRenderer(BACKGROUND_VERTEX_SHADER, BACKGROUND_FRAGMENT_SHADER) {
+  combined_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_CombinedMatrix");
+  grid_size_handle_ =
+      glGetUniformLocation(program_handle_, "u_GridSize");
+
+  // Make ground grid.
+  int groundTilesNumber = kGroundMaxSize / kGroundTileSize;
+  float groundSize = groundTilesNumber * kGroundTileSize;
+  int groundLinesNumber = 2 * (groundTilesNumber + 1);
+  ground_grid_lines_.resize(groundLinesNumber);
+
+  for (int i = 0; i < groundLinesNumber - 1; i += 2) {
+    float position =
+        -groundSize / 2.0f + (i / 2) * groundSize / groundTilesNumber;
+
+    // Line parallel to the z axis.
+    Line3d& zLine = ground_grid_lines_[i];
+    // Line parallel to the x axis.
+    Line3d& xLine = ground_grid_lines_[i + 1];
+
+    zLine.start.x = position;
+    zLine.start.y = kGroundYPosition;
+    zLine.start.z = -groundSize / 2.0f;
+    zLine.end.x = position;
+    zLine.end.y = kGroundYPosition;
+    zLine.end.z = groundSize / 2.0f;
+    xLine.start.x = -groundSize / 2.0f;
+    xLine.start.y = kGroundYPosition;
+    xLine.start.z = position;
+    xLine.end.x = groundSize / 2.0f;
+    xLine.end.y = kGroundYPosition;
+    xLine.end.z = position;
+  }
+}
+
+void BackgroundRenderer::Draw(const gvr::Mat4f& combined_matrix) {
+  glUseProgram(program_handle_);
+
+  // Pass in model view project matrix.
+  glUniformMatrix4fv(combined_matrix_handle_, 1, false,
+                     MatrixToGLArray(combined_matrix).data());
+
+  // Tell shader the grid size so that it can calculate the fading.
+  int groundTilesNumber = kGroundMaxSize / kGroundTileSize;
+  float groundSize = groundTilesNumber * kGroundTileSize;
+  glUniform1f(grid_size_handle_, groundSize);
+
+  // Activate ground grid vertices.
+  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
+                        (float*)ground_grid_lines_.data());
+  glEnableVertexAttribArray(position_handle_);
+
+  // Draw the ground.
+  int groundVerticesNumber = 4 * (groundTilesNumber + 1);
+  glDrawArrays(GL_LINES, 0, groundVerticesNumber);
+
+  glDisableVertexAttribArray(position_handle_);
+}
+
+BackgroundRenderer::~BackgroundRenderer() = default;
+
 VrShellRenderer::VrShellRenderer()
     : textured_quad_renderer_(new TexturedQuadRenderer),
       webvr_renderer_(new WebVrRenderer),
       reticle_renderer_(new ReticleRenderer),
-      laser_renderer_(new LaserRenderer) {}
+      laser_renderer_(new LaserRenderer),
+      background_renderer_(new BackgroundRenderer) {}
 
 VrShellRenderer::~VrShellRenderer() = default;
 

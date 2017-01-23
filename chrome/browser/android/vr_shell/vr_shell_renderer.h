@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_RENDERER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
@@ -26,7 +27,20 @@ enum ShaderID {
   RETICLE_FRAGMENT_SHADER,
   LASER_VERTEX_SHADER,
   LASER_FRAGMENT_SHADER,
+  BACKGROUND_VERTEX_SHADER,
+  BACKGROUND_FRAGMENT_SHADER,
   SHADER_ID_MAX
+};
+
+struct Vertex3d {
+  float x;
+  float y;
+  float z;
+};
+
+struct Line3d {
+  Vertex3d start;
+  Vertex3d end;
 };
 
 class BaseRenderer {
@@ -121,6 +135,21 @@ class LaserRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(LaserRenderer);
 };
 
+class BackgroundRenderer : public BaseRenderer {
+ public:
+  BackgroundRenderer();
+  ~BackgroundRenderer() override;
+
+  void Draw(const gvr::Mat4f& combined_matrix);
+
+ private:
+  GLuint combined_matrix_handle_;
+  GLuint grid_size_handle_;
+  std::vector<Line3d>  ground_grid_lines_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundRenderer);
+};
+
 class VrShellRenderer {
  public:
   VrShellRenderer();
@@ -142,11 +171,16 @@ class VrShellRenderer {
     return laser_renderer_.get();
   }
 
+  BackgroundRenderer* GetBackgroundRenderer() {
+    return background_renderer_.get();
+  }
+
  private:
   std::unique_ptr<TexturedQuadRenderer> textured_quad_renderer_;
   std::unique_ptr<WebVrRenderer> webvr_renderer_;
   std::unique_ptr<ReticleRenderer> reticle_renderer_;
   std::unique_ptr<LaserRenderer> laser_renderer_;
+  std::unique_ptr<BackgroundRenderer> background_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellRenderer);
 };

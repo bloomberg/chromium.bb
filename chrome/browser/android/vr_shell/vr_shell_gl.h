@@ -95,6 +95,7 @@ class VrShellGl {
   void DrawElements(const gvr::Mat4f& render_matrix,
                     const std::vector<const ContentRectangle*>& elements);
   void DrawCursor(const gvr::Mat4f& render_matrix);
+  void DrawBackground(const gvr::Mat4f& render_matrix);
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
