@@ -30,6 +30,7 @@
 #include "core/events/Event.h"
 #include "core/events/FocusEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/events/PointerEvent.h"
 #include "core/events/TouchEventContext.h"
 
 namespace blink {
@@ -51,6 +52,8 @@ void NodeEventContext::handleLocalEvents(Event& event) const {
   } else if (relatedTarget()) {
     if (event.isMouseEvent()) {
       toMouseEvent(event).setRelatedTarget(relatedTarget());
+    } else if (event.isPointerEvent()) {
+      toPointerEvent(event).setRelatedTarget(relatedTarget());
     } else if (event.isFocusEvent()) {
       toFocusEvent(event).setRelatedTarget(relatedTarget());
     }
