@@ -491,6 +491,11 @@ void ChromeContentClient::AddPepperPlugins(
 #if BUILDFLAG(ENABLE_PLUGINS)
   ComputeBuiltInPlugins(plugins);
 
+  // If flash is disabled, do not try to add any flash plugin.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableBundledPpapiFlash))
+    return;
+
   std::vector<std::unique_ptr<content::PepperPluginInfo>> flash_versions;
 
 // Get component updated flash for desktop Linux and Chrome OS.
