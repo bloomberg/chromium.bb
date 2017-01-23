@@ -167,10 +167,10 @@ class MockPopularSites : public PopularSites {
                void(bool force_download, const FinishedCallback& callback));
   MOCK_CONST_METHOD0(sites, const SitesVector&());
   MOCK_CONST_METHOD0(GetLastURLFetched, GURL());
-  MOCK_CONST_METHOD0(local_path, const base::FilePath&());
   MOCK_METHOD0(GetURLToFetch, GURL());
   MOCK_METHOD0(GetCountryToFetch, std::string());
   MOCK_METHOD0(GetVersionToFetch, std::string());
+  MOCK_METHOD0(GetCachedJson, const base::ListValue*());
 };
 
 class MockMostVisitedSitesObserver : public MostVisitedSites::Observer {

@@ -6,10 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/files/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "components/ntp_tiles/popular_sites.h"
 #include "components/ntp_tiles/pref_names.h"
@@ -17,17 +16,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "url/gurl.h"
-
-namespace {
-
-std::string ReadFileToString(const base::FilePath& path) {
-  std::string result;
-  if (!base::ReadFileToString(path, &result))
-    result.clear();
-  return result;
-}
-
-}  // namespace
 
 namespace ntp_tiles {
 
@@ -111,15 +99,13 @@ void PopularSitesInternalsMessageHandler::HandleViewJson(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
 
-  const base::FilePath& path = popular_sites_->local_path();
-  base::PostTaskAndReplyWithResult(
-      web_ui_->GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
-          .get(),
-      FROM_HERE, base::Bind(&ReadFileToString, path),
-      base::Bind(&PopularSitesInternalsMessageHandler::SendJson,
-                 weak_ptr_factory_.GetWeakPtr()));
+  const base::ListValue* json = popular_sites_->GetCachedJson();
+  std::string json_string;
+  if (json) {
+    bool success = base::JSONWriter::Write(*json, &json_string);
+    DCHECK(success);
+  }
+  SendJson(json_string);
 }
 
 void PopularSitesInternalsMessageHandler::SendOverrides() {

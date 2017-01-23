@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -197,14 +199,23 @@ TEST_F(PopularSitesTest, Failure) {
   ASSERT_THAT(sites, IsEmpty());
 }
 
-TEST_F(PopularSitesTest, FailsWithoutFetchIfNoCacheDir) {
+TEST_F(PopularSitesTest, ClearsCacheFileFromOldVersions) {
   SetCountryAndVersion("ZZ", "9");
+  RespondWithJSON(
+      "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",
+      {kWikipedia});
+
   PopularSites::SitesVector sites;
-  cache_dir_ = base::FilePath();  // Override with invalid file path.
-  EXPECT_FALSE(FetchPopularSites(/*force_download=*/false, &sites));
+  const base::FilePath old_cache_path =
+      cache_dir_.AppendASCII("suggested_sites.json");
+  CHECK(base::ImportantFileWriter::WriteFileAtomically(old_cache_path,
+                                                       "Old cache"));
+  FetchPopularSites(/*force_download=*/false, &sites);
+  worker_pool_owner_.pool()->FlushForTesting();
+  EXPECT_FALSE(base::PathExists(old_cache_path));
 }
 
-TEST_F(PopularSitesTest, UsesCachedFile) {
+TEST_F(PopularSitesTest, UsesCachedJson) {
   SetCountryAndVersion("ZZ", "9");
   RespondWithJSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",

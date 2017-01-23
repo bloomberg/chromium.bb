@@ -64,20 +64,18 @@ class PopularSitesImpl : public PopularSites, public net::URLFetcherDelegate {
                   const FinishedCallback& callback) override;
   const SitesVector& sites() const override;
   GURL GetLastURLFetched() const override;
-  const base::FilePath& local_path() const override;
   GURL GetURLToFetch() override;
   std::string GetCountryToFetch() override;
   std::string GetVersionToFetch() override;
+  const base::ListValue* GetCachedJson() override;
 
   // Register preferences used by this class.
   static void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* user_prefs);
 
  private:
-  void OnReadFileDone(std::unique_ptr<std::string> data, bool success);
-
-  // Fetch the popular sites at the given URL, overwriting any file that already
-  // exists.
+  // Fetch the popular sites at the given URL, overwriting any cache in prefs
+  // that already exists.
   void FetchPopularSites();
 
   // net::URLFetcherDelegate implementation.
@@ -85,8 +83,7 @@ class PopularSitesImpl : public PopularSites, public net::URLFetcherDelegate {
 
   void OnJsonParsed(std::unique_ptr<base::Value> json);
   void OnJsonParseFailed(const std::string& error_message);
-  void OnFileWriteDone(std::unique_ptr<base::Value> json, bool success);
-  void ParseSiteList(std::unique_ptr<base::Value> json);
+  void ParseSiteList(std::unique_ptr<base::ListValue> list);
   void OnDownloadFailed();
 
   // Parameters set from constructor.
@@ -95,7 +92,6 @@ class PopularSitesImpl : public PopularSites, public net::URLFetcherDelegate {
   const TemplateURLService* const template_url_service_;
   variations::VariationsService* const variations_;
   net::URLRequestContextGetter* const download_context_;
-  base::FilePath const local_path_;
   ParseJSONCallback parse_json_;
 
   // Set by StartFetch() and called after fetch completes.

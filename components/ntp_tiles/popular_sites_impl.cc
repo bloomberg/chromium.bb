@@ -10,13 +10,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/important_file_writer.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -49,11 +47,15 @@ const char kPopularSitesURLFormat[] =
     "https://www.gstatic.com/chrome/ntp/suggested_sites_%s_%s.json";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
 const char kPopularSitesDefaultVersion[] = "5";
-const char kPopularSitesLocalFilename[] = "suggested_sites.json";
 const int kPopularSitesRedownloadIntervalHours = 24;
 
 const char kPopularSitesLastDownloadPref[] = "popular_sites_last_download";
 const char kPopularSitesURLPref[] = "popular_sites_url";
+const char kPopularSitesJsonPref[] = "suggested_sites_json";
+
+// TODO(crbug.com/683890): This refers to a local cache stored by older
+// versions of Chrome, no longer used. Remove after M61.
+const char kPopularSitesLocalFilenameToCleanup[] = "suggested_sites.json";
 
 GURL GetPopularSitesURL(const std::string& country,
                         const std::string& version) {
@@ -102,15 +104,6 @@ std::string GetVariationVersion() {
                                             "version");
 }
 
-// Must run on the blocking thread pool.
-bool WriteJsonToFile(const base::FilePath& local_path,
-                     const base::Value* json) {
-  std::string json_string;
-  return base::JSONWriter::Write(*json, &json_string) &&
-         base::ImportantFileWriter::WriteFileAtomically(local_path,
-                                                        json_string);
-}
-
 }  // namespace
 
 PopularSites::Site::Site(const base::string16& title,
@@ -142,12 +135,18 @@ PopularSitesImpl::PopularSitesImpl(
       template_url_service_(template_url_service),
       variations_(variations_service),
       download_context_(download_context),
-      local_path_(directory.empty()
-                      ? base::FilePath()
-                      : directory.AppendASCII(kPopularSitesLocalFilename)),
       parse_json_(std::move(parse_json)),
       is_fallback_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // If valid path provided, remove local files created by older versions.
+  if (!directory.empty() && blocking_runner_) {
+    blocking_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&base::DeleteFile),
+                   directory.AppendASCII(kPopularSitesLocalFilenameToCleanup),
+                   /*recursive=*/false));
+  }
+}
 
 PopularSitesImpl::~PopularSitesImpl() {}
 
@@ -168,13 +167,6 @@ void PopularSitesImpl::StartFetch(bool force_download,
   const bool url_changed =
       pending_url_.spec() != prefs_->GetString(kPopularSitesURLPref);
 
-  // No valid path to save to. Immediately post failure.
-  if (local_path_.empty()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback_, false));
-    return;
-  }
-
   // Download forced, or we need to download a new file.
   if (force_download || download_time_is_future ||
       (time_since_last_download > redownload_interval) || url_changed) {
@@ -182,14 +174,16 @@ void PopularSitesImpl::StartFetch(bool force_download,
     return;
   }
 
-  std::unique_ptr<std::string> file_data(new std::string);
-  std::string* file_data_ptr = file_data.get();
-  base::PostTaskAndReplyWithResult(
-      blocking_runner_.get(), FROM_HERE,
-      base::Bind(&base::ReadFileToString, local_path_, file_data_ptr),
-      base::Bind(&PopularSitesImpl::OnReadFileDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(file_data))));
+  const base::ListValue* json = prefs_->GetList(kPopularSitesJsonPref);
+  if (!json) {
+    // Cache didn't exist.
+    FetchPopularSites();
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&PopularSitesImpl::ParseSiteList,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(json->CreateDeepCopy())));
+  }
 }
 
 const PopularSites::SitesVector& PopularSitesImpl::sites() const {
@@ -198,10 +192,6 @@ const PopularSites::SitesVector& PopularSitesImpl::sites() const {
 
 GURL PopularSitesImpl::GetLastURLFetched() const {
   return GURL(prefs_->GetString(kPopularSitesURLPref));
-}
-
-const base::FilePath& PopularSitesImpl::local_path() const {
-  return local_path_;
 }
 
 GURL PopularSitesImpl::GetURLToFetch() {
@@ -262,6 +252,10 @@ std::string PopularSitesImpl::GetVersionToFetch() {
   return version;
 }
 
+const base::ListValue* PopularSitesImpl::GetCachedJson() {
+  return prefs_->GetList(kPopularSitesJsonPref);
+}
+
 // static
 void PopularSitesImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
@@ -274,21 +268,7 @@ void PopularSitesImpl::RegisterProfilePrefs(
 
   user_prefs->RegisterInt64Pref(kPopularSitesLastDownloadPref, 0);
   user_prefs->RegisterStringPref(kPopularSitesURLPref, std::string());
-}
-
-void PopularSitesImpl::OnReadFileDone(std::unique_ptr<std::string> data,
-                                      bool success) {
-  if (success) {
-    auto json = base::JSONReader::Read(*data, base::JSON_ALLOW_TRAILING_COMMAS);
-    if (json) {
-      ParseSiteList(std::move(json));
-    } else {
-      OnJsonParseFailed("previously-fetched JSON was no longer parseable");
-    }
-  } else {
-    // File didn't exist, or couldn't be read for some other reason.
-    FetchPopularSites();
-  }
+  user_prefs->RegisterListPref(kPopularSitesJsonPref);
 }
 
 void PopularSitesImpl::FetchPopularSites() {
@@ -321,13 +301,20 @@ void PopularSitesImpl::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void PopularSitesImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
-  const base::Value* json_ptr = json.get();
-  base::PostTaskAndReplyWithResult(
-      blocking_runner_.get(), FROM_HERE,
-      base::Bind(&WriteJsonToFile, local_path_, json_ptr),
-      base::Bind(&PopularSitesImpl::OnFileWriteDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(json))));
+  std::unique_ptr<base::ListValue> list =
+      base::ListValue::From(std::move(json));
+  if (!list) {
+    DLOG(WARNING) << "JSON is not a list";
+    OnDownloadFailed();
+    return;
+  }
+
+  prefs_->Set(kPopularSitesJsonPref, *list);
+  prefs_->SetInt64(kPopularSitesLastDownloadPref,
+                   base::Time::Now().ToInternalValue());
+  prefs_->SetString(kPopularSitesURLPref, pending_url_.spec());
+
+  ParseSiteList(std::move(list));
 }
 
 void PopularSitesImpl::OnJsonParseFailed(const std::string& error_message) {
@@ -335,29 +322,7 @@ void PopularSitesImpl::OnJsonParseFailed(const std::string& error_message) {
   OnDownloadFailed();
 }
 
-void PopularSitesImpl::OnFileWriteDone(std::unique_ptr<base::Value> json,
-                                       bool success) {
-  if (success) {
-    prefs_->SetInt64(kPopularSitesLastDownloadPref,
-                     base::Time::Now().ToInternalValue());
-    prefs_->SetString(kPopularSitesURLPref, pending_url_.spec());
-    ParseSiteList(std::move(json));
-  } else {
-    DLOG(WARNING) << "Could not write file to "
-                  << local_path_.LossyDisplayName();
-    OnDownloadFailed();
-  }
-}
-
-void PopularSitesImpl::ParseSiteList(std::unique_ptr<base::Value> json) {
-  base::ListValue* list = nullptr;
-  if (!json || !json->GetAsList(&list)) {
-    DLOG(WARNING) << "JSON is not a list";
-    sites_.clear();
-    callback_.Run(false);
-    return;
-  }
-
+void PopularSitesImpl::ParseSiteList(std::unique_ptr<base::ListValue> list) {
   SitesVector sites;
   for (size_t i = 0; i < list->GetSize(); i++) {
     base::DictionaryValue* item;

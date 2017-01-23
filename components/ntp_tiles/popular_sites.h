@@ -8,10 +8,13 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
+
+namespace base {
+class ListValue;
+}
 
 namespace ntp_tiles {
 
@@ -45,8 +48,8 @@ class PopularSites {
   // invokes |callback| before returning control to the caller, even if the
   // result is immediately known.
   //
-  // Set |force_download| to enforce re-downloading the popular sites file, even
-  // if it already exists on disk.
+  // Set |force_download| to enforce re-downloading the popular sites JSON, even
+  // if it already exists in cache.
   //
   // Must be called at most once on a given PopularSites object.
   // TODO(mastiz): Remove this restriction?
@@ -58,10 +61,10 @@ class PopularSites {
 
   // Various internals exposed publicly for diagnostic pages only.
   virtual GURL GetLastURLFetched() const = 0;
-  virtual const base::FilePath& local_path() const = 0;
   virtual GURL GetURLToFetch() = 0;
   virtual std::string GetCountryToFetch() = 0;
   virtual std::string GetVersionToFetch() = 0;
+  virtual const base::ListValue* GetCachedJson() = 0;
 };
 
 }  // namespace ntp_tiles
