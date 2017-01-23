@@ -231,18 +231,20 @@ void ContentSubresourceFilterDriverFactory::DidFinishLoad(
   if (render_frame_host->GetParent())
     return;
 
-  UMA_HISTOGRAM_COUNTS_1000(
-      "SubresourceFilter.PageLoad.NumSubresourceLoads.Total",
-      aggregated_document_statistics_.num_loads_total);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "SubresourceFilter.PageLoad.NumSubresourceLoads.Evaluated",
-      aggregated_document_statistics_.num_loads_evaluated);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "SubresourceFilter.PageLoad.NumSubresourceLoads.MatchedRules",
-      aggregated_document_statistics_.num_loads_matching_rules);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "SubresourceFilter.PageLoad.NumSubresourceLoads.Disallowed",
-      aggregated_document_statistics_.num_loads_disallowed);
+  if (activation_state_ != ActivationState::DISABLED) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "SubresourceFilter.PageLoad.NumSubresourceLoads.Total",
+        aggregated_document_statistics_.num_loads_total);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "SubresourceFilter.PageLoad.NumSubresourceLoads.Evaluated",
+        aggregated_document_statistics_.num_loads_evaluated);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "SubresourceFilter.PageLoad.NumSubresourceLoads.MatchedRules",
+        aggregated_document_statistics_.num_loads_matching_rules);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "SubresourceFilter.PageLoad.NumSubresourceLoads.Disallowed",
+        aggregated_document_statistics_.num_loads_disallowed);
+  }
 
   if (measure_performance_) {
     DCHECK(activation_state_ != ActivationState::DISABLED);

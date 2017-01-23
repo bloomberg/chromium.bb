@@ -684,4 +684,46 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterWithPerformanceMeasurementBrowserTest,
       tester, true /* expect_performance_measurements */);
 }
 
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       ExpectHistogramsNotRecordedWhenFilteringNotActivated) {
+  ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
+      "suffix-that-does-not-match-anything"));
+  const GURL url = GetTestUrl(kTestFrameSetPath);
+  // Note: The |url| is not configured to be fishing.
+
+  base::HistogramTester tester;
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // The following histograms are generated only when filtering is activated.
+  tester.ExpectTotalCount(kSubresourceLoadsTotalForPage, 0);
+  tester.ExpectTotalCount(kSubresourceLoadsEvaluatedForPage, 0);
+  tester.ExpectTotalCount(kSubresourceLoadsMatchedRulesForPage, 0);
+  tester.ExpectTotalCount(kSubresourceLoadsDisallowedForPage, 0);
+  tester.ExpectTotalCount(kEvaluationTotalWallDurationForPage, 0);
+  tester.ExpectTotalCount(kEvaluationTotalCPUDurationForPage, 0);
+
+  // The rest is produced by renderers, therefore needs to be merged here.
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // But they still should not be recorded as the filtering is not activated.
+  tester.ExpectTotalCount(kEvaluationTotalWallDurationForDocument, 0);
+  tester.ExpectTotalCount(kEvaluationTotalCPUDurationForDocument, 0);
+  tester.ExpectTotalCount(kEvaluationWallDuration, 0);
+  tester.ExpectTotalCount(kEvaluationCPUDuration, 0);
+
+  tester.ExpectTotalCount(kActivationWallDuration, 0);
+  tester.ExpectTotalCount(kActivationCPUDuration, 0);
+
+  tester.ExpectTotalCount(kSubresourceLoadsTotal, 0);
+  tester.ExpectTotalCount(kSubresourceLoadsEvaluated, 0);
+  tester.ExpectTotalCount(kSubresourceLoadsMatchedRules, 0);
+  tester.ExpectTotalCount(kSubresourceLoadsDisallowed, 0);
+
+  // Although SubresourceFilterAgents still record the activation decision.
+  tester.ExpectUniqueSample(
+      kDocumentLoadActivationState,
+      static_cast<base::Histogram::Sample>(ActivationState::DISABLED), 6);
+}
+
 }  // namespace subresource_filter
