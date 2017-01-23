@@ -23,13 +23,18 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+class Profile;
+class SkBitmap;
+
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
 namespace safe_browsing {
 
+class NotificationImageReporter;
 class PermissionReporter;
+class SafeBrowsingDatabaseManager;
 
 class SafeBrowsingPingManager : public net::URLFetcherDelegate {
  public:
@@ -55,7 +60,15 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   // Report permission action to SafeBrowsing servers.
   void ReportPermissionAction(const PermissionReportInfo& report_info);
 
+  // Report notification content image to SafeBrowsing CSD server if necessary.
+  void ReportNotificationImage(
+      Profile* profile,
+      const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
+      const GURL& origin,
+      const SkBitmap& image);
+
  private:
+  friend class NotificationImageReporterTest;
   friend class PermissionReporterBrowserTest;
   friend class SafeBrowsingPingManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest,
@@ -101,6 +114,9 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
 
   // Sends reports of permission actions.
   std::unique_ptr<PermissionReporter> permission_reporter_;
+
+  // Sends reports of notification content images.
+  std::unique_ptr<NotificationImageReporter> notification_image_reporter_;
 
   net::NetLogWithSource net_log_;
 

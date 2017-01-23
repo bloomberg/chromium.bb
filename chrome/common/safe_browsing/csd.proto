@@ -835,3 +835,33 @@ message ClientSafeBrowsingReportRequest {
   // DANGEROUS_DOWNLOAD_BY_API.
   optional bytes token = 15;
 }
+
+// Canonical representation of raster image data.
+message ImageData {
+  // Image bitmap, after downscaling to <= 512x512.
+  optional bytes data = 1;
+
+  // Encoding scheme for the bitmap.
+  optional string mime_type = 2;
+
+  message Dimensions {
+    optional int32 width = 1;
+    optional int32 height = 2;
+  }
+
+  // Dimensions of the image stored in |data|.
+  optional Dimensions dimensions = 3;
+  optional Dimensions original_dimensions = 4;  // iff downscaled
+}
+
+// Reporting protobuf for an image served as part of a browser notification.
+// There is no response (an empty body) to this request.
+message NotificationImageReportRequest {
+  optional string notification_origin = 1;  // Src-origin of the notification.
+  optional ImageData image = 2;             // The bitmap of the image.
+
+  // Note that the image URL is deliberately omitted as it would be untrusted,
+  // since the notification image fetch may be intercepted by a Service Worker
+  // (even if the image URL is cross-origin). Otherwise a website could mislead
+  // Safe Browsing into associating phishing image bitmaps with safe image URLs.
+}

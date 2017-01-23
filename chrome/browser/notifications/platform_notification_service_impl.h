@@ -119,7 +119,8 @@ class PlatformNotificationServiceImpl
   void OnCloseEventDispatchComplete(
       content::PersistentNotificationStatus status);
 
-  // Creates a new Web Notification-based Notification object.
+  // Creates a new Web Notification-based Notification object. Should only be
+  // called when the notification is first shown.
   // TODO(peter): |delegate| can be a scoped_refptr, but properly passing this
   // through requires changing a whole lot of Notification constructor calls.
   Notification CreateNotificationFromData(

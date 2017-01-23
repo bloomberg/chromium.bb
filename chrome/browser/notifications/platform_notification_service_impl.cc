@@ -21,6 +21,8 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/ping_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,6 +38,7 @@
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "extensions/features/features.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification.h"
@@ -85,6 +88,18 @@ void CancelNotification(const std::string& notification_id,
       profile_id, incognito,
       base::Bind(&OnCloseNonPersistentNotificationProfileLoaded,
                  notification_id));
+}
+
+void ReportNotificationImageOnIOThread(
+    scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service,
+    Profile* profile,
+    const GURL& origin,
+    const SkBitmap& image) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!safe_browsing_service || !safe_browsing_service->enabled())
+    return;
+  safe_browsing_service->ping_manager()->ReportNotificationImage(
+      profile, safe_browsing_service->database_manager(), origin, image);
 }
 
 }  // namespace
@@ -428,6 +443,13 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     notification.set_type(message_center::NOTIFICATION_TYPE_IMAGE);
     notification.set_image(
         gfx::Image::CreateFrom1xBitmap(notification_resources.image));
+    // n.b. this should only be posted once per notification.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &ReportNotificationImageOnIOThread,
+            make_scoped_refptr(g_browser_process->safe_browsing_service()),
+            profile, origin, notification_resources.image));
   }
 
   // Badges are only supported on Android, primarily because it's the only

@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/safe_browsing/notification_image_reporter.h"
 #include "chrome/browser/safe_browsing/permission_reporter.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,6 +25,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -82,8 +84,10 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
   DCHECK(!url_prefix_.empty());
 
   if (request_context_getter) {
-    permission_reporter_.reset(
-        new PermissionReporter(request_context_getter->GetURLRequestContext()));
+    permission_reporter_ = base::MakeUnique<PermissionReporter>(
+        request_context_getter->GetURLRequestContext());
+    notification_image_reporter_ = base::MakeUnique<NotificationImageReporter>(
+        request_context_getter->GetURLRequestContext());
 
     net_log_ = net::NetLogWithSource::Make(
         request_context_getter->GetURLRequestContext()->net_log(),
@@ -168,6 +172,15 @@ void SafeBrowsingPingManager::ReportThreatDetails(const std::string& report) {
 void SafeBrowsingPingManager::ReportPermissionAction(
     const PermissionReportInfo& report_info) {
   permission_reporter_->SendReport(report_info);
+}
+
+void SafeBrowsingPingManager::ReportNotificationImage(
+    Profile* profile,
+    const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
+    const GURL& origin,
+    const SkBitmap& image) {
+  notification_image_reporter_->ReportNotificationImageOnIO(
+      profile, database_manager, origin, image);
 }
 
 GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(

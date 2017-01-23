@@ -1993,6 +1993,8 @@ split_static_library("browser") {
       "safe_browsing/certificate_reporting_service.h",
       "safe_browsing/certificate_reporting_service_factory.cc",
       "safe_browsing/certificate_reporting_service_factory.h",
+      "safe_browsing/notification_image_reporter.cc",
+      "safe_browsing/notification_image_reporter.h",
       "safe_browsing/permission_reporter.cc",
       "safe_browsing/permission_reporter.h",
       "safe_browsing/ping_manager.cc",
