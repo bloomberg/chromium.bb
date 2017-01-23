@@ -682,6 +682,11 @@ class GFX_EXPORT RenderText {
   // Adjust ranged styles to accommodate a new text length.
   void UpdateStyleLengths();
 
+  // Returns the line index for the given argument. |text_y| is relative to
+  // the text bounds. Returns -1 if |text_y| is above the text and
+  // lines().size() if |text_y| is below it.
+  int GetLineContainingYCoord(float text_y);
+
   // A convenience function to check whether the glyph attached to the caret
   // is within the given range.
   static bool RangeContainsCaret(const Range& range,

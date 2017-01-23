@@ -1031,12 +1031,10 @@ Vector2d RenderText::GetLineOffset(size_t line_number) {
 bool RenderText::GetDecoratedWordAtPoint(const Point& point,
                                          DecoratedText* decorated_word,
                                          Point* baseline_point) {
-  // FindCursorPosition doesn't currently support multiline. See
-  // http://crbug.com/650120.
-  if (multiline() || obscured())
+  if (obscured())
     return false;
 
-  // Note: FindCursorPosition will trigger a layout via EnsureLayout.
+  EnsureLayout();
   const SelectionModel model_at_point = FindCursorPosition(point);
   const size_t word_index =
       GetNearestWordStartBoundary(model_at_point.caret_pos());
@@ -1057,7 +1055,12 @@ bool RenderText::GetDecoratedWordAtPoint(const Point& point,
   const auto left_rect = std::min_element(
       word_bounds.begin(), word_bounds.end(),
       [](const Rect& lhs, const Rect& rhs) { return lhs.x() < rhs.x(); });
-  *baseline_point = left_rect->origin() + Vector2d(0, GetDisplayTextBaseline());
+  const int line_index = GetLineContainingYCoord(left_rect->CenterPoint().y() -
+                                                 GetLineOffset(0).y());
+  if (line_index < 0 || line_index >= static_cast<int>(lines().size()))
+    return false;
+  *baseline_point =
+      left_rect->origin() + Vector2d(0, lines()[line_index].baseline);
   return true;
 }
 
@@ -1385,6 +1388,21 @@ void RenderText::UpdateStyleLengths() {
   weights_.SetMax(text_length);
   for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
     styles_[style].SetMax(text_length);
+}
+
+int RenderText::GetLineContainingYCoord(float text_y) {
+  if (text_y < 0)
+    return -1;
+
+  for (size_t i = 0; i < lines().size(); i++) {
+    const internal::Line& line = lines()[i];
+
+    if (text_y <= line.size.height())
+      return i;
+    text_y -= line.size.height();
+  }
+
+  return lines().size();
 }
 
 // static

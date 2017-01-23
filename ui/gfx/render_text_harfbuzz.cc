@@ -239,6 +239,32 @@ void GetClusterAtImpl(size_t pos,
   DCHECK(!glyphs->is_empty());
 }
 
+// Returns the line segment index for the |line|, |text_x| pair. |text_x| is
+// relative to text in the given line. Returns -1 if |text_x| is to the left
+// of text in the line and |line|.segments.size() if it's to the right.
+// |offset_relative_segment| will contain the offset of |text_x| relative to
+// the start of the segment it is contained in.
+int GetLineSegmentContainingXCoord(const internal::Line& line,
+                                   float line_x,
+                                   float* offset_relative_segment) {
+  DCHECK(offset_relative_segment);
+
+  *offset_relative_segment = 0;
+  if (line_x < 0)
+    return -1;
+  for (size_t i = 0; i < line.segments.size(); i++) {
+    const internal::LineSegment& segment = line.segments[i];
+
+    // segment.x_range is not used because it is in text space.
+    if (line_x < segment.width()) {
+      *offset_relative_segment = line_x;
+      return i;
+    }
+    line_x -= segment.width();
+  }
+  return line.segments.size();
+}
+
 // Internal class to generate Line structures. If |multiline| is true, the text
 // is broken into lines at |words| boundaries such that each line is no longer
 // than |max_width|. If |multiline| is false, only outputs a single Line from
@@ -1296,43 +1322,6 @@ size_t RenderTextHarfBuzz::GetRunContainingCaret(
       return i;
   }
   return run_list->size();
-}
-
-int RenderTextHarfBuzz::GetLineContainingYCoord(float text_y) {
-  if (text_y < 0)
-    return -1;
-
-  for (size_t i = 0; i < lines().size(); i++) {
-    const internal::Line& line = lines()[i];
-
-    if (text_y <= line.size.height())
-      return i;
-    text_y -= line.size.height();
-  }
-
-  return lines().size();
-}
-
-int RenderTextHarfBuzz::GetLineSegmentContainingXCoord(
-    const internal::Line& line,
-    float line_x,
-    float* offset_relative_segment) {
-  DCHECK(offset_relative_segment);
-
-  *offset_relative_segment = 0;
-  if (line_x < 0)
-    return -1;
-  for (size_t i = 0; i < line.segments.size(); i++) {
-    const internal::LineSegment& segment = line.segments[i];
-
-    // segment.x_range is not used because it is in text space.
-    if (line_x < segment.width()) {
-      *offset_relative_segment = line_x;
-      return i;
-    }
-    line_x -= segment.width();
-  }
-  return line.segments.size();
 }
 
 SelectionModel RenderTextHarfBuzz::FirstSelectionModelInsideRun(

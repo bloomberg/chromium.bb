@@ -395,6 +395,10 @@ bool Label::CanProcessEventsWithinSubtree() const {
   return !!GetRenderTextForSelectionController();
 }
 
+WordLookupClient* Label::GetWordLookupClient() {
+  return this;
+}
+
 void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_STATIC_TEXT;
   node_data->AddStateFlag(ui::AX_STATE_READ_ONLY);
@@ -631,6 +635,16 @@ void Label::ShowContextMenuForView(View* source,
   ignore_result(context_menu_runner_->RunMenuAt(
       GetWidget(), nullptr, gfx::Rect(point, gfx::Size()), MENU_ANCHOR_TOPLEFT,
       source_type));
+}
+
+bool Label::GetDecoratedWordAtPoint(const gfx::Point& point,
+                                    gfx::DecoratedText* decorated_word,
+                                    gfx::Point* baseline_point) {
+  gfx::RenderText* render_text = GetRenderTextForSelectionController();
+  return render_text
+             ? render_text->GetDecoratedWordAtPoint(point, decorated_word,
+                                                    baseline_point)
+             : false;
 }
 
 gfx::RenderText* Label::GetRenderTextForSelectionController() {

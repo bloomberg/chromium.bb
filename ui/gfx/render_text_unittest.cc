@@ -473,10 +473,14 @@ class RenderTextTest : public testing::Test,
   }
 #endif
 
-  Rect GetSelectionBoundsUnion() {
+  Rect GetSubstringBoundsUnion(const Range& range) {
     const std::vector<Rect> bounds =
-        render_text_->GetSubstringBoundsForTesting(render_text_->selection());
+        render_text_->GetSubstringBoundsForTesting(range);
     return std::accumulate(bounds.begin(), bounds.end(), Rect(), UnionRects);
+  }
+
+  Rect GetSelectionBoundsUnion() {
+    return GetSubstringBoundsUnion(render_text_->selection());
   }
 
   Canvas* canvas() { return &canvas_; }
@@ -4157,6 +4161,85 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
       VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
       EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
     }
+  }
+}
+
+// Test that GetDecoratedWordAtPoint behaves correctly for multiline text.
+TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_Multiline) {
+  const base::string16 text = ASCIIToUTF16("a b\n..\ncd.");
+  const size_t kWordOneIndex = 0;    // Index of character 'a'.
+  const size_t kWordTwoIndex = 2;    // Index of character 'b'.
+  const size_t kWordThreeIndex = 7;  // Index of character 'c'.
+
+  // Set up render text.
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  render_text->SetDisplayRect(Rect(500, 500));
+  render_text->SetText(text);
+  render_text->ApplyWeight(Font::Weight::SEMIBOLD, Range(0, 3));
+  render_text->ApplyStyle(UNDERLINE, true, Range(1, 7));
+  render_text->ApplyStyle(STRIKE, true, Range(1, 8));
+  render_text->ApplyStyle(ITALIC, true, Range(5, 9));
+
+  // Set up test expectations.
+  const std::vector<RenderText::FontSpan> font_spans =
+      render_text->GetFontSpansForTesting();
+
+  DecoratedText expected_word_1;
+  expected_word_1.text = ASCIIToUTF16("a");
+  expected_word_1.attributes.push_back(CreateRangedAttribute(
+      font_spans, 0, kWordOneIndex, Font::Weight::SEMIBOLD, 0));
+  const Rect left_glyph_word_1 =
+      GetSubstringBoundsUnion(Range(kWordOneIndex, kWordOneIndex + 1));
+
+  DecoratedText expected_word_2;
+  expected_word_2.text = ASCIIToUTF16("b");
+  expected_word_2.attributes.push_back(CreateRangedAttribute(
+      font_spans, 0, kWordTwoIndex, Font::Weight::SEMIBOLD,
+      UNDERLINE_MASK | STRIKE_MASK));
+  const Rect left_glyph_word_2 =
+      GetSubstringBoundsUnion(Range(kWordTwoIndex, kWordTwoIndex + 1));
+
+  DecoratedText expected_word_3;
+  expected_word_3.text = ASCIIToUTF16("cd");
+  expected_word_3.attributes.push_back(
+      CreateRangedAttribute(font_spans, 0, kWordThreeIndex,
+                            Font::Weight::NORMAL, STRIKE_MASK | ITALIC_MASK));
+  expected_word_3.attributes.push_back(CreateRangedAttribute(
+      font_spans, 1, kWordThreeIndex + 1, Font::Weight::NORMAL, ITALIC_MASK));
+
+  const Rect left_glyph_word_3 =
+      GetSubstringBoundsUnion(Range(kWordThreeIndex, kWordThreeIndex + 1));
+
+  DecoratedText decorated_word;
+  Point baseline_point;
+  {
+    // Query to the left of the first line.
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+        Point(-5, GetCursorYForTesting(0)), &decorated_word, &baseline_point));
+    VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
+    EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
+  }
+  {
+    // Query on the second line.
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+        Point(5, GetCursorYForTesting(1)), &decorated_word, &baseline_point));
+    VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
+    EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
+  }
+  {
+    // Query at the center point of the character 'c'.
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+        left_glyph_word_3.CenterPoint(), &decorated_word, &baseline_point));
+    VerifyDecoratedWordsAreEqual(expected_word_3, decorated_word);
+    EXPECT_TRUE(left_glyph_word_3.Contains(baseline_point));
+  }
+  {
+    // Query to the right of the third line.
+    EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
+        Point(505, GetCursorYForTesting(2)), &decorated_word, &baseline_point));
+    VerifyDecoratedWordsAreEqual(expected_word_3, decorated_word);
+    EXPECT_TRUE(left_glyph_word_3.Contains(baseline_point));
   }
 }
 

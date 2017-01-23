@@ -197,20 +197,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // |runs_| vector if argument exceeds the text length or width.
   size_t GetRunContainingCaret(const SelectionModel& caret);
 
-  // Returns the line index for the given argument. |text_y| is relative to
-  // the text bounds. Returns -1 if |text_y| is above the text and
-  // lines().size() if |text_y| is below it.
-  int GetLineContainingYCoord(float text_y);
-
-  // Returns the line segment index for the |line|, |text_x| pair. |text_x| is
-  // relative to text in the given line. Returns -1 if |text_x| is to the left
-  // of text in the line and |line|.segments.size() if it's to the right.
-  // |offset_relative_segment| will contain the offset of |text_x| relative to
-  // the start of the segment it is contained in.
-  int GetLineSegmentContainingXCoord(const internal::Line& line,
-                                     float text_x,
-                                     float* offset_relative_segment);
-
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
   // The returned value represents a cursor/caret position without a selection.
