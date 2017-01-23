@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 
+#include <string>
 #include <tuple>
 
 #include "base/strings/utf_string_conversions.h"
@@ -18,7 +19,8 @@ AutofillKey::AutofillKey(const base::string16& name,
       value_(value) {
 }
 
-AutofillKey::AutofillKey(const char* name, const char* value)
+AutofillKey::AutofillKey(const std::string& name,
+                         const std::string& value)
     : name_(base::UTF8ToUTF16(name)),
       value_(base::UTF8ToUTF16(value)) {
 }

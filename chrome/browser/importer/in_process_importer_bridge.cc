@@ -230,10 +230,15 @@ void InProcessImporterBridge::SetAutofillFormData(
     const std::vector<ImporterAutofillFormDataEntry>& entries) {
   std::vector<autofill::AutofillEntry> autofill_entries;
   for (size_t i = 0; i < entries.size(); ++i) {
-    autofill_entries.push_back(autofill::AutofillEntry(
-        autofill::AutofillKey(entries[i].name, entries[i].value),
-        entries[i].first_used,
-        entries[i].last_used));
+    // Using method c_str() in order to avoid data which contains null
+    // terminating symbols.
+    const base::string16 name = entries[i].name.c_str();
+    const base::string16 value = entries[i].value.c_str();
+    if (name.empty() || value.empty())
+      continue;
+    autofill_entries.push_back(
+        autofill::AutofillEntry(autofill::AutofillKey(name, value),
+                                entries[i].first_used, entries[i].last_used));
   }
 
   writer_->AddAutofillFormDataEntries(autofill_entries);

@@ -112,8 +112,8 @@ void RunAndSignal(const base::Closure& cb, WaitableEvent* event) {
   event->Signal();
 }
 
-AutofillEntry MakeAutofillEntry(const char* name,
-                                const char* value,
+AutofillEntry MakeAutofillEntry(const std::string& name,
+                                const std::string& value,
                                 int time_shift0,
                                 int time_shift1) {
   // Time deep in the past would cause Autocomplete sync to discard the
@@ -128,8 +128,8 @@ AutofillEntry MakeAutofillEntry(const char* name,
                        date_created, date_last_used);
 }
 
-AutofillEntry MakeAutofillEntry(const char* name,
-                                const char* value,
+AutofillEntry MakeAutofillEntry(const std::string& name,
+                                const std::string& value,
                                 int time_shift) {
   return MakeAutofillEntry(name, value, time_shift, -1);
 }
@@ -926,6 +926,55 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
   std::set<AutofillEntry> expected_entries;
   expected_entries.insert(native_entry);
   expected_entries.insert(sync_entry);
+
+  std::vector<AutofillEntry> new_sync_entries;
+  std::vector<AutofillProfile> new_sync_profiles;
+  ASSERT_TRUE(
+      GetAutofillEntriesFromSyncDB(&new_sync_entries, &new_sync_profiles));
+  std::set<AutofillEntry> new_sync_entries_set(new_sync_entries.begin(),
+                                               new_sync_entries.end());
+
+  EXPECT_EQ(expected_entries, new_sync_entries_set);
+}
+
+TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge_NullTerminated) {
+  const char kEntry[] = "entry";
+  // A value which contains null terminating symbol.
+  std::string entry(kEntry, arraysize(kEntry));
+  AutofillEntry native_entry0(MakeAutofillEntry("native", kEntry, 1));
+  AutofillEntry native_entry1(MakeAutofillEntry("native", entry, 1));
+  AutofillEntry sync_entry0(MakeAutofillEntry("sync", kEntry, 2));
+  AutofillEntry sync_entry1(MakeAutofillEntry("sync", entry, 2));
+
+  std::vector<AutofillEntry> native_entries;
+  native_entries.push_back(native_entry0);
+  native_entries.push_back(native_entry1);
+
+  EXPECT_CALL(autofill_table(), GetAllAutofillEntries(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
+
+  std::vector<AutofillEntry> sync_entries;
+  sync_entries.push_back(sync_entry0);
+  sync_entries.push_back(sync_entry1);
+
+  AddAutofillHelper<AutofillEntry> add_autofill(this, sync_entries);
+
+  // Expecting that sync_entry0 and sync_entry1 will be written in an autofill
+  // table and a value in sync_entry1 won't lose null terminating symbol.
+  EXPECT_CALL(autofill_table(),
+              UpdateAutofillEntries(ElementsAre(sync_entry0, sync_entry1)))
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(personal_data_manager(), Refresh());
+  StartSyncService(add_autofill.callback(), false, AUTOFILL);
+  ASSERT_TRUE(add_autofill.success());
+
+  // Expecting that native_entry0 and native_entry1 won't merge into one entry.
+  std::set<AutofillEntry> expected_entries;
+  expected_entries.insert(native_entry0);
+  expected_entries.insert(native_entry1);
+  expected_entries.insert(sync_entry0);
+  expected_entries.insert(sync_entry1);
 
   std::vector<AutofillEntry> new_sync_entries;
   std::vector<AutofillProfile> new_sync_profiles;

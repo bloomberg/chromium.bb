@@ -85,8 +85,8 @@ bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
                   b.date_created(), b.date_last_used());
 }
 
-AutofillEntry MakeAutofillEntry(const char* name,
-                                const char* value,
+AutofillEntry MakeAutofillEntry(const std::string& name,
+                                const std::string& value,
                                 time_t date_created,
                                 time_t date_last_used) {
   if (date_last_used < 0)
@@ -461,6 +461,31 @@ TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
                                      db_.get()));
   EXPECT_EQ(2, GetAutofillEntryCount(ASCIIToUTF16("foo"), ASCIIToUTF16("bar1"),
                                      db_.get()));
+}
+
+TEST_F(AutofillTableTest, Autofill_UpdateNullTerminated) {
+  const char kName[] = "foo";
+  const char kValue[] = "bar";
+  // A value which contains terminating character.
+  std::string value(kValue, arraysize(kValue));
+
+  AutofillEntry entry0(MakeAutofillEntry(kName, kValue, 1, -1));
+  AutofillEntry entry1(MakeAutofillEntry(kName, value, 2, 3));
+  std::vector<AutofillEntry> entries;
+  entries.push_back(entry0);
+  entries.push_back(entry1);
+  ASSERT_TRUE(table_->UpdateAutofillEntries(entries));
+
+  EXPECT_EQ(1, GetAutofillEntryCount(ASCIIToUTF16(kName), ASCIIToUTF16(kValue),
+                                     db_.get()));
+  EXPECT_EQ(2, GetAutofillEntryCount(ASCIIToUTF16(kName), ASCIIToUTF16(value),
+                                     db_.get()));
+
+  std::vector<AutofillEntry> all_entries;
+  ASSERT_TRUE(table_->GetAllAutofillEntries(&all_entries));
+  ASSERT_EQ(2U, all_entries.size());
+  EXPECT_EQ(entry0, all_entries[0]);
+  EXPECT_EQ(entry1, all_entries[1]);
 }
 
 TEST_F(AutofillTableTest, Autofill_UpdateReplace) {

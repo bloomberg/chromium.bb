@@ -309,8 +309,7 @@ void AutocompleteSyncableService::CreateOrUpdateEntry(
     return;
   }
 
-  AutofillKey key(autofill_specifics.name().c_str(),
-                  autofill_specifics.value().c_str());
+  AutofillKey key(autofill_specifics.name(), autofill_specifics.value());
   AutocompleteEntryMap::iterator it = loaded_data->find(key);
   const google::protobuf::RepeatedField<int64_t>& timestamps =
       autofill_specifics.usage_timestamp();
