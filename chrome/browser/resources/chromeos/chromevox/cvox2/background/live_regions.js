@@ -128,16 +128,28 @@ LiveRegions.prototype = {
     if (node.containerLiveBusy)
       return;
 
-    if (node.containerLiveAtomic && !node.liveAtomic) {
-      if (node.parent)
-        this.outputLiveRegionChange_(node.parent, opt_prependFormatStr);
+    var delta = new Date() - this.lastLiveRegionTime_;
+    if (delta > LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS)
+      this.liveRegionNodeSet_ = new WeakSet();
+
+    while (node.containerLiveAtomic && !node.liveAtomic && node.parent)
+      node = node.parent;
+
+    if (this.liveRegionNodeSet_.has(node)) {
+      this.lastLiveRegionTime_ = new Date();
       return;
     }
 
-    // Alerts should be announced as a result of focus.
-    if (node.role == RoleType.alert)
-      return;
+    this.outputLiveRegionChangeForNode_(node, opt_prependFormatStr);
+  },
 
+  /**
+   * @param {!AutomationNode} node The changed node.
+   * @param {?string=} opt_prependFormatStr If set, a format string for
+   *     cvox2.Output to prepend to the output.
+   * @private
+   */
+  outputLiveRegionChangeForNode_: function(node, opt_prependFormatStr) {
     var range = cursors.Range.fromNode(node);
     var output = new Output();
     if (opt_prependFormatStr)
@@ -167,18 +179,6 @@ LiveRegions.prototype = {
       output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
     else
       output.withQueueMode(cvox.QueueMode.QUEUE);
-
-    if (delta > LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS)
-      this.liveRegionNodeSet_ = new WeakSet();
-
-    var parent = node;
-    while (parent) {
-      if (this.liveRegionNodeSet_.has(parent)) {
-        this.lastLiveRegionTime_ = currentTime;
-        return;
-      }
-      parent = parent.parent;
-    }
 
     this.liveRegionNodeSet_.add(node);
     output.go();
