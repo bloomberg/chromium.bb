@@ -32,6 +32,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -75,6 +76,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -826,6 +828,8 @@ void ChromeLauncherControllerImpl::AttachProfile(Profile* profile_to_attach) {
       app_list::AppListSyncableServiceFactory::GetForProfile(profile());
   if (app_service)
     app_service->AddObserverAndStart(this);
+
+  PrefServiceSyncableFromProfile(profile())->AddObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1114,6 +1118,10 @@ void ChromeLauncherControllerImpl::OnSyncModelUpdated() {
   UpdateAppLaunchersFromPref();
 }
 
+void ChromeLauncherControllerImpl::OnIsSyncingChanged() {
+  UpdateAppLaunchersFromPref();
+}
+
 void ChromeLauncherControllerImpl::ScheduleUpdateAppLaunchersFromPref() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -1389,6 +1397,8 @@ void ChromeLauncherControllerImpl::ReleaseProfile() {
       app_list::AppListSyncableServiceFactory::GetForProfile(profile());
   if (app_service)
     app_service->RemoveObserver(this);
+
+  PrefServiceSyncableFromProfile(profile())->RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

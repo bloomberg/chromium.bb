@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "ui/aura/window_observer.h"
 
 class AppSyncUIState;
@@ -53,7 +54,8 @@ class ChromeLauncherControllerImpl
       private ash::ShelfModelObserver,
       private ash::WindowTreeHostManager::Observer,
       private AppSyncUIStateObserver,
-      private app_list::AppListSyncableService::Observer {
+      private app_list::AppListSyncableService::Observer,
+      private sync_preferences::PrefServiceSyncableObserver {
  public:
   ChromeLauncherControllerImpl(Profile* profile, ash::ShelfModel* model);
   ~ChromeLauncherControllerImpl() override;
@@ -264,6 +266,9 @@ class ChromeLauncherControllerImpl
 
   // app_list::AppListSyncableService::Observer:
   void OnSyncModelUpdated() override;
+
+  // sync_preferences::PrefServiceSyncableObserver:
+  void OnIsSyncingChanged() override;
 
   // Unpins shelf item and optionally updates pin prefs when |update_prefs| is
   // set to true.

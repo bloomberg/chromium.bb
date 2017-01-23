@@ -31,6 +31,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -46,6 +47,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
@@ -83,10 +85,13 @@
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/shell_surface.h"
+#include "components/prefs/pref_notifier_impl.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -351,6 +356,9 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     StartAppSyncService(syncer::SyncDataList());
 
     std::string error;
+    extension_chrome_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
+                                          manifest, Extension::NO_FLAGS,
+                                          extension_misc::kChromeAppId, &error);
     extension1_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest, Extension::NO_FLAGS,
                                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", &error);
@@ -396,6 +404,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     arc_support_host_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                           manifest, Extension::NO_FLAGS,
                                           ArcSupportHost::kHostAppId, &error);
+    extension_service_->AddExtension(extension_chrome_.get());
   }
 
   // Creates a running platform V2 app (not pinned) of type |app_id|.
@@ -515,6 +524,42 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   void StopAppSyncService() { app_service_->StopSyncing(syncer::APP_LIST); }
+
+  sync_preferences::PrefModelAssociator* GetPrefSyncService() {
+    sync_preferences::PrefServiceSyncable* pref_sync =
+        profile()->GetTestingPrefService();
+    sync_preferences::PrefModelAssociator* pref_sync_service =
+        reinterpret_cast<sync_preferences::PrefModelAssociator*>(
+            pref_sync->GetSyncableService(syncer::PREFERENCES));
+    return pref_sync_service;
+  }
+
+  void StartPrefSyncService(const syncer::SyncDataList& init_sync_list) {
+    syncer::SyncMergeResult r = GetPrefSyncService()->MergeDataAndStartSyncing(
+        syncer::PREFERENCES, init_sync_list,
+        base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
+        base::MakeUnique<syncer::SyncErrorFactoryMock>());
+    EXPECT_FALSE(r.error().IsSet());
+  }
+
+  void StartPrefSyncServiceForPins(const base::ListValue& init_value) {
+    syncer::SyncDataList init_sync_list;
+    std::string serialized;
+    JSONStringValueSerializer json(&serialized);
+    json.Serialize(init_value);
+    sync_pb::EntitySpecifics one;
+    sync_pb::PreferenceSpecifics* pref_one = one.mutable_preference();
+    pref_one->set_name(prefs::kPinnedLauncherApps);
+    pref_one->set_value(serialized);
+    init_sync_list.push_back(syncer::SyncData::CreateRemoteData(
+        1, one, base::Time(), syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
+    StartPrefSyncService(init_sync_list);
+  }
+
+  void StopPrefSyncService() {
+    GetPrefSyncService()->StopSyncing(syncer::PREFERENCES);
+  }
 
   void SetAppIconLoader(std::unique_ptr<AppIconLoader> loader) {
     std::vector<std::unique_ptr<AppIconLoader>> loaders;
@@ -867,6 +912,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   // Needed for extension service & friends to work.
+  scoped_refptr<Extension> extension_chrome_;
   scoped_refptr<Extension> extension1_;
   scoped_refptr<Extension> extension2_;
   scoped_refptr<Extension> extension3_;
@@ -2659,28 +2705,50 @@ TEST_F(ChromeLauncherControllerImplTest, SyncUpdates) {
 }
 
 TEST_F(ChromeLauncherControllerImplTest, ImportLegacyPin) {
-  extension_service_->AddExtension(extension2_.get());
+  // Note extension3_ is actually Gmail app which is default pinned.
   extension_service_->AddExtension(extension3_.get());
-  extension_service_->AddExtension(extension4_.get());
+  InitLauncherController();
+
+  // Default pins should contain Gmail. Pref is not syncing now.
+  EXPECT_EQ("AppList, Chrome, App3", GetPinnedAppStatus());
+
+  extension_service_->AddExtension(extension2_.get());
+  EXPECT_EQ("AppList, Chrome, App3", GetPinnedAppStatus());
 
   // Initially pins are imported from legacy pref based model.
   base::ListValue value;
   InsertPrefValue(&value, 0, extension4_->id());
   InsertPrefValue(&value, 1, extension2_->id());
-  profile()->GetTestingPrefService()->SetManagedPref(prefs::kPinnedLauncherApps,
-                                                     value.DeepCopy());
+  InsertPrefValue(&value, 2, extension3_->id());
+  StartPrefSyncServiceForPins(value);
 
-  InitLauncherController();
+  // Imported pins contain App2. App2 should be added to pins now.
+  EXPECT_EQ("AppList, Chrome, App2, App3", GetPinnedAppStatus());
 
-  EXPECT_EQ("AppList, Chrome, App4, App2", GetPinnedAppStatus());
+  // extension4_ is in the pin list.
+  extension_service_->AddExtension(extension4_.get());
+  // extension5_ is not in the pin list.
+  extension_service_->AddExtension(extension5_.get());
+  EXPECT_EQ("AppList, Chrome, App4, App2, App3", GetPinnedAppStatus());
+
+  // Apply app sync, unpin one app and pin new one.
+  syncer::SyncChangeList sync_list;
+  InsertAddPinChange(&sync_list, -1, extension3_->id());
+  InsertAddPinChange(&sync_list, 3, extension5_->id());
+  SendPinChanges(sync_list, false);
+  EXPECT_EQ("AppList, Chrome, App4, App2, App5", GetPinnedAppStatus());
 
   // At this point changing old pref based model does not affect pin model.
-  InsertPrefValue(&value, 2, extension3_->id());
-  profile()->GetTestingPrefService()->SetManagedPref(prefs::kPinnedLauncherApps,
-                                                     value.DeepCopy());
-  EXPECT_EQ("AppList, Chrome, App4, App2", GetPinnedAppStatus());
+  InsertPrefValue(&value, 3, extension5_->id());
+  StopPrefSyncService();
+  StartPrefSyncServiceForPins(value);
+  EXPECT_EQ("AppList, Chrome, App4, App2, App5", GetPinnedAppStatus());
+
+  // Next Chrome start should preserve pins.
   RecreateChromeLauncher();
-  EXPECT_EQ("AppList, Chrome, App4, App2", GetPinnedAppStatus());
+  StopPrefSyncService();
+  StartPrefSyncService(syncer::SyncDataList());
+  EXPECT_EQ("AppList, Chrome, App4, App2, App5", GetPinnedAppStatus());
 }
 
 TEST_F(ChromeLauncherControllerImplTest, PendingInsertionOrder) {
@@ -3589,6 +3657,11 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
   EnableArc(false);
 
   InitLauncherController();
+
+  // To prevent import legacy pins each time.
+  // Initially pins are imported from legacy pref based model.
+  StartPrefSyncService(syncer::SyncDataList());
+
   arc::ArcSessionManager::SetShelfDelegateForTesting(
       launcher_controller_.get());
 

@@ -237,15 +237,19 @@ class AppTracker {
   }
 
   void MaybeAddApp(const AppLauncherId& app_launcher_id,
-                   const LauncherControllerHelper* helper) {
+                   const LauncherControllerHelper* helper,
+                   bool check_for_valid_app) {
     DCHECK_NE(kPinnedAppsPlaceholder, app_launcher_id.ToString());
-    if (!helper->IsValidIDForCurrentUser(app_launcher_id.ToString()))
+    if (check_for_valid_app &&
+        !helper->IsValidIDForCurrentUser(app_launcher_id.ToString())) {
       return;
+    }
     AddApp(app_launcher_id);
   }
 
   void MaybeAddAppFromPref(const base::DictionaryValue* app_pref,
-                           const LauncherControllerHelper* helper) {
+                           const LauncherControllerHelper* helper,
+                           bool check_for_valid_app) {
     std::string app_id;
     if (!app_pref->GetString(kPinnedAppsPrefAppIDPath, &app_id)) {
       LOG(ERROR) << "Cannot get app id from app pref entry.";
@@ -262,7 +266,7 @@ class AppTracker {
       return;
     }
 
-    MaybeAddApp(AppLauncherId(app_id), helper);
+    MaybeAddApp(AppLauncherId(app_id), helper, check_for_valid_app);
   }
 
   const std::vector<AppLauncherId>& app_list() const { return app_list_; }
@@ -399,6 +403,7 @@ void SetShelfAlignmentPref(PrefService* prefs,
 // Helper that extracts app list from policy preferences.
 void GetAppsPinnedByPolicy(const PrefService* prefs,
                            const LauncherControllerHelper* helper,
+                           bool check_for_valid_app,
                            AppTracker* apps) {
   DCHECK(apps);
   DCHECK(apps->app_list().empty());
@@ -433,17 +438,19 @@ void GetAppsPinnedByPolicy(const PrefService* prefs,
       for (const auto& activity : activities) {
         const std::string arc_app_id =
             ArcAppListPrefs::GetAppId(arc_package, activity);
-        apps->MaybeAddApp(AppLauncherId(arc_app_id), helper);
+        apps->MaybeAddApp(AppLauncherId(arc_app_id), helper,
+                          check_for_valid_app);
       }
     } else {
-      apps->MaybeAddApp(AppLauncherId(app_id), helper);
+      apps->MaybeAddApp(AppLauncherId(app_id), helper, check_for_valid_app);
     }
   }
 }
 
 std::vector<AppLauncherId> GetPinnedAppsFromPrefsLegacy(
     const PrefService* prefs,
-    const LauncherControllerHelper* helper) {
+    const LauncherControllerHelper* helper,
+    bool check_for_valid_app) {
   // Adding the app list item to the list of items requires that the ID is not
   // a valid and known ID for the extension system. The ID was constructed that
   // way - but just to make sure...
@@ -461,7 +468,7 @@ std::vector<AppLauncherId> GetPinnedAppsFromPrefsLegacy(
       CreateAppDict(AppLauncherId(extension_misc::kChromeAppId)));
 
   AppTracker apps;
-  GetAppsPinnedByPolicy(prefs, helper, &apps);
+  GetAppsPinnedByPolicy(prefs, helper, check_for_valid_app, &apps);
 
   std::string app_id;
   for (size_t i = 0; i < pinned_apps->GetSize(); ++i) {
@@ -474,7 +481,7 @@ std::vector<AppLauncherId> GetPinnedAppsFromPrefsLegacy(
       LOG(ERROR) << "There is no dictionary for app entry.";
       continue;
     }
-    apps.MaybeAddAppFromPref(app_pref, helper);
+    apps.MaybeAddAppFromPref(app_pref, helper, check_for_valid_app);
   }
 
   // If not added yet, the chrome item will be the last item in the list.
@@ -559,22 +566,24 @@ syncer::StringOrdinal GetLastPinPosition(Profile* profile) {
 
 std::vector<AppLauncherId> ImportLegacyPinnedApps(
     const PrefService* prefs,
-    LauncherControllerHelper* helper,
-    const AppTracker& policy_apps) {
-  std::vector<AppLauncherId> legacy_pins =
-      GetPinnedAppsFromPrefsLegacy(prefs, helper);
-  DCHECK(!legacy_pins.empty());
+    LauncherControllerHelper* helper) {
+  std::vector<AppLauncherId> legacy_pins_all =
+      GetPinnedAppsFromPrefsLegacy(prefs, helper, false);
+  DCHECK(!legacy_pins_all.empty());
 
   app_list::AppListSyncableService* app_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(helper->profile());
 
+  std::vector<AppLauncherId> legacy_pins_valid;
   syncer::StringOrdinal last_position =
       syncer::StringOrdinal::CreateInitialOrdinal();
   // Convert to sync item record.
-  for (const auto& app_launcher_id : legacy_pins) {
+  for (const auto& app_launcher_id : legacy_pins_all) {
     DCHECK_NE(kPinnedAppsPlaceholder, app_launcher_id.ToString());
     app_service->SetPinPosition(app_launcher_id.ToString(), last_position);
     last_position = last_position.CreateAfter();
+    if (helper->IsValidIDForCurrentUser(app_launcher_id.ToString()))
+      legacy_pins_valid.push_back(app_launcher_id);
   }
 
   // Now process default apps.
@@ -590,7 +599,7 @@ std::vector<AppLauncherId> ImportLegacyPinnedApps(
     last_position = last_position.CreateAfter();
   }
 
-  return legacy_pins;
+  return legacy_pins_valid;
 }
 
 std::vector<AppLauncherId> GetPinnedAppsFromPrefs(
@@ -603,9 +612,6 @@ std::vector<AppLauncherId> GetPinnedAppsFromPrefs(
     return std::vector<AppLauncherId>();
 
   std::vector<PinInfo> pin_infos;
-
-  AppTracker policy_apps;
-  GetAppsPinnedByPolicy(prefs, helper, &policy_apps);
 
   // Empty pins indicates that sync based pin model is used for the first
   // time. In normal workflow we have at least Chrome browser pin info.
@@ -627,13 +633,22 @@ std::vector<AppLauncherId> GetPinnedAppsFromPrefs(
   }
 
   if (first_run) {
+    // Return default apps in case profile is not synced yet.
+    sync_preferences::PrefServiceSyncable* const pref_service_syncable =
+        PrefServiceSyncableFromProfile(helper->profile());
+    if (!pref_service_syncable->IsSyncing())
+      return GetPinnedAppsFromPrefsLegacy(prefs, helper, true);
+
     // We need to import legacy pins model and convert it to sync based
     // model.
-    return ImportLegacyPinnedApps(prefs, helper, policy_apps);
+    return ImportLegacyPinnedApps(prefs, helper);
   }
 
   // Sort pins according their ordinals.
   std::sort(pin_infos.begin(), pin_infos.end(), ComparePinInfo());
+
+  AppTracker policy_apps;
+  GetAppsPinnedByPolicy(prefs, helper, true, &policy_apps);
 
   // Pinned by policy apps appear first, if they were not shown before.
   syncer::StringOrdinal front_position = GetFirstPinPosition(helper->profile());
