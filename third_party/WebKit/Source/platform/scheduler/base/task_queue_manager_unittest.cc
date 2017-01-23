@@ -495,6 +495,34 @@ TEST_F(TaskQueueManagerTest, InsertAndRemoveFence) {
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
+TEST_F(TaskQueueManagerTest, RemovingFenceForDisabledQueueDoesNotPostDoWork) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      runners_[0]->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+
+  runners_[0]->RemoveFence();
+  EXPECT_FALSE(test_task_runner_->HasPendingTasks());
+}
+
+TEST_F(TaskQueueManagerTest, EnablingFencedQueueDoesNotPostDoWork) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      runners_[0]->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+
+  voter->SetQueueEnabled(true);
+  EXPECT_FALSE(test_task_runner_->HasPendingTasks());
+}
+
 TEST_F(TaskQueueManagerTest, DenyRunning_BeforePosting) {
   Initialize(1u);
 
@@ -623,6 +651,8 @@ TEST_F(TaskQueueManagerTest, MultipleFences) {
   EXPECT_THAT(run_order, ElementsAre(1, 2));
 
   runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  // Subsequent tasks should be blocked.
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order));
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
 }
@@ -684,6 +714,18 @@ TEST_F(TaskQueueManagerTest, BlockedByFence) {
 
   runners_[0]->RemoveFence();
   EXPECT_FALSE(runners_[0]->BlockedByFence());
+}
+
+TEST_F(TaskQueueManagerTest, BlockedByFence_BothTypesOfFence) {
+  Initialize(1u);
+
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  EXPECT_FALSE(runners_[0]->BlockedByFence());
+
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
+  EXPECT_TRUE(runners_[0]->BlockedByFence());
 }
 
 void ReentrantTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
