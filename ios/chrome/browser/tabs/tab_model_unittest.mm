@@ -181,7 +181,7 @@ class TabModelTest : public PlatformTest {
   }
 
   std::unique_ptr<WebStateImpl> CreateChildWebState(Tab* parent) {
-    return CreateWebState([parent windowName], [parent currentSessionID], -1);
+    return CreateWebState([parent windowName], parent.tabId, -1);
   }
 
   void RestoreSession(SessionWindowIOS* window) {

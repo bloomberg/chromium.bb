@@ -415,7 +415,7 @@ NSArray<Tab*>* GetTabsFromWebStateList(WebStateList* web_state_list,
     startIndex = [self indexOfTab:tab];
   if (startIndex == NSNotFound)
     return nil;
-  NSString* parentID = [tab currentSessionID];
+  NSString* parentID = tab.tabId;
   for (NSUInteger i = startIndex + 1; i < self.count; ++i) {
     Tab* current = [self webStateAtIndex:i];
     DCHECK([current navigationManager]);
@@ -433,7 +433,7 @@ NSArray<Tab*>* GetTabsFromWebStateList(WebStateList* web_state_list,
   NSUInteger stopIndex = [self indexOfTab:tab];
   if (stopIndex == NSNotFound)
     return nil;
-  NSString* parentID = [tab currentSessionID];
+  NSString* parentID = tab.tabId;
   // Match the navigation index as well as the session id, to better match the
   // state of the tab. I.e. two tabs are opened via a link from tab A, and then
   // a new url is loaded into tab A, and more tabs opened from that url, the
@@ -460,7 +460,7 @@ NSArray<Tab*>* GetTabsFromWebStateList(WebStateList* web_state_list,
     return nil;
   // There is at least one tab in the model, because otherwise the above check
   // would have returned.
-  NSString* parentID = [tab currentSessionID];
+  NSString* parentID = tab.tabId;
   DCHECK([tab navigationManager]);
   NSInteger parentNavIndex = [tab navigationManager]->GetCurrentItemIndex();
 
@@ -487,11 +487,11 @@ NSArray<Tab*>* GetTabsFromWebStateList(WebStateList* web_state_list,
 - (Tab*)openerOfTab:(Tab*)tab {
   if (![tab navigationManager])
     return nil;
-  NSString* opener = [tab navigationManager]->GetSessionController().openerId;
-  if (!opener.length)  // Short-circuit if opener is empty.
+  NSString* openerId = [tab navigationManager]->GetSessionController().openerId;
+  if (!openerId.length)  // Short-circuit if opener is empty.
     return nil;
   for (Tab* iteratedTab in self) {
-    if ([[iteratedTab currentSessionID] isEqualToString:opener])
+    if ([iteratedTab.tabId isEqualToString:openerId])
       return iteratedTab;
   }
   return nil;
@@ -977,11 +977,11 @@ NSArray<Tab*>* GetTabsFromWebStateList(WebStateList* web_state_list,
   NSUInteger index = [self indexOfTab:tab];
   if (index > 0) {
     Tab* previousTab = [self tabAtIndex:(index - 1)];
-    [set addObject:[previousTab currentSessionID]];
+    [set addObject:previousTab.tabId];
   }
   if (index < self.count - 1) {
     Tab* nextTab = [self tabAtIndex:(index + 1)];
-    [set addObject:[nextTab currentSessionID]];
+    [set addObject:nextTab.tabId];
   }
   [SnapshotCache sharedInstance].pinnedIDs = set;
 }
@@ -1004,7 +1004,7 @@ NSArray<Tab*>* GetTabsFromWebStateList(WebStateList* web_state_list,
 - (void)willResignActive:(NSNotification*)notify {
   if (webUsageEnabled_ && _currentTab) {
     [[SnapshotCache sharedInstance]
-        willBeSavedGreyWhenBackgrounding:[_currentTab currentSessionID]];
+        willBeSavedGreyWhenBackgrounding:_currentTab.get().tabId];
   }
 }
 
@@ -1031,7 +1031,7 @@ NSArray<Tab*>* GetTabsFromWebStateList(WebStateList* web_state_list,
   // Write out a grey version of the current website to disk.
   if (webUsageEnabled_ && _currentTab) {
     [[SnapshotCache sharedInstance]
-        saveGreyInBackgroundForSessionID:[_currentTab currentSessionID]];
+        saveGreyInBackgroundForSessionID:_currentTab.get().tabId];
   }
 }
 

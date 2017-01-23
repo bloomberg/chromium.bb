@@ -188,9 +188,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
                         desktopUserAgent:(BOOL)desktopUserAgent
                            configuration:(void (^)(Tab*))configuration;
 
-// The current ID of the session (each Tab represents a session).
-- (NSString*)currentSessionID;
-
 // Sets the parent tab model for this tab.  Can only be called if the tab does
 // not already have a parent tab model set.
 // TODO(crbug.com/228575): Create a delegate interface and remove this.

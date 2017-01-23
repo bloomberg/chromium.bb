@@ -102,7 +102,7 @@
   if (self) {
     DCHECK(snapshotManager);
     DCHECK(tab);
-    DCHECK([tab currentSessionID]);
+    DCHECK(tab.tabId);
     DCHECK([tab webController]);
     _snapshotManager.reset([snapshotManager retain]);
     _webController.reset([tab webController]);

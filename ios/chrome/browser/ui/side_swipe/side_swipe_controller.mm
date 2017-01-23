@@ -249,7 +249,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
     Tab* tab = [model_ tabAtIndex:index];
     if (tab && tab.webController.usePlaceholderOverlay) {
-      [sessionIDs addObject:[tab currentSessionID]];
+      [sessionIDs addObject:tab.tabId];
     }
     index = index + dx;
   }

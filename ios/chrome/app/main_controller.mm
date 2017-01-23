@@ -2492,8 +2492,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (NSMutableSet*)liveSessionsForTabModel:(TabModel*)tabModel {
   NSMutableSet* result = [NSMutableSet setWithCapacity:[tabModel count]];
-  for (size_t i = 0; i < [tabModel count]; ++i)
-    [result addObject:[[tabModel tabAtIndex:i] currentSessionID]];
+  for (Tab* tab in tabModel) {
+    [result addObject:tab.tabId];
+  }
   return result;
 }
 

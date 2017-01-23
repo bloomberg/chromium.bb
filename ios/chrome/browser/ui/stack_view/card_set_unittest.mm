@@ -80,7 +80,7 @@ typedef const GURL& (^CardSetTestTabMock_url)(void);
   [[[tab stub] andReturnValue:OCMOCK_VALUE(no)] canGoBack];
   [[[tab stub] andReturnValue:OCMOCK_VALUE(no)] canGoForward];
   [[[tab stub] andReturn:title] title];
-  [[[tab stub] andReturn:sessionID] currentSessionID];
+  [[[tab stub] andReturn:sessionID] tabId];
 
   [tabs_ addObject:tab];
   [observer_ tabModel:(TabModel*)self

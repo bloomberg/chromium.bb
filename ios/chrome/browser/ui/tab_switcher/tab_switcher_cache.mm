@@ -156,7 +156,7 @@ const CGFloat kMaxFloatDelta = 0.01;
 
 - (NSString*)keyForTab:(Tab*)tab {
   DCHECK([NSThread isMainThread]);
-  return [tab currentSessionID];
+  return tab.tabId;
 }
 
 - (PendingSnapshotRequest)recordPendingRequestForTab:(Tab*)tab {

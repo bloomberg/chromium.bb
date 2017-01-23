@@ -2664,8 +2664,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (BOOL)isTabWithIDCurrent:(NSString*)sessionID {
-  return self.visible &&
-         [sessionID isEqualToString:[[_model currentTab] currentSessionID]];
+  return self.visible && [sessionID isEqualToString:[_model currentTab].tabId];
 }
 
 - (CGFloat)currentHeaderOffset {

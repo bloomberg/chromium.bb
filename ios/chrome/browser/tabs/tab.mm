@@ -521,7 +521,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   std::unique_ptr<web::WebStateImpl> webState(
       new web::WebStateImpl(browserState));
   webState->GetNavigationManagerImpl().InitializeSession(
-      windowName, [opener currentSessionID], openedByDOM, openerIndex);
+      windowName, opener.tabId, openedByDOM, openerIndex);
 
   return [self initWithWebState:std::move(webState) model:parentModel];
 }
@@ -544,7 +544,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [self.webController setDelegate:self];
     [self.webController setUIDelegate:self];
 
-    NSString* sessionID = [self currentSessionID];
+    NSString* sessionID = self.tabId;
     DCHECK(sessionID);
     snapshotManager_.reset([[SnapshotManager alloc] init]);
 
@@ -755,7 +755,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)retrieveSnapshot:(void (^)(UIImage*))callback {
   [webControllerSnapshotHelper_
       retrieveSnapshotForWebController:self.webController
-                             sessionID:[self currentSessionID]
+                             sessionID:self.tabId
                           withOverlays:[self snapshotOverlays]
                               callback:callback];
 }
@@ -896,7 +896,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     fullScreenController_.reset([[FullScreenController alloc]
          initWithDelegate:fullScreenControllerDelegate_
         navigationManager:&(self.webStateImpl->GetNavigationManagerImpl())
-                sessionID:[self currentSessionID]]);
+                sessionID:self.tabId]);
     [self.webController addObserver:fullScreenController_];
     // If the content of the page was loaded without knowledge of the
     // toolbar position it will be misplaced under the toolbar instead of
@@ -958,7 +958,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     fullScreenController_.reset([[FullScreenController alloc]
          initWithDelegate:fullScreenControllerDelegate
         navigationManager:navigationManager
-                sessionID:[self currentSessionID]]);
+                sessionID:self.tabId]);
     if (fullScreenController_) {
       [self.webController addObserver:fullScreenController_];
     }
@@ -1231,9 +1231,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   readerModeController_.reset();
 
   // Invalidate any snapshot stored for this session.
-  NSString* sessionID = [self currentSessionID];
-  DCHECK(sessionID);
-  [snapshotManager_ removeImageWithSessionID:sessionID];
+  DCHECK(self.tabId);
+  [snapshotManager_ removeImageWithSessionID:self.tabId];
   // Reset association with the webController.
   [self.webController setDelegate:nil];
   [self.webController setUIDelegate:nil];
@@ -1634,10 +1633,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [U2FController_ evaluateU2FResultFromU2FURL:URL webState:self.webState];
 }
 
-- (NSString*)currentSessionID {
-  return [self tabId];
-}
-
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods.
 
 - (CRWWebController*)webPageOrderedOpen:(const GURL&)URL
@@ -1994,7 +1989,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webController:(CRWWebController*)webController
     retrievePlaceholderOverlayImage:(void (^)(UIImage*))block {
-  NSString* sessionID = [self currentSessionID];
+  NSString* sessionID = self.tabId;
   // The snapshot is always grey, even if |useGreyImageCache_| is NO, as this
   // overlay represents an out-of-date website and is shown only until the
   // has begun loading. However, if |useGreyImageCache_| is YES, the grey image
