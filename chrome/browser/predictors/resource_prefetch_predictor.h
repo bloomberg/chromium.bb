@@ -38,6 +38,13 @@ class URLRequest;
 
 namespace predictors {
 
+namespace internal {
+constexpr char kResourcePrefetchPredictorPrecisionHistogram[] =
+    "ResourcePrefetchPredictor.LearningPrecision";
+constexpr char kResourcePrefetchPredictorRecallHistogram[] =
+    "ResourcePrefetchPredictor.LearningRecall";
+}  // namespace internal
+
 class TestObserver;
 class ResourcePrefetcherManager;
 
@@ -198,6 +205,8 @@ class ResourcePrefetchPredictor
                            PopulatePrefetcherRequest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetRedirectEndpoint);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetPrefetchData);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
+                           TestPrecisionRecallHistograms);
 
   enum InitializationState {
     NOT_INITIALIZED = 0,

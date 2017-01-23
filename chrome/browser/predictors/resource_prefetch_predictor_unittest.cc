@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
@@ -265,6 +266,8 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 
   MockURLRequestJobFactory url_request_job_factory_;
   EmptyURLRequestDelegate url_request_delegate_;
+
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
@@ -301,6 +304,8 @@ void ResourcePrefetchPredictorTest::SetUp() {
             ResourcePrefetchPredictor::INITIALIZED);
 
   url_request_context_.set_job_factory(&url_request_job_factory_);
+
+  histogram_tester_.reset(new base::HistogramTester());
 }
 
 void ResourcePrefetchPredictorTest::TearDown() {
@@ -1551,6 +1556,51 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
   urls.clear();
   EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &urls));
   EXPECT_THAT(urls, UnorderedElementsAre(GURL(font_url)));
+}
+
+TEST_F(ResourcePrefetchPredictorTest, TestPrecisionRecallHistograms) {
+  using testing::_;
+  EXPECT_CALL(*mock_tables_.get(), UpdateData(_, _, _, _));
+
+  // Fill the database with 3 resources: 1 useful, 2 useless.
+  const std::string main_frame_url = "http://google.com/?query=cats";
+  PrefetchData google = CreatePrefetchData("google.com", 1);
+
+  const std::string script_url = "https://cdn.google.com/script.js";
+  InitializeResourceData(google.add_resources(), script_url,
+                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(google.add_resources(), script_url + "foo",
+                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(google.add_resources(), script_url + "bar",
+                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  predictor_->host_table_cache_->insert(
+      std::make_pair(google.primary_key(), google));
+
+  std::vector<GURL> urls;
+  EXPECT_TRUE(predictor_->GetPrefetchData(GURL(main_frame_url), &urls));
+
+  // Simulate a navigation with 2 resources, one we know, one we don't.
+  URLRequestSummary main_frame = CreateURLRequestSummary(1, main_frame_url);
+  predictor_->RecordURLRequest(main_frame);
+
+  URLRequestSummary script = CreateURLRequestSummary(
+      1, main_frame_url, script_url, content::RESOURCE_TYPE_SCRIPT);
+  predictor_->RecordURLResponse(script);
+
+  URLRequestSummary new_script = CreateURLRequestSummary(
+      1, main_frame_url, script_url + "2", content::RESOURCE_TYPE_SCRIPT);
+  predictor_->RecordURLResponse(new_script);
+
+  predictor_->RecordMainFrameLoadComplete(main_frame.navigation_id);
+  profile_->BlockUntilHistoryProcessesPendingRequests();
+
+  histogram_tester_->ExpectBucketCount(
+      internal::kResourcePrefetchPredictorRecallHistogram, 50, 1);
+  histogram_tester_->ExpectBucketCount(
+      internal::kResourcePrefetchPredictorPrecisionHistogram, 33, 1);
 }
 
 }  // namespace predictors

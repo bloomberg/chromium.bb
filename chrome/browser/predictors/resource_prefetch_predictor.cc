@@ -120,6 +120,38 @@ void GetUrlVisitCountTask::DoneRunOnMainThread() {
 
 GetUrlVisitCountTask::~GetUrlVisitCountTask() {}
 
+void ReportPredictionAccuracy(
+    const std::vector<GURL>& predicted_urls,
+    const ResourcePrefetchPredictor::PageRequestSummary& summary) {
+  DCHECK(!predicted_urls.empty());
+
+  if (predicted_urls.empty() || summary.subresource_requests.empty())
+    return;
+
+  std::set<GURL> predicted_urls_set(predicted_urls.begin(),
+                                    predicted_urls.end());
+  std::set<GURL> actual_urls_set;
+  for (const auto& request_summary : summary.subresource_requests)
+    actual_urls_set.insert(request_summary.resource_url);
+
+  size_t correctly_predicted_count = 0;
+  for (const GURL& predicted_url : predicted_urls_set) {
+    if (actual_urls_set.find(predicted_url) != actual_urls_set.end())
+      correctly_predicted_count++;
+  }
+
+  size_t precision_percentage =
+      (100 * correctly_predicted_count) / predicted_urls_set.size();
+  size_t recall_percentage =
+      (100 * correctly_predicted_count) / actual_urls_set.size();
+
+  UMA_HISTOGRAM_PERCENTAGE(
+      internal::kResourcePrefetchPredictorPrecisionHistogram,
+      precision_percentage);
+  UMA_HISTOGRAM_PERCENTAGE(internal::kResourcePrefetchPredictorRecallHistogram,
+                           recall_percentage);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -601,6 +633,12 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   // Remove the navigation from the inflight navigations.
   std::unique_ptr<PageRequestSummary> summary = std::move(nav_it->second);
   inflight_navigations_.erase(nav_it);
+
+  std::vector<GURL> predicted_urls;
+  bool has_data = GetPrefetchData(nav_id_without_timing_info.main_frame_url,
+                                  &predicted_urls);
+  if (has_data)
+    ReportPredictionAccuracy(predicted_urls, *summary);
 
   // Kick off history lookup to determine if we should record the URL.
   history::HistoryService* history_service =
