@@ -1210,9 +1210,6 @@
         "test": "components_web_restrictions_junit_tests"
       },
       {
-        "test": "components_variations_junit_tests"
-      },
-      {
         "test": "content_junit_tests"
       },
       {
@@ -2420,9 +2417,6 @@
       },
       {
         "test": "components_web_restrictions_junit_tests"
-      },
-      {
-        "test": "components_variations_junit_tests"
       },
       {
         "test": "content_junit_tests"

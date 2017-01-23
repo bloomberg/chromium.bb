@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -37,11 +38,9 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -52,7 +51,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Unit tests for {@link org.chromium.chrome.browser.ChromeBackupAgent}.
@@ -62,7 +60,6 @@ import java.util.concurrent.CountDownLatch;
 public class ChromeBackupAgentTest {
     private Context mContext;
     private ChromeBackupAgent mAgent;
-    private AsyncInitTaskRunner mTaskRunner;
 
     private void setUpTestPrefs(SharedPreferences prefs) {
         SharedPreferences.Editor editor = prefs.edit();
@@ -73,39 +70,20 @@ public class ChromeBackupAgentTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws ProcessInitException {
         // Set up the context.
         mContext = RuntimeEnvironment.application.getApplicationContext();
         ContextUtils.initApplicationContextForTests(mContext);
 
-        // Create the agent to test; override the native calls and fetching the task runner, and
-        // spy on the agent to allow us to validate calls to these methods.
-        mAgent = spy(new ChromeBackupAgent() {
-            @Override
-            AsyncInitTaskRunner createAsyncInitTaskRunner(CountDownLatch latch) {
-                latch.countDown();
-                return mTaskRunner;
-            }
-
-            @Override
-            protected String[] nativeGetBoolBackupNames() {
-                return new String[] {"pref1"};
-            }
-
-            @Override
-            protected boolean[] nativeGetBoolBackupValues() {
-                return new boolean[] {true};
-            }
-
-            @Override
-            protected void nativeSetBoolBackupPrefs(String[] s, boolean[] b) {}
-        });
+        // Override the native calls.
+        mAgent = spy(new ChromeBackupAgent());
+        doReturn(new String[] {"pref1"}).when(mAgent).nativeGetBoolBackupNames();
+        doReturn(new boolean[] {true}).when(mAgent).nativeGetBoolBackupValues();
+        doNothing().when(mAgent).nativeSetBoolBackupPrefs(
+                any(String[].class), any(boolean[].class));
 
         // Mock initializing the browser
         doReturn(true).when(mAgent).initializeBrowser(any(Context.class));
-
-        // Mock the AsyncTaskRunner.
-        mTaskRunner = mock(AsyncInitTaskRunner.class);
     }
 
     /**
@@ -331,6 +309,7 @@ public class ChromeBackupAgentTest {
 
                     @Override
                     public Integer answer(InvocationOnMock invocation) throws Throwable {
+                        // TODO(aberent): Auto-generated method stub
                         byte[] buffer = invocation.getArgument(0);
                         for (int i = 0; i < values[mPos].length; i++) {
                             buffer[i] = values[mPos][i];
@@ -355,19 +334,17 @@ public class ChromeBackupAgentTest {
      *
      * @throws IOException
      * @throws ClassNotFoundException
-     * @throws ProcessInitException
-     * @throws InterruptedException
      */
     @Test
-    public void testOnRestore_normal()
-            throws IOException, ClassNotFoundException, ProcessInitException, InterruptedException {
+    public void testOnRestore_normal() throws IOException, ClassNotFoundException {
+        BackupDataInput backupData = createMockBackupData();
+
+        doReturn(true).when(mAgent).accountExistsOnDevice(any(String.class));
+
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
                 ParcelFileDescriptor.open(stateFile, ParcelFileDescriptor.parseMode("w"));
-
-        BackupDataInput backupData = createMockBackupData();
-        doReturn(true).when(mAgent).accountExistsOnDevice(any(String.class));
 
         // Do a restore.
         mAgent.onRestore(backupData, 0, newState);
@@ -376,13 +353,6 @@ public class ChromeBackupAgentTest {
         assertFalse(prefs.contains("junk"));
         verify(mAgent).nativeSetBoolBackupPrefs(
                 new String[] {"pref1", "pref2"}, new boolean[] {false, true});
-        verify(mTaskRunner)
-                .startBackgroundTasks(
-                        false /* allocateChildConnection */, true /* initVariationSeed */);
-        // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
-        // complete. If it isn't completed before the test exits Robolectric crashes with a null
-        // pointer exception (although the test passes). Force it to complete by getting some data.
-        PathUtils.getDataDirectory();
     }
 
     /**
@@ -391,30 +361,22 @@ public class ChromeBackupAgentTest {
      *
      * @throws IOException
      * @throws ClassNotFoundException
-     * @throws ProcessInitException
      */
     @Test
-    public void testOnRestore_badUser()
-            throws IOException, ClassNotFoundException, ProcessInitException {
+    public void testOnRestore_badUser() throws IOException, ClassNotFoundException {
+        BackupDataInput backupData = createMockBackupData();
+
+        doReturn(false).when(mAgent).accountExistsOnDevice(any(String.class));
+
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
                 ParcelFileDescriptor.open(stateFile, ParcelFileDescriptor.parseMode("w"));
-
-        BackupDataInput backupData = createMockBackupData();
-        doReturn(false).when(mAgent).accountExistsOnDevice(any(String.class));
 
         // Do a restore.
         mAgent.onRestore(backupData, 0, newState);
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         assertFalse(prefs.contains(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE));
         verify(mAgent, never()).nativeSetBoolBackupPrefs(any(String[].class), any(boolean[].class));
-        verify(mTaskRunner)
-                .startBackgroundTasks(
-                        false /* allocateChildConnection */, true /* initVariationSeed */);
-        // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
-        // complete. If it isn't completed before the test exits Robolectric crashes with a null
-        // pointer exception (although the test passes). Force it to complete by getting some data.
-        PathUtils.getDataDirectory();
     }
 }

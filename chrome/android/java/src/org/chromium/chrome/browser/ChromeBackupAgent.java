@@ -13,7 +13,6 @@ import android.os.ParcelFileDescriptor;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -21,7 +20,6 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.firstrun.FirstRunGlueImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.components.signin.AccountManagerHelper;
@@ -35,8 +33,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Backup agent for Chrome, using Android key/value backup.
@@ -57,10 +53,6 @@ public class ChromeBackupAgent extends BackupAgent {
             FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP,
             PrivacyPreferencesManager.PREF_METRICS_REPORTING,
     };
-
-    // Timeout for running the background tasks, needs to be quite long since they may be doing
-    // network access, but must be less than the 1 minute restore timeout to be useful.
-    private static final long BACKGROUND_TASK_TIMEOUT_SECS = 20;
 
     /**
      * Class to save and restore the backup state, used to decide if backups are needed. Since the
@@ -119,7 +111,7 @@ public class ChromeBackupAgent extends BackupAgent {
         try {
             ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
         } catch (ProcessInitException e) {
-            Log.w(TAG, "Browser launch failed on backup or restore: " + e);
+            Log.w(TAG, "Browser launch failed on restore: " + e);
             return false;
         }
         return true;
@@ -142,29 +134,27 @@ public class ChromeBackupAgent extends BackupAgent {
         final ArrayList<byte[]> backupValues = new ArrayList<>();
 
         // The native preferences can only be read on the UI thread.
-        Boolean nativePrefsRead =
-                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() {
-                        // Start the browser if necessary, so that Chrome can access the native
-                        // preferences. Although Chrome requests the backup, it doesn't happen
-                        // immediately, so by the time it does Chrome may not be running.
-                        if (!initializeBrowser(backupAgent)) return false;
+        if (!ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    // Start the browser if necessary, so that Chrome can access the native
+                    // preferences. Although Chrome requests the backup, it doesn't happen
+                    // immediately, so by the time it does Chrome may not be running.
+                    if (!initializeBrowser(backupAgent)) return false;
 
-                        String[] nativeBackupNames = nativeGetBoolBackupNames();
-                        boolean[] nativeBackupValues = nativeGetBoolBackupValues();
-                        assert nativeBackupNames.length == nativeBackupValues.length;
+                    String[] nativeBackupNames = nativeGetBoolBackupNames();
+                    boolean[] nativeBackupValues = nativeGetBoolBackupValues();
+                    assert nativeBackupNames.length == nativeBackupValues.length;
 
-                        for (String name : nativeBackupNames) {
-                            backupNames.add(NATIVE_PREF_PREFIX + name);
-                        }
-                        for (boolean val : nativeBackupValues) {
-                            backupValues.add(booleanToBytes(val));
-                        }
-                        return true;
+                    for (String name : nativeBackupNames) {
+                        backupNames.add(NATIVE_PREF_PREFIX + name);
                     }
-                });
-        if (!nativePrefsRead) {
+                    for (boolean val : nativeBackupValues) {
+                        backupValues.add(booleanToBytes(val));
+                    }
+                    return true;
+                }
+            })) {
             // Something went wrong reading the native preferences, skip the backup.
             return;
         }
@@ -211,9 +201,6 @@ public class ChromeBackupAgent extends BackupAgent {
     @Override
     public void onRestore(BackupDataInput data, int appVersionCode, ParcelFileDescriptor newState)
             throws IOException {
-        // TODO(aberent) Check that this is not running on the UI thread. Doing so, however, makes
-        // testing difficult since the test code runs on the UI thread.
-
         // Check that the user hasn't already seen FRE (not sure if this can ever happen, but if it
         // does then restoring the backup will overwrite the user's choices).
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
@@ -240,45 +227,16 @@ public class ChromeBackupAgent extends BackupAgent {
                 backupValues.add(buffer);
             }
         }
-        // Start and wait for the Async init tasks. This loads the library, and attempts to load the
-        // first run variations seed. Since these are both slow it makes sense to run them in
-        // parallel as Android AsyncTasks, reusing some of Chrome's async startup logic.
-        //
-        // Note that this depends on onRestore being run from a background thread, since
-        // if it were called from the UI thread the broadcast would not be received until after it
-        // exited.
-        final CountDownLatch latch = new CountDownLatch(1);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Chrome library loading depends on PathUtils.
-                PathUtils.setPrivateDataDirectorySuffix(
-                        ChromeBrowserInitializer.PRIVATE_DATA_DIRECTORY_SUFFIX);
-                createAsyncInitTaskRunner(latch).startBackgroundTasks(
-                        false /* allocateChildConnection */, true /* initVariationSeed */);
-            }
-        });
 
-        try {
-            // Ignore result. It will only be false if it times out. Problems with fetching the
-            // variation seed can be ignored, and other problems will either recover or be repeated
-            // when Chrome is started synchronously.
-            latch.await(BACKGROUND_TASK_TIMEOUT_SECS, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            // Should never happen, but can be ignored (as explained above) anyway.
-        }
-        // Chrome has to be running before it can check if the account exists. Because the native
-        // library is already loaded Chrome startup should be fast.
+        // Chrome has to be running before it can check if the account exists.
         final ChromeBackupAgent backupAgent = this;
-        boolean browserStarted =
-                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() {
-                        // Start the browser if necessary.
-                        return initializeBrowser(backupAgent);
-                    }
-                });
-        if (!browserStarted) {
+        if (!ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    // Start the browser if necessary.
+                    return initializeBrowser(backupAgent);
+                }
+            })) {
             // Something went wrong starting Chrome, skip the restore.
             return;
         }
@@ -332,24 +290,6 @@ public class ChromeBackupAgent extends BackupAgent {
         // The silent first run will change things, so there is no point in trying to prevent
         // additional backups at this stage. Don't write anything to |newState|.
         Log.i(TAG, "Restore complete");
-    }
-
-    @VisibleForTesting
-    AsyncInitTaskRunner createAsyncInitTaskRunner(final CountDownLatch latch) {
-        return new AsyncInitTaskRunner() {
-
-            @Override
-            protected void onSuccess() {
-                latch.countDown();
-            }
-
-            @Override
-            protected void onFailure() {
-                // Ignore failure. Problems with the variation seed can be ignored, and other
-                // problems will either recover or be repeated when Chrome is started synchronously.
-                latch.countDown();
-            }
-        };
     }
 
     @VisibleForTesting

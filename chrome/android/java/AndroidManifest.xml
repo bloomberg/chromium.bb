@@ -696,6 +696,23 @@ by a child template that "extends" this file.
             android:exported="false">
         </service>
 
+        <service android:name="org.chromium.components.variations.firstrun.VariationsSeedService"
+            android:exported="false" />
+
+        <receiver android:name="org.chromium.components.variations.firstrun.VariationsSeedServiceLauncher"
+            android:permission="{{ manifest_package }}.TOS_ACKED">
+            <intent-filter>
+                <action android:name="{{ manifest_package }}.TOS_ACKED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="org.chromium.chrome.browser.firstrun.ToSAckedReceiver"
+            android:permission="{{ manifest_package }}.TOS_ACKED">
+            <intent-filter>
+                <action android:name="{{ manifest_package }}.TOS_ACKED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Bookmarks widget -->
         <receiver android:name="com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider"
             android:label="@string/bookmark_widget_title">
