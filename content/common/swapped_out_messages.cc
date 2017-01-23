@@ -22,11 +22,10 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_UpdateRect::ID:
     // Handled by RenderWidgetHostView.
     case ViewHostMsg_SetNeedsBeginFrames::ID:
-    // Allow targeted navigations while swapped out.
-    case FrameHostMsg_OpenURL::ID:
-    case ViewHostMsg_Focus::ID:
     // Handled by RenderViewHost.
+    case FrameHostMsg_RenderProcessGone::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
+    case ViewHostMsg_Focus::ID:
     case ViewHostMsg_ShowFullscreenWidget::ID:
     case ViewHostMsg_ShowWidget::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
@@ -36,17 +35,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_RouteCloseEvent::ID:
     // Send page scale factor reset notification upon cross-process navigations.
     case ViewHostMsg_PageScaleFactorChanged::ID:
-    // Handled by RenderFrameHost.
-    case FrameHostMsg_BeforeUnload_ACK::ID:
-    case FrameHostMsg_SwapOut_ACK::ID:
-    case FrameHostMsg_RenderProcessGone::ID:
-    // Frame detach must occur after the RenderView has swapped out.
-    case FrameHostMsg_Detach::ID:
-    case FrameHostMsg_DomOperationResponse::ID:
-    // Input events propagate from parent to child.
-    case FrameHostMsg_ForwardInputEvent::ID:
-    // A swapped-out frame's opener might be updated with window.open.
-    case FrameHostMsg_DidChangeOpener::ID:
       return true;
     default:
       break;
