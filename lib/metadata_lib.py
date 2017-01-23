@@ -329,9 +329,9 @@ class CBuildbotMetadata(object):
     for entry in results_lib.Results.Get():
       timestr = datetime.timedelta(seconds=math.ceil(entry.time))
       if entry.result in results_lib.Results.NON_FAILURE_TYPES:
-        status = constants.FINAL_STATUS_PASSED
+        status = constants.BUILDER_STATUS_PASSED
       else:
-        status = constants.FINAL_STATUS_FAILED
+        status = constants.BUILDER_STATUS_FAILED
       metadata['results'].append({
           'name': entry.name,
           'status': status,

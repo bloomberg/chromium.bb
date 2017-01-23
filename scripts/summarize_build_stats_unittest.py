@@ -45,8 +45,8 @@ class TestCLActionLogic(cros_test_lib.TestCase):
     c4p2 = metadata_lib.GerritPatchTuple(4, 2, True)
 
     # Mock builder status dictionaries
-    passed_status = {'status': constants.FINAL_STATUS_PASSED}
-    failed_status = {'status': constants.FINAL_STATUS_FAILED}
+    passed_status = {'status': constants.BUILDER_STATUS_PASSED}
+    failed_status = {'status': constants.BUILDER_STATUS_FAILED}
 
     t = datetime.datetime.now()
     delta = datetime.timedelta(hours=1)

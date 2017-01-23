@@ -169,9 +169,9 @@ def GetChildConfigListMetadata(child_configs, config_status_map):
     pass_fail_status = None
     if config_status_map:
       if config_status_map[c['name']]:
-        pass_fail_status = constants.FINAL_STATUS_PASSED
+        pass_fail_status = constants.BUILDER_STATUS_PASSED
       else:
-        pass_fail_status = constants.FINAL_STATUS_FAILED
+        pass_fail_status = constants.BUILDER_STATUS_FAILED
     child_config_list.append({'name': c['name'],
                               'boards': c['boards'],
                               'status': pass_fail_status})
@@ -582,7 +582,7 @@ class ReportStage(generic_stages.BuilderStage,
 
     Args:
       final_status: String indicating final status of build,
-                    constants.FINAL_STATUS_PASSED indicating success.
+                    constants.BUILDER_STATUS_PASSED indicating success.
       counter_name: Name of counter to increment, typically the name of the
                     build config.
       dry_run: Pretend to update counter only. Default: False.
@@ -596,7 +596,7 @@ class ReportStage(generic_stages.BuilderStage,
                                counter_name)
     gs_counter = gs.GSCounter(gs_ctx, counter_url)
 
-    if final_status == constants.FINAL_STATUS_PASSED:
+    if final_status == constants.BUILDER_STATUS_PASSED:
       streak_value = gs_counter.StreakIncrement()
     else:
       streak_value = gs_counter.StreakDecrement()
@@ -829,8 +829,8 @@ class ReportStage(generic_stages.BuilderStage,
     """Archive our build results.
 
     Args:
-      final_status: constants.FINAL_STATUS_PASSED or
-                    constants.FINAL_STATUS_FAILED
+      final_status: constants.BUILDER_STATUS_PASSED or
+                    constants.BUILDER_STATUS_FAILED
       build_id: CIDB id for the current build.
       db: CIDBConnection instance.
     """
@@ -844,7 +844,7 @@ class ReportStage(generic_stages.BuilderStage,
     self._UpdateRunStreak(self._run, final_status)
 
     # Alert if the Pre-CQ has infra failures.
-    if final_status == constants.FINAL_STATUS_FAILED:
+    if final_status == constants.BUILDER_STATUS_FAILED:
       self._SendPreCQInfraAlertMessageIfNeeded()
 
     # Iterate through each builder run, whether there is just the main one
@@ -872,7 +872,7 @@ class ReportStage(generic_stages.BuilderStage,
 
       # Check if the builder_run is tied to any boards and if so get all
       # upload urls.
-      if final_status == constants.FINAL_STATUS_PASSED:
+      if final_status == constants.BUILDER_STATUS_PASSED:
         # Update the LATEST files if the build passed.
         try:
           upload_urls = self._GetUploadUrls(
@@ -964,9 +964,9 @@ class ReportStage(generic_stages.BuilderStage,
     """
     build_id, db = self._run.GetCIDBHandle()
     if results_lib.Results.BuildSucceededSoFar(db, build_id, self.name):
-      final_status = constants.FINAL_STATUS_PASSED
+      final_status = constants.BUILDER_STATUS_PASSED
     else:
-      final_status = constants.FINAL_STATUS_FAILED
+      final_status = constants.BUILDER_STATUS_FAILED
 
     if not hasattr(self._run.attrs, 'release_tag'):
       # If, for some reason, sync stage was not completed and

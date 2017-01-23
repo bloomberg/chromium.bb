@@ -398,9 +398,9 @@ class ReportStageTest(AbstractReportStageTestCase):
     config_status_map = {'config1': True,
                          'config2': False}
     expected = [{'name': 'config1', 'boards': ['board1'],
-                 'status': constants.FINAL_STATUS_PASSED},
+                 'status': constants.BUILDER_STATUS_PASSED},
                 {'name': 'config2', 'boards': ['board2'],
-                 'status': constants.FINAL_STATUS_FAILED}]
+                 'status': constants.BUILDER_STATUS_FAILED}]
     child_config_list = report_stages.GetChildConfigListMetadata(
         child_configs, config_status_map)
     self.assertEqual(expected, child_config_list)
