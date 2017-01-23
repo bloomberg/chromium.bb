@@ -134,13 +134,6 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect) {
       node->layoutObject()->invalidatePaintRectangle(inflatedRect, this);
 }
 
-void CaretBase::invalidateCaretRect(Node* node,
-                                    const LayoutRect& caretLocalRect) {
-  node->document().updateStyleAndLayoutTree();
-  if (hasEditableStyle(*node))
-    invalidateLocalCaretRect(node, caretLocalRect);
-}
-
 void CaretBase::paintCaret(Node* node,
                            GraphicsContext& context,
                            const LayoutRect& caretLocalRect,

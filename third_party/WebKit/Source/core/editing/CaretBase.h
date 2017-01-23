@@ -45,7 +45,6 @@ class CaretBase final : public DisplayItemClient {
   CaretBase();
   virtual ~CaretBase();
 
-  void invalidateCaretRect(Node*, const LayoutRect&);
   // Creating VisiblePosition causes synchronous layout so we should use the
   // PositionWithAffinity version if possible.
   // A position in HTMLTextFromControlElement is a typical example.

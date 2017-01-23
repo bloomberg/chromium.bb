@@ -59,6 +59,8 @@ class DragCaretController final
  private:
   DragCaretController();
 
+  void invalidateCaretRect(Node*, const LayoutRect&);
+
   // Implementations of |SynchronousMutationObserver|
   void nodeChildrenWillBeRemoved(ContainerNode&) final;
   void nodeWillBeRemoved(Node&) final;

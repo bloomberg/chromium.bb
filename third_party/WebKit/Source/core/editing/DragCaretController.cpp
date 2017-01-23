@@ -53,6 +53,19 @@ bool DragCaretController::isContentRichlyEditable() const {
   return isRichlyEditablePosition(m_position.position());
 }
 
+void DragCaretController::invalidateCaretRect(
+    Node* node,
+    const LayoutRect& caretLocalRect) {
+  // TODO(editing-dev): The use of updateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term we should use idle time spell checker to prevent
+  // synchronous layout caused by spell checking (see crbug.com/517298).
+  node->document().updateStyleAndLayoutTree();
+  if (!hasEditableStyle(*node))
+    return;
+  m_caretBase->invalidateLocalCaretRect(node, caretLocalRect);
+}
+
 void DragCaretController::setCaretPosition(
     const PositionWithAffinity& position) {
   // for querying Layer::compositingState()
@@ -61,11 +74,11 @@ void DragCaretController::setCaretPosition(
   DisableCompositingQueryAsserts disabler;
 
   if (Node* node = m_position.anchorNode())
-    m_caretBase->invalidateCaretRect(node, m_caretLocalRect);
+    invalidateCaretRect(node, m_caretLocalRect);
   m_position = createVisiblePosition(position).toPositionWithAffinity();
   Document* document = nullptr;
   if (Node* node = m_position.anchorNode()) {
-    m_caretBase->invalidateCaretRect(node, m_caretLocalRect);
+    invalidateCaretRect(node, m_caretLocalRect);
     document = &node->document();
     setContext(document);
   }
