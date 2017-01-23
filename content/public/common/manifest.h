@@ -31,6 +31,7 @@ struct CONTENT_EXPORT Manifest {
     enum IconPurpose {
       ANY = 0,
       BADGE,
+      ICON_PURPOSE_LAST = BADGE,
     };
 
     Icon();

@@ -14,10 +14,15 @@
 
 #define IPC_MESSAGE_START ManifestManagerMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(
+    content::Manifest::Icon::IconPurpose,
+    content::Manifest::Icon::IconPurpose::ICON_PURPOSE_LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(content::Manifest::Icon)
   IPC_STRUCT_TRAITS_MEMBER(src)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(sizes)
+  IPC_STRUCT_TRAITS_MEMBER(purpose)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::Manifest::ShareTarget)
