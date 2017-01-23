@@ -25,7 +25,6 @@
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "url/gurl.h"
 
-@protocol CRWRequestTrackerDelegate;
 @class CRWWebController;
 @protocol CRWWebViewProxy;
 @class NSURLRequest;
