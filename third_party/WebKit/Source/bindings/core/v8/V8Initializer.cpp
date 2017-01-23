@@ -421,9 +421,11 @@ void V8Initializer::initializeMainThread() {
 
   isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);
 
-  if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler())
+  if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
     profiler->SetWrapperClassInfoProvider(
         WrapperTypeInfo::NodeClassId, &RetainedDOMInfo::createRetainedDOMInfo);
+    profiler->SetGetRetainerInfosCallback(&V8GCController::getRetainerInfos);
+  }
 
   ASSERT(ThreadState::mainThreadState());
   ThreadState::mainThreadState()->addInterruptor(

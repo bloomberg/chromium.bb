@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
+#include <v8-profiler.h>
 #include <v8.h>
 
 namespace blink {
@@ -59,6 +60,8 @@ class CORE_EXPORT V8GCController {
 
   static void traceDOMWrappers(v8::Isolate*, Visitor*);
   static bool hasPendingActivity(v8::Isolate*, ExecutionContext*);
+
+  static v8::HeapProfiler::RetainerInfos getRetainerInfos(v8::Isolate*);
 };
 
 }  // namespace blink

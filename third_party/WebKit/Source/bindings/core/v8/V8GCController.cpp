@@ -51,6 +51,8 @@
 #include "wtf/Vector.h"
 #include "wtf/allocator/Partitions.h"
 #include <algorithm>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace blink {
 
@@ -147,6 +149,140 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
  private:
   v8::Isolate* m_isolate;
 };
+
+class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
+                                  public v8::PersistentHandleVisitor {
+ public:
+  explicit HeapSnaphotWrapperVisitor(v8::Isolate* isolate)
+      : ScriptWrappableVisitor(isolate),
+        m_currentParent(nullptr),
+        m_onlyTraceSingleLevel(false),
+        m_firstScriptWrappableTraced(false) {}
+
+  // Collect interesting V8 roots for the heap snapshot. Currently these are
+  // DOM nodes.
+  void collectV8Roots() { m_isolate->VisitHandlesWithClassIds(this); }
+
+  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
+                             uint16_t classId) override {
+    if (classId != WrapperTypeInfo::NodeClassId)
+      return;
+
+    DCHECK(!value->IsIndependent());
+    v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
+        m_isolate, v8::Persistent<v8::Object>::Cast(*value));
+    DCHECK(V8Node::hasInstance(wrapper, m_isolate));
+    Node* node = V8Node::toImpl(wrapper);
+    Node* root = V8GCController::opaqueRootForGC(m_isolate, node);
+    m_nodesRequiringTracing[root].push_back(node);
+  }
+
+  // Trace through the blink heap to find all V8 wrappers reachable from
+  // ActiveScriptWrappables. Also collect retainer edges on the way.
+  void tracePendingActivities() {
+    CHECK(m_foundV8Wrappers.empty());
+    m_currentParent = nullptr;
+
+    TracePrologue();
+    ActiveScriptWrappableBase::traceActiveScriptWrappables(m_isolate, this);
+    AdvanceTracing(
+        0,
+        v8::EmbedderHeapTracer::AdvanceTracingActions(
+            v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+    // Abort instead of Epilogue as we want to finish synchronously.
+    AbortTracing();
+
+    m_groups.push_back(
+        std::make_pair(new SuspendableObjectsInfo(m_foundV8Wrappers.size()),
+                       std::move(m_foundV8Wrappers)));
+  }
+
+  // Trace through the blink heap to find all V8 wrappers reachable from any
+  // of the collected roots. Also collect retainer edges on the way.
+  void traceV8Roots() {
+    for (auto& groupPair : m_nodesRequiringTracing) {
+      v8::HeapProfiler::RetainerChildren groupChildren;
+      for (auto& node : groupPair.second) {
+        auto wrappers = findV8WrappersDirectlyReachableFrom(node);
+        groupChildren.insert(wrappers.begin(), wrappers.end());
+      }
+      m_groups.push_back(std::make_pair(new RetainedDOMInfo(groupPair.first),
+                                        std::move(groupChildren)));
+    }
+  }
+
+  v8::HeapProfiler::RetainerEdges edges() { return std::move(m_edges); }
+  v8::HeapProfiler::RetainerGroups groups() { return std::move(m_groups); }
+
+  void markWrapper(const v8::PersistentBase<v8::Value>* value) const override {
+    if (m_currentParent && m_currentParent != value)
+      m_edges.push_back(std::make_pair(m_currentParent, value));
+    m_foundV8Wrappers.insert(value);
+  }
+
+  void dispatchTraceWrappers(const TraceWrapperBase* traceable) const override {
+    if (!m_onlyTraceSingleLevel || !traceable->isScriptWrappable() ||
+        !reinterpret_cast<const ScriptWrappable*>(traceable)
+             ->containsWrapper() ||
+        !m_firstScriptWrappableTraced) {
+      m_firstScriptWrappableTraced = true;
+      traceable->traceWrappers(this);
+    }
+  }
+
+ private:
+  v8::HeapProfiler::RetainerChildren findV8WrappersDirectlyReachableFrom(
+      Node* traceable) {
+    CHECK(m_foundV8Wrappers.empty());
+    WTF::AutoReset<bool>(&m_onlyTraceSingleLevel, true);
+    m_firstScriptWrappableTraced = false;
+    m_currentParent =
+        &v8::Persistent<v8::Value>::Cast(*traceable->rawMainWorldWrapper());
+
+    TracePrologue();
+    traceable->wrapperTypeInfo()->traceWrappers(this, traceable);
+    AdvanceTracing(
+        0,
+        v8::EmbedderHeapTracer::AdvanceTracingActions(
+            v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+    // Abort instead of Epilogue as we want to finish synchronously.
+    AbortTracing();
+
+    return std::move(m_foundV8Wrappers);
+  }
+
+  // Input obtained from |VisitPersistentHandle|.
+  std::unordered_map<Node*, std::vector<Node*>> m_nodesRequiringTracing;
+
+  // Temporaries used for tracing a single Node.
+  const v8::PersistentBase<v8::Value>* m_currentParent;
+  bool m_onlyTraceSingleLevel;
+  mutable bool m_firstScriptWrappableTraced;
+  mutable v8::HeapProfiler::RetainerChildren m_foundV8Wrappers;
+
+  // Out variables
+  mutable v8::HeapProfiler::RetainerEdges m_edges;
+  mutable v8::HeapProfiler::RetainerGroups m_groups;
+};
+
+// The function |getRetainerInfos| processing all handles on the blink heap,
+// logically grouping together DOM trees (attached and detached) and pending
+// activities, while at the same time finding parent to child relationships
+// for non-Node wrappers. Since we are processing *all* handles there is no
+// way we miss out on a handle. V8 will figure out the liveness information
+// for the provided information itself.
+v8::HeapProfiler::RetainerInfos V8GCController::getRetainerInfos(
+    v8::Isolate* isolate) {
+  std::unique_ptr<HeapSnaphotWrapperVisitor> tracer(
+      new HeapSnaphotWrapperVisitor(isolate));
+  V8PerIsolateData::TemporaryScriptWrappableVisitorScope scope(
+      isolate, std::move(tracer));
+
+  tracer->collectV8Roots();
+  tracer->traceV8Roots();
+  tracer->tracePendingActivities();
+  return v8::HeapProfiler::RetainerInfos{tracer->groups(), tracer->edges()};
+}
 
 class MajorGCWrapperVisitor : public v8::PersistentHandleVisitor {
  public:

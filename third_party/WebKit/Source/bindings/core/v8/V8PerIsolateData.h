@@ -167,6 +167,33 @@ class CORE_EXPORT V8PerIsolateData {
     return m_activeScriptWrappables.get();
   }
 
+  class TemporaryScriptWrappableVisitorScope {
+    WTF_MAKE_NONCOPYABLE(TemporaryScriptWrappableVisitorScope);
+    STACK_ALLOCATED();
+
+   public:
+    TemporaryScriptWrappableVisitorScope(
+        v8::Isolate* isolate,
+        std::unique_ptr<ScriptWrappableVisitor> visitor)
+        : m_isolate(isolate) {
+      swapWithV8PerIsolateDataVisitor(visitor);
+    }
+    ~TemporaryScriptWrappableVisitorScope() {
+      swapWithV8PerIsolateDataVisitor(m_savedVisitor);
+    }
+
+   private:
+    inline ScriptWrappableVisitor* currentVisitor(v8::Isolate* isolate) {
+      return V8PerIsolateData::from(m_isolate)->scriptWrappableVisitor();
+    }
+
+    void swapWithV8PerIsolateDataVisitor(
+        std::unique_ptr<ScriptWrappableVisitor>&);
+
+    v8::Isolate* m_isolate;
+    std::unique_ptr<ScriptWrappableVisitor> m_savedVisitor;
+  };
+
   void setScriptWrappableVisitor(
       std::unique_ptr<ScriptWrappableVisitor> visitor) {
     m_scriptWrappableVisitor = std::move(visitor);

@@ -169,6 +169,9 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
     return &m_headersToUnmark;
   }
 
+  // Immediately cleans up all wrappers if necessary.
+  void performCleanup();
+
  protected:
   bool pushToMarkingDeque(
       void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
@@ -189,7 +192,6 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
     return true;
   }
 
- private:
   // Returns true if wrapper tracing is currently in progress, i.e.,
   // TracePrologue has been called, and TraceEpilogue has not yet been called.
   bool m_tracingInProgress = false;
@@ -207,9 +209,6 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
   // Indicates whether cleanup should currently happen. The flag is used to
   // avoid cleaning up in the next GC cycle.
   bool m_shouldCleanup = false;
-
-  // Immediately cleans up all wrappers.
-  void performCleanup();
 
   // Schedule an idle task to perform a lazy (incremental) clean up of
   // wrappers.

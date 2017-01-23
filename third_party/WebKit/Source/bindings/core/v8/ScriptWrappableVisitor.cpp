@@ -80,6 +80,7 @@ void ScriptWrappableVisitor::performCleanup() {
   if (!m_shouldCleanup)
     return;
 
+  CHECK(!m_tracingInProgress);
   for (auto header : m_headersToUnmark) {
     // Dead objects residing in the marking deque may become invalid due to
     // minor garbage collections and are therefore set to nullptr. We have
