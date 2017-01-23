@@ -9,16 +9,3 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
-diff --git a/components-chromium/paper-icon-button/paper-icon-button-light.html b/components-chromium/paper-icon-button/paper-icon-button-light.html
-index 2eaa665..7416f94 100644
---- a/components-chromium/paper-icon-button/paper-icon-button-light.html
-+++ b/components-chromium/paper-icon-button/paper-icon-button-light.html
-@@ +45,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
-       paper-ripple {
-         opacity: 0.6;
-         color: currentColor;
-+        @apply(--paper-icon-button-light-ripple);
-       }
-     </style>
-     <content></content>
-
