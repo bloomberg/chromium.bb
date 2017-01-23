@@ -723,6 +723,12 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
   if (ProfileHelper::IsSigninProfile(profile))
     return false;
 
+  // Kiosk sessions keeps the startup flags.
+  if (user_manager::UserManager::Get() &&
+      user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
+    return false;
+  }
+
   if (early_restart && !CanPerformEarlyRestart())
     return false;
 
