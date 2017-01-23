@@ -48,7 +48,7 @@ class PrerendererClientImpl final
   WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
 
  public:
-  explicit PrerendererClientImpl(WebPrerendererClient*);
+  PrerendererClientImpl(Page&, WebPrerendererClient*);
 
   void willAddPrerender(Prerender*) override;
   bool isPrefetchOnly() override;

@@ -43,11 +43,12 @@ class InProcessWorkerMessagingProxy;
 class Page;
 class Worker;
 
-class DedicatedWorkerMessagingProxyProvider : public Supplement<Page> {
+class CORE_EXPORT DedicatedWorkerMessagingProxyProvider
+    : public Supplement<Page> {
   WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxyProvider);
 
  public:
-  DedicatedWorkerMessagingProxyProvider() {}
+  explicit DedicatedWorkerMessagingProxyProvider(Page&);
   virtual ~DedicatedWorkerMessagingProxyProvider() {}
 
   virtual InProcessWorkerMessagingProxy* createWorkerMessagingProxy(

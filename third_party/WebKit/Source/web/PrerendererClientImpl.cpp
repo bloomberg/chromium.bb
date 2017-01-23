@@ -38,8 +38,9 @@
 
 namespace blink {
 
-PrerendererClientImpl::PrerendererClientImpl(WebPrerendererClient* client)
-    : m_client(client) {}
+PrerendererClientImpl::PrerendererClientImpl(Page& page,
+                                             WebPrerendererClient* client)
+    : PrerendererClient(page), m_client(client) {}
 
 void PrerendererClientImpl::willAddPrerender(Prerender* prerender) {
   if (!m_client)

@@ -53,7 +53,7 @@ class SharedWorkerPerformance final
   DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<SharedWorker>::trace(visitor); }
 
  private:
-  SharedWorkerPerformance();
+  explicit SharedWorkerPerformance(SharedWorker&);
   static const char* supplementName();
 
   double m_timeOrigin;

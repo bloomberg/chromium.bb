@@ -35,33 +35,36 @@
 
 namespace blink {
 
-WorkerGlobalScopePerformance::WorkerGlobalScopePerformance() {}
+WorkerGlobalScopePerformance::WorkerGlobalScopePerformance(
+    WorkerGlobalScope& workerGlobalScope)
+    : Supplement<WorkerGlobalScope>(workerGlobalScope) {}
 
 const char* WorkerGlobalScopePerformance::supplementName() {
   return "WorkerGlobalScopePerformance";
 }
 
 WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::from(
-    WorkerGlobalScope& context) {
+    WorkerGlobalScope& workerGlobalScope) {
   WorkerGlobalScopePerformance* supplement =
       static_cast<WorkerGlobalScopePerformance*>(
-          Supplement<WorkerGlobalScope>::from(context, supplementName()));
+          Supplement<WorkerGlobalScope>::from(workerGlobalScope,
+                                              supplementName()));
   if (!supplement) {
-    supplement = new WorkerGlobalScopePerformance;
-    provideTo(context, supplementName(), supplement);
+    supplement = new WorkerGlobalScopePerformance(workerGlobalScope);
+    provideTo(workerGlobalScope, supplementName(), supplement);
   }
   return *supplement;
 }
 
 WorkerPerformance* WorkerGlobalScopePerformance::performance(
-    WorkerGlobalScope& context) {
-  return from(context).performance(&context);
+    WorkerGlobalScope& workerGlobalScope) {
+  return from(workerGlobalScope).performance(&workerGlobalScope);
 }
 
 WorkerPerformance* WorkerGlobalScopePerformance::performance(
-    WorkerGlobalScope* context) {
+    WorkerGlobalScope* workerGlobalScope) {
   if (!m_performance)
-    m_performance = WorkerPerformance::create(context);
+    m_performance = WorkerPerformance::create(workerGlobalScope);
   return m_performance.get();
 }
 

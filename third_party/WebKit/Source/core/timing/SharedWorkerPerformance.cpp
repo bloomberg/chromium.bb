@@ -38,8 +38,9 @@
 
 namespace blink {
 
-SharedWorkerPerformance::SharedWorkerPerformance()
-    : m_timeOrigin(monotonicallyIncreasingTime()) {}
+SharedWorkerPerformance::SharedWorkerPerformance(SharedWorker& sharedWorker)
+    : Supplement<SharedWorker>(sharedWorker),
+      m_timeOrigin(monotonicallyIncreasingTime()) {}
 
 const char* SharedWorkerPerformance::supplementName() {
   return "SharedWorkerPerformance";
@@ -50,7 +51,7 @@ SharedWorkerPerformance& SharedWorkerPerformance::from(
   SharedWorkerPerformance* supplement = static_cast<SharedWorkerPerformance*>(
       Supplement<SharedWorker>::from(sharedWorker, supplementName()));
   if (!supplement) {
-    supplement = new SharedWorkerPerformance();
+    supplement = new SharedWorkerPerformance(sharedWorker);
     provideTo(sharedWorker, supplementName(), supplement);
   }
   return *supplement;

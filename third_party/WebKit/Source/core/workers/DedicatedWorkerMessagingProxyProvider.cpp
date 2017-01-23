@@ -44,6 +44,10 @@ const char* DedicatedWorkerMessagingProxyProvider::supplementName() {
   return "DedicatedWorkerMessagingProxyProvider";
 }
 
+DedicatedWorkerMessagingProxyProvider::DedicatedWorkerMessagingProxyProvider(
+    Page& page)
+    : Supplement<Page>(page) {}
+
 void provideDedicatedWorkerMessagingProxyProviderTo(
     Page& page,
     DedicatedWorkerMessagingProxyProvider* provider) {

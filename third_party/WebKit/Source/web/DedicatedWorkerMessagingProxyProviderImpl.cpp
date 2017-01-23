@@ -47,6 +47,10 @@
 
 namespace blink {
 
+DedicatedWorkerMessagingProxyProviderImpl::
+    DedicatedWorkerMessagingProxyProviderImpl(Page& page)
+    : DedicatedWorkerMessagingProxyProvider(page) {}
+
 InProcessWorkerMessagingProxy*
 DedicatedWorkerMessagingProxyProviderImpl::createWorkerMessagingProxy(
     Worker* worker) {

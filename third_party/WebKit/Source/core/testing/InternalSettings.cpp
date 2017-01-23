@@ -131,7 +131,7 @@ InternalSettings::~InternalSettings() {}
 
 InternalSettings::InternalSettings(Page& page)
     : InternalSettingsGenerated(&page),
-      m_page(&page),
+      Supplement<Page>(page),
       m_backup(&page.settings()) {}
 
 void InternalSettings::resetToConsistentState() {
@@ -371,7 +371,6 @@ void InternalSettings::setDefaultVideoPosterURL(
 }
 
 DEFINE_TRACE(InternalSettings) {
-  visitor->trace(m_page);
   InternalSettingsGenerated::trace(visitor);
   Supplement<Page>::trace(visitor);
 }

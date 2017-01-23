@@ -47,6 +47,8 @@ PrerendererClient* PrerendererClient::from(Page* page) {
   return supplement;
 }
 
+PrerendererClient::PrerendererClient(Page& page) : Supplement<Page>(page) {}
+
 void providePrerendererClientTo(Page& page, PrerendererClient* client) {
   PrerendererClient::provideTo(page, PrerendererClient::supplementName(),
                                client);

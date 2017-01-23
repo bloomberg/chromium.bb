@@ -53,7 +53,7 @@ class WorkerGlobalScopePerformance final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  WorkerGlobalScopePerformance();
+  explicit WorkerGlobalScopePerformance(WorkerGlobalScope&);
 
   WorkerPerformance* performance(WorkerGlobalScope*);
   static const char* supplementName();

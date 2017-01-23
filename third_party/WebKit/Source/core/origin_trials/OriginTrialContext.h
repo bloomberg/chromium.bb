@@ -40,7 +40,7 @@ class CORE_EXPORT OriginTrialContext final
  public:
   enum CreateMode { CreateIfNotExists, DontCreateIfNotExists };
 
-  OriginTrialContext(ExecutionContext*, WebTrialTokenValidator*);
+  OriginTrialContext(ExecutionContext&, WebTrialTokenValidator*);
 
   static const char* supplementName();
 
@@ -84,7 +84,6 @@ class CORE_EXPORT OriginTrialContext final
  private:
   void validateToken(const String& token);
 
-  Member<ExecutionContext> m_host;
   Vector<String> m_tokens;
   HashSet<String> m_enabledTrials;
   WebTrialTokenValidator* m_trialTokenValidator;

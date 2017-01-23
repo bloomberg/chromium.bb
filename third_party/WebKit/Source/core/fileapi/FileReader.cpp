@@ -81,7 +81,7 @@ class FileReader::ThrottlingController final
     ThrottlingController* controller = static_cast<ThrottlingController*>(
         Supplement<ExecutionContext>::from(*context, supplementName()));
     if (!controller) {
-      controller = new ThrottlingController;
+      controller = new ThrottlingController(*context);
       provideTo(*context, supplementName(), controller);
     }
     return controller;
@@ -126,8 +126,9 @@ class FileReader::ThrottlingController final
   }
 
  private:
-  ThrottlingController()
-      : m_maxRunningReaders(kMaxOutstandingRequestsPerThread) {}
+  explicit ThrottlingController(ExecutionContext& context)
+      : Supplement<ExecutionContext>(context),
+        m_maxRunningReaders(kMaxOutstandingRequestsPerThread) {}
 
   void pushReader(FileReader* reader) {
     if (m_pendingReaders.isEmpty() &&

@@ -21,8 +21,8 @@ class TestPrerendererClient : public GarbageCollected<TestPrerendererClient>,
   USING_GARBAGE_COLLECTED_MIXIN(TestPrerendererClient);
 
  public:
-  TestPrerendererClient(bool isPrefetchOnly)
-      : m_isPrefetchOnly(isPrefetchOnly) {}
+  TestPrerendererClient(Page& page, bool isPrefetchOnly)
+      : PrerendererClient(page), m_isPrefetchOnly(isPrefetchOnly) {}
 
  private:
   void willAddPrerender(Prerender*) override{};
@@ -54,7 +54,8 @@ class HTMLDocumentParserTest : public testing::Test {
 
 TEST_F(HTMLDocumentParserTest, AppendPrefetch) {
   HTMLDocument& document = toHTMLDocument(m_dummyPageHolder->document());
-  providePrerendererClientTo(*document.page(), new TestPrerendererClient(true));
+  providePrerendererClientTo(*document.page(),
+                             new TestPrerendererClient(*document.page(), true));
   EXPECT_TRUE(document.isPrefetchOnly());
   HTMLDocumentParser* parser = createParser(document);
 

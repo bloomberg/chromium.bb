@@ -324,8 +324,8 @@ void WebViewImpl::setCredentialManagerClient(
 void WebViewImpl::setPrerendererClient(
     WebPrerendererClient* prerendererClient) {
   DCHECK(m_page);
-  providePrerendererClientTo(*m_page,
-                             new PrerendererClientImpl(prerendererClient));
+  providePrerendererClientTo(
+      *m_page, new PrerendererClientImpl(*m_page, prerendererClient));
 }
 
 void WebViewImpl::setSpellCheckClient(WebSpellCheckClient* spellCheckClient) {
@@ -407,7 +407,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   m_page->setValidationMessageClient(
       ValidationMessageClientImpl::create(*this));
   provideDedicatedWorkerMessagingProxyProviderTo(
-      *m_page, DedicatedWorkerMessagingProxyProviderImpl::create());
+      *m_page, DedicatedWorkerMessagingProxyProviderImpl::create(*m_page));
   StorageNamespaceController::provideStorageNamespaceTo(*m_page,
                                                         &m_storageClientImpl);
 

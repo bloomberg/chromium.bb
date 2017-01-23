@@ -150,10 +150,9 @@ class InternalSettings final : public InternalSettingsGenerated,
   explicit InternalSettings(Page&);
 
   Settings* settings() const;
-  Page* page() const { return m_page; }
+  Page* page() const { return supplementable(); }
   static const char* supplementName();
 
-  WeakMember<Page> m_page;
   Backup m_backup;
 };
 

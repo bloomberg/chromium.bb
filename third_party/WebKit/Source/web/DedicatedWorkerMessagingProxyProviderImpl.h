@@ -44,8 +44,8 @@ class DedicatedWorkerMessagingProxyProviderImpl final
   WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxyProviderImpl);
 
  public:
-  static DedicatedWorkerMessagingProxyProviderImpl* create() {
-    return new DedicatedWorkerMessagingProxyProviderImpl();
+  static DedicatedWorkerMessagingProxyProviderImpl* create(Page& page) {
+    return new DedicatedWorkerMessagingProxyProviderImpl(page);
   }
 
   ~DedicatedWorkerMessagingProxyProviderImpl() override {}
@@ -56,7 +56,7 @@ class DedicatedWorkerMessagingProxyProviderImpl final
   }
 
  private:
-  DedicatedWorkerMessagingProxyProviderImpl() {}
+  explicit DedicatedWorkerMessagingProxyProviderImpl(Page&);
 };
 
 }  // namespace blink
