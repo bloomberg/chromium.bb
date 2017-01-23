@@ -7,5 +7,5 @@
 [
     RuntimeEnabled=WebBluetooth,
 ] partial interface Navigator {
-    readonly attribute Bluetooth bluetooth;
+    [SameObject] readonly attribute Bluetooth bluetooth;
 };
