@@ -1372,4 +1372,31 @@ TEST_F(SourceListDirectiveTest, ParseHost) {
   }
 }
 
+TEST_F(SourceListDirectiveTest, AllowHostWildcard) {
+  KURL base;
+  // When the host-part is "*", the port must still be checked.
+  // See crbug.com/682673.
+  {
+    String sources = "http://*:111";
+    SourceListDirective sourceList("default-src", sources, csp.get());
+    EXPECT_TRUE(sourceList.allows(KURL(base, "http://a.com:111")));
+    EXPECT_FALSE(sourceList.allows(KURL(base, "http://a.com:222")));
+  }
+  // When the host-part is "*", the path must still be checked.
+  // See crbug.com/682673.
+  {
+    String sources = "http://*/welcome.html";
+    SourceListDirective sourceList("default-src", sources, csp.get());
+    EXPECT_TRUE(sourceList.allows(KURL(base, "http://a.com/welcome.html")));
+    EXPECT_FALSE(sourceList.allows(KURL(base, "http://a.com/passwords.txt")));
+  }
+  // When the host-part is "*" and the expression-source is not "*", then every
+  // host are allowed. See crbug.com/682673.
+  {
+    String sources = "http://*";
+    SourceListDirective sourceList("default-src", sources, csp.get());
+    EXPECT_TRUE(sourceList.allows(KURL(base, "http://a.com")));
+  }
+}
+
 }  // namespace blink
