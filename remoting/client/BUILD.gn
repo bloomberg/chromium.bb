@@ -53,7 +53,7 @@ static_library("client") {
 
   deps = [
     "//remoting/base",
-    "//remoting/codec",
+    "//remoting/codec:decoder",
     "//remoting/protocol",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",

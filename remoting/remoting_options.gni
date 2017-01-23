@@ -3,6 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/ui.gni")
+
+enable_remoting_host =
+    is_win || (is_linux && (is_chromeos || use_x11)) || is_mac
+enable_me2me_host = is_win || (is_linux && !is_chromeos && use_x11) || is_mac
 
 # These arguments can be overridden from the command line (see "gn help args").
 declare_args() {

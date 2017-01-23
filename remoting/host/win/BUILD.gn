@@ -390,7 +390,6 @@ shared_library("remoting_core") {
     "//net",
     "//remoting/base",
     "//remoting/base:breakpad",
-    "//remoting/codec",
     "//remoting/host:host",
     "//remoting/host:remoting_me2me_host_static",
     "//remoting/host/it2me:common",

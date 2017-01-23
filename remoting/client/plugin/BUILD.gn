@@ -49,7 +49,6 @@ executable("remoting_client_plugin_newlib") {
     "//ppapi/native_client:ppapi_lib",
     "//remoting/base",
     "//remoting/client",
-    "//remoting/codec",
     "//remoting/protocol",
     "//remoting/signaling",
     "//third_party/libyuv",

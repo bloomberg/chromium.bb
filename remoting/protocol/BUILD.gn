@@ -3,19 +3,16 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//remoting/remoting_options.gni")
 import("//media/media_options.gni")
 
 static_library("protocol") {
   sources = [
     "audio_decode_scheduler.cc",
     "audio_decode_scheduler.h",
-    "audio_pump.cc",
-    "audio_pump.h",
     "audio_reader.cc",
     "audio_reader.h",
     "audio_stub.h",
-    "audio_writer.cc",
-    "audio_writer.h",
     "auth_util.cc",
     "auth_util.h",
     "authenticator.cc",
@@ -193,39 +190,22 @@ static_library("protocol") {
     "//jingle:jingle_glue",
     "//net",
     "//remoting/base",
-    "//remoting/codec",
+    "//remoting/codec:decoder",
     "//remoting/signaling",
     "//third_party/boringssl",
     "//third_party/libyuv",
   ]
 
   if (!is_nacl) {
-    if (!is_android) {
-      sources += [
-        "ice_connection_to_client.cc",
-        "ice_connection_to_client.h",
-      ]
-    }
-
     sources += [
-      "capture_scheduler.cc",
-      "capture_scheduler.h",
       "chromium_port_allocator_factory.cc",
       "chromium_port_allocator_factory.h",
       "chromium_socket_factory.cc",
       "chromium_socket_factory.h",
-      "video_frame_pump.cc",
-      "video_frame_pump.h",
       "webrtc_audio_module.cc",
       "webrtc_audio_module.h",
       "webrtc_audio_sink_adapter.cc",
       "webrtc_audio_sink_adapter.h",
-      "webrtc_audio_source_adapter.cc",
-      "webrtc_audio_source_adapter.h",
-      "webrtc_audio_stream.cc",
-      "webrtc_audio_stream.h",
-      "webrtc_connection_to_client.cc",
-      "webrtc_connection_to_client.h",
       "webrtc_connection_to_host.cc",
       "webrtc_connection_to_host.h",
       "webrtc_data_stream_adapter.cc",
@@ -234,29 +214,45 @@ static_library("protocol") {
       "webrtc_dummy_video_capturer.h",
       "webrtc_dummy_video_encoder.cc",
       "webrtc_dummy_video_encoder.h",
-      "webrtc_frame_scheduler.h",
-      "webrtc_frame_scheduler_simple.cc",
-      "webrtc_frame_scheduler_simple.h",
       "webrtc_transport.cc",
       "webrtc_transport.h",
       "webrtc_video_renderer_adapter.cc",
       "webrtc_video_renderer_adapter.h",
-      "webrtc_video_stream.cc",
-      "webrtc_video_stream.h",
     ]
 
-    if (enable_webrtc) {
-      deps += [
-        "//third_party/libjingle/webrtc:libjingle_webrtc",
-        "//third_party/libjingle_xmpp",
-      ]
-    } else {
-      sources -= [
+    if (enable_remoting_host) {
+      sources += [
+        "webrtc_audio_source_adapter.cc",
+        "webrtc_audio_source_adapter.h",
+        "webrtc_audio_stream.cc",
+        "webrtc_audio_stream.h",
         "webrtc_connection_to_client.cc",
-        "webrtc_transport.cc",
+        "webrtc_connection_to_client.h",
+        "webrtc_frame_scheduler.h",
+        "webrtc_frame_scheduler_simple.cc",
+        "webrtc_frame_scheduler_simple.h",
         "webrtc_video_stream.cc",
+        "webrtc_video_stream.h",
       ]
     }
+
+    deps += [ "//third_party/libjingle/webrtc:libjingle_webrtc" ]
+  }
+
+  if (enable_remoting_host) {
+    sources += [
+      "audio_pump.cc",
+      "audio_pump.h",
+      "audio_writer.cc",
+      "audio_writer.h",
+      "capture_scheduler.cc",
+      "capture_scheduler.h",
+      "ice_connection_to_client.cc",
+      "ice_connection_to_client.h",
+      "video_frame_pump.cc",
+      "video_frame_pump.h",
+    ]
+    deps += [ "//remoting/codec:encoder" ]
   }
 }
 
@@ -264,18 +260,12 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "fake_audio_source.cc",
-    "fake_audio_source.h",
     "fake_authenticator.cc",
     "fake_authenticator.h",
-    "fake_connection_to_client.cc",
-    "fake_connection_to_client.h",
     "fake_connection_to_host.cc",
     "fake_connection_to_host.h",
     "fake_datagram_socket.cc",
     "fake_datagram_socket.h",
-    "fake_desktop_capturer.cc",
-    "fake_desktop_capturer.h",
     "fake_session.cc",
     "fake_session.h",
     "fake_stream_socket.cc",
@@ -285,6 +275,17 @@ static_library("test_support") {
     "protocol_mock_objects.cc",
     "protocol_mock_objects.h",
   ]
+
+  if (enable_remoting_host) {
+    sources += [
+      "fake_audio_source.cc",
+      "fake_audio_source.h",
+      "fake_connection_to_client.cc",
+      "fake_connection_to_client.h",
+      "fake_desktop_capturer.cc",
+      "fake_desktop_capturer.h",
+    ]
+  }
 
   public_deps = [
     ":protocol",
@@ -297,10 +298,8 @@ source_set("unit_tests") {
 
   sources = [
     "audio_decode_scheduler_unittest.cc",
-    "audio_pump_unittest.cc",
     "authenticator_test_base.cc",
     "authenticator_test_base.h",
-    "capture_scheduler_unittest.cc",
     "channel_multiplexer_unittest.cc",
     "channel_socket_adapter_unittest.cc",
     "chromium_socket_factory_unittest.cc",
@@ -332,14 +331,18 @@ source_set("unit_tests") {
     "third_party_authenticator_unittest.cc",
     "v2_authenticator_unittest.cc",
     "validating_authenticator_unittest.cc",
-    "video_frame_pump_unittest.cc",
-    "webrtc_audio_source_adapter_unittest.cc",
-    "webrtc_frame_scheduler_unittest.cc",
     "webrtc_transport_unittest.cc",
   ]
 
-  if (!is_android) {
-    sources += [ "connection_unittest.cc" ]
+  if (enable_remoting_host) {
+    sources += [
+      "audio_pump_unittest.cc",
+      "capture_scheduler_unittest.cc",
+      "connection_unittest.cc",
+      "video_frame_pump_unittest.cc",
+      "webrtc_audio_source_adapter_unittest.cc",
+      "webrtc_frame_scheduler_unittest.cc",
+    ]
   }
 
   deps = [

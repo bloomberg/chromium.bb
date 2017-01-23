@@ -2,13 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("codec") {
-  deps = [
-    ":decoder",
-    ":encoder",
-  ]
-}
-
 source_set("encoder") {
   sources = [
     "audio_encoder.h",
@@ -40,29 +33,6 @@ source_set("encoder") {
     "//third_party/webrtc/modules/desktop_capture:primitives",
     "//ui/gfx:color_space",
   ]
-
-  if (is_nacl) {
-    sources -= [
-      "audio_encoder.h",
-      "audio_encoder_opus.cc",
-      "audio_encoder_opus.h",
-      "video_encoder.cc",
-      "video_encoder.h",
-      "video_encoder_helper.cc",
-      "video_encoder_helper.h",
-      "video_encoder_verbatim.cc",
-      "video_encoder_verbatim.h",
-      "video_encoder_vpx.cc",
-      "video_encoder_vpx.h",
-      "webrtc_video_encoder_vpx.cc",
-      "webrtc_video_encoder_vpx.h",
-    ]
-    deps -= [
-      "//media",
-      "//media:shared_memory_support",
-      "//ui/gfx:color_space",
-    ]
-  }
 
   # Opus depends on //media, which is not a supported include for iOS.
   # Also disabled it on Android, to avoid dependency on //media.
@@ -139,7 +109,8 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":codec",
+    ":decoder",
+    ":encoder",
     "//base",
     "//remoting/proto",
     "//testing/gtest",

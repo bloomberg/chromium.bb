@@ -61,6 +61,7 @@ shared_library("remoting_client_jni") {
     "EGL",
   ]
   configs += [ "//remoting/build/config:enable_webrtc_remoting_client" ]
+  assert_no_deps = [ "//third_party/ffmpeg:*" ]
 }
 
 _raw_resources_base_dir = "$target_gen_dir/remoting_android_raw_resources/res"
