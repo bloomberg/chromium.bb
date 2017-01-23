@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <title>Test Automation of AudioListener</title>
@@ -9,8 +10,6 @@
 
   <body>
     <script>
-      description("Test Automation of AudioListener Position.");
-      window.jsTestIsAsync = true;
 
       var sampleRate = 48000;
       // These tests are quite slow, so don't run for many frames.  1024 frames should be enough to
@@ -86,7 +85,6 @@
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 
@@ -188,14 +186,6 @@
             precision: 5
           })
           .beCloseToArray(expectedRight, 0) && success;
-
-        var message = 'Moving AudioListener with distance model: "';
-        message += options.distanceModel.model + '", rolloff: ';
-        message += options.distanceModel.rolloff + ": ";
-        if (success)
-          testPassed(message + " passed.\n");
-        else
-          testFailed(message + " failed.\n");
 
         return success;
       }
