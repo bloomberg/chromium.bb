@@ -8,8 +8,8 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.payments.PaymentRequestFactory;
-import org.chromium.chrome.browser.shapedetection.BarcodeDetectionFactory;
-import org.chromium.chrome.browser.shapedetection.TextDetectionFactory;
+import org.chromium.chrome.browser.shapedetection.BarcodeDetectionImpl;
+import org.chromium.chrome.browser.shapedetection.TextDetectionImpl;
 import org.chromium.chrome.browser.webshare.ShareServiceImplementationFactory;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.WebContents;
@@ -33,8 +33,9 @@ class ChromeContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
     @Override
     public void registerInterfaces(InterfaceRegistry registry, final Context applicationContext) {
         registry.addInterface(
-                BarcodeDetection.MANAGER, new BarcodeDetectionFactory(applicationContext));
-        registry.addInterface(TextDetection.MANAGER, new TextDetectionFactory(applicationContext));
+                BarcodeDetection.MANAGER, new BarcodeDetectionImpl.Factory(applicationContext));
+        registry.addInterface(
+                TextDetection.MANAGER, new TextDetectionImpl.Factory(applicationContext));
     }
 }
 

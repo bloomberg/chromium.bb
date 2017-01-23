@@ -22,6 +22,7 @@ import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
+import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.BarcodeDetectionResult;
 
@@ -123,4 +124,19 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
         close();
     }
 
+    /**
+     * A factory class to register BarcodeDetection interface.
+     */
+    public static class Factory implements InterfaceFactory<BarcodeDetection> {
+        private final Context mContext;
+
+        public Factory(Context context) {
+            mContext = context;
+        }
+
+        @Override
+        public BarcodeDetection createImpl() {
+            return new BarcodeDetectionImpl(mContext);
+        }
+    }
 }

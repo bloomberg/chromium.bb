@@ -206,7 +206,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/picker/WeekPicker.java",
     "java/src/org/chromium/content/browser/picker/WeekPickerDialog.java",
     "java/src/org/chromium/content/browser/shapedetection/FaceDetectionImpl.java",
-    "java/src/org/chromium/content/browser/shapedetection/FaceDetectionProviderFactory.java",
     "java/src/org/chromium/content/browser/shapedetection/FaceDetectionProviderImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",

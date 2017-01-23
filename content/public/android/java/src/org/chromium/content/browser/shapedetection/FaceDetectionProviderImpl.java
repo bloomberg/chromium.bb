@@ -4,8 +4,11 @@
 
 package org.chromium.content.browser.shapedetection;
 
+import android.content.Context;
+
 import org.chromium.mojo.bindings.InterfaceRequest;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.shape_detection.mojom.FaceDetection;
 import org.chromium.shape_detection.mojom.FaceDetectionProvider;
 import org.chromium.shape_detection.mojom.FaceDetectorOptions;
@@ -25,4 +28,16 @@ public class FaceDetectionProviderImpl implements FaceDetectionProvider {
 
     @Override
     public void onConnectionError(MojoException e) {}
+
+    /**
+     * A factory class to register FaceDetectionProvider interface.
+     */
+    public static class Factory implements InterfaceFactory<FaceDetectionProvider> {
+        public Factory(Context context) {}
+
+        @Override
+        public FaceDetectionProvider createImpl() {
+            return new FaceDetectionProviderImpl();
+        }
+    }
 }
