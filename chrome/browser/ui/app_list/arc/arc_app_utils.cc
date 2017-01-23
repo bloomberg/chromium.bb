@@ -63,7 +63,7 @@ constexpr char kSetInTouchModeIntent[] =
 constexpr char kShowTalkbackSettingsIntent[] =
     "org.chromium.arc.intent_helper.SHOW_TALKBACK_SETTINGS";
 
-void PrioritizeArcInstanceCallback(bool success) {
+void SetArcCpuRestrictionCallback(bool success) {
   VLOG(2) << "Finished prioritizing the instance: result=" << success;
   if (!success)
     LOG(ERROR) << "Failed to prioritize ARC";
@@ -290,8 +290,9 @@ bool LaunchApp(content::BrowserContext* context,
         VLOG(2) << "Prioritizing the instance";
         chromeos::SessionManagerClient* session_manager_client =
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-        session_manager_client->PrioritizeArcInstance(
-            base::Bind(PrioritizeArcInstanceCallback));
+        session_manager_client->SetArcCpuRestriction(
+            login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND,
+            base::Bind(SetArcCpuRestrictionCallback));
       }
     }
     prefs->SetLastLaunchTime(app_id, base::Time::Now());

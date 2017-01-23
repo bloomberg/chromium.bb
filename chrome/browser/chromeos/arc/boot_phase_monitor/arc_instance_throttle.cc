@@ -16,10 +16,14 @@ namespace arc {
 
 namespace {
 
-void OnDBusReply(bool is_prioritize, bool success) {
+void OnDBusReply(login_manager::ContainerCpuRestrictionState state,
+                 bool success) {
   if (success)
     return;
-  const char* message = is_prioritize ? "unprioritize" : "prioritize";
+  const char* message =
+      (state == login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND)
+          ? "unprioritize"
+          : "prioritize";
   LOG(WARNING) << "Failed to " << message << " the instance";
 }
 
@@ -35,13 +39,12 @@ void ThrottleInstanceIfNeeded(ash::WmWindow* active) {
     LOG(WARNING) << "SessionManagerClient is not available";
     return;
   }
-  if (!active || !IsArcAppWindow(active)) {
-    // TODO(yusukes): Call session_manager_client->UnprioritizeArcInstance()
-    // once it's ready.
-  } else {
-    session_manager_client->PrioritizeArcInstance(
-        base::Bind(OnDBusReply, true));
-  }
+  const login_manager::ContainerCpuRestrictionState state =
+      (!active || !IsArcAppWindow(active))
+          ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
+          : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
+  session_manager_client->SetArcCpuRestriction(state,
+                                               base::Bind(OnDBusReply, state));
 }
 
 }  // namespace
