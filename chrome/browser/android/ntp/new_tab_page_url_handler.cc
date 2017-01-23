@@ -36,7 +36,8 @@ bool HandleAndroidNativePageURL(GURL* url,
     // See http://crbug.com/654071.
     if (base::FeatureList::IsEnabled(
             chrome::android::kNativeAndroidHistoryManager) &&
-        url->host() == kChromeUIHistoryHost) {
+        (url->host() == kChromeUIHistoryHost ||
+            url->host() == kChromeUIHistoryFrameHost)) {
       *url = GURL(kChromeUINativeHistoryURL);
       return true;
     }
