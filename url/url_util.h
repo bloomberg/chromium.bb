@@ -15,6 +15,8 @@
 #include "url/url_constants.h"
 #include "url/url_export.h"
 
+class GURL;
+
 namespace url {
 
 // Init ------------------------------------------------------------------------
@@ -152,6 +154,10 @@ URL_EXPORT bool IsReferrerScheme(const char* spec, const Component& scheme);
 URL_EXPORT bool GetStandardSchemeType(const char* spec,
                                       const Component& scheme,
                                       SchemeType* type);
+
+// Check whether the url is of the form about:blank, about:blank?foo or
+// about:blank/#foo.
+URL_EXPORT bool IsAboutBlank(const GURL& url);
 
 // Hosts  ----------------------------------------------------------------------
 

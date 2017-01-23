@@ -10,6 +10,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "url/gurl.h"
 #include "url/url_canon_internal.h"
 #include "url/url_constants.h"
 #include "url/url_file.h"
@@ -606,6 +607,21 @@ bool IsReferrerScheme(const char* spec, const Component& scheme) {
   Initialize();
   SchemeType unused_scheme_type;
   return DoIsInSchemes(spec, scheme, &unused_scheme_type, *referrer_schemes);
+}
+
+bool IsAboutBlank(const GURL& url) {
+  if (!url.SchemeIs(url::kAboutScheme))
+    return false;
+
+  if (url.has_host() || url.has_username() || url.has_password() ||
+      url.has_port()) {
+    return false;
+  }
+
+  if (url.path() != kAboutBlankPath && url.path() != kAboutBlankWithHashPath)
+    return false;
+
+  return true;
 }
 
 bool FindAndCompareScheme(const char* str,

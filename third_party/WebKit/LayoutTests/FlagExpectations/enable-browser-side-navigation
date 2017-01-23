@@ -9,7 +9,6 @@ crbug.com/608372 virtual/mojo-loading/http/tests/history/back-to-post.html [ Tim
 crbug.com/608372 fast/forms/submit-to-url-fragment.html [ Failure ]
 
 # https://crbug.com/575210: PlzNavigate: history navigation support
-crbug.com/575210 fast/history/history-length-append-subframe-with-hash.html [ Failure ]
 crbug.com/575210 fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
 crbug.com/575210 http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
 crbug.com/575210 external/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]

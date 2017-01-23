@@ -12,6 +12,7 @@
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
+#include "url/url_util.h"
 
 namespace content {
 
@@ -23,7 +24,7 @@ bool ShouldMakeNetworkRequestForURL(const GURL& url) {
   // to the network stack.
   // TODO(clamy): same document navigations should not send requests to the
   // network stack. Neither should pushState/popState.
-  return url != url::kAboutBlankURL && !url.SchemeIs(url::kJavaScriptScheme) &&
+  return !url::IsAboutBlank(url) && !url.SchemeIs(url::kJavaScriptScheme) &&
          !url.is_empty() && !url.SchemeIs(url::kContentIDScheme) &&
          url != content::kAboutSrcDocURL;
 }
