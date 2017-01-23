@@ -16,6 +16,7 @@
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_container_view_controller.h"
+#import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -61,12 +62,13 @@
   self.viewController.contentViewController = tabCoordinator.viewController;
 
   [self.baseViewController presentViewController:self.viewController
-                                        animated:YES
+                                        animated:self.context.animated
                                       completion:nil];
 }
 
 - (void)stop {
-  [self.viewController dismissViewControllerAnimated:YES completion:nil];
+  [self.viewController dismissViewControllerAnimated:self.context.animated
+                                          completion:nil];
   self.viewController = nil;
 }
 

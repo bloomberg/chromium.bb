@@ -14,6 +14,7 @@ source_set("tab_strip") {
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/tab",
+    "//ios/shared/chrome/browser/coordinator_context",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
