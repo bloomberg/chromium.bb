@@ -122,7 +122,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo,
 
 	if (format == DRM_FORMAT_NV12) {
 		uint32_t w_mbs = DIV_ROUND_UP(ALIGN(width, 16), 16);
-		uint32_t h_mbs = DIV_ROUND_UP(ALIGN(width, 16), 16);
+		uint32_t h_mbs = DIV_ROUND_UP(ALIGN(height, 16), 16);
 
 		uint32_t aligned_width = w_mbs * 16;
 		uint32_t aligned_height = DIV_ROUND_UP(h_mbs * 16 * 3, 2);
