@@ -16,6 +16,8 @@ class WebContents;
 }
 
 namespace chromecast {
+class CastWindowManager;
+
 namespace shell {
 
 // Class that represents the "window" a WebContents is displayed in cast_shell.
@@ -45,7 +47,9 @@ class CastContentWindow {
 
   // Creates a full-screen window for |web_contents| and display it.
   // |web_contents| should outlive this CastContentWindow.
-  virtual void ShowWebContents(content::WebContents* web_contents) = 0;
+  // |window_manager| should outlive this CastContentWindow.
+  virtual void ShowWebContents(content::WebContents* web_contents,
+                               CastWindowManager* window_manager) = 0;
 
   // Creates a WebContents.
   // TODO(derekjchow): remove this function from this class, since it doesn't

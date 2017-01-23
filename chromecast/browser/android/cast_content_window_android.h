@@ -33,7 +33,8 @@ class CastContentWindowAndroid : public CastContentWindow,
 
   // CastContentWindow implementation:
   void SetTransparent() override;
-  void ShowWebContents(content::WebContents* web_contents) override;
+  void ShowWebContents(content::WebContents* web_contents,
+                       CastWindowManager* window_manager) override;
   std::unique_ptr<content::WebContents> CreateWebContents(
       content::BrowserContext* browser_context) override;
 

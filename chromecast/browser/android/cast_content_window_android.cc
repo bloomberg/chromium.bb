@@ -59,7 +59,9 @@ void CastContentWindowAndroid::SetTransparent() {
 }
 
 void CastContentWindowAndroid::ShowWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    CastWindowManager* window_manager) {
+  DCHECK(window_manager);
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
       web_contents->GetJavaWebContents();

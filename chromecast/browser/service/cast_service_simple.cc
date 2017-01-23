@@ -36,10 +36,12 @@ GURL GetStartupURL() {
 
 }  // namespace
 
-CastServiceSimple::CastServiceSimple(
-    content::BrowserContext* browser_context,
-    PrefService* pref_service)
-    : CastService(browser_context, pref_service) {
+CastServiceSimple::CastServiceSimple(content::BrowserContext* browser_context,
+                                     PrefService* pref_service,
+                                     CastWindowManager* window_manager)
+    : CastService(browser_context, pref_service),
+      window_manager_(window_manager) {
+  DCHECK(window_manager_);
 }
 
 CastServiceSimple::~CastServiceSimple() {
@@ -55,7 +57,7 @@ void CastServiceSimple::FinalizeInternal() {
 void CastServiceSimple::StartInternal() {
   window_ = CastContentWindow::Create(this);
   web_contents_ = window_->CreateWebContents(browser_context());
-  window_->ShowWebContents(web_contents_.get());
+  window_->ShowWebContents(web_contents_.get(), window_manager_);
 
   web_contents_->GetController().LoadURL(startup_url_, content::Referrer(),
                                          ui::PAGE_TRANSITION_TYPED,

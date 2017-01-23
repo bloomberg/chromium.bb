@@ -64,7 +64,6 @@ content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
 
   web_contents_ = window_->CreateWebContents(
       CastBrowserProcess::GetInstance()->browser_context());
-  window_->ShowWebContents(web_contents_.get());
   content::WaitForLoadStop(web_contents_.get());
 
   content::TestNavigationObserver same_tab_observer(web_contents_.get(), 1);

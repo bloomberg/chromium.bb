@@ -130,8 +130,10 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context_getter,
-    media::VideoPlaneController* video_plane_controller) {
-  return base::MakeUnique<CastServiceSimple>(browser_context, pref_service);
+    media::VideoPlaneController* video_plane_controller,
+    CastWindowManager* window_manager) {
+  return base::MakeUnique<CastServiceSimple>(browser_context, pref_service,
+                                             window_manager);
 }
 
 #if !defined(OS_ANDROID)

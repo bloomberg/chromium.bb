@@ -9,11 +9,27 @@ source_set("graphics") {
   sources = [
     "cast_vsync_settings.cc",
     "cast_vsync_settings.h",
+    "cast_window_manager.h",
   ]
 
   deps = [
     "//base",
+    "//ui/gfx",
   ]
+
+  if (use_aura && !is_cast_audio_only) {
+    sources += [
+      "cast_window_manager_aura.cc",
+      "cast_window_manager_aura.h",
+    ]
+
+    deps += [ "//ui/base/ime" ]
+  } else {
+    sources += [
+      "cast_window_manager_default.cc",
+      "cast_window_manager_default.h",
+    ]
+  }
 
   if (use_aura) {
     sources += [
@@ -26,7 +42,6 @@ source_set("graphics") {
       "//chromecast/public",
       "//ui/aura",
       "//ui/display",
-      "//ui/gfx",
       "//ui/gfx/geometry",
     ]
   }

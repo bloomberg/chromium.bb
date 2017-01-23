@@ -27,6 +27,7 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
+#include "chromecast/base/version.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_browser_client.h"
@@ -41,6 +42,7 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/chromecast_features.h"
 #include "chromecast/common/global_descriptors.h"
+#include "chromecast/graphics/cast_window_manager.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_plane_controller.h"
@@ -469,12 +471,15 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
                  base::Unretained(video_plane_controller_.get())));
 #endif
 
+  window_manager_ =
+      CastWindowManager::Create(CAST_IS_DEBUG_BUILD() /* enable input */);
+
   cast_browser_process_->SetCastService(
       cast_browser_process_->browser_client()->CreateCastService(
           cast_browser_process_->browser_context(),
           cast_browser_process_->pref_service(),
           url_request_context_factory_->GetSystemGetter(),
-          video_plane_controller_.get()));
+          video_plane_controller_.get(), window_manager_.get()));
   cast_browser_process_->cast_service()->Initialize();
 
 #if !defined(OS_ANDROID)
@@ -530,6 +535,8 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   // Android does not use native main MessageLoop.
   NOTREACHED();
 #else
+  window_manager_.reset();
+
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->metrics_service_client()->Finalize();
   cast_browser_process_.reset();

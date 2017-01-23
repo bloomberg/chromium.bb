@@ -17,13 +17,16 @@ class WebContents;
 }
 
 namespace chromecast {
+class CastWindowManager;
+
 namespace shell {
 
 class CastServiceSimple : public CastService,
                           public CastContentWindow::Delegate {
  public:
   CastServiceSimple(content::BrowserContext* browser_context,
-                    PrefService* pref_service);
+                    PrefService* pref_service,
+                    CastWindowManager* window_manager);
   ~CastServiceSimple() override;
 
  protected:
@@ -38,6 +41,7 @@ class CastServiceSimple : public CastService,
   void OnKeyEvent(const ui::KeyEvent& key_event) override;
 
  private:
+  CastWindowManager* const window_manager_;
   std::unique_ptr<CastContentWindow> window_;
   std::unique_ptr<content::WebContents> web_contents_;
   GURL startup_url_;

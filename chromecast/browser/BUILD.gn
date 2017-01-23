@@ -132,7 +132,6 @@ source_set("browser") {
       "//build/linux:fontconfig",
       "//components/metrics:serialization",
       "//ui/aura",
-      "//ui/base/ime",
     ]
   } else if (is_android) {
     sources += [

@@ -36,6 +36,7 @@ class InterfaceRegistry;
 
 namespace chromecast {
 class CastService;
+class CastWindowManager;
 
 namespace media {
 class MediaCapsImpl;
@@ -73,7 +74,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context_getter,
-      media::VideoPlaneController* video_plane_controller);
+      media::VideoPlaneController* video_plane_controller,
+      CastWindowManager* window_manager);
 
 #if !defined(OS_ANDROID)
   // Gets object for enforcing video resolution policy restrictions.
