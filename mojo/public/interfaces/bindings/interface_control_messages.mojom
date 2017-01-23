@@ -57,7 +57,6 @@ struct RunOrClosePipeMessageParams {
 };
 union RunOrClosePipeInput {
   RequireVersion require_version;
-  SendDisconnectReason send_disconnect_reason;
 };
 
 // If the specified version of the user-defined interface is not supported, the
@@ -65,12 +64,4 @@ union RunOrClosePipeInput {
 // Sent by the interface client side.
 struct RequireVersion {
   uint32 version;
-};
-
-// A user-defined reason about why the interface is disconnected. The sender
-// usually send this message and immediately disconnect the interface.
-// Sent by either side of the interface.
-struct SendDisconnectReason {
-  uint32 custom_reason;
-  string description;
 };

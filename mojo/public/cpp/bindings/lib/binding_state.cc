@@ -48,8 +48,8 @@ void BindingStateBase::Close() {
 void BindingStateBase::CloseWithReason(uint32_t custom_reason,
                                        const std::string& description) {
   if (endpoint_client_)
-    endpoint_client_->control_message_proxy()->SendDisconnectReason(
-        custom_reason, description);
+    endpoint_client_->CloseWithReason(custom_reason, description);
+
   Close();
 }
 

@@ -141,13 +141,6 @@ bool ControlMessageHandler::RunOrClosePipe(Message* message) {
   auto& input = *params_ptr->input;
   if (input.is_require_version())
     return interface_version_ >= input.get_require_version()->version;
-  else if (input.is_send_disconnect_reason()) {
-    disconnect_custom_reason_ =
-        input.get_send_disconnect_reason()->custom_reason;
-    disconnect_description_ =
-        std::move(input.get_send_disconnect_reason()->description);
-    return true;
-  }
 
   return false;
 }

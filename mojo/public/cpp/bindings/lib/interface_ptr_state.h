@@ -79,11 +79,9 @@ class InterfacePtrState {
     endpoint_client_->control_message_proxy()->FlushForTesting();
   }
 
-  void SendDisconnectReason(uint32_t custom_reason,
-                            const std::string& description) {
+  void CloseWithReason(uint32_t custom_reason, const std::string& description) {
     ConfigureProxyIfNecessary();
-    endpoint_client_->control_message_proxy()->SendDisconnectReason(
-        custom_reason, description);
+    endpoint_client_->CloseWithReason(custom_reason, description);
   }
 
   void Swap(InterfacePtrState* other) {

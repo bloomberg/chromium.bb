@@ -29,14 +29,21 @@ union RunOrClosePipeInput {
       associated_endpoint_closed_before_sent_event;
 };
 
+// A user-defined reason about why the interface is disconnected.
+struct DisconnectReason {
+  uint32 custom_reason;
+  string description;
+};
+
 // An event to notify that an interface endpoint set up at the message sender
 // side has been closed.
 // 
-// This event is only used for associated interfaces. When a master interface
-// is closed, the message pipe is shutdown directly.
+// This event is omitted if the endpoint belongs to the master interface and
+// there is no disconnect reason specified.
 struct PeerAssociatedEndpointClosedEvent {
   // The interface ID.
   uint32 id;
+  DisconnectReason? disconnect_reason;
 };
 
 // An event to notify that an interface endpoint that is meant to be set up at

@@ -90,7 +90,10 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
       ScopedInterfaceEndpointHandle* remote_endpoint) override;
   ScopedInterfaceEndpointHandle CreateLocalEndpointHandle(
       InterfaceId id) override;
-  void CloseEndpointHandle(InterfaceId id, bool is_local) override;
+  void CloseEndpointHandle(
+      InterfaceId id,
+      bool is_local,
+      const base::Optional<DisconnectReason>& reason) override;
   InterfaceEndpointController* AttachEndpointClient(
       const ScopedInterfaceEndpointHandle& handle,
       InterfaceEndpointClient* endpoint_client,
@@ -158,7 +161,9 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   bool Accept(Message* message) override;
 
   // PipeControlMessageHandlerDelegate implementation:
-  bool OnPeerAssociatedEndpointClosed(InterfaceId id) override;
+  bool OnPeerAssociatedEndpointClosed(
+      InterfaceId id,
+      const base::Optional<DisconnectReason>& reason) override;
   bool OnAssociatedEndpointClosedBeforeSent(InterfaceId id) override;
 
   void OnPipeConnectionError();

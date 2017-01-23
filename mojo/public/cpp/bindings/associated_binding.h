@@ -127,15 +127,13 @@ class AssociatedBinding {
   // Closes the associated interface. Puts this object into a state where it can
   // be rebound.
   void Close() {
-    DCHECK(endpoint_client_);
     endpoint_client_.reset();
   }
 
   // Similar to the method above, but also specifies a disconnect reason.
   void CloseWithReason(uint32_t custom_reason, const std::string& description) {
-    DCHECK(endpoint_client_);
-    endpoint_client_->control_message_proxy()->SendDisconnectReason(
-        custom_reason, description);
+    if (endpoint_client_)
+      endpoint_client_->CloseWithReason(custom_reason, description);
     Close();
   }
 

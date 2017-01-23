@@ -5,9 +5,13 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_SCOPED_INTERFACE_ENDPOINT_HANDLE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_SCOPED_INTERFACE_ENDPOINT_HANDLE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
+#include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 
 namespace mojo {
@@ -33,6 +37,8 @@ class MOJO_CPP_BINDINGS_EXPORT ScopedInterfaceEndpointHandle {
   bool is_local() const { return is_local_; }
 
   void reset();
+  void ResetWithReason(uint32_t custom_reason, const std::string& description);
+
   void swap(ScopedInterfaceEndpointHandle& other);
 
   // DO NOT USE METHODS BELOW THIS LINE. These are for internal use and testing.
@@ -57,6 +63,8 @@ class MOJO_CPP_BINDINGS_EXPORT ScopedInterfaceEndpointHandle {
       InterfaceId id,
       bool is_local,
       scoped_refptr<AssociatedGroupController> group_controller);
+
+  void ResetInternal(const base::Optional<DisconnectReason>& reason);
 
   InterfaceId id_;
   bool is_local_;

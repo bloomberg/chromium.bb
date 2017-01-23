@@ -7,15 +7,14 @@
 
 #include <stdint.h>
 
-#include <string>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
-#include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
+
+class MessageReceiverWithResponder;
 
 namespace internal {
 
@@ -30,14 +29,7 @@ class MOJO_CPP_BINDINGS_EXPORT ControlMessageProxy {
   void RequireVersion(uint32_t version);
 
   void FlushForTesting();
-  void SendDisconnectReason(uint32_t custom_reason,
-                            const std::string& description);
-
   void OnConnectionError();
-
-  static Message ConstructDisconnectReasonMessage(
-      uint32_t custom_reason,
-      const std::string& description);
 
  private:
   void RunFlushForTestingClosure();

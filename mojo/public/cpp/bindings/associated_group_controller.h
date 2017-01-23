@@ -9,8 +9,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
+#include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
@@ -40,7 +42,10 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
       InterfaceId id) = 0;
 
   // Closes an interface endpoint handle.
-  virtual void CloseEndpointHandle(InterfaceId id, bool is_local) = 0;
+  virtual void CloseEndpointHandle(
+      InterfaceId id,
+      bool is_local,
+      const base::Optional<DisconnectReason>& reason) = 0;
 
   // Attaches a client to the specified endpoint to send and receive messages.
   // The returned object is still owned by the controller. It must only be used

@@ -128,7 +128,7 @@ class AssociatedInterfacePtr {
   // Similar to the method above, but also specifies a disconnect reason.
   void ResetWithReason(uint32_t custom_reason, const std::string& description) {
     if (internal_state_.is_bound())
-      internal_state_.SendDisconnectReason(custom_reason, description);
+      internal_state_.CloseWithReason(custom_reason, description);
     reset();
   }
 

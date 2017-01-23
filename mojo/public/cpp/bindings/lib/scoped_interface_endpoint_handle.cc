@@ -32,14 +32,15 @@ ScopedInterfaceEndpointHandle& ScopedInterfaceEndpointHandle::operator=(
 }
 
 void ScopedInterfaceEndpointHandle::reset() {
-  if (!IsValidInterfaceId(id_))
-    return;
+  ResetInternal(base::nullopt);
+}
 
-  group_controller_->CloseEndpointHandle(id_, is_local_);
-
-  id_ = kInvalidInterfaceId;
-  is_local_ = true;
-  group_controller_ = nullptr;
+void ScopedInterfaceEndpointHandle::ResetWithReason(
+    uint32_t custom_reason,
+    const std::string& description) {
+  base::Optional<DisconnectReason> reason;
+  reason.emplace(custom_reason, description);
+  ResetInternal(reason);
 }
 
 void ScopedInterfaceEndpointHandle::swap(ScopedInterfaceEndpointHandle& other) {
@@ -67,6 +68,18 @@ ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle(
       is_local_(is_local),
       group_controller_(std::move(group_controller)) {
   DCHECK(!IsValidInterfaceId(id) || group_controller_);
+}
+
+void ScopedInterfaceEndpointHandle::ResetInternal(
+    const base::Optional<DisconnectReason>& reason) {
+  if (!IsValidInterfaceId(id_))
+    return;
+
+  group_controller_->CloseEndpointHandle(id_, is_local_, reason);
+
+  id_ = kInvalidInterfaceId;
+  is_local_ = true;
+  group_controller_ = nullptr;
 }
 
 }  // namespace mojo

@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"

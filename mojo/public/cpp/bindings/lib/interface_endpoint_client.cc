@@ -207,6 +207,14 @@ void InterfaceEndpointClient::RaiseError() {
   handle_.group_controller()->RaiseError();
 }
 
+void InterfaceEndpointClient::CloseWithReason(uint32_t custom_reason,
+                                              const std::string& description) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  auto handle = PassHandle();
+  handle.ResetWithReason(custom_reason, description);
+}
+
 bool InterfaceEndpointClient::Accept(Message* message) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(controller_);
@@ -273,7 +281,8 @@ bool InterfaceEndpointClient::HandleIncomingMessage(Message* message) {
   return filters_.Accept(message);
 }
 
-void InterfaceEndpointClient::NotifyError() {
+void InterfaceEndpointClient::NotifyError(
+    const base::Optional<DisconnectReason>& reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (encountered_error_)
@@ -291,12 +300,12 @@ void InterfaceEndpointClient::NotifyError() {
   if (!error_handler_.is_null()) {
     error_handler_.Run();
   } else if (!error_with_reason_handler_.is_null()) {
-    // Make a copy on the stack. If we directly pass a reference to a member of
-    // |control_message_handler_|, that reference will be invalidated as soon as
-    // the user destroys the interface endpoint.
-    std::string description = control_message_handler_.disconnect_description();
-    error_with_reason_handler_.Run(
-        control_message_handler_.disconnect_custom_reason(), description);
+    if (reason) {
+      error_with_reason_handler_.Run(reason->custom_reason,
+                                     reason->description);
+    } else {
+      error_with_reason_handler_.Run(0, std::string());
+    }
   }
 }
 
@@ -352,7 +361,7 @@ void InterfaceEndpointClient::StopObservingIfNecessary() {
 
 void InterfaceEndpointClient::WillDestroyCurrentMessageLoop() {
   StopObservingIfNecessary();
-  NotifyError();
+  NotifyError(base::nullopt);
 }
 
 }  // namespace mojo

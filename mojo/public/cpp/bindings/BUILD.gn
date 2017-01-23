@@ -37,6 +37,7 @@ component("bindings") {
     "bindings_export.h",
     "connection_error_callback.h",
     "connector.h",
+    "disconnect_reason.h",
     "filter_chain.h",
     "interface_data_view.h",
     "interface_endpoint_client.h",

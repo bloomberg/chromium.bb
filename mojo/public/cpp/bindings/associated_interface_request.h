@@ -71,25 +71,7 @@ class AssociatedInterfaceRequest {
   }
 
   void ResetWithReason(uint32_t custom_reason, const std::string& description) {
-    if (!handle_.is_valid())
-      return;
-
-    if (!handle_.is_local()) {
-      // This handle is supposed to be sent to the other end of the message
-      // pipe and used there.
-      NOTREACHED();
-      handle_.reset();
-      return;
-    }
-
-    InterfaceEndpointClient client(std::move(handle_), nullptr,
-                                   base::MakeUnique<PassThroughFilter>(), false,
-                                   base::ThreadTaskRunnerHandle::Get(), 0u);
-    Message message =
-        internal::ControlMessageProxy::ConstructDisconnectReasonMessage(
-            custom_reason, description);
-    bool result = client.Accept(&message);
-    DCHECK(result);
+    handle_.ResetWithReason(custom_reason, description);
   }
 
  private:

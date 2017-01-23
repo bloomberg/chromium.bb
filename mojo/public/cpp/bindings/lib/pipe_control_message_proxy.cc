@@ -11,32 +11,28 @@
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
-#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/interfaces/bindings/pipe_control_messages.mojom.h"
 
 namespace mojo {
 namespace {
 
-void SendRunOrClosePipeMessage(MessageReceiver* receiver,
-                               pipe_control::RunOrClosePipeInputPtr input,
-                               internal::SerializationContext* context) {
-  pipe_control::RunOrClosePipeMessageParamsPtr params_ptr(
-      pipe_control::RunOrClosePipeMessageParams::New());
-  params_ptr->input = std::move(input);
+Message ConstructRunOrClosePipeMessage(
+    pipe_control::RunOrClosePipeInputPtr input_ptr) {
+  internal::SerializationContext context;
+
+  auto params_ptr = pipe_control::RunOrClosePipeMessageParams::New();
+  params_ptr->input = std::move(input_ptr);
 
   size_t size = internal::PrepareToSerialize<
-      pipe_control::RunOrClosePipeMessageParamsDataView>(params_ptr, context);
+      pipe_control::RunOrClosePipeMessageParamsDataView>(params_ptr, &context);
   internal::MessageBuilder builder(pipe_control::kRunOrClosePipeMessageId,
                                    size);
 
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
   internal::Serialize<pipe_control::RunOrClosePipeMessageParamsDataView>(
-      params_ptr, builder.buffer(), &params, context);
+      params_ptr, builder.buffer(), &params, &context);
   builder.message()->set_interface_id(kInvalidInterfaceId);
-  bool ok = receiver->Accept(builder.message());
-  // This return value may be ignored as !ok implies the underlying message pipe
-  // has encountered an error, which will be visible through other means.
-  ALLOW_UNUSED_LOCAL(ok);
+  return std::move(*builder.message());
 }
 
 }  // namespace
@@ -44,32 +40,44 @@ void SendRunOrClosePipeMessage(MessageReceiver* receiver,
 PipeControlMessageProxy::PipeControlMessageProxy(MessageReceiver* receiver)
     : receiver_(receiver) {}
 
-void PipeControlMessageProxy::NotifyPeerEndpointClosed(InterfaceId id) {
-  DCHECK(!IsMasterInterfaceId(id));
-  pipe_control::PeerAssociatedEndpointClosedEventPtr event(
-      pipe_control::PeerAssociatedEndpointClosedEvent::New());
-  event->id = id;
-
-  pipe_control::RunOrClosePipeInputPtr input(
-      pipe_control::RunOrClosePipeInput::New());
-  input->set_peer_associated_endpoint_closed_event(std::move(event));
-
-  internal::SerializationContext context;
-  SendRunOrClosePipeMessage(receiver_, std::move(input), &context);
+void PipeControlMessageProxy::NotifyPeerEndpointClosed(
+    InterfaceId id,
+    const base::Optional<DisconnectReason>& reason) {
+  Message message(ConstructPeerEndpointClosedMessage(id, reason));
+  bool ok = receiver_->Accept(&message);
+  ALLOW_UNUSED_LOCAL(ok);
 }
 
 void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
   DCHECK(!IsMasterInterfaceId(id));
-  pipe_control::AssociatedEndpointClosedBeforeSentEventPtr event(
-      pipe_control::AssociatedEndpointClosedBeforeSentEvent::New());
+
+  auto event = pipe_control::AssociatedEndpointClosedBeforeSentEvent::New();
   event->id = id;
 
-  pipe_control::RunOrClosePipeInputPtr input(
-      pipe_control::RunOrClosePipeInput::New());
+  auto input = pipe_control::RunOrClosePipeInput::New();
   input->set_associated_endpoint_closed_before_sent_event(std::move(event));
 
-  internal::SerializationContext context;
-  SendRunOrClosePipeMessage(receiver_, std::move(input), &context);
+  Message message(ConstructRunOrClosePipeMessage(std::move(input)));
+  bool ok = receiver_->Accept(&message);
+  ALLOW_UNUSED_LOCAL(ok);
+}
+
+// static
+Message PipeControlMessageProxy::ConstructPeerEndpointClosedMessage(
+    InterfaceId id,
+    const base::Optional<DisconnectReason>& reason) {
+  auto event = pipe_control::PeerAssociatedEndpointClosedEvent::New();
+  event->id = id;
+  if (reason) {
+    event->disconnect_reason = pipe_control::DisconnectReason::New();
+    event->disconnect_reason->custom_reason = reason->custom_reason;
+    event->disconnect_reason->description = reason->description;
+  }
+
+  auto input = pipe_control::RunOrClosePipeInput::New();
+  input->set_peer_associated_endpoint_closed_event(std::move(event));
+
+  return ConstructRunOrClosePipeMessage(std::move(input));
 }
 
 }  // namespace mojo

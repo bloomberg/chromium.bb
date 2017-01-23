@@ -17,10 +17,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
+#include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
@@ -94,6 +96,8 @@ class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
   // and notifies all interfaces running on this pipe.
   void RaiseError();
 
+  void CloseWithReason(uint32_t custom_reason, const std::string& description);
+
   // MessageReceiverWithResponder implementation:
   bool Accept(Message* message) override;
   bool AcceptWithResponder(Message* message,
@@ -104,7 +108,7 @@ class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
 
   // NOTE: |message| must have passed message header validation.
   bool HandleIncomingMessage(Message* message);
-  void NotifyError();
+  void NotifyError(const base::Optional<DisconnectReason>& reason);
 
   internal::ControlMessageProxy* control_message_proxy() {
     return &control_message_proxy_;

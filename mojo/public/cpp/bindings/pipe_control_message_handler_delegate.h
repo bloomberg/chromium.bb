@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_HANDLER_DELEGATE_H_
 
+#include "base/optional.h"
+#include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 
 namespace mojo {
@@ -14,7 +16,9 @@ class PipeControlMessageHandlerDelegate {
   // The implementation of the following methods should return false if the
   // notification is unexpected. In that case, the user of this delegate is
   // expected to close the message pipe.
-  virtual bool OnPeerAssociatedEndpointClosed(InterfaceId id) = 0;
+  virtual bool OnPeerAssociatedEndpointClosed(
+      InterfaceId id,
+      const base::Optional<DisconnectReason>& reason) = 0;
   virtual bool OnAssociatedEndpointClosedBeforeSent(InterfaceId id) = 0;
 
  protected:

@@ -67,8 +67,15 @@ bool PipeControlMessageHandler::RunOrClosePipe(Message* message) {
       params, &params_ptr, &context_);
 
   if (params_ptr->input->is_peer_associated_endpoint_closed_event()) {
-    return delegate_->OnPeerAssociatedEndpointClosed(
-        params_ptr->input->get_peer_associated_endpoint_closed_event()->id);
+    const auto& event =
+        params_ptr->input->get_peer_associated_endpoint_closed_event();
+
+    base::Optional<DisconnectReason> reason;
+    if (event->disconnect_reason) {
+      reason.emplace(event->disconnect_reason->custom_reason,
+                     event->disconnect_reason->description);
+    }
+    return delegate_->OnPeerAssociatedEndpointClosed(event->id, reason);
   }
   if (params_ptr->input->is_associated_endpoint_closed_before_sent_event()) {
     return delegate_->OnAssociatedEndpointClosedBeforeSent(

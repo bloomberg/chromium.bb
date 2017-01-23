@@ -74,10 +74,8 @@ class AssociatedInterfacePtrState {
     endpoint_client_->control_message_proxy()->FlushForTesting();
   }
 
-  void SendDisconnectReason(uint32_t custom_reason,
-                            const std::string& description) {
-    endpoint_client_->control_message_proxy()->SendDisconnectReason(
-        custom_reason, description);
+  void CloseWithReason(uint32_t custom_reason, const std::string& description) {
+    endpoint_client_->CloseWithReason(custom_reason, description);
   }
 
   void Swap(AssociatedInterfacePtrState* other) {

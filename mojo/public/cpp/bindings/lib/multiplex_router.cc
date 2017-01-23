@@ -61,6 +61,15 @@ class MultiplexRouter::InterfaceEndpoint
     peer_closed_ = true;
   }
 
+  const base::Optional<DisconnectReason>& disconnect_reason() const {
+    return disconnect_reason_;
+  }
+  void set_disconnect_reason(
+      const base::Optional<DisconnectReason>& disconnect_reason) {
+    router_->AssertLockAcquired();
+    disconnect_reason_ = disconnect_reason;
+  }
+
   base::SingleThreadTaskRunner* task_runner() const {
     return task_runner_.get();
   }
@@ -227,6 +236,8 @@ class MultiplexRouter::InterfaceEndpoint
   bool closed_;
   // Whether the peer endpoint has been closed.
   bool peer_closed_;
+
+  base::Optional<DisconnectReason> disconnect_reason_;
 
   // The task runner on which |client_|'s methods can be called.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -399,7 +410,10 @@ ScopedInterfaceEndpointHandle MultiplexRouter::CreateLocalEndpointHandle(
   return CreateScopedInterfaceEndpointHandle(id, true);
 }
 
-void MultiplexRouter::CloseEndpointHandle(InterfaceId id, bool is_local) {
+void MultiplexRouter::CloseEndpointHandle(
+    InterfaceId id,
+    bool is_local,
+    const base::Optional<DisconnectReason>& reason) {
   if (!IsValidInterfaceId(id))
     return;
 
@@ -422,9 +436,9 @@ void MultiplexRouter::CloseEndpointHandle(InterfaceId id, bool is_local) {
   DCHECK(!endpoint->closed());
   UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
 
-  if (!IsMasterInterfaceId(id)) {
+  if (!IsMasterInterfaceId(id) || reason) {
     MayAutoUnlock unlocker(lock_.get());
-    control_message_proxy_.NotifyPeerEndpointClosed(id);
+    control_message_proxy_.NotifyPeerEndpointClosed(id, reason);
   }
 
   ProcessTasks(NO_DIRECT_CLIENT_CALLS, nullptr);
@@ -572,13 +586,17 @@ bool MultiplexRouter::Accept(Message* message) {
   return true;
 }
 
-bool MultiplexRouter::OnPeerAssociatedEndpointClosed(InterfaceId id) {
+bool MultiplexRouter::OnPeerAssociatedEndpointClosed(
+    InterfaceId id,
+    const base::Optional<DisconnectReason>& reason) {
   AssertLockAcquired();
 
-  if (IsMasterInterfaceId(id))
-    return false;
+  DCHECK(!IsMasterInterfaceId(id) || reason);
 
   InterfaceEndpoint* endpoint = FindOrInsertEndpoint(id, nullptr);
+
+  if (reason)
+    endpoint->set_disconnect_reason(reason);
 
   // It is possible that this endpoint has been set as peer closed. That is
   // because when the message pipe is closed, all the endpoints are updated with
@@ -608,7 +626,7 @@ bool MultiplexRouter::OnAssociatedEndpointClosedBeforeSent(InterfaceId id) {
   UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
 
   MayAutoUnlock unlocker(lock_.get());
-  control_message_proxy_.NotifyPeerEndpointClosed(id);
+  control_message_proxy_.NotifyPeerEndpointClosed(id, base::nullopt);
 
   return true;
 }
@@ -739,6 +757,9 @@ bool MultiplexRouter::ProcessNotifyErrorTask(
   DCHECK(endpoint->task_runner()->BelongsToCurrentThread());
 
   InterfaceEndpointClient* client = endpoint->client();
+  base::Optional<DisconnectReason> disconnect_reason(
+      endpoint->disconnect_reason());
+
   {
     // We must unlock before calling into |client| because it may call this
     // object within NotifyError(). Holding the lock will lead to deadlock.
@@ -746,7 +767,7 @@ bool MultiplexRouter::ProcessNotifyErrorTask(
     // It is safe to call into |client| without the lock. Because |client| is
     // always accessed on the same thread, including DetachEndpointClient().
     MayAutoUnlock unlocker(lock_.get());
-    client->NotifyError();
+    client->NotifyError(disconnect_reason);
   }
   return true;
 }
@@ -795,7 +816,7 @@ bool MultiplexRouter::ProcessIncomingMessage(
     // messages for the master endpoint, we will get here.
     MayAutoUnlock unlocker(lock_.get());
     if (!IsMasterInterfaceId(id))
-      control_message_proxy_.NotifyPeerEndpointClosed(id);
+      control_message_proxy_.NotifyPeerEndpointClosed(id, base::nullopt);
     return true;
   }
 
