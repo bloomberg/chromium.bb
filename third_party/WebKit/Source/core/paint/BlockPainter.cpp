@@ -42,7 +42,7 @@ void BlockPainter::paint(const PaintInfo& paintInfo,
   // for.
   // FIXME: reduce the number of such cases.
   ContentsClipBehavior contentsClipBehavior = ForceContentsClip;
-  if (m_layoutBlock.hasOverflowClip() && !m_layoutBlock.hasControlClip() &&
+  if (m_layoutBlock.shouldClipOverflow() && !m_layoutBlock.hasControlClip() &&
       !m_layoutBlock.hasCaret())
     contentsClipBehavior = SkipContentsClipIfPossible;
 

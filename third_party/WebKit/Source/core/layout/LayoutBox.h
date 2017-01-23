@@ -1058,14 +1058,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       int caretOffset,
       LayoutUnit* extraWidthToEndOfLine = nullptr) override;
 
+  // Returns whether content which overflows should be clipped. This is not just
+  // because of overflow clip, but other types of clip as well, such as
+  // control clips or contain: paint.
+  virtual bool shouldClipOverflow() const;
+
+  // Returns the intersection of all overflow clips which apply.
   virtual LayoutRect overflowClipRect(
       const LayoutPoint& location,
       OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const;
   LayoutRect clipRect(const LayoutPoint& location) const;
-  virtual bool hasControlClip() const { return false; }
-  virtual LayoutRect controlClipRect(const LayoutPoint&) const {
-    return LayoutRect();
-  }
 
   // Returns the combination of overflow clip, contain: paint clip and CSS clip
   // for this object, in local space.
@@ -1305,9 +1307,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void ensureIsReadyForPaintInvalidation() override;
 
-  virtual bool shouldClipOverflow() const;
+  virtual bool hasControlClip() const { return false; }
 
  protected:
+  virtual LayoutRect controlClipRect(const LayoutPoint&) const {
+    return LayoutRect();
+  }
+
   void willBeDestroyed() override;
 
   void insertedIntoTree() override;

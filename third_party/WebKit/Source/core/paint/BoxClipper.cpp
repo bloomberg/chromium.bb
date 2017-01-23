@@ -26,10 +26,7 @@ namespace blink {
 static bool boxNeedsClip(const LayoutBox& box) {
   if (box.hasLayer() && box.layer()->isSelfPaintingLayer())
     return false;
-  if (box.isSVGRoot() && toLayoutSVGRoot(box).shouldApplyViewportClip())
-    return true;
-  return box.hasOverflowClip() || box.styleRef().containsPaint() ||
-         box.hasControlClip();
+  return box.shouldClipOverflow();
 }
 
 DISABLE_CFI_PERF
@@ -62,9 +59,7 @@ BoxClipper::BoxClipper(const LayoutBox& box,
   if (!boxNeedsClip(m_box))
     return;
 
-  LayoutRect clipRect = m_box.hasControlClip()
-                            ? m_box.controlClipRect(accumulatedOffset)
-                            : m_box.overflowClipRect(accumulatedOffset);
+  LayoutRect clipRect = m_box.overflowClipRect(accumulatedOffset);
   FloatRoundedRect clipRoundedRect(0, 0, 0, 0);
   bool hasBorderRadius = m_box.style()->hasBorderRadius();
   if (hasBorderRadius)

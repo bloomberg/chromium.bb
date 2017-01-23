@@ -636,9 +636,7 @@ void PaintPropertyTreeBuilder::updateOverflowClip(
     // those children. This is called control clip and we technically treat them
     // like overflow clip.
     LayoutRect clipRect;
-    if (box.hasControlClip()) {
-      clipRect = box.controlClipRect(context.current.paintOffset);
-    } else if (box.shouldClipOverflow()) {
+    if (box.shouldClipOverflow()) {
       clipRect = LayoutRect(pixelSnappedIntRect(
           box.overflowClipRect(context.current.paintOffset)));
     } else {

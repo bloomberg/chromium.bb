@@ -1399,7 +1399,7 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result,
   // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
   //            case, similar to overflow clip below.
   bool skipChildren = false;
-  if (hasOverflowClip() && !hasSelfPaintingLayer()) {
+  if (shouldClipOverflow() && !hasSelfPaintingLayer()) {
     if (!locationInContainer.intersects(overflowClipRect(
             adjustedLocation, ExcludeOverlayScrollbarSizeForHitTesting))) {
       skipChildren = true;
@@ -1409,11 +1409,6 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result,
           style()->getRoundedInnerBorderFor(boundsRect));
     }
   }
-
-  // A control clip can also clip out child hit testing.
-  if (!skipChildren && hasControlClip() &&
-      !locationInContainer.intersects(controlClipRect(adjustedLocation)))
-    skipChildren = true;
 
   // TODO(pdr): We should also include checks for hit testing border radius at
   //            the layer level (see: crbug.com/568904).
@@ -1799,6 +1794,10 @@ LayoutRect LayoutBox::overflowClipRect(
 
   if (hasOverflowClip())
     excludeScrollbars(clipRect, overlayScrollbarClipBehavior);
+
+  if (hasControlClip())
+    clipRect.intersect(controlClipRect(location));
+
   return clipRect;
 }
 

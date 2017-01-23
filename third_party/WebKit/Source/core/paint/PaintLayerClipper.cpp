@@ -47,7 +47,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
 
@@ -70,15 +69,6 @@ static void adjustClipRectsForChildren(const LayoutBoxModelObject& layoutObject,
   }
 }
 
-// TODO(chrishtr): move this to LayoutBox.
-static LayoutRect overflowOrControlClip(const LayoutBox& box,
-                                        const LayoutPoint& location,
-                                        OverlayScrollbarClipBehavior behavior) {
-  if (box.hasControlClip())
-    return box.controlClipRect(location);
-  return box.overflowClipRect(location, behavior);
-}
-
 static void applyClipRects(const ClipRectsContext& context,
                            const LayoutBoxModelObject& layoutObject,
                            LayoutPoint offset,
@@ -86,18 +76,15 @@ static void applyClipRects(const ClipRectsContext& context,
   DCHECK(layoutObject.isBox());
   const LayoutBox& box = *toLayoutBox(&layoutObject);
 
-  DCHECK(box.hasClipRelatedProperty() || box.hasControlClip() ||
-         (box.isSVGRoot() && toLayoutSVGRoot(&box)->shouldApplyViewportClip()));
+  DCHECK(box.shouldClipOverflow() || box.hasClip());
   LayoutView* view = box.view();
   DCHECK(view);
   if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
     offset -= LayoutSize(view->frameView()->getScrollOffset());
 
-  if (box.hasOverflowClip() ||
-      (box.isSVGRoot() && toLayoutSVGRoot(&box)->shouldApplyViewportClip()) ||
-      box.styleRef().containsPaint() || box.hasControlClip()) {
-    ClipRect newOverflowClip = overflowOrControlClip(
-        box, offset, context.overlayScrollbarClipBehavior);
+  if (box.shouldClipOverflow()) {
+    ClipRect newOverflowClip =
+        box.overflowClipRect(offset, context.overlayScrollbarClipBehavior);
     newOverflowClip.setHasRadius(box.styleRef().hasBorderRadius());
     clipRects.setOverflowClipRect(
         intersection(newOverflowClip, clipRects.overflowClipRect()));
@@ -361,10 +348,10 @@ void PaintLayerClipper::calculateRects(
 
   // Update the clip rects that will be passed to child layers.
   if (shouldClipOverflow(context)) {
-    LayoutRect overflowOrControlClipRect =
-        overflowOrControlClip(toLayoutBox(layoutObject), offset,
-                              context.overlayScrollbarClipBehavior);
-    foregroundRect.intersect(overflowOrControlClipRect);
+    LayoutRect overflowAndClipRect =
+        toLayoutBox(layoutObject)
+            .overflowClipRect(offset, context.overlayScrollbarClipBehavior);
+    foregroundRect.intersect(overflowAndClipRect);
     if (layoutObject.styleRef().hasBorderRadius())
       foregroundRect.setHasRadius(true);
 
@@ -561,9 +548,7 @@ bool PaintLayerClipper::shouldClipOverflow(
   if (!shouldRespectOverflowClip(context))
     return false;
 
-  return box.hasOverflowClip() || box.styleRef().containsPaint() ||
-         box.hasControlClip() ||
-         (box.isSVGRoot() && toLayoutSVGRoot(&box)->shouldApplyViewportClip());
+  return box.shouldClipOverflow();
 }
 
 bool PaintLayerClipper::shouldRespectOverflowClip(
