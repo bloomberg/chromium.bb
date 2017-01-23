@@ -289,8 +289,8 @@ var MainPageBehaviorImpl = {
   toggleOtherSectionsHidden_: function(sectionName, hidden) {
     var sections = Polymer.dom(this.root).querySelectorAll(
         'settings-section');
-    for (var section of sections)
-      section.hidden = hidden && (section.section != sectionName);
+    for (var i = 0; i < sections.length; i++)
+      sections[i].hidden = hidden && (sections[i].section != sectionName);
   },
 
   /**

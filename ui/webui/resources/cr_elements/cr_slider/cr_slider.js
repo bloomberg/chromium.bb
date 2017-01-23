@@ -56,7 +56,7 @@ Polymer({
    */
   valueChanged_: function() {
     // First update the slider settings if |tickValues| was set.
-    let numTicks = Math.max(1, this.tickValues.length);
+    var numTicks = Math.max(1, this.tickValues.length);
     this.$.slider.max = numTicks - 1;
     // Limit the number of ticks to 10 to keep the slider from looking too busy.
     /** @const */ var MAX_TICKS = 10;

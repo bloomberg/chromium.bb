@@ -57,7 +57,8 @@ cr.define('settings', function() {
   function findAndRemoveHighlights_(node) {
     var wrappers = node.querySelectorAll('* /deep/ .' + WRAPPER_CSS_CLASS);
 
-    for (var wrapper of wrappers) {
+    for (var i = 0; i < wrappers.length; i++ ) {
+      var wrapper = wrappers[i];
       var originalNode = wrapper.querySelector(
           '.' + ORIGINAL_CONTENT_CSS_CLASS);
       wrapper.parentElement.replaceChild(originalNode.firstChild, wrapper);
@@ -65,8 +66,8 @@ cr.define('settings', function() {
 
     var searchBubbles = node.querySelectorAll(
         '* /deep/ .' + SEARCH_BUBBLE_CSS_CLASS);
-    for (var searchBubble of searchBubbles)
-      searchBubble.remove();
+    for (var j = 0; j < searchBubbles.length; j++)
+      searchBubbles[j].remove();
   }
 
   /**

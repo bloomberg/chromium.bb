@@ -134,8 +134,10 @@ cr.define('settings', function() {
      */
     getCookieList: function() {
       var list = [];
-      for (var child of this.children_) {
-        for (var cookie of child.children_) {
+      for (var i = 0; i < this.children_.length; i++) {
+        var child = this.children_[i];
+        for (var j = 0; j < child.children_.length; j++) {
+          var cookie = child.children_[j];
           list.push({title: cookie.data.title,
                      id: cookie.data.id,
                      data: cookie.data});

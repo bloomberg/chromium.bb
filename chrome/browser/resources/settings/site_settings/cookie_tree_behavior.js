@@ -48,7 +48,8 @@ var CookieTreeBehaviorImpl = {
         prefix = parentId + ', ';
       }
       var promises = [];
-      for (let child of children) {
+      for (var i = 0; i < children.length; i++) {
+        var child = children[i];
         if (child.hasChildren) {
           promises.push(this.browserProxy.loadCookieChildren(
               prefix + child.id).then(loadChildrenRecurse.bind(this)));

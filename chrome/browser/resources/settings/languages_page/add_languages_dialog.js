@@ -110,7 +110,8 @@ Polymer({
    */
   onActionButtonTap_: function() {
     this.$.dialog.close();
-    for (var languageCode of this.languagesToAdd_)
-      this.languageHelper.enableLanguage(languageCode);
+    this.languagesToAdd_.forEach(function(language) {
+      this.languageHelper.enableLanguage(language);
+    }.bind(this));
   },
 });

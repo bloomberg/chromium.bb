@@ -75,7 +75,8 @@ var getCookieData = function(data) {
   /** @type {!Array<CookieDataForDisplay>} */
   var out = [];
   var fields = cookieInfo[data.type];
-  for (var field of fields) {
+  for (var i = 0; i < fields.length; i++) {
+    var field = fields[0];
     // Iterate through the keys found in |cookieInfo| for the given |type|
     // and see if those keys are present in the data. If so, display them
     // (in the order determined by |cookieInfo|).

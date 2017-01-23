@@ -225,8 +225,8 @@ Polymer({
 
     // Recreate the enabled language set before updating languages.enabled.
     this.enabledLanguageSet_.clear();
-    for (var languageState of enabledLanguageStates)
-      this.enabledLanguageSet_.add(languageState.language.code);
+    for (var i = 0; i < enabledLanguageStates.length; i++)
+      this.enabledLanguageSet_.add(enabledLanguageStates[i].language.code);
 
     this.set('languages.enabled', enabledLanguageStates);
   },
@@ -279,7 +279,8 @@ Polymer({
   createModel_: function(supportedLanguages, translateTarget,
                          supportedInputMethods, currentInputMethodId) {
     // Populate the hash map of supported languages.
-    for (var language of supportedLanguages) {
+    for (var i = 0; i < supportedLanguages.length; i++) {
+      var language = supportedLanguages[i];
       language.supportsUI = !!language.supportsUI;
       language.supportsTranslate = !!language.supportsTranslate;
       language.supportsSpellcheck = !!language.supportsSpellcheck;
@@ -288,13 +289,15 @@ Polymer({
 
     if (supportedInputMethods) {
       // Populate the hash map of supported input methods.
-      for (var inputMethod of supportedInputMethods) {
+      for (var j = 0; j < supportedInputMethods.length; j++) {
+        var inputMethod = supportedInputMethods[j];
         inputMethod.enabled = !!inputMethod.enabled;
         // Add the input method to the map of IDs.
         this.supportedInputMethodMap_.set(inputMethod.id, inputMethod);
         // Add the input method to the list of input methods for each language
         // it supports.
-        for (var languageCode of inputMethod.languageCodes) {
+        for (var k = 0; k < inputMethod.languageCodes.length; k++) {
+          var languageCode = inputMethod.languageCodes[k];
           if (!this.supportedLanguageMap_.has(languageCode))
             continue;
           if (!this.languageInputMethods_.has(languageCode))
@@ -316,8 +319,8 @@ Polymer({
     var enabledLanguageStates =
         this.getEnabledLanguageStates_(translateTarget, prospectiveUILanguage);
     // Populate the hash set of enabled languages.
-    for (var languageState of enabledLanguageStates)
-      this.enabledLanguageSet_.add(languageState.language.code);
+    for (var l = 0; l < enabledLanguageStates.length; l++)
+      this.enabledLanguageSet_.add(enabledLanguageStates[l].language.code);
 
     var model = /** @type {!LanguagesModel} */({
       supported: supportedLanguages,
@@ -449,10 +452,7 @@ Polymer({
    * @private
    */
   makeSetFromArray_: function(list) {
-    var set = new Set();
-    for (var item of list)
-      set.add(item);
-    return set;
+    return new Set(list);
   },
 
   // LanguageHelper implementation.
@@ -519,7 +519,8 @@ Polymer({
     if (cr.isChromeOS) {
       // Remove input methods that don't support any other enabled language.
       var inputMethods = this.languageInputMethods_.get(languageCode) || [];
-      for (var inputMethod of inputMethods) {
+      for (var i = 0; i < inputMethods.length; i++) {
+        var inputMethod = inputMethods[i];
         var supportsOtherEnabledLanguages = inputMethod.languageCodes.some(
             function(otherLanguageCode) {
               return otherLanguageCode != languageCode &&

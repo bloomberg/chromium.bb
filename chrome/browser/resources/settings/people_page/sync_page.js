@@ -238,7 +238,8 @@ Polymer({
 
       // Cache the previously selected preference before checking every box.
       this.cachedSyncPrefs_ = {};
-      for (var dataType of SyncPrefsIndividualDataTypes) {
+      for (var i = 0; i < SyncPrefsIndividualDataTypes.length; i++) {
+        var dataType = SyncPrefsIndividualDataTypes[i];
         // These are all booleans, so this shallow copy is sufficient.
         this.cachedSyncPrefs_[dataType] = this.syncPrefs[dataType];
 
@@ -246,7 +247,8 @@ Polymer({
       }
     } else if (this.cachedSyncPrefs_) {
       // Restore the previously selected preference.
-      for (dataType of SyncPrefsIndividualDataTypes) {
+      for (var i = 0; i < SyncPrefsIndividualDataTypes.length; i++) {
+        var dataType = SyncPrefsIndividualDataTypes[i];
         this.set(['syncPrefs', dataType], this.cachedSyncPrefs_[dataType]);
       }
     }

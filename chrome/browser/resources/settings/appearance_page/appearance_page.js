@@ -230,7 +230,7 @@ Polymer({
         this.themeSublabel_ = info.name;
       }.bind(this));
 
-      this.themeUrl_ = `https://chrome.google.com/webstore/detail/${themeId}`;
+      this.themeUrl_ = 'https://chrome.google.com/webstore/detail/' + themeId;
       return;
     }
 
