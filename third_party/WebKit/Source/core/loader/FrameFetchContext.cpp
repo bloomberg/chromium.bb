@@ -241,11 +241,11 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
           m_document->outgoingReferrer()));
       request.addHTTPOriginIfNeeded(m_document->getSecurityOrigin());
     } else {
-      CHECK_EQ(SecurityPolicy::generateReferrer(request.getReferrerPolicy(),
-                                                request.url(),
-                                                request.httpReferrer())
-                   .referrer,
-               request.httpReferrer());
+      DCHECK_EQ(SecurityPolicy::generateReferrer(request.getReferrerPolicy(),
+                                                 request.url(),
+                                                 request.httpReferrer())
+                    .referrer,
+                request.httpReferrer());
       request.addHTTPOriginIfNeeded(request.httpReferrer());
     }
   }
