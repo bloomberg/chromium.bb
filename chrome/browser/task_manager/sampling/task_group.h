@@ -107,11 +107,8 @@ class TaskGroup {
 
   void RefreshWindowsHandles();
 
-#if !defined(DISABLE_NACL)
   // |child_process_unique_id| see Task::GetChildProcessUniqueID().
   void RefreshNaClDebugStubPort(int child_process_unique_id);
-  void OnRefreshNaClDebugStubPortDone(int port);
-#endif
 
   void OnCpuRefreshDone(double cpu_usage);
 
