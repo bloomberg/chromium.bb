@@ -1679,7 +1679,7 @@ crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
-crbug.com/635909 inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ NeedsManualRebaseline ]
+crbug.com/635909 inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ NeedsManualRebaseline Timeout ]
 
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
 crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
@@ -2237,3 +2237,4 @@ crbug.com/681471 paint/invalidation/media-audio-no-spurious-repaints.html [ Fail
 crbug.com/681471 virtual/stable/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Pass Timeout ]
 
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
+
