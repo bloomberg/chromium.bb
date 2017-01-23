@@ -540,7 +540,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   }
 
   if (regional_data_.get() && !region_.empty() && !GetRegionDictionary())
-    LOG(ERROR) << "Bad reginal data: '" << region_ << "' << not found.";
+    LOG(ERROR) << "Bad regional data: '" << region_ << "' << not found.";
 
   // Finished loading the statistics.
   on_statistics_loaded_.Signal();
