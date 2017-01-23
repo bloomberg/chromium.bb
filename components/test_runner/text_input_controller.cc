@@ -11,7 +11,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEventResult.h"
 #include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
@@ -301,7 +301,7 @@ void TextInputController::SetComposition(const std::string& text) {
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
 
   key_down.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
-  view()->handleInputEvent(key_down);
+  view()->handleInputEvent(blink::WebCoalescedInputEvent(key_down));
 
   // The value returned by std::string::length() may not correspond to the
   // actual number of encoded characters in sequences of multi-byte or

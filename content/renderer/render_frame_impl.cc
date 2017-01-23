@@ -6644,7 +6644,8 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
       }
 
       if (GetRenderWidget()->GetWebWidget())
-        GetRenderWidget()->GetWebWidget()->handleInputEvent(char_event);
+        GetRenderWidget()->GetWebWidget()->handleInputEvent(
+            blink::WebCoalescedInputEvent(char_event));
     }
   } else {
     // Mimics the order of events sent by WebKit.

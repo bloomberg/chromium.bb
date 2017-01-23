@@ -26,8 +26,8 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "third_party/WebKit/public/platform/WebPointerProperties.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -2808,7 +2808,8 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
         raw_event, delegate()->GetWindowToViewportScale());
     const WebInputEvent* popup_friendly_event =
         scaled_event.get() ? scaled_event.get() : &raw_event;
-    return popup->handleInputEvent(*popup_friendly_event);
+    return popup->handleInputEvent(
+        blink::WebCoalescedInputEvent(*popup_friendly_event));
   }
 
   std::unique_ptr<WebInputEvent> widget_event =
@@ -2816,7 +2817,7 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
   const WebInputEvent* event =
       widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
                          : &raw_event;
-  return widget()->handleInputEvent(*event);
+  return widget()->handleInputEvent(blink::WebCoalescedInputEvent(*event));
 }
 
 void EventSender::SendGesturesForMouseWheelEvent(

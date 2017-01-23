@@ -193,9 +193,9 @@ void MainThreadEventQueue::DispatchInFlightEvent() {
           NOTREACHED();
       }
     }
-    client_->HandleEventOnMainThread(routing_id_, &in_flight_event_->event(),
-                                     in_flight_event_->latencyInfo(),
-                                     dispatch_type);
+    client_->HandleEventOnMainThread(
+        routing_id_, &in_flight_event_->coalesced_event(),
+        in_flight_event_->latencyInfo(), dispatch_type);
   }
 
   in_flight_event_.reset();

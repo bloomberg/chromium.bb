@@ -389,7 +389,7 @@ void TouchActionTest::sendTouchEvent(WebView* webView,
   webTouchEvent.touches[0].radiusY = 10;
   webTouchEvent.touches[0].force = 1.0;
 
-  webView->handleInputEvent(webTouchEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(webTouchEvent));
   runPendingTasks();
 }
 

@@ -62,7 +62,7 @@ class CONTENT_EXPORT MainThreadEventQueueClient {
   // channel. Implementors must implement this callback.
   virtual void HandleEventOnMainThread(
       int routing_id,
-      const blink::WebInputEvent* event,
+      const blink::WebCoalescedInputEvent* event,
       const ui::LatencyInfo& latency,
       InputEventDispatchType dispatch_type) = 0;
 

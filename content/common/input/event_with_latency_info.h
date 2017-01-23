@@ -28,13 +28,14 @@ class ScopedWebInputEventWithLatencyInfo {
       WARN_UNUSED_RESULT;
 
   const blink::WebInputEvent& event() const;
+  const blink::WebCoalescedInputEvent& coalesced_event() const;
   blink::WebInputEvent& event();
   const ui::LatencyInfo latencyInfo() const { return latency_; }
 
   void CoalesceWith(const ScopedWebInputEventWithLatencyInfo& other);
 
  private:
-  blink::WebScopedInputEvent event_;
+  blink::WebScopedCoalescedInputEvent event_;
   mutable ui::LatencyInfo latency_;
 };
 

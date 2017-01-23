@@ -2715,6 +2715,7 @@ void RenderViewImpl::UpdateWebViewWithDeviceScaleFactor() {
 
 void RenderViewImpl::OnDiscardInputEvent(
     const blink::WebInputEvent* input_event,
+    const std::vector<const blink::WebInputEvent*>& coalesced_events,
     const ui::LatencyInfo& latency_info,
     InputEventDispatchType dispatch_type) {
   if (!input_event || (dispatch_type != DISPATCH_TYPE_BLOCKING &&

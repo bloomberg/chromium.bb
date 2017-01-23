@@ -782,12 +782,17 @@ GURL RenderWidget::GetURLForGraphicsContext3D() {
   return GURL();
 }
 
-void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
-                                      const ui::LatencyInfo& latency_info,
-                                      InputEventDispatchType dispatch_type) {
+void RenderWidget::OnHandleInputEvent(
+    const blink::WebInputEvent* input_event,
+    const std::vector<const blink::WebInputEvent*>& coalesced_events,
+    const ui::LatencyInfo& latency_info,
+    InputEventDispatchType dispatch_type) {
   if (!input_event)
     return;
-  input_handler_->HandleInputEvent(*input_event, latency_info, dispatch_type);
+
+  input_handler_->HandleInputEvent(
+      blink::WebCoalescedInputEvent(*input_event, coalesced_events),
+      latency_info, dispatch_type);
 }
 
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {

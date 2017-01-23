@@ -2022,7 +2022,7 @@ bool WebViewTest::tapElement(WebInputEvent::Type type, Element* element) {
   event.x = center.x();
   event.y = center.y();
 
-  m_webViewHelper.webView()->handleInputEvent(event);
+  m_webViewHelper.webView()->handleInputEvent(WebCoalescedInputEvent(event));
   runPendingTasks();
   return true;
 }
@@ -2083,7 +2083,7 @@ TEST_P(WebViewTest, DetectContentAroundPosition) {
   WebGestureEvent event(WebInputEvent::GestureTap, WebInputEvent::NoModifiers,
                         WebInputEvent::TimeStampForTesting);
   event.sourceDevice = WebGestureDeviceTouchscreen;
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   runPendingTasks();
   EXPECT_TRUE(client.pendingIntentsCancelled());
 
@@ -2129,7 +2129,7 @@ TEST_P(WebViewTest, ClientTapHandling) {
   event.sourceDevice = WebGestureDeviceTouchscreen;
   event.x = 3;
   event.y = 8;
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   runPendingTasks();
   EXPECT_EQ(3, client.tapX());
   EXPECT_EQ(8, client.tapY());
@@ -2137,7 +2137,7 @@ TEST_P(WebViewTest, ClientTapHandling) {
   event.setType(WebInputEvent::GestureLongPress);
   event.x = 25;
   event.y = 7;
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   runPendingTasks();
   EXPECT_EQ(25, client.longpressX());
   EXPECT_EQ(7, client.longpressY());
@@ -2164,7 +2164,8 @@ TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
   event.sourceDevice = WebGestureDeviceTouchscreen;
   event.x = 3;
   event.y = 8;
-  EXPECT_EQ(WebInputEventResult::NotHandled, webView->handleInputEvent(event));
+  EXPECT_EQ(WebInputEventResult::NotHandled,
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
   webView->close();
 }
 
@@ -2187,7 +2188,8 @@ TEST_P(WebViewTest, LongPressEmptyDiv) {
   event.x = 250;
   event.y = 150;
 
-  EXPECT_EQ(WebInputEventResult::NotHandled, webView->handleInputEvent(event));
+  EXPECT_EQ(WebInputEventResult::NotHandled,
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
 }
 
 TEST_P(WebViewTest, LongPressEmptyDivAlwaysShow) {
@@ -2210,7 +2212,7 @@ TEST_P(WebViewTest, LongPressEmptyDivAlwaysShow) {
   event.y = 150;
 
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(event));
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
 }
 
 TEST_P(WebViewTest, LongPressObject) {
@@ -2233,7 +2235,7 @@ TEST_P(WebViewTest, LongPressObject) {
   event.y = 10;
 
   EXPECT_NE(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(event));
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
 
   HTMLElement* element =
       toHTMLElement(webView->mainFrame()->document().getElementById("obj"));
@@ -2260,7 +2262,7 @@ TEST_P(WebViewTest, LongPressObjectFallback) {
   event.y = 10;
 
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(event));
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
 
   HTMLElement* element =
       toHTMLElement(webView->mainFrame()->document().getElementById("obj"));
@@ -2287,7 +2289,7 @@ TEST_P(WebViewTest, LongPressImage) {
   event.y = 10;
 
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(event));
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
 }
 
 TEST_P(WebViewTest, LongPressVideo) {
@@ -2310,7 +2312,7 @@ TEST_P(WebViewTest, LongPressVideo) {
   event.y = 10;
 
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(event));
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
 }
 
 TEST_P(WebViewTest, LongPressLink) {
@@ -2333,7 +2335,7 @@ TEST_P(WebViewTest, LongPressLink) {
   event.y = 300;
 
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(event));
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
 }
 
 TEST_P(WebViewTest, showContextMenuOnLongPressingLinks) {
@@ -2383,7 +2385,7 @@ TEST_P(WebViewTest, LongPressEmptyEditableSelection) {
   event.y = 10;
 
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(event));
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
 }
 
 TEST_P(WebViewTest, LongPressEmptyNonEditableSelection) {
@@ -2406,7 +2408,7 @@ TEST_P(WebViewTest, LongPressEmptyNonEditableSelection) {
   WebLocalFrameImpl* frame = webView->mainFrameImpl();
 
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(event));
+            webView->handleInputEvent(WebCoalescedInputEvent(event)));
   EXPECT_TRUE(frame->selectionAsText().isEmpty());
 }
 
@@ -2460,7 +2462,7 @@ TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   event.y = 25;
   event.data.tap.tapCount = 2;
 
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->selectionAsText().isEmpty());
 
   HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(
@@ -2473,7 +2475,7 @@ TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   EXPECT_TRUE(frame->selectionAsText().isEmpty());
 
   // Double-tap past last word of textbox.
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->selectionAsText().isEmpty());
 }
 #endif
@@ -2535,7 +2537,7 @@ TEST_P(WebViewTest, BlinkCaretOnClosingContextMenu) {
   mouseEvent.x = 1;
   mouseEvent.y = 1;
   mouseEvent.clickCount = 1;
-  webView->handleInputEvent(mouseEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
   runPendingTasks();
 
   WebLocalFrameImpl* mainFrame = webView->mainFrameImpl();
@@ -2590,60 +2592,60 @@ TEST_P(WebViewTest, KeyDownScrollsHandled) {
   // RawKeyDown pagedown should be handled.
   keyEvent.windowsKeyCode = VKEY_NEXT;
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   // Coalesced KeyDown arrow-down should be handled.
   keyEvent.windowsKeyCode = VKEY_DOWN;
   keyEvent.setType(WebInputEvent::KeyDown);
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   // Ctrl-Home should be handled...
   keyEvent.windowsKeyCode = VKEY_HOME;
   keyEvent.setModifiers(WebInputEvent::ControlKey);
   keyEvent.setType(WebInputEvent::RawKeyDown);
   EXPECT_EQ(WebInputEventResult::NotHandled,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   // But Ctrl-Down should not.
   keyEvent.windowsKeyCode = VKEY_DOWN;
   keyEvent.setModifiers(WebInputEvent::ControlKey);
   keyEvent.setType(WebInputEvent::RawKeyDown);
   EXPECT_EQ(WebInputEventResult::NotHandled,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   // Shift, meta, and alt should not be handled.
   keyEvent.windowsKeyCode = VKEY_NEXT;
   keyEvent.setModifiers(WebInputEvent::ShiftKey);
   keyEvent.setType(WebInputEvent::RawKeyDown);
   EXPECT_EQ(WebInputEventResult::NotHandled,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   keyEvent.windowsKeyCode = VKEY_NEXT;
   keyEvent.setModifiers(WebInputEvent::MetaKey);
   keyEvent.setType(WebInputEvent::RawKeyDown);
   EXPECT_EQ(WebInputEventResult::NotHandled,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   keyEvent.windowsKeyCode = VKEY_NEXT;
   keyEvent.setModifiers(WebInputEvent::AltKey);
   keyEvent.setType(WebInputEvent::RawKeyDown);
   EXPECT_EQ(WebInputEventResult::NotHandled,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   // System-key labeled Alt-Down (as in Windows) should do nothing,
   // but non-system-key labeled Alt-Down (as in Mac) should be handled
@@ -2653,18 +2655,18 @@ TEST_P(WebViewTest, KeyDownScrollsHandled) {
   keyEvent.isSystemKey = true;
   keyEvent.setType(WebInputEvent::RawKeyDown);
   EXPECT_EQ(WebInputEventResult::NotHandled,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   keyEvent.windowsKeyCode = VKEY_DOWN;
   keyEvent.setModifiers(WebInputEvent::AltKey);
   keyEvent.isSystemKey = false;
   keyEvent.setType(WebInputEvent::RawKeyDown);
   EXPECT_EQ(WebInputEventResult::HandledSystem,
-            webView->handleInputEvent(keyEvent));
+            webView->handleInputEvent(WebCoalescedInputEvent(keyEvent)));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 }
 
 static void configueCompositingWebView(WebSettings* settings) {
@@ -2701,7 +2703,7 @@ TEST_P(WebViewTest, ShowPressOnTransformedLink) {
   event.y = 20;
 
   // Just make sure we don't hit any asserts.
-  webViewImpl->handleInputEvent(event);
+  webViewImpl->handleInputEvent(WebCoalescedInputEvent(event));
 }
 
 class MockAutofillClient : public WebAutofillClient {
@@ -2825,7 +2827,7 @@ TEST_P(WebViewTest, CompositionNotCancelledByBackspace) {
                               WebInputEvent::TimeStampForTesting);
     keyEvent.domKey = Platform::current()->domKeyEnumFromString("\b");
     keyEvent.windowsKeyCode = VKEY_BACK;
-    webView->handleInputEvent(keyEvent);
+    webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
     frame->setEditableSelectionOffsets(6, 6);
     EXPECT_TRUE(activeInputMethodController->setComposition(
@@ -2835,7 +2837,7 @@ TEST_P(WebViewTest, CompositionNotCancelledByBackspace) {
                                   "after pressing Backspace");
 
     keyEvent.setType(WebInputEvent::KeyUp);
-    webView->handleInputEvent(keyEvent);
+    webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
     webView->advanceFocus(false);
   }
@@ -3030,10 +3032,10 @@ static void openDateTimeChooser(WebView* webView,
                             WebInputEvent::TimeStampForTesting);
   keyEvent.domKey = Platform::current()->domKeyEnumFromString(" ");
   keyEvent.windowsKeyCode = VKEY_SPACE;
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 }
 
 // TODO(crbug.com/605112) This test is crashing on Android (Nexus 4) bot.
@@ -3615,9 +3617,9 @@ TEST_P(WebViewTest, FirstUserGestureObservedKeyEvent) {
                             WebInputEvent::TimeStampForTesting);
   keyEvent.domKey = Platform::current()->domKeyEnumFromString(" ");
   keyEvent.windowsKeyCode = VKEY_SPACE;
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
   keyEvent.setType(WebInputEvent::KeyUp);
-  webView->handleInputEvent(keyEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(keyEvent));
 
   EXPECT_EQ(1, client.getUserGestureNotificationsCount());
   frame->setAutofillClient(0);
@@ -3641,9 +3643,9 @@ TEST_P(WebViewTest, FirstUserGestureObservedMouseEvent) {
   mouseEvent.x = 1;
   mouseEvent.y = 1;
   mouseEvent.clickCount = 1;
-  webView->handleInputEvent(mouseEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
   mouseEvent.setType(WebInputEvent::MouseUp);
-  webView->handleInputEvent(mouseEvent);
+  webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
 
   EXPECT_EQ(1, client.getUserGestureNotificationsCount());
   frame->setAutofillClient(0);

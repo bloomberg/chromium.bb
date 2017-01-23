@@ -70,12 +70,15 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
   }
 
   void HandleEventOnMainThread(int routing_id,
-                               const blink::WebInputEvent* event,
+                               const blink::WebCoalescedInputEvent* event,
                                const ui::LatencyInfo& latency,
                                InputEventDispatchType type) override {
     EXPECT_EQ(kTestRoutingID, routing_id);
-    handled_events_.push_back(ui::WebInputEventTraits::Clone(*event));
-    queue_->EventHandled(event->type(), INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+    handled_events_.push_back(blink::WebCoalescedInputEvent(
+        event->event(), event->getCoalescedEventsPointers()));
+
+    queue_->EventHandled(event->event().type(),
+                         INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   }
 
   void SendInputEventAck(int routing_id,
@@ -125,7 +128,8 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
   blink::scheduler::MockRendererScheduler renderer_scheduler_;
   scoped_refptr<MainThreadEventQueue> queue_;
-  std::vector<blink::WebScopedInputEvent> handled_events_;
+  std::vector<blink::WebCoalescedInputEvent> handled_events_;
+
   std::vector<uint32_t> additional_acked_events_;
   int raf_aligned_input_setting_;
   bool needs_main_frame_;
@@ -154,12 +158,16 @@ TEST_P(MainThreadEventQueueTest, NonBlockingWheel) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(2u, handled_events_.size());
+  for (const auto& coalesced_event : handled_events_) {
+    EXPECT_EQ(2u, coalesced_event.coalescedEventSize());
+  }
 
   {
-    EXPECT_EQ(kEvents[0].size(), handled_events_.at(0)->size());
-    EXPECT_EQ(kEvents[0].type(), handled_events_.at(0)->type());
+    EXPECT_EQ(kEvents[0].size(), handled_events_.at(0).event().size());
+    EXPECT_EQ(kEvents[0].type(), handled_events_.at(0).event().type());
     const WebMouseWheelEvent* last_wheel_event =
-        static_cast<const WebMouseWheelEvent*>(handled_events_.at(0).get());
+        static_cast<const WebMouseWheelEvent*>(
+            handled_events_.at(0).eventPointer());
     EXPECT_EQ(WebInputEvent::DispatchType::ListenersNonBlockingPassive,
               last_wheel_event->dispatchType);
     WebMouseWheelEvent coalesced_event = kEvents[0];
@@ -170,14 +178,52 @@ TEST_P(MainThreadEventQueueTest, NonBlockingWheel) {
   }
 
   {
+    WebMouseWheelEvent coalesced_event = kEvents[0];
+    std::vector<const WebInputEvent*> coalesced_events =
+        handled_events_[0].getCoalescedEventsPointers();
+    const WebMouseWheelEvent* coalesced_wheel_event0 =
+        static_cast<const WebMouseWheelEvent*>(coalesced_events[0]);
+    coalesced_event.dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    EXPECT_EQ(coalesced_event, *coalesced_wheel_event0);
+
+    coalesced_event = kEvents[1];
+    const WebMouseWheelEvent* coalesced_wheel_event1 =
+        static_cast<const WebMouseWheelEvent*>(coalesced_events[1]);
+    coalesced_event.dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    EXPECT_EQ(coalesced_event, *coalesced_wheel_event1);
+  }
+
+  {
     const WebMouseWheelEvent* last_wheel_event =
-        static_cast<const WebMouseWheelEvent*>(handled_events_.at(1).get());
+        static_cast<const WebMouseWheelEvent*>(
+            handled_events_.at(1).eventPointer());
     WebMouseWheelEvent coalesced_event = kEvents[2];
     ui::Coalesce(kEvents[3], &coalesced_event);
     coalesced_event.dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_EQ(coalesced_event, *last_wheel_event);
   }
+
+  {
+    WebMouseWheelEvent coalesced_event = kEvents[2];
+    std::vector<const WebInputEvent*> coalesced_events =
+        handled_events_[1].getCoalescedEventsPointers();
+    const WebMouseWheelEvent* coalesced_wheel_event0 =
+        static_cast<const WebMouseWheelEvent*>(coalesced_events[0]);
+    coalesced_event.dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    EXPECT_EQ(coalesced_event, *coalesced_wheel_event0);
+
+    coalesced_event = kEvents[3];
+    const WebMouseWheelEvent* coalesced_wheel_event1 =
+        static_cast<const WebMouseWheelEvent*>(coalesced_events[1]);
+    coalesced_event.dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    EXPECT_EQ(coalesced_event, *coalesced_wheel_event1);
+  }
+
   histogram_tester.ExpectUniqueSample(kCoalescedCountHistogram, 1, 2);
 }
 
@@ -204,31 +250,67 @@ TEST_P(MainThreadEventQueueTest, NonBlockingTouch) {
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(3u, handled_events_.size());
 
-  EXPECT_EQ(kEvents[0].size(), handled_events_.at(0)->size());
-  EXPECT_EQ(kEvents[0].type(), handled_events_.at(0)->type());
+  EXPECT_EQ(kEvents[0].size(), handled_events_.at(0).event().size());
+  EXPECT_EQ(kEvents[0].type(), handled_events_.at(0).event().type());
   const WebTouchEvent* last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(0).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(0).eventPointer());
   kEvents[0].dispatchType =
       WebInputEvent::DispatchType::ListenersNonBlockingPassive;
   EXPECT_EQ(kEvents[0], *last_touch_event);
 
-  EXPECT_EQ(kEvents[1].size(), handled_events_.at(1)->size());
-  EXPECT_EQ(kEvents[1].type(), handled_events_.at(1)->type());
+  {
+    EXPECT_EQ(1u, handled_events_[0].coalescedEventSize());
+    const WebTouchEvent* coalesced_touch_event =
+        static_cast<const WebTouchEvent*>(
+            handled_events_[0].getCoalescedEventsPointers()[0]);
+    EXPECT_EQ(kEvents[0], *coalesced_touch_event);
+  }
+
+  EXPECT_EQ(kEvents[1].size(), handled_events_.at(1).event().size());
+  EXPECT_EQ(kEvents[1].type(), handled_events_.at(1).event().type());
   last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(1).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(1).eventPointer());
   kEvents[1].dispatchType =
       WebInputEvent::DispatchType::ListenersNonBlockingPassive;
   EXPECT_EQ(kEvents[1], *last_touch_event);
 
-  EXPECT_EQ(kEvents[2].size(), handled_events_.at(1)->size());
-  EXPECT_EQ(kEvents[2].type(), handled_events_.at(2)->type());
+  {
+    EXPECT_EQ(1u, handled_events_[1].coalescedEventSize());
+    const WebTouchEvent* coalesced_touch_event =
+        static_cast<const WebTouchEvent*>(
+            handled_events_[1].getCoalescedEventsPointers()[0]);
+    EXPECT_EQ(kEvents[1], *coalesced_touch_event);
+  }
+
+  EXPECT_EQ(kEvents[2].size(), handled_events_.at(1).event().size());
+  EXPECT_EQ(kEvents[2].type(), handled_events_.at(2).event().type());
   last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(2).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(2).eventPointer());
   WebTouchEvent coalesced_event = kEvents[2];
   ui::Coalesce(kEvents[3], &coalesced_event);
   coalesced_event.dispatchType =
       WebInputEvent::DispatchType::ListenersNonBlockingPassive;
   EXPECT_EQ(coalesced_event, *last_touch_event);
+
+  {
+    EXPECT_EQ(2u, handled_events_[2].coalescedEventSize());
+    WebTouchEvent coalesced_event = kEvents[2];
+    std::vector<const WebInputEvent*> coalesced_events =
+        handled_events_[2].getCoalescedEventsPointers();
+    const WebTouchEvent* coalesced_touch_event0 =
+        static_cast<const WebTouchEvent*>(coalesced_events[0]);
+    coalesced_event.dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    EXPECT_EQ(coalesced_event, *coalesced_touch_event0);
+
+    coalesced_event = kEvents[3];
+    const WebTouchEvent* coalesced_touch_event1 =
+        static_cast<const WebTouchEvent*>(coalesced_events[1]);
+    coalesced_event.dispatchType =
+        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    EXPECT_EQ(coalesced_event, *coalesced_touch_event1);
+  }
+
   histogram_tester.ExpectBucketCount(kCoalescedCountHistogram, 0, 1);
   histogram_tester.ExpectBucketCount(kCoalescedCountHistogram, 1, 1);
 }
@@ -297,10 +379,11 @@ TEST_P(MainThreadEventQueueTest, InterleavedEvents) {
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(2u, handled_events_.size());
   {
-    EXPECT_EQ(kWheelEvents[0].size(), handled_events_.at(0)->size());
-    EXPECT_EQ(kWheelEvents[0].type(), handled_events_.at(0)->type());
+    EXPECT_EQ(kWheelEvents[0].size(), handled_events_.at(0).event().size());
+    EXPECT_EQ(kWheelEvents[0].type(), handled_events_.at(0).event().type());
     const WebMouseWheelEvent* last_wheel_event =
-        static_cast<const WebMouseWheelEvent*>(handled_events_.at(0).get());
+        static_cast<const WebMouseWheelEvent*>(
+            handled_events_.at(0).eventPointer());
     EXPECT_EQ(WebInputEvent::DispatchType::ListenersNonBlockingPassive,
               last_wheel_event->dispatchType);
     WebMouseWheelEvent coalesced_event = kWheelEvents[0];
@@ -310,10 +393,10 @@ TEST_P(MainThreadEventQueueTest, InterleavedEvents) {
     EXPECT_EQ(coalesced_event, *last_wheel_event);
   }
   {
-    EXPECT_EQ(kTouchEvents[0].size(), handled_events_.at(1)->size());
-    EXPECT_EQ(kTouchEvents[0].type(), handled_events_.at(1)->type());
+    EXPECT_EQ(kTouchEvents[0].size(), handled_events_.at(1).event().size());
+    EXPECT_EQ(kTouchEvents[0].type(), handled_events_.at(1).event().type());
     const WebTouchEvent* last_touch_event =
-        static_cast<const WebTouchEvent*>(handled_events_.at(1).get());
+        static_cast<const WebTouchEvent*>(handled_events_.at(1).eventPointer());
     WebTouchEvent coalesced_event = kTouchEvents[0];
     ui::Coalesce(kTouchEvents[1], &coalesced_event);
     coalesced_event.dispatchType =
@@ -503,11 +586,11 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(1u, handled_events_.size());
-  EXPECT_EQ(kEvents.size(), handled_events_.at(0)->size());
-  EXPECT_EQ(kEvents.type(), handled_events_.at(0)->type());
+  EXPECT_EQ(kEvents.size(), handled_events_.at(0).event().size());
+  EXPECT_EQ(kEvents.type(), handled_events_.at(0).event().type());
   EXPECT_TRUE(last_touch_start_forced_nonblocking_due_to_fling());
   const WebTouchEvent* last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(0).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(0).eventPointer());
   kEvents.dispatchType = WebInputEvent::ListenersForcedNonBlockingDueToFling;
   EXPECT_EQ(kEvents, *last_touch_event);
 
@@ -520,11 +603,11 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(2u, handled_events_.size());
-  EXPECT_EQ(kEvents.size(), handled_events_.at(1)->size());
-  EXPECT_EQ(kEvents.type(), handled_events_.at(1)->type());
+  EXPECT_EQ(kEvents.size(), handled_events_.at(1).event().size());
+  EXPECT_EQ(kEvents.type(), handled_events_.at(1).event().type());
   EXPECT_TRUE(last_touch_start_forced_nonblocking_due_to_fling());
   last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(1).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(1).eventPointer());
   kEvents.dispatchType = WebInputEvent::ListenersForcedNonBlockingDueToFling;
   EXPECT_EQ(kEvents, *last_touch_event);
 
@@ -535,11 +618,11 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(3u, handled_events_.size());
-  EXPECT_EQ(kEvents.size(), handled_events_.at(2)->size());
-  EXPECT_EQ(kEvents.type(), handled_events_.at(2)->type());
+  EXPECT_EQ(kEvents.size(), handled_events_.at(2).event().size());
+  EXPECT_EQ(kEvents.type(), handled_events_.at(2).event().type());
   EXPECT_EQ(kEvents.dispatchType, WebInputEvent::Blocking);
   last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(2).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(2).eventPointer());
   EXPECT_EQ(kEvents, *last_touch_event);
 
   kEvents.ReleasePoint(0);
@@ -548,11 +631,11 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(4u, handled_events_.size());
-  EXPECT_EQ(kEvents.size(), handled_events_.at(3)->size());
-  EXPECT_EQ(kEvents.type(), handled_events_.at(3)->type());
+  EXPECT_EQ(kEvents.size(), handled_events_.at(3).event().size());
+  EXPECT_EQ(kEvents.type(), handled_events_.at(3).event().type());
   EXPECT_EQ(kEvents.dispatchType, WebInputEvent::Blocking);
   last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(3).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(3).eventPointer());
   EXPECT_EQ(kEvents, *last_touch_event);
 }
 
@@ -567,12 +650,12 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(1u, handled_events_.size());
-  EXPECT_EQ(kEvents.size(), handled_events_.at(0)->size());
-  EXPECT_EQ(kEvents.type(), handled_events_.at(0)->type());
+  EXPECT_EQ(kEvents.size(), handled_events_.at(0).event().size());
+  EXPECT_EQ(kEvents.type(), handled_events_.at(0).event().type());
   EXPECT_EQ(kEvents.dispatchType, WebInputEvent::Blocking);
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
   const WebTouchEvent* last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(0).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(0).eventPointer());
   EXPECT_EQ(kEvents, *last_touch_event);
 
   set_enable_fling_passive_listener_flag(false);
@@ -581,12 +664,12 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(2u, handled_events_.size());
-  EXPECT_EQ(kEvents.size(), handled_events_.at(1)->size());
-  EXPECT_EQ(kEvents.type(), handled_events_.at(1)->type());
+  EXPECT_EQ(kEvents.size(), handled_events_.at(1).event().size());
+  EXPECT_EQ(kEvents.type(), handled_events_.at(1).event().type());
   EXPECT_EQ(kEvents.dispatchType, WebInputEvent::Blocking);
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
   last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(1).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(1).eventPointer());
   EXPECT_EQ(kEvents, *last_touch_event);
 
   set_enable_fling_passive_listener_flag(true);
@@ -595,12 +678,12 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(3u, handled_events_.size());
-  EXPECT_EQ(kEvents.size(), handled_events_.at(2)->size());
-  EXPECT_EQ(kEvents.type(), handled_events_.at(2)->type());
+  EXPECT_EQ(kEvents.size(), handled_events_.at(2).event().size());
+  EXPECT_EQ(kEvents.type(), handled_events_.at(2).event().type());
   EXPECT_EQ(kEvents.dispatchType, WebInputEvent::Blocking);
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
   last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(2).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(2).eventPointer());
   EXPECT_EQ(kEvents, *last_touch_event);
 
   kEvents.MovePoint(0, 30, 30);
@@ -609,12 +692,12 @@ TEST_P(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
   EXPECT_EQ(4u, handled_events_.size());
-  EXPECT_EQ(kEvents.size(), handled_events_.at(3)->size());
-  EXPECT_EQ(kEvents.type(), handled_events_.at(3)->type());
+  EXPECT_EQ(kEvents.size(), handled_events_.at(3).event().size());
+  EXPECT_EQ(kEvents.type(), handled_events_.at(3).event().type());
   EXPECT_EQ(kEvents.dispatchType, WebInputEvent::Blocking);
   EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
   last_touch_event =
-      static_cast<const WebTouchEvent*>(handled_events_.at(3).get());
+      static_cast<const WebTouchEvent*>(handled_events_.at(3).eventPointer());
   EXPECT_EQ(kEvents, *last_touch_event);
 }
 

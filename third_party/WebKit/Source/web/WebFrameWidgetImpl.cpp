@@ -308,7 +308,8 @@ void WebFrameWidgetImpl::themeChanged() {
 const WebInputEvent* WebFrameWidgetImpl::m_currentInputEvent = nullptr;
 
 WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
-    const WebInputEvent& inputEvent) {
+    const WebCoalescedInputEvent& coalescedEvent) {
+  const WebInputEvent& inputEvent = coalescedEvent.event();
   TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type",
                WebInputEvent::GetName(inputEvent.type()));
 
@@ -379,8 +380,8 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
     return WebInputEventResult::HandledSystem;
   }
 
-  return PageWidgetDelegate::handleInputEvent(
-      *this, WebCoalescedInputEvent(inputEvent), m_localRoot->frame());
+  return PageWidgetDelegate::handleInputEvent(*this, coalescedEvent,
+                                              m_localRoot->frame());
 }
 
 void WebFrameWidgetImpl::setCursorVisibilityState(bool isVisible) {

@@ -90,8 +90,9 @@ size_t WebCoalescedInputEvent::coalescedEventSize() const {
   return m_coalescedEvents.size();
 }
 
-const WebInputEvent* WebCoalescedInputEvent::coalescedEvent(int index) const {
-  return m_coalescedEvents[index].get();
+const WebInputEvent& WebCoalescedInputEvent::coalescedEvent(
+    size_t index) const {
+  return *m_coalescedEvents[index].get();
 }
 
 std::vector<const WebInputEvent*>
@@ -103,20 +104,18 @@ WebCoalescedInputEvent::getCoalescedEventsPointers() const {
 }
 
 WebCoalescedInputEvent::WebCoalescedInputEvent(WebScopedInputEvent event)
-    : m_event(std::move(event)), m_coalescedEvents() {
+    : m_event(std::move(event)) {
   m_coalescedEvents.push_back(makeWebScopedInputEvent(*(m_event.get())));
 }
 
-WebCoalescedInputEvent::WebCoalescedInputEvent(const WebInputEvent& event)
-    : m_event(), m_coalescedEvents() {
+WebCoalescedInputEvent::WebCoalescedInputEvent(const WebInputEvent& event) {
   m_event = makeWebScopedInputEvent(event);
   m_coalescedEvents.push_back(makeWebScopedInputEvent(event));
 }
 
 WebCoalescedInputEvent::WebCoalescedInputEvent(
     const WebInputEvent& event,
-    const std::vector<const WebInputEvent*>& coalescedEvents)
-    : m_event(), m_coalescedEvents(coalescedEvents.size()) {
+    const std::vector<const WebInputEvent*>& coalescedEvents) {
   m_event = makeWebScopedInputEvent(event);
   for (const auto& coalescedEvent : coalescedEvents)
     m_coalescedEvents.push_back(makeWebScopedInputEvent(*coalescedEvent));

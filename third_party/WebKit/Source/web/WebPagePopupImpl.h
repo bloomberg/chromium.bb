@@ -82,7 +82,7 @@ class WebPagePopupImpl final : public WebPagePopup,
   void paint(WebCanvas*, const WebRect&) override;
   void resize(const WebSize&) override;
   void close() override;
-  WebInputEventResult handleInputEvent(const WebInputEvent&) override;
+  WebInputEventResult handleInputEvent(const WebCoalescedInputEvent&) override;
   void setFocus(bool) override;
   bool isPagePopup() const override { return true; }
   bool isAcceleratedCompositingActive() const override {

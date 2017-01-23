@@ -84,7 +84,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
 
   // MainThreadEventQueueClient methods:
   void HandleEventOnMainThread(int routing_id,
-                               const blink::WebInputEvent* event,
+                               const blink::WebCoalescedInputEvent* event,
                                const ui::LatencyInfo& latency,
                                InputEventDispatchType dispatch_type) override;
   // Send an InputEventAck IPC message. |touch_event_id| represents

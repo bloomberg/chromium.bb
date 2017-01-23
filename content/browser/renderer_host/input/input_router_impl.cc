@@ -428,8 +428,9 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
   const WebInputEvent* event_to_send =
       event_in_viewport ? event_in_viewport.get() : &input_event;
 
-  if (Send(new InputMsg_HandleInputEvent(routing_id(), event_to_send,
-                                         latency_info, dispatch_type))) {
+  if (Send(new InputMsg_HandleInputEvent(
+          routing_id(), event_to_send, std::vector<IPC::WebInputEventPointer>(),
+          latency_info, dispatch_type))) {
     // Ack messages for ignored ack event types should never be sent by the
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.

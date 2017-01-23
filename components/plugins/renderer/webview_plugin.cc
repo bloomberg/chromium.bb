@@ -17,7 +17,7 @@
 #include "content/public/renderer/render_view.h"
 #include "gin/converter.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -219,7 +219,8 @@ blink::WebInputEventResult WebViewPlugin::handleInputEvent(
     return blink::WebInputEventResult::HandledSuppressed;
   }
   current_cursor_ = cursor;
-  blink::WebInputEventResult handled = web_view()->handleInputEvent(event);
+  blink::WebInputEventResult handled =
+      web_view()->handleInputEvent(blink::WebCoalescedInputEvent(event));
   cursor = current_cursor_;
 
   return handled;

@@ -511,11 +511,11 @@ bool WebPagePopupImpl::isViewportPointInWindow(int x, int y) {
 }
 
 WebInputEventResult WebPagePopupImpl::handleInputEvent(
-    const WebInputEvent& event) {
+    const WebCoalescedInputEvent& event) {
   if (m_closing)
     return WebInputEventResult::NotHandled;
   return PageWidgetDelegate::handleInputEvent(
-      *this, WebCoalescedInputEvent(event), m_page->deprecatedLocalMainFrame());
+      *this, event, m_page->deprecatedLocalMainFrame());
 }
 
 void WebPagePopupImpl::setFocus(bool enable) {

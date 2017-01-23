@@ -9,6 +9,8 @@
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/public/renderer/render_view_observer.h"
 
+#include <vector>
+
 namespace blink {
 class WebInputEvent;
 }
@@ -31,9 +33,11 @@ class IdleUserDetector : public RenderViewObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
 
-  void OnHandleInputEvent(const blink::WebInputEvent* event,
-                          const ui::LatencyInfo& latency_info,
-                          InputEventDispatchType dispatch_type);
+  void OnHandleInputEvent(
+      const blink::WebInputEvent* event,
+      const std::vector<const blink::WebInputEvent*>& coalesced_events,
+      const ui::LatencyInfo& latency_info,
+      InputEventDispatchType dispatch_type);
 
   DISALLOW_COPY_AND_ASSIGN(IdleUserDetector);
 };

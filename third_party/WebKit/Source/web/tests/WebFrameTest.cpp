@@ -5846,7 +5846,7 @@ class DisambiguationPopupTestWebViewClient
   bool m_triggered;
 };
 
-static WebGestureEvent fatTap(int x, int y) {
+static WebCoalescedInputEvent fatTap(int x, int y) {
   WebGestureEvent event(WebInputEvent::GestureTap, WebInputEvent::NoModifiers,
                         WebInputEvent::TimeStampForTesting);
   event.sourceDevice = WebGestureDeviceTouchscreen;
@@ -5854,7 +5854,7 @@ static WebGestureEvent fatTap(int x, int y) {
   event.y = y;
   event.data.tap.width = 50;
   event.data.tap.height = 50;
-  return event;
+  return WebCoalescedInputEvent(event);
 }
 
 TEST_P(ParameterizedWebFrameTest, DisambiguationPopup) {
@@ -9726,9 +9726,9 @@ class WebFrameOverscrollTest
     : public WebFrameTest,
       public ::testing::WithParamInterface<blink::WebGestureDevice> {
  protected:
-  WebGestureEvent generateEvent(WebInputEvent::Type type,
-                                float deltaX = 0.0,
-                                float deltaY = 0.0) {
+  WebCoalescedInputEvent generateEvent(WebInputEvent::Type type,
+                                       float deltaX = 0.0,
+                                       float deltaY = 0.0) {
     WebGestureEvent event(type, WebInputEvent::NoModifiers,
                           WebInputEvent::TimeStampForTesting);
     // TODO(wjmaclean): Make sure that touchpad device is only ever used for
@@ -9740,7 +9740,7 @@ class WebFrameOverscrollTest
       event.data.scrollUpdate.deltaX = deltaX;
       event.data.scrollUpdate.deltaY = deltaY;
     }
-    return event;
+    return WebCoalescedInputEvent(event);
   }
 
   void ScrollBegin(FrameTestHelpers::WebViewHelper* webViewHelper) {
@@ -10684,13 +10684,15 @@ TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {
 
   // Try GestureScrollEnd and GestureScrollUpdate first to make sure that not
   // seeing a Begin first doesn't break anything. (This currently happens).
-  webViewHelper.webView()->handleInputEvent(endEvent);
-  webViewHelper.webView()->handleInputEvent(updateEvent);
+  webViewHelper.webView()->handleInputEvent(WebCoalescedInputEvent(endEvent));
+  webViewHelper.webView()->handleInputEvent(
+      WebCoalescedInputEvent(updateEvent));
 
   // Try a full Begin/Update/End cycle.
-  webViewHelper.webView()->handleInputEvent(beginEvent);
-  webViewHelper.webView()->handleInputEvent(updateEvent);
-  webViewHelper.webView()->handleInputEvent(endEvent);
+  webViewHelper.webView()->handleInputEvent(WebCoalescedInputEvent(beginEvent));
+  webViewHelper.webView()->handleInputEvent(
+      WebCoalescedInputEvent(updateEvent));
+  webViewHelper.webView()->handleInputEvent(WebCoalescedInputEvent(endEvent));
 }
 
 TEST_F(WebFrameTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {

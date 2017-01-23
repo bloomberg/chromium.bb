@@ -372,7 +372,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   event.clickCount = 1;
 
   // Make sure the right-click + Copy works in common scenario.
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(webView->mainFrame()->toWebLocalFrame()->executeCommand("Copy"));
   EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(
                                 WebClipboard::Buffer()));
@@ -384,7 +384,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
 
   // Now, let's try a more complex scenario:
   // 1) open the context menu. This will focus the plugin.
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   // 2) document blurs the plugin, because it can.
   webView->clearFocusedElement();
   // 3) Copy should still operate on the context node, even though the focus had
@@ -508,7 +508,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   event.x = 0;
   event.y = 0;
 
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   runPendingTasks();
 
   EXPECT_EQ(WebInputEvent::Undefined, testPlugin->getLastInputEventType());
@@ -519,7 +519,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   event.x = rect.x + rect.width / 2;
   event.y = rect.y + rect.height / 2;
 
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   runPendingTasks();
 
   EXPECT_EQ(WebInputEvent::GestureLongPress,
@@ -557,7 +557,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventTranslated) {
   event.x = rect.x + rect.width / 2;
   event.y = rect.y + rect.height / 2;
 
-  webView->handleInputEvent(event);
+  webView->handleInputEvent(WebCoalescedInputEvent(event));
   runPendingTasks();
 
   EXPECT_EQ(WebInputEvent::MouseWheel, testPlugin->getLastInputEventType());

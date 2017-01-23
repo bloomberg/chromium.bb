@@ -98,9 +98,9 @@ class BrowserControlsTest : public testing::Test {
         WebString::fromUTF8(fileName.c_str()));
   }
 
-  WebGestureEvent generateEvent(WebInputEvent::Type type,
-                                int deltaX = 0,
-                                int deltaY = 0) {
+  WebCoalescedInputEvent generateEvent(WebInputEvent::Type type,
+                                       int deltaX = 0,
+                                       int deltaY = 0) {
     WebGestureEvent event(type, WebInputEvent::NoModifiers,
                           WebInputEvent::TimeStampForTesting);
     event.sourceDevice = WebGestureDeviceTouchscreen;
@@ -110,7 +110,7 @@ class BrowserControlsTest : public testing::Test {
       event.data.scrollUpdate.deltaX = deltaX;
       event.data.scrollUpdate.deltaY = deltaY;
     }
-    return event;
+    return WebCoalescedInputEvent(event);
   }
 
   void verticalScroll(float deltaY) {

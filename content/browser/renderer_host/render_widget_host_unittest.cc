@@ -1574,7 +1574,7 @@ void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
   EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
 
   const WebInputEvent* event = std::get<0>(params);
-  ui::LatencyInfo latency_info = std::get<1>(params);
+  ui::LatencyInfo latency_info = std::get<2>(params);
 
   EXPECT_TRUE(event->type() == expected_type);
   EXPECT_TRUE(latency_info.FindLatency(

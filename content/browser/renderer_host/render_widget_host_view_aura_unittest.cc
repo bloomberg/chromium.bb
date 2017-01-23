@@ -674,7 +674,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       return;
     }
 
-    InputEventDispatchType dispatch_type = std::get<2>(params);
+    InputEventDispatchType dispatch_type = std::get<3>(params);
     if (dispatch_type == InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING)
       return;
 

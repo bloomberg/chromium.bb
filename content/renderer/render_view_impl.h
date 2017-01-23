@@ -642,9 +642,11 @@ class CONTENT_EXPORT RenderViewImpl
   void UpdateWebViewWithDeviceScaleFactor();
 
   // Send the appropriate ack to be able discard this input event message.
-  void OnDiscardInputEvent(const blink::WebInputEvent* input_event,
-                           const ui::LatencyInfo& latency_info,
-                           InputEventDispatchType dispatch_type);
+  void OnDiscardInputEvent(
+      const blink::WebInputEvent* input_event,
+      const std::vector<const blink::WebInputEvent*>& coalesced_events,
+      const ui::LatencyInfo& latency_info,
+      InputEventDispatchType dispatch_type);
 
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put

@@ -19,7 +19,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -48,8 +48,9 @@ enum {
 
 class MockWebWidget : public blink::WebWidget {
  public:
-  MOCK_METHOD1(handleInputEvent,
-               blink::WebInputEventResult(const blink::WebInputEvent&));
+  MOCK_METHOD1(
+      handleInputEvent,
+      blink::WebInputEventResult(const blink::WebCoalescedInputEvent&));
 };
 
 }  // namespace
@@ -74,7 +75,7 @@ class InteractiveRenderWidget : public RenderWidget {
 
   void SendInputEvent(const blink::WebInputEvent& event) {
     OnHandleInputEvent(
-        &event, ui::LatencyInfo(),
+        &event, std::vector<const blink::WebInputEvent*>(), ui::LatencyInfo(),
         ui::WebInputEventTraits::ShouldBlockEventStream(event)
             ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
             : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING);

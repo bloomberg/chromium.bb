@@ -29,6 +29,7 @@
 #include "ui/gl/gpu_preference.h"
 
 using blink::WebCanvas;
+using blink::WebCoalescedInputEvent;
 using blink::WebCompositionUnderline;
 using blink::WebCursorInfo;
 using blink::WebGestureEvent;
@@ -154,9 +155,12 @@ class PepperWidget : public WebWidget {
 
   void themeChanged() override { NOTIMPLEMENTED(); }
 
-  WebInputEventResult handleInputEvent(const WebInputEvent& event) override {
+  WebInputEventResult handleInputEvent(
+      const WebCoalescedInputEvent& coalesced_event) override {
     if (!widget_->plugin())
       return WebInputEventResult::NotHandled;
+
+    const WebInputEvent& event = coalesced_event.event();
 
     // This cursor info is ignored, we always set the cursor directly from
     // RenderWidgetFullscreenPepper::DidChangeCursor.

@@ -47,7 +47,7 @@
 namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback;
-class WebInputEvent;
+class WebCoalescedInputEvent;
 class WebLayoutAndPaintAsyncCallback;
 class WebPagePopup;
 struct WebPoint;
@@ -116,7 +116,7 @@ class WebWidget {
   virtual void themeChanged() {}
 
   // Called to inform the WebWidget of an input event.
-  virtual WebInputEventResult handleInputEvent(const WebInputEvent&) {
+  virtual WebInputEventResult handleInputEvent(const WebCoalescedInputEvent&) {
     return WebInputEventResult::NotHandled;
   }
 

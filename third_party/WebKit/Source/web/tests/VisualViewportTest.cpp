@@ -1167,12 +1167,12 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
 
   // Do a sanity check with no scale applied.
   webViewImpl()->mainFrameImpl()->setClient(&mockWebFrameClient);
-  webViewImpl()->handleInputEvent(mouseDownEvent);
-  webViewImpl()->handleInputEvent(mouseUpEvent);
+  webViewImpl()->handleInputEvent(WebCoalescedInputEvent(mouseDownEvent));
+  webViewImpl()->handleInputEvent(WebCoalescedInputEvent(mouseUpEvent));
 
   Mock::VerifyAndClearExpectations(&mockWebFrameClient);
   mouseDownEvent.button = WebMouseEvent::Button::Left;
-  webViewImpl()->handleInputEvent(mouseDownEvent);
+  webViewImpl()->handleInputEvent(WebCoalescedInputEvent(mouseDownEvent));
 
   // Now pinch zoom into the page and move the visual viewport. The context menu
   // should still appear at the location of the event, relative to the WebView.
@@ -1185,8 +1185,8 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
                                       mouseDownEvent.x, mouseDownEvent.y)));
 
   mouseDownEvent.button = WebMouseEvent::Button::Right;
-  webViewImpl()->handleInputEvent(mouseDownEvent);
-  webViewImpl()->handleInputEvent(mouseUpEvent);
+  webViewImpl()->handleInputEvent(WebCoalescedInputEvent(mouseDownEvent));
+  webViewImpl()->handleInputEvent(WebCoalescedInputEvent(mouseUpEvent));
 
   // Reset the old client so destruction can occur naturally.
   webViewImpl()->mainFrameImpl()->setClient(oldClient);
@@ -2015,7 +2015,7 @@ TEST_P(VisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly) {
   pinchUpdate.data.pinchUpdate.scale = 2;
   pinchUpdate.data.pinchUpdate.zoomDisabled = false;
 
-  webViewImpl()->handleInputEvent(pinchUpdate);
+  webViewImpl()->handleInputEvent(WebCoalescedInputEvent(pinchUpdate));
 
   VisualViewport& visualViewport =
       webViewImpl()->page()->frameHost().visualViewport();

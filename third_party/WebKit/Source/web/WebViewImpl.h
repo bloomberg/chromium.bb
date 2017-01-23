@@ -140,7 +140,7 @@ class WEB_EXPORT WebViewImpl final
   void compositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) override;
   void themeChanged() override;
-  WebInputEventResult handleInputEvent(const WebInputEvent&) override;
+  WebInputEventResult handleInputEvent(const WebCoalescedInputEvent&) override;
   void setCursorVisibilityState(bool isVisible) override;
   bool hasTouchEventHandlersAt(const WebPoint&) override;
 

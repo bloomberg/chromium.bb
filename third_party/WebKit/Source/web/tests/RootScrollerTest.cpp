@@ -124,24 +124,24 @@ class RootScrollerTest : public ::testing::Test {
     return &doc->rootScrollerController().effectiveRootScroller();
   }
 
-  WebGestureEvent generateTouchGestureEvent(WebInputEvent::Type type,
-                                            int deltaX = 0,
-                                            int deltaY = 0) {
+  WebCoalescedInputEvent generateTouchGestureEvent(WebInputEvent::Type type,
+                                                   int deltaX = 0,
+                                                   int deltaY = 0) {
     return generateGestureEvent(type, WebGestureDeviceTouchscreen, deltaX,
                                 deltaY);
   }
 
-  WebGestureEvent generateWheelGestureEvent(WebInputEvent::Type type,
-                                            int deltaX = 0,
-                                            int deltaY = 0) {
+  WebCoalescedInputEvent generateWheelGestureEvent(WebInputEvent::Type type,
+                                                   int deltaX = 0,
+                                                   int deltaY = 0) {
     return generateGestureEvent(type, WebGestureDeviceTouchpad, deltaX, deltaY);
   }
 
  protected:
-  WebGestureEvent generateGestureEvent(WebInputEvent::Type type,
-                                       WebGestureDevice device,
-                                       int deltaX,
-                                       int deltaY) {
+  WebCoalescedInputEvent generateGestureEvent(WebInputEvent::Type type,
+                                              WebGestureDevice device,
+                                              int deltaX,
+                                              int deltaY) {
     WebGestureEvent event(type, WebInputEvent::NoModifiers,
                           WebInputEvent::TimeStampForTesting);
     event.sourceDevice = device;
@@ -151,7 +151,7 @@ class RootScrollerTest : public ::testing::Test {
       event.data.scrollUpdate.deltaX = deltaX;
       event.data.scrollUpdate.deltaY = deltaY;
     }
-    return event;
+    return WebCoalescedInputEvent(event);
   }
 
   WebViewImpl* initializeInternal(const std::string& url,

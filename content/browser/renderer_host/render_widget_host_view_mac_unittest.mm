@@ -1174,7 +1174,8 @@ class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
         break;
     }
     DCHECK(message);
-    std::tuple<IPC::WebInputEventPointer, ui::LatencyInfo,
+    std::tuple<IPC::WebInputEventPointer,
+               std::vector<IPC::WebInputEventPointer>, ui::LatencyInfo,
                InputEventDispatchType>
         data;
     InputMsg_HandleInputEvent::Read(message, &data);

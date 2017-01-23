@@ -135,11 +135,15 @@ IPC_STRUCT_TRAITS_BEGIN(content::InputEventAck)
   IPC_STRUCT_TRAITS_MEMBER(unique_touch_event_id)
 IPC_STRUCT_TRAITS_END()
 
-// Sends an input event to the render widget.
-IPC_MESSAGE_ROUTED3(InputMsg_HandleInputEvent,
-                    IPC::WebInputEventPointer /* event */,
-                    ui::LatencyInfo /* latency_info */,
-                    content::InputEventDispatchType)
+// Sends an input event to the render widget. The input event in general
+// contains a list of coalesced events and one event that is representative of
+// all those events (https://w3c.github.io/pointerevents/extension.html).
+IPC_MESSAGE_ROUTED4(
+    InputMsg_HandleInputEvent,
+    IPC::WebInputEventPointer /* event */,
+    std::vector<IPC::WebInputEventPointer> /* coalesced events */,
+    ui::LatencyInfo /* latency_info */,
+    content::InputEventDispatchType)
 
 // Sends the cursor visibility state to the render widget.
 IPC_MESSAGE_ROUTED1(InputMsg_CursorVisibilityChange,

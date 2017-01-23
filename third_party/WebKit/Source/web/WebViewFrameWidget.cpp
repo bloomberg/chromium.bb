@@ -84,7 +84,7 @@ void WebViewFrameWidget::themeChanged() {
 }
 
 WebInputEventResult WebViewFrameWidget::handleInputEvent(
-    const WebInputEvent& event) {
+    const WebCoalescedInputEvent& event) {
   return m_webView->handleInputEvent(event);
 }
 

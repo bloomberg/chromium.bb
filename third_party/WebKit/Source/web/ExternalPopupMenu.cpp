@@ -127,7 +127,7 @@ void ExternalPopupMenu::show() {
 }
 
 void ExternalPopupMenu::dispatchEvent(TimerBase*) {
-  m_webView.handleInputEvent(*m_syntheticEvent);
+  m_webView.handleInputEvent(blink::WebCoalescedInputEvent(*m_syntheticEvent));
   m_syntheticEvent.reset();
 }
 

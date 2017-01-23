@@ -212,8 +212,8 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message,
     return;
   blink::WebScopedInputEvent event =
       ui::WebInputEventTraits::Clone(*std::get<0>(params));
-  ui::LatencyInfo latency_info = std::get<1>(params);
-  InputEventDispatchType dispatch_type = std::get<2>(params);
+  ui::LatencyInfo latency_info = std::get<2>(params);
+  InputEventDispatchType dispatch_type = std::get<3>(params);
 
   DCHECK(event);
   DCHECK(dispatch_type == DISPATCH_TYPE_BLOCKING ||
@@ -287,13 +287,14 @@ void InputEventFilter::SendMessageOnIOThread(
 
 void InputEventFilter::HandleEventOnMainThread(
     int routing_id,
-    const blink::WebInputEvent* event,
+    const blink::WebCoalescedInputEvent* event,
     const ui::LatencyInfo& latency_info,
     InputEventDispatchType dispatch_type) {
   TRACE_EVENT_INSTANT0("input", "InputEventFilter::HandlEventOnMainThread",
                        TRACE_EVENT_SCOPE_THREAD);
-  IPC::Message new_msg =
-      InputMsg_HandleInputEvent(routing_id, event, latency_info, dispatch_type);
+  IPC::Message new_msg = InputMsg_HandleInputEvent(
+      routing_id, &event->event(), event->getCoalescedEventsPointers(),
+      latency_info, dispatch_type);
   main_listener_.Run(new_msg);
 }
 

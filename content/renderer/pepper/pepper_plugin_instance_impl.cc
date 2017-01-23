@@ -2242,7 +2242,7 @@ void PepperPluginInstanceImpl::SimulateInputEvent(
   for (std::vector<std::unique_ptr<WebInputEvent>>::iterator it =
            events.begin();
        it != events.end(); ++it) {
-    widget->handleInputEvent(*it->get());
+    widget->handleInputEvent(blink::WebCoalescedInputEvent(*it->get()));
   }
 }
 

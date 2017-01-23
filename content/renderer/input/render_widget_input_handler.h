@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_dispatch_type.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
@@ -38,9 +38,10 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   virtual ~RenderWidgetInputHandler();
 
   // Handle input events from the input event provider.
-  virtual void HandleInputEvent(const blink::WebInputEvent& input_event,
-                                const ui::LatencyInfo& latency_info,
-                                InputEventDispatchType dispatch_type);
+  virtual void HandleInputEvent(
+      const blink::WebCoalescedInputEvent& coalesced_event,
+      const ui::LatencyInfo& latency_info,
+      InputEventDispatchType dispatch_type);
 
   // Handle overscroll from Blink.
   void DidOverscrollFromBlink(

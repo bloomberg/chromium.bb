@@ -961,7 +961,7 @@ WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(
   wheelEvent.wheelTicksX = 0;
   wheelEvent.wheelTicksY = pinchEvent.data.pinchUpdate.scale > 1 ? 1 : -1;
 
-  return handleInputEvent(wheelEvent);
+  return handleInputEvent(blink::WebCoalescedInputEvent(wheelEvent));
 }
 
 void WebViewImpl::transferActiveWheelFlingAnimation(
@@ -2104,7 +2104,8 @@ bool WebViewImpl::hasVerticalScrollbar() {
 const WebInputEvent* WebViewImpl::m_currentInputEvent = nullptr;
 
 WebInputEventResult WebViewImpl::handleInputEvent(
-    const WebInputEvent& inputEvent) {
+    const WebCoalescedInputEvent& coalescedEvent) {
+  const WebInputEvent& inputEvent = coalescedEvent.event();
   // TODO(dcheng): The fact that this is getting called when there is no local
   // main frame is problematic and probably indicates a bug in the input event
   // routing code.
@@ -2208,7 +2209,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
 
   // FIXME: This should take in the intended frame, not the local frame root.
   WebInputEventResult result = PageWidgetDelegate::handleInputEvent(
-      *this, WebCoalescedInputEvent(inputEvent), mainFrameImpl()->frame());
+      *this, coalescedEvent, mainFrameImpl()->frame());
   if (result != WebInputEventResult::NotHandled)
     return result;
 
