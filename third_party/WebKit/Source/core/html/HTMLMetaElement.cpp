@@ -459,7 +459,7 @@ static bool inDocumentHead(HTMLMetaElement* element) {
 }
 
 void HTMLMetaElement::process() {
-  if (!isConnected())
+  if (!isInDocumentTree())
     return;
 
   // All below situations require a content attribute (which can be the empty
