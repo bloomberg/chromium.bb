@@ -150,3 +150,65 @@ of only the content_providers data.
 This will safely do the push for you, ensuring that the automated job
 does not collide with your own.
 
+---------------------------------------
+VM: Some notes and troubleshooting tips
+
+Q1: How is the datastore populated in the VM?
+A:  /home/git-processor/update-docs-full.sh
+    This script is run frequently (TODO(lazyboy): How frequently?) through cron
+    to sync the chromium git repo in this machine. Once it has done so, it will
+    populate docserver data store and write that in
+    /home/git-processor/.docserver_cache. Docserver uses this file as data
+    sources to populate its documentation.
+
+Q2: Is chromium repo in the VM in sync?
+A:  Check the git logs on the repo.
+
+    $ sudo su git-processor
+    $ cd ~/chrome/src
+    $ git log
+
+    Verify that chromium checkout is up-to-date by looking at the latest git log
+    results.
+
+Q3: Did the last run to populate .docserver_cache succeed?
+A:  Check the logs.
+
+    $ sudo -s # You need to be root.
+    $ vi /var/log/user.log
+
+Jan 19 21:51:39 git-processor logger: Acquiring docserver update lock...
+Jan 19 21:51:39 git-processor logger: INFO:root:Starting refresh from commit 1ee51d53b10f8d2688a225d6cbd33dfdf8965403...
+...
+    Specifically you want to see some logs about writing keys to the
+    cache file, e.g.:
+Jan 19 21:33:21 git-processor logger: INFO:root:Saved 644 keys to /home/git-processor/.docserver_cache.
+
+Q4: Docs stopped updating for a while, what to do?
+A:  Start by checking whether the appengine instance contains datastore *close*
+    to HEAD. You can do this by visiting
+
+    https://developer.chrome.com/_query_commit/master
+
+    Then check the commit hash. If the commit hash is behind by more than few
+    days from HEAD then this means that last run(s) to populate .docserver_cache
+    failed in the VM.  An example of this happening can be found in:
+    https://crbug.com/682376.
+
+    Start checking the logs (Q3). If you see that there are no logs after
+    "Acquiring docserver update lock..", then the script might have hung. The
+    script uses /var/lock/docserver-update.lock lock file with flock. The
+    process/script probably is still running (I don't know why that happens
+    yet). You'd need to verify that this is the case.
+    For example, I ran:
+
+    $ ps -e -o  lstart,pid,ppid,cmd | grep update-docs
+
+Sat Oct  1 15:00:00 2016 10230 10229 /bin/sh -c /usr/bin/env bash /home/git-processor/update-docs-full.sh 2>&1 | /usr/bin>
+Sat Oct  1 15:00:00 2016 10231 10230 bash /home/git-processor/update-docs-full.sh
+Wed Dec 14 19:50:01 2016 10744 10743 /bin/sh -c /usr/bin/env bash /home/git-processor/update-docs-full.sh 2>&1 | /usr/bin>
+Wed Dec 14 19:50:01 2016 10745 10744 bash /home/git-processor/update-docs-full.sh
+    Once you're sure that one or more of these processes are running for a
+    while, you'd want to kill them, which should be "safe" (endorsed by rockot@)
+    in most of the cases. If that doesn't work, then delete the lock file. This
+    will let subsequent cron runs to update docserver.
