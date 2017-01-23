@@ -32,13 +32,16 @@ namespace video_capture {
 
 TEST_F(FakeDeviceTest, DISABLED_FrameCallbacksArrive) {
   base::RunLoop wait_loop;
-  const int kNumFramesToWaitFor = 3;
+  // These two constants must be static as a workaround
+  // for a MSVC++ bug about lambda captures, see the discussion at
+  // https://social.msdn.microsoft.com/Forums/SqlServer/4abf18bd-4ae4-4c72-ba3e-3b13e7909d5f
+  static const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
   mojom::ReceiverPtr receiver_proxy;
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
   EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
       .WillRepeatedly(InvokeWithoutArgs(
-          [&wait_loop, &kNumFramesToWaitFor, &num_frames_arrived]() {
+          [&wait_loop, &num_frames_arrived]() {
             num_frames_arrived += 1;
             if (num_frames_arrived >= kNumFramesToWaitFor) {
               wait_loop.Quit();
@@ -54,14 +57,17 @@ TEST_F(FakeDeviceTest, DISABLED_FrameCallbacksArrive) {
 TEST_F(FakeDeviceTest, DISABLED_ReceiveFramesFromFakeCaptureDevice) {
   base::RunLoop wait_loop;
   mojom::ReceiverPtr receiver_proxy;
-  constexpr int num_frames_to_receive = 2;
+  // These two constants must be static as a workaround
+  // for a MSVC++ bug about lambda captures, see the discussion at
+  // https://social.msdn.microsoft.com/Forums/SqlServer/4abf18bd-4ae4-4c72-ba3e-3b13e7909d5f
+  static const int num_frames_to_receive = 2;
   FrameInfo received_frame_infos[num_frames_to_receive];
   int received_frame_count = 0;
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
   EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
       .WillRepeatedly(Invoke(
-          [&received_frame_infos, &received_frame_count, &num_frames_to_receive,
-           &wait_loop](const media::mojom::VideoFramePtr* frame) {
+          [&received_frame_infos, &received_frame_count, &wait_loop]
+          (const media::mojom::VideoFramePtr* frame) {
             if (received_frame_count >= num_frames_to_receive)
               return;
             auto video_frame = frame->To<scoped_refptr<media::VideoFrame>>();
