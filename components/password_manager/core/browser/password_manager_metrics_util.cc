@@ -110,6 +110,10 @@ void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block) {
       should_block);
 }
 
+void LogCountHttpMigratedPasswords(int count) {
+  UMA_HISTOGRAM_COUNTS_100("PasswordManager.HttpPasswordMigrationCount", count);
+}
+
 void LogAccountChooserUsability(AccountChooserUsabilityMetric usability) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialogUsability",
                             usability, ACCOUNT_CHOOSER_USABILITY_COUNT);

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/http_password_migrator.h"
 
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -52,6 +53,8 @@ void HttpPasswordMigrator::OnGetPasswordStoreResults(
     form->skip_zero_click = false;
     password_store_->AddLogin(*form);
   }
+
+  metrics_util::LogCountHttpMigratedPasswords(results.size());
 
   if (consumer_)
     consumer_->ProcessMigratedForms(std::move(results));

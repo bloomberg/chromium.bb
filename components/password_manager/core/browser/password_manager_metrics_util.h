@@ -225,6 +225,9 @@ void LogSyncSigninPromoUserAction(SyncSignInUserAction action);
 // Logs whether a password was rejected due to same origin but different scheme.
 void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block);
 
+// Logs number of passwords migrated from HTTP to HTTPS.
+void LogCountHttpMigratedPasswords(int count);
+
 // Log if the account chooser has empty username or duplicate usernames.
 void LogAccountChooserUsability(AccountChooserUsabilityMetric usability);
 
