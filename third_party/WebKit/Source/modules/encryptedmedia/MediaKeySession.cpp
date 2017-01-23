@@ -33,6 +33,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
@@ -374,7 +375,10 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState,
       m_closedPromise(new ClosedPromise(scriptState->getExecutionContext(),
                                         this,
                                         ClosedPromise::Closed)),
-      m_actionTimer(this, &MediaKeySession::actionTimerFired) {
+      m_actionTimer(
+          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState),
+          this,
+          &MediaKeySession::actionTimerFired) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
   InstanceCounters::incrementCounter(InstanceCounters::MediaKeySessionCounter);
 
