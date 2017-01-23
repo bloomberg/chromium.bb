@@ -72,10 +72,13 @@ static unsigned prerenderRelTypesFromRelAttribute(
   return result;
 }
 
-LinkLoader::LinkLoader(LinkLoaderClient* client)
+LinkLoader::LinkLoader(LinkLoaderClient* client,
+                       RefPtr<WebTaskRunner> taskRunner)
     : m_client(client),
-      m_linkLoadTimer(this, &LinkLoader::linkLoadTimerFired),
-      m_linkLoadingErrorTimer(this, &LinkLoader::linkLoadingErrorTimerFired) {
+      m_linkLoadTimer(taskRunner, this, &LinkLoader::linkLoadTimerFired),
+      m_linkLoadingErrorTimer(taskRunner,
+                              this,
+                              &LinkLoader::linkLoadingErrorTimerFired) {
   DCHECK(m_client);
 }
 

@@ -258,6 +258,10 @@ void HTMLLinkElement::didSendDOMContentLoadedForLinkPrerender() {
   dispatchEvent(Event::create(EventTypeNames::webkitprerenderdomcontentloaded));
 }
 
+RefPtr<WebTaskRunner> HTMLLinkElement::getLoadingTaskRunner() {
+  return TaskRunnerHelper::get(TaskType::Networking, &document());
+}
+
 void HTMLLinkElement::valueWasSet() {
   setSynchronizedLazyAttribute(HTMLNames::sizesAttr, m_sizes->value());
   WebVector<WebSize> webIconSizes =

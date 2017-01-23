@@ -32,6 +32,7 @@
 #define LinkLoaderClient_h
 
 #include "core/CoreExport.h"
+#include "platform/WebTaskRunner.h"
 
 namespace blink {
 
@@ -50,6 +51,8 @@ class CORE_EXPORT LinkLoaderClient : public GarbageCollectedMixin {
   virtual void didStopLinkPrerender() = 0;
   virtual void didSendLoadForLinkPrerender() = 0;
   virtual void didSendDOMContentLoadedForLinkPrerender() = 0;
+
+  virtual RefPtr<WebTaskRunner> getLoadingTaskRunner() = 0;
 };
 
 }  // namespace blink
