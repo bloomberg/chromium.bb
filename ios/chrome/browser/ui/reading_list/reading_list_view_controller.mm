@@ -1110,6 +1110,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
                                 completion:nil];
   if (_readingListModel->size() == 0) {
     [self collectionIsEmpty];
+  } else {
+    [_toolbar setHasReadItem:_readingListModel->unread_size() !=
+                             _readingListModel->size()];
   }
 }
 
