@@ -232,6 +232,10 @@ void ChildAccountService::SetIsChildAccount(bool is_child_account) {
 }
 
 void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
+  // This method may get called when the account info isn't complete yet.
+  // We deliberately don't check for that, as we are only interested in the
+  // child account status.
+
   if (!IsChildAccountDetectionEnabled()) {
     SetIsChildAccount(false);
     return;

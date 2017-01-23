@@ -87,7 +87,9 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
 }
 
 void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
-  DCHECK(info.IsValid());
+  if (!info.IsValid())
+    return;
+
   Profile* profile = Profile::FromWebUI(web_ui());
   AccountTrackerServiceFactory::GetForProfile(profile)->RemoveObserver(this);
 

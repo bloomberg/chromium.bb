@@ -409,6 +409,9 @@ void SigninManager::PostSignedIn() {
 }
 
 void SigninManager::OnAccountUpdated(const AccountInfo& info) {
+  if (!info.IsValid())
+    return;
+
   user_info_fetched_by_account_tracker_ = true;
   PostSignedIn();
 }

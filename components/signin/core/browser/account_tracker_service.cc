@@ -238,7 +238,7 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
       state.info.picture_url = kNoPictureURLFound;
     }
   }
-  if (state.info.IsValid())
+  if (!state.info.gaia.empty())
     NotifyAccountUpdated(state);
   SaveToPrefs(state);
 }
@@ -250,7 +250,7 @@ void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
   if (state.info.is_child_account == is_child_account)
     return;
   state.info.is_child_account = is_child_account;
-  if (state.info.IsValid())
+  if (!state.info.gaia.empty())
     NotifyAccountUpdated(state);
   SaveToPrefs(state);
 }
@@ -361,7 +361,7 @@ void AccountTrackerService::LoadFromPrefs() {
         if (dict->GetBoolean(kAccountChildAccountStatusPath, &is_child_account))
           state.info.is_child_account = is_child_account;
 
-        if (state.info.IsValid())
+        if (!state.info.gaia.empty())
           NotifyAccountUpdated(state);
       }
     }
@@ -496,11 +496,9 @@ std::string AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   AccountState& state = accounts_[info.account_id];
   // Update the missing fields in |state.info| with |info|.
   if (state.info.UpdateWith(info)) {
-    if (state.info.IsValid()) {
-      // Notify only if the account info is fully updated, as it is equivalent
-      // to having the account fully fetched.
+    if (!state.info.gaia.empty())
       NotifyAccountUpdated(state);
-    }
+
     SaveToPrefs(state);
   }
   return info.account_id;
