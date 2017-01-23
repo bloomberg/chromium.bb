@@ -144,6 +144,8 @@ PASS Interfaces for isindex
 PASS Interfaces for ISINDEX 
 PASS Interfaces for kbd 
 PASS Interfaces for KBD 
+PASS Interfaces for keygen 
+PASS Interfaces for KEYGEN 
 PASS Interfaces for label 
 PASS Interfaces for LABEL 
 PASS Interfaces for legend 
