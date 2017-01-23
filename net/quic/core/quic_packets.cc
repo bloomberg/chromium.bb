@@ -226,7 +226,6 @@ SerializedPacket::SerializedPacket(QuicPathId path_id,
       has_ack(has_ack),
       has_stop_waiting(has_stop_waiting),
       transmission_type(NOT_RETRANSMISSION),
-      original_path_id(kInvalidPathId),
       original_packet_number(0) {}
 
 SerializedPacket::SerializedPacket(const SerializedPacket& other) = default;

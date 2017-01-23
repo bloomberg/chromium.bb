@@ -1612,8 +1612,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
 
   if (result.status != WRITE_STATUS_ERROR && debug_visitor_ != nullptr) {
     // Pass the write result to the visitor.
-    debug_visitor_->OnPacketSent(*packet, packet->original_path_id,
-                                 packet->original_packet_number,
+    debug_visitor_->OnPacketSent(*packet, packet->original_packet_number,
                                  packet->transmission_type, packet_send_time);
   }
   if (packet->transmission_type == NOT_RETRANSMISSION) {
