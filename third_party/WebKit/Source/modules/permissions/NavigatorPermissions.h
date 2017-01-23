@@ -26,7 +26,7 @@ class NavigatorPermissions final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  NavigatorPermissions();
+  explicit NavigatorPermissions(Navigator&);
 
   static const char* supplementName();
 

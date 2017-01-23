@@ -41,7 +41,7 @@ class NavigatorShare final : public GarbageCollectedFinalized<NavigatorShare>,
  private:
   class ShareClientImpl;
 
-  NavigatorShare();
+  explicit NavigatorShare(Navigator&);
   static const char* supplementName();
 
   void onConnectionError();

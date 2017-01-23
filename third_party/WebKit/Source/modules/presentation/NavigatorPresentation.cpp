@@ -9,7 +9,8 @@
 
 namespace blink {
 
-NavigatorPresentation::NavigatorPresentation() {}
+NavigatorPresentation::NavigatorPresentation(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {}
 
 // static
 const char* NavigatorPresentation::supplementName() {
@@ -21,7 +22,7 @@ NavigatorPresentation& NavigatorPresentation::from(Navigator& navigator) {
   NavigatorPresentation* supplement = static_cast<NavigatorPresentation*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new NavigatorPresentation();
+    supplement = new NavigatorPresentation(navigator);
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;

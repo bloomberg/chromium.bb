@@ -28,7 +28,7 @@ class WorkerNavigatorPermissions final
  private:
   static const char* supplementName();
 
-  WorkerNavigatorPermissions();
+  explicit WorkerNavigatorPermissions(WorkerNavigator&);
 
   Member<Permissions> m_permissions;
 };

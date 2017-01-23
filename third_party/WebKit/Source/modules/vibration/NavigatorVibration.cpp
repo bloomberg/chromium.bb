@@ -34,7 +34,9 @@
 namespace blink {
 
 NavigatorVibration::NavigatorVibration(Navigator& navigator)
-    : ContextLifecycleObserver(navigator.frame()->document()) {}
+    : Supplement<Navigator>(navigator),
+      ContextLifecycleObserver(navigator.frame() ? navigator.frame()->document()
+                                                 : nullptr) {}
 
 NavigatorVibration::~NavigatorVibration() {}
 

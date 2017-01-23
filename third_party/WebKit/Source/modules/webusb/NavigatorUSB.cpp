@@ -32,7 +32,8 @@ DEFINE_TRACE(NavigatorUSB) {
   Supplement<Navigator>::trace(visitor);
 }
 
-NavigatorUSB::NavigatorUSB(Navigator& navigator) {
+NavigatorUSB::NavigatorUSB(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {
   if (navigator.frame())
     m_usb = USB::create(*navigator.frame());
 }

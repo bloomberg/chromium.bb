@@ -9,7 +9,9 @@
 
 namespace blink {
 
-WorkerNavigatorPermissions::WorkerNavigatorPermissions() {}
+WorkerNavigatorPermissions::WorkerNavigatorPermissions(
+    WorkerNavigator& workerNavigator)
+    : Supplement<WorkerNavigator>(workerNavigator) {}
 
 // static
 const char* WorkerNavigatorPermissions::supplementName() {
@@ -23,7 +25,7 @@ WorkerNavigatorPermissions& WorkerNavigatorPermissions::from(
       static_cast<WorkerNavigatorPermissions*>(
           Supplement<WorkerNavigator>::from(workerNavigator, supplementName()));
   if (!supplement) {
-    supplement = new WorkerNavigatorPermissions();
+    supplement = new WorkerNavigatorPermissions(workerNavigator);
     provideTo(workerNavigator, supplementName(), supplement);
   }
   return *supplement;
