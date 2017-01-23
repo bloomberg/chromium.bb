@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_H
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_H
 
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -34,10 +33,7 @@ class ScreenOrientation : public device::mojom::ScreenOrientation,
   void DidNavigateMainFrame(const LoadCommittedDetails& details,
                             const FrameNavigateParams& params) override;
 
-  void NotifyLockResult(device::mojom::ScreenOrientationLockResult result);
-
   std::unique_ptr<ScreenOrientationProvider> provider_;
-  LockOrientationCallback on_result_callback_;
   WebContentsFrameBindingSet<device::mojom::ScreenOrientation> bindings_;
   base::WeakPtrFactory<ScreenOrientation> weak_factory_;
 };

@@ -5,10 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
 #define CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation_lock_types.mojom.h"
@@ -72,10 +71,9 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
 
   // Locks that require orientation changes are not completed until
   // OnOrientationChange.
-
   base::Optional<blink::WebScreenOrientationLockType> pending_lock_orientation_;
 
-  LockOrientationCallback on_result_callback_;
+  LockOrientationCallback pending_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationProvider);
 };

@@ -5,7 +5,6 @@
 #include "content/public/browser/screen_orientation_provider.h"
 
 #include "base/callback_helpers.h"
-#include "base/optional.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host.h"
@@ -28,10 +27,11 @@ ScreenOrientationProvider::~ScreenOrientationProvider() {
 void ScreenOrientationProvider::LockOrientation(
     blink::WebScreenOrientationLockType orientation,
     const LockOrientationCallback& callback) {
-  // ScreenOrientation should have cancelled all pending request at this point.
-  DCHECK(on_result_callback_.is_null());
-  DCHECK(!pending_lock_orientation_.has_value());
-  on_result_callback_ = callback;
+  // Cancel any pending lock request.
+  NotifyLockResult(ScreenOrientationLockResult::
+                       SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED);
+  // Record new pending lock request.
+  pending_callback_ = callback;
 
   if (!delegate_ || !delegate_->ScreenOrientationProviderSupported()) {
     NotifyLockResult(ScreenOrientationLockResult::
@@ -81,13 +81,16 @@ void ScreenOrientationProvider::LockOrientation(
 }
 
 void ScreenOrientationProvider::UnlockOrientation() {
+  // Cancel any pending lock request.
+  NotifyLockResult(ScreenOrientationLockResult::
+                       SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED);
+
   if (!lock_applied_ || !delegate_)
     return;
 
   delegate_->Unlock(web_contents());
 
   lock_applied_ = false;
-  pending_lock_orientation_.reset();
 }
 
 void ScreenOrientationProvider::OnOrientationChange() {
@@ -95,7 +98,7 @@ void ScreenOrientationProvider::OnOrientationChange() {
     return;
 
   if (LockMatchesCurrentOrientation(pending_lock_orientation_.value())) {
-    DCHECK(!on_result_callback_.is_null());
+    DCHECK(!pending_callback_.is_null());
     NotifyLockResult(
         ScreenOrientationLockResult::SCREEN_ORIENTATION_LOCK_RESULT_SUCCESS);
   }
@@ -103,11 +106,9 @@ void ScreenOrientationProvider::OnOrientationChange() {
 
 void ScreenOrientationProvider::NotifyLockResult(
     ScreenOrientationLockResult result) {
-  if (on_result_callback_.is_null()) {
-    pending_lock_orientation_.reset();
-    return;
+  if (!pending_callback_.is_null()) {
+    base::ResetAndReturn(&pending_callback_).Run(result);
   }
-  base::ResetAndReturn(&on_result_callback_).Run(result);
   pending_lock_orientation_.reset();
 }
 
