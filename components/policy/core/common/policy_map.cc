@@ -37,10 +37,13 @@ PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
 
 bool PolicyMap::Entry::has_higher_priority_than(
     const PolicyMap::Entry& other) const {
-  if (level == other.level)
+  if (level == other.level) {
+    if (scope == other.scope) {
+      return source > other.source;
+    }
     return scope > other.scope;
-  else
-    return level > other.level;
+  }
+  return level > other.level;
 }
 
 bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {

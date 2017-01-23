@@ -44,7 +44,8 @@ class POLICY_EXPORT PolicyMap {
     // Returns a copy of |this|.
     Entry DeepCopy() const;
 
-    // Returns true if |this| has higher priority than |other|.
+    // Returns true if |this| has higher priority than |other|. The priority of
+    // the fields are |level| > |scope| > |source|.
     bool has_higher_priority_than(const Entry& other) const;
 
     // Returns true if |this| equals |other|.

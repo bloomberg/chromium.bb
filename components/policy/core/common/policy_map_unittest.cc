@@ -185,6 +185,9 @@ TEST_F(PolicyMapTest, MergeFrom) {
   a.Set(kTestPolicyName5, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD,
         base::MakeUnique<base::StringValue>("google.com/q={x}"), nullptr);
+  a.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        POLICY_SOURCE_ENTERPRISE_DEFAULT,
+        base::MakeUnique<base::FundamentalValue>(false), nullptr);
 
   PolicyMap b;
   b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
@@ -194,7 +197,8 @@ TEST_F(PolicyMapTest, MergeFrom) {
         POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(false),
         nullptr);
   b.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, nullptr, CreateExternalDataFetcher("b"));
+        POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
+        CreateExternalDataFetcher("b"));
   b.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
         base::MakeUnique<base::FundamentalValue>(true), nullptr);
@@ -204,6 +208,9 @@ TEST_F(PolicyMapTest, MergeFrom) {
   b.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(true),
         nullptr);
+  b.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        POLICY_SOURCE_ACTIVE_DIRECTORY,
+        base::MakeUnique<base::FundamentalValue>(true), nullptr);
 
   a.MergeFrom(b);
 
@@ -231,6 +238,10 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
         POLICY_SOURCE_CLOUD, base::MakeUnique<base::FundamentalValue>(true),
         nullptr);
+  // POLICY_SOURCE_ACTIVE_DIRECTORY over POLICY_SOURCE_ENTERPRISE_DEFAULT.
+  c.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        POLICY_SOURCE_ACTIVE_DIRECTORY,
+        base::MakeUnique<base::FundamentalValue>(true), nullptr);
 
   EXPECT_TRUE(a.Equals(c));
 }
