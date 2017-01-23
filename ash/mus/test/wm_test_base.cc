@@ -198,7 +198,6 @@ void WmTestBase::SimulateUserLogin() {
 
   // Simulate the user session becoming active.
   mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-  info->max_users = 10;
   info->can_lock_screen = true;
   info->should_lock_screen_automatically = false;
   info->add_user_session_policy = AddUserSessionPolicy::ALLOWED;

@@ -48,6 +48,9 @@ struct Session {
   AccountId user_account_id;
 };
 
+// Limits the number of logged in users to 10 due to memory constraints.
+constexpr int kMaxmiumNumberOfUserSessions = 10;
+
 }  // namespace session_manager
 
 #endif  // COMPONENTS_SESSION_MANAGER_SESSION_MANAGER_TYPES_H_

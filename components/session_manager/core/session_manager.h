@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 #define COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 
-#include <stdint.h>
-
 #include <vector>
 
 #include "base/macros.h"
@@ -54,9 +52,6 @@ class SESSION_EXPORT SessionManager {
   // Convenience wrapps of session state.
   bool IsInSecondaryLoginScreen() const;
   bool IsScreenLocked() const;
-
-  // Returns the maximum number of allowed user sessions.
-  uint32_t GetMaximumNumberOfUserSessions() const;
 
   void AddObserver(SessionManagerObserver* observer);
   void RemoveObserver(SessionManagerObserver* observer);

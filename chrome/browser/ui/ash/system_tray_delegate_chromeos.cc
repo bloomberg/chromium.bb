@@ -334,8 +334,7 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
   }
 
   if (user_manager::UserManager::Get()->GetLoggedInUsers().size() >=
-      session_manager::SessionManager::Get()
-          ->GetMaximumNumberOfUserSessions()) {
+      session_manager::kMaxmiumNumberOfUserSessions) {
     return;
   }
 

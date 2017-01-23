@@ -23,7 +23,7 @@ void SessionController::BindRequest(mojom::SessionControllerRequest request) {
 }
 
 int SessionController::GetMaximumNumberOfLoggedInUsers() const {
-  return static_cast<int>(max_users_);
+  return session_manager::kMaxmiumNumberOfUserSessions;
 }
 
 int SessionController::NumberOfLoggedInUsers() const {
@@ -93,7 +93,6 @@ void SessionController::SetClient(mojom::SessionControllerClientPtr client) {
 }
 
 void SessionController::SetSessionInfo(mojom::SessionInfoPtr info) {
-  max_users_ = info->max_users;
   can_lock_ = info->can_lock_screen;
   should_lock_screen_automatically_ = info->should_lock_screen_automatically;
   add_user_session_policy_ = info->add_user_session_policy;

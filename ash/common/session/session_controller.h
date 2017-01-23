@@ -103,7 +103,6 @@ class ASH_EXPORT SessionController
   mojom::SessionControllerClientPtr client_;
 
   // Cached session info.
-  uint32_t max_users_ = 0u;
   bool can_lock_ = false;
   bool should_lock_screen_automatically_ = false;
   AddUserSessionPolicy add_user_session_policy_ = AddUserSessionPolicy::ALLOWED;

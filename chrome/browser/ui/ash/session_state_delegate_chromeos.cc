@@ -66,7 +66,7 @@ int SessionStateDelegateChromeos::GetMaximumNumberOfLoggedInUsers() const {
   // actually added to a session.
   // TODO(nkostylev): Adjust this limitation based on device capabilites.
   // http://crbug.com/230865
-  return 10;
+  return session_manager::kMaxmiumNumberOfUserSessions;
 }
 
 int SessionStateDelegateChromeos::NumberOfLoggedInUsers() const {

@@ -170,7 +170,7 @@ ash::AddUserSessionPolicy SessionControllerClient::GetAddUserSessionPolicy() {
   }
 
   if (UserManager::Get()->GetLoggedInUsers().size() >=
-      SessionManager::Get()->GetMaximumNumberOfUserSessions())
+      session_manager::kMaxmiumNumberOfUserSessions)
     return ash::AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED;
 
   return ash::AddUserSessionPolicy::ALLOWED;
@@ -256,7 +256,6 @@ void SessionControllerClient::SendSessionInfoIfChanged() {
   SessionManager* const session_manager = SessionManager::Get();
 
   ash::mojom::SessionInfoPtr info = ash::mojom::SessionInfo::New();
-  info->max_users = session_manager->GetMaximumNumberOfUserSessions();
   info->can_lock_screen = CanLockScreen();
   info->should_lock_screen_automatically = ShouldLockScreenAutomatically();
   info->add_user_session_policy = GetAddUserSessionPolicy();

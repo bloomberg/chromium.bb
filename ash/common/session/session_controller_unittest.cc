@@ -61,7 +61,6 @@ class TestSessionStateObserver : public SessionStateObserver {
 };
 
 void FillDefaultSessionInfo(mojom::SessionInfo* info) {
-  info->max_users = 123;
   info->can_lock_screen = true;
   info->should_lock_screen_automatically = true;
   info->add_user_session_policy = AddUserSessionPolicy::ALLOWED;
@@ -124,7 +123,8 @@ TEST_F(SessionControllerTest, SimpleSessionInfo) {
   FillDefaultSessionInfo(&info);
   SetSessionInfo(info);
 
-  EXPECT_EQ(123, controller()->GetMaximumNumberOfLoggedInUsers());
+  EXPECT_EQ(session_manager::kMaxmiumNumberOfUserSessions,
+            controller()->GetMaximumNumberOfLoggedInUsers());
   EXPECT_TRUE(controller()->CanLockScreen());
   EXPECT_TRUE(controller()->ShouldLockScreenAutomatically());
 
