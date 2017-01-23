@@ -32,8 +32,7 @@ DEFINE_TRACE(NavigatorAuth) {
   Supplement<Navigator>::trace(visitor);
 }
 
-NavigatorAuth::NavigatorAuth(Navigator& navigator)
-    : Supplement<Navigator>(navigator) {
+NavigatorAuth::NavigatorAuth(Navigator& navigator) {
   if (navigator.frame())
     m_webauthentication = WebAuthentication::create(*navigator.frame());
 }

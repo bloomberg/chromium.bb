@@ -64,7 +64,7 @@ NavigatorShare& NavigatorShare::from(Navigator& navigator) {
   NavigatorShare* supplement = static_cast<NavigatorShare*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new NavigatorShare(navigator);
+    supplement = new NavigatorShare();
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;
@@ -75,8 +75,7 @@ DEFINE_TRACE(NavigatorShare) {
   Supplement<Navigator>::trace(visitor);
 }
 
-NavigatorShare::NavigatorShare(Navigator& navigator)
-    : Supplement<Navigator>(navigator) {}
+NavigatorShare::NavigatorShare() {}
 
 const char* NavigatorShare::supplementName() {
   return "NavigatorShare";

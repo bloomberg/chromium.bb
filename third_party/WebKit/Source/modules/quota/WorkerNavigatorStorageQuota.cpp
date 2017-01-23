@@ -35,9 +35,7 @@
 
 namespace blink {
 
-WorkerNavigatorStorageQuota::WorkerNavigatorStorageQuota(
-    WorkerNavigator& workerNavigator)
-    : Supplement<WorkerNavigator>(workerNavigator) {}
+WorkerNavigatorStorageQuota::WorkerNavigatorStorageQuota() {}
 
 const char* WorkerNavigatorStorageQuota::supplementName() {
   return "WorkerNavigatorStorageQuota";
@@ -49,7 +47,7 @@ WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(
       static_cast<WorkerNavigatorStorageQuota*>(
           Supplement<WorkerNavigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new WorkerNavigatorStorageQuota(navigator);
+    supplement = new WorkerNavigatorStorageQuota();
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;

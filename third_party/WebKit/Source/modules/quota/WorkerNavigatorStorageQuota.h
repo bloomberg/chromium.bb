@@ -55,7 +55,7 @@ class WorkerNavigatorStorageQuota final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit WorkerNavigatorStorageQuota(WorkerNavigator&);
+  explicit WorkerNavigatorStorageQuota();
   static const char* supplementName();
 
   mutable Member<StorageManager> m_storageManager;

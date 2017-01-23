@@ -26,7 +26,7 @@ class NavigatorPresentation final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit NavigatorPresentation(Navigator&);
+  NavigatorPresentation();
 
   static const char* supplementName();
   Presentation* presentation();
