@@ -34,6 +34,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/MemoryCache.h"
@@ -1531,6 +1532,8 @@ InspectorNetworkAgent::InspectorNetworkAgent(InspectedFrames* inspectedFrames)
       m_pendingRequest(nullptr),
       m_isRecalculatingStyle(false),
       m_removeFinishedReplayXHRTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedLoading,
+                                inspectedFrames->root()),
           this,
           &InspectorNetworkAgent::removeFinishedReplayXHRFired) {}
 

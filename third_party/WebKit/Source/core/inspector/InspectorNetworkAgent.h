@@ -36,7 +36,6 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/protocol/Network.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -280,7 +279,7 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   HeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;
   HeapHashSet<Member<XMLHttpRequest>> m_replayXHRsToBeDeleted;
-  Timer<InspectorNetworkAgent> m_removeFinishedReplayXHRTimer;
+  TaskRunnerTimer<InspectorNetworkAgent> m_removeFinishedReplayXHRTimer;
 };
 
 }  // namespace blink
