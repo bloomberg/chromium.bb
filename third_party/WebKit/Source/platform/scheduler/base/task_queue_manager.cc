@@ -231,7 +231,8 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   // Posting a DoWork while a DoWork is running leads to spurious DoWorks.
   main_thread_pending_wakeups_.insert(base::TimeTicks());
 
-  if (!delegate_->IsNested())
+  bool is_nested = delegate_->IsNested();
+  if (!is_nested)
     queues_to_delete_.clear();
 
   LazyNow lazy_now(real_time_domain()->CreateLazyNow());
@@ -243,7 +244,8 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
       break;
 
     base::TimeTicks time_after_task;
-    switch (ProcessTaskFromWorkQueue(work_queue, lazy_now, &time_after_task)) {
+    switch (ProcessTaskFromWorkQueue(work_queue, is_nested, lazy_now,
+                                     &time_after_task)) {
       case ProcessTaskResult::DEFERRED:
         // If a task was deferred, try again with another task.
         continue;
@@ -261,7 +263,7 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
 
     // Only run a single task per batch in nested run loops so that we can
     // properly exit the nested loop when someone calls RunLoop::Quit().
-    if (delegate_->IsNested())
+    if (is_nested)
       break;
   }
 
@@ -320,6 +322,7 @@ void TaskQueueManager::DidQueueTask(
 
 TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     internal::WorkQueue* work_queue,
+    bool is_nested,
     LazyNow time_before_task,
     base::TimeTicks* time_after_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -335,7 +338,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   if (queue->GetQuiescenceMonitored())
     task_was_run_on_quiescence_monitored_queue_ = true;
 
-  if (!pending_task.nestable && delegate_->IsNested()) {
+  if (!pending_task.nestable && is_nested) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
     // arbitrarily delayed so the additional delay should not be a problem.
     // TODO(skyostil): Figure out a way to not forget which task queue the

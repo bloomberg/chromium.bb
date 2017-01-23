@@ -199,6 +199,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // set (not guaranteed), sampling |real_time_domain()->Now()| immediately
   // after running the task.
   ProcessTaskResult ProcessTaskFromWorkQueue(internal::WorkQueue* work_queue,
+                                             bool is_nested,
                                              LazyNow time_before_task,
                                              base::TimeTicks* time_after_task);
 
