@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -482,8 +481,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public void initializeControls(WindowDelegate windowDelegate, ActionBarDelegate delegate,
-            WindowAndroid windowAndroid) {
+    public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid) {
     }
 
     private int getSecurityLevel() {

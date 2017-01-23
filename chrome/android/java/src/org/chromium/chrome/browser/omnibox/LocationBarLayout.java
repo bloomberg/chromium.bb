@@ -12,8 +12,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -37,11 +35,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
-import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -78,8 +73,6 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.ActionModeController;
-import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
@@ -150,7 +143,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     protected TintedImageButton mDeleteButton;
     protected TintedImageButton mMicButton;
     protected UrlBar mUrlBar;
-    private ActionModeController mActionModeController;
 
     private AutocompleteController mAutocomplete;
 
@@ -226,8 +218,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     // instead of a parameter to hideSuggestions because that method is often called from multiple
     // code paths in a not necessarily obvious or even deterministic order.
     private boolean mSuggestionSelectionInProgress;
-
-    private ToolbarActionModeCallback mDefaultActionModeCallbackForTextEdit;
 
     private Runnable mShowSuggestions;
 
@@ -766,35 +756,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     @Override
     public void initializeControls(WindowDelegate windowDelegate,
-            ActionBarDelegate actionBarDelegate, WindowAndroid windowAndroid) {
+            WindowAndroid windowAndroid) {
         mWindowDelegate = windowDelegate;
-
-        mActionModeController = new ActionModeController(getContext(), actionBarDelegate);
-        mActionModeController.setCustomSelectionActionModeCallback(
-                new ToolbarActionModeCallback() {
-                    @Override
-                    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                        boolean retVal = super.onCreateActionMode(mode, menu);
-                        mode.getMenuInflater().inflate(R.menu.textselectionmenu, menu);
-                        return retVal;
-                    }
-
-                    @Override
-                    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                        if (item.getItemId() == R.id.copy_url) {
-                            ClipboardManager clipboard =
-                                    (ClipboardManager) getContext().getSystemService(
-                                            Context.CLIPBOARD_SERVICE);
-                            ClipData clip = ClipData.newPlainText("url", mOriginalUrl);
-                            clipboard.setPrimaryClip(clip);
-                            mode.finish();
-                            return true;
-                        } else {
-                            return super.onActionItemClicked(mode, item);
-                        }
-                    }
-                });
-
         mWindowAndroid = windowAndroid;
 
         // If the user focused the omnibox prior to the native libraries being initialized,
@@ -843,8 +806,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mDeferredNativeRunnables.clear();
 
         mUrlBar.onOmniboxFullyFunctional();
-
-        updateCustomSelectionActionModeCallback();
         updateVisualsForState();
     }
 
@@ -1154,15 +1115,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     @Override
     public void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback) {
-        mDefaultActionModeCallbackForTextEdit = callback;
-    }
-
-    /**
-     * If query in the omnibox, sets UrlBar's ActionModeCallback to show copy url button. Else,
-     * it is set to the default one.
-     */
-    private void updateCustomSelectionActionModeCallback() {
-        mUrlBar.setCustomSelectionActionModeCallback(mDefaultActionModeCallbackForTextEdit);
+        mUrlBar.setCustomSelectionActionModeCallback(callback);
     }
 
     @Override
@@ -2139,7 +2092,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             mUrlBar.deEmphasizeUrl();
             emphasizeUrl();
         }
-        updateCustomSelectionActionModeCallback();
     }
 
     /** Gets the URL of the web page in the tab. */

@@ -15,8 +15,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.ActionModeController;
-import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -94,12 +92,9 @@ public interface LocationBar extends UrlBarDelegate {
     /**
      * Initialize controls that will act as hooks to various functions.
      * @param windowDelegate {@link WindowDelegate} that will provide {@link Window} related info.
-     * @param delegate {@link ActionBarDelegate} to be used while creating a
-     *                 {@link ActionModeController}.
      * @param windowAndroid {@link WindowAndroid} that is used by the owning {@link Activity}.
      */
-    void initializeControls(WindowDelegate windowDelegate,
-            ActionBarDelegate delegate, WindowAndroid windowAndroid);
+    void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid);
 
     /**
      * Sets the URL focus change listener that will be notified when the URL gains or loses focus.
