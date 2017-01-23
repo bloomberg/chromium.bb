@@ -555,24 +555,6 @@ static CSSValue* consumeCounter(CSSParserTokenRange& range, int defaultValue) {
   return list;
 }
 
-static CSSValue* consumeSnapHeight(CSSParserTokenRange& range,
-                                   CSSParserMode cssParserMode) {
-  CSSPrimitiveValue* unit =
-      consumeLength(range, cssParserMode, ValueRangeNonNegative);
-  if (!unit)
-    return nullptr;
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*unit);
-
-  if (CSSPrimitiveValue* position = consumePositiveInteger(range)) {
-    if (position->getIntValue() > 100)
-      return nullptr;
-    list->append(*position);
-  }
-
-  return list;
-}
-
 static CSSValue* consumeMarginOrOffset(CSSParserTokenRange& range,
                                        CSSParserMode cssParserMode,
                                        UnitlessQuirk unitless) {
@@ -2225,8 +2207,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyCounterReset:
       return consumeCounter(m_range,
                             property == CSSPropertyCounterIncrement ? 1 : 0);
-    case CSSPropertySnapHeight:
-      return consumeSnapHeight(m_range, m_context->mode());
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(

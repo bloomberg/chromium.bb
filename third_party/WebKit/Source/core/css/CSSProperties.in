@@ -359,7 +359,7 @@ shape-margin interpolable, converter=convertLength, api_class
 shape-outside interpolable, converter=convertShapeValue, typedom_types=[Image], api_class
 shape-rendering inherited, svg
 size custom_all, api_class
-snap-height runtime_flag=CSSSnapSize, inherited, custom_all
+snap-height runtime_flag=CSSSnapSize, inherited, custom_all, api_class
 speak inherited
 stop-color interpolable, svg, converter=convertColor
 stop-opacity interpolable, svg, converter=convertNumberOrPercentage
