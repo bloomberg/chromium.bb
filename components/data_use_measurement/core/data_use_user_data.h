@@ -54,6 +54,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     WEB_HISTORY_SERVICE,
     NETWORK_TIME_TRACKER,
     SUPERVISED_USER,
+    IMAGE_FETCHER_UNTAGGED,
   };
 
   // Data use broken by content type. This enum must remain synchronized

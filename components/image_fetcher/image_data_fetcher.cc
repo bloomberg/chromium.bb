@@ -35,7 +35,7 @@ struct ImageDataFetcher::ImageDataFetcherRequest {
 ImageDataFetcher::ImageDataFetcher(
     net::URLRequestContextGetter* url_request_context_getter)
     : url_request_context_getter_(url_request_context_getter),
-      data_use_service_name_(DataUseUserData::NOT_TAGGED),
+      data_use_service_name_(DataUseUserData::IMAGE_FETCHER_UNTAGGED),
       next_url_fetcher_id_(0) {}
 
 ImageDataFetcher::~ImageDataFetcher() {}
@@ -51,9 +51,7 @@ void ImageDataFetcher::FetchImageData(
       net::URLFetcher::Create(
           next_url_fetcher_id_++, url, net::URLFetcher::GET, this);
 
-  if (data_use_service_name_ != DataUseUserData::NOT_TAGGED) {
-    DataUseUserData::AttachToFetcher(url_fetcher.get(), data_use_service_name_);
-  }
+  DataUseUserData::AttachToFetcher(url_fetcher.get(), data_use_service_name_);
 
   std::unique_ptr<ImageDataFetcherRequest> request(
       new ImageDataFetcherRequest(callback, std::move(url_fetcher)));

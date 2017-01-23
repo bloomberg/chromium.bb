@@ -108,6 +108,8 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "NetworkTimeTracker";
     case SUPERVISED_USER:
       return "SupervisedUser";
+    case IMAGE_FETCHER_UNTAGGED:
+      return "ImageFetcherUntagged";
   }
   return "INVALID";
 }
