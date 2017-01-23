@@ -75,12 +75,6 @@ inline bool keyMatchesSlotName(const AtomicString& key,
   return isHTMLSlotElement(element) && toHTMLSlotElement(element).name() == key;
 }
 
-inline bool keyMatchesLowercasedMapName(const AtomicString& key,
-                                        const Element& element) {
-  return isHTMLMapElement(element) &&
-         toHTMLMapElement(element).getName().lower() == key;
-}
-
 void DocumentOrderedMap::add(const AtomicString& key, Element* element) {
   DCHECK(key);
   DCHECK(element);
@@ -206,12 +200,6 @@ HTMLSlotElement* DocumentOrderedMap::getSlotByName(
     return toHTMLSlotElement(slot);
   }
   return nullptr;
-}
-
-Element* DocumentOrderedMap::getElementByLowercasedMapName(
-    const AtomicString& key,
-    const TreeScope* scope) const {
-  return get<keyMatchesLowercasedMapName>(key, scope);
 }
 
 DEFINE_TRACE(DocumentOrderedMap) {

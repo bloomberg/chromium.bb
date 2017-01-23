@@ -1,5 +1,3 @@
-CONSOLE WARNING: line 35: Case-insensitive matching for usemap attribute is deprecated and will be removed in M58, around April 2017. See https://www.chromestatus.com/features/5760965337415680 for more details. Comparing usemap=#different-CASE-name and name=different-case-name
-CONSOLE WARNING: line 35: Case-insensitive matching for usemap attribute is deprecated and will be removed in M58, around April 2017. See https://www.chromestatus.com/features/5760965337415680 for more details. Comparing usemap=#different-CASE-name and name=different-case-name
 This is a testharness.js-based test.
 FAIL HTML (standards) IMG usemap="no-hash-name" assert_equals: expected Element node <img src="/images/threecolors.png" usemap="no-hash-name">... but got Element node <area shape="rect" coords="0,0,99,50" href="#area-no-hash...
 PASS HTML (standards) OBJECT usemap="no-hash-name" 
@@ -54,7 +52,7 @@ FAIL HTML (standards) IMG usemap="http://example.org/#garbage-before-hash-id" as
 FAIL HTML (standards) OBJECT usemap="http://example.org/#garbage-before-hash-id" assert_equals: expected (object) Element node <area shape="rect" coords="0,0,99,50" href="#area-garbage... but got (function) function "[object HTMLObjectElement]"
 PASS HTML (standards) IMG usemap="#no-such-map" 
 PASS HTML (standards) OBJECT usemap="#no-such-map" 
-FAIL HTML (standards) IMG usemap="#different-CASE-name" assert_equals: expected Element node <img src="/images/threecolors.png" usemap="#different-CAS... but got Element node <area shape="rect" coords="0,0,99,50" href="#area-differe...
+PASS HTML (standards) IMG usemap="#different-CASE-name" 
 PASS HTML (standards) OBJECT usemap="#different-CASE-name" 
 PASS HTML (standards) IMG usemap="#different-CASE-id" 
 PASS HTML (standards) OBJECT usemap="#different-CASE-id" 
@@ -111,7 +109,7 @@ FAIL HTML (quirks) IMG usemap="http://example.org/#garbage-before-hash-id" asser
 FAIL HTML (quirks) OBJECT usemap="http://example.org/#garbage-before-hash-id" assert_equals: expected (object) Element node <area shape="rect" coords="0,0,99,50" href="#area-garbage... but got (function) function "[object HTMLObjectElement]"
 PASS HTML (quirks) IMG usemap="#no-such-map" 
 PASS HTML (quirks) OBJECT usemap="#no-such-map" 
-FAIL HTML (quirks) IMG usemap="#different-CASE-name" assert_equals: expected Element node <img src="/images/threecolors.png" usemap="#different-CAS... but got Element node <area shape="rect" coords="0,0,99,50" href="#area-differe...
+PASS HTML (quirks) IMG usemap="#different-CASE-name" 
 PASS HTML (quirks) OBJECT usemap="#different-CASE-name" 
 PASS HTML (quirks) IMG usemap="#different-CASE-id" 
 PASS HTML (quirks) OBJECT usemap="#different-CASE-id" 

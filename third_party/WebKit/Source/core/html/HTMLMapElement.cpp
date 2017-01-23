@@ -69,7 +69,7 @@ HTMLImageElement* HTMLMapElement::imageElement() {
     HTMLImageElement& imageElement = toHTMLImageElement(*curr);
     String useMapName =
         imageElement.getAttribute(usemapAttr).getString().substring(1);
-    if (equalIgnoringCase(useMapName, m_name))
+    if (useMapName == m_name)
       return &imageElement;
   }
 
@@ -93,8 +93,7 @@ void HTMLMapElement::parseAttribute(const AttributeModificationParams& params) {
     String mapName = params.newValue;
     if (mapName[0] == '#')
       mapName = mapName.substring(1);
-    m_name =
-        AtomicString(document().isHTMLDocument() ? mapName.lower() : mapName);
+    m_name = AtomicString(mapName);
     if (isConnected())
       treeScope().addImageMap(this);
 

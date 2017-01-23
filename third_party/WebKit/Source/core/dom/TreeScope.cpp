@@ -40,14 +40,11 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/DOMSelection.h"
 #include "core/events/EventPath.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLMapElement.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
@@ -57,21 +54,6 @@
 namespace blink {
 
 using namespace HTMLNames;
-
-namespace {
-
-void addSingletonDeprecationMessageForImageMap(const LocalFrame* frame,
-                                               UseCounter::Feature feature,
-                                               const String& usemap,
-                                               const AtomicString& name) {
-  if (!frame)
-    return;
-  frame->console().addSingletonMessage(ConsoleMessage::create(
-      DeprecationMessageSource, WarningMessageLevel,
-      Deprecation::deprecationMessage(feature) + " Comparing usemap=" + usemap +
-          " and name=" + name));
-}
-}
 
 TreeScope::TreeScope(ContainerNode& rootNode, Document& document)
     : m_rootNode(&rootNode),
@@ -203,31 +185,8 @@ HTMLMapElement* TreeScope::getImageMap(const String& url) const {
     return nullptr;
   size_t hashPos = url.find('#');
   String name = hashPos == kNotFound ? url : url.substring(hashPos + 1);
-  HTMLMapElement* map = toHTMLMapElement(
-      document().isHTMLDocument()
-          ? m_imageMapsByName->getElementByLowercasedMapName(
-                AtomicString(name.lower()), this)
-          : m_imageMapsByName->getElementByMapName(AtomicString(name), this));
-  if (!map || !document().isHTMLDocument())
-    return map;
-  const AtomicString& nameValue = map->fastGetAttribute(nameAttr);
-  if (nameValue.isNull())
-    return map;
-  String strippedName = nameValue;
-  if (strippedName.startsWith('#'))
-    strippedName = strippedName.substring(1);
-  if (strippedName == name) {
-    UseCounter::count(document(), UseCounter::MapNameMatchingStrict);
-  } else if (equalIgnoringASCIICase(strippedName, name)) {
-    addSingletonDeprecationMessageForImageMap(
-        document().frame(), UseCounter::MapNameMatchingASCIICaseless, url,
-        nameValue);
-  } else {
-    addSingletonDeprecationMessageForImageMap(
-        document().frame(), UseCounter::MapNameMatchingUnicodeLower, url,
-        nameValue);
-  }
-  return map;
+  return toHTMLMapElement(
+      m_imageMapsByName->getElementByMapName(AtomicString(name), this));
 }
 
 static bool pointWithScrollAndZoomIfPossible(const Document& document,
