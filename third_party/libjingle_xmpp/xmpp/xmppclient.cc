@@ -394,9 +394,7 @@ void XmppClient::Private::WriteOutput(const char* bytes, size_t len) {
 }
 
 void XmppClient::Private::StartTls(const std::string& domain) {
-#if defined(FEATURE_ENABLE_SSL)
   socket_->StartTls(domain);
-#endif
 }
 
 void XmppClient::Private::CloseConnection() {

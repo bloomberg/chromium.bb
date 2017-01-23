@@ -71,10 +71,8 @@ extern const char STR_TALKX_L_GOOGLE_COM[];
 extern const char STR_XMPP_GOOGLE_COM[];
 extern const char STR_XMPPX_L_GOOGLE_COM[];
 
-#ifdef FEATURE_ENABLE_VOICEMAIL
 extern const char STR_VOICEMAIL[];
 extern const char STR_OUTGOINGVOICEMAIL[];
-#endif
 
 extern const char STR_UNAVAILABLE[];
 

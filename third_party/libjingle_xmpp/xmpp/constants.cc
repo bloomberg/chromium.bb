@@ -76,10 +76,8 @@ const char STR_TALKX_L_GOOGLE_COM[] = "talkx.l.google.com";
 const char STR_XMPP_GOOGLE_COM[] = "xmpp.google.com";
 const char STR_XMPPX_L_GOOGLE_COM[] = "xmppx.l.google.com";
 
-#ifdef FEATURE_ENABLE_VOICEMAIL
 const char STR_VOICEMAIL[] = "voicemail";
 const char STR_OUTGOINGVOICEMAIL[] = "outgoingvoicemail";
-#endif
 
 const char STR_UNAVAILABLE[] = "unavailable";
 

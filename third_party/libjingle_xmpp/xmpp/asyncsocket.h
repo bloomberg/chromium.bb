@@ -28,10 +28,8 @@ public:
     STATE_CLOSING,         //!< Socket is closing but can have buffered data
     STATE_CONNECTING,      //!< In the process of
     STATE_OPEN,            //!< Socket is connected
-#if defined(FEATURE_ENABLE_SSL)
     STATE_TLS_CONNECTING,  //!< Establishing TLS connection
     STATE_TLS_OPEN,        //!< TLS connected
-#endif
   };
 
   enum Error {
@@ -39,9 +37,7 @@ public:
     ERROR_WINSOCK,          //!< Winsock error
     ERROR_DNS,              //!< Couldn't resolve host name
     ERROR_WRONGSTATE,       //!< Call made while socket is in the wrong state
-#if defined(FEATURE_ENABLE_SSL)
     ERROR_SSL,              //!< Something went wrong with OpenSSL
-#endif
   };
 
   virtual ~AsyncSocket() {}
@@ -53,12 +49,10 @@ public:
   virtual bool Read(char * data, size_t len, size_t* len_read) = 0;
   virtual bool Write(const char * data, size_t len) = 0;
   virtual bool Close() = 0;
-#if defined(FEATURE_ENABLE_SSL)
   // We allow matching any passed domain.  This allows us to avoid
   // handling the valuable certificates for logins into proxies.  If
   // both names are passed as empty, we do not require a match.
   virtual bool StartTls(const std::string & domainname) = 0;
-#endif
 
   sigslot::signal0<> SignalConnected;
   sigslot::signal0<> SignalSSLConnected;

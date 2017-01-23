@@ -47,13 +47,6 @@ config("rtc_xmpp_warnings_config") {
   }
 }
 
-config("rtc_xmpp_inherited_config") {
-  defines = [
-    "FEATURE_ENABLE_SSL",
-    "FEATURE_ENABLE_VOICEMAIL",
-  ]
-}
-
 rtc_static_library("rtc_xmpp") {
   cflags = []
   sources = [
@@ -84,7 +77,7 @@ rtc_static_library("rtc_xmpp") {
     "xmpp/xmpptask.h",
   ]
 
-  defines = [ "FEATURE_ENABLE_SSL" ]
+  defines = []
 
   deps = [
     ":rtc_xmllite",
@@ -94,8 +87,6 @@ rtc_static_library("rtc_xmpp") {
     "//third_party/expat",
   ]
   configs += [ ":rtc_xmpp_warnings_config" ]
-
-  public_configs = [ ":rtc_xmpp_inherited_config" ]
 
   if (is_nacl) {
     deps += [ "//native_client_sdk/src/libraries/nacl_io" ]

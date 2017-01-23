@@ -7,10 +7,6 @@
 #ifndef JINGLE_GLUE_CHROME_ASYNC_SOCKET_H_
 #define JINGLE_GLUE_CHROME_ASYNC_SOCKET_H_
 
-#if !defined(FEATURE_ENABLE_SSL)
-#error ChromeAsyncSocket expects FEATURE_ENABLE_SSL to be defined
-#endif
-
 #include <stddef.h>
 
 #include <memory>
