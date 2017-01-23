@@ -46,14 +46,17 @@
                      android:process=":crash_receiver_service"/>
         {% endmacro %}
         {{ common(package|default('com.android.webview'), 'libwebviewchromium.so') }}
+        {% set num_sandboxed_services = 20 %}
         <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
-                   android:value="1"/>
-        <service android:name="org.chromium.content.app.SandboxedProcessService0"
-                 android:process=":sandboxed_process0"
+                   android:value="{{ num_sandboxed_services }}"/>
+        {% for i in range(num_sandboxed_services) %}
+        <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
+                 android:process=":sandboxed_process{{ i }}"
                  android:isolatedProcess="true"
                  android:exported="true"
                  android:externalService="true"
                  tools:ignore="ExportedService" />
+        {% endfor %}
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="0"/>
     </application>
