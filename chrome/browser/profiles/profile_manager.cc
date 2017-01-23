@@ -1670,7 +1670,7 @@ void ProfileManager::BrowserListObserver::OnBrowserRemoved(
     // Gather statistics and store into ProfileInfoCache. For incognito profile
     // we gather the statistics of its parent profile instead, because a window
     // of the parent profile was open.
-    if (!profile->IsSystemProfile()) {
+    if (!profile->IsSystemProfile() && !original_profile->IsSystemProfile()) {
       ProfileStatisticsFactory::GetForProfile(original_profile)->
           GatherStatistics(profiles::ProfileStatisticsCallback());
     }
