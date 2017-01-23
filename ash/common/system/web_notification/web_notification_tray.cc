@@ -442,10 +442,6 @@ bool WebNotificationTray::IsMessageCenterBubbleVisible() const {
           message_center_bubble()->bubble()->IsVisible());
 }
 
-bool WebNotificationTray::IsMouseInNotificationBubble() const {
-  return false;
-}
-
 void WebNotificationTray::ShowMessageCenterBubble() {
   if (!IsMessageCenterBubbleVisible())
     message_center_tray_->ShowMessageCenterBubble();

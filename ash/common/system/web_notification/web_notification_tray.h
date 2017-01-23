@@ -69,9 +69,6 @@ class ASH_EXPORT WebNotificationTray
   // Returns true if the message center bubble is visible.
   bool IsMessageCenterBubbleVisible() const;
 
-  // Returns true if the mouse is inside the notification bubble.
-  bool IsMouseInNotificationBubble() const;
-
   // Shows the message center bubble.
   void ShowMessageCenterBubble();
 

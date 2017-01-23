@@ -130,11 +130,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Returns TrayAudio object if present or null otherwise.
   TrayAudio* GetTrayAudio() const;
 
-  // Accessors for testing.
-
-  // Returns true if the bubble exists.
-  bool CloseNotificationBubbleForTest() const;
-
   // Overridden from TrayBackgroundView.
   void SetShelfAlignment(ShelfAlignment alignment) override;
   void AnchorUpdated() override;

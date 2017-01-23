@@ -10,7 +10,6 @@
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/label_tray_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/tray_notification_view.h"
 #include "ash/common/wm_shell.h"
 #include "base/callback.h"
 #include "base/logging.h"

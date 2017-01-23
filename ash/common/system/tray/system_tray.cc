@@ -494,13 +494,6 @@ TrayAudio* SystemTray::GetTrayAudio() const {
   return tray_audio_;
 }
 
-bool SystemTray::CloseNotificationBubbleForTest() const {
-  if (!notification_bubble_)
-    return false;
-  notification_bubble_->bubble()->Close();
-  return true;
-}
-
 // Private methods.
 
 bool SystemTray::HasSystemBubbleType(SystemTrayBubble::BubbleType type) {

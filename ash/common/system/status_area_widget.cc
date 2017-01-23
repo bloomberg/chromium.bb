@@ -148,9 +148,7 @@ bool StatusAreaWidget::ShouldShowShelf() const {
 
   // If the shelf is currently visible, don't hide the shelf if the mouse
   // is in any of the notification bubbles.
-  return (system_tray_ && system_tray_->IsMouseInNotificationBubble()) ||
-         (web_notification_tray_ &&
-          web_notification_tray_->IsMouseInNotificationBubble());
+  return system_tray_ && system_tray_->IsMouseInNotificationBubble();
 }
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {
