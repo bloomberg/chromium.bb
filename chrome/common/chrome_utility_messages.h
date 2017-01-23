@@ -140,22 +140,6 @@ IPC_STRUCT_END()
 // Utility process messages:
 // These are messages from the browser to the utility process.
 
-// Tell the utility process to patch the given |input_file| using |patch_file|
-// and place the output in |output_file|. The patch should use the bsdiff
-// algorithm (Courgette's version).
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_PatchFileBsdiff,
-                     IPC::PlatformFileForTransit /* input_file */,
-                     IPC::PlatformFileForTransit /* patch_file */,
-                     IPC::PlatformFileForTransit /* output_file */)
-
-// Tell the utility process to patch the given |input_file| using |patch_file|
-// and place the output in |output_file|. The patch should use the Courgette
-// algorithm.
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_PatchFileCourgette,
-                     IPC::PlatformFileForTransit /* input_file */,
-                     IPC::PlatformFileForTransit /* patch_file */,
-                     IPC::PlatformFileForTransit /* output_file */)
-
 #if defined(OS_CHROMEOS)
 // Tell the utility process to create a zip file on the given list of files.
 IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_CreateZipFile,
@@ -208,9 +192,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetSaveFileName,
 // went wrong.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackWebResource_Failed,
                      std::string /* error_message, if any */)
-
-// Reply when a file has been patched.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_PatchFile_Finished, int /* result */)
 
 #if defined(OS_CHROMEOS)
 // Reply when the utility process has succeeded in creating the zip file.

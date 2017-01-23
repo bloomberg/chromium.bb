@@ -4,132 +4,92 @@
 
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 
-#include <memory>
-#include <vector>
-
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "chrome/common/chrome_utility_messages.h"
+#include "base/sequenced_task_runner.h"
+#include "base/strings/string16.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
-#include "courgette/courgette.h"
-#include "courgette/third_party/bsdiff/bsdiff.h"
-#include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace component_updater {
 
-class PatchHost : public content::UtilityProcessHostClient {
- public:
-  PatchHost(base::Callback<void(int result)> callback,
-            scoped_refptr<base::SequencedTaskRunner> task_runner);
+ChromeOutOfProcessPatcher::ChromeOutOfProcessPatcher() = default;
 
-  void StartProcess(std::unique_ptr<IPC::Message> message);
-
- private:
-  ~PatchHost() override;
-
-  void OnPatchFinished(int result);
-
-  // Overrides of content::UtilityProcessHostClient.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  void OnProcessCrashed(int exit_code) override;
-
-  base::Callback<void(int result)> callback_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-};
-
-PatchHost::PatchHost(base::Callback<void(int result)> callback,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : callback_(callback), task_runner_(task_runner) {
-}
-
-PatchHost::~PatchHost() {
-}
-
-void PatchHost::StartProcess(std::unique_ptr<IPC::Message> message) {
-  // The DeltaUpdateOpPatchHost is not responsible for deleting the
-  // UtilityProcessHost object.
-  content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
-      this, base::ThreadTaskRunnerHandle::Get().get());
-  host->SetName(l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME));
-  host->Send(message.release());
-}
-
-bool PatchHost::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PatchHost, message)
-  IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_PatchFile_Finished, OnPatchFinished)
-  IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void PatchHost::OnPatchFinished(int result) {
-  if (task_runner_.get()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));
-    task_runner_ = NULL;
-  }
-}
-
-void PatchHost::OnProcessCrashed(int exit_code) {
-  if (task_runner_.get()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback_, -1));
-    task_runner_ = NULL;
-  }
-}
-
-ChromeOutOfProcessPatcher::ChromeOutOfProcessPatcher() {
-}
-
-ChromeOutOfProcessPatcher::~ChromeOutOfProcessPatcher() {
-}
+ChromeOutOfProcessPatcher::~ChromeOutOfProcessPatcher() = default;
 
 void ChromeOutOfProcessPatcher::Patch(
     const std::string& operation,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::FilePath& input_abs_path,
-    const base::FilePath& patch_abs_path,
-    const base::FilePath& output_abs_path,
+    const base::FilePath& input_path,
+    const base::FilePath& patch_path,
+    const base::FilePath& output_path,
     base::Callback<void(int result)> callback) {
-  host_ = new PatchHost(callback, task_runner);
-  IPC::PlatformFileForTransit input = IPC::TakePlatformFileForTransit(
-      base::File(
-          input_abs_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
-  IPC::PlatformFileForTransit patch = IPC::TakePlatformFileForTransit(
-      base::File(
-          patch_abs_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
-  IPC::PlatformFileForTransit output = IPC::TakePlatformFileForTransit(
-      base::File(
-          output_abs_path,
-          base::File::FLAG_CREATE |
-              base::File::FLAG_WRITE |
-              base::File::FLAG_EXCLUSIVE_WRITE));
-  std::unique_ptr<IPC::Message> patch_message;
-  if (operation == update_client::kBsdiff) {
-    patch_message.reset(new ChromeUtilityMsg_PatchFileBsdiff(
-        input, patch, output));
-  } else if (operation == update_client::kCourgette) {
-    patch_message.reset(new ChromeUtilityMsg_PatchFileCourgette(
-        input, patch, output));
-  } else {
-    NOTREACHED();
+  DCHECK(task_runner);
+  DCHECK(!callback.is_null());
+
+  task_runner_ = std::move(task_runner);
+  callback_ = callback;
+
+  base::File input_file(input_path,
+                        base::File::FLAG_OPEN | base::File::FLAG_READ);
+  base::File patch_file(patch_path,
+                        base::File::FLAG_OPEN | base::File::FLAG_READ);
+  base::File output_file(output_path, base::File::FLAG_CREATE |
+                                          base::File::FLAG_WRITE |
+                                          base::File::FLAG_EXCLUSIVE_WRITE);
+
+  if (!input_file.IsValid() || !patch_file.IsValid() ||
+      !output_file.IsValid()) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback_, -1));
+    return;
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &PatchHost::StartProcess, host_, base::Passed(&patch_message)));
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&ChromeOutOfProcessPatcher::PatchOnIOThread, this, operation,
+                 base::Passed(&input_file), base::Passed(&patch_file),
+                 base::Passed(&output_file)));
+}
+
+void ChromeOutOfProcessPatcher::PatchOnIOThread(const std::string& operation,
+                                                base::File input_file,
+                                                base::File patch_file,
+                                                base::File output_file) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(!utility_process_mojo_client_);
+
+  const base::string16 utility_process_name =
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME);
+
+  utility_process_mojo_client_.reset(
+      new content::UtilityProcessMojoClient<chrome::mojom::FilePatcher>(
+          utility_process_name));
+  utility_process_mojo_client_->set_error_callback(
+      base::Bind(&ChromeOutOfProcessPatcher::PatchDone, this, -1));
+
+  utility_process_mojo_client_->Start();  // Start the utility process.
+
+  if (operation == update_client::kBsdiff) {
+    utility_process_mojo_client_->service()->PatchFileBsdiff(
+        std::move(input_file), std::move(patch_file), std::move(output_file),
+        base::Bind(&ChromeOutOfProcessPatcher::PatchDone, this));
+  } else if (operation == update_client::kCourgette) {
+    utility_process_mojo_client_->service()->PatchFileCourgette(
+        std::move(input_file), std::move(patch_file), std::move(output_file),
+        base::Bind(&ChromeOutOfProcessPatcher::PatchDone, this));
+  } else {
+    NOTREACHED();
+  }
+}
+
+void ChromeOutOfProcessPatcher::PatchDone(int result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  utility_process_mojo_client_.reset();  // Terminate the utility process.
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));
 }
 
 }  // namespace component_updater
