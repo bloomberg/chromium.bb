@@ -31,7 +31,7 @@ NGPhysicalFragment* NGTextLayoutAlgorithm::Layout() {
   return nullptr;
 }
 
-bool NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
+void NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
   // TODO(kojii): Make this tickable. Each line is easy. Needs more thoughts
   // for each fragment in a line. Bidi reordering is probably atomic.
   // TODO(kojii): oof is not well-thought yet. The bottom static position may be
@@ -66,7 +66,6 @@ bool NGTextLayoutAlgorithm::LayoutInline(NGLineBuilder* line_builder) {
     start_index = i;
   }
   line_builder->CreateLine();
-  return true;
 }
 
 DEFINE_TRACE(NGTextLayoutAlgorithm) {

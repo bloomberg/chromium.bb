@@ -43,19 +43,13 @@ NGPhysicalFragment* NGInlineLayoutAlgorithm::Layout() {
   if (current_child_) {
     space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
     line_builder_ = new NGLineBuilder(current_child_, space_for_current_child_);
-
-    while (!LayoutCurrentChild())
-      continue;
+    current_child_->LayoutInline(space_for_current_child_, line_builder_);
   }
 
   line_builder_->CreateFragments(builder_);
   NGPhysicalFragment* fragment = builder_->ToBoxFragment();
   line_builder_->CopyFragmentDataToLayoutBlockFlow();
   return fragment;
-}
-
-bool NGInlineLayoutAlgorithm::LayoutCurrentChild() {
-  return current_child_->LayoutInline(space_for_current_child_, line_builder_);
 }
 
 NGConstraintSpace*

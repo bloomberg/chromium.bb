@@ -22,7 +22,6 @@ class LayoutBlockFlow;
 class LayoutObject;
 class LayoutUnit;
 class NGConstraintSpace;
-class NGLayoutAlgorithm;
 class NGLayoutInlineItem;
 class NGLayoutInlineItemRange;
 class NGLayoutInlineItemsBuilder;
@@ -36,7 +35,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   ~NGInlineNode() override;
 
   NGPhysicalFragment* Layout(NGConstraintSpace*) override;
-  bool LayoutInline(NGConstraintSpace*, NGLineBuilder*);
+  void LayoutInline(NGConstraintSpace*, NGLineBuilder*);
   NGInlineNode* NextSibling() override;
 
   // Prepare inline and text content for layout. Must be called before
@@ -71,7 +70,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   RefPtr<ComputedStyle> block_style_;
 
   Member<NGInlineNode> next_sibling_;
-  Member<NGLayoutAlgorithm> layout_algorithm_;
 
   // Text content for all inline items represented by a single NGInlineNode
   // instance. Encoded either as UTF-16 or latin-1 depending on content.

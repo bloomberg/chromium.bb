@@ -220,7 +220,7 @@ NGPhysicalFragment* NGInlineNode::Layout(NGConstraintSpace*) {
   return nullptr;
 }
 
-bool NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
+void NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
                                 NGLineBuilder* line_builder) {
   PrepareLayout();
 
@@ -231,17 +231,8 @@ bool NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
           .SetTextDirection(constraint_space->Direction())
           .ToConstraintSpace();
 
-  if (!layout_algorithm_)
-    // TODO(layout-dev): If an atomic inline run the appropriate algorithm.
-    layout_algorithm_ = new NGTextLayoutAlgorithm(this, child_constraint_space);
-
-  if (!toNGTextLayoutAlgorithm(layout_algorithm_)->LayoutInline(line_builder)) {
-    return false;
-  }
-
-  // Reset algorithm for future use
-  layout_algorithm_ = nullptr;
-  return true;
+  NGTextLayoutAlgorithm(this, child_constraint_space)
+      .LayoutInline(line_builder);
 }
 
 NGInlineNode* NGInlineNode::NextSibling() {
@@ -301,7 +292,6 @@ void NGInlineNode::GetLayoutTextOffsets(
 
 DEFINE_TRACE(NGInlineNode) {
   visitor->trace(next_sibling_);
-  visitor->trace(layout_algorithm_);
   NGLayoutInputNode::trace(visitor);
 }
 
