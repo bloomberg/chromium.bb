@@ -32,7 +32,7 @@ extern "C" {
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_PALETTE
-#define PALETTE_COLOR_CONTEXTS 16
+#define PALETTE_COLOR_CONTEXTS 5
 #define PALETTE_MAX_SIZE 8
 #define PALETTE_BLOCK_SIZES (BLOCK_LARGEST - BLOCK_8X8 + 1)
 #define PALETTE_Y_MODE_CONTEXTS 3
@@ -438,10 +438,10 @@ static INLINE int av1_ceil_log2(int n) {
 #if CONFIG_PALETTE
 // Returns the context for palette color index at row 'r' and column 'c',
 // along with the 'color_order' of neighbors and the 'color_idx'.
-// The 'color_map' is a 2D array with the given 'width' and 'stride'.
-int av1_get_palette_color_context(const uint8_t *color_map, int width,
-                                  int stride, int r, int c, int palette_size,
-                                  uint8_t *color_order, int *color_idx);
+// The 'color_map' is a 2D array with the given 'stride'.
+int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
+                                  int c, int palette_size, uint8_t *color_order,
+                                  int *color_idx);
 #endif  // CONFIG_PALETTE
 
 #ifdef __cplusplus

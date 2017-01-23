@@ -408,9 +408,8 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
   for (i = 0; i < rows; ++i) {
     for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
       int color_new_idx;
-      const int color_ctx =
-          av1_get_palette_color_context(color_map, cols, plane_block_width, i,
-                                        j, n, color_order, &color_new_idx);
+      const int color_ctx = av1_get_palette_color_context(
+          color_map, plane_block_width, i, j, n, color_order, &color_new_idx);
       assert(color_new_idx >= 0 && color_new_idx < n);
       if (dry_run == DRY_RUN_COSTCOEFFS)
         this_rate += cpi->palette_y_color_cost[n - 2][color_ctx][color_new_idx];

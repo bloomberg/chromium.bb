@@ -329,7 +329,7 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
   for (i = 0; i < rows; ++i) {
     for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
       const int color_ctx = av1_get_palette_color_context(
-          color_map, cols, plane_block_width, i, j, n, color_order, NULL);
+          color_map, plane_block_width, i, j, n, color_order, NULL);
       const int color_idx = aom_read_tree(r, av1_palette_color_tree[n - 2],
                                           prob[n - 2][color_ctx], ACCT_STR);
       assert(color_idx >= 0 && color_idx < n);

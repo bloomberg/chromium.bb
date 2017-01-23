@@ -856,351 +856,149 @@ const aom_prob av1_default_palette_y_color_prob
     [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] = {
       {
           // 2 colors
-          { 230, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 214, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+          { 231, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB, UNUSED_PROB },
           { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 240, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 73, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+          { 69, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 130, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 227, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 188, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 75, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 250, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 223, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 252, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 3 colors
-          { 229, 137, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 197, 120, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 107, 195, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 27, 151, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 230, 130, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 37, 230, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 67, 221, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 124, 230, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 195, 109, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 99, 122, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 205, 208, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 40, 235, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 251, 132, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 237, 186, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 253, 112, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-      },
-      {
-          // 4 colors
-          { 195, 87, 128, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 143, 100, 123, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 94, 124, 119, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 77, 91, 130, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 39, 114, 178, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 222, 94, 125, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 44, 203, 132, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 68, 175, 122, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 110, 187, 124, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 152, 91, 128, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 70, 109, 181, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 133, 113, 164, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 47, 205, 133, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 247, 94, 136, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 205, 122, 146, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 251, 100, 141, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 5 colors
-          { 195, 65, 84, 125, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 150, 76, 84, 121, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 94, 110, 81, 117, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 79, 85, 91, 139, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 26, 102, 139, 127, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 220, 73, 91, 119, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 38, 203, 86, 127, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 61, 186, 72, 124, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 132, 199, 84, 128, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 172, 52, 62, 120, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 102, 89, 121, 122, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 182, 48, 69, 186, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 36, 206, 87, 126, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 249, 55, 67, 122, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 218, 88, 75, 122, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 253, 64, 80, 119, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 6 colors
-          { 182, 54, 64, 75, 118, UNUSED_PROB, UNUSED_PROB },
-          { 126, 67, 70, 76, 116, UNUSED_PROB, UNUSED_PROB },
-          { 79, 92, 67, 85, 120, UNUSED_PROB, UNUSED_PROB },
-          { 63, 61, 81, 118, 132, UNUSED_PROB, UNUSED_PROB },
-          { 21, 80, 105, 83, 119, UNUSED_PROB, UNUSED_PROB },
-          { 215, 72, 74, 74, 111, UNUSED_PROB, UNUSED_PROB },
-          { 50, 176, 63, 79, 120, UNUSED_PROB, UNUSED_PROB },
-          { 72, 148, 66, 77, 120, UNUSED_PROB, UNUSED_PROB },
-          { 105, 177, 57, 78, 130, UNUSED_PROB, UNUSED_PROB },
-          { 150, 66, 66, 80, 127, UNUSED_PROB, UNUSED_PROB },
-          { 81, 76, 109, 85, 116, UNUSED_PROB, UNUSED_PROB },
-          { 113, 81, 62, 96, 148, UNUSED_PROB, UNUSED_PROB },
-          { 54, 179, 69, 82, 121, UNUSED_PROB, UNUSED_PROB },
-          { 244, 47, 48, 67, 118, UNUSED_PROB, UNUSED_PROB },
-          { 198, 83, 53, 65, 121, UNUSED_PROB, UNUSED_PROB },
-          { 250, 42, 51, 69, 110, UNUSED_PROB, UNUSED_PROB },
-      },
-      {
-          // 7 colors
-          { 182, 45, 54, 62, 74, 113, UNUSED_PROB },
-          { 124, 63, 57, 62, 77, 114, UNUSED_PROB },
-          { 77, 80, 56, 66, 76, 117, UNUSED_PROB },
-          { 63, 57, 69, 98, 85, 131, UNUSED_PROB },
-          { 19, 81, 98, 63, 80, 116, UNUSED_PROB },
-          { 215, 56, 60, 63, 68, 105, UNUSED_PROB },
-          { 50, 174, 50, 60, 79, 118, UNUSED_PROB },
-          { 68, 151, 50, 58, 73, 117, UNUSED_PROB },
-          { 104, 182, 53, 57, 79, 127, UNUSED_PROB },
-          { 156, 50, 51, 63, 77, 111, UNUSED_PROB },
-          { 88, 67, 97, 59, 82, 120, UNUSED_PROB },
-          { 114, 81, 46, 65, 103, 132, UNUSED_PROB },
-          { 55, 166, 57, 66, 82, 120, UNUSED_PROB },
-          { 245, 34, 38, 43, 63, 114, UNUSED_PROB },
-          { 203, 68, 45, 47, 60, 118, UNUSED_PROB },
-          { 250, 35, 37, 47, 66, 110, UNUSED_PROB },
-      },
-      {
-          // 8 colors
-          { 180, 43, 46, 50, 56, 69, 109 },
-          { 116, 53, 51, 49, 57, 73, 115 },
-          { 79, 70, 49, 50, 59, 74, 117 },
-          { 60, 54, 57, 70, 62, 83, 129 },
-          { 20, 73, 85, 52, 66, 81, 119 },
-          { 213, 56, 52, 49, 53, 62, 104 },
-          { 48, 161, 41, 45, 56, 77, 116 },
-          { 68, 139, 40, 47, 54, 71, 116 },
-          { 123, 166, 42, 43, 52, 76, 130 },
-          { 153, 44, 44, 47, 54, 79, 129 },
-          { 87, 64, 83, 49, 60, 75, 127 },
-          { 131, 68, 43, 48, 73, 96, 130 },
-          { 55, 152, 45, 51, 64, 77, 113 },
-          { 243, 30, 28, 33, 41, 65, 114 },
-          { 202, 56, 35, 36, 42, 63, 123 },
-          { 249, 31, 29, 32, 45, 68, 111 },
-      }
-    };
-
-const aom_prob av1_default_palette_uv_color_prob
-    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] = {
-      {
-          // 2 colors
-          { 228, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 195, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 228, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 71, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 129, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 206, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 136, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 98, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 236, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 222, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+          { 224, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB, UNUSED_PROB },
           { 249, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB, UNUSED_PROB },
       },
       {
           // 3 colors
-          { 198, 136, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+          { 219, 124, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB },
-          { 178, 105, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+          { 91, 191, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB },
-          { 100, 206, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+          { 34, 237, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB },
-          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB, UNUSED_PROB },
-          { 12, 136, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+          { 184, 118, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB },
-          { 219, 134, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 50, 198, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 61, 231, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 110, 209, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 173, 106, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 145, 166, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 156, 175, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 69, 183, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 241, 163, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 224, 160, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
-            UNUSED_PROB },
-          { 246, 154, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+          { 252, 124, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
             UNUSED_PROB },
       },
       {
           // 4 colors
-          { 173, 88, 143, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 146, 81, 127, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 84, 134, 102, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 69, 138, 140, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 31, 103, 200, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 217, 101, 139, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 51, 174, 121, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 64, 177, 109, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 96, 179, 145, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 164, 77, 114, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 87, 94, 156, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 105, 57, 173, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 63, 158, 137, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 236, 102, 156, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 197, 115, 153, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 245, 106, 154, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 204, 87, 97, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 74, 144, 129, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 52, 191, 134, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 151, 85, 147, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 248, 60, 115, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
       },
       {
           // 5 colors
-          { 179, 64, 97, 129, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 137, 56, 88, 125, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 82, 107, 61, 118, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 59, 113, 86, 115, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 23, 88, 118, 130, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 213, 66, 90, 125, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 37, 181, 103, 121, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 47, 188, 61, 131, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 104, 185, 103, 144, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 163, 39, 76, 112, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 94, 74, 131, 126, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 142, 42, 103, 163, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 53, 162, 99, 149, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 239, 54, 84, 108, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 203, 84, 110, 147, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
-          { 248, 70, 105, 151, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 218, 69, 62, 106, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 76, 143, 89, 127, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 21, 233, 94, 131, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 172, 72, 89, 112, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 253, 66, 65, 128, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
       },
       {
           // 6 colors
-          { 189, 50, 67, 90, 130, UNUSED_PROB, UNUSED_PROB },
-          { 114, 50, 55, 90, 123, UNUSED_PROB, UNUSED_PROB },
-          { 66, 76, 54, 82, 128, UNUSED_PROB, UNUSED_PROB },
-          { 43, 69, 69, 80, 129, UNUSED_PROB, UNUSED_PROB },
-          { 22, 59, 87, 88, 141, UNUSED_PROB, UNUSED_PROB },
-          { 203, 49, 68, 87, 122, UNUSED_PROB, UNUSED_PROB },
-          { 43, 157, 74, 104, 146, UNUSED_PROB, UNUSED_PROB },
-          { 54, 138, 51, 95, 138, UNUSED_PROB, UNUSED_PROB },
-          { 82, 171, 58, 102, 146, UNUSED_PROB, UNUSED_PROB },
-          { 129, 38, 59, 64, 168, UNUSED_PROB, UNUSED_PROB },
-          { 56, 67, 119, 92, 112, UNUSED_PROB, UNUSED_PROB },
-          { 96, 62, 53, 132, 82, UNUSED_PROB, UNUSED_PROB },
-          { 60, 147, 77, 108, 145, UNUSED_PROB, UNUSED_PROB },
-          { 238, 76, 73, 93, 148, UNUSED_PROB, UNUSED_PROB },
-          { 189, 86, 73, 103, 157, UNUSED_PROB, UNUSED_PROB },
-          { 246, 62, 75, 83, 167, UNUSED_PROB, UNUSED_PROB },
+          { 190, 60, 47, 54, 74, UNUSED_PROB, UNUSED_PROB },
+          { 62, 106, 51, 95, 110, UNUSED_PROB, UNUSED_PROB },
+          { 52, 180, 69, 72, 107, UNUSED_PROB, UNUSED_PROB },
+          { 156, 83, 72, 83, 101, UNUSED_PROB, UNUSED_PROB },
+          { 245, 45, 37, 52, 91, UNUSED_PROB, UNUSED_PROB },
       },
       {
           // 7 colors
-          { 179, 42, 51, 73, 99, 134, UNUSED_PROB },
-          { 119, 52, 52, 61, 64, 114, UNUSED_PROB },
-          { 53, 77, 35, 65, 71, 131, UNUSED_PROB },
-          { 38, 70, 51, 68, 89, 144, UNUSED_PROB },
-          { 23, 65, 128, 73, 97, 131, UNUSED_PROB },
-          { 210, 47, 52, 63, 81, 143, UNUSED_PROB },
-          { 42, 159, 57, 68, 98, 143, UNUSED_PROB },
-          { 49, 153, 45, 82, 93, 143, UNUSED_PROB },
-          { 81, 169, 52, 72, 113, 151, UNUSED_PROB },
-          { 136, 46, 35, 56, 75, 96, UNUSED_PROB },
-          { 57, 84, 109, 47, 107, 131, UNUSED_PROB },
-          { 128, 78, 57, 36, 128, 85, UNUSED_PROB },
-          { 54, 149, 68, 77, 94, 153, UNUSED_PROB },
-          { 243, 58, 50, 71, 81, 167, UNUSED_PROB },
-          { 189, 92, 64, 70, 121, 173, UNUSED_PROB },
-          { 248, 35, 38, 51, 82, 201, UNUSED_PROB },
+          { 206, 56, 42, 42, 53, 85, UNUSED_PROB },
+          { 70, 100, 45, 68, 77, 94, UNUSED_PROB },
+          { 57, 169, 51, 62, 74, 119, UNUSED_PROB },
+          { 172, 76, 71, 40, 59, 76, UNUSED_PROB },
+          { 248, 47, 36, 53, 61, 110, UNUSED_PROB },
       },
       {
           // 8 colors
-          { 201, 40, 36, 42, 64, 92, 123 },
-          { 116, 43, 33, 43, 73, 102, 128 },
-          { 46, 77, 37, 69, 62, 78, 150 },
-          { 40, 65, 52, 50, 76, 89, 133 },
-          { 28, 48, 91, 17, 64, 77, 133 },
-          { 218, 43, 43, 37, 56, 72, 163 },
-          { 41, 155, 44, 83, 82, 129, 180 },
-          { 44, 141, 29, 55, 64, 89, 147 },
-          { 92, 166, 48, 45, 59, 126, 179 },
-          { 169, 35, 49, 41, 36, 99, 139 },
-          { 55, 77, 77, 56, 60, 75, 156 },
-          { 155, 81, 51, 64, 57, 182, 255 },
-          { 60, 134, 49, 49, 93, 128, 174 },
-          { 244, 98, 51, 46, 22, 73, 238 },
-          { 189, 70, 40, 87, 93, 79, 201 },
-          { 248, 54, 49, 40, 29, 42, 227 },
-      }
+          { 208, 52, 38, 34, 34, 44, 66 },
+          { 52, 107, 34, 73, 69, 82, 87 },
+          { 28, 208, 53, 43, 62, 70, 102 },
+          { 184, 64, 45, 37, 37, 69, 105 },
+          { 251, 18, 31, 45, 47, 61, 104 },
+      },
+    };
+
+const aom_prob av1_default_palette_uv_color_prob
+    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] = {
+      {
+          // 2 colors
+          { 233, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB, UNUSED_PROB },
+          { UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB, UNUSED_PROB },
+          { 69, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB },
+          { 240, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB, UNUSED_PROB },
+          { 248, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB, UNUSED_PROB },
+      },
+      {
+          // 3 colors
+          { 216, 128, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB },
+          { 110, 171, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB },
+          { 40, 239, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB },
+          { 191, 104, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB },
+          { 247, 134, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB,
+            UNUSED_PROB },
+      },
+      {
+          // 4 colors
+          { 202, 89, 132, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 90, 132, 136, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 63, 195, 149, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 152, 84, 152, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 241, 87, 136, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+      },
+      {
+          // 5 colors
+          { 209, 54, 82, 134, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 94, 173, 180, 93, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 10, 251, 127, 84, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 183, 20, 150, 47, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+          { 252, 73, 111, 150, UNUSED_PROB, UNUSED_PROB, UNUSED_PROB },
+      },
+      {
+          // 6 colors
+          { 192, 67, 59, 46, 184, UNUSED_PROB, UNUSED_PROB },
+          { 59, 92, 61, 100, 130, UNUSED_PROB, UNUSED_PROB },
+          { 49, 162, 68, 91, 150, UNUSED_PROB, UNUSED_PROB },
+          { 133, 29, 36, 153, 101, UNUSED_PROB, UNUSED_PROB },
+          { 247, 71, 44, 90, 129, UNUSED_PROB, UNUSED_PROB },
+      },
+      {
+          // 7 colors
+          { 182, 62, 80, 78, 46, 116, UNUSED_PROB },
+          { 59, 62, 39, 81, 65, 99, UNUSED_PROB },
+          { 54, 177, 48, 58, 93, 104, UNUSED_PROB },
+          { 137, 79, 54, 55, 44, 134, UNUSED_PROB },
+          { 239, 82, 79, 44, 69, 71, UNUSED_PROB },
+      },
+      {
+          // 8 colors
+          { 172, 53, 27, 67, 30, 79, 113 },
+          { 63, 57, 45, 81, 62, 35, 47 },
+          { 51, 200, 36, 47, 82, 165, 129 },
+          { 141, 100, 47, 29, 33, 37, 129 },
+          { 236, 42, 50, 91, 24, 154, 65 },
+      },
     };
 
 #undef UNUSED_PROB
 
 static const int palette_color_context_lookup[PALETTE_COLOR_CONTEXTS] = {
-  // (3, 0, 0, 0), (3, 2, 0, 0), (3, 3, 2, 0), (3, 3, 2, 2),
-  3993, 4235, 4378, 4380,
-  // (4, 3, 3, 0), (5, 0, 0, 0), (5, 3, 0, 0), (5, 3, 2, 0),
-  5720, 6655, 7018, 7040,
-  // (5, 5, 0, 0), (6, 2, 0, 0), (6, 2, 2, 0), (6, 4, 0, 0),
-  7260, 8228, 8250, 8470,
-  // (7, 3, 0, 0), (8, 0, 0, 0), (8, 2, 0, 0), (10, 0, 0, 0)
-  9680, 10648, 10890, 13310
+  // (3, 0, 0), (3, 3, 2)
+  363, 398,
+  // (5, 3, 0), (6, 2, 0), (8, 0, 0)
+  638, 748, 968
 };
 #endif  // CONFIG_PALETTE
 
@@ -1266,18 +1064,18 @@ static const aom_prob
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_PALETTE
-int av1_get_palette_color_context(const uint8_t *color_map, int width,
-                                  int stride, int r, int c, int palette_size,
-                                  uint8_t *color_order, int *color_idx) {
+int av1_get_palette_color_context(const uint8_t *color_map, int stride, int r,
+                                  int c, int palette_size, uint8_t *color_order,
+                                  int *color_idx) {
   int i;
   // The +10 below should not be needed. But we get a warning "array subscript
   // is above array bounds [-Werror=array-bounds]" without it, possibly due to
   // this (or similar) bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59124
   int scores[PALETTE_MAX_SIZE + 10];
-  const int weights[4] = { 3, 2, 3, 2 };
+  const int weights[3] = { 3, 2, 3 };
   int color_ctx_hash;
   int color_ctx;
-  int color_neighbors[4];
+  int color_neighbors[3];
   int inverse_color_order[PALETTE_MAX_SIZE];
   assert(palette_size <= PALETTE_MAX_SIZE);
 
@@ -1286,23 +1084,20 @@ int av1_get_palette_color_context(const uint8_t *color_map, int width,
   color_neighbors[1] =
       (c - 1 >= 0 && r - 1 >= 0) ? color_map[(r - 1) * stride + c - 1] : -1;
   color_neighbors[2] = (r - 1 >= 0) ? color_map[(r - 1) * stride + c] : -1;
-  color_neighbors[3] = (r - 1 >= 0 && c + 1 <= width - 1)
-                           ? color_map[(r - 1) * stride + c + 1]
-                           : -1;
 
   for (i = 0; i < PALETTE_MAX_SIZE; ++i) {
     color_order[i] = i;
     inverse_color_order[i] = i;
   }
   memset(scores, 0, PALETTE_MAX_SIZE * sizeof(scores[0]));
-  for (i = 0; i < 4; ++i) {
+  for (i = 0; i < 3; ++i) {
     if (color_neighbors[i] >= 0) {
       scores[color_neighbors[i]] += weights[i];
     }
   }
 
-  // Get the top 4 scores (sorted from large to small).
-  for (i = 0; i < 4; ++i) {
+  // Get the top 3 scores (sorted from large to small).
+  for (i = 0; i < 3; ++i) {
     int max = scores[i];
     int max_idx = i;
     int j;
@@ -1331,16 +1126,17 @@ int av1_get_palette_color_context(const uint8_t *color_map, int width,
 
   // Get hash value of context.
   color_ctx_hash = 0;
-  for (i = 0; i < 4; ++i) color_ctx_hash = color_ctx_hash * 11 + scores[i];
+  for (i = 0; i < 3; ++i) color_ctx_hash = color_ctx_hash * 11 + scores[i];
 
   // Lookup context from hash.
-  color_ctx = 0;  // Default.
+  color_ctx = -1;
   for (i = 0; i < PALETTE_COLOR_CONTEXTS; ++i) {
     if (color_ctx_hash == palette_color_context_lookup[i]) {
       color_ctx = i;
       break;
     }
   }
+  assert(color_ctx >= 0);
 
   if (color_idx != NULL) {
     *color_idx = inverse_color_order[color_map[r * stride + c]];
