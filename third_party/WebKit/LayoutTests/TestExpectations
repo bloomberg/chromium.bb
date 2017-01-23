@@ -117,6 +117,9 @@ crbug.com/645389 [ Win ] fast/canvas/canvas-hit-regions-event-test.html [ Timeou
 crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
 crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
 
+crbug.com/683339 paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
+crbug.com/683339 virtual/stable/paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
+
 crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646015 virtual/stable/paint/invalidation/hover-invalidation-table.html [ Failure ]

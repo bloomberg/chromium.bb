@@ -1635,7 +1635,7 @@ void PaintLayer::collectFragments(
   // Make the dirty rect relative to the fragmentation context (multicol
   // container, etc.).
   LayoutRect dirtyRectInMulticolContainer(dirtyRect);
-  dirtyRectInMulticolContainer.move(enclosingPaginationLayer()->location() -
+  dirtyRectInMulticolContainer.move(enclosingFlowThread->physicalLocation() -
                                     offsetOfPaginationLayerFromRoot);
 
   // Slice the layer into fragments. Each fragment needs to be processed (e.g.
