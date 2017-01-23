@@ -44,7 +44,7 @@ from webkitpy.w3c.test_converter import convert_for_webkit
 # Maximum length of import path starting from top of source repository.
 # This limit is here because the Windows builders cannot create paths that are
 # longer than the Windows max path length (260). See http://crbug.com/609871.
-MAX_PATH_LENGTH = 125
+MAX_PATH_LENGTH = 140
 
 _log = logging.getLogger(__name__)
 
