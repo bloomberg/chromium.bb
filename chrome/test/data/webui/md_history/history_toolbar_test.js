@@ -75,7 +75,7 @@ suite('history-toolbar', function() {
     app.historyResult(info, []);
     app.grouped_ = true;
     return PolymerTest.flushTasks().then(function() {
-      app.set('queryState_.range', HistoryRange.MONTH);
+      app.fire('change-query', {range: HistoryRange.MONTH});
       groupedList = app.$.history.$$('#grouped-list');
       assertTrue(!!groupedList);
       var today = toolbar.$$('#today-button');

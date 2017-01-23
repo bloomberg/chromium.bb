@@ -6,16 +6,10 @@ Polymer({
   is: 'history-list-container',
 
   properties: {
-    /** @type {HistoryRange} */
-    groupedRange: {
-      type: Number,
-      observer: 'groupedRangeChanged_',
-    },
-
     // The path of the currently selected page.
     selectedPage_: {
       type: String,
-      computed: 'computeSelectedPage_(groupedRange)',
+      computed: 'computeSelectedPage_(queryState.range)',
     },
 
     // Whether domain-grouped history is enabled.
@@ -207,7 +201,7 @@ Polymer({
         'EntryMenuShowMoreFromSite');
 
     var menu = assert(this.$.sharedMenu.getIfExists());
-    this.set('queryState.searchTerm', this.actionMenuModel_.item.domain);
+    this.fire('change-query', {search: this.actionMenuModel_.item.domain});
     this.actionMenuModel_ = null;
     this.closeMenu_();
   },

@@ -76,9 +76,9 @@ suite('Metrics', function() {
       assertEquals(1, histogram[HistoryPageViewHistogram.SYNCED_TABS]);
       app.selectedPage_ = 'history';
       assertEquals(2, histogram[HistoryPageViewHistogram.HISTORY]);
-      app.set('queryState_.range', HistoryRange.WEEK);
+      app.fire('change-query', {range: HistoryRange.WEEK});
       assertEquals(1, histogram[HistoryPageViewHistogram.GROUPED_WEEK]);
-      app.set('queryState_.range', HistoryRange.MONTH);
+      app.fire('change-query', {range: HistoryRange.MONTH});
       assertEquals(1, histogram[HistoryPageViewHistogram.GROUPED_MONTH]);
     });
   });
@@ -102,7 +102,7 @@ suite('Metrics', function() {
       assertEquals(1, histogramMap['HistoryPage.ClickPosition'][1]);
       assertEquals(1, histogramMap['HistoryPage.ClickPositionSubset'][1]);
 
-      app.set('queryState_.searchTerm', 'goog');
+      app.fire('change-query', {search: 'goog'});
       assertEquals(1, actionMap['Search']);
       app.set('queryState_.incremental', true);
       app.historyResult(createHistoryInfo('goog'), [

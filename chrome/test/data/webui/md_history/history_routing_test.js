@@ -55,7 +55,7 @@ cr.define('md_history.history_routing_test', function() {
       test('route updates from search', function() {
         var searchTerm = 'McCree';
         assertEquals('history', app.$.content.selected);
-        app.set('queryState_.searchTerm', searchTerm);
+        app.fire('change-query', {search: searchTerm});
         assertEquals('chrome://history/?q=' + searchTerm, window.location.href);
       });
 

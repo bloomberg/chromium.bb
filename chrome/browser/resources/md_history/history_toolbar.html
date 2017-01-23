@@ -220,7 +220,8 @@
     </div>
     <template is="dom-if" if="[[isGroupedMode]]">
       <div id="grouped-buttons-container">
-        <paper-tabs attr-for-selected="value" selected="{{groupedRange}}">
+        <paper-tabs attr-for-selected="value" selected="[[groupedRange]]"
+            on-iron-select="onTabSelected_">
           <paper-tab value="0">$i18n{rangeAllTime}</paper-tab>
           <paper-tab value="1">$i18n{rangeWeek}</paper-tab>
           <paper-tab value="2">$i18n{rangeMonth}</paper-tab>

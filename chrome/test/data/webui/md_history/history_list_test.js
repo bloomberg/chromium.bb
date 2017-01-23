@@ -445,7 +445,7 @@ suite('<history-list>', function() {
     app.$$('history-router').$$('iron-location').dwellTime = 0;
     app.queryState_.queryingDisabled = false;
     // Navigate from chrome://history/ to chrome://history/?q=something else.
-    app.set('queryState_.searchTerm', 'something else');
+    app.fire('change-query', {search: 'something else'});
     app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
     app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
 
@@ -494,6 +494,6 @@ suite('<history-list>', function() {
     registerMessageCallback('removeVisits', this, undefined);
     registerMessageCallback('queryHistory', this, function() {});
     registerMessageCallback('navigateToUrl', this, undefined);
-    app.set('queryState_.searchTerm', '');
+    app.fire('change-query', {search: ''});
   });
 });

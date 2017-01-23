@@ -27,7 +27,6 @@ Polymer({
     searchTerm: {
       type: String,
       observer: 'searchTermChanged_',
-      notify: true,
     },
 
     // True if the backend is processing and a spinner should be shown in the
@@ -52,13 +51,9 @@ Polymer({
     groupedRange: {
       type: Number,
       reflectToAttribute: true,
-      notify: true,
     },
 
-    groupedOffset: {
-      type: Number,
-      notify: true,
-    },
+    groupedOffset: Number,
 
     hasMoreResults: Boolean,
 
@@ -109,7 +104,7 @@ Polymer({
    * @private
    */
   onSearchChanged_: function(event) {
-    this.searchTerm = /** @type {string} */ (event.detail);
+    this.fire('change-query', {search: event.detail});
   },
 
   /** @private */
@@ -155,22 +150,37 @@ Polymer({
       return info.queryStartMonth;
   },
 
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onTabSelected_: function(e) {
+    this.fire(
+        'change-query', {range: Number(e.detail.item.getAttribute('value'))});
+  },
+
+  /**
+   * @param {number} newOffset
+   * @private
+   */
+  changeOffset_: function(newOffset) {
+    if (!this.querying)
+      this.fire('change-query', {offset: newOffset});
+  },
+
   /** @private */
   onTodayTap_: function() {
-    if (!this.querying)
-      this.groupedOffset = 0;
+    this.changeOffset_(0);
   },
 
   /** @private */
   onPrevTap_: function() {
-    if (!this.querying)
-      this.groupedOffset = this.groupedOffset + 1;
+    this.changeOffset_(this.groupedOffset + 1);
   },
 
   /** @private */
   onNextTap_: function() {
-    if (!this.querying)
-      this.groupedOffset = this.groupedOffset - 1;
+    this.changeOffset_(this.groupedOffset - 1);
   },
 
   /**

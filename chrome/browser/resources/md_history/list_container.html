@@ -38,7 +38,7 @@
       </history-list>
       <template is="dom-if" if="[[grouped]]">
         <history-grouped-list id="grouped-list"
-            range="[[groupedRange]]"
+            range="[[queryState.range]]"
             query-interval="[[queryResult.info.queryInterval]]"
             searched-term="[[queryResult.info.term]]">
         </history-grouped-list>

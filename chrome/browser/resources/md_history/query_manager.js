@@ -10,12 +10,25 @@ Polymer({
     queryState: {
       type: Object,
       notify: true,
-    },
+      value: function() {
+        return {
+          // Whether the most recent query was incremental.
+          incremental: false,
+          // A query is initiated by page load.
+          querying: true,
+          queryingDisabled: false,
+          _range: HistoryRange.ALL_TIME,
+          searchTerm: '',
+          groupedOffset: 0,
 
-    groupedRange_: {
-      type: Number,
-      // Use a computed property to be able to compare old and new values.
-      computed: 'computeGroupedRange_(queryState.range)',
+          set range(val) {
+            this._range = Number(val);
+          },
+          get range() {
+            return this._range;
+          },
+        };
+      },
     },
 
     /** @type {QueryResult} */
@@ -24,21 +37,24 @@ Polymer({
 
   observers: [
     'searchTermChanged_(queryState.searchTerm)',
-    'groupedOffsetChanged_(queryState.groupedOffset)',
   ],
 
-  /** @private {?function(!Event)} */
-  boundOnQueryHistory_: null,
+  /** @private {!Object<string, !function(!Event)>} */
+  documentListeners_: {},
 
   /** @override */
   attached: function() {
-    this.boundOnQueryHistory_ = this.onQueryHistory_.bind(this);
-    document.addEventListener('query-history', this.boundOnQueryHistory_);
+    this.documentListeners_['change-query'] = this.onChangeQuery_.bind(this);
+    this.documentListeners_['query-history'] = this.onQueryHistory_.bind(this);
+
+    for (var e in this.documentListeners_)
+      document.addEventListener(e, this.documentListeners_[e]);
   },
 
   /** @override */
   detached: function() {
-    document.removeEventListener('query-history', this.boundOnQueryHistory_);
+    for (var e in this.documentListeners_)
+      document.removeEventListener(e, this.documentListeners_[e]);
   },
 
   /**
@@ -81,35 +97,51 @@ Polymer({
    * @param {!Event} e
    * @private
    */
+  onChangeQuery_: function(e) {
+    var changes =
+        /** @type {{range: ?HistoryRange, offset: ?number, search: ?string}} */
+        (e.detail);
+    var needsUpdate = false;
+
+    if (changes.range != null && changes.range != this.queryState.range) {
+      this.set('queryState.range', changes.range);
+      needsUpdate = true;
+
+      // Reset back to page 0 of the results, unless changing to a specific
+      // page.
+      if (!changes.offset)
+        this.set('queryState.groupedOffset', 0);
+
+      this.fire('history-view-changed');
+    }
+
+    if (changes.offset != null &&
+        changes.offset != this.queryState.groupedOffset) {
+      this.set('queryState.groupedOffset', changes.offset);
+      needsUpdate = true;
+    }
+
+    if (changes.search != null &&
+        changes.search != this.queryState.searchTerm) {
+      this.set('queryState.searchTerm', changes.search);
+      needsUpdate = true;
+    }
+
+    if (needsUpdate)
+      this.queryHistory_(false);
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
   onQueryHistory_: function(e) {
     this.queryHistory_(/** @type {boolean} */ e.detail);
     return false;
   },
 
   /** @private */
-  groupedOffsetChanged_: function() {
-    this.queryHistory_(false);
-  },
-
-  /**
-   * @param {HistoryRange} range
-   * @return {HistoryRange}
-   * @private
-   */
-  computeGroupedRange_: function(range) {
-    if (this.groupedRange_ != undefined) {
-      this.set('queryState.groupedOffset', 0);
-
-      this.queryHistory_(false);
-      this.fire('history-view-changed');
-    }
-
-    return range;
-  },
-
-  /** @private */
   searchTermChanged_: function() {
-    this.queryHistory_(false);
     // TODO(tsergeant): Ignore incremental searches in this metric.
     if (this.queryState.searchTerm)
       md_history.BrowserService.getInstance().recordAction('Search');

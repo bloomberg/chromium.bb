@@ -10,12 +10,12 @@
 function replaceBody(element) {
   var body = document.body;
   var app = body.querySelector('history-app');
-  // Clear the query on the app, if it exists. This clears any query in the URL.
-  if (app)
-    app.set('queryState_.searchTerm', '');
 
   var currentBody = app || body.querySelector('.test-body');
   body.removeChild(currentBody);
+
+  // Clear any query in the URL.
+  window.history.replaceState({}, '', '/');
 
   element.classList.add('test-body');
   body.appendChild(element);

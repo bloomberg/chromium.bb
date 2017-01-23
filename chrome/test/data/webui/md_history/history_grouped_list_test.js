@@ -62,21 +62,21 @@ suite('history-grouped-list', function() {
     assertEquals('infinite-list', content.selected);
 
     // Switching to week or month causes grouped history list to be shown.
-    app.set('queryState_.range', HistoryRange.WEEK);
+    app.fire('change-query', {range: HistoryRange.WEEK});
     assertEquals('grouped-list', content.selected);
     assertEquals('history', sidebar.$.menu.selected);
 
-    app.set('queryState_.range', HistoryRange.ALL_TIME);
+    app.fire('change-query', {range: HistoryRange.ALL_TIME});
     assertEquals('infinite-list', content.selected);
     assertEquals('history', sidebar.$.menu.selected);
 
-    app.set('queryState_.range', HistoryRange.MONTH);
+    app.fire('change-query', {range: HistoryRange.MONTH});
     assertEquals('grouped-list', content.selected);
     assertEquals('history', sidebar.$.menu.selected);
   });
 
   test('items grouped by domain', function() {
-    app.set('queryState_.range', HistoryRange.WEEK);
+    app.fire('change-query', {range: HistoryRange.WEEK});
     var info = createHistoryInfo();
     app.historyResult(info, SIMPLE_RESULTS);
     return PolymerTest.flushTasks().then(function() {
@@ -111,7 +111,7 @@ suite('history-grouped-list', function() {
   });
 
   test('items grouped by day in week view', function() {
-    app.set('queryState_.range', HistoryRange.WEEK);
+    app.fire('change-query', {range: HistoryRange.WEEK});
     app.historyResult(createHistoryInfo(), PER_DAY_RESULTS);
     return PolymerTest.flushTasks().then(function() {
       var data = groupedList.groupedHistoryData_;
@@ -132,7 +132,7 @@ suite('history-grouped-list', function() {
   });
 
   test('items grouped by month in month view', function() {
-    app.set('queryState_.range', HistoryRange.MONTH);
+    app.fire('change-query', {range: HistoryRange.MONTH});
     app.historyResult(createHistoryInfo(), PER_MONTH_RESULTS);
     return PolymerTest.flushTasks().then(function() {
       var data = groupedList.groupedHistoryData_;
@@ -147,7 +147,7 @@ suite('history-grouped-list', function() {
   });
 
   test('items rendered when expanded', function() {
-    app.set('queryState_.range', HistoryRange.WEEK);
+    app.fire('change-query', {range: HistoryRange.WEEK});
     app.historyResult(createHistoryInfo(), SIMPLE_RESULTS);
 
     return PolymerTest.flushTasks().then(function() {
@@ -170,7 +170,7 @@ suite('history-grouped-list', function() {
       createHistoryEntry('2016-03-11', 'https://en.wikipedia.org'),
       createHistoryEntry('2016-03-10', 'https://www.youtube.com')
     ];
-    app.set('queryState_.range', HistoryRange.WEEK);
+    app.fire('change-query', {range: HistoryRange.WEEK});
     app.historyResult(createHistoryInfo(), results);
 
     return waitForEvent(groupedList, 'dom-change', function() {
@@ -220,7 +220,7 @@ suite('history-grouped-list', function() {
       createHistoryEntry('2016-03-11', 'https://en.wikipedia.org'),
       createHistoryEntry('2016-03-10', 'https://www.youtube.com')
     ];
-    app.set('queryState_.range', HistoryRange.WEEK);
+    app.fire('change-query', {range: HistoryRange.WEEK});
     app.historyResult(createHistoryInfo(), results);
 
     waitForEvent(groupedList, 'dom-change', function() {
