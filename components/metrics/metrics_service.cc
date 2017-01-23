@@ -205,9 +205,6 @@ const int kEventLimit = 2400;
 // limit is exceeded.
 const size_t kUploadLogAvoidRetransmitSize = 100 * 1024;
 
-// Interval, in minutes, between state saves.
-const int kSaveStateIntervalMinutes = 5;
-
 enum ResponseStatus {
   UNKNOWN_FAILURE,
   SUCCESS,
@@ -292,8 +289,7 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       idle_since_last_transmission_(false),
       session_id_(-1),
       data_use_tracker_(DataUseTracker::Create(local_state_)),
-      self_ptr_factory_(this),
-      state_saver_factory_(this) {
+      self_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_manager_);
   DCHECK(client_);
@@ -592,6 +588,12 @@ void MetricsService::MergeHistogramDeltas() {
 void MetricsService::InitializeMetricsState() {
   const int64_t buildtime = MetricsLog::GetBuildTime();
   const std::string version = client_->GetVersionString();
+
+  // Delete deprecated prefs
+  // TODO(holte): Remove these in M58
+  local_state_->ClearPref(prefs::kStabilityLaunchTimeSec);
+  local_state_->ClearPref(prefs::kStabilityLastTimestampSec);
+
   bool version_changed = false;
   int64_t previous_buildtime =
       local_state_->GetInt64(prefs::kStabilityStatsBuildTime);
@@ -683,18 +685,9 @@ void MetricsService::InitializeMetricsState() {
   base::TimeDelta startup_uptime;
   GetUptimes(local_state_, &startup_uptime, &ignored_uptime_parameter);
   DCHECK_EQ(0, startup_uptime.InMicroseconds());
-  // For backwards compatibility, leave this intact in case Omaha is checking
-  // them.  prefs::kStabilityLastTimestampSec may also be useless now.
-  // TODO(jar): Delete these if they have no uses.
-  local_state_->SetInt64(prefs::kStabilityLaunchTimeSec,
-                         base::Time::Now().ToTimeT());
 
   // Bookkeeping for the uninstall metrics.
   IncrementLongPrefsValue(prefs::kUninstallLaunchCount);
-
-  // Kick off the process of saving the state (so the uptime numbers keep
-  // getting updated) every n minutes.
-  ScheduleNextStateSave();
 }
 
 void MetricsService::OnUserAction(const std::string& action) {
@@ -745,25 +738,6 @@ void MetricsService::NotifyOnDidCreateMetricsLog() {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (MetricsProvider* provider : metrics_providers_)
     provider->OnDidCreateMetricsLog();
-}
-
-//------------------------------------------------------------------------------
-// State save methods
-
-void MetricsService::ScheduleNextStateSave() {
-  state_saver_factory_.InvalidateWeakPtrs();
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&MetricsService::SaveLocalState,
-                            state_saver_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMinutes(kSaveStateIntervalMinutes));
-}
-
-void MetricsService::SaveLocalState() {
-  RecordCurrentState(local_state_);
-
-  // TODO(jar):110021 Does this run down the batteries????
-  ScheduleNextStateSave();
 }
 
 
@@ -1295,15 +1269,8 @@ void MetricsService::LogCleanShutdown(bool end_completed) {
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
   client_->OnLogCleanShutdown();
   clean_exit_beacon_.WriteBeaconValue(true);
-  RecordCurrentState(local_state_);
   SetExecutionPhase(MetricsService::SHUTDOWN_COMPLETE, local_state_);
   local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, end_completed);
-  RecordCurrentState(local_state_);
-}
-
-void MetricsService::RecordCurrentState(PrefService* pref) {
-  pref->SetInt64(prefs::kStabilityLastTimestampSec,
-                 base::Time::Now().ToTimeT());
 }
 
 }  // namespace metrics

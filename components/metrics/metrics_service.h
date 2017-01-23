@@ -300,15 +300,6 @@ class MetricsService : public base::HistogramFlattener {
   // Notifies providers when a new metrics log is created.
   void NotifyOnDidCreateMetricsLog();
 
-  // Schedule the next save of LocalState information.  This is called
-  // automatically by the task that performs each save to schedule the next one.
-  void ScheduleNextStateSave();
-
-  // Save the LocalState information immediately. This should not be called by
-  // anybody other than the scheduler to avoid doing too many writes. When you
-  // make a change, call ScheduleNextStateSave() instead.
-  void SaveLocalState();
-
   // Opens a new log for recording user experience metrics.
   void OpenNewLog();
 
@@ -365,10 +356,6 @@ class MetricsService : public base::HistogramFlattener {
 
   // Records that the browser was shut down cleanly.
   void LogCleanShutdown(bool end_completed);
-
-  // Records state that should be periodically saved, like uptime and
-  // buffered plugin stability statistics.
-  void RecordCurrentState(PrefService* pref);
 
   // Notifies observers on a synthetic trial list change.
   void NotifySyntheticTrialObservers();
@@ -490,10 +477,6 @@ class MetricsService : public base::HistogramFlattener {
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as MetricsService.
   base::WeakPtrFactory<MetricsService> self_ptr_factory_;
-
-  // Weak pointers factory used for saving state. All weak pointers managed by
-  // this factory are invalidated in ScheduleNextStateSave.
-  base::WeakPtrFactory<MetricsService> state_saver_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
