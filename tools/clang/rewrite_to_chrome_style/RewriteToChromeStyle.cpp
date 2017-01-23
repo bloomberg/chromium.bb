@@ -113,9 +113,6 @@ AST_MATCHER_P(clang::CXXMethodDecl,
   llvm::StringRef mocked_method_name =
       method_name.substr(strlen(kGMockMethodNamePrefix));
   for (const auto& potentially_mocked_method : Node.getParent()->methods()) {
-    if (!potentially_mocked_method->isVirtual())
-      continue;
-
     clang::DeclarationName decl_name = potentially_mocked_method->getDeclName();
     if (!decl_name.isIdentifier() ||
         potentially_mocked_method->getName() != mocked_method_name)
