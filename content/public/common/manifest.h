@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
@@ -56,6 +57,16 @@ struct CONTENT_EXPORT Manifest {
     // a vector with a single value, IconPurpose::ANY, for all other parsing
     // exceptions.
     std::vector<IconPurpose> purpose;
+  };
+
+  // Structure representing how a Web Share target handles an incoming share.
+  struct CONTENT_EXPORT ShareTarget {
+    ShareTarget();
+    ~ShareTarget();
+
+    // The URL template that contains placeholders to be replaced with shared
+    // data. Null if the parsing failed.
+    base::NullableString16 url_template;
   };
 
   // Structure representing a related application.
@@ -106,6 +117,13 @@ struct CONTENT_EXPORT Manifest {
   // Empty if the parsing failed, the field was not present, empty or all the
   // icons inside the JSON array were invalid.
   std::vector<Icon> icons;
+
+  // Null if parsing failed or the field was not present.
+  // TODO(constantina): This field is non-standard and part of a Chrome
+  // experiment. See:
+  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
+  // As such, this field should not be exposed to web contents.
+  base::Optional<ShareTarget> share_target;
 
   // Empty if the parsing failed, the field was not present, empty or all the
   // applications inside the array were invalid. The order of the array
