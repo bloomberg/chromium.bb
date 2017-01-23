@@ -1067,6 +1067,21 @@
             ]
         }
     ],
+    "MidiManagerAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MidiManagerAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
     "ModerateBindingOnBackgroundTabCreation": [
         {
             "platforms": [
