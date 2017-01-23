@@ -561,6 +561,7 @@ class CLStatsEngine(object):
 ReportHTMLTemplate = """
 <head>
 <style>
+  body {{font-family: "sans serif"}}
   table {{border-collapse: collapse; width: 50%}}
   table, td, th {{border: 1px solid black}}
   th, td {{padding: 5px}}
