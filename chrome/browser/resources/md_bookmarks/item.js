@@ -26,7 +26,7 @@ Polymer({
   onMenuButtonOpenTap_: function(e) {
     this.fire('open-item-menu', {
       target: e.target,
-      item: this.item
+      item: this.item,
     });
   },
 

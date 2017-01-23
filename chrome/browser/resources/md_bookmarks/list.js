@@ -11,6 +11,8 @@ Polymer({
 
     /** @type {Array<BookmarkTreeNode>} */
     displayedList: Array,
+
+    searchTerm: String,
   },
 
   listeners: {
@@ -81,7 +83,13 @@ Polymer({
   },
 
   /** @private */
-  isListEmpty_: function() {
+  emptyListMessage_: function() {
+    var emptyListMessage = this.searchTerm ? 'noSearchResults' : 'emptyList';
+    return loadTimeData.getString(emptyListMessage);
+  },
+
+  /** @private */
+  isEmptyList_: function() {
     return this.displayedList.length == 0;
-  }
+  },
 });

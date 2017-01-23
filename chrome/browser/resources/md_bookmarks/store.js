@@ -21,6 +21,7 @@ var BookmarksStore = Polymer({
 
     searchTerm: {
       type: String,
+      value: '',
       observer: 'updateSearchDisplay_',
       notify: true,
     },
@@ -115,6 +116,9 @@ var BookmarksStore = Polymer({
 
   /** @private */
   updateSearchDisplay_: function() {
+    if (!this.rootNode)
+      return;
+
     if (!this.searchTerm) {
       this.fire('selected-folder-changed', this.rootNode.children[0].id);
     } else {

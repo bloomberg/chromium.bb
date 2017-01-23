@@ -34,7 +34,8 @@
     <div id="main-container">
       <bookmarks-sidebar root-folders="[[rootNode.children]]">
       </bookmarks-sidebar>
-      <bookmarks-list displayed-list="[[displayedList]]"></bookmarks-list>
+      <bookmarks-list displayed-list="[[displayedList]]"
+          search-term="[[searchTerm]]"></bookmarks-list>
     </div>
     <bookmarks-store selected-id="{{selectedId}}"
         root-node="{{rootNode}}"

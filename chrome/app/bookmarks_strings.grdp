@@ -351,6 +351,9 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_SORT" desc="Title of the bookmark toolbar dropdown menu item that sorts bookmarks by title.">
     Sort by title
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS" desc="Text on the bookmarks list that indicates that no bookmarks or folders match the search.">
+    No search results found
+  </message>
   <!-- End of material design Bookmarks Manager strings. -->
 
   <!-- Begin of Bookmarks Menu (in the Main Menu) strings. -->
