@@ -2653,6 +2653,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     # This may be None; default fallback value is determined in logic below.
     title = options.title
+    automatic_title = False
 
     if options.squash:
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
@@ -2667,6 +2668,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           default_title = RunGit(['show', '-s', '--format=%s', 'HEAD']).strip()
           title = ask_for_data(
               'Title for patchset [%s]: ' % default_title) or default_title
+          if title == default_title:
+            automatic_title = True
         change_id = self._GetChangeDetail()['change_id']
         while True:
           footer_change_ids = git_footers.get_footer_change_id(message)
@@ -2715,6 +2718,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         # On first upload, patchset title is always this string, while
         # --title flag gets converted to first line of message.
         title = 'Initial upload'
+        automatic_title = True
         if not change_desc.description:
           DieWithError("Description is empty. Aborting...")
         message = change_desc.description
@@ -2795,10 +2799,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if title:
       if not re.match(r'^[\w ]+$', title):
         title = re.sub(r'[^\w ]', '', title)
-        print('WARNING: Patchset title may only contain alphanumeric chars '
-              'and spaces. Cleaned up title:\n%s' % title)
-        if not options.force:
-          ask_for_data('Press enter to continue, Ctrl+C to abort')
+        if not automatic_title:
+          print('WARNING: Patchset title may only contain alphanumeric chars '
+                'and spaces. Cleaned up title:\n%s' % title)
+          if not options.force:
+            ask_for_data('Press enter to continue, Ctrl+C to abort')
       # Per doc, spaces must be converted to underscores, and Gerrit will do the
       # reverse on its side.
       refspec_opts.append('m=' + title.replace(' ', '_'))
