@@ -2892,7 +2892,7 @@ static void get_coef_counts_diff(AV1_COMP *cpi, int index,
 
   assert(max_idx < COEF_PROBS_BUFS);
 
-  for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size)
+  for (tx_size = 0; tx_size <= max_tx_size; ++tx_size)
     for (i = 0; i < PLANE_TYPES; ++i)
       for (j = 0; j < REF_TYPES; ++j)
         for (k = 0; k < COEF_BANDS; ++k)
@@ -3166,7 +3166,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
                                 [COEFF_CONTEXTS];
     av1_copy(eob_counts_copy, cm->counts.eob_branch);
     for (i = 1; i <= cpi->common.coef_probs_update_idx; ++i) {
-      for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size)
+      for (tx_size = 0; tx_size <= max_tx_size; ++tx_size)
         av1_full_to_model_counts(cm->counts.coef[tx_size],
                                  subframe_stats->coef_counts_buf[i][tx_size]);
       av1_copy(cm->counts.eob_branch, subframe_stats->eob_counts_buf[i]);

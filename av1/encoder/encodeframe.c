@@ -4650,7 +4650,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       TX_SIZE t;
       SUBFRAME_STATS *subframe_stats = &cpi->subframe_stats;
 
-      for (t = TX_4X4; t < TX_SIZES; ++t)
+      for (t = 0; t < TX_SIZES; ++t)
         av1_full_to_model_counts(cpi->td.counts->coef[t],
                                  cpi->td.rd_counts.coef_counts[t]);
       av1_partial_adapt_probs(cm, mi_row, mi_col);
