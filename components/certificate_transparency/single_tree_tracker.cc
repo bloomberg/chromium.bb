@@ -4,14 +4,55 @@
 
 #include "components/certificate_transparency/single_tree_tracker.h"
 
+#include <algorithm>
+#include <iterator>
+#include <list>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/certificate_transparency/log_dns_client.h"
+#include "crypto/sha2.h"
+#include "net/base/hash_value.h"
+#include "net/base/net_errors.h"
 #include "net/cert/ct_log_verifier.h"
+#include "net/cert/merkle_audit_proof.h"
+#include "net/cert/merkle_tree_leaf.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 
+using net::SHA256HashValue;
+using net::ct::LogEntry;
+using net::ct::MerkleAuditProof;
+using net::ct::MerkleTreeLeaf;
+using net::ct::SignedCertificateTimestamp;
 using net::ct::SignedTreeHead;
+
+// Overview of the process for auditing CT log entries
+//
+// A CT log entry, represented by net::ct::LogEntry, is made up of the
+// end-entity certificate and the Signed Certificate Timestamp associated with
+// it.
+//
+// In this file, obsered CT log entries are audited for inclusion in the CT log.
+// A pre-requirement for auditing a log entry is having a Signed Tree Head (STH)
+// from that log that is 24 hours (MMD period) after the timestamp in the SCT.
+// Log entries observed while the client has no STH from that log or an STH that
+// is too old start in the PENDING_NEWER_STH state.
+//
+// Once a fresh-enough STH is obtained, all entries that can be audited using
+// this STH move to the PENDING_INCLUSION_PROOF_REQUEST state.
+//
+// Requests for the entry index and inclusion proof are obtained using a
+// LogDnsClient instance - when an inclusion proof for an entry has been
+// successfully requested (e.g. it has not been throttled), it moves to the
+// INCLUSION_PROOF_REQUESTED state.
+//
+// Once the inclusion check is done, the entry is removed from
+// |pending_entries_|. If the inclusion check has been successful, the entry
+// is added to |checked_entries_|.
+
+namespace certificate_transparency {
 
 namespace {
 
@@ -25,13 +66,20 @@ enum SCTCanBeCheckedForInclusion {
   // first required to evaluate whether the SCT can be checked for inclusion
   // or not.
   VALID_STH_REQUIRED = 0,
+
   // If the STH does not cover the SCT (the timestamp in the SCT is greater than
   // MMD + timestamp in the STH), then a newer STH is needed.
   NEWER_STH_REQUIRED = 1,
+
   // When an SCT is observed, if the SingleTreeTracker instance has a valid STH
   // and the STH covers the SCT (the timestamp in the SCT is less than MMD +
   // timestamp in the STH), then it can be checked for inclusion.
   CAN_BE_CHECKED = 2,
+
+  // This SCT was not audited because the queue of pending entries was
+  // full.
+  NOT_AUDITED_QUEUE_FULL = 3,
+
   SCT_CAN_BE_CHECKED_MAX
 };
 
@@ -43,46 +91,179 @@ void LogCanBeCheckedForInclusionToUMA(
                             can_be_checked, SCT_CAN_BE_CHECKED_MAX);
 }
 
+// Enum indicating the outcome of an inclusion check for a particular log
+// entry.
+//
+// Note: The numeric values are used within a histogram and should not change
+// or be re-assigned.
+enum LogEntryInclusionCheckResult {
+  // Inclusion check succeeded: Proof obtained and validated successfully.
+  GOT_VALID_INCLUSION_PROOF = 0,
+
+  // Could not get an inclusion proof.
+  FAILED_GETTING_INCLUSION_PROOF = 1,
+
+  // An inclusion proof was obtained but it is invalid.
+  GOT_INVALID_INCLUSION_PROOF = 2,
+
+  // The SCT could not be audited because the client's DNS configuration
+  // is faulty.
+  DNS_QUERY_NOT_POSSIBLE = 3,
+
+  LOG_ENTRY_INCLUSION_CHECK_RESULT_MAX
+};
+
+void LogInclusionCheckResult(LogEntryInclusionCheckResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.InclusionCheckResult",
+                            result, LOG_ENTRY_INCLUSION_CHECK_RESULT_MAX);
+}
+
+// Calculate the leaf hash of the the entry in the log represented by
+// the given |cert| and |sct|. If leaf hash calculation succeeds returns
+// true, false otherwise.
+bool GetLogEntryLeafHash(const net::X509Certificate* cert,
+                         const SignedCertificateTimestamp* sct,
+                         SHA256HashValue* leaf_hash) {
+  MerkleTreeLeaf leaf;
+  if (!GetMerkleTreeLeaf(cert, sct, &leaf))
+    return false;
+
+  std::string leaf_hash_str;
+  if (!HashMerkleTreeLeaf(leaf, &leaf_hash_str))
+    return false;
+
+  memcpy(leaf_hash->data, leaf_hash_str.data(), crypto::kSHA256Length);
+  return true;
+}
+
+// Audit state of a log entry.
+enum AuditState {
+  // Entry cannot be audited because a newer STH is needed.
+  PENDING_NEWER_STH,
+  // A leaf index has been obtained and the entry is now pending request
+  // of an inclusion proof.
+  PENDING_INCLUSION_PROOF_REQUEST,
+  // An inclusion proof for this entry has been requested from the log.
+  INCLUSION_PROOF_REQUESTED
+};
+
+// Maximal size of the checked entries cache.
+size_t kCheckedEntriesCacheSize = 100;
+
+// Maximal size of the pending entries queue.
+size_t kPendingEntriesQueueSize = 100;
+
+// Maximum Merge Delay - logs can have individual MMD, but all known logs
+// currently have 24 hours MMD and Chrome's CT policy requires an MMD
+// that's no greater than that. For simplicity, use 24 hours for all logs.
+constexpr base::TimeDelta kMaximumMergeDelay = base::TimeDelta::FromHours(24);
+
+// The log MUST incorporate the a certificate in the tree within the Maximum
+// Merge Delay, so an entry can be audited once the timestamp from the SCT +
+// MMD has passed.
+// Returns true if the timestamp from the STH is newer than SCT timestamp + MMD.
+bool IsSCTReadyForAudit(base::Time sth_timestamp, base::Time sct_timestamp) {
+  return sct_timestamp + kMaximumMergeDelay < sth_timestamp;
+}
+
 }  // namespace
 
-namespace certificate_transparency {
+// The entry that is being audited.
+struct SingleTreeTracker::EntryToAudit {
+  base::Time sct_timestamp;
+  SHA256HashValue leaf_hash;
+
+  explicit EntryToAudit(base::Time timestamp) : sct_timestamp(timestamp) {}
+};
+
+// State of a log entry: its audit state and information necessary to
+// validate an inclusion proof. Gets updated as the entry transitions
+// between the different audit states.
+struct SingleTreeTracker::EntryAuditState {
+  // Current phase of inclusion check.
+  AuditState state;
+
+  // The proof to be filled in by the LogDnsClient
+  MerkleAuditProof proof;
+
+  // The root hash of the tree for which an inclusion proof was requested.
+  // The root hash is needed after the inclusion proof is fetched for validating
+  // the inclusion proof (each inclusion proof is valid for one particular leaf,
+  // denoted by the leaf index, in exactly one particular tree, denoted by the
+  // tree size in the proof).
+  // To avoid having to re-fetch the inclusion proof if a newer STH is provided
+  // to the SingleTreeTracker, the size of the original tree for which the
+  // inclusion proof was requested is stored in |proof| and the root hash
+  // in |root_hash|.
+  std::string root_hash;
+
+  explicit EntryAuditState(AuditState state) : state(state) {}
+};
+
+// Orders entries by the SCT timestamp. In case of tie, which is very unlikely
+// as it requires two SCTs issued from a log at exactly the same time, order
+// by leaf hash.
+bool SingleTreeTracker::OrderByTimestamp::operator()(
+    const EntryToAudit& lhs,
+    const EntryToAudit& rhs) const {
+  if (lhs.sct_timestamp != rhs.sct_timestamp)
+    return lhs.sct_timestamp < rhs.sct_timestamp;
+
+  return net::SHA256HashValueLessThan()(lhs.leaf_hash, rhs.leaf_hash);
+}
 
 SingleTreeTracker::SingleTreeTracker(
-    scoped_refptr<const net::CTLogVerifier> ct_log)
-    : ct_log_(std::move(ct_log)) {}
+    scoped_refptr<const net::CTLogVerifier> ct_log,
+    LogDnsClient* dns_client)
+    : ct_log_(std::move(ct_log)),
+      checked_entries_(kCheckedEntriesCacheSize),
+      dns_client_(dns_client),
+      weak_factory_(this) {
+  memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
+      &SingleTreeTracker::OnMemoryPressure, base::Unretained(this))));
+}
 
 SingleTreeTracker::~SingleTreeTracker() {}
 
-void SingleTreeTracker::OnSCTVerified(
-    net::X509Certificate* cert,
-    const net::ct::SignedCertificateTimestamp* sct) {
+void SingleTreeTracker::OnSCTVerified(net::X509Certificate* cert,
+                                      const SignedCertificateTimestamp* sct) {
   DCHECK_EQ(ct_log_->key_id(), sct->log_id);
 
-  // SCT was previously observed, so its status should not be changed.
-  if (entries_status_.find(sct->timestamp) != entries_status_.end())
+  EntryToAudit entry(sct->timestamp);
+  if (!GetLogEntryLeafHash(cert, sct, &entry.leaf_hash))
     return;
+
+  // Avoid queueing multiple instances of the same entry.
+  if (GetAuditedEntryInclusionStatus(entry) != SCT_NOT_OBSERVED)
+    return;
+
+  if (pending_entries_.size() >= kPendingEntriesQueueSize) {
+    // Queue is full - cannot audit SCT.
+    LogCanBeCheckedForInclusionToUMA(NOT_AUDITED_QUEUE_FULL);
+    return;
+  }
 
   // If there isn't a valid STH or the STH is not fresh enough to check
   // inclusion against, store the SCT for future checking and return.
   if (verified_sth_.timestamp.is_null() ||
-      (verified_sth_.timestamp <
-       (sct->timestamp + base::TimeDelta::FromHours(24)))) {
-    entries_status_.insert(
-        std::make_pair(sct->timestamp, SCT_PENDING_NEWER_STH));
+      !IsSCTReadyForAudit(verified_sth_.timestamp, entry.sct_timestamp)) {
+    pending_entries_.insert(
+        std::make_pair(std::move(entry), EntryAuditState(PENDING_NEWER_STH)));
 
-    if (!verified_sth_.timestamp.is_null()) {
-      LogCanBeCheckedForInclusionToUMA(NEWER_STH_REQUIRED);
-    } else {
+    if (verified_sth_.timestamp.is_null()) {
       LogCanBeCheckedForInclusionToUMA(VALID_STH_REQUIRED);
+    } else {
+      LogCanBeCheckedForInclusionToUMA(NEWER_STH_REQUIRED);
     }
 
     return;
   }
 
   LogCanBeCheckedForInclusionToUMA(CAN_BE_CHECKED);
-  // TODO(eranm): Check inclusion here.
-  entries_status_.insert(
-      std::make_pair(sct->timestamp, SCT_PENDING_INCLUSION_CHECK));
+  pending_entries_.insert(std::make_pair(
+      std::move(entry), EntryAuditState(PENDING_INCLUSION_PROOF_REQUEST)));
+
+  ProcessPendingEntries();
 }
 
 void SingleTreeTracker::NewSTHObserved(const SignedTreeHead& sth) {
@@ -103,36 +284,175 @@ void SingleTreeTracker::NewSTHObserved(const SignedTreeHead& sth) {
   // a newer timestamp.
   const bool sths_for_same_tree = verified_sth_.tree_size == sth.tree_size;
   const bool received_sth_is_for_larger_tree =
-      (verified_sth_.tree_size > sth.tree_size);
+      (verified_sth_.tree_size < sth.tree_size);
   const bool received_sth_is_newer = (sth.timestamp > verified_sth_.timestamp);
 
-  if (verified_sth_.timestamp.is_null() || received_sth_is_for_larger_tree ||
-      (sths_for_same_tree && received_sth_is_newer)) {
-    verified_sth_ = sth;
+  if (!verified_sth_.timestamp.is_null() && !received_sth_is_for_larger_tree &&
+      !(sths_for_same_tree && received_sth_is_newer)) {
+    // Observed an old STH - do nothing.
+    return;
   }
 
-  // Find out which SCTs can now be checked for inclusion.
-  // TODO(eranm): Keep two maps of MerkleTreeLeaf instances, one for leaves
-  // pending inclusion checks and one for leaves pending a new STH.
-  // The comparison function between MerkleTreeLeaf instances should use the
-  // timestamp to determine sorting order, so that bulk moving from one
-  // map to the other can happen.
-  auto entry = entries_status_.begin();
-  while (entry != entries_status_.end() &&
-         entry->first < verified_sth_.timestamp) {
-    entry->second = SCT_PENDING_INCLUSION_CHECK;
-    ++entry;
-    // TODO(eranm): Check inclusion here.
+  verified_sth_ = sth;
+
+  // Find the first entry in the PENDING_NEWER_STH state - entries
+  // before that should be pending leaf index / inclusion proof, no
+  // reason to inspect them.
+  auto auditable_entries_begin = std::find_if(
+      pending_entries_.begin(), pending_entries_.end(),
+      [](std::pair<const EntryToAudit&, const EntryAuditState&> value) {
+        return value.second.state == PENDING_NEWER_STH;
+      });
+
+  // Find where to stop - this is the first entry whose timestamp + MMD
+  // is greater than the STH's timestamp.
+  auto auditable_entries_end = std::lower_bound(
+      auditable_entries_begin, pending_entries_.end(), sth.timestamp,
+      [](std::pair<const EntryToAudit&, const EntryAuditState&> value,
+         base::Time sth_timestamp) {
+        return IsSCTReadyForAudit(sth_timestamp, value.first.sct_timestamp);
+      });
+
+  // Update the state of all entries that can now be checked for inclusion.
+  for (auto curr_entry = auditable_entries_begin;
+       curr_entry != auditable_entries_end; ++curr_entry) {
+    DCHECK_EQ(curr_entry->second.state, PENDING_NEWER_STH);
+    curr_entry->second.state = PENDING_INCLUSION_PROOF_REQUEST;
   }
+
+  if (auditable_entries_begin == auditable_entries_end)
+    return;
+
+  ProcessPendingEntries();
 }
 
 SingleTreeTracker::SCTInclusionStatus
 SingleTreeTracker::GetLogEntryInclusionStatus(
     net::X509Certificate* cert,
-    const net::ct::SignedCertificateTimestamp* sct) {
-  auto it = entries_status_.find(sct->timestamp);
+    const SignedCertificateTimestamp* sct) {
+  EntryToAudit entry(sct->timestamp);
+  if (!GetLogEntryLeafHash(cert, sct, &entry.leaf_hash))
+    return SCT_NOT_OBSERVED;
+  return GetAuditedEntryInclusionStatus(entry);
+}
 
-  return it == entries_status_.end() ? SCT_NOT_OBSERVED : it->second;
+void SingleTreeTracker::ProcessPendingEntries() {
+  for (auto it = pending_entries_.begin(); it != pending_entries_.end(); ++it) {
+    if (it->second.state != PENDING_INCLUSION_PROOF_REQUEST) {
+      continue;
+    }
+
+    it->second.root_hash =
+        std::string(verified_sth_.sha256_root_hash, crypto::kSHA256Length);
+
+    std::string leaf_hash(
+        reinterpret_cast<const char*>(it->first.leaf_hash.data),
+        crypto::kSHA256Length);
+    net::Error result = dns_client_->QueryAuditProof(
+        ct_log_->dns_domain(), leaf_hash, verified_sth_.tree_size,
+        &(it->second.proof),
+        base::Bind(&SingleTreeTracker::OnAuditProofObtained,
+                   weak_factory_.GetWeakPtr(), it->first));
+    // Handling proofs returned synchronously is not implemeted.
+    DCHECK_NE(result, net::OK);
+    if (result == net::ERR_IO_PENDING) {
+      // Successfully requested an inclusion proof - change entry state
+      // and continue to the next one.
+      it->second.state = INCLUSION_PROOF_REQUESTED;
+    } else if (result == net::ERR_TEMPORARILY_THROTTLED) {
+      dns_client_->NotifyWhenNotThrottled(
+          base::Bind(&SingleTreeTracker::ProcessPendingEntries,
+                     weak_factory_.GetWeakPtr()));
+      // Exit the loop since all subsequent calls to QueryAuditProof
+      // will be throttled.
+      break;
+    } else if (result == net::ERR_NAME_RESOLUTION_FAILED) {
+      LogInclusionCheckResult(DNS_QUERY_NOT_POSSIBLE);
+      // Lookup failed due to bad DNS configuration, erase the entry and
+      // continue to the next one.
+      it = pending_entries_.erase(it);
+      // Break here if it's the last entry to avoid |it| being incremented
+      // by the for loop.
+      if (it == pending_entries_.end())
+        break;
+    } else {
+      // BUG: an invalid argument was provided or an unexpected error
+      // was returned from LogDnsClient.
+      DCHECK_EQ(result, net::ERR_INVALID_ARGUMENT);
+      NOTREACHED();
+    }
+  }
+}
+
+SingleTreeTracker::SCTInclusionStatus
+SingleTreeTracker::GetAuditedEntryInclusionStatus(const EntryToAudit& entry) {
+  const auto checked_entries_iterator = checked_entries_.Get(entry.leaf_hash);
+  if (checked_entries_iterator != checked_entries_.end()) {
+    return SCT_INCLUDED_IN_LOG;
+  }
+
+  auto pending_iterator = pending_entries_.find(entry);
+  if (pending_iterator == pending_entries_.end()) {
+    return SCT_NOT_OBSERVED;
+  }
+
+  switch (pending_iterator->second.state) {
+    case PENDING_NEWER_STH:
+      return SCT_PENDING_NEWER_STH;
+    case PENDING_INCLUSION_PROOF_REQUEST:
+    case INCLUSION_PROOF_REQUESTED:
+      return SCT_PENDING_INCLUSION_CHECK;
+  }
+
+  NOTREACHED();
+  return SCT_NOT_OBSERVED;
+}
+
+void SingleTreeTracker::OnAuditProofObtained(const EntryToAudit& entry,
+                                             int net_error) {
+  auto it = pending_entries_.find(entry);
+  // The entry may not be present if it was evacuated due to low memory
+  // pressure.
+  if (it == pending_entries_.end())
+    return;
+
+  DCHECK_EQ(it->second.state, INCLUSION_PROOF_REQUESTED);
+
+  if (net_error != net::OK) {
+    // XXX(eranm): Should failures be cached? For now, they are not.
+    LogInclusionCheckResult(FAILED_GETTING_INCLUSION_PROOF);
+    pending_entries_.erase(it);
+    return;
+  }
+
+  std::string leaf_hash(reinterpret_cast<const char*>(entry.leaf_hash.data),
+                        crypto::kSHA256Length);
+
+  bool verified = ct_log_->VerifyAuditProof(it->second.proof,
+                                            it->second.root_hash, leaf_hash);
+
+  if (!verified) {
+    LogInclusionCheckResult(GOT_INVALID_INCLUSION_PROOF);
+  } else {
+    LogInclusionCheckResult(GOT_VALID_INCLUSION_PROOF);
+    checked_entries_.Put(entry.leaf_hash, EntryAuditResult());
+  }
+
+  pending_entries_.erase(it);
+}
+
+void SingleTreeTracker::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      pending_entries_.clear();
+    // Fall through to clearing the other cache.
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      checked_entries_.Clear();
+      break;
+  }
 }
 
 }  // namespace certificate_transparency

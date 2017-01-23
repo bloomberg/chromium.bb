@@ -6,25 +6,35 @@
 #define COMPONENTS_CERTIFICATE_TRANSPARENCY_SINGLE_TREE_TRACKER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
+#include "base/containers/mru_cache.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
+#include "base/memory/weak_ptr.h"
+#include "net/base/hash_value.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/sth_observer.h"
 
 namespace net {
+
 class CTLogVerifier;
 class X509Certificate;
 
 namespace ct {
+
+struct MerkleAuditProof;
 struct SignedCertificateTimestamp;
+
 }  // namespace ct
 
 }  // namespace net
 
 namespace certificate_transparency {
+
+class LogDnsClient;
 
 // Tracks the state of an individual Certificate Transparency Log's Merkle Tree.
 // A CT Log constantly issues Signed Tree Heads, for which every older STH must
@@ -48,8 +58,6 @@ namespace certificate_transparency {
 class SingleTreeTracker : public net::CTVerifier::Observer,
                           public net::ct::STHObserver {
  public:
-  // TODO(eranm): This enum will expand to include check success/failure,
-  // see crbug.com/506227
   enum SCTInclusionStatus {
     // SCT was not observed by this class and is not currently pending
     // inclusion check. As there's no evidence the SCT this status relates
@@ -62,11 +70,15 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
     SCT_PENDING_NEWER_STH,
 
     // SCT is known and there's a new-enough STH to check inclusion against.
-    // Actual inclusion check has to be performed.
-    SCT_PENDING_INCLUSION_CHECK
+    // It's in the process of being checked for inclusion.
+    SCT_PENDING_INCLUSION_CHECK,
+
+    // Inclusion check succeeded.
+    SCT_INCLUDED_IN_LOG,
   };
 
-  explicit SingleTreeTracker(scoped_refptr<const net::CTLogVerifier> ct_log);
+  SingleTreeTracker(scoped_refptr<const net::CTLogVerifier> ct_log,
+                    LogDnsClient* dns_client);
   ~SingleTreeTracker() override;
 
   // net::ct::CTVerifier::Observer implementation.
@@ -96,17 +108,66 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
       const net::ct::SignedCertificateTimestamp* sct);
 
  private:
+  struct EntryToAudit;
+  struct EntryAuditState;
+  struct EntryAuditResult {};
+
+  // Less-than comparator that sorts EntryToAudits based on the SCT timestamp,
+  // with smaller (older) SCTs appearing less than larger (newer) SCTs.
+  struct OrderByTimestamp {
+    bool operator()(const EntryToAudit& lhs, const EntryToAudit& rhs) const;
+  };
+
+  // Requests an inclusion proof for each of the entries in |pending_entries_|
+  // until throttled by the LogDnsClient.
+  void ProcessPendingEntries();
+
+  // Returns the inclusion status of the given |entry|, similar to
+  // GetLogEntryInclusionStatus(). The |entry| is an internal representation of
+  // a certificate + SCT combination.
+  SCTInclusionStatus GetAuditedEntryInclusionStatus(const EntryToAudit& entry);
+
+  // Processes the result of obtaining an audit proof for |entry|.
+  // * If an audit proof was successfully obtained and validated,
+  //   updates |checked_entries_| so that future calls to
+  //   GetLogEntryInclusionStatus() will indicate the entry's
+  //   inclusion.
+  // * If there was a failure to obtain or validate an inclusion
+  //   proof, removes |entry| from the queue of entries to validate.
+  //   Future calls to GetLogEntryInclusionStatus() will indicate the entry
+  //   has not been observed.
+  void OnAuditProofObtained(const EntryToAudit& entry, int net_error);
+
+  // Clears entries to reduce memory overhead.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   // Holds the latest STH fetched and verified for this log.
   net::ct::SignedTreeHead verified_sth_;
 
   // The log being tracked.
   scoped_refptr<const net::CTLogVerifier> ct_log_;
 
-  // List of log entries pending inclusion check.
-  // TODO(eranm): Rather than rely on the timestamp, extend to to use the
-  // whole MerkleTreeLeaf (RFC6962, section 3.4.) as a key. See
-  // https://crbug.com/506227#c22 and https://crbug.com/613495
-  std::map<base::Time, SCTInclusionStatus> entries_status_;
+  // Log entries waiting to be checked for inclusion, or being checked for
+  // inclusion, and their state.
+  std::map<EntryToAudit, EntryAuditState, OrderByTimestamp> pending_entries_;
+
+  // A cache of leaf hashes identifying entries which were checked for
+  // inclusion (the key is the Leaf Hash of the log entry).
+  // NOTE: The current implementation does not cache failures, so the presence
+  // of an entry in |checked_entries_| indicates success.
+  // To extend support for caching failures, a success indicator should be
+  // added to the EntryAuditResult struct.
+  base::MRUCache<net::SHA256HashValue,
+                 EntryAuditResult,
+                 net::SHA256HashValueLessThan>
+      checked_entries_;
+
+  LogDnsClient* dns_client_;
+
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  base::WeakPtrFactory<SingleTreeTracker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleTreeTracker);
 };

@@ -4,23 +4,50 @@
 
 #include "components/certificate_transparency/tree_state_tracker.h"
 
+#include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
+#include "components/certificate_transparency/log_dns_client.h"
 #include "components/certificate_transparency/single_tree_tracker.h"
+#include "net/base/network_change_notifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/dns_client.h"
+#include "net/dns/dns_config_service.h"
+#include "net/log/net_log.h"
 
 using net::X509Certificate;
 using net::CTLogVerifier;
 using net::ct::SignedCertificateTimestamp;
 using net::ct::SignedTreeHead;
 
+namespace {
+const size_t kMaxConcurrentDnsQueries = 1;
+}
+
 namespace certificate_transparency {
+
+// Enables or disables auditing Certificate Transparency logs over DNS.
+const base::Feature kCTLogAuditing = {"CertificateTransparencyLogAuditing",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 TreeStateTracker::TreeStateTracker(
     std::vector<scoped_refptr<const CTLogVerifier>> ct_logs) {
-  for (const auto& log : ct_logs)
-    tree_trackers_[log->key_id()].reset(new SingleTreeTracker(log));
+  if (!base::FeatureList::IsEnabled(kCTLogAuditing))
+    return;
+
+  // TODO(eranm): Hook up a real NetLog.
+  net::NetLogWithSource net_log;
+  std::unique_ptr<net::DnsClient> dns_client =
+      net::DnsClient::CreateClient(net_log.net_log());
+  dns_client_ = base::MakeUnique<LogDnsClient>(std::move(dns_client), net_log,
+                                               kMaxConcurrentDnsQueries);
+
+  for (const auto& log : ct_logs) {
+    tree_trackers_[log->key_id()].reset(
+        new SingleTreeTracker(log, dns_client_.get()));
+  }
 }
 
 TreeStateTracker::~TreeStateTracker() {}
