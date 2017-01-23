@@ -926,8 +926,19 @@ void SVGElement::attributeChanged(const AttributeModificationParams& params) {
       AttributeModificationParams(params.name, params.oldValue, params.newValue,
                                   AttributeModificationReason::kDirectly));
 
-  if (params.name == HTMLNames::idAttr)
+  if (params.name == HTMLNames::idAttr) {
     rebuildAllIncomingReferences();
+
+    LayoutObject* object = layoutObject();
+    // Notify resources about id changes, this is important as we cache
+    // resources by id in SVGDocumentExtensions
+    if (object && object->isSVGResourceContainer())
+      toLayoutSVGResourceContainer(object)->idChanged();
+    if (isConnected())
+      buildPendingResourcesIfNeeded();
+    invalidateInstances();
+    return;
+  }
 
   // Changes to the style attribute are processed lazily (see
   // Element::getAttribute() and related methods), so we don't want changes to
@@ -947,18 +958,6 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName) {
 
   if (attrName == HTMLNames::classAttr) {
     classAttributeChanged(AtomicString(m_className->currentValue()->value()));
-    invalidateInstances();
-    return;
-  }
-
-  if (attrName == HTMLNames::idAttr) {
-    LayoutObject* object = layoutObject();
-    // Notify resources about id changes, this is important as we cache
-    // resources by id in SVGDocumentExtensions
-    if (object && object->isSVGResourceContainer())
-      toLayoutSVGResourceContainer(object)->idChanged();
-    if (isConnected())
-      buildPendingResourcesIfNeeded();
     invalidateInstances();
     return;
   }
