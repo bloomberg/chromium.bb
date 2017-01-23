@@ -3244,6 +3244,10 @@ enum wl_pointer_axis {
  * finger. One example for this source is button-based scrolling where
  * the vertical motion of a device is converted to scroll events while
  * a button is held down.
+ *
+ * The "wheel tilt" axis source indicates that the actual device is a
+ * wheel but the scroll event is not caused by a rotation but a
+ * (usually sideways) tilt of the wheel.
  */
 enum wl_pointer_axis_source {
 	/**
@@ -3258,7 +3262,16 @@ enum wl_pointer_axis_source {
 	 * continuous coordinate space
 	 */
 	WL_POINTER_AXIS_SOURCE_CONTINUOUS = 2,
+	/**
+	 * a physical wheel tilt
+	 * @since 6
+	 */
+	WL_POINTER_AXIS_SOURCE_WHEEL_TILT = 3,
 };
+/**
+ * @ingroup iface_wl_pointer
+ */
+#define WL_POINTER_AXIS_SOURCE_WHEEL_TILT_SINCE_VERSION 6
 #endif /* WL_POINTER_AXIS_SOURCE_ENUM */
 
 /**

@@ -4035,6 +4035,10 @@ enum wl_pointer_axis {
  * finger. One example for this source is button-based scrolling where
  * the vertical motion of a device is converted to scroll events while
  * a button is held down.
+ *
+ * The "wheel tilt" axis source indicates that the actual device is a
+ * wheel but the scroll event is not caused by a rotation but a
+ * (usually sideways) tilt of the wheel.
  */
 enum wl_pointer_axis_source {
 	/**
@@ -4049,7 +4053,16 @@ enum wl_pointer_axis_source {
 	 * continuous coordinate space
 	 */
 	WL_POINTER_AXIS_SOURCE_CONTINUOUS = 2,
+	/**
+	 * a physical wheel tilt
+	 * @since 6
+	 */
+	WL_POINTER_AXIS_SOURCE_WHEEL_TILT = 3,
 };
+/**
+ * @ingroup iface_wl_pointer
+ */
+#define WL_POINTER_AXIS_SOURCE_WHEEL_TILT_SINCE_VERSION 6
 #endif /* WL_POINTER_AXIS_SOURCE_ENUM */
 
 /**
@@ -4216,7 +4229,8 @@ struct wl_pointer_listener {
 	 * is wl_pointer.axis_source.finger, a wl_pointer.axis_stop event
 	 * will be sent when the user lifts the finger off the device.
 	 *
-	 * If the source is wl_pointer axis_source.wheel or
+	 * If the source is wl_pointer.axis_source.wheel,
+	 * wl_pointer.axis_source.wheel_tilt or
 	 * wl_pointer.axis_source.continuous, a wl_pointer.axis_stop event
 	 * may or may not be sent. Whether a compositor sends an axis_stop
 	 * event for these sources is hardware-specific and
