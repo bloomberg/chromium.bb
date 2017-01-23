@@ -6,6 +6,7 @@
 #define NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_CONTROLLER_H_
 
 #include "net/base/host_port_pair.h"
+#include "net/base/privacy_mode.h"
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_request.h"
 
@@ -310,6 +311,9 @@ class HttpStreamFactoryImpl::JobController
 
   // True if an alternative proxy server job can be started to fetch |request_|.
   bool can_start_alternative_proxy_job_;
+
+  // Privacy mode that should be used for fetching the resource.
+  PrivacyMode privacy_mode_;
 
   base::WeakPtrFactory<JobController> ptr_factory_;
 };
