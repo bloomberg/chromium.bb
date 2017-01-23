@@ -318,7 +318,8 @@ ManagementGetPermissionWarningsByIdFunction::Run() {
       management::GetPermissionWarningsById::Results::Create(warnings)));
 }
 
-bool ManagementGetPermissionWarningsByManifestFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+ManagementGetPermissionWarningsByManifestFunction::Run() {
   std::unique_ptr<management::GetPermissionWarningsByManifest::Params> params(
       management::GetPermissionWarningsByManifest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -335,11 +336,10 @@ bool ManagementGetPermissionWarningsByManifestFunction::RunAsync() {
     AddRef();
 
     // Response is sent async in OnParseSuccess/Failure().
-    return true;
+    return RespondLater();
   } else {
     // TODO(lfg) add error string
-    OnParseFailure("");
-    return false;
+    return RespondNow(Error(kUnknownErrorDoNotUse));
   }
 }
 
@@ -352,29 +352,29 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
   const base::DictionaryValue* parsed_manifest =
       static_cast<const base::DictionaryValue*>(value.get());
 
+  std::string error;
   scoped_refptr<Extension> extension =
       Extension::Create(base::FilePath(), Manifest::INVALID_LOCATION,
-                        *parsed_manifest, Extension::NO_FLAGS, &error_);
+                        *parsed_manifest, Extension::NO_FLAGS, &error);
+  // TODO(lazyboy): Do we need to use |error|?
   if (!extension) {
     OnParseFailure(keys::kExtensionCreateError);
     return;
   }
 
   std::vector<std::string> warnings = CreateWarningsList(extension.get());
-  results_ =
-      management::GetPermissionWarningsByManifest::Results::Create(warnings);
-  SendResponse(true);
+  Respond(ArgumentList(
+      management::GetPermissionWarningsByManifest::Results::Create(warnings)));
 
-  // Matched with AddRef() in RunAsync().
+  // Matched with AddRef() in Run().
   Release();
 }
 
 void ManagementGetPermissionWarningsByManifestFunction::OnParseFailure(
     const std::string& error) {
-  error_ = error;
-  SendResponse(false);
+  Respond(Error(error));
 
-  // Matched with AddRef() in RunAsync().
+  // Matched with AddRef() in Run().
   Release();
 }
 
@@ -632,17 +632,13 @@ void ManagementCreateAppShortcutFunction::SetAutoConfirmForTest(
 }
 
 void ManagementCreateAppShortcutFunction::OnCloseShortcutPrompt(bool created) {
-  if (!created)
-    error_ = keys::kCreateShortcutCanceledError;
-  SendResponse(created);
-  Release();
+  Respond(created ? NoArguments() : Error(keys::kCreateShortcutCanceledError));
+  Release();  // Balanced in Run().
 }
 
-bool ManagementCreateAppShortcutFunction::RunAsync() {
-  if (!user_gesture()) {
-    error_ = keys::kGestureNeededForCreateAppShortcutError;
-    return false;
-  }
+ExtensionFunction::ResponseAction ManagementCreateAppShortcutFunction::Run() {
+  if (!user_gesture())
+    return RespondNow(Error(keys::kGestureNeededForCreateAppShortcutError));
 
   std::unique_ptr<management::CreateAppShortcut::Params> params(
       management::CreateAppShortcut::Params::Create(*args_));
@@ -651,21 +647,18 @@ bool ManagementCreateAppShortcutFunction::RunAsync() {
       ExtensionRegistry::Get(browser_context())
           ->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
   if (!extension) {
-    error_ =
-        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, params->id);
-    return false;
+    return RespondNow(Error(
+        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, params->id)));
   }
 
   if (!extension->is_app()) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kNotAnAppError, params->id);
-    return false;
+    return RespondNow(Error(
+        ErrorUtils::FormatErrorMessage(keys::kNotAnAppError, params->id)));
   }
 
 #if defined(OS_MACOSX)
-  if (!extension->is_platform_app()) {
-    error_ = keys::kCreateOnlyPackagedAppShortcutMac;
-    return false;
-  }
+  if (!extension->is_platform_app())
+    return RespondNow(Error(keys::kCreateOnlyPackagedAppShortcutMac));
 #endif
 
   if (auto_confirm_for_test != DO_NOT_SKIP) {
@@ -673,8 +666,8 @@ bool ManagementCreateAppShortcutFunction::RunAsync() {
     AddRef();
 
     OnCloseShortcutPrompt(auto_confirm_for_test == PROCEED);
-
-    return true;
+    // OnCloseShortcutPrompt() might have called Respond() already.
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
   std::string error;
@@ -684,12 +677,11 @@ bool ManagementCreateAppShortcutFunction::RunAsync() {
           ->CreateAppShortcutFunctionDelegate(this, extension, &error)) {
     // Matched with a Release() in OnCloseShortcutPrompt().
     AddRef();
+    // Response is sent async in OnCloseShortcutPrompt().
+    return RespondLater();
   } else {
-    SetError(error);
+    return RespondNow(Error(error));
   }
-
-  // Response is sent async in OnCloseShortcutPrompt().
-  return true;
 }
 
 ExtensionFunction::ResponseAction ManagementSetLaunchTypeFunction::Run() {
@@ -752,24 +744,17 @@ ManagementGenerateAppForLinkFunction::~ManagementGenerateAppForLinkFunction() {
 void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
-  if (extension) {
-    results_ = management::GenerateAppForLink::Results::Create(
-        CreateExtensionInfo(*extension, browser_context()));
-
-    SendResponse(true);
-    Release();
-  } else {
-    error_ = keys::kGenerateAppForLinkInstallError;
-    SendResponse(false);
-    Release();
-  }
+  ResponseValue response =
+      extension ? ArgumentList(management::GenerateAppForLink::Results::Create(
+                      CreateExtensionInfo(*extension, browser_context())))
+                : Error(keys::kGenerateAppForLinkInstallError);
+  Respond(std::move(response));
+  Release();  // Balanced in Run().
 }
 
-bool ManagementGenerateAppForLinkFunction::RunAsync() {
-  if (!user_gesture()) {
-    error_ = keys::kGestureNeededForGenerateAppForLinkError;
-    return false;
-  }
+ExtensionFunction::ResponseAction ManagementGenerateAppForLinkFunction::Run() {
+  if (!user_gesture())
+    return RespondNow(Error(keys::kGestureNeededForGenerateAppForLinkError));
 
   std::unique_ptr<management::GenerateAppForLink::Params> params(
       management::GenerateAppForLink::Params::Create(*args_));
@@ -777,15 +762,12 @@ bool ManagementGenerateAppForLinkFunction::RunAsync() {
 
   GURL launch_url(params->url);
   if (!launch_url.is_valid() || !launch_url.SchemeIsHTTPOrHTTPS()) {
-    error_ =
-        ErrorUtils::FormatErrorMessage(keys::kInvalidURLError, params->url);
-    return false;
+    return RespondNow(Error(
+        ErrorUtils::FormatErrorMessage(keys::kInvalidURLError, params->url)));
   }
 
-  if (params->title.empty()) {
-    error_ = keys::kEmptyTitleError;
-    return false;
-  }
+  if (params->title.empty())
+    return RespondNow(Error(keys::kEmptyTitleError));
 
   app_for_link_delegate_ =
       ManagementAPI::GetFactoryInstance()
@@ -798,7 +780,7 @@ bool ManagementGenerateAppForLinkFunction::RunAsync() {
   AddRef();
 
   // Response is sent async in FinishCreateBookmarkApp().
-  return true;
+  return RespondLater();
 }
 
 ManagementEventRouter::ManagementEventRouter(content::BrowserContext* context)

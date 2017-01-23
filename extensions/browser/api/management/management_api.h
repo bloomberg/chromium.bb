@@ -23,11 +23,6 @@ namespace extensions {
 class ExtensionRegistry;
 class RequirementsChecker;
 
-class AsyncManagementFunction : public AsyncExtensionFunction {
- protected:
-  ~AsyncManagementFunction() override {}
-};
-
 class ManagementGetAllFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.getAll", MANAGEMENT_GETALL)
@@ -75,7 +70,7 @@ class ManagementGetPermissionWarningsByIdFunction
 };
 
 class ManagementGetPermissionWarningsByManifestFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.getPermissionWarningsByManifest",
                              MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST);
@@ -88,7 +83,7 @@ class ManagementGetPermissionWarningsByManifestFunction
   ~ManagementGetPermissionWarningsByManifestFunction() override {}
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class ManagementLaunchAppFunction : public UIThreadExtensionFunction {
@@ -171,7 +166,7 @@ class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
   ResponseAction Run() override;
 };
 
-class ManagementCreateAppShortcutFunction : public AsyncManagementFunction {
+class ManagementCreateAppShortcutFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.createAppShortcut",
                              MANAGEMENT_CREATEAPPSHORTCUT);
@@ -185,7 +180,7 @@ class ManagementCreateAppShortcutFunction : public AsyncManagementFunction {
  protected:
   ~ManagementCreateAppShortcutFunction() override;
 
-  bool RunAsync() override;
+  ResponseAction Run() override;
 };
 
 class ManagementSetLaunchTypeFunction : public UIThreadExtensionFunction {
@@ -199,7 +194,7 @@ class ManagementSetLaunchTypeFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {
+class ManagementGenerateAppForLinkFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.generateAppForLink",
                              MANAGEMENT_GENERATEAPPFORLINK);
@@ -212,7 +207,7 @@ class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {
  protected:
   ~ManagementGenerateAppForLinkFunction() override;
 
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   std::unique_ptr<AppForLinkDelegate> app_for_link_delegate_;

@@ -13,19 +13,21 @@ namespace extensions {
 
 // Implementation of the systeminfo.storage.get API. It is an asynchronous
 // call relative to browser UI thread.
-class SystemStorageGetInfoFunction : public AsyncExtensionFunction {
+class SystemStorageGetInfoFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.storage.getInfo", SYSTEM_STORAGE_GETINFO);
   SystemStorageGetInfoFunction();
 
  private:
   ~SystemStorageGetInfoFunction() override;
-  bool RunAsync() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
   void OnGetStorageInfoCompleted(bool success);
 };
 
-class SystemStorageEjectDeviceFunction : public AsyncExtensionFunction {
+class SystemStorageEjectDeviceFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.storage.ejectDevice",
                              SYSTEM_STORAGE_EJECTDEVICE);
@@ -33,8 +35,8 @@ class SystemStorageEjectDeviceFunction : public AsyncExtensionFunction {
  protected:
   ~SystemStorageEjectDeviceFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void OnStorageMonitorInit(const std::string& transient_device_id);
@@ -44,7 +46,7 @@ class SystemStorageEjectDeviceFunction : public AsyncExtensionFunction {
 };
 
 class SystemStorageGetAvailableCapacityFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.storage.getAvailableCapacity",
                              SYSTEM_STORAGE_GETAVAILABLECAPACITY);
@@ -55,7 +57,9 @@ class SystemStorageGetAvailableCapacityFunction
   void OnQueryCompleted(const std::string& transient_id,
                         double available_capacity);
   ~SystemStorageGetAvailableCapacityFunction() override;
-  bool RunAsync() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

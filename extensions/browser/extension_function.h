@@ -153,7 +153,8 @@ class ExtensionFunction
 
   // The action to use when returning from RunAsync.
   //
-  // Use RespondNow() or RespondLater() rather than this class directly.
+  // Use RespondNow() or RespondLater() or AlreadyResponded() rather than this
+  // class directly.
   class ResponseActionObject {
    public:
     virtual ~ResponseActionObject() {}
@@ -371,6 +372,28 @@ class ExtensionFunction
   ResponseAction RespondNow(ResponseValue result) WARN_UNUSED_RESULT;
   // Don't respond now, but promise to call Respond(...) later.
   ResponseAction RespondLater() WARN_UNUSED_RESULT;
+  // Respond() was already called before Run() finished executing.
+  //
+  // Assume Run() uses some helper system that accepts callback that Respond()s.
+  // If that helper system calls the synchronously in some cases, then use
+  // this return value in those cases.
+  //
+  // FooExtensionFunction::Run() {
+  //   Helper::FetchResults(..., base::Bind(&Success));
+  //   if (did_respond()) return AlreadyResponded();
+  //   return RespondLater();
+  // }
+  // FooExtensionFunction::Success() {
+  //   Respond(...);
+  // }
+  //
+  // Helper::FetchResults(..., callback) {
+  //   if (...)
+  //     callback.Run(..);  // Synchronously call |callback|.
+  //   else
+  //     // Asynchronously call |callback|.
+  // }
+  ResponseAction AlreadyResponded() WARN_UNUSED_RESULT;
 
   // This is the return value of the EXTENSION_FUNCTION_VALIDATE macro, which
   // needs to work from Run(), RunAsync(), and RunSync(). The former of those

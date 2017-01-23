@@ -153,6 +153,13 @@ class RespondLaterAction : public ExtensionFunction::ResponseActionObject {
   void Execute() override {}
 };
 
+class AlreadyRespondedAction : public ExtensionFunction::ResponseActionObject {
+ public:
+  ~AlreadyRespondedAction() override {}
+
+  void Execute() override {}
+};
+
 // Used in implementation of ScopedUserGestureForTests.
 class UserGestureForTests {
  public:
@@ -391,6 +398,12 @@ ExtensionFunction::ResponseAction ExtensionFunction::RespondNow(
 
 ExtensionFunction::ResponseAction ExtensionFunction::RespondLater() {
   return ResponseAction(new RespondLaterAction());
+}
+
+ExtensionFunction::ResponseAction ExtensionFunction::AlreadyResponded() {
+  DCHECK(did_respond()) << "ExtensionFunction did not call Respond(),"
+                           " but Run() returned AlreadyResponded()";
+  return ResponseAction(new AlreadyRespondedAction());
 }
 
 // static
