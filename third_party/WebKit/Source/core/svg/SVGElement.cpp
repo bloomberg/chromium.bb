@@ -48,6 +48,7 @@
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGTitleElement.h"
+#include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/SVGUseElement.h"
 #include "core/svg/properties/SVGProperty.h"
 #include "wtf/AutoReset.h"
@@ -84,6 +85,13 @@ void SVGElement::attachLayoutTree(const AttachContext& context) {
     element->mapInstanceToElement(this);
 }
 
+TreeScope& SVGElement::treeScopeForIdResolution() const {
+  const SVGElement* treeScopeElement = this;
+  if (const SVGElement* element = correspondingElement())
+    treeScopeElement = element;
+  return treeScopeElement->treeScope();
+}
+
 int SVGElement::tabIndex() const {
   if (supportsFocus())
     return Element::tabIndex();
@@ -101,20 +109,20 @@ void SVGElement::willRecalcStyle(StyleRecalcChange change) {
 }
 
 void SVGElement::buildPendingResourcesIfNeeded() {
-  Document& document = this->document();
   if (!needsPendingResourceHandling() || !isConnected() || inUseShadowTree())
     return;
 
-  SVGDocumentExtensions& extensions = document.accessSVGExtensions();
+  SVGTreeScopeResources& treeScopeResources =
+      treeScope().ensureSVGTreeScopedResources();
   AtomicString resourceId = getIdAttribute();
-  if (!extensions.hasPendingResource(resourceId))
+  if (!treeScopeResources.hasPendingResource(resourceId))
     return;
   // Guaranteed by hasPendingResource.
   DCHECK(!resourceId.isEmpty());
 
   // Get pending elements for this id.
-  SVGDocumentExtensions::SVGPendingElements* pendingElements =
-      extensions.removePendingResource(resourceId);
+  SVGTreeScopeResources::SVGPendingElements* pendingElements =
+      treeScopeResources.removePendingResource(resourceId);
   if (!pendingElements || pendingElements->isEmpty())
     return;
 
@@ -131,7 +139,7 @@ void SVGElement::buildPendingResourcesIfNeeded() {
       toSVGUseElement(clientElement)->invalidateShadowTree();
     else
       clientElement->buildPendingResource();
-    extensions.clearHasPendingResourcesIfPossible(clientElement);
+    treeScopeResources.clearHasPendingResourcesIfPossible(clientElement);
   }
 }
 

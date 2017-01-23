@@ -49,6 +49,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "core/svg/SVGTreeScopeResources.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -297,6 +298,12 @@ HeapVector<Member<Element>> TreeScope::elementsFromPoint(int x, int y) const {
   return elementsFromHitTestResult(result);
 }
 
+SVGTreeScopeResources& TreeScope::ensureSVGTreeScopedResources() {
+  if (!m_svgTreeScopedResources)
+    m_svgTreeScopedResources = new SVGTreeScopeResources(this);
+  return *m_svgTreeScopedResources;
+}
+
 DOMSelection* TreeScope::getSelection() const {
   if (!rootNode().document().frame())
     return nullptr;
@@ -525,6 +532,7 @@ DEFINE_TRACE(TreeScope) {
   visitor->trace(m_imageMapsByName);
   visitor->trace(m_scopedStyleResolver);
   visitor->trace(m_radioButtonGroupScope);
+  visitor->trace(m_svgTreeScopedResources);
 }
 
 }  // namespace blink

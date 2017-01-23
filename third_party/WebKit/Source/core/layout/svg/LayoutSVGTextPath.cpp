@@ -27,12 +27,6 @@
 
 namespace blink {
 
-TreeScope& treeScopeForIdResolution(const SVGElement& element) {
-  if (SVGElement* correspondingElement = element.correspondingElement())
-    return correspondingElement->treeScope();
-  return element.treeScope();
-}
-
 PathPositionMapper::PathPositionMapper(const Path& path)
     : m_positionCalculator(path), m_pathLength(path.length()) {}
 
@@ -63,7 +57,7 @@ bool LayoutSVGTextPath::isChildAllowed(LayoutObject* child,
 std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::layoutPath() const {
   const SVGTextPathElement& textPathElement = toSVGTextPathElement(*node());
   Element* targetElement = SVGURIReference::targetElementFromIRIString(
-      textPathElement.hrefString(), treeScopeForIdResolution(textPathElement));
+      textPathElement.hrefString(), textPathElement.treeScopeForIdResolution());
 
   if (!isSVGPathElement(targetElement))
     return nullptr;

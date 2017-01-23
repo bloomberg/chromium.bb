@@ -267,6 +267,8 @@ blink_core_sources("svg") {
     "SVGTransformList.cpp",
     "SVGTransformListTearOff.cpp",
     "SVGTransformTearOff.cpp",
+    "SVGTreeScopeResources.cpp",
+    "SVGTreeScopeResources.h",
     "SVGURIReference.cpp",
     "SVGURIReference.h",
     "SVGUnitTypes.cpp",

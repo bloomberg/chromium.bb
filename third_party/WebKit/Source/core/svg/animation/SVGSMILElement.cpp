@@ -31,8 +31,8 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "platform/heap/Handle.h"
@@ -208,12 +208,12 @@ void SVGSMILElement::buildPendingResource() {
 
   if (!svgTarget) {
     // Do not register as pending if we are already pending this resource.
-    if (document().accessSVGExtensions().isElementPendingResource(this, id))
+    if (treeScope().ensureSVGTreeScopedResources().isElementPendingResource(
+            this, id))
       return;
-
     if (!id.isEmpty()) {
-      document().accessSVGExtensions().addPendingResource(id, this);
-      ASSERT(hasPendingResources());
+      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, this);
+      DCHECK(hasPendingResources());
     }
   } else {
     // Register us with the target in the dependencies map. Any change of
@@ -570,9 +570,11 @@ void SVGSMILElement::connectEventBaseConditions() {
       SVGElement* eventBase = eventBaseFor(*condition);
       if (!eventBase) {
         if (!condition->baseID().isEmpty() &&
-            !document().accessSVGExtensions().isElementPendingResource(
-                this, AtomicString(condition->baseID())))
-          document().accessSVGExtensions().addPendingResource(
+            !treeScope()
+                 .ensureSVGTreeScopedResources()
+                 .isElementPendingResource(this,
+                                           AtomicString(condition->baseID())))
+          treeScope().ensureSVGTreeScopedResources().addPendingResource(
               AtomicString(condition->baseID()), this);
         continue;
       }

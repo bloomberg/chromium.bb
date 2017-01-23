@@ -24,8 +24,8 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
+#include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/graphics/filters/SVGFEImage.h"
 #include "platform/graphics/Image.h"
 
@@ -93,8 +93,8 @@ void SVGFEImageElement::buildPendingResource() {
     if (id.isEmpty()) {
       fetchImageResource();
     } else {
-      document().accessSVGExtensions().addPendingResource(id, this);
-      ASSERT(hasPendingResources());
+      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, this);
+      DCHECK(hasPendingResources());
     }
   } else if (target->isSVGElement()) {
     // Register us with the target in the dependencies map. Any change of

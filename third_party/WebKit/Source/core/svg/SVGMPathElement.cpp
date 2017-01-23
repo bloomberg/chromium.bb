@@ -21,8 +21,8 @@
 
 #include "core/dom/Document.h"
 #include "core/svg/SVGAnimateMotionElement.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGTreeScopeResources.h"
 
 namespace blink {
 
@@ -50,12 +50,12 @@ void SVGMPathElement::buildPendingResource() {
       hrefString(), treeScope(), &id);
   if (!target) {
     // Do not register as pending if we are already pending this resource.
-    if (document().accessSVGExtensions().isElementPendingResource(this, id))
+    if (treeScope().ensureSVGTreeScopedResources().isElementPendingResource(
+            this, id))
       return;
-
     if (!id.isEmpty()) {
-      document().accessSVGExtensions().addPendingResource(id, this);
-      ASSERT(hasPendingResources());
+      treeScope().ensureSVGTreeScopedResources().addPendingResource(id, this);
+      DCHECK(hasPendingResources());
     }
   } else if (isSVGPathElement(target)) {
     // Register us with the target in the dependencies map. Any change of

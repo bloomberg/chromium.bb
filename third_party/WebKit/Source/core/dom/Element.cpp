@@ -134,8 +134,8 @@
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGAElement.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGTreeScopeResources.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/CompositorMutableProperties.h"
@@ -1664,8 +1664,11 @@ void Element::removedFrom(ContainerNode* insertionPoint) {
     if (this == document().cssTarget())
       document().setCSSTarget(nullptr);
 
-    if (hasPendingResources())
-      document().accessSVGExtensions().removeElementFromPendingResources(this);
+    if (hasPendingResources()) {
+      treeScope()
+          .ensureSVGTreeScopedResources()
+          .removeElementFromPendingResources(this);
+    }
 
     if (getCustomElementState() == CustomElementState::Custom)
       CustomElement::enqueueDisconnectedCallback(this);

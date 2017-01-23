@@ -43,6 +43,7 @@ class Element;
 class HTMLMapElement;
 class HitTestResult;
 class IdTargetObserverRegistry;
+class SVGTreeScopeResources;
 class ScopedStyleResolver;
 class Node;
 
@@ -127,6 +128,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   ScopedStyleResolver& ensureScopedStyleResolver();
   void clearScopedStyleResolver();
 
+  SVGTreeScopeResources& ensureSVGTreeScopedResources();
+
  protected:
   TreeScope(ContainerNode&, Document&);
   TreeScope(Document&);
@@ -151,6 +154,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   mutable Member<DOMSelection> m_selection;
 
   RadioButtonGroupScope m_radioButtonGroupScope;
+
+  Member<SVGTreeScopeResources> m_svgTreeScopedResources;
 };
 
 inline bool TreeScope::hasElementWithId(const AtomicString& id) const {

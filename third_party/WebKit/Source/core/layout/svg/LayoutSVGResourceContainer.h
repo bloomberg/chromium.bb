@@ -21,7 +21,7 @@
 #define LayoutSVGResourceContainer_h
 
 #include "core/layout/svg/LayoutSVGHiddenContainer.h"
-#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGTreeScopeResources.h"
 
 namespace blink {
 
@@ -120,7 +120,7 @@ inline LayoutSVGResourceContainer* getLayoutSVGResourceContainerById(
     return nullptr;
 
   if (LayoutSVGResourceContainer* layoutResource =
-          treeScope.document().accessSVGExtensions().resourceById(id))
+          treeScope.ensureSVGTreeScopedResources().resourceById(id))
     return layoutResource;
 
   return nullptr;

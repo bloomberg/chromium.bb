@@ -38,11 +38,11 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/layout/svg/LayoutSVGTransformableContainer.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGSymbolElement.h"
+#include "core/svg/SVGTreeScopeResources.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "wtf/Vector.h"
 
@@ -316,8 +316,8 @@ Element* SVGUseElement::resolveTargetElement() {
     return target;
   // Don't record any pending references for external resources.
   if (!m_resource) {
-    document().accessSVGExtensions().addPendingResource(m_elementIdentifier,
-                                                        this);
+    treeScope().ensureSVGTreeScopedResources().addPendingResource(
+        m_elementIdentifier, this);
     DCHECK(hasPendingResources());
   }
   return nullptr;
