@@ -90,6 +90,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Nexus 5
     self.Fail('WebglExtension_OES_texture_float_linear',
               ['android', ('qualcomm', 'Adreno (TM) 330')])
+    self.Fail('conformance/more/functions/vertexAttribPointerBadArgs.html',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=678850)
+    self.Fail('conformance/attribs/gl-vertexattribpointer.html',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=678850)
 
     # Nexus 5X
     self.Fail('WebglExtension_EXT_sRGB',
