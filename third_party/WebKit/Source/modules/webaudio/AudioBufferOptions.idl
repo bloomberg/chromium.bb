@@ -6,5 +6,5 @@
 dictionary AudioBufferOptions {
     unsigned long numberOfChannels = 1;
     required unsigned long length;
-    float sampleRate;
+    required float sampleRate;
 };

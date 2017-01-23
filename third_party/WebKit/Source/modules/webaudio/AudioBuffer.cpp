@@ -103,28 +103,10 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels,
   return audioBuffer;
 }
 
-AudioBuffer* AudioBuffer::create(BaseAudioContext* context,
-                                 const AudioBufferOptions& options,
+AudioBuffer* AudioBuffer::create(const AudioBufferOptions& options,
                                  ExceptionState& exceptionState) {
-  unsigned numberOfChannels;
-  size_t numberOfFrames;
-  float sampleRate;
-
-  if (!options.hasNumberOfChannels()) {
-    exceptionState.throwDOMException(
-        NotFoundError, "AudioBufferOptions: numberOfChannels is required.");
-    return nullptr;
-  }
-
-  numberOfChannels = options.numberOfChannels();
-  numberOfFrames = options.length();
-
-  if (options.hasSampleRate())
-    sampleRate = options.sampleRate();
-  else
-    sampleRate = context->sampleRate();
-
-  return create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
+  return create(options.numberOfChannels(), options.length(),
+                options.sampleRate(), exceptionState);
 }
 
 AudioBuffer* AudioBuffer::createFromAudioFileData(const void* data,

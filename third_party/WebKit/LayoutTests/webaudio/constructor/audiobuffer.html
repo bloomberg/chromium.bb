@@ -24,16 +24,18 @@
 
       audit.defineTask("invalid constructor", function (taskDone) {
         var node;
+        var args;
         var success = true;
 
+        args = [];
         success = Should("new AudioBuffer()", function () {
           node = new AudioBuffer();
         }).throw("TypeError");
         success = Should("new AudioBuffer(1)", function () {
           node = new AudioBuffer(1) && success;
         }).throw("TypeError");
-        success = Should("new AudioBuffer(context, 42)", function () {
-          node = new AudioBuffer(context, 42) && success;
+        success = Should("new AudioBuffer(Date, 42)", function () {
+          node = new AudioBuffer(Date, 42) && success;
         }).throw("TypeError");
 
         Should("Invalid constructors", success)
@@ -49,24 +51,39 @@
 
         var buffer;
 
-        // The length attribute is required; all others are optional.
-        success = Should("buffer = new AudioBuffer(context, {})", function () {
-          var buffer = new AudioBuffer(context, {});
+        // The length and sampleRate attributes are required; all others are
+        // optional.
+        success = Should("buffer = new AudioBuffer({})", function () {
+          var buffer = new AudioBuffer({});
         }).throw("TypeError");
 
-        success = Should("buffer = new AudioBuffer(context, {numberOfChannels: 1}",
+        success = Should("buffer = new AudioBuffer({length: 1})", function () {
+          new AudioBuffer({
+            length: 1
+          });
+        }).throw("TypeError") && success;
+
+        success = Should("buffer = new AudioBuffer({sampleRate: 48000})",
           function () {
-            buffer = new AudioBuffer(context, {
+            new AudioBuffer({
+              sampleRate: 48000
+            });
+          }).throw("TypeError") && success;
+
+        success = Should("buffer = new AudioBuffer({numberOfChannels: 1}",
+          function () {
+            buffer = new AudioBuffer({
               numberOfChannels: 1
             });
           }).throw("TypeError") && success;
 
-        // Length is required, but others are optional.
+        // Length and sampleRate are required, but others are optional.
         success = Should(
-          "buffer = new AudioBuffer(context, {length: 21}",
+          "buffer = new AudioBuffer({length: 21, sampleRate: 48000}",
           function () {
-            buffer = new AudioBuffer(context, {
-              length: 21
+            buffer = new AudioBuffer({
+              length: 21,
+              sampleRate: context.sampleRate
             });
           }).notThrow() && success;
         // Verify the buffer has the correct values.
@@ -78,9 +95,9 @@
           .beEqualTo(context.sampleRate) && success;
 
         success = Should(
-          "buffer = new AudioBuffer(context, {numberOfChannels: 1, length: 1, sampleRate: 48000}",
+          "buffer = new AudioBuffer({numberOfChannels: 1, length: 1, sampleRate: 48000}",
           function () {
-            buffer = new AudioBuffer(context, {
+            buffer = new AudioBuffer({
               numberOfChannels: 1,
               length: 1,
               sampleRate: 48000
@@ -98,26 +115,29 @@
 
         var options = {
           numberOfChannels: 0,
-          length: 1
+          length: 1,
+          sampleRate: 16000
         };
-        success = Should("new AudioBuffer(c, " + JSON.stringify(options) + ")", function () {
-          var buffer = new AudioBuffer(context, options);
+        success = Should("new AudioBuffer(" + JSON.stringify(options) + ")", function () {
+          var buffer = new AudioBuffer(options);
         }).throw("NotSupportedError");
 
         options = {
           numberOfChannels: 99,
-          length: 0
+          length: 0,
+          sampleRate: 16000
         };
-        success = Should("new AudioBuffer(c, " + JSON.stringify(options) + ")", function () {
-          var buffer = new AudioBuffer(context, options);
+        success = Should("new AudioBuffer(" + JSON.stringify(options) + ")", function () {
+          var buffer = new AudioBuffer(options);
         }).throw("NotSupportedError") && success;
 
         options = {
           numberOfChannels: 1,
-          length: 0
+          length: 0,
+          sampleRate: 16000
         };
-        success = Should("new AudioBuffer(c, " + JSON.stringify(options) + ")", function () {
-          var buffer = new AudioBuffer(context, options);
+        success = Should("new AudioBuffer(" + JSON.stringify(options) + ")", function () {
+          var buffer = new AudioBuffer(options);
         }).throw("NotSupportedError") && success;
 
         options = {
@@ -125,8 +145,8 @@
           length: 1,
           sampleRate: 100
         };
-        success = Should("new AudioBuffer(c, " + JSON.stringify(options) + ")", function () {
-          var buffer = new AudioBuffer(context, options);
+        success = Should("new AudioBuffer(" + JSON.stringify(options) + ")", function () {
+          var buffer = new AudioBuffer(options);
         }).throw("NotSupportedError") && success;
 
         Should("Invalid option values handled", success)
@@ -141,12 +161,13 @@
 
         var options = {
           numberOfChannels: 5,
-          length: 17
+          length: 17,
+          sampleRate: 16000
         };
         success = Should(
-          "buffer = new AudioBuffer(c, " + JSON.stringify(options) + ")",
+          "buffer = new AudioBuffer(" + JSON.stringify(options) + ")",
           function () {
-            buffer = new AudioBuffer(context, options);
+            buffer = new AudioBuffer(options);
           }).notThrow();
 
         success = Should("buffer.numberOfChannels", buffer.numberOfChannels)
@@ -154,7 +175,7 @@
         success = Should("buffer.length", buffer.length)
           .beEqualTo(options.length) && success;
         success = Should("buffer.sampleRate", buffer.sampleRate)
-          .beEqualTo(context.sampleRate) && success;
+          .beEqualTo(16000) && success;
 
         Should("Default constructor values set", success)
           .summarize("correctly", "incorrectly");
@@ -172,9 +193,9 @@
           sampleRate: 54321
         };
 
-        var message = "new AudioBuffer(c, {" + JSON.stringify(options) + ")";
+        var message = "new AudioBuffer(" + JSON.stringify(options) + ")";
         success = Should(message, function () {
-          buffer = new AudioBuffer(context, options);
+          buffer = new AudioBuffer(options);
         }).notThrow();
 
         success = Should("buffer.numberOfChannels", buffer.numberOfChannels)
@@ -207,6 +228,55 @@
           .summarize("correctly", "incorrectly");
 
         taskDone();
+      });
+
+      audit.defineTask("multiple contexts", function (taskDone) {
+        // Test that an AudioBuffer can be used for different contexts.
+        var buffer = new AudioBuffer({
+          length: 128,
+          sampleRate: context.sampleRate
+        });
+
+        var data = buffer.getChannelData(0);
+        for (var k = 0; k < data.length; ++k)
+          data[k] = 1 + k;
+
+        var c1 = new OfflineAudioContext(1, 128, context.sampleRate);
+        var c2 = new OfflineAudioContext(1, 128, context.sampleRate);
+
+
+        var s1 = new AudioBufferSourceNode(c1, {
+          buffer: buffer
+        });
+        var s2 = new AudioBufferSourceNode(c2, {
+          buffer: buffer
+        });
+
+        s1.connect(c1.destination);
+        s2.connect(c2.destination);
+
+        s1.start();
+        s2.start();
+
+        var c1Success = false;
+        var c2Success = false;
+
+        Promise.all([
+            c1.startRendering().then(function (resultBuffer) {
+              c1Success = Should("c1 result", resultBuffer.getChannelData(0))
+                .beEqualToArray(data);
+            }),
+            c2.startRendering().then(function (resultBuffer) {
+              c2Success = Should("c2 result", resultBuffer.getChannelData(0))
+                .beEqualToArray(data);
+            }),
+          ])
+          .then(function () {
+            Should("AudioBuffer shared between two different contexts",
+                c1Success && c2Success)
+              .summarize("correctly", "incorrectly");
+            taskDone();
+          });
       });
 
       audit.runTasks();

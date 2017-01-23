@@ -28,7 +28,7 @@
 
 // See https://webaudio.github.io/web-audio-api/#AudioBuffer
 [
-    Constructor(BaseAudioContext context, AudioBufferOptions options),
+    Constructor(AudioBufferOptions options),
     RaisesException=Constructor,
     Measure
 ] interface AudioBuffer {

@@ -41,7 +41,6 @@ namespace blink {
 
 class AudioBus;
 class AudioBufferOptions;
-class BaseAudioContext;
 class ExceptionState;
 
 class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
@@ -56,9 +55,7 @@ class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
                              size_t numberOfFrames,
                              float sampleRate,
                              ExceptionState&);
-  static AudioBuffer* create(BaseAudioContext*,
-                             const AudioBufferOptions&,
-                             ExceptionState&);
+  static AudioBuffer* create(const AudioBufferOptions&, ExceptionState&);
 
   // Returns 0 if data is not a valid audio file.
   static AudioBuffer* createFromAudioFileData(const void* data,
