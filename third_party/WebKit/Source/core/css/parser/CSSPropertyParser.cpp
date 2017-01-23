@@ -1055,11 +1055,6 @@ static CSSValue* consumeBorderWidth(CSSParserTokenRange& range,
   return consumeLineWidth(range, cssParserMode, unitless);
 }
 
-static CSSValue* consumeColumnRuleWidth(CSSParserTokenRange& range,
-                                        CSSParserMode cssParserMode) {
-  return consumeLineWidth(range, cssParserMode, UnitlessQuirk::Forbid);
-}
-
 static bool consumeTranslate3d(CSSParserTokenRange& args,
                                CSSParserMode cssParserMode,
                                CSSFunctionValue*& transformValue) {
@@ -2373,8 +2368,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
       return consumeNumber(m_range, ValueRangeNonNegative);
-    case CSSPropertyColumnRuleWidth:
-      return consumeColumnRuleWidth(m_range, m_context->mode());
     case CSSPropertyStrokeOpacity:
     case CSSPropertyFillOpacity:
     case CSSPropertyStopOpacity:
