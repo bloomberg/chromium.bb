@@ -85,7 +85,6 @@ class TestResourceDispatcher : public ResourceDispatcher {
       mojom::URLLoaderFactory* url_loader_factory,
       mojo::AssociatedGroup* associated_group) override {
     EXPECT_FALSE(peer_);
-    EXPECT_EQ(blink::WebURLRequest::LoadingIPCType::ChromeIPC, ipc_type);
     peer_ = std::move(peer);
     url_ = request->url;
     stream_url_ = request->resource_body_stream_url;
