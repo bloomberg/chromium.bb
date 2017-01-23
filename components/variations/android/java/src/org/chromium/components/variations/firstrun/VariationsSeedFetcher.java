@@ -4,12 +4,14 @@
 
 package org.chromium.components.variations.firstrun;
 
-import android.app.IntentService;
-import android.content.Intent;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.SystemClock;
-import android.support.v4.content.LocalBroadcastManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 
@@ -17,21 +19,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Background service that fetches the variations seed before the actual first run of Chrome.
+ * Fetches the variations seed before the actual first run of Chrome.
  */
-public class VariationsSeedService extends IntentService {
-    private static final String TAG = "VariationsSeedServ";
-
-    public static final String COMPLETE_BROADCAST = "VariationsseedService.Complete";
-
+public class VariationsSeedFetcher {
+    private static final String TAG = "VariationsSeedFetch";
     private static final String VARIATIONS_SERVER_URL =
             "https://clientservices.googleapis.com/chrome-variations/seed?osname=android";
+
     private static final int BUFFER_SIZE = 4096;
     private static final int READ_TIMEOUT = 3000; // time in ms
     private static final int REQUEST_TIMEOUT = 1000; // time in ms
@@ -43,31 +44,65 @@ public class VariationsSeedService extends IntentService {
     private static final int SEED_FETCH_RESULT_TIMEOUT = -2;
     private static final int SEED_FETCH_RESULT_IOEXCEPTION = -1;
 
-    public VariationsSeedService() {
-        super(TAG);
+    @VisibleForTesting
+    static final String VARIATIONS_INITIALIZED_PREF = "variations_initialized";
+
+    // Synchronization lock
+    private static final Object sLock = new Object();
+
+    private static VariationsSeedFetcher sInstance;
+
+    @VisibleForTesting
+    VariationsSeedFetcher() {}
+
+    public static VariationsSeedFetcher get() {
+        // TODO(aberent) Check not running on UI thread. Doing so however makes Robolectric testing
+        // of dependent classes difficult.
+        synchronized (sLock) {
+            if (sInstance == null) {
+                sInstance = new VariationsSeedFetcher();
+            }
+            return sInstance;
+        }
     }
 
-    @Override
-    public void onHandleIntent(Intent intent) {
-        // Early return if the seed has already been fetched. In such a case, either the Java-side
-        // variations seed pref is set, or a different Java pref is set that indicates that the
-        // seed exists in the native prefs.
-        // Note: There is no need to check for a concurrent seed fetch here, because the service
-        // runs all its intents on the same worker thread serially.
-        if (VariationsSeedBridge.hasJavaPref(getApplicationContext())
-                || VariationsSeedBridge.hasNativePref(getApplicationContext())) {
-            broadcastCompleteIntent();
-            return;
-        }
-        try {
-            downloadContent();
-        } finally {
-            broadcastCompleteIntent();
-        }
+    /**
+     * Override the VariationsSeedFetcher, typically with a mock, for testing classes that depend on
+     * this one.
+     * @param fetcher the mock.
+     */
+    @VisibleForTesting
+    public static void setVariationsSeedFetcherForTesting(VariationsSeedFetcher fetcher) {
+        sInstance = fetcher;
     }
 
-    private void broadcastCompleteIntent() {
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(COMPLETE_BROADCAST));
+    @VisibleForTesting
+    protected HttpURLConnection getServerConnection() throws MalformedURLException, IOException {
+        URL url = new URL(VARIATIONS_SERVER_URL);
+        return (HttpURLConnection) url.openConnection();
+    }
+
+    /**
+     * Fetch the first run variations seed.
+     */
+    public void fetchSeed() {
+        assert !ThreadUtils.runningOnUiThread();
+        // Prevent multiple simultaneous fetches
+        synchronized (sLock) {
+            Context context = ContextUtils.getApplicationContext();
+            SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+            // Early return if an attempt has already been made to fetch the seed, even if it
+            // failed. Only attempt to get the initial Java seed once, since a failure probably
+            // indicates a network problem that is unlikely to be resolved by a second attempt.
+            // Note that VariationsSeedBridge.hasNativePref() is a pure Java function, reading an
+            // Android preference that is set when the seed is fetched by the native code.
+            if (prefs.getBoolean(VARIATIONS_INITIALIZED_PREF, false)
+                    || VariationsSeedBridge.hasNativePref(context)) {
+                return;
+            }
+            downloadContent(context);
+            prefs.edit().putBoolean(VARIATIONS_INITIALIZED_PREF, true).apply();
+        }
     }
 
     private void recordFetchResultOrCode(int resultOrCode) {
@@ -89,12 +124,11 @@ public class VariationsSeedService extends IntentService {
         histogram.record(timeDeltaMillis);
     }
 
-    private boolean downloadContent() {
+    private void downloadContent(Context context) {
         HttpURLConnection connection = null;
         try {
             long startTimeMillis = SystemClock.elapsedRealtime();
-            URL url = new URL(VARIATIONS_SERVER_URL);
-            connection = (HttpURLConnection) url.openConnection();
+            connection = getServerConnection();
             connection.setReadTimeout(READ_TIMEOUT);
             connection.setConnectTimeout(REQUEST_TIMEOUT);
             connection.setDoInput(true);
@@ -104,7 +138,7 @@ public class VariationsSeedService extends IntentService {
             recordFetchResultOrCode(responseCode);
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 Log.w(TAG, "Non-OK response code = %d", responseCode);
-                return false;
+                return;
             }
 
             recordSeedConnectTime(SystemClock.elapsedRealtime() - startTimeMillis);
@@ -115,21 +149,17 @@ public class VariationsSeedService extends IntentService {
             String date = getHeaderFieldOrEmpty(connection, "Date");
             boolean isGzipCompressed = getHeaderFieldOrEmpty(connection, "IM").equals("gzip");
             VariationsSeedBridge.setVariationsFirstRunSeed(
-                    getApplicationContext(), rawSeed, signature, country, date, isGzipCompressed);
+                    context, rawSeed, signature, country, date, isGzipCompressed);
             recordSeedFetchTime(SystemClock.elapsedRealtime() - startTimeMillis);
-            return true;
         } catch (SocketTimeoutException e) {
             recordFetchResultOrCode(SEED_FETCH_RESULT_TIMEOUT);
             Log.w(TAG, "SocketTimeoutException fetching first run seed: ", e);
-            return false;
         } catch (UnknownHostException e) {
             recordFetchResultOrCode(SEED_FETCH_RESULT_UNKNOWN_HOST_EXCEPTION);
             Log.w(TAG, "UnknownHostException fetching first run seed: ", e);
-            return false;
         } catch (IOException e) {
             recordFetchResultOrCode(SEED_FETCH_RESULT_IOEXCEPTION);
             Log.w(TAG, "IOException fetching first run seed: ", e);
-            return false;
         } finally {
             if (connection != null) {
                 connection.disconnect();

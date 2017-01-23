@@ -4,13 +4,9 @@
 
 package org.chromium.chrome.browser.init;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
@@ -18,10 +14,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.components.variations.firstrun.VariationsSeedService;
-import org.chromium.content.browser.ChildProcessLauncher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +36,8 @@ class NativeInitializationController {
     private List<Intent> mPendingNewIntents;
     private List<ActivityResult> mPendingActivityResults;
 
-    private boolean mLibraryLoaded;
+    private boolean mBackgroundTasksComplete;
     private boolean mHasDoneFirstDraw;
-    private boolean mWaitingForVariationsFetch;
     private boolean mHasSignaledLibraryLoaded;
     private boolean mInitializationComplete;
 
@@ -85,77 +77,38 @@ class NativeInitializationController {
     public void startBackgroundTasks(final boolean allocateChildConnection) {
         ThreadUtils.assertOnUiThread();
 
-        // TODO(asvitkine): Consider moving this logic to a singleton, like
-        // ChromeBrowserInitializer.
-        if (ChromeVersionInfo.isOfficialBuild()) {
-            Context context = ContextUtils.getApplicationContext();
-            Intent initialIntent = mActivityDelegate.getInitialIntent();
-            if (FirstRunFlowSequencer.checkIfFirstRunIsNecessary(context, initialIntent, false)
-                    != null) {
-                mWaitingForVariationsFetch = true;
-                IntentFilter filter = new IntentFilter(VariationsSeedService.COMPLETE_BROADCAST);
-                final LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
-                manager.registerReceiver(
-                        new BroadcastReceiver() {
-                            @Override
-                            public void onReceive(Context context, Intent intent) {
-                                // This check is needed because onReceive() can be called multiple
-                                // times even after having unregistered below if two broadcasts
-                                // arrive in rapid succession.
-                                if (!mWaitingForVariationsFetch) return;
-                                mWaitingForVariationsFetch = false;
-                                manager.unregisterReceiver(this);
-                                signalNativeLibraryLoadedIfReady();
-                            }
-                        },
-                        filter);
-                context.startService(new Intent(context, VariationsSeedService.class));
-            }
-        }
+        boolean fetchVariationsSeed = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
+                                              ContextUtils.getApplicationContext(),
+                                              mActivityDelegate.getInitialIntent(), false)
+                != null;
 
-        // TODO(yusufo) : Investigate using an AsyncTask for this.
-        new Thread() {
+        mBackgroundTasksComplete = false;
+        new AsyncInitTaskRunner() {
+
             @Override
-            public void run() {
-                try {
-                    LibraryLoader libraryLoader =
-                            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
-                    libraryLoader.ensureInitialized();
-                    // The prefetch is done after the library load for two reasons:
-                    // - It is easier to know the library location after it has
-                    //   been loaded.
-                    // - Testing has shown that this gives the best compromise,
-                    //   by avoiding performance regression on any tested
-                    //   device, and providing performance improvement on
-                    //   some. Doing it earlier delays UI inflation and more
-                    //   generally startup on some devices, most likely by
-                    //   competing for IO.
-                    // For experimental results, see http://crbug.com/460438.
-                    libraryLoader.asyncPrefetchLibrariesToMemory();
-                } catch (ProcessInitException e) {
-                    Log.e(TAG, "Unable to load native library.", e);
-                    mActivityDelegate.onStartupFailure();
-                    return;
-                }
-                if (allocateChildConnection) {
-                    ChildProcessLauncher.warmUp(ContextUtils.getApplicationContext());
-                }
-                ThreadUtils.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mLibraryLoaded = true;
-                        signalNativeLibraryLoadedIfReady();
-                    }
-                });
+            protected void onSuccess() {
+                ThreadUtils.assertOnUiThread();
+
+                mBackgroundTasksComplete = true;
+                signalNativeLibraryLoadedIfReady();
             }
-        }.start();
+
+            @Override
+            protected void onFailure() {
+                // Initialization has failed, call onStartup failure to abandon the activity.
+                // This is not expected to return, so there is no need to set
+                // mBackgroundTasksComplete or do any other tidying up.
+                mActivityDelegate.onStartupFailure();
+            }
+
+        }.startBackgroundTasks(allocateChildConnection, fetchVariationsSeed);
     }
 
     private void signalNativeLibraryLoadedIfReady() {
         ThreadUtils.assertOnUiThread();
 
         // Called on UI thread when any of the booleans below have changed.
-        if (mHasDoneFirstDraw && mLibraryLoaded && !mWaitingForVariationsFetch) {
+        if (mHasDoneFirstDraw && mBackgroundTasksComplete) {
             // This block should only be hit once.
             assert !mHasSignaledLibraryLoaded;
             mHasSignaledLibraryLoaded = true;
