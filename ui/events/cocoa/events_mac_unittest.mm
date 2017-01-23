@@ -216,6 +216,8 @@ TEST_F(EventsMacTest, ButtonEvents) {
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
+  EXPECT_EQ(ui::EventLocationFromNative(event),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
 
   event =
       TestMouseEvent(kCGEventOtherMouseDown, location, kCGEventFlagMaskShift);
@@ -223,17 +225,23 @@ TEST_F(EventsMacTest, ButtonEvents) {
   EXPECT_EQ(ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_SHIFT_DOWN,
             ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
+  EXPECT_EQ(ui::EventLocationFromNative(event),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
 
   event = TestMouseEvent(kCGEventRightMouseUp, location, kNoEventFlags);
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, ui::EventTypeFromNative(event));
   EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
+  EXPECT_EQ(ui::EventLocationFromNative(event),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
 
   // Scroll up.
   event = TestScrollEvent(location, 0, 1);
   EXPECT_EQ(ui::ET_SCROLL, ui::EventTypeFromNative(event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location.ToString(), ui::EventLocationFromNative(event).ToString());
+  EXPECT_EQ(ui::EventLocationFromNative(event),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_GT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
@@ -243,6 +251,8 @@ TEST_F(EventsMacTest, ButtonEvents) {
   EXPECT_EQ(ui::ET_SCROLL, ui::EventTypeFromNative(event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
+  EXPECT_EQ(ui::EventLocationFromNative(event),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_LT(offset.y(), 0);
   EXPECT_EQ(0, offset.x());
@@ -252,6 +262,8 @@ TEST_F(EventsMacTest, ButtonEvents) {
   EXPECT_EQ(ui::ET_SCROLL, ui::EventTypeFromNative(event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
+  EXPECT_EQ(ui::EventLocationFromNative(event),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_EQ(0, offset.y());
   EXPECT_GT(offset.x(), 0);
@@ -261,6 +273,8 @@ TEST_F(EventsMacTest, ButtonEvents) {
   EXPECT_EQ(ui::ET_SCROLL, ui::EventTypeFromNative(event));
   EXPECT_EQ(0, ui::EventFlagsFromNative(event));
   EXPECT_EQ(location, ui::EventLocationFromNative(event));
+  EXPECT_EQ(ui::EventLocationFromNative(event),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(event)));
   offset = ui::GetMouseWheelOffset(event);
   EXPECT_EQ(0, offset.y());
   EXPECT_LT(offset.x(), 0);

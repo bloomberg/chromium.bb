@@ -2391,13 +2391,13 @@ class WaylandTouchDelegate : public TouchDelegate {
   void OnTouchDown(Surface* surface,
                    base::TimeTicks time_stamp,
                    int id,
-                   const gfx::Point& location) override {
+                   const gfx::PointF& location) override {
     wl_resource* surface_resource = GetSurfaceResource(surface);
     DCHECK(surface_resource);
     wl_touch_send_down(touch_resource_, next_serial(),
                        TimeTicksToMilliseconds(time_stamp), surface_resource,
-                       id, wl_fixed_from_int(location.x()),
-                       wl_fixed_from_int(location.y()));
+                       id, wl_fixed_from_double(location.x()),
+                       wl_fixed_from_double(location.y()));
   }
   void OnTouchUp(base::TimeTicks time_stamp, int id) override {
     wl_touch_send_up(touch_resource_, next_serial(),
@@ -2405,10 +2405,10 @@ class WaylandTouchDelegate : public TouchDelegate {
   }
   void OnTouchMotion(base::TimeTicks time_stamp,
                      int id,
-                     const gfx::Point& location) override {
+                     const gfx::PointF& location) override {
     wl_touch_send_motion(touch_resource_, TimeTicksToMilliseconds(time_stamp),
-                         id, wl_fixed_from_int(location.x()),
-                         wl_fixed_from_int(location.y()));
+                         id, wl_fixed_from_double(location.x()),
+                         wl_fixed_from_double(location.y()));
   }
   void OnTouchShape(int id, float major, float minor) override {
     if (wl_resource_get_version(touch_resource_) >=

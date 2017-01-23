@@ -90,14 +90,18 @@ base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
 }
 
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
+  return gfx::ToFlooredPoint(EventLocationFromNativeF(native_event));
+}
+
+gfx::PointF EventLocationFromNativeF(const base::NativeEvent& native_event) {
   NSWindow* window = [native_event window];
   if (!window) {
     NOTIMPLEMENTED();  // Point will be in screen coordinates.
-    return gfx::Point();
+    return gfx::PointF();
   }
   NSPoint location = [native_event locationInWindow];
   NSRect content_rect = [window contentRectForFrameRect:[window frame]];
-  return gfx::Point(location.x, NSHeight(content_rect) - location.y);
+  return gfx::PointF(location.x, NSHeight(content_rect) - location.y);
 }
 
 gfx::Point EventSystemLocationFromNative(

@@ -27,6 +27,17 @@ bool VectorContainsItem(T& vector, U value) {
   return FindVectorItem(vector, value) != vector.end();
 }
 
+gfx::PointF EventLocationInWindow(ui::TouchEvent* event, aura::Window* window) {
+  ui::Layer* root = window->GetRootWindow()->layer();
+  ui::Layer* target = window->layer();
+
+  gfx::Transform transform;
+  target->GetTargetTransformRelativeTo(root, &transform);
+  auto point = gfx::Point3F(event->root_location_f());
+  transform.TransformPointReverse(&point);
+  return point.AsPointF();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,9 +88,7 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
 
       // Convert location to focus surface coordinate space.
       DCHECK(focus_);
-      gfx::Point location = event->location();
-      aura::Window::ConvertPointToTarget(target->window(), focus_->window(),
-                                         &location);
+      gfx::PointF location = EventLocationInWindow(event, focus_->window());
 
       // Generate a touch down event for the focus surface. Note that this can
       // be different from the target surface.
@@ -115,11 +124,7 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
 
       DCHECK(focus_);
       // Convert location to focus surface coordinate space.
-      gfx::Point location = event->location();
-      aura::Window::ConvertPointToTarget(
-          static_cast<aura::Window*>(event->target()), focus_->window(),
-          &location);
-
+      gfx::PointF location = EventLocationInWindow(event, focus_->window());
       delegate_->OnTouchMotion(event->time_stamp(), event->touch_id(),
                                location);
       send_details = true;

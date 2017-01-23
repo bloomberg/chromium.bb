@@ -37,6 +37,11 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   return gfx::Point();
 }
 
+gfx::PointF EventLocationFromNativeF(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return gfx::PointF();
+}
+
 gfx::Point EventSystemLocationFromNative(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();

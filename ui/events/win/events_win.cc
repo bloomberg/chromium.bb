@@ -255,6 +255,10 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   return gfx::Point(native_point);
 }
 
+gfx::PointF EventLocationFromNativeF(const base::NativeEvent& native_event) {
+  return gfx::PointF(EventLocationFromNative(native_event));
+}
+
 gfx::Point EventSystemLocationFromNative(
     const base::NativeEvent& native_event) {
   POINT global_point = { static_cast<short>(LOWORD(native_event.lParam)),

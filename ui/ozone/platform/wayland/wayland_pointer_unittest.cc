@@ -90,10 +90,8 @@ TEST_F(WaylandPointerTest, Motion) {
   EXPECT_EQ(ET_MOUSE_MOVED, mouse_event->type());
   EXPECT_EQ(0, mouse_event->button_flags());
   EXPECT_EQ(0, mouse_event->changed_button_flags());
-  // TODO(forney): Once crbug.com/337827 is solved, compare with the fractional
-  // coordinates sent above.
-  EXPECT_EQ(gfx::PointF(10, 20), mouse_event->location_f());
-  EXPECT_EQ(gfx::PointF(10, 20), mouse_event->root_location_f());
+  EXPECT_EQ(gfx::PointF(10.75, 20.375), mouse_event->location_f());
+  EXPECT_EQ(gfx::PointF(10.75, 20.375), mouse_event->root_location_f());
 }
 
 TEST_F(WaylandPointerTest, MotionDragged) {

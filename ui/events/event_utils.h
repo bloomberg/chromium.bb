@@ -70,6 +70,8 @@ EVENTS_EXPORT void ValidateEventTimeClock(base::TimeTicks* timestamp);
 // TODO(tdresser): Return gfx::PointF here. See crbug.com/337827.
 EVENTS_EXPORT gfx::Point EventLocationFromNative(
     const base::NativeEvent& native_event);
+EVENTS_EXPORT gfx::PointF EventLocationFromNativeF(
+    const base::NativeEvent& native_event);
 
 // Gets the location in native system coordinate space.
 EVENTS_EXPORT gfx::Point EventSystemLocationFromNative(

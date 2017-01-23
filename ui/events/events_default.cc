@@ -36,6 +36,14 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   return EventSystemLocationFromNative(native_event);
 }
 
+gfx::PointF EventLocationFromNativeF(const base::NativeEvent& native_event) {
+  const ui::LocatedEvent* e =
+      static_cast<const ui::LocatedEvent*>(native_event);
+  DCHECK(e->IsMouseEvent() || e->IsTouchEvent() || e->IsGestureEvent() ||
+         e->IsScrollEvent());
+  return e->location_f();
+}
+
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   const ui::MouseEvent* event =

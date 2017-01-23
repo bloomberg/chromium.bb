@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 
 namespace gfx {
-class Point;
+class PointF;
 }
 
 namespace exo {
@@ -33,7 +33,7 @@ class TouchDelegate {
   virtual void OnTouchDown(Surface* surface,
                            base::TimeTicks time_stamp,
                            int id,
-                           const gfx::Point& location) = 0;
+                           const gfx::PointF& location) = 0;
 
   // Called when a touch point has disappeared. No further events will be sent
   // for this touch point.
@@ -42,7 +42,7 @@ class TouchDelegate {
   // Called when a touch point has changed coordinates.
   virtual void OnTouchMotion(base::TimeTicks time_stamp,
                              int id,
-                             const gfx::Point& location) = 0;
+                             const gfx::PointF& location) = 0;
 
   // Called when a touch point has changed its shape.
   virtual void OnTouchShape(int id, float major, float minor) = 0;

@@ -244,6 +244,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
       0, XI_TouchBegin, 5, gfx::Point(10, 10), valuators);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("10,10", ui::EventLocationFromNative(scoped_xevent).ToString());
+  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.15f);
   PointerDetails pointer_details =
@@ -259,6 +261,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
       0, XI_TouchUpdate, 5, gfx::Point(20, 20), valuators);
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("20,20", ui::EventLocationFromNative(scoped_xevent).ToString());
+  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
@@ -275,6 +279,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
       0, XI_TouchBegin, 6, gfx::Point(200, 200), valuators);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("200,200", ui::EventLocationFromNative(scoped_xevent).ToString());
+  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
   EXPECT_EQ(GetTouchId(scoped_xevent), 1);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
@@ -289,6 +295,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
       0, XI_TouchEnd, 5, gfx::Point(30, 30), valuators);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("30,30", ui::EventLocationFromNative(scoped_xevent).ToString());
+  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
@@ -303,6 +311,8 @@ TEST_F(EventsXTest, TouchEventBasic) {
       0, XI_TouchEnd, 6, gfx::Point(200, 200), valuators);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("200,200", ui::EventLocationFromNative(scoped_xevent).ToString());
+  EXPECT_EQ(ui::EventLocationFromNative(scoped_xevent),
+            gfx::ToFlooredPoint(ui::EventLocationFromNativeF(scoped_xevent)));
   EXPECT_EQ(GetTouchId(scoped_xevent), 1);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
   pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);

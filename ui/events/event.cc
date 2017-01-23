@@ -479,9 +479,8 @@ LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
     : Event(native_event,
             EventTypeFromNative(native_event),
             EventFlagsFromNative(native_event)),
-      location_(EventLocationFromNative(native_event)),
-      root_location_(location_) {
-}
+      location_(EventLocationFromNativeF(native_event)),
+      root_location_(location_) {}
 
 LocatedEvent::LocatedEvent(EventType type,
                            const gfx::PointF& location,

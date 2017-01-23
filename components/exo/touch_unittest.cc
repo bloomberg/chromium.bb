@@ -34,9 +34,9 @@ class MockTouchDelegate : public TouchDelegate {
   MOCK_METHOD1(OnTouchDestroying, void(Touch*));
   MOCK_CONST_METHOD1(CanAcceptTouchEventsForSurface, bool(Surface*));
   MOCK_METHOD4(OnTouchDown,
-               void(Surface*, base::TimeTicks, int, const gfx::Point&));
+               void(Surface*, base::TimeTicks, int, const gfx::PointF&));
   MOCK_METHOD2(OnTouchUp, void(base::TimeTicks, int));
-  MOCK_METHOD3(OnTouchMotion, void(base::TimeTicks, int, const gfx::Point&));
+  MOCK_METHOD3(OnTouchMotion, void(base::TimeTicks, int, const gfx::PointF&));
   MOCK_METHOD3(OnTouchShape, void(int, float, float));
   MOCK_METHOD0(OnTouchFrame, void());
   MOCK_METHOD0(OnTouchCancel, void());
@@ -66,7 +66,7 @@ TEST_F(TouchTest, OnTouchDown) {
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(top_window.surface()))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(delegate,
-              OnTouchDown(top_window.surface(), testing::_, 1, gfx::Point()));
+              OnTouchDown(top_window.surface(), testing::_, 1, gfx::PointF()));
   EXPECT_CALL(delegate, OnTouchFrame());
   generator.set_current_location(top_window.origin());
   generator.PressTouchId(1);
@@ -76,7 +76,7 @@ TEST_F(TouchTest, OnTouchDown) {
 
   // Second touch point should be relative to the focus surface.
   EXPECT_CALL(delegate, OnTouchDown(top_window.surface(), testing::_, 2,
-                                    gfx::Point(-1, -1)));
+                                    gfx::PointF(-1, -1)));
   EXPECT_CALL(delegate, OnTouchFrame());
 
   generator.set_current_location(bottom_window.origin());
@@ -98,7 +98,7 @@ TEST_F(TouchTest, OnTouchUp) {
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(window.surface()))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                    gfx::Point()))
+                                    gfx::PointF()))
       .Times(2);
   EXPECT_CALL(delegate, OnTouchFrame()).Times(2);
   generator.set_current_location(window.origin());
@@ -128,9 +128,9 @@ TEST_F(TouchTest, OnTouchMotion) {
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(window.surface()))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                    gfx::Point()));
+                                    gfx::PointF()));
   EXPECT_CALL(delegate,
-              OnTouchMotion(testing::_, testing::_, gfx::Point(5, 5)));
+              OnTouchMotion(testing::_, testing::_, gfx::PointF(5, 5)));
   EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
   EXPECT_CALL(delegate, OnTouchFrame()).Times(3);
   generator.set_current_location(window.origin());
@@ -139,9 +139,9 @@ TEST_F(TouchTest, OnTouchMotion) {
   // Check if touch point motion outside focus surface is reported properly to
   // the focus surface.
   EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                    gfx::Point()));
+                                    gfx::PointF()));
   EXPECT_CALL(delegate,
-              OnTouchMotion(testing::_, testing::_, gfx::Point(100, 100)));
+              OnTouchMotion(testing::_, testing::_, gfx::PointF(100, 100)));
   EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
   EXPECT_CALL(delegate, OnTouchFrame()).Times(3);
   generator.set_current_location(window.origin());
@@ -163,15 +163,15 @@ TEST_F(TouchTest, OnTouchShape) {
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                      gfx::Point()));
+                                      gfx::PointF()));
     EXPECT_CALL(delegate, OnTouchShape(testing::_, 1, 1));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate,
-                OnTouchMotion(testing::_, testing::_, gfx::Point(5, 5)));
+                OnTouchMotion(testing::_, testing::_, gfx::PointF(5, 5)));
     EXPECT_CALL(delegate, OnTouchShape(testing::_, 1, 1));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate,
-                OnTouchMotion(testing::_, testing::_, gfx::Point(10, 10)));
+                OnTouchMotion(testing::_, testing::_, gfx::PointF(10, 10)));
     EXPECT_CALL(delegate, OnTouchShape(testing::_, 20, 10));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
@@ -199,7 +199,7 @@ TEST_F(TouchTest, OnTouchCancel) {
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(window.surface()))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                    gfx::Point()))
+                                    gfx::PointF()))
       .Times(2);
   EXPECT_CALL(delegate, OnTouchFrame()).Times(2);
   generator.set_current_location(window.origin());
@@ -240,10 +240,10 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnTouchDown(modal.surface(), testing::_, testing::_,
-                                      gfx::Point()));
+                                      gfx::PointF()));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate,
-                OnTouchMotion(testing::_, testing::_, gfx::Point(1, 1)));
+                OnTouchMotion(testing::_, testing::_, gfx::PointF(1, 1)));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
@@ -255,10 +255,10 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                      gfx::Point()))
+                                      gfx::PointF()))
         .Times(0);
     EXPECT_CALL(delegate,
-                OnTouchMotion(testing::_, testing::_, gfx::Point(1, 1)))
+                OnTouchMotion(testing::_, testing::_, gfx::PointF(1, 1)))
         .Times(0);
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_)).Times(0);
     EXPECT_CALL(delegate, OnTouchFrame()).Times(0);
@@ -274,10 +274,10 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                      gfx::Point()));
+                                      gfx::PointF()));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate,
-                OnTouchMotion(testing::_, testing::_, gfx::Point(1, 1)));
+                OnTouchMotion(testing::_, testing::_, gfx::PointF(1, 1)));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
@@ -307,7 +307,7 @@ TEST_F(TouchTest, OnTouchTool) {
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                      gfx::Point()));
+                                      gfx::PointF()));
     EXPECT_CALL(stylus_delegate,
                 OnTouchTool(0, ui::EventPointerType::POINTER_TYPE_PEN));
     EXPECT_CALL(delegate, OnTouchFrame());
@@ -341,7 +341,7 @@ TEST_F(TouchTest, OnTouchForce) {
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                      gfx::Point()));
+                                      gfx::PointF()));
     EXPECT_CALL(stylus_delegate,
                 OnTouchTool(0, ui::EventPointerType::POINTER_TYPE_PEN));
     EXPECT_CALL(stylus_delegate, OnTouchForce(testing::_, 0, 1.0));
@@ -377,7 +377,7 @@ TEST_F(TouchTest, OnTouchTilt) {
   {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
-                                      gfx::Point()));
+                                      gfx::PointF()));
     EXPECT_CALL(stylus_delegate,
                 OnTouchTool(0, ui::EventPointerType::POINTER_TYPE_PEN));
     EXPECT_CALL(stylus_delegate,
