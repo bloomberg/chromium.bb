@@ -338,7 +338,7 @@ Resource::Resource(const ResourceRequest& request,
   InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
 
   // Currently we support the metadata caching only for HTTP family.
-  if (m_resourceRequest.url().protocolIsInHTTPFamily())
+  if (resourceRequest().url().protocolIsInHTTPFamily())
     m_cacheHandler = CachedMetadataHandlerImpl::create(this);
   MemoryCoordinator::instance().registerClient(this);
 }
@@ -440,7 +440,7 @@ void Resource::finish(double loadFinishTime) {
 
 AtomicString Resource::httpContentType() const {
   return extractMIMETypeFromMediaType(
-      m_response.httpHeaderField(HTTPNames::Content_Type).lower());
+      response().httpHeaderField(HTTPNames::Content_Type).lower());
 }
 
 bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin) const {
@@ -449,7 +449,7 @@ bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin) const {
           ? AllowStoredCredentials
           : DoNotAllowStoredCredentials;
   CrossOriginAccessControl::AccessStatus status =
-      CrossOriginAccessControl::checkAccess(m_response, storedCredentials,
+      CrossOriginAccessControl::checkAccess(response(), storedCredentials,
                                             securityOrigin);
 
   return status == CrossOriginAccessControl::kAccessAllowed;
@@ -493,10 +493,10 @@ static double currentAge(const ResourceResponse& response,
 }
 
 double Resource::currentAge() const {
-  return blink::currentAge(m_response, m_responseTimestamp);
+  return blink::currentAge(response(), m_responseTimestamp);
 }
 
-static double freshnessLifetime(ResourceResponse& response,
+static double freshnessLifetime(const ResourceResponse& response,
                                 double responseTimestamp) {
 #if !OS(ANDROID)
   // On desktop, local files should be reloaded in case they change.
@@ -527,15 +527,15 @@ static double freshnessLifetime(ResourceResponse& response,
   return 0;
 }
 
-double Resource::freshnessLifetime() {
-  return blink::freshnessLifetime(m_response, m_responseTimestamp);
+double Resource::freshnessLifetime() const {
+  return blink::freshnessLifetime(response(), m_responseTimestamp);
 }
 
-double Resource::stalenessLifetime() {
-  return m_response.cacheControlStaleWhileRevalidate();
+double Resource::stalenessLifetime() const {
+  return response().cacheControlStaleWhileRevalidate();
 }
 
-static bool canUseResponse(ResourceResponse& response,
+static bool canUseResponse(const ResourceResponse& response,
                            double responseTimestamp) {
   if (response.isNull())
     return false;
@@ -566,7 +566,7 @@ static bool canUseResponse(ResourceResponse& response,
 
 const ResourceRequest& Resource::lastResourceRequest() const {
   if (!m_redirectChain.size())
-    return m_resourceRequest;
+    return resourceRequest();
   return m_redirectChain.back().m_request;
 }
 
@@ -589,7 +589,7 @@ bool Resource::willFollowRedirect(const ResourceRequest& newRequest,
 
 void Resource::setResponse(const ResourceResponse& response) {
   m_response = response;
-  if (m_response.wasFetchedViaServiceWorker()) {
+  if (this->response().wasFetchedViaServiceWorker()) {
     m_cacheHandler = ServiceWorkerResponseCachedMetadataHandler::create(
         this, m_fetcherSecurityOrigin.get());
   }
@@ -622,7 +622,7 @@ void Resource::responseReceived(const ResourceResponse& response,
 
 void Resource::setSerializedCachedMetadata(const char* data, size_t size) {
   DCHECK(!m_isRevalidating);
-  DCHECK(!m_response.isNull());
+  DCHECK(!response().isNull());
   if (m_cacheHandler)
     m_cacheHandler->setSerializedCachedMetadata(data, size);
 }
@@ -729,7 +729,7 @@ void Resource::addClient(ResourceClient* client,
 
   // If an error has occurred or we have existing data to send to the new client
   // and the resource type supprts it, send it asynchronously.
-  if ((errorOccurred() || !m_response.isNull()) &&
+  if ((errorOccurred() || !response().isNull()) &&
       !typeNeedsSynchronousCacheHit(getType()) && !m_needsSynchronousCacheHit) {
     m_clientsAwaitingCallback.add(client);
     ResourceCallback::callbackHandler().schedule(this);
@@ -945,7 +945,7 @@ void Resource::revalidationSucceeded(
     const ResourceResponse& validatingResponse) {
   SECURITY_CHECK(m_redirectChain.isEmpty());
   SECURITY_CHECK(equalIgnoringFragmentIdentifier(validatingResponse.url(),
-                                                 m_response.url()));
+                                                 response().url()));
   m_response.setResourceLoadTiming(validatingResponse.resourceLoadTiming());
 
   // RFC2616 10.3.5
@@ -973,7 +973,7 @@ void Resource::revalidationFailed() {
   m_isRevalidating = false;
 }
 
-bool Resource::canReuseRedirectChain() {
+bool Resource::canReuseRedirectChain() const {
   for (auto& redirect : m_redirectChain) {
     if (!canUseResponse(redirect.m_redirectResponse, m_responseTimestamp))
       return false;
@@ -985,21 +985,21 @@ bool Resource::canReuseRedirectChain() {
 }
 
 bool Resource::hasCacheControlNoStoreHeader() const {
-  return m_response.cacheControlContainsNoStore() ||
-         m_resourceRequest.cacheControlContainsNoStore();
+  return response().cacheControlContainsNoStore() ||
+         resourceRequest().cacheControlContainsNoStore();
 }
 
 bool Resource::hasVaryHeader() const {
-  return !m_response.httpHeaderField(HTTPNames::Vary).isNull();
+  return !response().httpHeaderField(HTTPNames::Vary).isNull();
 }
 
-bool Resource::mustRevalidateDueToCacheHeaders() {
-  return !canUseResponse(m_response, m_responseTimestamp) ||
-         m_resourceRequest.cacheControlContainsNoCache() ||
-         m_resourceRequest.cacheControlContainsNoStore();
+bool Resource::mustRevalidateDueToCacheHeaders() const {
+  return !canUseResponse(response(), m_responseTimestamp) ||
+         resourceRequest().cacheControlContainsNoCache() ||
+         resourceRequest().cacheControlContainsNoStore();
 }
 
-bool Resource::canUseCacheValidator() {
+bool Resource::canUseCacheValidator() const {
   if (isLoading() || errorOccurred())
     return false;
 
@@ -1010,15 +1010,15 @@ bool Resource::canUseCacheValidator() {
   if (!redirectChain().isEmpty())
     return false;
 
-  return m_response.hasCacheValidatorFields() ||
-         m_resourceRequest.hasCacheValidatorFields();
+  return response().hasCacheValidatorFields() ||
+         resourceRequest().hasCacheValidatorFields();
 }
 
 size_t Resource::calculateOverheadSize() const {
   static const int kAverageClientsHashMapSize = 384;
-  return sizeof(Resource) + m_response.memoryUsage() +
+  return sizeof(Resource) + response().memoryUsage() +
          kAverageClientsHashMapSize +
-         m_resourceRequest.url().getString().length() * 2;
+         resourceRequest().url().getString().length() * 2;
 }
 
 void Resource::didChangePriority(ResourceLoadPriority loadPriority,

@@ -148,7 +148,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   // This url can have a fragment, but it can match resources that differ by the
   // fragment only.
-  const KURL& url() const { return m_resourceRequest.url(); }
+  const KURL& url() const { return resourceRequest().url(); }
   Type getType() const { return static_cast<Type>(m_type); }
   const ResourceLoaderOptions& options() const { return m_options; }
   ResourceLoaderOptions& mutableOptions() { return m_options; }
@@ -267,9 +267,9 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     --m_preloadCount;
   }
 
-  bool canReuseRedirectChain();
-  bool mustRevalidateDueToCacheHeaders();
-  bool canUseCacheValidator();
+  bool canReuseRedirectChain() const;
+  bool mustRevalidateDueToCacheHeaders() const;
+  bool canUseCacheValidator() const;
   bool isCacheValidator() const { return m_isRevalidating; }
   bool hasCacheControlNoStoreHeader() const;
   bool hasVaryHeader() const;
@@ -290,8 +290,8 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool mustRefetchDueToIntegrityMetadata(const FetchRequest&) const;
 
   double currentAge() const;
-  double freshnessLifetime();
-  double stalenessLifetime();
+  double freshnessLifetime() const;
+  double stalenessLifetime() const;
 
   bool isAlive() const { return m_isAlive; }
 
@@ -371,7 +371,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void didRemoveClientOrObserver();
   virtual void allClientsAndObserversRemoved();
 
-  bool hasClient(ResourceClient* client) {
+  bool hasClient(ResourceClient* client) const {
     return m_clients.contains(client) ||
            m_clientsAwaitingCallback.contains(client) ||
            m_finishedClients.contains(client);
