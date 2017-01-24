@@ -15,6 +15,9 @@
 #include "av1/common/filter.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/convolve.h"
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+#include "av1/common/warped_motion.h"
+#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 #include "aom/aom_integer.h"
 
 #ifdef __cplusplus
@@ -224,17 +227,38 @@ static INLINE void av1_make_inter_predictor(
 #else
     const InterpFilter interp_filter,
 #endif
+#if CONFIG_GLOBAL_MOTION
+    int is_global, int p_col, int p_row, int plane, int ref,
+#endif  // CONFIG_GLOBAL_MOTION
     int xs, int ys, const MACROBLOCKD *xd) {
   (void)xd;
+#if CONFIG_GLOBAL_MOTION
+  if (is_global) {
+    const MODE_INFO *mi = xd->mi[0];
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
+    const struct buf_2d *const pre_buf = &pd->pre[ref];
+    WarpedMotionParams *gm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
+
+    av1_warp_plane(gm,
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+                   xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+                   pre_buf->buf0, pre_buf->width, pre_buf->height,
+                   pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
+                   pd->subsampling_x, pd->subsampling_y, xs, ys, ref);
+    return;
+  }
+#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
                            sf, w, h, conv_params->ref, interp_filter, xs, ys,
                            xd->bd);
-  else
+    return;
+  }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-    inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
-                    h, conv_params, interp_filter, xs, ys);
+  inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y, sf, w,
+                  h, conv_params, interp_filter, xs, ys);
 }
 
 #if CONFIG_EXT_INTER
@@ -252,9 +276,13 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_SUPERTX
                                      int wedge_offset_x, int wedge_offset_y,
 #endif  // CONFIG_SUPERTX
-#if CONFIG_COMPOUND_SEGMENT
+#if CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
                                      int plane,
-#endif  // CONFIG_COMPOUND_SEGMENT
+#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
+                                     int is_global, int p_col, int p_row,
+                                     int ref,
+#endif  // CONFIG_GLOBAL_MOTION
                                      MACROBLOCKD *xd);
 #endif  // CONFIG_EXT_INTER
 

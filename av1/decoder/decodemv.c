@@ -1458,8 +1458,17 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
     case ZERO_ZEROMV: {
       assert(is_compound);
+#if CONFIG_GLOBAL_MOTION
+      mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
+                                          cm->allow_high_precision_mv)
+                         .as_int;
+      mv[1].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
+                                          cm->allow_high_precision_mv)
+                         .as_int;
+#else
       mv[0].as_int = 0;
       mv[1].as_int = 0;
+#endif  // CONFIG_GLOBAL_MOTION
       break;
     }
 #endif  // CONFIG_EXT_INTER

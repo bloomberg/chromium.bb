@@ -485,11 +485,6 @@ post_process_cmdline() {
       log_echo "disabling reference_buffer"
       disable_feature reference_buffer
     fi
-    if enabled global_motion && (enabled ext_inter || enabled dual_filter); then
-      log_echo "global_motion currently not compatible with ext_inter"
-      log_echo "and dual_filter. Disabling global_motion."
-      disable_feature global_motion
-    fi
 }
 
 
