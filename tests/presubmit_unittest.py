@@ -2195,7 +2195,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
     if not is_committing or (not tbr and issue):
       affected_file.LocalPath().AndReturn('foo/xyz.cc')
-      input_api.AffectedFiles(file_filter=None).AndReturn([affected_file])
+      change.AffectedFiles(file_filter=None).AndReturn([affected_file])
       if issue and not rietveld_response and not gerrit_response:
         rietveld_response = {
           "owner_email": change.author_email,
