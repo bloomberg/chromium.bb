@@ -4,7 +4,10 @@
 
 #include "chrome/browser/installable/installable_manager.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
@@ -19,6 +22,8 @@
 #include "net/base/url_util.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 
+using IconPurpose = content::Manifest::Icon::IconPurpose;
+
 namespace {
 
 const char kPngExtension[] = ".png";
@@ -30,7 +35,8 @@ const char kPngExtension[] = ".png";
 // TODO(dominickn): consolidate with minimum_icon_size_in_px across platforms.
 const int kIconMinimumSizeInPx = 144;
 
-// Returns true if |manifest| specifies a PNG icon >= 144x144px (or size "any").
+// Returns true if |manifest| specifies a PNG icon >= 144x144px (or size "any"),
+// and of icon purpose IconPurpose::ANY.
 bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
   for (const auto& icon : manifest.icons) {
     // The type field is optional. If it isn't present, fall back on checking
@@ -39,6 +45,9 @@ bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
         !(icon.type.empty() && base::EndsWith(
             icon.src.ExtractFileName(), kPngExtension,
             base::CompareCase::INSENSITIVE_ASCII)))
+      continue;
+
+    if (!base::ContainsValue(icon.purpose, IconPurpose::ANY))
       continue;
 
     for (const auto& size : icon.sizes) {

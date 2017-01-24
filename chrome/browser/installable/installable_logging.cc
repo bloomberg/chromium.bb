@@ -40,7 +40,8 @@ static const char kManifestDisplayNotSupportedMessage[] =
     "the manifest display property must be set to 'standalone' or 'fullscreen'";
 static const char kManifestMissingSuitableIconMessage[] =
     "the manifest does not contain a suitable icon - PNG format of at least "
-    "%spx is required, and the sizes attribute must be set";
+    "%spx is required, the sizes attribute must be set, and the purpose "
+    "attribute, if set, must include \"any\".";
 static const char kNoMatchingServiceWorkerMessage[] =
     "no matching service worker detected. You may need to reload the page, or "
     "check that the service worker for the current page also controls the "
