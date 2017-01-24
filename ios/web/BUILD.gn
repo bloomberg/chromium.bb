@@ -129,7 +129,6 @@ source_set("web_arc") {
     "public/web_state/context_menu_params.h",
     "public/web_state/credential.h",
     "public/web_state/crw_web_controller_observer.h",
-    "public/web_state/crw_web_user_interface_delegate.h",
     "public/web_state/crw_web_view_proxy.h",
     "public/web_state/crw_web_view_scroll_view_proxy.h",
     "public/web_state/global_web_state_observer.h",

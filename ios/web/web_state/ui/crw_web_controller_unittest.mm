@@ -71,11 +71,6 @@ using web::NavigationManagerImpl;
 @property(nonatomic, readonly) web::BlockedPopupInfo* blockedPopupInfo;
 @end
 
-// Stub implementation for CRWWebUserInterfaceDelegate protocol.
-@interface CRWWebUserInterfaceDelegateStub
-    : OCMockComplexTypeHelper<CRWWebUserInterfaceDelegate>
-@end
-
 @implementation MockInteractionLoader {
   // Backs up the property with the same name.
   std::unique_ptr<web::BlockedPopupInfo> _blockedPopupInfo;

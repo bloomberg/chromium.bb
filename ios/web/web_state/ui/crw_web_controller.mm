@@ -285,7 +285,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
                                WKNavigationDelegate,
                                WKUIDelegate> {
   base::WeakNSProtocol<id<CRWWebDelegate>> _delegate;
-  base::WeakNSProtocol<id<CRWWebUserInterfaceDelegate>> _UIDelegate;
   base::WeakNSProtocol<id<CRWNativeContentProvider>> _nativeProvider;
   base::WeakNSProtocol<id<CRWSwipeRecognizerProvider>> _swipeRecognizerProvider;
   // The WKWebView managed by this instance.
@@ -1088,14 +1087,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     else
       [self.nativeController setDelegate:nil];
   }
-}
-
-- (id<CRWWebUserInterfaceDelegate>)UIDelegate {
-  return _UIDelegate.get();
-}
-
-- (void)setUIDelegate:(id<CRWWebUserInterfaceDelegate>)UIDelegate {
-  _UIDelegate.reset(UIDelegate);
 }
 
 - (void)dealloc {
@@ -4441,9 +4432,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!_webView)
     return;
 
-  SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
-  if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
-    [self.UIDelegate cancelDialogsForWebController:self];
   _webStateImpl->CancelDialogs();
 
   web::NavigationItem* item = [self currentNavItem];
@@ -4461,12 +4449,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)webViewWebProcessDidCrash {
   _webProcessIsDead = YES;
-
-  SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
-  if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
-    [self.UIDelegate cancelDialogsForWebController:self];
   _webStateImpl->CancelDialogs();
-
   _webStateImpl->OnRenderProcessGone();
 }
 

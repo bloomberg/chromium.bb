@@ -9,7 +9,6 @@
 
 #import "ios/web/net/crw_request_tracker_delegate.h"
 #import "ios/web/public/navigation_manager.h"
-#import "ios/web/public/web_state/crw_web_user_interface_delegate.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
@@ -65,7 +64,6 @@ class WebStateImpl;
 @property(nonatomic, assign) BOOL webUsageEnabled;
 
 @property(nonatomic, assign) id<CRWWebDelegate> delegate;
-@property(nonatomic, weak) id<CRWWebUserInterfaceDelegate> UIDelegate;
 @property(nonatomic, assign) id<CRWNativeContentProvider> nativeProvider;
 @property(nonatomic, assign)
     id<CRWSwipeRecognizerProvider> swipeRecognizerProvider;

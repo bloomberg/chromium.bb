@@ -137,7 +137,6 @@
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/crw_web_user_interface_delegate.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -200,7 +199,6 @@ enum class RendererTerminationTabState {
 }  // namespace
 
 @interface Tab ()<CRWWebStateObserver,
-                  CRWWebUserInterfaceDelegate,
                   FindInPageControllerDelegate,
                   ReaderModeControllerDelegate> {
   TabModel* parentTabModel_;               // weak
@@ -535,7 +533,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         new web::WebStateObserverBridge(webStateImpl_.get(), self));
 
     [self.webController setDelegate:self];
-    [self.webController setUIDelegate:self];
 
     NSString* sessionID = self.tabId;
     DCHECK(sessionID);
@@ -1229,7 +1226,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [snapshotManager_ removeImageWithSessionID:self.tabId];
   // Reset association with the webController.
   [self.webController setDelegate:nil];
-  [self.webController setUIDelegate:nil];
 
   webStateImpl_->ClearTransientContentView();
   // Terminate the network activity before notifying the parent model, because
@@ -1706,6 +1702,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webState:(web::WebState*)webState
     didStartProvisionalNavigationForURL:(const GURL&)URL {
+  [self.dialogDelegate cancelDialogForTab:self];
   [parentTabModel_ notifyTabChanged:self];
   [openInController_ disable];
   [[NSNotificationCenter defaultCenter]
@@ -2120,17 +2117,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // work when the app becomes active because there is nothing to trigger
   // a view redisplay in that scenario.
   requireReloadAfterBecomingActive_ = visible_ && applicationIsBackgrounded;
+  [self.dialogDelegate cancelDialogForTab:self];
 }
 
 - (void)webController:(CRWWebController*)webController
     didLoadPassKitObject:(NSData*)data {
   [self.passKitDialogProvider presentPassKitDialog:data];
-}
-
-#pragma mark - WebUserInterfaceDelegate methods.
-
-- (void)cancelDialogsForWebController:(CRWWebController*)webController {
-  [self.dialogDelegate cancelDialogForTab:self];
 }
 
 #pragma mark - PrerenderDelegate

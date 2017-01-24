@@ -1018,6 +1018,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [currentTab.webController setOverlayPreviewMode:YES];
     if (currentTab)
       [self displayTab:currentTab isNewSelection:YES];
+  } else {
+    [_dialogPresenter cancelAllDialogs];
   }
   [_contextualSearchController enableContextualSearch:active];
   [_paymentRequestManager enablePaymentRequest:active];
@@ -4256,6 +4258,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)resetAllWebViews {
+  [_dialogPresenter cancelAllDialogs];
   [_model resetAllWebViews];
 }
 
