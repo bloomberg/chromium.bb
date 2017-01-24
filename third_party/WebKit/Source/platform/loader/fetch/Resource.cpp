@@ -302,12 +302,6 @@ void Resource::ResourceCallback::runTask() {
     resource->finishPendingClients();
 }
 
-constexpr Resource::Status Resource::NotStarted;
-constexpr Resource::Status Resource::Pending;
-constexpr Resource::Status Resource::Cached;
-constexpr Resource::Status Resource::LoadError;
-constexpr Resource::Status Resource::DecodeError;
-
 Resource::Resource(const ResourceRequest& request,
                    Type type,
                    const ResourceLoaderOptions& options)
@@ -322,7 +316,7 @@ Resource::Resource(const ResourceRequest& request,
       m_cacheIdentifier(MemoryCache::defaultCacheIdentifier()),
       m_preloadResult(PreloadNotReferenced),
       m_type(type),
-      m_status(NotStarted),
+      m_status(ResourceStatus::NotStarted),
       m_needsSynchronousCacheHit(false),
       m_linkPreload(false),
       m_isRevalidating(false),
@@ -360,7 +354,7 @@ void Resource::setLoader(ResourceLoader* loader) {
   CHECK(!m_loader);
   DCHECK(stillNeedsLoad());
   m_loader = loader;
-  m_status = Pending;
+  m_status = ResourceStatus::Pending;
 }
 
 void Resource::checkNotify() {
@@ -422,7 +416,7 @@ void Resource::error(const ResourceError& error) {
     memoryCache()->remove(this);
 
   if (!errorOccurred())
-    setStatus(LoadError);
+    setStatus(ResourceStatus::LoadError);
   DCHECK(errorOccurred());
   clearData();
   m_loader = nullptr;
@@ -433,7 +427,7 @@ void Resource::finish(double loadFinishTime) {
   DCHECK(!m_isRevalidating);
   m_loadFinishTime = loadFinishTime;
   if (!errorOccurred())
-    m_status = Cached;
+    m_status = ResourceStatus::Cached;
   m_loader = nullptr;
   checkNotify();
 }
@@ -576,7 +570,7 @@ void Resource::setRevalidatingRequest(const ResourceRequest& request) {
   CHECK(!m_isRevalidationStartForbidden);
   m_isRevalidating = true;
   m_resourceRequest = request;
-  m_status = NotStarted;
+  m_status = ResourceStatus::NotStarted;
 }
 
 bool Resource::willFollowRedirect(const ResourceRequest& newRequest,

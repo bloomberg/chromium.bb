@@ -76,9 +76,7 @@ class ImageResource::ImageResourceInfoImpl final
   const ResourceResponse& response() const override {
     return m_resource->response();
   }
-  Resource::Status getStatus() const override {
-    return m_resource->getStatus();
-  }
+  ResourceStatus getStatus() const override { return m_resource->getStatus(); }
   bool isPlaceholder() const override { return m_resource->isPlaceholder(); }
   bool isCacheValidator() const override {
     return m_resource->isCacheValidator();
@@ -326,7 +324,7 @@ void ImageResource::decodeError(bool allDataReceived) {
   clearData();
   setEncodedSize(0);
   if (!errorOccurred())
-    setStatus(DecodeError);
+    setStatus(ResourceStatus::DecodeError);
 
   if (!allDataReceived && loader()) {
     // TODO(hiroshige): Do not call didFinishLoading() directly.
@@ -442,7 +440,7 @@ void ImageResource::reloadIfLoFiOrPlaceholderImage(
                 false);
   }
 
-  setStatus(NotStarted);
+  setStatus(ResourceStatus::NotStarted);
 
   DCHECK(m_isSchedulingReload);
   m_isSchedulingReload = false;
@@ -466,7 +464,7 @@ void ImageResource::onePartInMultipartReceived(
     m_multipartParsingState = MultipartParsingState::FinishedParsingFirstPart;
     // Notify finished when the first part ends.
     if (!errorOccurred())
-      setStatus(Cached);
+      setStatus(ResourceStatus::Cached);
     // We notify clients and observers of finish in checkNotify() and
     // updateImageAndClearBuffer(), respectively, and they will not be
     // notified again in Resource::finish()/error().

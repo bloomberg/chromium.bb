@@ -780,7 +780,7 @@ InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame) {
             .build();
     if (cachedResource->wasCanceled())
       resourceObject->setCanceled(true);
-    else if (cachedResource->getStatus() == Resource::LoadError)
+    else if (cachedResource->getStatus() == ResourceStatus::LoadError)
       resourceObject->setFailed(true);
     subresources->addItem(std::move(resourceObject));
   }

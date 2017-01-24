@@ -154,7 +154,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length) {
     // If decoding has already failed, there's no point in sending additional
     // data to the ImageResource.
     if (document()->cachedImageResourceDeprecated()->getStatus() !=
-        Resource::DecodeError)
+        ResourceStatus::DecodeError)
       document()->cachedImageResourceDeprecated()->appendData(data, length);
   }
 

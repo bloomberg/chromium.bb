@@ -139,7 +139,7 @@ bool FontResource::ensureCustomFontData() {
     if (m_fontData) {
       recordPackageFormatHistogram(packageFormatOf(data()));
     } else {
-      setStatus(DecodeError);
+      setStatus(ResourceStatus::DecodeError);
       recordPackageFormatHistogram(PackageFormatUnknown);
     }
   }

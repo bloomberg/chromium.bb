@@ -63,7 +63,7 @@ TEST_F(CSSPreloadScannerTest, ScanFromResourceClient) {
   KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
       CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
-  resource->setStatus(Resource::Pending);
+  resource->setStatus(ResourceStatus::Pending);
 
   PreloadRecordingCSSPreloaderResourceClient* resourceClient =
       new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
@@ -90,7 +90,7 @@ TEST_F(CSSPreloadScannerTest, DestroyClientBeforeDataSent) {
   KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
   Persistent<CSSStyleSheetResource> resource =
       CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
-  resource->setStatus(Resource::Pending);
+  resource->setStatus(ResourceStatus::Pending);
 
   new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
@@ -141,7 +141,7 @@ TEST_F(CSSPreloadScannerTest, DoNotExpectValidDocument) {
   KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
       CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
-  resource->setStatus(Resource::Pending);
+  resource->setStatus(ResourceStatus::Pending);
 
   PreloadRecordingCSSPreloaderResourceClient* resourceClient =
       new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);

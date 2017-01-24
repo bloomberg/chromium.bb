@@ -239,7 +239,7 @@ TEST(ImageResourceTest, MultipartImage) {
 
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::create(imageResource->getContent());
-  EXPECT_EQ(Resource::Pending, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
 
   // Send the multipart response. No image or data buffer is created. Note that
   // the response must be routed through ResourceLoader to ensure the load is
@@ -322,24 +322,24 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
 
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::create(imageResource->getContent());
-  EXPECT_EQ(Resource::Pending, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
 
   // The load should still be alive, but a timer should be started to cancel the
   // load inside removeClient().
   observer->removeAsObserver();
-  EXPECT_EQ(Resource::Pending, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
   EXPECT_TRUE(memoryCache()->resourceForURL(testURL));
 
   // Trigger the cancel timer, ensure the load was cancelled and the resource
   // was evicted from the cache.
   blink::testing::runPendingTasks();
-  EXPECT_EQ(Resource::LoadError, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::LoadError, imageResource->getStatus());
   EXPECT_FALSE(memoryCache()->resourceForURL(testURL));
 }
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   ImageResource* imageResource = ImageResource::create(ResourceRequest());
-  imageResource->setStatus(Resource::Pending);
+  imageResource->setStatus(ResourceStatus::Pending);
 
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::create(imageResource->getContent());
@@ -383,7 +383,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
 
 TEST(ImageResourceTest, UpdateBitmapImages) {
   ImageResource* imageResource = ImageResource::create(ResourceRequest());
-  imageResource->setStatus(Resource::Pending);
+  imageResource->setStatus(ResourceStatus::Pending);
 
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::create(imageResource->getContent());
@@ -410,7 +410,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   ResourceRequest request = ResourceRequest(testURL);
   request.setPreviewsState(WebURLRequest::ServerLoFiOn);
   ImageResource* imageResource = ImageResource::create(request);
-  imageResource->setStatus(Resource::Pending);
+  imageResource->setStatus(ResourceStatus::Pending);
 
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::create(imageResource->getContent());
@@ -569,13 +569,13 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
       0.0, kJpegImageSubrangeWithDimensionsLength,
       kJpegImageSubrangeWithDimensionsLength);
 
-  EXPECT_EQ(Resource::Cached, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
   EXPECT_TRUE(imageResource->isPlaceholder());
 
   imageResource->reloadIfLoFiOrPlaceholderImage(fetcher,
                                                 Resource::kReloadAlways);
 
-  EXPECT_EQ(Resource::Pending, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
   EXPECT_FALSE(imageResource->isPlaceholder());
   EXPECT_EQ(nullAtom,
             imageResource->resourceRequest().httpHeaderField("range"));
@@ -859,7 +859,7 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
           ResourceResponse(testURL, "image/jpeg", 18, nullAtom, String())),
       nullptr);
   imageResource->loader()->didReceiveData("notactuallyanimage", 18);
-  EXPECT_EQ(Resource::DecodeError, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::DecodeError, imageResource->getStatus());
   EXPECT_FALSE(imageResource->isLoading());
 }
 
@@ -887,7 +887,7 @@ TEST(ImageResourceTest, FetchDisallowPlaceholder) {
   imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
                                             sizeof(kJpegImage));
 
-  EXPECT_EQ(Resource::Cached, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
   EXPECT_EQ(sizeof(kJpegImage), imageResource->encodedSize());
   EXPECT_FALSE(imageResource->isPlaceholder());
   EXPECT_LT(0, observer->imageChangedCount());
@@ -989,7 +989,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderSuccessful) {
       0.0, kJpegImageSubrangeWithDimensionsLength,
       kJpegImageSubrangeWithDimensionsLength);
 
-  EXPECT_EQ(Resource::Cached, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
   EXPECT_EQ(kJpegImageSubrangeWithDimensionsLength,
             imageResource->encodedSize());
   EXPECT_TRUE(imageResource->isPlaceholder());
@@ -1031,7 +1031,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
 
   // The dimensions could not be extracted, so the full original image should be
   // loading.
-  EXPECT_EQ(Resource::Pending, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
   EXPECT_FALSE(imageResource->isPlaceholder());
   EXPECT_EQ(nullAtom,
             imageResource->resourceRequest().httpHeaderField("range"));
@@ -1048,7 +1048,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   imageResource->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
                                             sizeof(kJpegImage));
 
-  EXPECT_EQ(Resource::Cached, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
   EXPECT_EQ(sizeof(kJpegImage), imageResource->encodedSize());
   EXPECT_FALSE(imageResource->isPlaceholder());
   EXPECT_LT(0, observer->imageChangedCount());
@@ -1079,7 +1079,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderThenDisallowPlaceholder) {
   ImageResource* secondImageResource =
       ImageResource::fetch(nonPlaceholderRequest, fetcher);
   EXPECT_EQ(imageResource, secondImageResource);
-  EXPECT_EQ(Resource::Pending, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
   EXPECT_FALSE(imageResource->isPlaceholder());
   EXPECT_EQ(nullAtom,
             imageResource->resourceRequest().httpHeaderField("range"));
@@ -1121,7 +1121,7 @@ TEST(ImageResourceTest,
       0.0, kJpegImageSubrangeWithDimensionsLength,
       kJpegImageSubrangeWithDimensionsLength);
 
-  EXPECT_EQ(Resource::Cached, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Cached, imageResource->getStatus());
   EXPECT_EQ(kJpegImageSubrangeWithDimensionsLength,
             imageResource->encodedSize());
   EXPECT_TRUE(imageResource->isPlaceholder());
@@ -1132,7 +1132,7 @@ TEST(ImageResourceTest,
   ImageResource* secondImageResource =
       ImageResource::fetch(nonPlaceholderRequest, fetcher);
   EXPECT_EQ(imageResource, secondImageResource);
-  EXPECT_EQ(Resource::Pending, imageResource->getStatus());
+  EXPECT_EQ(ResourceStatus::Pending, imageResource->getStatus());
   EXPECT_FALSE(imageResource->isPlaceholder());
   EXPECT_EQ(nullAtom,
             imageResource->resourceRequest().httpHeaderField("range"));
@@ -1151,7 +1151,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
                                         "text/html");
   ResourceRequest request = ResourceRequest(testURL);
   ImageResource* imageResource = ImageResource::create(request);
-  imageResource->setStatus(Resource::Pending);
+  imageResource->setStatus(ResourceStatus::Pending);
 
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::create(imageResource->getContent());

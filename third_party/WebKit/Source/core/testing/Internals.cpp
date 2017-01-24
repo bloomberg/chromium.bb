@@ -418,7 +418,7 @@ bool Internals::isLoadingFromMemoryCache(const String& url) {
   const String cacheIdentifier = m_document->fetcher()->getCacheIdentifier();
   Resource* resource = memoryCache()->resourceForURL(
       m_document->completeURL(url), cacheIdentifier);
-  return resource && resource->getStatus() == Resource::Cached;
+  return resource && resource->getStatus() == ResourceStatus::Cached;
 }
 
 int Internals::getResourcePriority(const String& url, Document* document) {

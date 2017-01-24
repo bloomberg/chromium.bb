@@ -35,7 +35,7 @@ class ScriptStreamingTest : public ::testing::Test {
         m_resourceRequest("http://www.streaming-test.com/"),
         m_resource(ScriptResource::create(m_resourceRequest, "UTF-8")),
         m_pendingScript(PendingScript::create(0, m_resource.get())) {
-    m_resource->setStatus(Resource::Pending);
+    m_resource->setStatus(ResourceStatus::Pending);
     m_pendingScript = PendingScript::create(0, m_resource.get());
     ScriptStreamer::setSmallScriptThresholdForTesting(0);
   }
@@ -69,7 +69,7 @@ class ScriptStreamingTest : public ::testing::Test {
 
   void finish() {
     m_resource->finish();
-    m_resource->setStatus(Resource::Cached);
+    m_resource->setStatus(ResourceStatus::Cached);
   }
 
   void processTasksUntilStreamingComplete() {

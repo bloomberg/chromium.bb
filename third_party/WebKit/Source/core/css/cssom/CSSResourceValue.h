@@ -20,14 +20,14 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
 
   const String state() const {
     switch (status()) {
-      case Resource::Status::NotStarted:
+      case ResourceStatus::NotStarted:
         return "unloaded";
-      case Resource::Status::Pending:
+      case ResourceStatus::Pending:
         return "loading";
-      case Resource::Status::Cached:
+      case ResourceStatus::Cached:
         return "loaded";
-      case Resource::Status::LoadError:
-      case Resource::Status::DecodeError:
+      case ResourceStatus::LoadError:
+      case ResourceStatus::DecodeError:
         return "error";
       default:
         NOTREACHED();
@@ -40,7 +40,7 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
  protected:
   CSSResourceValue() {}
 
-  virtual Resource::Status status() const = 0;
+  virtual ResourceStatus status() const = 0;
 };
 
 }  // namespace blink

@@ -427,7 +427,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   request1.setHTTPMethod(HTTPNames::POST);
   RawResource* resource1 =
       RawResource::create(ResourceRequest(request1.url()), Resource::Raw);
-  resource1->setStatus(Resource::Pending);
+  resource1->setStatus(ResourceStatus::Pending);
   memoryCache()->add(resource1);
 
   ResourceRequest request2(KURL(ParsedURLString, kResourceURL));

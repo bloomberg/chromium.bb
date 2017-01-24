@@ -400,7 +400,7 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior,
   if (m_loadingImageDocument && updateBehavior != UpdateForcedReload) {
     ImageResource* imageResource =
         ImageResource::create(imageSourceToKURL(m_element->imageSourceURL()));
-    imageResource->setStatus(Resource::Pending);
+    imageResource->setStatus(ResourceStatus::Pending);
     m_imageResourceForImageDocument = imageResource;
     setImage(imageResource->getContent());
     return;

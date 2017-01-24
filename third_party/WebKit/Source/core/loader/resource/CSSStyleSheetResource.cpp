@@ -114,7 +114,7 @@ const String CSSStyleSheetResource::sheetText(
   if (!m_decodedSheetText.isNull()) {
     // We should have the decoded sheet text cached when the resource is fully
     // loaded.
-    DCHECK_EQ(getStatus(), Resource::Cached);
+    DCHECK_EQ(getStatus(), ResourceStatus::Cached);
 
     return m_decodedSheetText;
   }

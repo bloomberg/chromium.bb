@@ -62,9 +62,9 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
 
   virtual bool isCachePending() const { return m_imageValue->isCachePending(); }
 
-  Resource::Status status() const override {
+  ResourceStatus status() const override {
     if (isCachePending())
-      return Resource::Status::NotStarted;
+      return ResourceStatus::NotStarted;
     return m_imageValue->cachedImage()->cachedImage()->getStatus();
   }
 

@@ -86,15 +86,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   };
   static const int kLastResourceType = Mock + 1;
 
-  using Status = ResourceStatus;
-
-  // TODO(hiroshige): Remove the following declarations.
-  static constexpr Status NotStarted = ResourceStatus::NotStarted;
-  static constexpr Status Pending = ResourceStatus::Pending;
-  static constexpr Status Cached = ResourceStatus::Cached;
-  static constexpr Status LoadError = ResourceStatus::LoadError;
-  static constexpr Status DecodeError = ResourceStatus::DecodeError;
-
   // Whether a resource client for a preload should mark the preload as
   // referenced.
   enum PreloadReferencePolicy {
@@ -172,8 +163,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   };
   PreloadResult getPreloadResult() const { return m_preloadResult; }
 
-  Status getStatus() const { return m_status; }
-  void setStatus(Status status) { m_status = status; }
+  ResourceStatus getStatus() const { return m_status; }
+  void setStatus(ResourceStatus status) { m_status = status; }
 
   size_t size() const { return encodedSize() + decodedSize() + overheadSize(); }
 
@@ -197,10 +188,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   size_t decodedSize() const { return m_decodedSize; }
   size_t overheadSize() const { return m_overheadSize; }
 
-  bool isLoaded() const { return m_status > Pending; }
+  bool isLoaded() const { return m_status > ResourceStatus::Pending; }
 
-  bool isLoading() const { return m_status == Pending; }
-  bool stillNeedsLoad() const { return m_status < Pending; }
+  bool isLoading() const { return m_status == ResourceStatus::Pending; }
+  bool stillNeedsLoad() const { return m_status < ResourceStatus::Pending; }
 
   void setLoader(ResourceLoader*);
   ResourceLoader* loader() const { return m_loader.get(); }
@@ -245,7 +236,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   bool wasCanceled() const { return m_error.isCancellation(); }
   bool errorOccurred() const {
-    return m_status == LoadError || m_status == DecodeError;
+    return m_status == ResourceStatus::LoadError ||
+           m_status == ResourceStatus::DecodeError;
   }
   bool loadFailedOrCanceled() const { return !m_error.isNull(); }
 
@@ -462,7 +454,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   PreloadResult m_preloadResult;
   Type m_type;
-  Status m_status;
+  ResourceStatus m_status;
 
   bool m_needsSynchronousCacheHit;
   bool m_linkPreload;

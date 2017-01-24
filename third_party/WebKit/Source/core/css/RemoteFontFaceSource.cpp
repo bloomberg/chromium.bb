@@ -114,13 +114,13 @@ void RemoteFontFaceSource::notifyFinished(Resource*) {
                                     : FontLoadHistograms::FromNetwork);
   m_histograms.recordRemoteFont(m_font.get(), m_isInterventionTriggered);
   m_histograms.fontLoaded(m_font->isCORSFailed(),
-                          m_font->getStatus() == Resource::LoadError,
+                          m_font->getStatus() == ResourceStatus::LoadError,
                           m_isInterventionTriggered);
 
   m_font->ensureCustomFontData();
   // FIXME: Provide more useful message such as OTS rejection reason.
   // See crbug.com/97467
-  if (m_font->getStatus() == Resource::DecodeError &&
+  if (m_font->getStatus() == ResourceStatus::DecodeError &&
       m_fontSelector->document()) {
     m_fontSelector->document()->addConsoleMessage(ConsoleMessage::create(
         OtherMessageSource, WarningMessageLevel,

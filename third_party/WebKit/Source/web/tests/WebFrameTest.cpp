@@ -10585,7 +10585,7 @@ TEST_F(WebFrameTest, ImageDocumentDecodeError) {
   Document* document =
       toLocalFrame(helper.webView()->page()->mainFrame())->document();
   EXPECT_TRUE(document->isImageDocument());
-  EXPECT_EQ(Resource::DecodeError,
+  EXPECT_EQ(ResourceStatus::DecodeError,
             toImageDocument(document)->cachedImage()->getStatus());
 }
 

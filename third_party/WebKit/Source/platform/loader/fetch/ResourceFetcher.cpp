@@ -292,7 +292,7 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier,
                                          ResourceLoadStartType type,
                                          bool isStaticData) {
   if (type == ResourceLoadingFromCache &&
-      resource->getStatus() == Resource::Cached &&
+      resource->getStatus() == ResourceStatus::Cached &&
       !m_validatedURLs.contains(resource->url())) {
     context().dispatchDidLoadResourceFromMemoryCache(
         identifier, resource, request.resourceRequest().frameType(),
