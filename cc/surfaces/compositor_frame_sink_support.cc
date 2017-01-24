@@ -61,27 +61,13 @@ void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalFrameId& local_frame_id,
     CompositorFrame frame) {
-  if (local_frame_id_ != local_frame_id) {
-    local_frame_id_ = local_frame_id;
-    if (display_ && !frame.render_pass_list.empty()) {
-      gfx::Size frame_size = frame.render_pass_list[0]->output_rect.size();
-      // TODO(piman, fsamuel): We will likely want to revisit this because some
-      // clients may want finer control over the Display sizing - since it
-      // really means the actual size of the native window (Linux/Win Aura) or
-      // display (Ozone). We may need to either prevent or gutter Display frames
-      // until there is a correctly-sized top-level CompositorFrame available
-      // (see ui::Compositor::DisableSwapUntilResize). We might want to resize
-      // Display earlier.
-      display_->Resize(frame_size);
-    }
-  }
   ++ack_pending_count_;
   surface_factory_.SubmitCompositorFrame(
-      local_frame_id_, std::move(frame),
+      local_frame_id, std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()));
   if (display_) {
-    display_->SetLocalFrameId(local_frame_id_,
+    display_->SetLocalFrameId(local_frame_id,
                               frame.metadata.device_scale_factor);
   }
 }

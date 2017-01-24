@@ -228,6 +228,7 @@ class WindowServer : public ServerWindowDelegate,
 
   // ServerWindowDelegate:
   cc::mojom::DisplayCompositor* GetDisplayCompositor() override;
+  mojo::AssociatedGroup* GetDisplayCompositorAssociatedGroup() override;
 
   // UserDisplayManagerDelegate:
   bool GetFrameDecorationsForUser(

@@ -81,10 +81,11 @@ class DisplayCompositor : public cc::SurfaceObserver,
   void CreateDisplayCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkAssociatedRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateRequest display_request) override;
+      cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
+      override;
   void CreateOffscreenCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       cc::mojom::MojoCompositorFrameSinkRequest request,

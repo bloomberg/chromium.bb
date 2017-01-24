@@ -14,11 +14,9 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     std::unique_ptr<cc::Display> display,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
-    cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest
         compositor_frame_sink_private_request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client,
-    cc::mojom::DisplayPrivateRequest display_private_request)
+    cc::mojom::MojoCompositorFrameSinkClientPtr client)
     : display_compositor_(display_compositor),
       support_(this,
                display_compositor->manager(),
@@ -27,14 +25,9 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
                std::move(begin_frame_source)),
       surface_tracker_(frame_sink_id),
       client_(std::move(client)),
-      binding_(this, std::move(request)),
       compositor_frame_sink_private_binding_(
           this,
-          std::move(compositor_frame_sink_private_request)),
-      display_private_binding_(this, std::move(display_private_request)) {
-  binding_.set_connection_error_handler(base::Bind(
-      &GpuCompositorFrameSink::OnClientConnectionLost, base::Unretained(this)));
-
+          std::move(compositor_frame_sink_private_request)) {
   compositor_frame_sink_private_binding_.set_connection_error_handler(
       base::Bind(&GpuCompositorFrameSink::OnPrivateConnectionLost,
                  base::Unretained(this)));
@@ -122,27 +115,6 @@ void GpuCompositorFrameSink::AddChildFrameSink(
 void GpuCompositorFrameSink::RemoveChildFrameSink(
     const cc::FrameSinkId& child_frame_sink_id) {
   support_.RemoveChildFrameSink(child_frame_sink_id);
-}
-
-void GpuCompositorFrameSink::SetDisplayVisible(bool visible) {
-  if (support_.display())
-    support_.display()->SetVisible(visible);
-}
-
-void GpuCompositorFrameSink::ResizeDisplay(const gfx::Size& size) {
-  if (support_.display())
-    support_.display()->Resize(size);
-}
-
-void GpuCompositorFrameSink::SetDisplayColorSpace(
-    const gfx::ColorSpace& color_space) {
-  if (support_.display())
-    support_.display()->SetColorSpace(color_space);
-}
-
-void GpuCompositorFrameSink::SetOutputIsSecure(bool secure) {
-  if (support_.display())
-    support_.display()->SetOutputIsSecure(secure);
 }
 
 void GpuCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {

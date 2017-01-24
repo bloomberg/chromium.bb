@@ -81,8 +81,8 @@ class FrameGenerator : public ServerWindowTracker,
   gfx::Size last_submitted_frame_size_;
   cc::LocalFrameId local_frame_id_;
   cc::SurfaceIdAllocator id_allocator_;
-  cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
-  cc::mojom::DisplayPrivatePtr display_private_;
+  cc::mojom::MojoCompositorFrameSinkAssociatedPtr compositor_frame_sink_;
+  cc::mojom::DisplayPrivateAssociatedPtr display_private_;
 
   cc::SurfaceId window_manager_surface_id_;
 

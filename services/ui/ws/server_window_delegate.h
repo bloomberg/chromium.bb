@@ -7,17 +7,11 @@
 
 #include <memory>
 
+#include "cc/ipc/display_compositor.mojom.h"
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
-namespace cc {
-namespace mojom {
-class DisplayCompositor;
-}
-}
-
 namespace ui {
-
 
 namespace ws {
 
@@ -28,6 +22,12 @@ class ServerWindowDelegate {
   // Returns a display compositor interface pointer. There is only one
   // DisplayCompositor running in the system.
   virtual cc::mojom::DisplayCompositor* GetDisplayCompositor() = 0;
+
+  // Returns the AssociatedGroup of DisplayCompositor which is used for
+  // creating interfaces that share the same MessagePipe with DisplayCompositor.
+  // Messages from interfaces that use the same AssociatedGroup will be
+  // delivered in the same order they were sent.
+  virtual mojo::AssociatedGroup* GetDisplayCompositorAssociatedGroup() = 0;
 
   // Returns the root of the window tree to which this |window| is attached.
   // Returns null if this window is not attached up through to a root window.

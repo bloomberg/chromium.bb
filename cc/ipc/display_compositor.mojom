@@ -41,10 +41,10 @@ interface DisplayCompositor {
   CreateDisplayCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
       gpu.mojom.SurfaceHandle widget,
-      cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
+      associated cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
       cc.mojom.MojoCompositorFrameSinkPrivate& compositor_frame_sink_private,
       cc.mojom.MojoCompositorFrameSinkClient compositor_frame_sink_client,
-      DisplayPrivate& display_private);
+      associated DisplayPrivate& display_private);
 
   // CreateOffscreenCompositorFrameSink is used by unprivileged clients.
   // An off screen CompositorFrameSink only submits frames to a buffer instead

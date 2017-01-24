@@ -21,30 +21,23 @@ namespace cc {
 class Display;
 }
 
-namespace gfx {
-class Size;
-class ColorSpace;
-}
-
 namespace ui {
 
 class DisplayCompositor;
 
 // Server side representation of a WindowSurface.
-class GpuCompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
-                               public cc::mojom::MojoCompositorFrameSink,
-                               public cc::mojom::MojoCompositorFrameSinkPrivate,
-                               public cc::mojom::DisplayPrivate {
+class GpuCompositorFrameSink
+    : public cc::CompositorFrameSinkSupportClient,
+      public cc::mojom::MojoCompositorFrameSink,
+      public cc::mojom::MojoCompositorFrameSinkPrivate {
  public:
   GpuCompositorFrameSink(
       DisplayCompositor* display_compositor,
       const cc::FrameSinkId& frame_sink_id,
       std::unique_ptr<cc::Display> display,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateRequest display_private_request);
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   ~GpuCompositorFrameSink() override;
 
@@ -62,11 +55,12 @@ class GpuCompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
   void RemoveChildFrameSink(
       const cc::FrameSinkId& child_frame_sink_id) override;
 
-  // cc::mojom::DisplayPrivate:
-  void SetDisplayVisible(bool visible) override;
-  void ResizeDisplay(const gfx::Size& size) override;
-  void SetDisplayColorSpace(const gfx::ColorSpace& color_space) override;
-  void SetOutputIsSecure(bool secure) override;
+ protected:
+  void OnClientConnectionLost();
+  void OnPrivateConnectionLost();
+
+  DisplayCompositor* const display_compositor_;
+  cc::CompositorFrameSinkSupport support_;
 
  private:
   // cc::CompositorFrameSinkSupportClient implementation:
@@ -74,13 +68,6 @@ class GpuCompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface() override;
-
-  void OnClientConnectionLost();
-  void OnPrivateConnectionLost();
-
-  DisplayCompositor* const display_compositor_;
-
-  cc::CompositorFrameSinkSupport support_;
 
   // Track the surface references for the surface corresponding to this
   // compositor frame sink.
@@ -90,10 +77,8 @@ class GpuCompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
   bool private_connection_lost_ = false;
 
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
-  mojo::Binding<cc::mojom::MojoCompositorFrameSink> binding_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkPrivate>
       compositor_frame_sink_private_binding_;
-  mojo::Binding<cc::mojom::DisplayPrivate> display_private_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
 };

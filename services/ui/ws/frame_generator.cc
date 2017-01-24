@@ -41,11 +41,15 @@ FrameGenerator::~FrameGenerator() {
 void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   DCHECK_NE(gfx::kNullAcceleratedWidget, widget);
-  cc::mojom::MojoCompositorFrameSinkRequest request(&compositor_frame_sink_);
-  cc::mojom::DisplayPrivateRequest display_private_request(&display_private_);
+  auto associated_group =
+      root_window_->delegate()->GetDisplayCompositorAssociatedGroup();
+  cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request =
+      mojo::MakeRequest(&compositor_frame_sink_, associated_group);
+  cc::mojom::DisplayPrivateAssociatedRequest display_request =
+      mojo::MakeRequest(&display_private_, associated_group);
   root_window_->CreateDisplayCompositorFrameSink(
-      widget, std::move(request), binding_.CreateInterfacePtrAndBind(),
-      std::move(display_private_request));
+      widget, std::move(sink_request), binding_.CreateInterfacePtrAndBind(),
+      std::move(display_request));
   // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
   // even when we don't need it. Once surface ID propagation work is done,
   // this will not be necessary because FrameGenerator will only need a
@@ -79,8 +83,11 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
     if (!frame.render_pass_list.empty())
       frame_size = frame.render_pass_list[0]->output_rect.size();
 
-    if (!local_frame_id_.is_valid() || frame_size != last_submitted_frame_size_)
+    if (!local_frame_id_.is_valid() ||
+        frame_size != last_submitted_frame_size_) {
       local_frame_id_ = id_allocator_.GenerateId();
+      display_private_->ResizeDisplay(frame_size);
+    }
 
     compositor_frame_sink_->SubmitCompositorFrame(local_frame_id_,
                                                   std::move(frame));

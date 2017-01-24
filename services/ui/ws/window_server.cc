@@ -532,6 +532,10 @@ cc::mojom::DisplayCompositor* WindowServer::GetDisplayCompositor() {
   return display_compositor_.get();
 }
 
+mojo::AssociatedGroup* WindowServer::GetDisplayCompositorAssociatedGroup() {
+  return display_compositor_.associated_group();
+}
+
 bool WindowServer::GetFrameDecorationsForUser(
     const UserId& user_id,
     mojom::FrameDecorationValuesPtr* values) {

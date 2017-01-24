@@ -23,20 +23,72 @@ ServerWindowCompositorFrameSinkManager::
 
 void ServerWindowCompositorFrameSinkManager::CreateDisplayCompositorFrameSink(
     gfx::AcceleratedWidget widget,
-    cc::mojom::MojoCompositorFrameSinkRequest request,
+    cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
-    cc::mojom::DisplayPrivateRequest display_private_request) {
-  CreateCompositorFrameSinkInternal(widget, std::move(request),
-                                    std::move(client),
-                                    std::move(display_private_request));
+    cc::mojom::DisplayPrivateAssociatedRequest display_request) {
+  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()), 0);
+
+  if (!frame_sink_data_)
+    frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
+
+  frame_sink_data_->frame_sink_id = frame_sink_id;
+  cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request;
+  if (frame_sink_data_->pending_compositor_frame_sink_request.is_pending()) {
+    private_request =
+        std::move(frame_sink_data_->pending_compositor_frame_sink_request);
+  } else {
+    private_request =
+        mojo::MakeRequest(&frame_sink_data_->compositor_frame_sink);
+  }
+
+  // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
+  // or Android. We should instead use GpuSurfaceTracker here on those
+  // platforms.
+  window_->delegate()->GetDisplayCompositor()->CreateDisplayCompositorFrameSink(
+      frame_sink_id, widget, std::move(sink_request),
+      std::move(private_request), std::move(client),
+      std::move(display_request));
+
+  if (window_->parent()) {
+    ServerWindow* root_window = window_->GetRoot();
+    if (root_window) {
+      root_window->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
+          frame_sink_id);
+    }
+  }
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateOffscreenCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
-  CreateCompositorFrameSinkInternal(gfx::kNullAcceleratedWidget,
-                                    std::move(request), std::move(client),
-                                    nullptr);
+  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()), 0);
+
+  if (!frame_sink_data_)
+    frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
+
+  frame_sink_data_->frame_sink_id = frame_sink_id;
+  cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request;
+  if (frame_sink_data_->pending_compositor_frame_sink_request.is_pending()) {
+    private_request =
+        std::move(frame_sink_data_->pending_compositor_frame_sink_request);
+  } else {
+    private_request =
+        mojo::MakeRequest(&frame_sink_data_->compositor_frame_sink);
+  }
+
+  window_->delegate()
+      ->GetDisplayCompositor()
+      ->CreateOffscreenCompositorFrameSink(frame_sink_id, std::move(request),
+                                           std::move(private_request),
+                                           std::move(client));
+
+  if (window_->parent()) {
+    ServerWindow* root_window = window_->GetRoot();
+    if (root_window) {
+      root_window->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
+          frame_sink_id);
+    }
+  }
 }
 
 void ServerWindowCompositorFrameSinkManager::AddChildFrameSinkId(
@@ -97,53 +149,6 @@ void ServerWindowCompositorFrameSinkManager::OnRootChanged(
   if (new_root) {
     new_root->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
         frame_sink_data_->frame_sink_id);
-  }
-}
-
-void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSinkInternal(
-    gfx::AcceleratedWidget widget,
-    cc::mojom::MojoCompositorFrameSinkRequest request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client,
-    cc::mojom::DisplayPrivateRequest display_private_request) {
-  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()), 0);
-
-  if (!frame_sink_data_)
-    frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
-
-  frame_sink_data_->frame_sink_id = frame_sink_id;
-  cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request;
-  if (frame_sink_data_->pending_compositor_frame_sink_request.is_pending()) {
-    private_request =
-        std::move(frame_sink_data_->pending_compositor_frame_sink_request);
-  } else {
-    private_request =
-        mojo::MakeRequest(&frame_sink_data_->compositor_frame_sink);
-  }
-  if (widget != gfx::kNullAcceleratedWidget) {
-    // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
-    // or Android. We should instead use GpuSurfaceTracker here on those
-    // platforms.
-    window_->delegate()
-        ->GetDisplayCompositor()
-        ->CreateDisplayCompositorFrameSink(
-            frame_sink_id, widget, std::move(request),
-            std::move(private_request), std::move(client),
-            std::move(display_private_request));
-  } else {
-    DCHECK(display_private_request.Equals(nullptr));
-    window_->delegate()
-        ->GetDisplayCompositor()
-        ->CreateOffscreenCompositorFrameSink(frame_sink_id, std::move(request),
-                                             std::move(private_request),
-                                             std::move(client));
-  }
-
-  if (window_->parent()) {
-    ServerWindow* root_window = window_->GetRoot();
-    if (root_window) {
-      root_window->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
-          frame_sink_id);
-    }
   }
 }
 

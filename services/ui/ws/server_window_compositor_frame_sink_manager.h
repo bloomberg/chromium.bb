@@ -45,9 +45,9 @@ class ServerWindowCompositorFrameSinkManager {
   // existing one of the specified type.
   void CreateDisplayCompositorFrameSink(
       gfx::AcceleratedWidget widget,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateRequest display_private_request);
+      cc::mojom::DisplayPrivateAssociatedRequest display_request);
 
   void CreateOffscreenCompositorFrameSink(
       cc::mojom::MojoCompositorFrameSinkRequest request,
@@ -76,12 +76,6 @@ class ServerWindowCompositorFrameSinkManager {
  private:
   friend class ServerWindowCompositorFrameSinkManagerTestApi;
   friend class ServerWindowCompositorFrameSink;
-
-  void CreateCompositorFrameSinkInternal(
-      gfx::AcceleratedWidget widget,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateRequest display_private_request);
 
   ServerWindow* window_;
 

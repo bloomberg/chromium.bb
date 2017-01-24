@@ -83,7 +83,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
   std::unique_ptr<Display> display_;
 
-  LocalFrameId local_frame_id_;
   SurfaceFactory surface_factory_;
   // Counts the number of CompositorFrames that have been submitted and have not
   // yet received an ACK.

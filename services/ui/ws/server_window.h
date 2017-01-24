@@ -62,9 +62,9 @@ class ServerWindow {
   // existing.
   void CreateDisplayCompositorFrameSink(
       gfx::AcceleratedWidget widget,
-      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkAssociatedRequest sink_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
-      cc::mojom::DisplayPrivateRequest display_private_request);
+      cc::mojom::DisplayPrivateAssociatedRequest display_request);
 
   void CreateOffscreenCompositorFrameSink(
       cc::mojom::MojoCompositorFrameSinkRequest request,
