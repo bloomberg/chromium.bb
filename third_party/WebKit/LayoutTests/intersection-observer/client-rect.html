@@ -1,30 +1,48 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
-<script src="../resources/intersection-observer-helper-functions.js"></script>
-<iframe id="iframe" srcdoc="<div id='target'><div style='width:1000px;height:1000px'></div></div>"></iframe>
-<script>
-description("Ensure that change.boundingClientRect matches change.target.getBoundingClientRect() for a clipped element with overflow inside an iframe.");
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="./resources/intersection-observer-test-utils.js"></script>
 
-var iframe = document.getElementById("iframe");
-var entries = [];
+<style>
+pre, #log {
+  position: absolute;
+  top: 0;
+  left: 200px;
+}
+iframe {
+  width: 180px;
+  height: 100px;
+}
+</style>
+
+<iframe id="iframe" srcdoc="<div id='target' style='width:1000px;height:1000px;'></div>"></iframe>
+
+<script>
 var target;
+var entries = [];
+var observer;
+var iframe = document.getElementById("iframe");
 
 iframe.onload = function() {
-  target = iframe.contentDocument.getElementById("target");
-  new IntersectionObserver((changes) => {
-    entries.push(...changes);
-  }).observe(target);
-  waitForNotification(step0);
+  runTestCycle(function() {
+    assert_equals(window.innerWidth, 800, "Window must be 800 pixels wide.");
+    assert_equals(window.innerHeight, 600, "Window must be 600 pixels high.");
+
+    target = iframe.contentDocument.getElementById("target");
+    assert_true(!!target, "Target element exists.");
+    observer = new IntersectionObserver(function(changes) {
+      entries = entries.concat(changes);
+    });
+    observer.observe(target);
+    entries = entries.concat(observer.takeRecords());
+    assert_equals(entries.length, 0, "No initial notifications.");
+    runTestCycle(test0, "First rAF should generate notification.");
+  }, "IntersectionObserverEntry.boundingClientRect should match target.boundingClientRect()");
 };
 
-function step0() {
-  shouldBeEqualToNumber("entries.length", 1);
-  if (entries.length > 0) {
-    shouldBe("entries[0].boundingClientRect.top", "target.getBoundingClientRect().top");
-    shouldBe("entries[0].boundingClientRect.left", "target.getBoundingClientRect().left");
-    shouldBe("entries[0].boundingClientRect.width", "target.getBoundingClientRect().width");
-    shouldBe("entries[0].boundingClientRect.height", "target.getBoundingClientRect().height");
-  }
-  finishJSTest();
+function test0() {
+  assert_equals(entries.length, 1, "One notification.");
+  var bcr = target.getBoundingClientRect();
+  checkLastEntry(entries, 0, [bcr.left, bcr.right, bcr.top, bcr.bottom]);
 }
 </script>

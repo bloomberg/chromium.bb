@@ -1,78 +1,70 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
-<script src="../resources/intersection-observer-helper-functions.js"></script>
-<div style="width:100%; height:700px;"></div>
-<iframe id="target-iframe" src="../resources/intersection-observer-subframe.html" style="height: 100px; overflow-y: scroll"></iframe>
-<div style="width:100%; height:700px;"></div>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="./resources/intersection-observer-test-utils.js"></script>
+
+<style>
+pre, #log {
+  position: absolute;
+  top: 0;
+  left: 200px;
+}
+.spacer {
+  height: 700px;
+}
+iframe {
+  height: 100px;
+  width: 150px;
+}
+</style>
+
+<div class="spacer"></div>
+<iframe id="target-iframe" src="resources/iframe-no-root-subframe.html"></iframe>
+<div class="spacer"></div>
 
 <script>
-description("Simple intersection observer test with no explicit root and target in an iframe.");
-var entries = [];
-var observer = new IntersectionObserver(changes => { entries = entries.concat(changes) }, {});
-var targetIframe = document.getElementById("target-iframe");
+var iframe = document.getElementById("target-iframe");
 var target;
-var iframeScroller;
+var entries = [];
 
-targetIframe.onload = function() {
-  target = targetIframe.contentDocument.getElementById("target");
-  iframeScroller = targetIframe.contentDocument.scrollingElement;
-  observer.observe(target);
-  entries = entries.concat(observer.takeRecords());
-  shouldBeEqualToNumber("entries.length", 0);
-  waitForNotification(step0);
-}
+iframe.onload = function() {
+  runTestCycle(function() {
+    assert_true(!!iframe, "iframe exists");
+    assert_equals(window.innerWidth, 800, "Window must be 800 pixels wide.");
+    assert_equals(window.innerHeight, 600, "Window must be 600 pixels high.");
+
+    target = iframe.contentDocument.getElementById("target");
+    assert_true(!!target, "Target element exists.");
+    var observer = new IntersectionObserver(function(changes) {
+      entries = entries.concat(changes)
+    });
+    observer.observe(target);
+    entries = entries.concat(observer.takeRecords());
+    assert_equals(entries.length, 0, "No initial notifications.");
+    runTestCycle(step0, "No notifications after first rAF.");
+  }, "Observer with the implicit root; target in a same-origin iframe.");
+};
 
 function step0() {
-  shouldBeEqualToNumber("entries.length", 0);
   document.scrollingElement.scrollTop = 200;
-  waitForNotification(step1);
+  runTestCycle(step1, "document.scrollingElement.scrollTop = 200");
+  assert_equals(entries.length, 0, "entries.length == 0");
 }
 
 function step1() {
-  shouldBeEqualToNumber("entries.length", 0);
-  iframeScroller.scrollTop = 250;
-  waitForNotification(step2);
+  iframe.contentDocument.scrollingElement.scrollTop = 250;
+  runTestCycle(step2, "iframe.contentDocument.scrollingElement.scrollTop = 250");
+  assert_equals(entries.length, 0, "entries.length == 0");
 }
 
 function step2() {
-  shouldBeEqualToNumber("entries.length", 1);
-  if (entries.length > 0) {
-    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 8);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 108);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.top", -42);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 58);
-    shouldBeEqualToNumber("entries[0].intersectionRect.left", 8);
-    shouldBeEqualToNumber("entries[0].intersectionRect.right", 108);
-    shouldBeEqualToNumber("entries[0].intersectionRect.top", 0);
-    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 58);
-    shouldBeEqualToNumber("entries[0].rootBounds.left", 0);
-    shouldBeEqualToNumber("entries[0].rootBounds.right", 785);
-    shouldBeEqualToNumber("entries[0].rootBounds.top", 0);
-    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 600);
-    shouldEvaluateToSameObject("entries[0].target", target);
-  }
   document.scrollingElement.scrollTop = 100;
-  waitForNotification(step3);
+  runTestCycle(step3, "document.scrollingElement.scrollTop = 100");
+  checkLastEntry(entries, 0, [8, 108, -42, 58, 8, 108, 0, 58, 0, 785, 0, 600, target]);
 }
 
 function step3() {
-  shouldBeEqualToNumber("entries.length", 2);
-  if (entries.length > 1) {
-    shouldBeEqualToNumber("entries[1].boundingClientRect.left", 8);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.right", 108);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.top", -42);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", 58);
-    shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.left", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.right", 785);
-    shouldBeEqualToNumber("entries[1].rootBounds.top", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.bottom", 600);
-    shouldEvaluateToSameObject("entries[1].target", target);
-  }
-  finishJSTest();
+  checkLastEntry(entries, 1, [8, 108, -42, 58, 0, 0, 0, 0, 0, 785, 0, 600, target]);
   document.scrollingElement.scrollTop = 0;
 }
 </script>

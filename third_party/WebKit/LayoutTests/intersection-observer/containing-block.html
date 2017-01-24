@@ -1,9 +1,16 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
-<script src="../resources/intersection-observer-helper-functions.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="./resources/intersection-observer-test-utils.js"></script>
+
 <style>
+pre, #log {
+  position: absolute;
+  top: 0;
+  left: 200px;
+}
 #root {
-  width: 200px;
+  width: 170px;
   height: 200px;
   overflow-y: scroll;
 }
@@ -14,79 +21,56 @@
   position: absolute;
 }
 </style>
+
 <div id="root" style="position: absolute">
   <div id="target" style="left: 50px; top: 250px"></div>
 </div>
 
 <script>
-description("Test that no notifications are generated when root is not in the containing block chain of target.");
-var root = document.getElementById("root");
-var target = document.getElementById("target");
 var entries = [];
+var root, target;
 
-var observer = new IntersectionObserver(
-    changes => { entries.push(...changes) },
-    { root: root }
-);
+runTestCycle(function() {
+  assert_equals(window.innerWidth, 800, "Window must be 800 pixels wide.");
+  assert_equals(window.innerHeight, 600, "Window must be 600 pixels high.");
 
-onload = function() {
+  root = document.getElementById("root");
+  assert_true(!!root, "root element exists.");
+  target = document.getElementById("target");
+  assert_true(!!target, "target element exists.");
+  var observer = new IntersectionObserver(function(changes) {
+    entries = entries.concat(changes);
+  }, { root: root });
   observer.observe(target);
-  shouldBeEqualToNumber("entries.length", 0);
+  entries = entries.concat(observer.takeRecords());
+  assert_equals(entries.length, 0, "No initial notifications.");
   target.style.top = "10px";
-  waitForNotification(step1);
-};
+  runTestCycle(test1, "In containing block and intersecting.");
+}, "IntersectionObserver should only report intersections if root is a containing block ancestor of target.");
 
-function step1() {
-  shouldBeEqualToNumber("entries.length", 1);
-  if (entries.length > 0) {
-    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 58);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 158);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.top", 18);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 118);
-    shouldBeEqualToNumber("entries[0].intersectionRect.left", 58);
-    shouldBeEqualToNumber("entries[0].intersectionRect.right", 158);
-    shouldBeEqualToNumber("entries[0].intersectionRect.top", 18);
-    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 118);
-    shouldBeEqualToNumber("entries[0].rootBounds.left", 8);
-    shouldBeEqualToNumber("entries[0].rootBounds.right", 193);
-    shouldBeEqualToNumber("entries[0].rootBounds.top", 8);
-    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 208);
-    shouldEvaluateToSameObject("entries[0].target", target);
-  }
+function test1() {
+  runTestCycle(test2, "In containing block and not intersecting.");
+  var rootBounds = contentBounds(root);
+  checkLastEntry(entries, 0, [58, 158, 18, 118, 58, 158, 18, 118].concat(rootBounds));
   target.style.top = "250px";
-  waitForNotification(step2);
 }
 
-function step2() {
-  shouldBeEqualToNumber("entries.length", 2);
-  if (entries.length > 1) {
-    shouldBeEqualToNumber("entries[1].boundingClientRect.left", 58);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.right", 158);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.top", 258);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", 358);
-    shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.left", 8);
-    shouldBeEqualToNumber("entries[1].rootBounds.right", 193);
-    shouldBeEqualToNumber("entries[1].rootBounds.top", 8);
-    shouldBeEqualToNumber("entries[1].rootBounds.bottom", 208);
-    shouldEvaluateToSameObject("entries[1].target", target);
-  }
+function test2() {
+  runTestCycle(test3, "Not in containing block and intersecting.");
+  var rootBounds = contentBounds(root);
+  checkLastEntry(entries, 1, [58, 158, 258, 358, 0, 0, 0, 0].concat(rootBounds));
   root.style.position = "static";
   target.style.top = "10px";
-  waitForNotification(step3);
 }
 
-function step3() {
-  shouldBeEqualToNumber("entries.length", 2);
+function test3() {
+  runTestCycle(test4, "Not in containing block and not intersecting.");
+  checkLastEntry(entries, 1);
   target.style.top = "250px";
-  waitForNotification(step4);
 }
 
-function step4() {
-  shouldBeEqualToNumber("entries.length", 2);
-  finishJSTest();
+function test4() {
+  checkLastEntry(entries, 1);
+  target.style.top = "0";
 }
 </script>

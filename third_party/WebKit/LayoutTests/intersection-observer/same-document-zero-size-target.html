@@ -1,68 +1,61 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
-<script src="../resources/intersection-observer-helper-functions.js"></script>
-<div style="width:100%; height:700px;"></div>
-<div id="target" style="background-color: green; width:0px; height:0px"></div>
-<div style="width:100%; height:700px;"></div>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="./resources/intersection-observer-test-utils.js"></script>
+
+<style>
+pre, #log {
+  position: absolute;
+  top: 0;
+  left: 200px;
+}
+.spacer {
+  height: 700px;
+}
+#target {
+  width: 0px;
+  height: 0px;
+  background-color: green;
+}
+</style>
+
+<div class="spacer"></div>
+<div id="target"></div>
+<div class="spacer"></div>
 
 <script>
-description("Intersection observer test with zero-size target element.");
-var target = document.getElementById("target");
 var entries = [];
-var observer = new IntersectionObserver(changes => { entries = entries.concat(changes) }, {});
+var target;
 
-onload = function() {
+runTestCycle(function() {
+  assert_equals(window.innerWidth, 800, "Window must be 800 pixels wide.");
+  assert_equals(window.innerHeight, 600, "Window must be 600 pixels high.");
+
+  target = document.getElementById("target");
+  assert_true(!!target, "Target exists");
+  var observer = new IntersectionObserver(function(changes) {
+    entries = entries.concat(changes)
+  });
   observer.observe(target);
-  entries.push(...observer.takeRecords());
-  shouldBeEqualToNumber("entries.length", 0);
+  entries = entries.concat(observer.takeRecords());
+  assert_equals(entries.length, 0, "No initial notifications.");
+  runTestCycle(step0, "First rAF");
+}, "Observing a zero-area target.");
+
+function step0() {
   document.scrollingElement.scrollTop = 300;
-  waitForNotification(step1);
-};
+  runTestCycle(step1, "document.scrollingElement.scrollTop = 300");
+  assert_equals(entries.length, 0, "No notifications after first rAF.");
+}
 
 function step1() {
-  shouldBeEqualToNumber("entries.length", 1);
-  if (entries.length > 0) {
-    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 8);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 8);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.top", 408);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 408);
-    shouldBeEqualToNumber("entries[0].intersectionRect.left", 8);
-    shouldBeEqualToNumber("entries[0].intersectionRect.right", 8);
-    shouldBeEqualToNumber("entries[0].intersectionRect.top", 408);
-    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 408);
-    shouldBeEqualToNumber("entries[0].rootBounds.left", 0);
-    shouldBeEqualToNumber("entries[0].rootBounds.right", 785);
-    shouldBeEqualToNumber("entries[0].rootBounds.top", 0);
-    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 600);
-    shouldEvaluateToSameObject("entries[0].target", target);
-
-    // ClientRect members of IntersectionObserverEntry should be stable.
-    shouldEvaluateToSameObject("entries[0].boundingClientRect", entries[0].boundingClientRect);
-    shouldEvaluateToSameObject("entries[0].intersectionRect", entries[0].intersectionRect);
-    shouldEvaluateToSameObject("entries[0].rootBounds", entries[0].rootBounds);
-  }
   document.scrollingElement.scrollTop = 100;
-  waitForNotification(step2);
+  runTestCycle(step2, "document.scrollingElement.scrollTop = 100");
+  checkLastEntry(entries, 0, [8, 8, 408, 408, 8, 8, 408, 408, 0, 785, 0, 600, target]);
 }
 
 function step2() {
-  shouldBeEqualToNumber("entries.length", 2);
-  if (entries.length > 1) {
-    shouldBeEqualToNumber("entries[1].boundingClientRect.left", 8);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.right", 8);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.top", 608);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", 608);
-    shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.left", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.right", 785);
-    shouldBeEqualToNumber("entries[1].rootBounds.top", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.bottom", 600);
-    shouldEvaluateToSameObject("entries[1].target", target);
-  }
-  finishJSTest();
   document.scrollingElement.scrollTop = 0;
+  checkLastEntry(entries, 1, [8, 8, 608, 608, 0, 0, 0, 0, 0, 785, 0, 600, target]);
 }
 </script>

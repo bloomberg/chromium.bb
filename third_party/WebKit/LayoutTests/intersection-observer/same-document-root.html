@@ -1,110 +1,90 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
-<script src="../resources/intersection-observer-helper-functions.js"></script>
-<div style="width:100%; height:700px;"></div>
-<div id="root" style="display: inline-block; overflow-y: scroll; height: 200px; border: 3px solid black">
-  <div style="width:100px; height: 300px;"></div>
-  <div id="target" style="background-color: green; width:100px; height:100px"></div>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="./resources/intersection-observer-test-utils.js"></script>
+
+<style>
+pre, #log {
+  position: absolute;
+  top: 0;
+  left: 200px;
+}
+.spacer {
+  height: 700px;
+}
+#root {
+  display: inline-block;
+  overflow-y: scroll;
+  height: 200px;
+  border: 3px solid black;
+}
+#target {
+  width: 100px;
+  height: 100px;
+  background-color: green;
+}
+</style>
+
+<div class="spacer"></div>
+<div id="root">
+  <div style="height: 300px;"></div>
+  <div id="target"></div>
 </div>
-<div style="width:100%;height:700px;"></div>
+<div class="spacer"></div>
 
 <script>
-description("Simple intersection observer test with explicit root and target in the same document.");
-var target = document.getElementById("target");
-var root = document.getElementById("root");
 var entries = [];
-var observer = new IntersectionObserver(
-    changes => { entries = entries.concat(changes) },
-    { root: document.getElementById("root") }
-);
+var root, target;
 
-onload = function() {
+runTestCycle(function() {
+  assert_equals(window.innerWidth, 800, "Window must be 800 pixels wide.");
+  assert_equals(window.innerHeight, 600, "Window must be 600 pixels high.");
+
+  target = document.getElementById("target");
+  assert_true(!!target, "target exists");
+  root = document.getElementById("root");
+  assert_true(!!root, "root exists");
+  var observer = new IntersectionObserver(function(changes) {
+    entries = entries.concat(changes)
+  }, { root: root });
   observer.observe(target);
   entries = entries.concat(observer.takeRecords());
-  shouldBeEqualToNumber("entries.length", 0);
-  waitForNotification(step0);
-}
+  assert_equals(entries.length, 0, "No initial notifications.");
+  runTestCycle(step0, "First rAF");
+}, "IntersectionObserver in a single document with explicit root.");
 
-// Test that notifications are not generated when the target is overflow clipped by the root.
 function step0() {
-  shouldBeEqualToNumber("entries.length", 0);
   document.scrollingElement.scrollTop = 600;
-  waitForNotification(step1);
+  runTestCycle(step1, "document.scrollingElement.scrollTop = 600.");
+  assert_equals(entries.length, 0, "No notifications after first rAF.");
 }
 
 function step1() {
-  shouldBeEqualToNumber("entries.length", 0);
   root.scrollTop = 150;
-  waitForNotification(step2);
+  runTestCycle(step2, "root.scrollTop = 150 with root scrolled into view.");
+  assert_equals(entries.length, 0, "No notifications after scrolling frame.");
 }
 
 function step2() {
-  shouldBeEqualToNumber("entries.length", 1);
-  if (entries.length > 0) {
-    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 11);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 111);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.top", 261);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 361);
-    shouldBeEqualToNumber("entries[0].intersectionRect.left", 11);
-    shouldBeEqualToNumber("entries[0].intersectionRect.right", 111);
-    shouldBeEqualToNumber("entries[0].intersectionRect.top", 261);
-    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 311);
-    shouldBeEqualToNumber("entries[0].rootBounds.left", 11);
-    shouldBeEqualToNumber("entries[0].rootBounds.right", 111);
-    shouldBeEqualToNumber("entries[0].rootBounds.top", 111);
-    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 311);
-    shouldEvaluateToSameObject("entries[0].target", target);
-  }
   document.scrollingElement.scrollTop = 0;
-  waitForNotification(step3);
+  runTestCycle(step3, "document.scrollingElement.scrollTop = 0.");
+  checkLastEntry(entries, 0, [11, 111, 261, 361, 11, 111, 261, 311, 11, 111, 111, 311, target]);
 }
 
 function step3() {
-  shouldBeEqualToNumber("entries.length", 1);
   root.scrollTop = 0;
-  waitForNotification(step4);
+  runTestCycle(step4, "root.scrollTop = 0");
+  checkLastEntry(entries, 0);
 }
 
 function step4() {
-  shouldBeEqualToNumber("entries.length", 2);
-  if (entries.length > 1) {
-    shouldBeEqualToNumber("entries[1].boundingClientRect.left", 11);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.right", 111);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.top", 1011);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", 1111);
-    shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.left", 11);
-    shouldBeEqualToNumber("entries[1].rootBounds.right", 111);
-    shouldBeEqualToNumber("entries[1].rootBounds.top", 711);
-    shouldBeEqualToNumber("entries[1].rootBounds.bottom", 911);
-    shouldEvaluateToSameObject("entries[1].target", target);
-  }
   root.scrollTop = 150;
-  waitForNotification(step5);
+  runTestCycle(step5, "root.scrollTop = 150 with root scrolled out of view.");
+  checkLastEntry(entries, 1, [11, 111, 1011, 1111, 0, 0, 0, 0, 11, 111, 711, 911, target]);
 }
 
 // This tests that notifications are generated even when the root element is off screen.
 function step5() {
-  shouldBeEqualToNumber("entries.length", 3);
-  if (entries.length > 2) {
-    shouldBeEqualToNumber("entries[2].boundingClientRect.left", 11);
-    shouldBeEqualToNumber("entries[2].boundingClientRect.right", 111);
-    shouldBeEqualToNumber("entries[2].boundingClientRect.top", 861);
-    shouldBeEqualToNumber("entries[2].boundingClientRect.bottom", 961);
-    shouldBeEqualToNumber("entries[2].intersectionRect.left", 11);
-    shouldBeEqualToNumber("entries[2].intersectionRect.right", 111);
-    shouldBeEqualToNumber("entries[2].intersectionRect.top", 861);
-    shouldBeEqualToNumber("entries[2].intersectionRect.bottom", 911);
-    shouldBeEqualToNumber("entries[2].rootBounds.left", 11);
-    shouldBeEqualToNumber("entries[2].rootBounds.right", 111);
-    shouldBeEqualToNumber("entries[2].rootBounds.top", 711);
-    shouldBeEqualToNumber("entries[2].rootBounds.bottom", 911);
-    shouldEvaluateToSameObject("entries[2].target", target);
-  }
-
-  finishJSTest();
+  checkLastEntry(entries, 2, [11, 111, 861, 961, 11, 111, 861, 911, 11, 111, 711, 911, target]);
 }
 </script>
