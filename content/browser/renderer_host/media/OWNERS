@@ -2,6 +2,7 @@ file://media/OWNERS
 
 # WebRTC OWNERS.
 emircan@chromium.org
+guidou@chromium.org
 tommi@chromium.org
 
 per-file video_*=mcasas@chromium.org
