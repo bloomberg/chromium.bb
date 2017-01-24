@@ -35,6 +35,9 @@
 /* Forward reference for array to keep "drm" handles */
 extern int drm_amdgpu[MAX_CARDS_SUPPORTED];
 
+/* Global variables */
+extern int open_render_node;
+
 /*************************  Basic test suite ********************************/
 
 /*

@@ -152,6 +152,11 @@ static void amdgpu_bo_export_import_do_type(enum amdgpu_bo_handle_type type)
 
 static void amdgpu_bo_export_import(void)
 {
+	if (open_render_node) {
+		printf("(DRM render node is used. Skip export/Import test) ");
+		return;
+	}
+
 	amdgpu_bo_export_import_do_type(amdgpu_bo_handle_type_gem_flink_name);
 	amdgpu_bo_export_import_do_type(amdgpu_bo_handle_type_dma_buf_fd);
 }

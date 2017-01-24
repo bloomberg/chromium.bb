@@ -56,6 +56,9 @@
  */
 int drm_amdgpu[MAX_CARDS_SUPPORTED];
 
+/** Open render node to test */
+int open_render_node = 0;	/* By default run most tests on primary node */
+
 /** The table of all known test suites to run */
 static CU_SuiteInfo suites[] = {
 	{
@@ -109,16 +112,17 @@ static void display_test_suites(void)
 
 /** Help string for command line parameters */
 static const char usage[] =
-	"Usage: %s [-hlp] [<-s <suite id>> [-t <test id>]] "
+	"Usage: %s [-hlpr] [<-s <suite id>> [-t <test id>]] "
 	"[-b <pci_bus_id> [-d <pci_device_id>]]\n"
 	"where:\n"
 	"       l - Display all suites and their tests\n"
+	"       r - Run the tests on render node\n"
 	"       b - Specify device's PCI bus id to run tests\n"
 	"       d - Specify device's PCI device id to run tests (optional)\n"
 	"       p - Display information of AMDGPU devices in system\n"
 	"       h - Display this help\n";
 /** Specified options strings for getopt */
-static const char options[]   = "hlps:t:b:d:";
+static const char options[]   = "hlrps:t:b:d:";
 
 /* Open AMD devices.
  * Return the number of AMD device openned.
@@ -326,6 +330,9 @@ int main(int argc, char **argv)
 		case 'p':
 			display_devices = 1;
 			break;
+		case 'r':
+			open_render_node = 1;
+			break;
 		case '?':
 		case 'h':
 			fprintf(stderr, usage, argv[0]);
@@ -336,7 +343,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (amdgpu_open_devices(0) <= 0) {
+	if (amdgpu_open_devices(open_render_node) <= 0) {
 		perror("Cannot open AMDGPU device");
 		exit(EXIT_FAILURE);
 	}
