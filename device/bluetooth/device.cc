@@ -100,16 +100,27 @@ void Device::GetCharacteristics(const std::string& service_id,
   device::BluetoothDevice* device = adapter_->GetDevice(GetAddress());
   DCHECK(device);
 
-  if (device->IsGattServicesDiscoveryComplete()) {
-    GetCharacteristicsImpl(service_id, callback);
+  device::BluetoothRemoteGattService* service =
+      device->GetGattService(service_id);
+  if (service == nullptr) {
+    callback.Run(base::nullopt);
     return;
   }
 
-  // pending_services_requests_ is owned by Device, so base::Unretained is
-  // safe.
-  pending_services_requests_.push_back(
-      base::Bind(&Device::GetCharacteristicsImpl, base::Unretained(this),
-                 service_id, callback));
+  std::vector<mojom::CharacteristicInfoPtr> characteristics;
+
+  for (const auto* characteristic : service->GetCharacteristics()) {
+    mojom::CharacteristicInfoPtr characteristic_info =
+        mojom::CharacteristicInfo::New();
+
+    characteristic_info->id = characteristic->GetIdentifier();
+    characteristic_info->uuid = characteristic->GetUUID();
+    characteristic_info->properties = characteristic->GetProperties();
+
+    characteristics.push_back(std::move(characteristic_info));
+  }
+
+  callback.Run(std::move(characteristics));
 }
 
 Device::Device(scoped_refptr<device::BluetoothAdapter> adapter,
@@ -141,31 +152,6 @@ mojom::ServiceInfoPtr Device::ConstructServiceInfoStruct(
   service_info->is_primary = service.IsPrimary();
 
   return service_info;
-}
-
-void Device::GetCharacteristicsImpl(
-    const std::string& service_id,
-    const GetCharacteristicsCallback& callback) {
-  device::BluetoothDevice* device = adapter_->GetDevice(GetAddress());
-  DCHECK(device);
-  device::BluetoothRemoteGattService* service =
-      device->GetGattService(service_id);
-  DCHECK(service);
-
-  std::vector<mojom::CharacteristicInfoPtr> characteristics;
-
-  for (const auto* characteristic : service->GetCharacteristics()) {
-    mojom::CharacteristicInfoPtr characteristic_info =
-        mojom::CharacteristicInfo::New();
-
-    characteristic_info->id = characteristic->GetIdentifier();
-    characteristic_info->uuid = characteristic->GetUUID();
-    characteristic_info->properties = characteristic->GetProperties();
-
-    characteristics.push_back(std::move(characteristic_info));
-  }
-
-  callback.Run(std::move(characteristics));
 }
 
 const std::string& Device::GetAddress() {

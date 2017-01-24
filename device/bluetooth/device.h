@@ -63,9 +63,6 @@ class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
   mojom::ServiceInfoPtr ConstructServiceInfoStruct(
       const device::BluetoothRemoteGattService& service);
 
-  void GetCharacteristicsImpl(const std::string& service_id,
-                              const GetCharacteristicsCallback& callback);
-
   const std::string& GetAddress();
 
   // The current BluetoothAdapter.

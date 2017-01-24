@@ -182,7 +182,7 @@ cr.define('characteristic_list', function() {
       device_broker.connectToDevice(deviceAddress).then(function(device) {
         return device.getCharacteristics(serviceId);
       }.bind(this)).then(function(response) {
-        this.setData(new ArrayDataModel(response.characteristics));
+        this.setData(new ArrayDataModel(response.characteristics || []));
         this.setLoading(false);
         this.characteristicsRequested_ = false;
       }.bind(this)).catch(function(error) {

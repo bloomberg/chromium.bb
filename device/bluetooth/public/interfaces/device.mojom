@@ -70,6 +70,9 @@ interface Device {
   GetServices() => (array<ServiceInfo> services);
 
   // Gets the GATT Characteristics in the GATT Service with |service_id|.
+  // If |characteristics| is null, an error occured while attempting to retrieve
+  // the array of characteristics. If |characteristics| is empty, this simply
+  // means that no characteristics were found.
   GetCharacteristics(string service_id) =>
-      (array<CharacteristicInfo> characteristics);
+      (array<CharacteristicInfo>? characteristics);
 };
