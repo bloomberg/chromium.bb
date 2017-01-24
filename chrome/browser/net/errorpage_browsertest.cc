@@ -1494,12 +1494,14 @@ IN_PROC_BROWSER_TEST_F(ErrorPageForIDNTest, IDN) {
   EXPECT_TRUE(IsDisplayingText(browser(), kHostnameJSUnicode));
 }
 
-// Make sure HTTP/0.9 is disabled on non-default ports by default.
+// Make sure HTTP/0.9 is enabled on non-default ports by default.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, Http09WeirdPort) {
+  const char kHttp09Response[] = "JumboShrimp";
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/echo-raw?spam"));
-  ExpectDisplayingLocalErrorPage(browser(), net::ERR_INVALID_HTTP_RESPONSE);
+      browser(), embedded_test_server()->GetURL(std::string("/echo-raw?") +
+                                                kHttp09Response));
+  EXPECT_TRUE(IsDisplayingText(browser(), kHttp09Response));
 }
 
 class ErrorPageWithHttp09OnNonDefaultPortsTest : public InProcessBrowserTest {

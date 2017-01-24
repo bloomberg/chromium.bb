@@ -357,7 +357,7 @@ IOThread::IOThread(
 #endif
       globals_(nullptr),
       is_quic_allowed_by_policy_(true),
-      http_09_on_non_default_ports_enabled_(false),
+      http_09_on_non_default_ports_enabled_(true),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
