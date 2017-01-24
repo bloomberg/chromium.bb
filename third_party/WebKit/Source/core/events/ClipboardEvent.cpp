@@ -24,11 +24,15 @@
 
 namespace blink {
 
-ClipboardEvent::ClipboardEvent(const AtomicString& eventType,
+ClipboardEvent::ClipboardEvent(const AtomicString& type,
                                bool canBubble,
                                bool cancelable,
                                DataTransfer* clipboardData)
-    : Event(eventType, canBubble, cancelable), m_clipboardData(clipboardData) {}
+    : Event(type, canBubble, cancelable), m_clipboardData(clipboardData) {}
+
+ClipboardEvent::ClipboardEvent(const AtomicString& type,
+                               const ClipboardEventInit& initializer)
+    : Event(type, initializer), m_clipboardData(initializer.clipboardData()) {}
 
 ClipboardEvent::~ClipboardEvent() {}
 

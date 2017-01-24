@@ -61,6 +61,8 @@ generated_core_dictionary_files = [
   "$blink_core_output_dir/events/AnimationPlaybackEventInit.h",
   "$blink_core_output_dir/events/ApplicationCacheErrorEventInit.cpp",
   "$blink_core_output_dir/events/ApplicationCacheErrorEventInit.h",
+  "$blink_core_output_dir/events/ClipboardEventInit.cpp",
+  "$blink_core_output_dir/events/ClipboardEventInit.h",
   "$blink_core_output_dir/events/CompositionEventInit.cpp",
   "$blink_core_output_dir/events/CompositionEventInit.h",
   "$blink_core_output_dir/events/CustomEventInit.cpp",
