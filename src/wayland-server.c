@@ -120,11 +120,16 @@ struct wl_resource {
 	struct wl_object object;
 	wl_resource_destroy_func_t destroy;
 	struct wl_list link;
-	struct wl_signal destroy_signal;
+	/* Unfortunately some users of libwayland (e.g. mesa) still use the
+	 * deprecated wl_resource struct, even if creating it with the new
+	 * wl_resource_create(). So we cannot change the layout of the struct
+	 * unless after the data field. */
+	struct wl_signal deprecated_destroy_signal;
 	struct wl_client *client;
 	void *data;
 	int version;
 	wl_dispatcher_func_t dispatcher;
+	struct wl_priv_signal destroy_signal;
 };
 
 struct wl_protocol_logger {
@@ -600,6 +605,31 @@ wl_resource_post_no_memory(struct wl_resource *resource)
 			       WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
 }
 
+/** Detect if a wl_resource uses the deprecated public definition.
+ *
+ * Before Wayland 1.2.0, the definition of struct wl_resource was public.
+ * It was made opaque just before 1.2.0, and later new fields were added.
+ * The new fields cannot be accessed if a program is using the deprecated
+ * defition, as there would not be memory allocated for them.
+ *
+ * The creation pattern for the deprecated definition was wl_resource_init()
+ * followed by wl_client_add_resource(). wl_resource_init() was an inline
+ * function and no longer exists, but binaries might still carry it.
+ * wl_client_add_resource() still exists for ABI compatiblity.
+ */
+static bool
+resource_is_deprecated(struct wl_resource *resource)
+{
+	struct wl_map *map = &resource->client->objects;
+	int id = resource->object.id;
+
+	/* wl_client_add_resource() marks deprecated resources with the flag. */
+	if (wl_map_lookup_flags(map, id) & WL_MAP_ENTRY_LEGACY)
+		return true;
+
+	return false;
+}
+
 static enum wl_iterator_result
 destroy_resource(void *element, void *data)
 {
@@ -607,7 +637,11 @@ destroy_resource(void *element, void *data)
 	struct wl_client *client = resource->client;
 	uint32_t flags;
 
-	wl_signal_emit(&resource->destroy_signal, resource);
+	wl_signal_emit(&resource->deprecated_destroy_signal, resource);
+	/* Don't emit the new signal for deprecated resources, as that would
+	 * access memory outside the bounds of the deprecated struct */
+	if (!resource_is_deprecated(resource))
+		wl_priv_signal_emit(&resource->destroy_signal, resource);
 
 	flags = wl_map_lookup_flags(&client->objects, resource->object.id);
 	if (resource->destroy)
@@ -719,14 +753,19 @@ WL_EXPORT void
 wl_resource_add_destroy_listener(struct wl_resource *resource,
 				 struct wl_listener * listener)
 {
-	wl_signal_add(&resource->destroy_signal, listener);
+	if (resource_is_deprecated(resource))
+		wl_signal_add(&resource->deprecated_destroy_signal, listener);
+	else
+		wl_priv_signal_add(&resource->destroy_signal, listener);
 }
 
 WL_EXPORT struct wl_listener *
 wl_resource_get_destroy_listener(struct wl_resource *resource,
 				 wl_notify_func_t notify)
 {
-	return wl_signal_get(&resource->destroy_signal, notify);
+	if (resource_is_deprecated(resource))
+		return wl_signal_get(&resource->deprecated_destroy_signal, notify);
+	return wl_priv_signal_get(&resource->destroy_signal, notify);
 }
 
 /** Retrieve the interface name (class) of a resource object.
@@ -1559,7 +1598,8 @@ wl_resource_create(struct wl_client *client,
 	resource->object.interface = interface;
 	resource->object.implementation = NULL;
 
-	wl_signal_init(&resource->destroy_signal);
+	wl_signal_init(&resource->deprecated_destroy_signal);
+	wl_priv_signal_init(&resource->destroy_signal);
 
 	resource->destroy = NULL;
 	resource->client = client;
@@ -1927,7 +1967,7 @@ wl_client_add_resource(struct wl_client *client,
 	}
 
 	resource->client = client;
-	wl_signal_init(&resource->destroy_signal);
+	wl_signal_init(&resource->deprecated_destroy_signal);
 
 	return resource->object.id;
 }
