@@ -41,6 +41,7 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/css/parser/FontVariantLigaturesParser.h"
+#include "core/css/parser/FontVariantNumericParser.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyColumnUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
@@ -338,87 +339,6 @@ static CSSValue* consumeWebkitHighlight(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
   return consumeString(range);
-}
-
-class FontVariantNumericParser {
-  STACK_ALLOCATED();
-
- public:
-  FontVariantNumericParser()
-      : m_sawNumericFigureValue(false),
-        m_sawNumericSpacingValue(false),
-        m_sawNumericFractionValue(false),
-        m_sawOrdinalValue(false),
-        m_sawSlashedZeroValue(false),
-        m_result(CSSValueList::createSpaceSeparated()) {}
-
-  enum class ParseResult { ConsumedValue, DisallowedValue, UnknownValue };
-
-  ParseResult consumeNumeric(CSSParserTokenRange& range) {
-    CSSValueID valueID = range.peek().id();
-    switch (valueID) {
-      case CSSValueLiningNums:
-      case CSSValueOldstyleNums:
-        if (m_sawNumericFigureValue)
-          return ParseResult::DisallowedValue;
-        m_sawNumericFigureValue = true;
-        break;
-      case CSSValueProportionalNums:
-      case CSSValueTabularNums:
-        if (m_sawNumericSpacingValue)
-          return ParseResult::DisallowedValue;
-        m_sawNumericSpacingValue = true;
-        break;
-      case CSSValueDiagonalFractions:
-      case CSSValueStackedFractions:
-        if (m_sawNumericFractionValue)
-          return ParseResult::DisallowedValue;
-        m_sawNumericFractionValue = true;
-        break;
-      case CSSValueOrdinal:
-        if (m_sawOrdinalValue)
-          return ParseResult::DisallowedValue;
-        m_sawOrdinalValue = true;
-        break;
-      case CSSValueSlashedZero:
-        if (m_sawSlashedZeroValue)
-          return ParseResult::DisallowedValue;
-        m_sawSlashedZeroValue = true;
-        break;
-      default:
-        return ParseResult::UnknownValue;
-    }
-    m_result->append(*consumeIdent(range));
-    return ParseResult::ConsumedValue;
-  }
-
-  CSSValue* finalizeValue() {
-    if (!m_result->length())
-      return CSSIdentifierValue::create(CSSValueNormal);
-    return m_result.release();
-  }
-
- private:
-  bool m_sawNumericFigureValue;
-  bool m_sawNumericSpacingValue;
-  bool m_sawNumericFractionValue;
-  bool m_sawOrdinalValue;
-  bool m_sawSlashedZeroValue;
-  Member<CSSValueList> m_result;
-};
-
-static CSSValue* consumeFontVariantNumeric(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueNormal)
-    return consumeIdent(range);
-
-  FontVariantNumericParser numericParser;
-  do {
-    if (numericParser.consumeNumeric(range) !=
-        FontVariantNumericParser::ParseResult::ConsumedValue)
-      return nullptr;
-  } while (!range.atEnd());
-
-  return numericParser.finalizeValue();
 }
 
 static CSSIdentifierValue* consumeFontVariantCSS21(CSSParserTokenRange& range) {
@@ -2172,8 +2092,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
   switch (property) {
     case CSSPropertyWebkitHighlight:
       return consumeWebkitHighlight(m_range);
-    case CSSPropertyFontVariantNumeric:
-      return consumeFontVariantNumeric(m_range);
     case CSSPropertyFontFeatureSettings:
       return consumeFontFeatureSettings(m_range);
     case CSSPropertyFontFamily:
