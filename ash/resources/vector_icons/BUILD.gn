@@ -208,6 +208,7 @@ action("aggregate_vector_icons") {
     "system_tray_volume_mute.icon",
     "touch_calibration_complete_check.1x.icon",
     "touch_calibration_complete_check.icon",
+    "touch_calibration_hand.icon",
     "window_control_back.1x.icon",
     "window_control_back.icon",
     "window_control_close.1x.icon",
