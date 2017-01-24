@@ -235,6 +235,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
+    private BottomSheet mBottomSheet;
 
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
@@ -389,8 +390,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 // Get a handle to the bottom sheet if using the bottom control container.
                 if (controlContainerLayoutId == R.layout.bottom_control_container) {
                     View coordinator = findViewById(R.id.coordinator);
-                    BottomSheet bottomSheet = (BottomSheet) findViewById(R.id.bottom_sheet);
-                    bottomSheet.init(coordinator, controlContainer.getView());
+                    mBottomSheet = (BottomSheet) findViewById(R.id.bottom_sheet);
+                    mBottomSheet.init(coordinator, controlContainer.getView());
                 }
 
                 // Inflate the correct toolbar layout for the device.
@@ -584,6 +585,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     protected int getAppMenuLayoutId() {
         return R.menu.main_menu;
+    }
+
+    /**
+     * Get the Chrome Home bottom sheet if it exists.
+     * @return The bottom sheet or null.
+     */
+    public BottomSheet getBottomSheet() {
+        return mBottomSheet;
     }
 
     /**

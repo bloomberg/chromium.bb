@@ -1757,7 +1757,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
-    private void triggerUrlFocusAnimation(final boolean hasFocus) {
+    protected void triggerUrlFocusAnimation(final boolean hasFocus) {
         if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
             mUrlFocusLayoutAnimator.cancel();
             mUrlFocusLayoutAnimator = null;

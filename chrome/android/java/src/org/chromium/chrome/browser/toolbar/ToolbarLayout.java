@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.ui.UiUtils;
@@ -794,4 +795,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                     R.string.accessibility_toolbar_btn_menu));
         }
     }
+
+    @Override
+    public void setBottomSheet(BottomSheet sheet) {}
 }

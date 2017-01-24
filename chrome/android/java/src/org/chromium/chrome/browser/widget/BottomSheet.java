@@ -234,8 +234,15 @@ public class BottomSheet extends LinearLayout {
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // Make sure the size of the layout actually changed.
+                if (bottom - top == oldBottom - oldTop && right - left == oldRight - oldLeft) {
+                    return;
+                }
+
                 mContainerHeight = bottom - top;
                 updateSheetPeekHeight();
+
+                cancelAnimation();
                 setSheetState(mCurrentState, false);
             }
         });
@@ -244,8 +251,15 @@ public class BottomSheet extends LinearLayout {
         controlContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // Make sure the size of the layout actually changed.
+                if (bottom - top == oldBottom - oldTop && right - left == oldRight - oldLeft) {
+                    return;
+                }
+
                 mToolbarHeight = bottom - top;
                 updateSheetPeekHeight();
+
+                cancelAnimation();
                 setSheetState(mCurrentState, false);
             }
         });
@@ -352,7 +366,7 @@ public class BottomSheet extends LinearLayout {
      * @param animate If true, the sheet will animate to the provided state, otherwise it will
      *                move there instantly.
      */
-    private void setSheetState(@SheetState int state, boolean animate) {
+    public void setSheetState(@SheetState int state, boolean animate) {
         mCurrentState = state;
 
         if (animate) {
@@ -360,6 +374,22 @@ public class BottomSheet extends LinearLayout {
         } else {
             setSheetOffsetFromBottom(getSheetHeightForState(state));
         }
+    }
+
+    /**
+     * @return The current state of the bottom sheet. If the sheet is animating, this will be the
+     *         state the sheet is animating to.
+     */
+    public int getSheetState() {
+        return mCurrentState;
+    }
+
+    /**
+     * If the animation to settle the sheet in one of its states is running.
+     * @return True if the animation is running.
+     */
+    private boolean isRunningSettleAnimation() {
+        return mSettleAnimator != null;
     }
 
     /**

@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.widget.BottomSheet;
 
 /**
  * An interface for outside packages to interact with ToolbarLayout. Other than for testing purposes
@@ -41,6 +42,13 @@ public interface Toolbar {
      * @param textureMode Whether or not to be in texture capture mode.
      */
     void setTextureCaptureMode(boolean textureMode);
+
+    /**
+     * Set the {@link BottomSheet} for triggering animations. This can be null if Chrome Home is
+     * disabled.
+     * @param sheet The {@link BottomSheet}.
+     */
+    void setBottomSheet(BottomSheet sheet);
 
     /**
      * @return Whether a dirty check for invalidation makes sense at this time.
