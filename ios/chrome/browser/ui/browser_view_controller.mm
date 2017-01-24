@@ -435,8 +435,7 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
   std::unique_ptr<InfoBarContainerDelegateIOS> _infoBarContainerDelegate;
 
   // Voice search bar at the bottom of the view overlayed on |_contentArea|
-  // when displaying voice search results. Implementation is not complete.
-  // See b/7998125.
+  // when displaying voice search results.
   base::scoped_nsprotocol<UIView<VoiceSearchBar>*> _voiceSearchBar;
 
   // The image fetcher used to save images and perform image-based searches.
@@ -2290,9 +2289,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   CGFloat width = CGRectGetWidth([[self view] bounds]);
   CGFloat y = CGRectGetHeight([[self view] bounds]) - kVoiceSearchBarHeight;
   CGRect frame = CGRectMake(0.0, y, width, kVoiceSearchBarHeight);
-  _voiceSearchBar.reset(ios::GetChromeBrowserProvider()
-                            ->GetVoiceSearchProvider()
-                            ->CreateVoiceSearchBar(frame));
+  _voiceSearchBar.reset([ios::GetChromeBrowserProvider()
+                             ->GetVoiceSearchProvider()
+                             ->BuildVoiceSearchBar(frame) retain]);
   [_voiceSearchBar setVoiceSearchBarDelegate:self];
   [_voiceSearchBar setHidden:YES];
   [_voiceSearchBar setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin |
